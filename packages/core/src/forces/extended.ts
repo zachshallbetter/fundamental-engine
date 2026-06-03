@@ -54,8 +54,32 @@ export const gate: Force = {
   meta: { desc: 'a one-way membrane — passes matter along its heading, reflects the reverse' },
 };
 
+/**
+ * §20.3 — `buoyancy`: a constant lift/sink set by a density difference. A particle's
+ * density `ρ_p = base / (size · (1 + heat))` falls as it grows or heats, so hot/large
+ * matter is lighter than the medium and rises while denser matter settles
+ * (sedimentation). `strength` is `g`; `data-range = 0` makes it global. Both `base`
+ * and the medium density are 1, so a unit-size, cool particle is neutrally buoyant.
+ *
+ * The spec writes `v_y += (ρ_med − ρ_p)·g`; the engine's `+y` points *down*, so we
+ * apply that quantity as a lift (subtract from `v_y`) — lighter matter rises (`−y`),
+ * denser sinks (`+y`).
+ */
+const BUOY_BASE = 1;
+const BUOY_MEDIUM = 1;
+export const buoyancy: Force = {
+  token: 'buoyancy',
+  label: 'Buoyancy',
+  apply(b, p, e) {
+    if (b.range > 0 && e.dist >= b.range) return; // range 0 ⇒ global field
+    const rhoP = BUOY_BASE / (p.size * (1 + p.heat)); // hotter / bigger → lighter
+    p.vy -= (BUOY_MEDIUM - rhoP) * b.strength; // lift up (−y) when lighter than the medium
+  },
+  meta: { desc: 'a constant lift/sink by density difference — light matter rises, dense settles' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
-export const extendedForces: readonly Force[] = [lens, gate];
+export const extendedForces: readonly Force[] = [lens, gate, buoyancy];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */
 export function registerExtendedForces(reg: Registry): void {
