@@ -216,6 +216,8 @@ export interface FieldHandle {
   setFormation(name: string): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void;
+  /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
+  burst(x: number, y: number, hex?: string): void;
   /** stop the loop and release listeners. */
   destroy(): void;
 }
