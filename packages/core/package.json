@@ -4,7 +4,6 @@
   "description": "A reciprocal DOM-physics field — elements bend the field; the field's density bends them back.",
   "type": "module",
   "license": "MIT",
-  "packageManager": "pnpm@10.29.1",
   "sideEffects": false,
   "files": ["dist"],
   "main": "./dist/index.js",
@@ -17,15 +16,11 @@
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test"
   },
   "devDependencies": {
-    "tsup": "^8.5.0",
-    "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "typescript": "^5.9.3"
   }
 }

@@ -9,5 +9,5 @@
  * the prototype in `docs/reference/`.
  */
 
-export * from './core/types';
-export * from './config/forces.config';
+export * from './core/types.js';
+export * from './config/forces.config.js';

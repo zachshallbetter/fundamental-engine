@@ -8,15 +8,13 @@
   "types": "./dist/index.d.ts",
   "sideEffects": ["./dist/index.js"],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "forces-ui": "workspace:*"
   },
   "devDependencies": {
-    "tsup": "^8.5.0",
     "typescript": "^5.9.3"
   }
 }
