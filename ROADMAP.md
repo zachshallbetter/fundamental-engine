@@ -137,7 +137,9 @@ Ordered for overnight (highest visible value first):
       hot/large matter rises, dense settles; `range 0` = global. `forces/extended.ts` (§20.3).
 - [x] **`shear`** — a laminar velocity gradient (Couette): flow speed along the axis
       grows with perpendicular offset (`v_∥ += S·(offset_⊥/d_max)·(1−d/d_max)`). `forces/extended.ts` (§20.3).
-- [ ] `crystallize`, `resonate`, `spotlight`, `align`, `wind`
+- [x] **`crystallize`** — a phase change: cool matter snaps onto a lattice (`v += (node−p)·k_snap`,
+      then damps) and settles solid; hot matter melts and moves free. `forces/extended.ts` (§20.3).
+- [ ] `resonate`, `spotlight`, `align`, `wind`
       — the rest of the §20.3 class [A] forces, one per cycle.
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
