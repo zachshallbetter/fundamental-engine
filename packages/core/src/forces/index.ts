@@ -9,6 +9,7 @@
 
 import type { Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
+import { FORCE_BY } from '../config/forces.config.ts';
 
 /** §6.1 — a soft gravity-like well, with optional orbital swirl. */
 export const attract: Force = {
@@ -167,7 +168,7 @@ export const reflect: Force = {
       p.vy = -p.vy * 0.85;
     }
     if (speed > 0.7) {
-      e.spark(p.x, p.y, Math.min(2.4, speed));
+      e.spark(p.x, p.y, Math.min(2.4, speed), FORCE_BY.reflect.color);
       p.heat = Math.max(p.heat, Math.min(0.85, speed * 0.4));
     }
   },
