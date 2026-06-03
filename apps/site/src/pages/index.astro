@@ -69,6 +69,8 @@ const cells = [
       ))}
     </div>
 
+    <a class="manual-link" href="/reference">The Field Manual — every force, defined →</a>
+
     <footer>
       <span>forces-ui · pre-alpha · building in the open</span>
       <a href="mailto:zach@zachshallbetter.com">zach@zachshallbetter.com</a>
@@ -222,6 +224,20 @@ const cells = [
       letter-spacing: 0.04em;
       text-transform: lowercase;
       color: var(--text-3);
+    }
+    .manual-link {
+      display: inline-block;
+      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
+      font-family: var(--mono, ui-monospace, monospace);
+      font-size: 0.82rem;
+      letter-spacing: 0.01em;
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+    .manual-link:hover {
+      border-bottom-color: var(--accent);
     }
     footer {
       margin: clamp(2.4rem, 6vh, 3.4rem) 0 0;

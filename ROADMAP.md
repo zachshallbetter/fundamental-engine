@@ -170,6 +170,11 @@ Ordered for overnight (highest visible value first):
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
 - [ ] Vanilla adapter (mount once, scan the DOM) + a React adapter.
+- [x] **The Field Manual `/reference` — the complete definition, in the UI.** Renders
+      `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 26
+      forces with its law, `data-*` attributes, and description; presets as compositions;
+      the `data-when` gates — all over the live field, linked from the home page. Driven by
+      the catalog (completeness-tested), so it can't drift from the engine.
 - [ ] **forces-ui.com landing page = the Field Manual, rebuilt on the engine.**
       The current `public/index.html` is a placeholder; the real home is the
       Manual (`docs/reference/manual.html`) — it explains the system *by being it*
