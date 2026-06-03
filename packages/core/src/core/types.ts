@@ -212,6 +212,9 @@ export interface FieldOptions {
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
    *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
   mass?: boolean;
+  /** colour template for the travelling accent (§9): a built-in name
+   *  (`'ours'` · `'heatmap'` · `'infrared'` · `'spectrum'`) or custom hex stops. */
+  palette?: string | readonly string[];
 }
 
 /** The handle returned by `createField` — the public field API (§13). */
@@ -222,6 +225,8 @@ export interface FieldHandle {
   rescan(): void;
   /** recolour the travelling accent (§9). */
   setAccent(hex: string): void;
+  /** swap the accent's colour template live: a built-in name or custom hex stops (§9). */
+  setPalette(palette: string | readonly string[]): void;
   /** switch the global formation (§7). */
   setFormation(name: string): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */

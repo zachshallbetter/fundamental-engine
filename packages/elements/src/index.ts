@@ -15,7 +15,7 @@ import { createField, PALETTE, type FieldHandle } from 'forces-ui';
  * place when there's UI to template, e.g. the Lab controls (§14).
  */
 export class ForcesField extends HTMLElement {
-  static readonly observedAttributes = ['accent', 'density', 'waves', 'render'];
+  static readonly observedAttributes = ['accent', 'density', 'waves', 'render', 'palette'];
 
   private readonly canvas: HTMLCanvasElement;
   private field?: FieldHandle;
@@ -53,6 +53,11 @@ export class ForcesField extends HTMLElement {
     return v === 'trails' || v === 'links' ? v : 'dots';
   }
 
+  /** colour template name for the travelling accent (§9), or undefined for `ours`. */
+  get palette(): string | undefined {
+    return this.getAttribute('palette') ?? undefined;
+  }
+
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
   /** re-scan the document for `[data-body]` bodies after a DOM change. */
   scan(): void {
@@ -65,6 +70,10 @@ export class ForcesField extends HTMLElement {
   /** recolour the travelling accent (§9). */
   setAccent(hex: string): void {
     this.field?.setAccent(hex);
+  }
+  /** swap the accent colour template live (§9). */
+  setPalette(palette: string | readonly string[]): void {
+    this.field?.setPalette(palette);
   }
   /** switch the global formation (§7). */
   setFormation(name: string): void {
@@ -79,10 +88,12 @@ export class ForcesField extends HTMLElement {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
     if (!this.hasAttribute('aria-hidden')) this.setAttribute('aria-hidden', 'true');
     this.field = createField(this.canvas, {
-      accent: this.accent,
+      // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
+      accent: this.getAttribute('accent') ?? undefined,
       density: this.density,
       waves: this.waves,
       render: this.renderMode,
+      palette: this.palette,
     });
   }
 
