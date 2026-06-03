@@ -10,6 +10,7 @@
 import type { Body, ConditionRegistry, Env, ForceRegistry, Particle } from './types.ts';
 import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
+import { waveYat, waveSlope, type Wave } from './currents.ts';
 
 export const FRICTION = 0.95;
 export const HEAT_DECAY = 0.972;
@@ -21,6 +22,8 @@ export interface StepInput {
   env: Env;
   forces: ForceRegistry;
   conditions: ConditionRegistry;
+  /** the carrier waves — free particles drift along their slope (§2.3). */
+  waves?: readonly Wave[];
 }
 
 function passes(conds: ConditionRegistry, b: Body, p: Particle): boolean {
@@ -30,10 +33,11 @@ function passes(conds: ConditionRegistry, b: Body, p: Particle): boolean {
 }
 
 export function step(input: StepInput): void {
-  const { store, bodies, env, forces, conditions } = input;
+  const { store, bodies, env, forces, conditions, waves } = input;
   const dt = env.dt;
   if (dt === 0) return;
   const { W, H, form } = env;
+  const hasWaves = !!waves && waves.length > 0;
   const hasBodies = bodies.length > 0;
   // the accretion target for `conv` — the first visible absorb body (§7).
   const conv = form.conv > 0.02 ? accretionTarget(bodies) : null;
@@ -44,6 +48,23 @@ export function step(input: StepInput): void {
       p.x += (p.cap.cx - p.x) * 0.18;
       p.y += (p.cap.cy - p.y) * 0.18;
       continue;
+    }
+
+    // wave current (§2.3): near a wave line, drift along its slope like debris.
+    if (hasWaves) {
+      let near: Wave | null = null;
+      let nd = 1e9;
+      for (const w of waves!) {
+        const d = Math.abs(waveYat(w, p.x, env.t, H) - p.y);
+        if (d < nd) {
+          nd = d;
+          near = w;
+        }
+      }
+      if (near && nd < 70) {
+        p.vx += near.dir * 0.035 * (1 - nd / 70);
+        p.vy += waveSlope(near, p.x, env.t) * 0.1 * (1 - nd / 70);
+      }
     }
 
     // formation currents (§7), before the body forces: a lateral lane, an

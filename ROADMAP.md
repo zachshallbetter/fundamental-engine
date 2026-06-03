@@ -61,11 +61,18 @@ Carried over from the Phase 1 conformance audit:
   (§20.8 — Phase 1 ships a minimal heat-only tint), and `alpha:false` vs the
   current transparent-overlay canvas (deliberate, revisit with Currents).
 
-## Phase 3 — Substrate & Currents
+## Phase 3 — Substrate & Currents (rendering ✅; reservoir → 3b)
 
-- [ ] Currents (the carrier waves): flow field + bound/free reservoir + healing (§24, §2).
-- [ ] Wave rendering and the cool-baseline palette tied to the accent journey (§24.4).
-- [ ] The conservation law as bookkept code (§2.4).
+- [x] Currents (`currents.ts`): 5 wave layers + bound shimmer riding them + the
+      wave-current flow that drifts free particles along the slope (§24, §2.3).
+- [x] Wave rendering (gradient fills + glowing strokes) over an opaque dark
+      substrate; the cool-baseline wave palette (§24.4); upgraded free-particle
+      render — cool centre → warm edge → accent (`particleRGB`, §20.8).
+- [ ] **3b — the conservation reservoir** (§2.4): wave-healing (calm free → bound),
+      detach (force/burst/supernova → free), `boundTarget` bookkeeping, and the
+      engaged-element wave bend ("spine"). Deferred — the two pools are fixed for now.
+- [ ] **3b — accent journey** (§9): scroll interpolates the accent through the
+      palette; currents + particles travel with it.
 
 ## Phase 4 — Agents & reciprocity (§22)
 
