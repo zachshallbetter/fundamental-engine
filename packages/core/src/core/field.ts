@@ -17,6 +17,7 @@ import { step } from './integrator.ts';
 import { scanBodies, measureBodies } from './scanner.ts';
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
 import { clamp, hexToRgb } from './math.ts';
+import { registerCoreForces } from '../forces/index.ts';
 
 const COOL: readonly [number, number, number] = [200, 224, 255];
 
@@ -26,6 +27,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   const store = new FieldStore();
   const reg = createRegistry();
+  registerCoreForces(reg); // the canonical nine (§6)
   const reduceMotion =
     typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -53,7 +55,32 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     c: 12,
     G: 1,
     spark: () => {}, // Phase 5 (§23)
-    supernova: () => {}, // Phase 2 (§6.9)
+    supernova: (b) => {
+      // release exactly what was captured — radial, from the core (§6.9).
+      for (const q of store.particles) {
+        if (q.cap === b) {
+          const ang = Math.random() * Math.PI * 2;
+          const spd = 4 + Math.random() * 3;
+          q.cap = null;
+          q.x = b.cx;
+          q.y = b.cy;
+          q.vx = Math.cos(ang) * spd;
+          q.vy = Math.sin(ang) * spd;
+          q.heat = 1;
+        } else {
+          const dx = q.x - b.cx;
+          const dy = q.y - b.cy;
+          const d = Math.hypot(dx, dy) || 1;
+          if (d < 320) {
+            const f = (1 - d / 320) * 4;
+            q.vx += (dx / d) * f;
+            q.vy += (dy / d) * f;
+            q.heat = Math.max(q.heat, 0.8);
+          }
+        }
+      }
+      b.accreted = 0;
+    },
     spawn: (p) => void store.add(newParticle(p)),
     neighbors: (p, r) => store.neighbors(p, r),
     grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }) }), // Phase C

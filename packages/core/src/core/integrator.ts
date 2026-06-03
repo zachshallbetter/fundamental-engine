@@ -36,8 +36,12 @@ export function step(input: StepInput): void {
   const hasBodies = bodies.length > 0;
 
   for (const p of store.particles) {
-    // captured matter is held inside an absorb core (§6.9) — Phase 2.
-    if (p.cap) continue;
+    // captured matter is held inside an absorb core, drifting to it (§6.9).
+    if (p.cap) {
+      p.x += (p.cap.cx - p.x) * 0.18;
+      p.y += (p.cap.cy - p.y) * 0.18;
+      continue;
+    }
 
     if (hasBodies) {
       for (const b of bodies) {
