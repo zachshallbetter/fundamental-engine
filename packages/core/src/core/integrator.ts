@@ -53,7 +53,10 @@ export function step(input: StepInput): void {
       }
     }
 
-    // formation bias (§7): a lateral current + a smooth curl-noise drift.
+    // formation bias (§7). Implemented: lateral current + curl-noise drift.
+    // TODO(Phase 2): periodic brownian jitter (every 40 frames); `spread` (needs
+    // Particle.gx/gy) and `conv` (needs the accretion target); and ease `form`
+    // transitions (lerp 0.03/frame) instead of swapping instantly in setFormation.
     if (form.driftX) p.vx += form.driftX * 0.02;
     if (form.wander > 0.05) {
       const cn =

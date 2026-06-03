@@ -40,9 +40,23 @@ Guiding principles:
 ## Phase 2 — Forces, conditions, formations
 
 - [ ] The canonical nine as modules in `forces/`, registered against the contract (§6).
-- [ ] Conditions (`data-when`) and the selective-gate rule (§5).
+- [x] Condition predicates (`data-when`: active/fast/slow/hot/cool) — built in Phase 1.
+      Remaining: the selective-gate-on-bound-particles rule (with Currents, Phase 3).
 - [ ] Formations + the eased global bias, and the scroll journey (§7).
 - [ ] Golden tests: each force's per-frame math matches the spec formulas.
+
+Carried over from the Phase 1 conformance audit (all deferred-by-phase, not bugs):
+
+- [ ] **Formation easing** — `setFormation` currently swaps instantly; ease the
+      active preset toward target at `lerp 0.03`/frame (§7).
+- [ ] **Formation terms** — the integrator applies `driftX` + curl-noise; add the
+      periodic **brownian** jitter (every 40 frames), **`spread`** (needs
+      `Particle.gx/gy`), and **`conv`** (needs the accretion target) (§7).
+- [ ] **`FieldHandle` surface** — add `threads()` (§10, Phase 4) and `burst()`
+      (§11, interaction) to match the §13 API. Deferred to their phases.
+- Phase 3 will also bring: the cool→warm distance render ramp + accent blend
+  (§20.8 — Phase 1 ships a minimal heat-only tint), and `alpha:false` vs the
+  current transparent-overlay canvas (deliberate, revisit with Currents).
 
 ## Phase 3 — Substrate & Currents
 
