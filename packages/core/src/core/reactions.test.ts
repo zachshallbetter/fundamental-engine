@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { energyDelta, reactionIntensity, sparkCount } from './reactions.ts';
+import { energyDelta, reactionIntensity, sparkCount, recoilImpulse } from './reactions.ts';
 
 test('energyDelta is the kinetic energy removed', () => {
   assert.equal(energyDelta(1, 2, 0), 2);   // ½·1·(4−0)
@@ -17,4 +17,10 @@ test('sparkCount is at least 3 and integer', () => {
   assert.equal(sparkCount(0, () => 0), 3);
   const n = sparkCount(2, () => 0.99);
   assert.ok(Number.isInteger(n) && n >= 3);
+});
+
+test('recoilImpulse is equal-and-opposite, split by mass (§23.5)', () => {
+  assert.deepEqual(recoilImpulse(10, -4, 1), { x: -10, y: 4 });
+  assert.deepEqual(recoilImpulse(10, 0, 5), { x: -2, y: 0 }); // heavier → smaller
+  assert.deepEqual(recoilImpulse(10, 0, 0), { x: -10, y: 0 }); // mass 0 → treated as 1
 });
