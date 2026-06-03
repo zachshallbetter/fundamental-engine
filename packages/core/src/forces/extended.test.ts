@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lens, gate, buoyancy, shear, crystallize, extendedForces } from './extended.ts';
+import { lens, gate, buoyancy, shear, crystallize, align, extendedForces } from './extended.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -66,10 +66,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('extended forces expose lens + gate + buoyancy + shear + crystallize (§20.3)', () => {
+test('extended forces expose the §20.3 class [A] set', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize'],
+    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize', 'align'],
   );
 });
 
@@ -208,4 +208,32 @@ test('crystallize damps a settled (on-node) particle and respects range', () => 
   const beyond = part({ x: 10, y: 0, vx: 0, heat: 0 });
   crystallize.apply(body({ strength: 0.1, range: 300 }), beyond, env({ dist: 350 }));
   assert.equal(beyond.vx, 0); // beyond range → inert
+});
+
+// align: heading +x (ux=1, uy=0); k_align = strength.
+test('align steers velocity toward the heading, preserving speed (§20.3)', () => {
+  const p = part({ vx: 0, vy: 1 }); // moving +y, |v| = 1
+  align.apply(body({ strength: 1, range: 300 }), p, env({ dist: 100 }));
+  assert.ok(near(p.vx, 1)); // k=1 → v becomes ĥ·|v| = (1, 0)
+  assert.ok(near(p.vy, 0));
+});
+
+test('align eases partway at k<1 and leaves an aligned particle be', () => {
+  const turning = part({ vx: 0, vy: 1 });
+  align.apply(body({ strength: 0.5, range: 300 }), turning, env({ dist: 100 }));
+  assert.ok(near(turning.vx, 0.5)); // halfway from (0,1) toward (1,0)
+  assert.ok(near(turning.vy, 0.5));
+  const aligned = part({ vx: 1, vy: 0 }); // already on the heading
+  align.apply(body({ strength: 0.5, range: 300 }), aligned, env({ dist: 100 }));
+  assert.ok(near(aligned.vx, 1));
+  assert.ok(near(aligned.vy, 0));
+});
+
+test('align is safe at zero speed and inert beyond range', () => {
+  const still = part({ vx: 0, vy: 0 });
+  align.apply(body({ strength: 1, range: 300 }), still, env({ dist: 100 }));
+  assert.equal(still.vx, 0); // target is 0·ĥ = 0 → no NaN, no kick
+  const beyond = part({ vx: 0, vy: 1 });
+  align.apply(body({ strength: 1, range: 300 }), beyond, env({ dist: 350 }));
+  assert.equal(beyond.vy, 1);
 });
