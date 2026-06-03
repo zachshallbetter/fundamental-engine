@@ -54,6 +54,8 @@ export class ForcesField extends HTMLElement {
   }
 
   connectedCallback(): void {
+    // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
+    if (!this.hasAttribute('aria-hidden')) this.setAttribute('aria-hidden', 'true');
     this.field = createField(this.canvas, {
       accent: this.accent,
       density: this.density,
