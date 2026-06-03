@@ -1,0 +1,107 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = 'forces-ui — a reciprocal DOM-physics field',
+  description = "forces-ui — elements bend the field; the field's density bends them back. A medium your interface lives inside, not a backdrop it sits on.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content="forces-ui" />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://forces-ui.com" />
+    <meta name="theme-color" content="#04050a" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@300..600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- CSS-gradient stand-in for the field; the live <forces-field> canvas
+         replaces this once the engine lands (Phase 1). -->
+    <div class="field" aria-hidden="true"></div>
+    <div class="scrim" aria-hidden="true"></div>
+    <slot />
+
+    <style is:global>
+      :root {
+        --bg: #04050a;
+        --text: #f3f6fc;
+        --text-2: rgba(228, 235, 247, 0.7);
+        --text-3: rgba(200, 212, 230, 0.46);
+        --line: rgba(255, 255, 255, 0.1);
+        --accent: #4da3ff;
+        --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+        --mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--display);
+        letter-spacing: -0.015em;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        overflow-x: hidden;
+      }
+      a {
+        color: inherit;
+      }
+      .field {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(40vw 40vw at 18% 22%, rgba(77, 163, 255, 0.16), transparent 70%),
+          radial-gradient(36vw 36vw at 82% 28%, rgba(167, 139, 250, 0.14), transparent 70%),
+          radial-gradient(46vw 46vw at 70% 86%, rgba(45, 212, 191, 0.12), transparent 70%),
+          radial-gradient(40vw 40vw at 24% 82%, rgba(255, 110, 156, 0.1), transparent 70%);
+        filter: saturate(1.1);
+        animation: drift 26s ease-in-out infinite alternate;
+      }
+      @keyframes drift {
+        from {
+          transform: translate3d(-2%, -1%, 0) scale(1.05);
+        }
+        to {
+          transform: translate3d(2%, 1%, 0) scale(1.12);
+        }
+      }
+      .scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(120% 80% at 50% -10%, transparent 55%, rgba(0, 0, 0, 0.55));
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .field {
+          animation: none;
+        }
+      }
+    </style>
+  </body>
+</html>

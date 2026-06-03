@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "echo \"static holding page — no install\"",
-  "buildCommand": "echo \"no build — serving public/\"",
-  "outputDirectory": "public"
+  "buildCommand": "pnpm --filter @forces-ui/site build",
+  "outputDirectory": "apps/site/dist"
 }

@@ -59,11 +59,21 @@ Guiding principles:
 - [ ] The preset layer (`__presets`) — cosmology as composites (§20.9).
 - [ ] First-class mass (Option B) on Lab/cosmology surfaces (§21.3).
 
-## Phase 7 — Adapters, Lab, demos, docs site
+## Phase 7 — Adapters, the landing page, Lab, docs site
 
 - [ ] Vanilla adapter (mount once, scan the DOM) + a React adapter.
+- [ ] **forces-ui.com landing page = the Field Manual, rebuilt on the engine.**
+      The current `public/index.html` is a placeholder; the real home is the
+      Manual (`docs/reference/manual.html`) — it explains the system *by being it*
+      (live demos behind every concept). Keep the bones & style (4-chapter arc:
+      Substrate → Forces → Conditions → System; dark aesthetic, Bricolage + Martian
+      Mono, Currents, force palette; demo-per-concept; chapter rail; the "every
+      element has mass" thesis). Rebuild on the typed engine (it becomes forces-ui's
+      first real consumer / the whole-engine integration test), reframe from
+      site-specific → the forces-ui manual, fix the "eight"→nine copy, and do a
+      responsive / a11y / perf pass. **Gated on Phases 1–5** (the demos must run).
 - [ ] The Lab (paint forces; shareable fields) (§14).
-- [ ] A demos/playground app and a published docs site (the executable design system).
+- [ ] A published docs site (the executable design system).
 
 ## Cross-cutting
 
@@ -71,8 +81,26 @@ Guiding principles:
 - [ ] Accessibility: reduced motion, focus engagement, `z-index` background layer (§18).
 - [ ] Naming/color reconciliation pass against the canonical palette (§20.2).
 
+## Stack (decided)
+
+A pnpm monorepo. The **core engine is framework-agnostic**; consumers reach it
+through a **web-component** keystone so it drops into anything.
+
+| Package | What | Tech |
+|---|---|---|
+| `packages/core` (`forces-ui`) | the engine — catalog, contracts, FieldStore, forces | vanilla TS |
+| `packages/elements` (`@forces-ui/elements`) | `<forces-field>` + declarative `data-body` | web components (plain now; Lit when there's UI to template, e.g. the Lab) |
+| `apps/site` (`@forces-ui/site`) | forces-ui.com — the manual / landing | Astro (static; Lit islands later) |
+| `packages/react` (later) | thin React adapter | React |
+
+Why web components as the keystone: "every element is a body" is a web-components-
+shaped idea; a custom element works in React/Svelte/Astro/plain HTML unchanged →
+forces-ui is a *platform*, not a framework library. The site shell (Astro) is a
+separate, swappable choice and shares no code with the engine.
+
 ## Open decisions
 
 - First-class mass everywhere vs. unit-mass UI + first-class Lab (§21.4) — leaning split.
-- Monorepo (`core` + adapters) vs. single package — single for now.
 - Final package name & the 24-force palette reconciliation (§20.2).
+- Site shell stays Astro vs. SvelteKit/Next (Astro chosen; cheap to revisit — it
+  shares no engine code).
