@@ -249,6 +249,17 @@ test('align is safe at zero speed and inert beyond range', () => {
   assert.equal(beyond.vy, 1);
 });
 
+test('align [B]: steers toward the neighbour-mean heading when it has neighbours (§20.3)', () => {
+  const p = part({ vx: 1, vy: 0 }); // moving +x, |v| = 1
+  // two neighbours both heading +y → mean heading (0, 1); heading default (1,0) is overridden
+  const neighbours: Partial<Env> = {
+    neighbors: () => [part({ vx: 0, vy: 3 }), part({ vx: 0, vy: 0.5 })],
+  };
+  align.apply(body({ strength: 1, range: 300 }), p, env({ dist: 100, ...neighbours }));
+  assert.ok(near(p.vx, 0)); // k=1 → v becomes mean-heading·|v| = (0, 1)
+  assert.ok(near(p.vy, 1));
+});
+
 test('curlNoise matches its closed form and is divergence-free (§20.3)', () => {
   const s = 0.1;
   const c = curlNoise(10, 20, 0, s); // a = 1, b = 2

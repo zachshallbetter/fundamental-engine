@@ -151,9 +151,10 @@ Ordered for overnight (highest visible value first):
       (`v += curl(ψ)·S`, `∇·curl ≡ 0`), closed-form so deterministic. `forces/extended.ts` (§20.3).
 - [x] **`cohesion`** (class [B]) — short-range pressure + mid-range pull over `env.neighbors`,
       i.e. surface tension; normalized to UI-sane velocities. `forces/extended.ts` (§20.3).
+- [x] **`align` `[B]`** — now steers toward the neighbour-mean heading (boids) when it has
+      neighbours, falling back to the body heading when alone. `forces/extended.ts` (§20.3).
 - [ ] `resonate` / `spotlight` — *modifier* forces that wrap a sibling core force; need the
-      integrator modifier pass. `align`'s `[B]` neighbour-mean variant (next, uses neighbors)
-      and `wind`'s `data-scale` wiring still pending.
+      integrator modifier pass.
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
