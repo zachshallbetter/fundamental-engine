@@ -100,7 +100,7 @@ Ordered for overnight (highest visible value first):
 
 - [x] **5a — Reaction kit + budget.** `ΔE → I`; spark/flash/pulse primitives; wire
       `env.spark` to a real spark draw pass (reflect already calls it).
-- [ ] **5b — Recoil (the missing side, §23.5).** reflect/collide push back on the
+- [x] **5b — Recoil (the missing side, §23.5).** reflect/collide push back on the
       body/agent split by mass; **chromatic shed** (tint by the acting force, §20.8).
 - [ ] **5c — Render modes (§20.6).** trails, links, knockout — the easy high-impact ones.
 
