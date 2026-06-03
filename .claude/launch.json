@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "site",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@forces-ui/site", "dev"],
+      "port": 4321
+    }
+  ]
+}
