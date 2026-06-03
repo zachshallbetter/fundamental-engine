@@ -166,8 +166,57 @@ export const collide: Force = {
   meta: { desc: 'elastic pairwise collision — the hard-sphere billiard force' },
 };
 
+/**
+ * §20.10 — `diffuse` (class [C], over the scalar `grid`): the pheromone/stigmergy
+ * field. Each frame a particle lays a mark into the shared `diffuse` grid (which the
+ * engine blurs via `∂φ/∂t = D∇²φ`) and steers *up* the local gradient, following the
+ * smeared trail toward where matter has gathered. `strength` sets both the deposit and
+ * the follow gain. Self-organizing trails emerge from the deposit↔blur↔follow loop.
+ */
+export const diffuse: Force = {
+  token: 'diffuse',
+  label: 'Diffuse',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const g = e.grid('diffuse');
+    g.deposit(p.x, p.y, b.strength); // lay a mark
+    const grad = g.gradient(p.x, p.y); // follow the blurred trail up-gradient
+    p.vx += grad.x * b.strength;
+    p.vy += grad.y * b.strength;
+  },
+  meta: { desc: 'pheromone field — deposit a mark and follow the diffused gradient' },
+};
+
+/**
+ * §20.10 — `propagate` (class [C], over a wave-mode `grid`): a travelling disturbance,
+ * `∂²φ/∂t² = c²∇²φ`. An engaged body injects φ at its centre; the grid carries it
+ * outward as a real expanding shock (reflecting and interfering for free) and every
+ * particle rides the wavefront's gradient. `strength` sets the injection and the push.
+ */
+export const propagate: Force = {
+  token: 'propagate',
+  label: 'Propagate',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const g = e.grid('wave-propagate'); // 'wave…' name → wave stepping
+    if (b.on) g.deposit(b.cx, b.cy, b.strength); // engaged → emit a disturbance at the source
+    const grad = g.gradient(p.x, p.y); // ride the wavefront
+    p.vx += grad.x * b.strength;
+    p.vy += grad.y * b.strength;
+  },
+  meta: { desc: 'a travelling wave — inject a shock at the source, particles ride the front' },
+};
+
 /** The natural primitives, in spec order (§20.10). */
-export const naturalForces: readonly Force[] = [gravity, charge, magnetism, thermal, collide];
+export const naturalForces: readonly Force[] = [
+  gravity,
+  charge,
+  magnetism,
+  thermal,
+  collide,
+  diffuse,
+  propagate,
+];
 
 /** Register the natural primitives on a registry (§4) — opt-in, alongside the nine. */
 export function registerNaturalForces(reg: Registry): void {
