@@ -61,7 +61,7 @@ Carried over from the Phase 1 conformance audit:
   (§20.8 — Phase 1 ships a minimal heat-only tint), and `alpha:false` vs the
   current transparent-overlay canvas (deliberate, revisit with Currents).
 
-## Phase 3 — Substrate & Currents ✅ (3c follow-ups noted)
+## Phase 3 — Substrate & Currents ✅
 
 - [x] Currents (`currents.ts`): 5 wave layers + bound shimmer riding them + the
       wave-current flow that drifts free particles along the slope (§24, §2.3).
@@ -71,10 +71,12 @@ Carried over from the Phase 1 conformance audit:
 - [x] The conservation **reservoir** (`reservoir.ts`, §2.4): wave-healing reclaims
       calm free matter onto the lines (capped at `boundTarget`); a supernova tears
       nearby bound matter loose. Count conserved throughout.
-- [ ] **3c:** force-tearing (bound matter near any `data-body` releases) + the
-      engaged-element wave bend ("spine").
-- [ ] **3c — accent journey** (§9): scroll interpolates the accent through the
-      palette; currents + particles travel with it.
+- [x] **Force-tearing** (`tearBoundByForces`): any force reaching a bound particle
+      tears it loose so it feels the force (selective gates skip bound).
+- [x] **The "spine"** — waves bend toward the engaged element (`waveYat` pull);
+      hover/focus a `[data-hot]` element to engage it (`b.on` → on-state forces).
+- [x] **Accent journey** (§9): scroll travels the palette (`sampleStops`), a
+      hovered `[data-color]` element overrides; the field recolours with it.
 
 ## Phase 4 — Agents & reciprocity (§22)
 
