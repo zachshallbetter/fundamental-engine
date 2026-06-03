@@ -29,6 +29,7 @@ import { FORMATION_BY, PALETTE, ACCENT_JOURNEY, type FormationId } from '../conf
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
+import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -65,6 +66,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let hoverAccent: string | null = null;
   let threadLinks: { a: Element; b: Element; c: RGB; seed: number }[] = [];
   let movers: { el: HTMLElement; o: ElementOffset; mEl: number }[] = [];
+  let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = performance.now();
 
@@ -149,6 +151,37 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const mEl = Number.isFinite(seeded) ? seeded : elementMass(r.width * r.height);
       return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl };
     });
+    eventEls = [...document.querySelectorAll('[data-on]')].map((node) => {
+      const el = node as HTMLElement;
+      return {
+        el,
+        body: bodies.find((b) => b.el === el) ?? null,
+        bindings: parseEventBindings(el.dataset.on ?? ''),
+      };
+    });
+  }
+
+  function updateEvents(): void {
+    if (eventEls.length === 0) return;
+    for (const ev of eventEls) {
+      const s = ev.body
+        ? { d: ev.body.d, on: ev.body.on, accreted: ev.body.accreted }
+        : { d: 0, on: ev.el.dataset.active === '1', accreted: 0 };
+      for (const bind of ev.bindings) {
+        const active = triggerActive(bind.trigger, s);
+        if (active && !bind.armed) {
+          bind.armed = true;
+          ev.el.dispatchEvent(
+            new CustomEvent(bind.event, {
+              bubbles: true,
+              detail: { trigger: bind.trigger, d: s.d, on: s.on, accreted: s.accreted },
+            })
+          );
+        } else if (!active) {
+          bind.armed = false;
+        }
+      }
+    }
   }
 
   function updateMovers(): void {
@@ -435,6 +468,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       updateMovers();
     }
     writeFeedback();
+    updateEvents();
     render();
     raf = requestAnimationFrame(frame);
   }
