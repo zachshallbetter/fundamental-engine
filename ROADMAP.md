@@ -161,8 +161,11 @@ Ordered for overnight (highest visible value first):
       i.e. surface tension; normalized to UI-sane velocities. `forces/extended.ts` (§20.3).
 - [x] **`align` `[B]`** — now steers toward the neighbour-mean heading (boids) when it has
       neighbours, falling back to the body heading when alone. `forces/extended.ts` (§20.3).
-- [ ] `resonate` / `spotlight` — *modifier* forces that wrap a sibling core force; need the
-      integrator modifier pass.
+- [x] **Modifier pass + `resonate` + `spotlight`** — the `Force` contract gains an optional
+      `modify(b,p,env) → {strength?, gate?}`; the integrator runs modifiers before a body's
+      core tokens, scaling their strength (`resonate`: `S(t)=S₀(1+sin ωt)`) or gating them to
+      a heading cone (`spotlight`). Live field unchanged (preview-verified). **The entire force
+      catalog — canonical nine + natural + extended + modifiers — is now complete.**
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 

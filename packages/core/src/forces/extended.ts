@@ -228,6 +228,42 @@ export const cohesion: Force = {
   meta: { desc: 'short-range pressure + mid-range cohesion — surface tension over neighbours' },
 };
 
+/**
+ * §20.3 — `resonate`: a *modifier* that pulses its sibling forces. It contributes no
+ * force of its own; instead `modify` returns a time-varying strength multiplier
+ * `1 + sin(ω·t)` (the spec's `S(t) = S₀·(1 + sin(ωt + φ))`), so e.g. `resonate attract`
+ * is a well that breathes. `spin` tunes the rate (`data-omega` not yet a Body field).
+ */
+const RESONATE_OMEGA = 3;
+export const resonate: Force = {
+  token: 'resonate',
+  label: 'Resonate',
+  apply() {}, // pure modifier — the work is in modify()
+  modify(b, _p, e) {
+    return { strength: 1 + Math.sin(e.t * RESONATE_OMEGA * b.spin) };
+  },
+  meta: { desc: 'pulses sibling forces with a time-varying strength S(t)=S₀(1+sin ωt)' },
+};
+
+/**
+ * §20.3 — `spotlight`: a *modifier* that gates its sibling forces to an angular cone of
+ * the heading `(ux, uy)`. A particle outside the cone is skipped for *every* token on
+ * the body this frame; inside, the siblings act normally — so `spotlight stream` is a
+ * directed beam. Cone half-angle is fixed (~60°; `data-fov` not yet a Body field).
+ */
+const SPOTLIGHT_COS = 0.5;
+export const spotlight: Force = {
+  token: 'spotlight',
+  label: 'Spotlight',
+  apply() {}, // pure modifier — the work is in modify()
+  modify(b, _p, e) {
+    const dirx = -e.dx / e.dist; // body → particle (e.dx points particle → body)
+    const diry = -e.dy / e.dist;
+    return { gate: dirx * b.ux + diry * b.uy < SPOTLIGHT_COS };
+  },
+  meta: { desc: 'gates sibling forces to an angular cone of the heading' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
 export const extendedForces: readonly Force[] = [
   lens,
@@ -238,6 +274,8 @@ export const extendedForces: readonly Force[] = [
   align,
   wind,
   cohesion,
+  resonate,
+  spotlight,
 ];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */

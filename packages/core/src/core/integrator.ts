@@ -100,7 +100,30 @@ export function step(input: StepInput): void {
         env.dx = dx;
         env.dy = dy;
         env.dist = d < 1 ? 1 : d;
-        for (const tok of b.tokens) forces[tok]?.apply(b, p, env);
+        // modifier pass (§20.3): resonate scales sibling strength, spotlight gates it.
+        let sMul = 1;
+        let gated = false;
+        let hasModifier = false;
+        for (const tok of b.tokens) {
+          const mod = forces[tok]?.modify;
+          if (!mod) continue;
+          hasModifier = true;
+          const m = mod(b, p, env);
+          if (m.strength != null) sMul *= m.strength;
+          if (m.gate) gated = true;
+        }
+        if (gated) continue; // spotlight cone excludes this particle
+        if (!hasModifier) {
+          for (const tok of b.tokens) forces[tok]?.apply(b, p, env);
+        } else {
+          const origS = b.strength;
+          b.strength = origS * sMul; // resonate's time-varying S(t)
+          for (const tok of b.tokens) {
+            const f = forces[tok];
+            if (f && !f.modify) f.apply(b, p, env);
+          }
+          b.strength = origS;
+        }
       }
     }
 
