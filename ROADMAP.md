@@ -126,6 +126,14 @@ Ordered for overnight (highest visible value first):
       as composition, no engine growth. (`lens`/`warp`/`spawn` composites await those atoms.)
 - [ ] First-class mass (Option B) on Lab/cosmology surfaces (§21.3).
 
+## Designed extended forces (§20.3, class [A] — opt-in, pure per-particle)
+
+- [x] **`lens`** — rotates velocity preserving speed (`θ = θ_max·(1−d/d_max)·sign`);
+      a path bend with no energy. In `forces/extended.ts`; also restored to the
+      `blackhole` preset. Golden-tested (§20.3).
+- [ ] `gate`, `buoyancy`, `shear`, `crystallize`, `resonate`, `spotlight`, `align`,
+      `wind` — the rest of the §20.3 class [A] forces, one per cycle.
+
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
 - [ ] Vanilla adapter (mount once, scan the DOM) + a React adapter.
