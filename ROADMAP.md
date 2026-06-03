@@ -119,8 +119,12 @@ Ordered for overnight (highest visible value first):
 - [x] **`collide`** — elastic pairwise collision via the live `env.neighbors`: overlapping,
       approaching discs exchange normal momentum (half-impulse each, `e = strength`).
       `forces/natural.ts` (§20.10).
-- [ ] Remaining natural primitives: `propagate`, `diffuse` (§20.10) — need the scalar
-      `grid` Env service (currently stubbed); implement `grid` first.
+- [x] **Scalar `grid` Env service** (§20.1 [C]) — `ScalarGridImpl` (bilinear sample,
+      deposit, central-diff gradient, diffusion + leapfrog-wave stepping), wired into
+      `field.ts` lazily (no grid allocated unless a force asks; per-frame `step()` +
+      viewport `resize()`). Live field unchanged (preview-verified). Golden-tested.
+- [ ] Remaining natural primitives: `diffuse`, `propagate` (§20.10) — now unblocked
+      by the `grid` service.
 - [x] **The preset layer** (§20.9) — `data-preset="blackhole"` expands to several
       co-located virtual bodies (one primitive each, own attrs, shared rect) via
       `expandPreset`; `config/presets.ts` holds the table (blackhole/whitehole/star).

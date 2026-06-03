@@ -33,6 +33,7 @@ import { parseEventBindings, triggerActive, type EventBinding } from './events.t
 import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
+import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount } from './reactions.ts';
 import { linkAlpha } from './render-modes.ts';
 
@@ -44,6 +45,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   if (!ctx) throw new Error('forces-ui: 2D canvas context unavailable');
 
   const store = new FieldStore();
+  const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
   const reg = createRegistry();
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
@@ -121,7 +123,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     spawn: (p) => void store.add(newParticle(p)),
     neighbors: (p, r) => store.neighbors(p, r),
-    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }) }), // Phase C
+    // scalar field-buffer service (§20.1 class [C]): created on demand, so a page
+    // with no diffuse/propagate body allocates nothing. Grids named "wave…" use the
+    // wave scheme; everything else diffuses.
+    grid: (name) => {
+      let g = grids.get(name);
+      if (!g) {
+        g = new ScalarGridImpl(W, H, name.startsWith('wave') ? 'wave' : 'diffuse');
+        grids.set(name, g);
+      }
+      return g;
+    },
   };
 
   function spawnSpark(x: number, y: number, power: number, color?: string): void {
@@ -312,6 +324,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     env.W = W;
     env.H = H;
+    for (const g of grids.values()) g.resize(W, H); // keep field buffers viewport-sized
     build();
     scan();
   }
@@ -536,6 +549,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     store.reindex();
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     if (env.dt) {
+      for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
       healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
       tearBoundByForces(bound, waves, bodies, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
