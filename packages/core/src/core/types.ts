@@ -209,6 +209,9 @@ export interface FieldOptions {
   waves?: boolean;
   /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links' (constellation). */
   render?: 'dots' | 'trails' | 'links';
+  /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
+   *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
+  mass?: boolean;
 }
 
 /** The handle returned by `createField` — the public field API (§13). */

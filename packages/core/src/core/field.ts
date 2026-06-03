@@ -57,6 +57,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     accent: opts.accent ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'dots',
+    mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
   };
 
   let bodies: Body[] = [];
@@ -148,14 +149,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function newParticle(seed: Partial<Particle> = {}): Particle {
+    const size = seed.size ?? 0.7 + Math.random() * 1.8;
     return {
       x: seed.x ?? Math.random() * W,
       y: seed.y ?? Math.random() * H,
       vx: seed.vx ?? (Math.random() - 0.5) * 0.25,
       vy: seed.vy ?? (Math.random() - 0.5) * 0.18,
-      m: seed.m ?? 1,
+      m: seed.m ?? (cfg.mass ? size : 1), // mass ∝ size when first-class mass is on
       heat: seed.heat ?? 0,
-      size: seed.size ?? 0.7 + Math.random() * 1.8,
+      size,
       gx: seed.gx ?? Math.random(),
       gy: seed.gy ?? Math.random(),
       cap: null,

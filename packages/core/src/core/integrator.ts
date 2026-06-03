@@ -89,6 +89,11 @@ export function step(input: StepInput): void {
 
     // DOM body forces — the page's elements move the field (§4).
     if (hasBodies) {
+      // first-class mass (§21.3): the body forces are accelerations, so the velocity
+      // they impart is scaled by 1/m. Captured here and divided after the pass — no
+      // force needs to know about mass. Unit-mass particles (m = 1) are untouched.
+      const vx0 = p.vx;
+      const vy0 = p.vy;
       for (const b of bodies) {
         if (!b.vis || b.tokens.length === 0) continue;
         const dx = b.cx - p.x;
@@ -124,6 +129,11 @@ export function step(input: StepInput): void {
           }
           b.strength = origS;
         }
+      }
+      if (p.m !== 1 && p.m > 0) {
+        const inv = 1 / p.m; // a = F/m: scale the force-induced Δv by 1/mass
+        p.vx = vx0 + (p.vx - vx0) * inv;
+        p.vy = vy0 + (p.vy - vy0) * inv;
       }
     }
 
