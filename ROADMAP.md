@@ -82,10 +82,10 @@ Carried over from the Phase 1 conformance audit:
 
 Ordered for overnight (highest visible value first):
 
-- [ ] **4a — Two-way density feedback (§8).** Per `data-feedback` body, sample local
+- [x] **4a — Two-way density feedback (§8).** Per `data-feedback` body, sample local
       density (`count` within `range·0.5`), ease into `--d`; expose `--mass`/`--load`
       for absorbers; optionally drive variable-font weight via `data-fmin/fmax/opsz`.
-- [ ] **4w — Word effects (the punctuation rule, §11 note).** Wire the site hero
+- [x] **4w — Word effects (the punctuation rule, §11 note).** Wire the site hero
       word(s) with `data-feedback` + CSS so `--d` drives weight + `text-shadow` glow
       + colour (glow/grow). **No particle-into-letterform assembly.** Optional one-shot
       ripple/spark on engage.
