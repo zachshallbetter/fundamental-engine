@@ -199,7 +199,10 @@ Ordered for overnight (highest visible value first):
 
 ## Cross-cutting
 
-- [ ] Performance: `ResizeObserver`/`IntersectionObserver` sync; `OffscreenCanvas` + worker.
+- [x] **Performance** — `<forces-cell>` uses `ResizeObserver` + `IntersectionObserver`-gated
+      rAF (pauses off-screen); the main field now pauses its loop + idle timer on
+      `visibilitychange` when backgrounded. (`OffscreenCanvas` + worker offload remains as a
+      larger future optimization.)
 - [x] **Accessibility** (§18) — reduced motion (integrator `dt=0` + static cell frame +
       CSS animation off), focus engagement (`[data-hot]` on focus), `z-index:0` background
       layer, and the decorative canvases (`<forces-field>`, `<forces-cell>`, `mountField`)
