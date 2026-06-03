@@ -34,7 +34,7 @@ import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
-import { sparkCount } from './reactions.ts';
+import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha } from './render-modes.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -612,6 +612,21 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     setFormation,
     threads: setThreads,
+    burst: (x, y, hex) => {
+      // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
+      const R = 160;
+      for (const q of store.particles) {
+        const imp = burstImpulse(q.x - x, q.y - y, R);
+        if (imp.heat === 0) continue;
+        q.vx += imp.vx;
+        q.vy += imp.vy;
+        q.heat = Math.max(q.heat, imp.heat);
+        if (hex) q.color = hex; // carried pigment (§20.8)
+      }
+      // detach nearby bound matter so the shock is actually felt (§2.4, like supernova)
+      tearBoundNear(bound, waves, x, y, R, W, H, env.t, (p) => void store.add(newParticle(p)));
+      spawnSpark(x, y, 2, hex); // a visible pop at the blast point (§23)
+    },
     destroy: () => {
       cancelAnimationFrame(raf);
       clearInterval(idleTimer);
