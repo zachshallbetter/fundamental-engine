@@ -60,9 +60,23 @@ apps/
 ```bash
 pnpm install
 pnpm -r typecheck    # tsc across packages
-pnpm -r build        # core + elements + the site
+pnpm -r test         # node:test (built in — no test framework)
+pnpm -r build        # core + elements (tsc) + the site (astro)
 pnpm dev             # run the site (apps/site) locally
 ```
+
+## Dependencies
+
+**Zero runtime dependencies**, by policy — the engine recreates what it needs on
+the platform. Tooling is deliberately minimal:
+
+- **Build:** `tsc` (no bundler — the library ships unbundled ESM).
+- **Test:** `node:test` (built into Node ≥ 22; no test framework).
+- **Only dev dependency:** TypeScript.
+- **Exception:** `apps/site` uses **Astro** as a build-time tool for the content
+  site; it ships zero runtime JS by default.
+
+Before any dependency is added, it must justify itself as a real exception.
 
 ## Naming
 
