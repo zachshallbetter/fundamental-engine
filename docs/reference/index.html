@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zach Shallbetter</title>
+<meta name="description" content="Zach Shallbetter builds the systems people feel before they understand them." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="app.css" />
+<link rel="stylesheet" href="lab.css" />
+</head>
+<body>
+<canvas id="field"></canvas>
+<div class="scrim"></div>
+
+<div class="shell">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-links">
+        <a href="#capabilities">Practice</a>
+        <a href="#the-field">Field</a>
+        <a href="#work">Work</a>
+        <a href="#writing">Writing</a>
+        <a href="#manual">Manual</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO — the name assembles from the field -->
+  <header class="hero" id="top">
+    <div class="wrap">
+      <p class="kicker hero-eyebrow"><b>Zach Shallbetter</b> &mdash; Product Experience · Creative Technology · 20 years</p>
+      <h1 class="hero-title">
+        <span class="ln">I build the systems</span>
+        <span class="ln">people <em class="liveword" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.9" data-range="300">feel</em> before</span>
+        <span class="ln">they understand them.</span>
+      </h1>
+      <p class="hero-sub">Across AI systems, software architecture, commerce, motion, and physical production — the visible experience and the invisible system that holds it up. This page is the idea made literal: everything you touch moves the field, and the field moves it back.</p>
+      <div class="hero-socials">
+        <a href="https://github.com/zachshallbetter" target="_blank" rel="noopener" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+        <a href="https://linkedin.com/in/zachshallbetter" target="_blank" rel="noopener" aria-label="LinkedIn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+        <a href="mailto:zach@zachshallbetter.com" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- CAPABILITIES — the practice as a field-reactive matrix -->
+  <section class="caps" id="capabilities">
+    <div class="wrap">
+      <div class="caps-head reveal">
+        <span class="kicker">The practice</span>
+        <h2 class="caps-title">A practice that spans the <span class="accent">whole</span> product.</h2>
+        <span class="caps-hint">Each skill is a force that acts on the field</span>
+      </div>
+      <p class="caps-research reveal"><b>Research</b> is the sensing layer &mdash; how the field becomes <span class="accent">visible</span>. Before a system can be shaped, its forces have to be read: the user behavior, business pressure, technical constraint, material limit, and unstated assumption already moving through the work.</p>
+      <div class="caps-grid" id="capsGrid" data-index>
+        <span class="cap" tabindex="0" data-hot data-color="#4da3ff" data-feedback data-when="active" data-body="attract" data-strength="0.95" data-range="260" style="--cat:#4da3ff;">
+          <span class="cap-top"><span class="cap-no">01</span><i class="cap-glyph g g-attract"></i></span>
+          <span class="cap-main"><span class="cap-name">Product strategy</span><span class="cap-force"><b>Attract</b> · gives direction</span><span class="cap-desc">Vision · roadmaps · R&amp;D · product logic · operating models</span></span>
+        </span>
+        <span class="cap" tabindex="0" data-hot data-color="#a78bfa" data-feedback data-when="active" data-body="emitter" data-angle="0" data-strength="0.9" data-range="260" style="--cat:#a78bfa;">
+          <span class="cap-top"><span class="cap-no">02</span><i class="cap-glyph g g-emitter"></i></span>
+          <span class="cap-main"><span class="cap-name">AI systems</span><span class="cap-force"><b>Condition</b> · adapts response</span><span class="cap-desc">LLMs · semantic search · recommendations · context · trust</span></span>
+        </span>
+        <span class="cap" tabindex="0" data-hot data-color="#2dd4bf" data-feedback data-when="active" data-body="spring" data-strength="0.9" data-range="260" style="--cat:#2dd4bf;">
+          <span class="cap-top"><span class="cap-no">03</span><i class="cap-glyph g g-spring"></i></span>
+          <span class="cap-main"><span class="cap-name">Software architecture</span><span class="cap-force"><b>Spring</b> · gives structure</span><span class="cap-desc">Platforms · APIs · data · payments · deployment · performance</span></span>
+        </span>
+        <span class="cap" tabindex="0" data-hot data-color="#7dd3fc" data-feedback data-when="active" data-body="reflect" data-strength="0.9" data-range="260" style="--cat:#7dd3fc;">
+          <span class="cap-top"><span class="cap-no">04</span><i class="cap-glyph g g-reflect"></i></span>
+          <span class="cap-main"><span class="cap-name">Experience design</span><span class="cap-force"><b>Reflect</b> · the human surface</span><span class="cap-desc">Flows · IA · usability · accessibility · journeys · behavior</span></span>
+        </span>
+        <span class="cap" tabindex="0" data-hot data-color="#ff9d5c" data-feedback data-when="active" data-body="stream" data-angle="0" data-strength="0.95" data-range="260" style="--cat:#ff9d5c;">
+          <span class="cap-top"><span class="cap-no">05</span><i class="cap-glyph g g-stream"></i></span>
+          <span class="cap-main"><span class="cap-name">Motion</span><span class="cap-force"><b>Stream</b> · reveals motion</span><span class="cap-desc">State · feedback · transitions · rhythm · interface behavior</span></span>
+        </span>
+        <span class="cap" tabindex="0" data-hot data-color="#ff6e9c" data-feedback data-when="active" data-body="repel" data-strength="0.95" data-range="260" style="--cat:#ff6e9c;">
+          <span class="cap-top"><span class="cap-no">06</span><i class="cap-glyph g g-repel"></i></span>
+          <span class="cap-main"><span class="cap-name">Commerce</span><span class="cap-force"><b>Repel</b> · market pressure</span><span class="cap-desc">Catalogs · checkout · sellers · payments · fulfillment · trust</span></span>
+        </span>
+        <span class="cap" tabindex="0" data-hot data-color="#5fd0a8" data-feedback data-when="active" data-body="drag" data-strength="0.9" data-range="260" style="--cat:#5fd0a8;">
+          <span class="cap-top"><span class="cap-no">07</span><i class="cap-glyph g g-drag"></i></span>
+          <span class="cap-main"><span class="cap-name">Physical production</span><span class="cap-force"><b>Drag</b> · adds constraint</span><span class="cap-desc">Materials · prototypes · packaging · manufacturing · delivery</span></span>
+        </span>
+        <span class="cap" tabindex="0" data-hot data-color="#c4b5fd" data-feedback data-when="active" data-body="vortex" data-spin="1" data-strength="0.9" data-range="260" style="--cat:#c4b5fd;">
+          <span class="cap-top"><span class="cap-no">08</span><i class="cap-glyph g g-vortex"></i></span>
+          <span class="cap-main"><span class="cap-name">Creative technology</span><span class="cap-force"><b>Vortex</b> · spins it together</span><span class="cap-desc">AI · code · animation · 3D · prototypes · experiments</span></span>
+        </span>
+      </div>
+      <p class="caps-note reveal">Every card here is a body in the field. <a href="manual.html">Read the manual &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- THE FIELD — the thinking, made into a manifesto -->
+  <section class="field-essay" id="the-field">
+    <div class="wrap">
+      <span class="kicker reveal">The field</span>
+      <h2 class="field-lead reveal">The interface is only the <span class="accent">visible surface.</span></h2>
+      <p class="field-body reveal">Beneath it are data models, permissions, business rules, user expectations, operating constraints, edge cases, motion states, and decisions made long before the user arrives.</p>
+      <p class="field-note reveal">I like the part where those forces become visible.</p>
+      <div class="field-chain reveal">
+        <p><b>Research</b> changes strategy. Strategy changes the interface. The interface exposes architecture. Architecture changes what <b>AI</b> can safely do. Commerce adds pressure. Physical production adds friction. Motion shows the state of the system before language has to explain it.</p>
+      </div>
+      <p class="field-goal reveal">The goal is <span class="accent">coherence.</span></p>
+    </div>
+  </section>
+
+  <!-- WORK -->
+  <section class="section" id="work">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="kicker">01 — Selected work</span>
+          <h2>Things made real.</h2>
+        </div>
+        <p class="lead">Customer-facing systems &mdash; the visible experience and the architecture beneath it.</p>
+      </div>
+      <div class="index" data-index>
+        <a class="idx-row" href="#" data-hot data-color="#2dd4bf" data-feedback data-body="attract" data-strength="0.7" data-range="300" style="--cat:#2dd4bf;">
+          <span class="r-idx">01</span>
+          <div class="r-body">
+            <span class="r-title">Executable Design System</span>
+            <span class="r-dek">Design decisions encoded into components, states, documentation, and implementation logic.</span>
+          </div>
+          <span class="r-cat">Design Systems</span>
+          <span class="r-year">2025</span>
+          <span class="r-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></span>
+        </a>
+        <a class="idx-row" href="#" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.7" data-range="300" style="--cat:#4da3ff;">
+          <span class="r-idx">02</span>
+          <div class="r-body">
+            <span class="r-title">AI-Assisted Search</span>
+            <span class="r-dek">Search shaped around intent, structured data, semantic matching, and adaptive response.</span>
+          </div>
+          <span class="r-cat">AI Systems</span>
+          <span class="r-year">2024</span>
+          <span class="r-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></span>
+        </a>
+        <a class="idx-row" href="#" data-hot data-color="#ff6e9c" data-feedback data-body="attract" data-strength="0.7" data-range="300" style="--cat:#ff6e9c;">
+          <span class="r-idx">03</span>
+          <div class="r-body">
+            <span class="r-title">Commerce Marketplace</span>
+            <span class="r-dek">Discovery, seller tools, secure payments, product data, and fulfillment working as one system.</span>
+          </div>
+          <span class="r-cat">Commerce</span>
+          <span class="r-year">2023</span>
+          <span class="r-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></span>
+        </a>
+        <a class="idx-row" href="#" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="0.7" data-range="300" style="--cat:#a78bfa;">
+          <span class="r-idx">04</span>
+          <div class="r-body">
+            <span class="r-title">Production Video Tools</span>
+            <span class="r-dek">Workflow tools for production states, media review, asset movement, and delivery.</span>
+          </div>
+          <span class="r-cat">Media</span>
+          <span class="r-year">2022</span>
+          <span class="r-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WRITING -->
+  <section class="section" id="writing">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="kicker">02 — Writing</span>
+          <h2>Notes in motion.</h2>
+        </div>
+        <p class="lead">On experience architecture, AI interaction, and the systems behind the screen.</p>
+      </div>
+      <div class="index" data-index>
+        <a class="write-row" href="#" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.5" data-range="260" style="--cat:#4da3ff;">
+          <div class="write-main">
+            <div class="write-meta"><span class="dot"></span><span>Essay</span><span>· 8 min</span></div>
+            <h3>The customer-facing layer is the product</h3>
+            <p class="dek">Why experience architecture — not features — decides whether technology survives contact with real users.</p>
+          </div>
+          <span class="write-date">2025</span>
+        </a>
+        <a class="write-row" href="#" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="0.5" data-range="260" style="--cat:#a78bfa;">
+          <div class="write-main">
+            <div class="write-meta"><span class="dot"></span><span>AI</span><span>· 11 min</span></div>
+            <h3>Designing AI interaction models that adapt</h3>
+            <p class="dek">Past the prompt box: interfaces that change shape around intent, context, and trust.</p>
+          </div>
+          <span class="write-date">2025</span>
+        </a>
+        <a class="write-row" href="#" data-hot data-color="#2dd4bf" data-feedback data-body="attract" data-strength="0.5" data-range="260" style="--cat:#2dd4bf;">
+          <div class="write-main">
+            <div class="write-meta"><span class="dot"></span><span>Systems</span><span>· 6 min</span></div>
+            <h3>Executable design systems</h3>
+            <p class="dek">Encoding design decisions into behavior and architecture instead of static specs.</p>
+          </div>
+          <span class="write-date">2024</span>
+        </a>
+        <a class="write-row" href="#" data-hot data-color="#ff9d5c" data-feedback data-body="attract" data-strength="0.5" data-range="260" style="--cat:#ff9d5c;">
+          <div class="write-main">
+            <div class="write-meta"><span class="dot"></span><span>Physical</span><span>· 9 min</span></div>
+            <h3>From prototype to the production line</h3>
+            <p class="dek">What software teams learn when materials, tolerance, and time stop being negotiable.</p>
+          </div>
+          <span class="write-date">2024</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MANUAL — the page is a model of the practice -->
+  <section class="manual-cta" id="manual">
+    <div class="wrap">
+      <span class="kicker reveal">03 — The manual</span>
+      <h2 class="reveal">This page has a manual.</h2>
+      <p class="lead reveal">Every word, card, and link is registered as a body in the field &mdash; attraction, repulsion, reflection, viscosity, accretion, emission, threads, and formations. The page is a model of the practice.</p>
+      <a class="manual-link reveal" href="manual.html">Open the field manual &rarr;</a>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE — a clean, content-free play space; the palette is the only affordance -->
+  <section class="experience" id="experience"></section>
+
+  <!-- CONTACT — the absorber -->
+  <section class="contact" id="contact">
+    <div class="wrap">
+      <h2 class="reveal">Open to the <span class="accent">right conversation.</span></h2>
+      <a class="node" href="mailto:zach@zachshallbetter.com" data-hot data-color="#ff9d5c" data-feedback data-body="absorb attract" data-absorb="74" data-max="44" data-strength="0.8" data-range="340">zach@zachshallbetter.com</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="cue" id="cue"><span>Scroll</span><span class="ln"></span></div>
+
+<div id="nodes"></div>
+
+<div class="lab-bar" id="labBar">
+  <div class="lab-body" id="labBody">
+    <div class="lab-status" id="labStatus">
+      <span class="ls-dot" id="lsDot"></span>
+      <span class="ls-text" id="lsText"></span>
+      <span class="ls-field" id="lsField"></span>
+    </div>
+    <div class="lab-section">
+      <span class="lab-label">Only when</span>
+      <div class="seg cond" id="conds">
+        <button class="on" data-cond="">Always</button>
+        <button data-cond="fast">Fast</button>
+        <button data-cond="hot">Hot</button>
+      </div>
+    </div>
+    <div class="lab-section">
+      <span class="lab-label">Formation</span>
+      <div class="seg form" id="forms">
+        <button class="on" data-form="ambient">Ambient</button>
+        <button data-form="wells">Wells</button>
+        <button data-form="lanes">Lanes</button>
+        <button data-form="scatter">Scatter</button>
+        <button data-form="accretion">Accretion</button>
+      </div>
+    </div>
+    <div class="lab-actions">
+      <button class="lab-btn" id="shareBtn">Share field</button>
+      <button class="lab-btn" id="clearBtn">Clear all</button>
+    </div>
+  </div>
+  <div class="lab-rail">
+    <span class="rail-active"><i class="g g-attract" id="handleGlyph"></i><span class="rail-name" id="handleName">Attract</span></span>
+    <span class="rail-div"></span>
+    <div class="brushes" id="tools">
+      <button class="brush on" data-tool="attract" style="--fc:#4da3ff" title="Attract — pulls matter into a well" aria-label="Attract"><i class="g g-attract"></i></button>
+      <button class="brush" data-tool="repel" style="--fc:#ff9d5c" title="Repel — pushes matter away" aria-label="Repel"><i class="g g-repel"></i></button>
+      <button class="brush" data-tool="absorb" style="--fc:#ff6e9c" title="Absorb — swallows matter, then pops" aria-label="Absorb"><i class="g g-absorb"></i></button>
+      <button class="brush" data-tool="vortex" style="--fc:#2dd4bf" title="Vortex — spins matter into a whirlpool" aria-label="Vortex"><i class="g g-vortex"></i></button>
+      <button class="brush" data-tool="stream" style="--fc:#7dd3fc" title="Stream — blows a directional current" aria-label="Stream"><i class="g g-stream"></i></button>
+      <button class="brush" data-tool="drag" style="--fc:#8da2c0" title="Drag — thickens the medium" aria-label="Drag"><i class="g g-drag"></i></button>
+      <button class="brush" data-tool="spring" style="--fc:#86e57f" title="Spring — tethers matter to a radius" aria-label="Spring"><i class="g g-spring"></i></button>
+      <button class="brush" data-tool="emitter" style="--fc:#a78bfa" title="Emitter — draws matter in and jets it out" aria-label="Emitter"><i class="g g-emitter"></i></button>
+    </div>
+    <span class="rail-div"></span>
+    <button class="lab-expand" id="labHandle" type="button" aria-expanded="false" aria-controls="labBody" title="More options"><span class="lab-chevron"></span></button>
+  </div>
+</div>
+
+<div id="tweaks-root"></div>
+
+<script src="forces.js"></script>
+<script src="field.js"></script>
+<script src="interact.js"></script>
+<script src="lab.js"></script>
+<script src="caps.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

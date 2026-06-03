@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Field Manual — Zach Shallbetter</title>
+<meta name="description" content="How this page thinks: DOM elements with mass, weight, and behavior, interacting inside a conserved particle field." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="app.css" />
+<link rel="stylesheet" href="manual.css" />
+</head>
+<body>
+<canvas id="field"></canvas>
+<div class="scrim"></div>
+
+<div class="shell">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="index.html#work">Work</a>
+        <a href="index.html#writing">Writing</a>
+        <a href="field.html">Field</a>
+        <a href="manual.html" class="active">Manual</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="manual-hero" id="top">
+    <div class="wrap">
+      <p class="kicker">Field Manual · v6 · the physics of this page</p>
+      <h1>Every element has <span class="accent">mass.</span></h1>
+      <p class="standfirst">This site isn&rsquo;t a layout on top of an effect. The words, links, and cards are physical bodies inside a single field — they carry weight, exert force, and the field pushes back. Here&rsquo;s exactly how it works, with the real engine running behind every example.</p>
+      <p class="thesis">The argument underneath it: <strong>I design systems where every part exerts force on the others</strong> — and the whole only works when you can feel them.</p>
+      <div class="meta">
+        <span><b>Substrate</b> &nbsp;one canvas, conserved</span>
+        <span><b>Forces</b> &nbsp;eight, composable · gated by conditions</span>
+        <span><b>Law</b> &nbsp;nothing created from nothing</span>
+      </div>
+    </div>
+  </header>
+
+
+  <nav class="chapter-rail" aria-label="Chapters">
+    <a href="#ch-substrate" data-ch="ch-substrate"><span class="cr-no">I</span><span class="cr-label">Substrate</span></a>
+    <a href="#ch-forces" data-ch="ch-forces"><span class="cr-no">II</span><span class="cr-label">Forces</span></a>
+    <a href="#ch-conditions" data-ch="ch-conditions"><span class="cr-no">III</span><span class="cr-label">Conditions</span></a>
+    <a href="#ch-system" data-ch="ch-system"><span class="cr-no">IV</span><span class="cr-label">System</span></a>
+  </nav>
+
+  <!-- CHAPTER I · Substrate -->
+  <div class="chapter" id="ch-substrate">
+    <div class="wrap">
+      <span class="chapter-no">I</span>
+      <h2 class="chapter-title">Substrate</h2>
+      <p class="chapter-sub">What the field is made of — and how it locks to the page.</p>
+    </div>
+  </div>
+
+  <section class="concept">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">01 &mdash; Synchronization</span>
+        <h2>The page and the field share one coordinate space.</h2>
+        <p>Normally the DOM and a background canvas live in separate worlds. Here a registry samples every body&rsquo;s <strong>getBoundingClientRect()</strong> on each animation frame and maps it onto the canvas — scaled by device pixel ratio for retina displays.</p>
+        <p class="note">Because it re-reads every frame, the invisible force fields stay locked to the visible boxes through scroll, resize, and reflow.</p>
+        <div class="formula"><span class="c">canvasₓ =</span> rect.left + rect.width / 2 &nbsp;<span class="c">·</span>&nbsp; <span class="v">DPR</span></div>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <span class="stage-label">DOM → field</span>
+        <svg class="diagram" viewBox="0 0 420 300" fill="none">
+          <rect x="60" y="70" width="180" height="90" rx="10" class="dim"/>
+          <text x="70" y="60" class="lbl">getBoundingClientRect</text>
+          <circle cx="150" cy="115" r="3" class="accf"/>
+          <line x1="150" y1="115" x2="340" y2="210" class="acc" stroke-dasharray="3 4"/>
+          <circle cx="340" cy="210" r="4" class="accf"/>
+          <text x="300" y="240" class="lbl">field (x·DPR, y·DPR)</text>
+          <line x1="30" y1="260" x2="390" y2="260" class="dim"/>
+          <text x="30" y="282" class="lbl">canvas space</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept reverse">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">02 &mdash; Mass &amp; damping</span>
+        <h2>Particles are point-masses in a medium.</h2>
+        <p>Each particle carries a velocity in pixels per second and a mass proportional to its size. Every frame its velocity is multiplied by a friction factor — the field behaves like a fluid, so momentum bleeds off instead of accumulating forever.</p>
+        <div class="formula"><span class="v">v</span><span class="c">ₜ₊₁</span> = <span class="v">v</span><span class="c">ₜ</span> · <span class="v">f</span> &nbsp;<span class="c">(f ≈ 0.95)</span><br/><span class="c">m ∝ size</span></div>
+        <p class="note">Damping is why the field settles into calm swarms rather than scattering. Heavier particles swing on wider arcs.</p>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <span class="stage-label">momentum decay</span>
+        <svg class="diagram" viewBox="0 0 420 300" fill="none">
+          <circle cx="80" cy="150" r="10" class="accf" opacity="0.9"/>
+          <line x1="95" y1="150" x2="175" y2="150" class="acc"/><polygon points="175,145 188,150 175,155" class="accf"/>
+          <circle cx="210" cy="150" r="7" class="accf" opacity="0.7"/>
+          <line x1="222" y1="150" x2="272" y2="150" class="acc"/><polygon points="272,146 282,150 272,154" class="accf"/>
+          <circle cx="305" cy="150" r="5" class="accf" opacity="0.5"/>
+          <line x1="315" y1="150" x2="345" y2="150" class="acc"/><polygon points="345,147 352,150 345,153" class="accf"/>
+          <circle cx="378" cy="150" r="3.5" class="accf" opacity="0.35"/>
+          <text x="60" y="210" class="lbl">velocity bleeds off each frame</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">03 &mdash; Currents</span>
+        <h2>The waves are a flow field.</h2>
+        <p>The layered waves aren&rsquo;t just decoration. Near a wave line, particles pick up a drag vector along the slope of the curve — the derivative of the sine — so they drift like debris carried down a river.</p>
+        <div class="formula">slope(x) = cos(x · <span class="v">freq</span> + φ) · freq · amp<br/><span class="v">vₓ</span> += slope(x) · influence</div>
+        <p class="note">It&rsquo;s why the resting field feels alive without any input: the currents are always moving.</p>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <span class="stage-label">wave slope → drift</span>
+        <svg class="diagram" viewBox="0 0 420 300" fill="none">
+          <path d="M20 170 Q110 90 200 170 T380 170" class="acc" stroke-width="1.5"/>
+          <circle cx="200" cy="170" r="4" class="accf"/>
+          <line x1="200" y1="170" x2="270" y2="140" class="acc" stroke-dasharray="3 4"/><polygon points="270,135 282,138 268,148" class="accf"/>
+          <text x="150" y="230" class="lbl">tangent drift along the curve</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER II · Forces -->
+  <div class="chapter" id="ch-forces">
+    <div class="wrap">
+      <span class="chapter-no">II</span>
+      <h2 class="chapter-title">Forces</h2>
+      <p class="chapter-sub">What a single body can do to the matter around it.</p>
+    </div>
+  </div>
+
+  <section class="concept reverse" data-form="wells">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">04 &mdash; Attraction</span>
+        <h2>A body can pull the field into orbit.</h2>
+        <p>An <strong>attractor</strong> defines a gravity well. Within its radius the pull grows sharply as distance falls — and a tangential component bends incoming particles into stable spirals instead of letting them slingshot away.</p>
+        <div class="formula">F = (1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span class="v">S</span></div>
+        <p class="note">Drag the attractor through the field and watch the swarm follow — the force is bound to the element, not the cursor.</p>
+        <button class="agitate" data-agitate="#attr-chip">↯ Agitate the field</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">attractor — drag me</span>
+        <span class="body-chip" id="attr-chip" data-drag data-body="attract" data-strength="1" data-range="300" style="--cc:#4da3ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">attractor</span>
+        <span class="hintline">force follows the element across the field</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept" data-form="scatter">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">05 &mdash; Repulsion</span>
+        <h2>A body can push the field away.</h2>
+        <p>A <strong>repeller</strong> is an inverted gravity well. Within its radius the force points <strong>outward</strong>, sharpening as a particle nears the core, so matter is held at arm&rsquo;s length. It carves a clean void in the swarm — a negative space the rest of the field has to flow around.</p>
+        <div class="formula">F = −(1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span class="v">S</span></div>
+        <p class="note">Drag the repeller through the field and watch a clearing open around it.</p>
+        <button class="agitate" data-agitate="#repel-chip">↯ Agitate the field</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">repeller — drag me</span>
+        <span class="body-chip repel" id="repel-chip" data-drag data-body="repel" data-strength="1.1" data-range="300" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">repel</span>
+        <span class="hintline">force points outward — a void opens in the field</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept reverse">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">06 &mdash; Reflection</span>
+        <h2>A body can be a wall.</h2>
+        <p>A <strong>reflector</strong> is an axis-aligned box. When a particle crosses an edge, the velocity component perpendicular to the nearest edge is reversed and scaled by an elasticity coefficient — then the particle is projected back outside so it can never get stuck inside. A hard hit throws a brief <strong>spark</strong> at the point of contact, so the collision reads as a collision.</p>
+        <div class="formula"><span class="c">if vertical edge:</span> <span class="v">vₓ</span> ← −Cᵣ · <span class="v">vₓ</span><br/><span class="c">if horizontal edge:</span> <span class="v">v_y</span> ← −Cᵣ · <span class="v">v_y</span></div>
+        <p class="note">Drag the wall into the drifting particles to deflect them.</p>
+      </div>
+      <div class="stage">
+        <span class="stage-label">reflector — drag me</span>
+        <div class="body-wall" data-drag data-body="reflect" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">reflect</div>
+        <span class="hintline">particles bounce off the bounding box</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept" data-form="wells">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">07 &mdash; Vortex</span>
+        <h2>A body can spin the field.</h2>
+        <p>A <strong>vortex</strong> applies a purely <strong>tangential</strong> force — perpendicular to the line from each particle to its core. There&rsquo;s no net pull inward, so matter doesn&rsquo;t collapse onto it; it wheels around. A whisper of retention keeps the whirlpool coherent instead of flinging matter off.</p>
+        <div class="formula"><span class="v">v</span> += (−<span class="v">d̂_y</span>, <span class="v">d̂_x</span>) · <span class="v">S</span> · spin<br/><span class="c">spin = ±1 → clockwise / counter</span></div>
+        <p class="note">Drag the vortex into the swarm — particles orbit it rather than falling in.</p>
+        <button class="agitate" data-agitate="#vortex-chip">↯ Agitate the field</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">vortex — drag me</span>
+        <span class="body-chip vortex" id="vortex-chip" data-drag data-body="vortex" data-spin="1" data-strength="1" data-range="320" style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">vortex</span>
+        <span class="hintline">tangential force — the field circles, never collapses</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept reverse" data-form="lanes">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">08 &mdash; Stream</span>
+        <h2>A body can blow a current.</h2>
+        <p>A <strong>stream</strong> emits a constant force along a fixed heading — a fan, a jet, a prevailing wind. Inside its radius every particle is pushed the same direction no matter where it sits, so the swarm combs into parallel flow.</p>
+        <div class="formula"><span class="v">v</span> += (cos θ, sin θ) · <span class="v">S</span> · (1 − <span class="v">d</span>/d<span class="c">max</span>)<br/><span class="c">θ = data-angle, in degrees</span></div>
+        <p class="note">Drag the emitter across the field and watch matter streak into lanes downwind.</p>
+        <button class="agitate" data-agitate="#stream-chip">↯ Agitate the field</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">stream — drag me · blows →</span>
+        <span class="body-chip stream" id="stream-chip" data-drag data-body="stream" data-angle="0" data-strength="1" data-range="340" style="--cc:#7dd3fc; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">stream</span>
+        <span class="hintline">directional current — particles comb downwind</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept" data-form="wells">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">09 &mdash; Spring</span>
+        <h2>A body can tether the field at a fixed distance.</h2>
+        <p>A <strong>spring</strong> isn&rsquo;t a well &mdash; it has a <strong>rest length</strong>. Matter that crowds too close is pushed out; matter that strays too far is reeled in. So instead of collapsing onto the core, the swarm settles into an orbiting <strong>shell</strong> that springs back when you disturb it &mdash; a leash, not a drain.</p>
+        <div class="formula"><span class="v">v</span> += &ucirc; &middot; (<span class="v">d</span> &minus; <span class="v">r</span><span class="c">est</span>) &middot; <span class="v">k</span><br/><span class="c">d &gt; rest &rarr; reel in &middot; d &lt; rest &rarr; push off</span></div>
+        <p class="note">Drag the tether through the field &mdash; matter springs back to its radius.</p>
+        <button class="agitate" data-agitate="#spring-chip">&#8623; Agitate the field</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">spring &mdash; drag me</span>
+        <span class="body-chip spring" id="spring-chip" data-drag data-body="spring" data-strength="1" data-range="260" style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">spring</span>
+        <span class="hintline">a tether &mdash; matter holds a shell at the rest radius</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept reverse" data-form="lanes">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">10 &mdash; Viscosity</span>
+        <h2>A body can thicken the medium.</h2>
+        <p>A <strong>drag</strong> body neither pulls nor pushes — it <strong>bleeds momentum</strong>. Inside its radius every particle is slowed in proportion to how deep it sits, as if the field turned to honey. Alone it just calms a patch of the swarm; paired with an attractor it&rsquo;s what turns a slingshot into a settled orbit.</p>
+        <div class="formula"><span class="v">v</span> ← <span class="v">v</span> · (1 − <span class="v">k</span>) &nbsp;<span class="c">where</span>&nbsp; k ∝ (1 − <span class="v">d</span>/d<span class="c">max</span>) · S</div>
+        <p class="note">Agitate the field, then watch the rush die inside the zone — the faster matter loses its speed first.</p>
+        <button class="agitate" data-agitate="#drag-chip">↯ Agitate the field</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">viscosity — move me</span>
+        <span class="body-chip drag" id="drag-chip" data-drag data-body="drag" data-strength="1" data-range="300" style="--cc:#8da2c0; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">drag</span>
+        <span class="hintline">a viscous zone — momentum bleeds off, the swarm settles</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept" data-form="accretion">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">11 &mdash; Accretion &amp; release</span>
+        <h2>A body can hold matter — and give it back.</h2>
+        <p>An <strong>absorber</strong> captures particles that reach its core. They aren&rsquo;t deleted; they&rsquo;re <strong>held inside it</strong>, feeding its mass, and the element visibly inflates as it fills.</p>
+        <p>When it saturates, it goes supernova: the exact particles it captured are <strong>released radially</strong> back into the field.</p>
+        <div class="formula"><span class="c">scale =</span> 1 + (M / M<span class="c">max</span>) · 0.45<br/><span class="v">conserved:</span> captured = released</div>
+        <p class="note">This is the rule for the whole system — nothing is conjured from thin air, and nothing vanishes. Matter only changes hands.</p>
+      </div>
+      <div class="stage">
+        <span class="stage-label">absorber — fills, then pops</span>
+        <div class="body-core" data-body="absorb attract" data-absorb="64" data-max="30" data-strength="0.8" data-range="360" style="--cc:#ff9d5c;">core</div>
+        <div class="meter" style="--cc:#ff9d5c;"><i></i></div>
+        <span class="hintline">mass accumulates, then releases on supernova</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept reverse" data-form="lanes">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">12 &mdash; Emission</span>
+        <h2>A body can be a fountain.</h2>
+        <p>An <strong>emitter</strong> is a conduit, not a source. It draws surrounding matter into its nozzle and relaunches it as a hot jet along a fixed heading — a continuous spray of particles. The field is <strong>recycled into a stream</strong>; obeying the same law as everything else, nothing is conjured.</p>
+        <div class="formula"><span class="c">feed:</span> <span class="v">v</span> += d̂ · S &nbsp; <span class="c">·</span> &nbsp; <span class="c">at nozzle:</span> <span class="v">v</span> = (cos θ, sin θ) · spd</div>
+        <p class="note">Agitate to feed it, then watch the jet stream off along its heading.</p>
+        <button class="agitate" data-agitate="#emit-chip">↯ Feed the fountain</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">emitter — move me · jets →</span>
+        <span class="body-chip emitter" id="emit-chip" data-drag data-body="emitter" data-angle="0" data-strength="1" data-range="300" style="--cc:#a78bfa; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">emitter</span>
+        <span class="hintline">a fountain — matter is drawn in and jetted back out</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER III · Conditions -->
+  <div class="chapter" id="ch-conditions">
+    <div class="wrap">
+      <span class="chapter-no">III</span>
+      <h2 class="chapter-title">Conditions</h2>
+      <p class="chapter-sub">When a force decides to act, and on which matter.</p>
+    </div>
+  </div>
+
+  <section class="concept" data-form="scatter">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">13 &mdash; Conditional</span>
+        <h2>A force can choose what it touches.</h2>
+        <p>Any body can carry a <strong>condition</strong>. It stays dormant until a test passes — gated on the element being engaged, or on a property of each passing particle: its <strong>speed</strong>, or its <strong>heat</strong>. A selective force reads every free agent and acts only on the ones that match, letting the rest drift through.</p>
+        <div class="formula"><span class="c">when</span> = active · fast · slow · hot · cool · scrolling<br/><span class="v">F</span> applied <span class="c">iff</span> test(particle)</div>
+        <p class="note">The catcher below only grips <strong>hot</strong> particles. Heat the field and the excited matter is pulled in and sorted — while the calm matter passes straight through it.</p>
+        <button class="agitate" data-agitate="#cond-chip">↯ Heat the field</button>
+      </div>
+      <div class="stage">
+        <span class="stage-label">conditional — catches heat only</span>
+        <span class="body-chip cond" id="cond-chip" data-drag data-body="attract" data-when="hot" data-strength="1.2" data-range="320" style="--cc:#ff6e9c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">when&nbsp;hot</span>
+        <span class="hintline">selective attractor — grips excited matter, ignores the calm</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER IV · System -->
+  <div class="chapter" id="ch-system">
+    <div class="wrap">
+      <span class="chapter-no">IV</span>
+      <h2 class="chapter-title">System</h2>
+      <p class="chapter-sub">What emerges when the parts interact.</p>
+    </div>
+  </div>
+
+  <section class="concept reverse">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">14 &mdash; Reciprocity</span>
+        <h2>The field changes the element back.</h2>
+        <p>This is the part most systems miss. The element bends the field — and the field&rsquo;s <strong>local density</strong> bends the element in return. As particles gather on a word, it gains weight, brightness, and lift, proportional to how much has collected on it.</p>
+        <div class="formula">--d = density(body) &nbsp;<span class="c">→</span>&nbsp; <span class="v">weight</span>, glow, rise</div>
+        <p class="note">Hover the word — it pulls the field, the field piles up, and the pile makes the word heavier. A closed loop.</p>
+      </div>
+      <div class="stage">
+        <span class="stage-label">density → weight</span>
+        <span class="live-demo" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="1" data-range="300" style="--cat:#a78bfa;">density</span>
+        <span class="hintline">gathered particles raise the element&rsquo;s weight</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">15 &mdash; Threads</span>
+        <h2>Engaging one body wires the set.</h2>
+        <p>When you engage an element that belongs to a group, the field draws living threads between it and its siblings — pulses traveling the connections. A list stops being a list and shows itself as a <strong>connected system</strong>.</p>
+        <p class="note">Hover any line below.</p>
+      </div>
+      <div class="stage">
+        <span class="stage-label">a connected set</span>
+        <div class="thread-set" data-index data-threads>
+          <span class="ti" data-hot data-color="#4da3ff" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#4da3ff;">Product</span>
+          <span class="ti" data-hot data-color="#2dd4bf" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#2dd4bf;">System</span>
+          <span class="ti" data-hot data-color="#a78bfa" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#a78bfa;">Interface</span>
+          <span class="ti" data-hot data-color="#ff9d5c" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#ff9d5c;">Material</span>
+        </div>
+        <span class="hintline">threads connect the engaged body to its set</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="concept reverse" id="formations">
+    <div class="wrap concept-grid">
+      <div>
+        <span class="concept-no">16 &mdash; Formations</span>
+        <h2>The whole field can change its mind.</h2>
+        <p>Forces act locally, one body at a time. A <strong>formation</strong> acts on every particle at once — a single global bias laid over the entire swarm. As you scrolled this page, each chapter quietly switched it; the field has been reorganizing under you the whole way down.</p>
+        <p class="note" id="form-desc">Ambient — calm brownian drift, the resting state.</p>
+        <div class="form-pills" id="formPills">
+          <button class="form-pill on" data-form="ambient">Ambient</button>
+          <button class="form-pill" data-form="wells">Wells</button>
+          <button class="form-pill" data-form="lanes">Lanes</button>
+          <button class="form-pill" data-form="scatter">Scatter</button>
+          <button class="form-pill" data-form="accretion">Accretion</button>
+        </div>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <span class="stage-label">formation — tap to reconfigure</span>
+        <div class="form-readout"><span id="form-name">ambient</span></div>
+        <span class="hintline">a global bias on every particle — watch the field behind everything respond</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOT -->
+  <section class="manual-foot">
+    <div class="wrap">
+      <h2>Now go bend it yourself.</h2>
+      <div class="actions">
+        <a class="btn primary" href="field.html">Open the sandbox →</a>
+        <a class="btn" href="index.html">Back to the work</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span class="fid">Field Manual · a conserved particle system where DOM elements carry mass, exert force, and respond to density.</span>
+      <div class="fsoc">
+        <a href="index.html">Home</a>
+        <a href="field.html">Sandbox</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<div class="cue" id="cue" style="opacity:0"><span>Scroll</span><span class="ln"></span></div>
+<div id="tweaks-root"></div>
+
+<script src="forces.js"></script>
+<script src="field.js"></script>
+<script src="interact.js"></script>
+<script src="manual.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>
