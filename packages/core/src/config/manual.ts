@@ -26,10 +26,50 @@ export interface ManualEntry {
   attrs: readonly string[];
   /** one-line description. */
   desc: string;
+  /** the force's canonical accent colour (§20.2 reconciliation). */
+  color: string;
 }
 
+/**
+ * The canonical colour for every registered force (§20.2 reconciliation). The nine
+ * mirror `forces.config.ts`; the designed-extended forces take the §20.2 registry
+ * colours; the §20.10 natural primitives (added after that table) get principled,
+ * clash-free accents. A test pins the nine to `FORCE_BY` so they can't drift.
+ */
+export const FORCE_COLORS: Record<string, string> = {
+  // canonical nine — mirror the force palette (forces.config.ts)
+  attract: '#4da3ff',
+  repel: '#ff9d5c',
+  vortex: '#2dd4bf',
+  stream: '#7dd3fc',
+  drag: '#8da2c0',
+  emitter: '#a78bfa',
+  spring: '#86e57f',
+  reflect: '#c4b5fd',
+  absorb: '#ff6e9c',
+  // natural primitives (§20.10)
+  gravity: '#6366f1',
+  charge: '#60a5fa',
+  magnetism: '#c084fc',
+  thermal: '#fb923c',
+  collide: '#cbd5e1',
+  diffuse: '#a3e635', // the pheromone field (§20.2 'pheromone')
+  propagate: '#5eead4',
+  // designed-extended forces (§20.2 registry colours)
+  lens: '#67e8f9',
+  gate: '#fb7185',
+  buoyancy: '#fcd34d',
+  shear: '#818cf8',
+  crystallize: '#93c5fd',
+  align: '#fbbf24',
+  wind: '#38bdf8',
+  cohesion: '#34d399',
+  resonate: '#f0abfc',
+  spotlight: '#facc15',
+};
+
 /** Every force, in catalog order. The UI groups these by `family`. */
-export const MANUAL_FORCES: readonly ManualEntry[] = [
+const FORCES_RAW: readonly Omit<ManualEntry, 'color'>[] = [
   // ── canonical nine (§6) ──────────────────────────────────────────────────────
   {
     family: 'canonical',
@@ -244,6 +284,12 @@ export const MANUAL_FORCES: readonly ManualEntry[] = [
     desc: 'a directional gate — confines sibling forces to a beam',
   },
 ];
+
+/** Every force with its canonical colour merged in (§20.2). The UI groups by `family`. */
+export const MANUAL_FORCES: readonly ManualEntry[] = FORCES_RAW.map((e) => ({
+  ...e,
+  color: FORCE_COLORS[e.token] ?? '#ffffff',
+}));
 
 /** A preset definition: its name and the primitive tokens it composes (§20.9). */
 export interface ManualPreset {

@@ -76,7 +76,9 @@ const count = MANUAL_FORCES.length;
             {byFamily(fam.key).map((f) => (
               <article class="card">
                 <h3>
-                  <code class="tok">{f.token}</code>
+                  <code class="tok" style={`--tc:${f.color}`}>
+                    {f.token}
+                  </code>
                   <span class="label">{f.label}</span>
                 </h3>
                 <pre class="formula">{f.formula}</pre>
@@ -260,8 +262,8 @@ const count = MANUAL_FORCES.length;
   .tok {
     font-family: var(--mono);
     font-size: 0.86rem;
-    color: var(--accent);
-    background: rgba(77, 163, 255, 0.1);
+    color: var(--tc, var(--accent));
+    background: color-mix(in oklab, var(--tc, var(--accent)) 15%, transparent);
     padding: 0.12rem 0.45rem;
     border-radius: 5px;
   }
