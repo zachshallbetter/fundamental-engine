@@ -1,18 +1,48 @@
 ---
 import Base from '../layouts/Base.astro';
+import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
+import '../styles/force-glyphs.css';
 
-// The Lab (§14) — place real force bodies on the page and watch the ONE background
-// field react to them (the field-reacts law, not foreground particles). Shareable
-// via the URL hash.
-const forces = [
-  { t: 'attract', c: '#4da3ff' },
-  { t: 'repel', c: '#ff9d5c' },
-  { t: 'vortex', c: '#7dd3fc' },
-  { t: 'stream', c: '#2dd4bf' },
-  { t: 'gravity', c: '#a78bfa' },
-  { t: 'drag', c: '#8da2c0' },
-  { t: 'spring', c: '#86e57f' },
+// The Lab (§14) — place real force bodies AND presets on the page and watch the ONE
+// background field react (the field-reacts law, not foreground particles). The
+// palette is the whole catalog. Shareable via the URL hash.
+
+// Sensible placement attrs per force (forces ignore attrs they don't read).
+const DEFAULTS = { strength: 1.5, range: 280, spin: 1, angle: -90 };
+const OVERRIDES: Record<string, Record<string, number>> = {
+  gravity: { strength: 320, range: 360 },
+  thermal: { strength: 2.5, range: 240 },
+  absorb: { strength: 0.8, range: 320, absorb: 60, max: 40 },
+  emitter: { strength: 1.3, range: 280 },
+  spring: { strength: 1, range: 240 },
+  drag: { strength: 1, range: 300 },
+};
+const PRESET_COLORS: Record<string, string> = {
+  blackhole: '#fbbf24',
+  whitehole: '#e0f2fe',
+  star: '#6366f1',
+  quasar: '#fbbf24',
+  galaxy: '#a78bfa',
+  nebula: '#38bdf8',
+  tornado: '#2dd4bf',
+};
+
+const FORCE_DATA = Object.fromEntries(
+  MANUAL_FORCES.map((f) => [
+    f.token,
+    { color: f.color, attrs: { ...DEFAULTS, ...(OVERRIDES[f.token] ?? {}) } },
+  ]),
+);
+const PRESET_DATA = Object.fromEntries(
+  MANUAL_PRESETS.map((p) => [p.name, { color: PRESET_COLORS[p.name] ?? '#4da3ff' }]),
+);
+
+const families = [
+  { key: 'canonical', label: 'canonical' },
+  { key: 'natural', label: 'natural' },
+  { key: 'extended', label: 'extended' },
 ] as const;
+const byFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
 ---
 
 <Base title="forces-ui — the Lab">
@@ -21,18 +51,59 @@ const forces = [
       <a class="back" href="/">← forces-ui</a>
       <h1>The Lab</h1>
       <p class="lede">
-        Place forces on the page and watch the single field react. Pick a force, click the
-        stage to drop a body, drag to move it, double-click to remove. Share your field with
-        the link button — the layout lives in the URL.
+        Place any force or preset on the page and watch the single field react. Pick one, click
+        the stage to drop it, drag to move, double-click to remove. Presets drop a whole composite.
+        Share your field with the link button — the layout lives in the URL.
       </p>
     </header>
 
-    <div class="toolbar">
-      <div class="forces" role="group">
+    <div class="catalog" role="group" aria-label="Force palette">
+      {
+        families.map((fam) => (
+          <div class="group">
+            <span class="glabel">{fam.label}</span>
+            {byFamily(fam.key).map((f) => (
+              <button
+                type="button"
+                data-kind="force"
+                data-token={f.token}
+                style={`--c:${f.color}`}
+                class={f.token === 'attract' ? 'on' : ''}
+                title={f.desc}
+              >
+                <i class={`fg fg-${f.token}`} aria-hidden="true" />
+                {f.token}
+              </button>
+            ))}
+          </div>
+        ))
+      }
+      <div class="group presets">
+        <span class="glabel">presets</span>
         {
-          forces.map((f, i) => (
-            <button type="button" data-force={f.t} style={`--c:${f.c}`} class={i === 0 ? 'on' : ''}>
-              {f.t}
+          MANUAL_PRESETS.map((p) => (
+            <button
+              type="button"
+              data-kind="preset"
+              data-token={p.name}
+              style={`--c:${PRESET_COLORS[p.name]}`}
+              title={p.desc}
+            >
+              <i class={`fg fg-${p.name}`} aria-hidden="true" />
+              {p.name}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="bar">
+      <div class="palettes" role="group">
+        <span class="plabel">palette</span>
+        {
+          ['ours', 'heatmap', 'infrared', 'spectrum'].map((p) => (
+            <button type="button" data-palette={p} class={p === 'ours' ? 'on' : ''}>
+              {p}
             </button>
           ))
         }
@@ -43,71 +114,55 @@ const forces = [
       </div>
     </div>
 
-    <div class="palettes" role="group">
-      <span class="plabel">palette</span>
-      {
-        ['ours', 'heatmap', 'infrared', 'spectrum'].map((p) => (
-          <button type="button" data-palette={p} class={p === 'ours' ? 'on' : ''}>
-            {p}
-          </button>
-        ))
-      }
-    </div>
-
     <div class="stage" id="stage">
-      <p class="hint">Pick a force, then click here to place it.</p>
+      <p class="hint">Pick a force or preset, then click here to place it.</p>
     </div>
   </main>
 </Base>
 
-<script is:inline>
+<script is:inline define:vars={{ FORCE_DATA, PRESET_DATA }}>
   (() => {
     const stage = document.getElementById('stage');
     const field = document.querySelector('forces-field');
-    const colors = {
-      attract: '#4da3ff',
-      repel: '#ff9d5c',
-      vortex: '#7dd3fc',
-      stream: '#2dd4bf',
-      gravity: '#a78bfa',
-      drag: '#8da2c0',
-      spring: '#86e57f',
-    };
-    let current = 'attract';
+    const meta = (kind, token) => (kind === 'preset' ? PRESET_DATA[token] : FORCE_DATA[token]);
+    let current = { kind: 'force', token: 'attract' };
     let nodes = [];
     const rescan = () => field && field.rescan && field.rescan();
     const hideHint = () => {
       const h = stage.querySelector('.hint');
       if (h) h.style.display = 'none';
     };
+    const clamp = (v) => Math.max(2, Math.min(98, v));
 
-    document.querySelectorAll('.forces button').forEach((b) =>
+    document.querySelectorAll('.catalog button').forEach((b) =>
       b.addEventListener('click', () => {
-        current = b.dataset.force;
-        document.querySelectorAll('.forces button').forEach((x) => x.classList.toggle('on', x === b));
+        current = { kind: b.dataset.kind, token: b.dataset.token };
+        document.querySelectorAll('.catalog button').forEach((x) => x.classList.toggle('on', x === b));
       }),
     );
 
-    // live colour template switch (§9)
     document.querySelectorAll('.palettes button').forEach((b) =>
       b.addEventListener('click', () => {
         if (field && field.setPalette) field.setPalette(b.dataset.palette);
-        document
-          .querySelectorAll('.palettes button')
-          .forEach((x) => x.classList.toggle('on', x === b));
+        document.querySelectorAll('.palettes button').forEach((x) => x.classList.toggle('on', x === b));
       }),
     );
 
     function makeEl(node) {
+      const m = meta(node.kind, node.token);
+      if (!m) return;
       const el = document.createElement('div');
       el.className = 'node';
-      el.dataset.body = node.force;
-      el.dataset.strength = '1.5';
-      el.dataset.range = '280';
-      el.style.setProperty('--c', colors[node.force] || '#4da3ff');
+      if (node.kind === 'preset') {
+        el.dataset.preset = node.token;
+      } else {
+        el.dataset.body = node.token;
+        for (const k in m.attrs) el.dataset[k] = m.attrs[k];
+      }
+      el.style.setProperty('--c', m.color);
       el.style.left = node.x + '%';
       el.style.top = node.y + '%';
-      el.textContent = node.force;
+      el.innerHTML = '<i class="fg fg-' + node.token + '"></i><span>' + node.token + '</span>';
       el.title = 'drag to move · double-click to remove';
       el.addEventListener('pointerdown', (e) => startDrag(e, node, el));
       el.addEventListener('dblclick', (e) => {
@@ -121,8 +176,8 @@ const forces = [
       node.el = el;
     }
 
-    function add(force, x, y) {
-      const node = { force, x, y };
+    function add(kind, token, x, y) {
+      const node = { kind, token, x, y };
       nodes.push(node);
       makeEl(node);
       rescan();
@@ -135,8 +190,8 @@ const forces = [
       el.setPointerCapture(e.pointerId);
       const onMove = (ev) => {
         const r = stage.getBoundingClientRect();
-        node.x = Math.max(0, Math.min(100, ((ev.clientX - r.left) / r.width) * 100));
-        node.y = Math.max(0, Math.min(100, ((ev.clientY - r.top) / r.height) * 100));
+        node.x = clamp(((ev.clientX - r.left) / r.width) * 100);
+        node.y = clamp(((ev.clientY - r.top) / r.height) * 100);
         el.style.left = node.x + '%';
         el.style.top = node.y + '%';
         rescan();
@@ -150,15 +205,22 @@ const forces = [
       el.addEventListener('pointerup', onUp);
     }
 
-    const clamp = (v) => Math.max(2, Math.min(98, v));
     stage.addEventListener('click', (e) => {
       if (e.target !== stage) return; // ignore clicks that land on a node
       const r = stage.getBoundingClientRect();
-      add(current, clamp(((e.clientX - r.left) / r.width) * 100), clamp(((e.clientY - r.top) / r.height) * 100));
+      add(
+        current.kind,
+        current.token,
+        clamp(((e.clientX - r.left) / r.width) * 100),
+        clamp(((e.clientY - r.top) / r.height) * 100),
+      );
     });
 
+    // share: presets are prefixed '@'; e.g. "attract,30,40;@blackhole,60,55"
     function save() {
-      const s = nodes.map((n) => n.force + ',' + n.x.toFixed(1) + ',' + n.y.toFixed(1)).join(';');
+      const s = nodes
+        .map((n) => (n.kind === 'preset' ? '@' : '') + n.token + ',' + n.x.toFixed(1) + ',' + n.y.toFixed(1))
+        .join(';');
       history.replaceState(null, '', s ? '#' + encodeURIComponent(s) : location.pathname);
     }
 
@@ -166,9 +228,12 @@ const forces = [
       const h = decodeURIComponent(location.hash.slice(1));
       if (!h) return;
       h.split(';').forEach((part) => {
-        const [force, x, y] = part.split(',');
-        if (force && colors[force]) {
-          const node = { force, x: +x, y: +y };
+        const [raw, x, y] = part.split(',');
+        if (!raw) return;
+        const kind = raw[0] === '@' ? 'preset' : 'force';
+        const token = raw[0] === '@' ? raw.slice(1) : raw;
+        if (meta(kind, token)) {
+          const node = { kind, token, x: +x, y: +y };
           nodes.push(node);
           makeEl(node);
         }
@@ -234,52 +299,86 @@ const forces = [
     letter-spacing: -0.03em;
   }
   .lede {
-    max-width: 52ch;
+    max-width: 56ch;
     color: var(--text-2);
     line-height: 1.55;
   }
-  .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: space-between;
-    align-items: center;
+
+  .catalog {
     margin: clamp(1.5rem, 4vh, 2.5rem) 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
   }
-  .forces,
-  .actions {
+  .group {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.4rem;
   }
-  .forces button {
+  .glabel {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    width: 5rem;
+    flex: none;
+  }
+  .catalog button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     font-family: var(--mono);
     font-size: 0.74rem;
     color: var(--text-3);
     background: transparent;
     border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.34rem 0.7rem;
+    border-radius: 7px;
+    padding: 0.32rem 0.6rem;
     cursor: pointer;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
   }
-  .forces button::before {
-    content: '';
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--c);
-    margin-right: 0.45rem;
-    vertical-align: middle;
-    box-shadow: 0 0 8px var(--c);
-  }
-  .forces button:hover {
+  .catalog button:hover {
     color: var(--text);
   }
-  .forces button.on {
+  .catalog button.on {
     color: var(--text);
     border-color: var(--c);
+    box-shadow: 0 0 0 1px var(--c) inset;
   }
+  .catalog .fg {
+    --fc: var(--c);
+    width: 13px;
+    height: 13px;
+  }
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 0 1rem;
+  }
+  .palettes,
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .plabel {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    margin-right: 0.2rem;
+  }
+  .palettes button,
   .actions button {
     font-family: var(--mono);
     font-size: 0.74rem;
@@ -287,48 +386,22 @@ const forces = [
     background: transparent;
     border: 1px solid var(--line);
     border-radius: 6px;
-    padding: 0.34rem 0.8rem;
-    cursor: pointer;
-  }
-  .actions button:hover {
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-  .palettes {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-    margin: 0 0 1rem;
-  }
-  .plabel {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--text-3);
-    margin-right: 0.3rem;
-  }
-  .palettes button {
-    font-family: var(--mono);
-    font-size: 0.74rem;
-    color: var(--text-3);
-    background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 6px;
     padding: 0.34rem 0.7rem;
     cursor: pointer;
   }
-  .palettes button:hover {
-    color: var(--text);
+  .palettes button:hover,
+  .actions button:hover {
+    color: var(--accent);
+    border-color: var(--accent);
   }
   .palettes button.on {
     color: var(--accent);
     border-color: var(--accent);
   }
+
   .stage {
     position: relative;
-    height: clamp(360px, 60vh, 620px);
+    height: clamp(360px, 58vh, 620px);
     border: 1px dashed var(--line);
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.012);
@@ -346,11 +419,14 @@ const forces = [
     font-size: 0.82rem;
     pointer-events: none;
   }
-  /* nodes are created at runtime, so they don't get Astro's scoped attribute —
-     these rules must be global to reach them. */
+
+  /* nodes are created at runtime → global rules */
   :global(.stage .node) {
     position: absolute;
     transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     font-family: var(--mono);
     font-size: 0.72rem;
     color: var(--text);
@@ -363,6 +439,11 @@ const forces = [
     white-space: nowrap;
     box-shadow: 0 0 16px -2px var(--c);
     touch-action: none;
+  }
+  :global(.stage .node .fg) {
+    --fc: var(--c);
+    width: 13px;
+    height: 13px;
   }
   :global(.stage .node:active) {
     cursor: grabbing;
