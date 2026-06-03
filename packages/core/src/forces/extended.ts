@@ -174,6 +174,44 @@ export const wind: Force = {
   meta: { desc: 'divergence-free curl-noise turbulence' },
 };
 
+/**
+ * §20.3 — `cohesion` (class [B], over `env.neighbors`): short-range pressure + mid-range
+ * pull, i.e. surface tension. Around a rest distance `r₀` each neighbour pushes `p` away
+ * when closer than `r₀` and draws it in when between `r₀` and the neighbour radius `r₁`.
+ * The spec's raw `k·(r₀ − d)` is normalized to a unit interval here so velocities stay
+ * UI-sane over ~100px distances. `strength` is the stiffness; `r₀ = r₁·0.5` (a fraction
+ * of the range, since `data-r0` would need a new Body field); `range` is `r₁`.
+ */
+const COHESION_REST = 0.5; // r₀ as a fraction of r₁
+export const cohesion: Force = {
+  token: 'cohesion',
+  label: 'Cohesion',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const r1 = b.range;
+    const r0 = r1 * COHESION_REST;
+    const k = b.strength;
+    for (const n of e.neighbors(p, r1)) {
+      const dx = n.x - p.x;
+      const dy = n.y - p.y;
+      const dn = Math.hypot(dx, dy);
+      if (dn < 1e-6) continue;
+      const ux = dx / dn;
+      const uy = dy / dn;
+      if (dn < r0) {
+        const f = (k * (r0 - dn)) / r0; // pressure: push apart (no overlap)
+        p.vx -= f * ux;
+        p.vy -= f * uy;
+      } else {
+        const f = (k * (dn - r0)) / (r1 - r0); // cohesion: pull toward the skin
+        p.vx += f * ux;
+        p.vy += f * uy;
+      }
+    }
+  },
+  meta: { desc: 'short-range pressure + mid-range cohesion — surface tension over neighbours' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
 export const extendedForces: readonly Force[] = [
   lens,
@@ -183,6 +221,7 @@ export const extendedForces: readonly Force[] = [
   crystallize,
   align,
   wind,
+  cohesion,
 ];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */
