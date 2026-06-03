@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lens, extendedForces } from './extended.ts';
+import { lens, gate, extendedForces } from './extended.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -66,10 +66,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('extended forces expose lens (§20.3)', () => {
+test('extended forces expose lens + gate (§20.3)', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens'],
+    ['lens', 'gate'],
   );
 });
 
@@ -104,4 +104,35 @@ test('lens bend vanishes at the rim and is inert beyond range', () => {
   lens.apply(body({ strength: Math.PI / 2, range: 300 }), beyond, env({ dist: 350 }));
   assert.equal(beyond.vx, 1);
   assert.equal(beyond.vy, 0);
+});
+
+// gate is box-sized (like reflect): cx/cy = 0, hw=50, hh=20; n from ux/uy.
+const gateBody = (o: Partial<Body> = {}) => body({ hw: 50, hh: 20, ux: 1, uy: 0, ...o });
+
+test('gate reflects a wrong-way crosser back along its heading (§20.3)', () => {
+  const p = part({ x: 0, y: 0, vx: -1, vy: 0 }); // moving −x, against n = +x
+  gate.apply(gateBody(), p, env());
+  assert.ok(near(p.vx, 1)); // v·n was −1 → flipped to travel with n
+  assert.ok(near(p.vy, 0));
+});
+
+test('gate passes right-way and tangential matter unchanged', () => {
+  const along = part({ x: 0, y: 0, vx: 1, vy: 0 }); // with n
+  gate.apply(gateBody(), along, env());
+  assert.ok(near(along.vx, 1));
+  const tangent = part({ x: 0, y: 0, vx: 0, vy: 1 }); // v·n = 0 (not < 0)
+  gate.apply(gateBody(), tangent, env());
+  assert.ok(near(tangent.vy, 1));
+});
+
+test('gate only acts on matter inside the element box', () => {
+  const outside = part({ x: 100, y: 0, vx: -1, vy: 0 }); // |100| ≥ hw+pad
+  gate.apply(gateBody(), outside, env());
+  assert.equal(outside.vx, -1); // untouched
+});
+
+test('gate heading orients the membrane', () => {
+  const p = part({ x: 0, y: 0, vx: 0, vy: -1 }); // against n = +y
+  gate.apply(gateBody({ ux: 0, uy: 1 }), p, env());
+  assert.ok(near(p.vy, 1)); // reflected to +y
 });
