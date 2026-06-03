@@ -31,6 +31,7 @@ import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
+import { sparkCount } from './reactions.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
@@ -66,6 +67,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let hoverAccent: string | null = null;
   let threadLinks: { a: Element; b: Element; c: RGB; seed: number }[] = [];
   let movers: { el: HTMLElement; o: ElementOffset; mEl: number }[] = [];
+  let sparks: { x: number; y: number; vx: number; vy: number; life: number; c: RGB }[] = [];
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = performance.now();
@@ -82,7 +84,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     dt: reduceMotion ? 0 : 1,
     c: 12,
     G: 1,
-    spark: () => {}, // Phase 5 (§23)
+    spark: (x, y, power, color) => spawnSpark(x, y, power, color),
     supernova: (b) => {
       // release exactly what was captured — radial, from the core (§6.9).
       for (const q of store.particles) {
@@ -115,6 +117,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     neighbors: (p, r) => store.neighbors(p, r),
     grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }) }), // Phase C
   };
+
+  function spawnSpark(x: number, y: number, power: number, color?: string): void {
+    if (reduceMotion || sparks.length > 260) return;
+    const c: RGB = color ? hexToRgb(color) : [255, 122, 69]; // WARM default (§20.8)
+    const n = sparkCount(power);
+    for (let k = 0; k < n; k++) {
+      const a = Math.random() * 6.28318;
+      const s = 0.8 + Math.random() * (power > 0 ? power : 1) * 1.7;
+      sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, c });
+    }
+  }
 
   function newParticle(seed: Partial<Particle> = {}): Particle {
     return {
@@ -380,6 +393,33 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
   }
 
+  function drawSparks(): void {
+    if (sparks.length === 0) return;
+    ctx!.globalCompositeOperation = 'lighter';
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+      if (!s) continue;
+      s.x += s.vx;
+      s.y += s.vy;
+      s.vx *= 0.9;
+      s.vy *= 0.9;
+      s.life *= 0.85;
+      if (s.life < 0.05) {
+        sparks.splice(i, 1);
+        continue;
+      }
+      const [r, g, b] = s.c;
+      ctx!.shadowBlur = 6 * s.life;
+      ctx!.shadowColor = `rgba(${r},${g},${b},0.9)`;
+      ctx!.fillStyle = `rgba(${r},${g},${b},${s.life})`;
+      ctx!.beginPath();
+      ctx!.arc(s.x, s.y, 0.6 + s.life * 1.5, 0, 6.28318);
+      ctx!.fill();
+    }
+    ctx!.shadowBlur = 0;
+    ctx!.globalCompositeOperation = 'source-over';
+  }
+
   function render(): void {
     // opaque dark substrate (§2.5, darkness ≈ 0.97).
     ctx!.fillStyle = 'rgb(5,6,11)';
@@ -417,6 +457,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.fill();
       if (h > 0.2) ctx!.shadowBlur = 0;
     }
+    drawSparks();
     drawThreads();
     ctx!.globalCompositeOperation = 'source-over';
   }
