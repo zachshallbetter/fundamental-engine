@@ -96,13 +96,13 @@ Ordered for overnight (highest visible value first):
 - [x] **4d — Event agent (§22.5).** `data-on="dense:field:lit, captured:field:dock"`
       → debounced `CustomEvent`s carrying `{ body, influence, value }`.
 
-## Phase 5 — Micro-reactions (§23)
+## Phase 5 — Micro-reactions (§23) ✅
 
 - [x] **5a — Reaction kit + budget.** `ΔE → I`; spark/flash/pulse primitives; wire
       `env.spark` to a real spark draw pass (reflect already calls it).
 - [x] **5b — Recoil (the missing side, §23.5).** reflect/collide push back on the
       body/agent split by mass; **chromatic shed** (tint by the acting force, §20.8).
-- [ ] **5c — Render modes (§20.6).** trails, links, knockout — the easy high-impact ones.
+- [x] **5c — Render modes (§20.6).** trails, links, knockout — the easy high-impact ones.
 
 ## Phase 6 — Depth: physical primitives, presets, mass
 
