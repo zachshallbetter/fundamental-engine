@@ -43,12 +43,12 @@ export interface PresetEntry {
  * is actually demoed, since these never touch the live site until opted into.
  */
 export const PRESETS: Record<string, readonly PresetEntry[]> = {
-  // §20.9 designed composite. `lens` (grazing-path bending) is omitted — it's an
-  // optional visual primitive not yet built; the well + frame-drag + horizon read.
+  // §20.9 designed composite — well + frame-drag + horizon + grazing-path bending.
   blackhole: [
     { body: 'attract', strength: 1.4, range: 340 }, // the well
     { body: 'vortex', strength: 1.0, range: 300, spin: 1 }, // frame-drag → accretion disk
     { body: 'absorb', absorb: 42, max: 60 }, // event horizon: capture → supernova
+    { body: 'lens', strength: 0.5, range: 380 }, // gravitational lensing of passing matter
   ],
   // §20.9 — the time-reverse: an emission horizon that throws matter out.
   whitehole: [
