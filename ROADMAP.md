@@ -123,8 +123,11 @@ Ordered for overnight (highest visible value first):
       deposit, central-diff gradient, diffusion + leapfrog-wave stepping), wired into
       `field.ts` lazily (no grid allocated unless a force asks; per-frame `step()` +
       viewport `resize()`). Live field unchanged (preview-verified). Golden-tested.
-- [ ] Remaining natural primitives: `diffuse`, `propagate` (§20.10) — now unblocked
-      by the `grid` service.
+- [x] **`diffuse`** (class [C]) — pheromone/stigmergy: deposit a mark into the diffusing
+      `grid` and follow the blurred gradient up-slope; trails self-organize. `forces/natural.ts` (§20.10).
+- [x] **`propagate`** (class [C]) — a travelling wave: an engaged body injects a shock into
+      a wave-mode `grid`; particles ride the wavefront. `forces/natural.ts` (§20.10).
+      **All §20.10 natural primitives now done.**
 - [x] **The preset layer** (§20.9) — `data-preset="blackhole"` expands to several
       co-located virtual bodies (one primitive each, own attrs, shared rect) via
       `expandPreset`; `config/presets.ts` holds the table (blackhole/whitehole/star).

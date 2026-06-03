@@ -6,9 +6,12 @@ import {
   magnetism,
   thermal,
   collide,
+  diffuse,
+  propagate,
   thermalSigma,
   naturalForces,
 } from './natural.ts';
+import type { ScalarGrid } from '../core/types.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -74,11 +77,76 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('natural primitives are gravity + charge + magnetism + thermal + collide (§20.10)', () => {
+test('natural primitives span §20.10 (gravity…propagate)', () => {
   assert.deepEqual(
     naturalForces.map((f) => f.token),
-    ['gravity', 'charge', 'magnetism', 'thermal', 'collide'],
+    ['gravity', 'charge', 'magnetism', 'thermal', 'collide', 'diffuse', 'propagate'],
   );
+});
+
+// a controllable grid stub: records deposits, returns a fixed gradient.
+const fakeGrid = (grad: { x: number; y: number }, rec: number[][]): ScalarGrid => ({
+  sample: () => 0,
+  deposit: (x, y, a) => {
+    rec.push([x, y, a]);
+  },
+  gradient: () => grad,
+});
+
+test('diffuse deposits a mark and follows the gradient up-slope (§20.10)', () => {
+  const rec: number[][] = [];
+  const p = part({ x: 10, y: 20 });
+  diffuse.apply(
+    body({ strength: 0.5, range: 300 }),
+    p,
+    env({ dist: 10, grid: () => fakeGrid({ x: 2, y: 0 }, rec) }),
+  );
+  assert.deepEqual(rec, [[10, 20, 0.5]]); // deposited at the particle
+  assert.ok(near(p.vx, 1)); // grad.x·strength = 2·0.5
+  assert.ok(near(p.vy, 0));
+});
+
+test('propagate injects at the source when engaged and rides the wavefront (§20.10)', () => {
+  const rec: number[][] = [];
+  const p = part({ x: 5, y: 5 });
+  propagate.apply(
+    body({ strength: 0.5, range: 300, on: true, cx: 100, cy: 50 }),
+    p,
+    env({ dist: 10, grid: () => fakeGrid({ x: 0, y: 3 }, rec) }),
+  );
+  assert.deepEqual(rec, [[100, 50, 0.5]]); // injected at the body centre
+  assert.ok(near(p.vy, 1.5)); // grad.y·strength
+});
+
+test('propagate rides the front without injecting when idle', () => {
+  const rec: number[][] = [];
+  const p = part({ x: 5, y: 5 });
+  propagate.apply(
+    body({ strength: 0.5, range: 300, on: false }),
+    p,
+    env({ dist: 10, grid: () => fakeGrid({ x: 1, y: 0 }, rec) }),
+  );
+  assert.equal(rec.length, 0); // no injection when not engaged
+  assert.ok(near(p.vx, 0.5)); // still rides the gradient
+});
+
+test('diffuse and propagate are inert beyond range', () => {
+  const rec: number[][] = [];
+  const dp = part({ vx: 0, vy: 0 });
+  diffuse.apply(
+    body({ strength: 1, range: 100 }),
+    dp,
+    env({ dist: 200, grid: () => fakeGrid({ x: 5, y: 5 }, rec) }),
+  );
+  assert.equal(dp.vx, 0);
+  const pp = part({ vx: 0, vy: 0 });
+  propagate.apply(
+    body({ strength: 1, range: 100 }),
+    pp,
+    env({ dist: 200, grid: () => fakeGrid({ x: 5, y: 5 }, rec) }),
+  );
+  assert.equal(pp.vx, 0);
+  assert.equal(rec.length, 0);
 });
 
 test('gravity pulls inward as a softened 1/d² law (§20.10)', () => {
