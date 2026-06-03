@@ -1,6 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lens, gate, buoyancy, shear, crystallize, align, extendedForces } from './extended.ts';
+import {
+  lens,
+  gate,
+  buoyancy,
+  shear,
+  crystallize,
+  align,
+  wind,
+  curlNoise,
+  extendedForces,
+} from './extended.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -69,7 +79,7 @@ const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < to
 test('extended forces expose the §20.3 class [A] set', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize', 'align'],
+    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize', 'align', 'wind'],
   );
 });
 
@@ -236,4 +246,27 @@ test('align is safe at zero speed and inert beyond range', () => {
   const beyond = part({ vx: 0, vy: 1 });
   align.apply(body({ strength: 1, range: 300 }), beyond, env({ dist: 350 }));
   assert.equal(beyond.vy, 1);
+});
+
+test('curlNoise matches its closed form and is divergence-free (§20.3)', () => {
+  const s = 0.1;
+  const c = curlNoise(10, 20, 0, s); // a = 1, b = 2
+  assert.ok(near(c.x, -s * Math.sin(1) * Math.sin(2)));
+  assert.ok(near(c.y, -s * Math.cos(1) * Math.cos(2)));
+  // numerical divergence ∂vx/∂x + ∂vy/∂y ≈ 0 (central differences)
+  const h = 1e-3;
+  const dvx = (curlNoise(10 + h, 20, 0, s).x - curlNoise(10 - h, 20, 0, s).x) / (2 * h);
+  const dvy = (curlNoise(10, 20 + h, 0, s).y - curlNoise(10, 20 - h, 0, s).y) / (2 * h);
+  assert.ok(Math.abs(dvx + dvy) < 1e-6);
+});
+
+test('wind applies the curl field scaled by strength; range 0 is global (§20.3)', () => {
+  const p = part({ x: 10, y: 20, vx: 0, vy: 0 });
+  wind.apply(body({ strength: 100, range: 0 }), p, env({ t: 0, dist: 9999 }));
+  const c = curlNoise(10, 20, 0, 0.01);
+  assert.ok(near(p.vx, c.x * 100));
+  assert.ok(near(p.vy, c.y * 100));
+  const beyond = part({ x: 10, y: 20, vx: 0, vy: 0 });
+  wind.apply(body({ strength: 100, range: 100 }), beyond, env({ t: 0, dist: 200 }));
+  assert.equal(beyond.vx, 0); // ranged gust, beyond reach → inert
 });
