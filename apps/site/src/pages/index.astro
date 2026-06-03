@@ -1,0 +1,199 @@
+---
+import Base from '../layouts/Base.astro';
+
+// the canonical force palette, in force order (mirrors forces-ui PALETTE).
+const palette = [
+  '#4da3ff', '#a78bfa', '#86e57f', '#c4b5fd', '#7dd3fc',
+  '#ff9d5c', '#8da2c0', '#2dd4bf', '#ff6e9c',
+];
+
+const chapters = [
+  { n: 'I', t: 'Substrate' },
+  { n: 'II', t: 'Forces' },
+  { n: 'III', t: 'Conditions' },
+  { n: 'IV', t: 'System' },
+];
+---
+
+<Base>
+  <main class="wrap">
+    <p class="kicker">forces-ui · the physics of the page</p>
+
+    <h1>Every element has <em>mass</em>.</h1>
+
+    <p class="standfirst">
+      This isn't a layout on top of an effect. Words, links, and cards are physical
+      bodies inside a single field — they carry weight, exert force, and the field
+      pushes back.
+    </p>
+
+    <p class="thesis">
+      A reciprocal medium: every part exerts force on the others, and the whole only
+      works when you can <em>feel</em> them.
+    </p>
+
+    <div class="meta">
+      <span><b>Substrate</b> one canvas, conserved</span>
+      <span><b>Forces</b> nine, composable · gated by conditions</span>
+      <span><b>Law</b> nothing created from nothing</span>
+    </div>
+
+    <nav class="rail" aria-label="Chapters">
+      {chapters.map((c) => (
+        <span class="ch"><i>{c.n}</i>{c.t}</span>
+      ))}
+    </nav>
+
+    <div class="palette" aria-hidden="true">
+      {palette.map((c) => <span style={`--c:${c}`}></span>)}
+    </div>
+
+    <footer>
+      <span>forces-ui · pre-alpha · building in the open</span>
+      <a href="mailto:zach@zachshallbetter.com">zach@zachshallbetter.com</a>
+    </footer>
+  </main>
+
+  <style>
+    .wrap {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 5vw, 5rem);
+    }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 0 0 clamp(1.6rem, 4vh, 2.4rem);
+    }
+    .kicker::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 14px var(--accent);
+      animation: pulse 2.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 0.5;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+    h1 {
+      margin: 0;
+      max-width: 16ch;
+      font-weight: 600;
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      font-size: clamp(2.6rem, 8vw, 6.5rem);
+      font-variation-settings: 'opsz' 96;
+    }
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+      text-shadow: 0 0 44px rgba(77, 163, 255, 0.5);
+    }
+    .standfirst {
+      margin: clamp(1.6rem, 4vh, 2.4rem) 0 0;
+      max-width: 54ch;
+      font-size: clamp(1rem, 1.5vw, 1.18rem);
+      line-height: 1.6;
+      color: var(--text-2);
+    }
+    .thesis {
+      margin: 1.4rem 0 0;
+      max-width: 54ch;
+      font-size: clamp(1rem, 1.4vw, 1.12rem);
+      line-height: 1.6;
+      color: var(--text-3);
+    }
+    .thesis em {
+      font-style: normal;
+      color: var(--text);
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.6rem;
+      margin: clamp(2rem, 5vh, 3rem) 0 0;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .meta b {
+      color: var(--text-2);
+      font-weight: 600;
+    }
+    .rail {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.4rem;
+      margin: clamp(2rem, 5vh, 2.8rem) 0 0;
+    }
+    .ch {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .ch i {
+      font-style: normal;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+    .palette {
+      display: flex;
+      gap: 0.7rem;
+      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
+    }
+    .palette span {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--c);
+      box-shadow: 0 0 12px var(--c);
+      opacity: 0.9;
+    }
+    footer {
+      margin: clamp(2.4rem, 6vh, 3.4rem) 0 0;
+      padding-top: 1.4rem;
+      border-top: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      display: flex;
+      gap: 1.4rem;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    footer a {
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.25s;
+    }
+    footer a:hover {
+      border-color: var(--text-3);
+    }
+  </style>
+</Base>

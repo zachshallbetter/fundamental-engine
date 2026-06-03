@@ -39,24 +39,29 @@ energy made visible (§23), and the Currents that carry it all (§24).
 
 ## Layout
 
+A pnpm monorepo (see `ROADMAP.md` → Stack):
+
 ```
 docs/
   forces-system.md         the full definition (the contract)
   forces-possibilities.md  roadmap, DOM⇄Canvas concepts, the extended vocabulary
   reference/               the original prototype — read-only source of authority
-src/
-  config/forces.config.ts  the canonical catalog (forces · formations · conditions)
-  core/types.ts            the contracts (Particle · Body · Env · Force · Agent)
-  forces/ formations/ render/ agents/   (engine modules — in progress)
+packages/
+  core/      forces-ui            the engine — canonical catalog + core contracts
+             src/config/forces.config.ts   forces · formations · conditions
+             src/core/types.ts             Particle · Body · Env · Force · Agent
+  elements/  @forces-ui/elements  <forces-field> — the web-component keystone
+apps/
+  site/      @forces-ui/site      forces-ui.com — the manual / landing (Astro)
 ```
 
 ## Getting started
 
 ```bash
 pnpm install
-pnpm typecheck      # tsc --noEmit
-pnpm test           # vitest
-pnpm build          # tsup → dist/
+pnpm -r typecheck    # tsc across packages
+pnpm -r build        # core + elements + the site
+pnpm dev             # run the site (apps/site) locally
 ```
 
 ## Naming
