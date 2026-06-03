@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lens, gate, extendedForces } from './extended.ts';
+import { lens, gate, buoyancy, extendedForces } from './extended.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -66,10 +66,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('extended forces expose lens + gate (§20.3)', () => {
+test('extended forces expose lens + gate + buoyancy (§20.3)', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens', 'gate'],
+    ['lens', 'gate', 'buoyancy'],
   );
 });
 
@@ -135,4 +135,31 @@ test('gate heading orients the membrane', () => {
   const p = part({ x: 0, y: 0, vx: 0, vy: -1 }); // against n = +y
   gate.apply(gateBody({ ux: 0, uy: 1 }), p, env());
   assert.ok(near(p.vy, 1)); // reflected to +y
+});
+
+test('buoyancy: a unit-size, cool particle is neutrally buoyant (§20.3)', () => {
+  const p = part({ size: 1, heat: 0 }); // ρ_p = 1 = ρ_med
+  buoyancy.apply(body({ strength: 2, range: 0 }), p, env());
+  assert.equal(p.vy, 0);
+});
+
+test('buoyancy: hot/light matter rises (−y)', () => {
+  const p = part({ size: 1, heat: 1 }); // ρ_p = 0.5 < ρ_med → lift
+  buoyancy.apply(body({ strength: 2, range: 0 }), p, env());
+  assert.ok(near(p.vy, -1)); // −(1 − 0.5)·2
+});
+
+test('buoyancy: dense matter settles (+y)', () => {
+  const p = part({ size: 0.5, heat: 0 }); // ρ_p = 2 > ρ_med → sink
+  buoyancy.apply(body({ strength: 2, range: 0 }), p, env());
+  assert.ok(near(p.vy, 2)); // −(1 − 2)·2
+});
+
+test('buoyancy: range 0 is global, range>0 cuts off', () => {
+  const global = part({ size: 1, heat: 1 });
+  buoyancy.apply(body({ strength: 2, range: 0 }), global, env({ dist: 9999 }));
+  assert.ok(near(global.vy, -1)); // still acts far away
+  const ranged = part({ size: 1, heat: 1 });
+  buoyancy.apply(body({ strength: 2, range: 100 }), ranged, env({ dist: 200 }));
+  assert.equal(ranged.vy, 0); // beyond range → inert
 });

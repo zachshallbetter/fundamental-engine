@@ -133,7 +133,9 @@ Ordered for overnight (highest visible value first):
       `blackhole` preset. Golden-tested (§20.3).
 - [x] **`gate`** — a one-way membrane: passes matter along its heading `n`, reflects
       wrong-way crossers (`v −= 2(v·n)·n`); box-sized like `reflect`. `forces/extended.ts` (§20.3).
-- [ ] `buoyancy`, `shear`, `crystallize`, `resonate`, `spotlight`, `align`, `wind`
+- [x] **`buoyancy`** — constant lift/sink by density difference (`ρ_p = base/(size·(1+heat))`);
+      hot/large matter rises, dense settles; `range 0` = global. `forces/extended.ts` (§20.3).
+- [ ] `shear`, `crystallize`, `resonate`, `spotlight`, `align`, `wind`
       — the rest of the §20.3 class [A] forces, one per cycle.
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
