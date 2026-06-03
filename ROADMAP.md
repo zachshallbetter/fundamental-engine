@@ -78,7 +78,7 @@ Carried over from the Phase 1 conformance audit:
 - [x] **Accent journey** (§9): scroll travels the palette (`sampleStops`), a
       hovered `[data-color]` element overrides; the field recolours with it.
 
-## Phase 4 — Agents & reciprocity (§22) + word effects
+## Phase 4 — Agents & reciprocity (§22) + word effects ✅
 
 Ordered for overnight (highest visible value first):
 
@@ -93,7 +93,7 @@ Ordered for overnight (highest visible value first):
       travelling pulses between an engaged `[data-index][data-threads]` set.
 - [x] **4c — Element agent (§22.4).** `[data-target]` elements moved by forces via a
       transform offset (element mass `m_el`); anchor spring + field pressure.
-- [ ] **4d — Event agent (§22.5).** `data-on="dense:field:lit, captured:field:dock"`
+- [x] **4d — Event agent (§22.5).** `data-on="dense:field:lit, captured:field:dock"`
       → debounced `CustomEvent`s carrying `{ body, influence, value }`.
 
 ## Phase 5 — Micro-reactions (§23)
