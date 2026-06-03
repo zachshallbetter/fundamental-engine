@@ -91,7 +91,7 @@ Ordered for overnight (highest visible value first):
       ripple/spark on engage.
 - [x] **4b — Threads (§10).** `__field.threads(list)` — glowing connector lines with
       travelling pulses between an engaged `[data-index][data-threads]` set.
-- [ ] **4c — Element agent (§22.4).** `[data-target]` elements moved by forces via a
+- [x] **4c — Element agent (§22.4).** `[data-target]` elements moved by forces via a
       transform offset (element mass `m_el`); anchor spring + field pressure.
 - [ ] **4d — Event agent (§22.5).** `data-on="dense:field:lit, captured:field:dock"`
       → debounced `CustomEvent`s carrying `{ body, influence, value }`.
