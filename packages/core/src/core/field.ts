@@ -28,6 +28,7 @@ import { healWaves, tearBoundNear, tearBoundByForces } from './reservoir.ts';
 import { FORMATION_BY, PALETTE, ACCENT_JOURNEY, type FormationId } from '../config/forces.config.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
+import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
 import { registerCoreForces } from '../forces/index.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -63,6 +64,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let curAccent: RGB = hexToRgb(cfg.accent);
   let hoverAccent: string | null = null;
   let threadLinks: { a: Element; b: Element; c: RGB; seed: number }[] = [];
+  let movers: { el: HTMLElement; o: ElementOffset; mEl: number }[] = [];
+  const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = performance.now();
 
   const env: Env = {
@@ -139,6 +142,43 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     bodies = scanBodies(document);
     measureBodies(bodies, W, H);
     bindEngagement();
+    movers = [...document.querySelectorAll('[data-move]')].map((node) => {
+      const el = node as HTMLElement;
+      const r = el.getBoundingClientRect();
+      const seeded = Number.parseFloat(el.dataset.mass ?? '');
+      const mEl = Number.isFinite(seeded) ? seeded : elementMass(r.width * r.height);
+      return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl };
+    });
+  }
+
+  function updateMovers(): void {
+    if (movers.length === 0) return;
+    for (const mv of movers) {
+      const r = mv.el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      probe.x = cx;
+      probe.y = cy;
+      probe.vx = 0;
+      probe.vy = 0;
+      probe.heat = 0;
+      probe.cap = null;
+      // probe the net field force at the element's centre (reuse the force modules)
+      for (const b of bodies) {
+        if (!b.vis || b.tokens.length === 0 || b.el === mv.el) continue;
+        const dx = b.cx - cx;
+        const dy = b.cy - cy;
+        const d = Math.hypot(dx, dy);
+        env.dx = dx;
+        env.dy = dy;
+        env.dist = d < 1 ? 1 : d;
+        for (const tok of b.tokens) reg.forces[tok]?.apply(b, probe, env);
+      }
+      probe.cap = null; // never let a mover get captured
+      const a = anchorForce(mv.o);
+      integrateOffset(mv.o, probe.vx + a.x, probe.vy + a.y, mv.mEl, 0.9);
+      mv.el.style.transform = `translate(${mv.o.x.toFixed(2)}px, ${mv.o.y.toFixed(2)}px)`;
+    }
   }
 
   // engagement: hover/focus a [data-hot] element → it activates (b.on, lighting
@@ -392,6 +432,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (env.dt) {
       healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
       tearBoundByForces(bound, waves, bodies, W, H, env.t, (p) => void store.add(newParticle(p)));
+      updateMovers();
     }
     writeFeedback();
     render();
