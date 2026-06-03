@@ -123,10 +123,10 @@ export const crystallize: Force = {
 };
 
 /**
- * §20.3 — `align` (the heading variant): steer velocity toward a fixed heading `ĥ`
- * while preserving speed — `v += (ĥ·|v| − v)·k_align`. The flocking-align primitive,
- * sourced from `data-angle` instead of neighbours (the `[B]` neighbour-mean variant
- * needs the `neighbors` service, deferred). `strength` is `k_align`.
+ * §20.3 — `align`: steer velocity toward a target heading `ĥ` while preserving speed,
+ * `v += (ĥ·|v| − v)·k_align`. Unifies both spec variants: `[B]` uses the **mean of
+ * neighbours' headings** when `p` has any (boids alignment), and falls back to `[A]`,
+ * the body's own `data-angle` heading, when it's alone. `strength` is `k_align`.
  */
 export const align: Force = {
   token: 'align',
@@ -135,10 +135,26 @@ export const align: Force = {
     if (e.dist >= b.range) return;
     const speed = Math.hypot(p.vx, p.vy); // steer toward ĥ·|v| → turns without speeding up
     const k = b.strength;
-    p.vx += (b.ux * speed - p.vx) * k;
-    p.vy += (b.uy * speed - p.vy) * k;
+    let hx = b.ux; // [A] default: the body heading
+    let hy = b.uy;
+    let sx = 0;
+    let sy = 0;
+    for (const n of e.neighbors(p, b.range)) {
+      const ns = Math.hypot(n.vx, n.vy); // sum the neighbours' unit velocities (v̂)
+      if (ns > 1e-6) {
+        sx += n.vx / ns;
+        sy += n.vy / ns;
+      }
+    }
+    const sm = Math.hypot(sx, sy);
+    if (sm > 1e-6) {
+      hx = sx / sm; // [B]: the mean neighbour heading
+      hy = sy / sm;
+    }
+    p.vx += (hx * speed - p.vx) * k;
+    p.vy += (hy * speed - p.vy) * k;
   },
-  meta: { desc: 'steers velocity toward a heading, preserving speed (flock-align)' },
+  meta: { desc: 'steers toward the neighbour-mean heading (or the body heading when alone)' },
 };
 
 /**
