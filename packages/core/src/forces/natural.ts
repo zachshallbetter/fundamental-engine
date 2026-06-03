@@ -34,10 +34,16 @@ export function inverseSquare(b: Body, p: Particle, e: Env, s: number): void {
   const f = s / (e.dist * e.dist + rs * rs); // s/(d²+ε²)
   p.vx += (e.dx / e.dist) * f;
   p.vy += (e.dy / e.dist) * f;
-  const sp = Math.hypot(p.vx, p.vy); // clamp |v| ≤ c (§20.10)
-  if (sp > e.c) {
-    p.vx = (p.vx / sp) * e.c;
-    p.vy = (p.vy / sp) * e.c;
+  clampToC(p, e.c);
+}
+
+/** Clamp a particle's speed to the unit system's `c` — the hard velocity cap that
+ *  IS the in-sim speed of light (§20.10). Shared by the natural primitives. */
+function clampToC(p: Particle, c: number): void {
+  const sp = Math.hypot(p.vx, p.vy);
+  if (sp > c) {
+    p.vx = (p.vx / sp) * c;
+    p.vy = (p.vy / sp) * c;
   }
 }
 
@@ -65,8 +71,33 @@ export const charge: Force = {
   meta: { desc: 'signed inverse-square — like repels, opposite attracts' },
 };
 
+/**
+ * §20.10 — the Lorentz force on a moving charge. In 2D the magnetic field `B` is a
+ * scalar out of the plane, so the force is perpendicular to velocity: it curves a
+ * particle's path into a circle (cyclotron radius `r_L = m|v|/(qB)`) **without doing
+ * work** — speed is preserved, only the heading turns. The body's `spin` sets the
+ * out-of-plane sense (which way it curls); `strength` is `|B|`. Acts only on charged,
+ * *moving* matter; neutral particles pass straight through.
+ */
+export const magnetism: Force = {
+  token: 'magnetism',
+  label: 'Magnetism',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return; // inside the field region
+    const q = p.charge ?? 0;
+    if (q === 0) return; // the Lorentz force needs charge
+    const f = q * b.spin * b.strength; // qB; spin sets the out-of-plane sense
+    const fx = -p.vy * f; // F = qB·(−v_y, v_x) — ⟂ to v, so F·v = 0 (no work)
+    const fy = p.vx * f;
+    p.vx += fx;
+    p.vy += fy;
+    clampToC(p, e.c);
+  },
+  meta: { desc: 'Lorentz force — curves a moving charge perpendicular to its velocity' },
+};
+
 /** The natural primitives, in spec order (§20.10). */
-export const naturalForces: readonly Force[] = [gravity, charge];
+export const naturalForces: readonly Force[] = [gravity, charge, magnetism];
 
 /** Register the natural primitives on a registry (§4) — opt-in, alongside the nine. */
 export function registerNaturalForces(reg: Registry): void {
