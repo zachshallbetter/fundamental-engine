@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lens, gate, buoyancy, extendedForces } from './extended.ts';
+import { lens, gate, buoyancy, shear, extendedForces } from './extended.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -66,10 +66,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('extended forces expose lens + gate + buoyancy (§20.3)', () => {
+test('extended forces expose lens + gate + buoyancy + shear (§20.3)', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens', 'gate', 'buoyancy'],
+    ['lens', 'gate', 'buoyancy', 'shear'],
   );
 });
 
@@ -162,4 +162,24 @@ test('buoyancy: range 0 is global, range>0 cuts off', () => {
   const ranged = part({ size: 1, heat: 1 });
   buoyancy.apply(body({ strength: 2, range: 100 }), ranged, env({ dist: 200 }));
   assert.equal(ranged.vy, 0); // beyond range → inert
+});
+
+// shear: flow axis +x (ux=1, uy=0); perpendicular offset is the particle's y.
+test('shear drags matter forward on one side, back on the other (§20.3)', () => {
+  const above = part({ x: 0, y: 100, vx: 0, vy: 0 });
+  shear.apply(body({ strength: 1, range: 200 }), above, env({ dist: 100 }));
+  assert.ok(near(above.vx, 0.25)); // 1·(100/200)·(1−100/200)
+  assert.ok(near(above.vy, 0)); // motion stays along the flow axis
+  const below = part({ x: 0, y: -100, vx: 0, vy: 0 });
+  shear.apply(body({ strength: 1, range: 200 }), below, env({ dist: 100 }));
+  assert.ok(near(below.vx, -0.25)); // opposite side → dragged the other way
+});
+
+test('shear is null on the flow axis and inert beyond range', () => {
+  const onAxis = part({ x: 100, y: 0, vx: 0, vy: 0 }); // offset_⊥ = 0
+  shear.apply(body({ strength: 1, range: 200 }), onAxis, env({ dist: 100 }));
+  assert.equal(onAxis.vx, 0);
+  const beyond = part({ x: 0, y: 100, vx: 0, vy: 0 });
+  shear.apply(body({ strength: 1, range: 200 }), beyond, env({ dist: 250 }));
+  assert.equal(beyond.vx, 0);
 });

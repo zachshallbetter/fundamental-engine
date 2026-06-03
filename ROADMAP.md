@@ -135,7 +135,9 @@ Ordered for overnight (highest visible value first):
       wrong-way crossers (`v −= 2(v·n)·n`); box-sized like `reflect`. `forces/extended.ts` (§20.3).
 - [x] **`buoyancy`** — constant lift/sink by density difference (`ρ_p = base/(size·(1+heat))`);
       hot/large matter rises, dense settles; `range 0` = global. `forces/extended.ts` (§20.3).
-- [ ] `shear`, `crystallize`, `resonate`, `spotlight`, `align`, `wind`
+- [x] **`shear`** — a laminar velocity gradient (Couette): flow speed along the axis
+      grows with perpendicular offset (`v_∥ += S·(offset_⊥/d_max)·(1−d/d_max)`). `forces/extended.ts` (§20.3).
+- [ ] `crystallize`, `resonate`, `spotlight`, `align`, `wind`
       — the rest of the §20.3 class [A] forces, one per cycle.
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
