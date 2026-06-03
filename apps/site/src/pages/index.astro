@@ -69,7 +69,10 @@ const cells = [
       ))}
     </div>
 
-    <a class="manual-link" href="/reference">The Field Manual — every force, defined →</a>
+    <nav class="links">
+      <a class="manual-link" href="/reference">The Field Manual — every force, defined →</a>
+      <a class="manual-link" href="/lab">The Lab — place forces, share the field →</a>
+    </nav>
 
     <footer>
       <span>forces-ui · pre-alpha · building in the open</span>
@@ -225,9 +228,14 @@ const cells = [
       text-transform: lowercase;
       color: var(--text-3);
     }
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
+    }
     .manual-link {
       display: inline-block;
-      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
       font-family: var(--mono, ui-monospace, monospace);
       font-size: 0.82rem;
       letter-spacing: 0.01em;

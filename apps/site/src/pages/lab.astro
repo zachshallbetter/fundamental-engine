@@ -1,0 +1,317 @@
+---
+import Base from '../layouts/Base.astro';
+
+// The Lab (§14) — place real force bodies on the page and watch the ONE background
+// field react to them (the field-reacts law, not foreground particles). Shareable
+// via the URL hash.
+const forces = [
+  { t: 'attract', c: '#4da3ff' },
+  { t: 'repel', c: '#ff9d5c' },
+  { t: 'vortex', c: '#7dd3fc' },
+  { t: 'stream', c: '#2dd4bf' },
+  { t: 'gravity', c: '#a78bfa' },
+  { t: 'drag', c: '#8da2c0' },
+  { t: 'spring', c: '#86e57f' },
+] as const;
+---
+
+<Base title="forces-ui — the Lab">
+  <main class="lab">
+    <header class="head">
+      <a class="back" href="/">← forces-ui</a>
+      <h1>The Lab</h1>
+      <p class="lede">
+        Place forces on the page and watch the single field react. Pick a force, click the
+        stage to drop a body, drag to move it, double-click to remove. Share your field with
+        the link button — the layout lives in the URL.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <div class="forces" role="group">
+        {
+          forces.map((f, i) => (
+            <button type="button" data-force={f.t} style={`--c:${f.c}`} class={i === 0 ? 'on' : ''}>
+              {f.t}
+            </button>
+          ))
+        }
+      </div>
+      <div class="actions">
+        <button type="button" id="share">Copy link</button>
+        <button type="button" id="clear">Clear</button>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <p class="hint">Pick a force, then click here to place it.</p>
+    </div>
+  </main>
+</Base>
+
+<script is:inline>
+  (() => {
+    const stage = document.getElementById('stage');
+    const field = document.querySelector('forces-field');
+    const colors = {
+      attract: '#4da3ff',
+      repel: '#ff9d5c',
+      vortex: '#7dd3fc',
+      stream: '#2dd4bf',
+      gravity: '#a78bfa',
+      drag: '#8da2c0',
+      spring: '#86e57f',
+    };
+    let current = 'attract';
+    let nodes = [];
+    const rescan = () => field && field.rescan && field.rescan();
+    const hideHint = () => {
+      const h = stage.querySelector('.hint');
+      if (h) h.style.display = 'none';
+    };
+
+    document.querySelectorAll('.forces button').forEach((b) =>
+      b.addEventListener('click', () => {
+        current = b.dataset.force;
+        document.querySelectorAll('.forces button').forEach((x) => x.classList.toggle('on', x === b));
+      }),
+    );
+
+    function makeEl(node) {
+      const el = document.createElement('div');
+      el.className = 'node';
+      el.dataset.body = node.force;
+      el.dataset.strength = '1.5';
+      el.dataset.range = '280';
+      el.style.setProperty('--c', colors[node.force] || '#4da3ff');
+      el.style.left = node.x + '%';
+      el.style.top = node.y + '%';
+      el.textContent = node.force;
+      el.title = 'drag to move · double-click to remove';
+      el.addEventListener('pointerdown', (e) => startDrag(e, node, el));
+      el.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        el.remove();
+        nodes = nodes.filter((n) => n !== node);
+        rescan();
+        save();
+      });
+      stage.appendChild(el);
+      node.el = el;
+    }
+
+    function add(force, x, y) {
+      const node = { force, x, y };
+      nodes.push(node);
+      makeEl(node);
+      rescan();
+      save();
+      hideHint();
+    }
+
+    function startDrag(e, node, el) {
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      const onMove = (ev) => {
+        const r = stage.getBoundingClientRect();
+        node.x = Math.max(0, Math.min(100, ((ev.clientX - r.left) / r.width) * 100));
+        node.y = Math.max(0, Math.min(100, ((ev.clientY - r.top) / r.height) * 100));
+        el.style.left = node.x + '%';
+        el.style.top = node.y + '%';
+        rescan();
+      };
+      const onUp = () => {
+        el.removeEventListener('pointermove', onMove);
+        el.removeEventListener('pointerup', onUp);
+        save();
+      };
+      el.addEventListener('pointermove', onMove);
+      el.addEventListener('pointerup', onUp);
+    }
+
+    const clamp = (v) => Math.max(2, Math.min(98, v));
+    stage.addEventListener('click', (e) => {
+      if (e.target !== stage) return; // ignore clicks that land on a node
+      const r = stage.getBoundingClientRect();
+      add(current, clamp(((e.clientX - r.left) / r.width) * 100), clamp(((e.clientY - r.top) / r.height) * 100));
+    });
+
+    function save() {
+      const s = nodes.map((n) => n.force + ',' + n.x.toFixed(1) + ',' + n.y.toFixed(1)).join(';');
+      history.replaceState(null, '', s ? '#' + encodeURIComponent(s) : location.pathname);
+    }
+
+    function restore() {
+      const h = decodeURIComponent(location.hash.slice(1));
+      if (!h) return;
+      h.split(';').forEach((part) => {
+        const [force, x, y] = part.split(',');
+        if (force && colors[force]) {
+          const node = { force, x: +x, y: +y };
+          nodes.push(node);
+          makeEl(node);
+        }
+      });
+      if (nodes.length) {
+        hideHint();
+        rescan();
+        setTimeout(rescan, 120); // the field may still be mounting on first paint
+      }
+    }
+
+    document.getElementById('clear').addEventListener('click', () => {
+      nodes.forEach((n) => n.el.remove());
+      nodes = [];
+      rescan();
+      save();
+    });
+    document.getElementById('share').addEventListener('click', async () => {
+      save();
+      const btn = document.getElementById('share');
+      try {
+        await navigator.clipboard.writeText(location.href);
+        const t = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => (btn.textContent = t), 1200);
+      } catch {
+        /* clipboard blocked — the URL is still updated to share manually */
+      }
+    });
+
+    restore();
+  })();
+</script>
+
+<style>
+  .lab {
+    position: relative;
+    z-index: 2;
+    align-self: flex-start;
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 7vh, 5rem) clamp(1.2rem, 5vw, 3.5rem) 5rem;
+  }
+  :global(body:has(.lab)) {
+    align-items: flex-start;
+  }
+  .back {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-decoration: none;
+  }
+  .back:hover {
+    color: var(--accent);
+  }
+  h1 {
+    font-size: clamp(2.4rem, 7vw, 4rem);
+    font-weight: 700;
+    margin: 0.6rem 0 0.8rem;
+    letter-spacing: -0.03em;
+  }
+  .lede {
+    max-width: 52ch;
+    color: var(--text-2);
+    line-height: 1.55;
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    margin: clamp(1.5rem, 4vh, 2.5rem) 0 1rem;
+  }
+  .forces,
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .forces button {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--text-3);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.34rem 0.7rem;
+    cursor: pointer;
+  }
+  .forces button::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--c);
+    margin-right: 0.45rem;
+    vertical-align: middle;
+    box-shadow: 0 0 8px var(--c);
+  }
+  .forces button:hover {
+    color: var(--text);
+  }
+  .forces button.on {
+    color: var(--text);
+    border-color: var(--c);
+  }
+  .actions button {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--text-3);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.34rem 0.8rem;
+    cursor: pointer;
+  }
+  .actions button:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .stage {
+    position: relative;
+    height: clamp(360px, 60vh, 620px);
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.012);
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  .hint {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    color: var(--text-3);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    pointer-events: none;
+  }
+  /* nodes are created at runtime, so they don't get Astro's scoped attribute —
+     these rules must be global to reach them. */
+  :global(.stage .node) {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text);
+    background: color-mix(in oklab, var(--c) 22%, #0a0c12);
+    border: 1px solid var(--c);
+    border-radius: 999px;
+    padding: 0.28rem 0.7rem;
+    cursor: grab;
+    user-select: none;
+    white-space: nowrap;
+    box-shadow: 0 0 16px -2px var(--c);
+    touch-action: none;
+  }
+  :global(.stage .node:active) {
+    cursor: grabbing;
+  }
+</style>

@@ -196,7 +196,12 @@ Ordered for overnight (highest visible value first):
 - [x] **Field Cell** (`<forces-cell force="vortex">`) — an in-frame, container-sized
       single-force/formation demo surface (§25.1); the embeddable unit for the
       manual's per-concept demos and the poster/render-mode variant.
-- [ ] The Lab (paint forces; shareable fields) (§14).
+- [x] **The Lab** (§14) — `/lab`: pick a force, click to drop a real `[data-body]` node,
+      drag to move, double-click to remove; the single background field reacts (the
+      field-reacts law, not foreground particles). The layout serializes to the URL hash
+      (shareable, restorable). `<forces-field>` now proxies the FieldHandle surface
+      (`scan`/`rescan`/`setAccent`/`setFormation`/`burst`) so any page can drive it. Linked
+      from the home page; build + preview verified.
 - [ ] A published docs site (the executable design system).
 
 ## Cross-cutting
