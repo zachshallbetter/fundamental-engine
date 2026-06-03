@@ -9,6 +9,8 @@ import {
   align,
   wind,
   cohesion,
+  resonate,
+  spotlight,
   curlNoise,
   extendedForces,
 } from './extended.ts';
@@ -80,8 +82,40 @@ const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < to
 test('extended forces expose the §20.3 class [A] set', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize', 'align', 'wind', 'cohesion'],
+    [
+      'lens',
+      'gate',
+      'buoyancy',
+      'shear',
+      'crystallize',
+      'align',
+      'wind',
+      'cohesion',
+      'resonate',
+      'spotlight',
+    ],
   );
+});
+
+test('resonate is a pure modifier: S(t) = 1 + sin(ω·t), spin tunes the rate (§20.3)', () => {
+  const p = part();
+  const b = body({ spin: 1 });
+  assert.equal(resonate.apply(b, p, env()), undefined); // apply is a no-op
+  assert.ok(near(resonate.modify!(b, p, env({ t: 0 })).strength!, 1)); // 1 + sin 0
+  assert.ok(near(resonate.modify!(b, p, env({ t: Math.PI / 6 })).strength!, 2)); // ω=3 → 3·π/6 = π/2
+  // spin doubles the rate: t = π/12 reaches the peak
+  assert.ok(near(resonate.modify!(body({ spin: 2 }), p, env({ t: Math.PI / 12 })).strength!, 2));
+});
+
+test('spotlight gates siblings to the heading cone (§20.3)', () => {
+  const p = part();
+  const b = body({ ux: 1, uy: 0 }); // heading +x
+  // straight ahead (body → particle along +x): inside the cone
+  assert.equal(spotlight.modify!(b, p, env({ dx: -100, dy: 0, dist: 100 })).gate, false);
+  // behind: outside
+  assert.equal(spotlight.modify!(b, p, env({ dx: 100, dy: 0, dist: 100 })).gate, true);
+  // 90° to the side: outside the ~60° cone
+  assert.equal(spotlight.modify!(b, p, env({ dx: 0, dy: -100, dist: 100 })).gate, true);
 });
 
 test('lens rotates velocity by θ_max·(1−d/d_max)·sign (§20.3)', () => {

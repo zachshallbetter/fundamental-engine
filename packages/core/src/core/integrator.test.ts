@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FieldStore } from './field-store.ts';
 import { step, FRICTION, HEAT_DECAY } from './integrator.ts';
-import type { Body, Env, Particle } from './types.ts';
+import type { Body, Env, Particle, Force } from './types.ts';
+import { resonate, spotlight } from '../forces/extended.ts';
 
 const makeEnv = (over: Partial<Env> = {}): Env => ({
   dx: 0,
@@ -110,4 +111,40 @@ test('a feedback body accumulates local density into b.count (§8)', () => {
   } as unknown as Body;
   step({ store, bodies: [body], env: makeEnv(), forces: {}, conditions: {} });
   assert.ok(body.count > 0); // particle within range·0.5 contributed
+});
+
+test('modifier pass: resonate scales the sibling strength, then restores it (§20.3)', () => {
+  let seen = -1;
+  const probe: Force = { token: 'probe', label: 'P', apply: (b) => void (seen = b.strength) };
+  const store = new FieldStore();
+  store.add(makeP({ x: 100, y: 100 }));
+  const body = {
+    tokens: ['resonate', 'probe'], vis: true, when: '', on: false, feedback: false,
+    strength: 2, spin: 1, range: 300, cx: 200, cy: 100, count: 0,
+  } as unknown as Body;
+  // env.t = π/6 → ω·t = π/2 → multiplier 1 + sin = 2, so probe sees 2·2 = 4
+  step({ store, bodies: [body], env: makeEnv({ t: Math.PI / 6 }), forces: { resonate, probe }, conditions: {} });
+  assert.ok(Math.abs(seen - 4) < 1e-6);
+  assert.equal(body.strength, 2); // restored after the frame
+});
+
+test('modifier pass: spotlight gates siblings outside the heading cone (§20.3)', () => {
+  let applied = false;
+  const probe: Force = { token: 'probe', label: 'P', apply: () => void (applied = true) };
+  const mkBody = () =>
+    ({
+      tokens: ['spotlight', 'probe'], vis: true, when: '', on: false, feedback: false,
+      strength: 1, spin: 1, range: 300, ux: 1, uy: 0, cx: 200, cy: 100, count: 0,
+    }) as unknown as Body;
+  // particle ahead (+x of the body, along the heading) → inside the cone → applied
+  const ahead = new FieldStore();
+  ahead.add(makeP({ x: 300, y: 100 }));
+  step({ store: ahead, bodies: [mkBody()], env: makeEnv(), forces: { spotlight, probe }, conditions: {} });
+  assert.equal(applied, true);
+  // particle behind the heading → gated → not applied
+  applied = false;
+  const behind = new FieldStore();
+  behind.add(makeP({ x: 100, y: 100 }));
+  step({ store: behind, bodies: [mkBody()], env: makeEnv(), forces: { spotlight, probe }, conditions: {} });
+  assert.equal(applied, false);
 });

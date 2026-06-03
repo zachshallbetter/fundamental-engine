@@ -173,6 +173,13 @@ export interface Force {
   label: string;
   targets?: AgentKind[];
   apply(b: Body, p: Particle, env: Env): void;
+  /**
+   * Optional *modifier* hook (§20.3 `resonate`/`spotlight`). Run before the body's
+   * other tokens apply, for this particle: a returned `strength` multiplies the
+   * sibling forces' strength for this frame; `gate: true` skips them entirely. A
+   * pure modifier (e.g. `spotlight`) can leave `apply` a no-op.
+   */
+  modify?(b: Body, p: Particle, env: Env): { strength?: number; gate?: boolean };
   meta?: { desc?: string };
 }
 
