@@ -93,6 +93,8 @@ export class ForcesCell extends HTMLElement {
   }
 
   connectedCallback(): void {
+    // a decorative demo surface — hide it from assistive tech (§18 a11y).
+    if (!this.hasAttribute('aria-hidden')) this.setAttribute('aria-hidden', 'true');
     this.ctx = this.canvas.getContext('2d');
     if (!this.ctx) return;
 

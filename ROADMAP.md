@@ -200,7 +200,10 @@ Ordered for overnight (highest visible value first):
 ## Cross-cutting
 
 - [ ] Performance: `ResizeObserver`/`IntersectionObserver` sync; `OffscreenCanvas` + worker.
-- [ ] Accessibility: reduced motion, focus engagement, `z-index` background layer (§18).
+- [x] **Accessibility** (§18) — reduced motion (integrator `dt=0` + static cell frame +
+      CSS animation off), focus engagement (`[data-hot]` on focus), `z-index:0` background
+      layer, and the decorative canvases (`<forces-field>`, `<forces-cell>`, `mountField`)
+      now marked `aria-hidden` so assistive tech skips them.
 - [ ] Naming/color reconciliation pass against the canonical palette (§20.2).
 - [x] Emit the design tokens (`--f-*`, `--coherence`, `--ease`) from `forces.config.ts` (§25.2).
 - [x] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,

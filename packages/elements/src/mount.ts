@@ -19,6 +19,7 @@ export interface MountOptions extends FieldOptions {
 export function mountField(opts: MountOptions = {}): FieldHandle {
   const { target = document.body, ...fieldOpts } = opts;
   const canvas = document.createElement('canvas');
+  canvas.setAttribute('aria-hidden', 'true'); // decorative field (§18 a11y)
   canvas.style.cssText =
     'position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block';
   target.appendChild(canvas);
