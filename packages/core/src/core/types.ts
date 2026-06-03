@@ -200,6 +200,8 @@ export interface FieldOptions {
   density?: number;
   /** draw the background Currents (§24) — not yet implemented (Phase 3). */
   waves?: boolean;
+  /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links' (constellation). */
+  render?: 'dots' | 'trails' | 'links';
 }
 
 /** The handle returned by `createField` — the public field API (§13). */

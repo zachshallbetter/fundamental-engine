@@ -15,7 +15,7 @@ import { createField, PALETTE, type FieldHandle } from 'forces-ui';
  * place when there's UI to template, e.g. the Lab controls (§14).
  */
 export class ForcesField extends HTMLElement {
-  static readonly observedAttributes = ['accent', 'density', 'waves'];
+  static readonly observedAttributes = ['accent', 'density', 'waves', 'render'];
 
   private readonly canvas: HTMLCanvasElement;
   private field?: FieldHandle;
@@ -47,11 +47,18 @@ export class ForcesField extends HTMLElement {
     return this.getAttribute('waves') !== 'false';
   }
 
+  /** render mode (§20.6). */
+  get renderMode(): 'dots' | 'trails' | 'links' {
+    const v = this.getAttribute('render');
+    return v === 'trails' || v === 'links' ? v : 'dots';
+  }
+
   connectedCallback(): void {
     this.field = createField(this.canvas, {
       accent: this.accent,
       density: this.density,
       waves: this.waves,
+      render: this.renderMode,
     });
   }
 
