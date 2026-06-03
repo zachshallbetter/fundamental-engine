@@ -47,12 +47,12 @@ test('parses composed tokens, numbers, angle, and feedback', () => {
   assert.equal(b.M, 0.8);
 });
 
-test('expandPreset: blackhole → well + frame-drag + horizon, each own-tuned (§20.9)', () => {
+test('expandPreset: blackhole → well + frame-drag + horizon + lens, each own-tuned (§20.9)', () => {
   const vb = expandPreset('blackhole');
-  assert.equal(vb.length, 3);
+  assert.equal(vb.length, 4);
   assert.deepEqual(
     vb.map((b) => b.tokens),
-    [['attract'], ['vortex'], ['absorb']],
+    [['attract'], ['vortex'], ['absorb'], ['lens']],
   );
   // the well and the horizon carry independent parameters (the one blocker §20.9 fixes)
   assert.equal(vb[0]!.strength, 1.4);
@@ -60,6 +60,7 @@ test('expandPreset: blackhole → well + frame-drag + horizon, each own-tuned (�
   assert.equal(vb[1]!.spin, 1);
   assert.equal(vb[2]!.absorbR, 42); // absorb's own capture radius
   assert.equal(vb[2]!.capacity, 60);
+  assert.equal(vb[3]!.range, 380); // lens reaches past the well
 });
 
 test('expandPreset: star composes the natural primitives gravity ⇄ thermal (§20.10)', () => {
