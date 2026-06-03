@@ -32,6 +32,7 @@ import { integrateOffset, anchorForce, elementMass, type ElementOffset } from '.
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
 import { sparkCount } from './reactions.ts';
+import { linkAlpha } from './render-modes.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
@@ -49,6 +50,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const cfg = {
     accent: opts.accent ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
+    render: opts.render ?? 'dots',
   };
 
   let bodies: Body[] = [];
@@ -421,8 +423,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function render(): void {
-    // opaque dark substrate (§2.5, darkness ≈ 0.97).
-    ctx!.fillStyle = 'rgb(5,6,11)';
+    // substrate clear — 'trails' uses a faded clear so motion light-paints (§20.6).
+    if (cfg.render === 'trails') {
+      ctx!.fillStyle = 'rgba(5,6,11,0.22)';
+    } else {
+      ctx!.fillStyle = 'rgb(5,6,11)';
+    }
     ctx!.fillRect(0, 0, W, H);
     drawWaves();
     drawBound();
@@ -460,6 +466,28 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     drawSparks();
     drawThreads();
     ctx!.globalCompositeOperation = 'source-over';
+
+    if (cfg.render === 'links') {
+      ctx!.globalCompositeOperation = 'lighter';
+      const acc = hexToRgb(cfg.accent);
+      const R = 90;
+      ctx!.lineWidth = 0.6;
+      for (const p of store.particles) {
+        if (p.cap) continue;
+        for (const q of store.neighbors(p, R)) {
+          // draw each undirected pair once
+          if (q.x < p.x || (q.x === p.x && q.y < p.y)) continue;
+          const a = linkAlpha(Math.hypot(q.x - p.x, q.y - p.y), R);
+          if (a <= 0) continue;
+          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${a})`;
+          ctx!.beginPath();
+          ctx!.moveTo(p.x, p.y);
+          ctx!.lineTo(q.x, q.y);
+          ctx!.stroke();
+        }
+      }
+      ctx!.globalCompositeOperation = 'source-over';
+    }
   }
 
   function frame(now: number): void {
