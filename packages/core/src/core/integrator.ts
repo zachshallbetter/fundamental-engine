@@ -98,7 +98,12 @@ export function step(input: StepInput): void {
         if (!b.vis || b.tokens.length === 0) continue;
         const dx = b.cx - p.x;
         const dy = b.cy - p.y;
-        const d = Math.hypot(dx, dy);
+        const d2 = dx * dx + dy * dy;
+        // range cull: a ranged body can't reach past ~1.6× its range (the largest
+        // on-state multiplier, spring's 1.575×). Skip the sqrt, the modifier pass,
+        // and every apply for matter beyond it. range 0 = global → never culled.
+        if (b.range > 0 && d2 >= b.range * b.range * 2.56) continue;
+        const d = Math.sqrt(d2);
         // density sampling for two-way feedback (engine bookkeeping, ungated, §8)
         if (b.feedback && d < b.range * 0.5) b.count += 1 - d / (b.range * 0.5);
         if (b.when && !passes(conditions, b, p)) continue;
