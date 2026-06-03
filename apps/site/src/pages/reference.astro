@@ -3,29 +3,64 @@ import Base from '../layouts/Base.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS, MANUAL_CONDITIONS } from 'forces-ui';
 import '../styles/force-glyphs.css';
 
-// The complete definition, rendered from the single catalog in core (guaranteed by
-// a test to match the registered forces exactly). The manual explains the system —
-// and lives inside the field it describes.
-const families = [
-  {
-    key: 'canonical',
-    title: 'The canonical nine',
-    note: 'The designed core (§6) — finite range, a soft (1 − d/d_max)ⁿ falloff, tuned for legibility on content bodies.',
-  },
-  {
-    key: 'natural',
-    title: 'Natural primitives',
-    note: 'Real field laws (§20.10) — a true 1/d², the Lorentz force, Langevin agitation, diffusion and waves.',
-  },
-  {
-    key: 'extended',
-    title: 'Designed extended',
-    note: 'Further designed forces and the two modifiers (§20.3) that wrap a sibling force.',
-  },
-] as const;
+// The Field Manual — a SELECTABLE explorer (not a long scroll). Pick a force or
+// preset; its definition appears beside a live demo: the real example body sits on
+// the single shared field and the field reacts to it (the field-reacts law).
 
-const byFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
-const count = MANUAL_FORCES.length;
+const DEFAULTS = { strength: 1.5, range: 280, spin: 1, angle: -90 };
+const OVERRIDES: Record<string, Record<string, number>> = {
+  gravity: { strength: 320, range: 360 },
+  thermal: { strength: 2.5, range: 240 },
+  absorb: { strength: 0.8, range: 320, absorb: 60, max: 40 },
+  emitter: { strength: 1.3, range: 280 },
+  spring: { strength: 1, range: 240 },
+  drag: { strength: 1, range: 300 },
+};
+const PRESET_COLORS: Record<string, string> = {
+  blackhole: '#fbbf24',
+  whitehole: '#e0f2fe',
+  star: '#6366f1',
+  quasar: '#fbbf24',
+  galaxy: '#a78bfa',
+  nebula: '#38bdf8',
+  tornado: '#2dd4bf',
+};
+
+// the flat item model the client uses to render the detail pane + the live body
+const ITEMS = [
+  ...MANUAL_FORCES.map((f) => ({
+    kind: 'force' as const,
+    token: f.token,
+    label: f.label,
+    family: f.family,
+    color: f.color,
+    formula: f.formula,
+    attrs: f.attrs,
+    desc: f.desc,
+    example: f.example,
+    body: { ...DEFAULTS, ...(OVERRIDES[f.token] ?? {}) } as Record<string, number>,
+  })),
+  ...MANUAL_PRESETS.map((p) => ({
+    kind: 'preset' as const,
+    token: p.name,
+    label: p.name,
+    family: 'preset',
+    color: PRESET_COLORS[p.name] ?? '#4da3ff',
+    formula: 'expands to: ' + p.tokens.join(' · '),
+    attrs: [] as readonly string[],
+    desc: p.desc,
+    example: p.example,
+    body: {} as Record<string, number>,
+  })),
+];
+
+const families = [
+  { key: 'canonical', label: 'Canonical nine' },
+  { key: 'natural', label: 'Natural primitives' },
+  { key: 'extended', label: 'Designed-extended' },
+  { key: 'preset', label: 'Presets' },
+] as const;
+const inFamily = (k: string) => ITEMS.filter((i) => i.family === k);
 ---
 
 <Base title="forces-ui — the Field Manual">
@@ -34,105 +69,43 @@ const count = MANUAL_FORCES.length;
       <a class="back" href="/">← forces-ui</a>
       <h1>The Field Manual</h1>
       <p class="lede">
-        The complete definition of the field — every force with its law, the
-        <code>data-*</code> attributes it reads, and what it does. {count} forces, composable
-        on any element. This page lives inside the field it describes.
+        Every force and preset, defined — pick one and watch it act on the live field.
+        {ITEMS.length} bodies, composable on any element. <a href="/lab">Open the Lab →</a>
       </p>
     </header>
 
-    <section class="demo" aria-hidden="true">
-      <forces-cell id="demo-cell" force="vortex" color="#4da3ff"></forces-cell>
-      <div class="switch" role="group">
+    <div class="explorer">
+      <aside class="rail" role="tablist" aria-label="Forces and presets">
         {
-          ['attract', 'repel', 'vortex', 'stream', 'gravity', 'spring', 'buoyancy'].map((t) => (
-            <button type="button" data-force={t} class={t === 'vortex' ? 'on' : ''}>
-              {t}
-            </button>
+          families.map((fam) => (
+            <div class="rgroup">
+              <span class="rlabel">{fam.label}</span>
+              {inFamily(fam.key).map((i) => (
+                <button
+                  type="button"
+                  class="ritem"
+                  role="tab"
+                  data-token={i.token}
+                  style={`--c:${i.color}`}
+                >
+                  <i class={`fg fg-${i.token}`} aria-hidden="true" />
+                  {i.token}
+                </button>
+              ))}
+            </div>
           ))
         }
-      </div>
-    </section>
+      </aside>
 
-    <script is:inline>
-      (() => {
-        const cell = document.getElementById('demo-cell');
-        const btns = document.querySelectorAll('.switch button');
-        btns.forEach((b) =>
-          b.addEventListener('click', () => {
-            cell.setAttribute('force', b.dataset.force);
-            btns.forEach((x) => x.classList.toggle('on', x === b));
-          }),
-        );
-      })();
-    </script>
+      <section class="detail">
+        <div class="stage" id="stage" aria-hidden="true"></div>
+        <div class="info" id="info"></div>
+      </section>
+    </div>
 
-    {
-      families.map((fam) => (
-        <section class="fam">
-          <div class="fam-head">
-            <h2>{fam.title}</h2>
-            <p class="note">{fam.note}</p>
-          </div>
-          <div class="grid">
-            {byFamily(fam.key).map((f) => (
-              <article class="card">
-                <h3>
-                  <i class={`fg fg-${f.token}`} style={`--fc:${f.color}`} aria-hidden="true" />
-                  <code class="tok" style={`--tc:${f.color}`}>{f.token}</code>
-                  <span class="label">{f.label}</span>
-                </h3>
-                <pre class="formula">{f.formula}</pre>
-                <p class="desc">{f.desc}</p>
-                <p class="attrs">
-                  {f.attrs.length === 0 ? (
-                    <span class="none">sized by the element box</span>
-                  ) : (
-                    f.attrs.map((a) => <code>data-{a}</code>)
-                  )}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-      ))
-    }
-
-    <section class="fam">
-      <div class="fam-head">
-        <h2>Presets</h2>
-        <p class="note">
-          Cosmology and weather as named arrangements of primitives (§20.9) — no new code, just
-          composition. Author with <code>data-preset</code>.
-        </p>
-      </div>
-      <div class="grid">
-        {
-          MANUAL_PRESETS.map((p) => (
-            <article class="card">
-              <h3>
-                <i class={`fg fg-${p.name}`} aria-hidden="true" />
-                <code class="tok">{p.name}</code>
-              </h3>
-              <p class="compose">
-                {p.tokens.map((t) => (
-                  <code>{t}</code>
-                ))}
-              </p>
-              <p class="desc">{p.desc}</p>
-            </article>
-          ))
-        }
-      </div>
-    </section>
-
-    <section class="fam">
-      <div class="fam-head">
-        <h2>Conditions</h2>
-        <p class="note">
-          Gate any force to when it should act with <code>data-when</code> (§5).
-        </p>
-      </div>
-      <ul class="conds">
+    <section class="conds">
+      <span class="rlabel">Conditions — gate any force with <code>data-when</code></span>
+      <ul>
         {
           MANUAL_CONDITIONS.map((c) => (
             <li>
@@ -151,6 +124,81 @@ const count = MANUAL_FORCES.length;
   </main>
 </Base>
 
+<script is:inline define:vars={{ ITEMS }}>
+  (() => {
+    const stage = document.getElementById('stage');
+    const info = document.getElementById('info');
+    const field = document.querySelector('forces-field');
+    const rescan = () => field && field.rescan && field.rescan();
+    const byToken = Object.fromEntries(ITEMS.map((i) => [i.token, i]));
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    function snippet(item) {
+      if (item.kind === 'preset') return '<div data-preset="' + item.token + '">…</div>';
+      const a = Object.entries(item.body)
+        .filter(([k]) => item.attrs.includes(k))
+        .map(([k, v]) => 'data-' + k + '="' + v + '"');
+      // always show the core ones even if not in attrs, for a useful snippet
+      const core = ['data-strength="' + item.body.strength + '"', 'data-range="' + item.body.range + '"'];
+      const list = a.length ? a : core;
+      return '<a data-body="' + item.token + '" ' + list.join(' ') + '>…</a>';
+    }
+
+    function select(token) {
+      const item = byToken[token];
+      if (!item) return;
+
+      // 1) the surfaced canvas — drop the real example body on the shared field
+      stage.innerHTML = '';
+      const body = document.createElement('div');
+      body.className = 'demo-body';
+      if (item.kind === 'preset') body.dataset.preset = item.token;
+      else {
+        body.dataset.body = item.token;
+        for (const k in item.body) body.dataset[k] = item.body[k];
+      }
+      body.style.setProperty('--c', item.color);
+      body.innerHTML = '<i class="fg fg-' + item.token + '"></i><span>' + item.token + '</span>';
+      stage.appendChild(body);
+      rescan();
+      setTimeout(rescan, 60);
+
+      // 2) the definition
+      const fam = { canonical: 'canonical', natural: 'natural primitive', extended: 'extended', preset: 'preset' }[
+        item.family
+      ];
+      const attrChips = item.attrs.length
+        ? item.attrs.map((x) => '<code>data-' + x + '</code>').join('')
+        : '<span class="muted">' + (item.kind === 'preset' ? 'data-preset, no tuning' : 'sized by the box') + '</span>';
+      info.innerHTML =
+        '<div class="ihead"><i class="fg fg-' + item.token + '" style="--fc:' + item.color + '"></i>' +
+        '<code class="itok" style="--tc:' + item.color + '">' + item.token + '</code>' +
+        '<span class="ifam">' + fam + '</span></div>' +
+        '<p class="idesc">' + esc(item.desc) + '</p>' +
+        '<pre class="iformula">' + esc(item.formula) + '</pre>' +
+        '<div class="iattrs">' + attrChips + '</div>' +
+        '<div class="iex"><span class="exlabel">In use</span>' + esc(item.example) + '</div>' +
+        '<pre class="icode">' + esc(snippet(item)) + '</pre>';
+
+      document.querySelectorAll('.ritem').forEach((b) => {
+        const on = b.dataset.token === token;
+        b.classList.toggle('on', on);
+        if (on) b.setAttribute('aria-selected', 'true');
+        else b.removeAttribute('aria-selected');
+      });
+      history.replaceState(null, '', '#' + token);
+    }
+
+    document.querySelectorAll('.ritem').forEach((b) =>
+      b.addEventListener('click', () => select(b.dataset.token)),
+    );
+
+    const start = byToken[location.hash.slice(1)] ? location.hash.slice(1) : ITEMS[0].token;
+    select(start);
+    setTimeout(rescan, 200);
+  })();
+</script>
+
 <style>
   .manual {
     position: relative;
@@ -161,8 +209,8 @@ const count = MANUAL_FORCES.length;
     margin: 0 auto;
     padding: clamp(2.5rem, 7vh, 5rem) clamp(1.2rem, 5vw, 3.5rem) 5rem;
   }
-  .head {
-    margin-bottom: clamp(2.5rem, 6vh, 4rem);
+  :global(body:has(.manual)) {
+    align-items: flex-start;
   }
   .back {
     font-family: var(--mono);
@@ -176,152 +224,211 @@ const count = MANUAL_FORCES.length;
     color: var(--accent);
   }
   h1 {
-    font-size: clamp(2.4rem, 7vw, 4rem);
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
     font-weight: 700;
-    margin: 0.6rem 0 0.8rem;
+    margin: 0.6rem 0 0.7rem;
     letter-spacing: -0.03em;
   }
   .lede {
-    max-width: 46ch;
+    max-width: 52ch;
     color: var(--text-2);
-    line-height: 1.55;
-    font-size: 1.02rem;
+    line-height: 1.5;
   }
-  .demo {
-    margin-top: clamp(1.5rem, 4vh, 2.5rem);
+  .lede a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .explorer {
+    display: grid;
+    grid-template-columns: minmax(170px, 220px) 1fr;
+    gap: clamp(1rem, 3vw, 2rem);
+    margin-top: clamp(1.6rem, 4vh, 2.6rem);
+    align-items: start;
+  }
+  .rail {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 1rem;
+    position: sticky;
+    top: 1.5rem;
+    max-height: 86vh;
+    overflow-y: auto;
+    padding-right: 0.3rem;
   }
-  .demo forces-cell {
-    display: block;
-    width: 100%;
-    height: clamp(160px, 26vh, 240px);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.015);
-  }
-  .switch {
+  .rgroup {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    flex-direction: column;
+    gap: 0.18rem;
   }
-  .switch button {
+  .rlabel {
     font-family: var(--mono);
-    font-size: 0.74rem;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-3);
+    margin-bottom: 0.25rem;
+  }
+  .ritem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
     color: var(--text-3);
     background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.32rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: 0.3rem 0.5rem;
     cursor: pointer;
-    transition:
-      color 0.15s ease,
-      border-color 0.15s ease;
+    text-align: left;
+    transition: color 0.12s ease;
   }
-  .switch button:hover {
+  .ritem:hover {
     color: var(--text);
   }
-  .switch button.on {
-    color: var(--accent);
-    border-color: var(--accent);
+  .ritem.on {
+    color: var(--text);
+    background: color-mix(in oklab, var(--c) 12%, transparent);
+    border-color: color-mix(in oklab, var(--c) 45%, transparent);
   }
-  .fam {
-    margin-top: clamp(2.5rem, 6vh, 4rem);
+  .ritem .fg {
+    --fc: var(--c);
+    width: 13px;
+    height: 13px;
   }
-  .fam-head h2 {
-    font-size: 1.5rem;
-    margin: 0 0 0.4rem;
-    letter-spacing: -0.02em;
+
+  .detail {
+    min-width: 0;
   }
-  .note {
-    max-width: 60ch;
-    color: var(--text-3);
-    font-size: 0.92rem;
-    line-height: 1.5;
-    margin: 0 0 1.6rem;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 0.9rem;
-  }
-  .card {
+  .stage {
+    position: relative;
+    height: clamp(220px, 34vh, 320px);
     border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 1.1rem 1.15rem 1.2rem;
-    background: rgba(255, 255, 255, 0.018);
-    backdrop-filter: blur(3px);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.012);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    margin-bottom: 1.3rem;
   }
-  .card h3 {
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    margin: 0 0 0.7rem;
-    font-weight: 500;
-  }
-  .tok {
+  :global(.demo-body) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     font-family: var(--mono);
-    font-size: 0.86rem;
+    font-size: 0.78rem;
+    color: var(--text);
+    background: color-mix(in oklab, var(--c) 20%, #0a0c12);
+    border: 1px solid var(--c);
+    border-radius: 999px;
+    padding: 0.34rem 0.85rem;
+    white-space: nowrap;
+    box-shadow: 0 0 18px -2px var(--c);
+  }
+  :global(.demo-body .fg) {
+    --fc: var(--c);
+    width: 14px;
+    height: 14px;
+  }
+
+  /* the detail pane is injected via innerHTML at runtime → these must be global */
+  :global(.info .ihead) {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+  }
+  :global(.info .ihead .fg) {
+    width: 18px;
+    height: 18px;
+  }
+  :global(.info .itok) {
+    font-family: var(--mono);
+    font-size: 1rem;
     color: var(--tc, var(--accent));
     background: color-mix(in oklab, var(--tc, var(--accent)) 15%, transparent);
-    padding: 0.12rem 0.45rem;
-    border-radius: 5px;
+    padding: 0.16rem 0.55rem;
+    border-radius: 6px;
   }
-  .label {
-    font-size: 0.82rem;
-    color: var(--text-3);
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-  }
-  .formula {
+  :global(.info .ifam) {
     font-family: var(--mono);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-3);
+  }
+  :global(.info .idesc) {
+    color: var(--text-2);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 1rem;
+    max-width: 56ch;
+  }
+  :global(.info .iformula),
+  :global(.info .icode) {
+    font-family: var(--mono);
+    font-size: 0.78rem;
     line-height: 1.5;
     color: var(--text);
     background: rgba(0, 0, 0, 0.32);
     border: 1px solid var(--line);
-    border-radius: 7px;
-    padding: 0.6rem 0.7rem;
-    margin: 0 0 0.7rem;
+    border-radius: 8px;
+    padding: 0.7rem 0.8rem;
+    margin: 0 0 1rem;
     white-space: pre-wrap;
-    word-break: break-word;
     overflow-wrap: anywhere;
   }
-  .desc {
-    color: var(--text-2);
-    font-size: 0.92rem;
-    line-height: 1.5;
-    margin: 0 0 0.7rem;
-  }
-  .attrs,
-  .compose {
+  :global(.info .iattrs) {
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
-    margin: 0;
+    margin-bottom: 1rem;
   }
-  .attrs code,
-  .compose code {
+  :global(.info .iattrs code) {
     font-family: var(--mono);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: var(--text-3);
     border: 1px solid var(--line);
     border-radius: 5px;
-    padding: 0.1rem 0.4rem;
+    padding: 0.12rem 0.45rem;
   }
-  .none {
+  :global(.info .iattrs .muted) {
     font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--text-3);
+    font-size: 0.72rem;
     font-style: italic;
+    color: var(--text-3);
   }
+  :global(.info .iex) {
+    color: var(--text-2);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    max-width: 56ch;
+  }
+  :global(.info .exlabel) {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-3);
+    margin-bottom: 0.3rem;
+  }
+  :global(.info .icode) {
+    color: var(--accent);
+    margin-bottom: 0;
+  }
+
   .conds {
+    margin-top: clamp(2.5rem, 6vh, 4rem);
+  }
+  .conds ul {
     list-style: none;
-    margin: 0;
+    margin: 0.6rem 0 0;
     padding: 0;
     display: grid;
-    gap: 0.5rem;
+    gap: 0.45rem;
     max-width: 60ch;
   }
   .conds li {
@@ -340,7 +447,7 @@ const count = MANUAL_FORCES.length;
     font-size: 0.92rem;
   }
   .foot {
-    margin-top: clamp(3rem, 8vh, 5rem);
+    margin-top: clamp(2.5rem, 7vh, 4rem);
     padding-top: 1.4rem;
     border-top: 1px solid var(--line);
     display: flex;
@@ -358,8 +465,15 @@ const count = MANUAL_FORCES.length;
   .foot a:hover {
     color: var(--accent);
   }
-  /* the manual is long-form: don't vertically centre it like the hero */
-  :global(body:has(.manual)) {
-    align-items: flex-start;
+  @media (max-width: 720px) {
+    .explorer {
+      grid-template-columns: 1fr;
+    }
+    .rail {
+      position: static;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
   }
 </style>
