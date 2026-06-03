@@ -37,6 +37,7 @@ export function step(input: StepInput): void {
   const dt = env.dt;
   if (dt === 0) return;
   const { W, H, form } = env;
+  for (const b of bodies) b.count = 0;
   const hasWaves = !!waves && waves.length > 0;
   const hasBodies = bodies.length > 0;
   // the accretion target for `conv` — the first visible absorb body (§7).
@@ -90,10 +91,12 @@ export function step(input: StepInput): void {
     if (hasBodies) {
       for (const b of bodies) {
         if (!b.vis || b.tokens.length === 0) continue;
-        if (b.when && !passes(conditions, b, p)) continue;
         const dx = b.cx - p.x;
         const dy = b.cy - p.y;
         const d = Math.hypot(dx, dy);
+        // density sampling for two-way feedback (engine bookkeeping, ungated, §8)
+        if (b.feedback && d < b.range * 0.5) b.count += 1 - d / (b.range * 0.5);
+        if (b.when && !passes(conditions, b, p)) continue;
         env.dx = dx;
         env.dy = dy;
         env.dist = d < 1 ? 1 : d;

@@ -100,3 +100,14 @@ test('conv converges toward the accretion node (§7)', () => {
   });
   assert.ok(p.vx > 0); // pulled toward the core at +x
 });
+
+test('a feedback body accumulates local density into b.count (§8)', () => {
+  const store = new FieldStore();
+  store.add(makeP({ x: 100, y: 100 })); // on the body centre
+  const body = {
+    tokens: ['attract'], vis: true, when: '', on: false, feedback: true,
+    cx: 100, cy: 100, range: 200, count: 0,
+  } as unknown as Body;
+  step({ store, bodies: [body], env: makeEnv(), forces: {}, conditions: {} });
+  assert.ok(body.count > 0); // particle within range·0.5 contributed
+});

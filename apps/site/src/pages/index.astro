@@ -21,7 +21,7 @@ const chapters = [
 
     <h1>
       Every element has
-      <em data-hot data-body="attract" data-color="#4da3ff" data-strength="0.9" data-range="320" tabindex="0">mass</em>.
+      <em data-hot data-body="attract" data-color="#4da3ff" data-strength="0.9" data-range="320" data-feedback data-fmin="600" data-fmax="800" data-opsz="96" tabindex="0">mass</em>.
     </h1>
 
     <p class="standfirst">
@@ -107,7 +107,9 @@ const chapters = [
     h1 em {
       font-style: normal;
       color: var(--accent);
-      text-shadow: 0 0 44px rgba(77, 163, 255, 0.5);
+      --d: 0;
+      text-shadow: 0 0 calc(8px + var(--d) * 54px)
+        color-mix(in srgb, var(--accent) calc(40% + var(--d) * 55%), transparent);
     }
     .standfirst {
       margin: clamp(1.6rem, 4vh, 2.4rem) 0 0;

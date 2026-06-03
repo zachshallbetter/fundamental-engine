@@ -27,6 +27,7 @@ import {
 import { healWaves, tearBoundNear, tearBoundByForces } from './reservoir.ts';
 import { FORMATION_BY, PALETTE, ACCENT_JOURNEY, type FormationId } from '../config/forces.config.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
+import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { registerCoreForces } from '../forces/index.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -243,6 +244,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.globalCompositeOperation = 'source-over';
   }
 
+  function writeFeedback(): void {
+    for (const b of bodies) {
+      if (!b.feedback) continue;
+      const target = feedbackTarget(b.count, b.on);
+      b.d += (target - b.d) * 0.08;
+      b.el.style.setProperty('--d', b.d.toFixed(3));
+      if (b.fmax) {
+        const w = feedbackWeight(b.fmin, b.fmax, b.d);
+        b.el.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
+      }
+      if (b.capacity > 0 && b.tokens.indexOf('absorb') >= 0) {
+        b.el.style.setProperty('--mass', clamp(b.accreted / b.capacity, 0, 1).toFixed(3));
+      }
+    }
+  }
+
   function render(): void {
     // opaque dark substrate (§2.5, darkness ≈ 0.97).
     ctx!.fillStyle = 'rgb(5,6,11)';
@@ -328,6 +345,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
       tearBoundByForces(bound, waves, bodies, W, H, env.t, (p) => void store.add(newParticle(p)));
     }
+    writeFeedback();
     render();
     raf = requestAnimationFrame(frame);
   }
