@@ -13,6 +13,15 @@ const chapters = [
   { n: 'III', t: 'Conditions' },
   { n: 'IV', t: 'System' },
 ];
+
+// A row of self-contained Field Cells (§25.1) — one force each, so the four
+// verbs read on their own. Punctuation-only matter; no glyph assembly.
+const cells = [
+  { f: 'attract', c: '#4da3ff', t: 'attract' },
+  { f: 'vortex', c: '#7dd3fc', t: 'vortex' },
+  { f: 'repel', c: '#ff9d5c', t: 'repel' },
+  { f: 'stream', c: '#9b8cff', t: 'stream' },
+];
 ---
 
 <Base>
@@ -49,6 +58,15 @@ const chapters = [
 
     <div class="palette" aria-hidden="true">
       {palette.map((c) => <span style={`--c:${c}`}></span>)}
+    </div>
+
+    <div class="cells" aria-hidden="true">
+      {cells.map((c) => (
+        <figure>
+          <forces-cell force={c.f} color={c.c}></forces-cell>
+          <figcaption>{c.t}</figcaption>
+        </figure>
+      ))}
     </div>
 
     <footer>
@@ -177,6 +195,33 @@ const chapters = [
       background: var(--c);
       box-shadow: 0 0 12px var(--c);
       opacity: 0.9;
+    }
+    .cells {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(0.6rem, 2vw, 1rem);
+      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
+    }
+    .cells figure {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .cells forces-cell {
+      display: block;
+      width: clamp(120px, 22vw, 150px);
+      height: 92px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .cells figcaption {
+      font-family: var(--mono, ui-monospace, monospace);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      text-transform: lowercase;
+      color: var(--text-3);
     }
     footer {
       margin: clamp(2.4rem, 6vh, 3.4rem) 0 0;
