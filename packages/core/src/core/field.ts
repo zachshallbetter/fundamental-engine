@@ -31,6 +31,7 @@ import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
+import { registerNaturalForces } from '../forces/natural.ts';
 import { sparkCount } from './reactions.ts';
 import { linkAlpha } from './render-modes.ts';
 
@@ -44,6 +45,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const store = new FieldStore();
   const reg = createRegistry();
   registerCoreForces(reg); // the canonical nine (§6)
+  registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
   const reduceMotion =
     typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 

@@ -106,8 +106,11 @@ Ordered for overnight (highest visible value first):
 
 ## Phase 6 — Depth: physical primitives, presets, mass
 
-- [ ] Natural primitives: `gravity`, `charge` (shared `1/d²` kernel), `magnetism`,
-      `thermal`, `propagate`, `collide`, `diffuse` (§20.10).
+- [x] **`gravity` + `charge`** — the shared softened inverse-square kernel
+      (`s/(d²+ε²)`, Plummer ε=r_s, |v|≤c), in `forces/natural.ts`; opt-in, registered
+      alongside the nine. Golden-tested (§20.10).
+- [ ] Remaining natural primitives: `magnetism` (Lorentz), `thermal`, `propagate`,
+      `collide`, `diffuse` (§20.10).
 - [ ] The preset layer (`__presets`) — cosmology as composites (§20.9).
 - [ ] First-class mass (Option B) on Lab/cosmology surfaces (§21.3).
 
