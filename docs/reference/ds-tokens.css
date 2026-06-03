@@ -1,0 +1,116 @@
+/* ══════════════════════════════════════
+   FIELD — DESIGN TOKENS
+   Aesthetic: dark / reciprocal-field / forces made literal.
+   Type: Bricolage Grotesque + Martian Mono.
+══════════════════════════════════════ */
+:root {
+  /* Surfaces — deep field */
+  --bg-page:    #04050a;
+  --bg-surface: #0a0d14;
+  --bg-subtle:  #0e121b;
+  --bg-card:    #0b0e16;
+  --bg-canvas:  #07090e;
+
+  /* Ink */
+  --ink-900: #f3f6fc;
+  --ink-800: #e4ebf7;
+  --ink-700: rgba(228,235,247,0.78);
+  --ink-600: rgba(228,235,247,0.62);
+  --ink-500: rgba(200,212,230,0.46);
+  --ink-400: rgba(196,207,226,0.30);
+  --ink-300: rgba(196,207,226,0.18);
+
+  /* Lines */
+  --line:    rgba(255,255,255,0.08);
+  --line-2:  rgba(255,255,255,0.16);
+  --line-3:  rgba(255,255,255,0.24);
+
+  /* ── The force palette — the single source of truth ──
+     Each accent IS a force. A discipline inherits its force's color.
+     A bright spread on dark: azure → violet → green → lilac → sky →
+     amber → slate → teal → pink. Mirrored in ds-data.js (window.DS_FORCES). */
+  --f-attract:  #4da3ff;   /* Product strategy      — azure */
+  --f-emitter:  #a78bfa;   /* AI systems            — violet */
+  --f-spring:   #86e57f;   /* Software architecture — green */
+  --f-reflect:  #c4b5fd;   /* Experience design     — lilac */
+  --f-stream:   #7dd3fc;   /* Motion                — sky */
+  --f-repel:    #ff9d5c;   /* Commerce              — amber */
+  --f-drag:     #8da2c0;   /* Physical production   — slate */
+  --f-vortex:   #2dd4bf;   /* Creative technology   — teal */
+  --f-absorb:   #ff6e9c;   /* Attention             — pink */
+  --f-condition: var(--f-emitter);  /* alias: "condition" is the emitter body */
+  --coherence:  #ffce6b;   /* resolved / accreted   — gold */
+
+  /* Primary accent (blue — the resting field) */
+  --accent:     #4da3ff;
+  --accent-soft: rgba(77,163,255,0.13);
+
+  /* Status */
+  --ok:   #5fd0a8;
+  --warn: #ffce6b;
+  --err:  #ff6e9c;
+
+  /* Semantic */
+  --text:        var(--ink-900);
+  --text-2:      var(--ink-700);
+  --text-3:      var(--ink-500);
+  --text-4:      var(--ink-400);
+  --border:      var(--line);
+  --border-2:    var(--line-2);
+
+  /* Type */
+  --display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --body:    "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --mono:    "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Tracking */
+  --track-loose: 0.22em;
+  --track-wide:  0.14em;
+  --track-tight: -0.03em;
+
+  /* Radii */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* Shadows */
+  --shadow-md: 0 12px 36px -18px rgba(0,0,0,0.8);
+  --shadow-lg: 0 34px 80px -36px rgba(0,0,0,0.9);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* dark root + crossfade between pages — kills the white flash on navigation */
+@view-transition { navigation: auto; }
+html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--bg-page); color-scheme: dark; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+}
+body.ds {
+  font-family: var(--body); background: var(--bg-page); color: var(--text);
+  line-height: 1.5; letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+input, textarea, select { font: inherit; color: inherit; }
+::selection { background: color-mix(in srgb, var(--accent) 42%, transparent); color: #fff; }
+
+/* ── utilities ── */
+.mono { font-family: var(--mono); }
+.display { font-family: var(--display); }
+.eyebrow { font-family: var(--mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: var(--track-loose); color: var(--accent); }
+.label-loose { font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: var(--track-wide); color: var(--text-3); }
+
+/* field canvas background — calm by default, charged when the Reciprocal Field is live */
+body.ds > #field { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display: block; opacity: 0.34; transition: opacity .7s ease; }
+body.ds.ds-show-field > #field { opacity: 0.6; }
+body.ds.field-live > #field { opacity: 0.96; }
+body.ds.field-live.ds-show-field > #field { opacity: 1; }
+.ds-scrim { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(130% 90% at 50% -10%, transparent 55%, rgba(0,0,0,0.6) 100%),
+              linear-gradient(180deg, rgba(4,5,10,0.7) 0%, rgba(4,5,10,0.2) 16%, rgba(4,5,10,0.2) 84%, rgba(4,5,10,0.6) 100%); }
+#root { position: relative; z-index: 2; }

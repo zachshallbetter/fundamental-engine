@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Forces — Orbital Mark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@300..700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #04050a; --bg-card: #0a0d14; --bg-inner: #07090e;
+    --line: rgba(255,255,255,0.09); --line-2: rgba(255,255,255,0.16);
+    --ink: #f3f6fc; --ink-2: rgba(228,235,247,0.6); --ink-3: rgba(196,207,226,0.34);
+    --accent: #4da3ff; --violet: #a78bfa;
+    --display: "Bricolage Grotesque", sans-serif; --mono: "Martian Mono", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--display); -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(rgba(255,255,255,0.022) 1px, transparent 1px); background-size: 26px 26px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem) 5rem; }
+  .eyebrow { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+
+  /* hero lockup — mark above the word, like the reference */
+  .hero { display: grid; place-items: center; gap: 1.4rem; padding: clamp(2rem,5vw,3.6rem) 1rem clamp(2.4rem,5vw,4rem); }
+  .live { position: relative; }
+  .hero-word { font-family: var(--display); font-weight: 700; font-size: clamp(3rem, 9vw, 5.6rem); letter-spacing: -0.04em; line-height: 0.9; }
+  .hero-sub { font-family: var(--mono); font-size: clamp(0.6rem,1.4vw,0.78rem); letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-3); }
+
+  .sect-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); margin: 3rem 0 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); }
+
+  .row { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .tile { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 1.4rem; display: grid; place-items: center; gap: 0.9rem; min-width: 140px; flex: 1; }
+  .tile .cap { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+  .chip-light { background: #eef1f6; border-radius: 12px; padding: 1rem 1.2rem; display: grid; place-items: center; }
+  .appicon { width: 76px; height: 76px; border-radius: 18px; display: grid; place-items: center; background: radial-gradient(120% 120% at 30% 20%, #11161f, #07090e); border: 1px solid var(--line-2); }
+
+  /* lockups */
+  .lock-h { display: flex; align-items: center; gap: 0.7rem; }
+  .lock-h .w { font-family: var(--display); font-weight: 700; font-size: 1.9rem; letter-spacing: -0.03em; }
+  .lock-stack { display: grid; place-items: center; gap: 0.4rem; }
+  .lock-stack .w { font-family: var(--display); font-weight: 700; font-size: 1.5rem; letter-spacing: -0.03em; }
+  .lock-stack .s { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="eyebrow">Forces · Identity</span>
+
+  <div class="hero">
+    <div class="live" data-live data-size="280" data-color="var(--accent)"></div>
+    <div style="display:grid;place-items:center;gap:0.5rem;">
+      <div class="hero-word">Forces</div>
+      <div class="hero-sub">Reciprocal Field · Design System</div>
+    </div>
+  </div>
+
+  <div class="sect-label">Live · particles trace the orbits</div>
+  <div class="row">
+    <div class="tile"><div class="live" data-live data-size="150" data-color="#4da3ff"></div><span class="cap">Azure</span></div>
+    <div class="tile"><div class="live" data-live data-size="150" data-color="#a78bfa"></div><span class="cap">Violet</span></div>
+    <div class="tile"><div class="live" data-live data-size="150" data-color="#2dd4bf"></div><span class="cap">Teal</span></div>
+  </div>
+
+  <div class="sect-label">Static · the mark as drawn</div>
+  <div class="row">
+    <div class="tile"><span class="mk" data-mk data-size="80" data-color="var(--accent)"></span><span class="cap">Display</span></div>
+    <div class="tile"><span class="mk" data-mk data-size="34" data-color="var(--ink)"></span><span class="cap">Small · 34</span></div>
+    <div class="tile"><span class="appicon"><span class="mk" data-mk data-size="42" data-color="var(--accent)"></span></span><span class="cap">App icon</span></div>
+    <div class="tile"><span class="chip-light"><span class="mk" data-mk data-size="34" data-color="#04050a"></span></span><span class="cap">On light</span></div>
+  </div>
+
+  <div class="sect-label">Lockups</div>
+  <div class="row">
+    <div class="tile"><div class="lock-h"><span class="mk" data-mk data-size="40" data-color="var(--accent)"></span><span class="w">Forces</span></div><span class="cap">Horizontal</span></div>
+    <div class="tile"><div class="lock-stack"><span class="mk" data-mk data-size="44" data-color="var(--accent)"></span><span class="w">Forces</span><span class="s">Design System</span></div><span class="cap">Stacked</span></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const VBW = 441.4, VBH = 421.5;
+  const ARC_D = [
+    'M393.7,327.2c12.6-17.7,22.5-37.8,29-59.8,31.2-106.2-29.6-217.6-135.8-248.8-44.1-12.9-89-10.1-128.7,5.3',
+    'M61.7,318.5c44.5,70,128.4,105.3,209.6,88.3',
+  ];
+  // live mark: the bodies are SOLID particles (filled), not rings
+  const BODIES = '<g fill="currentColor" stroke="none">'
+    + '<circle cx="230.4" cy="210.9" r="82"/>'
+    + '<circle cx="369.9" cy="354.8" r="34.7"/>'
+    + '<circle cx="45.2" cy="286.4" r="34.7"/>'
+    + '<circle cx="139" cy="315.4" r="16.1"/>'
+    + '<circle cx="92" cy="65.7" r="22.2"/>'
+    + '</g>';
+  const STATIC = '<g fill="none" stroke="currentColor" stroke-width="21" stroke-linecap="round" stroke-miterlimit="10">'
+    + '<circle cx="230.4" cy="210.9" r="89.1"/>'
+    + '<path d="' + ARC_D[0] + '"/>'
+    + '<circle cx="369.9" cy="354.8" r="34.7"/>'
+    + '<circle cx="45.2" cy="286.4" r="34.7"/>'
+    + '<path d="' + ARC_D[1] + '"/>'
+    + '<circle cx="139" cy="315.4" r="16.1" fill="currentColor" stroke="none"/>'
+    + '<circle cx="92" cy="65.7" r="22.2" fill="currentColor" stroke="none"/>'
+    + '</g>';
+  const NS = 'http://www.w3.org/2000/svg';
+
+  function resolveColor(c) {
+    if (!c || c.indexOf('var(') !== 0) return c || '#4da3ff';
+    const name = c.slice(4, -1).trim();
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#4da3ff';
+  }
+
+  // hidden svg to measure the two orbit arcs
+  const msvg = document.createElementNS(NS, 'svg');
+  msvg.setAttribute('viewBox', '0 0 ' + VBW + ' ' + VBH);
+  msvg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+  const arcPaths = ARC_D.map(function (d) { const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); msvg.appendChild(p); return p; });
+  document.body.appendChild(msvg);
+  const arcLen = arcPaths.map(function (p) { return p.getTotalLength(); });
+
+  function staticSVG(size, color) {
+    const c = resolveColor(color);
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" style="color:' + c + ';display:block;overflow:visible">' + STATIC + '</svg>';
+  }
+
+  function buildLive(host) {
+    const size = parseFloat(host.dataset.size) || 240;
+    const color = resolveColor(host.dataset.color);
+    const W = size, H = size * VBH / VBW;
+    const DPR = Math.min(2, window.devicePixelRatio || 1);
+    host.style.position = 'relative'; host.style.width = W + 'px'; host.style.height = H + 'px';
+
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    cv.style.cssText = 'position:absolute;inset:0;width:' + W + 'px;height:' + H + 'px';
+    host.appendChild(cv);
+    const ctx = cv.getContext('2d');
+    const k = (W / VBW) * DPR;
+    ctx.setTransform(k, 0, 0, k, 0, 0); // draw in viewBox units
+
+    // The named bodies AND a field of dust all orbit the centre, solid and
+    // glowing. Bodies keep their original distance/angle so the constellation
+    // reads, then revolve slowly at slightly different rates.
+    const CX = 230.4, CY = 210.9;
+    // keep centre-distance + radius + glow inside the viewBox at every angle.
+    const BOUND = 186;
+    const clamp01 = function (v) { return v < 0 ? 0 : v > 1 ? 1 : v; };
+    const glowOf = function (r) { return Math.min(46, r * 0.6); };            // glow size scales with body size
+    const glowA = function (r) { return 0.18 + clamp01(r / 80) * 0.64; };     // larger → brighter glow
+    const maxRad = function (r) { return Math.max(0, BOUND - r - glowOf(r)); };
+    // cores are OPAQUE (no see-through); smaller bodies use a dimmer shade so
+    // they read lighter without going transparent.
+    const hex2rgb = function (h) { const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h); return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : { r: 77, g: 163, b: 255 }; };
+    const coreCol = function (h, r) { const c = hex2rgb(h), b = 0.5 + clamp01(r / 80) * 0.5; return 'rgb(' + Math.round(c.r * b) + ',' + Math.round(c.g * b) + ',' + Math.round(c.b * b) + ')'; };
+    // on-brand palette — the instance base colour leads, with cool accents.
+    const PAL = [color, color, '#7dd3fc', '#a78bfa', '#2dd4bf', '#86e57f', '#ff9d5c'];
+    const pick = function () { return PAL[Math.floor(Math.random() * PAL.length)]; };
+
+    // the bodies: a big centre, two large satellites (one pushed far out, one
+    // near), and two mid bodies — distinct sizes so their glow reads differently.
+    const bodyDefs = [
+      { r: 80, rad: 4, ang: 0, col: color },
+      { r: 36, rad: 999, ang: 1.05, col: color },     // large — pushed far out, clears the centre
+      { r: 30, rad: 120, ang: 2.7, col: '#7dd3fc' },   // large — just outside the centre
+      { r: 22, rad: 116, ang: -2.0, col: '#a78bfa' },
+      { r: 16, rad: 108, ang: 4.2, col: '#2dd4bf' },
+    ];
+    const bodies = bodyDefs.map(function (b, i) {
+      return { rad: Math.min(b.rad, i === 0 ? 8 : maxRad(b.r)), ang: b.ang, ry: 0.97, rot: 0, r: b.r,
+        sp: (0.0016 + i * 0.0005) * (i % 2 ? 1 : -1), ph: Math.random() * 6.28, c: b.col, core: coreCol(b.col, b.r) };
+    });
+    const dust = [];
+    for (let i = 0; i < 42; i++) {
+      const r = 2 + Math.pow(Math.random(), 2.4) * 12; const col = pick();
+      dust.push({
+        rad: Math.min(102 + Math.random() * 106, maxRad(r)), ang: Math.random() * 6.28, ry: 0.7 + Math.random() * 0.3,
+        rot: Math.random() * 6.28, r: r,
+        sp: (0.003 + Math.random() * 0.006) * (Math.random() < 0.5 ? 1 : -1), ph: Math.random() * 6.28, c: col, core: coreCol(col, r),
+      });
+    }
+
+    let raf, vis = true;
+    const io = new IntersectionObserver(function (es) { es.forEach(function (e) { vis = e.isIntersecting; }); }); io.observe(cv);
+
+    function draw(o, now) {
+      o.ang += o.sp;
+      const ex = Math.cos(o.ang) * o.rad, ey = Math.sin(o.ang) * o.rad * o.ry;
+      const cs = Math.cos(o.rot), sn = Math.sin(o.rot);
+      const x = CX + ex * cs - ey * sn, y = CY + ex * sn + ey * cs;
+      const tw = 0.72 + 0.28 * Math.sin(now * 0.0026 + o.ph);
+      // additive glow halo — brighter for larger bodies
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.shadowColor = o.c; ctx.shadowBlur = glowOf(o.r);
+      ctx.globalAlpha = glowA(o.r) * tw;
+      ctx.beginPath(); ctx.arc(x, y, o.r, 0, 6.28); ctx.fillStyle = o.c; ctx.fill();
+      // solid core — opaque so nothing shows through; dimmer for smaller bodies
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(x, y, o.r, 0, 6.28); ctx.fillStyle = o.core; ctx.fill();
+    }
+
+    // draw smallest first so the larger particles float on top
+    const order = bodies.concat(dust).sort(function (a, b) { return a.r - b.r; });
+    function frame() {
+      ctx.clearRect(0, 0, VBW, VBH);
+      if (vis) {
+        const now = performance.now();
+        for (const o of order) draw(o, now);
+        ctx.shadowBlur = 0; ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  document.querySelectorAll('[data-mk]').forEach(function (el) { el.innerHTML = staticSVG(parseFloat(el.dataset.size) || 40, el.dataset.color); });
+  document.querySelectorAll('[data-live]').forEach(buildLive);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" style="background:#04050a">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#04050a" />
+<title>Forces — Design System</title>
+<link rel="icon" type="image/svg+xml" href="forces-favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="lab.css" />
+<link rel="stylesheet" href="ds-tokens.css" />
+<link rel="stylesheet" href="ds-shell.css" />
+</head>
+<body class="ds">
+<canvas id="field"></canvas>
+<div class="ds-scrim"></div>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- field engine (background) -->
+<script src="forces.js"></script>
+<script src="field.js"></script>
+<script src="ds-cell.js"></script>
+
+<!-- canonical data (single source of truth) + gated interactivity -->
+<script src="ds-data.js"></script>
+<script src="ds-interactions.js"></script>
+<script src="forces-mark.js"></script>
+
+<!-- design system -->
+<script type="text/babel" src="ds-shell.jsx"></script>
+<script type="text/babel" src="ds-views.jsx"></script>
+<script type="text/babel" src="ds-field.jsx"></script>
+<script type="text/babel" src="ds-forces.jsx"></script>
+<script type="text/babel" src="ds-lab.jsx"></script>
+<script type="text/babel" src="ds-views2.jsx"></script>
+<script type="text/babel" src="ds-app.jsx"></script>
+</body>
+</html>

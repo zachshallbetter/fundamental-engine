@@ -82,7 +82,7 @@
   });
 
   // ---- section → formation ----
-  const SECTION_FORM = { top: 'ambient', capabilities: 'scatter', work: 'wells', writing: 'lanes', contact: 'accretion' };
+  const SECTION_FORM = { top: 'ambient', about: 'ambient', capabilities: 'scatter', 'field-graph': 'lanes', work: 'wells', 'design-systems': 'wells', 'experiments-grid': 'scatter', stats: 'wells', logos: 'ambient', testimonials: 'scatter', beyond: 'wells', writing: 'lanes', contact: 'accretion' };
   const sections = [...document.querySelectorAll('section[id], header[id]')];
   const links = new Map();
   document.querySelectorAll('.nav-links a[href^="#"]').forEach((a) => links.set(a.getAttribute('href').slice(1), a));

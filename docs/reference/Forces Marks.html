@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Forces — Mark Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@300..700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-card: #0a0d14; --bg-inner: #07090e; --line: rgba(255,255,255,0.09); --line-2: rgba(255,255,255,0.16);
+    --ink: #f3f6fc; --ink-2: rgba(228,235,247,0.6); --ink-3: rgba(196,207,226,0.32);
+    --accent: #4da3ff; --display: "Bricolage Grotesque", sans-serif; --mono: "Martian Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  .mk-card { width: 100%; height: 100%; background: var(--bg-card); border-radius: 14px; display: grid;
+    grid-template-rows: 1fr auto auto auto; padding: 26px 22px 20px; gap: 18px; }
+  .mk-hero { display: grid; place-items: center; color: var(--accent); }
+  .mk-sizes { display: flex; align-items: center; justify-content: center; gap: 20px; color: var(--ink-2); }
+  .mk-fav { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 7px; background: var(--bg-inner); border: 1px solid var(--line); color: var(--accent); }
+  .mk-lock { display: flex; align-items: center; gap: 10px; justify-content: center; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--accent); }
+  .mk-word { font-family: var(--display); font-weight: 700; font-size: 1.7rem; letter-spacing: -0.03em; color: var(--ink); }
+  .mk-meta { display: flex; align-items: baseline; justify-content: space-between; }
+  .mk-name { font-family: var(--display); font-weight: 600; font-size: 1rem; color: var(--ink); letter-spacing: -0.01em; }
+  .mk-desc { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="marks.jsx"></script>
+<script type="text/babel">
+const CONCEPTS = [
+  { id: 'orbital',  name: 'Orbital',           desc: 'bodies in a field' },
+  { id: 'current',  name: 'Current',          desc: 'convergence' },
+  { id: 'cycle',    name: 'Reciprocal cycle',  desc: 'action ↔ reaction' },
+  { id: 'dipole',   name: 'Dipole field',      desc: 'lines between poles' },
+  { id: 'freebody', name: 'Free body',         desc: 'force diagram' },
+  { id: 'orbit',    name: 'Orbit',             desc: 'a body in a field' },
+  { id: 'warp',     name: 'Field warp',        desc: 'lines bend to a body' },
+  { id: 'pair',     name: 'Reciprocal pair',   desc: 'mutual pull' },
+  { id: 'aperture', name: 'Aperture',          desc: 'forces meet' },
+  { id: 'fvector',  name: 'F-vector',          desc: 'monogram' },
+];
+
+function MarkCard({ c }) {
+  return (
+    <div className="mk-card">
+      <div className="mk-hero"><Mark name={c.id} s={84} /></div>
+      <div className="mk-sizes">
+        <Mark name={c.id} s={30} color="var(--ink-2)" />
+        <Mark name={c.id} s={20} color="var(--ink-2)" />
+        <span className="mk-fav"><Mark name={c.id} s={15} /></span>
+      </div>
+      <div className="mk-lock"><Mark name={c.id} s={26} /><span className="mk-word">Forces</span></div>
+      <div className="mk-meta"><span className="mk-name">{c.name}</span><span className="mk-desc">{c.desc}</span></div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="marks" title="Forces — Mark candidates" subtitle="Nine directions · shown at display, small, favicon, and on the wordmark">
+        {CONCEPTS.map(c => (
+          <DCArtboard key={c.id} id={c.id} label={c.name} width={300} height={360}>
+            <MarkCard c={c} />
+          </DCArtboard>
+        ))}
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

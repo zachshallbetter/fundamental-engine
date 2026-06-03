@@ -1,0 +1,146 @@
+/* ============================================================
+   LAB / FIELD PALETTE — shared styles for the standalone sandbox
+   (field.html) and the in-page "Experience" playground (index.html).
+   Page chrome (cursor, headers, hint) stays in each page's own <style>.
+   ============================================================ */
+
+/* ===== Field palette — a small brush bar that expands ===== */
+.lab-bar {
+  position: fixed; z-index: 60; left: 50%; bottom: calc(1.5rem + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  max-width: calc(100vw - 1.2rem);
+  border: 1px solid var(--line-2); border-radius: 16px; background: rgba(8,10,15,0.82);
+  backdrop-filter: blur(20px) saturate(1.25); -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  box-shadow: 0 30px 70px -30px rgba(0,0,0,0.9); cursor: default;
+}
+/* embedded (homepage): the palette only appears once the play section is reached */
+body:not(.lab) .lab-bar { opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s ease; }
+body.play-active .lab-bar { opacity: 1; visibility: visible; }
+/* dropped chips are fixed to the viewport — only reveal them inside the play zone,
+   so they never float over the portfolio while scrolling */
+body:not(.lab) #nodes { opacity: 0; transition: opacity .35s ease; }
+body.play-active #nodes { opacity: 1; }
+body:not(.lab):not(.play-active) .node-chip { pointer-events: none; }
+/* paint cursor while the playground is live */
+body.play-active .experience { cursor: crosshair; }
+
+/* always-visible compact bar: active brush · swatches · expand */
+.lab-rail { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.5rem; }
+.rail-active { display: inline-flex; align-items: center; gap: 0.42rem; padding-left: 0.3rem; flex: none; font-family: var(--mono); }
+.rail-active .g { width: 14px; height: 14px; color: var(--fc, var(--accent)); }
+.rail-name { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); white-space: nowrap; }
+.rail-div { width: 1px; align-self: stretch; margin: 0.25rem 0; background: var(--line); flex: none; }
+
+/* brushes — icon swatches; the active one rings in its force color */
+.brushes { display: flex; align-items: center; gap: 0.28rem; flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.brushes::-webkit-scrollbar { display: none; }
+.brush { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 10px;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.018); cursor: pointer;
+  transition: background .18s, border-color .18s, transform .12s; }
+.brush:hover { border-color: var(--line-2); transform: translateY(-1px); }
+.brush.on { border-color: color-mix(in srgb, var(--fc) 75%, transparent); background: color-mix(in srgb, var(--fc) 18%, transparent); }
+.brush .g { width: 15px; height: 15px; color: var(--fc, var(--text-3)); }
+
+/* expand / collapse toggle */
+.lab-expand { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 9px;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.02); color: var(--text-3); cursor: pointer; transition: color .2s, border-color .2s; }
+.lab-expand:hover { color: var(--text); border-color: var(--line-2); }
+.lab-chevron { width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-1px) rotate(-135deg); transition: transform .3s var(--ease); }
+.lab-bar.expanded .lab-chevron { transform: translateY(1px) rotate(45deg); }
+
+/* the expanding drawer — options revealed on demand, above the rail */
+.lab-body { display: none; flex-direction: column; gap: 0.55rem; padding: 0.65rem 0.65rem 0.55rem; border-bottom: 1px solid var(--line); }
+.lab-bar.expanded .lab-body { display: flex; }
+
+.lab-status { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; row-gap: 0.3rem; padding: 0.5rem 0.6rem; border-radius: 10px;
+  background: rgba(255,255,255,0.022); border: 1px solid var(--line);
+  font-family: var(--mono); font-size: 0.57rem; letter-spacing: 0.02em; color: var(--text-3); }
+.lab-status b { color: var(--text); font-weight: 500; }
+.ls-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fc, var(--accent)); box-shadow: 0 0 8px var(--fc, var(--accent)); flex: none; transition: background .25s, box-shadow .25s; }
+.ls-text { min-width: 0; }
+.ls-field { margin-left: auto; white-space: nowrap; flex: none; }
+.ls-field b { color: var(--accent); }
+
+.lab-section { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.lab-label { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-4); flex: none; width: 5.4rem; }
+
+/* segmented controls — condition + formation */
+.seg { display: inline-flex; flex-wrap: wrap; gap: 0.18rem; padding: 0.2rem; border-radius: 10px; background: rgba(255,255,255,0.018); border: 1px solid var(--line); }
+.seg button { padding: 0.36rem 0.58rem; border-radius: 7px; border: 0; background: transparent; color: var(--text-3);
+  font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  transition: color .2s, background .2s; white-space: nowrap; }
+.seg button:hover { color: var(--text-2); }
+.seg.cond button.on { color: var(--text); background: color-mix(in srgb, #ffce6b 18%, transparent); }
+.seg.form button.on { color: var(--text); background: color-mix(in srgb, var(--accent) 20%, transparent); }
+
+/* footer actions */
+.lab-actions { display: flex; gap: 0.4rem; }
+.lab-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 0.7rem; border-radius: 9px;
+  border: 1px solid var(--line-2); background: rgba(255,255,255,0.018); color: var(--text-3);
+  font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: color .2s, background .2s, border-color .2s; }
+.lab-btn:hover { color: var(--text); border-color: var(--accent); }
+.lab-btn.on { color: var(--text); border-color: color-mix(in srgb, var(--accent) 60%, transparent); background: color-mix(in srgb, var(--accent) 13%, transparent); }
+
+/* tool glyphs — mirror the dropped-chip motifs, in the force color */
+.g { width: 13px; height: 13px; position: relative; display: inline-block; flex: none; color: var(--fc, var(--text-3)); }
+.g-attract::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.g-repel::before { content: ""; position: absolute; inset: 2.5px; background: currentColor; transform: rotate(45deg); box-shadow: 0 0 6px currentColor; }
+.g-absorb::before { content: ""; position: absolute; inset: 1px; border-radius: 50%; border: 1px dashed currentColor; }
+.g-vortex::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0deg, currentColor 55deg, transparent 135deg, transparent 180deg, currentColor 235deg, transparent 315deg); -webkit-mask: radial-gradient(farthest-side, transparent 54%, #000 56%); mask: radial-gradient(farthest-side, transparent 54%, #000 56%); animation: chip-spin 2.1s linear infinite; }
+.g-stream::before { content: ""; position: absolute; left: 1px; right: 1px; top: 4px; height: 5px; border-radius: 3px; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.g-drag::before { content: ""; position: absolute; inset: 1px; border-radius: 50%; border: 2px solid currentColor; opacity: 0.7; }
+.g-emitter::before { content: ""; position: absolute; left: 1px; top: 4px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.g-emitter::after { content: ""; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 5px solid currentColor; border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
+.g-spring::before { content: ""; position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 5px currentColor; }
+.g-spring::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px solid currentColor; opacity: 0.5; }
+.g-reflect::before { content: ""; position: absolute; inset: 2px; border-radius: 3px; border: 1.5px solid currentColor; }
+
+/* dropped bodies */
+#nodes { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+.node-chip {
+  position: absolute; transform: translate(-50%, -50%); pointer-events: auto; cursor: grab;
+  width: 16px; height: 16px; border-radius: 50%; touch-action: none;
+  display: grid; place-items: center;
+  background: var(--cc); box-shadow: 0 0 18px var(--cc), 0 0 0 1px rgba(255,255,255,0.25) inset;
+  transition: transform .15s var(--ease);
+}
+.node-chip[data-body~="repel"] { border-radius: 2px; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: none; filter: drop-shadow(0 0 7px var(--cc)); }
+.node-chip[data-body~="absorb"] { width: 22px; height: 22px; background: transparent; border: 1px dashed var(--cc); box-shadow: 0 0 22px -4px var(--cc); }
+.node-chip[data-body~="vortex"] { width: 12px; height: 12px; background: var(--cc); box-shadow: 0 0 16px var(--cc), 0 0 0 1px rgba(255,255,255,0.25) inset; }
+.node-chip[data-body~="vortex"]::after {
+  content: ""; position: absolute; inset: -8px; border-radius: 999px;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--cc) 55deg, transparent 135deg, transparent 180deg, var(--cc) 235deg, transparent 315deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  animation: chip-spin 2.1s linear infinite; pointer-events: none;
+}
+@keyframes chip-spin { to { transform: rotate(360deg); } }
+.node-chip[data-body~="stream"] { width: 24px; height: 10px; border-radius: 999px; }
+.node-chip[data-body~="drag"] { width: 18px; height: 18px; background: transparent; border: 2px solid color-mix(in srgb, var(--cc) 45%, transparent); box-shadow: 0 0 16px -2px var(--cc); }
+.node-chip[data-body~="emitter"] { width: 13px; height: 13px; }
+.node-chip[data-body~="emitter"]::after { content: ""; position: absolute; left: 118%; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 8px solid var(--cc); border-top: 4px solid transparent; border-bottom: 4px solid transparent; filter: drop-shadow(0 0 4px var(--cc)); }
+.node-chip[data-when] { outline: 1px dotted color-mix(in srgb, var(--cc) 70%, transparent); outline-offset: 3px; }
+.node-chip:active { cursor: grabbing; transform: translate(-50%,-50%) scale(1.25); }
+.node-chip .tip { position: absolute; top: 150%; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-4); white-space: nowrap; opacity: 0; transition: opacity .2s; }
+.node-chip:hover .tip { opacity: 1; }
+/* always-visible condition badge so gated bodies read at a glance */
+.node-chip .badge { position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 0.46rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cc); background: rgba(7,9,14,0.72); padding: 1px 5px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--cc) 40%, transparent); white-space: nowrap; pointer-events: none; }
+/* an invisible ≥44px hit target around the small visual chip */
+.node-chip::before { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; }
+/* remove control — hover-reveal on pointer devices, always shown on touch */
+.chip-x { position: absolute; left: 100%; bottom: 100%; transform: translate(-45%, 45%); width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: rgba(7,9,14,0.88); border: 1px solid color-mix(in srgb, var(--cc) 55%, transparent); color: var(--text-2); font-size: 13px; line-height: 1; padding: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .18s, color .18s; }
+.chip-x:hover { color: var(--text); }
+.node-chip:hover .chip-x { opacity: 1; pointer-events: auto; }
+
+@media (hover: none) {
+  .node-chip .tip { opacity: 1; }            /* no hover → show the label */
+  .chip-x { opacity: 1; pointer-events: auto; }
+}
+@media (max-width: 720px) {
+  .lab-bar { left: 0.6rem; right: 0.6rem; transform: none; max-width: none; }
+}
+/* honor reduced-motion: stop the chip spin + transitions, keep static motifs */
+@media (prefers-reduced-motion: reduce) {
+  .node-chip::after, .g-vortex::before { animation: none !important; }
+  .node-chip, .brush, .seg button, .lab-btn, .chip-x, .lab-chevron, .lab-expand { transition: none !important; }
+}

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zach Shallbetter — Field</title>
+<meta name="description" content="Zach Shallbetter builds the systems people feel before they understand them." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="app.css" />
+<link rel="stylesheet" href="lab.css" />
+<link rel="stylesheet" href="v6.css" />
+</head>
+<body>
+<canvas id="field"></canvas>
+<div class="scrim"></div>
+
+<div class="shell">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#capabilities">Practice</a>
+        <a href="#work">Work</a>
+        <a href="#design-systems">Systems</a>
+        <a href="#writing">Writing</a>
+        <a href="#manual">Manual</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO — the name accretes from the field -->
+  <header class="hero hero-v6" id="top">
+    <div class="hero-watermark" aria-hidden="true">FIELD</div>
+    <div class="wrap">
+      <p class="kicker hero-eyebrow"><b>Zach Shallbetter</b> &mdash; Product Experience · Creative Technology · 20 years</p>
+      <h1 class="hero-title">
+        <span class="ln">I build the systems</span>
+        <span class="ln">people <em class="liveword" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.9" data-range="300">feel</em> before</span>
+        <span class="ln">they understand them.</span>
+      </h1>
+      <p class="hero-sub">Across AI systems, software architecture, commerce, motion, and physical production — the visible experience and the invisible system that holds it up. This page is the idea made literal: everything you touch moves the field, and the field moves it back.</p>
+      <div class="hero-socials">
+        <a href="https://github.com/zachshallbetter" target="_blank" rel="noopener" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+        <a href="https://linkedin.com/in/zachshallbetter" target="_blank" rel="noopener" aria-label="LinkedIn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+        <a href="mailto:zach@zachshallbetter.com" aria-label="Email"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ABOUT — the throughline: designer → engineer → founder -->
+  <section class="about" id="about">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">00 — The throughline</span>
+        <h2>Build the machine that <span class="accent">builds the thing.</span></h2>
+      </div>
+      <p class="lead">A designer and illustrator who became an engineer, then a founder — and settled on the work he loves most: making products real, and building the systems that produce them.</p>
+    </div>
+
+    <div class="wrap reveal">
+      <div class="throughline" data-index>
+        <span class="tl-phase" tabindex="0" data-hot data-color="#7dd3fc" data-feedback data-body="attract" data-strength="0.7" data-range="220" style="--ph:#7dd3fc;--cat:#7dd3fc;">
+          <span class="tl-no">Where it starts</span>
+          <span class="tl-name"><b>Designer</b> &amp; illustrator</span>
+          <span class="tl-note">Form, composition, the feel of a thing before it works.</span>
+        </span>
+        <span class="tl-phase" tabindex="0" data-hot data-color="#2dd4bf" data-feedback data-body="spring" data-strength="0.7" data-range="220" style="--ph:#2dd4bf;--cat:#2dd4bf;">
+          <span class="tl-no">Then</span>
+          <span class="tl-name">became an <b>engineer</b></span>
+          <span class="tl-note">Architecture, data, services — the structure that makes it real.</span>
+        </span>
+        <span class="tl-phase" tabindex="0" data-hot data-color="#ffce6b" data-feedback data-body="absorb attract" data-strength="0.75" data-range="240" style="--ph:#ffce6b;--cat:#ffce6b;">
+          <span class="tl-no">Now</span>
+          <span class="tl-name">and a <b>founder</b></span>
+          <span class="tl-note">The whole system — prototype to real users, running on its own.</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="wrap about-grid">
+      <div class="about-body reveal">
+        <p>Across two decades the throughline is consistent: <b>build the machine that builds the thing, then engineer it to run without standing over it.</b> He has done this in both software and physical manufacturing — a rare pairing, and the core of what he builds now.</p>
+        <p>His range spans front-end and backend architecture, commerce and payments infrastructure, applied AI, design systems, and end-to-end production operations. He can define a product thesis, decompose a system into clean service boundaries, design the interaction model, and carry the result through to launch, fulfillment, and iteration.</p>
+        <p>He knows the difference between a <span class="about-accent">demo, a product, a platform, and a business</span> — and has shipped all four. That makes him effective where a company needs more than an idea: a product architecture, a technical narrative, a commercial path, and a system that survives real users.</p>
+      </div>
+      <aside class="about-side reveal">
+        <div class="about-facts">
+          <div class="fact"><span class="f-k">Now</span><span class="f-v"><b>Co-Founder &amp; Chief Product Architect</b> · S2Forge</span></div>
+          <div class="fact"><span class="f-k">Based</span><span class="f-v">Spokane, WA</span></div>
+          <div class="fact"><span class="f-k">Span</span><span class="f-v">Software architecture &amp; physical production</span></div>
+          <div class="fact"><span class="f-k">Founder</span><span class="f-v">Two-time — Cursed Crypt, S2Forge</span></div>
+          <div class="fact"><span class="f-k">Applied AI</span><span class="f-v">Retrieval · recommendation · conversational</span></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- PRACTICE — gravity wells at varied depths + a global formation switcher -->
+  <section class="caps caps-v6" id="capabilities">
+    <div class="wrap">
+      <div class="caps-head reveal">
+        <span class="kicker">The practice</span>
+        <h2 class="caps-title">A practice that spans the <span class="accent">whole</span> product.</h2>
+      </div>
+      <p class="caps-research reveal"><b>Research</b> is the sensing layer &mdash; how the field becomes <span class="accent">visible</span>. Before a system can be shaped, its forces have to be read: user behavior, business pressure, technical constraint, material limit, and the unstated assumption already moving through the work.</p>
+      <div class="caps-grid" id="capsGrid" data-index>
+        <span class="cap d2" tabindex="0" data-hot data-color="#4da3ff" data-feedback data-when="active" data-body="attract" data-strength="0.95" data-range="260" style="--cat:#4da3ff;">
+          <span class="cap-top"><span class="cap-no">01</span><i class="cap-glyph g g-attract"></i></span>
+          <span class="cap-main"><span class="cap-name">Product strategy</span><span class="cap-force"><b>Attract</b> · gives direction</span><span class="cap-desc">Vision · roadmaps · R&amp;D · product logic · operating models</span></span>
+        </span>
+        <span class="cap d0" tabindex="0" data-hot data-color="#a78bfa" data-feedback data-when="active" data-body="emitter" data-angle="0" data-strength="0.9" data-range="260" style="--cat:#a78bfa;">
+          <span class="cap-top"><span class="cap-no">02</span><i class="cap-glyph g g-emitter"></i></span>
+          <span class="cap-main"><span class="cap-name">AI systems</span><span class="cap-force"><b>Condition</b> · adapts response</span><span class="cap-desc">LLMs · semantic search · recommendations · context · trust</span></span>
+        </span>
+        <span class="cap d3" tabindex="0" data-hot data-color="#2dd4bf" data-feedback data-when="active" data-body="spring" data-strength="0.9" data-range="260" style="--cat:#2dd4bf;">
+          <span class="cap-top"><span class="cap-no">03</span><i class="cap-glyph g g-spring"></i></span>
+          <span class="cap-main"><span class="cap-name">Software architecture</span><span class="cap-force"><b>Spring</b> · gives structure</span><span class="cap-desc">Platforms · APIs · data · payments · deployment · performance</span></span>
+        </span>
+        <span class="cap d1" tabindex="0" data-hot data-color="#7dd3fc" data-feedback data-when="active" data-body="reflect" data-strength="0.9" data-range="260" style="--cat:#7dd3fc;">
+          <span class="cap-top"><span class="cap-no">04</span><i class="cap-glyph g g-reflect"></i></span>
+          <span class="cap-main"><span class="cap-name">Experience design</span><span class="cap-force"><b>Reflect</b> · the human surface</span><span class="cap-desc">Flows · IA · usability · accessibility · journeys · behavior</span></span>
+        </span>
+        <span class="cap d1" tabindex="0" data-hot data-color="#ff9d5c" data-feedback data-when="active" data-body="stream" data-angle="0" data-strength="0.95" data-range="260" style="--cat:#ff9d5c;">
+          <span class="cap-top"><span class="cap-no">05</span><i class="cap-glyph g g-stream"></i></span>
+          <span class="cap-main"><span class="cap-name">Motion</span><span class="cap-force"><b>Stream</b> · reveals motion</span><span class="cap-desc">State · feedback · transitions · rhythm · interface behavior</span></span>
+        </span>
+        <span class="cap d3" tabindex="0" data-hot data-color="#ff6e9c" data-feedback data-when="active" data-body="repel" data-strength="0.95" data-range="260" style="--cat:#ff6e9c;">
+          <span class="cap-top"><span class="cap-no">06</span><i class="cap-glyph g g-repel"></i></span>
+          <span class="cap-main"><span class="cap-name">Commerce</span><span class="cap-force"><b>Repel</b> · market pressure</span><span class="cap-desc">Catalogs · checkout · sellers · payments · fulfillment · trust</span></span>
+        </span>
+        <span class="cap d0" tabindex="0" data-hot data-color="#5fd0a8" data-feedback data-when="active" data-body="drag" data-strength="0.9" data-range="260" style="--cat:#5fd0a8;">
+          <span class="cap-top"><span class="cap-no">07</span><i class="cap-glyph g g-drag"></i></span>
+          <span class="cap-main"><span class="cap-name">Physical production</span><span class="cap-force"><b>Drag</b> · adds constraint</span><span class="cap-desc">Materials · prototypes · packaging · manufacturing · delivery</span></span>
+        </span>
+        <span class="cap d2" tabindex="0" data-hot data-color="#c4b5fd" data-feedback data-when="active" data-body="vortex" data-spin="1" data-strength="0.9" data-range="260" style="--cat:#c4b5fd;">
+          <span class="cap-top"><span class="cap-no">08</span><i class="cap-glyph g g-vortex"></i></span>
+          <span class="cap-main"><span class="cap-name">Creative technology</span><span class="cap-force"><b>Vortex</b> · spins it together</span><span class="cap-desc">AI · code · animation · 3D · prototypes · experiments</span></span>
+        </span>
+      </div>
+      <p class="caps-note reveal">Every card here is a body in the field. <a href="manual.html">Read the manual &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- THE FIELD — live thread diagram: every force resolves toward coherence -->
+  <section class="field-graph" id="field-graph">
+    <div class="wrap fg-head reveal">
+      <span class="kicker">The field</span>
+      <h2 class="field-lead">Every force resolves toward <span class="accent">coherence.</span></h2>
+      <p class="field-body">Research senses the field; strategy gives it direction; the interface is where it becomes human; architecture holds its shape; AI adapts its response; commerce and production add pressure and constraint; motion reveals its state. None of them stand alone — they pull on each other until the whole thing reads as one system.</p>
+    </div>
+    <div class="graph" id="fieldGraph">
+      <svg class="graph-svg" id="graphSvg" aria-hidden="true"></svg>
+      <span class="gnode" tabindex="0" data-node="research" data-color="#8da2c0" data-hot data-feedback data-body="attract" data-strength="0.6" data-range="200" style="--gx:7%;--gy:30%;--cat:#8da2c0;"><span>Research</span><em>Sense</em></span>
+      <span class="gnode" tabindex="0" data-node="strategy" data-color="#4da3ff" data-hot data-feedback data-body="attract" data-strength="0.6" data-range="200" style="--gx:25%;--gy:15%;--cat:#4da3ff;"><span>Strategy</span><em>Attract</em></span>
+      <span class="gnode" tabindex="0" data-node="interface" data-color="#7dd3fc" data-hot data-feedback data-body="reflect" data-strength="0.6" data-range="200" style="--gx:31%;--gy:55%;--cat:#7dd3fc;"><span>Interface</span><em>Reflect</em></span>
+      <span class="gnode" tabindex="0" data-node="motion" data-color="#ff9d5c" data-hot data-feedback data-body="stream" data-strength="0.6" data-range="200" style="--gx:21%;--gy:84%;--cat:#ff9d5c;"><span>Motion</span><em>Stream</em></span>
+      <span class="gnode" tabindex="0" data-node="architecture" data-color="#2dd4bf" data-hot data-feedback data-body="spring" data-strength="0.6" data-range="200" style="--gx:51%;--gy:33%;--cat:#2dd4bf;"><span>Architecture</span><em>Spring</em></span>
+      <span class="gnode" tabindex="0" data-node="ai" data-color="#a78bfa" data-hot data-feedback data-body="emitter" data-strength="0.6" data-range="200" style="--gx:60%;--gy:62%;--cat:#a78bfa;"><span>AI systems</span><em>Condition</em></span>
+      <span class="gnode" tabindex="0" data-node="commerce" data-color="#ff6e9c" data-hot data-feedback data-body="repel" data-strength="0.6" data-range="200" style="--gx:47%;--gy:88%;--cat:#ff6e9c;"><span>Commerce</span><em>Repel</em></span>
+      <span class="gnode" tabindex="0" data-node="production" data-color="#5fd0a8" data-hot data-feedback data-body="drag" data-strength="0.6" data-range="200" style="--gx:73%;--gy:85%;--cat:#5fd0a8;"><span>Production</span><em>Drag</em></span>
+      <span class="gnode gnode-goal" tabindex="0" data-node="coherence" data-color="#ffce6b" data-hot data-feedback data-body="absorb attract" data-strength="0.8" data-range="280" style="--gx:85%;--gy:49%;--cat:#ffce6b;"><span>Coherence</span><em>The goal</em></span>
+    </div>
+  </section>
+
+  <!-- WORK — accretion: each project a mass the field gathers around -->
+  <section class="work-acc" id="work">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">01 — Selected work</span>
+        <h2>Things made real.</h2>
+      </div>
+      <p class="lead">Customer-facing systems — the visible experience and the architecture beneath it.</p>
+    </div>
+    <div class="accretion" data-index>
+      <article class="acc-row" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.8" data-range="320" style="--cat:#4da3ff;">
+        <span class="acc-num">01</span>
+        <div class="acc-body">
+          <span class="acc-meta"><span class="acc-cat">Platform · Founding</span><span class="acc-year">2026</span></span>
+          <h3 class="acc-title">S2Forge — Contract-Driven Platform</h3>
+          <p class="acc-dek">A software platform built on the discipline that ran a physical line: single-responsibility services under explicit contracts, idempotent state, fail-closed boundaries, and automation that lets a small team operate a large system. Architected end to end — identity, commerce, retrieval, orchestration.</p>
+          <div class="acc-tags"><span class="acc-tag">Rust · Axum</span><span class="acc-tag">Microservices</span><span class="acc-tag">Payments</span><span class="acc-tag">RAG</span></div>
+        </div>
+      </article>
+      <article class="acc-row right" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="0.8" data-range="320" style="--cat:#a78bfa;">
+        <span class="acc-num">02</span>
+        <div class="acc-body">
+          <span class="acc-meta"><span class="acc-cat">Applied AI · Media</span><span class="acc-year">2025</span></span>
+          <h3 class="acc-title">AI Video Production Tools</h3>
+          <p class="acc-dek">An innovation division building AI for video and post-production — live rotoscoping, active object callouts, in-camera image masking — with the product strategy, architecture, and prototype direction behind them.</p>
+          <div class="acc-tags"><span class="acc-tag">Computer vision</span><span class="acc-tag">Workflow AI</span><span class="acc-tag">Prototyping</span></div>
+        </div>
+      </article>
+      <article class="acc-row" data-hot data-color="#ff6e9c" data-feedback data-body="attract" data-strength="0.8" data-range="320" style="--cat:#ff6e9c;">
+        <span class="acc-num">03</span>
+        <div class="acc-body">
+          <span class="acc-meta"><span class="acc-cat">Commerce · AI</span><span class="acc-year">2024</span></span>
+          <h3 class="acc-title">SWAIA — AI Commerce Platform</h3>
+          <p class="acc-dek">An Indigenous-art marketplace on Next.js, Supabase, and Stripe Connect — seller verification, customizable storefronts, product customization, and advanced search. Recommendation, semantic search, and conversational assist built directly into the shopping experience.</p>
+          <div class="acc-tags"><span class="acc-tag">Next.js</span><span class="acc-tag">Stripe Connect</span><span class="acc-tag">Semantic search</span><span class="acc-tag">Supabase</span></div>
+        </div>
+      </article>
+      <article class="acc-row right" data-hot data-color="#5fd0a8" data-feedback data-body="attract" data-strength="0.8" data-range="320" style="--cat:#5fd0a8;">
+        <span class="acc-num">04</span>
+        <div class="acc-body">
+          <span class="acc-meta"><span class="acc-cat">Hardware · Founding</span><span class="acc-year">2022</span></span>
+          <h3 class="acc-title">Cursed Crypt — Self-Running Factory</h3>
+          <p class="acc-dek">A tabletop-gaming hardware company taken from a Kickstarter at ~330% of goal through a ~$500K seed to an end-to-end, just-in-time facility that ran largely on its own — achieved by re-engineering machines, commissioning custom equipment, and inventing proprietary coatings and processes.</p>
+          <div class="acc-tags"><span class="acc-tag">JIT manufacturing</span><span class="acc-tag">Custom equipment</span><span class="acc-tag">Materials R&amp;D</span><span class="acc-tag">Fulfillment</span></div>
+        </div>
+      </article>
+      <article class="acc-row" data-hot data-color="#7dd3fc" data-feedback data-body="attract" data-strength="0.8" data-range="320" style="--cat:#7dd3fc;">
+        <span class="acc-num">05</span>
+        <div class="acc-body">
+          <span class="acc-meta"><span class="acc-cat">Studio · Leadership</span><span class="acc-year">2014–20</span></span>
+          <h3 class="acc-title">Uxiliary — Product &amp; Design Studio</h3>
+          <p class="acc-dek">A digital product and design studio directing a team of ten-plus across design and engineering, for clients from startups to Fortune 500 — Amazon, MassMutual, Novo Nordisk — owning proposals, scope, and daily delivery cadence.</p>
+          <div class="acc-tags"><span class="acc-tag">Product design</span><span class="acc-tag">Team leadership</span><span class="acc-tag">Delivery</span></div>
+        </div>
+      </article>
+      <article class="acc-row right" data-hot data-color="#ff9d5c" data-feedback data-body="attract" data-strength="0.8" data-range="320" style="--cat:#ff9d5c;">
+        <span class="acc-num">06</span>
+        <div class="acc-body">
+          <span class="acc-meta"><span class="acc-cat">Enterprise · Web</span><span class="acc-year">2007–13</span></span>
+          <h3 class="acc-title">Enterprise Brand Systems</h3>
+          <p class="acc-dek">National-brand campaigns and web systems — GE, GM, Adobe, Gilead, Celebrity Cruises — built through agencies including AKQA and Mekanism, including a CMS rebuild that drove a 320% increase in leads.</p>
+          <div class="acc-tags"><span class="acc-tag">CMS architecture</span><span class="acc-tag">Front-end</span><span class="acc-tag">Brand campaigns</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- DESIGN SYSTEMS — systems made: the field, organized by rules -->
+  <section class="systems" id="design-systems">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">Systems made</span>
+        <h2>Systems that build the thing.</h2>
+      </div>
+      <p class="lead">A design system is a field with rules — the same forces, organized into tokens, components, and behavior a team can run.</p>
+    </div>
+
+    <div class="wrap">
+      <div class="sys-grid" data-index>
+        <a class="sys-card sys-feature" href="design-system.html" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.85" data-range="340" style="--cat:#4da3ff;">
+          <div class="sys-feat-head">
+            <span class="sys-tag-row"><span class="sys-cat">Forces</span><span class="sys-year">2025 · Live</span></span>
+            <span class="sys-open">Open the system &rarr;</span>
+          </div>
+          <h3 class="sys-title">The Reciprocal Field</h3>
+          <p class="sys-dek">A design system where every component is a body in a conserved particle field — the system runs the very page that documents it. Eight forces, five formations, color and type tokens, and live, executable documentation.</p>
+          <div class="sys-tags"><span class="sys-chip">Tokens</span><span class="sys-chip">8 forces</span><span class="sys-chip">5 formations</span><span class="sys-chip">Executable docs</span></div>
+        </a>
+
+        <article class="sys-card" data-hot data-color="#2dd4bf" data-feedback data-body="attract" data-strength="0.7" data-range="280" style="--cat:#2dd4bf;">
+          <span class="sys-tag-row"><span class="sys-cat">Executable DS</span><span class="sys-year">2025</span></span>
+          <h3 class="sys-title">Specs that run</h3>
+          <p class="sys-dek">Design decisions encoded into components, states, documentation, and implementation logic — a system that compiles instead of sitting in a doc.</p>
+          <div class="sys-tags"><span class="sys-chip">States</span><span class="sys-chip">Docs-as-code</span><span class="sys-chip">Components</span></div>
+        </article>
+
+        <article class="sys-card" data-hot data-color="#ff6e9c" data-feedback data-body="attract" data-strength="0.7" data-range="280" style="--cat:#ff6e9c;">
+          <span class="sys-tag-row"><span class="sys-cat">Commerce</span><span class="sys-year">2024</span></span>
+          <h3 class="sys-title">SWAIA Storefront System</h3>
+          <p class="sys-dek">A themeable storefront and product-customization system for Indigenous-art sellers — branded components on one shared commerce core.</p>
+          <div class="sys-tags"><span class="sys-chip">Theming</span><span class="sys-chip">Commerce</span><span class="sys-chip">Seller tools</span></div>
+        </article>
+
+        <article class="sys-card" data-hot data-color="#ff9d5c" data-feedback data-body="attract" data-strength="0.7" data-range="280" style="--cat:#ff9d5c;">
+          <span class="sys-tag-row"><span class="sys-cat">Motion</span><span class="sys-year">Ongoing</span></span>
+          <h3 class="sys-title">Interaction &amp; Motion Library</h3>
+          <p class="sys-dek">Interface behavior as a system — state, feedback, transitions, and rhythm captured as reusable motion primitives that hold from brand to code.</p>
+          <div class="sys-tags"><span class="sys-chip">Motion tokens</span><span class="sys-chip">Transitions</span><span class="sys-chip">Rhythm</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS & EXPERIMENTS — where the field gets played with -->
+  <section class="experiments" id="experiments-grid">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">The lab bench</span>
+        <h2>Projects &amp; experiments.</h2>
+      </div>
+      <p class="lead">Smaller bodies in the field — creative-technology probes, AI tools, and prototypes built to see what a system wants to do.</p>
+    </div>
+
+    <div class="wrap">
+      <div class="xp-grid" data-index>
+        <article class="xp-card" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="0.6" data-range="220" style="--cat:#a78bfa;">
+          <image-slot id="xp-roto" class="xp-shot" shape="rounded" radius="14" placeholder="Drop a still or screen recording"></image-slot>
+          <div class="xp-meta"><span class="xp-tag">Computer vision</span><span class="xp-yr">2025</span></div>
+          <h3 class="xp-title">Live Rotoscoping</h3>
+          <p class="xp-dek">Real-time subject isolation for video — masking that follows the actor through the shot.</p>
+        </article>
+
+        <article class="xp-card" data-hot data-color="#7dd3fc" data-feedback data-body="attract" data-strength="0.6" data-range="220" style="--cat:#7dd3fc;">
+          <image-slot id="xp-callouts" class="xp-shot" shape="rounded" radius="14" placeholder="Drop a still or clip"></image-slot>
+          <div class="xp-meta"><span class="xp-tag">Computer vision</span><span class="xp-yr">2025</span></div>
+          <h3 class="xp-title">Active Object Callouts</h3>
+          <p class="xp-dek">In-frame annotations that track objects through a moving shot.</p>
+        </article>
+
+        <article class="xp-card" data-hot data-color="#2dd4bf" data-feedback data-body="attract" data-strength="0.6" data-range="220" style="--cat:#2dd4bf;">
+          <image-slot id="xp-mask" class="xp-shot" shape="rounded" radius="14" placeholder="Drop a still or clip"></image-slot>
+          <div class="xp-meta"><span class="xp-tag">Production tooling</span><span class="xp-yr">2025</span></div>
+          <h3 class="xp-title">In-Camera Image Masking</h3>
+          <p class="xp-dek">Composites masked live, in camera — review before the shot is even cut.</p>
+        </article>
+
+        <article class="xp-card" data-hot data-color="#ff6e9c" data-feedback data-body="attract" data-strength="0.6" data-range="220" style="--cat:#ff6e9c;">
+          <image-slot id="xp-search" class="xp-shot" shape="rounded" radius="14" placeholder="Drop a screenshot"></image-slot>
+          <div class="xp-meta"><span class="xp-tag">Applied AI</span><span class="xp-yr">2024</span></div>
+          <h3 class="xp-title">Semantic Search &amp; Assist</h3>
+          <p class="xp-dek">Retrieval, recommendation, and conversational assist built directly into the shopping experience.</p>
+        </article>
+
+        <article class="xp-card xp-live" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.6" data-range="220" style="--cat:#4da3ff;">
+          <image-slot id="xp-field" class="xp-shot" shape="rounded" radius="14" placeholder="Drop a field capture"></image-slot>
+          <div class="xp-meta"><span class="xp-tag">Creative tech · Live</span><span class="xp-yr">2025</span></div>
+          <h3 class="xp-title">The Reciprocal Field</h3>
+          <p class="xp-dek">This page's engine — a conserved particle field DOM elements bend, and are bent by. <a class="xp-link" href="field.html">Open the sandbox &rarr;</a></p>
+        </article>
+
+        <article class="xp-card xp-end">
+          <h3 class="xp-title">More in the lab.</h3>
+          <p class="xp-dek">New probes land as they resolve — generative form, 3D, and the next thing the field suggests.</p>
+          <span class="xp-end-mark" aria-hidden="true">+</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS — by-the-numbers: the field's measurable density -->
+  <section class="stats-band" id="stats">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">Density</span>
+        <h2>What the work weighs.</h2>
+      </div>
+      <p class="lead">Two decades resolved into the numbers that moved — funded, raised, lifted, shipped.</p>
+    </div>
+    <div class="wrap">
+      <div class="stats-grid" data-index>
+        <div class="stat-cell" data-hot data-color="#5fd0a8" data-feedback data-body="attract" data-strength="0.55" data-range="220" style="--cat:#5fd0a8;">
+          <div class="stat-num"><span class="v" data-count="330">0</span><span class="u">%</span></div>
+          <div class="stat-label">of Kickstarter goal funded for Cursed Crypt</div>
+          <div class="stat-sub">Hardware · 2018</div>
+        </div>
+        <div class="stat-cell" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.55" data-range="220" style="--cat:#4da3ff;">
+          <div class="stat-num"><span class="u">$</span><span class="v" data-count="500">0</span><span class="u">K</span></div>
+          <div class="stat-label">seed capital raised after launch</div>
+          <div class="stat-sub">Founder · CPO</div>
+        </div>
+        <div class="stat-cell" data-hot data-color="#ff9d5c" data-feedback data-body="attract" data-strength="0.55" data-range="220" style="--cat:#ff9d5c;">
+          <div class="stat-num"><span class="v" data-count="320">0</span><span class="u">%</span></div>
+          <div class="stat-label">lead increase from an enterprise CMS rebuild</div>
+          <div class="stat-sub">Agency era</div>
+        </div>
+        <div class="stat-cell" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="0.55" data-range="220" style="--cat:#a78bfa;">
+          <div class="stat-num"><span class="v" data-count="20">0</span><span class="u">%</span></div>
+          <div class="stat-label">program-enrollment growth, web &amp; UX curriculum</div>
+          <div class="stat-sub">Faculty · 2022</div>
+        </div>
+        <div class="stat-cell" data-hot data-color="#7dd3fc" data-feedback data-body="attract" data-strength="0.55" data-range="220" style="--cat:#7dd3fc;">
+          <div class="stat-num"><span class="v" data-count="20">0</span><span class="u"> yrs</span></div>
+          <div class="stat-label">across software, AI, commerce, and physical product</div>
+          <div class="stat-sub">The throughline</div>
+        </div>
+        <div class="stat-cell" data-hot data-color="#ffce6b" data-feedback data-body="absorb attract" data-strength="0.6" data-range="240" style="--cat:#ffce6b;">
+          <div class="stat-num"><span class="v" data-count="4">0</span><span class="u">/4</span></div>
+          <div class="stat-label">demo, product, platform, business — shipped all four</div>
+          <div class="stat-sub">Founder's range</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGOS — brands whose systems the work has touched -->
+  <section class="logos" id="logos">
+    <div class="wrap logos-head reveal">
+      <span class="kicker">Reach</span>
+      <p class="logos-line">Built for, and shipped through, brands and agencies including —</p>
+    </div>
+    <div class="logos-grid reveal">
+      <span class="logo-word">GE</span>
+      <span class="logo-word">GM</span>
+      <span class="logo-word">Adobe</span>
+      <span class="logo-word">Gilead</span>
+      <span class="logo-word">Amazon</span>
+      <span class="logo-word">Celebrity&nbsp;Cruises</span>
+      <span class="logo-word">MassMutual</span>
+      <span class="logo-word">Novo&nbsp;Nordisk</span>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS — the field, read back by the people in it -->
+  <section class="testimonials" id="testimonials">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">Feedback</span>
+        <h2>The field, read back.</h2>
+      </div>
+      <p class="lead">How collaborators describe working across the visible experience and the system beneath it.</p>
+    </div>
+    <div class="wrap">
+      <div class="quotes reveal" data-index>
+        <figure class="quote" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.6" data-range="240" style="--cat:#4da3ff;">
+          <span class="q-mark" aria-hidden="true">&ldquo;</span>
+          <blockquote><p>He moves from product thesis to service boundaries to a working prototype without ever losing the person who has to use it. Rare to find both halves in one head.</p></blockquote>
+          <figcaption class="q-by"><span class="q-name">Dustin —</span><span class="q-role">Co-Founder &amp; CEO · S2Forge</span></figcaption>
+        </figure>
+        <figure class="quote" data-hot data-color="#2dd4bf" data-feedback data-body="attract" data-strength="0.6" data-range="240" style="--cat:#2dd4bf;">
+          <span class="q-mark" aria-hidden="true">&ldquo;</span>
+          <blockquote><p>Zach handed us an architecture we could actually run — clean contracts, fail-closed boundaries, automation where it mattered. The system held the day it met real users.</p></blockquote>
+          <figcaption class="q-by"><span class="q-name">Engineering Lead</span><span class="q-role">Commerce platform</span></figcaption>
+        </figure>
+        <figure class="quote" data-hot data-color="#ffce6b" data-feedback data-body="attract" data-strength="0.6" data-range="240" style="--cat:#ffce6b;">
+          <span class="q-mark" aria-hidden="true">&ldquo;</span>
+          <blockquote><p>He built the machine that built the product — re-engineered the line, invented the coatings, then made it run without him in the room. I've never seen software and manufacturing instincts in the same person.</p></blockquote>
+          <figcaption class="q-by"><span class="q-name">Operations Partner</span><span class="q-role">Hardware &amp; fulfillment</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERSHIP & RECOGNITION — the field beyond the product -->
+  <section class="beyond" id="beyond">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">Beyond the build</span>
+        <h2>Leadership &amp; recognition.</h2>
+      </div>
+      <p class="lead">The work spreads past the product — into community, teaching, and the awards that marked the way.</p>
+    </div>
+
+    <div class="wrap beyond-grid">
+      <div class="lead-block reveal" data-index>
+        <article class="lead-card" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.65" data-range="240" style="--cat:#4da3ff;">
+          <span class="lead-role">President &amp; Co-Founder</span>
+          <h3>Inland Northwest Technologists</h3>
+          <p>A regional tech nonprofit (501c3): 50+ volunteers, 200+ community events, a municipal-broadband initiative carried to a unanimous council vote, and a merger that expanded its reach.</p>
+        </article>
+        <article class="lead-card" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="0.65" data-range="240" style="--cat:#a78bfa;">
+          <span class="lead-role">Interactive Chair</span>
+          <h3>AAF Spokane</h3>
+          <p>Chaired the interactive program for the regional American Advertising Federation chapter — connecting designers, developers, and the brands they build for.</p>
+        </article>
+        <article class="lead-card" data-hot data-color="#2dd4bf" data-feedback data-body="attract" data-strength="0.65" data-range="240" style="--cat:#2dd4bf;">
+          <span class="lead-role">Assistant Professor · Web &amp; UX</span>
+          <h3>North Idaho College</h3>
+          <p>Built and taught an interdisciplinary web &amp; UX curriculum, started a student-led consultancy, and established industry internship and placement pipelines.</p>
+        </article>
+      </div>
+
+      <aside class="awards reveal">
+        <span class="awards-label">Recognition</span>
+        <ul class="award-list" data-index>
+          <li class="award" data-hot data-color="#ffce6b" data-feedback data-body="attract" data-strength="0.6" data-range="200" style="--cat:#ffce6b;">
+            <span class="award-mark">Gold</span>
+            <span class="award-text"><b>AMCP Gold Award</b><span>Gilead annual report</span></span>
+          </li>
+          <li class="award" data-hot data-color="#ff9d5c" data-feedback data-body="attract" data-strength="0.6" data-range="200" style="--cat:#ff9d5c;">
+            <span class="award-mark">★</span>
+            <span class="award-text"><b>Design &amp; Innovation Awards</b><span>Ad Club of Spokane · AAF</span></span>
+          </li>
+          <li class="award" data-hot data-color="#7dd3fc" data-feedback data-body="attract" data-strength="0.6" data-range="200" style="--cat:#7dd3fc;">
+            <span class="award-mark">◇</span>
+            <span class="award-text"><b>Mayoral Award</b><span>Community leadership</span></span>
+          </li>
+          <li class="award" data-hot data-color="#5fd0a8" data-feedback data-body="attract" data-strength="0.6" data-range="200" style="--cat:#5fd0a8;">
+            <span class="award-mark">SBA</span>
+            <span class="award-text"><b>Emerging Leaders</b><span>U.S. Small Business Administration</span></span>
+          </li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <!-- WRITING — a horizontal stream you scrub sideways -->
+  <section class="writing-stream" id="writing">
+    <div class="wrap section-head reveal">
+      <div>
+        <span class="kicker">02 — Writing</span>
+        <h2>Notes in motion.</h2>
+      </div>
+      <p class="lead">On experience architecture, AI interaction, and the systems behind the screen.</p>
+    </div>
+    <div class="stream" id="stream" data-index tabindex="0" aria-label="Writing — scroll sideways">
+      <article class="stream-card" data-hot data-color="#4da3ff" data-feedback data-body="attract" data-strength="0.6" data-range="240" style="--cat:#4da3ff;">
+        <div class="sc-meta"><span class="dot"></span><span>Essay</span><span>8 min</span></div>
+        <h3>The customer-facing layer is the product</h3>
+        <p>Why experience architecture — not features — decides whether technology survives contact with real users.</p>
+        <span class="sc-date">2025</span>
+      </article>
+      <article class="stream-card" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="0.6" data-range="240" style="--cat:#a78bfa;">
+        <div class="sc-meta"><span class="dot"></span><span>AI</span><span>11 min</span></div>
+        <h3>Designing AI interaction models that adapt</h3>
+        <p>Past the prompt box: interfaces that change shape around intent, context, and trust.</p>
+        <span class="sc-date">2025</span>
+      </article>
+      <article class="stream-card" data-hot data-color="#2dd4bf" data-feedback data-body="attract" data-strength="0.6" data-range="240" style="--cat:#2dd4bf;">
+        <div class="sc-meta"><span class="dot"></span><span>Systems</span><span>6 min</span></div>
+        <h3>Executable design systems</h3>
+        <p>Encoding design decisions into behavior and architecture instead of static specs.</p>
+        <span class="sc-date">2024</span>
+      </article>
+      <article class="stream-card" data-hot data-color="#ff9d5c" data-feedback data-body="attract" data-strength="0.6" data-range="240" style="--cat:#ff9d5c;">
+        <div class="sc-meta"><span class="dot"></span><span>Physical</span><span>9 min</span></div>
+        <h3>From prototype to the production line</h3>
+        <p>What software teams learn when materials, tolerance, and time stop being negotiable.</p>
+        <span class="sc-date">2024</span>
+      </article>
+      <article class="stream-card sc-end">
+        <h3>More in motion.</h3>
+        <p>Notes are published as the work resolves.</p>
+        <span class="sc-arrow">↦</span>
+      </article>
+    </div>
+    <div class="stream-rail" aria-hidden="true"><span class="stream-prog" id="streamProg"></span></div>
+  </section>
+
+  <!-- MANUAL — full-bleed band; the page is a model of the practice -->
+  <section class="manual-band" id="manual">
+    <div class="wrap">
+      <span class="kicker reveal">03 — The manual</span>
+      <h2 class="reveal">This page has a manual.</h2>
+      <p class="lead reveal">Every word, card, and link is registered as a body in the field — attraction, repulsion, reflection, viscosity, accretion, emission, threads, and formations. The page is a model of the practice.</p>
+      <a class="manual-link reveal" href="manual.html">Open the field manual &rarr;</a>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE — the playground -->
+  <section class="experience" id="experience"></section>
+
+  <!-- CONTACT — the absorber: the page collapses into the node -->
+  <section class="contact contact-v6" id="contact">
+    <div class="wrap">
+      <h2 class="reveal">Open to the <span class="accent">right conversation.</span></h2>
+      <a class="node" href="mailto:zach@zachshallbetter.com" data-hot data-color="#ffce6b" data-feedback data-body="absorb attract" data-absorb="120" data-max="60" data-strength="0.95" data-range="520">zach@zachshallbetter.com</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="cue" id="cue"><span>Scroll</span><span class="ln"></span></div>
+
+<div id="nodes"></div>
+
+<div class="lab-bar" id="labBar">
+  <div class="lab-body" id="labBody">
+    <div class="lab-status" id="labStatus">
+      <span class="ls-dot" id="lsDot"></span>
+      <span class="ls-text" id="lsText"></span>
+      <span class="ls-field" id="lsField"></span>
+    </div>
+    <div class="lab-section">
+      <span class="lab-label">Only when</span>
+      <div class="seg cond" id="conds">
+        <button class="on" data-cond="">Always</button>
+        <button data-cond="fast">Fast</button>
+        <button data-cond="hot">Hot</button>
+      </div>
+    </div>
+    <div class="lab-section">
+      <span class="lab-label">Formation</span>
+      <div class="seg form" id="forms">
+        <button class="on" data-form="ambient">Ambient</button>
+        <button data-form="wells">Wells</button>
+        <button data-form="lanes">Lanes</button>
+        <button data-form="scatter">Scatter</button>
+        <button data-form="accretion">Accretion</button>
+      </div>
+    </div>
+    <div class="lab-actions">
+      <button class="lab-btn" id="shareBtn">Share field</button>
+      <button class="lab-btn" id="clearBtn">Clear all</button>
+    </div>
+  </div>
+  <div class="lab-rail">
+    <span class="rail-active"><i class="g g-attract" id="handleGlyph"></i><span class="rail-name" id="handleName">Attract</span></span>
+    <span class="rail-div"></span>
+    <div class="brushes" id="tools">
+      <button class="brush on" data-tool="attract" style="--fc:#4da3ff" title="Attract" aria-label="Attract"><i class="g g-attract"></i></button>
+      <button class="brush" data-tool="repel" style="--fc:#ff9d5c" title="Repel" aria-label="Repel"><i class="g g-repel"></i></button>
+      <button class="brush" data-tool="absorb" style="--fc:#ff6e9c" title="Absorb" aria-label="Absorb"><i class="g g-absorb"></i></button>
+      <button class="brush" data-tool="vortex" style="--fc:#2dd4bf" title="Vortex" aria-label="Vortex"><i class="g g-vortex"></i></button>
+      <button class="brush" data-tool="stream" style="--fc:#7dd3fc" title="Stream" aria-label="Stream"><i class="g g-stream"></i></button>
+      <button class="brush" data-tool="drag" style="--fc:#8da2c0" title="Drag" aria-label="Drag"><i class="g g-drag"></i></button>
+      <button class="brush" data-tool="spring" style="--fc:#86e57f" title="Spring" aria-label="Spring"><i class="g g-spring"></i></button>
+      <button class="brush" data-tool="emitter" style="--fc:#a78bfa" title="Emitter" aria-label="Emitter"><i class="g g-emitter"></i></button>
+    </div>
+    <span class="rail-div"></span>
+    <button class="lab-expand" id="labHandle" type="button" aria-expanded="false" aria-controls="labBody" title="More options"><span class="lab-chevron"></span></button>
+  </div>
+</div>
+
+<script src="forces.js"></script>
+<script src="field.js"></script>
+<script src="interact.js"></script>
+<script src="lab.js"></script>
+<script src="caps.js"></script>
+<script src="image-slot.js"></script>
+<script src="v6.js"></script>
+</body>
+</html>
