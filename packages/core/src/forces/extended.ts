@@ -78,8 +78,29 @@ export const buoyancy: Force = {
   meta: { desc: 'a constant lift/sink by density difference — light matter rises, dense settles' },
 };
 
+/**
+ * §20.3 — `shear`: a laminar velocity gradient (Couette flow). Speed along the flow
+ * axis `n = (cosθ, sinθ)` grows with a particle's *perpendicular* offset from the
+ * body: `v_∥ += S·(offset_⊥/d_max)·(1 − d/d_max)`. Matter on one side of the axis is
+ * dragged forward, the other side back — laminae sliding past each other.
+ * `data-angle` sets the flow axis; `strength` is S.
+ */
+export const shear: Force = {
+  token: 'shear',
+  label: 'Shear',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    // perpendicular axis is (−uy, ux); offset_⊥ = (p − centre) · perp
+    const offsetPerp = (p.x - b.cx) * -b.uy + (p.y - b.cy) * b.ux;
+    const f = b.strength * (offsetPerp / b.range) * (1 - e.dist / b.range);
+    p.vx += b.ux * f; // accelerate along the flow axis n
+    p.vy += b.uy * f;
+  },
+  meta: { desc: 'a laminar shear gradient — flow speed grows with perpendicular offset' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
-export const extendedForces: readonly Force[] = [lens, gate, buoyancy];
+export const extendedForces: readonly Force[] = [lens, gate, buoyancy, shear];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */
 export function registerExtendedForces(reg: Registry): void {
