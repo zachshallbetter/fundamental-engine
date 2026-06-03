@@ -98,7 +98,7 @@ Ordered for overnight (highest visible value first):
 
 ## Phase 5 — Micro-reactions (§23)
 
-- [ ] **5a — Reaction kit + budget.** `ΔE → I`; spark/flash/pulse primitives; wire
+- [x] **5a — Reaction kit + budget.** `ΔE → I`; spark/flash/pulse primitives; wire
       `env.spark` to a real spark draw pass (reflect already calls it).
 - [ ] **5b — Recoil (the missing side, §23.5).** reflect/collide push back on the
       body/agent split by mass; **chromatic shed** (tint by the acting force, §20.8).
