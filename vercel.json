@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm --filter @forces-ui/site build",
+  "buildCommand": "pnpm -r build",
   "outputDirectory": "apps/site/dist"
 }
