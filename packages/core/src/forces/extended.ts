@@ -141,8 +141,49 @@ export const align: Force = {
   meta: { desc: 'steers velocity toward a heading, preserving speed (flock-align)' },
 };
 
+/**
+ * A smooth divergence-free flow field (§20.3) — the curl of a sinusoidal stream-
+ * function `ψ = sin(a)·cos(b)`, with `a = x·s + 0.2t`, `b = y·s − 0.2t`. The velocity
+ * `(∂ψ/∂y, −∂ψ/∂x)` is divergence-free by construction (`∇·curl ≡ 0`), so it stirs
+ * without compressing. Closed-form (no RNG) → deterministic and exactly testable.
+ * `s` is the spatial scale of the eddies.
+ */
+export function curlNoise(x: number, y: number, t: number, s: number): { x: number; y: number } {
+  const a = x * s + t * 0.2;
+  const b = y * s - t * 0.2;
+  // ∂ψ/∂x = s·cos(a)cos(b), ∂ψ/∂y = −s·sin(a)sin(b); curl = (∂ψ/∂y, −∂ψ/∂x)
+  return { x: -s * Math.sin(a) * Math.sin(b), y: -s * Math.cos(a) * Math.cos(b) };
+}
+
+/**
+ * §20.3 — `wind`: divergence-free turbulence, `v += curl(noise(x·s, y·s, t))·S`.
+ * `strength` is the amplitude S; `data-range = 0` makes it a global gust. (The
+ * spatial scale is a fixed constant for now — wiring `data-scale` would need a new
+ * Body field.)
+ */
+const WIND_SCALE = 0.01;
+export const wind: Force = {
+  token: 'wind',
+  label: 'Wind',
+  apply(b, p, e) {
+    if (b.range > 0 && e.dist >= b.range) return; // range 0 ⇒ global
+    const c = curlNoise(p.x, p.y, e.t, WIND_SCALE);
+    p.vx += c.x * b.strength;
+    p.vy += c.y * b.strength;
+  },
+  meta: { desc: 'divergence-free curl-noise turbulence' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
-export const extendedForces: readonly Force[] = [lens, gate, buoyancy, shear, crystallize, align];
+export const extendedForces: readonly Force[] = [
+  lens,
+  gate,
+  buoyancy,
+  shear,
+  crystallize,
+  align,
+  wind,
+];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */
 export function registerExtendedForces(reg: Registry): void {
