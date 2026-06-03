@@ -2,6 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseBodyParams, expandPreset, type BodyAttrs } from './scanner.ts';
 import { PRESETS } from '../config/presets.ts';
+import { coreForces } from '../forces/index.ts';
+import { naturalForces } from '../forces/natural.ts';
+import { extendedForces } from '../forces/extended.ts';
 
 const attrs = (map: Record<string, string>): BodyAttrs => ({
   get: (name) => (name in map ? map[name] : null),
@@ -98,4 +101,39 @@ test('every preset entry names a single token', () => {
   for (const entries of Object.values(PRESETS)) {
     for (const e of entries) assert.ok(e.body && !e.body.includes(' '), e.body);
   }
+});
+
+test('every preset entry names a registered force (no dangling tokens)', () => {
+  const known = new Set(
+    [...coreForces, ...naturalForces, ...extendedForces].map((f) => f.token),
+  );
+  for (const [name, entries] of Object.entries(PRESETS)) {
+    for (const e of entries) assert.ok(known.has(e.body), `${name} → unknown token ${e.body}`);
+  }
+});
+
+test('expandPreset: quasar adds polar jets to the black hole (§20.9)', () => {
+  const vb = expandPreset('quasar');
+  assert.deepEqual(
+    vb.map((b) => b.tokens),
+    [['attract'], ['vortex'], ['absorb'], ['lens'], ['emitter'], ['emitter']],
+  );
+  // the two jets point along opposite headings (north/south poles)
+  assert.ok(Math.abs(vb[4]!.uy - -1) < 1e-9); // angle −90° → (0, −1)
+  assert.ok(Math.abs(vb[5]!.uy - 1) < 1e-9); // angle 90° → (0, 1)
+});
+
+test('expandPreset: galaxy/nebula/tornado compose implemented atoms', () => {
+  assert.deepEqual(
+    expandPreset('galaxy').map((b) => b.tokens[0]),
+    ['attract', 'vortex', 'drag', 'lens'],
+  );
+  assert.deepEqual(
+    expandPreset('nebula').map((b) => b.tokens[0]),
+    ['thermal', 'drag', 'buoyancy'],
+  );
+  assert.deepEqual(
+    expandPreset('tornado').map((b) => b.tokens[0]),
+    ['vortex', 'stream', 'drag'],
+  );
 });
