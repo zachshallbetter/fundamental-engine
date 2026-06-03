@@ -43,6 +43,9 @@ export interface Particle {
   size: number;
   /** the absorb/blackhole body holding this particle, or null (§6.9). */
   cap: Body | null;
+  /** stable per-particle scatter target fractions, for the `spread` formation (§7). */
+  gx?: number;
+  gy?: number;
   // optional attributes consumed by extended forces (§20)
   age?: number;
   /** signed charge q, for `charge` / `magnetism` (§20.10). */
@@ -134,6 +137,8 @@ export interface Env {
   H: number;
   /** elapsed time in seconds (for time-varying terms: curl drift, resonance). */
   t: number;
+  /** frame counter (for the periodic brownian jitter + scatter animation, §7). */
+  frameN: number;
   /** integration step: 1 a frame, 0 under reduced motion (§2.2/§18). */
   dt: number;
   /** velocity cap / "speed of light" of the unit system (§20.10). */

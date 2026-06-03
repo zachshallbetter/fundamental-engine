@@ -9,6 +9,7 @@
 
 import type { Body, ConditionRegistry, Env, ForceRegistry, Particle } from './types.ts';
 import type { FieldStore } from './field-store.ts';
+import { accretionTarget } from './formations.ts';
 
 export const FRICTION = 0.95;
 export const HEAT_DECAY = 0.972;
@@ -34,6 +35,8 @@ export function step(input: StepInput): void {
   if (dt === 0) return;
   const { W, H, form } = env;
   const hasBodies = bodies.length > 0;
+  // the accretion target for `conv` — the first visible absorb body (§7).
+  const conv = form.conv > 0.02 ? accretionTarget(bodies) : null;
 
   for (const p of store.particles) {
     // captured matter is held inside an absorb core, drifting to it (§6.9).
@@ -43,6 +46,26 @@ export function step(input: StepInput): void {
       continue;
     }
 
+    // formation currents (§7), before the body forces: a lateral lane, an
+    // even-scatter pull toward a per-particle target, and convergence to the core.
+    if (form.driftX) p.vx += form.driftX * 0.02;
+    if (form.spread > 0.02) {
+      const gx = p.gx ?? 0.5;
+      const gy = p.gy ?? 0.5;
+      const tx = ((gx + env.frameN * 0.00004) % 1) * W;
+      const ty = gy * H;
+      p.vx += (tx - p.x) * 0.0006 * form.spread;
+      p.vy += (ty - p.y) * 0.0006 * form.spread;
+    }
+    if (conv) {
+      const cdx = conv.cx - p.x;
+      const cdy = conv.cy - p.y;
+      const cd = Math.hypot(cdx, cdy) || 1;
+      p.vx += (cdx / cd) * form.conv * 0.06;
+      p.vy += (cdy / cd) * form.conv * 0.06;
+    }
+
+    // DOM body forces — the page's elements move the field (§4).
     if (hasBodies) {
       for (const b of bodies) {
         if (!b.vis || b.tokens.length === 0) continue;
@@ -57,11 +80,19 @@ export function step(input: StepInput): void {
       }
     }
 
-    // formation bias (§7). Implemented: lateral current + curl-noise drift.
-    // TODO(Phase 2): periodic brownian jitter (every 40 frames); `spread` (needs
-    // Particle.gx/gy) and `conv` (needs the accretion target); and ease `form`
-    // transitions (lerp 0.03/frame) instead of swapping instantly in setFormation.
-    if (form.driftX) p.vx += form.driftX * 0.02;
+    // integrate, then damp (§2.2).
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vx *= FRICTION;
+    p.vy *= FRICTION;
+
+    // wander (after damping, so it stays lively): a periodic brownian jitter
+    // every 40 frames, plus a smooth curl-noise eddy (§7).
+    if (env.frameN % 40 === 0 && form.wander > 0) {
+      const wsc = 0.05 * form.wander;
+      p.vx += (Math.random() - 0.5) * wsc;
+      p.vy += (Math.random() - 0.5) * wsc;
+    }
     if (form.wander > 0.05) {
       const cn =
         (Math.sin(p.x * 0.0032 + env.t * 0.12) + Math.cos(p.y * 0.0034 - env.t * 0.15)) *
@@ -70,11 +101,6 @@ export function step(input: StepInput): void {
       p.vy += Math.sin(cn) * 0.013 * form.wander;
     }
 
-    // integrate, then damp (§2.2).
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.vx *= FRICTION;
-    p.vy *= FRICTION;
     p.heat *= HEAT_DECAY;
 
     // toroidal wrap at the edges.

@@ -37,22 +37,24 @@ Guiding principles:
 > so `node:test` runs the source directly and `tsc` emits Node-valid `.js`. Zero test/build
 > framework — just TypeScript.
 
-## Phase 2 — Forces, conditions, formations
+## Phase 2 — Forces, conditions, formations ✅
 
 - [x] The canonical nine as modules in `forces/` (§6), registered into `createField`;
       absorb capture → supernova release (§6.9) + captured-particle drift.
 - [x] Condition predicates (`data-when`: active/fast/slow/hot/cool) — built in Phase 1.
       Remaining: the selective-gate-on-bound-particles rule (with Currents, Phase 3).
-- [ ] Formations + the eased global bias, and the scroll journey (§7).
+- [x] Formations: eased global bias (`easeFormation`, lerp 0.03/frame), the
+      `spread`/`conv`/brownian terms, and the scroll-journey conductor
+      (`[data-formation]` sections in view → ease; idle → `ambient`) (§7).
 - [x] Golden tests: each force's per-frame math matches the spec formulas (13 tests).
 
-Carried over from the Phase 1 conformance audit (all deferred-by-phase, not bugs):
+Carried over from the Phase 1 conformance audit:
 
-- [ ] **Formation easing** — `setFormation` currently swaps instantly; ease the
-      active preset toward target at `lerp 0.03`/frame (§7).
-- [ ] **Formation terms** — the integrator applies `driftX` + curl-noise; add the
-      periodic **brownian** jitter (every 40 frames), **`spread`** (needs
-      `Particle.gx/gy`), and **`conv`** (needs the accretion target) (§7).
+- [x] **Formation easing** — `easeFormation` lerps the active preset toward target
+      at 0.03/frame; `setFormation` sets the target (§7).
+- [x] **Formation terms** — integrator now applies `driftX`, curl-noise, periodic
+      **brownian** (every 40 frames), **`spread`** (`Particle.gx/gy`), and **`conv`**
+      (accretion target via `accretionTarget`) (§7).
 - [ ] **`FieldHandle` surface** — add `threads()` (§10, Phase 4) and `burst()`
       (§11, interaction) to match the §13 API. Deferred to their phases.
 - Phase 3 will also bring: the cool→warm distance render ramp + accent blend

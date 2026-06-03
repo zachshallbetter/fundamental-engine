@@ -10,11 +10,12 @@
  * visibly alive. Forces are Phase 2; the Currents and full rendering are Phase 3.
  */
 
-import type { Body, Env, FieldHandle, FieldOptions, Particle } from './types.ts';
+import type { Body, Env, FieldHandle, FieldOptions, Formation, Particle } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
 import { scanBodies, measureBodies } from './scanner.ts';
+import { easeFormation } from './formations.ts';
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
 import { clamp, hexToRgb } from './math.ts';
 import { registerCoreForces } from '../forces/index.ts';
@@ -41,6 +42,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let H = 0;
   let raf = 0;
   let frameN = 0;
+  let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
   const t0 = performance.now();
 
   const env: Env = {
@@ -51,6 +53,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     W: 0,
     H: 0,
     t: 0,
+    frameN: 0,
     dt: reduceMotion ? 0 : 1,
     c: 12,
     G: 1,
@@ -95,6 +98,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       m: seed.m ?? 1,
       heat: seed.heat ?? 0,
       size: seed.size ?? 0.7 + Math.random() * 1.8,
+      gx: seed.gx ?? Math.random(),
+      gy: seed.gy ?? Math.random(),
       cap: null,
     };
   }
@@ -143,7 +148,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function frame(now: number): void {
     frameN++;
     env.t = (now - t0) / 1000;
+    env.frameN = frameN;
     env.dt = reduceMotion ? 0 : 1;
+    easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
     if (bodies.length && frameN % 6 === 0) measureBodies(bodies, W, H);
     store.reindex();
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions });
@@ -151,9 +158,47 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     raf = requestAnimationFrame(frame);
   }
 
+  function setFormation(name: string): void {
+    const f = FORMATION_BY[name as FormationId];
+    if (f) formTarget = { ...f.preset };
+  }
+
+  // conductor (§7.1): as a section crosses mid-viewport, ease to its formation
+  // (declare with `data-formation="wells"`); after ~6 s of no input, drift back
+  // to calm `ambient`. Inert on pages with no `[data-formation]` sections.
+  let activeForm = '';
+  let lastInput = t0;
+  function onScroll(): void {
+    const mid = window.innerHeight * 0.5;
+    let next = '';
+    document.querySelectorAll('[data-formation]').forEach((node) => {
+      const r = (node as HTMLElement).getBoundingClientRect();
+      if (r.top <= mid && r.bottom >= mid) next = (node as HTMLElement).dataset.formation ?? '';
+    });
+    if (next && next !== activeForm) {
+      activeForm = next;
+      setFormation(next);
+    }
+  }
+  const markInput = (): void => void (lastInput = performance.now());
+  const scrollHandler = (): void => {
+    markInput();
+    onScroll();
+  };
+  const inputEvents = ['pointerdown', 'wheel', 'keydown', 'touchstart'];
+  const idleTimer = setInterval(() => {
+    if (performance.now() - lastInput > 6000 && activeForm !== 'ambient') {
+      activeForm = 'ambient';
+      setFormation('ambient');
+    }
+  }, 1200);
+
   const onResize = (): void => resize();
   resize();
   window.addEventListener('resize', onResize, { passive: true });
+  window.addEventListener('scroll', scrollHandler, { passive: true });
+  for (const ev of inputEvents) window.addEventListener(ev, markInput, { passive: true });
+  onScroll();
   raf = requestAnimationFrame(frame);
 
   return {
@@ -162,13 +207,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     setAccent: (hex) => {
       cfg.accent = hex;
     },
-    setFormation: (name) => {
-      const f = FORMATION_BY[name as FormationId];
-      if (f) env.form = { ...f.preset };
-    },
+    setFormation,
     destroy: () => {
       cancelAnimationFrame(raf);
+      clearInterval(idleTimer);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', scrollHandler);
+      for (const ev of inputEvents) window.removeEventListener(ev, markInput);
       store.clear();
     },
   };
