@@ -29,11 +29,17 @@ const {
     />
   </head>
   <body>
-    <!-- CSS-gradient stand-in for the field; the live <forces-field> canvas
-         replaces this once the engine lands (Phase 1). -->
+    <!-- the CSS gradient is colour ambiance; the live <forces-field> renders the
+         particle field over it, reacting to [data-body] elements on the page. -->
     <div class="field" aria-hidden="true"></div>
+    <forces-field accent="#4da3ff"></forces-field>
     <div class="scrim" aria-hidden="true"></div>
     <slot />
+
+    <script>
+      // registers <forces-field> (the engine mounts on connect). Bundled by Astro.
+      import '@forces-ui/elements';
+    </script>
 
     <style is:global>
       :root {

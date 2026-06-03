@@ -9,6 +9,7 @@
     "preview": "astro preview"
   },
   "dependencies": {
+    "@forces-ui/elements": "workspace:*",
     "astro": "^5"
   }
 }
