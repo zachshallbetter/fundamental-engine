@@ -18,15 +18,24 @@ Guiding principles:
 - [x] Project scaffold (TS, tsup, vitest, strict).
 - [x] Canonical catalog typed from `ds-data.js` → `config/forces.config.ts`.
 - [x] Core contracts → `core/types.ts` (Particle · Body · Env · Force · Agent).
-- [ ] `pnpm install` + green `typecheck` / `test`.
+- [x] `pnpm install` + green `typecheck` / `test`.
 
-## Phase 1 — The core engine
+## Phase 1 — The core engine ✅
 
-- [ ] `FieldStore`: the particle pool, a spatial index (uniform grid/hash),
-      optional scalar grids, and the extended `Env` services (§20.1).
-- [ ] The loop + integrator (`a = F/m`), with the reduced-motion `dt=0` path (§18).
-- [ ] Body scanner: `[data-body]`/`[data-preset]` → bodies, re-measured per frame (§2.1).
-- [ ] Unit tests for the integrator and conservation invariants (§21.1).
+- [x] `FieldStore`: particle pool + uniform-grid spatial index + `Env` services
+      (`grid`/`spark`/`supernova` stubbed for later phases).
+- [x] The loop + integrator + the reduced-motion `dt=0` path (§18). Unit-mass path
+      for now; first-class `a = F/m` is Phase 6 (§21.4).
+- [x] Body scanner: `[data-body]` → bodies, re-measured per frame (§2.1).
+      `[data-preset]` lands with the preset layer (§20.9).
+- [x] `node:test` coverage — integrator, store, spatial hash, scanner, conditions,
+      math (25 tests), incl. the reduced-motion and edge-wrap (conservation) cases.
+- [x] `createField` browser entry + a minimal particle renderer; `<forces-field>`
+      mounts it. (Forces themselves are Phase 2; Currents + full render are Phase 3.)
+
+> Toolchain note: source uses `.ts` import extensions + `rewriteRelativeImportExtensions`
+> so `node:test` runs the source directly and `tsc` emits Node-valid `.js`. Zero test/build
+> framework — just TypeScript.
 
 ## Phase 2 — Forces, conditions, formations
 
