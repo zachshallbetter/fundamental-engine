@@ -8,6 +8,7 @@ import {
   crystallize,
   align,
   wind,
+  cohesion,
   curlNoise,
   extendedForces,
 } from './extended.ts';
@@ -79,7 +80,7 @@ const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < to
 test('extended forces expose the §20.3 class [A] set', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize', 'align', 'wind'],
+    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize', 'align', 'wind', 'cohesion'],
   );
 });
 
@@ -269,4 +270,31 @@ test('wind applies the curl field scaled by strength; range 0 is global (§20.3)
   const beyond = part({ x: 10, y: 20, vx: 0, vy: 0 });
   wind.apply(body({ strength: 100, range: 100 }), beyond, env({ t: 0, dist: 200 }));
   assert.equal(beyond.vx, 0); // ranged gust, beyond reach → inert
+});
+
+// cohesion uses env.neighbors; range r1=200 → rest r0=100. k = strength.
+const withNeighbor = (n: Partial<Particle>): Partial<Env> => ({ neighbors: () => [part(n)] });
+
+test('cohesion pushes apart inside the rest distance (pressure, §20.3)', () => {
+  const p = part({ x: 0, y: 0 });
+  cohesion.apply(body({ strength: 0.5, range: 200 }), p, env({ dist: 10, ...withNeighbor({ x: 50, y: 0 }) }));
+  assert.ok(near(p.vx, -0.25)); // d=50<r0=100 → −k·(100−50)/100 = −0.25 along +x neighbour
+});
+
+test('cohesion pulls together beyond the rest distance (skin, §20.3)', () => {
+  const p = part({ x: 0, y: 0 });
+  cohesion.apply(body({ strength: 0.5, range: 200 }), p, env({ dist: 10, ...withNeighbor({ x: 150, y: 0 }) }));
+  assert.ok(near(p.vx, 0.25)); // d=150 → +k·(150−100)/(200−100) = +0.25 toward neighbour
+});
+
+test('cohesion is neutral exactly at the rest distance', () => {
+  const p = part({ x: 0, y: 0 });
+  cohesion.apply(body({ strength: 0.5, range: 200 }), p, env({ dist: 10, ...withNeighbor({ x: 100, y: 0 }) }));
+  assert.ok(near(p.vx, 0)); // d = r0 → zero on both branches
+});
+
+test('cohesion is inert beyond the body range', () => {
+  const p = part({ x: 0, y: 0 });
+  cohesion.apply(body({ strength: 0.5, range: 100 }), p, env({ dist: 200, ...withNeighbor({ x: 50, y: 0 }) }));
+  assert.equal(p.vx, 0);
 });
