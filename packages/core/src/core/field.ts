@@ -599,8 +599,20 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   const onResize = (): void => resize();
   resize();
+  // pause all work while the tab is backgrounded — stop the loop and the idle timer,
+  // resume cleanly when it returns (browsers throttle rAF in the background, but this
+  // guarantees zero work and avoids drift on return).
+  const onVisibility = (): void => {
+    if (document.hidden) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    } else if (!raf) {
+      raf = requestAnimationFrame(frame);
+    }
+  };
   window.addEventListener('resize', onResize, { passive: true });
   window.addEventListener('scroll', scrollHandler, { passive: true });
+  document.addEventListener('visibilitychange', onVisibility);
   for (const ev of inputEvents) window.addEventListener(ev, markInput, { passive: true });
   onScroll();
   raf = requestAnimationFrame(frame);
@@ -634,6 +646,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       clearInterval(idleTimer);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', scrollHandler);
+      document.removeEventListener('visibilitychange', onVisibility);
       for (const ev of inputEvents) window.removeEventListener(ev, markInput);
       store.clear();
     },
