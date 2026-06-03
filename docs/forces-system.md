@@ -487,13 +487,31 @@ content sets; the manual demo and the Lab use it. Pass `null` to clear.
 | Event | Trigger | Effect |
 |---|---|---|
 | **Boot** | load (or immediately under reduced motion) | `boot` ramps `0→1`; content fades in via `body.loaded` / `body.assembled`. |
-| **Glyph assembly** | fonts ready | Hero title (`[data-glyph]` `.ln` lines) is rasterized to sample points (stride `max(3, fontSize/26)`, capped **560** points); particles born in the wave band below **rise** into the letters (`ease 1−(1−t)⁴`), hold, then fade. Timeline: assembled at 1800 ms, form 2600 ms, hold 4000 ms, fade out by 5800 ms. Skipped under reduced motion. |
+| **Glyph assembly** | fonts ready | Particles rasterized from a `[data-glyph]` host rise into its shape, hold, then fade (stride `max(3, fontSize/26)`, cap **560** pts; ease `1−(1−t)⁴`; assembled 1800 ms, form 2600 ms, hold 4000 ms, fade by 5800 ms; skipped under reduced motion). **⚠ Deprecated for words — use only for punctuation / marks (the rule below).** |
 | **Burst** | `pointerdown` anywhere | Shoves + heats free particles within 260 px (`f=(1−d/260)·4.4`, `heat += (1−d/260)·1.3`); tears bound particles within 200 px loose. No ring (kept clean). |
 | **Engage** | hover/focus/tap a `[data-hot]` | Sets `data-active="1"` (`b.on`), lights the element, dims siblings, optionally wires threads, overrides accent. Waves bend toward it. |
 | **Capture → Supernova** | particle enters an `absorb` core; `mass ≥ maxMass` | Hold, then radial release of exactly what was held (see §6.9). |
 | **Spark** | hard `reflect` impact (`speed > 0.7`) | Short-lived impact debris (≤ 260 sparks) — pure collision feel. The exemplar micro-reaction; generalized as a system in **§23**. |
 | **Wave healing** | calm free particle near a line | Reclaimed to bound (conserved) — see §2.4. |
 | **Ripple** | (disabled project-wide) | `__field.ripple()` is a no-op; concentric rings were cut for cost/fit. |
+
+> ⚠️ **Word treatment — the punctuation rule (design law).** **Do not assemble
+> particles into words or letterforms** — it reads as rough and noisy. Glyph
+> assembly is therefore **deprecated for words**: reserve particle-into-shape
+> effects (`morph`, glyph assembly) for **punctuation and marks** — a `.`, `—`, `·`,
+> brackets, a logo glyph — where the silhouette is simple and legible.
+>
+> To make a **word** feel alive, act on the *type and the field around it*, never by
+> rebuilding it from dots:
+> - **Glow + grow** — drive variable-font weight, `text-shadow` bloom, and colour
+>   from the gathered density `--d` (§8); the word thickens and lights as the field
+>   collects on it (the `liveword`).
+> - **Ripple / field-change** — put a force body *on* the word (attract / vortex) so
+>   the field bends, swells, and sparks (§23) around it.
+> - **Engage** — on hover/focus its body amplifies (on-state, §6), the Currents bend
+>   toward it (the spine, §24), and the accent shifts (§9).
+>
+> **Words are bodies the field *decorates*; punctuation is where matter *assembles*.**
 
 ---
 
@@ -819,7 +837,7 @@ exposing `neighbors(p, r)` and `grid(name)`. Class [A] forces and **all** of §2
 | Hunt | `hunt` | B+E | `#ef4444` / `#22d3ee` | AI / systems | a living ecosystem — chases, population cycles |
 | Pheromone | `pheromone` | C | `#a3e635` | AI / Creative tech | self-growing transport networks (Physarum) |
 | Memory | `memory` | C | `#c084fc` | Experience design | paths wear in — the field remembers where matter went |
-| Morph | `morph` | D | `#e879f9` | Creative tech / Design | matter becomes a shape: logo, word, map, **chart** |
+| Morph | `morph` | D | `#e879f9` | Creative tech / Design | matter becomes a shape: logo, **mark/punctuation**, map, **chart** — *not* words (§11) |
 | Pigment | `pigment` | E | *(carried)* | Commerce / brand | conserved color transport — sections stain the field |
 | Warp | `warp` | A · paired | `#8b5cf6` | Software architecture | **atom** — conserved relocation between paired throats |
 | Spawn | `spawn` | **S** | `#fb923c` | Creative tech / Motion | **atom** — creates particles (continuous or one-shot) |
@@ -944,7 +962,9 @@ local force scaled by  (1 + μ·M(x))                          // worn paths att
 ```
 Attrs: `data-strength`(=μ), `data-range`. Needs grid `M`.
 
-**Morph — `morph` [D].** Assign particles to target points; spring in with fading jitter.
+**Morph — `morph` [D].** Assign particles to target points; spring in with fading
+jitter. **Targets are punctuation, marks, logos, shapes, or data — never
+words/letterforms** (the punctuation rule, §11); for words use `--d` glow/grow (§8).
 ```
 assign p → target t_k (stable hash) ;   v += (t_k − p)·k_m + jitter·(1 − arrived)
 arrived = clamp(1 − |t_k − p|/ε, 0, 1)
@@ -1710,3 +1730,78 @@ Today `field.js` hardcodes `waveColors = ['#4da3ff', '#2dd4bf', '#a78bfa']` — 
 > **Net:** Currents never own a separate color system. They are the **cool floor** of
 > the single field palette — traveling with the accent and warming wherever a force
 > injects energy. Same palette as everything else, just at rest.
+
+---
+
+## 25. Additive concepts from the design system
+
+> **Precedence:** §1–§24 are the authority. The items here are *additive* concepts
+> mined from the design-system prototype (`docs/reference/ds-*`); where anything
+> conflicts with the canonical spec, **the spec wins**. In particular the Field
+> Cell runs a *deliberately simplified* demo engine — its constants are **not**
+> canonical; the authoritative force math stays §6.
+
+### 25.1 The Field Cell — an in-frame field surface
+The spec describes one field: the full-viewport background. The design system adds a
+second surface — a **standalone field sized to its container** that renders *one*
+force or *one* formation, with its own particle pool, its own pointer interaction,
+and a lifecycle that pauses when off-screen. It's the unit behind every live demo,
+the natural embeddable (`<forces-cell force="vortex">`), and a concrete realization
+of the poster/reduced variant (possibilities §1.4) and render modes (§20.6).
+
+```js
+// window.makeFieldCell(canvas, { force | formation, color, count }) → { set, reset, destroy }
+const DPR   = Math.min(2, devicePixelRatio || 1);
+const reach = Math.min(W, H) * 0.62;            // range is FRAME-relative, not viewport
+const WELLS = [[0.28,0.42],[0.7,0.34],[0.5,0.72]];   // formation centres as frame fractions
+const LANES = [0.28, 0.5, 0.72];
+// cursor repel, per-cell:  if (d < 80) a += (dx/d)·(1 − d/80)·1.8
+// lifecycle: ResizeObserver re-fits the canvas; IntersectionObserver gates the rAF loop
+// edge per mode: wrap | reflect | emitter-respawn
+```
+
+> It is **not** the §-engine — it's a lighter "demo/poster" engine. Document its
+> *role*, not its numbers.
+
+### 25.2 Design tokens — the palette as a CSS contract
+`ds-tokens.css` is the single CSS source of truth, and pins two things §1–§24 didn't
+name: the canonical **easing** and the **coherence** colour.
+
+```css
+--f-attract:#4da3ff; --f-emitter:#a78bfa; --f-spring:#86e57f;
+--f-reflect:#c4b5fd; --f-stream:#7dd3fc;  --f-repel:#ff9d5c;
+--f-drag:#8da2c0;    --f-vortex:#2dd4bf;  --f-absorb:#ff6e9c;
+--f-condition: var(--f-emitter);   /* "condition" === the emitter body */
+--coherence: #ffce6b;              /* resolved / accreted — gold, NOT a force */
+--ease: cubic-bezier(0.16, 1, 0.3, 1);   /* the system easing curve */
+```
+
+These align with the canonical palette (§6/§20.2) and the `accretion` formation
+colour (`#ffce6b`); emit them as CSS variables in `forces.config.ts` consumers.
+
+### 25.3 Coherence — the resolved / accreted state (§7, §15)
+Beyond the nine forces there is a **resolved state**: what the field settles into,
+what an absorber's released matter represents, the hub every discipline pulls toward.
+The design system encodes it as the `--coherence` gold, as the substrate equation
+**`captured = released`**, and as a single "Coherence" goal node every discipline
+threads to. It is the *destination* of the `accretion` formation (§7) and the
+disciplines' shared sink (§15) — a named state, not a tenth force.
+
+### 25.4 Embedding the field — opacity, scrim, nav continuity (§17/§18)
+A concrete recipe for layering a live field under content (slots beside the §18 cost
+controls and the §17 gated-toggle):
+
+```css
+#field               { position:fixed; inset:0; z-index:0; opacity:.34; transition:opacity .7s ease; }
+.show-field  #field  { opacity:.6; }    /* physics views */
+.field-live  #field  { opacity:.96; }   /* reciprocal field toggled on */
+.scrim { position:fixed; inset:0; z-index:1; pointer-events:none; /* radial+linear vignette */ }
+/* content at z-index:2. Kill nav flash: inline dark <html>, color-scheme:dark, @view-transition{navigation:auto} */
+```
+
+### 25.5 Assembly targets a mark, never a word
+`forces-mark.js` (`buildForcesMark(host,{size,color})`) renders the favicon/wordmark
+as a **live field**: an opaque core with smaller bodies + dust orbiting within a
+bounded radius. It's "identity that's generated, not drawn" — and the canonical
+example of particle **assembly targeting a mark/icon** (per the punctuation rule, §11
+note). Bodies stay inside the silhouette: `maxRad(r) = max(0, 186 − r − glow(r))`.

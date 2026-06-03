@@ -78,16 +78,31 @@ Carried over from the Phase 1 conformance audit:
 - [x] **Accent journey** (§9): scroll travels the palette (`sampleStops`), a
       hovered `[data-color]` element overrides; the field recolours with it.
 
-## Phase 4 — Agents & reciprocity (§22)
+## Phase 4 — Agents & reciprocity (§22) + word effects
 
-- [ ] Element agent: forces move DOM via transforms; element mass `m_el`.
-- [ ] Event agent: `data-on` → debounced `CustomEvent`s (the field drives behavior).
-- [ ] Two-way density feedback → `--d` / `--load` (§8); threads (§10).
+Ordered for overnight (highest visible value first):
 
-## Phase 5 — Micro-reactions & render modes
+- [ ] **4a — Two-way density feedback (§8).** Per `data-feedback` body, sample local
+      density (`count` within `range·0.5`), ease into `--d`; expose `--mass`/`--load`
+      for absorbers; optionally drive variable-font weight via `data-fmin/fmax/opsz`.
+- [ ] **4w — Word effects (the punctuation rule, §11 note).** Wire the site hero
+      word(s) with `data-feedback` + CSS so `--d` drives weight + `text-shadow` glow
+      + colour (glow/grow). **No particle-into-letterform assembly.** Optional one-shot
+      ripple/spark on engage.
+- [ ] **4b — Threads (§10).** `__field.threads(list)` — glowing connector lines with
+      travelling pulses between an engaged `[data-index][data-threads]` set.
+- [ ] **4c — Element agent (§22.4).** `[data-target]` elements moved by forces via a
+      transform offset (element mass `m_el`); anchor spring + field pressure.
+- [ ] **4d — Event agent (§22.5).** `data-on="dense:field:lit, captured:field:dock"`
+      → debounced `CustomEvent`s carrying `{ body, influence, value }`.
 
-- [ ] The reaction budget `ΔE → I` and the reaction kit; **recoil** (the missing side, §23.5).
-- [ ] Render modes: metaballs, trails, links, knockout, redshift/blackbody (§20.6).
+## Phase 5 — Micro-reactions (§23)
+
+- [ ] **5a — Reaction kit + budget.** `ΔE → I`; spark/flash/pulse primitives; wire
+      `env.spark` to a real spark draw pass (reflect already calls it).
+- [ ] **5b — Recoil (the missing side, §23.5).** reflect/collide push back on the
+      body/agent split by mass; **chromatic shed** (tint by the acting force, §20.8).
+- [ ] **5c — Render modes (§20.6).** trails, links, knockout — the easy high-impact ones.
 
 ## Phase 6 — Depth: physical primitives, presets, mass
 
@@ -109,6 +124,9 @@ Carried over from the Phase 1 conformance audit:
       first real consumer / the whole-engine integration test), reframe from
       site-specific → the forces-ui manual, fix the "eight"→nine copy, and do a
       responsive / a11y / perf pass. **Gated on Phases 1–5** (the demos must run).
+- [ ] **Field Cell** (`<forces-cell force="vortex">`) — an in-frame, container-sized
+      single-force/formation demo surface (§25.1); the embeddable unit for the
+      manual's per-concept demos and the poster/render-mode variant.
 - [ ] The Lab (paint forces; shareable fields) (§14).
 - [ ] A published docs site (the executable design system).
 
@@ -117,6 +135,9 @@ Carried over from the Phase 1 conformance audit:
 - [ ] Performance: `ResizeObserver`/`IntersectionObserver` sync; `OffscreenCanvas` + worker.
 - [ ] Accessibility: reduced motion, focus engagement, `z-index` background layer (§18).
 - [ ] Naming/color reconciliation pass against the canonical palette (§20.2).
+- [ ] Emit the design tokens (`--f-*`, `--coherence`, `--ease`) from `forces.config.ts` (§25.2).
+- [ ] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,
+      "captured = released" (§25 + possibilities); the plain-language on-ramp.
 
 ## Stack (decided)
 
