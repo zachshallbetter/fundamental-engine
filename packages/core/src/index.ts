@@ -13,6 +13,7 @@ export * from './core/types.ts';
 export * from './config/forces.config.ts';
 export * from './core/math.ts';
 export * from './core/currents.ts';
+export * from './core/reservoir.ts';
 export * from './core/spatial-hash.ts';
 export * from './core/field-store.ts';
 export * from './core/conditions.ts';

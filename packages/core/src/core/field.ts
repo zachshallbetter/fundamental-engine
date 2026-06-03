@@ -17,6 +17,7 @@ import { step } from './integrator.ts';
 import { scanBodies, measureBodies } from './scanner.ts';
 import { easeFormation } from './formations.ts';
 import { buildWaves, buildBound, waveYat, type Wave, type BoundParticle } from './currents.ts';
+import { healWaves, tearBoundNear } from './reservoir.ts';
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
 import { clamp, hexToRgb, particleRGB } from './math.ts';
 import { registerCoreForces } from '../forces/index.ts';
@@ -47,6 +48,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
+  let boundTarget = 0;
   let boot = reduceMotion ? 1 : 0;
   const t0 = performance.now();
 
@@ -87,6 +89,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           }
         }
       }
+      // the blast also tears nearby bound matter off the Currents (§6.9, §2.4).
+      tearBoundNear(bound, waves, b.cx, b.cy, 320, W, H, env.t, (p) => void store.add(newParticle(p)));
       b.accreted = 0;
     },
     spawn: (p) => void store.add(newParticle(p)),
@@ -115,6 +119,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (let i = 0; i < n; i++) store.add(newParticle());
     waves = buildWaves(WAVE_RGB);
     bound = buildBound(waves.length, cfg.density, Math.random);
+    boundTarget = bound.length;
   }
 
   function scan(): void {
@@ -259,6 +264,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (bodies.length && frameN % 6 === 0) measureBodies(bodies, W, H);
     store.reindex();
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
+    if (env.dt) healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
     render();
     raf = requestAnimationFrame(frame);
   }
