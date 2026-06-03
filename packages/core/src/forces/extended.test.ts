@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lens, gate, buoyancy, shear, extendedForces } from './extended.ts';
+import { lens, gate, buoyancy, shear, crystallize, extendedForces } from './extended.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -66,10 +66,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('extended forces expose lens + gate + buoyancy + shear (§20.3)', () => {
+test('extended forces expose lens + gate + buoyancy + shear + crystallize (§20.3)', () => {
   assert.deepEqual(
     extendedForces.map((f) => f.token),
-    ['lens', 'gate', 'buoyancy', 'shear'],
+    ['lens', 'gate', 'buoyancy', 'shear', 'crystallize'],
   );
 });
 
@@ -182,4 +182,30 @@ test('shear is null on the flow axis and inert beyond range', () => {
   const beyond = part({ x: 0, y: 100, vx: 0, vy: 0 });
   shear.apply(body({ strength: 1, range: 200 }), beyond, env({ dist: 250 }));
   assert.equal(beyond.vx, 0);
+});
+
+// crystallize: lattice cell 32, anchored at body centre (0,0); freezes below heat 0.5.
+test('crystallize snaps cool matter toward its nearest lattice node (§20.3)', () => {
+  const p = part({ x: 10, y: 0, heat: 0 }); // nearest node is 0 (round(10/32)=0)
+  crystallize.apply(body({ strength: 0.1, range: 300 }), p, env({ dist: 10 }));
+  assert.ok(near(p.vx, -0.9)); // (0−10)·0.1 = −1, then ×0.9 damping
+  assert.ok(near(p.vy, 0));
+  const q = part({ x: 30, y: 0, heat: 0 }); // nearest node is 32 (round(30/32)=1)
+  crystallize.apply(body({ strength: 0.1, range: 300 }), q, env({ dist: 30 }));
+  assert.ok(near(q.vx, 0.18)); // (32−30)·0.1 = 0.2, ×0.9
+});
+
+test('crystallize melts (frees) hot matter', () => {
+  const p = part({ x: 10, y: 0, vx: 0.4, heat: 0.8 }); // ≥ FREEZE → free
+  crystallize.apply(body({ strength: 0.1, range: 300 }), p, env({ dist: 10 }));
+  assert.equal(p.vx, 0.4); // untouched
+});
+
+test('crystallize damps a settled (on-node) particle and respects range', () => {
+  const settled = part({ x: 0, y: 0, vx: 1, vy: 0, heat: 0 }); // already on a node
+  crystallize.apply(body({ strength: 0.1, range: 300 }), settled, env({ dist: 1 }));
+  assert.ok(near(settled.vx, 0.9)); // no pull (offset 0), just the ×0.9 damping
+  const beyond = part({ x: 10, y: 0, vx: 0, heat: 0 });
+  crystallize.apply(body({ strength: 0.1, range: 300 }), beyond, env({ dist: 350 }));
+  assert.equal(beyond.vx, 0); // beyond range → inert
 });
