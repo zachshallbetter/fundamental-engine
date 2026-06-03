@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS, MANUAL_CONDITIONS } from 'forces-ui';
+import '../styles/force-glyphs.css';
 
 // The complete definition, rendered from the single catalog in core (guaranteed by
 // a test to match the registered forces exactly). The manual explains the system —
@@ -76,9 +77,8 @@ const count = MANUAL_FORCES.length;
             {byFamily(fam.key).map((f) => (
               <article class="card">
                 <h3>
-                  <code class="tok" style={`--tc:${f.color}`}>
-                    {f.token}
-                  </code>
+                  <i class={`fg fg-${f.token}`} style={`--fc:${f.color}`} aria-hidden="true" />
+                  <code class="tok" style={`--tc:${f.color}`}>{f.token}</code>
                   <span class="label">{f.label}</span>
                 </h3>
                 <pre class="formula">{f.formula}</pre>
@@ -110,6 +110,7 @@ const count = MANUAL_FORCES.length;
           MANUAL_PRESETS.map((p) => (
             <article class="card">
               <h3>
+                <i class={`fg fg-${p.name}`} aria-hidden="true" />
                 <code class="tok">{p.name}</code>
               </h3>
               <p class="compose">
