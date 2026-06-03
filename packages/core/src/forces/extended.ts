@@ -99,8 +99,31 @@ export const shear: Force = {
   meta: { desc: 'a laminar shear gradient — flow speed grows with perpendicular offset' },
 };
 
+/**
+ * §20.3 — `crystallize`: a phase change. While a particle is cool (`heat < FREEZE`)
+ * it snaps toward the nearest node of a lattice anchored at the body, `v += (node −
+ * p)·k_snap`, then damps (`v *= 0.9`) so it settles into a solid; once hot it melts
+ * and moves freely. `strength` is `k_snap`; pairs naturally with `data-when="cool"`.
+ */
+const LATTICE = 32; // lattice cell, px
+const FREEZE = 0.5; // heat below which matter solidifies
+export const crystallize: Force = {
+  token: 'crystallize',
+  label: 'Crystallize',
+  apply(b, p, e) {
+    if (e.dist >= b.range || p.heat >= FREEZE) return; // out of range or melted → free
+    const nodeX = b.cx + Math.round((p.x - b.cx) / LATTICE) * LATTICE;
+    const nodeY = b.cy + Math.round((p.y - b.cy) / LATTICE) * LATTICE;
+    p.vx += (nodeX - p.x) * b.strength; // pull toward the lattice node
+    p.vy += (nodeY - p.y) * b.strength;
+    p.vx *= 0.9; // damp → settle into the solid
+    p.vy *= 0.9;
+  },
+  meta: { desc: 'snaps cool matter onto a lattice; melts and frees it when hot' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
-export const extendedForces: readonly Force[] = [lens, gate, buoyancy, shear];
+export const extendedForces: readonly Force[] = [lens, gate, buoyancy, shear, crystallize];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */
 export function registerExtendedForces(reg: Registry): void {
