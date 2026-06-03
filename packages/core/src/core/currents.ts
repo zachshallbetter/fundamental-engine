@@ -80,6 +80,14 @@ export function buildBound(waveCount: number, density: number, rand: () => numbe
   return bound;
 }
 
+/** An engaged element the lines bend toward — the "spine" (§24). */
+export interface WavePull {
+  x: number;
+  y: number;
+  /** strength 0…1 (eased as the element engages/releases). */
+  k: number;
+}
+
 /** The wave's y at horizontal position `x` and `time` seconds (§2.3). */
 export function waveYat(
   w: Wave,
@@ -87,13 +95,21 @@ export function waveYat(
   time: number,
   H: number,
   waveSpeed = 1,
-  amplitude = 1
+  amplitude = 1,
+  pull?: WavePull
 ): number {
-  return (
+  let y =
     w.baseFrac * H +
     w.offsetY +
-    Math.sin(x * w.freq + w.phase + time * w.speed * 1000 * waveSpeed) * w.amp * amplitude
-  );
+    Math.sin(x * w.freq + w.phase + time * w.speed * 1000 * waveSpeed) * w.amp * amplitude;
+  // the engaged element bends the lines locally toward it (Gaussian falloff).
+  if (pull && pull.k > 0.001) {
+    const dx = x - pull.x;
+    const s = 260;
+    const fall = Math.exp(-(dx * dx) / (2 * s * s));
+    y += (pull.y - y) * 0.42 * fall * pull.k * (0.45 + w.depth * 0.55);
+  }
+  return y;
 }
 
 /** The wave's slope at `x` — the derivative the free particles drift along. */

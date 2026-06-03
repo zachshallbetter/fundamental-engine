@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { healWaves, tearBoundNear } from './reservoir.ts';
+import { healWaves, tearBoundNear, tearBoundByForces } from './reservoir.ts';
 import { FieldStore } from './field-store.ts';
 import type { Wave, BoundParticle } from './currents.ts';
-import type { Particle } from './types.ts';
+import type { Body, Particle } from './types.ts';
 
 // one flat line at y = 0.5·H = 400 (amp 0).
 const flat = (): Wave[] => [
@@ -62,4 +62,42 @@ test('tearBoundNear releases bound matter near a blast (conserved)', () => {
   );
   assert.equal(bound.length, 0);
   assert.equal(store.size, 1);
+});
+
+test('tearBoundByForces releases bound matter within a force range', () => {
+  const store = new FieldStore();
+  const bound: BoundParticle[] = [
+    { wi: 0, progress: 0.5, phase: 0, size: 1, glow: false, speed: 0 }, // at (500, 400)
+  ];
+  const body = {
+    tokens: ['attract'],
+    vis: true,
+    when: '',
+    on: false,
+    cx: 550,
+    cy: 400,
+    hw: 10,
+    hh: 10,
+    range: 280,
+    ux: 1,
+    uy: 0,
+  } as unknown as Body;
+  tearBoundByForces(bound, flat(), [body], 1000, 800, 0, (p) => void store.add(mkP({ ...p })));
+  assert.equal(bound.length, 0); // within range·0.8 (dist 50 < 224)
+  assert.equal(store.size, 1);
+});
+
+test('tearBoundByForces ignores selective gates (free agents only)', () => {
+  const bound: BoundParticle[] = [{ wi: 0, progress: 0.5, phase: 0, size: 1, glow: false, speed: 0 }];
+  const body = {
+    tokens: ['attract'],
+    vis: true,
+    when: 'hot',
+    on: false,
+    cx: 550,
+    cy: 400,
+    range: 280,
+  } as unknown as Body;
+  tearBoundByForces(bound, flat(), [body], 1000, 800, 0, () => {});
+  assert.equal(bound.length, 1); // selective gate → bound untouched
 });
