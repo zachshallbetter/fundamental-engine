@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { gravity, charge, magnetism, thermal, thermalSigma, naturalForces } from './natural.ts';
+import {
+  gravity,
+  charge,
+  magnetism,
+  thermal,
+  collide,
+  thermalSigma,
+  naturalForces,
+} from './natural.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -66,10 +74,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('natural primitives are gravity + charge + magnetism + thermal (§20.10)', () => {
+test('natural primitives are gravity + charge + magnetism + thermal + collide (§20.10)', () => {
   assert.deepEqual(
     naturalForces.map((f) => f.token),
-    ['gravity', 'charge', 'magnetism', 'thermal'],
+    ['gravity', 'charge', 'magnetism', 'thermal', 'collide'],
   );
 });
 
@@ -195,6 +203,45 @@ test('thermal kicks are isotropic with the right variance (§20.10)', () => {
   assert.ok(Math.abs(meanX) < 0.2, `mean ${meanX}`); // centred
   assert.ok(stdX > 1.6 && stdX < 2.4, `stdX ${stdX}`); // ≈ σ ≈ 2
   assert.ok(stdY > 1.6 && stdY < 2.4, `stdY ${stdY}`); // isotropic
+});
+
+// collide uses env.neighbors — stub it to return a fixed partner q.
+const withNeighbor = (q: Particle): Partial<Env> => ({ neighbors: () => [q] });
+
+test('collide reverses a head-on approach elastically (e=1, §20.10)', () => {
+  const q = part({ x: 3, y: 0, vx: -1, vy: 0, size: 2 });
+  const p = part({ x: 0, y: 0, vx: 1, vy: 0, size: 2 }); // discs overlap (d=3 < 4)
+  collide.apply(body({ strength: 1, range: 300 }), p, env({ dist: 10, ...withNeighbor(q) }));
+  assert.ok(near(p.vx, -1)); // half-impulse on p flips its approach (q flips on its turn)
+  assert.ok(near(p.vy, 0));
+});
+
+test('collide ignores a separating pair', () => {
+  const q = part({ x: 3, y: 0, vx: 1, vy: 0, size: 2 });
+  const p = part({ x: 0, y: 0, vx: -1, vy: 0, size: 2 }); // moving apart
+  collide.apply(body({ strength: 1, range: 300 }), p, env({ dist: 10, ...withNeighbor(q) }));
+  assert.equal(p.vx, -1); // untouched
+});
+
+test('collide ignores partners out of contact', () => {
+  const q = part({ x: 10, y: 0, vx: -1, vy: 0, size: 2 }); // d=10 > r_p+r_q=4
+  const p = part({ x: 0, y: 0, vx: 1, vy: 0, size: 2 });
+  collide.apply(body({ strength: 1, range: 300 }), p, env({ dist: 10, ...withNeighbor(q) }));
+  assert.equal(p.vx, 1);
+});
+
+test('collide restitution e=0 is perfectly inelastic (half closing speed removed)', () => {
+  const q = part({ x: 3, y: 0, vx: -1, vy: 0, size: 2 });
+  const p = part({ x: 0, y: 0, vx: 1, vy: 0, size: 2 });
+  collide.apply(body({ strength: 0, range: 300 }), p, env({ dist: 10, ...withNeighbor(q) }));
+  assert.ok(near(p.vx, 0)); // (1+0)·0.5·relN, relN=−2 → p: 1 → 0 (moves with q)
+});
+
+test('collide is inert outside the body region', () => {
+  const q = part({ x: 3, y: 0, vx: -1, vy: 0, size: 2 });
+  const p = part({ x: 0, y: 0, vx: 1, vy: 0, size: 2 });
+  collide.apply(body({ strength: 1, range: 100 }), p, env({ dist: 200, ...withNeighbor(q) }));
+  assert.equal(p.vx, 1);
 });
 
 test('gravity and charge share one kernel — same |f| for unit source (§20.10)', () => {
