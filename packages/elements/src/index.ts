@@ -77,3 +77,6 @@ declare global {
     'forces-field': ForcesField;
   }
 }
+
+export * from './forces-cell.ts';
+export * from './cell-force.ts';
