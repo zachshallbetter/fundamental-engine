@@ -5,6 +5,7 @@
  */
 
 import type { Body } from './types.ts';
+import { PRESETS, type PresetEntry } from '../config/presets.ts';
 
 /** A minimal attribute accessor — `name` is the suffix after `data-`. */
 export interface BodyAttrs {
@@ -63,7 +64,50 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
   };
 }
 
-/** Scan a DOM subtree for `[data-body]` elements → bodies (browser only). */
+/** A `BodyAttrs` view over one preset entry, so it parses through the very same
+ *  defaults as a real `data-*` element (single source of truth in `parseBodyParams`).
+ *  The entry's keys map to the attribute suffixes the parser already reads. */
+function entryAttrs(e: PresetEntry): BodyAttrs {
+  const map: Record<string, string> = { body: e.body };
+  if (e.strength != null) map.strength = String(e.strength);
+  if (e.range != null) map.range = String(e.range);
+  if (e.spin != null) map.spin = String(e.spin);
+  if (e.angle != null) map.angle = String(e.angle);
+  if (e.absorb != null) map.absorb = String(e.absorb);
+  if (e.max != null) map.max = String(e.max);
+  return {
+    get: (name) => map[name] ?? null,
+    has: (name) => name in map,
+  };
+}
+
+/** Expand a preset name into the static params of its virtual bodies (pure, §20.9).
+ *  An unknown preset yields `[]` — the element simply contributes nothing. */
+export function expandPreset(name: string): StaticBody[] {
+  const entries = PRESETS[name];
+  return entries ? entries.map((e) => parseBodyParams(entryAttrs(e))) : [];
+}
+
+/** A fresh Body from static params, all runtime fields zeroed — shared by both paths. */
+function makeBody(el: HTMLElement, sb: StaticBody): Body {
+  return {
+    el,
+    ...sb,
+    cx: 0,
+    cy: 0,
+    hw: 0,
+    hh: 0,
+    on: false,
+    vis: true,
+    accreted: 0,
+    count: 0,
+    d: 0,
+  };
+}
+
+/** Scan a DOM subtree for `[data-body]` and `[data-preset]` elements → bodies (§2.1,
+ *  §20.9). A preset element emits one virtual body per entry, all sharing its rect;
+ *  the plain `data-body` path is unchanged. */
 export function scanBodies(root: ParentNode): Body[] {
   const bodies: Body[] = [];
   root.querySelectorAll('[data-body]').forEach((node) => {
@@ -72,19 +116,11 @@ export function scanBodies(root: ParentNode): Body[] {
       get: (name) => el.getAttribute('data-' + name),
       has: (name) => el.hasAttribute('data-' + name),
     };
-    bodies.push({
-      el,
-      ...parseBodyParams(attrs),
-      cx: 0,
-      cy: 0,
-      hw: 0,
-      hh: 0,
-      on: false,
-      vis: true,
-      accreted: 0,
-      count: 0,
-      d: 0,
-    });
+    bodies.push(makeBody(el, parseBodyParams(attrs)));
+  });
+  root.querySelectorAll('[data-preset]').forEach((node) => {
+    const el = node as HTMLElement;
+    for (const sb of expandPreset(el.dataset.preset ?? '')) bodies.push(makeBody(el, sb));
   });
   return bodies;
 }
