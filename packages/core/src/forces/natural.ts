@@ -133,8 +133,41 @@ export const thermal: Force = {
   meta: { desc: 'Langevin/Brownian agitation — a real temperature in the medium' },
 };
 
+/**
+ * §20.10 — `collide`: elastic pairwise collision (granular / billiard), the hard-sphere
+ * complement to the smooth, wall-bound `reflect`. For each neighbour `q` whose disc
+ * overlaps `p`'s (`d < r_p + r_q`, radius ≈ `size`) and that is *approaching*, the pair
+ * exchanges normal momentum: `p` takes a half-impulse along the contact normal `n`,
+ * `q` the other half on its own turn — so momentum is conserved and, at `e = 1`, energy
+ * too. `strength` is the restitution `e ∈ [0,1]`. Class [B] — uses `env.neighbors`.
+ */
+export const collide: Force = {
+  token: 'collide',
+  label: 'Collide',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return; // collisions resolve within the body's region
+    const restitution = Math.max(0, Math.min(1, b.strength));
+    const pr = Math.max(1, p.size);
+    for (const q of e.neighbors(p, pr * 4)) {
+      const qr = Math.max(1, q.size);
+      const nx = p.x - q.x;
+      const ny = p.y - q.y;
+      const d = Math.hypot(nx, ny);
+      if (d >= pr + qr || d < 1e-6) continue; // not in contact
+      const ux = nx / d;
+      const uy = ny / d;
+      const relN = (p.vx - q.vx) * ux + (p.vy - q.vy) * uy;
+      if (relN >= 0) continue; // separating already → no impulse
+      const j = (1 + restitution) * 0.5 * relN; // half the exchange (q takes the rest)
+      p.vx -= j * ux;
+      p.vy -= j * uy;
+    }
+  },
+  meta: { desc: 'elastic pairwise collision — the hard-sphere billiard force' },
+};
+
 /** The natural primitives, in spec order (§20.10). */
-export const naturalForces: readonly Force[] = [gravity, charge, magnetism, thermal];
+export const naturalForces: readonly Force[] = [gravity, charge, magnetism, thermal, collide];
 
 /** Register the natural primitives on a registry (§4) — opt-in, alongside the nine. */
 export function registerNaturalForces(reg: Registry): void {
