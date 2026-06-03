@@ -55,8 +55,9 @@ Carried over from the Phase 1 conformance audit:
 - [x] **Formation terms** — integrator now applies `driftX`, curl-noise, periodic
       **brownian** (every 40 frames), **`spread`** (`Particle.gx/gy`), and **`conv`**
       (accretion target via `accretionTarget`) (§7).
-- [ ] **`FieldHandle` surface** — add `threads()` (§10, Phase 4) and `burst()`
-      (§11, interaction) to match the §13 API. Deferred to their phases.
+- [x] **`FieldHandle` surface** — `threads()` (§10) and `burst()` (§11) both land;
+      `burst(x,y,hex?)` shoves + heats + tints nearby matter and detaches bound
+      particles (pure `burstImpulse` helper, golden-tested). The §13 API is complete.
 - Phase 3 will also bring: the cool→warm distance render ramp + accent blend
   (§20.8 — Phase 1 ships a minimal heat-only tint), and `alpha:false` vs the
   current transparent-overlay canvas (deliberate, revisit with Currents).
