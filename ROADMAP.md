@@ -124,7 +124,7 @@ Ordered for overnight (highest visible value first):
       first real consumer / the whole-engine integration test), reframe from
       site-specific → the forces-ui manual, fix the "eight"→nine copy, and do a
       responsive / a11y / perf pass. **Gated on Phases 1–5** (the demos must run).
-- [ ] **Field Cell** (`<forces-cell force="vortex">`) — an in-frame, container-sized
+- [x] **Field Cell** (`<forces-cell force="vortex">`) — an in-frame, container-sized
       single-force/formation demo surface (§25.1); the embeddable unit for the
       manual's per-concept demos and the poster/render-mode variant.
 - [ ] The Lab (paint forces; shareable fields) (§14).
