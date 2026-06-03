@@ -11,6 +11,7 @@
 
 export * from './core/types.ts';
 export * from './config/forces.config.ts';
+export * from './config/manual.ts';
 export * from './config/tokens.ts';
 export * from './core/math.ts';
 export * from './core/feedback.ts';
