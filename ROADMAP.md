@@ -119,7 +119,11 @@ Ordered for overnight (highest visible value first):
 - [ ] Remaining natural primitives: `propagate`, `collide`, `diffuse` (§20.10) — each
       needs Env services (scalar `grid` for propagate/diffuse, `neighbors` for collide),
       i.e. engine plumbing beyond a single small force; do them when that lands.
-- [ ] The preset layer (`__presets`) — cosmology as composites (§20.9).
+- [x] **The preset layer** (§20.9) — `data-preset="blackhole"` expands to several
+      co-located virtual bodies (one primitive each, own attrs, shared rect) via
+      `expandPreset`; `config/presets.ts` holds the table (blackhole/whitehole/star).
+      Opt-in, additive to the scanner; `data-body` path untouched. The cosmology family
+      as composition, no engine growth. (`lens`/`warp`/`spawn` composites await those atoms.)
 - [ ] First-class mass (Option B) on Lab/cosmology surfaces (§21.3).
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
