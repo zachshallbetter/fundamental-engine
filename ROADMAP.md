@@ -175,10 +175,10 @@ Ordered for overnight (highest visible value first):
 - [x] **Vanilla adapter** — `mountField(opts)` creates a fixed full-viewport canvas,
       starts the engine, returns the `FieldHandle` (`destroy()` also removes the canvas).
       The framework-free imperative mount, in `@forces-ui/elements`.
-- [ ] React adapter. **Decision-gated:** a React adapter requires React as a dev/peer
-      dependency, which conflicts with the zero-dependency rule. Awaiting a call on whether
-      to add the React dep (the vanilla `mountField` + `<forces-field>` already cover
-      framework-free and any-framework use).
+- [x] **React adapter** (`@forces-ui/react`) — `<ForcesField>` component + `useForcesField`
+      hook mount the engine via `createField`; every `FieldOptions` prop + an `onReady(handle)`.
+      React is a peer dependency (the one approved framework dep; core stays zero-dep).
+      Typecheck + `pnpm -r build` green.
 - [x] **The Field Manual `/reference` — the complete definition, in the UI.** Renders
       `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 26
       forces with its law, `data-*` attributes, and description; presets as compositions;
