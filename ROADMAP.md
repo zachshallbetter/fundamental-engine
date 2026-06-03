@@ -136,7 +136,7 @@ Ordered for overnight (highest visible value first):
 - [ ] Accessibility: reduced motion, focus engagement, `z-index` background layer (§18).
 - [ ] Naming/color reconciliation pass against the canonical palette (§20.2).
 - [x] Emit the design tokens (`--f-*`, `--coherence`, `--ease`) from `forces.config.ts` (§25.2).
-- [ ] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,
+- [x] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,
       "captured = released" (§25 + possibilities); the plain-language on-ramp.
 
 ## Stack (decided)
