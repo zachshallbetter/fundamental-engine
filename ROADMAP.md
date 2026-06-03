@@ -39,11 +39,12 @@ Guiding principles:
 
 ## Phase 2 — Forces, conditions, formations
 
-- [ ] The canonical nine as modules in `forces/`, registered against the contract (§6).
+- [x] The canonical nine as modules in `forces/` (§6), registered into `createField`;
+      absorb capture → supernova release (§6.9) + captured-particle drift.
 - [x] Condition predicates (`data-when`: active/fast/slow/hot/cool) — built in Phase 1.
       Remaining: the selective-gate-on-bound-particles rule (with Currents, Phase 3).
 - [ ] Formations + the eased global bias, and the scroll journey (§7).
-- [ ] Golden tests: each force's per-frame math matches the spec formulas.
+- [x] Golden tests: each force's per-frame math matches the spec formulas (13 tests).
 
 Carried over from the Phase 1 conformance audit (all deferred-by-phase, not bugs):
 

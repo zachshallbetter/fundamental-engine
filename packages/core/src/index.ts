@@ -19,3 +19,4 @@ export * from './core/registry.ts';
 export * from './core/integrator.ts';
 export * from './core/scanner.ts';
 export * from './core/field.ts';
+export * from './forces/index.ts';
