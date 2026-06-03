@@ -122,8 +122,27 @@ export const crystallize: Force = {
   meta: { desc: 'snaps cool matter onto a lattice; melts and frees it when hot' },
 };
 
+/**
+ * §20.3 — `align` (the heading variant): steer velocity toward a fixed heading `ĥ`
+ * while preserving speed — `v += (ĥ·|v| − v)·k_align`. The flocking-align primitive,
+ * sourced from `data-angle` instead of neighbours (the `[B]` neighbour-mean variant
+ * needs the `neighbors` service, deferred). `strength` is `k_align`.
+ */
+export const align: Force = {
+  token: 'align',
+  label: 'Align',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const speed = Math.hypot(p.vx, p.vy); // steer toward ĥ·|v| → turns without speeding up
+    const k = b.strength;
+    p.vx += (b.ux * speed - p.vx) * k;
+    p.vy += (b.uy * speed - p.vy) * k;
+  },
+  meta: { desc: 'steers velocity toward a heading, preserving speed (flock-align)' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
-export const extendedForces: readonly Force[] = [lens, gate, buoyancy, shear, crystallize];
+export const extendedForces: readonly Force[] = [lens, gate, buoyancy, shear, crystallize, align];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */
 export function registerExtendedForces(reg: Registry): void {

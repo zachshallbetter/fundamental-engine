@@ -139,8 +139,12 @@ Ordered for overnight (highest visible value first):
       grows with perpendicular offset (`v_∥ += S·(offset_⊥/d_max)·(1−d/d_max)`). `forces/extended.ts` (§20.3).
 - [x] **`crystallize`** — a phase change: cool matter snaps onto a lattice (`v += (node−p)·k_snap`,
       then damps) and settles solid; hot matter melts and moves free. `forces/extended.ts` (§20.3).
-- [ ] `resonate`, `spotlight`, `align`, `wind`
-      — the rest of the §20.3 class [A] forces, one per cycle.
+- [x] **`align`** (heading variant) — steers velocity toward a heading preserving speed
+      (`v += (ĥ·|v| − v)·k_align`). `forces/extended.ts` (§20.3). The `[B]` neighbour-mean
+      variant awaits the `neighbors` service.
+- [ ] `wind` — curl-noise turbulence (§20.3); needs a noise field (check for a reusable
+      curl-noise helper; else a small value-noise). `resonate`/`spotlight` — modifier
+      forces that wrap a sibling core force; need an integrator modifier pass (plumbing) — DEFER.
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
