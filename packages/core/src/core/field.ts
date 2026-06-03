@@ -62,6 +62,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const JOURNEY: RGB[] = ACCENT_JOURNEY.map(hexToRgb);
   let curAccent: RGB = hexToRgb(cfg.accent);
   let hoverAccent: string | null = null;
+  let threadLinks: { a: Element; b: Element; c: RGB; seed: number }[] = [];
   const t0 = performance.now();
 
   const env: Env = {
@@ -150,16 +151,62 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const enter = (): void => {
         el.dataset.active = '1';
         hoverAccent = el.dataset.color ?? null;
+        const group = el.closest('[data-index][data-threads]');
+        if (group) {
+          const sibs = [...group.querySelectorAll('[data-hot]')].filter((s) => s !== el);
+          setThreads(sibs.map((s) => ({ a: el, b: s, color: el.dataset.color ?? undefined })));
+        }
       };
       const leave = (): void => {
         el.dataset.active = '0';
         hoverAccent = null;
+        setThreads(null);
       };
       el.addEventListener('pointerenter', enter);
       el.addEventListener('pointerleave', leave);
       el.addEventListener('focus', enter);
       el.addEventListener('blur', leave);
     });
+  }
+
+  function setThreads(list: import('./types.ts').ThreadLink[] | null): void {
+    threadLinks = (list ?? []).map((t) => ({
+      a: t.a,
+      b: t.b,
+      c: hexToRgb(t.color ?? cfg.accent),
+      seed: Math.random() * 6.28,
+    }));
+  }
+
+  function drawThreads(): void {
+    if (threadLinks.length === 0) return;
+    const time = env.t;
+    ctx!.globalCompositeOperation = 'lighter';
+    for (const th of threadLinks) {
+      const ra = th.a.getBoundingClientRect();
+      const rb = th.b.getBoundingClientRect();
+      const ax = ra.left + ra.width / 2;
+      const ay = ra.top + ra.height / 2;
+      const bx = rb.left + rb.width / 2;
+      const by = rb.top + rb.height / 2;
+      const [cr, cg, cb] = th.c;
+      ctx!.strokeStyle = `rgba(${cr},${cg},${cb},0.22)`;
+      ctx!.lineWidth = 1;
+      ctx!.beginPath();
+      ctx!.moveTo(ax, ay);
+      ctx!.lineTo(bx, by);
+      ctx!.stroke();
+      for (let k = 0; k < 3; k++) {
+        const tt = (time * 0.6 + th.seed + k / 3) % 1;
+        const px = ax + (bx - ax) * tt;
+        const py = ay + (by - ay) * tt;
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${(1 - tt) * 0.9})`;
+        ctx!.beginPath();
+        ctx!.arc(px, py, 2.2, 0, 6.28318);
+        ctx!.fill();
+      }
+    }
+    ctx!.globalCompositeOperation = 'source-over';
   }
 
   function resize(): void {
@@ -297,6 +344,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.fill();
       if (h > 0.2) ctx!.shadowBlur = 0;
     }
+    drawThreads();
     ctx!.globalCompositeOperation = 'source-over';
   }
 
@@ -401,6 +449,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       curAccent = hexToRgb(hex);
     },
     setFormation,
+    threads: setThreads,
     destroy: () => {
       cancelAnimationFrame(raf);
       clearInterval(idleTimer);

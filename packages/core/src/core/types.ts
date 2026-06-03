@@ -176,6 +176,13 @@ export interface Force {
   meta?: { desc?: string };
 }
 
+/** A connector between two elements for `field.threads` (§10). */
+export interface ThreadLink {
+  a: Element;
+  b: Element;
+  color?: string;
+}
+
 /** A `data-when` gate predicate (§5). Selective gates read each particle. */
 export type Condition = (b: Body, p: Particle) => boolean;
 
@@ -205,6 +212,8 @@ export interface FieldHandle {
   setAccent(hex: string): void;
   /** switch the global formation (§7). */
   setFormation(name: string): void;
+  /** wire glowing connector lines between a set, or clear with null (§10). */
+  threads(list: ThreadLink[] | null): void;
   /** stop the loop and release listeners. */
   destroy(): void;
 }
