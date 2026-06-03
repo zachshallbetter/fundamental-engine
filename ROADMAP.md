@@ -180,7 +180,9 @@ Ordered for overnight (highest visible value first):
       `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 26
       forces with its law, `data-*` attributes, and description; presets as compositions;
       the `data-when` gates — all over the live field, linked from the home page. Driven by
-      the catalog (completeness-tested), so it can't drift from the engine.
+      the catalog (completeness-tested), so it can't drift from the engine. Opens with a
+      **live, playable `<forces-cell>` demo** + a force switcher (attract/repel/vortex/stream/
+      gravity/spring/buoyancy) — the manual explains by being it.
 - [ ] **forces-ui.com landing page = the Field Manual, rebuilt on the engine.**
       The current `public/index.html` is a placeholder; the real home is the
       Manual (`docs/reference/manual.html`) — it explains the system *by being it*
