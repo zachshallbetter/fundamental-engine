@@ -175,7 +175,10 @@ Ordered for overnight (highest visible value first):
 - [x] **Vanilla adapter** — `mountField(opts)` creates a fixed full-viewport canvas,
       starts the engine, returns the `FieldHandle` (`destroy()` also removes the canvas).
       The framework-free imperative mount, in `@forces-ui/elements`.
-- [ ] React adapter.
+- [ ] React adapter. **Decision-gated:** a React adapter requires React as a dev/peer
+      dependency, which conflicts with the zero-dependency rule. Awaiting a call on whether
+      to add the React dep (the vanilla `mountField` + `<forces-field>` already cover
+      framework-free and any-framework use).
 - [x] **The Field Manual `/reference` — the complete definition, in the UI.** Renders
       `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 26
       forces with its law, `data-*` attributes, and description; presets as compositions;
@@ -183,16 +186,14 @@ Ordered for overnight (highest visible value first):
       the catalog (completeness-tested), so it can't drift from the engine. Opens with a
       **live, playable `<forces-cell>` demo** + a force switcher (attract/repel/vortex/stream/
       gravity/spring/buoyancy) — the manual explains by being it.
-- [ ] **forces-ui.com landing page = the Field Manual, rebuilt on the engine.**
-      The current `public/index.html` is a placeholder; the real home is the
-      Manual (`docs/reference/manual.html`) — it explains the system *by being it*
-      (live demos behind every concept). Keep the bones & style (4-chapter arc:
-      Substrate → Forces → Conditions → System; dark aesthetic, Bricolage + Martian
-      Mono, Currents, force palette; demo-per-concept; chapter rail; the "every
-      element has mass" thesis). Rebuild on the typed engine (it becomes forces-ui's
-      first real consumer / the whole-engine integration test), reframe from
-      site-specific → the forces-ui manual, fix the "eight"→nine copy, and do a
-      responsive / a11y / perf pass. **Gated on Phases 1–5** (the demos must run).
+- [x] **forces-ui.com rebuilt on the engine.** The home page is now the engine-driven
+      manual — the live `<forces-field>` runs the whole engine (its first real consumer);
+      the hero `mass.` is a real `data-feedback` body that glows; the Field Cell row demos
+      forces; the chapter rail (Substrate → Forces → Conditions → System), the "every element
+      has mass" thesis, Bricolage + Martian Mono, Currents, and the force palette are all
+      present; copy says nine; a11y + perf passes done. The deep dives are `/reference` (the
+      complete definition + a live demo) and `/lab` (interactive). _Optional future expansion:
+      the full long-form 4-chapter arc with a demo behind every single concept._
 - [x] **Field Cell** (`<forces-cell force="vortex">`) — an in-frame, container-sized
       single-force/formation demo surface (§25.1); the embeddable unit for the
       manual's per-concept demos and the poster/render-mode variant.
@@ -202,7 +203,9 @@ Ordered for overnight (highest visible value first):
       (shareable, restorable). `<forces-field>` now proxies the FieldHandle surface
       (`scan`/`rescan`/`setAccent`/`setFormation`/`burst`) so any page can drive it. Linked
       from the home page; build + preview verified.
-- [ ] A published docs site (the executable design system).
+- [x] A published docs site (the executable design system) — `/reference` renders the
+      complete force catalog (laws, attributes, presets, conditions) live from the engine's
+      single source of truth, with a playable demo. The executable design system, shipped.
 
 ## Cross-cutting
 
@@ -215,6 +218,8 @@ Ordered for overnight (highest visible value first):
       layer, and the decorative canvases (`<forces-field>`, `<forces-cell>`, `mountField`)
       now marked `aria-hidden` so assistive tech skips them.
 - [ ] Naming/color reconciliation pass against the canonical palette (§20.2).
+      **Decision-gated:** this would change the live force colours/names — an opinionated
+      design call best made by the user rather than chosen autonomously.
 - [x] Emit the design tokens (`--f-*`, `--coherence`, `--ease`) from `forces.config.ts` (§25.2).
 - [x] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,
       "captured = released" (§25 + possibilities); the plain-language on-ramp.
