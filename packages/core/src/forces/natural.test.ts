@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { gravity, charge, magnetism, naturalForces } from './natural.ts';
+import { gravity, charge, magnetism, thermal, thermalSigma, naturalForces } from './natural.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
 
 const body = (o: Partial<Body> = {}): Body => ({
@@ -66,10 +66,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('natural primitives are gravity + charge + magnetism (§20.10)', () => {
+test('natural primitives are gravity + charge + magnetism + thermal (§20.10)', () => {
   assert.deepEqual(
     naturalForces.map((f) => f.token),
-    ['gravity', 'charge', 'magnetism'],
+    ['gravity', 'charge', 'magnetism', 'thermal'],
   );
 });
 
@@ -152,6 +152,49 @@ test('magnetism is inert beyond the cutoff range', () => {
   const p = part({ vx: 1, vy: 0, charge: 1 });
   magnetism.apply(body({ spin: 1, strength: 1, range: 300 }), p, env({ dx: 350, dy: 0, dist: 350 }));
   assert.equal(p.vy, 0);
+});
+
+test('thermalSigma is the fluctuation–dissipation amplitude √(2T) (§20.10)', () => {
+  assert.equal(thermalSigma(0), 0); // T=0 → frozen
+  assert.ok(near(thermalSigma(0.5), 1)); // √(2·0.5) = 1
+  assert.ok(near(thermalSigma(2), 2)); // √(2·2) = 2
+  assert.equal(thermalSigma(-5), 0); // negative T floored — no imaginary kicks
+});
+
+test('thermal is frozen at zero temperature', () => {
+  const p = part({ vx: 0.3, vy: -0.2 });
+  thermal.apply(body({ strength: 0, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
+  assert.equal(p.vx, 0.3);
+  assert.equal(p.vy, -0.2);
+});
+
+test('thermal is inert beyond the cutoff range', () => {
+  const p = part();
+  thermal.apply(body({ strength: 5, range: 300 }), p, env({ dx: 350, dy: 0, dist: 350 }));
+  assert.equal(p.vx, 0);
+  assert.equal(p.vy, 0);
+});
+
+test('thermal kicks are isotropic with the right variance (§20.10)', () => {
+  // Sample many independent kicks; mean ≈ 0 and per-axis std ≈ σ. At d=1, range=300,
+  // strength=2 → σ = √(2·2·(1−1/300)) ≈ 1.997. Bounds are loose enough to be robust.
+  const N = 5000;
+  let sx = 0;
+  let sxx = 0;
+  let syy = 0;
+  for (let i = 0; i < N; i++) {
+    const p = part();
+    thermal.apply(body({ strength: 2, range: 300 }), p, env({ dx: 1, dy: 0, dist: 1 }));
+    sx += p.vx;
+    sxx += p.vx * p.vx;
+    syy += p.vy * p.vy;
+  }
+  const meanX = sx / N;
+  const stdX = Math.sqrt(sxx / N);
+  const stdY = Math.sqrt(syy / N);
+  assert.ok(Math.abs(meanX) < 0.2, `mean ${meanX}`); // centred
+  assert.ok(stdX > 1.6 && stdX < 2.4, `stdX ${stdX}`); // ≈ σ ≈ 2
+  assert.ok(stdY > 1.6 && stdY < 2.4, `stdY ${stdY}`); // isotropic
 });
 
 test('gravity and charge share one kernel — same |f| for unit source (§20.10)', () => {

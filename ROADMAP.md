@@ -113,7 +113,12 @@ Ordered for overnight (highest visible value first):
       velocity so it curls a moving charge without doing work; `spin` sets the
       out-of-plane sense. In `forces/natural.ts`, golden-tested (§20.10). Completes
       the EM pair with `charge`.
-- [ ] Remaining natural primitives: `thermal`, `propagate`, `collide`, `diffuse` (§20.10).
+- [x] **`thermal`** — Langevin/Brownian agitation (`v += √(2T)·ξ`), the honest
+      `wander`; paired with `drag` it's a fluctuation–dissipation thermostat. Pure
+      `thermalSigma` + isotropic Box–Muller kick, in `forces/natural.ts` (§20.10).
+- [ ] Remaining natural primitives: `propagate`, `collide`, `diffuse` (§20.10) — each
+      needs Env services (scalar `grid` for propagate/diffuse, `neighbors` for collide),
+      i.e. engine plumbing beyond a single small force; do them when that lands.
 - [ ] The preset layer (`__presets`) — cosmology as composites (§20.9).
 - [ ] First-class mass (Option B) on Lab/cosmology surfaces (§21.3).
 

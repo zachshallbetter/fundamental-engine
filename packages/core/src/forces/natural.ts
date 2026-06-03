@@ -96,8 +96,45 @@ export const magnetism: Force = {
   meta: { desc: 'Lorentz force — curves a moving charge perpendicular to its velocity' },
 };
 
+/**
+ * The Langevin noise amplitude `σ = √(2·k_B·T·γ)` (§20.10). In sim units `k_B = γ = 1`,
+ * so `σ = √(2T)`; negative `T` is floored to 0 (no imaginary kicks). Pure, so the
+ * fluctuation–dissipation law itself is golden-tested apart from the RNG.
+ */
+export function thermalSigma(T: number): number {
+  return Math.sqrt(2 * Math.max(0, T));
+}
+
+/**
+ * §20.10 — `thermal`: Langevin/Brownian agitation, the *honest* `wander`. Each frame
+ * a charge-free Gaussian kick `v += σ·ξ` (ξ ~ N(0,1) per axis) jiggles matter, with
+ * `σ = √(2T)`. Paired with `drag` (`−γv`) it's a **thermostat** — fluctuation–
+ * dissipation, the swarm equilibrates at temperature `T`. `T` is the body's strength,
+ * eased to a localized hot spot by a `(1 − d/d_max)` falloff (sourceable from heat or
+ * scroll energy). Box–Muller turns two uniforms into one isotropic 2-D kick.
+ */
+export const thermal: Force = {
+  token: 'thermal',
+  label: 'Thermal',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const falloff = 1 - e.dist / b.range; // localized: hotter nearer the source
+    const sigma = thermalSigma(b.strength * falloff);
+    if (sigma === 0) return;
+    // Box–Muller: (u1, u2) → one isotropic N(0,1) pair, scaled by σ.
+    const u1 = Math.random() || 1e-9; // avoid log(0)
+    const mag = sigma * Math.sqrt(-2 * Math.log(u1));
+    const ang = 2 * Math.PI * Math.random();
+    p.vx += mag * Math.cos(ang);
+    p.vy += mag * Math.sin(ang);
+    if (b.on) p.heat = Math.max(p.heat, falloff * 0.4);
+    clampToC(p, e.c);
+  },
+  meta: { desc: 'Langevin/Brownian agitation — a real temperature in the medium' },
+};
+
 /** The natural primitives, in spec order (§20.10). */
-export const naturalForces: readonly Force[] = [gravity, charge, magnetism];
+export const naturalForces: readonly Force[] = [gravity, charge, magnetism, thermal];
 
 /** Register the natural primitives on a registry (§4) — opt-in, alongside the nine. */
 export function registerNaturalForces(reg: Registry): void {
