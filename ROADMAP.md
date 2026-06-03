@@ -123,7 +123,10 @@ Ordered for overnight (highest visible value first):
       co-located virtual bodies (one primitive each, own attrs, shared rect) via
       `expandPreset`; `config/presets.ts` holds the table (blackhole/whitehole/star).
       Opt-in, additive to the scanner; `data-body` path untouched. The cosmology family
-      as composition, no engine growth. (`lens`/`warp`/`spawn` composites await those atoms.)
+      as composition, no engine growth. (`warp`/`spawn` composites await those atoms.)
+- [x] **More presets** — `quasar` (black hole + polar jets), `galaxy`, `nebula`,
+      `tornado`, now that `lens`/`buoyancy`/`thermal`/etc. exist. A registry-cross-check
+      test guards against any preset naming an unregistered token.
 - [ ] First-class mass (Option B) on Lab/cosmology surfaces (§21.3).
 
 ## Designed extended forces (§20.3, class [A] — opt-in, pure per-particle)

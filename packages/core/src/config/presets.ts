@@ -62,4 +62,34 @@ export const PRESETS: Record<string, readonly PresetEntry[]> = {
     { body: 'gravity', strength: 300, range: 320 }, // inward GM well
     { body: 'thermal', strength: 1.0, range: 220 }, // outward Brownian pressure
   ],
+  // §20.9 — an accreting black hole that also jets along its poles.
+  quasar: [
+    { body: 'attract', strength: 1.4, range: 340 }, // the well
+    { body: 'vortex', strength: 1.2, range: 300, spin: 1 }, // accretion disk
+    { body: 'absorb', absorb: 40, max: 60 }, // horizon
+    { body: 'lens', strength: 0.5, range: 380 }, // lensing
+    { body: 'emitter', strength: 1.2, range: 260, angle: -90 }, // north pole jet
+    { body: 'emitter', strength: 1.2, range: 260, angle: 90 }, // south pole jet
+  ],
+  // A spiral disk: a soft well, a swirl for the arms, drag to settle into a plane,
+  // and lensing at the rim.
+  galaxy: [
+    { body: 'attract', strength: 1.0, range: 400 }, // the bulge
+    { body: 'vortex', strength: 1.3, range: 380, spin: 1 }, // spiral arms
+    { body: 'drag', strength: 0.4, range: 400 }, // settle into the disk
+    { body: 'lens', strength: 0.3, range: 420 }, // halo lensing
+  ],
+  // A warm, slow cloud: thermal agitation churning in a viscous medium, light matter
+  // drifting up.
+  nebula: [
+    { body: 'thermal', strength: 0.8, range: 320 }, // warm churn
+    { body: 'drag', strength: 0.5, range: 320 }, // viscous medium
+    { body: 'buoyancy', strength: 0.3, range: 0 }, // light wisps rise
+  ],
+  // A vortex with an updraft along its axis, calmed at the edges by drag.
+  tornado: [
+    { body: 'vortex', strength: 1.6, range: 300, spin: 1 }, // the funnel
+    { body: 'stream', strength: 0.8, range: 280, angle: -90 }, // updraft
+    { body: 'drag', strength: 0.3, range: 300 }, // ragged edge
+  ],
 };
