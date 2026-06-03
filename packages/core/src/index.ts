@@ -17,6 +17,7 @@ export * from './core/field-store.ts';
 export * from './core/conditions.ts';
 export * from './core/registry.ts';
 export * from './core/integrator.ts';
+export * from './core/formations.ts';
 export * from './core/scanner.ts';
 export * from './core/field.ts';
 export * from './forces/index.ts';
