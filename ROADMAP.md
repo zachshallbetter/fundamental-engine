@@ -172,7 +172,10 @@ Ordered for overnight (highest visible value first):
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
-- [ ] Vanilla adapter (mount once, scan the DOM) + a React adapter.
+- [x] **Vanilla adapter** — `mountField(opts)` creates a fixed full-viewport canvas,
+      starts the engine, returns the `FieldHandle` (`destroy()` also removes the canvas).
+      The framework-free imperative mount, in `@forces-ui/elements`.
+- [ ] React adapter.
 - [x] **The Field Manual `/reference` — the complete definition, in the UI.** Renders
       `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 26
       forces with its law, `data-*` attributes, and description; presets as compositions;
