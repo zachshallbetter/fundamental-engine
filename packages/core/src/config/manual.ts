@@ -28,6 +28,8 @@ export interface ManualEntry {
   desc: string;
   /** the force's canonical accent colour (§20.2 reconciliation). */
   color: string;
+  /** a one-line real-world use — what you'd reach for this force to do in a UI. */
+  example: string;
 }
 
 /**
@@ -68,8 +70,45 @@ export const FORCE_COLORS: Record<string, string> = {
   spotlight: '#facc15',
 };
 
+/**
+ * A one-line real-world use for each force — the spirit of the original manual's
+ * "real use example" captions (the canonical nine are adapted from them; the rest
+ * are authored). The UI renders this alongside a live demo of the force.
+ */
+export const FORCE_EXAMPLES: Record<string, string> = {
+  // canonical nine
+  attract: 'A hero word that pulls the field into orbit around it.',
+  repel: 'A dismiss control that opens a clean void in the field.',
+  vortex: 'A loading state that spins the field into a whirlpool.',
+  stream: 'A scroll cue that combs the field downwind like a current.',
+  drag: 'A modal backdrop the field thickens behind — motion settles.',
+  emitter: 'A call-to-action that draws matter in and jets it back out.',
+  spring: 'A pinned element the field tethers to at a rest radius.',
+  reflect: 'A card the field bounces off — a wall that sparks on impact.',
+  absorb: 'A cart that accretes matter, then releases it on checkout (a supernova).',
+  // natural primitives
+  gravity: 'A heavy headline with a true 1/d² pull — a real well.',
+  charge: 'Two states that demix charged matter into +/− domains.',
+  magnetism: 'A region that curves moving charge into cyclotron arcs.',
+  thermal: 'A "hot" badge that agitates the field with Brownian heat.',
+  collide: 'A dense cluster where particles ricochet like billiards.',
+  diffuse: 'A trail particles lay down and follow — stigmergy.',
+  propagate: 'A button that fires a real shock wave across the field.',
+  // designed-extended
+  lens: 'A link that bends a passing flow into caustics — no capture.',
+  gate: 'A one-way membrane: matter passes through but not back.',
+  buoyancy: 'A feed where light/hot items rise and dense ones settle.',
+  shear: 'A divider with laminar flow — layers slide past each other.',
+  crystallize: 'A "cool" section where matter snaps onto a lattice.',
+  align: 'A nav where particles flock to a shared heading.',
+  wind: 'A hero with divergence-free turbulence drifting through it.',
+  cohesion: 'A tag group that behaves like a droplet — a swarm with a skin.',
+  resonate: 'Pair with attract: a well that breathes (pulsing strength).',
+  spotlight: 'Pair with stream: a directed beam confined to a cone.',
+};
+
 /** Every force, in catalog order. The UI groups these by `family`. */
-const FORCES_RAW: readonly Omit<ManualEntry, 'color'>[] = [
+const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
   // ── canonical nine (§6) ──────────────────────────────────────────────────────
   {
     family: 'canonical',
@@ -285,28 +324,30 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color'>[] = [
   },
 ];
 
-/** Every force with its canonical colour merged in (§20.2). The UI groups by `family`. */
+/** Every force with its canonical colour + real-use example merged in. Grouped by `family`. */
 export const MANUAL_FORCES: readonly ManualEntry[] = FORCES_RAW.map((e) => ({
   ...e,
   color: FORCE_COLORS[e.token] ?? '#ffffff',
+  example: FORCE_EXAMPLES[e.token] ?? '',
 }));
 
-/** A preset definition: its name and the primitive tokens it composes (§20.9). */
+/** A preset definition: its name, the primitive tokens it composes, and a real use (§20.9). */
 export interface ManualPreset {
   name: string;
   tokens: readonly string[];
   desc: string;
+  example: string;
 }
 
 /** The cosmology/weather presets, as compositions (§20.9). */
 export const MANUAL_PRESETS: readonly ManualPreset[] = [
-  { name: 'blackhole', tokens: ['attract', 'vortex', 'absorb', 'lens'], desc: 'a well, an accretion disk, an event horizon, and lensing' },
-  { name: 'whitehole', tokens: ['repel', 'stream'], desc: 'an emission horizon that throws matter out' },
-  { name: 'star', tokens: ['gravity', 'thermal'], desc: 'hydrostatic equilibrium — gravity balanced by thermal pressure' },
-  { name: 'quasar', tokens: ['attract', 'vortex', 'absorb', 'lens', 'emitter'], desc: 'an accreting black hole with polar jets' },
-  { name: 'galaxy', tokens: ['attract', 'vortex', 'drag', 'lens'], desc: 'a spiral disk that settles into a plane' },
-  { name: 'nebula', tokens: ['thermal', 'drag', 'buoyancy'], desc: 'a warm, slow cloud with rising wisps' },
-  { name: 'tornado', tokens: ['vortex', 'stream', 'drag'], desc: 'a funnel with an updraft, calmed at the edges' },
+  { name: 'blackhole', tokens: ['attract', 'vortex', 'absorb', 'lens'], desc: 'a well, an accretion disk, an event horizon, and lensing', example: 'A dramatic focal element — the field pours in, circles, and is swallowed.' },
+  { name: 'whitehole', tokens: ['repel', 'stream'], desc: 'an emission horizon that throws matter out', example: 'A source that only emits — the field is pushed away and downwind.' },
+  { name: 'star', tokens: ['gravity', 'thermal'], desc: 'hydrostatic equilibrium — gravity balanced by thermal pressure', example: 'A balanced body — gravity’s pull held off by thermal pressure.' },
+  { name: 'quasar', tokens: ['attract', 'vortex', 'absorb', 'lens', 'emitter'], desc: 'an accreting black hole with polar jets', example: 'An accreting core with bright jets firing from its poles.' },
+  { name: 'galaxy', tokens: ['attract', 'vortex', 'drag', 'lens'], desc: 'a spiral disk that settles into a plane', example: 'A spiral that winds the field into arms and settles into a disk.' },
+  { name: 'nebula', tokens: ['thermal', 'drag', 'buoyancy'], desc: 'a warm, slow cloud with rising wisps', example: 'A warm, slow cloud — the field churns and light wisps rise.' },
+  { name: 'tornado', tokens: ['vortex', 'stream', 'drag'], desc: 'a funnel with an updraft, calmed at the edges', example: 'A funnel that swirls the field up its axis, ragged at the edges.' },
 ];
 
 /** The `data-when` condition gates (§5). */
