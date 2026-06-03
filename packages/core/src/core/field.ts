@@ -16,11 +16,13 @@ import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
 import { scanBodies, measureBodies } from './scanner.ts';
 import { easeFormation } from './formations.ts';
+import { buildWaves, buildBound, waveYat, type Wave, type BoundParticle } from './currents.ts';
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
-import { clamp, hexToRgb } from './math.ts';
+import { clamp, hexToRgb, particleRGB } from './math.ts';
 import { registerCoreForces } from '../forces/index.ts';
 
-const COOL: readonly [number, number, number] = [200, 224, 255];
+// the Currents' cool baseline palette — a subset of the force palette (§24.4).
+const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   const ctx = canvas.getContext('2d');
@@ -43,6 +45,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let raf = 0;
   let frameN = 0;
   let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
+  let waves: Wave[] = [];
+  let bound: BoundParticle[] = [];
+  let boot = reduceMotion ? 1 : 0;
   const t0 = performance.now();
 
   const env: Env = {
@@ -108,6 +113,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     store.clear();
     const n = Math.round(130 * cfg.density);
     for (let i = 0; i < n; i++) store.add(newParticle());
+    waves = buildWaves(WAVE_RGB);
+    bound = buildBound(waves.length, cfg.density, Math.random);
   }
 
   function scan(): void {
@@ -130,19 +137,111 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     scan();
   }
 
-  function render(): void {
-    ctx!.clearRect(0, 0, W, H);
-    const [ar, ag, ab] = hexToRgb(cfg.accent);
-    for (const p of store.particles) {
-      const h = p.heat;
-      const r = (COOL[0] + (ar - COOL[0]) * h) | 0;
-      const g = (COOL[1] + (ag - COOL[1]) * h) | 0;
-      const b = (COOL[2] + (ab - COOL[2]) * h) | 0;
-      ctx!.fillStyle = `rgba(${r},${g},${b},${clamp(0.5 + h * 0.5, 0, 1)})`;
+  function drawWaves(): void {
+    const time = env.t;
+    const STEP = 16;
+    for (const w of waves) {
+      const [cr, cg, cb] = w.color;
       ctx!.beginPath();
-      ctx!.arc(p.x, p.y, p.size + h * 2, 0, 6.28318);
+      ctx!.moveTo(0, waveYat(w, 0, time, H));
+      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H));
+      ctx!.lineTo(W, H);
+      ctx!.lineTo(0, H);
+      ctx!.closePath();
+      const ty = w.baseFrac * H + w.offsetY - w.amp;
+      const grad = ctx!.createLinearGradient(0, ty, 0, ty + 320);
+      grad.addColorStop(0, `rgba(${cr},${cg},${cb},${(0.11 + w.depth * 0.05) * boot})`);
+      grad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+      ctx!.fillStyle = grad;
       ctx!.fill();
     }
+    ctx!.globalCompositeOperation = 'lighter';
+    for (const w of waves) {
+      const [cr, cg, cb] = w.color;
+      ctx!.beginPath();
+      ctx!.moveTo(0, waveYat(w, 0, time, H));
+      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H));
+      ctx!.lineWidth = 1.2;
+      ctx!.shadowBlur = 11;
+      ctx!.shadowColor = `rgba(${cr},${cg},${cb},0.9)`;
+      ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.3 + w.depth * 0.22) * boot})`;
+      ctx!.stroke();
+    }
+    ctx!.shadowBlur = 0;
+    ctx!.globalCompositeOperation = 'source-over';
+  }
+
+  function drawBound(): void {
+    ctx!.globalCompositeOperation = 'lighter';
+    const time = env.t;
+    let i = 0;
+    for (const p of bound) {
+      const w = waves[p.wi];
+      if (!w) {
+        i++;
+        continue;
+      }
+      if (env.dt) {
+        p.progress += p.speed;
+        if (p.progress > 1) p.progress -= 1;
+        else if (p.progress < 0) p.progress += 1;
+      }
+      const x = p.progress * W;
+      const y = waveYat(w, x, time, H) + p.phase * 32;
+      const [cr, cg, cb] = w.color;
+      const tw = p.glow ? 0.6 + 0.4 * Math.sin(time * 2.2 + i) : 0.85;
+      if (p.glow) {
+        ctx!.shadowBlur = 8;
+        ctx!.shadowColor = `rgba(${cr},${cg},${cb},0.9)`;
+      }
+      ctx!.fillStyle = `rgba(${cr},${cg},${cb},${tw * boot})`;
+      ctx!.beginPath();
+      ctx!.arc(x, y, p.size, 0, 6.28318);
+      ctx!.fill();
+      if (p.glow) ctx!.shadowBlur = 0;
+      i++;
+    }
+    ctx!.globalCompositeOperation = 'source-over';
+  }
+
+  function render(): void {
+    // opaque dark substrate (§2.5, darkness ≈ 0.97).
+    ctx!.fillStyle = 'rgb(5,6,11)';
+    ctx!.fillRect(0, 0, W, H);
+    drawWaves();
+    drawBound();
+
+    // free particles — cool centre → warm edge, blended toward accent (§20.8).
+    ctx!.globalCompositeOperation = 'lighter';
+    const acc = hexToRgb(cfg.accent);
+    const cx = W / 2;
+    const cy = H * 0.4;
+    const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
+    for (const p of store.particles) {
+      if (p.cap) {
+        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.55 * boot})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, 1.3, 0, 6.28318);
+        ctx!.fill();
+        continue;
+      }
+      const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
+      const rs = d * d;
+      const h = p.heat;
+      const [r, g, b] = particleRGB(rs, h, acc);
+      const size = p.size * (1 - 0.4 * rs) + h * 2;
+      const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot, 0, 1);
+      if (h > 0.2) {
+        ctx!.shadowBlur = 12 * h;
+        ctx!.shadowColor = `rgba(${r | 0},${g | 0},${b | 0},0.95)`;
+      }
+      ctx!.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${alpha})`;
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, size, 0, 6.28318);
+      ctx!.fill();
+      if (h > 0.2) ctx!.shadowBlur = 0;
+    }
+    ctx!.globalCompositeOperation = 'source-over';
   }
 
   function frame(now: number): void {
@@ -150,10 +249,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     env.t = (now - t0) / 1000;
     env.frameN = frameN;
     env.dt = reduceMotion ? 0 : 1;
+    if (boot < 1) boot = Math.min(1, boot + 0.012);
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
+    const scrollY = window.scrollY || 0; // wave parallax (§24)
+    for (const w of waves) {
+      const target = scrollY * (0.025 + w.depth * 0.08);
+      w.offsetY += (target - w.offsetY) * 0.04;
+    }
     if (bodies.length && frameN % 6 === 0) measureBodies(bodies, W, H);
     store.reindex();
-    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions });
+    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     render();
     raf = requestAnimationFrame(frame);
   }
