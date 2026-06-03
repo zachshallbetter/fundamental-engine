@@ -149,10 +149,11 @@ Ordered for overnight (highest visible value first):
       variant awaits the `neighbors` service.
 - [x] **`wind`** — divergence-free turbulence: the curl of a sinusoidal streamfunction
       (`v += curl(ψ)·S`, `∇·curl ≡ 0`), closed-form so deterministic. `forces/extended.ts` (§20.3).
-- [ ] **DEFERRED** — `resonate` / `spotlight` are *modifier* forces that wrap a sibling
-      core force (time-vary or cone-gate it); they need an integrator modifier pass
-      (engine plumbing), so they wait for that. `align`'s `[B]` neighbour-mean variant
-      and `wind`'s `data-scale` wiring likewise wait on their plumbing.
+- [x] **`cohesion`** (class [B]) — short-range pressure + mid-range pull over `env.neighbors`,
+      i.e. surface tension; normalized to UI-sane velocities. `forces/extended.ts` (§20.3).
+- [ ] `resonate` / `spotlight` — *modifier* forces that wrap a sibling core force; need the
+      integrator modifier pass. `align`'s `[B]` neighbour-mean variant (next, uses neighbors)
+      and `wind`'s `data-scale` wiring still pending.
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
