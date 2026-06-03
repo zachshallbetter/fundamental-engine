@@ -53,6 +53,28 @@ export class ForcesField extends HTMLElement {
     return v === 'trails' || v === 'links' ? v : 'dots';
   }
 
+  // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
+  /** re-scan the document for `[data-body]` bodies after a DOM change. */
+  scan(): void {
+    this.field?.scan();
+  }
+  /** alias of `scan`. */
+  rescan(): void {
+    this.field?.scan();
+  }
+  /** recolour the travelling accent (§9). */
+  setAccent(hex: string): void {
+    this.field?.setAccent(hex);
+  }
+  /** switch the global formation (§7). */
+  setFormation(name: string): void {
+    this.field?.setFormation(name);
+  }
+  /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
+  burst(x: number, y: number, hex?: string): void {
+    this.field?.burst(x, y, hex);
+  }
+
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
     if (!this.hasAttribute('aria-hidden')) this.setAttribute('aria-hidden', 'true');
