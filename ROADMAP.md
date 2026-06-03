@@ -221,9 +221,11 @@ Ordered for overnight (highest visible value first):
       `infrared`, `spectrum`) selectable via the `palette` FieldOption / `<forces-field palette>`
       attribute, and swappable live with `field.setPalette(name | hex[])`; a switcher in the Lab.
       Golden-tested.
-- [ ] Naming/color reconciliation pass against the canonical palette (§20.2).
-      **Decision-gated:** renaming the forces / reconciling the 24-force palette is an
-      opinionated design call best made by the user (distinct from the colour templates above).
+- [x] **Naming/colour reconciliation** (§20.2) — every one of the 26 registered forces now
+      carries a canonical colour (`FORCE_COLORS` in the manual catalog): the nine mirror
+      `forces.config` (pinned by a no-drift test), the designed-extended forces take the §20.2
+      registry colours, and the §20.10 naturals get principled clash-free accents. Surfaced as
+      per-force tinted token chips on `/reference`. Tokens are final (names settled).
 - [x] Emit the design tokens (`--f-*`, `--coherence`, `--ease`) from `forces.config.ts` (§25.2).
 - [x] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,
       "captured = released" (§25 + possibilities); the plain-language on-ramp.
