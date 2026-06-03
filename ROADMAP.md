@@ -131,8 +131,10 @@ Ordered for overnight (highest visible value first):
 - [x] **`lens`** — rotates velocity preserving speed (`θ = θ_max·(1−d/d_max)·sign`);
       a path bend with no energy. In `forces/extended.ts`; also restored to the
       `blackhole` preset. Golden-tested (§20.3).
-- [ ] `gate`, `buoyancy`, `shear`, `crystallize`, `resonate`, `spotlight`, `align`,
-      `wind` — the rest of the §20.3 class [A] forces, one per cycle.
+- [x] **`gate`** — a one-way membrane: passes matter along its heading `n`, reflects
+      wrong-way crossers (`v −= 2(v·n)·n`); box-sized like `reflect`. `forces/extended.ts` (§20.3).
+- [ ] `buoyancy`, `shear`, `crystallize`, `resonate`, `spotlight`, `align`, `wind`
+      — the rest of the §20.3 class [A] forces, one per cycle.
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
