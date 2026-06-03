@@ -39,6 +39,32 @@ const count = MANUAL_FORCES.length;
       </p>
     </header>
 
+    <section class="demo" aria-hidden="true">
+      <forces-cell id="demo-cell" force="vortex" color="#4da3ff"></forces-cell>
+      <div class="switch" role="group">
+        {
+          ['attract', 'repel', 'vortex', 'stream', 'gravity', 'spring', 'buoyancy'].map((t) => (
+            <button type="button" data-force={t} class={t === 'vortex' ? 'on' : ''}>
+              {t}
+            </button>
+          ))
+        }
+      </div>
+    </section>
+
+    <script is:inline>
+      (() => {
+        const cell = document.getElementById('demo-cell');
+        const btns = document.querySelectorAll('.switch button');
+        btns.forEach((b) =>
+          b.addEventListener('click', () => {
+            cell.setAttribute('force', b.dataset.force);
+            btns.forEach((x) => x.classList.toggle('on', x === b));
+          }),
+        );
+      })();
+    </script>
+
     {
       families.map((fam) => (
         <section class="fam">
@@ -157,6 +183,45 @@ const count = MANUAL_FORCES.length;
     color: var(--text-2);
     line-height: 1.55;
     font-size: 1.02rem;
+  }
+  .demo {
+    margin-top: clamp(1.5rem, 4vh, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .demo forces-cell {
+    display: block;
+    width: 100%;
+    height: clamp(160px, 26vh, 240px);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .switch button {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--text-3);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.32rem 0.7rem;
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .switch button:hover {
+    color: var(--text);
+  }
+  .switch button.on {
+    color: var(--accent);
+    border-color: var(--accent);
   }
   .fam {
     margin-top: clamp(2.5rem, 6vh, 4rem);
