@@ -37,3 +37,21 @@ export function particleRGB(rs: number, heat: number, accent: RGB): RGB {
   b += (accent[2] - b) * heat;
   return [r, g, b];
 }
+
+/** `[r, g, b]` → `#rrggbb`. */
+export function rgbToHex([r, g, b]: RGB): string {
+  const h = (v: number): string => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0');
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+/** Sample a colour ramp at `frac` ∈ [0,1] — the accent journey (§9). */
+export function sampleStops(stops: readonly RGB[], frac: number): RGB {
+  if (stops.length === 0) return [77, 163, 255];
+  if (stops.length === 1) return stops[0]!;
+  const f = clamp(frac, 0, 1) * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(f));
+  const t = f - i;
+  const a = stops[i]!;
+  const b = stops[i + 1]!;
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}

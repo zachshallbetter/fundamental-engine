@@ -46,3 +46,11 @@ test('buildBound makes round(16·density) riders per wave', () => {
   const b = buildBound(5, 1, () => 0.5);
   assert.equal(b.length, 16 * 5);
 });
+
+test('waveYat bends toward the pull (the spine)', () => {
+  const w = wave({ baseFrac: 0.5 }); // line at y = 400 (H = 800), flat
+  const flatY = waveYat(w, 0, 0, 800);
+  const bent = waveYat(w, 0, 0, 800, 1, 1, { x: 0, y: 600, k: 1 });
+  assert.ok(bent > flatY); // pulled down toward y = 600
+  assert.ok(bent < 600); // but only partway
+});

@@ -16,10 +16,17 @@ import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
 import { scanBodies, measureBodies } from './scanner.ts';
 import { easeFormation } from './formations.ts';
-import { buildWaves, buildBound, waveYat, type Wave, type BoundParticle } from './currents.ts';
-import { healWaves, tearBoundNear } from './reservoir.ts';
-import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
-import { clamp, hexToRgb, particleRGB } from './math.ts';
+import {
+  buildWaves,
+  buildBound,
+  waveYat,
+  type Wave,
+  type BoundParticle,
+  type WavePull,
+} from './currents.ts';
+import { healWaves, tearBoundNear, tearBoundByForces } from './reservoir.ts';
+import { FORMATION_BY, PALETTE, ACCENT_JOURNEY, type FormationId } from '../config/forces.config.ts';
+import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { registerCoreForces } from '../forces/index.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -50,6 +57,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
   let boot = reduceMotion ? 1 : 0;
+  const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
+  const JOURNEY: RGB[] = ACCENT_JOURNEY.map(hexToRgb);
+  let curAccent: RGB = hexToRgb(cfg.accent);
+  let hoverAccent: string | null = null;
   const t0 = performance.now();
 
   const env: Env = {
@@ -125,6 +136,29 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function scan(): void {
     bodies = scanBodies(document);
     measureBodies(bodies, W, H);
+    bindEngagement();
+  }
+
+  // engagement: hover/focus a [data-hot] element → it activates (b.on, lighting
+  // the spine + on-state forces) and overrides the accent with its data-color (§9).
+  function bindEngagement(): void {
+    document.querySelectorAll('[data-hot]').forEach((node) => {
+      const el = node as HTMLElement;
+      if (el.dataset.fxEngaged === '1') return;
+      el.dataset.fxEngaged = '1';
+      const enter = (): void => {
+        el.dataset.active = '1';
+        hoverAccent = el.dataset.color ?? null;
+      };
+      const leave = (): void => {
+        el.dataset.active = '0';
+        hoverAccent = null;
+      };
+      el.addEventListener('pointerenter', enter);
+      el.addEventListener('pointerleave', leave);
+      el.addEventListener('focus', enter);
+      el.addEventListener('blur', leave);
+    });
   }
 
   function resize(): void {
@@ -148,8 +182,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (const w of waves) {
       const [cr, cg, cb] = w.color;
       ctx!.beginPath();
-      ctx!.moveTo(0, waveYat(w, 0, time, H));
-      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H));
+      ctx!.moveTo(0, waveYat(w, 0, time, H, 1, 1, pull));
+      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H, 1, 1, pull));
       ctx!.lineTo(W, H);
       ctx!.lineTo(0, H);
       ctx!.closePath();
@@ -164,8 +198,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (const w of waves) {
       const [cr, cg, cb] = w.color;
       ctx!.beginPath();
-      ctx!.moveTo(0, waveYat(w, 0, time, H));
-      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H));
+      ctx!.moveTo(0, waveYat(w, 0, time, H, 1, 1, pull));
+      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H, 1, 1, pull));
       ctx!.lineWidth = 1.2;
       ctx!.shadowBlur = 11;
       ctx!.shadowColor = `rgba(${cr},${cg},${cb},0.9)`;
@@ -192,7 +226,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         else if (p.progress < 0) p.progress += 1;
       }
       const x = p.progress * W;
-      const y = waveYat(w, x, time, H) + p.phase * 32;
+      const y = waveYat(w, x, time, H, 1, 1, pull) + p.phase * 32;
       const [cr, cg, cb] = w.color;
       const tw = p.glow ? 0.6 + 0.4 * Math.sin(time * 2.2 + i) : 0.85;
       if (p.glow) {
@@ -256,15 +290,44 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     env.dt = reduceMotion ? 0 : 1;
     if (boot < 1) boot = Math.min(1, boot + 0.012);
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
-    const scrollY = window.scrollY || 0; // wave parallax (§24)
+
+    const scrollY = window.scrollY || 0;
     for (const w of waves) {
-      const target = scrollY * (0.025 + w.depth * 0.08);
+      const target = scrollY * (0.025 + w.depth * 0.08); // wave parallax (§24)
       w.offsetY += (target - w.offsetY) * 0.04;
     }
     if (bodies.length && frameN % 6 === 0) measureBodies(bodies, W, H);
+
+    // spine: ease the wave-bend toward the engaged element (§24).
+    let engaged: Body | null = null;
+    for (const b of bodies) {
+      if (b.on && b.vis) {
+        engaged = b;
+        break;
+      }
+    }
+    pull.k += ((engaged ? 1 : 0) - pull.k) * 0.07;
+    if (engaged) {
+      pull.x = pull.x ? pull.x + (engaged.cx - pull.x) * 0.16 : engaged.cx;
+      pull.y = pull.y ? pull.y + (engaged.cy - pull.y) * 0.16 : engaged.cy;
+    }
+
+    // accent journey (§9): scroll travels the palette; a hovered element overrides.
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight || 1;
+    const targetAcc = hoverAccent ? hexToRgb(hoverAccent) : sampleStops(JOURNEY, scrollY / maxScroll);
+    curAccent = [
+      curAccent[0] + (targetAcc[0] - curAccent[0]) * 0.08,
+      curAccent[1] + (targetAcc[1] - curAccent[1]) * 0.08,
+      curAccent[2] + (targetAcc[2] - curAccent[2]) * 0.08,
+    ];
+    cfg.accent = rgbToHex(curAccent);
+
     store.reindex();
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
-    if (env.dt) healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
+    if (env.dt) {
+      healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
+      tearBoundByForces(bound, waves, bodies, W, H, env.t, (p) => void store.add(newParticle(p)));
+    }
     render();
     raf = requestAnimationFrame(frame);
   }
@@ -317,6 +380,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     rescan: scan,
     setAccent: (hex) => {
       cfg.accent = hex;
+      curAccent = hexToRgb(hex);
     },
     setFormation,
     destroy: () => {
