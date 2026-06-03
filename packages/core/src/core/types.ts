@@ -132,6 +132,8 @@ export interface Env {
   form: Formation;
   W: number;
   H: number;
+  /** elapsed time in seconds (for time-varying terms: curl drift, resonance). */
+  t: number;
   /** integration step: 1 a frame, 0 under reduced motion (§2.2/§18). */
   dt: number;
   /** velocity cap / "speed of light" of the unit system (§20.10). */
@@ -177,3 +179,27 @@ export type ForceRegistry = Record<Token, Force>;
 
 /** The condition registry — `id → predicate` (§5). */
 export type ConditionRegistry = Record<string, Condition>;
+
+/** Options for `createField` (§2.5 config). */
+export interface FieldOptions {
+  /** travelling accent colour (§9). */
+  accent?: string;
+  /** particle-count multiplier (§2.5). */
+  density?: number;
+  /** draw the background Currents (§24) — not yet implemented (Phase 3). */
+  waves?: boolean;
+}
+
+/** The handle returned by `createField` — the public field API (§13). */
+export interface FieldHandle {
+  /** (re)scan the document for `[data-body]` bodies after a layout change. */
+  scan(): void;
+  /** alias of `scan`. */
+  rescan(): void;
+  /** recolour the travelling accent (§9). */
+  setAccent(hex: string): void;
+  /** switch the global formation (§7). */
+  setFormation(name: string): void;
+  /** stop the loop and release listeners. */
+  destroy(): void;
+}

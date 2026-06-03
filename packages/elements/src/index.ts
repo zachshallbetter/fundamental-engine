@@ -1,25 +1,24 @@
-import { PALETTE } from 'forces-ui';
+import { createField, PALETTE, type FieldHandle } from 'forces-ui';
 
 /**
  * `<forces-field>` — the reciprocal field as a custom element.
  *
  * Drop it once on a page; it renders a full-viewport canvas behind the content
- * and (once the engine lands — ROADMAP Phase 1) scans the document for
- * `[data-body]` / `[data-preset]` elements, turning each into a body in the field.
+ * and scans the document for `[data-body]` / `[data-preset]` elements, turning
+ * each into a body in the field (§2.1).
  *
  * The point of shipping a **custom element**: it works in React, Svelte, Astro,
  * Vue, or plain HTML unchanged — "every element is a body" as a native, portable
  * primitive, with no framework lock-in for consumers.
  *
- * Plain `HTMLElement` for now (the field is just a canvas — no templating). Lit
- * earns its place when there's UI to template, e.g. the Lab controls (§14).
- *
- * STATUS: API placeholder. The integrator (FieldStore + loop) wires in at Phase 1.
+ * Plain `HTMLElement` (the field is just a canvas — no templating). Lit earns its
+ * place when there's UI to template, e.g. the Lab controls (§14).
  */
 export class ForcesField extends HTMLElement {
   static readonly observedAttributes = ['accent', 'density', 'waves'];
 
   private readonly canvas: HTMLCanvasElement;
+  private field?: FieldHandle;
 
   constructor() {
     super();
@@ -49,16 +48,16 @@ export class ForcesField extends HTMLElement {
   }
 
   connectedCallback(): void {
-    // TODO(Phase 1): mount the engine against this.canvas —
-    //   this.field = createField(this.canvas, {
-    //     accent: this.accent, density: this.density, waves: this.waves,
-    //   });
-    //   this.field.scan(document); // [data-body] / [data-preset] → bodies
-    void this.canvas;
+    this.field = createField(this.canvas, {
+      accent: this.accent,
+      density: this.density,
+      waves: this.waves,
+    });
   }
 
   disconnectedCallback(): void {
-    // TODO(Phase 1): this.field?.destroy();
+    this.field?.destroy();
+    this.field = undefined;
   }
 }
 
