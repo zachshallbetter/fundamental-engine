@@ -63,6 +63,7 @@ const env = (o: Partial<Env> = {}): Env => ({
   W: 1000,
   H: 800,
   t: 0,
+  frameN: 0,
   dt: 1,
   c: 12,
   G: 1,
