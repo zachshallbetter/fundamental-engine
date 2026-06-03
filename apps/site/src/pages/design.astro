@@ -1,0 +1,384 @@
+---
+import Base from '../layouts/Base.astro';
+import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
+import '../styles/ds-tokens.css';
+import '../styles/force-glyphs.css';
+
+// Forces — Design System. The documentation grounded in this project's real
+// implementation: the §20.2 force palette, the catalog, the glyphs, the tokens.
+
+const PRESET_COLORS: Record<string, string> = {
+  blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf',
+};
+const DISCIPLINE: Record<string, string> = {
+  attract: 'Product strategy', emitter: 'AI systems', spring: 'Software architecture',
+  reflect: 'Experience design', stream: 'Motion', repel: 'Commerce',
+  drag: 'Physical production', vortex: 'Creative technology', absorb: 'Attention',
+};
+const families = [
+  { key: 'canonical', label: 'Canonical nine' },
+  { key: 'natural', label: 'Natural primitives' },
+  { key: 'extended', label: 'Designed-extended' },
+] as const;
+const inFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
+
+const surfaces = [
+  { n: 'Page', v: '#04050a' }, { n: 'Surface', v: '#0a0d14' }, { n: 'Subtle', v: '#0e121b' },
+  { n: 'Card', v: '#0b0e16' }, { n: 'Canvas', v: '#07090e' },
+];
+const ink = [
+  { n: 'Ink 900', v: '#f3f6fc' }, { n: 'Ink 700', v: '#b4bdcd' }, { n: 'Ink 500', v: '#8793a6' },
+  { n: 'Ink 400', v: '#5b6678' }, { n: 'Ink 300', v: '#39404e' },
+];
+const radii = [
+  { n: 'sm', v: '6px' }, { n: 'md', v: '10px' }, { n: 'lg', v: '14px' }, { n: 'xl', v: '20px' }, { n: 'pill', v: '999px' },
+];
+const space = [4, 8, 12, 16, 24, 32, 48, 64];
+const typescale = [
+  { l: 'Display', s: 'clamp(2.4rem,6vw,4.6rem)', spec: '600 · −0.04em · 0.98', use: 'Hero statements', t: 'A system you can feel.' },
+  { l: 'H1', s: '2.6rem', spec: '600 · −0.035em · 1.0', use: 'Page titles', t: 'Things made real.' },
+  { l: 'H2', s: '1.9rem', spec: '600 · −0.03em · 1.04', use: 'Section titles', t: 'One reciprocal field.' },
+  { l: 'H3', s: '1.35rem', spec: '600 · −0.02em · 1.1', use: 'Card titles', t: 'Executable design systems' },
+  { l: 'Body', s: '1.02rem', spec: '400 · −0.011em · 1.6', use: 'Running text', t: 'The visible surface and the invisible system that holds it up.' },
+  { l: 'Small', s: '0.85rem', spec: '400 · 0 · 1.5', use: 'Secondary text', t: 'On the systems behind the screen.' },
+];
+const weights = [
+  { w: 300, n: 'Light' }, { w: 400, n: 'Regular' }, { w: 500, n: 'Medium' },
+  { w: 600, n: 'Semibold' }, { w: 700, n: 'Bold' }, { w: 800, n: 'Extrabold' },
+];
+const formations = [
+  { id: 'ambient', t: 'Ambient', section: 'Hero', c: '#4da3ff', cue: 'resting drift', d: 'Gentle curl-noise drift — nothing pulls; matter just breathes. The default everywhere.' },
+  { id: 'wells', t: 'Wells', section: 'Work', c: '#2dd4bf', cue: 'matter pools', d: 'Matter pools into a few gravity wells. Bodies gain weight where they gather.' },
+  { id: 'lanes', t: 'Lanes', section: 'Writing', c: '#ff9d5c', cue: 'a current carries', d: 'A directional current carries particles sideways in bands.' },
+  { id: 'scatter', t: 'Scatter', section: 'Practice', c: '#a78bfa', cue: 'energy dispersed', d: 'Brownian dispersal — energy without direction.' },
+  { id: 'accretion', t: 'Accretion', section: 'Contact', c: '#ffce6b', cue: 'everything gathers', d: 'Everything gathers toward one mass — the closing pull.' },
+];
+const motions = [
+  { n: 'Reveal', d: '0.9s', note: 'opacity + 28px rise' },
+  { n: 'Engage', d: '0.45s', note: 'lit / dim cross-fade' },
+  { n: 'Formation ease', d: '~2s', note: 'lerp 0.03 / frame' },
+  { n: 'Accent journey', d: 'continuous', note: 'lerp 0.08 / frame' },
+];
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+---
+
+<Base title="forces-ui — Design System">
+  <div class="ds-shell">
+    <header class="ds-top">
+      <div class="ds-top-inner">
+        <a class="ds-mark" href="/">
+          <svg viewBox="0 0 441 421" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round"><circle cx="230" cy="211" r="89"></circle><path d="M393 327c30-50 36-130-20-180-44-40-110-40-160-10"></path><circle cx="370" cy="355" r="34"></circle><circle cx="45" cy="286" r="34"></circle><path d="M62 318c44 70 128 105 209 88"></path></g><circle cx="139" cy="315" r="16" fill="currentColor"></circle><circle cx="92" cy="66" r="22" fill="currentColor"></circle></svg>
+          <span class="ds-name">Forces</span>
+          <span class="ds-tag">Design System · v0.2</span>
+        </a>
+        <nav class="ds-nav">
+          <a href="#brand">Brand</a>
+          <a href="#palette">Palette</a>
+          <a href="#surfaces">Surfaces</a>
+          <a href="#type">Type</a>
+          <span class="ds-sep"></span>
+          <a href="#forces">Forces</a>
+          <a href="#formations">Formations</a>
+          <span class="ds-sep"></span>
+          <a href="#library">Library</a>
+        </nav>
+        <a class="ds-tool" href="/lab" title="Open the Lab">Lab ↗</a>
+      </div>
+    </header>
+
+    <main class="ds-main">
+      <section class="ds-hero">
+        <div class="hero-eyebrow"><span>Forces · Design System</span><span class="rule"></span><span class="ct">v0.2</span></div>
+        <h1>A system you can <em>feel.</em></h1>
+        <p class="hero-lede">Every element is a body — it bends the field, and the field bends it back.
+          This is that thesis as a design language: the tokens, the {MANUAL_FORCES.length} forces, the
+          glyphs, and the type that document it.</p>
+        <div class="hero-meta">
+          <span><i class="dot"></i>Reciprocal field · live</span>
+          <span>Zach Shallbetter</span>
+          <span>v0.2 · 2026</span>
+        </div>
+      </section>
+
+      <!-- BRAND -->
+      <section class="ds-sec" id="brand">
+        <div class="sec-head"><span class="idl">01 — Brand</span><h2>The page is the idea made literal.</h2>
+          <p class="sec-desc">Everything you touch moves the field, and the field moves it back. The
+            interface is the visible surface of one reciprocal system.</p></div>
+        <div class="grid cols-3">
+          <article class="card pillar" style="--c:#4da3ff"><i class="fg fg-attract"></i><h3>Reciprocal</h3><p>Elements bend the field; the field bends them back. Nothing is inert.</p></article>
+          <article class="card pillar" style="--c:#c4b5fd"><i class="fg fg-reflect"></i><h3>Felt before understood</h3><p>The visible surface and the invisible system are designed as one. People feel coherence before they can name it.</p></article>
+          <article class="card pillar" style="--c:#86e57f"><i class="fg fg-spring"></i><h3>Structured, not stiff</h3><p>Load-bearing systems that still give. Constraints are forces, not walls.</p></article>
+        </div>
+        <div class="grid cols-2 voice">
+          <div class="card"><span class="vl ok">We say</span><ul><li>Everything you touch moves the field.</li><li>The interface is only the visible surface.</li><li>The goal is coherence.</li></ul></div>
+          <div class="card"><span class="vl err">We avoid</span><ul><li>Hype, metrics theater, buzzwords.</li><li>“Synergy”, “revolutionary”, “game-changing”.</li><li>Decoration without behavior.</li></ul></div>
+        </div>
+      </section>
+
+      <!-- PALETTE -->
+      <section class="ds-sec" id="palette">
+        <div class="sec-head"><span class="idl">02 — Force palette</span><h2>Every accent is a force.</h2>
+          <p class="sec-desc">The palette is the catalog. Each of the {MANUAL_FORCES.length} forces is an
+            accent with a canonical colour (§20.2), a glyph, and — for the nine — a discipline it maps to.</p></div>
+        {families.map((fam) => (
+          <>
+            <span class="sub">{fam.label}</span>
+            <div class="grid cols-3 swatches">
+              {inFamily(fam.key).map((f) => (
+                <article class="card swatch">
+                  <div class="band" style={`background:${f.color}`}><i class={`fg fg-${f.token}`} style="--fc:rgba(0,0,0,0.6)" /></div>
+                  <div class="sw-meta"><b>{cap(f.label)}</b><code>{f.color}</code>
+                    <span>{DISCIPLINE[f.token] ?? f.family}</span></div>
+                </article>
+              ))}
+            </div>
+          </>
+        ))}
+        <span class="sub">Presets</span>
+        <div class="grid cols-3 swatches">
+          {MANUAL_PRESETS.map((p) => (
+            <article class="card swatch">
+              <div class="band" style={`background:${PRESET_COLORS[p.name]}`}><i class={`fg fg-${p.name}`} style="--fc:rgba(0,0,0,0.6)" /></div>
+              <div class="sw-meta"><b>{cap(p.name)}</b><code>{PRESET_COLORS[p.name]}</code><span>{p.tokens.length} forces</span></div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- SURFACES + INK -->
+      <section class="ds-sec" id="surfaces">
+        <div class="sec-head"><span class="idl">03 — Surfaces &amp; ink</span><h2>A deep, near-black field.</h2>
+          <p class="sec-desc">Colour is an accent, never a flood — pure hue lives on the mark and the
+            glyph; surfaces stay deep, ink stays legible.</p></div>
+        <span class="sub">Surfaces</span>
+        <div class="grid cols-5 swatches">
+          {surfaces.map((s) => (<article class="card swatch"><div class="band sm" style={`background:${s.v}; box-shadow:inset 0 0 0 1px var(--line)`} /><div class="sw-meta"><b>{s.n}</b><code>{s.v}</code></div></article>)) }
+        </div>
+        <span class="sub">Ink</span>
+        <div class="grid cols-5 swatches">
+          {ink.map((s) => (<article class="card swatch"><div class="band sm" style={`background:${s.v}`} /><div class="sw-meta"><b>{s.n}</b><code>{s.v}</code></div></article>)) }
+        </div>
+        <span class="sub">Spacing — 4px scale</span>
+        <div class="frame canvas spacing">
+          {space.map((v) => (<div class="sp"><div class="box" style={`width:${v}px;height:${v}px`} /><code>{v}</code></div>)) }
+        </div>
+        <div class="grid cols-2">
+          <div><span class="sub">Radii</span><div class="grid cols-5 swatches">
+            {radii.map((r) => (<article class="card swatch"><div class="band sm rad" style={`border-radius:${r.v === '999px' ? '12px' : r.v}; background:var(--accent-soft); box-shadow:inset 0 0 0 1px var(--accent)`} /><div class="sw-meta"><b>{r.n}</b><code>{r.v}</code></div></article>)) }
+          </div></div>
+          <div><span class="sub">Elevation</span><div class="grid cols-3 swatches">
+            <article class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:var(--shadow-md)" /><div class="sw-meta"><b>Resting</b></div></article>
+            <article class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:var(--shadow-lg)" /><div class="sw-meta"><b>Raised</b></div></article>
+            <article class="card swatch"><div class="band sm" style="background:var(--bg-card); box-shadow:0 0 30px -6px var(--accent)" /><div class="sw-meta"><b>Charged</b></div></article>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- TYPE -->
+      <section class="ds-sec" id="type">
+        <div class="sec-head"><span class="idl">04 — Type</span><h2>Bricolage &amp; <em>Martian Mono.</em></h2>
+          <p class="sec-desc">Two families: Bricolage Grotesque handles prose and display; Martian Mono
+            handles every label, counter, and measurement.</p></div>
+        <div class="grid cols-2">
+          <div class="frame canvas spec"><span class="frame-label">Display · Bricolage</span><div class="big">Aa Gg</div><span class="cap">Variable · 300–800 · opsz 12–96</span></div>
+          <div class="frame canvas spec"><span class="frame-label">Mono · Martian Mono</span><div class="big mono">Aa Gg</div><span class="cap">Variable · 300–700 · tabular</span></div>
+        </div>
+        <span class="sub">Weights</span>
+        <div class="frame canvas weights">
+          {weights.map((w) => (<div class="wt"><span style={`font-weight:${w.w}`}>Forces</span><code>{w.w} · {w.n}</code></div>)) }
+        </div>
+        <span class="sub">Scale</span>
+        <div class="hr-table">
+          {typescale.map((t) => (
+            <div class="row">
+              <code class="rl">{t.l}</code>
+              <div class="spec" style={`font-size:${t.s}`}>{t.t}</div>
+              <code class="rs">{t.spec} · {t.use}</code>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- FORCES -->
+      <section class="ds-sec" id="forces">
+        <div class="sec-head"><span class="idl">05 — Forces</span><h2>{MANUAL_FORCES.length} forces. One reciprocal field.</h2>
+          <p class="sec-desc">The vocabulary is verbs — what a body does to the matter around it. Each
+            is a glyph, a colour, and a per-frame law. <a href="/reference">Read the full manual →</a></p></div>
+        <div class="grid cols-2 formulas">
+          {MANUAL_FORCES.map((f) => (
+            <article class="card formula-card" style={`--c:${f.color}`}>
+              <h3><i class={`fg fg-${f.token}`} /><code class="ftok">{f.token}</code></h3>
+              <code class="expr">{f.formula}</code>
+              <p>{f.desc}.</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- FORMATIONS -->
+      <section class="ds-sec" id="formations">
+        <div class="sec-head"><span class="idl">06 — Formations</span><h2>The whole field can change its mind.</h2>
+          <p class="sec-desc">Forces act locally; a formation is a single global bias over every particle.
+            Five of them, one per section of the journey.</p></div>
+        <div class="hr-table">
+          {formations.map((fm) => (
+            <div class="row form">
+              <i class="dot" style={`background:${fm.c}; box-shadow:0 0 8px ${fm.c}`} />
+              <code class="rl" style={`color:${fm.c}`}>{fm.t}</code>
+              <div class="fd"><b>{fm.section} · {fm.cue}</b><span>{fm.d}</span></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- LIBRARY -->
+      <section class="ds-sec" id="library">
+        <div class="sec-head"><span class="idl">07 — Library</span><h2>Glyphs &amp; motion.</h2>
+          <p class="sec-desc">The force glyphs are pure CSS shapes — they double as the icon set and the
+            system vocabulary. One easing curve drives all motion.</p></div>
+        <span class="sub">Force glyphs</span>
+        <div class="frame canvas glyphs">
+          {MANUAL_FORCES.map((f) => (<div class="gl"><i class={`fg fg-${f.token}`} style={`--fc:${f.color}`} /><code>{f.token}</code></div>)) }
+        </div>
+        <span class="sub">Preset glyphs</span>
+        <div class="frame canvas glyphs">
+          {MANUAL_PRESETS.map((p) => (<div class="gl"><i class={`fg fg-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} /><code>{p.name}</code></div>)) }
+        </div>
+        <span class="sub">Motion</span>
+        <div class="grid cols-4 swatches">
+          {motions.map((m) => (<article class="card mo"><b>{m.n}</b><code>{m.d}</code><span>{m.note}</span></article>)) }
+        </div>
+        <p class="ease-note">Easing: <code>cubic-bezier(0.16, 1, 0.3, 1)</code> — everywhere.</p>
+      </section>
+
+      <footer class="ds-foot">
+        <span>Forces — Design System · v0.2</span>
+        <a href="/">← back to the field</a>
+      </footer>
+    </main>
+  </div>
+</Base>
+
+<style>
+  .ds-shell { position: relative; z-index: 2; width: 100%; align-self: flex-start; }
+  :global(body:has(.ds-shell)) { align-items: flex-start; }
+
+  .ds-top { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg-page) 78%, transparent); backdrop-filter: blur(18px) saturate(1.2); border-bottom: 1px solid var(--line); }
+  .ds-top-inner { max-width: 1360px; margin: 0 auto; height: 60px; display: flex; align-items: center; gap: 1.5rem; padding: 0 clamp(1.25rem, 3vw, 2.75rem); }
+  .ds-mark { display: flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--text); }
+  .ds-mark svg { width: 22px; height: 22px; color: var(--accent); }
+  .ds-name { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; }
+  .ds-tag { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-4); }
+  .ds-nav { margin: 0 auto; display: flex; align-items: center; gap: 1rem; overflow-x: auto; scrollbar-width: none; }
+  .ds-nav::-webkit-scrollbar { display: none; }
+  .ds-nav a { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); text-decoration: none; white-space: nowrap; }
+  .ds-nav a:hover { color: var(--accent); }
+  .ds-sep { width: 1px; height: 12px; background: var(--line-2); }
+  .ds-tool { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); text-decoration: none; border: 1px solid var(--line-2); border-radius: 999px; padding: 0.34rem 0.7rem; white-space: nowrap; }
+  .ds-tool:hover { color: var(--accent); border-color: var(--accent); }
+  @media (max-width: 820px) { .ds-tag, .ds-nav { display: none; } }
+
+  .ds-main { max-width: 1360px; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.75rem) 5rem; }
+
+  .ds-hero { padding: clamp(3rem, 9vh, 6rem) 0 clamp(2rem, 5vh, 3.5rem); }
+  .hero-eyebrow { display: flex; align-items: center; gap: 0.8rem; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+  .hero-eyebrow .rule { flex: 1; max-width: 120px; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); }
+  .hero-eyebrow .ct { color: var(--text-4); }
+  .ds-hero h1 { margin: 1.2rem 0 0; font-family: var(--display); font-weight: 600; font-size: clamp(2.4rem, 6vw, 4.6rem); letter-spacing: -0.03em; line-height: 0.98; text-wrap: balance; }
+  .ds-hero h1 em { font-style: normal; color: var(--accent); }
+  .hero-lede { margin: 1.4rem 0 0; max-width: 52ch; color: var(--text-2); font-size: 1.1rem; line-height: 1.5; }
+  .hero-meta { margin-top: 1.8rem; display: flex; flex-wrap: wrap; gap: 1.6rem; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+  .hero-meta .dot { display: inline-block; width: 7px; height: 7px; margin-right: 0.4rem; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+
+  .ds-sec { padding: clamp(3rem, 8vh, 5rem) 0; border-top: 1px solid var(--line); scroll-margin-top: 76px; }
+  .sec-head { margin-bottom: 1.8rem; }
+  .idl { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); }
+  .sec-head h2 { margin: 0.5rem 0 0; font-family: var(--display); font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: -0.03em; line-height: 1.04; }
+  .sec-head h2 em { font-style: normal; color: var(--accent); }
+  .sec-desc { margin: 0.9rem 0 0; max-width: 60ch; color: var(--text-2); font-size: 1.02rem; line-height: 1.6; }
+  .sec-desc a { color: var(--accent); text-decoration: none; }
+  .sub { display: block; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin: 1.8rem 0 0.8rem; }
+
+  .grid { display: grid; gap: clamp(0.8rem, 1.5vw, 1.2rem); }
+  .cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .cols-5 { grid-template-columns: repeat(5, 1fr); }
+  @media (max-width: 900px) { .cols-3, .cols-4, .cols-5 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .cols-2, .cols-3, .cols-4, .cols-5 { grid-template-columns: 1fr; } }
+
+  .card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--bg-card); padding: clamp(1rem, 2vw, 1.4rem); }
+  .pillar { --c: var(--accent); }
+  .pillar .fg { --fc: var(--c); width: 20px; height: 20px; }
+  .pillar h3 { margin: 0.7rem 0 0.4rem; font-family: var(--display); font-weight: 600; font-size: 1.2rem; letter-spacing: -0.02em; }
+  .pillar p { color: var(--text-2); font-size: 0.95rem; line-height: 1.55; }
+  .voice { margin-top: 1.2rem; }
+  .vl { display: block; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.8rem; }
+  .vl.ok { color: var(--ok); }
+  .vl.err { color: var(--err); }
+  .voice ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .voice li { color: var(--text-2); font-size: 0.98rem; }
+
+  .swatches .card.swatch { padding: 0; overflow: hidden; }
+  .band { position: relative; height: 88px; display: grid; place-items: end; padding: 0.5rem; }
+  .band.sm { height: 60px; }
+  .band .fg { width: 18px; height: 18px; }
+  .sw-meta { padding: 0.7rem 0.8rem; display: flex; flex-direction: column; gap: 0.15rem; }
+  .sw-meta b { font-family: var(--display); font-weight: 600; font-size: 0.92rem; }
+  .sw-meta code { font-family: var(--mono); font-size: 0.68rem; color: var(--text-3); }
+  .sw-meta span { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-4); }
+
+  .frame { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.4rem; position: relative; }
+  .frame.canvas { background:
+      radial-gradient(var(--line) 1px, transparent 1px) 0 0 / 22px 22px, var(--bg-canvas); }
+  .frame-label { position: absolute; top: 0.8rem; left: 1rem; font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-4); }
+  .spacing { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1.2rem; padding-top: 2.2rem; }
+  .spacing .sp { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+  .spacing .box { background: var(--accent); border-radius: 2px; }
+  .spacing code { font-family: var(--mono); font-size: 0.6rem; color: var(--text-3); }
+
+  .spec { min-height: 150px; display: grid; place-items: center; gap: 0.4rem; padding-top: 2rem; }
+  .spec .big { font-family: var(--display); font-weight: 600; font-size: 3.2rem; letter-spacing: -0.03em; }
+  .spec .big.mono { font-family: var(--mono); font-size: 2.4rem; }
+  .spec .cap { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-4); }
+  .weights { display: flex; flex-wrap: wrap; gap: 1.6rem; align-items: baseline; padding-top: 2.2rem; }
+  .weights .wt { display: flex; flex-direction: column; gap: 0.3rem; }
+  .weights .wt span { font-family: var(--display); font-size: 1.8rem; letter-spacing: -0.02em; }
+  .weights .wt code { font-family: var(--mono); font-size: 0.58rem; color: var(--text-3); }
+
+  .hr-table { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+  .hr-table .row { background: var(--bg-card); display: grid; grid-template-columns: 5rem 1fr 16rem; align-items: center; gap: 1rem; padding: 1rem 1.2rem; }
+  .hr-table .row.form { grid-template-columns: 1rem 7rem 1fr; }
+  .hr-table .rl { font-family: var(--mono); font-size: 0.72rem; color: var(--text-3); }
+  .hr-table .spec { font-family: var(--display); font-weight: 500; letter-spacing: -0.02em; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .hr-table .rs { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.04em; color: var(--text-4); text-align: right; }
+  .hr-table .fd { display: flex; flex-direction: column; gap: 0.2rem; }
+  .hr-table .fd b { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .hr-table .fd span { color: var(--text-2); font-size: 0.95rem; }
+  .hr-table .form .dot { width: 9px; height: 9px; border-radius: 50%; }
+  @media (max-width: 700px) { .hr-table .row { grid-template-columns: 1fr; } .hr-table .rs { text-align: left; } }
+
+  .formulas .formula-card { --c: var(--accent); }
+  .formula-card h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.7rem; }
+  .formula-card .fg { --fc: var(--c); width: 16px; height: 16px; }
+  .formula-card .ftok { font-family: var(--mono); font-size: 0.82rem; color: var(--c); }
+  .formula-card .expr { display: block; font-family: var(--mono); font-size: 0.74rem; line-height: 1.5; color: var(--text); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 7px; padding: 0.6rem 0.7rem; margin-bottom: 0.6rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .formula-card p { color: var(--text-3); font-size: 0.9rem; line-height: 1.5; }
+
+  .glyphs { display: flex; flex-wrap: wrap; gap: 1.4rem 1.6rem; padding-top: 2.2rem; }
+  .glyphs .gl { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 4.5rem; }
+  .glyphs .gl .fg { width: 22px; height: 22px; }
+  .glyphs .gl code { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.02em; color: var(--text-3); }
+  .mo { display: flex; flex-direction: column; gap: 0.25rem; }
+  .mo b { font-family: var(--display); font-weight: 600; font-size: 1rem; }
+  .mo code { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); }
+  .mo span { font-size: 0.85rem; color: var(--text-3); }
+  .ease-note { margin-top: 1.2rem; font-family: var(--mono); font-size: 0.7rem; color: var(--text-3); }
+  .ease-note code { color: var(--accent); }
+
+  .ds-foot { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; font-family: var(--mono); font-size: 0.72rem; color: var(--text-3); }
+  .ds-foot a { color: var(--text-3); text-decoration: none; }
+  .ds-foot a:hover { color: var(--accent); }
+</style>
