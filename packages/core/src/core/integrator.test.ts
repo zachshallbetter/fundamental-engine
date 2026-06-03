@@ -148,3 +148,22 @@ test('modifier pass: spotlight gates siblings outside the heading cone (§20.3)'
   step({ store: behind, bodies: [mkBody()], env: makeEnv(), forces: { spotlight, probe }, conditions: {} });
   assert.equal(applied, false);
 });
+
+test('first-class mass: body forces accelerate by a = F/m (§21.3)', () => {
+  const push: Force = { token: 'push', label: 'P', apply: (_b, p) => void (p.vx += 4) };
+  const mkBody = () =>
+    ({
+      tokens: ['push'], vis: true, when: '', on: false, feedback: false,
+      strength: 1, range: 300, cx: 150, cy: 100, count: 0,
+    }) as unknown as Body;
+  const light = new FieldStore();
+  const pL = makeP({ x: 100, y: 100, vx: 0, m: 1 });
+  light.add(pL);
+  step({ store: light, bodies: [mkBody()], env: makeEnv(), forces: { push }, conditions: {} });
+  const heavy = new FieldStore();
+  const pH = makeP({ x: 100, y: 100, vx: 0, m: 2 });
+  heavy.add(pH);
+  step({ store: heavy, bodies: [mkBody()], env: makeEnv(), forces: { push }, conditions: {} });
+  assert.ok(pL.vx > 0); // unit mass takes the full kick
+  assert.ok(Math.abs(pH.vx - pL.vx / 2) < 1e-9); // twice the mass → half the acceleration
+});

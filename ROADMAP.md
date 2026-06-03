@@ -137,7 +137,10 @@ Ordered for overnight (highest visible value first):
 - [x] **More presets** — `quasar` (black hole + polar jets), `galaxy`, `nebula`,
       `tornado`, now that `lens`/`buoyancy`/`thermal`/etc. exist. A registry-cross-check
       test guards against any preset naming an unregistered token.
-- [ ] First-class mass (Option B) on Lab/cosmology surfaces (§21.3).
+- [x] **First-class mass** (Option B, §21.3) — the integrator scales the body-force Δv by
+      `1/m` (captured before the pass, divided after — no force needs to know about mass);
+      the `mass: true` FieldOption makes particle mass ∝ size. Gated on `m ≠ 1`, default off,
+      so the live field is unchanged (preview-verified). Golden-tested (a=F/m).
 
 ## Designed extended forces (§20.3, class [A] — opt-in, pure per-particle)
 
