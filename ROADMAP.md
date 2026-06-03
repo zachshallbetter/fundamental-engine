@@ -217,9 +217,13 @@ Ordered for overnight (highest visible value first):
       CSS animation off), focus engagement (`[data-hot]` on focus), `z-index:0` background
       layer, and the decorative canvases (`<forces-field>`, `<forces-cell>`, `mountField`)
       now marked `aria-hidden` so assistive tech skips them.
+- [x] **Colour templates** — `config/palettes.ts`: four accent palettes (`ours`, `heatmap`,
+      `infrared`, `spectrum`) selectable via the `palette` FieldOption / `<forces-field palette>`
+      attribute, and swappable live with `field.setPalette(name | hex[])`; a switcher in the Lab.
+      Golden-tested.
 - [ ] Naming/color reconciliation pass against the canonical palette (§20.2).
-      **Decision-gated:** this would change the live force colours/names — an opinionated
-      design call best made by the user rather than chosen autonomously.
+      **Decision-gated:** renaming the forces / reconciling the 24-force palette is an
+      opinionated design call best made by the user (distinct from the colour templates above).
 - [x] Emit the design tokens (`--f-*`, `--coherence`, `--ease`) from `forces.config.ts` (§25.2).
 - [x] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,
       "captured = released" (§25 + possibilities); the plain-language on-ramp.

@@ -43,6 +43,17 @@ const forces = [
       </div>
     </div>
 
+    <div class="palettes" role="group">
+      <span class="plabel">palette</span>
+      {
+        ['ours', 'heatmap', 'infrared', 'spectrum'].map((p) => (
+          <button type="button" data-palette={p} class={p === 'ours' ? 'on' : ''}>
+            {p}
+          </button>
+        ))
+      }
+    </div>
+
     <div class="stage" id="stage">
       <p class="hint">Pick a force, then click here to place it.</p>
     </div>
@@ -74,6 +85,16 @@ const forces = [
       b.addEventListener('click', () => {
         current = b.dataset.force;
         document.querySelectorAll('.forces button').forEach((x) => x.classList.toggle('on', x === b));
+      }),
+    );
+
+    // live colour template switch (§9)
+    document.querySelectorAll('.palettes button').forEach((b) =>
+      b.addEventListener('click', () => {
+        if (field && field.setPalette) field.setPalette(b.dataset.palette);
+        document
+          .querySelectorAll('.palettes button')
+          .forEach((x) => x.classList.toggle('on', x === b));
       }),
     );
 
@@ -270,6 +291,38 @@ const forces = [
     cursor: pointer;
   }
   .actions button:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .palettes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 1rem;
+  }
+  .plabel {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-3);
+    margin-right: 0.3rem;
+  }
+  .palettes button {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--text-3);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.34rem 0.7rem;
+    cursor: pointer;
+  }
+  .palettes button:hover {
+    color: var(--text);
+  }
+  .palettes button.on {
     color: var(--accent);
     border-color: var(--accent);
   }

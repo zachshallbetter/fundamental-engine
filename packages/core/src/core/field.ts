@@ -25,7 +25,8 @@ import {
   type WavePull,
 } from './currents.ts';
 import { healWaves, tearBoundNear, tearBoundByForces } from './reservoir.ts';
-import { FORMATION_BY, PALETTE, ACCENT_JOURNEY, type FormationId } from '../config/forces.config.ts';
+import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
+import { resolvePalette } from '../config/palettes.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
@@ -54,7 +55,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const cfg = {
-    accent: opts.accent ?? PALETTE[0] ?? '#4da3ff',
+    accent: opts.accent ?? resolvePalette(opts.palette)[0] ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'dots',
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
@@ -71,7 +72,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let boundTarget = 0;
   let boot = reduceMotion ? 1 : 0;
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
-  const JOURNEY: RGB[] = ACCENT_JOURNEY.map(hexToRgb);
+  let JOURNEY: RGB[] = resolvePalette(opts.palette).map(hexToRgb); // the accent journey (§9)
   let curAccent: RGB = hexToRgb(cfg.accent);
   let hoverAccent: string | null = null;
   let threadLinks: { a: Element; b: Element; c: RGB; seed: number }[] = [];
@@ -623,6 +624,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     setAccent: (hex) => {
       cfg.accent = hex;
       curAccent = hexToRgb(hex);
+    },
+    setPalette: (p) => {
+      // swap the travelling-accent stops (§9) and snap the accent to the first.
+      const stops = resolvePalette(p);
+      JOURNEY = stops.map(hexToRgb);
+      const first = stops[0];
+      if (first) {
+        cfg.accent = first;
+        curAccent = hexToRgb(first);
+      }
     },
     setFormation,
     threads: setThreads,
