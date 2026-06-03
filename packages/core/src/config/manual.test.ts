@@ -5,6 +5,7 @@ import { coreForces } from '../forces/index.ts';
 import { naturalForces } from '../forces/natural.ts';
 import { extendedForces } from '../forces/extended.ts';
 import { PRESETS } from './presets.ts';
+import { FORCE_BY } from './forces.config.ts';
 
 test('the manual defines exactly the registered forces (no drift)', () => {
   const registered = [...coreForces, ...naturalForces, ...extendedForces].map((f) => f.token).sort();
@@ -12,11 +13,19 @@ test('the manual defines exactly the registered forces (no drift)', () => {
   assert.deepEqual(documented, registered);
 });
 
-test('every manual entry is complete (formula + description)', () => {
+test('every manual entry is complete (formula + description + colour)', () => {
   for (const e of MANUAL_FORCES) {
     assert.ok(e.formula.length > 0, `${e.token}: missing formula`);
     assert.ok(e.desc.length > 0, `${e.token}: missing description`);
     assert.ok(e.label.length > 0, `${e.token}: missing label`);
+    assert.match(e.color, /^#[0-9a-f]{6}$/i, `${e.token}: invalid colour ${e.color}`);
+  }
+});
+
+test('the canonical nine colours mirror forces.config (§20.2 — no drift)', () => {
+  for (const e of MANUAL_FORCES) {
+    const canonical = FORCE_BY[e.token];
+    if (canonical) assert.equal(e.color, canonical.color, `${e.token} colour drifted`);
   }
 });
 
