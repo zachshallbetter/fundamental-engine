@@ -140,26 +140,93 @@ Cosmology presets use co-located virtual bodies of basic forces to represent ast
 
 ## 3. Substrate & Field Mechanics (The Ground State)
 
+This section documents the equations driving the background substrate, including velocity integration, wave current drift, noise, toroidal edge wrapping, global formations, and typographic feedback loops.
+
+---
+
 ### 3.1 Mass & Velocity Integration
 Particles integrate coordinates under a viscous friction model:
 $$v_{t+1} = v_t \cdot f \quad (f \approx 0.95)$$
 $$\text{heat}_{t+1} = \text{heat}_t \cdot 0.972$$
 
-- **Option A (Unit Mass - Default UI):**
+* **Option A (Unit Mass - Default UI):**
   $$v += F$$
-- **Option B (First-Class Mass - Physics Simulation):**
+* **Option B (First-Class Mass - Physics Simulation):**
   $$a = F/m$$
   $$v += a \cdot \tau$$
   $$p = m \cdot v\ \text{(conserve momentum on collisions/fusions)}$$
 
+---
+
 ### 3.2 Background Currents (Carrier Waves)
-The background currents create a baseline flow-field force:
-$$\text{slope}(x) = \cos(x \cdot \text{freq} + \phi) \cdot \text{freq} \cdot \text{amp}$$
-$$v_x += \text{slope} \cdot \text{influence}$$
+The background consists of $5$ layered standing waveforms that drift free particles and transport bound particles.
 
-Waves bend locally toward the engaged body ($b.\text{on} == \text{true}$) using a Gaussian falloff ($\sigma = 260\ \text{px}$).
+* **Wave Y-Coordinate Calculation (`waveYat`):**
+  At horizontal coordinate $x$ and time $t$ (seconds), the height $y_w$ of wave $w$ is:
+  $$y_w = w.\text{baseFrac} \cdot H + w.\text{offsetY} + \sin(x \cdot w.\text{freq} + w.\text{phase} + t \cdot w.\text{speed} \cdot 1000 \cdot \text{waveSpeed}) \cdot w.\text{amp} \cdot \text{amplitude}$$
+  
+* **Gaussian Spine Pull (Local Bending):**
+  When a DOM element is engaged ($\text{pull.k} > 0$), the waves locally bend toward its location $(\text{pull.x}, \text{pull.y})$:
+  $$\Delta x = x - \text{pull.x}$$
+  $$\text{fall} = \exp\left(-\frac{\Delta x^2}{2 \cdot 260^2}\right)$$
+  $$y_w \leftarrow y_w + (\text{pull.y} - y_w) \cdot 0.42 \cdot \text{fall} \cdot \text{pull.k} \cdot (0.45 + w.\text{depth} \cdot 0.55)$$
 
-### 3.3 Two-Way Density Feedback (The Bridge)
+* **Wave Slope / Derivative (`waveSlope`):**
+  The slope of the wave represents its spatial derivative, driving vertical velocity:
+  $$\text{slope}_w = \cos(x \cdot w.\text{freq} + w.\text{phase} + t \cdot w.\text{speed} \cdot 1000 \cdot \text{waveSpeed}) \cdot w.\text{amp} \cdot w.\text{freq} \cdot \text{amplitude}$$
+
+* **Free Particle Drift (Wave Current):**
+  For each free particle, identify the closest wave $w$ in the viewport. If the vertical distance $\text{nd} = |y_w - p.y| < 70\ \text{px}$, apply velocities:
+  $$p.vx += w.\text{dir} \cdot 0.035 \cdot \left(1 - \frac{\text{nd}}{70}\right)$$
+  $$p.vy += \text{slope}_w \cdot 0.1 \cdot \left(1 - \frac{\text{nd}}{70}\right)$$
+
+---
+
+### 3.3 Brownian Jitter & Curl-Noise Wander
+When formation wander is active ($\text{wander} > 0$), random perturbations and divergence-free eddies are injected:
+
+* **Periodic Jitter (Every 40 frames):**
+  $$\text{wsc} = 0.05 \cdot \text{form.wander}$$
+  $$p.vx += (\text{rand}() - 0.5) \cdot \text{wsc}$$
+  $$p.vy += (\text{rand}() - 0.5) \cdot \text{wsc}$$
+
+* **Curl-Noise Eddies (Every frame, for $\text{wander} > 0.05$):**
+  $$\theta_{\text{curl}} = \left(\sin(p.x \cdot 0.0032 + t \cdot 0.12) + \cos(p.y \cdot 0.0034 - t \cdot 0.15)\right) \cdot \pi$$
+  $$p.vx += \cos(\theta_{\text{curl}}) \cdot 0.013 \cdot \text{form.wander}$$
+  $$p.vy += \sin(\theta_{\text{curl}}) \cdot 0.013 \cdot \text{form.wander}$$
+
+---
+
+### 3.4 Boundary Toroidal Wrapping
+Particles are wrapped around screen boundaries rather than bounced or deleted (conserving global count):
+$$\text{EDGE} = 10\ \text{px}$$
+$$\text{if } p.x < -\text{EDGE}: p.x = W + \text{EDGE}$$
+$$\text{if } p.x > W + \text{EDGE}: p.x = -\text{EDGE}$$
+$$\text{if } p.y < -\text{EDGE}: p.y = H + \text{EDGE}$$
+$$\text{if } p.y > H + \text{EDGE}: p.y = -\text{EDGE}$$
+
+---
+
+### 3.5 Global Formation Currents (IA Layout States)
+Global currents affect free particle motion, overriding or reinforcing local body forces:
+
+* **Lanes Current (`driftX`):**
+  $$p.vx += \text{driftX} \cdot 0.02$$
+* **Scatter Target Pull (`spread`):**
+  Each particle pulls toward its custom grid slot $(t_x, t_y)$ mapping a spread state across the canvas:
+  $$t_x = ((\text{p.gx} + \text{frameCount} \cdot 0.00004) \bmod 1) \cdot W$$
+  $$t_y = \text{p.gy} \cdot H$$
+  $$p.vx += (t_x - p.x) \cdot 0.0006 \cdot \text{form.spread}$$
+  $$p.vy += (t_y - p.y) \cdot 0.0006 \cdot \text{form.spread}$$
+* **Accretion Center-of-Mass Convergence (`conv`):**
+  Pull particles toward the first visible `absorb` body $b_{\text{target}}$:
+  $$\hat{u}_{\text{core}} = \frac{(b_{\text{target}}.\text{cx} - p.x, b_{\text{target}}.\text{cy} - p.y)}{\text{dist}_{\text{core}}}$$
+  $$p.vx += \hat{u}_{\text{core}, x} \cdot \text{form.conv} \cdot 0.06$$
+  $$p.vy += \hat{u}_{\text{core}, y} \cdot \text{form.conv} \cdot 0.06$$
+
+---
+
+### 3.6 Two-Way Density Feedback (The Bridge)
 - **DOM $\rightarrow$ Canvas (Pipe 1):**
   $$c_x = (\text{rect.left} + \text{rect.width}/2) \cdot \text{DPR}$$
   $$c_y = (\text{rect.top} + \text{rect.height}/2) \cdot \text{DPR}$$
@@ -171,7 +238,9 @@ Waves bend locally toward the engaged body ($b.\text{on} == \text{true}$) using 
   $$\text{CSS:}\ \text{element.style.setProperty}('--d', b.\text{d})$$
   $$\text{Time Constant:}\ \tau = -1 / (60 \cdot \ln(1 - 0.08)) \approx 0.20\ \text{seconds}$$
 
-### 3.4 Conserved Attention (Zero-Sum Allocation)
+---
+
+### 3.7 Conserved Attention (Zero-Sum Allocation)
 To prevent visual clutter, attention can be normalized as a fixed budget:
 $$\text{demand:}\ m_i = S_i \cdot (1 + \beta \cdot \text{on}_i) \cdot \text{vis}_i \quad (\beta \approx 2)$$
 $$\text{ softmax share:}\ d_i^* = \hat{N} \cdot \frac{m_i}{\sum_j m_j}$$
@@ -196,30 +265,147 @@ $$\text{heat} = \max(\text{heat}, \min(0.85, |v| \cdot 0.4))$$
 
 ## 5. Design & Implementation Antipatterns
 
-### 5.1 Design & Presentation Antipatterns
-- **Rebuilding Words from Dots (The Punctuation Rule Violation):**
-  - *Antipattern:* Assembling or morphing particles directly into full letters or text words. It creates noisy, illegible silhouettes.
-  - *Correct Pattern:* Reserve particle-to-shape morphology (`morph` or glyph assembly) strictly for punctuation and marks (`.`, `—`, `·`, brackets, logos). Make words feel alive by animating the *surrounding* field or altering type attributes (weight, glow, spacing) via the local density `--d` variable.
-- **Decoration Without Behavior (One-Way Metaphors):**
-  - *Antipattern:* Adding the particle field as a passive screen-saver backdrop that doesn't read or react to DOM boxes.
-  - *Correct Pattern:* Maintain absolute reciprocity. Elements must bend the field (Pipe 1), and local density must swell/glow the elements back (Pipe 2).
-- **Constant Chaos (Noisy Resting State):**
-  - *Antipattern:* Keeping the field constantly agitated, fast, or noisy when the user is idle.
-  - *Correct Pattern:* *"Make the transfer legible; keep the steady state quiet."* A force at rest is silent. Reserve heavy excitement, heat, and visual sparks for transitional triggers (hover, click-bursts, boundary collision impacts).
-- **Hype-heavy Copywriting:**
-  - *Antipattern:* Describing the site's physics using buzzwords like "synergy," "revolutionary," or "game-changing."
-  - *Correct Pattern:* Use a plain, declarative, physical voice (e.g., "The page's elements bend the field; the field's density bends the elements back").
+This section documents critical antipatterns across three categories: Creative & Design System integration, Engine Performance, and Mathematical/Physical Simulation logic. Developers and designers must check this list before introducing new components, physics rules, or layouts.
 
-### 5.2 Physics & Engine Implementation Antipatterns
-- **Unbounded Particle Spawning (Class [S] Law-Breaks):**
-  - *Antipattern:* Creating particles continuously via sources (`spawn` / `fountain` / `supernova`) without allocating a budget or clean-up routine.
-  - *Correct Pattern:* Respect the global conservation law. Every particle generator must be paired with a sink (`blackhole` with `data-destroy`), an age despawn threshold (`age > life`), or a global ceiling to prevent browser tab crashes.
-- **Aspirational Mass in Unit-Mass Integrators:**
-  - *Antipattern:* Claiming that particle sizes or labels affect their trajectory arcs when running a unit-mass model ($v += F$).
-  - *Correct Pattern:* Clearly declare if Option A (Unit Mass) is running. In Option A, size is purely cosmetic. To enable physical size-mass behaviors, upgrade to Option B ($a = F/m$) and conserve momentum.
-- **Synchronous Viewport Box Polling:**
-  - *Antipattern:* Running `getBoundingClientRect()` on all elements every frame.
-  - *Correct Pattern:* Re-sample layout bounds every 6 frames, deactivate forces on off-screen elements, and use `ResizeObserver`/`IntersectionObserver` to trigger measurements on mutation.
-- **Unbounded / Diverging Wells at Scale:**
-  - *Antipattern:* Implementing pure Newtonian gravity ($1/d^2$) for UI attractors, leading to infinite acceleration/velocities at zero distance.
-  - *Correct Pattern:* Use soft, bounded designs $(1 - d/d_{\max})^n$ for user-interface targets, or apply Plummer softening ($1 / (d^2 + \epsilon^2)$) to keep natural forces mathematically finite.
+---
+
+### 5.1 Creative & Design System Antipatterns
+
+These guidelines ensure visual consistency and typography legibility. They preserve the site's identity as a *reciprocal medium* rather than a collection of visual effects.
+
+#### 5.1.1 The Word Silhouette Break (Punctuation Rule Violation)
+* **Symptom:** Text words or case study headings are assembled from, or morphed out of, loose particles. The typography becomes noisy, jagged, and illegible.
+* **Root Cause:** Direct morphing or glyph assembly (`data-glyph`) applied to prose words.
+* **Correct Pattern:** Words must remain solid, vector-drawn typographic elements. The field must *decorate* and interact with the text box, not form the text itself. Reserve particle shape-assembly strictly for simple punctuation and marks (e.g., `.`, `—`, `·`, brackets, logos) where the silhouette remains simple and legible.
+* **Typographic Interaction:** To make words feel alive, alter their typographic properties using the eased `--d` local density variable written back by the engine:
+  ```css
+  .liveword {
+    /* Drive weight from local density */
+    font-variation-settings: "wght" calc(300 + var(--d) * 500);
+    /* Drive glow bloom from local density */
+    text-shadow: 0 0 calc(var(--d) * 15px) var(--accent);
+    /* Subtly mix color towards accent based on density */
+    color: color-mix(in srgb, var(--accent) calc(var(--d) * 100%), var(--ink-base));
+  }
+  ```
+
+#### 5.1.2 Static Metaphors (One-Way Fields)
+* **Symptom:** Particles react to mouse cursor movement, but layout cards and text headers do not react to the particle concentration. The canvas feels like a passive backdrop screensaver.
+* **Root Cause:** Neglecting to declare the `data-feedback` attribute on elements, or failing to bind the `--d` CSS variable to typographic/layout properties.
+* **Correct Pattern:** Every engageable DOM element must opt into the reciprocal loop. When particles gather, the element must visually swell, glow, or shift weights to close the interaction loop.
+
+#### 5.1.3 Over-Agitation & Lack of Restraint (Visual Fatigue)
+* **Symptom:** The particle field is constantly flashing, sparking, and moving at high velocity even when the page is completely idle.
+* **Root Cause:** Failing to decay particle heat (`heat *= 0.972`) or setting baseline ambient velocities too high.
+* **Correct Pattern:** Keep the resting state quiet. The field at rest should float on slow, gentle curl-noise drift ($v \approx 0.1 \rightarrow 0.5\ \text{px/frame}$). High-velocity motion, sparks, and flashes must be reserved as short-lived reactions to events (click-bursts, bounces, cursor drags) that decay rapidly back to the ground state.
+
+#### 5.1.4 Color-Semantic Incoherence
+* **Symptom:** Laying out cards or page sections with arbitrary colored accents (e.g. rendering a `spring` element in teal or a `vortex` card in pink).
+* **Root Cause:** Hardcoding accent colors on components instead of deriving them from the canonical force-to-discipline mapping.
+* **Correct Pattern:** All element colors must align with `DS_FORCES` (e.g., attract = blue `#4da3ff`, vortex = teal `#2dd4bf`, spring = green `#86e57f`). Derive these programmatically via `forces.config.ts` or bind to CSS tokens:
+  ```css
+  .card-spring {
+    border-color: var(--f-spring); /* #86e57f */
+  }
+  ```
+
+#### 5.1.5 Vignette Scrim Neglect (Contrast Muddying)
+* **Symptom:** Page copy is unreadable because bright particles drift directly behind white text, creating a contrast violation.
+* **Root Cause:** Missing or weak vignette scrim overlays, or canvas opacity set too high.
+* **Correct Pattern:** Always layer a radial-linear vignette scrim at `z-index: 1` between the canvas (`z-index: 0`) and the content shell (`z-index: 2`). Keep background canvas opacity at `~0.34` globally, and only raise it (e.g. to `.6` or `.96`) in dedicated showcase view-states.
+  ```css
+  #field {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.34;
+    transition: opacity 0.7s var(--ease);
+  }
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(circle, transparent 20%, var(--bg-page) 90%);
+  }
+  ```
+
+#### 5.1.6 Thread Flooding
+* **Symptom:** The page is covered in a dense web of glowing connector lines linking unrelated content, creating extreme visual clutter.
+* **Root Cause:** Declaring `data-threads` globally on all lists or grids.
+* **Correct Pattern:** Use threads strictly as opt-in wiring for structured indexes or case study navigation. Pass `null` to clear the thread registry on engagement leave.
+
+#### 5.1.7 Treating Coherence as a Force
+* **Symptom:** Code implements a new `coherence` force module in the force registry.
+* **Root Cause:** Misunderstanding the "resolved/accreted" state as a physical primitive.
+* **Correct Pattern:** Coherence is a target destination state (represented by the `--coherence` gold `#ffce6b` color and coordinates in the `accretion` formation). It is driven by composite attraction wells, not a tenth force token.
+
+---
+
+### 5.2 Engine Performance & Architecture Antipatterns
+
+These engineering guidelines keep the viewport rendering at a stable 60 fps on mobile and low-power devices.
+
+#### 5.2.1 Per-Frame Bounding Box Polling (Layout Thrashing)
+* **Symptom:** Jittery scrolling, frame drops, and high CPU usage when scrolling or resizing.
+* **Root Cause:** Calling `element.getBoundingClientRect()` on all elements inside the main `requestAnimationFrame` loop every frame.
+* **Correct Pattern:** Re-sample element coordinates at a lower frequency (e.g., every 6 frames) or use a `ResizeObserver` / `IntersectionObserver` pattern to measure boxes only when they mutate or enter view, marking coordinate states as dirty in the store.
+  ```js
+  // Inside integration loop:
+  if (frameIndex % 6 === 0) {
+    bodies.forEach(body => body.measure());
+  }
+  ```
+
+#### 5.2.2 Unmanaged Source-Sink Pools (Memory Leaks)
+* **Symptom:** Browser memory allocation grows linearly over time, eventually causing the tab to crash (OOM).
+* **Root Cause:** Continuously spawning new particles (Class [S] forces like `spawn`, `fountain`, or `supernova`) without any despawning criteria or hard limits.
+* **Correct Pattern:** Respect the conservation law. Every particle generator must be balanced by a sink (such as a `blackhole` with `data-destroy`), age decay (`p.age > data-life`), or a hard global particle pool cap.
+
+#### 5.2.3 DPR Over-Sampling (GPU Fill-Rate Saturation)
+* **Symptom:** Mobile devices heat up and thermal throttle within minutes of loading the site.
+* **Root Cause:** Initializing the canvas backing store at the full hardware `devicePixelRatio` on high-resolution screens (e.g., 3x or 4x Retina).
+* **Correct Pattern:** Cap the device pixel ratio at 2:
+  ```js
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = rect.width * DPR;
+  canvas.height = rect.height * DPR;
+  ```
+
+#### 5.2.4 Off-Screen Section Physics Waste
+* **Symptom:** Heavy background processing cost on long pages when the active scrolled section contains no physics elements.
+* **Root Cause:** Running force math and integration steps on elements that have scrolled out of the viewport.
+* **Correct Pattern:** When a body scrolls off-screen (beyond a safety margin like `H * 0.15`), set `body.vis = false` and skip it in the integrator loop.
+
+#### 5.2.5 Multiple Root Canvas Instances
+* **Symptom:** The browser struggles to clear and draw to multiple full-viewport canvases running concurrent requestAnimationFrame loops.
+* **Root Cause:** Instantiating a new canvas for every element or view that needs a background field.
+* **Correct Pattern:** Mount a single, shared canvas (`<FieldCanvas />`) at the application root for the viewport background. For isolated inline demonstrations, use container-scoped, low-particle-count, paused `<forces-cell>` instances.
+
+---
+
+### 5.3 Mathematical & Physical Simulation Antipatterns
+
+These math guidelines keep the integration loop numerically stable, preventing particle explosion or orbit decay.
+
+#### 5.3.1 Newtonian Singularity (Zero-Distance Velocity Blowup)
+* **Symptom:** Particles disappear instantly or fly off-screen at extreme speeds when they approach the center of an attractor.
+* **Root Cause:** Using the literal physical gravity law ($F = G/d^2$) without core softening, causing division by zero ($d \rightarrow 0$).
+* **Correct Pattern:** Use bounded designed wells $(1 - d/d_{\max})^n$ for UI attractors, or add Plummer softening ($\epsilon^2$) in natural equations:
+  $$F = \frac{G \cdot M}{d^2 + \epsilon^2} \quad (\epsilon \approx \text{horizon or core radius})$$
+
+#### 5.3.2 Mass Dissonance (Nominal vs. Inertial Mass)
+* **Symptom:** The UI claims larger particles have more inertia, but all particles accelerate identically under the same force.
+* **Root Cause:** Documenting inertial mass behavior while running a Unit Mass integrator ($v += F$).
+* **Correct Pattern:** Under Option A (default UI), size does not affect motion. Correct the manual copy, or run Option B (First-Class Mass: $a = F/m$) inside the Lab/simulation spaces where collisions and momentum-conservation are critical.
+
+#### 5.3.3 Infinite Loop Instability (Typography Feedback Oscillation)
+* **Symptom:** A text block fluctuates rapidly in width, causing jittery layout reflows and text shaking.
+* **Root Cause:** High loop gain in the reciprocal feedback loop. Changing density alters font weight $\rightarrow$ alters word width $\rightarrow$ alters force bounding box $\rightarrow$ alters local particle density. If $\alpha$ (low-pass smoothing factor) is too high or the weight-width change is large, the system oscillates.
+* **Correct Pattern:** Dampen typography bounds changes. Keep $\alpha \approx 0.08$ (low-pass filter) and keep the weight-to-geometry coupling small ($|G| \ll 1$) so the loop converges.
+
+#### 5.3.4 Orbital Swirl Injection Error (Tangential Acceleration Blowup)
+* **Symptom:** Particles spiral rapidly outward and leave the attractor well instead of forming stable circular orbits.
+* **Root Cause:** Continuously applying tangential acceleration ($a_t += \text{constant}$), which continually injects kinetic energy into the system, causing orbits to decay outward.
+* **Correct Pattern:** Inject tangential *velocity* once when seeding particles, or scale the tangential force with the attractor's radial pull factor:
+  $$v_{\text{tangential}} = \frac{(-dy, dx)}{d} \cdot f_{\text{radial}} \cdot \text{form.orbit}$$
