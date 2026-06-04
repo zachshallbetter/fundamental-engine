@@ -69,6 +69,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let bodies: Body[] = [];
   let W = 0;
   let H = 0;
+  // cached page scroll extent — reading scrollHeight forces a synchronous reflow, so
+  // we cache it (refreshed on resize + sampled occasionally) rather than per frame.
+  let maxScroll = 1;
+  // last variable-font weight written per element — changing fontVariationSettings
+  // reflows the text, so we only write it when the rounded weight actually changes.
+  const lastWeight = new WeakMap<HTMLElement, number>();
   let raf = 0;
   let frameN = 0;
   let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
@@ -333,6 +339,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     env.W = W;
     env.H = H;
+    maxScroll = document.documentElement.scrollHeight - H || 1;
     for (const g of grids.values()) g.resize(W, H); // keep field buffers viewport-sized
     build();
     scan();
@@ -362,13 +369,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.beginPath();
       ctx!.moveTo(0, waveYat(w, 0, time, H, 1, 1, pull));
       for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H, 1, 1, pull));
+      // glow via a wide faint underlay then a crisp line (both additive) — not
+      // shadowBlur, which made each of the five long strokes cost several ×.
+      ctx!.lineWidth = 5;
+      ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.05 + w.depth * 0.04) * boot})`;
+      ctx!.stroke();
       ctx!.lineWidth = 1.2;
-      ctx!.shadowBlur = 11;
-      ctx!.shadowColor = `rgba(${cr},${cg},${cb},0.9)`;
       ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.3 + w.depth * 0.22) * boot})`;
       ctx!.stroke();
     }
-    ctx!.shadowBlur = 0;
     ctx!.globalCompositeOperation = 'source-over';
   }
 
@@ -392,14 +401,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const [cr, cg, cb] = w.color;
       const tw = p.glow ? 0.6 + 0.4 * Math.sin(time * 2.2 + i) : 0.85;
       if (p.glow) {
-        ctx!.shadowBlur = 8;
-        ctx!.shadowColor = `rgba(${cr},${cg},${cb},0.9)`;
+        // additive halo instead of shadowBlur (the canvas is composited 'lighter')
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.16 * tw * boot})`;
+        ctx!.beginPath();
+        ctx!.arc(x, y, p.size + 2.5, 0, 6.28318);
+        ctx!.fill();
       }
       ctx!.fillStyle = `rgba(${cr},${cg},${cb},${tw * boot})`;
       ctx!.beginPath();
       ctx!.arc(x, y, p.size, 0, 6.28318);
       ctx!.fill();
-      if (p.glow) ctx!.shadowBlur = 0;
       i++;
     }
     ctx!.globalCompositeOperation = 'source-over';
@@ -455,7 +466,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       b.el.style.setProperty('--d', b.d.toFixed(3));
       if (b.fmax) {
         const w = feedbackWeight(b.fmin, b.fmax, b.d);
-        b.el.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
+        if (lastWeight.get(b.el) !== w) {
+          lastWeight.set(b.el, w);
+          b.el.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
+        }
       }
       if (b.capacity > 0 && b.tokens.indexOf('absorb') >= 0) {
         b.el.style.setProperty('--mass', clamp(b.accreted / b.capacity, 0, 1).toFixed(3));
@@ -479,14 +493,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         continue;
       }
       const [r, g, b] = s.c;
-      ctx!.shadowBlur = 6 * s.life;
-      ctx!.shadowColor = `rgba(${r},${g},${b},0.9)`;
+      // additive halo + core (no shadowBlur) — sparks can burst in bulk on impact.
+      ctx!.fillStyle = `rgba(${r},${g},${b},${0.18 * s.life})`;
+      ctx!.beginPath();
+      ctx!.arc(s.x, s.y, 2 + s.life * 4, 0, 6.28318);
+      ctx!.fill();
       ctx!.fillStyle = `rgba(${r},${g},${b},${s.life})`;
       ctx!.beginPath();
       ctx!.arc(s.x, s.y, 0.6 + s.life * 1.5, 0, 6.28318);
       ctx!.fill();
     }
-    ctx!.shadowBlur = 0;
     ctx!.globalCompositeOperation = 'source-over';
   }
 
@@ -528,15 +544,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
       const size = p.size * (1 - 0.4 * rs) + h * 2;
       const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot, 0, 1);
+      const cr = r | 0;
+      const cg = g | 0;
+      const cb = b | 0;
+      // glow for hot matter via a cheap additive halo under the core (the canvas is
+      // composited 'lighter'), not per-particle shadowBlur — the same look without the
+      // 10×+ per-draw cost that spiked frames during interaction.
       if (h > 0.2) {
-        ctx!.shadowBlur = 12 * h;
-        ctx!.shadowColor = `rgba(${r | 0},${g | 0},${b | 0},0.95)`;
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.13 * h * boot})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, size + 3 + 6 * h, 0, 6.28318);
+        ctx!.fill();
       }
-      ctx!.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${alpha})`;
+      ctx!.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
       ctx!.beginPath();
       ctx!.arc(p.x, p.y, size, 0, 6.28318);
       ctx!.fill();
-      if (h > 0.2) ctx!.shadowBlur = 0;
     }
     drawSparks();
     drawThreads();
@@ -630,7 +653,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
 
     // accent journey (§9): scroll travels the palette; a hovered element overrides.
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight || 1;
+    // maxScroll is cached (scrollHeight forces a reflow); resample it twice a second.
+    if (frameN % 30 === 0) maxScroll = document.documentElement.scrollHeight - H || 1;
     const targetAcc = hoverAccent ? hexToRgb(hoverAccent) : sampleStops(JOURNEY, scrollY / maxScroll);
     curAccent = [
       curAccent[0] + (targetAcc[0] - curAccent[0]) * 0.08,
