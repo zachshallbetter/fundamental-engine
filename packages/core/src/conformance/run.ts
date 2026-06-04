@@ -15,6 +15,7 @@ import { createRegistry } from '../core/registry.ts';
 import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
+import { conditions } from '../core/conditions.ts';
 import type { ApplyDelta, FrameState, Scenario, ScenarioResult } from './types.ts';
 
 const W = 1200;
@@ -175,7 +176,7 @@ export function runScenario(s: Scenario, forces: ForceRegistry = allForces()): S
       env.frameN = f;
       env.t = f / 60;
       store.reindex();
-      step({ store, bodies: [body], env, forces, conditions: {} });
+      step({ store, bodies: [body], env, forces, conditions });
       if (env.dt) for (const g of env.__grids.values()) g.step();
       trajectory.push(store.particles.map(snap));
     }
