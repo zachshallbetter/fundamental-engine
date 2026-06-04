@@ -3,16 +3,208 @@
    Built on ds-tokens.css; mirrors the manual's voice but reads
    as a reference, not an explainer. Global (not scoped).
    ============================================================ */
-.docs {
+/* three-column docs shell: sidebar · content · on-this-page TOC */
+.docs-shell {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 880px;
+  max-width: 1340px;
   margin: 0 auto;
-  padding: calc(58px + clamp(2rem, 6vh, 4rem)) clamp(1.25rem, 5vw, 2rem) 4rem;
+  padding: 58px clamp(1rem, 4vw, 2rem) 0;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 200px;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
 }
-:global(body:has(.docs)) {
+:global(body:has(.docs-shell)) {
   align-items: flex-start;
+}
+
+/* sidebar */
+.docs-sidebar {
+  position: sticky;
+  top: 58px;
+  align-self: start;
+  max-height: calc(100svh - 58px);
+  overflow-y: auto;
+  padding: clamp(1.6rem, 4vh, 2.6rem) 0 2rem;
+  scrollbar-width: thin;
+}
+.docs-side-toggle {
+  display: none;
+}
+.docs-group {
+  margin-bottom: 1.5rem;
+}
+.docs-group-title {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 0.6rem;
+}
+.docs-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+.docs-group a {
+  display: block;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--text-3);
+  text-decoration: none;
+  padding: 0.32rem 0.6rem;
+  border-radius: 6px;
+  border-left: 2px solid transparent;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+.docs-group a:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+.docs-group a[aria-current='page'] {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(77, 163, 255, 0.06);
+}
+
+/* content column */
+.docs-content {
+  min-width: 0;
+  padding: clamp(1.6rem, 4vh, 2.6rem) 0 4rem;
+}
+
+/* on-this-page TOC */
+.docs-toc {
+  position: sticky;
+  top: 58px;
+  align-self: start;
+  padding: clamp(1.6rem, 4vh, 2.6rem) 0 2rem;
+}
+.docs-toc-title {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 0.7rem;
+}
+.docs-toc nav {
+  display: grid;
+  gap: 0.15rem;
+  border-left: 1px solid var(--line);
+}
+.docs-toc a {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--text-3);
+  text-decoration: none;
+  padding: 0.22rem 0 0.22rem 0.8rem;
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  transition: color 0.15s;
+}
+.docs-toc a.lvl3 {
+  padding-left: 1.5rem;
+  font-size: 0.76rem;
+}
+.docs-toc a:hover {
+  color: var(--text-2);
+}
+.docs-toc a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+/* prev / next */
+.docs-prevnext {
+  margin-top: 3rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.docs-prevnext .pn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg, 14px);
+  padding: 0.8rem 1.1rem;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+.docs-prevnext .pn.next {
+  text-align: right;
+  margin-left: auto;
+}
+.docs-prevnext .pn:hover {
+  border-color: var(--accent);
+}
+.docs-prevnext .pn span {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.docs-prevnext .pn b {
+  font-size: 0.96rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 1080px) {
+  .docs-shell {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .docs-toc {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .docs-shell {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .docs-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 1rem 0 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .docs-side-toggle {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    background: none;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    margin-bottom: 0.8rem;
+    cursor: pointer;
+  }
+  #docsSide {
+    display: none;
+  }
+  #docsSide.open {
+    display: block;
+  }
 }
 
 /* hero */

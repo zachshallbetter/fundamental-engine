@@ -1,0 +1,142 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+const bodySnippet = `<a
+  data-body="attract vortex"   // forces compose, space-separated
+  data-strength="0.9"
+  data-range="320"
+  data-color="#4da3ff"
+  data-when="active"           // gate: only acts while engaged
+  data-feedback                // opt into density write-back
+>link</a>`;
+
+const pipeSnippet = `// DOM → field (every frame, per body)
+cx = (rect.left + rect.width / 2) * DPR
+cy = (rect.top  + rect.height / 2) * DPR
+
+// field → DOM (every frame, per data-feedback body)
+element.style.setProperty('--d', density)   // d ∈ [0, 1]`;
+
+const feedbackSnippet = `.headline {
+  /* the engine writes --d; CSS turns density into weight + glow */
+  font-variation-settings: 'wght' calc(380 + var(--d) * 420);
+  text-shadow: 0 0 calc(var(--d) * 40px) rgba(77, 163, 255, calc(var(--d)));
+}`;
+---
+
+<DocsLayout
+  title="forces-ui — Concepts"
+  description="The mental model behind forces-ui: bodies, the single conserved field, the two-way DOM⇄canvas binding, reciprocity via --d, and the orthogonal axes (forces, conditions, formations, render modes, agents)."
+>
+  <header class="docs-hero">
+    <p class="kicker">Concepts</p>
+    <h1>How the field <span class="accent">thinks</span>.</h1>
+    <p class="lede">
+      forces-ui is one particle field that the page lives inside. Elements are bodies that
+      bend it; the field's density bends them back. Everything else is a way to shape that
+      one reciprocal loop.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Bodies</h2>
+    <p>
+      A <strong>body</strong> is any element you mark with <code>data-body</code>. Its value is
+      one or more <em>force</em> tokens, space-separated — they compose, so a single element
+      can attract and swirl at once. The engine re-reads each body's bounding box every frame,
+      so moving the element moves the force.
+    </p>
+    <pre class="code"><code>{bodySnippet}</code></pre>
+    <p>
+      Common attributes — <code>data-strength</code>, <code>data-range</code>,
+      <code>data-color</code>, <code>data-spin</code>, <code>data-angle</code> — are read by the
+      forces that use them; each force ignores the ones it doesn't. See the
+      <a href="/#ch-forces">Manual</a> for the full matrix.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The single field</h2>
+    <p>
+      There is exactly one field — a fixed, full-viewport <code>&lt;canvas&gt;</code> behind your
+      content, running one <code>requestAnimationFrame</code> loop over a conserved pool of
+      particles (~130 at default density). Every body acts on that same pool. This is the
+      central law: <strong>nothing is created from nothing</strong>. Matter is moved, captured,
+      and released — an absorber that swallows particles must later release them; the reservoir
+      keeps the count constant. Effects can't cheat by spawning matter, which is what makes the
+      field feel physical rather than decorative.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The DOM ⇄ canvas binding</h2>
+    <p>
+      The rarest property of the system is a <strong>two-way binding between layout and a
+      physics sim</strong>. Most particle backgrounds are one-way (canvas reacts to the mouse).
+      Here the DOM <em>is</em> the simulation's geometry, and the simulation writes back into
+      layout and type. Two pipes, every frame:
+    </p>
+    <pre class="code"><code>{pipeSnippet}</code></pre>
+    <p>
+      <strong>Pipe 1 (geometry in):</strong> any DOM change — reflow, transform, resize — is an
+      instantaneous change to the force geometry, so animating the DOM animates the sim for free.
+      <strong>Pipe 2 (density out):</strong> the field samples how much matter pooled on each
+      <code>data-feedback</code> body and writes it back as <code>--d</code>.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Reciprocity &amp; <code>--d</code></h2>
+    <p>
+      Reciprocity is the payoff. Opt a body in with <code>data-feedback</code> and the engine
+      eases the gathered density into a CSS custom property <code>--d</code> ∈ [0, 1] on the
+      element. Your styles turn that number into anything — weight, glow, scale, colour:
+    </p>
+    <pre class="code"><code>{feedbackSnippet}</code></pre>
+    <p>
+      The value is low-pass filtered (a ~0.2s time constant), so it eases rather than jitters.
+      This is the sanctioned way to make type react — words gain weight where matter collects.
+      (The engine never assembles particles into letterforms; words glow and grow, they are not
+      drawn from dots.)
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The orthogonal axes</h2>
+    <p>The vocabulary stays small by separating four independent dimensions:</p>
+    <ul class="model">
+      <li>
+        <b>Forces</b> — <em>what</em> a body does to nearby matter (attract, vortex, gravity,
+        lens…). They compose. <a href="/#ch-forces">In the Manual →</a>
+      </li>
+      <li>
+        <b>Conditions</b> — <em>when</em> a force acts, via <code>data-when</code> (active, fast,
+        slow, hot, cool). <a href="/#ch-conditions">In the Manual →</a>
+      </li>
+      <li>
+        <b>Formations</b> — a single global bias applied to <em>every</em> particle at once
+        (ambient, wells, lanes, scatter, accretion). <a href="/#formations">In the Manual →</a>
+      </li>
+      <li>
+        <b>Render modes</b> — the same physics drawn differently (dots, trails, links,
+        streamlines). <a href="/lab">Try in the Lab →</a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Agents: particles, elements, events</h2>
+    <p>
+      Forces don't only push particles. The same force can target a <strong>particle</strong>
+      (the default), a <strong>DOM element</strong> (it gets moved by a transform offset, with
+      an anchor spring), or an <strong>event</strong> (crossing a density threshold fires a
+      <code>CustomEvent</code> you can listen for). One mechanism, three kinds of target — so the
+      field can drive real app behaviour, not just pixels.
+    </p>
+    <div class="callout">
+      <b>Composites, not new code.</b> Bigger ideas — <code>blackhole</code>, <code>galaxy</code>,
+      <code>tornado</code> — are <a href="/#ch-presets">presets</a> that expand to several
+      co-located bodies, one primitive each. The engine never grows to add a preset.
+    </div>
+  </section>
+</DocsLayout>
