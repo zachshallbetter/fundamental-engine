@@ -627,8 +627,19 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
   <SiteFooter />
 </Base>
 
-<script is:inline>
+<script is:inline data-astro-rerun>
   (() => {
+    // this script re-runs on every client-side navigation back to this page; tear
+    // down the previous run's window listeners + observers so they don't stack.
+    if (window.__manualTeardown) window.__manualTeardown();
+    const _ac = new AbortController();
+    const _sig = _ac.signal;
+    const _obs = [];
+    window.__manualTeardown = () => {
+      _ac.abort();
+      _obs.forEach((o) => o.disconnect());
+    };
+
     const field = document.querySelector('forces-field');
     const rescan = () => field && field.rescan && field.rescan();
 
@@ -712,6 +723,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
       { threshold: 0.5 },
     );
     document.querySelectorAll('section[data-form]').forEach((s) => formObs.observe(s));
+    _obs.push(formObs);
 
     // conserved attention (§2.4): switch the field's finite strength budget ON only
     // while its demo is in view, so the rest of the manual is unaffected.
@@ -726,6 +738,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
         { threshold: 0.45 },
       );
       attnObs.observe(attnSection);
+      _obs.push(attnObs);
     }
 
     // cross-boundary causality (Concept 4): density spills to neighbours — on only
@@ -741,6 +754,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
         { threshold: 0.45 },
       );
       causalObs.observe(causalSection);
+      _obs.push(causalObs);
     }
 
     // chapter rail active state
@@ -751,7 +765,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
       for (const ch of chapters) if (ch.getBoundingClientRect().top < innerHeight * 0.35) active = ch.id;
       links.forEach((a) => a.classList.toggle('active', a.dataset.ch === active));
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true, signal: _sig });
     onScroll();
 
     // threads between a hovered item and its set
@@ -780,7 +794,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
       });
     });
 
-    window.addEventListener('resize', rescan, { passive: true });
+    window.addEventListener('resize', rescan, { passive: true, signal: _sig });
     setTimeout(rescan, 250);
   })();
 </script>

@@ -80,8 +80,15 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
   </div>
   <SiteFooter />
 
-  <script is:inline>
+  <script is:inline data-astro-rerun>
     (() => {
+      // re-runs on each client-side navigation into a docs page; tear down the
+      // previous run's scroll listener so it doesn't stack.
+      if (window.__docsTeardown) window.__docsTeardown();
+      const _ac = new AbortController();
+      const _sig = _ac.signal;
+      window.__docsTeardown = () => _ac.abort();
+
       // copy-on-click for any [data-copy] (install chips, code snippets)
       document.querySelectorAll('[data-copy]').forEach((el) => {
         el.addEventListener('click', () => {
@@ -125,7 +132,7 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
           }
           links.forEach((l) => l.a.classList.toggle('active', l === cur));
         };
-        window.addEventListener('scroll', spy, { passive: true });
+        window.addEventListener('scroll', spy, { passive: true, signal: _sig });
         spy();
       }
 

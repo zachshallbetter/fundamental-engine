@@ -136,7 +136,7 @@ const byFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
   <SiteFooter />
 </Base>
 
-<script is:inline define:vars={{ FORCE_DATA, PRESET_DATA }}>
+<script is:inline data-astro-rerun define:vars={{ FORCE_DATA, PRESET_DATA }}>
   (() => {
     const stage = document.getElementById('stage');
     const field = document.querySelector('forces-field');
