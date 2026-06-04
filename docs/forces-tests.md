@@ -1,133 +1,207 @@
-# Lab 
+# Forces — Testing & Conformance
 
-The Lab is a physics conformance instrument. Think of it like CERN. A particle goes in, we see what happens. If it does what we expect, it's good. If not, we fix it. Instead of just dropping particles and seeing what happens, we send a single particle into a force with known attributes and see what happens. We compare the actual behavior to the expected behavior and see if it matches. 
+> How every force in the engine is verified to do what the math says. Companion to
+> [`forces-system.md`](forces-system.md) (the spec). Section refs like §6 point there.
 
-## Context
+A physics engine is only as trustworthy as its proof that each force behaves. This
+document is that proof, in two registers: the **unit math** (each force's exact
+per-frame Δv) and the **behavior** (the invariants that define "reacts appropriately").
+The behavioral layer is a single declarative catalog that drives both the test suite
+and the **Lab detector** ([`/lab`](https://forces-ui.com/lab)) — so "did the expected
+thing happen?" is answered identically in code and on screen.
 
-The Lab is a paint toy: drop `[data-body]` nodes and watch the shared field react.
-It can't answer the question that actually matters for a physics engine: **send a
-single particle into a force with known attributes — what is the expected behavior,
-and did it occur?** We want a real instrument, backed by rigorous math.
+The Lab is the human face of it: think of it like a particle collider. A known particle
+goes into a known force; you watch its track, the surrounding field, and any related
+particles; the measured behavior is checked against the prediction. If it matches, good.
+If not, tune the attributes and fire again.
 
-The foundation is already strong: `forces.test.ts` / `natural.test.ts` /
-`extended.test.ts` assert exact per-frame Δv per force with shared `body()`/`part()`/
-`env()`/`near()` helpers; `integrator.bench.ts` already runs the engine headlessly
-(store + env + `step()`). What's missing is (1) a **single declarative catalog** of
-"expected behavior per force" and (2) a way to **see and operate** it.
+---
 
-The design: one headless **`runScenario()`** in core that builds its own particle(s)
-+ body + env and runs the real engine deterministically, returning the trajectory.
-A declarative **expectations** layer (invariants + exact-formula checks) defines
-"appropriate reaction". The **same catalog + runner power both the test suite and the
-new Lab "Verify" instrument** — so "did it happen?" is answered identically in code
-and on screen. (Decisions: the Lab *becomes* Verify, paint tool retired; checks are
-invariants + exact formula.)
+## The four layers
 
-## Architecture
+| Layer | File(s) | Asks | Style |
+|---|---|---|---|
+| **Golden unit tests** | `forces/forces.test.ts`, `forces/natural.test.ts`, `forces/extended.test.ts` | Is each force's per-frame math *exactly* the spec formula? | direct `apply(b,p,env)`, hand-built env, assert Δv |
+| **Integrator tests** | `core/integrator.test.ts` | Does the loop *around* forces hold (friction, heat decay, edge wrap, the modifier pass, first-class mass, conserved-attention/causality)? | `step()` over a `FieldStore` |
+| **Conformance suite** | `conformance/` | Fire a particle into a force — *did the expected behavior occur*? | `runScenario()` + declarative expectations |
+| **Benchmark** | `bench/integrator.bench.ts` | How fast is the hot loop? (perf, not correctness) | timed `step()` at several scales |
 
-A shared, framework-agnostic conformance layer in `forces-ui` core, consumed by both
-`node:test` and the Lab page. No engine API changes (no particle inject/read needed —
-the runner owns its own store).
+How they relate:
+
+- **Golden tests pin the coefficients.** They call a force's `apply()` directly with a
+  hand-set `env` (`dx`, `dy`, `dist` precomputed) and assert the precise Δv. They catch a
+  wrong constant even when the direction is right. Helpers `body()` / `part()` / `env()` /
+  `near()` are shared across the three files.
+- **The conformance suite pins the behavior.** It runs the *real* engine on a controlled
+  scenario and checks named invariants (direction, speed change, conservation, …) plus an
+  exact Δv where the formula is clean. It is the systematic, completeness-guarded layer,
+  and it is the same catalog the Lab renders.
+- **Integrator tests pin the surroundings** — the per-frame friction (`×0.95`), heat decay
+  (`×0.972`), toroidal wrap, the `modify()` pass, and the opt-in systems.
+- **The benchmark is not a correctness gate** — it tracks throughput so a regression is
+  visible (`pnpm --filter forces-ui bench`).
+
+Run everything with `pnpm --filter forces-ui test` (Node's built-in `node:test`, zero
+test framework). RNG forces are seeded, so the suite is deterministic across runs.
+
+---
+
+## The conformance system
+
+Lives in `packages/core/src/conformance/`, exported from the package so the Lab imports
+the exact same code the tests run.
 
 ```
-Scenario     → force token(s) + body attrs + initial particle(s) + frames + seed
-runScenario  → builds store/body/env, runs real step() N frames (real neighbors/grid),
-               returns trajectory[frame][particle] (+ a single-apply exact Δv for class A)
-Expectation  → { label, kind: 'invariant'|'exact', check(result) → {pass, measured, expected} }
-EXPERIMENTS  → one ForceConformance { scenario, expectations[] } per force (the catalog)
+Scenario     a known particle (or particles) fired into a force with known attributes
+runScenario  builds its own FieldStore + Body + Env, runs the real step() N frames,
+             returns the trajectory + each particle's frame-0 force delta
+Expectation  { label, kind: 'invariant'|'exact', check(result) → {pass, measured, expected} }
+EXPERIMENTS  one ForceConformance { scenario, expectations[] } per registered force
 ```
 
-## Phase A — Core conformance framework (one PR; the "formulas + tests" deliverable)
+### Scenario
 
-New `packages/core/src/conformance/`:
+```ts
+interface Scenario {
+  force: string;                 // the force under test
+  tokens?: string[];             // body tokens (default [force]); modifiers pair, e.g. ['resonate','attract']
+  family: 'canonical' | 'natural' | 'extended';
+  klass: 'A' | 'B' | 'C' | 'modifier';
+  body: Partial<Body>;           // strength, range, spin, angle, M, cx, cy, hw, hh, …
+  particles: ScenarioParticle[]; // initial state(s); particles[0] is the tracked test particle
+  frames: number;                // how long to simulate
+  seed?: number;                 // for RNG forces (thermal, emitter) → reproducible
+}
+```
 
-- **`types.ts`** — `Scenario`, `FrameState`, `ScenarioResult`, `Expectation`,
-  `ForceConformance`. `class: 'A'|'B'|'C'|'modifier'` (single-particle / neighbours /
-  grid / modifier) drives how the runner sets up.
-- **`run.ts`** — `runScenario(scenario, registry): ScenarioResult`. Mirrors
-  `integrator.bench.ts`: a `FieldStore` seeded with the scenario particle(s), a full
-  `Body` (reuse the test-helper default shape) from `scenario.body`, an `Env` with the
-  **real** `store.neighbors` (class B) and a **real** `ScalarGridImpl` advanced each
-  frame (class C, replicating `field.ts`'s grid `step()`); run `step()` for `frames`,
-  capturing `{x,y,vx,vy,heat,speed}` per particle per frame. For RNG forces
-  (`thermal`, `emitter`) temporarily swap `Math.random` for a seeded `mulberry(seed)`
-  and restore (deterministic, reproducible). Also compute `applyDelta` — one direct
-  `force.apply(b,p,env)` with hand-set `dx/dy/dist` — for exact class-A first-frame Δv.
-- **`expectations.ts`** — a small library of reusable predicate builders:
-  `movesToward(body)`, `movesAway`, `speedPreserved(tol)`, `speedDecreases`,
-  `perpendicularToVelocity`, `momentumConserved(set)`, `exactDelta(dvx,dvy,tol)`,
-  `staysInRange`, `noEffectBeyondRange`, `gatedOutsideCone`, `followsGradient`,
-  `pathDeepens`, `isotropic`/`varianceApprox` (statistical, for thermal), etc. Each
-  returns `{pass, measured, expected}` so the Lab can render the numbers.
-- **`experiments.ts`** — `EXPERIMENTS: ForceConformance[]`, one per registered force
-  (28) plus the two modifiers and a couple of composites/conditions. Each pairs a
-  sensible default scenario with its invariants + exact checks. Representative:
-  - `attract`: p at (150,0), body at origin, S=1 R=300 → *moves toward* + `exactDelta(0.125,0)`.
-  - `drag`: p with v=(5,0) → *speed decreases*, *direction unchanged*, exact factor.
-  - `lens`: moving p → *speed preserved*, *rotated by θ = θmax·(1−d/r)·spin*.
-  - `magnetism`: moving charged p → *perpendicular to v*, *no work (speed preserved)*.
-  - `collide` [B]: two approaching discs → *momentum conserved*, *they separate*.
-  - `cohesion`/`align` [B]: 2+ particles → *push<r₀, pull mid-range* / *steers to mean heading*.
-  - `diffuse`/`memory`/`propagate` [C]: real grid → *follows up-gradient* / *path deepens*.
-  - `resonate`/`spotlight` (modifier): call `modify()` directly → *strength ~ 1+sin ωt* /
-    *gate true outside cone, Δv inside*.
-  - `thermal`: seeded, many samples → *isotropic*, *variance ≈ 2·S·(1−d/r)*, *mean ≈ 0*.
-  - …gravity, charge, repel, vortex, spring, stream, emitter, reflect, absorb, gate,
-    buoyancy, shear, crystallize, wind, pigment — each its experiment.
-- **`conformance.test.ts`** — (1) completeness: every token in the force registry has
-  an `EXPERIMENTS` entry (mirror `manual.test.ts`); (2) for each experiment,
-  `runScenario` then assert **every** expectation `pass`. This is the systematic
-  physics conformance suite. Existing golden tests stay (additive).
-- Export the catalog + `runScenario` + expectation builders from
-  `packages/core/src/index.ts`.
+### The four classes
 
-## Phase B — The Lab Verify instrument (one PR; "make the lab an actual lab")
+The class decides how `runScenario` wires the environment (§20.1):
 
-Rewrite **`apps/site/src/pages/lab.astro`** as the instrument (retire the paint tool).
-Imports `{ EXPERIMENTS, runScenario, registry }` from `forces-ui`, runs the sim
-client-side, draws to its **own** dedicated `<canvas>` (the ambient `<forces-field>`
-from `Base.astro` stays as decorative background; the experiment is independent).
+- **`A` — body → particle.** Single particle, no services. 21 forces.
+- **`B` — particle ↔ particle.** Needs `env.neighbors` (a real spatial hash). `collide`,
+  `cohesion`, `align`.
+- **`C` — field-buffer.** Needs `env.grid` (a real `ScalarGrid` advanced each frame).
+  `diffuse`, `propagate`, `memory`.
+- **`modifier`.** `apply()` is a no-op; the work is in `modify()`, which scales or gates
+  sibling forces. `resonate`, `spotlight`.
 
-- **Force picker** (left): the 28 forces grouped by family (reuse `MANUAL_FORCES` +
-  glyphs); selecting one loads its experiment.
-- **Experiment canvas** (centre): draws the body marker, the test particle(s) + their
-  **actual** trajectory (path + current position), and the **expected** overlay (an
-  arrow for expected initial Δv direction; a ghost/target where relevant). Play / pause
-  / step / reset.
-- **Readout panel** (right): editable scenario params (strength, range, spin/angle,
-  initial vx/vy, distance, particle count for [B]/[C]) — *"we just change those
-  parameters"*; and the **expectations checklist** — each invariant/exact check with
-  ✓/✗, measured vs expected, and a headline **PASS / FAIL**. Editing a param re-runs
-  `runScenario` live and re-evaluates.
-- **Share** via URL hash (repurpose the existing hash serialization to encode force +
-  params).
-- New `apps/site/src/styles/lab.css` for the instrument; update the home/docs copy that
-  describes the Lab ("place forces / share the field" → "verify any force's physics").
+### runScenario
 
-## Reuse (don't rebuild)
+Mirrors `integrator.bench.ts`: a `FieldStore` seeded with the scenario particle(s), a
+full `Body` from `scenario.body`, an `Env` with **real** `store.neighbors` (class B) and a
+**real** `ScalarGridImpl` stepped each frame (class C). It runs the real `step()` for
+`frames`, capturing `{x, y, vx, vy, heat, speed}` per particle per frame. For RNG forces
+it temporarily swaps `Math.random` for a seeded `mulberry(seed)` and restores it. It also
+computes `applyDelta` — one direct `apply()` with hand-set `dx/dy/dist`, the pure
+frame-0 force effect *before* friction — which the exact and direction/speed checks use
+(the trajectory itself is friction-damped, so those checks read `applyDelta`, while
+position checks read the trajectory).
 
-- `integrator.bench.ts` headless pattern (store + env + `step()`), the test-helper
-  `body()`/`part()`/`env()` default shapes (`packages/core/src/forces/*.test.ts`), the
-  `mulberry` PRNG (in the bench), `ScalarGridImpl` (`core/scalar-grid.ts`) + the grid
-  `step()` loop from `core/field.ts`, `manual.test.ts`'s completeness pattern,
-  `MANUAL_FORCES` + `force-glyphs.css` for the Lab picker.
+### Expectation vocabulary
 
-## Verification
+Reusable builders in `conformance/expectations.ts`. Each returns `{pass, measured,
+expected}` so the Lab can show the numbers.
 
-- `pnpm --filter forces-ui typecheck && test` green — the new `conformance.test.ts`
-  asserts completeness (every force has an experiment) + every expectation passes; run
-  twice (RNG forces are seeded, so it's deterministic). `pnpm -r build` green.
-- Lab: preview via the "forces" config (port 4399) — pick several forces, confirm the
-  canvas animates the trajectory and the checklist shows PASS with sane measured
-  numbers; edit a param and watch it re-evaluate; check console-error clean. (Live-loop
-  caveat: the instrument's own sim is synchronous/deterministic and re-runs on demand,
-  so it's verifiable from a screenshot unlike the ambient rAF field.)
-- Land Phase A, then Phase B, each as its own squash-merged PR; confirm Vercel READY.
+| Builder | Asserts |
+|---|---|
+| `movesToward()` / `movesAway()` | the frame-0 Δv points in / out along the body axis |
+| `exactDelta(dvx, dvy, tol)` | the precise frame-0 Δv (the spec formula) |
+| `speedPreserved(tol)` | `|v + Δv| ≈ |v|` — a rotation, no work |
+| `speedReduced()` | speed bled off (drag) |
+| `perpendicularToVelocity(tol)` | `Δv · v ≈ 0`, `Δv ≠ 0` (Lorentz, no work) |
+| `momentumConserved(tol)` | `Σ Δv ≈ 0` across the particle set (elastic collision) |
+| `separates()` | two particles end farther apart than they began |
+| `approachesBody()` / `recedesFromBody()` | the track ends closer / farther over time |
+| `noEffectBeyondRange()` | a probe past `~1.6× range` gets no Δv |
+| `followsGradient(gx, gy)` | a `[C]` force deposits a mark and steers up the grid gradient |
+| `gatesOutsideCone(in, out)` | a modifier gates siblings outside a heading cone, acts inside |
+| `modulatesStrength()` | a modifier scales sibling strength `1 + sin(ωt)` |
+| `unaffectedWhenNeutral()` | the force ignores charge-free matter (`charge`) |
+| `adoptsTint()` | the particle takes on and carries the body tint (`pigment`) |
 
-## Open / deferred
+### Verdict
 
-- The retired paint tool could return later as a docs demo; not now.
-- Multi-force composition + condition-gate (`data-when`) experiments: include a couple
-  in the catalog now; exhaustive composition matrix is a later extension.
-- A "sweep" view (vary a param across a range, plot the response curve) is a natural
-  follow-on once the single-experiment instrument exists.
+A force passes its experiment iff **every** expectation passes. `conformance.test.ts`
+enforces two things: completeness (every registered force token has an experiment — the
+same guard as `manual.test.ts`) and correctness (every expectation of every experiment
+passes). In the Lab, the same per-expectation results render as a **MATCH / NO-MATCH**
+verdict; tuning a parameter re-runs `runScenario` live. (Exact checks are pinned to each
+experiment's default attributes, so once you tune they go *default-only* and drop out of
+the verdict while the tuning-robust invariants keep proving the physics.)
+
+---
+
+## The catalog
+
+Every registered force, with the experiment that verifies it. `d` is the
+particle→body distance, `r` the range, `S` the strength, `û` the unit vector toward the
+body. "Δv" is the frame-0 effect on a still particle unless a velocity is given.
+
+### Canonical nine (§6)
+
+| Force | Fired in | Expected behavior | Exact Δv | Law |
+|---|---|---|---|---|
+| `attract` | still p, 150px out, S 1, r 300 | pulled toward the body; falls with distance; nothing past range | `(0.125, 0)` | `f=(1−d/r)²·S·0.5` inward (§6.1) |
+| `repel` | still p, 150px out, S 1, r 300 | pushed away; mirror of attract | `(−0.125, 0)` | same `f`, outward (§6.6) |
+| `vortex` | still p, 150px out, spin +1 | mostly tangential swirl + a small inward retention | `(0.020, −0.171)` | `f=(1−d/r)^1.4·S·0.45`; tangential ±`spin`, +0.12 inward (§6.8) |
+| `stream` | still p, heading +x | a steady current along the heading | `(0.233, 0)` | `f=(1−d/r)^1.1·S·0.5` along `(ux,uy)` (§6.5) |
+| `drag` | p moving `vx=5` | speed bled off, no redirection | `(−0.3, 0)` | `v −= v·k`, `k=(1−d/r)(0.05+S·0.07)` (§6.7) |
+| `emitter` | still p in the feed zone (d>24) | drawn toward the nozzle (inside it, relaunched as a hot jet) | `(0.1, 0)` | feed `f=(1−d/r)²(0.25+S·0.15)`; nozzle jet `spd=2.4+S·2.6` (§6.2) |
+| `spring` | still p inside the rest shell (d 150 < rest 180) | pushed back out toward the rest radius, lightly damped | `(−0.532, 0)` | `v += û(d−rest)k`, `rest=r·0.6`, damp `×0.985` (§6.3) |
+| `reflect` | p moving into the wall box | elastic bounce — velocity reverses, damped (`e≈0.85`) | reverses sign | axis-aligned wall on the element box (§6.4) |
+| `absorb` | still p inside `absorbR` | captured (`accreted++`), then drifts to the core; releases at capacity | — | capture → supernova at `capacity` (§6.9) |
+
+### Natural primitives (§20.10)
+
+| Force | Fired in | Expected behavior | Class | Law |
+|---|---|---|---|---|
+| `gravity` | still p near `M=2000` | pulled inward; ends closer; nothing past range | A | softened `F=GM·û/(d²+ε²)`, `ε=2GM/c²` |
+| `charge` | like-signed p (`q=+1`) by `spin +1` | like repels (opposite would attract); neutral matter unaffected | A | `s=−σ·q·GM`; same kernel as gravity |
+| `magnetism` | moving charged p (`vx=5`, S 0.05) | curves ⟂ to velocity, doing no work — speed preserved | A | Lorentz `F=qB·(−v_y, v_x)` |
+| `thermal` | p in a bath, seeded | agitated into motion; kicks isotropic (comparable spread on both axes) | A | Langevin `σ=√(2·S·(1−d/r))`, Box–Muller |
+| `collide` | two approaching discs | momentum conserved across the pair; they separate after | B | elastic half-impulse along the contact normal, `e=S` |
+| `diffuse` | p over a pheromone grid | deposits a mark and steers up the diffused gradient | C | `∂φ/∂t=D∇²φ`; follow `∇φ` |
+| `propagate` | p near an engaged emitter | injects a shock (when engaged) and rides the wavefront | C | wave `∂²φ/∂t²=c²∇²φ` |
+| `memory` | still p, 120px out | an attractive pull amplified by how worn the spot is | C | pull `×(1 + 0.5·M(x))`, slow-decay occupancy |
+
+### Designed-extended (§20.3)
+
+| Force | Fired in | Expected behavior | Class | Law |
+|---|---|---|---|---|
+| `lens` | moving p (`vx=5`), θmax 0.3 | path bent without adding energy — speed preserved, rotated by θ | A | `θ=θmax(1−d/r)·spin`, `v ← rotate(v,θ)` |
+| `gate` | p crossing against the heading | the wrong-way crosser is reflected back along `n` | A | if `v·n<0`: `v −= 2(v·n)n` |
+| `buoyancy` | hot, large p (light) | light matter rises (`−y`); dense settles | A | `v_y −= (ρ_med − ρ_p)g`, `ρ_p=base/(size(1+heat))` |
+| `shear` | p offset ⟂ to the flow axis | dragged along the axis in proportion to its ⟂ offset | A | `v_∥ += S·(offset_⊥/r)(1−d/r)` |
+| `crystallize` | cool p off a lattice node | snaps toward the nearest node and settles; melts when hot | A | `v += (node−p)·k`, damp `×0.9`, while `heat<0.5` |
+| `align` | p among neighbours moving +y | steers toward the neighbour-mean heading, preserving speed | B | `v += (ĥ·|v| − v)·k`, `ĥ`=mean neighbour dir |
+| `wind` | p in a global gust | a non-zero, divergence-free curl-noise push | A | `v += curl(ψ)·S`, `∇·curl ≡ 0` |
+| `cohesion` | two particles at mid-range | mid-range neighbours draw together (surface tension); push when too close | B | push `d<r₀`, pull `r₀<d<r₁`, `r₀=r₁·0.5` |
+| `resonate` | modifier on `attract` | scales the sibling's strength as `1 + sin(ωt)` (ω=3) | modifier | `modify → {strength}` |
+| `spotlight` | modifier on `stream` | gates the sibling outside a ~60° heading cone, lets it act inside | modifier | `modify → {gate}` when `û·heading < 0.5` |
+| `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved colour) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
+
+---
+
+## Adding a force
+
+1. Implement and register it (`forces/*.ts`), with a **golden test** pinning its exact
+   per-frame math.
+2. Add a **`ForceConformance`** entry to `conformance/experiments.ts`: a scenario that
+   fires a representative particle into it, plus the invariants (and an `exactDelta` where
+   the formula is clean) that define "appropriate reaction".
+3. Document it in the catalog above (one row). The completeness guards fail until a force
+   is covered in both the catalog of experiments **and** this document.
+4. It appears in the Lab picker automatically (the picker is driven by `EXPERIMENTS`).
+
+---
+
+## Coverage & deferred
+
+- **28 forces**, each with an experiment; the conformance suite is **30 `node:test`
+  cases** (completeness + per-force), deterministic across runs, on top of the ~60 golden
+  unit tests and the integrator suite. Total ≈ 220 core tests.
+- **Deferred:** multi-force composition experiments (`data-body="attract repel"`),
+  condition-gate (`data-when`) experiments, and a Lab "sweep" view (vary one parameter
+  across a range and plot the response curve) are natural extensions once the
+  single-experiment instrument is in hand.
