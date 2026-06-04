@@ -34,3 +34,8 @@ export * from './core/scanner.ts';
 export * from './core/render-modes.ts';
 export * from './core/field.ts';
 export * from './forces/index.ts';
+// physics conformance — the Lab-as-detector framework (shared by tests + the Lab UI)
+export * from './conformance/types.ts';
+export * from './conformance/run.ts';
+export * from './conformance/expectations.ts';
+export * from './conformance/experiments.ts';
