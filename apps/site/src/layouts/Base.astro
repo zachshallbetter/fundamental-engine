@@ -51,9 +51,9 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://forces-ui.com').href;
          particle field over it, reacting to [data-body] elements on the page.
          transition:persist keeps the engine running across client-side navigation —
          the field is one continuous medium, never reset between pages. -->
-    <div class="field" aria-hidden="true" transition:persist></div>
-    <forces-field accent="#4da3ff" transition:persist="forces-field"></forces-field>
-    <div class="scrim" aria-hidden="true" transition:persist></div>
+    <div class="field" aria-hidden="true" transition:persist transition:name="bg-grad"></div>
+    <forces-field accent="#4da3ff" transition:persist transition:name="bg-field"></forces-field>
+    <div class="scrim" aria-hidden="true" transition:persist transition:name="bg-scrim"></div>
     <slot />
 
     <script>
@@ -140,13 +140,27 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://forces-ui.com').href;
         }
       }
 
-      /* page transition: a quick, soft cross-fade of the content only — the field
-         behind it (transition:persist) keeps running, so navigation reads as the
-         content settling into one continuous medium. */
+      /* page transition: a quick, soft cross-fade of the CONTENT only (the `root`
+         group). The field behind it is its own named group (below), held static — so
+         the background never fades; it stays one continuous, running medium. */
       ::view-transition-old(root),
       ::view-transition-new(root) {
         animation-duration: 0.22s;
         animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      /* the persisted background field is its own group — hold it perfectly static
+         (no cross-fade, no morph) so navigation never touches it. */
+      ::view-transition-group(bg-grad),
+      ::view-transition-group(bg-field),
+      ::view-transition-group(bg-scrim),
+      ::view-transition-old(bg-grad),
+      ::view-transition-new(bg-grad),
+      ::view-transition-old(bg-field),
+      ::view-transition-new(bg-field),
+      ::view-transition-old(bg-scrim),
+      ::view-transition-new(bg-scrim) {
+        animation: none !important;
+        mix-blend-mode: normal;
       }
       @media (prefers-reduced-motion: reduce) {
         ::view-transition-old(root),
