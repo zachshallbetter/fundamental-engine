@@ -108,6 +108,9 @@ export interface Body {
   d: number;
   /** conserved-attention effective-strength multiplier (§2.4); 1 = neutral. */
   attn?: number;
+  /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
+   *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
+  targets?: readonly { x: number; y: number }[];
 }
 
 /** A formation preset — a global bias on every free particle (§7). */

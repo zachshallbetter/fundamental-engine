@@ -16,6 +16,7 @@ export type ForceClass =
   | 'A' // body → particle (single particle, no services)
   | 'B' // particle ↔ particle (needs env.neighbors)
   | 'C' // field-buffer (needs env.grid)
+  | 'D' // shape-assignment (springs matter to body.targets — a mark/chart, §20.3)
   | 'S' // source / sink (creates or destroys matter via env.spawn; budgeted, §20.1)
   | 'modifier'; // resonate / spotlight (no-op apply; affect siblings via modify())
 
@@ -30,6 +31,8 @@ export interface ScenarioParticle {
   charge?: number;
   color?: string;
   species?: number;
+  /** stable scatter fraction in [0,1]; `morph` hashes it to a target index (§20.3 [D]). */
+  gx?: number;
 }
 
 /** A controlled experiment: particle(s) sent into a force with specific attributes. */

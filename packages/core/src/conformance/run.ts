@@ -35,7 +35,16 @@ function centerScenario(s: Scenario): Scenario {
   if (NO_OFFSET.has(s.force)) return s;
   return {
     ...s,
-    body: { ...s.body, cx: (s.body.cx ?? 0) + CENTER.x, cy: (s.body.cy ?? 0) + CENTER.y },
+    body: {
+      ...s.body,
+      cx: (s.body.cx ?? 0) + CENTER.x,
+      cy: (s.body.cy ?? 0) + CENTER.y,
+      // morph's target points live in the same world space — translate them too, else the
+      // shape would sit at the origin while the matter is centred (and wrap toward it).
+      ...(s.body.targets
+        ? { targets: s.body.targets.map((t) => ({ x: t.x + CENTER.x, y: t.y + CENTER.y })) }
+        : {}),
+    },
     particles: s.particles.map((p) => ({ ...p, x: p.x + CENTER.x, y: p.y + CENTER.y })),
   };
 }
@@ -109,6 +118,7 @@ function makeParticle(p: import('./types.ts').ScenarioParticle): Particle {
     ...(p.charge != null ? { charge: p.charge } : {}),
     ...(p.color != null ? { color: p.color } : {}),
     ...(p.species != null ? { species: p.species } : {}),
+    ...(p.gx != null ? { gx: p.gx } : {}),
   };
 }
 

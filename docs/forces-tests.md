@@ -83,6 +83,9 @@ The class decides how `runScenario` wires the environment (§20.1):
   `cohesion`, `pressure`, `link`, `hunt`, `align`.
 - **`C` — field-buffer.** Needs `env.grid` (a real `ScalarGrid` advanced each frame).
   `diffuse`, `propagate`, `memory`.
+- **`D` — shape-assignment.** Springs each particle to a point in the body's `targets`
+  set (a sampled mark / chart / logo — never words, §11), assigned by a stable hash of
+  the particle's scatter fraction. `morph`.
 - **`S` — source / sink.** `apply()` is a no-op; the work is in `source()`, run once per
   body per frame to *create* matter via `env.spawn`. Breaks conservation by design, so it
   self-budgets (a per-particle lifespan `age` + a hard pool ceiling). `spawn`.
@@ -182,6 +185,7 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `cohesion` | two particles at mid-range | mid-range neighbours draw together (surface tension); push when too close | B | push `d<r₀`, pull `r₀<d<r₁`, `r₀=r₁·0.5` |
 | `pressure` | two overlapping particles | over-dense matter spreads apart to an even fill; momentum conserved | B | `ρ=Σ W(d,h)`, `v += −k·(ρ−ρ₀)·∇W`, `ρ₀=0.5` |
 | `link` | two particles past the rest length | a stretched bond pulls back toward `L`; momentum conserved | B | `e=d−L`, `v += ½k·(e/L)·û`, `L=range·0.35` |
+| `morph` | three particles, a three-point mark | each particle settles on its assigned target; the mark assembles | D | `v += (t−p)·k + jitter·(1−arrived)`, target by `hash(gx)` |
 | `hunt` | a predator and a prey particle | the predator accelerates toward the prey; the prey flees; the pair migrates | B | predator `v += seek·S`, prey `v += flee·S`, by `species` |
 | `spawn` | an engaged source, empty field | the pool grows as matter is emitted along the heading; mortal matter despawns | S | `source()` emits `round(S·2)`/frame, `age`-budgeted |
 | `resonate` | modifier on `attract` | scales the sibling's strength as `1 + sin(ωt)` (ω=3) | modifier | `modify → {strength}` |
