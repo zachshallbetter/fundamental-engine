@@ -1,0 +1,352 @@
+/* ============================================================
+   The Lab — a physics detector. Fire a particle into a force,
+   watch the track + the surrounding field, compare to expected.
+   Global stylesheet (the readout is built at runtime).
+   ============================================================ */
+.lab {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: calc(58px + clamp(1rem, 3vh, 2rem)) clamp(1rem, 3vw, 2rem) 3rem;
+}
+:global(body:has(.lab)) {
+  align-items: flex-start;
+}
+
+.lab-head {
+  margin-bottom: 1.4rem;
+}
+.lab-head .kicker {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+.lab-head h1 {
+  margin: 0.5rem 0 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.lab-head .lede {
+  margin: 0.7rem 0 0;
+  max-width: 64ch;
+  color: var(--text-2);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+/* three-column instrument: picker · chamber · readout */
+.lab-grid {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr) 300px;
+  gap: clamp(0.8rem, 2vw, 1.4rem);
+  align-items: start;
+}
+
+/* force picker */
+.lab-picker {
+  position: sticky;
+  top: 58px;
+  max-height: calc(100svh - 70px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.lab-picker .group {
+  margin-bottom: 1.1rem;
+}
+.lab-picker .glabel {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 0.5rem;
+}
+.lab-pick {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--text-2);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.lab-pick:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+.lab-pick.on {
+  background: color-mix(in srgb, var(--c, var(--accent)) 12%, transparent);
+  border-color: color-mix(in srgb, var(--c, var(--accent)) 55%, transparent);
+  color: var(--text);
+}
+.lab-pick .fg {
+  --fc: var(--c, var(--accent));
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+/* the detector chamber */
+.lab-chamber {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg, 14px);
+  background:
+    radial-gradient(var(--line) 1px, transparent 1px) 0 0 / 26px 26px,
+    var(--bg-canvas, #07090e);
+  position: relative;
+  overflow: hidden;
+}
+.lab-chamber canvas {
+  display: block;
+  width: 100%;
+  height: clamp(420px, 60vh, 640px);
+}
+.lab-chamber .stage-label {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  pointer-events: none;
+}
+.lab-transport {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.8rem;
+  flex-wrap: wrap;
+}
+.lab-transport button {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: none;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 0.42rem 0.9rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.lab-transport button:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.lab-transport .frame-readout {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-4);
+  margin-left: auto;
+}
+
+/* readout panel */
+.lab-readout {
+  position: sticky;
+  top: 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--r-md, 10px);
+  border: 1px solid var(--line);
+}
+.verdict::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.verdict.pass {
+  color: var(--ok, #5fd0a8);
+  background: color-mix(in srgb, var(--ok, #5fd0a8) 9%, transparent);
+  border-color: color-mix(in srgb, var(--ok, #5fd0a8) 40%, transparent);
+}
+.verdict.pass::before {
+  background: var(--ok, #5fd0a8);
+  box-shadow: 0 0 8px var(--ok, #5fd0a8);
+}
+.verdict.fail {
+  color: var(--err, #ff6e9c);
+  background: color-mix(in srgb, var(--err, #ff6e9c) 9%, transparent);
+  border-color: color-mix(in srgb, var(--err, #ff6e9c) 40%, transparent);
+}
+.verdict.fail::before {
+  background: var(--err, #ff6e9c);
+  box-shadow: 0 0 8px var(--err, #ff6e9c);
+}
+
+.panel-title {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin: 0 0 0.5rem;
+}
+
+.checklist {
+  display: grid;
+  gap: 0.5rem;
+}
+.check {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-card, #0b0e16);
+}
+.check .row1 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.check .mark {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  flex: none;
+}
+.check.pass .mark {
+  color: var(--ok, #5fd0a8);
+}
+.check.fail .mark {
+  color: var(--err, #ff6e9c);
+}
+.check.muted {
+  opacity: 0.5;
+}
+.check.muted .mark {
+  color: var(--text-4);
+}
+.check .label {
+  font-size: 0.86rem;
+  color: var(--text);
+  line-height: 1.35;
+}
+.check .kind {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  flex: none;
+}
+.check .nums {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--text-3);
+}
+.check .nums b {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+/* tune-and-refire params */
+.params {
+  display: grid;
+  gap: 0.6rem;
+}
+.param {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+.param label {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+.param input[type='range'] {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--accent);
+}
+.param .val {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--text);
+}
+.lab-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+.lab-actions button {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: none;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+.lab-actions button:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.scenario-note {
+  font-size: 0.82rem;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+@media (max-width: 1080px) {
+  .lab-grid {
+    grid-template-columns: 1fr;
+  }
+  .lab-picker,
+  .lab-readout {
+    position: static;
+    max-height: none;
+  }
+  .lab-picker .group {
+    display: inline-block;
+    margin-right: 1rem;
+  }
+}
