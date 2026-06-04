@@ -496,6 +496,31 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
+      force: 'pressure',
+      label: 'Two overlapping particles relax apart',
+      family: 'extended',
+      klass: 'B',
+      // a crowded pair (gap 8, well inside the smoothing radius) is over the rest
+      // density, so pressure pushes them apart symmetrically — momentum is conserved.
+      body: { cx: 0, cy: 0, range: 200, strength: 1 },
+      particles: [
+        { x: 0, y: 0 },
+        { x: 8, y: 0 },
+      ],
+      frames: 30,
+    },
+    expectations: [
+      momentumConserved(1e-6),
+      separates(0, 1),
+      check('over-dense matter spreads to an even fill', 'invariant', (r) => {
+        const start = gap(r, 0, 0, 1);
+        const end = gap(r, r.trajectory.length - 1, 0, 1);
+        return { pass: end > start + 1e-6, measured: `gap ${f3(start)} → ${f3(end)}`, expected: 'spread apart' };
+      }),
+    ],
+  },
+  {
+    scenario: {
       force: 'resonate',
       tokens: ['resonate', 'attract'],
       label: 'A resonator pulsing an attractor',

@@ -381,6 +381,27 @@
   opacity: 0.7;
 }
 
+/* pressure — a packed cell relaxing outward (even fill) */
+.fg-pressure::before {
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+.fg-pressure::after {
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+}
+
 /* resonate — a standing wave */
 .fg-resonate::before {
   left: 1px;
