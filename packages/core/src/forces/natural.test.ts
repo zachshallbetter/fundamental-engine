@@ -281,8 +281,9 @@ test('collide reverses a head-on approach elastically (e=1, §20.10)', () => {
   const q = part({ x: 3, y: 0, vx: -1, vy: 0, size: 2 });
   const p = part({ x: 0, y: 0, vx: 1, vy: 0, size: 2 }); // discs overlap (d=3 < 4)
   collide.apply(body({ strength: 1, range: 300 }), p, env({ dist: 10, ...withNeighbor(q) }));
-  assert.ok(near(p.vx, -1)); // half-impulse on p flips its approach (q flips on its turn)
+  assert.ok(near(p.vx, -1)); // equal-mass elastic swap: p reverses (q updated symmetrically)
   assert.ok(near(p.vy, 0));
+  assert.ok(near(q.vx, 1)); // q reversed too — the pair is resolved in one pass
 });
 
 test('collide ignores a separating pair', () => {

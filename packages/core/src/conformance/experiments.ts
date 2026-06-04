@@ -227,8 +227,10 @@ export const EXPERIMENTS: ForceConformance[] = [
       family: 'natural',
       klass: 'A',
       body: { cx: 0, cy: 0, range: 300, strength: 1 },
-      particles: [{ x: 40, y: 0, vx: 0, vy: 0 }],
-      frames: 160,
+      // a cloud of independent particles — the isotropy is a statistical property, so
+      // it only converges over many samples (one particle is a noisy random walk).
+      particles: Array.from({ length: 150 }, () => ({ x: 40, y: 0, vx: 0, vy: 0 })),
+      frames: 120,
       seed: 7,
     },
     expectations: [
@@ -237,20 +239,24 @@ export const EXPERIMENTS: ForceConformance[] = [
         return { pass: moved, measured: 'speed > 0 occurs', expected: 'kicked into motion' };
       }),
       check('isotropic kicks (comparable spread on both axes)', 'invariant', (r) => {
-        // an isotropic 2-D kick gives similar RMS velocity in x and y
+        // isotropic 2-D kicks give equal RMS velocity in x and y — measured across the
+        // whole cloud over all frames, so it converges close to 1.
         let sx = 0;
         let sy = 0;
-        for (const fr of r.trajectory) {
-          sx += fr[0]!.vx * fr[0]!.vx;
-          sy += fr[0]!.vy * fr[0]!.vy;
-        }
-        const rx = Math.sqrt(sx / r.trajectory.length);
-        const ry = Math.sqrt(sy / r.trajectory.length);
+        let n = 0;
+        for (const fr of r.trajectory)
+          for (const p of fr) {
+            sx += p.vx * p.vx;
+            sy += p.vy * p.vy;
+            n++;
+          }
+        const rx = Math.sqrt(sx / n);
+        const ry = Math.sqrt(sy / n);
         const ratio = rx / (ry || 1e-9);
         return {
-          pass: rx > 0.1 && ry > 0.1 && ratio > 0.4 && ratio < 2.5,
+          pass: rx > 0.1 && ry > 0.1 && ratio > 0.9 && ratio < 1.11,
           measured: `rms (${f3(rx)}, ${f3(ry)}), ratio ${f3(ratio)}`,
-          expected: 'both > 0, ratio ≈ 1',
+          expected: 'both > 0, ratio ≈ 1 (±10%)',
         };
       }),
     ],
@@ -261,14 +267,26 @@ export const EXPERIMENTS: ForceConformance[] = [
       label: 'Two discs in a head-on elastic collision',
       family: 'natural',
       klass: 'B',
-      body: { cx: 0, cy: 0, range: 300, strength: 1 },
+      // centred in positive space (the sim wraps at the field origin, so keep clear of
+      // the edges). Start apart (gap 20) and approaching slowly, so they meet, exchange
+      // momentum, and clearly fly back apart rather than tunnelling through.
+      body: { cx: 300, cy: 300, range: 300, strength: 1 },
       particles: [
-        { x: -4, y: 0, vx: 2, vy: 0, size: 5 },
-        { x: 4, y: 0, vx: -2, vy: 0, size: 5 },
+        { x: 290, y: 300, vx: 1, vy: 0, size: 4 },
+        { x: 310, y: 300, vx: -1, vy: 0, size: 4 },
       ],
-      frames: 24,
+      frames: 40,
     },
-    expectations: [momentumConserved(1e-6), separates(0, 1)],
+    expectations: [
+      momentumConserved(1e-6),
+      separates(0, 1),
+      check('the discs bounce (relative velocity reverses)', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        // they approached (+x and −x); after the bounce each moves the other way
+        const ok = last[0]!.vx < 0 && last[1]!.vx > 0;
+        return { pass: ok, measured: `vx ${f3(last[0]!.vx)}, ${f3(last[1]!.vx)}`, expected: 'reversed (bounced)' };
+      }),
+    ],
   },
   {
     scenario: {
@@ -349,7 +367,7 @@ export const EXPERIMENTS: ForceConformance[] = [
       check('reflects the wrong-way crosser back along n', 'invariant', (r) => {
         const a = r.applyDelta[0]!;
         const after = -3 + a.dvx;
-        return { pass: after > 0, measured: `vx -3 → ${f3(after)}`, expected: '> 0 (passed through)' };
+        return { pass: after > 0, measured: `vx -3 → ${f3(after)}`, expected: '> 0 (reflected back along +n)' };
       }),
     ],
   },
@@ -443,15 +461,15 @@ export const EXPERIMENTS: ForceConformance[] = [
       label: 'A particle in curl-noise turbulence',
       family: 'extended',
       klass: 'A',
-      body: { cx: 0, cy: 0, range: 0, strength: 1 }, // global gust
+      body: { cx: 0, cy: 0, range: 0, strength: 8 }, // a strong global gust (legible drift)
       particles: [{ x: 137, y: 89 }],
-      frames: 30,
+      frames: 60,
     },
     expectations: [
       check('receives a non-zero curl-noise push', 'invariant', (r) => {
         const a = r.applyDelta[0]!;
         const mag = Math.hypot(a.dvx, a.dvy);
-        return { pass: mag > 1e-6, measured: `|Δv| = ${f3(mag)}`, expected: '> 0 (stirred)' };
+        return { pass: mag > 0.01, measured: `|Δv| = ${f3(mag)}`, expected: '> 0.01 (clearly stirred)' };
       }),
     ],
   },
