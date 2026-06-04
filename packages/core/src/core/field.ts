@@ -39,6 +39,7 @@ import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha } from './render-modes.ts';
+import { forceAt } from './streamlines.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
@@ -554,6 +555,41 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
       ctx!.globalCompositeOperation = 'source-over';
     }
+
+    // streamlines: draw the force field itself — a grid of arrows along the net
+    // push a still test particle would feel (§20.6 diagnostic).
+    if (cfg.render === 'streamlines') {
+      const GRID = 46;
+      const acc = hexToRgb(cfg.accent);
+      ctx!.lineWidth = 1;
+      ctx!.lineCap = 'round';
+      for (let gx = GRID / 2; gx < W; gx += GRID) {
+        for (let gy = GRID / 2; gy < H; gy += GRID) {
+          const { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
+          const mag = Math.hypot(fx, fy);
+          if (mag < 1e-4) {
+            ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
+            ctx!.fillRect(gx - 0.5, gy - 0.5, 1, 1); // quiescent field → a faint dot
+            continue;
+          }
+          const ux = fx / mag;
+          const uy = fy / mag;
+          const len = Math.min(GRID * 0.46, 6 + mag * 42);
+          const ex = gx + ux * len;
+          const ey = gy + uy * len;
+          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.12 + mag * 1.3, 0, 0.72)})`;
+          ctx!.beginPath();
+          ctx!.moveTo(gx, gy);
+          ctx!.lineTo(ex, ey);
+          const ah = 3.4;
+          ctx!.moveTo(ex, ey);
+          ctx!.lineTo(ex - ux * ah - uy * ah * 0.6, ey - uy * ah + ux * ah * 0.6);
+          ctx!.moveTo(ex, ey);
+          ctx!.lineTo(ex - ux * ah + uy * ah * 0.6, ey - uy * ah - ux * ah * 0.6);
+          ctx!.stroke();
+        }
+      }
+    }
   }
 
   function frame(now: number): void {
@@ -695,6 +731,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           b.el.style.removeProperty('--lit');
           b.el.dataset.fxLit = '0';
         }
+    },
+    setRender: (mode) => {
+      cfg.render = mode;
     },
     threads: setThreads,
     burst: (x, y, hex) => {
