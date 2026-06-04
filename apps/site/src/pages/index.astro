@@ -637,6 +637,35 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
       </div>
     </section>
 
+    <section class="concept" data-form="scatter">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">47 — Self-laying-out</span>
+          <h2>The page arranges itself.</h2>
+          <p>These nodes aren’t pinned by CSS. Each one <strong>pushes off the others</strong> and drifts
+            away from crowded field, settling into an equilibrium — and re-settling when the field is
+            disturbed or the window resizes. Layout as a physical process, not fixed coordinates.</p>
+          <div class="formula">F = anchor <span class="c">+</span> repel <span class="c">+</span> <span class="v">density pressure</span></div>
+          <p class="note">Drag the attractor through them, or resize the window — the constellation
+            scatters and re-settles like a physical object.</p>
+          <button class="agitate" data-agitate="#layout-seed">↯ Disturb the layout</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">elements find their own positions</span>
+          <span id="layout-seed" data-drag data-body="attract" data-strength="0.9" data-range="260"
+            class="layout-seed" style="--cc:#7dd3fc; position:absolute; left:50%; top:42%; transform:translate(-50%,-50%);">field</span>
+          <div class="layout-cluster">
+            <span class="layout-node" data-move="layout" style="--cn:#4da3ff;">Product</span>
+            <span class="layout-node" data-move="layout" style="--cn:#2dd4bf;">System</span>
+            <span class="layout-node" data-move="layout" style="--cn:#a78bfa;">Interface</span>
+            <span class="layout-node" data-move="layout" style="--cn:#ff9d5c;">Material</span>
+            <span class="layout-node" data-move="layout" style="--cn:#f0abfc;">Motion</span>
+          </div>
+          <span class="hintline">anchor + mutual repulsion + density pressure → equilibrium</span>
+        </div>
+      </div>
+    </section>
+
     <section class="manual-foot">
       <div class="wrap">
         <h2>Now go bend it yourself.</h2>

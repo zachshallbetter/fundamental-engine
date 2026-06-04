@@ -584,6 +584,44 @@
   transform: scale(0.985); /* a brief recoil on the burst */
 }
 
+/* self-laying-out page (Concept 3) — the nodes share one anchor (the stage centre) and
+   the engine writes transform offsets, so mutual repulsion + density pressure spread
+   them into an equilibrium constellation. The engine owns `transform`; centre via margin. */
+.layout-cluster {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.layout-node {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -1.1em 0 0 -3.2em; /* rough centring; the engine's transform adds the offset */
+  min-width: 5.2em;
+  text-align: center;
+  padding: 0.4em 0.85em;
+  border-radius: 999px;
+  font-size: clamp(0.82rem, 1.5vw, 0.98rem);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--cn) 80%, #fff);
+  background: color-mix(in srgb, var(--cn) 14%, var(--bg-2, #0b0d14));
+  border: 1px solid color-mix(in srgb, var(--cn) 45%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cn) 22%, transparent);
+  white-space: nowrap;
+  will-change: transform;
+}
+.layout-seed {
+  z-index: 2;
+  cursor: grab;
+  padding: 0.35em 0.8em;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cc);
+  background: color-mix(in srgb, var(--cc) 16%, var(--bg-2, #0b0d14));
+  border: 1px solid color-mix(in srgb, var(--cc) 55%, transparent);
+}
+
 /* conserved-attention set — each word's weight + glow is the engine-written --d,
    so the redistributed force budget shows up as redistributed type */
 .attn-set {

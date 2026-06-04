@@ -43,3 +43,39 @@ export function elementMass(area: number): number {
   const m = area / 30000;
   return m < 0.6 ? 0.6 : m > 6 ? 6 : m;
 }
+
+/**
+ * Self-laying-out repulsion (Concept 3): every other element pushes this one away,
+ * `Σ C·(c − cⱼ)/|c − cⱼ|²` — so a cluster spreads out. Softened near coincidence so
+ * fully-overlapping elements don't blow up. `others` are the other element centres.
+ */
+export function repelForce(self: Vec2, others: readonly Vec2[], C = 1600, soft = 26): Vec2 {
+  let fx = 0;
+  let fy = 0;
+  const s2 = soft * soft;
+  for (const o of others) {
+    const dx = self.x - o.x;
+    const dy = self.y - o.y;
+    const d2 = dx * dx + dy * dy + s2; // softened |c − cⱼ|²
+    fx += (C * dx) / d2; // magnitude ≈ C/|d| along the separation unit vector
+    fy += (C * dy) / d2;
+  }
+  return { x: fx, y: fy };
+}
+
+/**
+ * Density-pressure force (Concept 3): push an element *down* the local density gradient
+ * (toward emptier field), `−∇ρ`, estimated by a 4-tap finite difference of a density
+ * sampler at `±delta`. So elements drift off crowded matter toward open space.
+ */
+export function densityPush(
+  sample: (x: number, y: number) => number,
+  x: number,
+  y: number,
+  delta = 16,
+  scale = 1
+): Vec2 {
+  const gx = (sample(x + delta, y) - sample(x - delta, y)) / (2 * delta);
+  const gy = (sample(x, y + delta) - sample(x, y - delta)) / (2 * delta);
+  return { x: -gx * scale, y: -gy * scale }; // negative gradient → toward lower density
+}
