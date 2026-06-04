@@ -103,6 +103,20 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
             <li><b>Verdict</b> — every check must pass. Each shows measured vs expected and the frame it goes green; the run “matches” once they all have.</li>
           </ul>
         </details>
+
+        <details class="lab-sweep">
+          <summary>Parameter sweep</summary>
+          <div class="sweep-controls">
+            <label>Sweep <select id="sweepParam"></select></label>
+            <label>Measure <select id="sweepMetric">
+              <option value="delta">frame-0 |Δv| (force felt)</option>
+              <option value="finalDist">final distance to body</option>
+              <option value="passes">tests passed</option>
+            </select></label>
+          </div>
+          <canvas id="sweepCanvas"></canvas>
+          <p class="sweep-note">Each point re-runs the experiment at that parameter value. The dashed line marks the current setting.</p>
+        </details>
       </section>
 
       <aside class="lab-readout" aria-label="Readout">
@@ -197,15 +211,15 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       };
       const color = () => META[cur]?.color ?? '#4da3ff';
 
-      function buildScenario() {
+      function buildScenario(ov: Any = overrides) {
         const s = clone(byForce[cur].scenario);
-        if (overrides.strength != null && s.body.strength != null) s.body.strength = overrides.strength;
-        if (overrides.range != null && s.body.range != null) s.body.range = overrides.range;
-        if (overrides.vx != null) s.particles[0].vx = overrides.vx;
-        if (overrides.vy != null) s.particles[0].vy = overrides.vy;
-        if (overrides.frames != null) s.frames = overrides.frames; // unlocked free-run extends this
+        if (ov.strength != null && s.body.strength != null) s.body.strength = ov.strength;
+        if (ov.range != null && s.body.range != null) s.body.range = ov.range;
+        if (ov.vx != null) s.particles[0].vx = ov.vx;
+        if (ov.vy != null) s.particles[0].vy = ov.vy;
+        if (ov.frames != null) s.frames = ov.frames; // unlocked free-run extends this
         // multi-particle: fan extra particles through the test particle, same velocity
-        const count = Math.max(1, Math.min(40, Math.round(overrides.count ?? s.particles.length)));
+        const count = Math.max(1, Math.min(40, Math.round(ov.count ?? s.particles.length)));
         if (count > s.particles.length) {
           const base = s.particles[0];
           const extra = count - s.particles.length;
@@ -249,7 +263,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         if (resetFrame) frame = 0;
         buildTimeline();
         computeView();
-        if (resetFrame) renderParams();
+        if (resetFrame) { renderParams(); populateSweep(); runSweep(); }
         draw();
       }
       const evaluate = () => compute(true);
@@ -481,6 +495,72 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         }
       }
 
+      // ── parameter sweep: vary one param across its range, plot the response ────
+      function sweepable() {
+        const s = byForce[cur].scenario, b = s.body, p0 = s.particles[0];
+        const out: Any[] = [];
+        if (b.strength != null) out.push({ key: 'strength', label: 'strength', min: 0, max: Math.max(0.5, b.strength * 3), base: b.strength });
+        if (b.range > 0) out.push({ key: 'range', label: 'range', min: 50, max: 500, base: b.range });
+        out.push({ key: 'vx', label: 'initial vᵪ', min: -8, max: 8, base: p0.vx ?? 0 });
+        out.push({ key: 'vy', label: 'initial vᵧ', min: -8, max: 8, base: p0.vy ?? 0 });
+        return out;
+      }
+      function populateSweep() {
+        const sel = $('sweepParam') as HTMLSelectElement | null;
+        if (!sel) return;
+        const opts = sweepable();
+        const prev = sel.value;
+        sel.innerHTML = opts.map((o: Any) => `<option value="${o.key}">${o.label}</option>`).join('');
+        if (opts.some((o: Any) => o.key === prev)) sel.value = prev;
+      }
+      function sweepOpen() {
+        const d = document.querySelector('.lab-sweep') as HTMLDetailsElement | null;
+        return !!(d && d.open);
+      }
+      function runSweep() {
+        if (!sweepOpen() || !result) return;
+        const opts = sweepable();
+        const sel = $('sweepParam') as HTMLSelectElement | null;
+        const key = (sel && sel.value) || opts[0].key;
+        const spec = opts.find((o: Any) => o.key === key) || opts[0];
+        const metric = ($('sweepMetric') as HTMLSelectElement).value;
+        const N = 48;
+        const pts: [number, number][] = [];
+        for (let i = 0; i < N; i++) {
+          const v = spec.min + (spec.max - spec.min) * (i / (N - 1));
+          const res = runScenario(buildScenario({ ...overrides, [key]: v }), forces);
+          let m = 0;
+          if (metric === 'delta') { const d = res.applyDelta[0]; m = Math.hypot(d.dvx, d.dvy); }
+          else if (metric === 'finalDist') { const last = res.trajectory[res.trajectory.length - 1][0]; m = Math.hypot(last.x - res.body.cx, last.y - res.body.cy); }
+          else { m = byForce[cur].expectations.filter((e: Any) => { try { return e.check(res).pass; } catch { return false; } }).length; }
+          pts.push([v, m]);
+        }
+        drawSweep(pts, spec, overrides[key] ?? spec.base);
+      }
+      function drawSweep(pts: [number, number][], spec: Any, curVal: number) {
+        const cv = $('sweepCanvas') as HTMLCanvasElement | null;
+        if (!cv) return;
+        const w = cv.clientWidth || 300, h = 150;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        cv.width = Math.floor(w * dpr); cv.height = Math.floor(h * dpr);
+        const c = cv.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+        c.clearRect(0, 0, w, h);
+        const pad = { l: 42, r: 12, t: 12, b: 22 };
+        const ys = pts.map((p) => p[1]);
+        const yMax = Math.max(...ys, 1e-6), yMin = Math.min(...ys, 0);
+        const X = (x: number) => pad.l + ((x - spec.min) / ((spec.max - spec.min) || 1)) * (w - pad.l - pad.r);
+        const Y = (y: number) => h - pad.b - ((y - yMin) / ((yMax - yMin) || 1)) * (h - pad.t - pad.b);
+        c.strokeStyle = 'rgba(255,255,255,0.12)'; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(pad.l, pad.t); c.lineTo(pad.l, h - pad.b); c.lineTo(w - pad.r, h - pad.b); c.stroke();
+        c.fillStyle = 'rgba(200,210,230,0.5)'; c.font = '10px ui-monospace,monospace';
+        c.fillText(yMax.toFixed(2), 4, pad.t + 8); c.fillText(yMin.toFixed(2), 4, h - pad.b);
+        c.fillText(spec.min.toFixed(0), pad.l, h - 6); c.fillText(spec.max.toFixed(0), w - pad.r - 22, h - 6);
+        c.strokeStyle = 'rgba(255,206,107,0.7)'; c.setLineDash([3, 3]);
+        c.beginPath(); c.moveTo(X(curVal), pad.t); c.lineTo(X(curVal), h - pad.b); c.stroke(); c.setLineDash([]);
+        c.strokeStyle = META[cur]?.color ?? '#4da3ff'; c.lineWidth = 1.8; c.beginPath();
+        pts.forEach((p, i) => { const sx = X(p[0]), sy = Y(p[1]); i ? c.lineTo(sx, sy) : c.moveTo(sx, sy); }); c.stroke();
+      }
+
       function renderParams() {
         const s = byForce[cur].scenario;
         const b = s.body, p0 = s.particles[0], cur0 = overrides;
@@ -666,6 +746,9 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         });
         $('export')?.addEventListener('click', exportJSON);
         $('report')?.addEventListener('click', copyReport);
+        document.querySelector('.lab-sweep')?.addEventListener('toggle', runSweep);
+        $('sweepParam')?.addEventListener('change', runSweep);
+        $('sweepMetric')?.addEventListener('change', runSweep);
         const tl = $('timeline');
         if (tl) {
           const frameFromX = (clientX: number) => {
