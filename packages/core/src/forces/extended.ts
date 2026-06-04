@@ -8,7 +8,7 @@
  * nine. Opt-in via `data-body="lens"` etc.; a page that doesn't ask is unaffected.
  */
 
-import type { Force } from '../core/types.ts';
+import type { Force, Particle } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
 import { mixHex } from '../core/math.ts';
 
@@ -273,6 +273,45 @@ export const pressure: Force = {
 };
 
 /**
+ * §20.3 — `hunt` (class [B], over `env.neighbors`): a two-species pursuit. A particle's
+ * `species` sets its role: predators (species `0`) accelerate toward the nearest particle
+ * of another species; prey (species ≠ `0`) accelerate directly away from the nearest
+ * predator. `range` is the perception radius; `strength` the seek/flee gain. So a field of
+ * two species chases and scatters — schooling/fleeing motion. The Lotka–Volterra
+ * *population* cycle (births and deaths) is an emergent simulation concern, not this
+ * per-particle motion law; `hunt` is the chase itself, honestly.
+ */
+export const hunt: Force = {
+  token: 'hunt',
+  label: 'Hunt',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const me = p.species ?? 0;
+    // the nearest neighbour of a *different* species — the target to chase or escape
+    let target: Particle | null = null;
+    let bestD2 = Infinity;
+    for (const n of e.neighbors(p, b.range)) {
+      if ((n.species ?? 0) === me) continue;
+      const dx = n.x - p.x;
+      const dy = n.y - p.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bestD2) {
+        bestD2 = d2;
+        target = n;
+      }
+    }
+    if (!target) return; // nothing of the other species in reach
+    const dx = target.x - p.x;
+    const dy = target.y - p.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const dir = me === 0 ? 1 : -1; // predator seeks (toward), prey flees (away)
+    p.vx += (dx / d) * b.strength * dir;
+    p.vy += (dy / d) * b.strength * dir;
+  },
+  meta: { desc: 'two-species pursuit — predators seek prey, prey flee predators' },
+};
+
+/**
  * §20.3 — `resonate`: a *modifier* that pulses its sibling forces. It contributes no
  * force of its own; instead `modify` returns a time-varying strength multiplier
  * `1 + sin(ω·t)` (the spec's `S(t) = S₀·(1 + sin(ωt + φ))`), so e.g. `resonate attract`
@@ -337,6 +376,7 @@ export const extendedForces: readonly Force[] = [
   wind,
   cohesion,
   pressure,
+  hunt,
   resonate,
   spotlight,
   pigment,

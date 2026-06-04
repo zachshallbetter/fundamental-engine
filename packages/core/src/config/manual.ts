@@ -68,6 +68,7 @@ export const FORCE_COLORS: Record<string, string> = {
   wind: '#38bdf8',
   cohesion: '#34d399',
   pressure: '#5eead4',
+  hunt: '#ef4444',
   resonate: '#f0abfc',
   spotlight: '#facc15',
   pigment: '#d6529e', // ink — conserved colour transport
@@ -108,6 +109,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   wind: 'A hero with divergence-free turbulence drifting through it.',
   cohesion: 'A tag group that behaves like a droplet — a swarm with a skin.',
   pressure: 'A dense cluster that relaxes to an even fill, like a settling fluid.',
+  hunt: 'A two-species swarm that chases and scatters — a living ecosystem.',
   resonate: 'Pair with attract: a well that breathes (pulsing strength).',
   spotlight: 'Pair with stream: a directed beam confined to a cone.',
   pigment: 'A section that stains passing matter its own colour, carried away.',
@@ -327,6 +329,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
     formula: 'ρ = Σ W(d, h);  v += −k·(ρ − ρ₀)·∇W  (push down the density gradient)',
     attrs: ['strength', 'range'],
     desc: 'SPH density relaxation — incompressible even-fill via mutual repulsion',
+  },
+  {
+    family: 'extended',
+    token: 'hunt',
+    label: 'Hunt',
+    formula: 'predator: v += seek(nearest prey)·S;  prey: v += flee(nearest predator)·S',
+    attrs: ['strength', 'range'],
+    desc: 'two-species pursuit — predators seek prey, prey flee predators',
   },
   {
     family: 'extended',

@@ -402,6 +402,27 @@
   opacity: 0.8;
 }
 
+/* hunt — a predator dot chasing a prey dot */
+.fg-hunt::before {
+  left: 1px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.fg-hunt::after {
+  right: 1.5px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0.65;
+}
+
 /* resonate — a standing wave */
 .fg-resonate::before {
   left: 1px;

@@ -28,6 +28,7 @@ export interface ScenarioParticle {
   size?: number;
   charge?: number;
   color?: string;
+  species?: number;
 }
 
 /** A controlled experiment: particle(s) sent into a force with specific attributes. */
