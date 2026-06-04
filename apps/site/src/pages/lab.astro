@@ -73,7 +73,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           <button type="button" id="play">▶ Play</button>
           <button type="button" id="stepb">⏭ Step</button>
           <button type="button" id="reset">⟲ Reset</button>
-          <button type="button" id="loop" aria-pressed="false">↻ Loop</button>
+          <button type="button" id="mode" data-mode="once" title="Playback: once · loop · unlocked (keep observing)">↦ Once</button>
           <span class="frame-readout" id="frameReadout"></span>
         </div>
 
@@ -105,6 +105,8 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           <div class="params" id="params"></div>
           <div class="lab-actions">
             <button type="button" id="share">Copy link</button>
+            <button type="button" id="export">Export JSON</button>
+            <button type="button" id="report">Copy report</button>
             <button type="button" id="resetParams">Defaults</button>
           </div>
         </div>
@@ -164,7 +166,9 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       let result: Any = null;
       let checks: Any[] = []; // {label, kind, pass, measured, expected, active, passFrame}
       let frame = 0;
-      let loop = false;
+      let mode: 'once' | 'loop' | 'unlocked' = 'once';
+      const MODE_LABEL: Any = { once: '↦ Once', loop: '↻ Loop', unlocked: '∞ Unlocked' };
+      const MAX_FRAMES = 1800; // upper bound for unlocked free-running
       let view = { scale: 1, ox: 0, oy: 0 };
 
       const clone = (o: any) => JSON.parse(JSON.stringify(o));
@@ -184,6 +188,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         if (overrides.range != null && s.body.range != null) s.body.range = overrides.range;
         if (overrides.vx != null) s.particles[0].vx = overrides.vx;
         if (overrides.vy != null) s.particles[0].vy = overrides.vy;
+        if (overrides.frames != null) s.frames = overrides.frames; // unlocked free-run extends this
         // multi-particle: fan extra particles through the test particle, same velocity
         const count = Math.max(1, Math.min(40, Math.round(overrides.count ?? s.particles.length)));
         if (count > s.particles.length) {
@@ -211,7 +216,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         return -1;
       }
 
-      function evaluate() {
+      function compute(resetFrame: boolean) {
         const s = buildScenario();
         result = runScenario(s, forces);
         // exact-formula checks are pinned to the experiment's default attributes; once you
@@ -226,12 +231,22 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
             passFrame: r.pass ? firstPassFrame(e, result) : -1,
           };
         });
-        frame = 0;
+        if (resetFrame) frame = 0;
         const scrub = $('scrub') as HTMLInputElement | null;
-        if (scrub) { scrub.max = String(result.trajectory.length - 1); scrub.value = '0'; }
+        if (scrub) { scrub.max = String(result.trajectory.length - 1); if (resetFrame) scrub.value = '0'; }
         computeView();
-        renderParams();
+        if (resetFrame) renderParams();
         draw();
+      }
+      const evaluate = () => compute(true);
+
+      // unlocked free-run: grow the simulation so observation continues past the cap.
+      function extend(): boolean {
+        const have = result.trajectory.length - 1;
+        if (have >= MAX_FRAMES) return false;
+        overrides.frames = Math.min(MAX_FRAMES, have + 240);
+        compute(false);
+        return true;
       }
 
       function computeView() {
@@ -476,8 +491,12 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         W.__labTimer = window.setInterval(() => {
           frame++;
           if (frame >= result.trajectory.length - 1) {
-            if (loop) { frame = 0; draw(); return; } // continuous playback
-            frame = result.trajectory.length - 1;
+            if (mode === 'loop') { frame = 0; draw(); return; }
+            if (mode === 'unlocked') {
+              if (extend()) { draw(); return; } // grow the sim and keep observing
+              frame = 0; draw(); return; // hit the cap → wrap (still continuous)
+            }
+            frame = result.trajectory.length - 1; // once: stop at the end
             draw();
             stopPlay();
             return;
@@ -497,6 +516,71 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         evaluate();
       }
 
+      // ── actionable save: a reproducible record of inputs → outputs ───────────
+      function buildHash() {
+        const parts = [cur];
+        for (const k of ['strength', 'range', 'vx', 'vy', 'count'])
+          if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
+        return parts.join(';');
+      }
+      function buildRecord() {
+        const s = byForce[cur].scenario, b = result.body;
+        const active = checks.filter((c: Any) => c.active);
+        return {
+          tool: 'forces-ui · the Lab',
+          force: cur,
+          scenario: { label: s.label, family: s.family, class: s.klass, frames: result.scenario.frames },
+          inputs: {
+            body: { strength: b.strength, range: b.range, spin: b.spin, angle: b.angle, M: b.M },
+            particles: result.trajectory[0].map((p: Any) => ({ x: p.x, y: p.y, vx: p.vx, vy: p.vy })),
+            overrides: { ...overrides },
+          },
+          outputs: {
+            verdict: active.every((c: Any) => c.passFrame >= 0) ? 'match' : 'no-match',
+            expectedDelta: result.applyDelta[0],
+            finalState: result.trajectory[result.trajectory.length - 1][0],
+            checks: checks.map((c: Any) => ({
+              label: c.label, kind: c.kind, active: c.active,
+              pass: c.passFrame >= 0, passFrame: c.passFrame,
+              measured: c.measured, expected: c.expected,
+            })),
+          },
+          link: location.href.split('#')[0] + '#' + buildHash(),
+        };
+      }
+      function flash(id: string, msg: string) {
+        const el = $(id);
+        if (!el) return;
+        const prev = el.textContent;
+        el.textContent = msg;
+        setTimeout(() => (el.textContent = prev), 1200);
+      }
+      function exportJSON() {
+        const blob = new Blob([JSON.stringify(buildRecord(), null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `forces-lab-${cur}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        flash('export', 'Saved ✓');
+      }
+      function copyReport() {
+        const r = buildRecord();
+        const lines = [
+          `forces-ui Lab — ${r.force} (${r.scenario.label})`,
+          `verdict: ${r.outputs.verdict.toUpperCase()}`,
+          '',
+          ...r.outputs.checks.map((c: Any) =>
+            `${c.active ? (c.pass ? '✓' : '✗') : '–'} ${c.label} — measured ${c.measured}, expected ${c.expected}` +
+            (c.active && c.pass ? ` (@ frame ${c.passFrame})` : ''),
+          ),
+          '',
+          r.link,
+        ];
+        navigator.clipboard?.writeText(lines.join('\n'));
+        flash('report', 'Copied ✓');
+      }
+
       function init() {
         document.querySelectorAll('.lab-pick').forEach((b) =>
           b.addEventListener('click', () => select((b as HTMLElement).dataset.force!)),
@@ -509,12 +593,15 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           draw();
         });
         $('reset')?.addEventListener('click', () => { stopPlay(); frame = 0; draw(); });
-        $('loop')?.addEventListener('click', () => {
-          loop = !loop;
-          const lb = $('loop')!;
-          lb.setAttribute('aria-pressed', String(loop));
-          lb.classList.toggle('on', loop);
+        $('mode')?.addEventListener('click', () => {
+          mode = mode === 'once' ? 'loop' : mode === 'loop' ? 'unlocked' : 'once';
+          const mb = $('mode')!;
+          mb.textContent = MODE_LABEL[mode];
+          mb.dataset.mode = mode;
+          mb.classList.toggle('on', mode !== 'once');
         });
+        $('export')?.addEventListener('click', exportJSON);
+        $('report')?.addEventListener('click', copyReport);
         $('scrub')?.addEventListener('input', () => {
           stopPlay();
           frame = parseInt(($('scrub') as HTMLInputElement).value, 10) || 0;
@@ -522,13 +609,9 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         });
         $('resetParams')?.addEventListener('click', () => select(cur));
         $('share')?.addEventListener('click', () => {
-          const parts = [cur];
-          for (const k of ['strength', 'range', 'vx', 'vy', 'count'])
-            if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
-          location.hash = parts.join(';');
+          location.hash = buildHash();
           navigator.clipboard?.writeText(location.href);
-          const sb = $('share');
-          if (sb) { sb.textContent = 'Copied ✓'; setTimeout(() => (sb.textContent = 'Copy link'), 1100); }
+          flash('share', 'Copied ✓');
         });
         window.addEventListener('resize', () => { if (result) { computeView(); draw(); } }, { passive: true, signal: _ac.signal });
 
