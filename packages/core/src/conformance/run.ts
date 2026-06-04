@@ -18,8 +18,27 @@ import { registerExtendedForces } from '../forces/extended.ts';
 import { conditions } from '../core/conditions.ts';
 import type { ApplyDelta, FrameState, Scenario, ScenarioResult } from './types.ts';
 
-const W = 1200;
-const H = 800;
+// A large field centred on the action: the integrator wraps toroidally at the field
+// origin, so scenarios run in a big positive region where outward/long trajectories
+// (repel, charge, spring, vortex, buoyancy, thermal) never reach an edge.
+const W = 6000;
+const H = 4000;
+const CENTER = { x: 3000, y: 2000 };
+// position-dependent forces (a fixed lattice / a curl-noise field) are left at their
+// original coordinates — translating them would change the sampled field, and they
+// don't wander far enough to wrap anyway.
+const NO_OFFSET = new Set(['crystallize', 'wind']);
+
+/** Centre a scenario in positive space (a transparent translation — every conformance
+ *  check is relative, so a uniform offset of body + particles changes nothing). */
+function centerScenario(s: Scenario): Scenario {
+  if (NO_OFFSET.has(s.force)) return s;
+  return {
+    ...s,
+    body: { ...s.body, cx: (s.body.cx ?? 0) + CENTER.x, cy: (s.body.cy ?? 0) + CENTER.y },
+    particles: s.particles.map((p) => ({ ...p, x: p.x + CENTER.x, y: p.y + CENTER.y })),
+  };
+}
 
 /** A seeded PRNG (mulberry32) — same family the bench uses, for reproducible RNG runs. */
 function mulberry(seed: number): () => number {
@@ -157,7 +176,8 @@ function frameZeroDelta(s: Scenario, body: Body, forces: ForceRegistry, store: F
 }
 
 /** Simulate a scenario with the real engine; deterministic (RNG seeded if requested). */
-export function runScenario(s: Scenario, forces: ForceRegistry = allForces()): ScenarioResult {
+export function runScenario(input: Scenario, forces: ForceRegistry = allForces()): ScenarioResult {
+  const s = centerScenario(input);
   const store = new FieldStore();
   for (const sp of s.particles) store.add(makeParticle(sp));
   const body = resolveBody(s);
@@ -180,6 +200,7 @@ export function runScenario(s: Scenario, forces: ForceRegistry = allForces()): S
       if (env.dt) for (const g of env.__grids.values()) g.step();
       trajectory.push(store.particles.map(snap));
     }
+    // report the centred scenario so r.scenario / r.body / r.trajectory share one frame.
     return { scenario: s, trajectory, applyDelta, body };
   } finally {
     Math.random = origRandom;
