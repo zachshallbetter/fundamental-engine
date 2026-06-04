@@ -16,6 +16,7 @@ export type ForceClass =
   | 'A' // body → particle (single particle, no services)
   | 'B' // particle ↔ particle (needs env.neighbors)
   | 'C' // field-buffer (needs env.grid)
+  | 'S' // source / sink (creates or destroys matter via env.spawn; budgeted, §20.1)
   | 'modifier'; // resonate / spotlight (no-op apply; affect siblings via modify())
 
 /** Initial state for one injected particle. */

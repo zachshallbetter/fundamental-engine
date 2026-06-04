@@ -11,6 +11,7 @@ import {
   cohesion,
   pressure,
   hunt,
+  spawn,
   resonate,
   spotlight,
   pigment,
@@ -96,6 +97,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'cohesion',
       'pressure',
       'hunt',
+      'spawn',
       'resonate',
       'spotlight',
       'pigment',
@@ -399,6 +401,24 @@ test('hunt: ignores neighbours of its own species and is inert beyond range', ()
   const beyond = part({ x: 0, y: 0, species: 0 });
   hunt.apply(body({ strength: 1, range: 100 }), beyond, env({ dist: 200, neighbors: () => [part({ x: 10, y: 0, species: 1 })] }));
   assert.equal(beyond.vx, 0); // body out of reach
+});
+
+// spawn is a class-[S] source: no per-particle apply, the work is in source().
+test('spawn emits round(S·2) mortal particles from the body centre along the heading (§20.1 [S])', () => {
+  const emitted: Partial<Particle>[] = [];
+  const collect = (p: Partial<Particle>): void => void emitted.push(p);
+  spawn.source!(body({ strength: 1, cx: 100, cy: 50, ux: 1, uy: 0 }), env({ spawn: collect }));
+  assert.equal(emitted.length, 2); // round(1·2)
+  for (const e of emitted) {
+    assert.ok((e.vx ?? 0) > 0, 'launched along the +x heading'); // cos(±cone) > 0
+    assert.ok((e.age ?? 0) > 0, 'mortal — carries a finite lifespan (the [S] sink)');
+    assert.equal(e.x, 100);
+    assert.equal(e.y, 50);
+  }
+  // a stronger source emits more per frame
+  emitted.length = 0;
+  spawn.source!(body({ strength: 3, ux: 1, uy: 0 }), env({ spawn: collect }));
+  assert.equal(emitted.length, 6); // round(3·2)
 });
 
 test('pigment stains overlapping matter with the body tint, then advects it', () => {

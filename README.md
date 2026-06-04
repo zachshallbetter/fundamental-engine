@@ -17,11 +17,19 @@ it was refactored from.
 ## Status
 
 **v0.1.0 — feature-complete.** The full specification is written and stable, and
-the typed engine realizes it: 28 forces (canonical · natural · designed-extended),
-presets, conditions, formations, render modes, two-way density feedback, conserved
-attention, and cross-boundary causality — zero runtime dependencies, golden-tested.
-The site (`apps/site`) is its first consumer: a live manual, lab, and design system
-at [forces-ui.com](https://forces-ui.com). Published as `forces-ui`,
+the typed engine realizes it: 31 forces (canonical · natural · designed-extended ·
+SPH-fluid pressure · predator/prey · a budgeted [S] source), presets, conditions,
+formations, render modes (including metaballs and voronoi), two-way density feedback,
+conserved attention, and cross-boundary causality — zero runtime dependencies, fully
+tested.
+
+The repository includes a shared **physics conformance framework** (a deterministic
+scenario runner that verifies particle trajectories against mathematical invariants)
+and a visual **physics conformance lab** (an interactive particle detector chamber
+offering timeline diagnostics, parameter sweeps, and exportable reports).
+
+The site (`apps/site`) is its first consumer: a live manual, conformance lab, and
+design system at [forces-ui.com](https://forces-ui.com). Published as `forces-ui`,
 `@forces-ui/elements`, and `@forces-ui/react`.
 
 ## The model
@@ -49,15 +57,18 @@ A pnpm monorepo (see `ROADMAP.md` → Stack):
 docs/
   forces-system.md         the full definition (the contract)
   forces-possibilities.md  roadmap, DOM⇄Canvas concepts, the extended vocabulary
+  forces-formulas.md       complete reference formulas & attributes handbook
+  forces-tests.md          testing, validation, and physics conformance guide
   reference/               the original prototype — read-only source of authority
 packages/
   core/      forces-ui            the engine — catalog, contracts, FieldStore, forces
              src/config/forces.config.ts   forces · formations · conditions
+             src/conformance/              declarative physics conformance scenarios & expectations
              src/core/types.ts             Particle · Body · Env · Force · Agent
   elements/  @forces-ui/elements  <forces-field> — the web-component keystone
   react/     @forces-ui/react     <ForcesField> + useForcesField — the React adapter
 apps/
-  site/      @forces-ui/site      forces-ui.com — the manual / landing (Astro)
+  site/      @forces-ui/site      forces-ui.com — the manual / landing / conformance lab (Astro)
 ```
 
 ## Getting started

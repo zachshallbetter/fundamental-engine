@@ -312,6 +312,41 @@ export const hunt: Force = {
 };
 
 /**
+ * §20.1/§20.2 — `spawn` (class [S], the source *atom*): the one force that *creates*
+ * matter rather than moving it. While its body is engaged it emits particles each frame
+ * at the body centre, launched along the heading `(ux, uy)` within a soft cone. This
+ * deliberately breaks conservation (§2.4), so every spawned particle is **mortal**: it
+ * carries a finite `age` and despawns when it expires (the integrator's [S] sink), and
+ * the engine caps the pool besides — a budgeted source, per the §20.1 conservation note.
+ * `strength` sets the emission rate; `angle` the direction. `fountain` is the preset that
+ * names a continuous upward spawn; `supernova` is its one-shot cousin (the conserved
+ * absorb→release event is the everyday path — reach for [S] only when creation is the
+ * point). A pure source: `apply` is a no-op, the work is in `source()`.
+ */
+const SPAWN_LIFE = 90; // frames a spawned particle lives before the [S] sink reclaims it
+export const spawn: Force = {
+  token: 'spawn',
+  label: 'Spawn',
+  apply() {}, // a source, not a per-particle force — the work is in source()
+  source(b, e) {
+    // emit continuously (a fountain flows while on-screen); the integrator's source pass
+    // already skips non-visible bodies, so an off-screen source is silent.
+    const rate = Math.max(1, Math.round(b.strength * 2)); // particles per frame
+    for (let i = 0; i < rate; i++) {
+      // rotate the heading by a small random angle → a soft emission cone
+      const j = (Math.random() - 0.5) * 0.6;
+      const c = Math.cos(j);
+      const s = Math.sin(j);
+      const hx = b.ux * c - b.uy * s;
+      const hy = b.ux * s + b.uy * c;
+      const speed = 2 + Math.random() * 2;
+      e.spawn({ x: b.cx, y: b.cy, vx: hx * speed, vy: hy * speed, age: SPAWN_LIFE, heat: 0.6 });
+    }
+  },
+  meta: { desc: 'a source — emits matter along the heading, budgeted by a lifespan' },
+};
+
+/**
  * §20.3 — `resonate`: a *modifier* that pulses its sibling forces. It contributes no
  * force of its own; instead `modify` returns a time-varying strength multiplier
  * `1 + sin(ω·t)` (the spec's `S(t) = S₀·(1 + sin(ωt + φ))`), so e.g. `resonate attract`
@@ -377,6 +412,7 @@ export const extendedForces: readonly Force[] = [
   cohesion,
   pressure,
   hunt,
+  spawn,
   resonate,
   spotlight,
   pigment,

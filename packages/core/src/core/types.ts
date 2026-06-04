@@ -47,6 +47,8 @@ export interface Particle {
   gx?: number;
   gy?: number;
   // optional attributes consumed by extended forces (§20)
+  /** frames-to-live for *mortal* (spawned) matter — decremented each tick, despawned at
+   *  ≤ 0 (the [S] source sink). Undefined ⇒ immortal (the conserved base field). */
   age?: number;
   /** signed charge q, for `charge` / `magnetism` (§20.10). */
   charge?: number;
@@ -184,6 +186,14 @@ export interface Force {
    * pure modifier (e.g. `spotlight`) can leave `apply` a no-op.
    */
   modify?(b: Body, p: Particle, env: Env): { strength?: number; gate?: boolean };
+  /**
+   * Optional *source* hook (§20.1 class [S], e.g. `spawn`). Run once per body per frame
+   * — not per particle — after the per-particle force pass, so a body can *create*
+   * matter via `env.spawn`. A pure source leaves `apply` a no-op. Sources break
+   * conservation by design and must self-budget (a lifespan `age` plus the engine's
+   * pool ceiling keep the count bounded).
+   */
+  source?(b: Body, env: Env): void;
   meta?: { desc?: string };
 }
 

@@ -167,3 +167,37 @@ test('first-class mass: body forces accelerate by a = F/m (§21.3)', () => {
   assert.ok(pL.vx > 0); // unit mass takes the full kick
   assert.ok(Math.abs(pH.vx - pL.vx / 2) < 1e-9); // twice the mass → half the acceleration
 });
+
+test('mortal matter ages and despawns at its lifespan (the class-[S] sink)', () => {
+  const store = new FieldStore();
+  const mortal = makeP({ age: 2 }); // two ticks to live
+  const immortal = makeP({}); // no age → the conserved base field
+  store.add(mortal);
+  store.add(immortal);
+  step({ store, bodies: [], env: makeEnv(), forces: {}, conditions: {} });
+  assert.equal(store.size, 2); // age 2 → 1, still alive
+  assert.equal(mortal.age, 1);
+  step({ store, bodies: [], env: makeEnv(), forces: {}, conditions: {} });
+  assert.equal(store.size, 1); // age 1 → 0 → despawned
+  assert.equal(store.particles[0], immortal); // the immortal base particle remains
+});
+
+test('the source pass runs a force.source() once per body per frame (class [S])', () => {
+  const store = new FieldStore();
+  store.add(makeP({})); // one existing particle — a source must NOT fire per-particle
+  let calls = 0;
+  const src: Force = {
+    token: 'src',
+    label: 'S',
+    apply: () => {},
+    source: (_b, e) => {
+      calls++;
+      e.spawn({ x: 0, y: 0 });
+    },
+  };
+  const collected: Partial<Particle>[] = [];
+  const body = { tokens: ['src'], vis: true, when: '', on: true, strength: 1, range: 300, cx: 0, cy: 0, count: 0 } as unknown as Body;
+  step({ store, bodies: [body], env: makeEnv({ spawn: (p) => void collected.push(p) }), forces: { src }, conditions: {} });
+  assert.equal(calls, 1); // once for the body, not once per particle
+  assert.equal(collected.length, 1);
+});
