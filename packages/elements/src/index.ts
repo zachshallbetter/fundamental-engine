@@ -22,6 +22,7 @@ export class ForcesField extends HTMLElement {
     'render',
     'palette',
     'attention',
+    'causality',
   ];
 
   private readonly canvas: HTMLCanvasElement;
@@ -70,6 +71,11 @@ export class ForcesField extends HTMLElement {
     return this.hasAttribute('attention') && this.getAttribute('attention') !== 'false';
   }
 
+  /** cross-boundary causality (Concept 4): present and not `"false"` → density spills. */
+  get causality(): boolean {
+    return this.hasAttribute('causality') && this.getAttribute('causality') !== 'false';
+  }
+
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
   /** re-scan the document for `[data-body]` bodies after a DOM change. */
   scan(): void {
@@ -95,6 +101,10 @@ export class ForcesField extends HTMLElement {
   setAttention(on: boolean): void {
     this.field?.setAttention(on);
   }
+  /** toggle cross-boundary causality (Concept 4) live. */
+  setCausality(on: boolean): void {
+    this.field?.setCausality(on);
+  }
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void {
     this.field?.burst(x, y, hex);
@@ -111,6 +121,7 @@ export class ForcesField extends HTMLElement {
       render: this.renderMode,
       palette: this.palette,
       attention: this.attention,
+      causality: this.causality,
     });
   }
 

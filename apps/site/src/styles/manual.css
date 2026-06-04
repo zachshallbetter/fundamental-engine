@@ -540,6 +540,32 @@
   transition: color 0.25s;
 }
 
+/* causality set — each tile's glow is the engine-written --lit (own density plus
+   spillover received from saturated neighbours) */
+.causal-set {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2.2vw, 1.1rem);
+  width: 100%;
+  padding: 0 1rem;
+}
+.causal-node {
+  --lit: 0;
+  --cat: var(--accent);
+  width: clamp(38px, 9vw, 62px);
+  height: clamp(38px, 9vw, 62px);
+  border-radius: 14px;
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--cat) calc(18% + var(--lit) * 82%), var(--line));
+  background: color-mix(in srgb, var(--cat) calc(var(--lit) * 24%), transparent);
+  box-shadow: 0 0 calc(var(--lit) * 30px) color-mix(in srgb, var(--cat) calc(var(--lit) * 70%), transparent);
+  transition:
+    border-color 0.25s var(--ease),
+    background 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
+}
+
 /* thread set */
 .thread-set {
   display: flex;

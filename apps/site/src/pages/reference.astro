@@ -561,10 +561,34 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
         </div>
       </div>
     </section>
+    <section class="concept reverse" data-causality-demo>
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">44 — Cross-boundary causality</span>
+          <h2>Density doesn’t stop at the edge.</h2>
+          <p>When a body saturates, the excess <strong>spills to its neighbours</strong> — weighted by
+            nearness, and conserved. Engage one tile and the ones beside it light up on their own.
+            The wiring between elements appears because matter actually flows between them.</p>
+          <div class="formula">Φᵢⱼ = κ · excessᵢ · <span class="v">wᵢⱼ</span> ⁄ Σ wᵢₖ</div>
+          <p class="note">Hover the middle tile — watch its neighbours catch, the far ones faintly.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">spill → neighbours light</span>
+          <div class="causal-set">
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#a78bfa" style="--cat:#a78bfa;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#7dd3fc" style="--cat:#7dd3fc;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#4da3ff" style="--cat:#4da3ff;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#2dd4bf" style="--cat:#2dd4bf;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#86e57f" style="--cat:#86e57f;"></span>
+          </div>
+          <span class="hintline">engage one — the excess spills to whoever’s near</span>
+        </div>
+      </div>
+    </section>
     <section class="concept reverse" id="formations">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">44 — Formations</span>
+          <span class="concept-no">45 — Formations</span>
           <h2>The whole field can change its mind.</h2>
           <p>Forces act locally. A <strong>formation</strong> acts on every particle at once — a single
             global bias. As you scrolled, each chapter quietly switched it.</p>
@@ -686,6 +710,21 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
         { threshold: 0.45 },
       );
       attnObs.observe(attnSection);
+    }
+
+    // cross-boundary causality (Concept 4): density spills to neighbours — on only
+    // while its demo is in view.
+    const causalSection = document.querySelector('[data-causality-demo]');
+    if (causalSection && field) {
+      const causalObs = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (field.setCausality) field.setCausality(e.isIntersecting);
+          }
+        },
+        { threshold: 0.45 },
+      );
+      causalObs.observe(causalSection);
     }
 
     // chapter rail active state
