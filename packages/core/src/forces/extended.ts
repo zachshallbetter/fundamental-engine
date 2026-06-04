@@ -230,6 +230,49 @@ export const cohesion: Force = {
 };
 
 /**
+ * §20.3 — `pressure` (class [B], over `env.neighbors`): SPH-style density relaxation
+ * → an incompressible even-fill. Each particle estimates the local matter density by
+ * summing a smooth kernel `W(d, h) = (1 − d/h)²` over its neighbours, then pushes *down*
+ * the density gradient whenever it sits above a rest density `ρ₀` — so crowded matter
+ * spreads out and settles to an even spacing instead of overlapping. Unlike `cohesion`
+ * (which has a mid-range *pull*), pressure only ever pushes apart; the rest density sets
+ * the equilibrium spacing. Momentum-conserving for a symmetric pair (each member pushes
+ * the other equally and oppositely). `range` is the smoothing radius `h`; `strength` is
+ * the stiffness `k`; `ρ₀` is a fixed fraction (a new `data-rho0` would need a Body field).
+ */
+const PRESSURE_REST = 0.5; // ρ₀ — the rest density that sets the equilibrium spacing
+export const pressure: Force = {
+  token: 'pressure',
+  label: 'Pressure',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const h = b.range;
+    const k = b.strength;
+    // first pass: local density ρ_p = Σ W(d, h), W = (1 − d/h)²  (a smooth, cheap kernel)
+    let rho = 0;
+    const ns = e.neighbors(p, h);
+    for (const n of ns) {
+      const d = Math.hypot(n.x - p.x, n.y - p.y);
+      if (d < h) rho += (1 - d / h) ** 2;
+    }
+    const over = rho - PRESSURE_REST; // pressure scalar P = k·(ρ − ρ₀)
+    if (over <= 0) return; // under-dense → no push (an even fill only relaxes crowding)
+    // second pass: push away from each neighbour along the (spiky) density gradient,
+    // weighted by how crowded the spot is — strongest at close range (no overlap).
+    for (const n of ns) {
+      const dx = p.x - n.x; // neighbour → p, i.e. the away-from-crowd direction
+      const dy = p.y - n.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 1e-6 || d >= h) continue;
+      const f = (k * over * (1 - d / h)) / d; // ∝ P · ∇W, normalized by d to use (dx, dy)
+      p.vx += f * dx;
+      p.vy += f * dy;
+    }
+  },
+  meta: { desc: 'SPH density relaxation — incompressible even-fill via mutual repulsion' },
+};
+
+/**
  * §20.3 — `resonate`: a *modifier* that pulses its sibling forces. It contributes no
  * force of its own; instead `modify` returns a time-varying strength multiplier
  * `1 + sin(ω·t)` (the spec's `S(t) = S₀·(1 + sin(ωt + φ))`), so e.g. `resonate attract`
@@ -293,6 +336,7 @@ export const extendedForces: readonly Force[] = [
   align,
   wind,
   cohesion,
+  pressure,
   resonate,
   spotlight,
   pigment,

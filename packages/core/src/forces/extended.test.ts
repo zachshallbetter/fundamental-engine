@@ -9,6 +9,7 @@ import {
   align,
   wind,
   cohesion,
+  pressure,
   resonate,
   spotlight,
   pigment,
@@ -92,6 +93,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'align',
       'wind',
       'cohesion',
+      'pressure',
       'resonate',
       'spotlight',
       'pigment',
@@ -343,6 +345,30 @@ test('cohesion is neutral exactly at the rest distance', () => {
 test('cohesion is inert beyond the body range', () => {
   const p = part({ x: 0, y: 0 });
   cohesion.apply(body({ strength: 0.5, range: 100 }), p, env({ dist: 200, ...withNeighbor({ x: 50, y: 0 }) }));
+  assert.equal(p.vx, 0);
+});
+
+// pressure uses env.neighbors over a smoothing radius h = range; ρ₀ = 0.5, k = strength.
+test('pressure pushes an over-dense neighbour away down the density gradient (§20.3)', () => {
+  const p = part({ x: 0, y: 0 });
+  // one neighbour at d=8, h=200: ρ = (1 − 8/200)² = 0.9216 > ρ₀ (0.5) → over = 0.4216.
+  // f = k·over·(1 − d/h)/d = 1·0.4216·0.96/8 = 0.050592; v += f·(p − n) = f·(−8, 0).
+  pressure.apply(body({ strength: 1, range: 200 }), p, env({ dist: 10, ...withNeighbor({ x: 8, y: 0 }) }));
+  assert.ok(near(p.vx, -0.404736)); // pushed away from the +x neighbour
+  assert.ok(near(p.vy, 0));
+});
+
+test('pressure is inert when the neighbourhood is below the rest density', () => {
+  const p = part({ x: 0, y: 0 });
+  // one far neighbour at d=190, h=200: ρ = (1 − 190/200)² = 0.0025 < ρ₀ → no push
+  pressure.apply(body({ strength: 1, range: 200 }), p, env({ dist: 10, ...withNeighbor({ x: 190, y: 0 }) }));
+  assert.equal(p.vx, 0);
+  assert.equal(p.vy, 0);
+});
+
+test('pressure is inert beyond the body range', () => {
+  const p = part({ x: 0, y: 0 });
+  pressure.apply(body({ strength: 1, range: 100 }), p, env({ dist: 200, ...withNeighbor({ x: 8, y: 0 }) }));
   assert.equal(p.vx, 0);
 });
 

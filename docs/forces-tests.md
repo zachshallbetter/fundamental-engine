@@ -80,7 +80,7 @@ The class decides how `runScenario` wires the environment (§20.1):
 
 - **`A` — body → particle.** Single particle, no services. 21 forces.
 - **`B` — particle ↔ particle.** Needs `env.neighbors` (a real spatial hash). `collide`,
-  `cohesion`, `align`.
+  `cohesion`, `pressure`, `align`.
 - **`C` — field-buffer.** Needs `env.grid` (a real `ScalarGrid` advanced each frame).
   `diffuse`, `propagate`, `memory`.
 - **`modifier`.** `apply()` is a no-op; the work is in `modify()`, which scales or gates
@@ -177,6 +177,7 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `align` | p among neighbours moving +y | steers toward the neighbour-mean heading, preserving speed | B | `v += (ĥ·|v| − v)·k`, `ĥ`=mean neighbour dir |
 | `wind` | p in a global gust | a non-zero, divergence-free curl-noise push | A | `v += curl(ψ)·S`, `∇·curl ≡ 0` |
 | `cohesion` | two particles at mid-range | mid-range neighbours draw together (surface tension); push when too close | B | push `d<r₀`, pull `r₀<d<r₁`, `r₀=r₁·0.5` |
+| `pressure` | two overlapping particles | over-dense matter spreads apart to an even fill; momentum conserved | B | `ρ=Σ W(d,h)`, `v += −k·(ρ−ρ₀)·∇W`, `ρ₀=0.5` |
 | `resonate` | modifier on `attract` | scales the sibling's strength as `1 + sin(ωt)` (ω=3) | modifier | `modify → {strength}` |
 | `spotlight` | modifier on `stream` | gates the sibling outside a ~60° heading cone, lets it act inside | modifier | `modify → {gate}` when `û·heading < 0.5` |
 | `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved colour) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
