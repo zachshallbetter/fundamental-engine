@@ -1,5 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
 import '../styles/ds-tokens.css';
 import '../styles/force-glyphs.css';
@@ -64,15 +66,12 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
 <Base title="forces-ui — Design System">
+  <SiteNav current="design" />
   <div class="ds-shell">
     <header class="ds-top">
       <div class="ds-top-inner">
-        <a class="ds-mark" href="/">
-          <svg viewBox="0 0 441 421" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round"><circle cx="230" cy="211" r="89"></circle><path d="M393 327c30-50 36-130-20-180-44-40-110-40-160-10"></path><circle cx="370" cy="355" r="34"></circle><circle cx="45" cy="286" r="34"></circle><path d="M62 318c44 70 128 105 209 88"></path></g><circle cx="139" cy="315" r="16" fill="currentColor"></circle><circle cx="92" cy="66" r="22" fill="currentColor"></circle></svg>
-          <span class="ds-name">Forces</span>
-          <span class="ds-tag">Design System · v0.2</span>
-        </a>
-        <nav class="ds-nav">
+        <span class="ds-here">Design System · v0.2</span>
+        <nav class="ds-nav" aria-label="On this page">
           <a href="#brand">Brand</a>
           <a href="#palette">Palette</a>
           <a href="#surfaces">Surfaces</a>
@@ -83,7 +82,6 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
           <span class="ds-sep"></span>
           <a href="#library">Library</a>
         </nav>
-        <a class="ds-tool" href="/lab" title="Open the Lab">Lab ↗</a>
       </div>
     </header>
 
@@ -253,32 +251,24 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         <p class="ease-note">Easing: <code>cubic-bezier(0.16, 1, 0.3, 1)</code> — everywhere.</p>
       </section>
 
-      <footer class="ds-foot">
-        <span>Forces — Design System · v0.2</span>
-        <a href="/">← back to the field</a>
-      </footer>
     </main>
   </div>
+  <SiteFooter />
 </Base>
 
 <style>
-  .ds-shell { position: relative; z-index: 2; width: 100%; align-self: flex-start; }
+  .ds-shell { position: relative; z-index: 2; width: 100%; align-self: flex-start; padding-top: 58px; }
   :global(body:has(.ds-shell)) { align-items: flex-start; }
 
-  .ds-top { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg-page) 78%, transparent); backdrop-filter: blur(18px) saturate(1.2); border-bottom: 1px solid var(--line); }
-  .ds-top-inner { max-width: 1360px; margin: 0 auto; height: 60px; display: flex; align-items: center; gap: 1.5rem; padding: 0 clamp(1.25rem, 3vw, 2.75rem); }
-  .ds-mark { display: flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--text); }
-  .ds-mark svg { width: 22px; height: 22px; color: var(--accent); }
-  .ds-name { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; }
-  .ds-tag { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-4); }
-  .ds-nav { margin: 0 auto; display: flex; align-items: center; gap: 1rem; overflow-x: auto; scrollbar-width: none; }
+  .ds-top { position: sticky; top: 58px; z-index: 40; background: color-mix(in srgb, var(--bg-page) 78%, transparent); backdrop-filter: blur(18px) saturate(1.2); border-bottom: 1px solid var(--line); }
+  .ds-top-inner { max-width: 1360px; margin: 0 auto; height: 48px; display: flex; align-items: center; gap: 1.5rem; padding: 0 clamp(1.25rem, 3vw, 2.75rem); }
+  .ds-here { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-4); white-space: nowrap; }
+  .ds-nav { margin-left: auto; display: flex; align-items: center; gap: 1rem; overflow-x: auto; scrollbar-width: none; }
   .ds-nav::-webkit-scrollbar { display: none; }
   .ds-nav a { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); text-decoration: none; white-space: nowrap; }
   .ds-nav a:hover { color: var(--accent); }
   .ds-sep { width: 1px; height: 12px; background: var(--line-2); }
-  .ds-tool { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); text-decoration: none; border: 1px solid var(--line-2); border-radius: 999px; padding: 0.34rem 0.7rem; white-space: nowrap; }
-  .ds-tool:hover { color: var(--accent); border-color: var(--accent); }
-  @media (max-width: 820px) { .ds-tag, .ds-nav { display: none; } }
+  @media (max-width: 820px) { .ds-nav { display: none; } }
 
   .ds-main { max-width: 1360px; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.75rem) 5rem; }
 
@@ -292,7 +282,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   .hero-meta { margin-top: 1.8rem; display: flex; flex-wrap: wrap; gap: 1.6rem; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
   .hero-meta .dot { display: inline-block; width: 7px; height: 7px; margin-right: 0.4rem; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
 
-  .ds-sec { padding: clamp(3rem, 8vh, 5rem) 0; border-top: 1px solid var(--line); scroll-margin-top: 76px; }
+  .ds-sec { padding: clamp(3rem, 8vh, 5rem) 0; border-top: 1px solid var(--line); scroll-margin-top: 118px; }
   .sec-head { margin-bottom: 1.8rem; }
   .idl { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); }
   .sec-head h2 { margin: 0.5rem 0 0; font-family: var(--display); font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: -0.03em; line-height: 1.04; }
@@ -378,7 +368,4 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   .ease-note { margin-top: 1.2rem; font-family: var(--mono); font-size: 0.7rem; color: var(--text-3); }
   .ease-note code { color: var(--accent); }
 
-  .ds-foot { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; font-family: var(--mono); font-size: 0.72rem; color: var(--text-3); }
-  .ds-foot a { color: var(--text-3); text-decoration: none; }
-  .ds-foot a:hover { color: var(--accent); }
 </style>

@@ -1,5 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 
 // the canonical force palette, in force order (mirrors forces-ui PALETTE).
 const palette = [
@@ -25,6 +27,7 @@ const cells = [
 ---
 
 <Base>
+  <SiteNav current="home" />
   <main class="wrap">
     <p class="kicker">forces-ui · the physics of the page</p>
 
@@ -75,11 +78,8 @@ const cells = [
       <a class="manual-link" href="/design">The Design System — tokens, palette, type →</a>
     </nav>
 
-    <footer>
-      <span>forces-ui · pre-alpha · building in the open</span>
-      <a href="mailto:zach@zachshallbetter.com">zach@zachshallbetter.com</a>
-    </footer>
   </main>
+  <SiteFooter />
 
   <style>
     .wrap {
@@ -87,7 +87,8 @@ const cells = [
       z-index: 2;
       max-width: 1100px;
       margin: 0 auto;
-      padding: clamp(1.5rem, 5vw, 5rem);
+      padding: calc(58px + clamp(1.5rem, 5vw, 3rem)) clamp(1.5rem, 5vw, 5rem)
+        clamp(1.5rem, 5vw, 5rem);
     }
     .kicker {
       display: inline-flex;
@@ -247,28 +248,6 @@ const cells = [
     }
     .manual-link:hover {
       border-bottom-color: var(--accent);
-    }
-    footer {
-      margin: clamp(2.4rem, 6vh, 3.4rem) 0 0;
-      padding-top: 1.4rem;
-      border-top: 1px solid var(--line);
-      font-family: var(--mono);
-      font-size: 0.66rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      display: flex;
-      gap: 1.4rem;
-      flex-wrap: wrap;
-      justify-content: space-between;
-    }
-    footer a {
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.25s;
-    }
-    footer a:hover {
-      border-color: var(--text-3);
     }
   </style>
 </Base>

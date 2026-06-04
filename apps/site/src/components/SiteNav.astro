@@ -1,0 +1,134 @@
+---
+// The shared site navigation — one fixed top bar on every public page so the
+// wordmark (→ home) and the three destinations (Manual / Lab / Design) are always
+// reachable and the current page is marked. Position-fixed so it sits out of flow
+// and never disturbs a page's own layout (home stays centred; the manual keeps its
+// left chapter rail; design keeps its section strip).
+interface Props {
+  current?: 'home' | 'reference' | 'lab' | 'design';
+}
+const { current } = Astro.props;
+const dest = [
+  { href: '/reference', label: 'Manual', key: 'reference' },
+  { href: '/lab', label: 'Lab', key: 'lab' },
+  { href: '/design', label: 'Design', key: 'design' },
+] as const;
+---
+
+<header class="site-nav">
+  <div class="sn-inner">
+    <a
+      class="sn-mark"
+      href="/"
+      aria-label="forces-ui — home"
+      aria-current={current === 'home' ? 'page' : undefined}
+    >
+      <svg viewBox="0 0 441 421" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round">
+          <circle cx="230" cy="211" r="89"></circle>
+          <path d="M393 327c30-50 36-130-20-180-44-40-110-40-160-10"></path>
+          <circle cx="370" cy="355" r="34"></circle>
+          <circle cx="45" cy="286" r="34"></circle>
+          <path d="M62 318c44 70 128 105 209 88"></path>
+        </g>
+        <circle cx="139" cy="315" r="16" fill="currentColor"></circle>
+        <circle cx="92" cy="66" r="22" fill="currentColor"></circle>
+      </svg>
+      <span class="sn-name">forces<span class="sn-dim">-ui</span></span>
+    </a>
+    <nav class="sn-dest" aria-label="Primary">
+      {
+        dest.map((d) => (
+          <a href={d.href} aria-current={current === d.key ? 'page' : undefined}>
+            {d.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    display: flex;
+    justify-content: center;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg, #04050a) 72%, transparent),
+      color-mix(in srgb, var(--bg, #04050a) 24%, transparent)
+    );
+    backdrop-filter: blur(12px) saturate(1.15);
+    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  }
+  .sn-inner {
+    width: 100%;
+    max-width: 1360px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 clamp(1.25rem, 3vw, 2.75rem);
+  }
+  .sn-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text, #f3f6fc);
+  }
+  .sn-mark svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent, #4da3ff);
+    flex: none;
+  }
+  .sn-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .sn-dim {
+    color: var(--text-3, rgba(200, 212, 230, 0.46));
+    font-weight: 600;
+  }
+  .sn-dest {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 2.4vw, 1.6rem);
+  }
+  .sn-dest a {
+    position: relative;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3, rgba(200, 212, 230, 0.46));
+    text-decoration: none;
+    padding: 0.2rem 0;
+    transition: color 0.2s ease;
+  }
+  .sn-dest a:hover {
+    color: var(--text, #f3f6fc);
+  }
+  .sn-dest a[aria-current='page'] {
+    color: var(--accent, #4da3ff);
+  }
+  .sn-dest a[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: var(--accent, #4da3ff);
+    box-shadow: 0 0 8px var(--accent, #4da3ff);
+  }
+</style>

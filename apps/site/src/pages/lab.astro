@@ -1,5 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
 import '../styles/force-glyphs.css';
 
@@ -46,9 +48,9 @@ const byFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
 ---
 
 <Base title="forces-ui — the Lab">
+  <SiteNav current="lab" />
   <main class="lab">
     <header class="head">
-      <a class="back" href="/">← forces-ui</a>
       <h1>The Lab</h1>
       <p class="lede">
         Place any force or preset on the page and watch the single field react. Pick one, click
@@ -118,6 +120,7 @@ const byFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
       <p class="hint">Pick a force or preset, then click here to place it.</p>
     </div>
   </main>
+  <SiteFooter />
 </Base>
 
 <script is:inline define:vars={{ FORCE_DATA, PRESET_DATA }}>
@@ -276,21 +279,10 @@ const byFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
     width: 100%;
     max-width: 1120px;
     margin: 0 auto;
-    padding: clamp(2.5rem, 7vh, 5rem) clamp(1.2rem, 5vw, 3.5rem) 5rem;
+    padding: calc(58px + clamp(1.4rem, 4vh, 2.6rem)) clamp(1.2rem, 5vw, 3.5rem) 5rem;
   }
   :global(body:has(.lab)) {
     align-items: flex-start;
-  }
-  .back {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-3);
-    text-decoration: none;
-  }
-  .back:hover {
-    color: var(--accent);
   }
   h1 {
     font-size: clamp(2.4rem, 7vw, 4rem);

@@ -1,5 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
 import '../styles/manual.css';
 import '../styles/force-glyphs.css';
@@ -26,9 +28,8 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
 ---
 
 <Base title="forces-ui — the Field Manual">
+  <SiteNav current="reference" />
   <div class="manual-shell">
-    <div class="wrap"><a class="m-back" href="/">← forces-ui</a></div>
-
     <header class="manual-hero" id="top">
       <div class="wrap">
         <p class="kicker">Field Manual · the physics of the page</p>
@@ -569,6 +570,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
       </div>
     </section>
   </div>
+  <SiteFooter />
 </Base>
 
 <script is:inline>
