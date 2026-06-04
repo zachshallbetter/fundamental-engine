@@ -562,6 +562,28 @@
   text-shadow: 0 0 calc(var(--d) * 50px) color-mix(in srgb, var(--accent) calc(var(--d) * 85%), transparent);
 }
 
+/* material typography (Concept 1) — one density (--d) drives every type axis at once:
+   weight, optical size, tracking, bloom, colour and a slight grow. Disturb it and the
+   readout falls, then recovers as the field resettles. Type as a material. */
+.material-word {
+  --d: 0;
+  --cat: var(--accent);
+  cursor: default;
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  font-weight: 500;
+  /* wght 300→800, opsz 14→94 — both read from the same --d (clamped to the font's axes) */
+  font-variation-settings: 'wght' calc(300 + var(--d) * 500), 'opsz' calc(14 + var(--d) * 80);
+  letter-spacing: calc(0.04em - var(--d) * 0.1em); /* tightens as it gathers */
+  color: color-mix(in srgb, var(--cat) calc(20% + var(--d) * 70%), var(--text-4));
+  text-shadow: 0 0 calc(4px + var(--d) * 46px) color-mix(in srgb, var(--cat) calc(var(--d) * 90%), transparent);
+  transform: scale(calc(1 + var(--d) * 0.06));
+  transition: letter-spacing 0.2s ease, transform 0.2s ease;
+}
+.material-word.agitated {
+  transition: transform 0.12s ease;
+  transform: scale(0.985); /* a brief recoil on the burst */
+}
+
 /* conserved-attention set — each word's weight + glow is the engine-written --d,
    so the redistributed force budget shows up as redistributed type */
 .attn-set {
