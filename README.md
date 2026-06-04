@@ -12,13 +12,17 @@ than sitting on top of an effect.
 
 It began as the homepage of [zachshallbetter.com](https://zachshallbetter.com) and
 outgrew it. This repo is the engine, its specification, and the original prototype
-it is being refactored from.
+it was refactored from.
 
 ## Status
 
-**Pre-alpha — spec-first.** The full specification is written and stable; the
-engine is being refactored from the prototype onto typed, modular foundations.
-Landed so far: the canonical catalog and the core contracts (`src/`).
+**v0.1.0 — feature-complete.** The full specification is written and stable, and
+the typed engine realizes it: 28 forces (canonical · natural · designed-extended),
+presets, conditions, formations, render modes, two-way density feedback, conserved
+attention, and cross-boundary causality — zero runtime dependencies, golden-tested.
+The site (`apps/site`) is its first consumer: a live manual, lab, and design system
+at [forces-ui.com](https://forces-ui.com). Published as `forces-ui`,
+`@forces-ui/elements`, and `@forces-ui/react`.
 
 ## The model
 
@@ -47,10 +51,11 @@ docs/
   forces-possibilities.md  roadmap, DOM⇄Canvas concepts, the extended vocabulary
   reference/               the original prototype — read-only source of authority
 packages/
-  core/      forces-ui            the engine — canonical catalog + core contracts
+  core/      forces-ui            the engine — catalog, contracts, FieldStore, forces
              src/config/forces.config.ts   forces · formations · conditions
              src/core/types.ts             Particle · Body · Env · Force · Agent
   elements/  @forces-ui/elements  <forces-field> — the web-component keystone
+  react/     @forces-ui/react     <ForcesField> + useForcesField — the React adapter
 apps/
   site/      @forces-ui/site      forces-ui.com — the manual / landing (Astro)
 ```
@@ -77,11 +82,6 @@ the platform. Tooling is deliberately minimal:
   site; it ships zero runtime JS by default.
 
 Before any dependency is added, it must justify itself as a real exception.
-
-## Naming
-
-The colors in `docs/forces-system.md` §20.2 are **provisional**, pending one
-reconciliation pass against the canonical palette.
 
 ## License
 

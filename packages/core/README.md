@@ -6,8 +6,8 @@ density bends them back — glowing, growing, gaining weight where matter gather
 Not a background effect; a medium your interface lives inside.
 
 - **Zero runtime dependencies.** Pure TypeScript, one `<canvas>`, one `rAF` loop.
-- **27 forces** — nine canonical verbs, seven natural primitives (gravity, charge,
-  magnetism, thermal, collide, diffuse, propagate, memory), and ten designed
+- **28 forces** — nine canonical verbs, eight natural primitives (gravity, charge,
+  magnetism, thermal, collide, diffuse, propagate, memory), and eleven designed
   extended forces — plus presets, conditions, formations, and render modes.
 - **Reciprocal.** Two-way density feedback writes `--d` back onto your elements;
   opt-in conserved attention and cross-boundary causality couple them.
