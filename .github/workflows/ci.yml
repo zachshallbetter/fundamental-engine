@@ -30,11 +30,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm typecheck
+      # Build first: `tsc` builds the packages in topological order, which typechecks
+      # every package AND emits the core's `dist` types that the adapters resolve. A
+      # standalone `typecheck` before the build can't find the not-yet-built core types.
+      - name: Build (typechecks all packages)
+        run: pnpm build
 
       - name: Test
         run: pnpm test
-
-      - name: Build
-        run: pnpm build

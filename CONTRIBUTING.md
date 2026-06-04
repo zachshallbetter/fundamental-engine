@@ -64,12 +64,14 @@ A force is a small module plus its proof. The four steps:
 Before opening a PR, run the full loop:
 
 ```sh
-pnpm typecheck && pnpm test && pnpm build
+pnpm build && pnpm test
 ```
 
-For changes to the live field (the integrator, rendering, or the site), also run the
-site (`pnpm dev`) and check the page behaves and the console is clean. CI runs the same
-typecheck · test · build on every PR.
+`pnpm build` runs `tsc` across the packages in topological order — it typechecks every
+package _and_ emits the core's `dist` types that the adapters resolve against, so on a
+clean checkout it must come before a standalone `pnpm typecheck`. For changes to the live
+field (the integrator, rendering, or the site), also run the site (`pnpm dev`) and check
+the page behaves and the console is clean. CI runs the same build · test on every PR.
 
 ## Pull requests
 
