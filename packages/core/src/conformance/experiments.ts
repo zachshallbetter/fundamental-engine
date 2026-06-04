@@ -555,6 +555,32 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
+      force: 'spawn',
+      label: 'A source emitting matter along its heading',
+      family: 'extended',
+      klass: 'S',
+      // an engaged source with no initial matter: it fills the field along +x (angle 0).
+      body: { cx: 0, cy: 0, range: 300, strength: 1, on: true, angle: 0 },
+      particles: [],
+      frames: 12,
+      seed: 7,
+    },
+    expectations: [
+      check('the source creates matter over time', 'invariant', (r) => {
+        const start = r.trajectory[0]!.length;
+        const end = r.trajectory[r.trajectory.length - 1]!.length;
+        return { pass: end > start, measured: `${start} → ${end} particles`, expected: 'grows' };
+      }),
+      check('emitted matter carries the heading (+x)', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        if (!last.length) return { pass: false, measured: 'no matter emitted', expected: 'mean vx > 0' };
+        const mean = last.reduce((s, p) => s + p.vx, 0) / last.length;
+        return { pass: mean > 0, measured: `mean vx ${f3(mean)}`, expected: '> 0 (along the heading)' };
+      }),
+    ],
+  },
+  {
+    scenario: {
       force: 'resonate',
       tokens: ['resonate', 'attract'],
       label: 'A resonator pulsing an attractor',

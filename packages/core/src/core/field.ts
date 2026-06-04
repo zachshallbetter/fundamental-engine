@@ -84,6 +84,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let boot = reduceMotion ? 1 : 0;
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
+  // hard pool ceiling for class-[S] sources (§20.1) — generous above the ~130·density
+  // base field so emission is never starved, but bounded so the sim can't grow forever.
+  const spawnCeiling = Math.round(130 * cfg.density) * 4;
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
   let JOURNEY: RGB[] = resolvePalette(opts.palette).map(hexToRgb); // the accent journey (§9)
   let curAccent: RGB = hexToRgb(cfg.accent);
@@ -136,7 +139,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       tearBoundNear(bound, waves, b.cx, b.cy, 320, W, H, env.t, (p) => void store.add(newParticle(p)));
       b.accreted = 0;
     },
-    spawn: (p) => void store.add(newParticle(p)),
+    // class-[S] sources emit through here, capped by a hard pool ceiling (the
+    // conservation backstop, §20.1): even a source with no lifespan can't grow the
+    // count without bound. The ceiling is generous above the base field so normal
+    // emission is never starved.
+    spawn: (p) => {
+      if (store.size >= spawnCeiling) return;
+      store.add(newParticle(p));
+    },
     neighbors: (p, r) => store.neighbors(p, r),
     // scalar field-buffer service (§20.1 class [C]): created on demand, so a page
     // with no diffuse/propagate body allocates nothing. Grids named "wave…" use the
@@ -176,6 +186,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       gx: seed.gx ?? Math.random(),
       gy: seed.gy ?? Math.random(),
       cap: null,
+      ...(seed.age != null ? { age: seed.age } : {}), // mortal matter (a [S] source)
+      ...(seed.color != null ? { color: seed.color } : {}),
     };
   }
 

@@ -92,4 +92,10 @@ export const PRESETS: Record<string, readonly PresetEntry[]> = {
     { body: 'stream', strength: 0.8, range: 280, angle: -90 }, // updraft
     { body: 'drag', strength: 0.3, range: 300 }, // ragged edge
   ],
+  // §20.2 — a continuous class-[S] source jetting matter upward, the spray pulled back
+  // down by a gentle global gravity well: a literal water fountain.
+  fountain: [
+    { body: 'spawn', strength: 1.2, angle: -90 }, // jet up (−y); emits while on-screen
+    { body: 'gravity', strength: 60, range: 0 }, // the arc home — global, weak
+  ],
 };

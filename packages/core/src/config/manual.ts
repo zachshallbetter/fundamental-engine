@@ -69,6 +69,7 @@ export const FORCE_COLORS: Record<string, string> = {
   cohesion: '#34d399',
   pressure: '#5eead4',
   hunt: '#ef4444',
+  spawn: '#fb923c',
   resonate: '#f0abfc',
   spotlight: '#facc15',
   pigment: '#d6529e', // ink — conserved colour transport
@@ -110,6 +111,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   cohesion: 'A tag group that behaves like a droplet — a swarm with a skin.',
   pressure: 'A dense cluster that relaxes to an even fill, like a settling fluid.',
   hunt: 'A two-species swarm that chases and scatters — a living ecosystem.',
+  spawn: 'A nozzle that jets matter into the field — a literal fountain or a star seeding the void.',
   resonate: 'Pair with attract: a well that breathes (pulsing strength).',
   spotlight: 'Pair with stream: a directed beam confined to a cone.',
   pigment: 'A section that stains passing matter its own colour, carried away.',
@@ -340,6 +342,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
   },
   {
     family: 'extended',
+    token: 'spawn',
+    label: 'Spawn',
+    formula: 'while engaged: emit S·2 particles/frame along the heading, each living ~90 frames',
+    attrs: ['strength', 'angle'],
+    desc: 'a source [S] — creates matter along the heading, budgeted by a lifespan + pool ceiling',
+  },
+  {
+    family: 'extended',
     token: 'resonate',
     label: 'Resonate',
     formula: 'modifier: scales sibling S by S(t) = 1 + sin(ω·t)',
@@ -388,6 +398,7 @@ export const MANUAL_PRESETS: readonly ManualPreset[] = [
   { name: 'galaxy', tokens: ['attract', 'vortex', 'drag', 'lens'], desc: 'a spiral disk that settles into a plane', example: 'A spiral that winds the field into arms and settles into a disk.' },
   { name: 'nebula', tokens: ['thermal', 'drag', 'buoyancy'], desc: 'a warm, slow cloud with rising wisps', example: 'A warm, slow cloud — the field churns and light wisps rise.' },
   { name: 'tornado', tokens: ['vortex', 'stream', 'drag'], desc: 'a funnel with an updraft, calmed at the edges', example: 'A funnel that swirls the field up its axis, ragged at the edges.' },
+  { name: 'fountain', tokens: ['spawn', 'gravity'], desc: 'a class-[S] source jetting matter up, arcing home under gravity', example: 'A literal fountain — matter sprays upward and falls back in an arc.' },
 ];
 
 /** The `data-when` condition gates (§5). */

@@ -40,6 +40,7 @@ export function step(input: StepInput): void {
   for (const b of bodies) b.count = 0;
   const hasWaves = !!waves && waves.length > 0;
   const hasBodies = bodies.length > 0;
+  let dead: Particle[] | null = null; // mortal (spawned) matter that expired this tick
   // the accretion target for `conv` — the first visible absorb body (§7).
   const conv = form.conv > 0.02 ? accretionTarget(bodies) : null;
 
@@ -173,10 +174,30 @@ export function step(input: StepInput): void {
 
     p.heat *= HEAT_DECAY;
 
+    // mortal matter ages (the class-[S] sink): spawned particles carry a finite `age`
+    // and despawn at ≤ 0, so a continuous source stays budgeted. Immortal base-field
+    // matter (age undefined) is untouched — the conserved field is unchanged.
+    if (p.age != null) {
+      p.age -= dt;
+      if (p.age <= 0) (dead ??= []).push(p);
+    }
+
     // toroidal wrap at the edges.
     if (p.x < -EDGE) p.x = W + EDGE;
     else if (p.x > W + EDGE) p.x = -EDGE;
     if (p.y < -EDGE) p.y = H + EDGE;
     else if (p.y > H + EDGE) p.y = -EDGE;
   }
+
+  // class-[S] sources (§20.1): a body-level pass *after* the per-particle loop, so a
+  // source emits matter once per frame (not once per existing particle) via env.spawn.
+  if (hasBodies) {
+    for (const b of bodies) {
+      if (!b.vis || b.tokens.length === 0) continue;
+      for (const tok of b.tokens) forces[tok]?.source?.(b, env);
+    }
+  }
+
+  // remove expired mortal matter (swap-remove is O(1); order is not significant).
+  if (dead) for (const p of dead) store.remove(p);
 }

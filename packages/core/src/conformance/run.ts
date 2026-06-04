@@ -128,7 +128,20 @@ function makeEnv(store: FieldStore): Env {
     G: 1,
     spark: () => {},
     supernova: () => {},
-    spawn: () => {},
+    // class-[S] sources (spawn) create matter — wire it to the store so a source
+    // experiment can observe the pool grow (and mortal matter despawn) headlessly.
+    spawn: (sp) =>
+      void store.add({
+        x: sp.x ?? 0,
+        y: sp.y ?? 0,
+        vx: sp.vx ?? 0,
+        vy: sp.vy ?? 0,
+        m: 1,
+        heat: sp.heat ?? 0,
+        size: sp.size ?? 1,
+        cap: null,
+        ...(sp.age != null ? { age: sp.age } : {}),
+      }),
     neighbors: (p, r) => store.neighbors(p, r),
     grid: (name) => {
       let g = grids.get(name);
