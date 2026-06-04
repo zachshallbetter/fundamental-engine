@@ -136,7 +136,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     grid: (name) => {
       let g = grids.get(name);
       if (!g) {
-        g = new ScalarGridImpl(W, H, name.startsWith('wave') ? 'wave' : 'diffuse');
+        const mode = name.startsWith('wave') ? 'wave' : name.startsWith('memory') ? 'memory' : 'diffuse';
+        g = new ScalarGridImpl(W, H, mode);
         grids.set(name, g);
       }
       return g;

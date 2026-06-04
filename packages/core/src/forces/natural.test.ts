@@ -8,6 +8,7 @@ import {
   collide,
   diffuse,
   propagate,
+  memory,
   thermalSigma,
   naturalForces,
 } from './natural.ts';
@@ -77,10 +78,10 @@ const env = (o: Partial<Env> = {}): Env => ({
 
 const near = (a: number, b: number, tol = 1e-4): boolean => Math.abs(a - b) < tol;
 
-test('natural primitives span §20.10 (gravity…propagate)', () => {
+test('natural primitives span §20.10 (gravity…memory)', () => {
   assert.deepEqual(
     naturalForces.map((f) => f.token),
-    ['gravity', 'charge', 'magnetism', 'thermal', 'collide', 'diffuse', 'propagate'],
+    ['gravity', 'charge', 'magnetism', 'thermal', 'collide', 'diffuse', 'propagate', 'memory'],
   );
 });
 
@@ -319,4 +320,45 @@ test('gravity and charge share one kernel — same |f| for unit source (§20.10)
   charge.apply(body({ spin: 1, M: 1, range: 300 }), c, env({ dx: 10, dy: 0, dist: 10 }));
   // identical magnitude, opposite direction (gravity attracts, like-charge repels)
   assert.ok(near(g.vx, -c.vx));
+});
+
+// a memory-grid stub: records deposits, returns a fixed occupancy sample.
+const memGrid = (sampleVal: number, rec: number[][]): ScalarGrid => ({
+  sample: () => sampleVal,
+  deposit: (x, y, a) => {
+    rec.push([x, y, a]);
+  },
+  gradient: () => ({ x: 0, y: 0 }),
+});
+
+test('memory lays occupancy and pulls harder where the path is worn', () => {
+  const recFresh: number[][] = [];
+  const fresh = part({ x: 7, y: 3 });
+  memory.apply(
+    body({ strength: 1, range: 100 }),
+    fresh,
+    env({ dx: 10, dy: 0, dist: 10, grid: () => memGrid(0, recFresh) }),
+  );
+  const recWorn: number[][] = [];
+  const worn = part({ x: 7, y: 3 });
+  memory.apply(
+    body({ strength: 1, range: 100 }),
+    worn,
+    env({ dx: 10, dy: 0, dist: 10, grid: () => memGrid(2, recWorn) }),
+  );
+  assert.deepEqual(recFresh, [[7, 3, 0.15]]); // occupancy laid at the particle
+  assert.ok(worn.vx > fresh.vx, 'a more worn spot pulls harder');
+  assert.ok(near(worn.vx, fresh.vx * 2), 'amp = 1 + 0.5·M → doubles at M = 2');
+});
+
+test('memory is inert beyond range', () => {
+  const rec: number[][] = [];
+  const p = part({ vx: 0, vy: 0 });
+  memory.apply(
+    body({ strength: 1, range: 100 }),
+    p,
+    env({ dx: 5, dy: 5, dist: 200, grid: () => memGrid(5, rec) }),
+  );
+  assert.equal(rec.length, 0); // no deposit out of range
+  assert.ok(near(p.vx, 0));
 });

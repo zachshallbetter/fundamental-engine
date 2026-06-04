@@ -207,6 +207,28 @@ export const propagate: Force = {
   meta: { desc: 'a travelling wave — inject a shock at the source, particles ride the front' },
 };
 
+/**
+ * Memory (class [C], over a slow-decaying `memory` grid) — the field remembers.
+ * Each frame a particle lays occupancy where it sits, into a grid that barely blurs
+ * and fades slowly; the body's pull is then amplified by how worn the spot is. So
+ * `M(x) += λ` and the effective force `×= (1 + μ·M)`: frequently-travelled routes
+ * deepen and pull harder, and channels wear in over time.
+ */
+export const memory: Force = {
+  token: 'memory',
+  label: 'Memory',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const g = e.grid('memory'); // 'memory' name → slow-decay stepping
+    g.deposit(p.x, p.y, b.strength * 0.15); // wear the path where matter sits
+    const amp = 1 + 0.5 * g.sample(p.x, p.y); // worn paths pull harder (1 + μ·M)
+    const f = (1 - e.dist / b.range) ** 2 * b.strength * 0.5 * amp;
+    p.vx += (e.dx / e.dist) * f;
+    p.vy += (e.dy / e.dist) * f;
+  },
+  meta: { desc: 'the field remembers — occupancy wears in paths that pull harder' },
+};
+
 /** The natural primitives, in spec order (§20.10). */
 export const naturalForces: readonly Force[] = [
   gravity,
@@ -216,6 +238,7 @@ export const naturalForces: readonly Force[] = [
   collide,
   diffuse,
   propagate,
+  memory,
 ];
 
 /** Register the natural primitives on a registry (§4) — opt-in, alongside the nine. */
