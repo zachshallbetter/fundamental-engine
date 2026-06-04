@@ -581,6 +581,30 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
+      force: 'link',
+      label: 'Two particles relaxing to the bond rest length',
+      family: 'extended',
+      klass: 'B',
+      // range 200 → rest length L = 70; a pair at gap 150 (> L) is pulled together
+      // toward L, symmetrically, so momentum is conserved.
+      body: { cx: 0, cy: 0, range: 200, strength: 1 },
+      particles: [
+        { x: 0, y: 0 },
+        { x: 150, y: 0 },
+      ],
+      frames: 40,
+    },
+    expectations: [
+      momentumConserved(1e-6),
+      check('a stretched bond pulls back toward its rest length', 'invariant', (r) => {
+        const start = gap(r, 0, 0, 1);
+        const end = gap(r, r.trajectory.length - 1, 0, 1);
+        return { pass: end < start - 1e-6 && end > 40, measured: `gap ${f3(start)} → ${f3(end)}`, expected: 'toward L ≈ 70' };
+      }),
+    ],
+  },
+  {
+    scenario: {
       force: 'resonate',
       tokens: ['resonate', 'attract'],
       label: 'A resonator pulsing an attractor',
