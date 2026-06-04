@@ -4,9 +4,9 @@
  * Elements bend the field; the field's density bends them back.
  * Spec: `docs/forces-system.md`. Roadmap: `ROADMAP.md`.
  *
- * Status: pre-alpha. The canonical catalog and core contracts are in place;
- * the engine (FieldStore, integrator, force modules) is being refactored from
- * the prototype in `docs/reference/`.
+ * v0.1.0 — feature-complete: the catalog, core contracts, FieldStore, integrator,
+ * and the full force set (canonical · natural · designed-extended), realized from
+ * the original prototype in `docs/reference/`. Zero runtime dependencies.
  */
 
 export * from './core/types.ts';

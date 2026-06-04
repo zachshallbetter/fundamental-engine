@@ -10,3 +10,8 @@ coverage
 # Astro generated cache
 .astro/
 .vercel/
+
+# env (defensive — none are used, but never commit secrets)
+.env
+.env.*
+!.env.example
