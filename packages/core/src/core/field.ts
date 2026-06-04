@@ -30,6 +30,7 @@ import { resolvePalette } from '../config/palettes.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { attentionMuls } from './attention.ts';
+import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
@@ -61,6 +62,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     render: opts.render ?? 'dots',
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
+    causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
   };
 
   let bodies: Body[] = [];
@@ -414,6 +416,35 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (let i = 0; i < vis.length; i++) vis[i]!.attn = muls[i]!;
   }
 
+  // cross-boundary causality (Concept 4): a saturated body's density spills to its
+  // neighbours, so engaging one lights its siblings. Writes `--lit` and fires a
+  // debounced field:lit / field:dim on each element as it crosses the threshold.
+  function applyCausality(): void {
+    if (!cfg.causality) return;
+    const vis = bodies.filter((b) => b.vis && b.tokens.length > 0);
+    if (vis.length === 0) return;
+    if (vis.length === 1) {
+      writeLit(vis[0]!, vis[0]!.d);
+      return;
+    }
+    const delta = spillover(vis.map((b) => ({ d: b.d, cx: b.cx, cy: b.cy })));
+    for (let i = 0; i < vis.length; i++) {
+      writeLit(vis[i]!, clamp(vis[i]!.d + delta[i]!, 0, 1));
+    }
+  }
+
+  function writeLit(b: Body, lit: number): void {
+    b.el.style.setProperty('--lit', lit.toFixed(3));
+    const armed = b.el.dataset.fxLit === '1';
+    if (lit > 0.5 && !armed) {
+      b.el.dataset.fxLit = '1';
+      b.el.dispatchEvent(new CustomEvent('field:lit', { detail: { value: lit } }));
+    } else if (lit < 0.4 && armed) {
+      b.el.dataset.fxLit = '0';
+      b.el.dispatchEvent(new CustomEvent('field:dim', { detail: { value: lit } }));
+    }
+  }
+
   function writeFeedback(): void {
     for (const b of bodies) {
       if (!b.feedback) continue;
@@ -574,6 +605,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       updateMovers();
     }
     writeFeedback();
+    applyCausality();
     updateEvents();
     render();
     raf = requestAnimationFrame(frame);
@@ -655,6 +687,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     setAttention: (on) => {
       cfg.attention = on;
       if (!on) for (const b of bodies) b.attn = 1; // release the budget → neutral
+    },
+    setCausality: (on) => {
+      cfg.causality = on;
+      if (!on)
+        for (const b of bodies) {
+          b.el.style.removeProperty('--lit');
+          b.el.dataset.fxLit = '0';
+        }
     },
     threads: setThreads,
     burst: (x, y, hex) => {

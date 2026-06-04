@@ -220,6 +220,9 @@ export interface FieldOptions {
   /** conserved attention (§2.4): one finite strength budget — engaging a body
    *  pulls force off every other. Default false; rest-neutral until engaged. */
   attention?: boolean;
+  /** cross-boundary causality (Concept 4): a saturated body spills density to its
+   *  neighbours (writing `--lit` + firing `field:lit`/`field:dim`). Default false. */
+  causality?: boolean;
 }
 
 /** The handle returned by `createField` — the public field API (§13). */
@@ -236,6 +239,8 @@ export interface FieldHandle {
   setFormation(name: string): void;
   /** toggle conserved attention (§2.4) live — one finite strength budget. */
   setAttention(on: boolean): void;
+  /** toggle cross-boundary causality (Concept 4) live — density spills to neighbours. */
+  setCausality(on: boolean): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
