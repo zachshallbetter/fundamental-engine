@@ -605,14 +605,15 @@ export const COMPOSITE_EXPERIMENTS: ForceConformance[] = [
     },
     expectations: [
       check('the gate lets the fast particle through, blocks the slow one', 'invariant', (r) => {
+        const first = r.trajectory[0]!;
         const last = r.trajectory[r.trajectory.length - 1]!;
-        const fastX = last[0]!.x;
-        const slowX = last[1]!.x;
-        const pass = fastX - slowX > 10 && slowX < 5;
+        const fastMoved = last[0]!.x - first[0]!.x; // pulled toward the body (+x)
+        const slowMoved = last[1]!.x - first[1]!.x; // gated → ~unmoved
+        const pass = fastMoved > 10 && Math.abs(slowMoved) < 5;
         return {
           pass,
-          measured: `fast x = ${f3(fastX)}, slow x = ${f3(slowX)}`,
-          expected: 'fast pulled toward the body, slow ~unmoved',
+          measured: `fast Δx = ${f3(fastMoved)}, slow Δx = ${f3(slowMoved)}`,
+          expected: 'fast pulled toward the body (Δx > 10), slow ~unmoved',
         };
       }),
     ],
