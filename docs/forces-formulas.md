@@ -191,3 +191,35 @@ $I$ drives parameters like spark count, glow flash radius, and element recoil.
 ### Impact Spark Formula (Reflect / Collide)
 $$\text{if}\ |v| > 0.7: \text{sparks} = \text{round}(3 + \text{rand} \cdot |v| \cdot 3)$$
 $$\text{heat} = \max(\text{heat}, \min(0.85, |v| \cdot 0.4))$$
+
+---
+
+## 5. Design & Implementation Antipatterns
+
+### 5.1 Design & Presentation Antipatterns
+- **Rebuilding Words from Dots (The Punctuation Rule Violation):**
+  - *Antipattern:* Assembling or morphing particles directly into full letters or text words. It creates noisy, illegible silhouettes.
+  - *Correct Pattern:* Reserve particle-to-shape morphology (`morph` or glyph assembly) strictly for punctuation and marks (`.`, `—`, `·`, brackets, logos). Make words feel alive by animating the *surrounding* field or altering type attributes (weight, glow, spacing) via the local density `--d` variable.
+- **Decoration Without Behavior (One-Way Metaphors):**
+  - *Antipattern:* Adding the particle field as a passive screen-saver backdrop that doesn't read or react to DOM boxes.
+  - *Correct Pattern:* Maintain absolute reciprocity. Elements must bend the field (Pipe 1), and local density must swell/glow the elements back (Pipe 2).
+- **Constant Chaos (Noisy Resting State):**
+  - *Antipattern:* Keeping the field constantly agitated, fast, or noisy when the user is idle.
+  - *Correct Pattern:* *"Make the transfer legible; keep the steady state quiet."* A force at rest is silent. Reserve heavy excitement, heat, and visual sparks for transitional triggers (hover, click-bursts, boundary collision impacts).
+- **Hype-heavy Copywriting:**
+  - *Antipattern:* Describing the site's physics using buzzwords like "synergy," "revolutionary," or "game-changing."
+  - *Correct Pattern:* Use a plain, declarative, physical voice (e.g., "The page's elements bend the field; the field's density bends the elements back").
+
+### 5.2 Physics & Engine Implementation Antipatterns
+- **Unbounded Particle Spawning (Class [S] Law-Breaks):**
+  - *Antipattern:* Creating particles continuously via sources (`spawn` / `fountain` / `supernova`) without allocating a budget or clean-up routine.
+  - *Correct Pattern:* Respect the global conservation law. Every particle generator must be paired with a sink (`blackhole` with `data-destroy`), an age despawn threshold (`age > life`), or a global ceiling to prevent browser tab crashes.
+- **Aspirational Mass in Unit-Mass Integrators:**
+  - *Antipattern:* Claiming that particle sizes or labels affect their trajectory arcs when running a unit-mass model ($v += F$).
+  - *Correct Pattern:* Clearly declare if Option A (Unit Mass) is running. In Option A, size is purely cosmetic. To enable physical size-mass behaviors, upgrade to Option B ($a = F/m$) and conserve momentum.
+- **Synchronous Viewport Box Polling:**
+  - *Antipattern:* Running `getBoundingClientRect()` on all elements every frame.
+  - *Correct Pattern:* Re-sample layout bounds every 6 frames, deactivate forces on off-screen elements, and use `ResizeObserver`/`IntersectionObserver` to trigger measurements on mutation.
+- **Unbounded / Diverging Wells at Scale:**
+  - *Antipattern:* Implementing pure Newtonian gravity ($1/d^2$) for UI attractors, leading to infinite acceleration/velocities at zero distance.
+  - *Correct Pattern:* Use soft, bounded designs $(1 - d/d_{\max})^n$ for user-interface targets, or apply Plummer softening ($1 / (d^2 + \epsilon^2)$) to keep natural forces mathematically finite.

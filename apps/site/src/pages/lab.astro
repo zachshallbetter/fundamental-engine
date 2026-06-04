@@ -2,466 +2,429 @@
 import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
+import { EXPERIMENTS, MANUAL_FORCES } from 'forces-ui';
 import '../styles/force-glyphs.css';
+import '../styles/lab.css';
 
-// The Lab (§14) — place real force bodies AND presets on the page and watch the ONE
-// background field react (the field-reacts law, not foreground particles). The
-// palette is the whole catalog. Shareable via the URL hash.
+// The Lab — a physics detector. Fire a known particle into a force with known
+// attributes; the canvas shows the track + the surrounding field + related particles,
+// and the readout checks the measured behavior against the conformance catalog (the
+// same EXPERIMENTS the test suite runs). Tune the attributes and fire again.
 
-// Sensible placement attrs per force (forces ignore attrs they don't read).
-const DEFAULTS = { strength: 1.5, range: 280, spin: 1, angle: -90 };
-const OVERRIDES: Record<string, Record<string, number>> = {
-  gravity: { strength: 320, range: 360 },
-  thermal: { strength: 2.5, range: 240 },
-  absorb: { strength: 0.8, range: 320, absorb: 60, max: 40 },
-  emitter: { strength: 1.3, range: 280 },
-  spring: { strength: 1, range: 240 },
-  drag: { strength: 1, range: 300 },
-};
-const PRESET_COLORS: Record<string, string> = {
-  blackhole: '#fbbf24',
-  whitehole: '#e0f2fe',
-  star: '#6366f1',
-  quasar: '#fbbf24',
-  galaxy: '#a78bfa',
-  nebula: '#38bdf8',
-  tornado: '#2dd4bf',
-};
-
-const FORCE_DATA = Object.fromEntries(
-  MANUAL_FORCES.map((f) => [
-    f.token,
-    { color: f.color, attrs: { ...DEFAULTS, ...(OVERRIDES[f.token] ?? {}) } },
-  ]),
+const META: Record<string, { color: string; label: string }> = Object.fromEntries(
+  MANUAL_FORCES.map((f) => [f.token, { color: f.color, label: f.label }]),
 );
-const PRESET_DATA = Object.fromEntries(
-  MANUAL_PRESETS.map((p) => [p.name, { color: PRESET_COLORS[p.name] ?? '#4da3ff' }]),
-);
-
 const families = [
-  { key: 'canonical', label: 'canonical' },
-  { key: 'natural', label: 'natural' },
-  { key: 'extended', label: 'extended' },
+  { key: 'canonical', label: 'Canonical' },
+  { key: 'natural', label: 'Natural' },
+  { key: 'extended', label: 'Designed-extended' },
 ] as const;
-const byFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
+const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === k);
 ---
 
 <Base
-  title="forces-ui — the Lab"
-  description="The Lab — place any force or preset on the page and watch the single field react. Drag to move, double-click to remove, and share your field by URL."
+  title="forces-ui — the Lab (physics detector)"
+  description="Fire a known particle into a force with known attributes and watch what happens — its track, the surrounding field, related particles — then compare the measured behavior to what the math predicts. The Lab is a conformance instrument."
 >
   <SiteNav current="lab" />
   <main class="lab">
-    <header class="head">
-      <h1>The Lab</h1>
+    <header class="lab-head">
+      <p class="kicker">The Lab · physics detector</p>
+      <h1>Fire a particle into a force.</h1>
       <p class="lede">
-        Place any force or preset on the page and watch the single field react. Pick one, click
-        the stage to drop it, drag to move, double-click to remove. Presets drop a whole composite.
-        Share your field with the link button — the layout lives in the URL.
+        Pick a force, send a known particle into it, and watch its track, the surrounding
+        field, and any related particles. The measured behavior is checked against what the
+        math predicts — if it doesn’t match, tune the attributes and fire again.
       </p>
     </header>
 
-    <div class="catalog" role="group" aria-label="Force palette">
-      {
-        families.map((fam) => (
-          <div class="group">
-            <span class="glabel">{fam.label}</span>
-            {byFamily(fam.key).map((f) => (
-              <button
-                type="button"
-                data-kind="force"
-                data-token={f.token}
-                style={`--c:${f.color}`}
-                class={f.token === 'attract' ? 'on' : ''}
-                title={f.desc}
-              >
-                <i class={`fg fg-${f.token}`} aria-hidden="true" />
-                {f.token}
-              </button>
-            ))}
+    <div class="lab-grid">
+      <aside class="lab-picker" aria-label="Force picker">
+        {
+          families.map((fam) => (
+            <div class="group">
+              <span class="glabel">{fam.label}</span>
+              {inFamily(fam.key).map((e) => (
+                <button
+                  type="button"
+                  class="lab-pick"
+                  data-force={e.scenario.force}
+                  style={`--c:${META[e.scenario.force]?.color ?? '#4da3ff'}`}
+                >
+                  <i class={`fg fg-${e.scenario.force}`} aria-hidden="true" />
+                  {META[e.scenario.force]?.label ?? e.scenario.force}
+                </button>
+              ))}
+            </div>
+          ))
+        }
+      </aside>
+
+      <section class="lab-center">
+        <div class="lab-chamber">
+          <span class="stage-label">detector chamber</span>
+          <canvas id="chamber"></canvas>
+        </div>
+        <div class="lab-transport">
+          <button type="button" id="fire">↯ Fire</button>
+          <button type="button" id="play">▶ Play</button>
+          <button type="button" id="stepb">⏭ Step</button>
+          <button type="button" id="reset">⟲ Reset</button>
+          <span class="frame-readout" id="frameReadout"></span>
+        </div>
+      </section>
+
+      <aside class="lab-readout" aria-label="Readout">
+        <div class="verdict" id="verdict">—</div>
+        <div>
+          <p class="panel-title">Expectations</p>
+          <div class="checklist" id="checklist"></div>
+        </div>
+        <div>
+          <p class="panel-title">Tune &amp; refire</p>
+          <div class="params" id="params"></div>
+          <div class="lab-actions">
+            <button type="button" id="share">Copy link</button>
+            <button type="button" id="resetParams">Defaults</button>
           </div>
-        ))
-      }
-      <div class="group presets">
-        <span class="glabel">presets</span>
-        {
-          MANUAL_PRESETS.map((p) => (
-            <button
-              type="button"
-              data-kind="preset"
-              data-token={p.name}
-              style={`--c:${PRESET_COLORS[p.name]}`}
-              title={p.desc}
-            >
-              <i class={`fg fg-${p.name}`} aria-hidden="true" />
-              {p.name}
-            </button>
-          ))
-        }
-      </div>
-    </div>
-
-    <div class="bar">
-      <div class="palettes" role="group">
-        <span class="plabel">palette</span>
-        {
-          ['ours', 'heatmap', 'infrared', 'spectrum'].map((p) => (
-            <button type="button" data-palette={p} class={p === 'ours' ? 'on' : ''}>
-              {p}
-            </button>
-          ))
-        }
-      </div>
-      <div class="views" role="group">
-        <span class="plabel">view</span>
-        {
-          ['dots', 'streamlines', 'trails', 'links'].map((v) => (
-            <button type="button" data-render={v} class={v === 'dots' ? 'on' : ''}>
-              {v}
-            </button>
-          ))
-        }
-      </div>
-      <div class="actions">
-        <button type="button" id="share">Copy link</button>
-        <button type="button" id="clear">Clear</button>
-      </div>
-    </div>
-
-    <div class="stage" id="stage">
-      <p class="hint">Pick a force or preset, then click here to place it.</p>
+        </div>
+        <p class="scenario-note" id="note"></p>
+      </aside>
     </div>
   </main>
   <SiteFooter />
-</Base>
 
-<script is:inline data-astro-rerun define:vars={{ FORCE_DATA, PRESET_DATA }}>
-  (() => {
-    const stage = document.getElementById('stage');
-    const field = document.querySelector('forces-field');
-    const meta = (kind, token) => (kind === 'preset' ? PRESET_DATA[token] : FORCE_DATA[token]);
-    let current = { kind: 'force', token: 'attract' };
-    let nodes = [];
-    const rescan = () => field && field.rescan && field.rescan();
-    const hideHint = () => {
-      const h = stage.querySelector('.hint');
-      if (h) h.style.display = 'none';
-    };
-    const clamp = (v) => Math.max(2, Math.min(98, v));
+  <script>
+    import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from 'forces-ui';
 
-    document.querySelectorAll('.catalog button').forEach((b) =>
-      b.addEventListener('click', () => {
-        current = { kind: b.dataset.kind, token: b.dataset.token };
-        document.querySelectorAll('.catalog button').forEach((x) => x.classList.toggle('on', x === b));
-      }),
-    );
+    type Any = Record<string, any>;
+    const forces = allForces();
+    const byForce: Any = {};
+    for (const e of EXPERIMENTS as Any[]) byForce[e.scenario.force] = e;
+    const META: Any = {};
+    for (const f of MANUAL_FORCES as Any[]) META[f.token] = f;
 
-    document.querySelectorAll('.palettes button').forEach((b) =>
-      b.addEventListener('click', () => {
-        if (field && field.setPalette) field.setPalette(b.dataset.palette);
-        document.querySelectorAll('.palettes button').forEach((x) => x.classList.toggle('on', x === b));
-      }),
-    );
+    const $ = (id: string) => document.getElementById(id);
 
-    document.querySelectorAll('.views button').forEach((b) =>
-      b.addEventListener('click', () => {
-        if (field && field.setRender) field.setRender(b.dataset.render);
-        document.querySelectorAll('.views button').forEach((x) => x.classList.toggle('on', x === b));
-      }),
-    );
+    // re-runs on each client-side navigation to /lab (ClientRouter); no-op elsewhere.
+    function setup() {
+      const canvas = $('chamber') as HTMLCanvasElement | null;
+      if (!canvas) return;
+      const W = window as Any;
+      W.__labAbort?.abort(); // tear down a previous run's window listeners
+      const _ac = new AbortController();
+      W.__labAbort = _ac;
+      if (W.__labTimer) { clearInterval(W.__labTimer); W.__labTimer = 0; }
+      const ctx = canvas.getContext('2d')!;
 
-    function makeEl(node) {
-      const m = meta(node.kind, node.token);
-      if (!m) return;
-      const el = document.createElement('div');
-      el.className = 'node';
-      if (node.kind === 'preset') {
-        el.dataset.preset = node.token;
-      } else {
-        el.dataset.body = node.token;
-        for (const k in m.attrs) el.dataset[k] = m.attrs[k];
+      // a minimal env for the field-vector probe (forceAt)
+      const fenv: Any = {
+        dx: 0, dy: 0, dist: 1,
+        form: { driftX: 0, wander: 0, orbit: 0, spread: 0, conv: 0 },
+        W: 1200, H: 800, t: 0, frameN: 0, dt: 1, c: 12, G: 1,
+        spark() {}, supernova() {}, spawn() {},
+        neighbors: () => [],
+        grid: () => ({ sample: () => 0, deposit() {}, gradient: () => ({ x: 0, y: 0 }) }),
+      };
+
+      let cur = 'attract';
+      let overrides: Any = {};
+      let result: Any = null;
+      let checks: Any[] = [];
+      let frame = 0;
+      let view = { scale: 1, ox: 0, oy: 0 };
+
+      const clone = (o: any) => JSON.parse(JSON.stringify(o));
+      const hexRgb = (h: string) => {
+        const n = parseInt(h.replace('#', ''), 16);
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      };
+      const rgba = (h: string, a: number) => {
+        const [r, g, b] = hexRgb(h);
+        return `rgba(${r},${g},${b},${a})`;
+      };
+      const color = () => META[cur]?.color ?? '#4da3ff';
+
+      function buildScenario() {
+        const s = clone(byForce[cur].scenario);
+        if (overrides.strength != null && s.body.strength != null) s.body.strength = overrides.strength;
+        if (overrides.range != null && s.body.range != null) s.body.range = overrides.range;
+        if (overrides.vx != null) s.particles[0].vx = overrides.vx;
+        if (overrides.vy != null) s.particles[0].vy = overrides.vy;
+        return s;
       }
-      el.style.setProperty('--c', m.color);
-      el.style.left = node.x + '%';
-      el.style.top = node.y + '%';
-      el.innerHTML = '<i class="fg fg-' + node.token + '"></i><span>' + node.token + '</span>';
-      el.title = 'drag to move · double-click to remove';
-      el.addEventListener('pointerdown', (e) => startDrag(e, node, el));
-      el.addEventListener('dblclick', (e) => {
-        e.stopPropagation();
-        el.remove();
-        nodes = nodes.filter((n) => n !== node);
-        rescan();
-        save();
-      });
-      stage.appendChild(el);
-      node.el = el;
-    }
 
-    function add(kind, token, x, y) {
-      const node = { kind, token, x, y };
-      nodes.push(node);
-      makeEl(node);
-      rescan();
-      save();
-      hideHint();
-    }
+      function evaluate() {
+        const s = buildScenario();
+        result = runScenario(s, forces);
+        // exact-formula checks are pinned to the experiment's default attributes; once
+        // you tune a parameter they no longer apply (the physics is still right — the
+        // invariants prove it), so they go inactive and drop out of the verdict.
+        const tuned = Object.keys(overrides).length > 0;
+        checks = byForce[cur].expectations.map((e: Any) => {
+          const r = e.check(result);
+          return {
+            label: e.label, kind: e.kind, pass: r.pass, measured: r.measured, expected: r.expected,
+            active: !(tuned && e.kind === 'exact'),
+          };
+        });
+        frame = 0;
+        computeView();
+        renderReadout();
+        renderParams();
+        draw();
+      }
 
-    function startDrag(e, node, el) {
-      e.preventDefault();
-      el.setPointerCapture(e.pointerId);
-      const onMove = (ev) => {
-        const r = stage.getBoundingClientRect();
-        node.x = clamp(((ev.clientX - r.left) / r.width) * 100);
-        node.y = clamp(((ev.clientY - r.top) / r.height) * 100);
-        el.style.left = node.x + '%';
-        el.style.top = node.y + '%';
-        rescan();
-      };
-      const onUp = () => {
-        el.removeEventListener('pointermove', onMove);
-        el.removeEventListener('pointerup', onUp);
-        save();
-      };
-      el.addEventListener('pointermove', onMove);
-      el.addEventListener('pointerup', onUp);
-    }
+      function computeView() {
+        const b = result.body;
+        const ext = b.range > 0 && b.range < 1200 ? b.range : 70;
+        let minX = b.cx - ext, maxX = b.cx + ext, minY = b.cy - ext, maxY = b.cy + ext;
+        for (const fr of result.trajectory)
+          for (const p of fr) {
+            minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+          }
+        const w = canvas!.clientWidth, h = canvas!.clientHeight;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas!.width = Math.floor(w * dpr);
+        canvas!.height = Math.floor(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const pad = 46;
+        const spanX = maxX - minX || 1, spanY = maxY - minY || 1;
+        const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY);
+        const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+        view = { scale, ox: w / 2 - cx * scale, oy: h / 2 - cy * scale };
+      }
+      const w2s = (x: number, y: number): [number, number] => [x * view.scale + view.ox, y * view.scale + view.oy];
 
-    stage.addEventListener('click', (e) => {
-      if (e.target !== stage) return; // ignore clicks that land on a node
-      const r = stage.getBoundingClientRect();
-      add(
-        current.kind,
-        current.token,
-        clamp(((e.clientX - r.left) / r.width) * 100),
-        clamp(((e.clientY - r.top) / r.height) * 100),
-      );
-    });
+      function arrow(x1: number, y1: number, x2: number, y2: number, col: string, head = 4) {
+        const a = Math.atan2(y2 - y1, x2 - x1);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+        ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(a - 0.4) * head, y2 - Math.sin(a - 0.4) * head);
+        ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(a + 0.4) * head, y2 - Math.sin(a + 0.4) * head);
+        ctx.stroke();
+      }
 
-    // share: presets are prefixed '@'; e.g. "attract,30,40;@blackhole,60,55"
-    function save() {
-      const s = nodes
-        .map((n) => (n.kind === 'preset' ? '@' : '') + n.token + ',' + n.x.toFixed(1) + ',' + n.y.toFixed(1))
-        .join(';');
-      history.replaceState(null, '', s ? '#' + encodeURIComponent(s) : location.pathname);
-    }
+      function drawField(b: Any) {
+        const w = canvas!.clientWidth, h = canvas!.clientHeight;
+        const stepPx = 34;
+        for (let sx = stepPx / 2; sx < w; sx += stepPx)
+          for (let sy = stepPx / 2; sy < h; sy += stepPx) {
+            const wx = (sx - view.ox) / view.scale;
+            const wy = (sy - view.oy) / view.scale;
+            const { fx, fy } = forceAt([b], forces, fenv, wx, wy);
+            const mag = Math.hypot(fx, fy);
+            if (mag < 1e-5) continue;
+            const ux = fx / mag, uy = fy / mag;
+            const len = Math.min(stepPx * 0.42, 4 + mag * 120);
+            ctx.strokeStyle = `rgba(125,150,200,${Math.min(0.05 + mag * 1.6, 0.36)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + ux * len, sy + uy * len); ctx.stroke();
+          }
+      }
 
-    function restore() {
-      const h = decodeURIComponent(location.hash.slice(1));
-      if (!h) return;
-      h.split(';').forEach((part) => {
-        const [raw, x, y] = part.split(',');
-        if (!raw) return;
-        const kind = raw[0] === '@' ? 'preset' : 'force';
-        const token = raw[0] === '@' ? raw.slice(1) : raw;
-        if (meta(kind, token)) {
-          const node = { kind, token, x: +x, y: +y };
-          nodes.push(node);
-          makeEl(node);
+      function draw() {
+        if (!result) return;
+        const w = canvas!.clientWidth, h = canvas!.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        const b = result.body;
+        const col = color();
+
+        drawField(b);
+
+        // range ring
+        if (b.range > 0 && b.range < 1200) {
+          const [sx, sy] = w2s(b.cx, b.cy);
+          ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(sx, sy, b.range * view.scale, 0, 6.283); ctx.stroke();
         }
-      });
-      if (nodes.length) {
-        hideHint();
-        rescan();
-        setTimeout(rescan, 120); // the field may still be mounting on first paint
+        // body marker
+        {
+          const [sx, sy] = w2s(b.cx, b.cy);
+          ctx.fillStyle = col;
+          ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 6.283); ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+        }
+
+        // particle tracks (0 = test particle, prominent; others = related)
+        const traj = result.trajectory;
+        const nP = traj[0].length;
+        for (let i = 0; i < nP; i++) {
+          ctx.beginPath();
+          for (let f = 0; f <= frame; f++) {
+            const p = traj[f][i];
+            const [sx, sy] = w2s(p.x, p.y);
+            if (f === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.strokeStyle = i === 0 ? rgba(col, 0.9) : 'rgba(200,210,230,0.35)';
+          ctx.lineWidth = i === 0 ? 1.7 : 1;
+          ctx.stroke();
+          const p = traj[frame][i];
+          const [sx, sy] = w2s(p.x, p.y);
+          ctx.fillStyle = i === 0 ? col : 'rgba(200,210,230,0.6)';
+          ctx.beginPath(); ctx.arc(sx, sy, i === 0 ? 4 : 2.6, 0, 6.283); ctx.fill();
+          // velocity vector
+          const [vx2, vy2] = w2s(p.x + p.vx * 5, p.y + p.vy * 5);
+          arrow(sx, sy, vx2, vy2, i === 0 ? rgba(col, 0.7) : 'rgba(200,210,230,0.4)', 3.5);
+        }
+
+        // expected overlay: the predicted frame-0 Δv on the test particle (gold)
+        const p0 = traj[0][0];
+        const d = result.applyDelta[0];
+        if (Math.hypot(d.dvx, d.dvy) > 1e-6) {
+          const k = 60;
+          const [ex, ey] = w2s(p0.x, p0.y);
+          const [ex2, ey2] = w2s(p0.x + d.dvx * k, p0.y + d.dvy * k);
+          arrow(ex, ey, ex2, ey2, 'rgba(255,206,107,0.95)', 4);
+          ctx.fillStyle = 'rgba(255,206,107,0.95)';
+          ctx.font = '10px ui-monospace, monospace';
+          ctx.fillText('expected Δv', ex2 + 4, ey2 - 4);
+        }
+
+        const fr = $('frameReadout');
+        if (fr) fr.textContent = `frame ${frame} / ${traj.length - 1}`;
       }
+
+      function renderReadout() {
+        const active = checks.filter((c) => c.active);
+        const allPass = active.every((c) => c.pass);
+        const v = $('verdict')!;
+        v.className = 'verdict ' + (allPass ? 'pass' : 'fail');
+        v.textContent = allPass ? 'Match — behaves as predicted' : 'No match — tune & refire';
+        const list = $('checklist')!;
+        list.innerHTML = checks
+          .map((c) => {
+            const cls = !c.active ? 'muted' : c.pass ? 'pass' : 'fail';
+            const mark = !c.active ? '–' : c.pass ? '✓' : '✗';
+            const kind = c.active ? c.kind : 'default-only';
+            return `<div class="check ${cls}">
+              <div class="row1"><span class="mark">${mark}</span>
+              <span class="label">${c.label}</span><span class="kind">${kind}</span></div>
+              <div class="nums"><span>measured <b>${c.measured}</b></span><span>expected <b>${c.expected}</b></span></div>
+            </div>`;
+          })
+          .join('');
+        const note = $('note');
+        if (note) note.textContent = byForce[cur].scenario.label + '.';
+      }
+
+      function renderParams() {
+        const s = byForce[cur].scenario;
+        const rows: string[] = [];
+        const slider = (key: string, label: string, val: number, min: number, max: number, step: number) =>
+          `<div class="param"><label>${label}</label><span class="val" id="val-${key}">${val}</span>
+            <input type="range" data-param="${key}" min="${min}" max="${max}" step="${step}" value="${val}"></div>`;
+        const b = s.body;
+        const cur0 = overrides;
+        if (b.strength != null) {
+          const def = cur0.strength ?? b.strength;
+          const max = Math.max(0.5, b.strength * 3);
+          rows.push(slider('strength', 'strength', def, 0, max, max / 100));
+        }
+        if (b.range > 0) {
+          const def = cur0.range ?? b.range;
+          rows.push(slider('range', 'range (px)', def, 50, 500, 10));
+        }
+        const p0 = s.particles[0];
+        rows.push(slider('vx', 'initial vᵪ', cur0.vx ?? p0.vx ?? 0, -8, 8, 0.5));
+        rows.push(slider('vy', 'initial vᵧ', cur0.vy ?? p0.vy ?? 0, -8, 8, 0.5));
+        $('params')!.innerHTML = rows.join('');
+        $('params')!
+          .querySelectorAll('input[data-param]')
+          .forEach((el) =>
+            el.addEventListener('input', () => {
+              const key = (el as HTMLInputElement).dataset.param!;
+              const val = parseFloat((el as HTMLInputElement).value);
+              overrides[key] = val;
+              const vv = $('val-' + key);
+              if (vv) vv.textContent = String(val);
+              evaluate();
+            }),
+          );
+      }
+
+      // ── transport ──────────────────────────────────────────────────────────
+      function stopPlay() {
+        if (W.__labTimer) clearInterval(W.__labTimer);
+        W.__labTimer = 0;
+        const pb = $('play');
+        if (pb) pb.textContent = '▶ Play';
+      }
+      function play() {
+        if (W.__labTimer) return stopPlay();
+        frame = 0;
+        const pb = $('play');
+        if (pb) pb.textContent = '⏸ Pause';
+        W.__labTimer = window.setInterval(() => {
+          frame++;
+          if (frame >= result.trajectory.length - 1) {
+            frame = result.trajectory.length - 1;
+            draw();
+            stopPlay();
+            return;
+          }
+          draw();
+        }, 33);
+      }
+
+      function select(force: string, keepOverrides = false) {
+        cur = force;
+        if (!keepOverrides) overrides = {};
+        document.querySelectorAll('.lab-pick').forEach((b) =>
+          b.classList.toggle('on', (b as HTMLElement).dataset.force === force),
+        );
+        stopPlay();
+        evaluate();
+      }
+
+      function init() {
+        document.querySelectorAll('.lab-pick').forEach((b) =>
+          b.addEventListener('click', () => select((b as HTMLElement).dataset.force!)),
+        );
+        $('fire')?.addEventListener('click', () => { stopPlay(); frame = 0; play(); });
+        $('play')?.addEventListener('click', play);
+        $('stepb')?.addEventListener('click', () => {
+          stopPlay();
+          frame = Math.min(frame + 1, result.trajectory.length - 1);
+          draw();
+        });
+        $('reset')?.addEventListener('click', () => { stopPlay(); frame = 0; draw(); });
+        $('resetParams')?.addEventListener('click', () => select(cur));
+        $('share')?.addEventListener('click', () => {
+          const parts = [cur];
+          for (const k of ['strength', 'range', 'vx', 'vy'])
+            if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
+          location.hash = parts.join(';');
+          navigator.clipboard?.writeText(location.href);
+          const sb = $('share');
+          if (sb) { sb.textContent = 'Copied ✓'; setTimeout(() => (sb.textContent = 'Copy link'), 1100); }
+        });
+        window.addEventListener('resize', () => { if (result) { computeView(); draw(); } }, { passive: true, signal: _ac.signal });
+
+        // restore from hash, else default
+        const hash = decodeURIComponent(location.hash.replace(/^#/, ''));
+        if (hash) {
+          const [force, ...kv] = hash.split(';');
+          if (byForce[force]) {
+            for (const pair of kv) {
+              const [k, v] = pair.split('=');
+              if (v != null) overrides[k] = parseFloat(v);
+            }
+            select(force, true);
+            return;
+          }
+        }
+        select('attract');
+      }
+
+      init();
     }
 
-    document.getElementById('clear').addEventListener('click', () => {
-      nodes.forEach((n) => n.el.remove());
-      nodes = [];
-      rescan();
-      save();
-    });
-    document.getElementById('share').addEventListener('click', async () => {
-      save();
-      const btn = document.getElementById('share');
-      try {
-        await navigator.clipboard.writeText(location.href);
-        const t = btn.textContent;
-        btn.textContent = 'Copied!';
-        setTimeout(() => (btn.textContent = t), 1200);
-      } catch {
-        /* clipboard blocked — the URL is still updated to share manually */
-      }
-    });
-
-    restore();
-  })();
-</script>
-
-<style>
-  .lab {
-    position: relative;
-    z-index: 2;
-    align-self: flex-start;
-    width: 100%;
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: calc(58px + clamp(1.4rem, 4vh, 2.6rem)) clamp(1.2rem, 5vw, 3.5rem) 5rem;
-  }
-  :global(body:has(.lab)) {
-    align-items: flex-start;
-  }
-  h1 {
-    font-size: clamp(2.4rem, 7vw, 4rem);
-    font-weight: 700;
-    margin: 0.6rem 0 0.8rem;
-    letter-spacing: -0.03em;
-  }
-  .lede {
-    max-width: 56ch;
-    color: var(--text-2);
-    line-height: 1.55;
-  }
-
-  .catalog {
-    margin: clamp(1.5rem, 4vh, 2.5rem) 0 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  .glabel {
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-3);
-    width: 5rem;
-    flex: none;
-  }
-  .catalog button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-family: var(--mono);
-    font-size: 0.74rem;
-    color: var(--text-3);
-    background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 7px;
-    padding: 0.32rem 0.6rem;
-    cursor: pointer;
-    transition:
-      color 0.15s ease,
-      border-color 0.15s ease;
-  }
-  .catalog button:hover {
-    color: var(--text);
-  }
-  .catalog button.on {
-    color: var(--text);
-    border-color: var(--c);
-    box-shadow: 0 0 0 1px var(--c) inset;
-  }
-  .catalog .fg {
-    --fc: var(--c);
-    width: 13px;
-    height: 13px;
-  }
-
-  .bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: space-between;
-    align-items: center;
-    margin: 0 0 1rem;
-  }
-  .palettes,
-  .views,
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  .plabel {
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-3);
-    margin-right: 0.2rem;
-  }
-  .palettes button,
-  .views button,
-  .actions button {
-    font-family: var(--mono);
-    font-size: 0.74rem;
-    color: var(--text-3);
-    background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.34rem 0.7rem;
-    cursor: pointer;
-  }
-  .palettes button:hover,
-  .views button:hover,
-  .actions button:hover {
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-  .palettes button.on,
-  .views button.on {
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-
-  .stage {
-    position: relative;
-    height: clamp(360px, 58vh, 620px);
-    border: 1px dashed var(--line);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.012);
-    overflow: hidden;
-    cursor: crosshair;
-  }
-  .hint {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    display: grid;
-    place-items: center;
-    color: var(--text-3);
-    font-family: var(--mono);
-    font-size: 0.82rem;
-    pointer-events: none;
-  }
-
-  /* nodes are created at runtime → global rules */
-  :global(.stage .node) {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--text);
-    background: color-mix(in oklab, var(--c) 22%, #0a0c12);
-    border: 1px solid var(--c);
-    border-radius: 999px;
-    padding: 0.28rem 0.7rem;
-    cursor: grab;
-    user-select: none;
-    white-space: nowrap;
-    box-shadow: 0 0 16px -2px var(--c);
-    touch-action: none;
-  }
-  :global(.stage .node .fg) {
-    --fc: var(--c);
-    width: 13px;
-    height: 13px;
-  }
-  :global(.stage .node:active) {
-    cursor: grabbing;
-  }
-</style>
+    document.addEventListener('astro:page-load', setup);
+  </script>
+</Base>
