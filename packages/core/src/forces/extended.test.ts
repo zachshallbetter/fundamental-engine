@@ -10,6 +10,7 @@ import {
   wind,
   cohesion,
   pressure,
+  link,
   hunt,
   spawn,
   resonate,
@@ -96,6 +97,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'wind',
       'cohesion',
       'pressure',
+      'link',
       'hunt',
       'spawn',
       'resonate',
@@ -400,6 +402,31 @@ test('hunt: ignores neighbours of its own species and is inert beyond range', ()
   assert.equal(p.vx, 0); // same species → no target
   const beyond = part({ x: 0, y: 0, species: 0 });
   hunt.apply(body({ strength: 1, range: 100 }), beyond, env({ dist: 200, neighbors: () => [part({ x: 10, y: 0, species: 1 })] }));
+  assert.equal(beyond.vx, 0); // body out of reach
+});
+
+// link uses env.neighbors; range r=200 → rest length L = r·0.35 = 70. k = strength.
+test('link pulls a stretched bond back toward its rest length (§20.3)', () => {
+  const p = part({ x: 0, y: 0 });
+  // neighbour at d=150 > L=70 → err=80, f = ½·1·(80/70) = 0.571428 toward +x
+  link.apply(body({ strength: 1, range: 200 }), p, env({ dist: 10, ...withNeighbor({ x: 150, y: 0 }) }));
+  assert.ok(near(p.vx, 0.571428));
+  assert.ok(near(p.vy, 0));
+});
+
+test('link pushes a compressed bond back out toward its rest length (§20.3)', () => {
+  const p = part({ x: 0, y: 0 });
+  // neighbour at d=30 < L=70 → err=−40, f = ½·1·(−40/70) = −0.285714 (away from +x)
+  link.apply(body({ strength: 1, range: 200 }), p, env({ dist: 10, ...withNeighbor({ x: 30, y: 0 }) }));
+  assert.ok(near(p.vx, -0.285714));
+});
+
+test('link is neutral exactly at the rest length and inert beyond range', () => {
+  const atRest = part({ x: 0, y: 0 });
+  link.apply(body({ strength: 1, range: 200 }), atRest, env({ dist: 10, ...withNeighbor({ x: 70, y: 0 }) }));
+  assert.ok(near(atRest.vx, 0)); // d = L → err 0
+  const beyond = part({ x: 0, y: 0 });
+  link.apply(body({ strength: 1, range: 100 }), beyond, env({ dist: 200, ...withNeighbor({ x: 35, y: 0 }) }));
   assert.equal(beyond.vx, 0); // body out of reach
 });
 

@@ -444,6 +444,26 @@
   opacity: 0.55;
 }
 
+/* link — two nodes joined by a bond */
+.fg-link::before {
+  left: 1px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+}
+.fg-link::after {
+  right: 1px;
+  top: 50%;
+  width: 8px;
+  height: 0;
+  margin-top: -0.5px;
+  border-top: 1.5px solid currentColor;
+  opacity: 0.7;
+}
+
 /* resonate — a standing wave */
 .fg-resonate::before {
   left: 1px;

@@ -312,6 +312,39 @@ export const hunt: Force = {
 };
 
 /**
+ * §20.3 — `link` (class [B], over `env.neighbors`): a Verlet distance constraint that
+ * holds matter at a rest length, so a dense blob behaves as rope / chain / cloth — a soft
+ * structure rather than a gas. The spec declares explicit pairs (`data-link="a b"`), but
+ * this engine's particles are an anonymous pool, so `link` bonds to *every* neighbour
+ * inside a bond radius (`range`) and pulls each toward the rest length `L = range·0.35`:
+ * too far → pull in, too close → push out, stiffness `k = strength`. Each particle applies
+ * only *half* the correction toward each partner; the partner applies its half on its own
+ * turn, so the pair satisfies the constraint symmetrically and momentum is conserved.
+ */
+const LINK_REST = 0.35; // rest length L as a fraction of the bond radius (range)
+export const link: Force = {
+  token: 'link',
+  label: 'Link',
+  apply(b, p, e) {
+    if (e.dist >= b.range) return;
+    const r = b.range;
+    const L = r * LINK_REST;
+    const k = b.strength;
+    for (const n of e.neighbors(p, r)) {
+      const dx = n.x - p.x;
+      const dy = n.y - p.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 1e-6) continue;
+      const err = d - L; // +ve → too far (pull together); −ve → too close (push apart)
+      const f = 0.5 * k * (err / L); // half the Verlet correction; the partner does its half
+      p.vx += f * (dx / d);
+      p.vy += f * (dy / d);
+    }
+  },
+  meta: { desc: 'a Verlet distance constraint — holds a rest length, so matter ropes and drapes' },
+};
+
+/**
  * §20.1/§20.2 — `spawn` (class [S], the source *atom*): the one force that *creates*
  * matter rather than moving it. While its body is engaged it emits particles each frame
  * at the body centre, launched along the heading `(ux, uy)` within a soft cone. This
@@ -411,6 +444,7 @@ export const extendedForces: readonly Force[] = [
   wind,
   cohesion,
   pressure,
+  link,
   hunt,
   spawn,
   resonate,
