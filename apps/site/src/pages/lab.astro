@@ -67,7 +67,22 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           <span class="stage-label">detector chamber</span>
           <canvas id="chamber"></canvas>
         </div>
-        <input type="range" id="scrub" class="lab-scrub" min="0" max="1" value="0" aria-label="Scrub timeline" />
+        <div
+          class="lab-timeline"
+          id="timeline"
+          role="slider"
+          tabindex="0"
+          aria-label="Timeline — drag to scrub; markers show where each test passes"
+          aria-valuemin="0"
+          aria-valuenow="0"
+        >
+          <div class="tl-track">
+            <div class="tl-ticks" id="tlTicks"></div>
+            <div class="tl-fill" id="tlFill"></div>
+            <div class="tl-markers" id="tlMarkers"></div>
+            <div class="tl-playhead" id="tlPlayhead"></div>
+          </div>
+        </div>
         <div class="lab-transport">
           <button type="button" id="fire" class="primary">↯ Fire</button>
           <button type="button" id="play">▶ Play</button>
@@ -232,8 +247,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           };
         });
         if (resetFrame) frame = 0;
-        const scrub = $('scrub') as HTMLInputElement | null;
-        if (scrub) { scrub.max = String(result.trajectory.length - 1); if (resetFrame) scrub.value = '0'; }
+        buildTimeline();
         computeView();
         if (resetFrame) renderParams();
         draw();
@@ -263,9 +277,11 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         canvas!.width = Math.floor(w * dpr);
         canvas!.height = Math.floor(h * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        const pad = 50;
+        const pad = 56;
         const spanX = maxX - minX || 1, spanY = maxY - minY || 1;
-        const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY);
+        // a wider view: zoom out so the particle sits in more of the surrounding field
+        // rather than filling the frame.
+        const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY) * 0.7;
         const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
         view = { scale, ox: w / 2 - cx * scale, oy: h / 2 - cy * scale };
       }
@@ -363,8 +379,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
 
         const fr = $('frameReadout');
         if (fr) fr.textContent = `frame ${frame} / ${traj.length - 1}`;
-        const scrub = $('scrub') as HTMLInputElement | null;
-        if (scrub && document.activeElement !== scrub) scrub.value = String(frame);
+        updateTimeline();
         paintChecklist();
       }
 
@@ -415,6 +430,55 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           <span class="label">${c.label}</span><span class="kind">${kind}</span></div>
           <div class="nums"><span>measured <b>${c.measured}</b></span><span>expected <b>${c.expected}</b></span>${when ? `<span class="when">${when}</span>` : ''}</div>
         </div>`;
+      }
+
+      // the timeline: ticks, a marker at each test's pass-frame, a MATCH flag at the
+      // frame where all tests have passed, and the playhead. Built on evaluate.
+      function buildTimeline() {
+        const max = result.trajectory.length - 1;
+        const tl = $('timeline');
+        if (tl) tl.setAttribute('aria-valuemax', String(max));
+        const ticks = $('tlTicks');
+        if (ticks) {
+          const n = 10;
+          ticks.innerHTML = Array.from({ length: n + 1 }, (_, i) => `<span style="left:${(i / n) * 100}%"></span>`).join('');
+        }
+        const markers = $('tlMarkers');
+        if (markers) {
+          const active = checks.filter((c: Any) => c.active && c.passFrame >= 0);
+          let html = active
+            .map((c: Any) => {
+              const pct = max ? (c.passFrame / max) * 100 : 0;
+              return `<span class="tl-marker" data-pf="${c.passFrame}" style="left:${pct}%" title="${c.label} — passes @ frame ${c.passFrame}"></span>`;
+            })
+            .join('');
+          const allActive = checks.filter((c: Any) => c.active);
+          const matchFrame = allActive.length && allActive.every((c: Any) => c.passFrame >= 0)
+            ? Math.max(...allActive.map((c: Any) => c.passFrame)) : -1;
+          if (matchFrame >= 0) {
+            const pct = max ? (matchFrame / max) * 100 : 0;
+            html += `<span class="tl-flag" data-pf="${matchFrame}" style="left:${pct}%" title="MATCH — all tests pass by frame ${matchFrame}"></span>`;
+          }
+          markers.innerHTML = html;
+          markers.dataset.match = String(matchFrame);
+        }
+        updateTimeline();
+      }
+      function updateTimeline() {
+        if (!result) return;
+        const max = result.trajectory.length - 1 || 1;
+        const pct = (frame / max) * 100;
+        const fill = $('tlFill'); if (fill) fill.style.width = pct + '%';
+        const ph = $('tlPlayhead'); if (ph) ph.style.left = pct + '%';
+        const tl = $('timeline'); if (tl) tl.setAttribute('aria-valuenow', String(frame));
+        const markers = $('tlMarkers');
+        if (markers) {
+          markers.querySelectorAll('.tl-marker').forEach((m: Any) => m.classList.toggle('passed', frame >= +m.dataset.pf));
+          const matchFrame = +(markers.dataset.match ?? -1);
+          const fl = markers.querySelector('.tl-flag') as Any;
+          if (fl) fl.classList.toggle('reached', matchFrame >= 0 && frame >= matchFrame);
+          if (fill) (fill as HTMLElement).classList.toggle('matched', matchFrame >= 0 && frame >= matchFrame);
+        }
       }
 
       function renderParams() {
@@ -602,11 +666,27 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         });
         $('export')?.addEventListener('click', exportJSON);
         $('report')?.addEventListener('click', copyReport);
-        $('scrub')?.addEventListener('input', () => {
-          stopPlay();
-          frame = parseInt(($('scrub') as HTMLInputElement).value, 10) || 0;
-          draw();
-        });
+        const tl = $('timeline');
+        if (tl) {
+          const frameFromX = (clientX: number) => {
+            const r = tl.getBoundingClientRect();
+            const t = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+            return Math.round(t * (result.trajectory.length - 1));
+          };
+          let dragging = false;
+          const scrubTo = (clientX: number) => { stopPlay(); frame = frameFromX(clientX); draw(); };
+          tl.addEventListener('pointerdown', (e: Any) => { dragging = true; try { tl.setPointerCapture(e.pointerId); } catch {} scrubTo(e.clientX); });
+          tl.addEventListener('pointermove', (e: Any) => { if (dragging) scrubTo(e.clientX); });
+          tl.addEventListener('pointerup', () => { dragging = false; });
+          tl.addEventListener('keydown', (e: Any) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+              stopPlay();
+              frame = Math.max(0, Math.min(result.trajectory.length - 1, frame + (e.key === 'ArrowRight' ? 1 : -1)));
+              draw();
+              e.preventDefault();
+            }
+          });
+        }
         $('resetParams')?.addEventListener('click', () => select(cur));
         $('share')?.addEventListener('click', () => {
           location.hash = buildHash();
