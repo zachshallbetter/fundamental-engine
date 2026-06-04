@@ -44,6 +44,14 @@ export function rgbToHex([r, g, b]: RGB): string {
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
+/** Lerp two hex colours by `t` ∈ [0,1] — conserved pigment mixing (§20.8). */
+export function mixHex(a: string, b: string, t: number): string {
+  const [ar, ag, ab] = hexToRgb(a);
+  const [br, bg, bb] = hexToRgb(b);
+  const k = t < 0 ? 0 : t > 1 ? 1 : t;
+  return rgbToHex([ar + (br - ar) * k, ag + (bg - ag) * k, ab + (bb - ab) * k]);
+}
+
 /** Sample a colour ramp at `frac` ∈ [0,1] — the accent journey (§9). */
 export function sampleStops(stops: readonly RGB[], frac: number): RGB {
   if (stops.length === 0) return [77, 163, 255];

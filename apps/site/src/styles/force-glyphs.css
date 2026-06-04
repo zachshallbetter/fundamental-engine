@@ -423,6 +423,20 @@
   background: currentColor;
 }
 
+/* pigment — two overlapping inks mixing (conserved colour transport) */
+.fg-pigment::before {
+  inset: 1.5px 5px 5px 1.5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+.fg-pigment::after {
+  inset: 5px 1.5px 1.5px 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+}
+
 /* ── presets (§20.9) — cosmic composites ───────────────────────────────────── */
 
 /* blackhole — a dark core ringed by an accretion disk */

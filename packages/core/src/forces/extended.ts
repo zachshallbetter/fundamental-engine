@@ -10,6 +10,7 @@
 
 import type { Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
+import { mixHex } from '../core/math.ts';
 
 /**
  * §20.3 — `lens`: rotate the velocity, preserving its magnitude. A gravitational
@@ -264,6 +265,24 @@ export const spotlight: Force = {
   meta: { desc: 'gates sibling forces to an angular cone of the heading' },
 };
 
+/**
+ * §20.8 — `pigment` (class [E], particle attribute `color`): conserved colour
+ * transport. A particle that overlaps a pigment body takes on the body's tint
+ * (`data-color`) and carries it away — the section *stains* the field, and the
+ * colour advects with the matter instead of being re-tinted globally. Opt-in and
+ * inert without a tint, so a normal field is untouched.
+ */
+export const pigment: Force = {
+  token: 'pigment',
+  label: 'Pigment',
+  apply(b, p, e) {
+    const tint = b.tint;
+    if (!tint || e.dist >= b.range * 0.6) return; // only stains on overlap
+    p.color = p.color ? mixHex(p.color, tint, 0.08) : tint; // adopt, then advect toward
+  },
+  meta: { desc: 'conserved colour transport — matter takes on and carries a tint' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
 export const extendedForces: readonly Force[] = [
   lens,
@@ -276,6 +295,7 @@ export const extendedForces: readonly Force[] = [
   cohesion,
   resonate,
   spotlight,
+  pigment,
 ];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */

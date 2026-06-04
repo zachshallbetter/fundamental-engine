@@ -93,6 +93,7 @@ function makeBody(el: HTMLElement, sb: StaticBody): Body {
   return {
     el,
     ...sb,
+    tint: el.dataset.color, // data-color → pigment tint (§20.8); undefined if absent
     cx: 0,
     cy: 0,
     hw: 0,

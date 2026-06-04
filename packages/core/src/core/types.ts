@@ -82,6 +82,8 @@ export interface Body {
   when: string;
   /** opt into two-way density write-back (§8). */
   feedback: boolean;
+  /** the body's tint from `data-color`, for `pigment` colour transport (§20.8). */
+  tint?: string;
   fmin: number;
   fmax: number;
   opsz: string;

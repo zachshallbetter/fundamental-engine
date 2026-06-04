@@ -69,6 +69,7 @@ export const FORCE_COLORS: Record<string, string> = {
   cohesion: '#34d399',
   resonate: '#f0abfc',
   spotlight: '#facc15',
+  pigment: '#d6529e', // ink — conserved colour transport
 };
 
 /**
@@ -107,6 +108,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   cohesion: 'A tag group that behaves like a droplet — a swarm with a skin.',
   resonate: 'Pair with attract: a well that breathes (pulsing strength).',
   spotlight: 'Pair with stream: a directed beam confined to a cone.',
+  pigment: 'A section that stains passing matter its own colour, carried away.',
 };
 
 /** Every force, in catalog order. The UI groups these by `family`. */
@@ -331,6 +333,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
     formula: 'modifier: gates siblings outside an angular cone of the heading',
     attrs: ['angle'],
     desc: 'a directional gate — confines sibling forces to a beam',
+  },
+  {
+    family: 'extended',
+    token: 'pigment',
+    label: 'Pigment',
+    formula: 'on overlap: c_p ← mix(c_p, tint, rate);  the colour advects with matter',
+    attrs: ['range', 'color'],
+    desc: 'conserved colour transport — matter takes on and carries a tint',
   },
 ];
 
