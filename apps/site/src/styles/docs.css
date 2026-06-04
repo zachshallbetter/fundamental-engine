@@ -29,6 +29,17 @@
   overflow-y: auto;
   padding: clamp(1.6rem, 4vh, 2.6rem) 0 2rem;
   scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+.docs-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.docs-sidebar::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 3px;
+}
+.docs-sidebar::-webkit-scrollbar-track {
+  background: transparent;
 }
 .docs-side-toggle {
   display: none;
