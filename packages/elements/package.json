@@ -1,12 +1,46 @@
 {
   "name": "@forces-ui/elements",
   "version": "0.1.0",
-  "private": true,
+  "description": "Web-component keystone for forces-ui — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
+  "license": "MIT",
+  "author": "Zach Shallbetter <zach@zachshallbetter.com> (https://zachshallbetter.com)",
+  "homepage": "https://forces-ui.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachshallbetter/forces-ui.git",
+    "directory": "packages/elements"
+  },
+  "bugs": {
+    "url": "https://github.com/zachshallbetter/forces-ui/issues"
+  },
+  "keywords": [
+    "forces-ui",
+    "web-components",
+    "custom-elements",
+    "particles",
+    "physics",
+    "canvas",
+    "field"
+  ],
+  "sideEffects": ["./dist/index.js"],
+  "files": ["dist", "README.md", "LICENSE"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": ["./dist/index.js"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"

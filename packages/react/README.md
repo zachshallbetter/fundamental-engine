@@ -1,8 +1,11 @@
 # @forces-ui/react
 
-The React adapter for [forces-ui](../../README.md) — a reciprocal DOM-physics field
-as a React component. Elements you mark with `data-body` become forces; the single
-background field reacts to them, and its density reacts back.
+The React adapter for [forces-ui](https://www.npmjs.com/package/forces-ui) — a
+reciprocal DOM-physics field as a React component. Elements you mark with
+`data-body` become forces; the single background field reacts to them, and its
+density reacts back.
+
+→ Live at **[forces-ui.com](https://forces-ui.com)**.
 
 React is a **peer dependency** (the core engine stays zero-dependency).
 
@@ -23,9 +26,9 @@ export function App() {
 
 `<ForcesField>` mounts a fixed, full-viewport canvas behind your app and runs the
 engine on it — the same field the `<forces-field>` custom element and `mountField()`
-wrap. It accepts every [`FieldOptions`](../core/src/core/types.ts) prop (`accent`,
-`density`, `waves`, `render`, `mass`) plus `className`/`style`, and an `onReady`
-callback that hands you the live `FieldHandle`:
+wrap. It accepts every `FieldOptions` prop (`accent`, `density`, `waves`, `render`,
+`palette`, `mass`, `attention`, `causality`) plus `className`/`style`, and an
+`onReady` callback that hands you the live `FieldHandle`:
 
 ```tsx
 <ForcesField onReady={(field) => field.scan()} />   // rescan after adding bodies
