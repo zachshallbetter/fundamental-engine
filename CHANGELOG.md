@@ -35,6 +35,19 @@ in progress (see [RELEASING.md](RELEASING.md)).
 - **Release engineering** — CI (typecheck · test · build on every PR), `CONTRIBUTING.md`,
   `RELEASING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, and issue/PR templates.
 
+### Fixed
+
+- **`collide` now conserves momentum in the trajectory.** It resolved only `p` and
+  trusted `q`'s later turn, but the integrator processes particles sequentially, so `q`
+  read `p`'s already-changed velocity — an order-dependent, non-conserving result. The
+  pair is now resolved symmetrically in one pass (equal & opposite impulses), giving a
+  proper equal-mass elastic bounce.
+- **Conformance experiments tightened** — `thermal` isotropy is measured over a 150-body
+  cloud (ratio ≈ 1, not a single noisy walk); `collide` is centred in positive space and
+  approaches slowly so the bounce is clear (gap 20 → 31) and gains a velocity-reversal
+  check; `wind` uses a stronger gust; the `gate` expectation wording is corrected
+  ("reflected back along n").
+
 ### Changed
 
 - **The site front door** — the Field Manual is now the home page (`/reference` redirects

@@ -158,9 +158,16 @@ export const collide: Force = {
       const uy = ny / d;
       const relN = (p.vx - q.vx) * ux + (p.vy - q.vy) * uy;
       if (relN >= 0) continue; // separating already → no impulse
-      const j = (1 + restitution) * 0.5 * relN; // half the exchange (q takes the rest)
+      // resolve the pair symmetrically in one pass (equal & opposite impulses) so the
+      // result is momentum-conserving and order-independent — the integrator processes
+      // particles sequentially, so applying only to `p` and trusting `q`'s later turn
+      // double-counts (q would read p's already-changed velocity). After this the pair
+      // is separating, so q's own apply skips it.
+      const j = (1 + restitution) * 0.5 * relN;
       p.vx -= j * ux;
       p.vy -= j * uy;
+      q.vx += j * ux;
+      q.vy += j * uy;
     }
   },
   meta: { desc: 'elastic pairwise collision — the hard-sphere billiard force' },
