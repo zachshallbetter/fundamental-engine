@@ -516,6 +516,30 @@
   text-shadow: 0 0 calc(var(--d) * 50px) color-mix(in srgb, var(--accent) calc(var(--d) * 85%), transparent);
 }
 
+/* conserved-attention set — each word's weight + glow is the engine-written --d,
+   so the redistributed force budget shows up as redistributed type */
+.attn-set {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: clamp(0.8rem, 3vw, 2.2rem);
+  width: 100%;
+  padding: 0 1rem;
+}
+.attn-word {
+  --d: 0;
+  --cat: var(--accent);
+  cursor: pointer;
+  font-size: clamp(1.9rem, 5vw, 3.6rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--cat) calc(32% + var(--d) * 60%), var(--text-4));
+  font-variation-settings: 'wght' calc(360 + var(--d) * 420);
+  text-shadow: 0 0 calc(var(--d) * 46px) color-mix(in srgb, var(--cat) calc(var(--d) * 85%), transparent);
+  transition: color 0.25s;
+}
+
 /* thread set */
 .thread-set {
   display: flex;
