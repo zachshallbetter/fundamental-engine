@@ -1,0 +1,244 @@
+/* ============================================================
+   Developer docs — shared styling for the /docs portal.
+   Built on ds-tokens.css; mirrors the manual's voice but reads
+   as a reference, not an explainer. Global (not scoped).
+   ============================================================ */
+.docs {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: calc(58px + clamp(2rem, 6vh, 4rem)) clamp(1.25rem, 5vw, 2rem) 4rem;
+}
+:global(body:has(.docs)) {
+  align-items: flex-start;
+}
+
+/* hero */
+.docs-hero {
+  padding-bottom: clamp(1.6rem, 4vh, 2.6rem);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: clamp(2rem, 5vh, 3rem);
+}
+.docs .kicker {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+.docs-hero h1 {
+  margin: 0.9rem 0 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.docs-hero h1 .accent {
+  color: var(--accent);
+}
+.docs-hero .lede {
+  margin: 1.1rem 0 0;
+  max-width: 60ch;
+  font-size: 1.08rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+/* sections */
+.docs-sec {
+  margin: clamp(2.4rem, 6vh, 3.6rem) 0 0;
+}
+.docs-sec > h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  letter-spacing: -0.03em;
+  margin: 0 0 0.4rem;
+  scroll-margin-top: 76px;
+}
+.docs-sec h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.12rem;
+  letter-spacing: -0.02em;
+  margin: 1.8rem 0 0.7rem;
+  color: var(--text);
+}
+.docs-sec p {
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--text-2);
+  max-width: 64ch;
+  margin: 0.6rem 0;
+}
+.docs-sec p code,
+.docs-sec li code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.08em 0.36em;
+}
+.docs-sec a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.docs-sec a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* install chips */
+.install {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  color: var(--text);
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: copy;
+  transition: border-color 0.2s;
+}
+.install::before {
+  content: '$';
+  color: var(--accent);
+  opacity: 0.7;
+}
+.install:hover {
+  border-color: var(--accent);
+}
+.install.copied::after {
+  content: 'copied ✓';
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.pkg-grid {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+.pkg {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.pkg span {
+  font-size: 0.9rem;
+  color: var(--text-3);
+}
+
+/* code blocks */
+.code {
+  margin: 0.8rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--ink-800, #e4ebf7);
+  background: var(--bg-canvas, #07090e);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  tab-size: 2;
+}
+.code .cm {
+  color: var(--text-4);
+}
+.code .kw {
+  color: var(--accent);
+}
+.code .st {
+  color: var(--ok, #5fd0a8);
+}
+
+/* callouts */
+.callout {
+  margin: 1.4rem 0;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: 8px;
+  background: rgba(77, 163, 255, 0.05);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.callout b {
+  color: var(--text);
+}
+
+/* the mental-model list */
+.model {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.model li {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-2);
+  padding-left: 1.1rem;
+  border-left: 2px solid var(--line-2);
+}
+.model li b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* next-steps cards */
+.next-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.next-card {
+  display: block;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg, 14px);
+  background: var(--bg-card, #0b0e16);
+  border-bottom: 1px solid var(--line) !important;
+  transition:
+    border-color 0.2s,
+    transform 0.2s var(--ease);
+}
+.next-card:hover {
+  border-color: var(--accent) !important;
+  transform: translateY(-2px);
+}
+.next-card b {
+  display: block;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.next-card span {
+  font-size: 0.9rem;
+  color: var(--text-3);
+}
+@media (max-width: 620px) {
+  .next-grid {
+    grid-template-columns: 1fr;
+  }
+}

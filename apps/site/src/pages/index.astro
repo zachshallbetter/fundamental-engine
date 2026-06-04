@@ -2,252 +2,785 @@
 import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
+import '../styles/manual.css';
+import '../styles/force-glyphs.css';
 
-// the canonical force palette, in force order (mirrors forces-ui PALETTE).
-const palette = [
-  '#4da3ff', '#a78bfa', '#86e57f', '#c4b5fd', '#7dd3fc',
-  '#ff9d5c', '#8da2c0', '#2dd4bf', '#ff6e9c',
-];
+// The Field Manual — the original chapter-based explainer, rebuilt on the typed
+// engine and extended to the full catalog. Every concept is a two-column row: prose
+// + formula beside a live demo body the shared field reacts to (the field-reacts law).
 
-const chapters = [
-  { n: 'I', t: 'Substrate' },
-  { n: 'II', t: 'Forces' },
-  { n: 'III', t: 'Conditions' },
-  { n: 'IV', t: 'System' },
-];
-
-// A row of self-contained Field Cells (§25.1) — one force each, so the four
-// verbs read on their own. Punctuation-only matter; no glyph assembly.
-const cells = [
-  { f: 'attract', c: '#4da3ff', t: 'attract' },
-  { f: 'vortex', c: '#7dd3fc', t: 'vortex' },
-  { f: 'repel', c: '#ff9d5c', t: 'repel' },
-  { f: 'stream', c: '#9b8cff', t: 'stream' },
-];
+const DEFAULTS = { strength: 1.5, range: 280, spin: 1, angle: -90 };
+const OVERRIDES: Record<string, Record<string, number>> = {
+  gravity: { strength: 320, range: 360 },
+  thermal: { strength: 2.5, range: 240 },
+  emitter: { strength: 1.3, range: 280 },
+};
+const PRESET_COLORS: Record<string, string> = {
+  blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf',
+};
+const attrsFor = (t: string) => ({ ...DEFAULTS, ...(OVERRIDES[t] ?? {}) });
+const natural = MANUAL_FORCES.filter((f) => f.family === 'natural');
+const extended = MANUAL_FORCES.filter((f) => f.family === 'extended');
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+let n = 16; // running concept number (canonical nine + substrate end at 12; we continue)
 ---
 
-<Base>
+<Base
+  title="forces-ui — a reciprocal DOM-physics field"
+  description="Every element on the page is a body in one particle field — it carries weight, exerts force, and the field's density bends it back. A framework-agnostic engine (vanilla · web component · React) with zero runtime dependencies. This is the complete, executable manual, live over the running engine."
+>
   <SiteNav current="home" />
-  <main class="wrap">
-    <p class="kicker">forces-ui · the physics of the page</p>
+  <div class="manual-shell">
+    <header class="manual-hero" id="top">
+      <div class="wrap">
+        <p class="kicker">forces-ui · a reciprocal DOM-physics field</p>
+        <h1>Every element has <span class="accent">mass.</span></h1>
+        <p class="standfirst">
+          This isn’t a layout on top of an effect. The words, links, and cards are physical bodies
+          inside a single field — they carry weight, exert force, and the field pushes back. Here’s
+          exactly how it works, with the real engine running behind every example.
+        </p>
+        <p class="thesis">
+          <strong>Every part exerts force on the others</strong> — and the whole only works when you
+          can feel them.
+        </p>
+        <div class="hero-cta">
+          <code class="install" data-copy="npm i forces-ui">npm i forces-ui</code>
+          <a class="btn primary" href="/docs">Read the docs →</a>
+          <a class="btn" href="/lab">Open the Lab →</a>
+        </div>
+        <div class="meta">
+          <span><b>Substrate</b> &nbsp;one canvas, conserved</span>
+          <span><b>Forces</b> &nbsp;{MANUAL_FORCES.length}, composable · gated by conditions</span>
+          <span><b>Law</b> &nbsp;nothing created from nothing</span>
+        </div>
+      </div>
+    </header>
 
-    <h1>
-      Every element has
-      <em data-hot data-body="attract" data-color="#4da3ff" data-strength="0.9" data-range="320" data-feedback data-fmin="600" data-fmax="800" data-opsz="96" tabindex="0">mass</em>.
-    </h1>
-
-    <p class="standfirst">
-      This isn't a layout on top of an effect. Words, links, and cards are physical
-      bodies inside a single field — they carry weight, exert force, and the field
-      pushes back.
-    </p>
-
-    <p class="thesis">
-      A reciprocal medium: every part exerts force on the others, and the whole only
-      works when you can <em>feel</em> them.
-    </p>
-
-    <div class="meta">
-      <span><b>Substrate</b> one canvas, conserved</span>
-      <span><b>Forces</b> nine, composable · gated by conditions</span>
-      <span><b>Law</b> nothing created from nothing</span>
-    </div>
-
-    <nav class="rail" aria-label="Chapters">
-      {chapters.map((c) => (
-        <span class="ch"><i>{c.n}</i>{c.t}</span>
-      ))}
+    <nav class="chapter-rail" aria-label="Chapters">
+      <a href="#ch-substrate" data-ch="ch-substrate"><span class="cr-no">I</span><span class="cr-label">Substrate</span></a>
+      <a href="#ch-forces" data-ch="ch-forces"><span class="cr-no">II</span><span class="cr-label">Forces</span></a>
+      <a href="#ch-natural" data-ch="ch-natural"><span class="cr-no">III</span><span class="cr-label">Natural</span></a>
+      <a href="#ch-extended" data-ch="ch-extended"><span class="cr-no">IV</span><span class="cr-label">Extended</span></a>
+      <a href="#ch-presets" data-ch="ch-presets"><span class="cr-no">V</span><span class="cr-label">Presets</span></a>
+      <a href="#ch-conditions" data-ch="ch-conditions"><span class="cr-no">VI</span><span class="cr-label">Conditions</span></a>
+      <a href="#ch-system" data-ch="ch-system"><span class="cr-no">VII</span><span class="cr-label">System</span></a>
     </nav>
 
-    <div class="palette" aria-hidden="true">
-      {palette.map((c) => <span style={`--c:${c}`}></span>)}
+    <!-- I · Substrate -->
+    <div class="chapter" id="ch-substrate">
+      <div class="wrap">
+        <span class="chapter-no">I</span>
+        <h2 class="chapter-title">Substrate</h2>
+        <p class="chapter-sub">What the field is made of — and how it locks to the page.</p>
+      </div>
     </div>
 
-    <div class="cells" aria-hidden="true">
-      {cells.map((c) => (
-        <figure>
-          <forces-cell force={c.f} color={c.c}></forces-cell>
-          <figcaption>{c.t}</figcaption>
-        </figure>
-      ))}
+    <section class="concept">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">01 — Synchronization</span>
+          <h2>The page and the field share one coordinate space.</h2>
+          <p>A registry samples every body’s <strong>getBoundingClientRect()</strong> each animation
+            frame and maps it onto the canvas — scaled by device pixel ratio.</p>
+          <p class="note">Because it re-reads every frame, the invisible force fields stay locked to
+            the visible boxes through scroll, resize, and reflow.</p>
+          <div class="formula"><span class="c">canvasₓ =</span> rect.left + rect.width / 2 · <span class="v">DPR</span></div>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <span class="stage-label">DOM → field</span>
+          <svg class="diagram" viewBox="0 0 420 300" fill="none">
+            <rect x="60" y="70" width="180" height="90" rx="10" class="dim"></rect>
+            <text x="70" y="60" class="lbl">getBoundingClientRect</text>
+            <circle cx="150" cy="115" r="3" class="accf"></circle>
+            <line x1="150" y1="115" x2="340" y2="210" class="acc" stroke-dasharray="3 4"></line>
+            <circle cx="340" cy="210" r="4" class="accf"></circle>
+            <text x="300" y="240" class="lbl">field (x·DPR, y·DPR)</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">02 — Mass &amp; damping</span>
+          <h2>Particles are point-masses in a medium.</h2>
+          <p>Each particle carries a velocity and a mass proportional to its size. Every frame its
+            velocity is multiplied by a friction factor — momentum bleeds off instead of accumulating.</p>
+          <div class="formula"><span class="v">v</span><span class="c">ₜ₊₁</span> = <span class="v">v</span><span class="c">ₜ</span> · <span class="v">f</span> <span class="c">(f ≈ 0.95)</span> · <span class="c">m ∝ size</span></div>
+          <p class="note">Damping is why the field settles into calm swarms rather than scattering.</p>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <span class="stage-label">momentum decay</span>
+          <svg class="diagram" viewBox="0 0 420 300" fill="none">
+            <circle cx="80" cy="150" r="10" class="accf" opacity="0.9"></circle>
+            <line x1="95" y1="150" x2="175" y2="150" class="acc"></line>
+            <circle cx="210" cy="150" r="7" class="accf" opacity="0.7"></circle>
+            <line x1="222" y1="150" x2="272" y2="150" class="acc"></line>
+            <circle cx="305" cy="150" r="5" class="accf" opacity="0.5"></circle>
+            <circle cx="378" cy="150" r="3.5" class="accf" opacity="0.35"></circle>
+            <text x="60" y="210" class="lbl">velocity bleeds off each frame</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">03 — Currents</span>
+          <h2>The waves are a flow field.</h2>
+          <p>Near a wave line, particles pick up a drag vector along the slope of the curve — the
+            derivative of the sine — so they drift like debris carried down a river.</p>
+          <div class="formula">slope(x) = cos(x · <span class="v">freq</span> + φ) · freq · amp · <span class="v">vₓ</span> += slope · influence</div>
+          <p class="note">It’s why the resting field feels alive without any input.</p>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <span class="stage-label">wave slope → drift</span>
+          <svg class="diagram" viewBox="0 0 420 300" fill="none">
+            <path d="M20 170 Q110 90 200 170 T380 170" class="acc" stroke-width="1.5"></path>
+            <circle cx="200" cy="170" r="4" class="accf"></circle>
+            <line x1="200" y1="170" x2="270" y2="140" class="acc" stroke-dasharray="3 4"></line>
+            <text x="150" y="230" class="lbl">tangent drift along the curve</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- II · Forces (canonical nine) -->
+    <div class="chapter" id="ch-forces">
+      <div class="wrap">
+        <span class="chapter-no">II</span>
+        <h2 class="chapter-title">Forces</h2>
+        <p class="chapter-sub">What a single body can do to the matter around it.</p>
+      </div>
     </div>
 
-    <nav class="links">
-      <a class="manual-link" href="/reference">The Field Manual — every force, defined →</a>
-      <a class="manual-link" href="/lab">The Lab — place forces, share the field →</a>
-      <a class="manual-link" href="/design">The Design System — tokens, palette, type →</a>
-    </nav>
+    <section class="concept reverse" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-attract" style="--fc:#4da3ff"></i>04 — Attraction</span>
+          <h2>A body can pull the field into orbit.</h2>
+          <p>An <strong>attractor</strong> defines a gravity well. The pull grows as distance falls, and
+            a tangential component bends incoming particles into stable spirals.</p>
+          <div class="formula">F = (1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span class="v">S</span></div>
+          <p class="note">Drag the attractor — the force is bound to the element, not the cursor.</p>
+          <button class="agitate" data-agitate="#c-attract">↯ Agitate the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">attractor — drag me</span>
+          <span class="body-chip" id="c-attract" data-drag data-body="attract" data-strength="1" data-range="300" style="--cc:#4da3ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-attract"></i>attractor</span>
+          <span class="hintline">force follows the element across the field</span>
+        </div>
+      </div>
+    </section>
 
-  </main>
+    <section class="concept" data-form="scatter">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-repel" style="--fc:#ff9d5c"></i>05 — Repulsion</span>
+          <h2>A body can push the field away.</h2>
+          <p>A <strong>repeller</strong> is an inverted well — the force points <strong>outward</strong>,
+            carving a clean void the rest of the field flows around.</p>
+          <div class="formula">F = −(1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span class="v">S</span></div>
+          <p class="note">Drag the repeller and watch a clearing open around it.</p>
+          <button class="agitate" data-agitate="#c-repel">↯ Agitate the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">repeller — drag me</span>
+          <span class="body-chip" id="c-repel" data-drag data-body="repel" data-strength="1.1" data-range="300" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-repel"></i>repel</span>
+          <span class="hintline">force points outward — a void opens in the field</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-reflect" style="--fc:#c4b5fd"></i>06 — Reflection</span>
+          <h2>A body can be a wall.</h2>
+          <p>A <strong>reflector</strong> is an axis-aligned box. A crossing particle has its
+            perpendicular velocity reversed and scaled by elasticity, then is projected back out — a
+            hard hit throws a <strong>spark</strong>.</p>
+          <div class="formula"><span class="c">vertical edge:</span> <span class="v">vₓ</span> ← −Cᵣ · <span class="v">vₓ</span></div>
+          <p class="note">Drag the wall into the drifting particles to deflect them.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">reflector — drag me</span>
+          <div class="body-wall" data-drag data-body="reflect" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">reflect</div>
+          <span class="hintline">particles bounce off the bounding box</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-vortex" style="--fc:#2dd4bf"></i>07 — Vortex</span>
+          <h2>A body can spin the field.</h2>
+          <p>A <strong>vortex</strong> applies a purely <strong>tangential</strong> force. There’s no net
+            pull inward, so matter wheels around it; a whisper of retention keeps the whirlpool coherent.</p>
+          <div class="formula"><span class="v">v</span> += (−<span class="v">d̂_y</span>, <span class="v">d̂_x</span>) · <span class="v">S</span> · spin</div>
+          <p class="note">Drag the vortex into the swarm — particles orbit rather than fall in.</p>
+          <button class="agitate" data-agitate="#c-vortex">↯ Agitate the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">vortex — drag me</span>
+          <span class="body-chip" id="c-vortex" data-drag data-body="vortex" data-spin="1" data-strength="1" data-range="320" style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-vortex"></i>vortex</span>
+          <span class="hintline">tangential force — the field circles, never collapses</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse" data-form="lanes">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-stream" style="--fc:#7dd3fc"></i>08 — Stream</span>
+          <h2>A body can blow a current.</h2>
+          <p>A <strong>stream</strong> emits a constant force along a heading — a fan, a jet, a prevailing
+            wind. The swarm combs into parallel flow.</p>
+          <div class="formula"><span class="v">v</span> += (cos θ, sin θ) · <span class="v">S</span> · (1 − <span class="v">d</span>/d<span class="c">max</span>)</div>
+          <p class="note">Drag the emitter and watch matter streak into lanes downwind.</p>
+          <button class="agitate" data-agitate="#c-stream">↯ Agitate the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">stream — drag me</span>
+          <span class="body-chip" id="c-stream" data-drag data-body="stream" data-angle="0" data-strength="1" data-range="340" style="--cc:#7dd3fc; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-stream"></i>stream</span>
+          <span class="hintline">directional current — particles comb downwind</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-spring" style="--fc:#86e57f"></i>09 — Spring</span>
+          <h2>A body can tether the field at a fixed distance.</h2>
+          <p>A <strong>spring</strong> has a <strong>rest length</strong>. Matter that crowds in is pushed
+            out; matter that strays is reeled in — the swarm settles into an orbiting shell.</p>
+          <div class="formula"><span class="v">v</span> += û · (<span class="v">d</span> − <span class="v">r</span><span class="c">est</span>) · <span class="v">k</span></div>
+          <p class="note">Drag the tether — matter springs back to its radius.</p>
+          <button class="agitate" data-agitate="#c-spring">↯ Agitate the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">spring — drag me</span>
+          <span class="body-chip" id="c-spring" data-drag data-body="spring" data-strength="1" data-range="260" style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-spring"></i>spring</span>
+          <span class="hintline">a tether — matter holds a shell at the rest radius</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse" data-form="lanes">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-drag" style="--fc:#8da2c0"></i>10 — Viscosity</span>
+          <h2>A body can thicken the medium.</h2>
+          <p>A <strong>drag</strong> body neither pulls nor pushes — it <strong>bleeds momentum</strong>,
+            as if the field turned to honey. Paired with an attractor it turns a slingshot into a settled
+            orbit.</p>
+          <div class="formula"><span class="v">v</span> ← <span class="v">v</span> · (1 − <span class="v">k</span>), <span class="c">k ∝ (1 − d/d_max)·S</span></div>
+          <p class="note">Agitate, then watch the rush die inside the zone.</p>
+          <button class="agitate" data-agitate="#c-drag">↯ Agitate the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">viscosity — move me</span>
+          <span class="body-chip" id="c-drag" data-drag data-body="drag" data-strength="1" data-range="300" style="--cc:#8da2c0; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-drag"></i>drag</span>
+          <span class="hintline">a viscous zone — momentum bleeds off, the swarm settles</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept" data-form="accretion">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-absorb" style="--fc:#ff6e9c"></i>11 — Accretion &amp; release</span>
+          <h2>A body can hold matter — and give it back.</h2>
+          <p>An <strong>absorber</strong> captures particles at its core. They aren’t deleted — they’re
+            <strong>held inside</strong>, and the element inflates as it fills. When it saturates it goes
+            supernova: the exact particles are <strong>released radially</strong>.</p>
+          <div class="formula"><span class="c">scale =</span> 1 + (M / M<span class="c">max</span>) · 0.45 · <span class="v">captured = released</span></div>
+          <p class="note">Nothing is conjured from thin air, and nothing vanishes. Matter changes hands.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">absorber — fills, then pops</span>
+          <div class="body-core" data-drag data-body="absorb attract" data-absorb="64" data-max="30" data-strength="0.8" data-range="360" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">core</div>
+          <div class="meter" style="--cc:#ff9d5c;"><i></i></div>
+          <span class="hintline">mass accumulates, then releases on supernova</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse" data-form="lanes">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"><i class="fg fg-emitter" style="--fc:#a78bfa"></i>12 — Emission</span>
+          <h2>A body can be a fountain.</h2>
+          <p>An <strong>emitter</strong> draws surrounding matter into its nozzle and relaunches it as a
+            hot jet — the field is <strong>recycled into a stream</strong>, nothing conjured.</p>
+          <div class="formula"><span class="c">feed:</span> <span class="v">v</span> += d̂ · S · <span class="c">at nozzle:</span> <span class="v">v</span> = (cos θ, sin θ) · spd</div>
+          <p class="note">Agitate to feed it, then watch the jet stream off along its heading.</p>
+          <button class="agitate" data-agitate="#c-emitter">↯ Feed the fountain</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">emitter — move me · jets →</span>
+          <span class="body-chip" id="c-emitter" data-drag data-body="emitter" data-angle="0" data-strength="1" data-range="300" style="--cc:#a78bfa; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-emitter"></i>emitter</span>
+          <span class="hintline">a fountain — matter is drawn in and jetted back out</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- III · Natural primitives -->
+    <div class="chapter" id="ch-natural">
+      <div class="wrap">
+        <span class="chapter-no">III</span>
+        <h2 class="chapter-title">Natural primitives</h2>
+        <p class="chapter-sub">Real field laws — true 1/d², Lorentz, Langevin, diffusion, waves.</p>
+      </div>
+    </div>
+    {
+      natural.map((f, i) => {
+        n += 1;
+        const a = attrsFor(f.token);
+        return (
+          <section class={'concept' + (i % 2 ? ' reverse' : '')}>
+            <div class="wrap concept-grid">
+              <div>
+                <span class="concept-no" style={`--c:${f.color}`}>
+                  <i class={`fg fg-${f.token}`} /> {String(n).padStart(2, '0')} — {cap(f.label)}
+                </span>
+                <h2>{f.example}</h2>
+                <p>{cap(f.desc)}.</p>
+                <div class="formula" style={`--c:${f.color}`}>{f.formula}</div>
+              </div>
+              <div class="stage">
+                <span class="stage-label">{f.token} — drag me</span>
+                <span
+                  class="body-chip"
+                  data-drag
+                  data-body={f.token}
+                  data-strength={a.strength}
+                  data-range={a.range}
+                  data-spin={a.spin}
+                  data-angle={a.angle}
+                  style={`--cc:${f.color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
+                >
+                  <i class={`fg fg-${f.token}`} />
+                  {f.token}
+                </span>
+                <span class="hintline">{f.desc}</span>
+              </div>
+            </div>
+          </section>
+        );
+      })
+    }
+
+    <!-- IV · Designed-extended -->
+    <div class="chapter" id="ch-extended">
+      <div class="wrap">
+        <span class="chapter-no">IV</span>
+        <h2 class="chapter-title">Designed-extended</h2>
+        <p class="chapter-sub">Further designed forces, and the modifiers that wrap a sibling.</p>
+      </div>
+    </div>
+    {
+      extended.map((f, i) => {
+        n += 1;
+        const a = attrsFor(f.token);
+        return (
+          <section class={'concept' + (i % 2 ? ' reverse' : '')}>
+            <div class="wrap concept-grid">
+              <div>
+                <span class="concept-no" style={`--c:${f.color}`}>
+                  <i class={`fg fg-${f.token}`} /> {String(n).padStart(2, '0')} — {cap(f.label)}
+                </span>
+                <h2>{f.example}</h2>
+                <p>{cap(f.desc)}.</p>
+                <div class="formula" style={`--c:${f.color}`}>{f.formula}</div>
+              </div>
+              <div class="stage">
+                <span class="stage-label">{f.token} — drag me</span>
+                <span
+                  class="body-chip"
+                  data-drag
+                  data-body={f.token}
+                  data-strength={a.strength}
+                  data-range={a.range}
+                  data-spin={a.spin}
+                  data-angle={a.angle}
+                  style={`--cc:${f.color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
+                >
+                  <i class={`fg fg-${f.token}`} />
+                  {f.token}
+                </span>
+                <span class="hintline">{f.desc}</span>
+              </div>
+            </div>
+          </section>
+        );
+      })
+    }
+
+    <!-- V · Presets -->
+    <div class="chapter" id="ch-presets">
+      <div class="wrap">
+        <span class="chapter-no">V</span>
+        <h2 class="chapter-title">Presets</h2>
+        <p class="chapter-sub">Cosmology as composition — named arrangements of the primitives.</p>
+      </div>
+    </div>
+    {
+      MANUAL_PRESETS.map((p, i) => {
+        n += 1;
+        const color = PRESET_COLORS[p.name] ?? '#4da3ff';
+        return (
+          <section class={'concept' + (i % 2 ? ' reverse' : '')}>
+            <div class="wrap concept-grid">
+              <div>
+                <span class="concept-no" style={`--c:${color}`}>
+                  <i class={`fg fg-${p.name}`} /> {String(n).padStart(2, '0')} — {cap(p.name)}
+                </span>
+                <h2>{p.example}</h2>
+                <p>{cap(p.desc)}.</p>
+                <div class="formula" style={`--c:${color}`}>
+                  expands to: {p.tokens.join(' · ')}
+                </div>
+              </div>
+              <div class="stage">
+                <span class="stage-label">{p.name} — drag me</span>
+                <span
+                  class="body-chip"
+                  data-drag
+                  data-preset={p.name}
+                  style={`--cc:${color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
+                >
+                  <i class={`fg fg-${p.name}`} />
+                  {p.name}
+                </span>
+                <span class="hintline">a whole composite — {p.tokens.length} forces in one body</span>
+              </div>
+            </div>
+          </section>
+        );
+      })
+    }
+
+    <!-- VI · Conditions -->
+    <div class="chapter" id="ch-conditions">
+      <div class="wrap">
+        <span class="chapter-no">VI</span>
+        <h2 class="chapter-title">Conditions</h2>
+        <p class="chapter-sub">When a force decides to act, and on which matter.</p>
+      </div>
+    </div>
+    <section class="concept" data-form="scatter">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">40 — Conditional</span>
+          <h2>A force can choose what it touches.</h2>
+          <p>Any body can carry a <strong>condition</strong> — gated on being engaged, or on a particle’s
+            <strong>speed</strong> or <strong>heat</strong>. A selective force reads every free agent and
+            acts only on those that match.</p>
+          <div class="formula"><span class="c">when</span> = active · fast · slow · hot · cool</div>
+          <p class="note">The catcher below only grips <strong>hot</strong> particles. Heat the field and
+            the excited matter is pulled in while the calm passes through.</p>
+          <button class="agitate" data-agitate="#c-cond">↯ Heat the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">conditional — catches heat only</span>
+          <span class="body-chip" id="c-cond" data-drag data-body="attract" data-when="hot" data-strength="1.2" data-range="320" style="--cc:#ff6e9c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-attract"></i>when&nbsp;hot</span>
+          <span class="hintline">selective attractor — grips excited matter, ignores the calm</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VII · System -->
+    <div class="chapter" id="ch-system">
+      <div class="wrap">
+        <span class="chapter-no">VII</span>
+        <h2 class="chapter-title">System</h2>
+        <p class="chapter-sub">What emerges when the parts interact.</p>
+      </div>
+    </div>
+    <section class="concept reverse">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">41 — Reciprocity</span>
+          <h2>The field changes the element back.</h2>
+          <p>The element bends the field — and the field’s <strong>local density</strong> bends the element
+            in return. As particles gather on a word, it gains weight, brightness, and lift.</p>
+          <div class="formula">--d = density(body) <span class="c">→</span> <span class="v">weight</span>, glow, rise</div>
+          <p class="note">Hover the word — it pulls the field, the field piles up, and the pile makes the
+            word heavier. A closed loop.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">density → weight</span>
+          <span class="live-demo" data-hot data-color="#a78bfa" data-feedback data-body="attract" data-strength="1" data-range="300" style="--cat:#a78bfa;">density</span>
+          <span class="hintline">gathered particles raise the element’s weight</span>
+        </div>
+      </div>
+    </section>
+    <section class="concept reverse" data-attention-demo>
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">42 — Conserved attention</span>
+          <h2>The page can’t emphasize two things at once.</h2>
+          <p>There is one finite budget of force for the whole page. Engage a word and it
+            pulls force off every other — so as one gathers matter and grows heavier, the
+            rest give theirs up. Focus isn’t styled; it’s <strong>conserved</strong>.</p>
+          <div class="formula">Σ Sᵢ · effortᵢ = <span class="v">constant</span></div>
+          <p class="note">Hover one word — watch the others surrender their weight to it.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">one budget, redistributed</span>
+          <div class="attn-set">
+            <span class="attn-word" data-hot data-feedback data-body="attract" data-strength="1.5" data-range="240" data-color="#4da3ff" style="--cat:#4da3ff;">focus</span>
+            <span class="attn-word" data-hot data-feedback data-body="attract" data-strength="1.5" data-range="240" data-color="#2dd4bf" style="--cat:#2dd4bf;">depth</span>
+            <span class="attn-word" data-hot data-feedback data-body="attract" data-strength="1.5" data-range="240" data-color="#ff9d5c" style="--cat:#ff9d5c;">weight</span>
+          </div>
+          <span class="hintline">one finite budget — engaging one starves the rest</span>
+        </div>
+      </div>
+    </section>
+    <section class="concept">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">43 — Threads</span>
+          <h2>Engaging one body wires the set.</h2>
+          <p>Engage an element in a group and the field draws living threads between it and its siblings.
+            A list stops being a list and shows itself as a <strong>connected system</strong>.</p>
+          <p class="note">Hover any line.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">a connected set</span>
+          <div class="thread-set" data-index data-threads>
+            <span class="ti" data-hot data-color="#4da3ff" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#4da3ff;">Product</span>
+            <span class="ti" data-hot data-color="#2dd4bf" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#2dd4bf;">System</span>
+            <span class="ti" data-hot data-color="#a78bfa" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#a78bfa;">Interface</span>
+            <span class="ti" data-hot data-color="#ff9d5c" data-body="attract" data-strength="0.5" data-range="220" style="--cat:#ff9d5c;">Material</span>
+          </div>
+          <span class="hintline">threads connect the engaged body to its set</span>
+        </div>
+      </div>
+    </section>
+    <section class="concept reverse" data-causality-demo>
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">44 — Cross-boundary causality</span>
+          <h2>Density doesn’t stop at the edge.</h2>
+          <p>When a body saturates, the excess <strong>spills to its neighbours</strong> — weighted by
+            nearness, and conserved. Engage one tile and the ones beside it light up on their own.
+            The wiring between elements appears because matter actually flows between them.</p>
+          <div class="formula">Φᵢⱼ = κ · excessᵢ · <span class="v">wᵢⱼ</span> ⁄ Σ wᵢₖ</div>
+          <p class="note">Hover the middle tile — watch its neighbours catch, the far ones faintly.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">spill → neighbours light</span>
+          <div class="causal-set">
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#a78bfa" style="--cat:#a78bfa;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#7dd3fc" style="--cat:#7dd3fc;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#4da3ff" style="--cat:#4da3ff;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#2dd4bf" style="--cat:#2dd4bf;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#86e57f" style="--cat:#86e57f;"></span>
+          </div>
+          <span class="hintline">engage one — the excess spills to whoever’s near</span>
+        </div>
+      </div>
+    </section>
+    <section class="concept reverse" id="formations">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">45 — Formations</span>
+          <h2>The whole field can change its mind.</h2>
+          <p>Forces act locally. A <strong>formation</strong> acts on every particle at once — a single
+            global bias. As you scrolled, each chapter quietly switched it.</p>
+          <p class="note" id="form-desc">Ambient — calm brownian drift, the resting state.</p>
+          <div class="form-pills" id="formPills">
+            <button class="form-pill on" data-form="ambient">Ambient</button>
+            <button class="form-pill" data-form="wells">Wells</button>
+            <button class="form-pill" data-form="lanes">Lanes</button>
+            <button class="form-pill" data-form="scatter">Scatter</button>
+            <button class="form-pill" data-form="accretion">Accretion</button>
+          </div>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <span class="stage-label">formation — tap to reconfigure</span>
+          <div class="form-readout"><span id="form-name">ambient</span></div>
+          <span class="hintline">a global bias on every particle — watch the field behind everything</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="manual-foot">
+      <div class="wrap">
+        <h2>Now go bend it yourself.</h2>
+        <div class="actions">
+          <a class="btn primary" href="/lab">Open the Lab →</a>
+          <a class="btn" href="/docs">Read the docs →</a>
+        </div>
+      </div>
+    </section>
+  </div>
   <SiteFooter />
-
-  <style>
-    .wrap {
-      position: relative;
-      z-index: 2;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: calc(58px + clamp(1.5rem, 5vw, 3rem)) clamp(1.5rem, 5vw, 5rem)
-        clamp(1.5rem, 5vw, 5rem);
-    }
-    .kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-family: var(--mono);
-      font-size: 0.66rem;
-      font-weight: 500;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin: 0 0 clamp(1.6rem, 4vh, 2.4rem);
-    }
-    .kicker::before {
-      content: '';
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 14px var(--accent);
-      animation: pulse 2.6s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,
-      100% {
-        opacity: 0.5;
-      }
-      50% {
-        opacity: 1;
-      }
-    }
-    h1 {
-      margin: 0;
-      max-width: 16ch;
-      font-weight: 600;
-      line-height: 0.98;
-      letter-spacing: -0.04em;
-      font-size: clamp(2.6rem, 8vw, 6.5rem);
-      font-variation-settings: 'opsz' 96;
-    }
-    h1 em {
-      font-style: normal;
-      color: var(--accent);
-      --d: 0;
-      text-shadow: 0 0 calc(8px + var(--d) * 54px)
-        color-mix(in srgb, var(--accent) calc(40% + var(--d) * 55%), transparent);
-    }
-    .standfirst {
-      margin: clamp(1.6rem, 4vh, 2.4rem) 0 0;
-      max-width: 54ch;
-      font-size: clamp(1rem, 1.5vw, 1.18rem);
-      line-height: 1.6;
-      color: var(--text-2);
-    }
-    .thesis {
-      margin: 1.4rem 0 0;
-      max-width: 54ch;
-      font-size: clamp(1rem, 1.4vw, 1.12rem);
-      line-height: 1.6;
-      color: var(--text-3);
-    }
-    .thesis em {
-      font-style: normal;
-      color: var(--text);
-    }
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.6rem;
-      margin: clamp(2rem, 5vh, 3rem) 0 0;
-      font-family: var(--mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-3);
-    }
-    .meta b {
-      color: var(--text-2);
-      font-weight: 600;
-    }
-    .rail {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.4rem;
-      margin: clamp(2rem, 5vh, 2.8rem) 0 0;
-    }
-    .ch {
-      display: inline-flex;
-      align-items: baseline;
-      gap: 0.5rem;
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--text-3);
-    }
-    .ch i {
-      font-style: normal;
-      color: var(--accent);
-      opacity: 0.8;
-    }
-    .palette {
-      display: flex;
-      gap: 0.7rem;
-      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
-    }
-    .palette span {
-      width: 13px;
-      height: 13px;
-      border-radius: 50%;
-      background: var(--c);
-      box-shadow: 0 0 12px var(--c);
-      opacity: 0.9;
-    }
-    .cells {
-      display: flex;
-      flex-wrap: wrap;
-      gap: clamp(0.6rem, 2vw, 1rem);
-      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
-    }
-    .cells figure {
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .cells forces-cell {
-      display: block;
-      width: clamp(120px, 22vw, 150px);
-      height: 92px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.015);
-    }
-    .cells figcaption {
-      font-family: var(--mono, ui-monospace, monospace);
-      font-size: 0.72rem;
-      letter-spacing: 0.04em;
-      text-transform: lowercase;
-      color: var(--text-3);
-    }
-    .links {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin: clamp(2.2rem, 5vh, 3rem) 0 0;
-    }
-    .manual-link {
-      display: inline-block;
-      font-family: var(--mono, ui-monospace, monospace);
-      font-size: 0.82rem;
-      letter-spacing: 0.01em;
-      color: var(--accent);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.2s ease;
-    }
-    .manual-link:hover {
-      border-bottom-color: var(--accent);
-    }
-  </style>
 </Base>
+
+<script is:inline>
+  (() => {
+    const field = document.querySelector('forces-field');
+    const rescan = () => field && field.rescan && field.rescan();
+
+    // copy the install command on click
+    document.querySelectorAll('[data-copy]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const text = el.getAttribute('data-copy') || el.textContent || '';
+        navigator.clipboard?.writeText(text).then(() => {
+          el.classList.add('copied');
+          setTimeout(() => el.classList.remove('copied'), 1100);
+        });
+      });
+    });
+
+    // drag any [data-drag] body within its stage
+    document.querySelectorAll('[data-drag]').forEach((el) => {
+      el.addEventListener('pointerdown', (e) => {
+        const stage = el.closest('.stage');
+        if (!stage) return;
+        e.preventDefault();
+        el.setPointerCapture(e.pointerId);
+        const move = (ev) => {
+          const r = stage.getBoundingClientRect();
+          el.style.left = Math.max(0, Math.min(r.width, ev.clientX - r.left)) + 'px';
+          el.style.top = Math.max(0, Math.min(r.height, ev.clientY - r.top)) + 'px';
+          rescan();
+        };
+        const up = () => {
+          el.removeEventListener('pointermove', move);
+          el.removeEventListener('pointerup', up);
+        };
+        el.addEventListener('pointermove', move);
+        el.addEventListener('pointerup', up);
+      });
+    });
+
+    // agitate — a burst at the target + a chip kick + a shock ring
+    document.querySelectorAll('[data-agitate]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = document.querySelector(btn.dataset.agitate);
+        if (!target) return;
+        const r = target.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        const color = (getComputedStyle(target).getPropertyValue('--cc') || '#4da3ff').trim();
+        if (field && field.burst) field.burst(cx, cy, color);
+        target.classList.add('agitated');
+        setTimeout(() => target.classList.remove('agitated'), 500);
+        const stage = target.closest('.stage');
+        if (stage) {
+          const ring = document.createElement('span');
+          ring.className = 'shock';
+          ring.style.setProperty('--cc', color);
+          const sr = stage.getBoundingClientRect();
+          ring.style.left = cx - sr.left + 'px';
+          ring.style.top = cy - sr.top + 'px';
+          stage.appendChild(ring);
+          setTimeout(() => ring.remove(), 700);
+        }
+      });
+    });
+
+    // formation pills
+    const setForm = (name) => {
+      if (field && field.setFormation) field.setFormation(name);
+      const readout = document.getElementById('form-name');
+      if (readout) readout.textContent = name;
+    };
+    document.querySelectorAll('.form-pill').forEach((p) =>
+      p.addEventListener('click', () => {
+        document.querySelectorAll('.form-pill').forEach((x) => x.classList.toggle('on', x === p));
+        setForm(p.dataset.form);
+      }),
+    );
+
+    // each [data-form] section cues the formation as it scrolls into view
+    const formObs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setForm(e.target.dataset.form);
+      },
+      { threshold: 0.5 },
+    );
+    document.querySelectorAll('section[data-form]').forEach((s) => formObs.observe(s));
+
+    // conserved attention (§2.4): switch the field's finite strength budget ON only
+    // while its demo is in view, so the rest of the manual is unaffected.
+    const attnSection = document.querySelector('[data-attention-demo]');
+    if (attnSection && field) {
+      const attnObs = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (field.setAttention) field.setAttention(e.isIntersecting);
+          }
+        },
+        { threshold: 0.45 },
+      );
+      attnObs.observe(attnSection);
+    }
+
+    // cross-boundary causality (Concept 4): density spills to neighbours — on only
+    // while its demo is in view.
+    const causalSection = document.querySelector('[data-causality-demo]');
+    if (causalSection && field) {
+      const causalObs = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (field.setCausality) field.setCausality(e.isIntersecting);
+          }
+        },
+        { threshold: 0.45 },
+      );
+      causalObs.observe(causalSection);
+    }
+
+    // chapter rail active state
+    const chapters = [...document.querySelectorAll('.chapter')];
+    const links = [...document.querySelectorAll('.chapter-rail a')];
+    const onScroll = () => {
+      let active = chapters[0] && chapters[0].id;
+      for (const ch of chapters) if (ch.getBoundingClientRect().top < innerHeight * 0.35) active = ch.id;
+      links.forEach((a) => a.classList.toggle('active', a.dataset.ch === active));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // threads between a hovered item and its set
+    document.querySelectorAll('[data-threads]').forEach((set) => {
+      const items = [...set.querySelectorAll('.ti')];
+      items.forEach((it) => {
+        it.addEventListener('pointerenter', () => {
+          items.forEach((x) => {
+            x.classList.toggle('lit', x === it);
+            x.classList.toggle('dim', x !== it);
+          });
+          if (field && field.threads) {
+            field.threads(
+              items.filter((x) => x !== it).map((x) => ({
+                a: it,
+                b: x,
+                color: (getComputedStyle(it).getPropertyValue('--cat') || '#4da3ff').trim(),
+              })),
+            );
+          }
+        });
+        it.addEventListener('pointerleave', () => {
+          items.forEach((x) => x.classList.remove('lit', 'dim'));
+          if (field && field.threads) field.threads(null);
+        });
+      });
+    });
+
+    window.addEventListener('resize', rescan, { passive: true });
+    setTimeout(rescan, 250);
+  })();
+</script>
