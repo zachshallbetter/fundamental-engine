@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
+import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
 
 test('integrateOffset advances offset under force, with mass + damping', () => {
   const o: ElementOffset = { x: 0, y: 0, vx: 0, vy: 0 };
@@ -30,4 +30,36 @@ test('anchorForce pulls back toward home', () => {
 test('elementMass scales with area, clamped', () => {
   assert.equal(elementMass(0), 0.6);
   assert.equal(elementMass(1e9), 6);
+});
+
+test('repelForce pushes away from other elements (Concept 3)', () => {
+  // one neighbour to the right → pushed left (−x)
+  const f = repelForce({ x: 0, y: 0 }, [{ x: 100, y: 0 }]);
+  assert.ok(f.x < 0);
+  assert.ok(Math.abs(f.y) < 1e-9);
+  // symmetric neighbours left and right cancel on x
+  const sym = repelForce({ x: 0, y: 0 }, [{ x: 100, y: 0 }, { x: -100, y: 0 }]);
+  assert.ok(Math.abs(sym.x) < 1e-9);
+  // a closer neighbour pushes harder than a far one
+  const near = repelForce({ x: 0, y: 0 }, [{ x: 40, y: 0 }]);
+  assert.ok(Math.abs(near.x) > Math.abs(f.x));
+});
+
+test('repelForce is finite even at full overlap (softened)', () => {
+  const f = repelForce({ x: 10, y: 10 }, [{ x: 10, y: 10 }]);
+  assert.ok(Number.isFinite(f.x) && Number.isFinite(f.y));
+  assert.equal(f.x, 0); // zero separation → zero direction, no blowup
+  assert.equal(f.y, 0);
+});
+
+test('densityPush points down the density gradient (Concept 3)', () => {
+  // density rises with x → gradient is +x → the push is −x (toward emptier space)
+  const ramp = (x: number): number => x;
+  const f = densityPush(ramp, 50, 50, 10, 1);
+  assert.ok(f.x < 0);
+  assert.ok(Math.abs(f.y) < 1e-9);
+  // a flat field exerts no pressure (±0 — compare by magnitude, not Object.is)
+  const flat = densityPush(() => 3, 50, 50);
+  assert.ok(Math.abs(flat.x) < 1e-9);
+  assert.ok(Math.abs(flat.y) < 1e-9);
 });

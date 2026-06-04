@@ -31,7 +31,7 @@ import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from '.
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { attentionMuls } from './attention.ts';
 import { spillover } from './causality.ts';
-import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
+import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
@@ -92,7 +92,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let curAccent: RGB = hexToRgb(cfg.accent);
   let hoverAccent: string | null = null;
   let threadLinks: { a: Element; b: Element; c: RGB; seed: number }[] = [];
-  let movers: { el: HTMLElement; o: ElementOffset; mEl: number }[] = [];
+  let movers: { el: HTMLElement; o: ElementOffset; mEl: number; layout: boolean }[] = [];
   let sparks: { x: number; y: number; vx: number; vy: number; life: number; c: RGB }[] = [];
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
@@ -209,7 +209,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const r = el.getBoundingClientRect();
       const seeded = Number.parseFloat(el.dataset.mass ?? '');
       const mEl = Number.isFinite(seeded) ? seeded : elementMass(r.width * r.height);
-      return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl };
+      // `data-move="layout"` opts into the self-laying-out forces (Concept 3): mutual
+      // repulsion + density pressure. Plain `data-move` just drifts with the field.
+      const layout = (el.dataset.move ?? '').trim() === 'layout';
+      return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl, layout };
     });
     eventEls = [...document.querySelectorAll('[data-on]')].map((node) => {
       const el = node as HTMLElement;
@@ -246,10 +249,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   function updateMovers(): void {
     if (movers.length === 0) return;
-    for (const mv of movers) {
+    // current screen centres (the rect already reflects each element's transform), so the
+    // self-laying-out repulsion (Concept 3) sees where everything actually sits this frame.
+    const centers = movers.map((mv) => {
       const r = mv.el.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    });
+    for (let i = 0; i < movers.length; i++) {
+      const mv = movers[i]!;
+      const cx = centers[i]!.x;
+      const cy = centers[i]!.y;
       probe.x = cx;
       probe.y = cy;
       probe.vx = 0;
@@ -269,7 +278,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
       probe.cap = null; // never let a mover get captured
       const a = anchorForce(mv.o);
-      integrateOffset(mv.o, probe.vx + a.x, probe.vy + a.y, mv.mEl, 0.9);
+      let fx = probe.vx + a.x;
+      let fy = probe.vy + a.y;
+      // Concept 3 — self-laying-out: this element pushes off the others and drifts off
+      // dense field regions, so a cluster spreads and re-settles (e.g. on resize).
+      if (mv.layout) {
+        const others = centers.filter((_, j) => j !== i);
+        const rep = repelForce({ x: cx, y: cy }, others);
+        const press = densityPush((sx, sy) => store.near(sx, sy, 40).length, cx, cy, 16, 6);
+        fx += rep.x + press.x;
+        fy += rep.y + press.y;
+      }
+      integrateOffset(mv.o, fx, fy, mv.mEl, 0.9);
       mv.el.style.transform = `translate(${mv.o.x.toFixed(2)}px, ${mv.o.y.toFixed(2)}px)`;
     }
   }
