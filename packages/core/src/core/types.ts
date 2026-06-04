@@ -212,8 +212,9 @@ export interface FieldOptions {
   /** draw the background Currents (§24) — not yet implemented (Phase 3). */
   waves?: boolean;
   /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links'
-   *  (constellation), 'streamlines' (draw the force field itself — diagnostic). */
-  render?: 'dots' | 'trails' | 'links' | 'streamlines';
+   *  (constellation), 'metaballs' (a liquid iso-surface, not dots), 'streamlines'
+   *  (draw the force field itself — diagnostic). */
+  render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'streamlines';
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
    *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
   mass?: boolean;
@@ -245,7 +246,7 @@ export interface FieldHandle {
   /** toggle cross-boundary causality (Concept 4) live — density spills to neighbours. */
   setCausality(on: boolean): void;
   /** switch the render mode (§20.6) live. */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'streamlines'): void;
+  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'streamlines'): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
