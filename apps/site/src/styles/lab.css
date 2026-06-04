@@ -336,6 +336,146 @@
   line-height: 1.5;
 }
 
+/* timeline scrubber */
+.lab-scrub {
+  width: 100%;
+  margin: 0.7rem 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* transport: emphasise Fire, mark Loop active */
+.lab-transport button.primary {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.lab-transport button.on {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* "what am I looking at?" legend */
+.lab-legend {
+  margin-top: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 10px);
+  background: var(--bg-card, #0b0e16);
+  padding: 0.2rem 0.9rem;
+}
+.lab-legend summary {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0.6rem 0;
+  list-style: none;
+}
+.lab-legend summary::-webkit-details-marker { display: none; }
+.lab-legend summary::before { content: '+ '; color: var(--accent); }
+.lab-legend[open] summary::before { content: '– '; }
+.lab-legend ul {
+  list-style: none;
+  margin: 0 0 0.7rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.lab-legend li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.lab-legend li b { color: var(--text); font-weight: 600; }
+.lab-legend code {
+  font-family: var(--mono);
+  font-size: 0.82em;
+  color: var(--text-3);
+}
+.lab-legend .lg {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  margin-top: 0.2rem;
+}
+.lab-legend .lg.body { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.lab-legend .lg.field { background: rgba(125, 150, 200, 0.7); }
+.lab-legend .lg.particle { background: var(--accent); }
+.lab-legend .lg.related { background: rgba(200, 210, 230, 0.5); }
+.lab-legend .lg.expected { background: #ffce6b; box-shadow: 0 0 6px rgba(255, 206, 107, 0.6); }
+
+/* verdict: a third "resolving" state while tests are still going green */
+.verdict.resolving {
+  color: var(--warn, #ffce6b);
+  background: color-mix(in srgb, var(--warn, #ffce6b) 8%, transparent);
+  border-color: color-mix(in srgb, var(--warn, #ffce6b) 35%, transparent);
+}
+.verdict.resolving::before {
+  background: var(--warn, #ffce6b);
+  box-shadow: 0 0 8px var(--warn, #ffce6b);
+}
+.pass-summary {
+  font-family: var(--mono);
+  letter-spacing: 0;
+  color: var(--text-3);
+  text-transform: none;
+}
+
+/* a check that hasn't reached its pass-frame yet */
+.check.pending {
+  opacity: 0.7;
+}
+.check.pending .mark { color: var(--warn, #ffce6b); }
+.check .when {
+  color: var(--text-4);
+}
+
+/* preset dropdown */
+.preset-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+.preset-row span {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.preset-row select {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text);
+  background: var(--bg-card, #0b0e16);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+
+/* number input beside each slider */
+.param input.num {
+  width: 4.6rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  padding: 0.2rem 0.4rem;
+  text-align: right;
+}
+
 @media (max-width: 1080px) {
   .lab-grid {
     grid-template-columns: 1fr;

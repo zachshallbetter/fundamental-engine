@@ -6,10 +6,11 @@ import { EXPERIMENTS, MANUAL_FORCES } from 'forces-ui';
 import '../styles/force-glyphs.css';
 import '../styles/lab.css';
 
-// The Lab — a physics detector. Fire a known particle into a force with known
-// attributes; the canvas shows the track + the surrounding field + related particles,
+// The Lab — a physics detector. Fire known particle(s) into a force with known
+// attributes; the chamber shows the track + the surrounding field + related particles,
 // and the readout checks the measured behavior against the conformance catalog (the
-// same EXPERIMENTS the test suite runs). Tune the attributes and fire again.
+// same EXPERIMENTS the test suite runs) — including *when* during the run each check
+// passes. Tune the numbers (or pick a preset), fire more particles, loop the playback.
 
 const META: Record<string, { color: string; label: string }> = Object.fromEntries(
   MANUAL_FORCES.map((f) => [f.token, { color: f.color, label: f.label }]),
@@ -24,7 +25,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
 
 <Base
   title="forces-ui — the Lab (physics detector)"
-  description="Fire a known particle into a force with known attributes and watch what happens — its track, the surrounding field, related particles — then compare the measured behavior to what the math predicts. The Lab is a conformance instrument."
+  description="Fire known particles into a force with known attributes and watch what happens — their tracks, the surrounding field, related particles — then compare the measured behavior to what the math predicts, frame by frame. The Lab is a conformance instrument."
 >
   <SiteNav current="lab" />
   <main class="lab">
@@ -32,9 +33,10 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       <p class="kicker">The Lab · physics detector</p>
       <h1>Fire a particle into a force.</h1>
       <p class="lede">
-        Pick a force, send a known particle into it, and watch its track, the surrounding
-        field, and any related particles. The measured behavior is checked against what the
-        math predicts — if it doesn’t match, tune the attributes and fire again.
+        Send known particles into a force and watch their tracks, the surrounding field, and any
+        related particles. Each frame, the measured behavior is checked against what the math
+        predicts — you see exactly <em>when</em> every test passes. If it doesn’t match, tune the
+        numbers and fire again.
       </p>
     </header>
 
@@ -65,23 +67,41 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           <span class="stage-label">detector chamber</span>
           <canvas id="chamber"></canvas>
         </div>
+        <input type="range" id="scrub" class="lab-scrub" min="0" max="1" value="0" aria-label="Scrub timeline" />
         <div class="lab-transport">
-          <button type="button" id="fire">↯ Fire</button>
+          <button type="button" id="fire" class="primary">↯ Fire</button>
           <button type="button" id="play">▶ Play</button>
           <button type="button" id="stepb">⏭ Step</button>
           <button type="button" id="reset">⟲ Reset</button>
+          <button type="button" id="loop" aria-pressed="false">↻ Loop</button>
           <span class="frame-readout" id="frameReadout"></span>
         </div>
+
+        <details class="lab-legend">
+          <summary>What am I looking at?</summary>
+          <ul>
+            <li><i class="lg body"></i><b>Body</b> — the force source (an element). The ring is its <code>range</code>.</li>
+            <li><i class="lg field"></i><b>Field</b> — faint vectors: the push a still particle would feel at each point.</li>
+            <li><i class="lg particle"></i><b>Test particle</b> — fired in at a known state; bright track + a velocity arrow. Its behavior is what’s judged.</li>
+            <li><i class="lg related"></i><b>Related particles</b> — extra or neighbour matter (multi-particle and particle↔particle forces).</li>
+            <li><i class="lg expected"></i><b>Expected Δv</b> — the gold arrow: what the math predicts the force adds on the first frame.</li>
+            <li><b>Verdict</b> — every check must pass. Each shows measured vs expected and the frame it goes green; the run “matches” once they all have.</li>
+          </ul>
+        </details>
       </section>
 
       <aside class="lab-readout" aria-label="Readout">
         <div class="verdict" id="verdict">—</div>
         <div>
-          <p class="panel-title">Expectations</p>
+          <p class="panel-title">Expectations <span class="pass-summary" id="passSummary"></span></p>
           <div class="checklist" id="checklist"></div>
         </div>
         <div>
           <p class="panel-title">Tune &amp; refire</p>
+          <label class="preset-row">
+            <span>Preset</span>
+            <select id="preset"></select>
+          </label>
           <div class="params" id="params"></div>
           <div class="lab-actions">
             <button type="button" id="share">Copy link</button>
@@ -105,6 +125,18 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
     for (const f of MANUAL_FORCES as Any[]) META[f.token] = f;
 
     const $ = (id: string) => document.getElementById(id);
+    const round = (n: number) => Math.round(n * 100) / 100;
+
+    // generic tuning presets — relative to each force's default scenario
+    const PRESETS = [
+      { id: 'default', label: 'Default' },
+      { id: 'strong', label: 'Strong force' },
+      { id: 'weak', label: 'Weak force' },
+      { id: 'far', label: 'Long range' },
+      { id: 'near', label: 'Short range' },
+      { id: 'fast', label: 'Fast particle' },
+      { id: 'burst', label: 'Particle burst (×14)' },
+    ];
 
     // re-runs on each client-side navigation to /lab (ClientRouter); no-op elsewhere.
     function setup() {
@@ -130,8 +162,9 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       let cur = 'attract';
       let overrides: Any = {};
       let result: Any = null;
-      let checks: Any[] = [];
+      let checks: Any[] = []; // {label, kind, pass, measured, expected, active, passFrame}
       let frame = 0;
+      let loop = false;
       let view = { scale: 1, ox: 0, oy: 0 };
 
       const clone = (o: any) => JSON.parse(JSON.stringify(o));
@@ -151,26 +184,52 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         if (overrides.range != null && s.body.range != null) s.body.range = overrides.range;
         if (overrides.vx != null) s.particles[0].vx = overrides.vx;
         if (overrides.vy != null) s.particles[0].vy = overrides.vy;
+        // multi-particle: fan extra particles through the test particle, same velocity
+        const count = Math.max(1, Math.min(40, Math.round(overrides.count ?? s.particles.length)));
+        if (count > s.particles.length) {
+          const base = s.particles[0];
+          const extra = count - s.particles.length;
+          const spread = (s.body.range || 200) * 0.9;
+          for (let i = 0; i < extra; i++) {
+            const t = extra === 1 ? 0 : i / (extra - 1) - 0.5; // -0.5..0.5
+            s.particles.push({ ...base, x: base.x, y: base.y + t * spread, vx: base.vx, vy: base.vy });
+          }
+        }
         return s;
+      }
+
+      // first frame at which an expectation passes (evaluated on the growing trajectory),
+      // or -1 if it never does. Lets the checklist fill in as the particle moves.
+      function firstPassFrame(exp: Any, res: Any) {
+        const N = res.trajectory.length;
+        for (let f = 0; f < N; f++) {
+          const partial = { ...res, trajectory: res.trajectory.slice(0, f + 1) };
+          try {
+            if (exp.check(partial).pass) return f;
+          } catch {}
+        }
+        return -1;
       }
 
       function evaluate() {
         const s = buildScenario();
         result = runScenario(s, forces);
-        // exact-formula checks are pinned to the experiment's default attributes; once
-        // you tune a parameter they no longer apply (the physics is still right — the
-        // invariants prove it), so they go inactive and drop out of the verdict.
-        const tuned = Object.keys(overrides).length > 0;
+        // exact-formula checks are pinned to the experiment's default attributes; once you
+        // tune a parameter they go inactive (the physics is still right — the invariants
+        // prove it) and drop out of the verdict.
+        const tuned = ['strength', 'range', 'vx', 'vy'].some((k) => overrides[k] != null);
         checks = byForce[cur].expectations.map((e: Any) => {
           const r = e.check(result);
           return {
             label: e.label, kind: e.kind, pass: r.pass, measured: r.measured, expected: r.expected,
             active: !(tuned && e.kind === 'exact'),
+            passFrame: r.pass ? firstPassFrame(e, result) : -1,
           };
         });
         frame = 0;
+        const scrub = $('scrub') as HTMLInputElement | null;
+        if (scrub) { scrub.max = String(result.trajectory.length - 1); scrub.value = '0'; }
         computeView();
-        renderReadout();
         renderParams();
         draw();
       }
@@ -189,7 +248,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         canvas!.width = Math.floor(w * dpr);
         canvas!.height = Math.floor(h * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        const pad = 46;
+        const pad = 50;
         const spanX = maxX - minX || 1, spanY = maxY - minY || 1;
         const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY);
         const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
@@ -261,16 +320,17 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
             if (f === 0) ctx.moveTo(sx, sy);
             else ctx.lineTo(sx, sy);
           }
-          ctx.strokeStyle = i === 0 ? rgba(col, 0.9) : 'rgba(200,210,230,0.35)';
+          ctx.strokeStyle = i === 0 ? rgba(col, 0.9) : 'rgba(200,210,230,0.22)';
           ctx.lineWidth = i === 0 ? 1.7 : 1;
           ctx.stroke();
           const p = traj[frame][i];
           const [sx, sy] = w2s(p.x, p.y);
-          ctx.fillStyle = i === 0 ? col : 'rgba(200,210,230,0.6)';
-          ctx.beginPath(); ctx.arc(sx, sy, i === 0 ? 4 : 2.6, 0, 6.283); ctx.fill();
-          // velocity vector
-          const [vx2, vy2] = w2s(p.x + p.vx * 5, p.y + p.vy * 5);
-          arrow(sx, sy, vx2, vy2, i === 0 ? rgba(col, 0.7) : 'rgba(200,210,230,0.4)', 3.5);
+          ctx.fillStyle = i === 0 ? col : 'rgba(200,210,230,0.5)';
+          ctx.beginPath(); ctx.arc(sx, sy, i === 0 ? 4 : 2.4, 0, 6.283); ctx.fill();
+          if (i === 0) {
+            const [vx2, vy2] = w2s(p.x + p.vx * 5, p.y + p.vy * 5);
+            arrow(sx, sy, vx2, vy2, rgba(col, 0.7), 3.5);
+          }
         }
 
         // expected overlay: the predicted frame-0 Δv on the test particle (gold)
@@ -288,64 +348,117 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
 
         const fr = $('frameReadout');
         if (fr) fr.textContent = `frame ${frame} / ${traj.length - 1}`;
+        const scrub = $('scrub') as HTMLInputElement | null;
+        if (scrub && document.activeElement !== scrub) scrub.value = String(frame);
+        paintChecklist();
       }
 
-      function renderReadout() {
+      // the checklist fills in temporally: a check is ✓ once the frame reaches its
+      // pass-frame, ○ pending before that, ✗ if it never passes.
+      function paintChecklist() {
         const active = checks.filter((c) => c.active);
-        const allPass = active.every((c) => c.pass);
+        const live = active.map((c) => ({ ...c, satisfied: c.passFrame >= 0 && frame >= c.passFrame, fails: c.passFrame < 0 }));
+        const passedNow = live.filter((c) => c.satisfied).length;
+        const anyFail = live.some((c) => c.fails);
+        const allPass = passedNow === active.length && active.length > 0;
         const v = $('verdict')!;
-        v.className = 'verdict ' + (allPass ? 'pass' : 'fail');
-        v.textContent = allPass ? 'Match — behaves as predicted' : 'No match — tune & refire';
+        if (anyFail) {
+          v.className = 'verdict fail';
+          v.textContent = 'No match — tune & refire';
+        } else if (allPass) {
+          v.className = 'verdict pass';
+          v.textContent = 'Match — behaves as predicted';
+        } else {
+          v.className = 'verdict resolving';
+          v.textContent = `Resolving — ${passedNow}/${active.length} passed`;
+        }
+        const sum = $('passSummary');
+        if (sum) sum.textContent = active.length ? `${passedNow}/${active.length}` : '';
+
         const list = $('checklist')!;
         list.innerHTML = checks
           .map((c) => {
-            const cls = !c.active ? 'muted' : c.pass ? 'pass' : 'fail';
-            const mark = !c.active ? '–' : c.pass ? '✓' : '✗';
-            const kind = c.active ? c.kind : 'default-only';
-            return `<div class="check ${cls}">
-              <div class="row1"><span class="mark">${mark}</span>
-              <span class="label">${c.label}</span><span class="kind">${kind}</span></div>
-              <div class="nums"><span>measured <b>${c.measured}</b></span><span>expected <b>${c.expected}</b></span></div>
-            </div>`;
+            if (!c.active) {
+              return checkRow('muted', '–', c, 'default-only', '');
+            }
+            if (c.passFrame < 0) return checkRow('fail', '✗', c, c.kind, 'never');
+            const satisfied = frame >= c.passFrame;
+            return checkRow(
+              satisfied ? 'pass' : 'pending',
+              satisfied ? '✓' : '○',
+              c, c.kind,
+              `passes @ frame ${c.passFrame}`,
+            );
           })
           .join('');
         const note = $('note');
         if (note) note.textContent = byForce[cur].scenario.label + '.';
       }
+      function checkRow(cls: string, mark: string, c: Any, kind: string, when: string) {
+        return `<div class="check ${cls}">
+          <div class="row1"><span class="mark">${mark}</span>
+          <span class="label">${c.label}</span><span class="kind">${kind}</span></div>
+          <div class="nums"><span>measured <b>${c.measured}</b></span><span>expected <b>${c.expected}</b></span>${when ? `<span class="when">${when}</span>` : ''}</div>
+        </div>`;
+      }
 
       function renderParams() {
         const s = byForce[cur].scenario;
+        const b = s.body, p0 = s.particles[0], cur0 = overrides;
         const rows: string[] = [];
-        const slider = (key: string, label: string, val: number, min: number, max: number, step: number) =>
-          `<div class="param"><label>${label}</label><span class="val" id="val-${key}">${val}</span>
+        const row = (key: string, label: string, val: number, min: number, max: number, step: number) =>
+          `<div class="param"><label>${label}</label>
+            <input type="number" class="num" data-param="${key}" min="${min}" max="${max}" step="${step}" value="${round(val)}">
             <input type="range" data-param="${key}" min="${min}" max="${max}" step="${step}" value="${val}"></div>`;
-        const b = s.body;
-        const cur0 = overrides;
         if (b.strength != null) {
-          const def = cur0.strength ?? b.strength;
           const max = Math.max(0.5, b.strength * 3);
-          rows.push(slider('strength', 'strength', def, 0, max, max / 100));
+          rows.push(row('strength', 'strength', cur0.strength ?? b.strength, 0, max, max / 100));
         }
-        if (b.range > 0) {
-          const def = cur0.range ?? b.range;
-          rows.push(slider('range', 'range (px)', def, 50, 500, 10));
-        }
-        const p0 = s.particles[0];
-        rows.push(slider('vx', 'initial vᵪ', cur0.vx ?? p0.vx ?? 0, -8, 8, 0.5));
-        rows.push(slider('vy', 'initial vᵧ', cur0.vy ?? p0.vy ?? 0, -8, 8, 0.5));
+        if (b.range > 0) rows.push(row('range', 'range (px)', cur0.range ?? b.range, 50, 500, 5));
+        rows.push(row('vx', 'initial vᵪ', cur0.vx ?? p0.vx ?? 0, -8, 8, 0.5));
+        rows.push(row('vy', 'initial vᵧ', cur0.vy ?? p0.vy ?? 0, -8, 8, 0.5));
+        rows.push(row('count', 'particles', cur0.count ?? s.particles.length, 1, 40, 1));
         $('params')!.innerHTML = rows.join('');
         $('params')!
           .querySelectorAll('input[data-param]')
           .forEach((el) =>
             el.addEventListener('input', () => {
-              const key = (el as HTMLInputElement).dataset.param!;
-              const val = parseFloat((el as HTMLInputElement).value);
+              const inp = el as HTMLInputElement;
+              const key = inp.dataset.param!;
+              const val = parseFloat(inp.value);
+              if (Number.isNaN(val)) return;
               overrides[key] = val;
-              const vv = $('val-' + key);
-              if (vv) vv.textContent = String(val);
+              // sync the sibling (slider ↔ number)
+              $('params')!
+                .querySelectorAll(`input[data-param="${key}"]`)
+                .forEach((o) => { if (o !== inp) (o as HTMLInputElement).value = String(val); });
+              setPresetSelect('');
               evaluate();
             }),
           );
+        const sel = $('preset') as HTMLSelectElement | null;
+        if (sel && !sel.options.length) {
+          sel.innerHTML = PRESETS.map((p) => `<option value="${p.id}">${p.label}</option>`).join('');
+          sel.addEventListener('change', () => applyPreset(sel.value));
+        }
+      }
+
+      function setPresetSelect(id: string) {
+        const sel = $('preset') as HTMLSelectElement | null;
+        if (sel) sel.value = id || '';
+      }
+
+      function applyPreset(id: string) {
+        const s = byForce[cur].scenario, b = s.body;
+        overrides = {};
+        if (id === 'strong' && b.strength != null) overrides.strength = round(b.strength * 2.2);
+        else if (id === 'weak' && b.strength != null) overrides.strength = round(b.strength * 0.4);
+        else if (id === 'far' && b.range > 0) overrides.range = Math.round(b.range * 1.6);
+        else if (id === 'near' && b.range > 0) overrides.range = Math.round(b.range * 0.55);
+        else if (id === 'fast') overrides.vx = 6;
+        else if (id === 'burst') overrides.count = 14;
+        stopPlay();
+        evaluate();
       }
 
       // ── transport ──────────────────────────────────────────────────────────
@@ -357,12 +470,13 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       }
       function play() {
         if (W.__labTimer) return stopPlay();
-        frame = 0;
+        if (frame >= result.trajectory.length - 1) frame = 0;
         const pb = $('play');
         if (pb) pb.textContent = '⏸ Pause';
         W.__labTimer = window.setInterval(() => {
           frame++;
           if (frame >= result.trajectory.length - 1) {
+            if (loop) { frame = 0; draw(); return; } // continuous playback
             frame = result.trajectory.length - 1;
             draw();
             stopPlay();
@@ -378,6 +492,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         document.querySelectorAll('.lab-pick').forEach((b) =>
           b.classList.toggle('on', (b as HTMLElement).dataset.force === force),
         );
+        setPresetSelect('default');
         stopPlay();
         evaluate();
       }
@@ -394,10 +509,21 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           draw();
         });
         $('reset')?.addEventListener('click', () => { stopPlay(); frame = 0; draw(); });
+        $('loop')?.addEventListener('click', () => {
+          loop = !loop;
+          const lb = $('loop')!;
+          lb.setAttribute('aria-pressed', String(loop));
+          lb.classList.toggle('on', loop);
+        });
+        $('scrub')?.addEventListener('input', () => {
+          stopPlay();
+          frame = parseInt(($('scrub') as HTMLInputElement).value, 10) || 0;
+          draw();
+        });
         $('resetParams')?.addEventListener('click', () => select(cur));
         $('share')?.addEventListener('click', () => {
           const parts = [cur];
-          for (const k of ['strength', 'range', 'vx', 'vy'])
+          for (const k of ['strength', 'range', 'vx', 'vy', 'count'])
             if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
           location.hash = parts.join(';');
           navigator.clipboard?.writeText(location.href);
