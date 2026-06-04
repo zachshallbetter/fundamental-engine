@@ -108,6 +108,52 @@
   font-weight: 400;
 }
 
+/* product hero CTA — install command + doc/lab links */
+.hero-cta {
+  margin-top: clamp(1.8rem, 4vh, 2.6rem);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+.hero-cta .install {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: copy;
+  transition:
+    border-color 0.25s,
+    color 0.25s;
+}
+.hero-cta .install::before {
+  content: '$';
+  color: var(--accent);
+  opacity: 0.7;
+}
+.hero-cta .install::after {
+  content: 'copy';
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.hero-cta .install:hover {
+  border-color: var(--accent);
+}
+.hero-cta .install.copied::after {
+  content: 'copied ✓';
+  color: var(--accent);
+}
+
 /* chapter dividers */
 .chapter {
   position: relative;
@@ -663,7 +709,7 @@
   justify-content: center;
   flex-wrap: wrap;
 }
-.manual-foot a.btn {
+a.btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -680,14 +726,19 @@
     color 0.25s,
     border-color 0.25s;
 }
-.manual-foot a.btn:hover {
+a.btn:hover {
   color: var(--text);
   border-color: var(--accent);
 }
-.manual-foot a.btn.primary {
+a.btn.primary {
   background: var(--text);
   color: #06080d;
   border-color: var(--text);
+}
+a.btn.primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06080d;
 }
 
 @media (max-width: 900px) {
