@@ -123,11 +123,19 @@ export function step(input: StepInput): void {
           if (m.gate) gated = true;
         }
         if (gated) continue; // spotlight cone excludes this particle
-        if (!hasModifier) {
+        // conserved-attention multiplier (§2.4): a page-level effective strength,
+        // 1 = neutral (the default, so the live field is untouched until opted in).
+        const attn = b.attn ?? 1;
+        if (!hasModifier && attn === 1) {
           for (const tok of b.tokens) forces[tok]?.apply(b, p, env);
+        } else if (!hasModifier) {
+          const origS = b.strength;
+          b.strength = origS * attn;
+          for (const tok of b.tokens) forces[tok]?.apply(b, p, env);
+          b.strength = origS;
         } else {
           const origS = b.strength;
-          b.strength = origS * sMul; // resonate's time-varying S(t)
+          b.strength = origS * sMul * attn; // resonate's S(t) × attention budget
           for (const tok of b.tokens) {
             const f = forces[tok];
             if (f && !f.modify) f.apply(b, p, env);
