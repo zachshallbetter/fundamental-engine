@@ -4,8 +4,31 @@
   "description": "A reciprocal DOM-physics field — elements bend the field; the field's density bends them back.",
   "type": "module",
   "license": "MIT",
+  "author": "Zach Shallbetter <zach@zachshallbetter.com> (https://zachshallbetter.com)",
+  "homepage": "https://forces-ui.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachshallbetter/forces-ui.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/zachshallbetter/forces-ui/issues"
+  },
+  "keywords": [
+    "particles",
+    "physics",
+    "canvas",
+    "forces",
+    "field",
+    "reciprocal",
+    "dom",
+    "animation",
+    "interaction",
+    "generative",
+    "zero-dependency"
+  ],
   "sideEffects": false,
-  "files": ["dist"],
+  "files": ["dist", "README.md", "LICENSE"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,7 +36,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
