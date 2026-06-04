@@ -336,12 +336,101 @@
   line-height: 1.5;
 }
 
-/* timeline scrubber */
-.lab-scrub {
-  width: 100%;
-  margin: 0.7rem 0 0;
-  accent-color: var(--accent);
+/* the timeline — ticks, pass-frame markers, a MATCH flag, and the playhead */
+.lab-timeline {
+  margin: 0.85rem 0 0;
+  padding: 0.5rem 0;
   cursor: pointer;
+  outline: none;
+}
+.lab-timeline:focus-visible .tl-track {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.tl-track {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+}
+.tl-ticks span {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 5px;
+  transform: translateY(-50%);
+  margin-left: -0.5px;
+  background: var(--line-2);
+}
+.tl-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: background 0.2s;
+}
+.tl-fill.matched {
+  background: color-mix(in srgb, var(--ok, #5fd0a8) 30%, transparent);
+}
+.tl-markers {
+  position: absolute;
+  inset: 0;
+}
+.tl-marker {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--bg-card, #0b0e16);
+  border: 1.5px solid var(--warn, #ffce6b);
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.tl-marker.passed {
+  background: var(--ok, #5fd0a8);
+  border-color: var(--ok, #5fd0a8);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--ok, #5fd0a8) 70%, transparent);
+}
+.tl-flag {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--warn, #ffce6b);
+  opacity: 0.5;
+}
+.tl-flag.reached {
+  background: var(--ok, #5fd0a8);
+  opacity: 1;
+  box-shadow: 0 0 8px var(--ok, #5fd0a8);
+}
+.tl-playhead {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text);
+  border-radius: 2px;
+}
+.tl-playhead::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text);
 }
 
 /* transport: emphasise Fire, mark Loop active */
