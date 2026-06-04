@@ -12,6 +12,7 @@ import {
   pressure,
   link,
   hunt,
+  morph,
   spawn,
   resonate,
   spotlight,
@@ -99,6 +100,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'pressure',
       'link',
       'hunt',
+      'morph',
       'spawn',
       'resonate',
       'spotlight',
@@ -428,6 +430,33 @@ test('link is neutral exactly at the rest length and inert beyond range', () => 
   const beyond = part({ x: 0, y: 0 });
   link.apply(body({ strength: 1, range: 100 }), beyond, env({ dist: 200, ...withNeighbor({ x: 35, y: 0 }) }));
   assert.equal(beyond.vx, 0); // body out of reach
+});
+
+// morph springs a particle toward a target point hashed from its scatter fraction gx.
+test('morph springs a particle toward its assigned target point (§20.3)', () => {
+  const p = part({ x: 0, y: 0, gx: 0 }); // gx 0 → target index 0
+  morph.apply(body({ strength: 1, targets: [{ x: 100, y: 0 }] }), p, env());
+  assert.ok(p.vx > 1.5, 'pulled toward the +x target (spring ≈ 2, jitter small)'); // 100·1·0.02
+});
+
+test('morph assigns by the hash of gx — different particles aim at different marks', () => {
+  const targets = [{ x: 0, y: 0 }, { x: 100, y: 0 }];
+  const lo = part({ x: 50, y: 0, gx: 0.1 }); // floor(0.1·2)=0 → target (0,0) → springs −x
+  morph.apply(body({ strength: 1, targets }), lo, env());
+  assert.ok(lo.vx < 0);
+  const hi = part({ x: 50, y: 0, gx: 0.9 }); // floor(0.9·2)=1 → target (100,0) → springs +x
+  morph.apply(body({ strength: 1, targets }), hi, env());
+  assert.ok(hi.vx > 0);
+});
+
+test('morph is still and jitter-free once a particle sits on its mark, inert with no targets', () => {
+  const onMark = part({ x: 100, y: 0, gx: 0 });
+  morph.apply(body({ strength: 1, targets: [{ x: 100, y: 0 }] }), onMark, env());
+  assert.equal(onMark.vx, 0); // d = 0 → spring 0, arrived 1 → jitter 0
+  assert.equal(onMark.vy, 0);
+  const noShape = part({ x: 0, y: 0 });
+  morph.apply(body({ strength: 1 }), noShape, env());
+  assert.equal(noShape.vx, 0); // no targets → inert
 });
 
 // spawn is a class-[S] source: no per-particle apply, the work is in source().

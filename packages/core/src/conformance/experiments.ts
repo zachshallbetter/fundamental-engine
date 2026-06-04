@@ -605,6 +605,52 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
+      force: 'morph',
+      label: 'Matter assembling into a three-point mark',
+      family: 'extended',
+      klass: 'D',
+      // three particles, each hashed (by gx) to a distinct target — they spring out from
+      // the centre and settle onto the marks. A geometric mark, never letterforms (§11).
+      body: {
+        cx: 0,
+        cy: 0,
+        range: 300,
+        strength: 1,
+        targets: [
+          { x: 120, y: 0 },
+          { x: -60, y: 100 },
+          { x: -60, y: -100 },
+        ],
+      },
+      particles: [
+        { x: 0, y: 0, gx: 0.1 },
+        { x: 0, y: 0, gx: 0.45 },
+        { x: 0, y: 0, gx: 0.8 },
+      ],
+      frames: 80,
+      seed: 5,
+    },
+    expectations: [
+      check('each particle settles on its assigned mark', 'invariant', (r) => {
+        const ts = r.scenario.body.targets!;
+        const first = r.trajectory[0]!;
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        let converged = true;
+        let maxEnd = 0;
+        for (let i = 0; i < r.scenario.particles.length; i++) {
+          const gx = r.scenario.particles[i]!.gx ?? 0;
+          const t = ts[Math.min(ts.length - 1, Math.floor(gx * ts.length))]!;
+          const d0 = Math.hypot(first[i]!.x - t.x, first[i]!.y - t.y);
+          const d1 = Math.hypot(last[i]!.x - t.x, last[i]!.y - t.y);
+          if (d1 >= d0) converged = false;
+          maxEnd = Math.max(maxEnd, d1);
+        }
+        return { pass: converged && maxEnd < 30, measured: `max dist to mark ${f3(maxEnd)}`, expected: 'each on its mark (< 30)' };
+      }),
+    ],
+  },
+  {
+    scenario: {
       force: 'resonate',
       tokens: ['resonate', 'attract'],
       label: 'A resonator pulsing an attractor',

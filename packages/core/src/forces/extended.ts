@@ -345,6 +345,45 @@ export const link: Force = {
 };
 
 /**
+ * §20.3 — `morph` (class [D]): matter assembles into a shape. Each particle is assigned
+ * a stable target point from the body's `targets` set (hashed from its fixed scatter
+ * fraction `gx`, so the assignment never flickers frame to frame), springs toward it, and
+ * the random jitter fades as it arrives — so the swarm settles into the form. `strength`
+ * is the spring gain.
+ *
+ * **DESIGN LAW (§11):** targets are *marks* — a logo, an icon, a chart, a map,
+ * punctuation — **never words or letterforms**. Text is rendered as text and made to
+ * react (glow/grow via `--d`, §8); particles never spell. The `targets` set must come
+ * from a non-word source.
+ */
+const MORPH_ARRIVE = 40; // px within which a particle counts as "arrived" (jitter fades)
+export const morph: Force = {
+  token: 'morph',
+  label: 'Morph',
+  apply(b, p, e) {
+    const ts = b.targets;
+    if (!ts || ts.length === 0) return; // no shape assigned → inert
+    // stable assignment: hash the particle's fixed scatter fraction to a target index, so
+    // a given particle always aims at the same point (no flicker as the pool reorders).
+    const i = Math.min(ts.length - 1, Math.floor((p.gx ?? 0) * ts.length));
+    const t = ts[i]!;
+    const dx = t.x - p.x;
+    const dy = t.y - p.y;
+    const d = Math.hypot(dx, dy);
+    const k = b.strength;
+    p.vx += dx * k * 0.02; // spring toward the target point
+    p.vy += dy * k * 0.02;
+    const arrived = d < MORPH_ARRIVE ? 1 - d / MORPH_ARRIVE : 0;
+    const jit = (1 - arrived) * k * 0.3; // jitter that fades to zero on arrival
+    if (jit > 0) {
+      p.vx += (Math.random() - 0.5) * jit;
+      p.vy += (Math.random() - 0.5) * jit;
+    }
+  },
+  meta: { desc: 'matter assembles into a mark/chart/logo — never words (§11)' },
+};
+
+/**
  * §20.1/§20.2 — `spawn` (class [S], the source *atom*): the one force that *creates*
  * matter rather than moving it. While its body is engaged it emits particles each frame
  * at the body centre, launched along the heading `(ux, uy)` within a soft cone. This
@@ -446,6 +485,7 @@ export const extendedForces: readonly Force[] = [
   pressure,
   link,
   hunt,
+  morph,
   spawn,
   resonate,
   spotlight,

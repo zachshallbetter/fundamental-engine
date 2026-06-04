@@ -464,6 +464,29 @@
   opacity: 0.7;
 }
 
+/* morph — scattered dots gathering toward a mark */
+.fg-morph::before {
+  left: 1px;
+  top: 2px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  box-shadow:
+    1px 9px 0 currentColor,
+    9px 2px 0 currentColor;
+}
+.fg-morph::after {
+  right: 1.5px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+
 /* resonate — a standing wave */
 .fg-resonate::before {
   left: 1px;
