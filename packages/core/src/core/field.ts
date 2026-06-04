@@ -518,7 +518,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
       const rs = d * d;
       const h = p.heat;
-      const [r, g, b] = particleRGB(rs, h, acc);
+      let [r, g, b] = particleRGB(rs, h, acc);
+      if (p.color) {
+        // carried pigment (§20.8): a stained particle reads mostly as its own tint.
+        const [pr, pg, pb] = hexToRgb(p.color);
+        r += (pr - r) * 0.75;
+        g += (pg - g) * 0.75;
+        b += (pb - b) * 0.75;
+      }
       const size = p.size * (1 - 0.4 * rs) + h * 2;
       const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot, 0, 1);
       if (h > 0.2) {

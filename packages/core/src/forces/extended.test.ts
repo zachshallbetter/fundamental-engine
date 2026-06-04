@@ -11,6 +11,7 @@ import {
   cohesion,
   resonate,
   spotlight,
+  pigment,
   curlNoise,
   extendedForces,
 } from './extended.ts';
@@ -93,6 +94,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'cohesion',
       'resonate',
       'spotlight',
+      'pigment',
     ],
   );
 });
@@ -342,4 +344,26 @@ test('cohesion is inert beyond the body range', () => {
   const p = part({ x: 0, y: 0 });
   cohesion.apply(body({ strength: 0.5, range: 100 }), p, env({ dist: 200, ...withNeighbor({ x: 50, y: 0 }) }));
   assert.equal(p.vx, 0);
+});
+
+test('pigment stains overlapping matter with the body tint, then advects it', () => {
+  // first contact: adopt the tint outright
+  const fresh = part({});
+  pigment.apply(body({ tint: '#ff0000', range: 100 }), fresh, env({ dist: 10 }));
+  assert.equal(fresh.color, '#ff0000');
+  // already carrying a colour: advect toward the tint (mix — doesn't snap)
+  const carrying = part({ color: '#000000' });
+  pigment.apply(body({ tint: '#ffffff', range: 100 }), carrying, env({ dist: 10 }));
+  assert.notEqual(carrying.color, '#000000'); // it moved
+  assert.notEqual(carrying.color, '#ffffff'); // but not all the way
+});
+
+test('pigment is inert without a tint or beyond the overlap radius', () => {
+  const noTint = part({});
+  pigment.apply(body({ range: 100 }), noTint, env({ dist: 10 }));
+  assert.equal(noTint.color, undefined); // nothing to stain with
+
+  const farOff = part({});
+  pigment.apply(body({ tint: '#ff0000', range: 100 }), farOff, env({ dist: 90 }));
+  assert.equal(farOff.color, undefined); // beyond 0.6·range = overlap radius
 });
