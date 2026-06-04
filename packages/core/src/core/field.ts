@@ -38,7 +38,7 @@ import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
-import { linkAlpha, marchingCell, splatDensity } from './render-modes.ts';
+import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
 import { forceAt } from './streamlines.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -83,6 +83,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let boundTarget = 0;
   let boot = reduceMotion ? 1 : 0;
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
+  let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
   let JOURNEY: RGB[] = resolvePalette(opts.palette).map(hexToRgb); // the accent journey (§9)
   let curAccent: RGB = hexToRgb(cfg.accent);
@@ -624,6 +625,44 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
             ctx!.lineTo(ox + s.x2 * STEP, oy + s.y2 * STEP);
           }
         }
+      }
+      ctx!.stroke();
+      ctx!.globalCompositeOperation = 'source-over';
+    }
+
+    // voronoi: assign each grid node its nearest particle, then stroke the walls where
+    // adjacent nodes belong to different cells — the shattered-glass look (§20.6).
+    if (cfg.render === 'voronoi') {
+      const STEP = 18; // grid resolution (px)
+      const SEARCH = STEP * 3; // candidate radius for the nearest-site query
+      const cols = Math.ceil(W / STEP) + 1;
+      const rows = Math.ceil(H / STEP) + 1;
+      if (!vor || vor.length !== cols * rows) vor = new Int32Array(cols * rows);
+      // a stable owner id per particle (its index in the pool) so adjacent nodes compare.
+      const parts = store.particles;
+      const idOf = new Map<(typeof parts)[number], number>();
+      for (let i = 0; i < parts.length; i++) idOf.set(parts[i]!, i);
+      for (let gy = 0; gy < rows; gy++) {
+        for (let gx = 0; gx < cols; gx++) {
+          const nx = gx * STEP;
+          const ny = gy * STEP;
+          const cands = store.near(nx, ny, SEARCH);
+          let owner = -1;
+          if (cands.length) {
+            const k = nearestSite(nx, ny, cands);
+            if (k >= 0) owner = idOf.get(cands[k]!) ?? -1;
+          }
+          vor[gy * cols + gx] = owner;
+        }
+      }
+      const acc = hexToRgb(cfg.accent);
+      ctx!.globalCompositeOperation = 'lighter';
+      ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.32 * boot})`;
+      ctx!.lineWidth = 1;
+      ctx!.beginPath();
+      for (const s of voronoiWalls(vor, cols, rows)) {
+        ctx!.moveTo(s.x1 * STEP, s.y1 * STEP);
+        ctx!.lineTo(s.x2 * STEP, s.y2 * STEP);
       }
       ctx!.stroke();
       ctx!.globalCompositeOperation = 'source-over';
