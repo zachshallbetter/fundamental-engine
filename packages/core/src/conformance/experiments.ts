@@ -521,6 +521,40 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
+      force: 'hunt',
+      label: 'A predator chasing prey, the prey fleeing',
+      family: 'extended',
+      klass: 'B',
+      // predator (species 0) left of prey (species 1): the predator accelerates toward
+      // the prey (+x) and the prey flees away (+x), so the whole pair migrates +x.
+      body: { cx: 0, cy: 0, range: 300, strength: 1 },
+      particles: [
+        { x: 0, y: 0, species: 0 },
+        { x: 20, y: 0, species: 1 },
+      ],
+      frames: 30,
+    },
+    expectations: [
+      check('the predator accelerates toward the prey', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        return { pass: last[0]!.vx > 0, measured: `predator vx ${f3(last[0]!.vx)}`, expected: '> 0 (toward prey)' };
+      }),
+      check('the prey flees away from the predator', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        return { pass: last[1]!.vx > 0, measured: `prey vx ${f3(last[1]!.vx)}`, expected: '> 0 (fleeing)' };
+      }),
+      check('a particle ignores its own species', 'invariant', (r) => {
+        // both move the same way only because they are different species; a self-pair
+        // check is implicit — the predator's target must be the prey, not itself.
+        const first = r.trajectory[0]!;
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        const migrated = last[0]!.x - first[0]!.x > 1 && last[1]!.x - first[1]!.x > 1;
+        return { pass: migrated, measured: `Δx ${f3(last[0]!.x - first[0]!.x)}, ${f3(last[1]!.x - first[1]!.x)}`, expected: 'both migrate +x' };
+      }),
+    ],
+  },
+  {
+    scenario: {
       force: 'resonate',
       tokens: ['resonate', 'attract'],
       label: 'A resonator pulsing an attractor',

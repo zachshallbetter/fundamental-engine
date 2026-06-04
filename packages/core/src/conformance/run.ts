@@ -108,6 +108,7 @@ function makeParticle(p: import('./types.ts').ScenarioParticle): Particle {
     cap: null,
     ...(p.charge != null ? { charge: p.charge } : {}),
     ...(p.color != null ? { color: p.color } : {}),
+    ...(p.species != null ? { species: p.species } : {}),
   };
 }
 

@@ -10,6 +10,7 @@ import {
   wind,
   cohesion,
   pressure,
+  hunt,
   resonate,
   spotlight,
   pigment,
@@ -94,6 +95,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'wind',
       'cohesion',
       'pressure',
+      'hunt',
       'resonate',
       'spotlight',
       'pigment',
@@ -370,6 +372,33 @@ test('pressure is inert beyond the body range', () => {
   const p = part({ x: 0, y: 0 });
   pressure.apply(body({ strength: 1, range: 100 }), p, env({ dist: 200, ...withNeighbor({ x: 8, y: 0 }) }));
   assert.equal(p.vx, 0);
+});
+
+// hunt uses env.neighbors; species 0 = predator (seeks), species ≠ 0 = prey (flees).
+test('hunt: a predator accelerates toward the nearest prey (§20.3)', () => {
+  const predator = part({ x: 0, y: 0, species: 0 });
+  const prey: Partial<Env> = { neighbors: () => [part({ x: 10, y: 0, species: 1 })] };
+  hunt.apply(body({ strength: 1, range: 300 }), predator, env({ dist: 100, ...prey }));
+  assert.ok(near(predator.vx, 1)); // unit step toward the prey at +x
+  assert.ok(near(predator.vy, 0));
+});
+
+test('hunt: prey flees directly away from the nearest predator (§20.3)', () => {
+  const prey = part({ x: 0, y: 0, species: 1 });
+  const pred: Partial<Env> = { neighbors: () => [part({ x: 10, y: 0, species: 0 })] };
+  hunt.apply(body({ strength: 1, range: 300 }), prey, env({ dist: 100, ...pred }));
+  assert.ok(near(prey.vx, -1)); // flees away from the predator at +x
+  assert.ok(near(prey.vy, 0));
+});
+
+test('hunt: ignores neighbours of its own species and is inert beyond range', () => {
+  const p = part({ x: 0, y: 0, species: 0 });
+  const sameSpecies: Partial<Env> = { neighbors: () => [part({ x: 10, y: 0, species: 0 })] };
+  hunt.apply(body({ strength: 1, range: 300 }), p, env({ dist: 100, ...sameSpecies }));
+  assert.equal(p.vx, 0); // same species → no target
+  const beyond = part({ x: 0, y: 0, species: 0 });
+  hunt.apply(body({ strength: 1, range: 100 }), beyond, env({ dist: 200, neighbors: () => [part({ x: 10, y: 0, species: 1 })] }));
+  assert.equal(beyond.vx, 0); // body out of reach
 });
 
 test('pigment stains overlapping matter with the body tint, then advects it', () => {
