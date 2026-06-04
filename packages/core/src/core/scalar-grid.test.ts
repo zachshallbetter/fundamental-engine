@@ -71,3 +71,19 @@ test('resize rebuilds (and clears) the field', () => {
   g.deposit(64, 64, 3);
   assert.ok(near(g.sample(64, 64), 3)); // usable at the new size
 });
+
+test("'memory' mode retains a deposit far longer than diffuse (slow decay, barely blurs)", () => {
+  const mem = new ScalarGridImpl(320, 320, 'memory', 32);
+  const dif = new ScalarGridImpl(320, 320, 'diffuse', 32);
+  mem.deposit(160, 160, 10);
+  dif.deposit(160, 160, 10);
+  for (let i = 0; i < 40; i++) {
+    mem.step();
+    dif.step();
+  }
+  // both fade, but memory keeps several times more of the worn-in mark (slow decay)
+  assert.ok(
+    mem.sample(160, 160) > dif.sample(160, 160) * 3,
+    `memory persists far longer: ${mem.sample(160, 160).toFixed(3)} vs ${dif.sample(160, 160).toFixed(3)}`,
+  );
+});

@@ -15,7 +15,7 @@
 
 import type { ScalarGrid, Vec2 } from './types.ts';
 
-export type GridMode = 'diffuse' | 'wave';
+export type GridMode = 'diffuse' | 'wave' | 'memory';
 
 export class ScalarGridImpl implements ScalarGrid {
   readonly mode: GridMode;
@@ -86,6 +86,7 @@ export class ScalarGridImpl implements ScalarGrid {
   /** advance one frame in the grid's mode. */
   step(): void {
     if (this.mode === 'wave') this.stepWave();
+    else if (this.mode === 'memory') this.stepDiffuse(0.03, 0.004); // barely blur, fade slowly
     else this.stepDiffuse();
   }
 

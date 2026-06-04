@@ -57,6 +57,7 @@ export const FORCE_COLORS: Record<string, string> = {
   collide: '#cbd5e1',
   diffuse: '#a3e635', // the pheromone field (§20.2 'pheromone')
   propagate: '#5eead4',
+  memory: '#c9a27e', // worn paths — a faded sepia
   // designed-extended forces (§20.2 registry colours)
   lens: '#67e8f9',
   gate: '#fb7185',
@@ -94,6 +95,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   collide: 'A dense cluster where particles ricochet like billiards.',
   diffuse: 'A trail particles lay down and follow — stigmergy.',
   propagate: 'A button that fires a real shock wave across the field.',
+  memory: 'A frequently-used path that wears in and starts pulling harder.',
   // designed-extended
   lens: 'A link that bends a passing flow into caustics — no capture.',
   gate: 'A one-way membrane: matter passes through but not back.',
@@ -239,6 +241,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
     formula: 'inject φ at the source; v += ∇φ · S;  ∂²φ/∂t² = c²∇²φ',
     attrs: ['strength', 'range'],
     desc: 'a travelling wave — particles ride the expanding front',
+  },
+  {
+    family: 'natural',
+    token: 'memory',
+    label: 'Memory',
+    formula: 'M(x) += λ where matter sits;  v += û · (1 − d/r)² · S · (1 + μ·M)',
+    attrs: ['strength', 'range'],
+    desc: 'the field remembers — occupancy wears in paths that pull harder',
   },
 
   // ── designed extended forces (§20.3) ─────────────────────────────────────────
