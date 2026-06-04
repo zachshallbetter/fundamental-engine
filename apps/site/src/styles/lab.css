@@ -336,12 +336,37 @@
   line-height: 1.5;
 }
 
-/* the timeline — ticks, pass-frame markers, a MATCH flag, and the playhead */
+/* the timeline — a per-particle speed waveform, then ticks, pass-frame markers,
+   a MATCH flag, and a playhead that spans both */
 .lab-timeline {
+  position: relative;
   margin: 0.85rem 0 0;
   padding: 0.5rem 0;
   cursor: pointer;
   outline: none;
+}
+.tl-wave-wrap {
+  position: relative;
+  margin-bottom: 0.4rem;
+}
+.tl-wave {
+  display: block;
+  width: 100%;
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-canvas, #07090e);
+}
+.tl-wave-label {
+  position: absolute;
+  top: 4px;
+  left: 7px;
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  pointer-events: none;
 }
 .lab-timeline:focus-visible .tl-track {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 50%, transparent);
@@ -411,20 +436,22 @@
   opacity: 1;
   box-shadow: 0 0 8px var(--ok, #5fd0a8);
 }
+/* the playhead spans the whole timeline (waveform + track) */
 .tl-playhead {
   position: absolute;
-  top: -4px;
-  bottom: -4px;
+  top: 0.5rem;
+  bottom: 0.5rem;
   left: 0;
   width: 2px;
   margin-left: -1px;
   background: var(--text);
   border-radius: 2px;
+  pointer-events: none;
 }
 .tl-playhead::after {
   content: '';
   position: absolute;
-  top: -3px;
+  bottom: -3px;
   left: 50%;
   transform: translateX(-50%);
   width: 9px;

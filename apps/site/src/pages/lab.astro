@@ -76,12 +76,16 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           aria-valuemin="0"
           aria-valuenow="0"
         >
+          <div class="tl-wave-wrap">
+            <span class="tl-wave-label">particle speed</span>
+            <canvas class="tl-wave" id="tlWave"></canvas>
+          </div>
           <div class="tl-track">
             <div class="tl-ticks" id="tlTicks"></div>
             <div class="tl-fill" id="tlFill"></div>
             <div class="tl-markers" id="tlMarkers"></div>
-            <div class="tl-playhead" id="tlPlayhead"></div>
           </div>
+          <div class="tl-playhead" id="tlPlayhead"></div>
         </div>
         <div class="lab-transport">
           <button type="button" id="fire" class="primary">↯ Fire</button>
@@ -476,7 +480,45 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           markers.innerHTML = html;
           markers.dataset.match = String(matchFrame);
         }
+        buildWaveform();
         updateTimeline();
+      }
+      // the waveform: each particle's speed across the run, drawn like an oscilloscope
+      // trace — the test particle prominent, related particles dim. Reads acceleration
+      // (attract ramps up), bleed (drag decays), oscillation (spring), a bounce spike
+      // (collide), jitter (thermal), at a glance.
+      function buildWaveform() {
+        const cv = $('tlWave') as HTMLCanvasElement | null;
+        if (!cv || !result) return;
+        const w = cv.clientWidth || 600, h = 46;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        cv.width = Math.floor(w * dpr); cv.height = Math.floor(h * dpr);
+        const c = cv.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+        c.clearRect(0, 0, w, h);
+        const traj = result.trajectory;
+        const N = traj.length;
+        const nP = traj[0].length;
+        let maxV = 1e-6;
+        for (const fr of traj) for (const p of fr) maxV = Math.max(maxV, p.speed);
+        const pad = 5;
+        const X = (f: number) => (N > 1 ? (f / (N - 1)) * w : 0);
+        const Y = (v: number) => h - pad - (v / maxV) * (h - 2 * pad);
+        // baseline
+        c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(0, h - pad); c.lineTo(w, h - pad); c.stroke();
+        const col = color();
+        const cap = Math.min(nP, 24); // keep dense clouds (thermal) legible
+        for (let i = cap - 1; i >= 0; i--) {
+          c.beginPath();
+          for (let f = 0; f < N; f++) {
+            const sx = X(f), sy = Y(traj[f][i].speed);
+            f ? c.lineTo(sx, sy) : c.moveTo(sx, sy);
+          }
+          if (i === 0) { c.strokeStyle = col; c.lineWidth = 1.6; c.globalAlpha = 1; }
+          else { c.strokeStyle = 'rgba(200,210,230,0.5)'; c.lineWidth = 0.7; c.globalAlpha = 0.45; }
+          c.stroke();
+        }
+        c.globalAlpha = 1;
       }
       function updateTimeline() {
         if (!result) return;
