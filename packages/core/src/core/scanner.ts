@@ -102,6 +102,7 @@ function makeBody(el: HTMLElement, sb: StaticBody): Body {
     accreted: 0,
     count: 0,
     d: 0,
+    attn: 1,
   };
 }
 

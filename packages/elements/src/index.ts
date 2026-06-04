@@ -15,7 +15,14 @@ import { createField, PALETTE, type FieldHandle } from 'forces-ui';
  * place when there's UI to template, e.g. the Lab controls (§14).
  */
 export class ForcesField extends HTMLElement {
-  static readonly observedAttributes = ['accent', 'density', 'waves', 'render', 'palette'];
+  static readonly observedAttributes = [
+    'accent',
+    'density',
+    'waves',
+    'render',
+    'palette',
+    'attention',
+  ];
 
   private readonly canvas: HTMLCanvasElement;
   private field?: FieldHandle;
@@ -58,6 +65,11 @@ export class ForcesField extends HTMLElement {
     return this.getAttribute('palette') ?? undefined;
   }
 
+  /** conserved attention (§2.4): present and not `"false"` → one finite strength budget. */
+  get attention(): boolean {
+    return this.hasAttribute('attention') && this.getAttribute('attention') !== 'false';
+  }
+
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
   /** re-scan the document for `[data-body]` bodies after a DOM change. */
   scan(): void {
@@ -79,6 +91,10 @@ export class ForcesField extends HTMLElement {
   setFormation(name: string): void {
     this.field?.setFormation(name);
   }
+  /** toggle conserved attention (§2.4) live. */
+  setAttention(on: boolean): void {
+    this.field?.setAttention(on);
+  }
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void {
     this.field?.burst(x, y, hex);
@@ -94,6 +110,7 @@ export class ForcesField extends HTMLElement {
       waves: this.waves,
       render: this.renderMode,
       palette: this.palette,
+      attention: this.attention,
     });
   }
 

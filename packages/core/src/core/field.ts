@@ -29,6 +29,7 @@ import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config
 import { resolvePalette } from '../config/palettes.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
+import { attentionMuls } from './attention.ts';
 import { integrateOffset, anchorForce, elementMass, type ElementOffset } from './agents.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
@@ -59,6 +60,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'dots',
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
+    attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
   };
 
   let bodies: Body[] = [];
@@ -399,6 +401,19 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.globalCompositeOperation = 'source-over';
   }
 
+  // conserved attention (§2.4): redistribute one finite strength budget across the
+  // visible bodies by demand (strength × engagement). Rest-neutral and total-
+  // conserving, so the live field is unchanged until a body is engaged. Runs before
+  // step() so the integrator reads this frame's `attn`.
+  function applyAttention(): void {
+    if (!cfg.attention) return;
+    for (const b of bodies) b.attn = 1;
+    const vis = bodies.filter((b) => b.vis && b.tokens.length > 0);
+    if (vis.length === 0) return;
+    const muls = attentionMuls(vis);
+    for (let i = 0; i < vis.length; i++) vis[i]!.attn = muls[i]!;
+  }
+
   function writeFeedback(): void {
     for (const b of bodies) {
       if (!b.feedback) continue;
@@ -550,6 +565,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     cfg.accent = rgbToHex(curAccent);
 
     store.reindex();
+    applyAttention();
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
@@ -636,6 +652,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
     },
     setFormation,
+    setAttention: (on) => {
+      cfg.attention = on;
+      if (!on) for (const b of bodies) b.attn = 1; // release the budget → neutral
+    },
     threads: setThreads,
     burst: (x, y, hex) => {
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).

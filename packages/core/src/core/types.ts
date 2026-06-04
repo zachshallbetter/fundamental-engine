@@ -102,6 +102,8 @@ export interface Body {
   /** per-frame density tally and its eased value d ∈ [0,1] (§8). */
   count: number;
   d: number;
+  /** conserved-attention effective-strength multiplier (§2.4); 1 = neutral. */
+  attn?: number;
 }
 
 /** A formation preset — a global bias on every free particle (§7). */
@@ -215,6 +217,9 @@ export interface FieldOptions {
   /** colour template for the travelling accent (§9): a built-in name
    *  (`'ours'` · `'heatmap'` · `'infrared'` · `'spectrum'`) or custom hex stops. */
   palette?: string | readonly string[];
+  /** conserved attention (§2.4): one finite strength budget — engaging a body
+   *  pulls force off every other. Default false; rest-neutral until engaged. */
+  attention?: boolean;
 }
 
 /** The handle returned by `createField` — the public field API (§13). */
@@ -229,6 +234,8 @@ export interface FieldHandle {
   setPalette(palette: string | readonly string[]): void;
   /** switch the global formation (§7). */
   setFormation(name: string): void;
+  /** toggle conserved attention (§2.4) live — one finite strength budget. */
+  setAttention(on: boolean): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
