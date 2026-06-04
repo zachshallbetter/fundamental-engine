@@ -1,0 +1,112 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+const setup = `<script type="module">
+  import '@forces-ui/elements';
+</script>
+
+<forces-field accent="#4da3ff"></forces-field>`;
+
+const bodies = `<!-- one force -->
+<a data-body="attract" data-strength="0.9" data-range="320">pull me</a>
+
+<!-- composed forces + a condition gate + density write-back -->
+<button
+  data-body="repel vortex"
+  data-strength="1.2"
+  data-range="240"
+  data-spin="1"
+  data-when="active"
+  data-feedback
+>swirl</button>`;
+
+const methods = `const field = document.querySelector('forces-field');
+
+field.scan();                    // after adding/removing [data-body] elements
+field.setFormation('wells');     // global field bias
+field.setAttention(true);        // conserved attention (one strength budget)
+field.setCausality(true);        // density spills to neighbours
+field.setRender('streamlines');  // draw the force field itself
+field.setPalette('heatmap');     // swap the accent colour template
+field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
+---
+
+<DocsLayout
+  title="forces-ui — Web component guide"
+  description="Use the <forces-field> web component from @forces-ui/elements: register it, mark elements as bodies, set attributes, and drive the field through the proxied FieldHandle. Works in any framework or plain HTML."
+>
+  <header class="docs-hero">
+    <p class="kicker">Guides</p>
+    <h1>The <span class="accent">web component</span></h1>
+    <p class="lede">
+      <code>&lt;forces-field&gt;</code> is the keystone — a custom element that drops into any
+      framework (or plain HTML) unchanged. "Every element is a body" is a web-components-shaped
+      idea.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Install</h2>
+    <div class="pkg">
+      <code class="install" data-copy="npm i @forces-ui/elements">npm i @forces-ui/elements</code>
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Set up the field</h2>
+    <p>
+      Import the package once to register the element, then drop a single
+      <code>&lt;forces-field&gt;</code> anywhere. It mounts a fixed, full-viewport canvas behind
+      your page and runs the engine. It's decorative, so it marks itself
+      <code>aria-hidden</code> automatically.
+    </p>
+    <pre class="code"><code>{setup}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Mark elements as bodies</h2>
+    <p>
+      The field reacts to every <code>[data-body]</code> element on the page (the field-reacts
+      law). Forces compose, space-separated; each force reads only the attributes it uses.
+    </p>
+    <pre class="code"><code>{bodies}</code></pre>
+    <div class="callout">
+      <b>Rescan after DOM changes.</b> The engine reads bodies on mount. If you add or remove
+      <code>[data-body]</code> elements later (a route change, a list update), call
+      <code>field.scan()</code> so it picks them up.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Attributes</h2>
+    <p>Set these on the <code>&lt;forces-field&gt;</code> element:</p>
+    <ul class="model">
+      <li><b>accent</b> — the travelling accent colour (a hex string).</li>
+      <li><b>density</b> — particle-count multiplier (default 1).</li>
+      <li><b>waves</b> — draw the background Currents (default on; <code>"false"</code> to disable).</li>
+      <li><b>render</b> — <code>dots</code> · <code>trails</code> · <code>links</code> · <code>streamlines</code>.</li>
+      <li><b>palette</b> — <code>ours</code> · <code>heatmap</code> · <code>infrared</code> · <code>spectrum</code>.</li>
+      <li><b>attention</b> — opt into conserved attention (one finite strength budget).</li>
+      <li><b>causality</b> — opt into cross-boundary causality (density spills to neighbours).</li>
+    </ul>
+    <p>Full details in the <a href="/docs/api/options">options reference</a>.</p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Methods</h2>
+    <p>
+      The full <a href="/docs/api/handle">FieldHandle</a> is proxied onto the element, so any
+      page can drive the field after it mounts:
+    </p>
+    <pre class="code"><code>{methods}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The Field Cell</h2>
+    <p>
+      For a small, in-frame, single-force demo (instead of the page-wide field), use
+      <code>&lt;forces-cell force="vortex"&gt;</code> — a container-sized canvas that runs one
+      force or formation. It's the embeddable unit behind the Manual's per-concept demos.
+    </p>
+  </section>
+</DocsLayout>

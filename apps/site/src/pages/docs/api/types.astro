@@ -1,0 +1,92 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+const force = `interface Force {
+  token: string;                       // unique id, used in data-body
+  label: string;
+  apply(b: Body, p: Particle, env: Env): void;   // the per-frame law
+  modify?(b: Body, p: Particle, env: Env):        // optional (resonate, spotlight)
+    { strength?: number; gate?: boolean };
+}`;
+
+const body = `interface Body {
+  el: HTMLElement;
+  tokens: string[];      // composed force ids
+  strength: number;      // S       (data-strength)
+  range: number;         // d_max   (data-range, px)
+  spin: number;          // ±        (data-spin)
+  angle: number;         // radians  (data-angle)
+  ux: number; uy: number;// heading unit vector
+  when: string;          // condition gate id
+  feedback: boolean;     // density write-back opt-in
+  // runtime state, refreshed each frame:
+  cx: number; cy: number;// rect centre (canvas space)
+  hw: number; hh: number;// half-extents
+  on: boolean;           // engaged (data-active)
+  vis: boolean;          // on-screen
+  count: number; d: number; // density tally + eased value ∈ [0,1]
+}`;
+
+const particle = `interface Particle {
+  x: number; y: number;      // position
+  vx: number; vy: number;    // velocity
+  m: number;                 // mass (1 = nominal)
+  heat: number;              // ∈ [0,1] → colour, size, glow
+  size: number;
+  cap: Body | null;          // capturing absorb body
+  color?: string;            // carried pigment
+}`;
+
+const env = `interface Env {
+  dx: number; dy: number;    // vector body → particle
+  dist: number;              // its length, clamped ≥ 1
+  form: Formation;           // active eased formation
+  W: number; H: number;      // canvas size
+  t: number; frameN: number; dt: number;  // time, frame, step (0 under reduced motion)
+  neighbors(p: Particle, r: number): Particle[];  // spatial query
+  grid(name: string): ScalarGrid;                 // persistent field buffer
+  spark(x, y, power, color?): void;               // micro-reaction
+}`;
+---
+
+<DocsLayout
+  title="forces-ui — Types"
+  description="The core TypeScript contracts for advanced use and custom forces: Force (the per-frame contract), Body, Particle, and Env (the shared per-frame environment)."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>Core <span class="accent">types</span></h1>
+    <p class="lede">
+      For advanced use and authoring your own forces. A force is just an object implementing the
+      <code>Force</code> contract — the engine never special-cases any single one.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Force</h2>
+    <p>The contract every force implements. <code>apply</code> nudges one particle given one body and the shared env.</p>
+    <pre class="code"><code>{force}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Body</h2>
+    <p>A DOM element as a force source — parsed from <a href="/docs/api/attributes">data-* attributes</a>, then refreshed each frame.</p>
+    <pre class="code"><code>{body}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Particle</h2>
+    <p>A point-mass in the conserved pool.</p>
+    <pre class="code"><code>{particle}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Env</h2>
+    <p>The shared per-frame environment handed to every force — precomputed vectors plus the engine services.</p>
+    <pre class="code"><code>{env}</code></pre>
+    <div class="callout">
+      <b>See also.</b> <a href="/docs/api/options">FieldOptions</a> (creation config) and the
+      <a href="/docs/api/handle">FieldHandle</a> (runtime API).
+    </div>
+  </section>
+</DocsLayout>

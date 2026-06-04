@@ -1,0 +1,48 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import { MANUAL_FORCES, MANUAL_PRESETS, MANUAL_CONDITIONS } from 'forces-ui';
+
+const cards = [
+  { href: '/docs/api/options', t: 'createField & options', d: 'The entry point and every FieldOptions knob.' },
+  { href: '/docs/api/handle', t: 'FieldHandle', d: 'The object every entry point returns — drive the field at runtime.' },
+  { href: '/docs/api/attributes', t: 'data-* attributes', d: 'Every attribute a body reads, and which force reads which.' },
+  { href: '/docs/api/forces', t: `Forces (${MANUAL_FORCES.length})`, d: 'The full catalog — law, attributes, and example per force.' },
+  { href: '/docs/api/presets', t: `Presets (${MANUAL_PRESETS.length})`, d: 'Whole compositions as one attribute. No new engine code.' },
+  { href: '/docs/api/catalog', t: 'Conditions, formations & modes', d: 'The orthogonal axes — when, field-wide, and how it draws.' },
+  { href: '/docs/api/types', t: 'Types', d: 'Body, Particle, Force, Env — for advanced and custom forces.' },
+];
+---
+
+<DocsLayout
+  title="forces-ui — API reference"
+  description="The complete forces-ui API: createField & FieldOptions, the FieldHandle, every data-* attribute, all forces, presets, conditions, formations, render modes, and the core types. Generated from the engine's own catalog."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>The complete <span class="accent">surface</span>.</h1>
+    <p class="lede">
+      Every option, method, attribute, and catalog entry. The forces, presets, conditions, and
+      formations pages are generated from the engine's own catalog, so they can't drift from the
+      code you install.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Reference</h2>
+    <div class="next-grid">
+      {
+        cards.map((c) => (
+          <a class="next-card" href={c.href}>
+            <b>{c.t}</b>
+            <span>{c.d}</span>
+          </a>
+        ))
+      }
+    </div>
+    <div class="callout">
+      <b>At a glance.</b> {MANUAL_FORCES.length} forces · {MANUAL_PRESETS.length} presets ·
+      {MANUAL_CONDITIONS.length} conditions · 5 formations · 4 render modes · 4 palettes — one
+      conserved field, zero runtime dependencies.
+    </div>
+  </section>
+</DocsLayout>
