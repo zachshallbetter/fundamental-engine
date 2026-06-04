@@ -1,0 +1,48 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import { OPTIONS } from '../../../lib/docs-api.ts';
+
+const sig = `import { createField } from 'forces-ui';
+
+const field = createField(canvas, options);   // → FieldHandle`;
+---
+
+<DocsLayout
+  title="forces-ui — createField & options"
+  description="createField(canvas, options) starts the engine on a canvas and returns the FieldHandle. Every FieldOptions field: accent, density, waves, render, mass, palette, attention, causality — with types and defaults."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1><span class="accent">createField</span> &amp; options</h1>
+    <p class="lede">
+      The lowest-level entry point. <code>createField(canvas, options)</code> starts the engine on
+      a canvas you provide and returns the <a href="/docs/api/handle">FieldHandle</a>. The web
+      component and <code>mountField()</code> both wrap it.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Signature</h2>
+    <pre class="code"><code>{sig}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>FieldOptions</h2>
+    <p>Every field is optional. Defaults keep the live field unchanged until you opt in.</p>
+    <div class="api-table">
+      {
+        OPTIONS.map((o) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{o.name}</code>
+              <span class="ty">
+                {o.type} · <b>default {o.def}</b>
+              </span>
+            </div>
+            <div class="d">{o.desc}</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</DocsLayout>
