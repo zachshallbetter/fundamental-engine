@@ -181,6 +181,22 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `spotlight` | modifier on `stream` | gates the sibling outside a ~60° heading cone, lets it act inside | modifier | `modify → {gate}` when `û·heading < 0.5` |
 | `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved colour) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
 
+### Composition & conditions
+
+Forces aren't only verified one at a time — a body can carry several tokens (they
+**compose**) and gate on a condition (`data-when`). A second catalog,
+`COMPOSITE_EXPERIMENTS`, verifies those two mechanisms (run alongside the per-force
+catalog by `conformance.test.ts`):
+
+| Experiment | Fired in | Expected behavior |
+|---|---|---|
+| `attract repel` | equal attractor + repeller on one body | the two cancel — net Δv ≈ 0 |
+| `attract vortex` | one body, both forces | composes to the **sum** of the parts — an inward pull *and* a tangential swirl (Δv ≈ (0.146, −0.171)) |
+| `attract` + `data-when="fast"` | a fast and a slow particle | the gate lets the **fast** particle through (pulled toward the body) and **blocks** the slow one (left alone) |
+
+Condition gating runs through the real condition registry (`active`, `fast`, `slow`,
+`hot`, `cool`), so the trajectory reflects the gate frame by frame.
+
 ---
 
 ## Adding a force

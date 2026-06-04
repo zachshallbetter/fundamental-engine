@@ -515,3 +515,88 @@ export const EXPERIMENTS: ForceConformance[] = [
     expectations: [adoptsTint()],
   },
 ];
+
+/**
+ * Beyond the per-force catalog: forces **compose** (a body can carry several tokens)
+ * and **gate** on conditions (`data-when`). These experiments verify those two
+ * mechanisms. They are not per-force, so they live in their own catalog; the
+ * conformance test runs them alongside `EXPERIMENTS`.
+ */
+export const COMPOSITE_EXPERIMENTS: ForceConformance[] = [
+  {
+    // attract + repel at equal strength cancel — the net force is zero.
+    scenario: {
+      force: 'attract repel',
+      tokens: ['attract', 'repel'],
+      label: 'A particle between an equal attractor + repeller (they cancel)',
+      family: 'canonical',
+      klass: 'A',
+      body: { cx: 150, range: 300, strength: 1 },
+      particles: [{ x: 0, y: 0 }],
+      frames: 30,
+    },
+    expectations: [
+      exactDelta(0, 0),
+      check('composes to no net force', 'invariant', (r) => {
+        const d = r.applyDelta[0]!;
+        const mag = Math.hypot(d.dvx, d.dvy);
+        return { pass: mag < 1e-6, measured: `|Δv| = ${f3(mag)}`, expected: '≈ 0 (cancelled)' };
+      }),
+    ],
+  },
+  {
+    // attract + vortex compose into an inward spiral: inward pull + tangential swirl.
+    scenario: {
+      force: 'attract vortex',
+      tokens: ['attract', 'vortex'],
+      label: 'A particle in a composed attract + vortex (a spiral)',
+      family: 'canonical',
+      klass: 'A',
+      body: { cx: 150, range: 300, strength: 1, spin: 1 },
+      particles: [{ x: 0, y: 0 }],
+      frames: 90,
+    },
+    expectations: [
+      movesToward(),
+      check('acquires a tangential (swirl) component', 'invariant', (r) => {
+        const d = r.applyDelta[0]!;
+        return { pass: Math.abs(d.dvy) > 0.05, measured: `Δvᵧ = ${f3(d.dvy)}`, expected: '|Δvᵧ| > 0.05 (swirl)' };
+      }),
+      check('composes to the sum of its parts (inward + swirl)', 'exact', (r) => {
+        const d = r.applyDelta[0]!;
+        // attract Δv (0.125, 0) + vortex Δv (0.0205, −0.1705) on a still particle 150px out
+        const ok = Math.abs(d.dvx - 0.1455) < 0.005 && Math.abs(d.dvy + 0.1705) < 0.005;
+        return { pass: ok, measured: `(${f3(d.dvx)}, ${f3(d.dvy)})`, expected: '(0.1455, −0.1705) ±0.005' };
+      }),
+    ],
+  },
+  {
+    // a condition gate: attract only acts on a *fast* particle. Two particles fired
+    // in — the fast one is pulled toward the body, the slow one is left alone.
+    scenario: {
+      force: 'attract',
+      label: 'A gated attractor (data-when="fast"): pulls the fast particle, not the slow',
+      family: 'canonical',
+      klass: 'A',
+      body: { cx: 150, range: 300, strength: 2, when: 'fast' },
+      particles: [
+        { x: 0, y: 0, vy: 6 }, // fast → passes the gate
+        { x: 0, y: 0, vy: 0.1 }, // slow → blocked
+      ],
+      frames: 60,
+    },
+    expectations: [
+      check('the gate lets the fast particle through, blocks the slow one', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        const fastX = last[0]!.x;
+        const slowX = last[1]!.x;
+        const pass = fastX - slowX > 10 && slowX < 5;
+        return {
+          pass,
+          measured: `fast x = ${f3(fastX)}, slow x = ${f3(slowX)}`,
+          expected: 'fast pulled toward the body, slow ~unmoved',
+        };
+      }),
+    ],
+  },
+];

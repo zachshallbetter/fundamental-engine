@@ -22,7 +22,12 @@ in progress (see [RELEASING.md](RELEASING.md)).
   predicts.
 - **The Lab is a physics detector** — fire known particles into a force, watch the track,
   the field, and related particles, and see each conformance check pass frame-by-frame.
-  Numeric tuning + presets, multi-particle firing, loop/scrub playback.
+  Numeric tuning + presets, multi-particle firing, once/loop/unlocked playback, a
+  timeline with a marker at every test's pass-frame and a MATCH flag, and actionable
+  save (Export JSON / Copy report).
+- **Composition + condition experiments** — `COMPOSITE_EXPERIMENTS` verifies that forces
+  compose (`attract repel` cancel; `attract vortex` sums to a spiral) and gate on
+  conditions (`data-when` runs through the real condition registry).
 - **Developer portal** (`/docs`) — getting started, concepts, framework guides, a
   catalog-driven API reference, recipes, and performance/accessibility notes.
 - **`docs/forces-tests.md`** — the testing & conformance reference.

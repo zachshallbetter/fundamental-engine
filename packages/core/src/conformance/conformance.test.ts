@@ -5,7 +5,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { EXPERIMENTS } from './experiments.ts';
+import { EXPERIMENTS, COMPOSITE_EXPERIMENTS } from './experiments.ts';
 import { allForces, runScenario } from './run.ts';
 
 const registry = allForces();
@@ -21,7 +21,7 @@ test('no experiment names an unregistered force', () => {
   assert.deepEqual(unknown, [], `experiments for unknown forces: ${unknown.join(', ')}`);
 });
 
-for (const exp of EXPERIMENTS) {
+for (const exp of [...EXPERIMENTS, ...COMPOSITE_EXPERIMENTS]) {
   test(`${exp.scenario.force}: ${exp.scenario.label}`, () => {
     const result = runScenario(exp.scenario, registry);
     assert.ok(exp.expectations.length > 0, `${exp.scenario.force} has no expectations`);
