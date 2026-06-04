@@ -116,3 +116,59 @@ export function splatDensity(
     }
   }
 }
+
+// ── Voronoi (§20.6) — nearest-site cells over the particle field ────────────────
+//
+// Each grid node is assigned the index of its nearest particle (its "owner"); cell
+// walls are then the boundaries between adjacent nodes with different owners. The
+// shattered-glass look without a full Delaunay triangulation. Both halves are pure
+// and golden-tested; the renderer feeds owners from the spatial hash.
+
+/** Index of the nearest site to `(x, y)`, or `-1` if `sites` is empty. */
+export function nearestSite(x: number, y: number, sites: readonly { x: number; y: number }[]): number {
+  let best = -1;
+  let bestD2 = Infinity;
+  for (let i = 0; i < sites.length; i++) {
+    const s = sites[i]!;
+    const dx = s.x - x;
+    const dy = s.y - y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < bestD2) {
+      bestD2 = d2;
+      best = i;
+    }
+  }
+  return best;
+}
+
+/** A wall segment between two Voronoi cells, in grid-node units (×step at draw time). */
+export interface GridSeg {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+/**
+ * The Voronoi cell walls of an owner grid (row-major `cols × rows` of site indices).
+ * A wall sits on the shared edge between any two orthogonally-adjacent nodes whose
+ * owners differ (an unowned node is `-1`); coordinates are in node units, so the
+ * vertical wall between columns `gx` and `gx+1` lies at `x = gx + 0.5`.
+ */
+export function voronoiWalls(owners: ArrayLike<number>, cols: number, rows: number): GridSeg[] {
+  const walls: GridSeg[] = [];
+  for (let gy = 0; gy < rows; gy++) {
+    for (let gx = 0; gx < cols; gx++) {
+      const o = owners[gy * cols + gx]!;
+      if (gx + 1 < cols && owners[gy * cols + gx + 1] !== o) {
+        // vertical wall on the edge shared with the right neighbour
+        walls.push({ x1: gx + 0.5, y1: gy - 0.5, x2: gx + 0.5, y2: gy + 0.5 });
+      }
+      if (gy + 1 < rows && owners[(gy + 1) * cols + gx] !== o) {
+        // horizontal wall on the edge shared with the bottom neighbour
+        walls.push({ x1: gx - 0.5, y1: gy + 0.5, x2: gx + 0.5, y2: gy + 0.5 });
+      }
+    }
+  }
+  return walls;
+}

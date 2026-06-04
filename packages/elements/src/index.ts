@@ -56,9 +56,9 @@ export class ForcesField extends HTMLElement {
   }
 
   /** render mode (§20.6). */
-  get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'streamlines' {
+  get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' {
     const v = this.getAttribute('render');
-    return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'streamlines' ? v : 'dots';
+    return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' ? v : 'dots';
   }
 
   /** colour template name for the travelling accent (§9), or undefined for `ours`. */
@@ -106,7 +106,7 @@ export class ForcesField extends HTMLElement {
     this.field?.setCausality(on);
   }
   /** switch the render mode (§20.6) live. */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'streamlines'): void {
+  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void {
     this.field?.setRender(mode);
   }
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
