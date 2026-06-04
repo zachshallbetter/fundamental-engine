@@ -38,7 +38,7 @@ import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
-import { linkAlpha } from './render-modes.ts';
+import { linkAlpha, marchingCell, splatDensity } from './render-modes.ts';
 import { forceAt } from './streamlines.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -82,6 +82,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
   let boot = reduceMotion ? 1 : 0;
+  let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
   let JOURNEY: RGB[] = resolvePalette(opts.palette).map(hexToRgb); // the accent journey (§9)
   let curAccent: RGB = hexToRgb(cfg.accent);
@@ -584,6 +585,47 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           ctx!.stroke();
         }
       }
+      ctx!.globalCompositeOperation = 'source-over';
+    }
+
+    // metaballs: trace a single iso-contour of the particle density field, so the swarm
+    // reads as one liquid skin rather than discrete dots (§20.6). Particles splat a smooth
+    // kernel onto a coarse grid; marching squares walks the threshold cell by cell.
+    if (cfg.render === 'metaballs') {
+      const STEP = 16; // grid resolution (px)
+      const RAD = 34; // kernel radius (px)
+      const LEVEL = 0.9; // iso threshold → the blob skin
+      const cols = Math.ceil(W / STEP) + 1;
+      const rows = Math.ceil(H / STEP) + 1;
+      if (!mball || mball.length !== cols * rows) mball = new Float32Array(cols * rows);
+      else mball.fill(0);
+      for (const p of store.particles) {
+        if (p.cap) continue;
+        splatDensity(mball, cols, rows, STEP, p.x, p.y, RAD, 1);
+      }
+      const acc = hexToRgb(cfg.accent);
+      ctx!.globalCompositeOperation = 'lighter';
+      ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.5 * boot})`;
+      ctx!.lineWidth = 1.4;
+      ctx!.lineCap = 'round';
+      ctx!.beginPath();
+      for (let gy = 0; gy < rows - 1; gy++) {
+        for (let gx = 0; gx < cols - 1; gx++) {
+          const tl = mball[gy * cols + gx]!;
+          const tr = mball[gy * cols + gx + 1]!;
+          const br = mball[(gy + 1) * cols + gx + 1]!;
+          const bl = mball[(gy + 1) * cols + gx]!;
+          const segs = marchingCell(tl, tr, br, bl, LEVEL);
+          if (!segs.length) continue;
+          const ox = gx * STEP;
+          const oy = gy * STEP;
+          for (const s of segs) {
+            ctx!.moveTo(ox + s.x1 * STEP, oy + s.y1 * STEP);
+            ctx!.lineTo(ox + s.x2 * STEP, oy + s.y2 * STEP);
+          }
+        }
+      }
+      ctx!.stroke();
       ctx!.globalCompositeOperation = 'source-over';
     }
 
