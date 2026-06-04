@@ -56,9 +56,9 @@ export class ForcesField extends HTMLElement {
   }
 
   /** render mode (§20.6). */
-  get renderMode(): 'dots' | 'trails' | 'links' {
+  get renderMode(): 'dots' | 'trails' | 'links' | 'streamlines' {
     const v = this.getAttribute('render');
-    return v === 'trails' || v === 'links' ? v : 'dots';
+    return v === 'trails' || v === 'links' || v === 'streamlines' ? v : 'dots';
   }
 
   /** colour template name for the travelling accent (§9), or undefined for `ours`. */
@@ -104,6 +104,10 @@ export class ForcesField extends HTMLElement {
   /** toggle cross-boundary causality (Concept 4) live. */
   setCausality(on: boolean): void {
     this.field?.setCausality(on);
+  }
+  /** switch the render mode (§20.6) live. */
+  setRender(mode: 'dots' | 'trails' | 'links' | 'streamlines'): void {
+    this.field?.setRender(mode);
   }
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void {
