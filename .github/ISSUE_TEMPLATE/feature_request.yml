@@ -1,0 +1,26 @@
+name: Feature request
+description: Propose a new force, option, or capability.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        New ideas are usually **composites or emergent behavior**, not new primitives
+        (see `docs/forces-system.md` §20.0 and `docs/forces-possibilities.md`). Tell us
+        the behavior you want and we'll find the smallest way to express it.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The behavior you want
+      description: What should the field do? What's the use case?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How you imagine it
+      description: An attribute, a force, a composition of existing forces, an API.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

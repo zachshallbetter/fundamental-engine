@@ -1,5 +1,44 @@
 # Changelog
 
+All notable changes are documented here, following
+[Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+The packages are not yet published; everything below `Unreleased` is the first release
+in progress (see [RELEASING.md](RELEASING.md)).
+
+## [Unreleased]
+
+### Added
+
+- **Two more forces (28 total)** — `memory` (a worn-path occupancy field, class [C]) and
+  `pigment` (conserved colour transport, [E]).
+- **Conserved attention** (§2.4) — one finite strength budget across the page; engaging a
+  body pulls force off the others. Opt-in via `FieldOptions.attention` /
+  `FieldHandle.setAttention` / `<forces-field attention>`.
+- **Cross-boundary causality** — density spills from a saturated body to its neighbours
+  (`--lit` + `field:lit`/`field:dim` events). Opt-in via `causality`.
+- **Physics conformance framework** (`forces-ui` `conformance/`) — `runScenario` + a
+  declarative `EXPERIMENTS` catalog of per-force invariants and exact checks, shared by
+  the test suite and the Lab. Fire a particle into a force, verify it reacts as the math
+  predicts.
+- **The Lab is a physics detector** — fire known particles into a force, watch the track,
+  the field, and related particles, and see each conformance check pass frame-by-frame.
+  Numeric tuning + presets, multi-particle firing, loop/scrub playback.
+- **Developer portal** (`/docs`) — getting started, concepts, framework guides, a
+  catalog-driven API reference, recipes, and performance/accessibility notes.
+- **`docs/forces-tests.md`** — the testing & conformance reference.
+- **Release engineering** — CI (typecheck · test · build on every PR), `CONTRIBUTING.md`,
+  `RELEASING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, and issue/PR templates.
+
+### Changed
+
+- **The site front door** — the Field Manual is now the home page (`/reference` redirects
+  to `/`); client-side navigation keeps the field running continuously across pages.
+
+### Performance
+
+- Range-culled the integrator body-force loop (~2× at scale) and removed all
+  `shadowBlur` from the render path; cached the per-frame `scrollHeight` read.
+
 ## 0.1.0 — the complete engine
 
 The first feature-complete milestone: the full reciprocal-field engine, a
