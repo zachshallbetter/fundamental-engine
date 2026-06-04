@@ -348,7 +348,7 @@
 }
 .tl-track {
   position: relative;
-  height: 12px;
+  height: 20px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--line);
@@ -357,7 +357,7 @@
   position: absolute;
   top: 50%;
   width: 1px;
-  height: 5px;
+  height: 9px;
   transform: translateY(-50%);
   margin-left: -0.5px;
   background: var(--line-2);
@@ -382,12 +382,12 @@
 .tl-marker {
   position: absolute;
   top: 50%;
-  width: 8px;
-  height: 8px;
-  margin: -4px 0 0 -4px;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
   border-radius: 50%;
   background: var(--bg-card, #0b0e16);
-  border: 1.5px solid var(--warn, #ffce6b);
+  border: 2px solid var(--warn, #ffce6b);
   transition:
     background 0.2s,
     border-color 0.2s;
@@ -499,6 +499,70 @@
 .lab-legend .lg.particle { background: var(--accent); }
 .lab-legend .lg.related { background: rgba(200, 210, 230, 0.5); }
 .lab-legend .lg.expected { background: #ffce6b; box-shadow: 0 0 6px rgba(255, 206, 107, 0.6); }
+
+/* parameter sweep panel */
+.lab-sweep {
+  margin-top: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 10px);
+  background: var(--bg-card, #0b0e16);
+  padding: 0.2rem 0.9rem;
+}
+.lab-sweep summary {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0.6rem 0;
+  list-style: none;
+}
+.lab-sweep summary::-webkit-details-marker { display: none; }
+.lab-sweep summary::before { content: '+ '; color: var(--accent); }
+.lab-sweep[open] summary::before { content: '– '; }
+.sweep-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+  margin: 0.2rem 0 0.7rem;
+}
+.sweep-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.sweep-controls select {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  background: var(--bg-canvas, #07090e);
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  padding: 0.32rem 0.5rem;
+  cursor: pointer;
+}
+.lab-sweep canvas {
+  display: block;
+  width: 100%;
+  height: 150px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-canvas, #07090e);
+}
+.sweep-note {
+  margin: 0.5rem 0 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-4);
+  line-height: 1.4;
+}
 
 /* verdict: a third "resolving" state while tests are still going green */
 .verdict.resolving {
