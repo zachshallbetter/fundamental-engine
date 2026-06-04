@@ -518,10 +518,32 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
         </div>
       </div>
     </section>
+    <section class="concept reverse" data-attention-demo>
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">42 — Conserved attention</span>
+          <h2>The page can’t emphasize two things at once.</h2>
+          <p>There is one finite budget of force for the whole page. Engage a word and it
+            pulls force off every other — so as one gathers matter and grows heavier, the
+            rest give theirs up. Focus isn’t styled; it’s <strong>conserved</strong>.</p>
+          <div class="formula">Σ Sᵢ · effortᵢ = <span class="v">constant</span></div>
+          <p class="note">Hover one word — watch the others surrender their weight to it.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">one budget, redistributed</span>
+          <div class="attn-set">
+            <span class="attn-word" data-hot data-feedback data-body="attract" data-strength="1.5" data-range="240" data-color="#4da3ff" style="--cat:#4da3ff;">focus</span>
+            <span class="attn-word" data-hot data-feedback data-body="attract" data-strength="1.5" data-range="240" data-color="#2dd4bf" style="--cat:#2dd4bf;">depth</span>
+            <span class="attn-word" data-hot data-feedback data-body="attract" data-strength="1.5" data-range="240" data-color="#ff9d5c" style="--cat:#ff9d5c;">weight</span>
+          </div>
+          <span class="hintline">one finite budget — engaging one starves the rest</span>
+        </div>
+      </div>
+    </section>
     <section class="concept">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">42 — Threads</span>
+          <span class="concept-no">43 — Threads</span>
           <h2>Engaging one body wires the set.</h2>
           <p>Engage an element in a group and the field draws living threads between it and its siblings.
             A list stops being a list and shows itself as a <strong>connected system</strong>.</p>
@@ -542,7 +564,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse" id="formations">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">43 — Formations</span>
+          <span class="concept-no">44 — Formations</span>
           <h2>The whole field can change its mind.</h2>
           <p>Forces act locally. A <strong>formation</strong> acts on every particle at once — a single
             global bias. As you scrolled, each chapter quietly switched it.</p>
@@ -650,6 +672,21 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
       { threshold: 0.5 },
     );
     document.querySelectorAll('section[data-form]').forEach((s) => formObs.observe(s));
+
+    // conserved attention (§2.4): switch the field's finite strength budget ON only
+    // while its demo is in view, so the rest of the manual is unaffected.
+    const attnSection = document.querySelector('[data-attention-demo]');
+    if (attnSection && field) {
+      const attnObs = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (field.setAttention) field.setAttention(e.isIntersecting);
+          }
+        },
+        { threshold: 0.45 },
+      );
+      attnObs.observe(attnSection);
+    }
 
     // chapter rail active state
     const chapters = [...document.querySelectorAll('.chapter')];
