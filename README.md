@@ -17,10 +17,11 @@ it was refactored from.
 ## Status
 
 **v0.1.0 — feature-complete.** The full specification is written and stable, and
-the typed engine realizes it: 30 forces (canonical · natural · designed-extended ·
-SPH fluid · predator/prey), presets, conditions, formations, render modes (including
-metaballs and voronoi), two-way density feedback, conserved attention, and
-cross-boundary causality — zero runtime dependencies, fully tested.
+the typed engine realizes it: 31 forces (canonical · natural · designed-extended ·
+SPH-fluid pressure · predator/prey · a budgeted [S] source), presets, conditions,
+formations, render modes (including metaballs and voronoi), two-way density feedback,
+conserved attention, and cross-boundary causality — zero runtime dependencies, fully
+tested.
 
 The repository includes a shared **physics conformance framework** (a deterministic
 scenario runner that verifies particle trajectories against mathematical invariants)

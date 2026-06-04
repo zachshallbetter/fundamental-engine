@@ -219,9 +219,12 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         const s = clone(byForce[cur].scenario);
         if (ov.strength != null && s.body.strength != null) s.body.strength = ov.strength;
         if (ov.range != null && s.body.range != null) s.body.range = ov.range;
-        if (ov.vx != null) s.particles[0].vx = ov.vx;
-        if (ov.vy != null) s.particles[0].vy = ov.vy;
+        if (ov.vx != null && s.particles[0]) s.particles[0].vx = ov.vx;
+        if (ov.vy != null && s.particles[0]) s.particles[0].vy = ov.vy;
         if (ov.frames != null) s.frames = ov.frames; // unlocked free-run extends this
+        // class-[S] sources (spawn) start with no test particle — the source creates the
+        // matter — so there is nothing to fan out; leave the particle list empty.
+        if (s.particles.length === 0) return s;
         // multi-particle: fan extra particles through the test particle, same velocity
         const count = Math.max(1, Math.min(40, Math.round(ov.count ?? s.particles.length)));
         if (count > s.particles.length) {
@@ -361,38 +364,50 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         // particle tracks (0 = test particle, prominent; others = related)
         const traj = result.trajectory;
         const nP = traj[0].length;
-        for (let i = 0; i < nP; i++) {
-          ctx.beginPath();
-          for (let f = 0; f <= frame; f++) {
-            const p = traj[f][i];
+        if (nP === 0) {
+          // a class-[S] source: matter is created over the run, so there are no stable
+          // tracks (the pool reorders as it grows/despawns). Draw the matter present at
+          // this frame as dots — the spray from the nozzle.
+          const here = traj[frame] || [];
+          for (const p of here) {
             const [sx, sy] = w2s(p.x, p.y);
-            if (f === 0) ctx.moveTo(sx, sy);
-            else ctx.lineTo(sx, sy);
+            ctx.fillStyle = rgba(col, 0.7);
+            ctx.beginPath(); ctx.arc(sx, sy, 2.2, 0, 6.283); ctx.fill();
           }
-          ctx.strokeStyle = i === 0 ? rgba(col, 0.9) : 'rgba(200,210,230,0.22)';
-          ctx.lineWidth = i === 0 ? 1.7 : 1;
-          ctx.stroke();
-          const p = traj[frame][i];
-          const [sx, sy] = w2s(p.x, p.y);
-          ctx.fillStyle = i === 0 ? col : 'rgba(200,210,230,0.5)';
-          ctx.beginPath(); ctx.arc(sx, sy, i === 0 ? 4 : 2.4, 0, 6.283); ctx.fill();
-          if (i === 0) {
-            const [vx2, vy2] = w2s(p.x + p.vx * 5, p.y + p.vy * 5);
-            arrow(sx, sy, vx2, vy2, rgba(col, 0.7), 3.5);
+        } else {
+          for (let i = 0; i < nP; i++) {
+            ctx.beginPath();
+            for (let f = 0; f <= frame; f++) {
+              const p = traj[f][i];
+              const [sx, sy] = w2s(p.x, p.y);
+              if (f === 0) ctx.moveTo(sx, sy);
+              else ctx.lineTo(sx, sy);
+            }
+            ctx.strokeStyle = i === 0 ? rgba(col, 0.9) : 'rgba(200,210,230,0.22)';
+            ctx.lineWidth = i === 0 ? 1.7 : 1;
+            ctx.stroke();
+            const p = traj[frame][i];
+            const [sx, sy] = w2s(p.x, p.y);
+            ctx.fillStyle = i === 0 ? col : 'rgba(200,210,230,0.5)';
+            ctx.beginPath(); ctx.arc(sx, sy, i === 0 ? 4 : 2.4, 0, 6.283); ctx.fill();
+            if (i === 0) {
+              const [vx2, vy2] = w2s(p.x + p.vx * 5, p.y + p.vy * 5);
+              arrow(sx, sy, vx2, vy2, rgba(col, 0.7), 3.5);
+            }
           }
-        }
 
-        // expected overlay: the predicted frame-0 Δv on the test particle (gold)
-        const p0 = traj[0][0];
-        const d = result.applyDelta[0];
-        if (Math.hypot(d.dvx, d.dvy) > 1e-6) {
-          const k = 60;
-          const [ex, ey] = w2s(p0.x, p0.y);
-          const [ex2, ey2] = w2s(p0.x + d.dvx * k, p0.y + d.dvy * k);
-          arrow(ex, ey, ex2, ey2, 'rgba(255,206,107,0.95)', 4);
-          ctx.fillStyle = 'rgba(255,206,107,0.95)';
-          ctx.font = '10px ui-monospace, monospace';
-          ctx.fillText('expected Δv', ex2 + 4, ey2 - 4);
+          // expected overlay: the predicted frame-0 Δv on the test particle (gold)
+          const p0 = traj[0][0];
+          const d = result.applyDelta[0];
+          if (d && Math.hypot(d.dvx, d.dvy) > 1e-6) {
+            const k = 60;
+            const [ex, ey] = w2s(p0.x, p0.y);
+            const [ex2, ey2] = w2s(p0.x + d.dvx * k, p0.y + d.dvy * k);
+            arrow(ex, ey, ex2, ey2, 'rgba(255,206,107,0.95)', 4);
+            ctx.fillStyle = 'rgba(255,206,107,0.95)';
+            ctx.font = '10px ui-monospace, monospace';
+            ctx.fillText('expected Δv', ex2 + 4, ey2 - 4);
+          }
         }
 
         const fr = $('frameReadout');
@@ -543,8 +558,10 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         const out: Any[] = [];
         if (b.strength != null) out.push({ key: 'strength', label: 'strength', min: 0, max: Math.max(0.5, b.strength * 3), base: b.strength });
         if (b.range > 0) out.push({ key: 'range', label: 'range', min: 50, max: 500, base: b.range });
-        out.push({ key: 'vx', label: 'initial vᵪ', min: -8, max: 8, base: p0.vx ?? 0 });
-        out.push({ key: 'vy', label: 'initial vᵧ', min: -8, max: 8, base: p0.vy ?? 0 });
+        if (p0) {
+          out.push({ key: 'vx', label: 'initial vᵪ', min: -8, max: 8, base: p0.vx ?? 0 });
+          out.push({ key: 'vy', label: 'initial vᵧ', min: -8, max: 8, base: p0.vy ?? 0 });
+        }
         return out;
       }
       function populateSweep() {
@@ -572,8 +589,8 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           const v = spec.min + (spec.max - spec.min) * (i / (N - 1));
           const res = runScenario(buildScenario({ ...overrides, [key]: v }), forces);
           let m = 0;
-          if (metric === 'delta') { const d = res.applyDelta[0]; m = Math.hypot(d.dvx, d.dvy); }
-          else if (metric === 'finalDist') { const last = res.trajectory[res.trajectory.length - 1][0]; m = Math.hypot(last.x - res.body.cx, last.y - res.body.cy); }
+          if (metric === 'delta') { const d = res.applyDelta[0]; m = d ? Math.hypot(d.dvx, d.dvy) : 0; }
+          else if (metric === 'finalDist') { const last = res.trajectory[res.trajectory.length - 1][0]; m = last ? Math.hypot(last.x - res.body.cx, last.y - res.body.cy) : 0; }
           else { m = byForce[cur].expectations.filter((e: Any) => { try { return e.check(res).pass; } catch { return false; } }).length; }
           pts.push([v, m]);
         }
@@ -616,9 +633,12 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           rows.push(row('strength', 'strength', cur0.strength ?? b.strength, 0, max, max / 100));
         }
         if (b.range > 0) rows.push(row('range', 'range (px)', cur0.range ?? b.range, 50, 500, 5));
-        rows.push(row('vx', 'initial vᵪ', cur0.vx ?? p0.vx ?? 0, -8, 8, 0.5));
-        rows.push(row('vy', 'initial vᵧ', cur0.vy ?? p0.vy ?? 0, -8, 8, 0.5));
-        rows.push(row('count', 'particles', cur0.count ?? s.particles.length, 1, 40, 1));
+        // a class-[S] source has no injected test particle — skip the particle rows.
+        if (p0) {
+          rows.push(row('vx', 'initial vᵪ', cur0.vx ?? p0.vx ?? 0, -8, 8, 0.5));
+          rows.push(row('vy', 'initial vᵧ', cur0.vy ?? p0.vy ?? 0, -8, 8, 0.5));
+          rows.push(row('count', 'particles', cur0.count ?? s.particles.length, 1, 40, 1));
+        }
         $('params')!.innerHTML = rows.join('');
         $('params')!
           .querySelectorAll('input[data-param]')
