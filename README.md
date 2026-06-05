@@ -1,106 +1,168 @@
-# Forces — a reciprocal DOM-physics field
+# forces-ui
 
-> The page's **elements** bend the field; the field's **density** bends the
-> elements back.
+**A reciprocal DOM-physics field.** Every element on the page is a body in one particle field. Bodies bend the field; the field's local density bends the elements back.
 
-Forces is a framework-agnostic engine where every meaningful thing on a page — a
-word, a card, a link — is a **body** in a particle field rendered on a canvas
-behind the content. Bodies exert forces on the field; the field writes its density
-back into the elements (weight, glow, motion). Forces act on **particles, DOM
-elements, and events** alike, so the interface lives *inside* one medium rather
-than sitting on top of an effect.
+[![Live demo: forces-ui.com](https://img.shields.io/badge/demo-forces--ui.com-4da3ff)](https://forces-ui.com)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20deps-0-2dd4bf)
+![TypeScript: strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
+![Tests: 300+ passing](https://img.shields.io/badge/tests-300%2B%20passing-2dd4bf)
 
-It began as the homepage of [zachshallbetter.com](https://zachshallbetter.com) and
-outgrew it. This repo is the engine, its specification, and the original prototype
-it was refactored from.
+forces-ui renders a single particle field on a canvas behind your content. Mark any element as a body with one attribute and it starts to pull, push, swirl, or hold the matter around it. Where the field gathers, it writes that density back into the element as weight, glow, and motion. The interface lives inside one medium instead of sitting on top of an effect.
 
-## Status
+It is framework-agnostic (a custom element, a React component, or a plain function), written in TypeScript, and ships with zero runtime dependencies.
 
-**v0.2.0 — feature-complete, hardening.** The full specification is written and stable,
-and the typed engine realizes it: 33 forces (canonical · natural · designed-extended ·
-SPH-fluid pressure · Verlet cloth · predator/prey · shape-assembly morph · a budgeted
-[S] source), presets, conditions, formations, render modes (including metaballs and
-voronoi), two-way density feedback, conserved attention, cross-boundary causality, and
-the closed-loop concepts (material typography, self-laying-out layout) — zero runtime
-dependencies, fully tested.
+> **See it live.** The whole system runs over the engine at **[forces-ui.com](https://forces-ui.com)**, with a physics [Lab](https://forces-ui.com/lab) where you fire particles into a force and watch the math hold.
 
-A **physics workover** is underway — a designed / natural / hybrid substrate that makes
-the engine more physically coherent without losing the designed interface feel. A global
-velocity cap and a conformance safety sweep already ship; the mode system, medium
-formalization, and the transformation primitives follow. Plan and as-built audit in
-[`docs/physics-workover.md`](docs/physics-workover.md).
+## The idea
 
-The repository includes a shared **physics conformance framework** (a deterministic
-scenario runner that verifies particle trajectories against mathematical invariants)
-and a visual **physics conformance lab** (an interactive particle detector chamber
-offering timeline diagnostics, parameter sweeps, and exportable reports).
+Most particle backgrounds are one-way: the canvas reacts to the cursor. forces-ui is two-way, and it is bound to your layout.
 
-The site (`apps/site`) is its first consumer: a live manual, conformance lab, and
-design system at [forces-ui.com](https://forces-ui.com). The workspace ships three
-packages — `forces-ui`, `@forces-ui/elements`, and `@forces-ui/react` — not yet on npm;
-each release is cut as a git tag (see [`RELEASING.md`](RELEASING.md)).
+1. **Elements to field.** A registry reads each body's `getBoundingClientRect()` every frame and maps it onto the canvas. The body exerts force on the particles near it.
+2. **Field to elements.** The field samples particle density around each body and writes it to a CSS variable (`--d`). Your CSS reads `--d` to drive weight, size, colour, or position.
 
-## The model
+The geometry is re-read every frame, so the invisible forces stay locked to the visible boxes through scroll, resize, and reflow. Animating the DOM animates the simulation for free.
 
-Everything in the system sits in one of a few layers (full detail: `docs/forces-system.md` §20):
+## Quick start
 
-- **Primitives** — the irreducible forces the engine implements. *Designed*
-  (bounded, UI-legible: the canonical nine) and *natural* (real laws: `gravity`,
-  `charge`, `magnetism`, `thermal`, …), plus source/relocate atoms.
-- **Composites** — named presets over primitives (`blackhole`, `wormhole`,
-  `supernova`, `star`). No new engine code.
-- **Emergent** — behaviors that *arise* (orbits, flocking, networks, phase changes).
-- **Orthogonal axes** — **conditions** (when a force acts), **formations** (a force
-  applied field-wide), **render modes** (draw-pass swaps), and **agents** (particle
-  / element / event).
+### Web component (any stack, or plain HTML)
 
-Underneath: mass & momentum (§21), the unified target model (§22), micro-reactions —
-energy made visible (§23), and the Currents that carry it all (§24).
+```html
+<script type="module">
+  import '@forces-ui/elements';
+</script>
 
-## Layout
+<forces-field></forces-field>
 
-A pnpm monorepo (see `ROADMAP.md` → Stack):
-
-```
-docs/
-  forces-system.md         the full definition (the contract)
-  forces-possibilities.md  roadmap, DOM⇄Canvas concepts, the extended vocabulary
-  forces-formulas.md       complete reference formulas & attributes handbook
-  forces-tests.md          testing, validation, and physics conformance guide
-packages/
-  core/      forces-ui            the engine — catalog, contracts, FieldStore, forces
-             src/config/forces.config.ts   forces · formations · conditions
-             src/conformance/              declarative physics conformance scenarios & expectations
-             src/core/types.ts             Particle · Body · Env · Force · Agent
-  elements/  @forces-ui/elements  <forces-field> — the web-component keystone
-  react/     @forces-ui/react     <ForcesField> + useForcesField — the React adapter
-apps/
-  site/      @forces-ui/site      forces-ui.com — the manual / landing / conformance lab (Astro)
+<h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
+<button data-body="repel" data-range="240">Keep clear</button>
 ```
 
-## Getting started
+Drop `<forces-field>` once. It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
+
+### React
+
+```tsx
+import { ForcesField } from '@forces-ui/react';
+
+export default function Page() {
+  return (
+    <>
+      <ForcesField density={1} />
+      <h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
+    </>
+  );
+}
+```
+
+Reach for `useForcesField(options)` when you want the field handle instead of the component.
+
+### Vanilla and imperative
+
+```ts
+import { mountField } from '@forces-ui/elements';
+
+const field = mountField({ render: 'dots' });
+field.setFormation('wells');
+field.burst(window.innerWidth / 2, 200);
+// field.scan(); field.destroy();
+```
+
+To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)` from `forces-ui`.
+
+## Author bodies in markup
+
+A body is any element with a `data-body` attribute. The value is one or more force tokens, separated by spaces.
+
+| Attribute | Purpose |
+|---|---|
+| `data-body` | one or more force tokens (`attract`, `swirl`, `sink attract`, …) |
+| `data-strength` | force magnitude (default `1`) |
+| `data-range` | influence radius in pixels |
+| `data-spin` | rotation sign and strength (`swirl`, `charge`, `magnetism`) |
+| `data-angle` | heading in degrees (`stream`, `jet`) |
+| `data-when` | act only on a condition: `active`, `fast`, `slow`, `hot`, `cool` |
+| `data-feedback` | opt into the two-way write-back (sets `--d` on the element) |
+| `data-color` | accent colour when the body is engaged |
+| `data-absorb` / `data-max` | capture radius and capacity for `sink` |
+| `data-preset` | expand a named composite (`blackhole`, `galaxy`, …) |
+
+Engaging an element (hover, focus, tap) widens its range and amplifies its strength, so the field answers interaction.
+
+## What's in the box
+
+**33 forces**, in three families.
+
+- **Canonical (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`, `sink`. Designed interface verbs with bounded, legible falloff.
+- **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`. Real field laws: softened inverse-square, Lorentz, Langevin, diffusion, travelling waves.
+- **Designed-extended (16):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, the `resonate` and `spotlight` modifiers, and `pigment` colour transport.
+
+**8 presets** compose those primitives into cosmology with no new engine code: `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
+
+**6 render modes:** `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`.
+
+**5 formations** bias the whole field at once: `ambient`, `wells`, `lanes`, `scatter`, `accretion`.
+
+**Reciprocal write-back.** Density returns to the elements through `--d` (local density), `--load` (a sink's accretion fill), and `--lit` (cross-boundary spillover). Richer behaviors build on that loop:
+
+- **Conserved attention.** One finite force budget across the page. Engaging a word pulls force off the others.
+- **Cross-boundary causality.** A saturated body spills density to its neighbours, weighted by nearness.
+- **Material typography.** One density value drives weight, optical size, tracking, glow, and colour at once.
+- **Self-laying-out layout.** Nodes find equilibrium positions from anchor, mutual repulsion, and density pressure, then re-settle on resize.
+
+**Verified, not eyeballed.** A conformance framework fires known particles into each force and checks the measured trajectory against the math. The same catalog drives the test suite and the visual Lab. The repository carries 300+ deterministic tests and a global safety sweep that holds every force finite, bounded in velocity and heat, and conserved in count.
+
+## Packages
+
+| Package | What it is |
+|---|---|
+| [`forces-ui`](packages/core) | the engine: catalog, contracts, `FieldStore`, integrator, the force set, conformance |
+| [`@forces-ui/elements`](packages/elements) | the `<forces-field>` and `<forces-cell>` custom elements, plus `mountField()` |
+| [`@forces-ui/react`](packages/react) | the `<ForcesField>` component and the `useForcesField()` hook |
+
+## Availability
+
+The packages are pre-release and not yet published to npm. Each release is cut as a git tag (see [`RELEASING.md`](RELEASING.md)). To use forces-ui today, consume it from this repository as a workspace dependency, a git install, or a local link. The public API shown above is stable; the `npm install` path arrives with the first published release.
+
+## Documentation
+
+- **Field Manual** at [forces-ui.com](https://forces-ui.com): every concept running live over the engine.
+- **Lab** at [forces-ui.com/lab](https://forces-ui.com/lab): fire particles into a force, watch the track, share the result through a URL.
+- [`docs/forces-system.md`](docs/forces-system.md): the full specification, the contract the engine implements.
+- [`docs/forces-formulas.md`](docs/forces-formulas.md): per-force formulas and the attribute handbook.
+- [`docs/forces-tests.md`](docs/forces-tests.md): the testing and physics-conformance guide.
+- [`docs/forces-concept.md`](docs/forces-concept.md): the design vision and the layered-physics model.
+
+## Develop
+
+forces-ui is a pnpm monorepo. Development needs Node 22 or newer, because the test runner executes TypeScript directly.
 
 ```bash
 pnpm install
-pnpm -r typecheck    # tsc across packages
-pnpm -r test         # node:test (built in — no test framework)
-pnpm -r build        # core + elements (tsc) + the site (astro)
-pnpm dev             # run the site (apps/site) locally
+pnpm -r typecheck   # tsc across packages
+pnpm -r test        # node:test, no test framework
+pnpm -r build       # core and elements (tsc), and the site (Astro)
+pnpm dev            # run the site locally
 ```
 
-## Dependencies
+The build is `tsc`. There is no bundler; the library ships unbundled ESM. The site uses Astro as a build-time tool and ships no runtime JavaScript by default.
 
-**Zero runtime dependencies**, by policy — the engine recreates what it needs on
-the platform. Tooling is deliberately minimal:
+## Design principles
 
-- **Build:** `tsc` (no bundler — the library ships unbundled ESM).
-- **Test:** `node:test` (built into Node ≥ 22; no test framework).
-- **Only dev dependency:** TypeScript.
-- **Exception:** `apps/site` uses **Astro** as a build-time tool for the content
-  site; it ships zero runtime JS by default.
+- **The field reacts to real elements.** The single background field responds to actual `data-body` elements, not a decorative particle pool layered on top.
+- **Nothing is created from nothing.** The default field conserves particle count. Sources and sinks break conservation only when they are explicitly budgeted.
+- **Designed and natural, side by side.** Canonical forces stay bounded and legible for interface work. Natural primitives carry real laws for cosmology and material systems. A composite picks the register it needs.
+- **Zero runtime dependencies, by policy.** The engine recreates what it needs on the platform. The only development dependency is TypeScript. Any new dependency has to justify itself as a real exception.
+- **Framework-agnostic.** The custom element makes "every element is a body" a portable primitive that behaves the same in React, Svelte, Astro, Vue, or plain HTML.
 
-Before any dependency is added, it must justify itself as a real exception.
+## Contributing
+
+Issues and pull requests are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow and conventions, and report anything sensitive through [`SECURITY.md`](SECURITY.md).
+
+## Origins
+
+forces-ui began as the homepage of [zachshallbetter.com](https://zachshallbetter.com) and outgrew it. This repository is the engine, its specification, and the prototype it was refactored from.
 
 ## License
 
-MIT.
+[MIT](LICENSE).
