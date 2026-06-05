@@ -40,6 +40,47 @@ field.scan();
 
 // release the loop + listeners when you're done
 field.destroy();`;
+
+const workedVanilla = `import { createField } from 'forces-ui';
+
+const field = createField(canvas);   // the handle
+
+// recolour + reshape the whole field at runtime
+field.setPalette('infrared');
+field.setFormation('accretion');
+field.setRender('metaballs');
+
+// glowing threads between engaged elements (real Element refs)
+const a = document.querySelector('#node-a');
+const b = document.querySelector('#node-b');
+field.threads([{ a, b, color: '#4da3ff' }]);
+
+// a one-shot shove + heat at the cursor
+addEventListener('click', (e) => field.burst(e.clientX, e.clientY));
+
+field.scan();      // re-scan after the DOM changes
+field.destroy();   // release the loop + listeners`;
+
+const workedReact = `import { ForcesField } from '@forces-ui/react';
+
+export function Background() {
+  // onReady hands you the same handle once the field mounts
+  return (
+    <ForcesField
+      onReady={(field) => {
+        field.setPalette('infrared');
+        field.setFormation('accretion');
+        field.setRender('metaballs');
+
+        const a = document.querySelector('#node-a');
+        const b = document.querySelector('#node-b');
+        field.threads([{ a, b, color: '#4da3ff' }]);
+
+        addEventListener('click', (e) => field.burst(e.clientX, e.clientY));
+      }}
+    />
+  );
+}`;
 ---
 
 <DocsLayout
@@ -99,7 +140,13 @@ field.destroy();`;
       Drive the field from your own code — recolour it, reshape it, thread engaged elements
       together, react to events, and clean up:
     </p>
-    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: worked }]} />
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'js', code: worked },
+        { label: 'React', lang: 'tsx', code: workedReact },
+        { label: 'Vanilla', lang: 'ts', code: workedVanilla },
+      ]}
+    />
   </section>
 
   <SeeAlso
