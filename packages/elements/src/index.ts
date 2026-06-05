@@ -1,4 +1,4 @@
-import { createField, PALETTE, type FieldHandle } from 'forces-ui';
+import { createField, PALETTE, type FieldHandle, type ThreadLink } from 'forces-ui';
 
 /**
  * `<forces-field>` — the reciprocal field as a custom element.
@@ -108,6 +108,10 @@ export class ForcesField extends HTMLElement {
   /** switch the render mode (§20.6) live. */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void {
     this.field?.setRender(mode);
+  }
+  /** wire glowing connector lines between a set, or clear with null (§10). */
+  threads(list: ThreadLink[] | null): void {
+    this.field?.threads(list);
   }
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void {
