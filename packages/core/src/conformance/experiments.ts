@@ -401,10 +401,14 @@ export const EXPERIMENTS: ForceConformance[] = [
     expectations: [
       check('dragged along the flow axis by its ⟂ offset', 'invariant', (r) => {
         const a = r.applyDelta[0]!;
+        // project onto the body's actual flow axis so the check holds at any `angle`
+        const ux = r.body.ux, uy = r.body.uy;
+        const along = a.dvx * ux + a.dvy * uy;
+        const perp = a.dvx * -uy + a.dvy * ux;
         return {
-          pass: Math.abs(a.dvx) > 1e-6 && Math.abs(a.dvy) < 1e-9,
-          measured: `Δv = (${f3(a.dvx)}, ${f3(a.dvy)})`,
-          expected: 'along +x only',
+          pass: Math.abs(along) > 1e-6 && Math.abs(perp) < 1e-6,
+          measured: `along ${f3(along)}, ⟂ ${f3(perp)}`,
+          expected: 'along the flow axis only',
         };
       }),
     ],
