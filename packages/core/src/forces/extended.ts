@@ -357,6 +357,11 @@ export const link: Force = {
  * punctuation — **never words or letterforms**. Text is rendered as text and made to
  * react (glow/grow via `--d`, §8); particles never spell. The `targets` set must come
  * from a non-word source.
+ *
+ * **Reach:** like every ranged body, the engine only applies morph to matter within ~1.6×
+ * the body's `range` of its centre (the integrator's cull radius). So `range` is morph's
+ * *recruitment radius* — distant matter is not pulled into the form. To assemble from the
+ * whole field, give the body a large range, or `data-range="0"` (global, never culled).
  */
 const MORPH_ARRIVE = 40; // px within which a particle counts as "arrived" (jitter fades)
 export const morph: Force = {

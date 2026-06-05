@@ -58,6 +58,12 @@ metrics, and the transformation primitives, not re-building what exists.)
 
 ### Fixed
 
+- **`<forces-field>` reacts to live attribute changes, and `destroy()` cleans up fully.**
+  Changing `accent` / `render` / `palette` / `attention` / `causality` on a mounted
+  `<forces-field>` now applies immediately (and `density` / `waves` / `mass` rebuild the field);
+  the `observedAttributes` were declared but inert before. `destroy()` / `disconnectedCallback`
+  now also release the per-element `[data-hot]` engagement listeners, so repeated mount/destroy
+  on the same DOM no longer leaks handlers.
 - **First-class mass no longer corrupts velocity-replacing forces.** Under `mass: true` the
   integrator scaled the *whole* per-frame velocity change by `1/m`, breaking forces that *set*
   velocity rather than add to it: a `wall` bounce could drive matter through the wall, and a
@@ -97,6 +103,11 @@ metrics, and the transformation primitives, not re-building what exists.)
 
 ### Documentation
 
+- **Audit cleanup sweep.** Marked the four spec-only render modes (`knockout` / `heatmap` /
+  `redshift` / `blackbody`) **planned** in the §20.6 table; documented `morph`'s `range` as its
+  *recruitment radius* (distant matter isn't pulled into the form — use `data-range="0"` for the
+  whole field); corrected the `presets.ts` note (`lens` / `buoyancy` / `spawn` ship now, not
+  "deferred"); and fixed the ROADMAP scaffold line (`tsc` / `node:test`, not `tsup` / `vitest`).
 - **Docs and the live manual reconciled to the workover.** The Field Manual's `vortex`
   panel now reads as a swirl — the inward bias surfaces as `+ 0.12` in its formula, with no
   "whirlpool" — and the `absorb` panel uses `accreted / capacity`. The formula handbook's
