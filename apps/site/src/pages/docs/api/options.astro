@@ -47,21 +47,21 @@ createField(canvas, { mass: true });`;
   <section class="docs-sec">
     <h2>FieldOptions</h2>
     <p>Every field is optional. Defaults keep the live field unchanged until you opt in.</p>
-    <div class="api-table">
+    <dl class="api-table">
       {
         OPTIONS.map((o) => (
           <div class="api-row">
-            <div class="k">
+            <dt class="k">
               <code>{o.name}</code>
               <span class="ty">
                 {o.type} · <b>default {o.def}</b>
               </span>
-            </div>
-            <div class="d">{o.desc}</div>
+            </dt>
+            <dd class="d">{o.desc}</dd>
           </div>
         ))
       }
-    </div>
+    </dl>
   </section>
 
   <section class="docs-sec">
