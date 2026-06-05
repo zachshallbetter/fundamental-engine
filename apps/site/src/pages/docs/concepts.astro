@@ -1,6 +1,8 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
+import ForceCell from '../../components/ForceCell.astro';
+import { MANUAL_FORCES } from 'forces-ui';
 
 const bodySnippet = `<a
   data-body="attract swirl"  // forces compose, space-separated
@@ -23,6 +25,18 @@ const feedbackSnippet = `.headline {
   font-variation-settings: 'wght' calc(380 + var(--d) * 420);
   text-shadow: 0 0 calc(var(--d) * 40px) rgba(77, 163, 255, calc(var(--d)));
 }`;
+
+// The cell-supported primitives (the poster engine implements these seven).
+const byTok = Object.fromEntries(MANUAL_FORCES.map((f) => [f.token, f]));
+const DEMOS = [
+  { token: 'attract', caption: 'pulls matter into a central well' },
+  { token: 'repel', caption: 'carves a clean void at the centre' },
+  { token: 'swirl', caption: 'circles matter without pulling in' },
+  { token: 'gravity', caption: 'a true 1/d² well, softened at the core' },
+  { token: 'stream', caption: 'a constant current along one heading' },
+  { token: 'buoyancy', caption: 'a steady lift against the frame' },
+  { token: 'tether', caption: 'holds matter at a fixed radius' },
+];
 ---
 
 <DocsLayout
@@ -123,6 +137,32 @@ const feedbackSnippet = `.headline {
         metaballs, voronoi, streamlines). <a href="/docs/api/catalog">Reference →</a>
       </li>
     </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2>See the primitives move</h2>
+    <p>
+      Each frame below is a live <code>&lt;forces-cell&gt;</code> running one force — the
+      lightweight demo surface with its own small particle pool, not the page field. Move your
+      cursor through a frame to push the matter around.
+    </p>
+    <div class="cell-gallery">
+      {
+        DEMOS.map((d) => (
+          <ForceCell
+            force={d.token}
+            color={byTok[d.token].color}
+            label={byTok[d.token].label}
+            caption={d.caption}
+          />
+        ))
+      }
+    </div>
+    <div class="callout">
+      <b>These are posters, not the detector.</b> A cell uses a simplified centre-of-frame model
+      so the motion reads at a glance. To fire a particle into the <em>canonical</em> force math
+      and check it against its law, open <a href="/lab">the Lab</a>.
+    </div>
   </section>
 
   <section class="docs-sec">

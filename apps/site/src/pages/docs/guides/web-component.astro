@@ -2,6 +2,8 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
+const cell = `<forces-cell force="swirl" color="#2dd4bf"></forces-cell>`;
+
 const setup = `<script type="module">
   import '@forces-ui/elements';
 </script>
@@ -106,8 +108,24 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
     <h2>The Field Cell</h2>
     <p>
       For a small, in-frame, single-force demo (instead of the page-wide field), use
-      <code>&lt;forces-cell force="swirl"&gt;</code> — a container-sized canvas that runs one
-      force or formation. It's the embeddable unit behind the Manual's per-concept demos.
+      <code>&lt;forces-cell&gt;</code> — a container-sized canvas that runs one force with its own
+      particle pool. It pauses off-screen (IntersectionObserver), re-fits on resize, and honours
+      reduced motion. It's the embeddable unit behind the Manual's per-concept demos.
     </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: cell }]} />
+    <figure class="force-cell solo" style="--fc:#2dd4bf; margin-top:0.9rem">
+      <forces-cell force="swirl" color="#2dd4bf" style="height:150px"></forces-cell>
+      <figcaption>
+        <b>swirl</b>
+        <span>live — move your cursor through the frame</span>
+      </figcaption>
+    </figure>
+    <div class="callout">
+      <b>Supported forces.</b> The cell is a simplified poster engine — it runs
+      <code>attract</code>, <code>repel</code>, <code>swirl</code>, <code>gravity</code>,
+      <code>stream</code>, <code>buoyancy</code>, and <code>tether</code>. For the full {''}
+      <a href="/docs/api/forces">catalog of 33</a> against the canonical math, use the page field
+      or <a href="/lab">the Lab</a>.
+    </div>
   </section>
 </DocsLayout>
