@@ -298,10 +298,49 @@
   letter-spacing: 0.04em;
   color: var(--text-3);
 }
-.param input[type='range'] {
+.param .track-wrap {
   grid-column: 1 / -1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.param input[type='range'] {
   width: 100%;
   accent-color: var(--accent);
+}
+/* a marker on the track at the scenario's default value */
+.param .tick {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 9px;
+  margin-top: -4.5px;
+  transform: translateX(-1px);
+  background: var(--text-4, rgba(255, 255, 255, 0.32));
+  border-radius: 1px;
+  pointer-events: none;
+}
+.param label .sym {
+  margin-left: 0.3rem;
+  font-style: italic;
+  color: var(--text-4, rgba(255, 255, 255, 0.4));
+}
+.param label .unit {
+  margin-left: 0.2rem;
+  color: var(--text-4, rgba(255, 255, 255, 0.4));
+}
+/* the live formula for the selected force, above its controls */
+.param-formula {
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  line-height: 1.55;
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: 6px;
+  padding: 0.4rem 0.55rem;
+  margin-bottom: 0.65rem;
+  overflow-wrap: anywhere;
 }
 .param .val {
   font-family: var(--mono);
