@@ -6,7 +6,7 @@
  *
  * v0.1.0 — feature-complete: the catalog, core contracts, FieldStore, integrator,
  * and the full force set (canonical · natural · designed-extended), realized from
- * the original prototype in `docs/reference/`. Zero runtime dependencies.
+ * the original design-system prototype. Zero runtime dependencies.
  */
 
 export * from './core/types.ts';
