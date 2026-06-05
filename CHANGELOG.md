@@ -9,6 +9,10 @@ in progress (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Frontiers roadmap + backlog.** `docs/roadmap-frontiers.md` (implementation notes for
+  the next frontiers — reciprocal input channels, a GPU backend, the compositor bridge,
+  `bindData()`, finishing the cosmology, and render frontiers) and `BACKLOG.md` (the
+  granular queue). All 33 forces re-verified via the Lab — every one reaches MATCH.
 - **Seven more forces (33 total), spanning every input class.** `memory` (a worn-path
   occupancy field, [C]) and `pigment` (conserved colour transport, [E]); `pressure`
   (SPH density relaxation — incompressible even-fill, [B]); `link` (a Verlet distance
