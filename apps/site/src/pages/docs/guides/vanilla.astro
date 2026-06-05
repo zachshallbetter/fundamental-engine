@@ -2,14 +2,6 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const mount = `import { mountField } from '@forces-ui/elements';
-
-// creates a fixed full-viewport canvas, starts the engine, returns the handle
-const field = mountField({ accent: '#4da3ff', render: 'dots' });
-
-// …later
-field.destroy();   // stops the loop AND removes the canvas it created`;
-
 const create = `import { createField } from 'forces-ui';
 
 const canvas = document.querySelector('canvas');
@@ -32,47 +24,33 @@ const custom = `import { createField } from 'forces-ui';
 ---
 
 <DocsLayout
-  title="forces-ui — Vanilla / core guide"
-  description="Use the forces-ui engine directly: mountField() to create a managed canvas, or createField() to drive your own. Both return the FieldHandle. Zero runtime dependencies."
+  title="forces-ui — Core engine guide"
+  description="Drive the forces-ui engine directly: createField() on a canvas you own, returning the FieldHandle. Zero runtime dependencies. For a managed canvas and a typed class, see the TypeScript guide."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
-    <h1>Vanilla &amp; the <span class="accent">core engine</span></h1>
+    <h1>The <span class="accent">core engine</span></h1>
     <p class="lede">
-      Skip the wrappers and drive the engine yourself — either with a canvas it manages for you,
-      or one you own. The core is zero-dependency TypeScript.
+      Skip every wrapper and drive the engine on a canvas you own. The core is zero-dependency
+      TypeScript. For a managed canvas and an ergonomic class, reach for the
+      <a href="/docs/guides/typescript">TypeScript wrapper</a> instead.
     </p>
   </header>
 
   <section class="docs-sec">
     <h2>Install</h2>
-    <div class="pkg-grid">
-      <div class="pkg">
-        <code class="install" data-copy="npm i @forces-ui/elements">npm i @forces-ui/elements</code>
-        <span>for <code>mountField()</code> — it creates and manages the canvas</span>
-      </div>
-      <div class="pkg">
-        <code class="install" data-copy="npm i forces-ui">npm i forces-ui</code>
-        <span>for <code>createField()</code> — when you own the canvas</span>
-      </div>
+    <div class="pkg">
+      <code class="install" data-copy="npm i forces-ui">npm i forces-ui</code>
+      <span>the engine itself — when you own the canvas</span>
     </div>
-  </section>
-
-  <section class="docs-sec">
-    <h2>mountField — a managed canvas</h2>
-    <p>
-      The framework-free imperative mount. It creates a fixed full-viewport canvas, starts the
-      engine, and returns the <a href="/docs/api/handle">FieldHandle</a>. Its
-      <code>destroy()</code> also removes the canvas it made.
-    </p>
-    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: mount }]} />
   </section>
 
   <section class="docs-sec">
     <h2>createField — your own canvas</h2>
     <p>
       When you want to place and size the canvas yourself, hand it to <code>createField</code>.
-      You get the same handle. This is the lowest-level entry point; everything else wraps it.
+      You get the <a href="/docs/api/handle">FieldHandle</a>. This is the lowest-level entry
+      point; the web component, the React adapter, and <code>@forces-ui/vanilla</code> all wrap it.
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: create }]} />
     <div class="callout">
@@ -80,6 +58,11 @@ const custom = `import { createField } from 'forces-ui';
       (<code>position: fixed; inset: 0; z-index: 0; pointer-events: none</code>) and mark it
       <code>aria-hidden</code>. Reduced motion is honoured automatically, and the loop pauses
       when the tab is backgrounded.
+    </div>
+    <div class="callout">
+      <b>Want a managed canvas?</b> <code>@forces-ui/vanilla</code> creates and tears down the
+      canvas for you — as a <code>ForcesField</code> class or the <code>mountField()</code>
+      function. See the <a href="/docs/guides/typescript">TypeScript guide</a>.
     </div>
   </section>
 

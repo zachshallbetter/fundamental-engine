@@ -17,6 +17,13 @@ metrics, and the transformation primitives, not re-building what exists.)
 
 ### Added
 
+- **`@forces-ui/vanilla` — a framework-free TypeScript wrapper.** A fourth package exposes the
+  imperative API as a typed `ForcesField` class (it manages a canvas for you, or drives one you
+  own) alongside `mountField()` and a re-exported `createField()` plus the catalog — with no
+  custom-element registration and no framework dependency, so importing it has no side effects.
+  `mountField` now lives here as its canonical home; `@forces-ui/elements` re-exports it, so
+  existing `import { mountField } from '@forces-ui/elements'` is unchanged. The developer portal
+  gains a **TypeScript** guide for it.
 - **Global velocity cap + safety conformance sweep.** The integrator now clamps every free
   particle's speed to the unit system's `c` (12) each step, so no canonical force or
   composite can produce a runaway (the natural primitives already self-clamped; this makes
