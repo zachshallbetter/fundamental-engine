@@ -34,13 +34,18 @@ export const DOCS_NAV: DocGroup[] = [
     title: 'API reference',
     items: [
       { href: '/docs/api', label: 'Overview', ready: true },
-      { href: '/docs/api/options', label: 'createField & options', ready: true },
+      { href: '/docs/api/options', label: 'createField', ready: true },
       { href: '/docs/api/handle', label: 'FieldHandle', ready: true },
-      { href: '/docs/api/attributes', label: 'data-* attributes', ready: true },
+      { href: '/docs/api/attributes', label: 'Attributes', ready: true },
+      { href: '/docs/api/types', label: 'Types', ready: true },
+    ],
+  },
+  {
+    title: 'Catalog',
+    items: [
       { href: '/docs/api/forces', label: 'Forces', ready: true },
       { href: '/docs/api/presets', label: 'Presets', ready: true },
-      { href: '/docs/api/catalog', label: 'Conditions, formations & modes', ready: true },
-      { href: '/docs/api/types', label: 'Types', ready: true },
+      { href: '/docs/api/catalog', label: 'Conditions & formations', ready: true },
     ],
   },
   {
