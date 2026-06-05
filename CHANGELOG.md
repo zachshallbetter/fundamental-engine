@@ -15,6 +15,15 @@ inverse-square gravity/charge, `b.accreted`, and class-[S] source/sink budgeting
 ship, so the work is the mode system, medium formalization, safety layer, `screen`,
 metrics, and the transformation primitives, not re-building what exists.)
 
+### Added
+
+- **Global velocity cap + safety conformance sweep.** The integrator now clamps every free
+  particle's speed to the unit system's `c` (12) each step, so no canonical force or
+  composite can produce a runaway (the natural primitives already self-clamped; this makes
+  it universal). A new conformance **safety sweep** runs every experiment and asserts the
+  whole trajectory stays finite (no NaN/Infinity), positions finite, speed ≤ c, heat
+  bounded, and the particle count stable unless a budgeted [S] source is active.
+
 ### Fixed
 
 - **Canonical vortex swirls again (inward bias `0.6` → `0.12`).** Reverts the v0.2.0 bias:
