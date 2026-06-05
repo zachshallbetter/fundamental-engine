@@ -20,7 +20,25 @@ test('every manual entry is complete (formula + description + colour + example)'
     assert.ok(e.label.length > 0, `${e.token}: missing label`);
     assert.match(e.color, /^#[0-9a-f]{6}$/i, `${e.token}: invalid colour ${e.color}`);
     assert.ok(e.example.length > 0, `${e.token}: missing real-use example`);
+    assert.ok(e.summary.length > 0, `${e.token}: missing summary`);
+    assert.ok(e.effect.length > 0, `${e.token}: missing effect`);
   }
+});
+
+test('every force has a unique two-letter symbol', () => {
+  const seen = new Map<string, string>();
+  for (const e of MANUAL_FORCES) {
+    assert.match(e.symbol, /^[A-Z][a-z]$/, `${e.token}: symbol "${e.symbol}" must be two letters (Xx)`);
+    const prev = seen.get(e.symbol);
+    assert.equal(prev, undefined, `symbol ${e.symbol} collides: ${prev} and ${e.token}`);
+    seen.set(e.symbol, e.token);
+  }
+});
+
+test('the calibration split is 25 calibrated · 8 awaiting', () => {
+  const awaiting = MANUAL_FORCES.filter((e) => !e.calibrated).map((e) => e.token).sort();
+  assert.equal(MANUAL_FORCES.filter((e) => e.calibrated).length, 25);
+  assert.deepEqual(awaiting, ['diffuse', 'memory', 'morph', 'pigment', 'propagate', 'resonate', 'spawn', 'spotlight']);
 });
 
 test('every preset has a real-use example', () => {
