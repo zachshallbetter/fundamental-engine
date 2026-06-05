@@ -47,7 +47,7 @@ Forces are grouped into architectural classes that define their interaction scop
 
 ## 1. The Nine Canonical Forces (Active Engine)
 
-These forces are fully implemented in `forces.js` and drive the homepage Capabilities matrix. By default, **engagement (hover/focus/tap)** widens their range and amplifies strength.
+These forces are fully implemented in `packages/core/src/forces/index.ts` and drive the live Field Manual. By default, **engagement (hover/focus/tap)** widens their range and amplifies strength.
 
 | Force (Token) | Class | HTML Attributes & Defaults | Math Formula / Implementation | Behavior & On-State Impact |
 |---|---|---|---|---|
@@ -67,6 +67,8 @@ These forces are fully implemented in `forces.js` and drive the homepage Capabil
 
 These forces constitute the roadmap's forward registry, splitting into designed behaviors, physical primitives, and virtual cosmology presets.
 
+> **Status.** Most of this vocabulary now ships; the as-built set and exact tokens live in §1, [`forces-system.md`](forces-system.md) §20, and the catalog. Names here are the shipped tokens: the pheromone field ships as `diffuse`, `diffuse` and `memory` are class [C] natural primitives, and the budgeted class-[S] source ships as `spawn`. Still spec-only: the relocation atom `warp` and the `wormhole` preset it composes. The registered presets are `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`; `supernova` below is the sink-release *event*, not a `data-preset`.
+
 ### 2.1 Extended Designed Forces
 
 | Force (Token) | Class | Attributes | Math Formula / Implementation | Behavior & Unique Result |
@@ -84,7 +86,7 @@ These forces constitute the roadmap's forward registry, splitting into designed 
 | **Pressure**<br>`pressure` | **[B]** | `data-range`<br>`data-strength`<br>`data-rho0` | $$\rho_p = \sum_n W(d_n, h)$$<br>$$v += -k \cdot \sum_n (\rho_p - \rho_0) \cdot \nabla W(d_n, h)$$ | Incompressible fluid SPH model. Resists crowding, spreads evenly. |
 | **Link**<br>`link` | **[B]** | `data-link`<br>`data-len`<br>`data-stiff` | $$e = (|p_a - p_b| - L)$$<br>$$p_a -= 0.5 \cdot e \cdot \hat{u};\ p_b += 0.5 \cdot e \cdot \hat{u}$$ | Verlet distance constraints. Chains particles to form ropes or cloth. |
 | **Hunt**<br>`hunt` | **[B+E]** | `data-species`<br>`data-strength` | $$\text{predator}: v += \text{seek}(\text{prey}) \cdot S$$<br>$$\text{prey}: v += \text{flee}(\text{predator}) \cdot S$$ | Predator/prey ecosystems. Cycles populations via Lotka-Volterra. |
-| **Pheromone**<br>`pheromone`| **[C]** | `data-strength`<br>`data-range`<br>`data-follow` | $$\text{deposit}: T(x) += \delta$$<br>$$\text{steer}: v += \nabla T(x) \cdot k_{\text{follow}}$$<br>$$\text{grid}: T \leftarrow (T \cdot \text{decay}) \circledast \text{blur}$$ | Stigmergy paths. Particles self-organize into transport networks. |
+| **Diffuse**<br>`diffuse` | **[C]** | `data-strength`<br>`data-range`<br>`data-follow` | $$\text{deposit}: T(x) += \delta$$<br>$$\text{steer}: v += \nabla T(x) \cdot k_{\text{follow}}$$<br>$$\text{grid}: T \leftarrow (T \cdot \text{decay}) \circledast \text{blur}$$ | Stigmergy paths. Particles self-organize into transport networks. |
 | **Memory**<br>`memory` | **[C]** | `data-strength`<br>`data-range` | $$M(x) += \lambda \cdot \tau$$<br>$$\text{force\_factor} = (1 + \mu \cdot M(x))$$ | Occupancy grid footprint. Frequently travelled pathways attract more. |
 | **Morph**<br>`morph` | **[D]** | `data-target`<br>`data-strength` | $$v += (t_k - p) \cdot k_m + \text{jitter} \cdot (1 - \text{arrived})$$<br>$$\text{arrived} = \text{clamp}(1 - |t_k - p|/\epsilon, 0, 1)$$ | SVG/data targeting. Constellates dust into symbols (marks/logos). |
 | **Pigment**<br>`pigment` | **[E]** | `data-color` | $$c_p = \text{mix}(c_p, c_{\text{other}}, \text{rate})$$ | Conserved color advection. Swarms physically transport pigment dyes. |
@@ -111,7 +113,7 @@ Cosmology presets use co-located virtual bodies of basic forces to represent ast
   - *Formula:*
     $$\text{if}\ d < r_s:\ p.\text{pos} = b.\text{center} + \hat{u}_{\text{out}} \cdot r_s;\ v = \hat{u}_{\text{out}} \cdot \text{spd}$$
     $$\text{else}:\ v -= (GM/d^2) \cdot \hat{u}$$
-- **Wormhole (`wormhole`)**
+- **Wormhole (`wormhole`)** — *proposed; `warp` not yet built*
   - *Class:* [A · paired]
   - *Composition:* `attract` + `warp` (throat A) $\leftrightarrow$ `warp` + `repel` (throat B)
   - *Formula (Warp throat relocation):*
@@ -120,7 +122,7 @@ Cosmology presets use co-located virtual bodies of basic forces to represent ast
     $$p.\text{pos} = B.\text{center} + \text{rotate}(\text{local\_offset}, \Delta\theta)$$
     $$p.\text{vel} = \text{rotate}(p.\text{vel}, \Delta\theta) \cdot k$$
     $$p.\text{heat} = \max(p.\text{heat}, 0.6)$$
-- **Supernova (`supernova`)**
+- **Supernova (`supernova`)** — *the sink-release event, not a registered preset*
   - *Class:* [S] (Source blast)
   - *Composition:* `spawn` (one-shot) + remnant swap
   - *Formula:*

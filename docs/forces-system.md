@@ -155,7 +155,7 @@ Parsed from `data-*` attributes in `scanBodies()`:
 | `feedback` | `data-feedback` | absent | Opt into density write-back. |
 | `fmin`,`fmax` | `data-fmin/fmax` | `0` | Font-weight range driven by density. |
 | `opsz` | `data-opsz` | `''` | Optical-size axis paired with `fmax`. |
-| `mass`,`cx`,`cy`,`hw`,`hh`,`on`,`vis`,`count`,`d` | — | runtime | Live state (center, half-extents, engaged, visible, density tally, eased density). |
+| `M`,`accreted`,`cx`,`cy`,`hw`,`hh`,`on`,`vis`,`count`,`d` | — | runtime | Live state (source mass, accretion count, center, half-extents, engaged, visible, density tally, eased density). |
 
 `b.on` is `true` when the element has `data-active="1"` (set on hover/focus/tap by
 the conductor — see §13).
@@ -491,7 +491,7 @@ content sets; the manual demo and the Lab use it. Pass `null` to clear.
 | **Glyph assembly** | fonts ready | Particles rasterized from a `[data-glyph]` host rise into its shape, hold, then fade (stride `max(3, fontSize/26)`, cap **560** pts; ease `1−(1−t)⁴`; assembled 1800 ms, form 2600 ms, hold 4000 ms, fade by 5800 ms; skipped under reduced motion). **⚠ Deprecated for words — use only for punctuation / marks (the rule below).** |
 | **Burst** | `pointerdown` anywhere | Shoves + heats free particles within 260 px (`f=(1−d/260)·4.4`, `heat += (1−d/260)·1.3`); tears bound particles within 200 px loose. No ring (kept clean). |
 | **Engage** | hover/focus/tap a `[data-hot]` | Sets `data-active="1"` (`b.on`), lights the element, dims siblings, optionally wires threads, overrides accent. Waves bend toward it. |
-| **Capture → Supernova** | particle enters an `sink` core; `accreted ≥ capacity` | Hold, then radial release of exactly what was held (see §6.9). |
+| **Capture → Supernova** | particle enters a `sink` core; `accreted ≥ capacity` | Hold, then radial release of exactly what was held (see §6.9). |
 | **Spark** | hard `wall` impact (`speed > 0.7`) | Short-lived impact debris (≤ 260 sparks) — pure collision feel. The exemplar micro-reaction; generalized as a system in **§23**. |
 | **Wave healing** | calm free particle near a line | Reclaimed to bound (conserved) — see §2.4. |
 | **Ripple** | (disabled project-wide) | `__field.ripple()` is a no-op; concentric rings were cut for cost/fit. |
@@ -545,7 +545,7 @@ and `ds-interactions.js`):
 |---|---|
 | `data-drag` | Makes the body draggable; on pointer-move it repositions and calls `__field.rescan()` so the **force follows the element** across the field. The clearest proof that force is bound to the element, not the cursor. |
 | `data-agitate="#sel"` | On a button — fires a one-shot `__field.burst()` at the center of the target element `#sel` (tinted by its `--cc`/`--cat`, falling back to `--accent`), plus a CSS shockwave ring. A **discrete burst, not a steady force** — see §11/§16. |
-| `.body-core` + `.meter > i` | An sink core whose paired meter bar reads the live `--load` the engine writes (`width = --load · 100%`) — visualizes accretion filling toward supernova. |
+| `.body-core` + `.meter > i` | A sink core whose paired meter bar reads the live `--load` the engine writes (`width = --load · 100%`) — visualizes accretion filling toward supernova. |
 
 ---
 
@@ -754,8 +754,10 @@ engine and the caps matrix against it.
 ## 20. Extended force set — **implemented**
 
 > This section is the **formal spec** (token, class, formula, defaults) for the extended
-> vocabulary, and it is now **built**: every force below ships in the engine except the two
-> relocation atoms `warp` and `wormhole` (still spec-only). Rationale, "unique result," and
+> vocabulary, and the **forces** are now **built**: every force below ships in the engine
+> except the relocation atom `warp` and the `wormhole` preset it composes (still spec-only);
+> a few forward items in §20.6 (render modes) and §20.10 (transmutation atoms) are spec-only
+> too and are marked inline. Rationale, "unique result," and
 > sequencing live in `docs/forces-possibilities.md`. The foundational pass the classes
 > depend on — `FieldStore`, the spatial hash (`env.neighbors`), the scalar grid
 > (`env.grid`), the target store (`body.targets`), particle attributes, and the source
@@ -1321,7 +1323,7 @@ Derived, no hand-waving:
 r_s (horizon) = 2GM/c²        θ_lens = 2GM/(c²·d) = r_s/d        ISCO = 3·r_s
 z_grav = (1 − r_s/d)^(−½) − 1        z_doppler = (v·û_view)/c
 ```
-The old `c = 6` becomes the real `v_max`. Caveat 2 gone: lensing and redshift are
+The old `c = 6` becomes the real `v_max` (shipped as `c = 12`). Caveat 2 gone: lensing and redshift are
 consequences of `{G, M, c}`, internally consistent.
 
 > **As-built (v0.3).** The integrator applies the `|v| ≤ c` clamp to *every* free

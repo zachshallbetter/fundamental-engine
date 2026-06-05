@@ -19,13 +19,13 @@ Not a background effect; a medium your interface lives inside.
 
 ## Install
 
-```sh
-npm add forces-ui
-```
+> **Pre-release: not yet on npm.** Releases are cut as git tags for now (see
+> [`RELEASING.md`](../../RELEASING.md)); consume the package from the repository as a
+> workspace dependency or a git install. `npm add forces-ui` lands with the first
+> published release.
 
-Most apps want the [`@forces-ui/elements`](https://www.npmjs.com/package/@forces-ui/elements)
-web component or the [`@forces-ui/react`](https://www.npmjs.com/package/@forces-ui/react)
-adapter, which wrap this engine. Use the core directly when you own the canvas.
+Most apps want the `@forces-ui/elements` web component or the `@forces-ui/react` adapter,
+which wrap this engine. Use the core directly when you own the canvas.
 
 ## Quick start
 

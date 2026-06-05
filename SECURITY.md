@@ -23,4 +23,4 @@ attribute parsing are in scope.
 
 ## Supported versions
 
-While pre-1.0, only the latest published version receives fixes.
+While pre-1.0, only the latest tagged release receives fixes.

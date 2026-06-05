@@ -40,7 +40,7 @@ data-feedback >
 mass </a>
 ```
 
-The element now affects particles. It may pull, repel, swirl, viscosity, wall, sink, emit, or otherwise shape motion.
+The element now affects particles. It may pull, repel, swirl, stream, slow, jet, tether, deflect, or capture the matter around it.
 
 ### Field to Element
 
@@ -241,7 +241,7 @@ They are designed forces. They are not required to be literal real-world laws.
 | Repel | repel | creates pressure and separation |
 | Swirl | swirl | spins motion together |
 | Stream | stream | reveals directional motion |
-| Viscosity | viscosity | adds constraint and viscosity |
+| Viscosity | viscosity | bleeds momentum, thickening the medium |
 | Jet | jet | adapts and relaunches response |
 | Tether | tether | gives structure and rest length |
 | Wall | wall | defines human surface and collision |
