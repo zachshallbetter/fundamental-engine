@@ -638,6 +638,21 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       };
       const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+      // named quick-pick values per control, so you click a meaningful setting instead of
+      // guessing and dragging. Values are relative to the scenario's default where it helps.
+      function bands(sp: Any): [string, number][] {
+        const d = sp.def;
+        switch (sp.key) {
+          case 'strength': return [['weak', round(d * 0.4)], ['default', d], ['strong', round(d * 2.2)], ['max', round(sp.max)]];
+          case 'range': return [['near', Math.round(d * 0.55)], ['default', d], ['far', Math.min(sp.max, Math.round(d * 1.6))]];
+          case 'spin': return [['ccw', -1], ['off', 0], ['cw', 1]];
+          case 'angle': return [['0°', 0], ['45°', 45], ['90°', 90], ['180°', 180]];
+          case 'vx': case 'vy': return [['0', 0], ['slow', 2], ['fast', 6]];
+          case 'count': return [['1', 1], ['8', 8], ['24', 24]];
+          default: return [];
+        }
+      }
+
       function renderParams() {
         const s = byForce[cur].scenario;
         const b = s.body, p0 = s.particles[0], cur0 = overrides;
@@ -648,10 +663,14 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           const frac = Math.max(0, Math.min(1, (sp.def - sp.min) / (sp.max - sp.min || 1)));
           const sym = sp.sym ? `<span class="sym">${sp.sym}</span>` : '';
           const unit = sp.unit ? `<span class="unit">${sp.unit}</span>` : '';
+          const chips = bands(sp)
+            .map((b) => `<button type="button" class="band${round(cur) === b[1] ? ' on' : ''}" data-band-key="${sp.key}" data-band-val="${b[1]}">${b[0]}</button>`)
+            .join('');
           return `<div class="param"><label>${sp.label}${sym}${unit}</label>
             <input type="number" class="num" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${round(cur)}">
             <div class="track-wrap"><span class="tick" title="default" style="left:${(frac * 100).toFixed(1)}%"></span>
-            <input type="range" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${cur}"></div></div>`;
+            <input type="range" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${cur}"></div>
+            ${chips ? `<div class="bands">${chips}</div>` : ''}</div>`;
         };
         // the formula + class for the selected force, so the controls are self-explaining
         let head = '';
@@ -684,6 +703,18 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
               $('params')!
                 .querySelectorAll(`input[data-param="${key}"]`)
                 .forEach((o) => { if (o !== inp) (o as HTMLInputElement).value = String(val); });
+              setPresetSelect('');
+              evaluate();
+            }),
+          );
+        // quick-pick bands: set the control to a named value directly (no slider snap, so
+        // the chip reads as active), then refire — `evaluate` re-renders the panel.
+        $('params')!
+          .querySelectorAll('.band')
+          .forEach((el) =>
+            el.addEventListener('click', () => {
+              const key = (el as HTMLElement).dataset.bandKey!;
+              overrides[key] = parseFloat((el as HTMLElement).dataset.bandVal!);
               setPresetSelect('');
               evaluate();
             }),
