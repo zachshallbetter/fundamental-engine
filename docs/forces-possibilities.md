@@ -1,145 +1,44 @@
-# The Forces System — Possibilities & Roadmap
+# The Forces System — Possibilities & Design Notes
 
 > What the [reciprocal field](forces-system.md) unlocks once it stops being a
-> background effect and becomes wired to *meaning* — your archive, your taxonomy,
-> your attention. This is an options menu and a suggested sequence, not a
-> commitment. Companion to `docs/forces-system.md` (the definition); section refs
-> like §6 point there.
+> background effect and becomes wired to *meaning* — your data, your taxonomy, your
+> users' attention. A menu of directions and the math behind them. Companion to
+> `docs/forces-system.md` (the definition); section refs like §6 point there.
 
-## The core thesis
+## The core idea
 
-The field is a **metaphor engine with a real physics API**. Its highest-leverage
-use is as a **dumb renderer for the archive** — which is exactly the direction the
-data layer is already heading (`data = life archive · API is the contract ·
-client is disposable`, see `docs/archive-architecture.md`). The prototype
-hardcodes its bodies in markup; the win is to let **force metadata flow from the
-API** so the field *is* a visualization of the work, not a decoration on top of it.
+The field is a **metaphor engine with a real physics API**. Its highest-leverage use is
+as a **renderer for data**: let force metadata flow from your content or API so the field
+*is* a visualization of the work, not a decoration on top of it. Map a record's category,
+significance, recency, and relationships onto forces and the layout becomes a live,
+physical map of the data behind it — the client stays a dumb renderer.
 
-Two ideas carry the most leverage:
-- **A — Bind the field to the archive.** Make disciplines, significance, recency,
-  and relationships *render as forces*.
-- **E — Publish the executable design system.** You say you build executable
-  design systems; the `ds-*` bundle already is one. Shipping it is the proof.
+## Application patterns
 
-## How to read the tiers
+A few directions the engine opens up, independent of any one site:
 
-Ranked by **leverage ÷ effort**, not by ambition alone.
-
-| Tier | Meaning |
-|---|---|
-| **1 · Quick wins** | Days, mostly mechanical, low risk. Make the field *mean* something with what already exists. |
-| **2 · Signature bets** | Weeks. The differentiated, "this is the site" work. A & E live here. |
-| **3 · Moonshots** | Open-ended. High upside, real research/cost risk. |
-
----
-
-## Tier 1 — Quick wins
-
-### 1.1 Discipline → force, from data
-Each archive entry already has a category. Map category → canonical force using
-`DS_FORCES` (§6, §15). The API returns a `force` token per entry; the client
-renders a body. **This is the unlock that makes everything else in A possible**,
-and it's mostly a lookup table.
-- *Touches:* archive contract (add `force`/derive it), one render helper.
-- *Risk:* low. The mapping is already authored.
-
-### 1.2 Tags → threads (the relationship graph)
-The "Everything connects to the experience" system-map is literally the
-`threads()` API (§10). Hover a tag or a hub node → wire every entry that shares
-it. Makes the archive's graph visible on demand.
-- *Touches:* a `data-index data-threads` group + tag→entry index.
-
-### 1.3 Recency/significance → heat & strength
-New entries spawn "hot"; prominent ones get higher `data-strength`. Pure
-attribute mapping (§3.1, §6) — the field weights what matters with no new physics.
-
-### 1.4 Reduced-motion / poster variant
-A frozen, screenshot-able render of the field for OG images, low-power devices,
-and `prefers-reduced-motion` (§18). Same engine, `boot=1`, `dt=0`. Cheap, and it
-de-risks the "is this too heavy?" objection everywhere else.
-
-### 1.5 Generalized glyph assembly
-Today only the hero name assembles from particles (§11). Generalize the
-`[data-glyph]` host so section titles / the contact email / a case-study title can
-materialize from the field. Small change, big "wow" reuse.
-
----
-
-## Tier 2 — Signature bets
-
-### A — The archive-bound field (deep dive)
-
-The field becomes a live map of the body of work. Built on Tier-1 §1.1.
-
-**A1 · Force metadata in the contract.** Extend the entry schema so each entry
-resolves to `{ force, strength, color, when? }` — derived server-side from
-category/prominence/recency so the **client stays dumb**. The homepage Work/Writing
-indexes (which already declare forces in the prototype) bind to real entries.
-
-**A2 · Reciprocity as a live signal.** The `--d` density write-back (field →
-element, §8) is the rarest, most underused part of the system. Pipe real
-engagement (view counts, recently-opened) into density so the most-read pieces
-*gain weight and glow*. The archive's analytics become typography. **This is the
-part almost nothing else on the web does** — worth protecting as the signature.
-
-**A3 · Formations as view-state.** Formations already shift per section (§7);
-promote them to **IA states** driven by the query:
-- search results → `scatter`
-- browse-by-discipline → `wells` (entries pool into discipline clusters)
-- chronological → `lanes` (a timeline current)
-- a single open entry → `accretion` (everything converges on it)
-
-The interface explains its own state through behavior, without chrome.
-
-**A4 · Conditions tied to real state.** `data-when` (§5): featured entries attract
-harder; "new" runs hot; scroll-velocity gates the heavy effects so fast scrolling
-stays calm.
-
-*Sequencing within A:* 1.1 → A1 → A3 → A2 → A4. (Density-as-signal last; it needs
-an analytics source.)
-
-### E — Publish the executable design system (deep dive)
-
-You build executable design systems; `design-system.html` + `ds-*` is a running
-one — 11 views across Foundations / The Field / Interface (§17), with live demos
-behind a gated "Reciprocal Field" toggle (default off, the right cost pattern).
-
-**E1 · Ship it as a public site.** A portfolio piece that *is* the thesis: a design
-system you can operate, with the physics live behind it. Lift `ds-data.js` into a
-typed `src/config/forces.config.ts` as the single source of truth (recommended in
-§19) so the DS and the live site read the same catalog.
-
-**E2 · Extract the engine as a library.** The force registry is clean and modular —
-`window.__forces[token] = { apply(b,p,env) }`, core never changes (§4). It's a
-publishable package ("a reciprocal DOM-physics field"). Open-sourcing it is itself
-credibility, and forces a clean API boundary.
-
-**E3 · The Lab as a signature interaction.** Shareable fields via URL hash already
-work (§14.4). Could be a play space, a generative-wallpaper generator, or a quirky
-contact mechanism ("build me a field, send it").
-
-### Identity (rides alongside E)
-A forces-derived brand system — nine colors, the `forces-mark` favicon/wordmark
-(it's already a field render). Coherent identity that's *generated, not drawn*.
-
----
-
-## Tier 3 — Moonshots
-
-### M1 · Conversational field (AI surface)
-There's a `view-conversation.jsx` screen, and the archive roadmap includes an
-LLM-agent client. An AI chat whose responses **render into the field** (emitter =
-AI systems, fittingly) collapses the interface and the system into one object.
-High novelty; real scope (streaming → particle choreography, latency, cost).
-
-### M2 · Narrative scrollytelling for case studies
-The manual's chapter-by-chapter formation shifts (§16) are a storytelling device.
-Apply to project case studies: each section cues a formation, the field narrates
-the story underneath the prose.
-
-### M3 · Generative / seasonal field
-Accent journey + formations varied by time of day, season, or "mood" of the
-archive (what you've shipped lately). The site as a living instrument.
+- **Data-driven fields.** Map each record to a body: category → force token (a catalog
+  lookup, §6/§15), prominence → `data-strength`, recency → heat, relationships →
+  `threads()` (§10). The field renders the dataset's *shape*; nothing is hardcoded in
+  markup.
+- **Formations as view-state.** Promote the global formations (§7) to IA states driven by
+  the query — search results → `scatter`, browse-by-group → `wells` (items pool into
+  clusters), chronological → `lanes` (a timeline current), a single open item →
+  `accretion` (everything converges on it). The interface explains its state through
+  behavior, without chrome.
+- **Reciprocity as a live signal.** The `--d` density write-back (field → element, §8) is
+  the rarest part of the system. Pipe real engagement (view counts, recently opened) into
+  density so the most-used items *gain weight and glow* — analytics become typography.
+- **Conditions tied to real state.** `data-when` (§5): featured items attract harder, new
+  ones run hot, scroll-velocity gates the heavy effects so fast scrolling stays calm.
+- **Self-assembling marks & data-viz.** `morph` (§20.3 [D]) assembles matter into logos,
+  icons, maps, or charts — a bar chart whose bars are accreted matter. Glyph assembly
+  (§11) generalized to any geometry. (Marks and data only — never words; §11.)
+- **A shareable Lab.** Fields serialize to a URL hash (§14.4) — a play space, a
+  generative-wallpaper tool, or a quirky contact mechanism ("build me a field, send it").
+- **Reduced-motion / poster variant.** A frozen, screenshot-able render (`boot=1`,
+  `dt=0`, §18) for OG images, low-power devices, and `prefers-reduced-motion` — the same
+  engine, no loop.
 
 ---
 
@@ -199,8 +98,7 @@ So any density-driven visual reaches ~63% of its target in ~0.2 s and ~95% in
 
 **Idea.** A word's *appearance is a live readout of the particle mass pooled under
 it* — and you can physically disturb it (agitate) and watch it recover. Type as a
-material. The prototype's `liveword` does the weight axis for one word (§8); this
-generalizes it.
+material. The single-axis `--d` weight feedback (§8) generalizes to every axis at once.
 
 **Axis mapping.** For any CSS-numeric target `A` with range `[A₀, A₁]`:
 ```
@@ -312,8 +210,8 @@ the DOM, not just read it:
 ```
 if b.d_j crosses θ (≈ 0.6):  element_j.dispatchEvent('field:lit')  → CSS/JS reaction
 ```
-This is the "Everything connects" system-map (§10 threads) made emergent instead
-of hand-drawn — the wiring appears because matter actually flows between boxes.
+This is the "everything connects" relationship map (§10 threads) made emergent
+instead of hand-drawn — the wiring appears because matter actually flows between boxes.
 
 ---
 
@@ -351,9 +249,9 @@ loop-heavy concepts (2, 3, 4 across a whole page) want a cheaper, smoother bridg
 
 The canonical nine (§6) are all **body → particle, local, O(b·n)** forces: each
 reads one particle against one body. The most *unique* results come from three
-frontiers the prototype never crosses. Flagging the **class** of each addition
-matters, because two of the frontiers break the current registry contract ("a
-force owns only the math that nudges one free particle given a shared env"):
+frontiers beyond that. Flagging the **class** of each addition matters, because two of
+the frontiers break the original registry contract ("a force owns only the math that
+nudges one free particle given a shared env"):
 
 - **[A] Body→particle** — fits the existing contract; pure addition. New attrs only.
 - **[B] Particle→particle** — needs neighbor access (a spatial hash in `env`);
@@ -407,9 +305,8 @@ deposit:  T(x) += δ at each particle
 steer:    v += ∇T(x)·k_follow
 field:    T ← (T·decay) ⊛ blur        decay ≈ 0.97
 ```
-*Unique:* **self-organizing transport networks grow between source bodies** — the
-archive's relationship graph literally *builds itself* (Physarum). On-brand for
-"everything connects." *Fits:* AI / Creative technology.
+*Unique:* **self-organizing transport networks grow between source bodies** — a
+relationship graph that builds itself (Physarum). *Fits:* AI / Creative technology.
 
 **Crystallize — phase transition by heat.** `[A]`  (ties into the existing `heat`)
 ```
@@ -444,9 +341,10 @@ image samples, or datapoints)
 ```
 assign each p a target t_k ;   F = (t_k − p)·k_m + jitter·(1 − arrived)
 ```
-*Unique:* the field **assembles into logos, words, maps, or charts** — glyph
+*Unique:* the field **assembles into logos, marks, maps, or charts** — glyph
 assembly (§11) generalized to any geometry. The bridge to brand + data-viz: *a bar
-chart whose bars are accreted matter.* *Fits:* Creative technology / Design.
+chart whose bars are accreted matter.* Marks and data only — never words (§11).
+*Fits:* Creative technology / Design.
 
 **Constraint — Verlet ropes & cloth.** `[B]`  (linked pairs, rest length `L`)
 ```
@@ -556,7 +454,7 @@ minting sibling of emitter. *Fits:* Motion. *(Source — cap with `age`/despawn.
 
 > **Formal specs** (tokens, classes, default attrs, exact formulas) for every force,
 > condition, formation, and render mode below now live in
-> `docs/forces-system.md` §20 — the forward registry. This section keeps the *why*.
+> `docs/forces-system.md` §20. This section keeps the *why*.
 
 ### New conditions (`data-when` extensions)
 `near` (proximity to cursor/another body) · `dense` / `sparse` (local density gate)
@@ -586,7 +484,7 @@ from identical forces (✅ marks the six that ship: `render` / `setRender`):
 These aren't single forces — they're phenomena that *emerge* when the above
 combine, and none of them exist on a normal site:
 - **Self-assembly** (Morph) — data and identity rendered as particle constellations.
-- **Grown networks** (Pheromone) — the relationship graph organizes itself.
+- **Grown networks** (Pheromone) — a relationship graph organizes itself.
 - **Phase transitions** (Crystallize + heat/scroll) — solid that melts on scroll.
 - **Demixing / sorting** (Charge or Buoyancy) — categories physically separate.
 - **Reaction–diffusion** (cohesion + inhibition on a grid) — Turing spots/stripes
@@ -598,37 +496,6 @@ combine, and none of them exist on a normal site:
 > **Architectural note.** Classes [B]/[C]/[D]/[E] are not pure additions like the
 > nine — they require: a **spatial hash** exposed on `env` (neighbor queries),
 > **persistent buffers** (grids, target sets), or **new particle attributes**.
-> Worth a single foundational pass (a `FieldStore` that owns particles + a spatial
-> index + optional grids) before reaching for the emergent concepts. The local
-> `[A]` forces and all the conditions/formations are drop-in against today's
-> engine.
-
----
-
-## Cross-cutting decisions (resolve before building Tier 2)
-
-1. **Coexist or replace?** The repo already has wave/particle systems
-   (`useWaves`, `WaveContext`, `src/experiments/particle-life*`,
-   `src/behaviors/`). Decide whether the field engine *replaces* them or runs
-   beside them. (Replacing is cleaner long-term; coexisting is faster short-term.)
-2. **Keep the client dumb.** Honor the archive direction — force metadata comes
-   from the **API**, not hardcoded in components (the prototype does the latter).
-3. **Cost budget.** Full field on mobile is heavy. The DS "live toggle, default
-   off" is the tell for where it's expensive; pair every field surface with the
-   Tier-1 §1.4 poster fallback.
-4. **One source of truth.** Lift `ds-data.js` → `src/config/forces.config.ts`
-   first (§19); both the site and any DS read it.
-
-## Suggested sequence
-
-```
-Foundations:  forces.config.ts (one source of truth)  +  1.4 poster fallback
-Quick wins:   1.1 discipline→force → 1.2 threads → 1.3 heat/strength → 1.5 glyph
-Signature:    A1 contract → A3 formations-as-view → A2 density-as-signal → A4 conditions
-              E1 publish DS (parallel track, shares forces.config.ts)
-Then:         E2 extract library · E3 Lab · Identity
-Moonshots:    M1 conversational field · M2 case-study scrollytelling · M3 generative
-```
-
-Quickest path to a differentiated site: **forces.config.ts → 1.1 → A1 → A3**, with
-**A2 (density-as-signal)** as the moment it becomes unmistakably yours.
+> This foundational pass shipped (a `FieldStore` that owns particles + a spatial
+> index + optional grids), so the emergent concepts are now reachable; the local
+> `[A]` forces and all the conditions/formations remain drop-in.

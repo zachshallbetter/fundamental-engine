@@ -726,18 +726,16 @@ pattern for embedding the (cost-heavy) field inside a denser documentation UI.
 
 ---
 
-## 19. Notes for porting into the React app
+## 19. Notes for adapting the engine
 
-The prototype is plain DOM + a `requestAnimationFrame` loop reading
-`[data-body]` attributes. The current codebase already has a particle/wave engine
-(`src/experiments/particle-life*`, `src/behaviors/`, `src/components/Waves`,
-`useWaves`, `WaveContext`), so a port should decide whether to:
+The original prototype was plain DOM + a `requestAnimationFrame` loop reading
+`[data-body]` attributes. Adapting it into any app comes down to one decision:
 
-1. **Adapt the prototype engine** as a single canvas component
-   (`<FieldCanvas/>`) mounted once at the app root, that scans
-   `[data-body]` elements — keeping the declarative authoring model intact; or
-2. **Re-express the forces** on top of the existing behavior system, mapping each
-   force in §6 to a `ParticleBehavior`.
+1. **Mount the engine once** as a single canvas component at the app root that scans
+   `[data-body]` elements — keeping the declarative authoring model intact. This is what
+   the shipped adapters do (`<forces-field>`, `mountField()`, `<ForcesField>`); or
+2. **Re-express the forces** on top of an existing particle/behavior system, mapping each
+   force in §6 to that system's primitive.
 
 Either way, this document is the contract: the **nine forces** (§6), **five
 formations** (§7), **seven conditions** (§5), the **body attribute API** (§12),
