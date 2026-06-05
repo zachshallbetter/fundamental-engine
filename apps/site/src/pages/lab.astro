@@ -9,10 +9,10 @@ import '../styles/lab.css';
 // The Lab — a physics detector, rebuilt as an instrument. Fire a known particle
 // into a force with known attributes; the chamber shows its track + the field
 // structure, and the readout checks the measured behaviour against the conformance
-// catalog (the same EXPERIMENTS the test suite runs) — frame by frame. The eight
-// not-yet-calibrated forces are browsable but locked (no detector run).
+// catalog (the same EXPERIMENTS the test suite runs) — frame by frame. Every force
+// in the catalog has a conformance experiment, so all of them fire here.
 
-// every force that has a conformance experiment (the detector can run it)
+// every force that has a conformance experiment (the detector can run it — all 33 do)
 const HAS_EXP = new Set(EXPERIMENTS.map((e) => e.scenario.force));
 const families = [
   { key: 'canonical', label: 'Canonical' },
@@ -23,8 +23,7 @@ const inFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
 const forceNo = (token: string) => MANUAL_FORCES.findIndex((f) => f.token === token) + 1;
 const z2 = (n: number) => String(n).padStart(2, '0');
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const calibratedCount = MANUAL_FORCES.filter((f) => f.calibrated).length;
-const awaitingCount = MANUAL_FORCES.length - calibratedCount;
+const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
 ---
 
 <Base
@@ -53,11 +52,10 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
                 {inFamily(fam.key).map((f) => (
                   <button
                     type="button"
-                    class={`force-tile ${f.calibrated && HAS_EXP.has(f.token) ? 'calib' : 'locked'}`}
+                    class={`force-tile ${HAS_EXP.has(f.token) ? 'calib' : 'locked'}`}
                     data-force={f.token}
-                    data-calibrated={f.calibrated && HAS_EXP.has(f.token) ? '1' : '0'}
                     style={`--fc:${f.color}`}
-                    title={`${cap(f.label)} — ${f.effect}${f.calibrated ? '' : ' (awaiting calibration)'}`}
+                    title={`${cap(f.label)} — ${f.effect}`}
                   >
                     <span class="z">{z2(forceNo(f.token))}</span>
                     <span class="picon as-icon"><i class={`fg fg-${f.token}`} aria-hidden="true" /></span>
@@ -69,7 +67,7 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
               </div>
             </div>
           ))}
-          <p class="fb-foot"><b>{calibratedCount} calibrated</b> · {awaitingCount} awaiting<br />fire any lit force</p>
+          <p class="fb-foot"><b>{liveCount} forces</b> · conformance-backed<br />fire any force</p>
         </div>
       </aside>
 
@@ -161,7 +159,7 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
             <span class="about-sym" id="aboutSym"><i class="fg fg-attract" aria-hidden="true"></i></span>
             <div class="about-id">
               <div class="about-name" id="aboutName">Attract</div>
-              <div class="about-meta" id="aboutMeta">Canonical · At · No. 01 · calibrated</div>
+              <div class="about-meta" id="aboutMeta">Canonical · At · No. 01</div>
             </div>
           </div>
           <p class="about-desc" id="aboutDesc"></p>
@@ -217,49 +215,35 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
       return Number(n.toFixed(d));
     };
 
-    // param metadata — label · symbol · unit · slider range (ported from the design)
-    const PMETA: Any = {
-      strength: { label: 'strength', sym: 'S', min: 0, max: 3, step: 0.03 },
-      range: { label: 'range', sym: 'd', unit: 'px', min: 50, max: 500, step: 5 },
-      spin: { label: 'spin', sym: 'σ', min: -2, max: 2, step: 0.1 },
-      angle: { label: 'heading', sym: 'θ', unit: 'deg', min: 0, max: 359, step: 1 },
-      vx: { label: 'initial v', sym: 'ₓ', min: -8, max: 8, step: 0.2 },
-      vy: { label: 'initial v', sym: 'ᵧ', min: -8, max: 8, step: 0.2 },
-      box: { label: 'wall size', sym: 'w', unit: 'px', min: 24, max: 100, step: 2 },
-      absorbR: { label: 'capture radius', sym: 'r', unit: 'px', min: 30, max: 140, step: 2 },
-      count: { label: 'particles', sym: 'n', min: 1, max: 14, step: 1 },
+    // Tunable body-attribute specs — symbol · unit · slider range — derived live from the
+    // selected force's scenario body. `angle` is shown in degrees and converted to radians
+    // in buildScenario. Which knobs appear is driven by the catalog `attrs` (so each force
+    // shows only the knobs that matter), plus box/absorbR auto-added when the body has them,
+    // plus the injected particle's vx/vy/count. This covers all 33 forces with no per-force
+    // table to drift.
+    const ATTR: Any = {
+      strength: (b: Any) => { const v = b.strength ?? 1, mx = Math.max(0.5, v * 3); return { key: 'strength', label: 'strength', sym: 'S', val: v, def: v, min: 0, max: mx, step: mx / 100 }; },
+      range: (b: Any) => ({ key: 'range', label: 'range', sym: 'd', unit: 'px', val: b.range ?? 300, def: b.range ?? 300, min: 50, max: 500, step: 5 }),
+      spin: (b: Any) => ({ key: 'spin', label: 'spin', sym: 'σ', val: b.spin ?? 1, def: b.spin ?? 1, min: -2, max: 2, step: 0.1 }),
+      angle: (b: Any) => { const d = Math.round(((b.angle ?? 0) * 180) / Math.PI); return { key: 'angle', label: 'heading', sym: 'θ', unit: 'deg', val: d, def: d, min: -180, max: 180, step: 5 }; },
+      box: (b: Any) => ({ key: 'box', label: 'wall size', sym: 'w', unit: 'px', val: b.hw ?? 40, def: b.hw ?? 40, min: 20, max: 120, step: 2 }),
+      absorbR: (b: Any) => ({ key: 'absorbR', label: 'capture radius', sym: 'r', unit: 'px', val: b.absorbR ?? 64, def: b.absorbR ?? 64, min: 24, max: 160, step: 2 }),
     };
-    // which knobs each force exposes (matches the body fields its scenario reads)
-    const SCHEMA: Any = {
-      attract: ['strength', 'range', 'vx', 'vy', 'count'],
-      repel: ['strength', 'range', 'vx', 'vy', 'count'],
-      swirl: ['strength', 'range', 'spin', 'vx', 'vy', 'count'],
-      stream: ['strength', 'range', 'angle', 'vx', 'vy', 'count'],
-      viscosity: ['strength', 'range', 'vx', 'vy', 'count'],
-      jet: ['strength', 'range', 'angle', 'vx', 'count'],
-      tether: ['strength', 'range', 'vx', 'vy', 'count'],
-      wall: ['box', 'vx', 'vy', 'count'],
-      sink: ['absorbR', 'vx', 'count'],
-      gravity: ['strength', 'range', 'vx', 'vy', 'count'],
-      charge: ['strength', 'range', 'vx', 'vy', 'count'],
-      magnetism: ['strength', 'range', 'vx', 'vy', 'count'],
-      thermal: ['strength', 'range', 'count'],
-      lens: ['strength', 'range', 'spin', 'vx', 'vy', 'count'],
-      gate: ['range', 'angle', 'vx', 'vy', 'count'],
-      buoyancy: ['strength', 'range', 'vx', 'vy', 'count'],
-      shear: ['strength', 'range', 'angle', 'vx', 'vy', 'count'],
-      crystallize: ['strength', 'range', 'vx', 'vy', 'count'],
-      wind: ['strength', 'range', 'vx', 'vy', 'count'],
-      collide: ['strength', 'range'],
-      cohesion: ['strength', 'range'],
-      pressure: ['strength', 'range'],
-      link: ['strength', 'range'],
-      hunt: ['strength', 'range'],
-      align: ['strength', 'range'],
-    };
-    // the most characteristic axis to sweep, per force
-    const SIG: Any = { swirl: 'spin', stream: 'angle', jet: 'angle', shear: 'angle', gate: 'angle', wall: 'box', sink: 'absorbR' };
-    const sweepableOf = (id: string) => (SCHEMA[id] || ['strength']).filter((k: string) => !['vx', 'vy', 'count'].includes(k));
+    // named quick-pick chips per control — click a meaningful value instead of dragging.
+    function bands(sp: Any): [string, number][] {
+      const d = sp.def;
+      switch (sp.key) {
+        case 'strength': return [['weak', round(d * 0.4)], ['default', d], ['strong', round(d * 2.2)], ['max', round(sp.max)]];
+        case 'range': return [['near', Math.round(d * 0.55)], ['default', d], ['far', Math.min(sp.max, Math.round(d * 1.6))]];
+        case 'spin': return [['ccw', -1], ['off', 0], ['cw', 1]];
+        case 'angle': return [['0', 0], ['45', 45], ['90', 90], ['180', 180]];
+        case 'box': return [['tight', Math.round(d * 0.6)], ['default', d], ['wide', Math.min(sp.max, Math.round(d * 1.6))]];
+        case 'absorbR': return [['small', Math.round(d * 0.6)], ['default', d], ['large', Math.min(sp.max, Math.round(d * 1.6))]];
+        case 'vx': case 'vy': return [['0', 0], ['slow', 2], ['fast', 6]];
+        case 'count': return [['1', 1], ['8', 8], ['24', 24]];
+        default: return [];
+      }
+    }
 
     // re-runs on each client-side navigation to /lab (ClientRouter); no-op elsewhere.
     function setup() {
@@ -278,7 +262,9 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
       let result: Any = null;
       let checks: Any[] = [];
       let frame = 0;
-      let mode: 'once' | 'loop' = 'once';
+      let mode: 'once' | 'loop' | 'unlocked' = 'once';
+      const MODE_LABEL: Any = { once: '↦ Once', loop: '↻ Loop', unlocked: '∞ Free' };
+      const MAX_FRAMES = 1800; // upper bound for the unlocked / continuous free-run
       let view = { scale: 1, ox: 0, oy: 0 };
       let pickView: 'icon' | 'symbol' | 'name' = 'icon';
       let tab: 'expect' | 'tune' = 'expect';
@@ -293,7 +279,7 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
         return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
       };
       const color = () => META[cur]?.color ?? '#4da3ff';
-      const calibrated = () => !!META[cur]?.calibrated && !!byForce[cur];
+      const calibrated = () => !!byForce[cur]; // every catalogued force has a conformance experiment
       const isPair = (id: string) => ['collide', 'cohesion', 'pressure', 'link', 'hunt', 'align'].includes(id);
 
       function scenarioBase() { return byForce[cur].scenario; }
@@ -329,7 +315,7 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
         if (ov.frames != null) s.frames = ov.frames;
         if (s.particles.length === 0) return s;
         if (!isPair(cur)) {
-          const count = Math.max(1, Math.min(14, Math.round(ov.count ?? s.particles.length)));
+          const count = Math.max(1, Math.min(40, Math.round(ov.count ?? s.particles.length)));
           if (count > s.particles.length) {
             const base = s.particles[0];
             const extra = count - s.particles.length;
@@ -354,9 +340,11 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
 
       function compute(resetFrame: boolean) {
         const s = buildScenario();
-        // ghost: keep the prior trajectory if the force is unchanged + ghost on
-        if (result && ghostOn && ghostForce === cur) ghostTraj = result.trajectory;
-        else if (ghostForce !== cur) ghostTraj = null;
+        // ghost: capture the prior setting's trajectory on a fresh run (not on a free-run extend)
+        if (resetFrame) {
+          if (result && ghostOn && ghostForce === cur) ghostTraj = result.trajectory;
+          else if (ghostForce !== cur) ghostTraj = null;
+        }
         result = runScenario(s, forces);
         ghostForce = cur;
         const tuned = ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy'].some((k) => overrides[k] != null);
@@ -618,28 +606,31 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
         buildWaveform();
       }
 
-      // ── parameter sweep ──
+      // ── parameter sweep (over any body knob the force exposes; excludes count) ──
+      const sweepSpecs = () => paramSpecs().filter((s: Any) => s.key !== 'count');
       function populateSweep() {
         const sel = $('sweepParam') as HTMLSelectElement | null; if (!sel) return;
-        const opts = sweepableOf(cur);
+        const specs = sweepSpecs();
         const prev = sel.value;
-        sel.innerHTML = opts.map((k: string) => `<option value="${k}">${PMETA[k].label}</option>`).join('');
-        sel.value = opts.includes(prev) ? prev : (SIG[cur] && opts.includes(SIG[cur]) ? SIG[cur] : opts[0]);
-        const lbl = $('sweepLabel'); if (lbl) lbl.textContent = PMETA[sel.value]?.label ?? sel.value;
+        sel.innerHTML = specs.map((s: Any) => `<option value="${s.key}">${s.label}${s.sym ? ' ' + s.sym : ''}</option>`).join('');
+        sel.value = specs.some((s: Any) => s.key === prev) ? prev : (specs[0]?.key ?? 'strength');
+        const sp = specs.find((s: Any) => s.key === sel.value);
+        const lbl = $('sweepLabel'); if (lbl) lbl.textContent = sp ? sp.label : sel.value;
       }
       function runSweep() {
         if (!result) return;
+        const specs = sweepSpecs();
         const sel = $('sweepParam') as HTMLSelectElement | null;
-        const key = (sel && sel.value) || sweepableOf(cur)[0];
-        const m = PMETA[key]; if (!m) return;
+        const key = (sel && sel.value) || specs[0]?.key;
+        const m = specs.find((s: Any) => s.key === key) || specs[0]; if (!m) return;
         const N = 44, pts: [number, number][] = [];
         for (let i = 0; i <= N; i++) {
           const v = m.min + (m.max - m.min) * (i / N);
-          const res = runScenario(buildScenario({ ...overrides, [key]: v, count: 1 }), forces);
+          const res = runScenario(buildScenario({ ...overrides, [m.key]: v, count: 1 }), forces);
           const last = res.trajectory[res.trajectory.length - 1][0];
           pts.push([v, last ? Math.hypot(last.x - res.body.cx, last.y - res.body.cy) : 0]);
         }
-        drawSweep(pts, m, valOf(key));
+        drawSweep(pts, m, overrides[m.key] != null ? overrides[m.key] : m.def);
         const lbl = $('sweepLabel'); if (lbl) lbl.textContent = m.label;
       }
       function drawSweep(pts: [number, number][], m: Any, curVal: number) {
@@ -661,18 +652,42 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
 
       // ── tune panel ──
       const esc = (t: string) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // The ordered list of knobs for the current force: catalog `attrs` (strength/range/
+      // spin/angle) → box/absorbR when the body has them → the injected particle vx/vy/count.
+      // Driven by data, so every force gets exactly the controls that matter — no per-force table.
+      function paramSpecs(): Any[] {
+        const s = scenarioBase(), b = s.body, p0 = s.particles[0];
+        const attrs: string[] = (META[cur] && META[cur].attrs) || ['strength', 'range'];
+        const specs: Any[] = [];
+        for (const a of attrs) {
+          if (a === 'strength' && b.strength == null) continue;
+          if (a === 'range' && !(b.range > 0)) continue;
+          if (ATTR[a]) specs.push(ATTR[a](b));
+        }
+        if (b.hw != null) specs.push(ATTR.box(b));
+        if (b.absorbR != null) specs.push(ATTR.absorbR(b));
+        if (p0) {
+          specs.push({ key: 'vx', label: 'initial v', sym: 'ₓ', val: p0.vx ?? 0, def: p0.vx ?? 0, min: -8, max: 8, step: 0.5 });
+          specs.push({ key: 'vy', label: 'initial v', sym: 'ᵧ', val: p0.vy ?? 0, def: p0.vy ?? 0, min: -8, max: 8, step: 0.5 });
+          specs.push({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 });
+        }
+        return specs;
+      }
       function renderParams() {
-        const keys: string[] = SCHEMA[cur] || ['strength', 'range'];
-        const rows = keys.map((key) => {
-          const m = PMETA[key]; const cv = valOf(key); const def = defOf(key);
-          const frac = Math.max(0, Math.min(1, (def - m.min) / (m.max - m.min || 1)));
-          const sym = m.sym ? `<span class="sym">${m.sym}</span>` : '';
-          const unit = m.unit ? `<span class="unit">${m.unit}</span>` : '';
+        const rows = paramSpecs().map((sp: Any) => {
+          const cv = overrides[sp.key] != null ? overrides[sp.key] : sp.val;
+          const frac = Math.max(0, Math.min(1, (sp.def - sp.min) / (sp.max - sp.min || 1)));
+          const sym = sp.sym ? `<span class="sym">${sp.sym}</span>` : '';
+          const unit = sp.unit ? `<span class="unit">${sp.unit}</span>` : '';
+          const chips = bands(sp)
+            .map((b) => `<button type="button" class="band${round(cv) === b[1] ? ' on' : ''}" data-band-key="${sp.key}" data-band-val="${b[1]}">${b[0]}</button>`)
+            .join('');
           return `<div class="param">
-            <label>${m.label}${sym}${unit}</label>
-            <input class="num" type="number" data-param="${key}" min="${m.min}" max="${m.max}" step="${m.step}" value="${round(cv, m.step)}">
+            <label>${sp.label}${sym}${unit}</label>
+            <input class="num" type="number" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${round(cv, sp.step)}">
             <div class="track-wrap"><span class="tick" title="default" style="left:${(frac * 100).toFixed(1)}%"></span>
-            <input type="range" data-param="${key}" min="${m.min}" max="${m.max}" step="${m.step}" value="${cv}"></div>
+            <input type="range" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${cv}"></div>
+            ${chips ? `<div class="bands">${chips}</div>` : ''}
           </div>`;
         }).join('');
         $('params')!.innerHTML = rows;
@@ -682,6 +697,14 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
             if (Number.isNaN(val)) return;
             overrides[key] = val;
             $('params')!.querySelectorAll(`input[data-param="${key}"]`).forEach((o) => { if (o !== inp) (o as HTMLInputElement).value = String(val); });
+            setPreset('custom');
+            evaluate();
+          }),
+        );
+        // quick-pick bands: jump a control to a named value, then refire
+        $('params')!.querySelectorAll('.band').forEach((el) =>
+          el.addEventListener('click', () => {
+            overrides[(el as HTMLElement).dataset.bandKey!] = parseFloat((el as HTMLElement).dataset.bandVal!);
             setPreset('custom');
             evaluate();
           }),
@@ -713,6 +736,15 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
 
       // ── transport ──
       function stopPlay() { if (W.__labTimer) clearInterval(W.__labTimer); W.__labTimer = 0; const pb = $('play'); if (pb) pb.textContent = '▶ Play'; }
+      // unlocked / continuous mode: when the playhead hits the end, grow the simulation and
+      // keep observing (orbits, settling, long-run drift) instead of stopping at the cap.
+      function extend(): boolean {
+        const have = result.trajectory.length - 1;
+        if (have >= MAX_FRAMES) return false;
+        overrides.frames = Math.min(MAX_FRAMES, have + 240);
+        compute(false);
+        return true;
+      }
       function play() {
         if (W.__labTimer) return stopPlay();
         if (frame >= result.trajectory.length - 1) frame = 0;
@@ -721,6 +753,7 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
           frame++;
           if (frame >= result.trajectory.length - 1) {
             if (mode === 'loop') { frame = 0; draw(); return; }
+            if (mode === 'unlocked') { if (extend()) { draw(); return; } frame = 0; draw(); return; }
             frame = result.trajectory.length - 1; draw(); stopPlay(); return;
           }
           draw();
@@ -757,7 +790,7 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
         const m = META[cur]; if (!m) return;
         const sym = $('aboutSym')!; sym.innerHTML = `<i class="fg fg-${cur}"></i>`; sym.style.setProperty('--fc', m.color);
         ($('aboutName') as HTMLElement).textContent = m.label;
-        ($('aboutMeta') as HTMLElement).textContent = `${famLabel(cur)} · ${m.symbol} · No. ${z2(forceNoJS(cur))} · ${m.calibrated && byForce[cur] ? 'calibrated' : 'awaiting calibration'}`;
+        ($('aboutMeta') as HTMLElement).textContent = `${famLabel(cur)} · ${m.symbol} · No. ${z2(forceNoJS(cur))}`;
         ($('aboutDesc') as HTMLElement).textContent = m.summary;
         ($('aboutEffect') as HTMLElement).textContent = m.effect;
         const ff = $('aboutFormula')!; ff.textContent = m.formula; ff.style.display = calibrated() ? '' : 'none';
@@ -831,8 +864,8 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
         $('stepb')?.addEventListener('click', () => { stopPlay(); frame = Math.min(frame + 1, result.trajectory.length - 1); draw(); }, { signal: _ac.signal });
         $('reset')?.addEventListener('click', () => { stopPlay(); frame = 0; draw(); }, { signal: _ac.signal });
         $('mode')?.addEventListener('click', () => {
-          mode = mode === 'once' ? 'loop' : 'once';
-          const mb = $('mode')!; mb.textContent = mode === 'loop' ? '↻ Loop' : '↦ Once'; mb.dataset.mode = mode; mb.classList.toggle('on', mode === 'loop');
+          mode = mode === 'once' ? 'loop' : mode === 'loop' ? 'unlocked' : 'once';
+          const mb = $('mode')!; mb.textContent = MODE_LABEL[mode]; mb.dataset.mode = mode; mb.classList.toggle('on', mode !== 'once');
         }, { signal: _ac.signal });
         $('ghost')?.addEventListener('click', () => { ghostOn = !ghostOn; if (!ghostOn) ghostTraj = null; $('ghost')!.classList.toggle('on', ghostOn); draw(); }, { signal: _ac.signal });
         document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => showTab((b as HTMLElement).dataset.tab as any), { signal: _ac.signal }));
@@ -873,7 +906,7 @@ const awaitingCount = MANUAL_FORCES.length - calibratedCount;
         const hash = decodeURIComponent(location.hash.replace(/^#/, ''));
         if (hash) {
           const [force, ...kv] = hash.split(';');
-          if (byForce[force] && META[force]?.calibrated) {
+          if (byForce[force]) {
             for (const pair of kv) { const [k, v] = pair.split('='); if (v != null) overrides[k] = parseFloat(v); }
             selectForce(force, true);
             return;
