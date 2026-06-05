@@ -2,13 +2,24 @@
 
 All notable changes are documented here, following
 [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
-The packages are not yet published; everything below `Unreleased` is the first release
-in progress (see [RELEASING.md](RELEASING.md)).
+The packages are not yet published to npm; each release is cut as a git tag
+(see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-06-04
+
 ### Added
 
+- **Force-aware Lab controls.** The TUNE & REFIRE panel is driven by each force's
+  catalog attributes — it shows only the knobs that matter for the selected force
+  (shear exposes its flow angle, `vortex`/`charge`/`resonate` expose spin, class-[S]
+  sources show just strength + angle), each with its symbol (S, d, σ, θ°), units,
+  a live formula line, and a default-value tick on the track.
+- **Quick-pick value bands.** Named quick-set chips under each control (strength:
+  weak/default/strong/max; range: near/default/far; spin: ccw/off/cw; angle:
+  0/45/90/180; vx/vy: 0/slow/fast; count: 1/8/24) — click a meaningful setting
+  instead of guessing and dragging; the active band is highlighted.
 - **Frontiers roadmap + backlog.** `docs/roadmap-frontiers.md` (implementation notes for
   the next frontiers — reciprocal input channels, a GPU backend, the compositor bridge,
   `bindData()`, finishing the cosmology, and render frontiers) and `BACKLOG.md` (the
@@ -59,6 +70,19 @@ in progress (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **Vortex binds its orbit into a whirlpool.** Its inward bias (0.12) was far too
+  weak to provide centripetal binding, so particles gained tangential speed and
+  drifted *outward* — a feeble swirl that read like gravity. Raising it to 0.6
+  binds the orbit: matter circles ~1.2× while spiralling gently in, a real
+  whirlpool (tangential still dominates ~1.7×). Driven by headless orbit-count
+  sweeps; the conformance exact-Δv and the `attract vortex` composite are updated.
+- **Drag's no-redirection check is velocity-relative.** It hardcoded Δvy = 0 —
+  true only for horizontal motion — so tuning a test particle's vy flipped a
+  correct drag to NO MATCH. Drag is `v −= v·k`, so Δv is anti-parallel to v at any
+  velocity; the check now asserts no perpendicular component (cross ≈ 0).
+- **The emitter Lab scenario fires from the nozzle**, so it demonstrates the jet
+  (relaunched fast along the heading, receding from the body) instead of sitting
+  in the feed zone, where it read as an attractor.
 - **`collide` now conserves momentum in the trajectory.** It resolved only `p` and
   trusted `q`'s later turn, but the integrator processes particles sequentially, so `q`
   read `p`'s already-changed velocity — an order-dependent, non-conserving result. The

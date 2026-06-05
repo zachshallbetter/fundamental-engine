@@ -1,6 +1,6 @@
 {
   "name": "forces-ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A reciprocal DOM-physics field — elements bend the field; the field's density bends them back.",
   "type": "module",
   "license": "MIT",
@@ -28,7 +28,11 @@
     "zero-dependency"
   ],
   "sideEffects": false,
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
