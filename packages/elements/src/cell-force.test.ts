@@ -10,8 +10,8 @@ test('repel pushes away from the centre', () => {
   const { ax } = cellForce('repel', 100, 0, 200);
   assert.ok(ax < 0);
 });
-test('vortex is tangential (perpendicular to radial)', () => {
-  const { ax, ay } = cellForce('vortex', 100, 0, 200); // radial is +x → tangential is ±y
+test('swirl is tangential (perpendicular to radial)', () => {
+  const { ax, ay } = cellForce('swirl', 100, 0, 200); // radial is +x → tangential is ±y
   assert.ok(Math.abs(ax) < 1e-9 && ay > 0);
 });
 test('out of reach → no force (except the uniform fields)', () => {
@@ -28,8 +28,8 @@ test('gravity pulls inward, steeper than attract near the centre', () => {
 test('buoyancy is a steady lift (−y)', () => {
   assert.deepEqual(cellForce('buoyancy', 30, 50, 200), { ax: 0, ay: -0.12 });
 });
-test('spring pulls in past the shell and pushes out within it', () => {
+test('tether pulls in past the shell and pushes out within it', () => {
   const rest = 200 * 0.45; // 90
-  assert.ok(cellForce('spring', rest + 50, 0, 200).ax > 0); // beyond shell → inward
-  assert.ok(cellForce('spring', rest - 50, 0, 200).ax < 0); // inside shell → outward
+  assert.ok(cellForce('tether', rest + 50, 0, 200).ax > 0); // beyond shell → inward
+  assert.ok(cellForce('tether', rest - 50, 0, 200).ax < 0); // inside shell → outward
 });
