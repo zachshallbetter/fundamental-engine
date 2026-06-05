@@ -32,6 +32,17 @@ metrics, and the transformation primitives, not re-building what exists.)
   a spiral drain. That binding belongs in a preset (`whirlpool` / `blackhole` / `accretion`).
   The conformance check moves from an exact inward spiral to **tangential dominance**; the Lab
   shows the first-frame Δv `(0.020, −0.171)` with `|Δvᵧ| > 4×|Δvₓ|` and a swirl track.
+- **Every force can disturb the resting field (not just seven canonical tokens).** The
+  resting field rides on wave-bound matter, and a force only reaches a bound particle once
+  it's torn loose. The tear pass had a hardcoded allowlist — `reflect`, `attract`, `absorb`,
+  `emitter`, `repel`, `vortex`, `stream` — so every **natural primitive and extended force**
+  (`gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`,
+  `cohesion`, `pressure`, …, plus `drag` and `spring`) let the wave shimmer ride straight
+  through, doing nothing. Tearing is now keyed on a force *property*, not a token list: any
+  visible always/active body that carries a non-modifier, non-source token frees nearby bound
+  matter with a gentle inward nudge, then the integrator's real `apply()` shapes it — so gentle
+  forces read gently and strong ones strongly. (Modifiers `resonate`/`spotlight` and the pure
+  source `spawn` correctly never tear.)
 
 ### Documentation
 
