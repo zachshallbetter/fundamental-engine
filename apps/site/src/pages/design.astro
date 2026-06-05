@@ -144,7 +144,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         <div class="grid cols-3 swatches">
           {MANUAL_PRESETS.map((p) => (
             <article class="card swatch">
-              <div class="band" style={`background:${PRESET_COLORS[p.name]}`}><i class={`fg fg-${p.name}`} style="--fc:rgba(0,0,0,0.6)" /></div>
+              <div class="band" style={`background:${PRESET_COLORS[p.name]}`}><i class={`fgp fgp-${p.name}`} style="--fc:rgba(0,0,0,0.6)" /></div>
               <div class="sw-meta"><b>{cap(p.name)}</b><code>{PRESET_COLORS[p.name]}</code><span>{p.tokens.length} forces</span></div>
             </article>
           ))}
@@ -285,7 +285,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         </div>
         <span class="sub">Preset glyphs</span>
         <div class="frame canvas glyphs">
-          {MANUAL_PRESETS.map((p) => (<div class="gl"><i class={`fg fg-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} /><code>{p.name}</code></div>)) }
+          {MANUAL_PRESETS.map((p) => (<div class="gl"><i class={`fgp fgp-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} /><code>{p.name}</code></div>)) }
         </div>
         <span class="sub">Instrument components</span>
         <p class="sec-desc" style="margin-top:0">The shared parts the Lab and the design system both run on — a status pill, a

@@ -38,7 +38,7 @@ const usage = `<div data-preset="blackhole"></div>`;
         MANUAL_PRESETS.map((p) => (
           <article class="ref-card" id={`preset-${p.name}`} style={`--c:${PRESET_COLORS[p.name]}`}>
             <div class="rc-head">
-              <i class={`fg fg-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} />
+              <i class={`fgp fgp-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} />
               <code>{p.name}</code>
             </div>
             <p class="rc-desc">{cap(p.desc)}.</p>
