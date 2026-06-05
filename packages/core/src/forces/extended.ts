@@ -38,7 +38,7 @@ export const lens: Force = {
  * §20.3 — `gate`: a one-way membrane. Along its heading `n = (cosθ, sinθ)` matter
  * passes freely; matter crossing the *wrong* way (`v·n < 0`) is reflected across the
  * membrane, `v −= 2(v·n)·n`, so its normal component flips to travel with `n`. Sized
- * by the element box (like `reflect`, §6.4); `data-angle` sets `n`.
+ * by the element box (like `wall`, §6.4); `data-angle` sets `n`.
  */
 export const gate: Force = {
   token: 'gate',

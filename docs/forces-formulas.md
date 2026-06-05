@@ -10,7 +10,7 @@ This document serves as the canonical reference for the physics formulas, DOM at
 |---|---|---|
 | $b$ | A registered DOM body / attractor element | Object |
 | $p$ | A particle in the simulation | Object |
-| $s$ | General variable for spin (vortex direction/strength) | $\pm 1$ |
+| $s$ | General variable for spin (swirl direction/strength) | $\pm 1$ |
 | $t$ | Time parameter (current frame) | Frames ($1\ \text{frame} = 1/60\ \text{s}$) |
 | $v, v_t$ | Particle velocity vector $(v_x, v_y)$ | $\text{px}/\text{frame}$ |
 | $p.\text{pos}$ | Particle position vector $(x, y)$ | $\text{px}$ |
@@ -38,7 +38,7 @@ Forces are grouped into architectural classes that define their interaction scop
 - **Class [A]**: **Body $\rightarrow$ Particle.** Local force where a DOM body influences a particle. Compute cost: $O(b \cdot n)$. *Drop-in.*
 - **Class [B]**: **Particle $\rightarrow$ Particle.** Needs neighbor queries (typically via spatial hash). Compute cost: $O(n \cdot k)$ with $k$ neighbors.
 - **Class [C]**: **Field-Buffer.** Reads/writes persistent scalar/vector grids. Compute cost: $O(n + \text{grid})$.
-- **Class [D]**: **Target-Geometry.** Body carries a target point set; particles spring to matching points. Compute cost: $O(n)$.
+- **Class [D]**: **Target-Geometry.** Body carries a target point set; particles tether to matching points. Compute cost: $O(n)$.
 - **Class [E]**: **Particle Attribute.** Uses additional particle state variables (charge, species, age).
 - **Class [S]**: **Source / Sink.** Creates or destroys matter. *Breaks particle count conservation; must be budgeted.*
 - **[Preset]**: **Virtual Composite.** Expands a single HTML element into co-located virtual bodies of Class [A] to compose complex reactions.
@@ -52,14 +52,14 @@ These forces are fully implemented in `forces.js` and drive the homepage Capabil
 | Force (Token) | Class | HTML Attributes & Defaults | Math Formula / Implementation | Behavior & On-State Impact |
 |---|---|---|---|---|
 | **Attract**<br>`attract` | **[A]** | `data-strength="1.0"`<br>`data-range="300"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.5 : 1)$$<br>$$S' = S \cdot (\text{on}\ ?\ 3 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$$f = (1 - d/r)^2 \cdot S' \cdot 0.5$$<br>$$v += \hat{u} \cdot f$$<br>$\text{if}\ \text{form.orbit}: v += \frac{(-dy, dx)}{d} \cdot f \cdot \text{form.orbit}$<br>$\text{if}\ \text{on}: \text{heat} = \max(\text{heat}, (1 - d/r) \cdot 0.9)$ | Bounded gravity-like attractor well. Range $\times 1.5$, strength $\times 3$ on engagement. Optional orbital swirl added near lines. |
-| **Emitter**<br>`emitter` | **[A]** | `data-angle="0"`<br>`data-strength="1.0"`<br>`data-range="300"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$\text{if}\ d < 24:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{spread} = \text{rand}(-0.4..0.4)\ \text{rad}$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$h = \text{rotate}((\text{ux}, \text{uy}), \text{spread})$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{spd} = 2.4 + S \cdot 2.6$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$v = h \cdot \text{spd};\ p.\text{pos} = b.\text{center} + h \cdot 26$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{heat} = \max(\text{heat}, 0.9)$$<br>$\text{else}:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$f = (1 - d/r)^2 \cdot (0.25 + S \cdot 0.15)$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$v += \hat{u} \cdot f$$ | Recycle conduit: draws particles into a nozzle ($d \ge 24$) and ejects them as a hot jet ($d < 24$). Range $\times 1.4$ when `on`. |
-| **Spring**<br>`spring` | **[A]** | `data-strength="1.0"`<br>`data-range="260"` | $$\text{rest} = \text{range} \cdot 0.6 \cdot (\text{on}\ ?\ 1.25 : 1)$$<br>$$\text{reach} = \text{rest} \cdot 2.1$$<br>$\text{if}\ d \ge \text{reach}:\ \text{skip}$<br>$$k = (0.006 + S \cdot 0.012) \cdot (\text{on}\ ?\ 1.7 : 1)$$<br>$$\text{stretch} = d - \text{rest}$$<br>$$v += \hat{u} \cdot \text{stretch} \cdot k$$<br>$$v *= 0.985$$<br>$\text{if}\ \text{on}: \text{heat} = \max\left(\text{heat}, \left(1 - \frac{|\text{stretch}|}{\text{rest}}\right) \cdot 0.5\right)$ | Tether with rest length. Pushes out when crowded, pulls in when strayed. Settle factor $0.985$ forms orbits. |
-| **Reflect**<br>`reflect` | **[A]** | *none* (sized by bounding box) | $$\text{pad} = 6$$<br>$\text{if}\ p\ \text{is outside}\ (\text{box} + \text{pad}):\ \text{skip}$<br>$\text{resolve shallower penetration axis}:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{push}\ p\ \text{outside boundary}$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$v_{\text{axis}} = -v_{\text{axis}} \cdot 0.85$$<br>$\text{if}\ |v| > 0.7:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{env.spark}(x, y, \min(2.4, |v|))$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{heat} = \max(\text{heat}, \min(0.85, |v| \cdot 0.4))$$ | Elastic bounce off element borders. Restitution $0.85$. Emits visual sparks on hard impacts ($|v| > 0.7$). |
+| **Jet**<br>`jet` | **[A]** | `data-angle="0"`<br>`data-strength="1.0"`<br>`data-range="300"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$\text{if}\ d < 24:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{spread} = \text{rand}(-0.4..0.4)\ \text{rad}$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$h = \text{rotate}((\text{ux}, \text{uy}), \text{spread})$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{spd} = 2.4 + S \cdot 2.6$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$v = h \cdot \text{spd};\ p.\text{pos} = b.\text{center} + h \cdot 26$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{heat} = \max(\text{heat}, 0.9)$$<br>$\text{else}:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$f = (1 - d/r)^2 \cdot (0.25 + S \cdot 0.15)$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$v += \hat{u} \cdot f$$ | Recycle conduit: draws particles into a nozzle ($d \ge 24$) and ejects them as a hot jet ($d < 24$). Range $\times 1.4$ when `on`. |
+| **Tether**<br>`tether` | **[A]** | `data-strength="1.0"`<br>`data-range="260"` | $$\text{rest} = \text{range} \cdot 0.6 \cdot (\text{on}\ ?\ 1.25 : 1)$$<br>$$\text{reach} = \text{rest} \cdot 2.1$$<br>$\text{if}\ d \ge \text{reach}:\ \text{skip}$<br>$$k = (0.006 + S \cdot 0.012) \cdot (\text{on}\ ?\ 1.7 : 1)$$<br>$$\text{stretch} = d - \text{rest}$$<br>$$v += \hat{u} \cdot \text{stretch} \cdot k$$<br>$$v *= 0.985$$<br>$\text{if}\ \text{on}: \text{heat} = \max\left(\text{heat}, \left(1 - \frac{|\text{stretch}|}{\text{rest}}\right) \cdot 0.5\right)$ | Tether with rest length. Pushes out when crowded, pulls in when strayed. Settle factor $0.985$ forms orbits. |
+| **Wall**<br>`wall` | **[A]** | *none* (sized by bounding box) | $$\text{pad} = 6$$<br>$\text{if}\ p\ \text{is outside}\ (\text{box} + \text{pad}):\ \text{skip}$<br>$\text{resolve shallower penetration axis}:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{push}\ p\ \text{outside boundary}$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$v_{\text{axis}} = -v_{\text{axis}} \cdot 0.85$$<br>$\text{if}\ |v| > 0.7:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{env.spark}(x, y, \min(2.4, |v|))$$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{heat} = \max(\text{heat}, \min(0.85, |v| \cdot 0.4))$$ | Elastic bounce off element borders. Restitution $0.85$. Emits visual sparks on hard impacts ($|v| > 0.7$). |
 | **Stream**<br>`stream` | **[A]** | `data-angle="0"`<br>`data-strength="1.0"`<br>`data-range="340"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$$S' = S \cdot (\text{on}\ ?\ 2 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$$f = (1 - d/r)^{1.1} \cdot S' \cdot 0.5$$<br>$$v += (\text{ux}, \text{uy}) \cdot f$$<br>$\text{if}\ \text{on}: \text{heat} = \max(\text{heat}, (1 - d/r) \cdot 0.5)$ | Continuous directional flow vector. Range $\times 1.4$, strength $\times 2$ when `on`. |
 | **Repel**<br>`repel` | **[A]** | `data-strength="1.1"`<br>`data-range="300"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$$S' = S \cdot (\text{on}\ ?\ 2 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$$f = (1 - d/r)^2 \cdot S' \cdot 0.5$$<br>$$v -= \hat{u} \cdot f$$ | Soft outward push from center. Carves a clean void. Range $\times 1.4$, strength $\times 2$ when `on`. |
-| **Drag**<br>`drag` | **[A]** | `data-strength="1.0"`<br>`data-range="300"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$$k = (1 - d/r) \cdot (0.05 + S \cdot 0.07) \cdot (\text{on}\ ?\ 1.6 : 1)$$<br>$$v -= v \cdot k$$ | Viscous zone. Bleeds particle momentum without redirection. Calms dynamic areas. Range $\times 1.4$ when `on`. |
-| **Vortex**<br>`vortex` | **[A]** | `data-spin="1"`<br>`data-strength="1.0"`<br>`data-range="320"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$$S' = S \cdot (\text{on}\ ?\ 2 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$$f = (1 - d/r)^{1.4} \cdot S' \cdot 0.45$$<br>$$v_x += (dy/d) \cdot f \cdot s + (dx/d) \cdot f \cdot 0.12$$<br>$$v_y += (-dx/d) \cdot f \cdot s + (dy/d) \cdot f \cdot 0.12$$<br>$\text{if}\ \text{on}: \text{heat} = \max(\text{heat}, (1 - d/r) \cdot 0.6)$ | Tangential swirl. Inward bias factor $0.12$ gives light inward retention; the swirl dominates. Range $\times 1.4$, strength $\times 2$ on engagement. |
-| **Absorb**<br>`absorb` | **[A]** | `data-absorb="64"`<br>`data-max="30"`<br>`data-strength="0.8"`<br>`data-range="360"` | $\text{if}\ p.\text{cap}\ \text{or}\ d \ge \text{absorbR}:\ \text{skip}$<br>$$p.\text{cap} = b$$<br>$$b.\text{accreted} += 1$$<br>$\text{if}\ b.\text{accreted} \ge \text{capacity}:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{env.supernova}(b)$$ | Accretion core. Traps particles ($d < \text{absorbR}$) and grows its accreted count. Supernovas at `capacity`, ejecting the held matter radially. |
+| **Viscosity**<br>`viscosity` | **[A]** | `data-strength="1.0"`<br>`data-range="300"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$$k = (1 - d/r) \cdot (0.05 + S \cdot 0.07) \cdot (\text{on}\ ?\ 1.6 : 1)$$<br>$$v -= v \cdot k$$ | Viscous zone. Bleeds particle momentum without redirection. Calms dynamic areas. Range $\times 1.4$ when `on`. |
+| **Swirl**<br>`swirl` | **[A]** | `data-spin="1"`<br>`data-strength="1.0"`<br>`data-range="320"` | $$r = \text{range} \cdot (\text{on}\ ?\ 1.4 : 1)$$<br>$$S' = S \cdot (\text{on}\ ?\ 2 : 1)$$<br>$\text{if}\ d \ge r:\ \text{skip}$<br>$$f = (1 - d/r)^{1.4} \cdot S' \cdot 0.45$$<br>$$v_x += (dy/d) \cdot f \cdot s + (dx/d) \cdot f \cdot 0.12$$<br>$$v_y += (-dx/d) \cdot f \cdot s + (dy/d) \cdot f \cdot 0.12$$<br>$\text{if}\ \text{on}: \text{heat} = \max(\text{heat}, (1 - d/r) \cdot 0.6)$ | Tangential swirl. Inward bias factor $0.12$ gives light inward retention; the swirl dominates. Range $\times 1.4$, strength $\times 2$ on engagement. |
+| **Sink**<br>`sink` | **[A]** | `data-absorb="64"`<br>`data-max="30"`<br>`data-strength="0.8"`<br>`data-range="360"` | $\text{if}\ p.\text{cap}\ \text{or}\ d \ge \text{absorbR}:\ \text{skip}$<br>$$p.\text{cap} = b$$<br>$$b.\text{accreted} += 1$$<br>$\text{if}\ b.\text{accreted} \ge \text{capacity}:$<br>&nbsp;&nbsp;&nbsp;&nbsp;$$\text{env.supernova}(b)$$ | Accretion core. Traps particles ($d < \text{absorbR}$) and grows its accreted count. Supernovas at `capacity`, ejecting the held matter radially. |
 
 ---
 
@@ -95,7 +95,7 @@ Cosmology presets use co-located virtual bodies of basic forces to represent ast
 
 - **Blackhole (`blackhole`)**
   - *Class:* [A] (+[S] if `data-destroy` is set)
-  - *Composition:* `attract` (steep) + `vortex` (frame drag) + `absorb` (event horizon) + `lens` (light bending)
+  - *Composition:* `attract` (steep) + `swirl` (frame drag) + `sink` (event horizon) + `lens` (light bending)
   - *Formula:*
     $$M_{\text{source}} = S \cdot k_g$$
     $$\text{if}\ d \le r_s\ (\text{horizon}): p.\text{cap} = b;\ b.\text{accreted}++$$
@@ -127,7 +127,7 @@ Cosmology presets use co-located virtual bodies of basic forces to represent ast
     $$\text{release:}\ p.\text{cap} = \text{null};\ v = \hat{u} \cdot \text{rand}(4..7);\ \text{heat}=1\ \ (\text{held particles})$$
     $$\text{spawn N new:}\ \theta = 2\pi k/N;\ v_{\text{spawn}} = (\cos\theta, \sin\theta) \cdot \text{spd};\ \text{age}=0$$
     $$\text{shockwave:}\ \text{burst}(c_x, c_y, R)$$
-    $$\text{remnant:}\ b \rightarrow \text{neutron star (`spring`) or Blackhole}$$
+    $$\text{remnant:}\ b \rightarrow \text{neutron star (`tether`) or Blackhole}$$
 - **Fountain (`fountain`)**
   - *Class:* [S]
   - *Composition:* `spawn` (continuous) along a nozzle vector
@@ -219,7 +219,7 @@ Global currents affect free particle motion, overriding or reinforcing local bod
   $$p.vx += (t_x - p.x) \cdot 0.0006 \cdot \text{form.spread}$$
   $$p.vy += (t_y - p.y) \cdot 0.0006 \cdot \text{form.spread}$$
 * **Accretion Center-of-Mass Convergence (`conv`):**
-  Pull particles toward the first visible `absorb` body $b_{\text{target}}$:
+  Pull particles toward the first visible `sink` body $b_{\text{target}}$:
   $$\hat{u}_{\text{core}} = \frac{(b_{\text{target}}.\text{cx} - p.x, b_{\text{target}}.\text{cy} - p.y)}{\text{dist}_{\text{core}}}$$
   $$p.vx += \hat{u}_{\text{core}, x} \cdot \text{form.conv} \cdot 0.06$$
   $$p.vy += \hat{u}_{\text{core}, y} \cdot \text{form.conv} \cdot 0.06$$
@@ -257,7 +257,7 @@ $$\text{Reaction Intensity:}\ I = \text{clamp}(k \cdot \Delta E, 0, I_{\max})$$
 
 $I$ drives parameters like spark count, glow flash radius, and element recoil.
 
-### Impact Spark Formula (Reflect / Collide)
+### Impact Spark Formula (Wall / Collide)
 $$\text{if}\ |v| > 0.7: \text{sparks} = \text{round}(3 + \text{rand} \cdot |v| \cdot 3)$$
 $$\text{heat} = \max(\text{heat}, \min(0.85, |v| \cdot 0.4))$$
 
@@ -300,12 +300,12 @@ These guidelines ensure visual consistency and typography legibility. They prese
 * **Correct Pattern:** Keep the resting state quiet. The field at rest should float on slow, gentle curl-noise drift ($v \approx 0.1 \rightarrow 0.5\ \text{px/frame}$). High-velocity motion, sparks, and flashes must be reserved as short-lived reactions to events (click-bursts, bounces, cursor drags) that decay rapidly back to the ground state.
 
 #### 5.1.4 Color-Semantic Incoherence
-* **Symptom:** Laying out cards or page sections with arbitrary colored accents (e.g. rendering a `spring` element in teal or a `vortex` card in pink).
+* **Symptom:** Laying out cards or page sections with arbitrary colored accents (e.g. rendering a `tether` element in teal or a `swirl` card in pink).
 * **Root Cause:** Hardcoding accent colors on components instead of deriving them from the canonical force-to-discipline mapping.
-* **Correct Pattern:** All element colors must align with `DS_FORCES` (e.g., attract = blue `#4da3ff`, vortex = teal `#2dd4bf`, spring = green `#86e57f`). Derive these programmatically via `forces.config.ts` or bind to CSS tokens:
+* **Correct Pattern:** All element colors must align with `DS_FORCES` (e.g., attract = blue `#4da3ff`, swirl = teal `#2dd4bf`, tether = green `#86e57f`). Derive these programmatically via `forces.config.ts` or bind to CSS tokens:
   ```css
-  .card-spring {
-    border-color: var(--f-spring); /* #86e57f */
+  .card-tether {
+    border-color: var(--f-tether); /* #86e57f */
   }
   ```
 

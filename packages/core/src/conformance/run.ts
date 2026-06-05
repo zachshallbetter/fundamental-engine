@@ -3,7 +3,7 @@
  *
  * Mirrors the integrator benchmark (FieldStore + Env + `step()`), with real
  * `neighbors` (class B) and a real `ScalarGridImpl` advanced each frame (class C).
- * RNG forces (thermal, emitter) are made deterministic by swapping `Math.random` for
+ * RNG forces (thermal, jet) are made deterministic by swapping `Math.random` for
  * a seeded PRNG during the run. Returns the full trajectory plus each particle's
  * frame-0 force delta (one direct `apply`, before friction) for exact/invariant checks.
  */
@@ -20,7 +20,7 @@ import type { ApplyDelta, FrameState, Scenario, ScenarioResult } from './types.t
 
 // A large field centred on the action: the integrator wraps toroidally at the field
 // origin, so scenarios run in a big positive region where outward/long trajectories
-// (repel, charge, spring, vortex, buoyancy, thermal) never reach an edge.
+// (repel, charge, tether, swirl, buoyancy, thermal) never reach an edge.
 const W = 6000;
 const H = 4000;
 const CENTER = { x: 3000, y: 2000 };

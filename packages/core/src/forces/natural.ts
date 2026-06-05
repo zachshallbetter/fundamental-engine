@@ -135,7 +135,7 @@ export const thermal: Force = {
 
 /**
  * §20.10 — `collide`: elastic pairwise collision (granular / billiard), the hard-sphere
- * complement to the smooth, wall-bound `reflect`. For each neighbour `q` whose disc
+ * complement to the smooth, box-bound `wall`. For each neighbour `q` whose disc
  * overlaps `p`'s (`d < r_p + r_q`, radius ≈ `size`) and that is *approaching*, the pair
  * exchanges normal momentum: `p` takes a half-impulse along the contact normal `n`,
  * `q` the other half on its own turn — so momentum is conserved and, at `e = 1`, energy

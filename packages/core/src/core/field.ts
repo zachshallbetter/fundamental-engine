@@ -505,7 +505,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           b.el.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
         }
       }
-      if (b.capacity > 0 && b.tokens.indexOf('absorb') >= 0) {
+      if (b.capacity > 0 && b.tokens.indexOf('sink') >= 0) {
         // accretion load ∈ [0,1] — the canonical author-facing var is `--load`; `--mass`
         // is kept as a back-compat alias (§21.2). This is the fill fraction, not the
         // captured count `b.accreted`.

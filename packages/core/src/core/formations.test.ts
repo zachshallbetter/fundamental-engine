@@ -27,11 +27,11 @@ test('easeFormation converges over many frames', () => {
   assert.ok(Math.abs(cur.orbit - 0.85) < 1e-3);
 });
 
-test('accretionTarget returns the first visible absorb body', () => {
+test('accretionTarget returns the first visible sink body', () => {
   const mk = (tokens: string[], vis: boolean): Body =>
     ({ tokens, vis } as unknown as Body);
-  const bodies = [mk(['attract'], true), mk(['absorb', 'attract'], true), mk(['absorb'], true)];
+  const bodies = [mk(['attract'], true), mk(['sink', 'attract'], true), mk(['sink'], true)];
   assert.equal(accretionTarget(bodies), bodies[1]);
-  assert.equal(accretionTarget([mk(['absorb'], false)]), null);
+  assert.equal(accretionTarget([mk(['sink'], false)]), null);
   assert.equal(accretionTarget([mk(['attract'], true)]), null);
 });

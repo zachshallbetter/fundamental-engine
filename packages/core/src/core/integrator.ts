@@ -41,11 +41,11 @@ export function step(input: StepInput): void {
   const hasWaves = !!waves && waves.length > 0;
   const hasBodies = bodies.length > 0;
   let dead: Particle[] | null = null; // mortal (spawned) matter that expired this tick
-  // the accretion target for `conv` — the first visible absorb body (§7).
+  // the accretion target for `conv` — the first visible sink body (§7).
   const conv = form.conv > 0.02 ? accretionTarget(bodies) : null;
 
   for (const p of store.particles) {
-    // captured matter is held inside an absorb core, drifting to it (§6.9).
+    // captured matter is held inside a sink core, drifting to it (§6.9).
     if (p.cap) {
       p.x += (p.cap.cx - p.x) * 0.18;
       p.y += (p.cap.cy - p.y) * 0.18;
@@ -101,7 +101,7 @@ export function step(input: StepInput): void {
         const dy = b.cy - p.y;
         const d2 = dx * dx + dy * dy;
         // range cull: a ranged body can't reach past ~1.6× its range (the largest
-        // on-state multiplier, spring's 1.575×). Skip the sqrt, the modifier pass,
+        // on-state multiplier, tether's 1.575×). Skip the sqrt, the modifier pass,
         // and every apply for matter beyond it. range 0 = global → never culled.
         if (b.range > 0 && d2 >= b.range * b.range * 2.56) continue;
         const d = Math.sqrt(d2);

@@ -219,7 +219,7 @@ instead of hand-drawn — the wiring appears because matter actually flows betwe
 
 Map app state onto the conservation grammar (§6.9) so transitions are *physical*:
 ```
-loading   → accretion   : absorb body, load ramps  scale = 1 + (accreted/capacity)·0.45
+loading   → accretion   : sink body, load ramps  scale = 1 + (accreted/capacity)·0.45
 success   → supernova   : release all captured radially (spd 4–7, heat 1)
 submit    → capture      : p.cap = b ; b.accreted++
 error     → repel burst  : F = −(1 − d/d_max)²·S  (carve a void, §6.6)
@@ -331,7 +331,7 @@ F_y = (ρ_med − ρ_p)·g                 // hot/light rises, heavy sinks
 
 **Gate — one-way membrane (diode).** `[A]`  (axis `n`)
 ```
-if v·n < 0:  reflect across n ;   else pass                  // rectifier
+if v·n < 0:  wall across n ;   else pass                  // rectifier
 ```
 *Unique:* matter **accumulates on one side** — valves, funnels, pressure builds.
 *Fits:* Software architecture (flow control).
@@ -413,7 +413,7 @@ A coherent astrophysical set — most conserved, two deliberate **sources** (cla
 **These are composites, not new modules:** the whole family is realized as a
 **preset layer** over the primitives (forces-system.md §20.9), needing only two new
 atoms — `warp` (teleport) and `spawn` (create matter). `blackhole` and `whitehole`
-are pure compositions of existing tokens (`attract vortex absorb lens` /
+are pure compositions of existing tokens (`attract swirl sink lens` /
 `repel stream`) and need zero new code.
 
 **Blackhole — `blackhole` [A].** Extreme `attract` with an event horizon (capture),
@@ -434,11 +434,11 @@ momentum carried through. *Unique:* **conserved teleport** — routing made phys
 (§6.9). *Fits:* Creative technology. *(Source — pair with a sink.)*
 
 **Fountain — `fountain` [S].** A true source: continuously *creates* particles at a
-nozzle (vs `emitter`, which recycles the field). *Unique:* a literal spray — the
-minting sibling of emitter. *Fits:* Motion. *(Source — cap with `age`/despawn.)*
+nozzle (vs `jet`, which recycles the field). *Unique:* a literal spray — the
+minting sibling of jet. *Fits:* Motion. *(Source — cap with `age`/despawn.)*
 
 > **Relationships & color.** These forces relate by inversion, intensity,
-> composition, and lifecycle (e.g. `blackhole = attract + vortex + absorb + lens`;
+> composition, and lifecycle (e.g. `blackhole = attract + swirl + sink + lens`;
 > `star: cloud → supernova → remnant`), and they unlock a physical **color model**
 > (blackbody temperature, Doppler/gravitational redshift, charge hue, conserved
 > pigment). Both are specified in `docs/forces-system.md` §20.7–§20.8.

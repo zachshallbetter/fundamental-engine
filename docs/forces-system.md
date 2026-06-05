@@ -40,7 +40,7 @@ Three invariants define the system:
    purely decorative.
 2. **Conservation.** Nothing is created or destroyed. Particles are captured,
    released, detached from waves, and reclaimed — never spawned or deleted in the
-   steady state. An "absorb" body *holds* matter and later *releases exactly what
+   steady state. An "sink" body *holds* matter and later *releases exactly what
    it held* (a supernova).
 3. **Synchronization.** The page and the field share one coordinate space. Every
    body's `getBoundingClientRect()` is re-sampled onto the canvas each frame
@@ -83,7 +83,7 @@ heat_{t+1} = heat_t · 0.972
 > engine integrates `v += F` (every particle behaves as **unit mass**); `baseSize`
 > drives only the *rendered* dot radius. The substrate/manual claim *"mass ∝ size,
 > heavier particles swing on wider arcs"* is **aspirational, not implemented.** The
-> word "mass" elsewhere (now `b.accreted`) is a *different* quantity — an absorb body's
+> word "mass" elsewhere (now `b.accreted`) is a *different* quantity — a sink body's
 > captured-particle **count**. See **§21** for the full audit and the first-class-mass
 > upgrade.
 
@@ -144,13 +144,13 @@ Parsed from `data-*` attributes in `scanBodies()`:
 
 | Field | Source attr | Default | Meaning |
 |---|---|---|---|
-| `tokens` | `data-body` | — | Space-joined force ids, e.g. `"absorb attract"`. Forces compose. |
+| `tokens` | `data-body` | — | Space-joined force ids, e.g. `"sink attract"`. Forces compose. |
 | `strength` | `data-strength` | `0.5` | Force magnitude `S`. |
 | `range` | `data-range` | `280` | Influence radius `d_max` (px). |
-| `absorbR` | `data-absorb` | `64` | Capture radius for `absorb`. |
+| `absorbR` | `data-absorb` | `64` | Capture radius for `sink`. |
 | `capacity` | `data-max` | `60` | Saturation count → supernova. |
-| `spin` | `data-spin` | `1` | Vortex direction/strength (±). |
-| `angle`,`ux`,`uy` | `data-angle` | `0°` | Heading for `stream`/`emitter` (deg → unit vector). |
+| `spin` | `data-spin` | `1` | Swirl direction/strength (±). |
+| `angle`,`ux`,`uy` | `data-angle` | `0°` | Heading for `stream`/`jet` (deg → unit vector). |
 | `when` | `data-when` | `''` | Conditional gate (see §5). |
 | `feedback` | `data-feedback` | absent | Opt into density write-back. |
 | `fmin`,`fmax` | `data-fmin/fmax` | `0` | Font-weight range driven by density. |
@@ -164,7 +164,7 @@ the conductor — see §13).
 ```
 { x, y, vx, vy, heat, cap }
 ```
-`heat` ∈ [0,1] drives color (toward accent) and size/glow. `cap` is the absorb
+`heat` ∈ [0,1] drives color (toward accent) and size/glow. `cap` is the sink
 body currently holding this particle (or `null`).
 
 ### 3.3 Environment `env` — shared, rebuilt per particle/frame
@@ -242,35 +242,35 @@ column is the **exact engine implementation** (`forces.js`). `S = strength`,
 | # | Force | Color | Discipline → verb | One-line law |
 |---|---|---|---|---|
 | 1 | **Attract** | `#4da3ff` | Product strategy → gives direction | inverse-square pull, bent into a spiral |
-| 2 | **Emitter** | `#a78bfa` | AI systems → adapts response | recycles the field into a stream |
-| 3 | **Spring** | `#86e57f` | Software architecture → gives structure | a rest length — a leash, not a drain |
-| 4 | **Reflect** | `#c4b5fd` | Experience design → the human surface | elastic bounce off the bounding box |
+| 2 | **Jet** | `#a78bfa` | AI systems → adapts response | recycles the field into a stream |
+| 3 | **Tether** | `#86e57f` | Software architecture → gives structure | a rest length — a leash, not a drain |
+| 4 | **Wall** | `#c4b5fd` | Experience design → the human surface | elastic bounce off the bounding box |
 | 5 | **Stream** | `#7dd3fc` | Motion → reveals motion | constant force along a heading |
 | 6 | **Repel** | `#ff9d5c` | Commerce → market pressure | inverted well — carves a clean void |
-| 7 | **Drag** | `#8da2c0` | Physical production → adds constraint | viscosity — bleeds momentum off |
-| 8 | **Vortex** | `#2dd4bf` | Creative technology → spins it together | tangential force — circles, never collapses |
-| 9 | **Absorb** | `#ff6e9c` | Attention → holds, then releases | accretion, then supernova |
+| 7 | **Viscosity** | `#8da2c0` | Physical production → adds constraint | viscosity — bleeds momentum off |
+| 8 | **Swirl** | `#2dd4bf` | Creative technology → spins it together | tangential force — circles, never collapses |
+| 9 | **Sink** | `#ff6e9c` | Attention → holds, then releases | accretion, then supernova |
 
 > **Falloff accuracy.** The DS "law" column calls `attract`/`repel` *inverse-square*,
 > but the engine falloff is a **bounded** `(1 − d/d_max)ⁿ` — a *designed* well with
 > predictable reach, not literal `1/d²`. The real inverse-square law is the `gravity`
 > primitive (§20.10); at UI scale the two read the same.
 
-> **Two naming registers.** The engine **token** (`attract`, `drag`, `absorb`,
-> `emitter`, …) is the API; the Field Manual narrates each with a descriptive
+> **Two naming registers.** The engine **token** (`attract`, `viscosity`, `sink`,
+> `jet`, …) is the API; the Field Manual narrates each with a descriptive
 > **concept name**. Keep both straight when implementing:
 >
 > | Token | DS name | Manual concept name |
 > |---|---|---|
 > | `attract` | Attract | Attraction |
 > | `repel` | Repel | Repulsion |
-> | `reflect` | Reflect | Reflection |
-> | `vortex` | Vortex | Vortex |
+> | `wall` | Wall | Reflection |
+> | `swirl` | Swirl | Swirl |
 > | `stream` | Stream | Stream |
-> | `spring` | Spring | Spring |
-> | `drag` | Drag | **Viscosity** |
-> | `absorb` | Absorb | **Accretion & release** |
-> | `emitter` | Emitter | **Emission** |
+> | `tether` | Tether | Tether |
+> | `viscosity` | Viscosity | **Viscosity** |
+> | `sink` | Sink | **Accretion & release** |
+> | `jet` | Jet | **Emission** |
 
 ### 6.1 Attract — `attract`
 A soft, gravity-*like* well — note the falloff is a **bounded** `(1 − d/d_max)²`,
@@ -286,7 +286,7 @@ if on:          heat = max(heat, (1 − dist/range)·0.9)
 ```
 Default attrs: `data-strength="1" data-range="300"`.
 
-### 6.2 Emitter — `emitter`
+### 6.2 Jet — `jet`
 A conduit (not a source): draws matter into a nozzle, relaunches it as a hot jet
 along `data-angle`. The field is recycled — nothing created.
 ```
@@ -303,7 +303,7 @@ else:                                       // feed → draw toward the nozzle
 ```
 Default attrs: `data-angle="0" data-strength="1" data-range="300"`.
 
-### 6.3 Spring — `spring`
+### 6.3 Tether — `tether`
 A tether with a **rest length** — holds matter at a preferred shell radius; pushes
 out when crowded, reels in when strayed. Settles into an orbiting ring.
 ```
@@ -318,7 +318,7 @@ if on: heat = max(heat, (1 − min(1, |stretch|/rest))·0.5)
 ```
 Default attrs: `data-strength="1" data-range="260"`.
 
-### 6.4 Reflect — `reflect`
+### 6.4 Wall — `wall`
 An axis-aligned bouncing wall around the element's box; throws sparks on hard hits.
 (The exemplar micro-reaction — generalized in **§23**; note it sparks the *particle*
 but does **not** yet recoil the wall, §23.5.)
@@ -353,7 +353,7 @@ v −= û · f
 ```
 Default attrs: `data-strength="1.1" data-range="300"`.
 
-### 6.7 Drag — `drag`
+### 6.7 Viscosity — `viscosity`
 Viscosity — thickens the medium, bleeding momentum (no redirection). On its own it
 calms a patch; paired with attract it turns a slingshot into a settled orbit.
 ```
@@ -364,10 +364,10 @@ v −= v · k
 ```
 Default attrs: `data-strength="1" data-range="300"`.
 
-### 6.8 Vortex — `vortex`
+### 6.8 Swirl — `swirl`
 Tangential swirl with light inward retention so it holds shape instead of
 flinging matter out. A tight inward spiral (a drain) is a preset, not canonical
-vortex. `spin` sets direction/strength.
+swirl. `spin` sets direction/strength.
 ```
 range = range·(on?1.4:1);  S' = S·(on?2:1)
 if dist ≥ range: skip
@@ -378,10 +378,10 @@ if on: heat = max(heat, (1 − dist/range)·0.6)
 ```
 Default attrs: `data-spin="1" data-strength="1" data-range="320"`.
 
-### 6.9 Absorb — `absorb`
+### 6.9 Sink — `sink`
 Captures matter into an accretion core (held, not deleted), then releases exactly
 what it held when saturated — a supernova. Always paired with `attract` so matter
-is pulled in first (`data-body="absorb attract"`).
+is pulled in first (`data-body="sink attract"`).
 ```
 if p.cap or dist ≥ absorbR: skip
 p.cap = b;  b.accreted += 1                         // held — conserved
@@ -414,7 +414,7 @@ Field terms applied to each free particle:
 - `wander` → brownian jitter (every 40 frames) **and** a smooth curl-noise eddy.
 - `orbit` → multiplies attract's tangential swirl (orbits near attractors).
 - `spread` → pull toward an even scatter across the viewport.
-- `conv` → pull toward the accretion target (first visible `absorb` body).
+- `conv` → pull toward the accretion target (first visible `sink` body).
 
 ### 7.1 The journey
 The conductor maps the in-view section to a formation
@@ -449,7 +449,7 @@ if fmax:  element.style.fontVariationSettings = `"wght" lerp(fmin, fmax, b.d)` (
 ```
 
 So `--d` ∈ [0,1] is "how much field is gathered on me right now." CSS uses it for
-glow, color-mix, weight, and the per-card density wash. Absorb bodies additionally
+glow, color-mix, weight, and the per-card density wash. Sink bodies additionally
 expose `--load` ∈ [0,1] (alias `--mass`) so they can inflate as they fill.
 
 Example body (the hero's live word):
@@ -491,8 +491,8 @@ content sets; the manual demo and the Lab use it. Pass `null` to clear.
 | **Glyph assembly** | fonts ready | Particles rasterized from a `[data-glyph]` host rise into its shape, hold, then fade (stride `max(3, fontSize/26)`, cap **560** pts; ease `1−(1−t)⁴`; assembled 1800 ms, form 2600 ms, hold 4000 ms, fade by 5800 ms; skipped under reduced motion). **⚠ Deprecated for words — use only for punctuation / marks (the rule below).** |
 | **Burst** | `pointerdown` anywhere | Shoves + heats free particles within 260 px (`f=(1−d/260)·4.4`, `heat += (1−d/260)·1.3`); tears bound particles within 200 px loose. No ring (kept clean). |
 | **Engage** | hover/focus/tap a `[data-hot]` | Sets `data-active="1"` (`b.on`), lights the element, dims siblings, optionally wires threads, overrides accent. Waves bend toward it. |
-| **Capture → Supernova** | particle enters an `absorb` core; `accreted ≥ capacity` | Hold, then radial release of exactly what was held (see §6.9). |
-| **Spark** | hard `reflect` impact (`speed > 0.7`) | Short-lived impact debris (≤ 260 sparks) — pure collision feel. The exemplar micro-reaction; generalized as a system in **§23**. |
+| **Capture → Supernova** | particle enters an `sink` core; `accreted ≥ capacity` | Hold, then radial release of exactly what was held (see §6.9). |
+| **Spark** | hard `wall` impact (`speed > 0.7`) | Short-lived impact debris (≤ 260 sparks) — pure collision feel. The exemplar micro-reaction; generalized as a system in **§23**. |
 | **Wave healing** | calm free particle near a line | Reclaimed to bound (conserved) — see §2.4. |
 | **Ripple** | (disabled project-wide) | `__field.ripple()` is a no-op; concentric rings were cut for cost/fit. |
 
@@ -507,7 +507,7 @@ content sets; the manual demo and the Lab use it. Pass `null` to clear.
 > - **Glow + grow** — drive variable-font weight, `text-shadow` bloom, and colour
 >   from the gathered density `--d` (§8); the word thickens and lights as the field
 >   collects on it (the `liveword`).
-> - **Ripple / field-change** — put a force body *on* the word (attract / vortex) so
+> - **Ripple / field-change** — put a force body *on* the word (attract / swirl) so
 >   the field bends, swells, and sparks (§23) around it.
 > - **Engage** — on hover/focus its body amplifies (on-state, §6), the Currents bend
 >   toward it (the spine, §24), and the accent shifts (§9).
@@ -522,12 +522,12 @@ Any element opts into the field by adding attributes — no JS needed:
 
 ```html
 <a class="node"
-   data-body="absorb attract"   <!-- space-joined force ids; they compose      -->
+   data-body="sink attract"   <!-- space-joined force ids; they compose      -->
    data-strength="0.8"          <!-- S (force magnitude)                       -->
    data-range="340"             <!-- d_max influence radius (px)               -->
-   data-absorb="74" data-max="44"  <!-- absorb capture radius & saturation     -->
-   data-spin="1"                <!-- vortex direction/strength (±)             -->
-   data-angle="0"               <!-- stream/emitter heading (deg)              -->
+   data-absorb="74" data-max="44"  <!-- sink capture radius & saturation     -->
+   data-spin="1"                <!-- swirl direction/strength (±)             -->
+   data-angle="0"               <!-- stream/jet heading (deg)              -->
    data-when="hot"              <!-- conditional gate (§5)                      -->
    data-feedback                <!-- enable density write-back (--d)           -->
    data-fmin="300" data-fmax="800" data-opsz="96"  <!-- density→font weight    -->
@@ -545,7 +545,7 @@ and `ds-interactions.js`):
 |---|---|
 | `data-drag` | Makes the body draggable; on pointer-move it repositions and calls `__field.rescan()` so the **force follows the element** across the field. The clearest proof that force is bound to the element, not the cursor. |
 | `data-agitate="#sel"` | On a button — fires a one-shot `__field.burst()` at the center of the target element `#sel` (tinted by its `--cc`/`--cat`, falling back to `--accent`), plus a CSS shockwave ring. A **discrete burst, not a steady force** — see §11/§16. |
-| `.body-core` + `.meter > i` | An absorb core whose paired meter bar reads the live `--load` the engine writes (`width = --load · 100%`) — visualizes accretion filling toward supernova. |
+| `.body-core` + `.meter > i` | An sink core whose paired meter bar reads the live `--load` the engine writes (`width = --load · 100%`) — visualizes accretion filling toward supernova. |
 
 ---
 
@@ -580,16 +580,16 @@ Click a brush, optionally pick a condition, click the field to drop. Defaults
 |---|---|---|---|---|
 | Attract | `attract` | 0.9 | 320 | — |
 | Repel | `repel` | 1.1 | 300 | — |
-| Absorb | `absorb attract` | 0.5 | 300 | `absorb 80`, `max 40` |
-| Vortex | `vortex` | 1 | 320 | `spin 1` |
+| Sink | `sink attract` | 0.5 | 300 | `sink 80`, `max 40` |
+| Swirl | `swirl` | 1 | 320 | `spin 1` |
 | Stream | `stream` | 1 | 340 | `angle 0` |
-| Drag | `drag` | 1 | 300 | — |
-| Spring | `spring` | 1 | 260 | — |
-| Emitter | `emitter` | 1 | 300 | `angle 0` |
+| Viscosity | `viscosity` | 1 | 300 | — |
+| Tether | `tether` | 1 | 260 | — |
+| Jet | `jet` | 1 | 300 | `angle 0` |
 
 Brush colors match the canonical force colors (§6), except the Lab tints
-**drag** `#8da2c0` and **absorb** `#ff6e9c` (both canonical) — note the Lab does
-**not** expose `reflect` as a brush.
+**viscosity** `#8da2c0` and **sink** `#ff6e9c` (both canonical) — note the Lab does
+**not** expose `wall` as a brush.
 
 ### 14.2 Conditions & formations exposed
 - Conditions: **Always**, **Fast**, **Hot** (a subset of §5).
@@ -619,22 +619,22 @@ Clicking a card focuses it and fans out 14 facets (`caps.js` `RELATED`).
 | Discipline | Force | Verb |
 |---|---|---|
 | Product strategy | Attract | gives direction |
-| AI systems | Emitter | adapts response |
-| Software architecture | Spring | gives structure |
-| Experience design | Reflect | the human surface |
+| AI systems | Jet | adapts response |
+| Software architecture | Tether | gives structure |
+| Experience design | Wall | the human surface |
 | Motion | Stream | reveals motion |
 | Commerce | Repel | market pressure |
-| Physical production | Drag | adds constraint |
-| Creative technology | Vortex | spins it together |
-| *(Attention)* | Absorb | holds, then releases |
+| Physical production | Viscosity | adds constraint |
+| Creative technology | Swirl | spins it together |
+| *(Attention)* | Sink | holds, then releases |
 
 > ⚠️ **Known inconsistency to reconcile when implementing.** The prototype's
 > homepage `index.html` caps cards assign *different* colors than the canonical
-> `DS_FORCES` (e.g. Spring is tinted `#2dd4bf` on the card but is canonically
-> `#86e57f`; Reflect is `#7dd3fc` on the card but canonically `#c4b5fd`), and it
+> `DS_FORCES` (e.g. Tether is tinted `#2dd4bf` on the card but is canonically
+> `#86e57f`; Wall is `#7dd3fc` on the card but canonically `#c4b5fd`), and it
 > labels AI systems' force "Condition" rather than the canonical verb "adapts
 > response." **`DS_FORCES` colors/identity are the authority** — align the cards to
-> them. Absorb maps to "Attention" and is not shown as a discipline card (it's the
+> them. Sink maps to "Attention" and is not shown as a discipline card (it's the
 > Contact body and a Lab brush).
 
 ---
@@ -652,7 +652,7 @@ Structured as **four chapters / sixteen numbered concepts**:
 | Ch | Concepts |
 |---|---|
 | **I · Substrate** | 01 Synchronization · 02 Mass & damping · 03 Currents |
-| **II · Forces** | 04 Attraction · 05 Repulsion · 06 Reflection · 07 Vortex · 08 Stream · 09 Spring · 10 Viscosity · 11 Accretion & release · 12 Emission |
+| **II · Forces** | 04 Attraction · 05 Repulsion · 06 Reflection · 07 Swirl · 08 Stream · 09 Tether · 10 Viscosity · 11 Accretion & release · 12 Emission |
 | **III · Conditions** | 13 Conditional |
 | **IV · System** | 14 Reciprocity · 15 Threads · 16 Formations |
 
@@ -805,7 +805,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 > set to destroy/mint) deliberately **break that law**. That is allowed but must be
 > *budgeted*: a source needs a matching sink, an `age`/despawn cap, or a global pool
 > ceiling, or the particle count grows unbounded and the sim dies. The engine
-> already has a **conserved** `supernova` *event* (absorb → release exactly what was
+> already has a **conserved** `supernova` *event* (sink → release exactly what was
 > held, §6.9); the class-[S] `supernova` *force* below is its dramatic superset
 > (with `data-create="0"` it collapses back to the conserved event). Prefer the
 > conserved path; reach for [S] only when the creation *is* the point (a star that
@@ -823,7 +823,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 >   its wave sibling is **`propagate`** (`∂²φ/∂t² = c²∇²φ`). Both are class [C].
 > - **`warp` and `wormhole` are not built.** They remain spec-only atoms/presets; the rest
 >   of the cosmology set is composed from existing tokens (`blackhole`, `whitehole`) or the
->   conserved absorb→release event (`supernova`).
+>   conserved sink→release event (`supernova`).
 > - **`spawn` [S] and `fountain`** shipped as written (a budgeted source + its preset).
 >
 > Everything else below is implemented under the listed token and colour.
@@ -851,7 +851,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 | Pigment | `pigment` | E | *(carried)* | Commerce / brand | conserved color transport — sections stain the field |
 | Warp | `warp` | A · paired | `#8b5cf6` | Software architecture | **atom** — conserved relocation between paired throats |
 | Spawn | `spawn` | **S** | `#fb923c` | Creative tech / Motion | **atom** — creates particles (continuous or one-shot) |
-| Blackhole | `blackhole` | **preset** | `#fbbf24` (disk) | Product strategy | = `attract vortex absorb lens` — horizon + disk + lensing |
+| Blackhole | `blackhole` | **preset** | `#fbbf24` (disk) | Product strategy | = `attract swirl sink lens` — horizon + disk + lensing |
 | Whitehole | `whitehole` | **preset** | `#e0f2fe` | Commerce | = `repel stream` — emission-only horizon |
 | Wormhole | `wormhole` | **preset** | `#8b5cf6` | Software architecture | = `attract warp` ↔ `warp repel` — two linked throats |
 | Supernova | `supernova` | **preset [S]** | `#fb923c` | Creative technology | = `spawn` (one-shot blast) + remnant swap |
@@ -892,11 +892,11 @@ S(t) = S₀ · (1 + sin(ω·t + φ)) ;   apply chosen core force with S(t)
 ```
 Attrs: `data-strength`(=S₀), `data-range`, `data-omega`, `data-body="resonate attract"`.
 
-**Gate — `gate` [A].** Pass one way across axis `n`, reflect the other.
+**Gate — `gate` [A].** Pass one way across axis `n`, wall the other.
 ```
-n = (cosθ, sinθ) ;   if (v·n) < 0:  v −= 2(v·n)·n        // reflect wrong-way crossers
+n = (cosθ, sinθ) ;   if (v·n) < 0:  v −= 2(v·n)·n        // wall wrong-way crossers
 ```
-Attrs: `data-angle`(=n heading). Sized by the element box (like `reflect`).
+Attrs: `data-angle`(=n heading). Sized by the element box (like `wall`).
 
 **Spotlight — `spotlight` [A].** Gate any force on an angular cone of the heading.
 ```
@@ -972,7 +972,7 @@ local force scaled by  (1 + μ·M(x))                          // worn paths att
 ```
 Attrs: `data-strength`(=μ), `data-range`. Needs grid `M`.
 
-**Morph — `morph` [D].** Assign particles to target points; spring in with fading
+**Morph — `morph` [D].** Assign particles to target points; tether in with fading
 jitter. **Targets are punctuation, marks, logos, shapes, or data — never
 words/letterforms** (the punctuation rule, §11); for words use `--d` glow/grow (§8).
 ```
@@ -1000,8 +1000,8 @@ as the spec for the two atoms. `blackhole`/`whitehole`/`wormhole` are **conserve
 real velocity cap `v_max` so those terms become *derived* rather than fudged.
 
 **Blackhole — `blackhole` [A] (+[S] if `data-destroy`).** Newtonian infall with an
-event horizon that captures (like `absorb`), frame-dragging that builds an
-accretion disk (like `vortex`), and grazing-path bending (like `lens`). It is the
+event horizon that captures (like `sink`), frame-dragging that builds an
+accretion disk (like `swirl`), and grazing-path bending (like `lens`). It is the
 *extreme* of `attract`.
 ```
 GM = strength · k_g
@@ -1019,7 +1019,7 @@ tidal stretch ∝ 2·GM / d³                      // spaghettification (render 
 ```
 Attrs: `data-strength`(GM), `data-range`, `data-horizon`(r_s≈40), `data-spin`(frame-drag),
 `data-max`(mass cap), `data-destroy`(make it a true sink). Composite of attract +
-vortex + absorb + lens — see §20.7.
+swirl + sink + lens — see §20.7.
 
 **Whitehole — `whitehole` [A] (+[S]).** The time-reverse of a black hole: matter can
 only *leave*. A hard repeller with an emission horizon — and the natural exit mouth
@@ -1055,21 +1055,21 @@ on trigger at (cx, cy):
               θ = 2πk/N + jitter ; spd = v0·(0.7 + 0.6·rand)
               spawn { pos: center, vel: (cosθ,sinθ)·spd, heat: 1, age: 0 }
   shock:    burst(cx, cy, R)                                                  // shove + detach (§11)
-  remnant:  leave data-remnant ∈ { spring (neutron star) | blackhole | none }
+  remnant:  leave data-remnant ∈ { tether (neutron star) | blackhole | none }
 ```
 Attrs: `data-create`(N; 0 ⇒ conserved event), `data-strength`(v0/blast), `data-range`(shock R),
 `data-remnant`. Pair with a sink (a `blackhole`, or `age` despawn) to balance the budget.
 
 **Fountain — `fountain` [S].** A true source: continuously *creates* particles at a
 nozzle with an initial heading, which then fall under gravity/formation and expire
-by age. Distinct from `emitter`, which *recycles* existing field (conserved conduit).
+by age. Distinct from `jet`, which *recycles* existing field (conserved conduit).
 ```
 each frame (Poisson rate r = data-rate):
   spawn ⌊r⌋ particles at nozzle:  vel = heading·spd + cone(spread) ; heat = warm ; age = 0
 particles integrate normally; despawn when age > life or off-screen  ← required sink
 ```
 Attrs: `data-rate`(spawn/frame), `data-angle`(heading), `data-strength`(spd),
-`data-spread`(cone), `data-life`(age cap). Relationship: `fountain : emitter ::
+`data-spread`(cone), `data-life`(age cap). Relationship: `fountain : jet ::
 source : conduit` (§20.7).
 
 ### 20.4 Extended conditions (`data-when`)
@@ -1134,9 +1134,9 @@ primitives.
 
 **Dual / inverse pairs** (one undoes the other):
 ```
-attract ↔ repel            blackhole ↔ whitehole         emitter ↔ fountain   (recycle ↔ mint)
-absorb  ↔ spawn            (sink ↔ source)               drag    ↔ resonate   (remove ↔ add energy)
-reflect ↔ gate             (symmetric wall ↔ one-way)    charge(+) ↔ charge(−)
+attract ↔ repel            blackhole ↔ whitehole         jet ↔ fountain   (recycle ↔ mint)
+sink  ↔ spawn            (sink ↔ source)               viscosity    ↔ resonate   (remove ↔ add energy)
+wall ↔ gate             (symmetric wall ↔ one-way)    charge(+) ↔ charge(−)
 ```
 
 **Intensity ladders** (mild → extreme — same axis, more of it):
@@ -1144,18 +1144,18 @@ reflect ↔ gate             (symmetric wall ↔ one-way)    charge(+) ↔ charg
 wander → stream → wind/shear            (drift → directed → turbulent)
 attract → orbit → blackhole             (pull → bound orbit → event horizon)
 repel  → whitehole                      (push → emission horizon)
-absorb → blackhole → supernova          (hold → trap → erupt)
+sink → blackhole → supernova          (hold → trap → erupt)
 ```
 
 **Composites** (a named force = primitives, fired together via `data-body`):
 ```
-blackhole   = attract(steep) + vortex(frame-drag) + absorb(horizon) + lens(bending)
+blackhole   = attract(steep) + swirl(frame-drag) + sink(horizon) + lens(bending)
 whitehole   = repel(strong) + stream(eject)
 wormhole    = attract + warp(throat A) ⟷ warp + repel(throat B), paired
 pulsar      = gravity(spin) + resonate + spotlight(sweeping beam)
-quasar/jet  = blackhole + emitter(along the poles)
-accretion disk = blackhole + spring(ISCO ring) + temperature gradient (§20.8)
-comet       = spawn/emitter(tail) + `trails` render mode
+quasar/jet  = blackhole + jet(along the poles)
+accretion disk = blackhole + tether(ISCO ring) + temperature gradient (§20.8)
+comet       = spawn/jet(tail) + `trails` render mode
 binary      = two gravity bodies, paired
 ```
 These are formalized as the **preset layer** in §20.9 — only `warp` and `spawn` are
@@ -1163,8 +1163,8 @@ new atoms; the rest compose the canonical nine + `lens`.
 
 **Lifecycle chains** (state machines over time / mass — a body becomes another):
 ```
-star:      cloud(cohesion) → ignite(resonate) → supernova → remnant{ neutron-star=spring/pulsar | blackhole }
-accretion: matter → blackhole grows (mass↑) → at cap → quasar jet (emitter) | supernova
+star:      cloud(cohesion) → ignite(resonate) → supernova → remnant{ neutron-star=tether/pulsar | blackhole }
+accretion: matter → blackhole grows (mass↑) → at cap → quasar jet (jet) | supernova
 transit:   enter blackhole mouth → wormhole bridge → exit whitehole mouth
 ```
 
@@ -1212,7 +1212,7 @@ down the page rather than a global lerp.
 self-labels.
 
 **Accretion-disk gradient.** Falls out of the above: hot inner edge (blue-white) →
-cool outer (red) from temperature × radius, banded by the `spring`/ISCO ring. No
+cool outer (red) from temperature × radius, banded by the `tether`/ISCO ring. No
 special-case code — just the color model applied near a `blackhole`.
 
 ### 20.9 Cosmology as composites — the preset layer
@@ -1222,8 +1222,8 @@ This keeps the registry small and means the dramatic effects fall out of forces
 already specified.
 
 **The one blocker, and the fix (shipped).** A body shares a single `strength`/`range`
-across every token in its `data-body` (§3.1) — so `attract vortex absorb` can't tune
-the horizon (`absorb`) independently of the well (`attract`). The fix — now built — is a
+across every token in its `data-body` (§3.1) — so `attract swirl sink` can't tune
+the horizon (`sink`) independently of the well (`attract`). The fix — now built — is a
 thin **preset layer** (`config/presets.ts` → `scanner.ts`) that expands one element into
 several **co-located virtual bodies**, each a primitive with its *own* attrs, all bound to
 the same rect. The force loop is unchanged — it already iterates `bodies × tokens` (§4);
@@ -1235,8 +1235,8 @@ the scanner just emits more bodies. Shipped presets: `blackhole`, `whitehole`, `
 window.__presets = {
   blackhole: [
     { body:'attract', strength:1.4, range:340 },          // the well
-    { body:'vortex',  strength:1.0, range:300, spin:1 },   // frame-drag → accretion disk
-    { body:'absorb',  absorb:42,    max:60,   strength:0 },// event horizon (capture)
+    { body:'swirl',  strength:1.0, range:300, spin:1 },   // frame-drag → accretion disk
+    { body:'sink',  sink:42,    max:60,   strength:0 },// event horizon (capture)
     { body:'lens',    strength:0.5, range:380 },           // grazing-path bending
   ],
   whitehole: [
@@ -1248,7 +1248,7 @@ window.__presets = {
     { body:'warp',    throat:40,   pair:'@pair', twist:0, scale:1 },  // relocate A→B (conserved)
   ],
   supernova: [                                             // one-shot; fire on trigger/saturation
-    { body:'spawn',   create:120,  strength:5, range:320, oneshot:true, remnant:'spring' },
+    { body:'spawn',   create:120,  strength:5, range:320, oneshot:true, remnant:'tether' },
   ],
   fountain: [
     { body:'spawn',   rate:3,      strength:4, angle:-90, spread:0.5, life:240 },
@@ -1266,20 +1266,20 @@ window.__presets = {
 - **`spawn` [S]** — particle creation (the *Fountain*/*Supernova* logic in §20.3).
   `rate` ⇒ continuous (fountain); `oneshot:true` + `create:N` ⇒ a single burst that
   also shoves neighbors and can swap the element's preset to its `remnant`
-  (`spring` = neutron star, `blackhole` = collapse). Class [S] — budget it (§20.1).
+  (`tether` = neutron star, `blackhole` = collapse). Class [S] — budget it (§20.1).
 
 **Composite map** (what each preset *is*):
 
 | Preset | Atoms / tokens | New code |
 |---|---|---|
-| `blackhole` | `attract` + `vortex` + `absorb` + `lens` | none |
+| `blackhole` | `attract` + `swirl` + `sink` + `lens` | none |
 | `whitehole` | `repel` + `stream` | none |
 | `wormhole` | `attract` + **`warp`** (×2 mouths, paired) | `warp` |
 | `supernova` | **`spawn`** (one-shot) + remnant swap | `spawn` |
 | `fountain` | **`spawn`** (continuous) | `spawn` |
 | *pulsar* | `gravity`(spin) + `resonate` + `spotlight` | none |
-| *quasar* | `blackhole` + `emitter` (poles) | none |
-| *comet* | `spawn`/`emitter` + `trails` render | none |
+| *quasar* | `blackhole` + `jet` (poles) | none |
+| *comet* | `spawn`/`jet` + `trails` render | none |
 
 So the entire cosmology family — plus pulsar/quasar/comet — costs **two new atoms
 and a preset table.** Two approximations remain at this layer — `attract`'s bounded
@@ -1300,7 +1300,7 @@ forces are **designed** (bounded falloff, predictable reach, tuned constants —
 for UI) where the cosmology wants **natural** primitives (true field laws in a
 consistent unit system). Keeping both, and labeling which is which, fixes it.
 
-> **Designed vs. natural.** `attract`/`repel`/`spring` are *designed* — finite range,
+> **Designed vs. natural.** `attract`/`repel`/`tether` are *designed* — finite range,
 > soft `(1 − d/d_max)ⁿ` falloff, chosen for legibility on content bodies. The
 > primitives below are *natural* — real laws (`1/d²`, Lorentz, Langevin) for the
 > field/experience surfaces. A composite picks the register it needs: a hero word
@@ -1377,7 +1377,7 @@ Magnetic confinement, field lines, aurora. Shares particle `q` with `charge`.
 ```
 v += √(2·k_B·T·γ) · ξ      ξ ~ N(0,1) per axis
 ```
-Paired with `drag` (`−γv`) it's a **thermostat** — fluctuation–dissipation, the
+Paired with `viscosity` (`−γv`) it's a **thermostat** — fluctuation–dissipation, the
 swarm equilibrates at temperature `T`. The current friction + random `wander`
 already *approximate* this; naming it makes the medium physically real and lets `T`
 be sourced (heat, scroll energy).
@@ -1397,7 +1397,7 @@ with interference for free.
 close pair (d < r_a+r_b): exchange normal momentum,  v·n ← −e·(v·n)   // e = restitution
 ```
 Momentum- and (for `e=1`) energy-conserving — the hard-sphere complement to the
-smooth `pressure` and the wall-bound `reflect`.
+smooth `pressure` and the wall-bound `wall`.
 
 **`diffuse` `[C]`** — scalar diffusion (generalizes the pheromone blur):
 ```
@@ -1405,7 +1405,7 @@ smooth `pressure` and the wall-bound `reflect`.
 ```
 
 #### Transmutation primitives (matter changes form)
-`spawn` (create) and `absorb` (capture) already exist; nature also merges and splits:
+`spawn` (create) and `sink` (capture) already exist; nature also merges and splits:
 
 **`fuse` `[B]`** — merge on energetic contact (`2 → 1`, conserved mass + momentum):
 ```
@@ -1421,7 +1421,7 @@ age += τ ;  if age > −τ_half·ln(rand):  spawn daughter / change species / e
 #### The faithful composites (caveats fixed)
 With the above, the cosmology presets stop approximating:
 ```
-blackhole = gravity(GM, ε=r_s) + vortex(frame-drag) + absorb(r_s) + lens(derived)
+blackhole = gravity(GM, ε=r_s) + swirl(frame-drag) + sink(r_s) + lens(derived)
             → r_s, θ_lens = r_s/d, redshift all derive from {G, M, c} — no fudge
 supernova = fuse(core ignites) → spawn(ejecta) + propagate(real shock) + remnant
 star      = gravity(collapse)  ⇄  thermal(pressure)        ← hydrostatic equilibrium
@@ -1450,7 +1450,7 @@ built:
 |---|---|---|
 | **Count** (particles) | ✅ respected | the §2.4 law — captured/released/detached/reclaimed, never spawned or deleted (except deliberate class [S], which self-budgets via lifespan + pool ceiling). |
 | **Mass** (inertial `m`) | ✅ opt-in | particles carry `m` (default 1 = unit mass). With `FieldOptions.mass`, `m ∝ size` and body forces accelerate by `a = F/m` (§21.3). |
-| **Momentum** (`p = m·v`) | ◐ partial | `collide` now conserves it pairwise (equal & opposite impulses); `reflect`/`collide` push back on a `data-body` element (recoil, §23.5). The ambient field is still driven/damped by design — friction bleeds `p` every frame. |
+| **Momentum** (`p = m·v`) | ◐ partial | `collide` now conserves it pairwise (equal & opposite impulses); `wall`/`collide` push back on a `data-body` element (recoil, §23.5). The ambient field is still driven/damped by design — friction bleeds `p` every frame. |
 | **Energy** | ❌ not respected | friction + `heat` decay; it's a *driven, damped* field on purpose. |
 
 This is the right feel for a calm UI backdrop. The honest split below **shipped**:
@@ -1469,7 +1469,7 @@ This is the right feel for a calm UI backdrop. The honest split below **shipped*
 | particle inertial mass | **`m`** | *(absent)* | resistance to acceleration; `∝ baseSize²` or seeded |
 | body source mass | **`M`** | `strength·k_g` | sources `gravity`/`charge`; for a UI body, `M = strength·k` |
 | accretion load | **`b.accreted`** | `b.mass` | running total a sink has captured |
-| accretion capacity | **`capacity`** | `maxMass` | the load at which an absorber supernovas |
+| accretion capacity | **`capacity`** | `maxMass` | the load at which a sink supernovas |
 | CSS inflation var | **`--load`** | `--mass` | `accreted / capacity` ∈ [0,1] (author-facing; alias `--mass` for back-compat) |
 
 After the rename, **`m`/`M` always mean mass**; `b.accreted`/`capacity`/`--load` are
@@ -1484,7 +1484,7 @@ update them with the rename.)
    - `collide` — exchange normal momentum by mass (unequal masses → real billiard).
    - `fuse` — `m = m_a+m_b`, `p = p_a+p_b` (conserve both; energy → `heat`).
    - `warp`/`wormhole` — carry `m` and `p` through the throat.
-   - `absorb` — `b.accreted += p.m`; `supernova` releases exactly that mass back
+   - `sink` — `b.accreted += p.m`; `supernova` releases exactly that mass back
      (and, if faithful, recoils the remnant by `−Σp`).
 4. **Accretion in mass units.** supernova fires at `b.accreted ≥ capacity`;
    `--load = accreted/capacity`.
@@ -1522,7 +1522,7 @@ This section audits it and defines the unified model.
 | **Event host** — the field fires app behavior off it | ✅ as-built | `data-on` (§22.5); cross-boundary `field:lit` |
 
 All four are now wired: an element **sources** force, **receives density**, is **moved**
-by the field (a `data-move` element agent — anchor spring + field force, with optional
+by the field (a `data-move` element agent — anchor tether + field force, with optional
 mutual repulsion + density pressure for self-laying-out layout), and the field **signals
 through it** (a saturated body fires `field:lit`/`field:dim`; `data-on` binds field state
 to DOM events). One model — agents and consumers (§22.2).
@@ -1534,7 +1534,7 @@ to apply it. Forces stay target-agnostic; agents differ only in how they consume
 
 | Agent | position | inertia | "capture" means | consumes force as |
 |---|---|---|---|---|
-| **Particle** | `x,y` | `m` (§21) | held in an absorb core | velocity impulse + heat |
+| **Particle** | `x,y` | `m` (§21) | held in a sink core | velocity impulse + heat |
 | **Element** (DOM) | rect center | `m_el` (∝ area or `data-mass`) | docked / collapsed | a transform offset, CSS var, or class |
 | **Event sink** | its host body | — | — | a dispatched signal on threshold crossing |
 
@@ -1548,8 +1548,8 @@ Every force emits one of a few influence kinds. The matrix is the whole spec:
 | Influence (from force) | Particle | Element | Event sink |
 |---|---|---|---|
 | **impulse** `Δv` (attract, repel, wind, stream…) | `v += F/m` | `o_v += F/m_el` → `translate(o)` | — |
-| **constraint** (spring, reflect, gate) | clamp pos/vel | clamp the transform offset | — |
-| **capture** (absorb) | `cap = b` | dock/collapse the element | fire `field:captured` |
+| **constraint** (tether, wall, gate) | clamp pos/vel | clamp the transform offset | — |
+| **capture** (sink) | `cap = b` | dock/collapse the element | fire `field:captured` |
 | **relocate** (warp) | move position | reorder/teleport in the DOM | — |
 | **emit** (spawn) | new particle | clone/insert a DOM node | — |
 | **trigger** (threshold) | (sets heat) | toggle a class | **dispatch a `CustomEvent`** |
@@ -1562,10 +1562,10 @@ force to an event" = the influence, on crossing a threshold, becomes a **signal*
 Each targetable element carries an anchor `a` (its CSS layout slot), a live offset
 `o`, and mass `m_el`. Forces sum to `F`; integrate and write a transform:
 ```
-o_v += F/m_el · τ ;   o_v *= f ;   o += o_v       // a spring to a → equilibrium at o = 0
+o_v += F/m_el · τ ;   o_v *= f ;   o += o_v       // a tether to a → equilibrium at o = 0
 element.style.transform = `translate(${o.x}px, ${o.y}px)`
 ```
-Now `blackhole`/`gravity` pulls cards in, `repel` spaces them, `reflect` elements
+Now `blackhole`/`gravity` pulls cards in, `repel` spaces them, `wall` elements
 collide, `stream` drifts them. **Heavier (or `data-mass`-flagged) UI resists** — the
 inertia of importance. Pipe 1 (§2.1) re-reads the moved rect each frame, so the field
 stays locked to where the element actually is. (Rationale & forces: possibilities
@@ -1575,11 +1575,11 @@ stays locked to where the element actually is. (Rationale & forces: possibilitie
 A force targeting an **event sink** turns physics into app logic — the write side of
 Canvas→DOM *beyond* styling. Declare bindings on a body:
 ```html
-<article data-body="absorb attract"
+<article data-body="sink attract"
          data-on="captured:field:dock, dense:field:lit, spotlight:field:seen">…</article>
 ```
 On the influence/condition firing, dispatch a debounced `CustomEvent` carrying
-`{ body, influence, value }`. Examples: `absorb` an element → `field:dock` (app
+`{ body, influence, value }`. Examples: `sink` an element → `field:dock` (app
 collapses it into a tray); density `> θ` → `field:lit` (highlight); `spotlight`
 sweeps over → `field:seen` (lazy-load / analytics); `supernova` → `field:erupt`
 (fire a transition). The field can now move **state**, not just pixels.
@@ -1596,7 +1596,7 @@ window.__forces[token] = {
 A force untouched from today implicitly declares `targets: ['particle']` and runs
 exactly as before. The engine routes each force only to the agent tiers it lists, and
 the **agent's consumer** (§22.3) does the tier-specific application — so most forces
-need *no* per-tier code; only structural ones (`reflect`/`absorb`/`warp`/`spawn`)
+need *no* per-tier code; only structural ones (`wall`/`sink`/`warp`/`spawn`)
 implement tier semantics.
 
 ### 22.7 Conservation across tiers
@@ -1621,12 +1621,12 @@ Cross-tier interaction is where this gets honest (tie-in to §21):
 The system's *feel* lives in the **moment of interaction**, not the steady state: a
 particle strikes a wall and **sparks**; a click shoves and heats; a core captures and
 the matter dims. These tiny, fast, legible reactions are what separate a living field
-from a screensaver. The prototype's `reflect` spark (§6.4) is the exemplar — and it's
+from a screensaver. The prototype's `wall` spark (§6.4) is the exemplar — and it's
 worth making the *principle*, not a one-off.
 
 ### 23.1 The principle (and how it reconciles §21)
 > **Energy isn't lost — it's spent on spectacle.** Whenever a force removes energy
-> from an agent (a bounce's restitution, drag's bleed, a capture, a collision), that
+> from an agent (a bounce's restitution, viscosity's bleed, a capture, a collision), that
 > energy is **accounted for as a proportional micro-reaction**.
 
 §21 noted the field is *damped by design* — energy isn't conserved in motion. §23 is
@@ -1643,17 +1643,17 @@ I  = clamp(k · ΔE, 0, I_max)                  // reaction intensity
 `I` drives spark count, flash magnitude, flash radius, recoil, (optional) sound. A
 glancing touch barely flickers; a hard hit erupts. **The budget kit shipped** in
 `core/reactions.ts`: `energyDelta` (ΔE), `reactionIntensity` (I), `sparkCount`, and
-`recoilImpulse` (the element-recoil side, §23.5). `reflect` ships the canonical slice
+`recoilImpulse` (the element-recoil side, §23.5). `wall` ships the canonical slice
 (spark when `speed > 0.7`, `heat = min(0.85, speed·0.4)`); §23 generalizes it across
 dissipative interactions.
 
 ### 23.3 Catalog — where energy transfers, and the reaction it should shed
 | Interaction | Energy event | Reaction | Status |
 |---|---|---|---|
-| **Reflect impact** | KE lost to restitution `(1−e²)` | sparks + heat flash `∝ speed` | ✅ as-built |
+| **Wall impact** | KE lost to restitution `(1−e²)` | sparks + heat flash `∝ speed` | ✅ as-built |
 | **Collide** (particle↔particle) | KE lost when `e < 1` | contact spark at the midpoint `∝ \|v_rel\|` | proposed |
-| **Drag / viscosity** | KE bled continuously | faint heat shimmer in the zone `∝ ΔKE` (drag *warms* the medium — real) | proposed |
-| **Absorb capture** | KE swallowed, matter held | inward flash + a core intake-pulse | proposed |
+| **Viscosity** | KE bled continuously | faint heat shimmer in the zone `∝ ΔKE` (drag *warms* the medium — real) | proposed |
+| **Sink capture** | KE swallowed, matter held | inward flash + a core intake-pulse | proposed |
 | **Supernova / spawn** | binding/PE → KE released | radial ejecta + `heat = 1` | ✅ as-built |
 | **Detach** (bound→free) | binding broken | the carried velocity + a tiny snap-flash | ✅ / proposed |
 | **Wave-heal snap** | particle rejoins a line | a soft settle-glow as it docks | proposed |
@@ -1667,17 +1667,17 @@ A small shared vocabulary the catalog draws from — keep them as renderable ato
 - **spark** — N fast-fading debris (exists; cap 260, §11).
 - **flash / bloom** — a brief heat/alpha spike on the agent (exists via `heat`).
 - **recoil** — the equal-and-opposite impulse on the *other* agent (§21 momentum) —
-  **currently missing**: `reflect` sparks the particle but never shudders the wall.
+  **currently missing**: `wall` sparks the particle but never shudders the wall.
 - **ripple** — a one-frame expanding ring (was disabled for cost; cheap to revive
   scoped to a single interaction).
-- **pulse** — the body scales/glows briefly (absorb intake, capture).
+- **pulse** — the body scales/glows briefly (sink intake, capture).
 - **trail** — a short motion-blur on fast agents (§20.6 render mode).
 - **chromatic shed** — the released energy tints toward the *acting force's* color
   (§20.8 identity tint), so you can **see which force did it**.
 - **tick** *(optional audio)* — a click whose pitch ∝ `ΔE`; the field becomes audible.
 
 ### 23.5 Two-sidedness — the deepest version
-A *true* energy transfer has **two sides**. Today `reflect` only reacts on the
+A *true* energy transfer has **two sides**. Today `wall` only reacts on the
 particle; first-class reactions make **both** agents respond, split by mass (§21):
 the particle sparks **and** the wall shudders a hair, `Δv_wall = −Δp/m_el`. "Every
 action has an equal and opposite reaction" is exactly what makes a transfer read as a
@@ -1741,7 +1741,7 @@ scroll parallax `offsetY = scrollY·(0.025 + depth·0.08)`, a boot growth sweep.
 
 ### 24.4 Color alignment (one palette · cool baseline · travels with the accent)
 Today `field.js` hardcodes `waveColors = ['#4da3ff', '#2dd4bf', '#a78bfa']` — a
-*subset* of the force palette (attract/vortex/emitter). Formalize that into a rule:
+*subset* of the force palette (attract/swirl/jet). Formalize that into a rule:
 
 1. **One source of truth.** Currents draw from the canonical force palette
    (`DS_FORCES`), never a separate constant — derive `waveColors` from it.
@@ -1776,7 +1776,7 @@ The spec describes one field: the full-viewport background. The design system ad
 second surface — a **standalone field sized to its container** that renders *one*
 force or *one* formation, with its own particle pool, its own pointer interaction,
 and a lifecycle that pauses when off-screen. It's the unit behind every live demo,
-the natural embeddable (`<forces-cell force="vortex">`), and a concrete realization
+the natural embeddable (`<forces-cell force="swirl">`), and a concrete realization
 of the poster/reduced variant (possibilities §1.4) and render modes (§20.6).
 
 ```js
@@ -1787,7 +1787,7 @@ const WELLS = [[0.28,0.42],[0.7,0.34],[0.5,0.72]];   // formation centres as fra
 const LANES = [0.28, 0.5, 0.72];
 // cursor repel, per-cell:  if (d < 80) a += (dx/d)·(1 − d/80)·1.8
 // lifecycle: ResizeObserver re-fits the canvas; IntersectionObserver gates the rAF loop
-// edge per mode: wrap | reflect | emitter-respawn
+// edge per mode: wrap | wall | jet-respawn
 ```
 
 > It is **not** the §-engine — it's a lighter "demo/poster" engine. Document its
@@ -1798,10 +1798,10 @@ const LANES = [0.28, 0.5, 0.72];
 name: the canonical **easing** and the **coherence** colour.
 
 ```css
---f-attract:#4da3ff; --f-emitter:#a78bfa; --f-spring:#86e57f;
---f-reflect:#c4b5fd; --f-stream:#7dd3fc;  --f-repel:#ff9d5c;
---f-drag:#8da2c0;    --f-vortex:#2dd4bf;  --f-absorb:#ff6e9c;
---f-condition: var(--f-emitter);   /* "condition" === the emitter body */
+--f-attract:#4da3ff; --f-jet:#a78bfa; --f-tether:#86e57f;
+--f-wall:#c4b5fd; --f-stream:#7dd3fc;  --f-repel:#ff9d5c;
+--f-viscosity:#8da2c0;    --f-swirl:#2dd4bf;  --f-sink:#ff6e9c;
+--f-condition: var(--f-jet);   /* "condition" === the jet body */
 --coherence: #ffce6b;              /* resolved / accreted — gold, NOT a force */
 --ease: cubic-bezier(0.16, 1, 0.3, 1);   /* the system easing curve */
 ```
@@ -1811,7 +1811,7 @@ colour (`#ffce6b`); emit them as CSS variables in `forces.config.ts` consumers.
 
 ### 25.3 Coherence — the resolved / accreted state (§7, §15)
 Beyond the nine forces there is a **resolved state**: what the field settles into,
-what an absorber's released matter represents, the hub every discipline pulls toward.
+what a sink's released matter represents, the hub every discipline pulls toward.
 The design system encodes it as the `--coherence` gold, as the substrate equation
 **`captured = released`**, and as a single "Coherence" goal node every discipline
 threads to. It is the *destination* of the `accretion` formation (§7) and the

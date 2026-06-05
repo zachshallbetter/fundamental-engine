@@ -101,7 +101,7 @@ test('spread pulls toward an even-scatter target (§7)', () => {
 test('conv converges toward the accretion node (§7)', () => {
   const store = new FieldStore();
   const p = store.add(makeP({ x: 0, y: 0, vx: 0 }));
-  const core = { cx: 500, cy: 0, tokens: ['absorb'], vis: true, when: '' } as unknown as Body;
+  const core = { cx: 500, cy: 0, tokens: ['sink'], vis: true, when: '' } as unknown as Body;
   step({
     store,
     bodies: [core],

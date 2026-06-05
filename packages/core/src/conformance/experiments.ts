@@ -71,16 +71,16 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
-      force: 'vortex',
-      label: 'A particle 150px from a vortex (spin +1)',
+      force: 'swirl',
+      label: 'A particle 150px from a swirl (spin +1)',
       family: 'canonical',
       klass: 'A',
       body: { cx: 150, range: 300, strength: 1, spin: 1 },
       particles: [{ x: 0, y: 0 }],
-      frames: 120, // long enough to show the swirl arc (canonical vortex retains shape lightly)
+      frames: 120, // long enough to show the swirl arc (canonical swirl retains shape lightly)
     },
     expectations: [
-      // canonical vortex is swirl-dominant with only light inward retention (0.12); it does
+      // canonical swirl is swirl-dominant with only light inward retention (0.12); it does
       // NOT bind into an inward spiral — that is a preset (whirlpool / blackhole). So the
       // check is tangential dominance, not movesToward.
       exactDelta(0.020462, -0.170518, 2e-3), // first-frame Δv: tangential −0.1705 ≫ inward 0.0205
@@ -111,8 +111,8 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
-      force: 'drag',
-      label: 'A moving particle entering a drag field',
+      force: 'viscosity',
+      label: 'A moving particle entering a viscosity field',
       family: 'canonical',
       klass: 'A',
       body: { cx: 150, range: 300, strength: 1 },
@@ -123,7 +123,7 @@ export const EXPERIMENTS: ForceConformance[] = [
       speedReduced(),
       exactDelta(-0.3, 0),
       check('direction unchanged (no redirection)', 'invariant', (r) => {
-        // drag is v -= v·k, so Δv is anti-parallel to v: it has NO perpendicular
+        // viscosity is v -= v·k, so Δv is anti-parallel to v: it has NO perpendicular
         // component, at any velocity (not just horizontal motion).
         const a = r.applyDelta[0]!;
         const p0 = r.scenario.particles[0]!;
@@ -136,8 +136,8 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
-      force: 'emitter',
-      label: 'A particle relaunched from the emitter nozzle (the jet)',
+      force: 'jet',
+      label: 'A particle relaunched from the jet nozzle (the jet)',
       family: 'canonical',
       klass: 'A',
       body: { cx: 0, cy: 0, range: 300, strength: 1, angle: 0 }, // jet heading +x
@@ -162,8 +162,8 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
-      force: 'spring',
-      label: 'A particle inside a spring rest shell (compressed)',
+      force: 'tether',
+      label: 'A particle inside a tether rest shell (compressed)',
       family: 'canonical',
       klass: 'A',
       body: { cx: 150, range: 300, strength: 1 },
@@ -175,8 +175,8 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
-      force: 'reflect',
-      label: 'A particle hitting a reflect wall',
+      force: 'wall',
+      label: 'A particle hitting a wall',
       family: 'canonical',
       klass: 'A',
       body: { cx: 0, cy: 0, hw: 40, hh: 40 },
@@ -198,8 +198,8 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
-      force: 'absorb',
-      label: 'A particle drifting into an absorber',
+      force: 'sink',
+      label: 'A particle drifting into a sink',
       family: 'canonical',
       klass: 'A',
       body: { cx: 0, cy: 0, range: 300, absorbR: 64, capacity: 60 },
@@ -645,7 +645,7 @@ export const EXPERIMENTS: ForceConformance[] = [
       label: 'Matter assembling into a three-point mark',
       family: 'extended',
       klass: 'D',
-      // three particles, each hashed (by gx) to a distinct target — they spring out from
+      // three particles, each hashed (by gx) to a distinct target — they tether out from
       // the centre and settle onto the marks. A geometric mark, never letterforms (§11).
       body: {
         cx: 0,
@@ -754,11 +754,11 @@ export const COMPOSITE_EXPERIMENTS: ForceConformance[] = [
     ],
   },
   {
-    // attract + vortex compose into an inward spiral: inward pull + tangential swirl.
+    // attract + swirl compose into an inward spiral: inward pull + tangential swirl.
     scenario: {
-      force: 'attract vortex',
-      tokens: ['attract', 'vortex'],
-      label: 'A particle in a composed attract + vortex (a spiral)',
+      force: 'attract swirl',
+      tokens: ['attract', 'swirl'],
+      label: 'A particle in a composed attract + swirl (a spiral)',
       family: 'canonical',
       klass: 'A',
       body: { cx: 150, range: 300, strength: 1, spin: 1 },
@@ -773,7 +773,7 @@ export const COMPOSITE_EXPERIMENTS: ForceConformance[] = [
       }),
       check('composes to the sum of its parts (inward + swirl)', 'exact', (r) => {
         const d = r.applyDelta[0]!;
-        // attract Δv (0.125, 0) + vortex Δv (0.0205, −0.1705) on a still particle 150px out
+        // attract Δv (0.125, 0) + swirl Δv (0.0205, −0.1705) on a still particle 150px out
         const ok = Math.abs(d.dvx - 0.1455) < 0.005 && Math.abs(d.dvy + 0.1705) < 0.005;
         return { pass: ok, measured: `(${f3(d.dvx)}, ${f3(d.dvy)})`, expected: '(0.1455, −0.1705) ±0.005' };
       }),
