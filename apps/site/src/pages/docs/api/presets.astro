@@ -2,6 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { MANUAL_PRESETS } from 'forces-ui';
 import CodeTabs from '../../../components/CodeTabs.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
 import '../../../styles/force-glyphs.css';
 
 const PRESET_COLORS: Record<string, string> = {
@@ -52,4 +53,12 @@ const usage = `<div data-preset="blackhole"></div>`;
       }
     </div>
   </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/forces', label: 'Forces' },
+      { href: '/docs/api/catalog', label: 'Conditions, formations & modes' },
+      { href: '/docs/recipes', label: 'Recipes' },
+    ]}
+  />
 </DocsLayout>
