@@ -1324,6 +1324,13 @@ z_grav = (1 − r_s/d)^(−½) − 1        z_doppler = (v·û_view)/c
 The old `c = 6` becomes the real `v_max`. Caveat 2 gone: lensing and redshift are
 consequences of `{G, M, c}`, internally consistent.
 
+> **As-built (v0.3).** The integrator applies the `|v| ≤ c` clamp to *every* free
+> particle each step, so the cap is universal — no canonical force or composite can
+> drive a runaway, not just the natural primitives. A conformance **safety sweep**
+> runs every experiment and asserts the whole trajectory stays finite (no NaN/Infinity),
+> bounded in heat, capped in speed, and conserved in count unless a budgeted [S] source
+> is active. See [`docs/physics-workover.md`](physics-workover.md).
+
 #### `gravity` — true softened inverse-square `[A]` (fixes caveat 1)
 Plummer softening keeps it finite at the core while staying a real `1/d²` law far
 out — exactly how N-body sims do it:
