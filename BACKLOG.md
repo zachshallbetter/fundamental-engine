@@ -17,8 +17,10 @@ The major current thrust. Full plan and as-built audit in
       the conformance check is now tangential dominance, preview-verified in the Lab. (#113)
 - [ ] **Absorber `--accreted`.** Export `--accreted` (keep `--mass` as a temporary alias);
       fix the stale `forces.config.ts` comment. (`b.accreted` already exists in TS.)
-- [ ] **Velocity cap + safety invariants.** A hard `velocityCap`; conformance guards for no
-      NaN / no Infinity / finite position / bounded velocity + heat / stable count.
+- [x] **Velocity cap + safety invariants.** The integrator caps free-particle speed at `c`
+      (12); a conformance safety sweep asserts no NaN / Infinity, finite position, bounded
+      velocity + heat, and stable count (unless a budgeted [S] source runs). The `velocityCap`
+      config knob is deferred to v0.4 (the mode system).
 - [ ] **Source-budget guard.** Dev-mode warn + safe cap when an [S] force has no
       `data-life` / `data-cap` / `data-budget` / `data-sink`.
 - [ ] **Modifier contract + parser.** Classify tokens into `{modifiers, forces, sources}`;
