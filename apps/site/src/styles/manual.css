@@ -4,11 +4,8 @@
    applies reliably to server-rendered and live-demo elements alike.
    ============================================================ */
 
-:root {
-  --text-4: rgba(200, 212, 230, 0.32);
-  --line-2: rgba(255, 255, 255, 0.16);
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* Tokens (--text-4, --line-2, --ease, …) come from ds-tokens.css, now loaded
+   globally via Base.astro — no local :root needed. */
 
 .wrap {
   width: 100%;
