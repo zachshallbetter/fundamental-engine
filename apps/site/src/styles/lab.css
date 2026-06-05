@@ -99,9 +99,10 @@ body:has(.lab) { align-items: flex-start; }
 .lab-info { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-card); overflow: hidden; }
 .lab-info .info-col { padding: 0.95rem 1.05rem; }
 .info-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.5rem; }
-.sweep-head { justify-content: space-between; }
-.sweep-select { transform: scale(0.92); transform-origin: right; min-width: 120px; }
-.sweep-select select { font-size: 9px; padding: 3px 18px 3px 7px; }
+.sweep-head { justify-content: space-between; gap: 0.5rem; }
+.sweep-selects { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.sweep-select { transform: scale(0.92); transform-origin: right; }
+.sweep-select select { font-size: 9px; padding: 3px 16px 3px 6px; min-width: 84px; }
 #sweepCanvas { width: 100%; height: 96px; display: block; border: 1px solid var(--line); border-radius: var(--r-sm); background: rgba(0, 0, 0, 0.25); }
 .sweep-note { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; color: var(--text-4); margin-top: 0.5rem; line-height: 1.6; }
 .sweep-note b { color: var(--text-3); font-weight: 500; }
