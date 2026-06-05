@@ -57,18 +57,18 @@ export default function Page() {
 
 Reach for `useForcesField(options)` when you want the field handle instead of the component.
 
-### Vanilla and imperative
+### Vanilla TypeScript
 
 ```ts
-import { mountField } from '@forces-ui/elements';
+import { ForcesField } from '@forces-ui/vanilla';
 
-const field = mountField({ render: 'dots' });
+const field = new ForcesField({ render: 'dots' });
 field.setFormation('wells');
 field.burst(window.innerWidth / 2, 200);
 // field.scan(); field.destroy();
 ```
 
-To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)` from `forces-ui`.
+`@forces-ui/vanilla` is the framework-free door: a typed `ForcesField` class, with `mountField()` and `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
 
 ## Author bodies in markup
 
@@ -117,7 +117,8 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 | Package | What it is |
 |---|---|
 | [`forces-ui`](packages/core) | the engine: catalog, contracts, `FieldStore`, integrator, the force set, conformance |
-| [`@forces-ui/elements`](packages/elements) | the `<forces-field>` and `<forces-cell>` custom elements, plus `mountField()` |
+| [`@forces-ui/vanilla`](packages/vanilla) | the framework-free door: the `ForcesField` class and `mountField()`, no custom element |
+| [`@forces-ui/elements`](packages/elements) | the `<forces-field>` and `<forces-cell>` custom elements |
 | [`@forces-ui/react`](packages/react) | the `<ForcesField>` component and the `useForcesField()` hook |
 
 ## Availability

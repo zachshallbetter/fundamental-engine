@@ -1,0 +1,89 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+
+const cls = `import { ForcesField } from '@forces-ui/vanilla';
+
+// builds + manages a fixed full-viewport canvas, starts the engine
+const field = new ForcesField({ accent: '#4da3ff', render: 'dots' });
+
+field.setFormation('wells');
+field.burst(window.innerWidth / 2, 200);
+
+// …later
+field.destroy();   // stops the loop AND removes the managed canvas`;
+
+const own = `import { ForcesField } from '@forces-ui/vanilla';
+
+// drive a <canvas> you place and size yourself — nothing is created or removed,
+// and destroy() only stops the engine.
+const field = new ForcesField({ canvas: myCanvas, density: 1.2 });`;
+
+const mount = `import { mountField, createField } from '@forces-ui/vanilla';
+
+// the plain factory form — same managed canvas, returns the bare FieldHandle
+const field = mountField({ render: 'trails' });
+
+// or own the canvas entirely with the lowest-level entry:
+const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' });`;
+---
+
+<DocsLayout
+  title="forces-ui — Vanilla TypeScript guide"
+  description="Use forces-ui from plain TypeScript with @forces-ui/vanilla: a typed ForcesField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
+>
+  <header class="docs-hero">
+    <p class="kicker">Guides</p>
+    <h1>The <span class="accent">TypeScript</span> wrapper</h1>
+    <p class="lede">
+      <code>@forces-ui/vanilla</code> is the framework-free door — a typed <code>ForcesField</code>
+      class for plain TypeScript apps, with no custom element to register and no framework
+      dependency. It wraps the same zero-dependency engine the web component and React adapter do.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Install</h2>
+    <div class="pkg">
+      <code class="install" data-copy="npm i @forces-ui/vanilla">npm i @forces-ui/vanilla</code>
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The ForcesField class</h2>
+    <p>
+      <code>new ForcesField()</code> builds a fixed, full-viewport canvas behind your page and
+      starts the engine on it. It takes every <a href="/docs/api/options">FieldOptions</a> value,
+      implements the full <a href="/docs/api/handle">FieldHandle</a> surface, and exposes the
+      <code>canvas</code> it runs on. Importing the package has no side effects — it never
+      registers a custom element.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: cls }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Drive a canvas you own</h2>
+    <p>
+      Pass your own <code>&lt;canvas&gt;</code> and the field never creates or removes one —
+      <code>destroy()</code> only stops the engine. Use this when you place and size the canvas
+      yourself.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: own }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>mountField — the factory form</h2>
+    <p>
+      Prefer a plain function over a class? <code>mountField()</code> returns the bare
+      <a href="/docs/api/handle">FieldHandle</a>; its <code>destroy()</code> also removes the
+      canvas it made. <code>createField()</code> is re-exported too, for when you own the canvas
+      and want the lowest-level entry — see the <a href="/docs/guides/vanilla">core engine</a> guide.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: mount }]} />
+    <div class="callout">
+      <b>One package, everything vanilla.</b> The catalog data (<code>FORCES</code>,
+      <code>FORMATIONS</code>, <code>CONDITIONS</code>, <code>PALETTE</code>) and the engine
+      contracts are re-exported, so a force picker or legend needs no second install.
+    </div>
+  </section>
+</DocsLayout>

@@ -4,7 +4,7 @@ import CodeTabs from '../../components/CodeTabs.astro';
 
 const installWc = `npm i @forces-ui/elements`;
 const installReact = `npm i @forces-ui/react`;
-const installCore = `npm i forces-ui`;
+const installCore = `npm i @forces-ui/vanilla`;
 
 const setupWc = `<script type="module">
   import '@forces-ui/elements';
@@ -24,7 +24,7 @@ export default function App() {
   );
 }`;
 
-const setupCore = `import { mountField } from '@forces-ui/elements';
+const setupCore = `import { mountField } from '@forces-ui/vanilla';
 
 // creates + manages a fixed full-viewport canvas, returns the handle
 const field = mountField({ accent: '#4da3ff' });`;
