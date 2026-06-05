@@ -1,5 +1,8 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+// The design system's tokens are the single, global source of truth — load them
+// on every page (the homepage and Lab included), not just the docs surfaces.
+import '../styles/ds-tokens.css';
 interface Props {
   title?: string;
   description?: string;
@@ -77,16 +80,8 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://forces-ui.com').href;
     </script>
 
     <style is:global>
-      :root {
-        --bg: #04050a;
-        --text: #f3f6fc;
-        --text-2: rgba(228, 235, 247, 0.7);
-        --text-3: rgba(200, 212, 230, 0.46);
-        --line: rgba(255, 255, 255, 0.1);
-        --accent: #4da3ff;
-        --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-        --mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-      }
+      /* Design tokens come from ds-tokens.css (imported above), the single source
+         of truth. Only page-frame styles live here. */
       * {
         box-sizing: border-box;
       }
