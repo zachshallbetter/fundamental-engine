@@ -19,7 +19,7 @@ export function cellForce(
   switch (force) {
     case 'repel':
       return { ax: -ux * f, ay: -uy * f };
-    case 'vortex':
+    case 'swirl':
       return { ax: -uy * f, ay: ux * f };
     case 'stream':
       return { ax: 0.12, ay: 0 };
@@ -29,7 +29,7 @@ export function cellForce(
       const g = Math.min(0.8, ((reach * reach) / (d * d)) * 0.02); // true-ish 1/d²
       return { ax: ux * g, ay: uy * g };
     }
-    case 'spring': {
+    case 'tether': {
       const rest = reach * 0.45;
       const s = (d - rest) * 0.025; // pull in past the shell, push out within it
       return { ax: ux * s, ay: uy * s };
