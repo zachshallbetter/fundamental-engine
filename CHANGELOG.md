@@ -24,6 +24,18 @@ metrics, and the transformation primitives, not re-building what exists.)
   whole trajectory stays finite (no NaN/Infinity), positions finite, speed ≤ c, heat
   bounded, and the particle count stable unless a budgeted [S] source is active.
 
+### Changed
+
+- **BREAKING — six canonical force tokens renamed to functional terms.** `vortex → swirl`,
+  `spring → tether`, `emitter → jet`, `drag → viscosity`, `reflect → wall`, and `absorb → sink`
+  (the other three canonical forces — `attract`, `repel`, `stream` — keep their names). This is
+  a **hard rename**: the old `data-body` values no longer resolve, so update markup to the new
+  tokens. The capture-radius attribute stays `data-absorb` and the accretion CSS var stays
+  `--load`; the per-force vars follow the tokens (`--f-swirl`, `--f-viscosity`, …). The engine,
+  presets, the conformance catalog + full test suite, the Field Manual, the Lab, and every doc
+  move together. (The wave-binding tear keys on a force *property*, not a token list, so it
+  needed no change.)
+
 ### Fixed
 
 - **Canonical vortex swirls again (inward bias `0.6` → `0.12`).** Reverts the v0.2.0 bias:

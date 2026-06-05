@@ -76,7 +76,7 @@ interface Scenario {
   body: Partial<Body>;           // strength, range, spin, angle, M, cx, cy, hw, hh, …
   particles: ScenarioParticle[]; // initial state(s); particles[0] is the tracked test particle
   frames: number;                // how long to simulate
-  seed?: number;                 // for RNG forces (thermal, emitter) → reproducible
+  seed?: number;                 // for RNG forces (thermal, jet) → reproducible
 }
 ```
 
@@ -120,7 +120,7 @@ expected}` so the Lab can show the numbers.
 | `movesToward()` / `movesAway()` | the frame-0 Δv points in / out along the body axis |
 | `exactDelta(dvx, dvy, tol)` | the precise frame-0 Δv (the spec formula) |
 | `speedPreserved(tol)` | `|v + Δv| ≈ |v|` — a rotation, no work |
-| `speedReduced()` | speed bled off (drag) |
+| `speedReduced()` | speed bled off (viscosity) |
 | `perpendicularToVelocity(tol)` | `Δv · v ≈ 0`, `Δv ≠ 0` (Lorentz, no work) |
 | `momentumConserved(tol)` | `Σ Δv ≈ 0` across the particle set (elastic collision) |
 | `separates()` | two particles end farther apart than they began |
@@ -156,13 +156,13 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 |---|---|---|---|---|
 | `attract` | still p, 150px out, S 1, r 300 | pulled toward the body; falls with distance; nothing past range | `(0.125, 0)` | `f=(1−d/r)²·S·0.5` inward (§6.1) |
 | `repel` | still p, 150px out, S 1, r 300 | pushed away; mirror of attract | `(−0.125, 0)` | same `f`, outward (§6.6) |
-| `vortex` | still p, 150px out, spin +1 | mostly tangential swirl + a small inward retention | `(0.020, −0.171)` | `f=(1−d/r)^1.4·S·0.45`; tangential ±`spin`, +0.12 inward (§6.8) |
+| `swirl` | still p, 150px out, spin +1 | mostly tangential swirl + a small inward retention | `(0.020, −0.171)` | `f=(1−d/r)^1.4·S·0.45`; tangential ±`spin`, +0.12 inward (§6.8) |
 | `stream` | still p, heading +x | a steady current along the heading | `(0.233, 0)` | `f=(1−d/r)^1.1·S·0.5` along `(ux,uy)` (§6.5) |
-| `drag` | p moving `vx=5` | speed bled off, no redirection (Δv ⟂-free at any velocity) | `(−0.3, 0)` | `v −= v·k`, `k=(1−d/r)(0.05+S·0.07)` (§6.7) |
-| `emitter` | p inside the nozzle (d<24) | relaunched as a fast jet along the heading, recedes from the body | — | feed `f=(1−d/r)²(0.25+S·0.15)`; nozzle jet `spd=2.4+S·2.6` (§6.2) |
-| `spring` | still p inside the rest shell (d 150 < rest 180) | pushed back out toward the rest radius, lightly damped | `(−0.532, 0)` | `v += û(d−rest)k`, `rest=r·0.6`, damp `×0.985` (§6.3) |
-| `reflect` | p moving into the wall box | elastic bounce — velocity reverses, damped (`e≈0.85`) | reverses sign | axis-aligned wall on the element box (§6.4) |
-| `absorb` | still p inside `absorbR` | captured (`accreted++`), then drifts to the core; releases at capacity | — | capture → supernova at `capacity` (§6.9) |
+| `viscosity` | p moving `vx=5` | speed bled off, no redirection (Δv ⟂-free at any velocity) | `(−0.3, 0)` | `v −= v·k`, `k=(1−d/r)(0.05+S·0.07)` (§6.7) |
+| `jet` | p inside the nozzle (d<24) | relaunched as a fast jet along the heading, recedes from the body | — | feed `f=(1−d/r)²(0.25+S·0.15)`; nozzle jet `spd=2.4+S·2.6` (§6.2) |
+| `tether` | still p inside the rest shell (d 150 < rest 180) | pushed back out toward the rest radius, lightly damped | `(−0.532, 0)` | `v += û(d−rest)k`, `rest=r·0.6`, damp `×0.985` (§6.3) |
+| `wall` | p moving into the wall box | elastic bounce — velocity reverses, damped (`e≈0.85`) | reverses sign | axis-aligned wall on the element box (§6.4) |
+| `sink` | still p inside `absorbR` | captured (`accreted++`), then drifts to the core; releases at capacity | — | capture → supernova at `capacity` (§6.9) |
 
 ### Natural primitives (§20.10)
 
@@ -174,7 +174,7 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `thermal` | p in a bath, seeded | agitated into motion; kicks isotropic (comparable spread on both axes) | A | Langevin `σ=√(2·S·(1−d/r))`, Box–Muller |
 | `collide` | two approaching discs | momentum conserved across the pair; they separate after | B | elastic half-impulse along the contact normal, `e=S` |
 | `diffuse` | p over a pheromone grid | deposits a mark and steers up the diffused gradient | C | `∂φ/∂t=D∇²φ`; follow `∇φ` |
-| `propagate` | p near an engaged emitter | injects a shock (when engaged) and rides the wavefront | C | wave `∂²φ/∂t²=c²∇²φ` |
+| `propagate` | p near an engaged jet | injects a shock (when engaged) and rides the wavefront | C | wave `∂²φ/∂t²=c²∇²φ` |
 | `memory` | still p, 120px out | an attractive pull amplified by how worn the spot is | C | pull `×(1 + 0.5·M(x))`, slow-decay occupancy |
 
 ### Designed-extended (§20.3)
@@ -208,7 +208,7 @@ catalog by `conformance.test.ts`):
 | Experiment | Fired in | Expected behavior |
 |---|---|---|
 | `attract repel` | equal attractor + repeller on one body | the two cancel — net Δv ≈ 0 |
-| `attract vortex` | one body, both forces | composes to the **sum** of the parts — an inward pull *and* a tangential swirl (Δv ≈ (0.146, −0.171)) |
+| `attract swirl` | one body, both forces | composes to the **sum** of the parts — an inward pull *and* a tangential swirl (Δv ≈ (0.146, −0.171)) |
 | `attract` + `data-when="fast"` | a fast and a slow particle | the gate lets the **fast** particle through (pulled toward the body) and **blocks** the slow one (left alone) |
 
 Condition gating runs through the real condition registry (`active`, `fast`, `slow`,
@@ -238,7 +238,7 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
   (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count). **294 core tests** in all,
   every merge green.
 - **Composition + conditions** are covered, not deferred: `COMPOSITE_EXPERIMENTS` verifies
-  that forces compose (`attract repel` cancel; `attract vortex` sums to a spiral) and gate
+  that forces compose (`attract repel` cancel; `attract swirl` sums to a spiral) and gate
   on conditions (`data-when` runs through the real condition registry).
 - The Lab adds a **parameter-sweep** view (vary one input across its range and plot the
   response curve) and a per-particle **speed waveform** on the timeline.

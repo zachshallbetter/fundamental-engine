@@ -50,7 +50,7 @@ export interface Scenario {
   particles: ScenarioParticle[];
   /** how many frames to simulate. */
   frames: number;
-  /** seed for RNG forces (thermal, emitter) so the run is reproducible. */
+  /** seed for RNG forces (thermal, jet) so the run is reproducible. */
   seed?: number;
 }
 

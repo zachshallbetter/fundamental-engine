@@ -16,14 +16,14 @@ import type { Formation } from '../core/types.ts';
 /** The canonical nine force ids (the implemented set). */
 export type ForceId =
   | 'attract'
-  | 'emitter'
-  | 'spring'
-  | 'reflect'
+  | 'jet'
+  | 'tether'
+  | 'wall'
   | 'stream'
   | 'repel'
-  | 'drag'
-  | 'vortex'
-  | 'absorb';
+  | 'viscosity'
+  | 'swirl'
+  | 'sink';
 
 export interface ForceDef {
   id: ForceId;
@@ -59,35 +59,35 @@ export const FORCES: readonly ForceDef[] = [
     law: 'a soft gravity-like well, bent into a spiral',
   },
   {
-    id: 'emitter',
-    name: 'Emitter',
+    id: 'jet',
+    name: 'Jet',
     color: '#a78bfa',
     does: 'Draws matter in, jets it out',
     discipline: 'AI systems',
     verb: 'adapts response',
-    body: 'emitter',
+    body: 'jet',
     attrs: { 'data-angle': '0', 'data-strength': '1', 'data-range': '300' },
     law: 'recycles the field into a stream',
   },
   {
-    id: 'spring',
-    name: 'Spring',
+    id: 'tether',
+    name: 'Tether',
     color: '#86e57f',
     does: 'Tethers matter to a radius',
     discipline: 'Software architecture',
     verb: 'gives structure',
-    body: 'spring',
+    body: 'tether',
     attrs: { 'data-strength': '1', 'data-range': '260' },
     law: 'a rest length — a leash, not a drain',
   },
   {
-    id: 'reflect',
-    name: 'Reflect',
+    id: 'wall',
+    name: 'Wall',
     color: '#c4b5fd',
     does: 'A surface that bounces — throws sparks',
     discipline: 'Experience design',
     verb: 'the human surface',
-    body: 'reflect',
+    body: 'wall',
     attrs: {},
     law: 'elastic bounce off the bounding box',
   },
@@ -114,36 +114,36 @@ export const FORCES: readonly ForceDef[] = [
     law: 'inverted well — carves a clean void',
   },
   {
-    id: 'drag',
-    name: 'Drag',
+    id: 'viscosity',
+    name: 'Viscosity',
     color: '#8da2c0',
     does: 'Thickens the medium',
     discipline: 'Physical production',
     verb: 'adds constraint',
-    body: 'drag',
+    body: 'viscosity',
     attrs: { 'data-strength': '1', 'data-range': '300' },
     law: 'viscosity — bleeds momentum off',
   },
   {
-    id: 'vortex',
-    name: 'Vortex',
+    id: 'swirl',
+    name: 'Swirl',
     color: '#2dd4bf',
-    does: 'Spins matter into a whirlpool',
+    does: 'Spins matter into a swirl',
     discipline: 'Creative technology',
     verb: 'spins it together',
-    body: 'vortex',
+    body: 'swirl',
     attrs: { 'data-spin': '1', 'data-strength': '1', 'data-range': '320' },
     law: 'tangential force — circles, never collapses',
   },
   {
-    id: 'absorb',
-    name: 'Absorb',
+    id: 'sink',
+    name: 'Sink',
     color: '#ff6e9c',
     does: 'Swallows matter, then pops',
     discipline: 'Attention',
     verb: 'holds, then releases',
-    body: 'absorb attract',
-    // §21.2 naming: the absorber's captured count is `b.accreted` (was `b.mass`), its
+    body: 'sink attract',
+    // §21.2 naming: the sink's captured count is `b.accreted` (was `b.mass`), its
     // limit is `capacity` (was `maxMass`), and the CSS fill var is `--load` (alias
     // `--mass`). `data-max` is the authoring alias for capacity.
     attrs: {

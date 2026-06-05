@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import {
   attract,
   repel,
-  vortex,
+  swirl,
   stream,
-  drag,
-  emitter,
-  spring,
-  reflect,
-  absorb,
+  viscosity,
+  jet,
+  tether,
+  wall,
+  sink,
   coreForces,
 } from './index.ts';
 import type { Body, Env, Particle } from '../core/types.ts';
@@ -100,9 +100,9 @@ test('repel pushes away (§6.6)', () => {
   assert.ok(near(p.vx, -0.125));
 });
 
-test('vortex applies tangential force + slight inward (§6.8)', () => {
+test('swirl applies tangential force + slight inward (§6.8)', () => {
   const p = part();
-  vortex.apply(body({ range: 320, strength: 1, spin: 1 }), p, env({ dx: 100, dy: 0, dist: 100 }));
+  swirl.apply(body({ range: 320, strength: 1, spin: 1 }), p, env({ dx: 100, dy: 0, dist: 100 }));
   assert.ok(p.vy < 0); // tangential (clockwise for spin>0)
   assert.ok(p.vx > 0); // light inward retention (0.12) holds shape
   assert.ok(near(p.vy, -0.2663, 1e-2));
@@ -116,28 +116,28 @@ test('stream blows along the heading (§6.5)', () => {
   assert.ok(near(p.vy, 0));
 });
 
-test('drag bleeds momentum without redirection (§6.7)', () => {
+test('viscosity bleeds momentum without redirection (§6.7)', () => {
   const p = part({ vx: 10 });
-  drag.apply(body({ range: 300, strength: 1 }), p, env({ dx: 150, dy: 0, dist: 150 }));
+  viscosity.apply(body({ range: 300, strength: 1 }), p, env({ dx: 150, dy: 0, dist: 150 }));
   assert.ok(near(p.vx, 9.4)); // 10·(1 − 0.5·0.12)
 });
 
-test('emitter feeds matter toward the nozzle (§6.2)', () => {
+test('jet feeds matter toward the nozzle (§6.2)', () => {
   const p = part();
-  emitter.apply(body({ range: 300, strength: 1 }), p, env({ dx: 100, dy: 0, dist: 100 }));
+  jet.apply(body({ range: 300, strength: 1 }), p, env({ dx: 100, dy: 0, dist: 100 }));
   assert.ok(near(p.vx, 0.17778, 1e-3));
 });
 
-test('spring reels toward the rest shell (§6.3)', () => {
+test('tether reels toward the rest shell (§6.3)', () => {
   const p = part();
-  spring.apply(body({ range: 260, strength: 1 }), p, env({ dx: 200, dy: 0, dist: 200 }));
+  tether.apply(body({ range: 260, strength: 1 }), p, env({ dx: 200, dy: 0, dist: 200 }));
   assert.ok(near(p.vx, 0.78012, 1e-3)); // 44·0.018, then ·0.985
 });
 
-test('reflect bounces off the box and sparks hard hits (§6.4)', () => {
+test('wall bounces off the box and sparks hard hits (§6.4)', () => {
   let sparks = 0;
   const p = part({ x: 40, y: 0, vx: 2, vy: 0 });
-  reflect.apply(
+  wall.apply(
     body({ cx: 0, cy: 0, hw: 50, hh: 50 }),
     p,
     env({ spark: () => { sparks++; } })
@@ -148,26 +148,26 @@ test('reflect bounces off the box and sparks hard hits (§6.4)', () => {
   assert.equal(sparks, 1);
 });
 
-test('reflect ignores particles outside the box', () => {
+test('wall ignores particles outside the box', () => {
   const p = part({ x: 200, y: 0, vx: 2 });
-  reflect.apply(body({ cx: 0, cy: 0, hw: 50, hh: 50 }), p, env());
+  wall.apply(body({ cx: 0, cy: 0, hw: 50, hh: 50 }), p, env());
   assert.equal(p.vx, 2);
 });
 
-test('absorb captures within radius, ignores beyond (§6.9)', () => {
+test('sink captures within radius, ignores beyond (§6.9)', () => {
   const b = body({ absorbR: 64, capacity: 60 });
   const p = part();
-  absorb.apply(b, p, env({ dist: 50 }));
+  sink.apply(b, p, env({ dist: 50 }));
   assert.equal(p.cap, b);
   assert.equal(b.accreted, 1);
   const q = part();
-  absorb.apply(b, q, env({ dist: 100 }));
+  sink.apply(b, q, env({ dist: 100 }));
   assert.equal(q.cap, null);
 });
 
-test('absorb supernovas at capacity (conserved release)', () => {
+test('sink supernovas at capacity (conserved release)', () => {
   let pops = 0;
   const b = body({ absorbR: 64, capacity: 1 });
-  absorb.apply(b, part(), env({ dist: 50, supernova: () => { pops++; } }));
+  sink.apply(b, part(), env({ dist: 50, supernova: () => { pops++; } }));
   assert.equal(pops, 1);
 });
