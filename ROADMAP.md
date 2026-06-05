@@ -258,6 +258,7 @@ through a **web-component** keystone so it drops into anything.
 | Package | What | Tech |
 |---|---|---|
 | `packages/core` (`forces-ui`) | the engine — catalog, contracts, FieldStore, forces | vanilla TS |
+| `packages/vanilla` (`@forces-ui/vanilla`) | framework-free door — `ForcesField` class + `mountField()`, no side effects | vanilla TS |
 | `packages/elements` (`@forces-ui/elements`) | `<forces-field>` + declarative `data-body` | web components (plain now; Lit when there's UI to template, e.g. the Lab) |
 | `apps/site` (`@forces-ui/site`) | forces-ui.com — the manual / landing / Lab | Astro (static) |
 | `packages/react` (`@forces-ui/react`) | thin React adapter | React |
