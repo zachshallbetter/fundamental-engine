@@ -1,4 +1,5 @@
 import { createField, PALETTE, type FieldHandle, type ThreadLink } from 'forces-ui';
+import { HTMLElementBase } from './base.ts';
 
 /**
  * `<forces-field>` — the reciprocal field as a custom element.
@@ -14,13 +15,14 @@ import { createField, PALETTE, type FieldHandle, type ThreadLink } from 'forces-
  * Plain `HTMLElement` (the field is just a canvas — no templating). Lit earns its
  * place when there's UI to template, e.g. the Lab controls (§14).
  */
-export class ForcesField extends HTMLElement {
+export class ForcesField extends HTMLElementBase {
   static readonly observedAttributes = [
     'accent',
     'density',
     'waves',
     'render',
     'palette',
+    'mass',
     'attention',
     'causality',
   ];
@@ -76,6 +78,11 @@ export class ForcesField extends HTMLElement {
     return this.hasAttribute('causality') && this.getAttribute('causality') !== 'false';
   }
 
+  /** first-class mass (§21.3): present and not `"false"` → particle mass ∝ size. */
+  get mass(): boolean {
+    return this.hasAttribute('mass') && this.getAttribute('mass') !== 'false';
+  }
+
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
   /** re-scan the document for `[data-body]` bodies after a DOM change. */
   scan(): void {
@@ -128,6 +135,7 @@ export class ForcesField extends HTMLElement {
       waves: this.waves,
       render: this.renderMode,
       palette: this.palette,
+      mass: this.mass,
       attention: this.attention,
       causality: this.causality,
     });

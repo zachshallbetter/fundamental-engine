@@ -21,6 +21,7 @@ import { mixHex } from '../core/math.ts';
 export const lens: Force = {
   token: 'lens',
   label: 'Lens',
+  kinematic: true, // a pure rotation of velocity — bends the path, not the speed, mass-free
   apply(b, p, e) {
     if (e.dist >= b.range) return;
     const theta = b.strength * (1 - e.dist / b.range) * b.spin;
@@ -43,6 +44,7 @@ export const lens: Force = {
 export const gate: Force = {
   token: 'gate',
   label: 'Gate',
+  kinematic: true, // reflects wrong-way crossers — a constraint, not an acceleration
   apply(b, p, e) {
     const pad = 6; // act on matter within the element box (the membrane's extent)
     if (Math.abs(p.x - b.cx) >= b.hw + pad || Math.abs(p.y - b.cy) >= b.hh + pad) return;

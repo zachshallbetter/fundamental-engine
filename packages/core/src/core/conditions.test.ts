@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { conditions, passes } from './conditions.ts';
-import type { Body, Particle } from './types.ts';
+import type { Body, Env, Particle } from './types.ts';
 
 const body = (over: Partial<Body> = {}): Body => ({
   el: {} as HTMLElement,
@@ -65,4 +65,13 @@ test('passes: empty gate always passes; unknown gate passes', () => {
   assert.equal(passes(conditions, body({ when: '' }), part()), true);
   assert.equal(passes(conditions, body({ when: 'nope' }), part()), true);
   assert.equal(passes(conditions, body({ when: 'hot' }), part({ heat: 0 })), false);
+});
+
+test('scrolling gates on page scroll speed (env.scrollV)', () => {
+  assert.equal(conditions.scrolling!(body(), part(), { scrollV: 0.5 } as Env), true); // > 0.25
+  assert.equal(conditions.scrolling!(body(), part(), { scrollV: 0.1 } as Env), false);
+  assert.equal(conditions.scrolling!(body(), part()), false); // no env (conformance) → inert
+  // passes() threads env through to the predicate
+  assert.equal(passes(conditions, body({ when: 'scrolling' }), part(), { scrollV: 1 } as Env), true);
+  assert.equal(passes(conditions, body({ when: 'scrolling' }), part()), false);
 });

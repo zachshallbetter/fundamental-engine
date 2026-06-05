@@ -32,6 +32,11 @@ engine on it. It takes every `FieldOptions` value (`accent`, `density`, `waves`,
 `palette`, `mass`, `attention`, `causality`), implements the full `FieldHandle` surface, and
 exposes the `canvas` it runs on.
 
+> **Client only.** The field is a browser effect: `new ForcesField()` (and `mountField()`)
+> touch `document` right away and throw a clear error during server-side rendering. In
+> Next.js, Astro, SvelteKit, and similar, construct it on the client — inside `useEffect`,
+> `onMount`, or a "client only" boundary.
+
 Drive a `<canvas>` you own instead by passing it — then the field never creates or removes a
 canvas, and `destroy()` only stops the engine:
 

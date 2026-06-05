@@ -8,6 +8,7 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "check:dist": "node scripts/check-dist.mjs",
     "dev": "pnpm --filter @forces-ui/site dev",
     "build:site": "pnpm --filter @forces-ui/site build"
   }
