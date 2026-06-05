@@ -542,4 +542,5 @@ export const MANUAL_CONDITIONS: readonly { id: string; desc: string }[] = [
   { id: 'slow', desc: 'the particle is moving slowly' },
   { id: 'hot', desc: 'the particle is hot' },
   { id: 'cool', desc: 'the particle is cool' },
+  { id: 'scrolling', desc: 'the page is scrolling' },
 ];
