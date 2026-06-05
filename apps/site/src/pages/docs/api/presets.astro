@@ -1,0 +1,54 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import { MANUAL_PRESETS } from 'forces-ui';
+import '../../../styles/force-glyphs.css';
+
+const PRESET_COLORS: Record<string, string> = {
+  blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf',
+};
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const usage = `<div data-preset="blackhole"></div>`;
+---
+
+<DocsLayout
+  title="forces-ui — Presets"
+  description="Presets compose several primitive forces into one named effect — blackhole, whitehole, star, quasar, galaxy, nebula, tornado. Drop one with data-preset; no new engine code."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1><span class="accent">Presets</span></h1>
+    <p class="lede">
+      A preset expands to several co-located bodies — one primitive each, sharing the element's
+      rectangle. It's pure composition: the engine never grows to add one.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Usage</h2>
+    <pre class="code"><code>{usage}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The {MANUAL_PRESETS.length} presets</h2>
+    <div class="ref-grid">
+      {
+        MANUAL_PRESETS.map((p) => (
+          <article class="ref-card" id={`preset-${p.name}`} style={`--c:${PRESET_COLORS[p.name]}`}>
+            <div class="rc-head">
+              <i class={`fg fg-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} />
+              <code>{p.name}</code>
+            </div>
+            <p class="rc-desc">{cap(p.desc)}.</p>
+            <div class="rc-meta">
+              {p.tokens.map((t) => (
+                <span class="chip">{t}</span>
+              ))}
+            </div>
+            <p class="rc-eg">{p.example}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+</DocsLayout>

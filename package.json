@@ -1,0 +1,14 @@
+{
+  "name": "forces-ui-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.29.1",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "dev": "pnpm --filter @forces-ui/site dev",
+    "build:site": "pnpm --filter @forces-ui/site build"
+  }
+}
