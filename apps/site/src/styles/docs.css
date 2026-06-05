@@ -533,6 +533,49 @@
   max-width: 280px;
 }
 
+/* See also — the shared API-reference cross-link footer (SeeAlso.astro) */
+.see-also {
+  margin: 2.2rem 0 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+}
+.see-also .sa-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 0.7rem;
+}
+.see-also ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.see-also a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill, 999px);
+  font-size: 0.85rem;
+  color: var(--text-2);
+  text-decoration: none;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.see-also a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
 /* callouts */
 .callout {
   margin: 1.4rem 0;

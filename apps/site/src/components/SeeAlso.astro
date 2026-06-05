@@ -1,0 +1,25 @@
+---
+// A consistent cross-reference footer for the API reference pages, so the
+// reference reads as one linked set rather than isolated pages.
+interface Link {
+  href: string;
+  label: string;
+}
+interface Props {
+  links: Link[];
+}
+const { links } = Astro.props;
+---
+
+<nav class="see-also" aria-label="See also">
+  <span class="sa-label">See also</span>
+  <ul>
+    {
+      links.map((l) => (
+        <li>
+          <a href={l.href}>{l.label}</a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
