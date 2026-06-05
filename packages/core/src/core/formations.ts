@@ -18,7 +18,7 @@ export function easeFormation(current: Formation, target: Formation, rate = 0.03
 /** The accretion target for `conv` — the first visible body that absorbs (§7). */
 export function accretionTarget(bodies: readonly Body[]): Body | null {
   for (const b of bodies) {
-    if (b.vis && b.tokens.indexOf('absorb') >= 0) return b;
+    if (b.vis && b.tokens.indexOf('sink') >= 0) return b;
   }
   return null;
 }

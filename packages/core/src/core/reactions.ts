@@ -16,7 +16,7 @@ export function reactionIntensity(dE: number, k = 1, iMax = 2.4): number {
   return i < 0 ? 0 : i > iMax ? iMax : i;
 }
 
-/** Spark count for a reaction of a given power (§23.3, the reflect exemplar). */
+/** Spark count for a reaction of a given power (§23.3, the wall exemplar). */
 export function sparkCount(power: number, rand: () => number = Math.random): number {
   return 3 + Math.floor(rand() * (power > 0 ? power : 1) * 3);
 }

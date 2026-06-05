@@ -49,9 +49,9 @@ export const repel: Force = {
 };
 
 /** §6.8 — tangential swirl with light inward retention. */
-export const vortex: Force = {
-  token: 'vortex',
-  label: 'Vortex',
+export const swirl: Force = {
+  token: 'swirl',
+  label: 'Swirl',
   apply(b, p, e) {
     const range = b.range * (b.on ? 1.4 : 1);
     const s = b.strength * (b.on ? 2 : 1);
@@ -61,7 +61,7 @@ export const vortex: Force = {
     const ux = e.dx / e.dist;
     const uy = e.dy / e.dist;
     // tangential swirl with a light inward retention (0.12): the swirl dominates ~8×, so
-    // canonical vortex reads as a designed spin, not a drain. A tight inward-binding
+    // canonical swirl reads as a designed spin, not a drain. A tight inward-binding
     // whirlpool belongs in a preset (`whirlpool` / `blackhole` / `accretion`), not here.
     p.vx += uy * f * spin + ux * f * 0.12;
     p.vy += -ux * f * spin + uy * f * 0.12;
@@ -87,9 +87,9 @@ export const stream: Force = {
 };
 
 /** §6.7 — viscosity; bleeds momentum, no redirection. */
-export const drag: Force = {
-  token: 'drag',
-  label: 'Drag',
+export const viscosity: Force = {
+  token: 'viscosity',
+  label: 'Viscosity',
   apply(b, p, e) {
     const range = b.range * (b.on ? 1.4 : 1);
     if (e.dist >= range) return;
@@ -101,9 +101,9 @@ export const drag: Force = {
 };
 
 /** §6.2 — a conduit: draws matter in, jets it out along the heading. */
-export const emitter: Force = {
-  token: 'emitter',
-  label: 'Emitter',
+export const jet: Force = {
+  token: 'jet',
+  label: 'Jet',
   apply(b, p, e) {
     const range = b.range * (b.on ? 1.4 : 1);
     if (e.dist >= range) return;
@@ -131,9 +131,9 @@ export const emitter: Force = {
 };
 
 /** §6.3 — a tether with a rest length; holds matter at a shell radius. */
-export const spring: Force = {
-  token: 'spring',
-  label: 'Spring',
+export const tether: Force = {
+  token: 'tether',
+  label: 'Tether',
   apply(b, p, e) {
     const rest = b.range * 0.6 * (b.on ? 1.25 : 1);
     const reach = rest * 2.1;
@@ -152,9 +152,9 @@ export const spring: Force = {
 };
 
 /** §6.4 — an axis-aligned bouncing wall; sparks on hard impact. */
-export const reflect: Force = {
-  token: 'reflect',
-  label: 'Reflect',
+export const wall: Force = {
+  token: 'wall',
+  label: 'Wall',
   apply(b, p, e) {
     const pad = 6;
     const ox = Math.abs(p.x - b.cx);
@@ -171,7 +171,7 @@ export const reflect: Force = {
       p.vy = -p.vy * 0.85;
     }
     if (speed > 0.7) {
-      e.spark(p.x, p.y, Math.min(2.4, speed), FORCE_BY.reflect.color);
+      e.spark(p.x, p.y, Math.min(2.4, speed), FORCE_BY.wall.color);
       p.heat = Math.max(p.heat, Math.min(0.85, speed * 0.4));
     }
   },
@@ -179,9 +179,9 @@ export const reflect: Force = {
 };
 
 /** §6.9 — captures matter (held, conserved), then releases on saturation. */
-export const absorb: Force = {
-  token: 'absorb',
-  label: 'Absorb',
+export const sink: Force = {
+  token: 'sink',
+  label: 'Sink',
   apply(b, p, e) {
     if (p.cap || e.dist >= b.absorbR) return;
     p.cap = b;
@@ -194,14 +194,14 @@ export const absorb: Force = {
 /** The canonical nine, in spec order. */
 export const coreForces: readonly Force[] = [
   attract,
-  emitter,
-  spring,
-  reflect,
+  jet,
+  tether,
+  wall,
   stream,
   repel,
-  drag,
-  vortex,
-  absorb,
+  viscosity,
+  swirl,
+  sink,
 ];
 
 /** Register the canonical nine on a registry (§4). */

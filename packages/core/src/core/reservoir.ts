@@ -141,7 +141,7 @@ export function tearBoundByForces(
       const dist = Math.hypot(dx, dy) || 1;
       const range = b.range * (b.on ? 1.4 : 1);
 
-      if (toks.indexOf('reflect') >= 0) {
+      if (toks.indexOf('wall') >= 0) {
         const pad = 6;
         if (Math.abs(x - b.cx) < b.hw + pad && Math.abs(y - b.cy) < b.hh + pad) {
           kx = (x < b.cx ? -1 : 1) * 1.6;
@@ -149,7 +149,7 @@ export function tearBoundByForces(
           hit = true;
         }
       }
-      if (!hit && (toks.indexOf('attract') >= 0 || toks.indexOf('absorb') >= 0 || toks.indexOf('emitter') >= 0)) {
+      if (!hit && (toks.indexOf('attract') >= 0 || toks.indexOf('sink') >= 0 || toks.indexOf('jet') >= 0)) {
         if (dist < range * 0.8) {
           const k = 1.2 + (b.on ? 1.6 : 0);
           kx = (dx / dist) * k;
@@ -163,7 +163,7 @@ export function tearBoundByForces(
         ky = -(dy / dist) * k;
         hit = true;
       }
-      if (!hit && toks.indexOf('vortex') >= 0 && dist < range * 0.75) {
+      if (!hit && toks.indexOf('swirl') >= 0 && dist < range * 0.75) {
         kx = (dy / dist) * 1.2;
         ky = -(dx / dist) * 1.2;
         hit = true;
@@ -174,7 +174,7 @@ export function tearBoundByForces(
         hit = true;
       }
       // every other force-bearing body — gravity, charge, thermal, collide, diffuse,
-      // propagate, cohesion, pressure, drag, spring, … — also frees nearby bound matter,
+      // propagate, cohesion, pressure, viscosity, tether, … — also frees nearby bound matter,
       // with a gentle inward nudge, so the integrator's real force can act on it. A force
       // can't reach a particle that's riding a wave line; without this, only the seven
       // canonical tokens above ever disturbed the resting field. Gentle forces then read

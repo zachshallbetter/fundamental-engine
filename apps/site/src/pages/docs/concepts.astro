@@ -2,7 +2,7 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 
 const bodySnippet = `<a
-  data-body="attract vortex"   // forces compose, space-separated
+  data-body="attract swirl"   // forces compose, space-separated
   data-strength="0.9"
   data-range="320"
   data-color="#4da3ff"
@@ -62,7 +62,7 @@ const feedbackSnippet = `.headline {
       content, running one <code>requestAnimationFrame</code> loop over a conserved pool of
       particles (~130 at default density). Every body acts on that same pool. This is the
       central law: <strong>nothing is created from nothing</strong>. Matter is moved, captured,
-      and released — an absorber that swallows particles must later release them; the reservoir
+      and released — a sink that swallows particles must later release them; the reservoir
       keeps the count constant. Effects can't cheat by spawning matter, which is what makes the
       field feel physical rather than decorative.
     </p>
@@ -106,7 +106,7 @@ const feedbackSnippet = `.headline {
     <p>The vocabulary stays small by separating four independent dimensions:</p>
     <ul class="model">
       <li>
-        <b>Forces</b> — <em>what</em> a body does to nearby matter (attract, vortex, gravity,
+        <b>Forces</b> — <em>what</em> a body does to nearby matter (attract, swirl, gravity,
         lens…). They compose. <a href="/docs/api/forces">Reference →</a>
       </li>
       <li>
@@ -129,7 +129,7 @@ const feedbackSnippet = `.headline {
     <p>
       Forces don't only push particles. The same force can target a <strong>particle</strong>
       (the default), a <strong>DOM element</strong> (it gets moved by a transform offset, with
-      an anchor spring), or an <strong>event</strong> (crossing a density threshold fires a
+      an anchor tether), or an <strong>event</strong> (crossing a density threshold fires a
       <code>CustomEvent</code> you can listen for). One mechanism, three kinds of target — so the
       field can drive real app behaviour, not just pixels.
     </p>

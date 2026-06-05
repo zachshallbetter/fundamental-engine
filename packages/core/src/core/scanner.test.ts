@@ -26,7 +26,7 @@ test('applies defaults when attributes are absent', () => {
 test('parses composed tokens, numbers, angle, and feedback', () => {
   const b = parseBodyParams(
     attrs({
-      body: 'absorb attract',
+      body: 'sink attract',
       strength: '0.8',
       range: '360',
       absorb: '74',
@@ -36,7 +36,7 @@ test('parses composed tokens, numbers, angle, and feedback', () => {
       feedback: '',
     })
   );
-  assert.deepEqual(b.tokens, ['absorb', 'attract']);
+  assert.deepEqual(b.tokens, ['sink', 'attract']);
   assert.equal(b.strength, 0.8);
   assert.equal(b.range, 360);
   assert.equal(b.absorbR, 74);
@@ -55,7 +55,7 @@ test('expandPreset: blackhole → well + frame-drag + horizon + lens, each own-t
   assert.equal(vb.length, 4);
   assert.deepEqual(
     vb.map((b) => b.tokens),
-    [['attract'], ['vortex'], ['absorb'], ['lens']],
+    [['attract'], ['swirl'], ['sink'], ['lens']],
   );
   // the well and the horizon carry independent parameters (the one blocker §20.9 fixes)
   assert.equal(vb[0]!.strength, 1.4);
@@ -116,7 +116,7 @@ test('expandPreset: quasar adds polar jets to the black hole (§20.9)', () => {
   const vb = expandPreset('quasar');
   assert.deepEqual(
     vb.map((b) => b.tokens),
-    [['attract'], ['vortex'], ['absorb'], ['lens'], ['emitter'], ['emitter']],
+    [['attract'], ['swirl'], ['sink'], ['lens'], ['jet'], ['jet']],
   );
   // the two jets point along opposite headings (north/south poles)
   assert.ok(Math.abs(vb[4]!.uy - -1) < 1e-9); // angle −90° → (0, −1)
@@ -126,14 +126,14 @@ test('expandPreset: quasar adds polar jets to the black hole (§20.9)', () => {
 test('expandPreset: galaxy/nebula/tornado compose implemented atoms', () => {
   assert.deepEqual(
     expandPreset('galaxy').map((b) => b.tokens[0]),
-    ['attract', 'vortex', 'drag', 'lens'],
+    ['attract', 'swirl', 'viscosity', 'lens'],
   );
   assert.deepEqual(
     expandPreset('nebula').map((b) => b.tokens[0]),
-    ['thermal', 'drag', 'buoyancy'],
+    ['thermal', 'viscosity', 'buoyancy'],
   );
   assert.deepEqual(
     expandPreset('tornado').map((b) => b.tokens[0]),
-    ['vortex', 'stream', 'drag'],
+    ['swirl', 'stream', 'viscosity'],
   );
 });
