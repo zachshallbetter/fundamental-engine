@@ -18,7 +18,7 @@
  */
 
 import { createField, type FieldHandle, type FieldOptions, type ThreadLink } from 'forces-ui';
-import { makeFieldCanvas } from './mount.ts';
+import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
 export interface ForcesFieldInit extends FieldOptions {
   /** drive a `<canvas>` you own; when omitted, a managed full-viewport canvas is created
@@ -36,6 +36,7 @@ export class ForcesField implements FieldHandle {
   private readonly managed: boolean;
 
   constructor(init: ForcesFieldInit = {}) {
+    assertBrowser(); // browser-only: fail loudly during SSR instead of a cryptic crash
     const { canvas, target, ...opts } = init;
     this.managed = !canvas;
     this.canvas = canvas ?? makeFieldCanvas(target);

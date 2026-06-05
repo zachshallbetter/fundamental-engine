@@ -6,7 +6,8 @@
  *   - the force-registry contract (§4) generalized to agents (§22)
  *   - mass & momentum (§21), conditions (§5), formations (§7)
  *
- * Nothing here runs yet — it is the shape the engine is being refactored onto.
+ * This is the contract the engine implements: `createField`, the force registry,
+ * the integrator, and the conformance harness all build on these shapes.
  */
 
 export interface Vec2 {
@@ -154,6 +155,9 @@ export interface Env {
   c: number;
   /** gravitational constant of the unit system (§20.10). */
   G: number;
+  /** recent page-scroll speed (eased, px/frame); drives the `scrolling` gate (§5).
+   *  Undefined / 0 off the page, so the gate is inert under the conformance harness. */
+  scrollV?: number;
 
   // ── services (filled by the engine) ──────────────────────────────────────
   /** throw a micro-reaction at a point — sparks/heat (§23). */
@@ -183,6 +187,13 @@ export interface Force {
   targets?: AgentKind[];
   apply(b: Body, p: Particle, env: Env): void;
   /**
+   * This force *replaces* velocity (a reflection, rotation, or relaunch) rather than
+   * *adding* an acceleration, so first-class mass (§21.3) must not scale its effect: a
+   * bounce reflects and a lens bends regardless of inertia. Additive forces leave this
+   * unset and have their Δv scaled by `1/m`. Set on `wall`, `jet`, `lens`, `gate`.
+   */
+  kinematic?: boolean;
+  /**
    * Optional *modifier* hook (§20.3 `resonate`/`spotlight`). Run before the body's
    * other tokens apply, for this particle: a returned `strength` multiplies the
    * sibling forces' strength for this frame; `gate: true` skips them entirely. A
@@ -207,8 +218,9 @@ export interface ThreadLink {
   color?: string;
 }
 
-/** A `data-when` gate predicate (§5). Selective gates read each particle. */
-export type Condition = (b: Body, p: Particle) => boolean;
+/** A `data-when` gate predicate (§5). Selective gates read each particle; the engine
+ *  also passes the shared `env`, so a gate can read frame state (e.g. `scrolling`). */
+export type Condition = (b: Body, p: Particle, env?: Env) => boolean;
 
 /** The force registry — `token → module` (§4). */
 export type ForceRegistry = Record<Token, Force>;
@@ -222,7 +234,8 @@ export interface FieldOptions {
   accent?: string;
   /** particle-count multiplier (§2.5). */
   density?: number;
-  /** draw the background Currents (§24) — not yet implemented (Phase 3). */
+  /** draw the background Currents (§24); default true. Set false for the bare
+   *  free-particle field with no carrier waves. */
   waves?: boolean;
   /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links'
    *  (constellation), 'metaballs' (a liquid iso-surface, not dots), 'streamlines'

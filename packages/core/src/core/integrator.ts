@@ -2,12 +2,12 @@
  * The integrator — advances the field one tick (§2.2, §7).
  *
  * For each free particle: apply DOM-body forces (§4), the formation bias (§7),
- * then integrate and damp. Mass is nominal here (the unit-mass path, §21.4);
- * first-class `a = F/m` arrives in Phase 6. Reduced motion (`dt = 0`) freezes
- * the sim (§18).
+ * then integrate and damp. Under first-class mass (§21.3) each additive body force is
+ * scaled by `1/m` as it applies, while velocity-replacing (`kinematic`) forces are left
+ * untouched. Reduced motion (`dt = 0`) freezes the sim (§18).
  */
 
-import type { Body, ConditionRegistry, Env, ForceRegistry, Particle } from './types.ts';
+import type { Body, ConditionRegistry, Env, Force, ForceRegistry, Particle } from './types.ts';
 import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, type Wave } from './currents.ts';
@@ -26,10 +26,28 @@ export interface StepInput {
   waves?: readonly Wave[];
 }
 
-function passes(conds: ConditionRegistry, b: Body, p: Particle): boolean {
+function passes(conds: ConditionRegistry, b: Body, p: Particle, env: Env): boolean {
   if (!b.when) return true;
   const fn = conds[b.when];
-  return fn ? fn(b, p) : true;
+  return fn ? fn(b, p, env) : true;
+}
+
+/**
+ * Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's
+ * velocity change is scaled by `1/m` (a = F/m, so heavier matter moves less), while a
+ * `kinematic` force (a reflection / rotation / relaunch) sets velocity outright and is left
+ * unscaled. `inv === 1` (the default, `m = 1`) is the identity path either way.
+ */
+function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
+  if (inv === 1 || f.kinematic) {
+    f.apply(b, p, env);
+    return;
+  }
+  const bvx = p.vx;
+  const bvy = p.vy;
+  f.apply(b, p, env);
+  p.vx = bvx + (p.vx - bvx) * inv;
+  p.vy = bvy + (p.vy - bvy) * inv;
 }
 
 export function step(input: StepInput): void {
@@ -90,11 +108,9 @@ export function step(input: StepInput): void {
 
     // DOM body forces — the page's elements move the field (§4).
     if (hasBodies) {
-      // first-class mass (§21.3): the body forces are accelerations, so the velocity
-      // they impart is scaled by 1/m. Captured here and divided after the pass — no
-      // force needs to know about mass. Unit-mass particles (m = 1) are untouched.
-      const vx0 = p.vx;
-      const vy0 = p.vy;
+      // first-class mass (§21.3): an additive force's Δv is scaled by 1/m as it applies
+      // (see applyForce); kinematic forces set velocity outright and are left unscaled.
+      const inv = p.m !== 1 && p.m > 0 ? 1 / p.m : 1;
       for (const b of bodies) {
         if (!b.vis || b.tokens.length === 0) continue;
         const dx = b.cx - p.x;
@@ -107,7 +123,7 @@ export function step(input: StepInput): void {
         const d = Math.sqrt(d2);
         // density sampling for two-way feedback (engine bookkeeping, ungated, §8)
         if (b.feedback && d < b.range * 0.5) b.count += 1 - d / (b.range * 0.5);
-        if (b.when && !passes(conditions, b, p)) continue;
+        if (b.when && !passes(conditions, b, p, env)) continue;
         env.dx = dx;
         env.dy = dy;
         env.dist = d < 1 ? 1 : d;
@@ -128,26 +144,27 @@ export function step(input: StepInput): void {
         // 1 = neutral (the default, so the live field is untouched until opted in).
         const attn = b.attn ?? 1;
         if (!hasModifier && attn === 1) {
-          for (const tok of b.tokens) forces[tok]?.apply(b, p, env);
+          for (const tok of b.tokens) {
+            const f = forces[tok];
+            if (f) applyForce(f, b, p, env, inv);
+          }
         } else if (!hasModifier) {
           const origS = b.strength;
           b.strength = origS * attn;
-          for (const tok of b.tokens) forces[tok]?.apply(b, p, env);
+          for (const tok of b.tokens) {
+            const f = forces[tok];
+            if (f) applyForce(f, b, p, env, inv);
+          }
           b.strength = origS;
         } else {
           const origS = b.strength;
           b.strength = origS * sMul * attn; // resonate's S(t) × attention budget
           for (const tok of b.tokens) {
             const f = forces[tok];
-            if (f && !f.modify) f.apply(b, p, env);
+            if (f && !f.modify) applyForce(f, b, p, env, inv);
           }
           b.strength = origS;
         }
-      }
-      if (p.m !== 1 && p.m > 0) {
-        const inv = 1 / p.m; // a = F/m: scale the force-induced Δv by 1/mass
-        p.vx = vx0 + (p.vx - vx0) * inv;
-        p.vy = vy0 + (p.vy - vy0) * inv;
       }
     }
 

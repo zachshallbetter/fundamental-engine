@@ -4,9 +4,8 @@
  * Elements bend the field; the field's density bends them back.
  * Spec: `docs/forces-system.md`. Roadmap: `ROADMAP.md`.
  *
- * v0.1.0 — feature-complete: the catalog, core contracts, FieldStore, integrator,
- * and the full force set (canonical · natural · designed-extended), realized from
- * the original design-system prototype. Zero runtime dependencies.
+ * Feature-complete: the catalog, core contracts, FieldStore, integrator, and the
+ * full force set (canonical · natural · designed-extended). Zero runtime dependencies.
  */
 
 export * from './core/types.ts';
@@ -32,6 +31,7 @@ export * from './core/integrator.ts';
 export * from './core/formations.ts';
 export * from './core/scanner.ts';
 export * from './core/render-modes.ts';
+export * from './core/surface.ts';
 export * from './core/field.ts';
 export * from './forces/index.ts';
 // physics conformance — the Lab-as-detector framework (shared by tests + the Lab UI)
