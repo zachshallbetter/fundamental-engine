@@ -116,18 +116,18 @@ export function Background() {
 
   <section class="docs-sec">
     <h2>Methods</h2>
-    <div class="api-table">
+    <dl class="api-table">
       {
         HANDLE.map((m) => (
           <div class="api-row">
-            <div class="k">
+            <dt class="k">
               <code>{m.sig}</code>
-            </div>
-            <div class="d">{m.desc}</div>
+            </dt>
+            <dd class="d">{m.desc}</dd>
           </div>
         ))
       }
-    </div>
+    </dl>
     <div class="callout">
       <b>On the element.</b> When you use <code>&lt;forces-field&gt;</code>, these are proxied onto
       the element itself — <code>document.querySelector('forces-field').setFormation('wells')</code>.
