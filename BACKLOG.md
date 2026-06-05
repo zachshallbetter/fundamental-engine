@@ -15,8 +15,8 @@ The major current thrust. Full plan and as-built audit in
 
 - [x] **Vortex to 0.12.** Reverted the #110 inward bias (`0.6` → `0.12`) to match the spec;
       the conformance check is now tangential dominance, preview-verified in the Lab. (#113)
-- [ ] **Absorber `--accreted`.** Export `--accreted` (keep `--mass` as a temporary alias);
-      fix the stale `forces.config.ts` comment. (`b.accreted` already exists in TS.)
+- [x] **Absorber `--load`.** Exports the canonical `--load` (`accreted / capacity`), with
+      `--mass` kept as a back-compat alias; fixed the stale `forces.config.ts` comment. (#115, #116)
 - [x] **Velocity cap + safety invariants.** The integrator caps free-particle speed at `c`
       (12); a conformance safety sweep asserts no NaN / Infinity, finite position, bounded
       velocity + heat, and stable count (unless a budgeted [S] source runs). The `velocityCap`
