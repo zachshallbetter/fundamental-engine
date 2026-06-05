@@ -17,13 +17,14 @@ If not, tune the attributes and fire again.
 
 ---
 
-## The four layers
+## The five layers
 
 | Layer | File(s) | Asks | Style |
 |---|---|---|---|
 | **Golden unit tests** | `forces/forces.test.ts`, `forces/natural.test.ts`, `forces/extended.test.ts` | Is each force's per-frame math *exactly* the spec formula? | direct `apply(b,p,env)`, hand-built env, assert Δv |
-| **Integrator tests** | `core/integrator.test.ts` | Does the loop *around* forces hold (friction, heat decay, edge wrap, the modifier pass, first-class mass, conserved-attention/causality)? | `step()` over a `FieldStore` |
+| **Integrator tests** | `core/integrator.test.ts` | Does the loop *around* forces hold (friction, heat decay, edge wrap, the velocity cap, the modifier pass, first-class mass, conserved-attention/causality)? | `step()` over a `FieldStore` |
 | **Conformance suite** | `conformance/` | Fire a particle into a force — *did the expected behavior occur*? | `runScenario()` + declarative expectations |
+| **Safety sweep** | `conformance/safety.test.ts` | Does *every* experiment stay finite, bounded, and conserved across its whole trajectory? | global invariants over the `EXPERIMENTS` catalog |
 | **Benchmark** | `bench/integrator.bench.ts` | How fast is the hot loop? (perf, not correctness) | timed `step()` at several scales |
 
 How they relate:
@@ -37,7 +38,12 @@ How they relate:
   exact Δv where the formula is clean. It is the systematic, completeness-guarded layer,
   and it is the same catalog the Lab renders.
 - **Integrator tests pin the surroundings** — the per-frame friction (`×0.95`), heat decay
-  (`×0.972`), toroidal wrap, the `modify()` pass, and the opt-in systems.
+  (`×0.972`), toroidal wrap, the `|v| ≤ c` velocity cap, the `modify()` pass, and the opt-in
+  systems.
+- **The safety sweep pins the floor.** Beyond each force's own expectations, it runs every
+  experiment and asserts the whole trajectory stays finite (no NaN/Infinity), positions
+  finite, speed ≤ `c`, heat bounded, and the particle count stable unless a budgeted [S]
+  source is active — the net that catches a runaway a bespoke check would miss.
 - **The benchmark is not a correctness gate** — it tracks throughput so a regression is
   visible (`pnpm --filter forces-ui bench`).
 
@@ -66,7 +72,7 @@ interface Scenario {
   force: string;                 // the force under test
   tokens?: string[];             // body tokens (default [force]); modifiers pair, e.g. ['resonate','attract']
   family: 'canonical' | 'natural' | 'extended';
-  klass: 'A' | 'B' | 'C' | 'modifier';
+  klass: 'A' | 'B' | 'C' | 'D' | 'S' | 'modifier';
   body: Partial<Body>;           // strength, range, spin, angle, M, cx, cy, hw, hh, …
   particles: ScenarioParticle[]; // initial state(s); particles[0] is the tracked test particle
   frames: number;                // how long to simulate
@@ -74,7 +80,7 @@ interface Scenario {
 }
 ```
 
-### The four classes
+### The classes
 
 The class decides how `runScenario` wires the environment (§20.1):
 
@@ -227,8 +233,10 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
 
 - **33 forces**, each with an experiment (33 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
   ~71 invariant/exact checks), driven through the real engine and deterministic across
-  runs, on top of the golden per-force unit tests and the integrator suite. **257 core
-  tests** in all, every merge green.
+  runs, on top of the golden per-force unit tests and the integrator suite. A **safety
+  sweep** then runs all 36 experiments through global finite/bounded/conserved invariants
+  (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count). **294 core tests** in all,
+  every merge green.
 - **Composition + conditions** are covered, not deferred: `COMPOSITE_EXPERIMENTS` verifies
   that forces compose (`attract repel` cancel; `attract vortex` sums to a spiral) and gate
   on conditions (`data-when` runs through the real condition registry).

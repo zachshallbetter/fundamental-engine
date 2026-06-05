@@ -58,7 +58,7 @@ spec gives the exact math and how it hooks the existing engine.
 Reusing the engine's symbols (see `forces-system.md`):
 `S` strength, `d_max` effective range, `(cx,cy)` body center, `(hw,hh)` half-
 extents, `b.count` per-frame density tally, `b.d` eased density ∈ [0,1], `b.on`
-engaged, `b.mass` captured count. Per particle: position/velocity `(x,y,vx,vy)`,
+engaged, `b.accreted` captured count. Per particle: position/velocity `(x,y,vx,vy)`,
 `heat`, friction `f ≈ 0.95`. Frame rate assumed 60 fps.
 
 ### The two transfer functions (the whole bridge)
@@ -219,9 +219,9 @@ instead of hand-drawn — the wiring appears because matter actually flows betwe
 
 Map app state onto the conservation grammar (§6.9) so transitions are *physical*:
 ```
-loading   → accretion   : absorb body, mass ramps  scale = 1 + (mass/maxMass)·0.45
+loading   → accretion   : absorb body, load ramps  scale = 1 + (accreted/capacity)·0.45
 success   → supernova   : release all captured radially (spd 4–7, heat 1)
-submit    → capture      : p.cap = b ; b.mass++
+submit    → capture      : p.cap = b ; b.accreted++
 error     → repel burst  : F = −(1 − d/d_max)²·S  (carve a void, §6.6)
 ```
 Nothing is faked — every transition shoves or releases *existing* matter, so the

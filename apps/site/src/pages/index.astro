@@ -221,9 +221,11 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
         <div>
           <span class="concept-no"><i class="fg fg-vortex" style="--fc:#2dd4bf"></i>07 — Vortex</span>
           <h2>A body can spin the field.</h2>
-          <p>A <strong>vortex</strong> applies a purely <strong>tangential</strong> force. There’s no net
-            pull inward, so matter wheels around it; a whisper of retention keeps the whirlpool coherent.</p>
-          <div class="formula"><span class="v">v</span> += (−<span class="v">d̂_y</span>, <span class="v">d̂_x</span>) · <span class="v">S</span> · spin</div>
+          <p>A <strong>vortex</strong> applies a dominantly <strong>tangential</strong> force — a swirl, not
+            a drain. The inward pull is light (the swirl dominates it roughly eightfold), so matter wheels
+            around the body instead of falling in. A tight inward spiral is a preset (<code>whirlpool</code>),
+            never the canonical verb.</p>
+          <div class="formula"><span class="v">v</span> += (−<span class="v">d̂_y</span>, <span class="v">d̂_x</span>) · <span class="v">S</span> · spin <span class="c">+</span> <span class="v">d̂</span> · <span class="v">S</span> · <span class="c">0.12</span></div>
           <p class="note">Drag the vortex into the swarm — particles orbit rather than fall in.</p>
           <button class="agitate" data-agitate="#c-vortex">↯ Agitate the field</button>
         </div>
@@ -301,14 +303,14 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
           <p>An <strong>absorber</strong> captures particles at its core. They aren’t deleted — they’re
             <strong>held inside</strong>, and the element inflates as it fills. When it saturates it goes
             supernova: the exact particles are <strong>released radially</strong>.</p>
-          <div class="formula"><span class="c">scale =</span> 1 + (M / M<span class="c">max</span>) · 0.45 · <span class="v">captured = released</span></div>
+          <div class="formula"><span class="c">scale =</span> 1 + (<span class="v">accreted</span> / <span class="v">capacity</span>) · 0.45 · <span class="v">captured = released</span></div>
           <p class="note">Nothing is conjured from thin air, and nothing vanishes. Matter changes hands.</p>
         </div>
         <div class="stage">
           <span class="stage-label">absorber — fills, then pops</span>
           <div class="body-core" data-drag data-body="absorb attract" data-absorb="64" data-max="30" data-strength="0.8" data-range="360" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">core</div>
           <div class="meter" style="--cc:#ff9d5c;"><i></i></div>
-          <span class="hintline">mass accumulates, then releases on supernova</span>
+          <span class="hintline">matter accumulates, then releases on supernova</span>
         </div>
       </div>
     </section>

@@ -16,13 +16,19 @@ it was refactored from.
 
 ## Status
 
-**v0.1.0 — feature-complete.** The full specification is written and stable, and
-the typed engine realizes it: 33 forces (canonical · natural · designed-extended ·
+**v0.2.0 — feature-complete, hardening.** The full specification is written and stable,
+and the typed engine realizes it: 33 forces (canonical · natural · designed-extended ·
 SPH-fluid pressure · Verlet cloth · predator/prey · shape-assembly morph · a budgeted
 [S] source), presets, conditions, formations, render modes (including metaballs and
 voronoi), two-way density feedback, conserved attention, cross-boundary causality, and
 the closed-loop concepts (material typography, self-laying-out layout) — zero runtime
 dependencies, fully tested.
+
+A **physics workover** is underway — a designed / natural / hybrid substrate that makes
+the engine more physically coherent without losing the designed interface feel. A global
+velocity cap and a conformance safety sweep already ship; the mode system, medium
+formalization, and the transformation primitives follow. Plan and as-built audit in
+[`docs/physics-workover.md`](docs/physics-workover.md).
 
 The repository includes a shared **physics conformance framework** (a deterministic
 scenario runner that verifies particle trajectories against mathematical invariants)
@@ -30,8 +36,9 @@ and a visual **physics conformance lab** (an interactive particle detector chamb
 offering timeline diagnostics, parameter sweeps, and exportable reports).
 
 The site (`apps/site`) is its first consumer: a live manual, conformance lab, and
-design system at [forces-ui.com](https://forces-ui.com). Published as `forces-ui`,
-`@forces-ui/elements`, and `@forces-ui/react`.
+design system at [forces-ui.com](https://forces-ui.com). The workspace ships three
+packages — `forces-ui`, `@forces-ui/elements`, and `@forces-ui/react` — not yet on npm;
+each release is cut as a git tag (see [`RELEASING.md`](RELEASING.md)).
 
 ## The model
 
