@@ -5,6 +5,7 @@ import SiteFooter from '../components/SiteFooter.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
 import '../styles/ds-tokens.css';
 import '../styles/force-glyphs.css';
+import '../styles/instrument.css';
 
 // Forces — Design System. The documentation grounded in this project's real
 // implementation: the §20.2 force palette, the catalog, the glyphs, the tokens.
@@ -24,6 +25,10 @@ const families = [
   { key: 'extended', label: 'Designed-extended' },
 ] as const;
 const inFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
+const forceNo = (token: string) => MANUAL_FORCES.findIndex((f) => f.token === token) + 1;
+const calibratedCount = MANUAL_FORCES.filter((f) => f.calibrated).length;
+const awaitingCount = MANUAL_FORCES.length - calibratedCount;
+const z2 = (n: number) => String(n).padStart(2, '0');
 
 const surfaces = [
   { n: 'Page', v: '#04050a' }, { n: 'Surface', v: '#0a0d14' }, { n: 'Subtle', v: '#0e121b' },
@@ -206,13 +211,50 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
       <section class="ds-sec" id="forces">
         <div class="sec-head"><span class="idl">05 — Forces</span><h2>{MANUAL_FORCES.length} forces. One reciprocal field.</h2>
           <p class="sec-desc">The vocabulary is verbs — what a body does to the matter around it. Each
-            is a glyph, a colour, and a per-frame law. <a href="/">Read the full manual →</a></p></div>
+            is a glyph, a two-letter symbol, a colour, and a per-frame law. <a href="/">Read the full manual →</a></p></div>
+
+        <span class="sub">The force set</span>
+        <div class="frame canvas">
+          <div class="force-browser view-icon" data-force-browser>
+            <div class="fb-head">
+              <span class="fb-label">{MANUAL_FORCES.length} forces</span>
+              <div class="seg-toggle" role="group" aria-label="Tile display">
+                <button type="button" data-view="icon" class="on">Icon</button>
+                <button type="button" data-view="symbol">Symbol</button>
+                <button type="button" data-view="name">Name</button>
+              </div>
+            </div>
+            {families.map((fam) => (
+              <div class="fb-group">
+                <span class="glabel">{fam.label}</span>
+                <div class="force-grid">
+                  {inFamily(fam.key).map((f) => (
+                    <div
+                      class={`force-tile ${f.calibrated ? 'calib' : 'locked'}`}
+                      style={`--fc:${f.color}`}
+                      title={`${cap(f.label)} — ${f.effect}${f.calibrated ? '' : ' (awaiting calibration)'}`}
+                    >
+                      <span class="z">{z2(forceNo(f.token))}</span>
+                      <span class="picon as-icon"><i class={`fg fg-${f.token}`} /></span>
+                      <span class="sym as-symbol">{f.symbol}</span>
+                      <span class="nameBig as-name">{cap(f.label)}</span>
+                      <span class="pname">{cap(f.label)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <p class="fb-foot"><b>{calibratedCount} calibrated</b> · {awaitingCount} awaiting · the lit forces fire in <a href="/lab">the Lab →</a></p>
+          </div>
+        </div>
+
+        <span class="sub">Formulas</span>
         <div class="grid cols-2 formulas">
           {MANUAL_FORCES.map((f) => (
             <article class="card formula-card" style={`--c:${f.color}`}>
-              <h3><i class={`fg fg-${f.token}`} /><code class="ftok">{f.token}</code></h3>
+              <h3><i class={`fg fg-${f.token}`} /><code class="ftok">{f.symbol}</code><code class="ftok dim">{f.token}</code></h3>
               <code class="expr">{f.formula}</code>
-              <p>{f.desc}.</p>
+              <p>{f.summary}</p>
             </article>
           ))}
         </div>
@@ -247,6 +289,27 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         <div class="frame canvas glyphs">
           {MANUAL_PRESETS.map((p) => (<div class="gl"><i class={`fg fg-${p.name}`} style={`--fc:${PRESET_COLORS[p.name]}`} /><code>{p.name}</code></div>)) }
         </div>
+        <span class="sub">Instrument components</span>
+        <p class="sec-desc" style="margin-top:0">The shared parts the Lab and the design system both run on — a status pill, a
+          segmented toggle, force-tinted tabs, and a mono readout. Each tints to the active force via <code class="ftok">--fc</code>.</p>
+        <div class="grid cols-2">
+          <div class="frame canvas inst-demo">
+            <span class="frame-label">Status pill</span>
+            <div class="verdict resolving" style="--fc:#4da3ff">Resolving — 2/3 passed</div>
+            <div class="verdict confirmed">Confirmed — 3/3 passed</div>
+            <div class="verdict mismatch">Mismatch — 1 failed</div>
+          </div>
+          <div class="frame canvas inst-demo">
+            <span class="frame-label">Segmented · tabs · readout</span>
+            <div class="seg-toggle"><button type="button" class="on">Icon</button><button type="button">Symbol</button><button type="button">Name</button></div>
+            <div class="readout-tabs" style="--fc:#2dd4bf"><button type="button" class="on">Expectations<i>2/3</i></button><button type="button">Tune</button></div>
+            <div class="ds-readout" style="--fc:#2dd4bf">
+              <div class="hud-row"><span class="k">dist</span><b>80</b><span class="u">px</span></div>
+              <div class="hud-row"><span class="k">speed</span><b>0.00</b><span class="u">px/f</span></div>
+              <div class="hud-row"><span class="k">force</span><b>0.080</b><span class="u">|Δv|</span></div>
+            </div>
+          </div>
+        </div>
         <span class="sub">Motion</span>
         <div class="grid cols-4 swatches">
           {motions.map((m) => (<article class="card mo"><b>{m.n}</b><code>{m.d}</code><span>{m.note}</span></article>)) }
@@ -257,6 +320,28 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     </main>
   </div>
   <SiteFooter />
+
+  <script>
+    // The force browser's Icon / Symbol / Name toggle — swaps a `view-*` class on
+    // the browser root; the tile faces show/hide via CSS. Re-binds on client nav.
+    function initForceBrowsers() {
+      document.querySelectorAll<HTMLElement>('[data-force-browser]').forEach((br) => {
+        const seg = br.querySelector('.seg-toggle');
+        if (!seg || (br as any)._wired) return;
+        (br as any)._wired = true;
+        seg.addEventListener('click', (e) => {
+          const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-view]');
+          if (!btn) return;
+          const view = btn.dataset.view!;
+          br.classList.remove('view-icon', 'view-symbol', 'view-name');
+          br.classList.add('view-' + view);
+          seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn));
+        });
+      });
+    }
+    initForceBrowsers();
+    document.addEventListener('astro:page-load', initForceBrowsers);
+  </script>
 </Base>
 
 <style>
@@ -357,6 +442,13 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   .formula-card h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.7rem; }
   .formula-card .fg { --fc: var(--c); width: 16px; height: 16px; }
   .formula-card .ftok { font-family: var(--mono); font-size: 0.82rem; color: var(--c); }
+  .formula-card .ftok.dim { color: var(--text-4); font-size: 0.72rem; }
+  /* the force set reads as a dense reference sheet here (the Lab uses a narrow 5-col rail) */
+  [data-force-browser] { gap: 18px; }
+  [data-force-browser] .force-grid { grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); }
+  [data-force-browser].view-name .force-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .inst-demo { display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem; padding-top: 2.4rem; }
+  .inst-demo .verdict, .inst-demo .readout-tabs, .inst-demo .ds-readout { width: 100%; max-width: 280px; }
   .formula-card .expr { display: block; font-family: var(--mono); font-size: 0.74rem; line-height: 1.5; color: var(--text); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 7px; padding: 0.6rem 0.7rem; margin-bottom: 0.6rem; white-space: pre-wrap; overflow-wrap: anywhere; }
   .formula-card p { color: var(--text-3); font-size: 0.9rem; line-height: 1.5; }
 
