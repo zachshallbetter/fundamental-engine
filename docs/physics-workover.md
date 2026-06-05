@@ -1,7 +1,9 @@
 # Physics Workover
 
-Status: planning and in progress. This is the authority for the multi-version
-physics effort (v0.3 through v0.6). It sits under the spec
+Status: in progress. Phase 1 (v0.3) reconciliation has shipped — vortex `0.12`, the
+absorber `--load` export, the global velocity cap, and the conformance safety sweep; the
+mode system, medium, metrics, and transformation primitives remain. This is the authority
+for the multi-version physics effort (v0.3 through v0.6). It sits under the spec
 ([`forces-system.md`](forces-system.md)); where this doc and the spec disagree,
 the spec wins and this doc is corrected.
 
@@ -81,11 +83,16 @@ substrate already ships. Do not re-implement these:
 - **`env.neighbors`** (spatial hash) and **`env.grid`** (scalar grid: diffuse plus
   leapfrog wave) are both implemented services, not stubs.
 
-Real gaps (the actual work of this workover):
+Real gaps (the actual work of this workover). Phase 1 (v0.3) has since closed the first
+three — they are kept here, marked **Done**, as the record of what shipped:
 
-- Vortex inward bias is `0.6` in code and `forces-formulas.md` (shipped in #110),
-  but the spec (`forces-system.md:374`) says `0.12`. Reconcile to `0.12`.
-- No velocity cap anywhere. No NaN, Infinity, or finite-position guards.
+- **Done (#113).** Vortex inward bias reconciled `0.6` → `0.12` in code, the formulas
+  reference, and the conformance check (now tangential dominance, not an exact inward spiral).
+- **Done (#117).** A global velocity cap (`|v| ≤ c`, `c = 12`) plus a conformance safety
+  sweep — no NaN/Infinity, finite position, bounded heat, and a stable count across every
+  experiment.
+- **Done (#115).** The absorber exports `--load` (`accreted / capacity`), with `--mass`
+  kept as a back-compat alias.
 - `FRICTION = 0.95` is an unnamed global damping constant, not a medium mode.
 - `dt` is frame-based (`0` or `1`), not seconds; no fixed-step accumulator.
 - `drag` is linear only; no quadratic or mixed.
@@ -96,8 +103,6 @@ Real gaps (the actual work of this workover):
   colour, unrelated to a measured metric).
 - No `phase` particle attribute (only "phase change" in the `crystallize` comment).
 - No transformation primitives: `warp`, `wormhole`, `fuse`, `decay`, `fission`.
-- Absorber CSS export is still `--mass` (`field.ts:509`); it should be
-  `--load` with an optional `--mass` alias.
 
 ## Phase 1 reconciliations
 
@@ -121,9 +126,9 @@ conformance check moves from an exact inward spiral to **tangential dominance**
 ### Absorber accreted
 
 `b.accreted` is the captured-particle count, not inertial mass. `p.m` is reserved
-for inertial mass. Remaining work: export `--load` CSS (keep `--mass` as a
-temporary alias), fix the stale `forces.config.ts:146` comment, and confirm the
-docs say absorb tracks an accreted count.
+for inertial mass. Shipped (#115, #116): the `--load` CSS export (`accreted / capacity`,
+with `--mass` kept as a back-compat alias), the corrected `forces.config.ts` comment, and
+the spec/docs now state that absorb tracks an accreted count.
 
 ### Global safety invariants
 

@@ -33,6 +33,16 @@ metrics, and the transformation primitives, not re-building what exists.)
   The conformance check moves from an exact inward spiral to **tangential dominance**; the Lab
   shows the first-frame Δv `(0.020, −0.171)` with `|Δvᵧ| > 4×|Δvₓ|` and a swirl track.
 
+### Documentation
+
+- **Docs and the live manual reconciled to the workover.** The Field Manual's `vortex`
+  panel now reads as a swirl — the inward bias surfaces as `+ 0.12` in its formula, with no
+  "whirlpool" — and the `absorb` panel uses `accreted / capacity`. The formula handbook's
+  `absorb` row, the testing guide (the new safety-sweep layer, the corrected class list, the
+  `294`-test count), the spec's §20.10 (an as-built note on the global cap + safety sweep),
+  the possibilities doc, and the README status (`v0.2.0`; packages not yet on npm) are all
+  brought in line.
+
 ## [0.2.0] — 2026-06-04
 
 ### Added
