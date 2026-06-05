@@ -195,3 +195,34 @@ export function tearBoundByForces(
     }
   }
 }
+
+/**
+ * Charge induction (§20.10) — a *field-level* polarization, separate from the force.
+ *
+ * The pure `charge`/`magnetism` force ignores neutral matter (`q = 0 → return`), so on
+ * the live field — where every particle starts neutral — it would do nothing at all. A
+ * charge or magnetism body therefore polarizes the matter that enters its field: a
+ * neutral particle picks up a sign by which side of the body it sits on, splitting the
+ * region into the +/- domains the force then sorts. Charge is induced once — matter
+ * carries its sign thereafter — so an already-charged particle is never overwritten.
+ *
+ * This lives here, not in the force's `apply`, on purpose: the bare integrator (which the
+ * conformance suite drives) never runs it, so the force's golden contract ("ignores
+ * neutral matter") stays exactly true; only the live field, which calls this each frame,
+ * has charged matter for the force to push.
+ */
+export function induceCharges(bodies: readonly Body[], particles: readonly Particle[]): void {
+  for (const b of bodies) {
+    if (!b.vis) continue;
+    if (b.tokens.indexOf('charge') < 0 && b.tokens.indexOf('magnetism') < 0) continue;
+    if (b.range <= 0) continue; // a global (range 0) charge field has no side to polarize by
+    const r2 = b.range * b.range;
+    for (const p of particles) {
+      if (p.charge) continue; // already signed — matter carries its charge
+      const dx = b.cx - p.x;
+      const dy = b.cy - p.y;
+      if (dx * dx + dy * dy >= r2) continue;
+      p.charge = dx >= 0 ? 1 : -1; // polarize by side → a two-domain +/- split
+    }
+  }
+}
