@@ -695,6 +695,9 @@
   line-height: 1.55;
   color: var(--text-2);
 }
+.api-table dd {
+  margin: 0;
+}
 @media (max-width: 680px) {
   .api-row {
     grid-template-columns: 1fr;
