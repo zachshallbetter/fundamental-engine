@@ -13,8 +13,8 @@ The major current thrust. Full plan and as-built audit in
 
 **v0.3 — reconciliation, safety, boundary, metrics (the live queue):**
 
-- [ ] **Vortex to 0.12.** Revert the #110 inward bias (`0.6` → `0.12`) to match the spec;
-      the conformance check becomes tangential dominance, not an exact inward spiral.
+- [x] **Vortex to 0.12.** Reverted the #110 inward bias (`0.6` → `0.12`) to match the spec;
+      the conformance check is now tangential dominance, preview-verified in the Lab. (#113)
 - [ ] **Absorber `--accreted`.** Export `--accreted` (keep `--mass` as a temporary alias);
       fix the stale `forces.config.ts` comment. (`b.accreted` already exists in TS.)
 - [ ] **Velocity cap + safety invariants.** A hard `velocityCap`; conformance guards for no
