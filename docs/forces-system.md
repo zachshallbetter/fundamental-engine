@@ -1114,19 +1114,22 @@ Drop-in [A]; selective ones read each particle (like `hot`/`cool`, §5).
 
 ### 20.6 Render modes (same sim, different material)
 The integrator is decoupled from the draw; these change the *look* without
-touching the physics. Each is a swap of the particle draw pass in `field.js`.
+touching the physics. Each is a swap of the particle draw pass in the renderer.
+**Six ship today** — `dots` (the default), `trails`, `links`, `metaballs`, `voronoi`,
+and `streamlines`; the remaining rows are spec-only and marked **planned**.
 
-| Mode | How | Result |
-|---|---|---|
-| `metaballs` | threshold a summed density field (marching squares) | a liquid iso-surface, not dots |
-| `trails` | persist a faded previous frame instead of clearing | long-exposure light-painting |
-| `voronoi` | Delaunay/Voronoi over particle centers | shattered glass / cells |
-| `links` | line between particles within `r` (particle↔particle threads) | constellation / neural-net |
-| `streamlines` | trace the force field itself, not the particles | a diagnostic vector view |
-| `knockout` | clip particle draw to text via `destination-in` | the field visible only inside letters |
-| `heatmap` | render the density/`heat` grid as a contour | an attention contour map |
-| `redshift` | tint by velocity/proximity (Doppler + gravitational, §20.8) | relativistic accretion-disk look |
-| `blackbody` | tint by energy on a blackbody ramp (§20.8) | physically-warm temperature color |
+| Mode | How | Result | Status |
+|---|---|---|---|
+| `dots` | heat-tinted points (the default draw) | the baseline field | shipped |
+| `metaballs` | threshold a summed density field (marching squares) | a liquid iso-surface, not dots | shipped |
+| `trails` | persist a faded previous frame instead of clearing | long-exposure light-painting | shipped |
+| `voronoi` | nearest-site cells over particle centers | shattered glass / cells | shipped |
+| `links` | line between particles within `r` (particle↔particle threads) | constellation / neural-net | shipped |
+| `streamlines` | trace the force field itself, not the particles | a diagnostic vector view | shipped |
+| `knockout` | clip particle draw to text via `destination-in` | the field visible only inside letters | planned |
+| `heatmap` | render the density/`heat` grid as a contour | an attention contour map | planned |
+| `redshift` | tint by velocity/proximity (Doppler + gravitational, §20.8) | relativistic accretion-disk look | planned |
+| `blackbody` | tint by energy on a blackbody ramp (§20.8) | physically-warm temperature color | planned |
 
 ### 20.7 Force relationships (the "side" relationships)
 Forces aren't a flat list — they relate by inversion, intensity, composition, and
