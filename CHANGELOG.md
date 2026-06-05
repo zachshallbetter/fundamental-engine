@@ -7,6 +7,23 @@ The packages are not yet published to npm; each release is cut as a git tag
 
 ## [Unreleased]
 
+The **physics workover** begins: a designed / natural / hybrid substrate that makes the
+engine more physically coherent without losing the designed interface feel. The full plan
+and an as-built audit live in [`docs/physics-workover.md`](docs/physics-workover.md); the
+work ships across v0.3 to v0.6. (The audit's headline: first-class mass, softened
+inverse-square gravity/charge, `b.accreted`, and class-[S] source/sink budgeting already
+ship, so the work is the mode system, medium formalization, safety layer, `screen`,
+metrics, and the transformation primitives, not re-building what exists.)
+
+### Fixed
+
+- **Canonical vortex swirls again (inward bias `0.6` → `0.12`).** Reverts the v0.2.0 bias:
+  the spec (§6.8) and the catalog already specified `0.12`. Canonical `vortex` is a designed
+  swirl verb — the tangential component dominates the inward one ~8×, so it holds shape — not
+  a spiral drain. That binding belongs in a preset (`whirlpool` / `blackhole` / `accretion`).
+  The conformance check moves from an exact inward spiral to **tangential dominance**; the Lab
+  shows the first-frame Δv `(0.020, −0.171)` with `|Δvᵧ| > 4×|Δvₓ|` and a swirl track.
+
 ## [0.2.0] — 2026-06-04
 
 ### Added
