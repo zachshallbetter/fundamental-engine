@@ -1,0 +1,209 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+
+const installWc = `npm i @forces-ui/elements`;
+const installReact = `npm i @forces-ui/react`;
+const installCore = `npm i forces-ui`;
+
+const setupWc = `<script type="module">
+  import '@forces-ui/elements';
+</script>
+
+<!-- one field, behind everything -->
+<forces-field accent="#4da3ff"></forces-field>`;
+
+const setupReact = `import { ForcesField } from '@forces-ui/react';
+
+export default function App() {
+  return (
+    <>
+      <ForcesField accent="#4da3ff" />
+      {/* your app */}
+    </>
+  );
+}`;
+
+const setupCore = `import { mountField } from '@forces-ui/elements';
+
+// creates + manages a fixed full-viewport canvas, returns the handle
+const field = mountField({ accent: '#4da3ff' });`;
+
+const body1 = `<h1 data-body="attract" data-strength="0.9" data-range="320">
+  forces-ui
+</h1>`;
+
+const react1 = `// bodies are plain elements anywhere in your tree
+<h1 data-body="attract" data-strength="0.9" data-range="320">
+  forces-ui
+</h1>
+
+// React renders bodies after the field mounts — rescan once they're in:
+<ForcesField accent="#4da3ff" onReady={(field) => field.scan()} />`;
+
+const reciprocity = `<h1 data-body="attract" data-range="320" data-feedback>forces-ui</h1>
+
+<style>
+  h1 {
+    --d: 0;  /* the engine eases this in, density ∈ [0,1] */
+    font-variation-settings: 'wght' calc(380 + var(--d) * 420);
+    text-shadow: 0 0 calc(var(--d) * 36px) rgba(77, 163, 255, var(--d));
+  }
+</style>`;
+
+const compose = `<h1
+  data-body="attract swirl"
+  data-strength="0.9"
+  data-range="320"
+  data-spin="1"
+  data-feedback
+>forces-ui</h1>`;
+
+const condition = `<a data-hot data-body="swirl" data-when="active" data-spin="1" data-range="220">
+  hover me
+</a>`;
+
+const drive = `const field = document.querySelector('forces-field');
+
+// a global bias on every particle
+field.setFormation('wells');
+
+// a one-shot shove + heat at the cursor
+document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
+---
+
+<DocsLayout
+  title="forces-ui — Your first field"
+  description="A step-by-step tutorial: install forces-ui, drop the field, add your first body, make type react with --d, compose forces, gate on a condition, and drive the field from code. From npm install to a glowing, reacting headline."
+>
+  <header class="docs-hero">
+    <p class="kicker">Getting started</p>
+    <h1>Your <span class="accent">first field</span></h1>
+    <p class="lede">
+      Eight short steps from <code>npm install</code> to a headline that gains weight and glow as
+      the field pools around it. Every step is runnable on its own — paste, save, watch.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>1. Install</h2>
+    <p>Pick the entry point for your stack. The rest of this tutorial uses the web component.</p>
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'bash', code: installWc },
+        { label: 'React', lang: 'bash', code: installReact },
+        { label: 'Vanilla', lang: 'bash', code: installCore },
+      ]}
+    />
+  </section>
+
+  <section class="docs-sec">
+    <h2>2. Drop the field</h2>
+    <p>
+      One field lives behind your whole page. Register the element and drop a single
+      <code>&lt;forces-field&gt;</code> — it mounts a fixed, full-viewport canvas and starts the
+      engine. Nothing reacts yet; there are no bodies.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'html', code: setupWc },
+        { label: 'React', lang: 'tsx', code: setupReact },
+        { label: 'Vanilla', lang: 'ts', code: setupCore },
+      ]}
+    />
+  </section>
+
+  <section class="docs-sec">
+    <h2>3. Add your first body</h2>
+    <p>
+      A <strong>body</strong> is any element with <code>data-body</code>. Mark your headline an
+      <code>attract</code> body and the field starts pulling matter toward it. Move the element and
+      the force moves with it — the engine re-reads its box every frame.
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: body1 }]} />
+    <figure class="force-cell solo" style="--fc:#4da3ff; margin-top:0.9rem">
+      <forces-cell force="attract" color="#4da3ff" style="height:150px"></forces-cell>
+      <figcaption>
+        <b>attract</b>
+        <span>what your headline now does to nearby matter</span>
+      </figcaption>
+    </figure>
+    <div class="callout">
+      <b>React note.</b> Components render their bodies <em>after</em> the field mounts, so call
+      <code>field.scan()</code> once from <code>onReady</code> to pick them up.
+      <CodeTabs variants={[{ label: 'React', lang: 'tsx', code: react1 }]} />
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>4. Make the type react</h2>
+    <p>
+      This is the payoff. Add <code>data-feedback</code> and the field writes the density it
+      gathered back to your element as the <code>--d</code> custom property (∈ [0, 1], low-pass
+      filtered so it eases). Drive weight and glow from it — the word grows where matter collects.
+    </p>
+    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: reciprocity }]} />
+    <div class="callout">
+      <b>Words glow, they are never drawn.</b> The text stays real, selectable, and accessible —
+      <code>--d</code> only enhances it; particles never assemble into letterforms.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>5. Compose another force</h2>
+    <p>
+      Forces compose, space-separated. Add <code>swirl</code> and your headline now both pulls and
+      spins the matter around it. Each force reads only the attributes it uses —
+      <code>swirl</code> takes <code>data-spin</code>; <code>attract</code> ignores it.
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: compose }]} />
+    <figure class="force-cell solo" style="--fc:#2dd4bf; margin-top:0.9rem">
+      <forces-cell force="swirl" color="#2dd4bf" style="height:150px"></forces-cell>
+      <figcaption>
+        <b>swirl</b>
+        <span>the spin you just composed on top of attract</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="docs-sec">
+    <h2>6. Gate it on a condition</h2>
+    <p>
+      A force can act only <em>when</em> a condition holds, via <code>data-when</code>. Mark an
+      element <code>data-hot</code> so hover and keyboard focus set its engaged state, then gate the
+      force on <code>active</code> — it swirls only while the link is engaged.
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: condition }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>7. Drive it from code</h2>
+    <p>
+      Every entry point hands you a <a href="/docs/api/handle">FieldHandle</a>. With the web
+      component it's proxied onto the element, so you can reshape the field and react to events:
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: drive }]} />
+  </section>
+
+  <section class="docs-sec next">
+    <h2>8. Where to go next</h2>
+    <div class="next-grid">
+      <a class="next-card" href="/docs/concepts">
+        <b>Concepts</b>
+        <span>The model in depth — one conserved field, reciprocity, the orthogonal axes.</span>
+      </a>
+      <a class="next-card" href="/docs/api/forces">
+        <b>The 33 forces</b>
+        <span>The full catalog — compose any of them on a body, space-separated.</span>
+      </a>
+      <a class="next-card" href="/docs/recipes">
+        <b>Recipes</b>
+        <span>Copy-paste patterns — a glowing hero, a reacting grid, a click burst.</span>
+      </a>
+      <a class="next-card" href="/lab">
+        <b>The Lab</b>
+        <span>Fire a particle into any force and verify it against its law.</span>
+      </a>
+    </div>
+  </section>
+</DocsLayout>
