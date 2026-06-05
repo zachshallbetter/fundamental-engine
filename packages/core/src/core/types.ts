@@ -1,0 +1,269 @@
+/**
+ * Core contracts for the reciprocal field.
+ *
+ * These types encode the spec in `docs/forces-system.md`:
+ *   - the data model (§3): Particle, Body, Env
+ *   - the force-registry contract (§4) generalized to agents (§22)
+ *   - mass & momentum (§21), conditions (§5), formations (§7)
+ *
+ * Nothing here runs yet — it is the shape the engine is being refactored onto.
+ */
+
+export interface Vec2 {
+  x: number;
+  y: number;
+}
+
+/** A force id. Open string so the registry can be extended (§20), but the
+ *  canonical set is enumerated in `config/forces.config.ts`. */
+export type Token = string;
+
+/** The three kinds of thing a force can act on (§22). A particle is the
+ *  lightest agent; an element is a heavy body with a DOM consumer; an event
+ *  sink is write-only. */
+export type AgentKind = 'particle' | 'element' | 'event';
+
+/**
+ * A free particle — the lightest agent (§3.2, §21).
+ *
+ * `m` is inertial mass. Today it is nominal (always 1 — the engine integrates
+ * `v += F`, §2.2). Under first-class mass (§21, Option B) it becomes `∝ size`
+ * and the integrator divides by it. Mutate `vx/vy/heat/x/y` from a force.
+ */
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  /** inertial mass — 1 = nominal (§21). */
+  m: number;
+  /** ∈ [0,1]; drives colour (toward accent), size, and glow (§2.2). */
+  heat: number;
+  /** render-radius basis. */
+  size: number;
+  /** the absorb/blackhole body holding this particle, or null (§6.9). */
+  cap: Body | null;
+  /** stable per-particle scatter target fractions, for the `spread` formation (§7). */
+  gx?: number;
+  gy?: number;
+  // optional attributes consumed by extended forces (§20)
+  /** frames-to-live for *mortal* (spawned) matter — decremented each tick, despawned at
+   *  ≤ 0 (the [S] source sink). Undefined ⇒ immortal (the conserved base field). */
+  age?: number;
+  /** signed charge q, for `charge` / `magnetism` (§20.10). */
+  charge?: number;
+  /** species tag, for `hunt` (§20.3). */
+  species?: number;
+  /** carried pigment, conserved colour transport (§20.8). */
+  color?: string;
+}
+
+/**
+ * A registered DOM element acting as a force source (§3.1). Parsed from
+ * `data-*` attributes; the runtime fields are refreshed each scan/frame.
+ */
+export interface Body {
+  el: HTMLElement;
+  /** space-joined force ids from `data-body` (they compose, §4). */
+  tokens: Token[];
+  /** force magnitude S. */
+  strength: number;
+  /** influence radius d_max, px. */
+  range: number;
+  /** capture radius for `absorb`. */
+  absorbR: number;
+  /** load at which an absorber supernovas (was `maxMass`, renamed §21.2). */
+  capacity: number;
+  /** vortex/charge sign or spin (±). */
+  spin: number;
+  /** heading in radians, with its unit vector, for stream/emitter/etc. */
+  angle: number;
+  ux: number;
+  uy: number;
+  /** conditional gate id (§5); '' = always. */
+  when: string;
+  /** opt into two-way density write-back (§8). */
+  feedback: boolean;
+  /** the body's tint from `data-color`, for `pigment` colour transport (§20.8). */
+  tint?: string;
+  fmin: number;
+  fmax: number;
+  opsz: string;
+
+  // ── runtime state ────────────────────────────────────────────────────────
+  /** source mass M for `gravity`/`charge` (§20.10/§21). */
+  M: number;
+  cx: number;
+  cy: number;
+  hw: number;
+  hh: number;
+  /** engaged (hover/focus/tap → data-active="1"). */
+  on: boolean;
+  /** on-screen and exerting force (§2.1). */
+  vis: boolean;
+  /** captured load (was `mass`, renamed §21.2). */
+  accreted: number;
+  /** per-frame density tally and its eased value d ∈ [0,1] (§8). */
+  count: number;
+  d: number;
+  /** conserved-attention effective-strength multiplier (§2.4); 1 = neutral. */
+  attn?: number;
+  /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
+   *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
+  targets?: readonly { x: number; y: number }[];
+}
+
+/** A formation preset — a global bias on every free particle (§7). */
+export interface Formation {
+  driftX: number;
+  wander: number;
+  orbit: number;
+  spread: number;
+  conv: number;
+}
+
+/** A persistent scalar grid backing field-buffer forces (§20.1 class [C]). */
+export interface ScalarGrid {
+  sample(x: number, y: number): number;
+  deposit(x: number, y: number, amount: number): void;
+  gradient(x: number, y: number): Vec2;
+}
+
+/**
+ * The shared per-frame environment handed to every force (§3.3), extended with
+ * the services later classes need (§20.1) and the sim unit-system constants
+ * (§20.10). Engines may leave the heavier services as no-ops until built.
+ */
+export interface Env {
+  /** vector from particle to body: (b.cx − p.x, b.cy − p.y). */
+  dx: number;
+  dy: number;
+  /** |(dx, dy)|, clamped ≥ 1. */
+  dist: number;
+  /** the active, eased formation (§7). */
+  form: Formation;
+  W: number;
+  H: number;
+  /** elapsed time in seconds (for time-varying terms: curl drift, resonance). */
+  t: number;
+  /** frame counter (for the periodic brownian jitter + scatter animation, §7). */
+  frameN: number;
+  /** integration step: 1 a frame, 0 under reduced motion (§2.2/§18). */
+  dt: number;
+  /** velocity cap / "speed of light" of the unit system (§20.10). */
+  c: number;
+  /** gravitational constant of the unit system (§20.10). */
+  G: number;
+
+  // ── services (filled by the engine) ──────────────────────────────────────
+  /** throw a micro-reaction at a point — sparks/heat (§23). */
+  spark(x: number, y: number, power: number, color?: string): void;
+  /** release everything a body has captured (§6.9). */
+  supernova(b: Body): void;
+  /** create a particle — source forces only (§20, class [S]). */
+  spawn(p: Partial<Particle>): void;
+  /** neighbours within r — particle↔particle forces (§20.1 class [B]). */
+  neighbors(p: Particle, r: number): Particle[];
+  /** a named scalar grid — field-buffer forces (§20.1 class [C]). */
+  grid(name: string): ScalarGrid;
+}
+
+/**
+ * A force module (§4). The engine owns the loop and everything conserved; a
+ * force owns only the math that nudges one agent given the shared `env`.
+ *
+ * `apply` is the common path (a free particle). A force opts into other agent
+ * tiers (§22) by listing them in `targets` and the engine routes accordingly;
+ * most forces need no per-tier code because the *agent's* consumer interprets
+ * the influence. Default `targets` is `['particle']` — today's behaviour.
+ */
+export interface Force {
+  token: Token;
+  label: string;
+  targets?: AgentKind[];
+  apply(b: Body, p: Particle, env: Env): void;
+  /**
+   * Optional *modifier* hook (§20.3 `resonate`/`spotlight`). Run before the body's
+   * other tokens apply, for this particle: a returned `strength` multiplies the
+   * sibling forces' strength for this frame; `gate: true` skips them entirely. A
+   * pure modifier (e.g. `spotlight`) can leave `apply` a no-op.
+   */
+  modify?(b: Body, p: Particle, env: Env): { strength?: number; gate?: boolean };
+  /**
+   * Optional *source* hook (§20.1 class [S], e.g. `spawn`). Run once per body per frame
+   * — not per particle — after the per-particle force pass, so a body can *create*
+   * matter via `env.spawn`. A pure source leaves `apply` a no-op. Sources break
+   * conservation by design and must self-budget (a lifespan `age` plus the engine's
+   * pool ceiling keep the count bounded).
+   */
+  source?(b: Body, env: Env): void;
+  meta?: { desc?: string };
+}
+
+/** A connector between two elements for `field.threads` (§10). */
+export interface ThreadLink {
+  a: Element;
+  b: Element;
+  color?: string;
+}
+
+/** A `data-when` gate predicate (§5). Selective gates read each particle. */
+export type Condition = (b: Body, p: Particle) => boolean;
+
+/** The force registry — `token → module` (§4). */
+export type ForceRegistry = Record<Token, Force>;
+
+/** The condition registry — `id → predicate` (§5). */
+export type ConditionRegistry = Record<string, Condition>;
+
+/** Options for `createField` (§2.5 config). */
+export interface FieldOptions {
+  /** travelling accent colour (§9). */
+  accent?: string;
+  /** particle-count multiplier (§2.5). */
+  density?: number;
+  /** draw the background Currents (§24) — not yet implemented (Phase 3). */
+  waves?: boolean;
+  /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links'
+   *  (constellation), 'metaballs' (a liquid iso-surface, not dots), 'streamlines'
+   *  (draw the force field itself — diagnostic). */
+  render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines';
+  /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
+   *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
+  mass?: boolean;
+  /** colour template for the travelling accent (§9): a built-in name
+   *  (`'ours'` · `'heatmap'` · `'infrared'` · `'spectrum'`) or custom hex stops. */
+  palette?: string | readonly string[];
+  /** conserved attention (§2.4): one finite strength budget — engaging a body
+   *  pulls force off every other. Default false; rest-neutral until engaged. */
+  attention?: boolean;
+  /** cross-boundary causality (Concept 4): a saturated body spills density to its
+   *  neighbours (writing `--lit` + firing `field:lit`/`field:dim`). Default false. */
+  causality?: boolean;
+}
+
+/** The handle returned by `createField` — the public field API (§13). */
+export interface FieldHandle {
+  /** (re)scan the document for `[data-body]` bodies after a layout change. */
+  scan(): void;
+  /** alias of `scan`. */
+  rescan(): void;
+  /** recolour the travelling accent (§9). */
+  setAccent(hex: string): void;
+  /** swap the accent's colour template live: a built-in name or custom hex stops (§9). */
+  setPalette(palette: string | readonly string[]): void;
+  /** switch the global formation (§7). */
+  setFormation(name: string): void;
+  /** toggle conserved attention (§2.4) live — one finite strength budget. */
+  setAttention(on: boolean): void;
+  /** toggle cross-boundary causality (Concept 4) live — density spills to neighbours. */
+  setCausality(on: boolean): void;
+  /** switch the render mode (§20.6) live. */
+  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void;
+  /** wire glowing connector lines between a set, or clear with null (§10). */
+  threads(list: ThreadLink[] | null): void;
+  /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
+  burst(x: number, y: number, hex?: string): void;
+  /** stop the loop and release listeners. */
+  destroy(): void;
+}

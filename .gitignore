@@ -1,0 +1,26 @@
+node_modules
+dist
+coverage
+*.log
+.DS_Store
+.idea
+.vscode
+*.tsbuildinfo
+
+# Astro generated cache
+.astro/
+.vercel/
+
+# env (defensive — none are used, but never commit secrets)
+.env
+.env.*
+!.env.example
+
+# AI assistant tooling — never committed to this repo
+.claude/
+CLAUDE.md
+AGENTS.md
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md

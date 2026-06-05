@@ -1,0 +1,58 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import { MANUAL_FORCES } from 'forces-ui';
+import '../../../styles/force-glyphs.css';
+
+const families = [
+  { key: 'canonical', label: 'Canonical nine', blurb: 'The bounded, UI-legible verbs — what a body does to nearby matter.' },
+  { key: 'natural', label: 'Natural primitives', blurb: 'Real physical laws in a consistent unit system.' },
+  { key: 'extended', label: 'Designed extended', blurb: 'Pure per-particle effects — bends, gates, phase changes, modifiers.' },
+] as const;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+---
+
+<DocsLayout
+  title="forces-ui — Forces reference"
+  description="Every force in forces-ui, generated from the engine's catalog: the canonical nine, the natural primitives, and the designed-extended forces — each with its per-frame law, the data-* attributes it reads, a description, and a real-world example."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>The <span class="accent">{MANUAL_FORCES.length} forces</span></h1>
+    <p class="lede">
+      Compose them on any <code>data-body</code> element, space-separated. Each card is generated
+      from the engine's own catalog — the law, the attributes it reads, and a real-world use.
+    </p>
+  </header>
+
+  {
+    families.map((fam) => {
+      const list = MANUAL_FORCES.filter((f) => f.family === fam.key);
+      return (
+        <section class="docs-sec">
+          <h2>{fam.label}</h2>
+          <p>{fam.blurb} <span style="color:var(--text-4)">({list.length})</span></p>
+          <div class="ref-grid">
+            {list.map((f) => (
+              <article class="ref-card" id={`force-${f.token}`} style={`--c:${f.color}`}>
+                <div class="rc-head">
+                  <i class={`fg fg-${f.token}`} style={`--fc:${f.color}`} />
+                  <code>{f.token}</code>
+                </div>
+                <code class="rc-formula">{f.formula}</code>
+                <p class="rc-desc">{cap(f.desc)}.</p>
+                <div class="rc-meta">
+                  {f.attrs.length ? (
+                    f.attrs.map((a) => <span class="chip">data-{a}</span>)
+                  ) : (
+                    <span class="chip">no params</span>
+                  )}
+                </div>
+                <p class="rc-eg">{f.example}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    })
+  }
+</DocsLayout>

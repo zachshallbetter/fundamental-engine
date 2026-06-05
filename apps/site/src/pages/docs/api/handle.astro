@@ -1,0 +1,39 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import { HANDLE } from '../../../lib/docs-api.ts';
+---
+
+<DocsLayout
+  title="forces-ui — FieldHandle"
+  description="The FieldHandle is the object every entry point returns. Methods: scan, setAccent, setPalette, setFormation, setAttention, setCausality, setRender, threads, burst, destroy — drive the field at runtime."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>The <span class="accent">FieldHandle</span></h1>
+    <p class="lede">
+      Every entry point — <code>createField</code>, <code>mountField</code>, the
+      <code>&lt;forces-field&gt;</code> element (proxied), and the React <code>onReady</code> — hands
+      you a <code>FieldHandle</code>. Use it to drive the field after it mounts.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Methods</h2>
+    <div class="api-table">
+      {
+        HANDLE.map((m) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{m.sig}</code>
+            </div>
+            <div class="d">{m.desc}</div>
+          </div>
+        ))
+      }
+    </div>
+    <div class="callout">
+      <b>On the element.</b> When you use <code>&lt;forces-field&gt;</code>, these are proxied onto
+      the element itself — <code>document.querySelector('forces-field').setFormation('wells')</code>.
+    </div>
+  </section>
+</DocsLayout>

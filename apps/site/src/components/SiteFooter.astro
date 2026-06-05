@@ -1,0 +1,81 @@
+---
+// The shared site footer — one consistent close on every public page: the
+// wordmark + thesis line, the destinations, and contact.
+const dest = [
+  { href: '/docs', label: 'Docs' },
+  { href: '/lab', label: 'Lab' },
+  { href: 'mailto:hi@zachshallbetter.com', label: 'Contact' },
+];
+---
+
+<footer class="site-foot">
+  <div class="sf-inner">
+    <div class="sf-brand">
+      <span class="sf-name">forces<span class="sf-dim">-ui</span></span>
+      <span class="sf-note">A reciprocal DOM-physics field · pre-alpha · v0.1</span>
+    </div>
+    <nav class="sf-links" aria-label="Footer">
+      {dest.map((d) => <a href={d.href}>{d.label}</a>)}
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-foot {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    margin-top: auto;
+    border-top: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  }
+  .sf-inner {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: clamp(1.6rem, 4vh, 2.4rem) clamp(1.25rem, 3vw, 2.75rem);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem 1.6rem;
+  }
+  .sf-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .sf-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    color: var(--text, #f3f6fc);
+  }
+  .sf-dim {
+    color: var(--text-3, rgba(200, 212, 230, 0.46));
+    font-weight: 600;
+  }
+  .sf-note {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3, rgba(200, 212, 230, 0.46));
+  }
+  .sf-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+  }
+  .sf-links a {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3, rgba(200, 212, 230, 0.46));
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .sf-links a:hover {
+    color: var(--accent, #4da3ff);
+  }
+</style>

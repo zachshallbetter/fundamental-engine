@@ -1,0 +1,150 @@
+---
+import Base from './Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { DOCS_NAV, DOCS_FLAT } from '../lib/docs-nav.ts';
+import '../styles/ds-tokens.css';
+import '../styles/docs.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+
+// current page (normalise trailing slash) → sidebar active + prev/next
+const path = Astro.url.pathname.replace(/\/$/, '') || '/docs';
+const groups = DOCS_NAV.map((g) => ({ ...g, items: g.items.filter((i) => i.ready) })).filter(
+  (g) => g.items.length > 0,
+);
+const idx = DOCS_FLAT.findIndex((i) => i.href === path);
+const prev = idx > 0 ? DOCS_FLAT[idx - 1] : null;
+const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
+---
+
+<Base title={title} description={description}>
+  <SiteNav current="docs" />
+  <div class="docs-shell">
+    <aside class="docs-sidebar" aria-label="Docs navigation">
+      <button class="docs-side-toggle" aria-expanded="false" aria-controls="docsSide">
+        Menu
+      </button>
+      <nav id="docsSide">
+        {
+          groups.map((g) => (
+            <div class="docs-group">
+              <span class="docs-group-title">{g.title}</span>
+              <ul>
+                {g.items.map((i) => (
+                  <li>
+                    <a href={i.href} aria-current={i.href === path ? 'page' : undefined}>
+                      {i.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <main class="docs-content">
+      <slot />
+      <nav class="docs-prevnext" aria-label="Pagination">
+        {
+          prev ? (
+            <a class="pn prev" href={prev.href}>
+              <span>← Previous</span>
+              <b>{prev.label}</b>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a class="pn next" href={next.href}>
+              <span>Next →</span>
+              <b>{next.label}</b>
+            </a>
+          )
+        }
+      </nav>
+    </main>
+
+    <aside class="docs-toc" aria-label="On this page">
+      <span class="docs-toc-title">On this page</span>
+      <nav id="docsToc"></nav>
+    </aside>
+  </div>
+  <SiteFooter />
+
+  <script is:inline data-astro-rerun>
+    (() => {
+      // re-runs on each client-side navigation into a docs page; tear down the
+      // previous run's scroll listener so it doesn't stack.
+      if (window.__docsTeardown) window.__docsTeardown();
+      const _ac = new AbortController();
+      const _sig = _ac.signal;
+      window.__docsTeardown = () => _ac.abort();
+
+      // copy-on-click for any [data-copy] (install chips, code snippets)
+      document.querySelectorAll('[data-copy]').forEach((el) => {
+        el.addEventListener('click', () => {
+          const text = el.getAttribute('data-copy') || el.textContent || '';
+          navigator.clipboard &&
+            navigator.clipboard.writeText(text).then(() => {
+              el.classList.add('copied');
+              setTimeout(() => el.classList.remove('copied'), 1100);
+            });
+        });
+      });
+
+      // build the "On this page" TOC from the content's h2/h3
+      const content = document.querySelector('.docs-content');
+      const toc = document.getElementById('docsToc');
+      if (content && toc) {
+        const slug = (s) =>
+          s
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+        const heads = [...content.querySelectorAll('h2, h3')];
+        const links = [];
+        for (const h of heads) {
+          if (!h.id) h.id = slug(h.textContent || '');
+          const a = document.createElement('a');
+          a.href = '#' + h.id;
+          a.textContent = h.textContent;
+          a.className = h.tagName === 'H3' ? 'lvl3' : 'lvl2';
+          a.dataset.for = h.id;
+          toc.appendChild(a);
+          links.push({ a, h });
+        }
+        if (links.length < 2) toc.closest('.docs-toc').style.visibility = 'hidden';
+        // scroll-spy
+        const spy = () => {
+          let cur = links[0];
+          for (const l of links) {
+            if (l.h.getBoundingClientRect().top < 120) cur = l;
+          }
+          links.forEach((l) => l.a.classList.toggle('active', l === cur));
+        };
+        window.addEventListener('scroll', spy, { passive: true, signal: _sig });
+        spy();
+      }
+
+      // mobile sidebar toggle
+      const toggle = document.querySelector('.docs-side-toggle');
+      const side = document.getElementById('docsSide');
+      if (toggle && side) {
+        toggle.addEventListener('click', () => {
+          const open = side.classList.toggle('open');
+          toggle.setAttribute('aria-expanded', String(open));
+        });
+      }
+    })();
+  </script>
+</Base>

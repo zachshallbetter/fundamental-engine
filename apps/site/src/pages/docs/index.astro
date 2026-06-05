@@ -1,0 +1,142 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { MANUAL_FORCES } from 'forces-ui';
+
+// Getting started — install + a 60-second quickstart for every entry point + the
+// mental model. Snippets live as consts so Astro renders angle-brackets and braces
+// as literal escaped text.
+
+const htmlSnippet = `<!-- 1. register the element -->
+<script type="module">
+  import '@forces-ui/elements';
+</script>
+
+<!-- 2. drop the field + mark any element as a body -->
+<forces-field accent="#4da3ff"></forces-field>
+
+<a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
+  pull me
+</a>`;
+
+const reactSnippet = `import { ForcesField } from '@forces-ui/react';
+
+export function App() {
+  return (
+    <>
+      <ForcesField accent="#4da3ff" onReady={(field) => field.scan()} />
+      <a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
+        pull me
+      </a>
+    </>
+  );
+}`;
+
+const coreSnippet = `import { createField } from 'forces-ui';
+
+const field = createField(document.querySelector('canvas'), {
+  accent: '#4da3ff',
+});
+
+// any [data-body] element on the page becomes a force the field reacts to.
+// after adding bodies to the DOM, rescan:
+field.scan();`;
+---
+
+<DocsLayout
+  title="forces-ui — Developer docs"
+  description="Install forces-ui and get a reciprocal field reacting to your elements in under a minute — for plain HTML, React, or your own canvas. Zero runtime dependencies."
+>
+  <header class="docs-hero">
+    <p class="kicker">Getting started</p>
+    <h1>Build with <span class="accent">forces-ui</span>.</h1>
+    <p class="lede">
+      A reciprocal DOM-physics field for the web — framework-agnostic, zero runtime
+      dependencies. Get a field reacting to your elements in under a minute.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Install</h2>
+    <p>
+      Pick the entry point that matches your stack. The core engine has zero runtime
+      dependencies; the adapters wrap it.
+    </p>
+    <div class="pkg-grid">
+      <div class="pkg">
+        <code class="install" data-copy="npm i @forces-ui/elements">npm i @forces-ui/elements</code>
+        <span>the <code>&lt;forces-field&gt;</code> web component — drops into any framework or plain HTML</span>
+      </div>
+      <div class="pkg">
+        <code class="install" data-copy="npm i @forces-ui/react">npm i @forces-ui/react</code>
+        <span>the <code>&lt;ForcesField&gt;</code> React component + <code>useForcesField</code> hook</span>
+      </div>
+      <div class="pkg">
+        <code class="install" data-copy="npm i forces-ui">npm i forces-ui</code>
+        <span>the engine itself — when you own the canvas</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Quick start</h2>
+
+    <h3>Web component — any framework or plain HTML</h3>
+    <pre class="code"><code>{htmlSnippet}</code></pre>
+
+    <h3>React</h3>
+    <pre class="code"><code>{reactSnippet}</code></pre>
+
+    <h3>Vanilla — bring your own canvas</h3>
+    <pre class="code"><code>{coreSnippet}</code></pre>
+
+    <div class="callout">
+      <b>The field reacts to the page.</b> A single full-viewport canvas runs behind your
+      content and reads every <code>[data-body]</code> element each frame — so any layout
+      change <em>is</em> a change to the force geometry. After you add or remove bodies,
+      call <code>field.scan()</code>.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The mental model</h2>
+    <ul class="model">
+      <li>
+        <b>Bodies.</b> Any element with <code>data-body="&lt;force&gt; &lt;force&gt;…"</code>
+        becomes a force (forces compose). Tune it with <code>data-strength</code>,
+        <code>data-range</code>, <code>data-color</code>, and a condition gate
+        <code>data-when</code>.
+      </li>
+      <li>
+        <b>The field.</b> One conserved pool of particles. Nothing is created from nothing;
+        matter is moved, captured, and released — never faked.
+      </li>
+      <li>
+        <b>Reciprocity.</b> Add <code>data-feedback</code> and the field writes the local
+        density it gathered back into your element as the <code>--d</code> custom property —
+        drive weight, glow, and scale from it.
+      </li>
+    </ul>
+  </section>
+
+  <section class="docs-sec next">
+    <h2>Where to go next</h2>
+    <div class="next-grid">
+      <a class="next-card" href="/docs/concepts">
+        <b>Concepts</b>
+        <span>The model in depth — bodies, the single field, reciprocity, conservation.</span>
+      </a>
+      <a class="next-card" href="/docs/api/forces">
+        <b>The {MANUAL_FORCES.length} forces</b>
+        <span>The full API reference — law, attributes, and an example per force.</span>
+      </a>
+      <a class="next-card" href="/docs/guides/web-component">
+        <b>Framework guides</b>
+        <span>Web component, React, and the vanilla core — pick your entry point.</span>
+      </a>
+      <a class="next-card" href="/lab">
+        <b>The Lab</b>
+        <span>A physics detector — fire a particle into any force and verify its behavior.</span>
+      </a>
+    </div>
+  </section>
+</DocsLayout>
