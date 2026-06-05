@@ -119,6 +119,14 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
             });
             return;
           }
+          // live demo: burst the persisted page field at the click point
+          const burst = e.target.closest && e.target.closest('[data-field-burst]');
+          if (burst) {
+            const field = document.querySelector('forces-field');
+            const color = burst.getAttribute('data-field-burst') || undefined;
+            if (field && field.burst) field.burst(e.clientX, e.clientY, color || undefined);
+            return;
+          }
           const copy = e.target.closest && e.target.closest('.ct-copy');
           if (copy) {
             const wrap = copy.closest('.code-tabs');
