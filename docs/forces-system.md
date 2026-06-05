@@ -83,7 +83,7 @@ heat_{t+1} = heat_t · 0.972
 > engine integrates `v += F` (every particle behaves as **unit mass**); `baseSize`
 > drives only the *rendered* dot radius. The substrate/manual claim *"mass ∝ size,
 > heavier particles swing on wider arcs"* is **aspirational, not implemented.** The
-> word "mass" elsewhere (`b.mass`) is a *different* quantity — an absorb body's
+> word "mass" elsewhere (now `b.accreted`) is a *different* quantity — an absorb body's
 > captured-particle **count**. See **§21** for the full audit and the first-class-mass
 > upgrade.
 
@@ -148,7 +148,7 @@ Parsed from `data-*` attributes in `scanBodies()`:
 | `strength` | `data-strength` | `0.5` | Force magnitude `S`. |
 | `range` | `data-range` | `280` | Influence radius `d_max` (px). |
 | `absorbR` | `data-absorb` | `64` | Capture radius for `absorb`. |
-| `maxMass` | `data-max` | `60` | Saturation count → supernova. |
+| `capacity` | `data-max` | `60` | Saturation count → supernova. |
 | `spin` | `data-spin` | `1` | Vortex direction/strength (±). |
 | `angle`,`ux`,`uy` | `data-angle` | `0°` | Heading for `stream`/`emitter` (deg → unit vector). |
 | `when` | `data-when` | `''` | Conditional gate (see §5). |
@@ -384,14 +384,14 @@ what it held when saturated — a supernova. Always paired with `attract` so mat
 is pulled in first (`data-body="absorb attract"`).
 ```
 if p.cap or dist ≥ absorbR: skip
-p.cap = b;  b.mass += 1                         // held — conserved
-if b.mass ≥ maxMass:  env.supernova(b)          // saturate → release all
+p.cap = b;  b.accreted += 1                         // held — conserved
+if b.accreted ≥ capacity:  env.supernova(b)          // saturate → release all
 ```
-Captured particles orbit toward `b.center` and feed `b.mass`; the element inflates
-via `--mass = mass/maxMass`. **Supernova** (`field.js`): each held particle is
+Captured particles orbit toward `b.center` and feed `b.accreted`; the element inflates
+via `--load = accreted/capacity` (alias `--mass`). **Supernova** (`field.js`): each held particle is
 released radially from the core (`spd 4–7`, `heat 1`); nearby free particles
 (`< 320px`) are shoved; nearby bound particles (`< 320px`) are torn loose; then
-`mass = 0`.
+`accreted = 0`.
 Default attrs: `data-absorb="64" data-max="30" data-strength="0.8" data-range="360"`.
 
 ---
@@ -450,7 +450,7 @@ if fmax:  element.style.fontVariationSettings = `"wght" lerp(fmin, fmax, b.d)` (
 
 So `--d` ∈ [0,1] is "how much field is gathered on me right now." CSS uses it for
 glow, color-mix, weight, and the per-card density wash. Absorb bodies additionally
-expose `--mass` ∈ [0,1] so they can inflate as they fill.
+expose `--load` ∈ [0,1] (alias `--mass`) so they can inflate as they fill.
 
 Example body (the hero's live word):
 ```html
@@ -491,7 +491,7 @@ content sets; the manual demo and the Lab use it. Pass `null` to clear.
 | **Glyph assembly** | fonts ready | Particles rasterized from a `[data-glyph]` host rise into its shape, hold, then fade (stride `max(3, fontSize/26)`, cap **560** pts; ease `1−(1−t)⁴`; assembled 1800 ms, form 2600 ms, hold 4000 ms, fade by 5800 ms; skipped under reduced motion). **⚠ Deprecated for words — use only for punctuation / marks (the rule below).** |
 | **Burst** | `pointerdown` anywhere | Shoves + heats free particles within 260 px (`f=(1−d/260)·4.4`, `heat += (1−d/260)·1.3`); tears bound particles within 200 px loose. No ring (kept clean). |
 | **Engage** | hover/focus/tap a `[data-hot]` | Sets `data-active="1"` (`b.on`), lights the element, dims siblings, optionally wires threads, overrides accent. Waves bend toward it. |
-| **Capture → Supernova** | particle enters an `absorb` core; `mass ≥ maxMass` | Hold, then radial release of exactly what was held (see §6.9). |
+| **Capture → Supernova** | particle enters an `absorb` core; `accreted ≥ capacity` | Hold, then radial release of exactly what was held (see §6.9). |
 | **Spark** | hard `reflect` impact (`speed > 0.7`) | Short-lived impact debris (≤ 260 sparks) — pure collision feel. The exemplar micro-reaction; generalized as a system in **§23**. |
 | **Wave healing** | calm free particle near a line | Reclaimed to bound (conserved) — see §2.4. |
 | **Ripple** | (disabled project-wide) | `__field.ripple()` is a no-op; concentric rings were cut for cost/fit. |
@@ -545,7 +545,7 @@ and `ds-interactions.js`):
 |---|---|
 | `data-drag` | Makes the body draggable; on pointer-move it repositions and calls `__field.rescan()` so the **force follows the element** across the field. The clearest proof that force is bound to the element, not the cursor. |
 | `data-agitate="#sel"` | On a button — fires a one-shot `__field.burst()` at the center of the target element `#sel` (tinted by its `--cc`/`--cat`, falling back to `--accent`), plus a CSS shockwave ring. A **discrete burst, not a steady force** — see §11/§16. |
-| `.body-core` + `.meter > i` | An absorb core whose paired meter bar reads the live `--mass` the engine writes (`width = --mass · 100%`) — visualizes accretion filling toward supernova. |
+| `.body-core` + `.meter > i` | An absorb core whose paired meter bar reads the live `--load` the engine writes (`width = --load · 100%`) — visualizes accretion filling toward supernova. |
 
 ---
 
@@ -659,7 +659,7 @@ Structured as **four chapters / sixteen numbered concepts**:
 Manual-specific behavior (`manual.js`): each `.concept[data-form]` section cues a
 formation as it scrolls into view (the field "reorganizes under you"); a chapter
 rail highlights the current chapter; `[data-drag]` chips and `[data-agitate]`
-buttons drive the live demos (§12); the accretion `.meter` reads `--mass`.
+buttons drive the live demos (§12); the accretion `.meter` reads `--load`.
 
 > ⚠️ **Copy discrepancy to fix.** The manual hero states "**Forces** — eight,
 > composable," but the manual itself documents **nine** (concepts 04–12) and
@@ -1006,8 +1006,8 @@ accretion disk (like `vortex`), and grazing-path bending (like `lens`). It is th
 ```
 GM = strength · k_g
 if d ≤ r_s:                                   // event horizon (r_s = data-horizon)
-    capture: p.cap = b ; b.mass++             // held (conserved) unless data-destroy → removed
-    if b.mass ≥ maxMass:  supernova(b) | jet(b)   // saturate → release / quasar
+    capture: p.cap = b ; b.accreted++         // held (conserved) unless data-destroy → removed
+    if b.accreted ≥ capacity:  supernova(b) | jet(b)   // saturate → release / quasar
 else:
     a   = GM / d²                             // radial infall (diverges near r_s)
     v  += a · û
@@ -1500,7 +1500,7 @@ This section audits it and defines the unified model.
 | A DOM element can be a… | Status | Where |
 |---|---|---|
 | **Source** — emits forces onto particles | ✅ as-built | §3.1, §6 |
-| **Density receiver** — gathered field → CSS (`--d`/`--mass`) → styling | ✅ as-built | §8 |
+| **Density receiver** — gathered field → CSS (`--d`/`--load`) → styling | ✅ as-built | §8 |
 | **Force target** — forces *move* the element itself | ✅ as-built | `data-move` (§22.4); self-laying-out (Concept 3) |
 | **Event host** — the field fires app behavior off it | ✅ as-built | `data-on` (§22.5); cross-boundary `field:lit` |
 
