@@ -9,6 +9,9 @@
   --bg-subtle: #0e121b;
   --bg-card: #0b0e16;
   --bg-canvas: #07090e;
+  /* back-compat aliases — older surfaces refer to these names */
+  --bg: var(--bg-page);
+  --bg-2: var(--bg-card);
 
   /* ink */
   --ink-900: #f3f6fc;
@@ -43,6 +46,7 @@
   /* type */
   --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   --body: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* tracking */
   --track-loose: 0.22em;
