@@ -12,7 +12,7 @@
  */
 
 import type { FieldStore } from './field-store.ts';
-import type { Body, Particle } from './types.ts';
+import type { Body, Particle, ForceRegistry } from './types.ts';
 import { waveYat, type Wave, type BoundParticle } from './currents.ts';
 
 /** Reclaim calm free matter onto the nearest line, up to `boundTarget` (§2.4). */
@@ -106,11 +106,20 @@ export function tearBoundByForces(
   bound: BoundParticle[],
   waves: readonly Wave[],
   bodies: readonly Body[],
+  forces: ForceRegistry,
   W: number,
   H: number,
   time: number,
   spawn: (p: Partial<Particle>) => void
 ): void {
+  // a body "exerts force" if it carries any non-modifier, non-source token — those are
+  // the ones whose apply() actually pushes matter. Modifiers (resonate/spotlight) and
+  // pure sources (spawn) don't move existing matter, so they never tear bound particles.
+  const exertsForce = (b: Body): boolean =>
+    b.tokens.some((t) => {
+      const f = forces[t];
+      return !!f && !f.modify && !f.source;
+    });
   for (let i = bound.length - 1; i >= 0; i--) {
     const p = bound[i];
     if (!p) continue;
@@ -162,6 +171,18 @@ export function tearBoundByForces(
       if (!hit && toks.indexOf('stream') >= 0 && dist < range * 0.75) {
         kx = b.ux * 1.3;
         ky = b.uy * 1.3;
+        hit = true;
+      }
+      // every other force-bearing body — gravity, charge, thermal, collide, diffuse,
+      // propagate, cohesion, pressure, drag, spring, … — also frees nearby bound matter,
+      // with a gentle inward nudge, so the integrator's real force can act on it. A force
+      // can't reach a particle that's riding a wave line; without this, only the seven
+      // canonical tokens above ever disturbed the resting field. Gentle forces then read
+      // gently and strong ones strongly, since the real apply() pass does the shaping (§2.4).
+      if (!hit && dist < range * 0.8 && exertsForce(b)) {
+        const k = 0.8 + (b.on ? 0.8 : 0);
+        kx = (dx / dist) * k;
+        ky = (dy / dist) * k;
         hit = true;
       }
       if (hit) break;
