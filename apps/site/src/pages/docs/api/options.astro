@@ -7,6 +7,22 @@ import SeeAlso from '../../../components/SeeAlso.astro';
 const sig = `import { createField } from 'forces-ui';
 
 const field = createField(canvas, options);   // → FieldHandle`;
+
+const cfgResting = `// the resting field — an accent and a palette, nothing else
+createField(canvas, { accent: '#4da3ff', palette: 'ours' });`;
+
+const cfgDiagnostic = `// draw the force field itself as arrows — a diagnostic view
+createField(canvas, { render: 'streamlines' });`;
+
+const cfgAttention = `// focus one thing at a time — one finite strength budget,
+// so engaging a body starves the others
+createField(canvas, { attention: true });`;
+
+const cfgLowPower = `// a large or low-power surface — half the particles, no wave layer
+createField(canvas, { density: 0.5, waves: false });`;
+
+const cfgMass = `// first-class mass — particle mass ∝ size, bodies accelerate by a = F/m
+createField(canvas, { mass: true });`;
 ---
 
 <DocsLayout
@@ -45,6 +61,28 @@ const field = createField(canvas, options);   // → FieldHandle`;
           </div>
         ))
       }
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Common configurations</h2>
+    <p>
+      Every option is optional and the defaults keep the field calm. These are the combinations
+      worth knowing — each is the whole <code>options</code> object. Switch tabs to compare.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'Resting', lang: 'ts', code: cfgResting },
+        { label: 'Diagnostic', lang: 'ts', code: cfgDiagnostic },
+        { label: 'Attention', lang: 'ts', code: cfgAttention },
+        { label: 'Low-power', lang: 'ts', code: cfgLowPower },
+        { label: 'Mass', lang: 'ts', code: cfgMass },
+      ]}
+    />
+    <div class="callout">
+      <b>These are creation-time.</b> Most have a live counterpart on the
+      <a href="/docs/api/handle">FieldHandle</a> — <code>setPalette</code>, <code>setRender</code>,
+      <code>setAttention</code>, <code>setCausality</code> — so you can change them after mount too.
     </div>
   </section>
 
