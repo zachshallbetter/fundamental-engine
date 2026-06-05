@@ -27,19 +27,19 @@ const families = [
 
   <section class="docs-sec">
     <h2>All attributes</h2>
-    <div class="api-table">
+    <dl class="api-table">
       {
         ATTRS.map((a) => (
           <div class="api-row">
-            <div class="k">
+            <dt class="k">
               <code>{a.name}</code>
               <span class="ty">{a.type}{a.def ? <> · <b>default {a.def}</b></> : null}</span>
-            </div>
-            <div class="d">{a.desc}</div>
+            </dt>
+            <dd class="d">{a.desc}</dd>
           </div>
         ))
       }
-    </div>
+    </dl>
   </section>
 
   <section class="docs-sec">
@@ -52,22 +52,22 @@ const families = [
       families.map((fam) => (
         <>
           <span class="ref-fam">{fam.label}</span>
-          <div class="api-table">
+          <dl class="api-table">
             {MANUAL_FORCES.filter((f) => f.family === fam.key).map((f) => (
               <div class="api-row">
-                <div class="k">
+                <dt class="k">
                   <code>{f.token}</code>
-                </div>
-                <div class="d rc-meta">
+                </dt>
+                <dd class="d rc-meta">
                   {f.attrs.length ? (
                     f.attrs.map((a) => <span class="chip">data-{a}</span>)
                   ) : (
                     <span class="chip">box-sized — no params</span>
                   )}
-                </div>
+                </dd>
               </div>
             ))}
-          </div>
+          </dl>
         </>
       ))
     }
