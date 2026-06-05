@@ -24,7 +24,7 @@ const attrsFor = (t: string) => ({ ...DEFAULTS, ...(OVERRIDES[t] ?? {}) });
 const natural = MANUAL_FORCES.filter((f) => f.family === 'natural');
 const extended = MANUAL_FORCES.filter((f) => f.family === 'extended');
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-let n = 16; // running concept number (canonical nine + substrate end at 12; we continue)
+let n = 12; // running concept number (substrate + canonical forces end at 12; we continue)
 ---
 
 <Base
@@ -481,7 +481,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept" data-form="scatter">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">40 — Conditional</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Conditional</span>
           <h2>A force can choose what it touches.</h2>
           <p>Any body can carry a <strong>condition</strong> — gated on being engaged, or on a particle’s
             <strong>speed</strong> or <strong>heat</strong>. A selective force reads every free agent and
@@ -510,7 +510,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">41 — Reciprocity</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Reciprocity</span>
           <h2>The field changes the element back.</h2>
           <p>The element bends the field — and the field’s <strong>local density</strong> bends the element
             in return. As particles gather on a word, it gains weight, brightness, and lift.</p>
@@ -528,7 +528,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse" data-attention-demo>
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">42 — Conserved attention</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Conserved attention</span>
           <h2>The page can’t emphasize two things at once.</h2>
           <p>There is one finite budget of force for the whole page. Engage a word and it
             pulls force off every other — so as one gathers matter and grows heavier, the
@@ -550,7 +550,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">43 — Threads</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Threads</span>
           <h2>Engaging one body wires the set.</h2>
           <p>Engage an element in a group and the field draws living threads between it and its siblings.
             A list stops being a list and shows itself as a <strong>connected system</strong>.</p>
@@ -571,7 +571,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse" data-causality-demo>
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">44 — Cross-boundary causality</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Cross-boundary causality</span>
           <h2>Density doesn’t stop at the edge.</h2>
           <p>When a body saturates, the excess <strong>spills to its neighbours</strong> — weighted by
             nearness, and conserved. Engage one tile and the ones beside it light up on their own.
@@ -595,7 +595,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse" id="formations">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">45 — Formations</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Formations</span>
           <h2>The whole field can change its mind.</h2>
           <p>Forces act locally. A <strong>formation</strong> acts on every particle at once — a single
             global bias. As you scrolled, each chapter quietly switched it.</p>
@@ -619,7 +619,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse" data-form="wells">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">46 — Material typography</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Material typography</span>
           <h2>Type is a readout of mass.</h2>
           <p>The word is a <strong>body</strong>. It pulls the field, matter pools beneath it, and its
             whole appearance — weight, optical size, tracking, bloom, colour — is a live readout of how
@@ -642,7 +642,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept" data-form="scatter">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">47 — Self-laying-out</span>
+          <span class="concept-no">{String((n += 1)).padStart(2, '0')} — Self-laying-out</span>
           <h2>The page arranges itself.</h2>
           <p>These nodes aren’t pinned by CSS. Each one <strong>pushes off the others</strong> and drifts
             away from crowded field, settling into an equilibrium — and re-settling when the field is
