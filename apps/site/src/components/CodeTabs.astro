@@ -1,0 +1,61 @@
+---
+// A highlighted, copyable code block. Pass one variant for a plain block, or
+// several (vanilla / web component / react) to get framework tabs. Highlighting
+// is Shiki at BUILD time via astro:components <Code/> — zero runtime JS ships;
+// the only client work is tab-switch + copy, delegated from DocsLayout's script.
+import { Code } from 'astro:components';
+
+export interface CodeVariant {
+  /** tab label — 'Vanilla', 'Web component', 'React', or a bare language name */
+  label: string;
+  /** Shiki language id — ts, js, tsx, html, css, bash, json … */
+  lang: string;
+  code: string;
+}
+interface Props {
+  variants: CodeVariant[];
+  /** optional caption under the block */
+  caption?: string;
+  /** Shiki theme — defaults to the site's night-owl */
+  theme?: string;
+}
+const { variants, caption, theme = 'night-owl' } = Astro.props;
+const multi = variants.length > 1;
+---
+
+<figure class="code-tabs" data-codetabs>
+  <div class="ct-head">
+    {
+      multi ? (
+        <div class="ct-tabs" role="tablist">
+          {variants.map((v, i) => (
+            <button
+              type="button"
+              class="ct-tab"
+              data-i={i}
+              role="tab"
+              aria-selected={i === 0 ? 'true' : 'false'}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <span class="ct-lang">{variants[0].label}</span>
+      )
+    }
+    <button type="button" class="ct-copy" aria-label="Copy code to clipboard">
+      <span class="ct-copy-label">Copy</span>
+    </button>
+  </div>
+  <div class="ct-bodies">
+    {
+      variants.map((v, i) => (
+        <div class="ct-body" data-i={i} role="tabpanel" hidden={i !== 0}>
+          <Code code={v.code} lang={v.lang as any} theme={theme as any} />
+        </div>
+      ))
+    }
+  </div>
+  {caption && <figcaption class="ct-caption" set:html={caption} />}
+</figure>

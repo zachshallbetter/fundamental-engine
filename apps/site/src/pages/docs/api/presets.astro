@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { MANUAL_PRESETS } from 'forces-ui';
+import CodeTabs from '../../../components/CodeTabs.astro';
 import '../../../styles/force-glyphs.css';
 
 const PRESET_COLORS: Record<string, string> = {
@@ -26,7 +27,7 @@ const usage = `<div data-preset="blackhole"></div>`;
 
   <section class="docs-sec">
     <h2>Usage</h2>
-    <pre class="code"><code>{usage}</code></pre>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: usage }]} />
   </section>
 
   <section class="docs-sec">
