@@ -1,0 +1,129 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+
+const rescan = `// plain DOM / web component
+field.scan();
+
+// React — bodies render after the field mounts, so scan from onReady
+<ForcesField onReady={(field) => field.scan()} />`;
+
+const layer = `/* the canvas is decorative — behind content, never intercepting clicks */
+.forces-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;          /* your content sits above */
+  pointer-events: none;/* clicks pass through */
+}`;
+
+const feedback = `<!-- 1. opt the element in -->
+<h1 data-body="attract" data-range="320" data-feedback>weighty</h1>
+
+<style>
+  h1 {
+    --d: 0;  /* the engine eases this in ∈ [0,1]; default it yourself */
+    font-variation-settings: 'wght' calc(380 + var(--d) * 420);
+  }
+</style>`;
+---
+
+<DocsLayout
+  title="forces-ui — Troubleshooting"
+  description="Common forces-ui gotchas and fixes: new elements not reacting (rescan), a frozen field (reduced motion / backgrounded tab), the canvas intercepting clicks, --d not updating, SSR/hydration, and large-page performance."
+>
+  <header class="docs-hero">
+    <p class="kicker">Resources</p>
+    <h1><span class="accent">Troubleshooting</span></h1>
+    <p class="lede">
+      The handful of things that trip people up — each with the why and the fix. Most reduce to
+      one of two facts: the field reads bodies on a schedule, and it refuses to fake motion.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>New elements aren't reacting</h2>
+    <p>
+      The field scans for <code>[data-body]</code> elements when it mounts. If you add or remove
+      bodies afterwards — a route change, a list update, a modal — it won't see them until you
+      re-scan. Call <code>field.scan()</code> (or its alias <code>rescan()</code>) after the DOM
+      settles.
+    </p>
+    <CodeTabs variants={[{ label: 'Rescan', lang: 'tsx', code: rescan }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>The field is frozen or blank</h2>
+    <p>Two behaviours pause the loop on purpose — both are features, not bugs:</p>
+    <ul class="model">
+      <li>
+        <b>Reduced motion.</b> Under <code>prefers-reduced-motion: reduce</code> the simulation
+        renders a single static frame (<code>dt = 0</code>) and never animates. Test with the OS
+        setting off to see motion.
+      </li>
+      <li>
+        <b>Backgrounded tab.</b> The loop stops on <code>visibilitychange</code> and resumes when
+        the tab is foregrounded again, so a hidden tab costs nothing.
+      </li>
+      <li>
+        <b>Off-screen cells.</b> A <code>&lt;forces-cell&gt;</code> gates its loop on an
+        <code>IntersectionObserver</code> — it only runs while visible.
+      </li>
+    </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The canvas covers my content or eats clicks</h2>
+    <p>
+      With <code>&lt;forces-field&gt;</code> and the React component this is handled for you. If
+      you own the canvas via <code>createField</code>, position it fixed behind your content and
+      let pointer events pass through:
+    </p>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: layer }]} />
+    <div class="callout">
+      <b>One field per page.</b> There is exactly one background field. Don't mount several
+      <code>&lt;forces-field&gt;</code> elements — for small in-frame effects use
+      <code>&lt;forces-cell&gt;</code> instead, which is built to be embedded many times.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2><code>--d</code> isn't updating my element</h2>
+    <p>
+      Density write-back is opt-in. The element needs <code>data-feedback</code>, and your CSS
+      should default <code>--d</code> so it renders before the first write. The value is low-pass
+      filtered (~0.2s), so it eases rather than jumps.
+    </p>
+    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: feedback }]} />
+    <div class="callout">
+      <b>Words glow, they are never drawn.</b> The engine never assembles particles into
+      letterforms — text stays real, selectable, and accessible; <code>--d</code> drives weight,
+      glow, and scale on the real element.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>SSR &amp; hydration</h2>
+    <p>
+      The field is a client-only concern. The custom element registers in the browser, and the
+      React component mounts its canvas on the client — there is no server-rendered canvas to
+      mismatch. In Astro, the <code>import '@forces-ui/elements'</code> lives in a client
+      <code>&lt;script&gt;</code>; in Next.js, render the field in a client component. Bodies are
+      plain markup, so they server-render fine; only the field's reaction is deferred to the
+      client.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>It feels heavy on a large page</h2>
+    <p>
+      The field is one shared canvas, so cost does not grow with the number of bodies beyond the
+      per-body loop term. If a very large or low-power surface needs headroom, lower
+      <a href="/docs/api/options">density</a> — <code>density: 0.5</code> halves the particle
+      count. See <a href="/docs/performance">Performance</a> for the full picture.
+    </p>
+    <div class="callout">
+      <b>Still stuck?</b> The <a href="/lab">Lab</a> fires a single particle into any force and
+      checks it against its law — the fastest way to confirm a force behaves as documented.
+    </div>
+  </section>
+</DocsLayout>

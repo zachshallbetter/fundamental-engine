@@ -1,6 +1,44 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
 import { HANDLE } from '../../../lib/docs-api.ts';
+
+const getWc = `import '@forces-ui/elements';
+
+// the <forces-field> element proxies the entire FieldHandle:
+const field = document.querySelector('forces-field');
+field.setFormation('wells');`;
+
+const getVanilla = `import { createField } from 'forces-ui';
+
+const field = createField(canvas);   // ← createField returns the handle
+field.setRender('links');`;
+
+const getReact = `import { ForcesField } from '@forces-ui/react';
+
+// onReady hands you the live handle once the field mounts:
+<ForcesField onReady={(field) => field.setPalette('heatmap')} />`;
+
+const worked = `const field = document.querySelector('forces-field');
+
+// recolour + reshape the whole field at runtime
+field.setPalette('infrared');
+field.setFormation('accretion');
+field.setRender('metaballs');
+
+// glowing threads between engaged elements (real Element refs, not selectors)
+const a = document.querySelector('#node-a');
+const b = document.querySelector('#node-b');
+field.threads([{ a, b, color: '#4da3ff' }]);
+
+// a one-shot shove + heat at the cursor
+addEventListener('click', (e) => field.burst(e.clientX, e.clientY));
+
+// re-scan after a route change adds or removes [data-body] elements
+field.scan();
+
+// release the loop + listeners when you're done
+field.destroy();`;
 ---
 
 <DocsLayout
@@ -16,6 +54,22 @@ import { HANDLE } from '../../../lib/docs-api.ts';
       you a <code>FieldHandle</code>. Use it to drive the field after it mounts.
     </p>
   </header>
+
+  <section class="docs-sec">
+    <h2>How you get one</h2>
+    <p>
+      Every entry point returns the same handle — pick the one that matches your stack. With the
+      web component it's also <em>proxied onto the element</em>, so the element <strong>is</strong>
+      the handle.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'js', code: getWc },
+        { label: 'React', lang: 'tsx', code: getReact },
+        { label: 'Vanilla', lang: 'ts', code: getVanilla },
+      ]}
+    />
+  </section>
 
   <section class="docs-sec">
     <h2>Methods</h2>
@@ -34,6 +88,20 @@ import { HANDLE } from '../../../lib/docs-api.ts';
     <div class="callout">
       <b>On the element.</b> When you use <code>&lt;forces-field&gt;</code>, these are proxied onto
       the element itself — <code>document.querySelector('forces-field').setFormation('wells')</code>.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>A worked example</h2>
+    <p>
+      Drive the field from your own code — recolour it, reshape it, thread engaged elements
+      together, react to events, and clean up:
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: worked }]} />
+    <div class="callout">
+      <b>See also.</b> <a href="/docs/api/options">createField &amp; options</a> for the creation
+      config, the <a href="/docs/api/forces">forces catalog</a> for what bodies do, and
+      <a href="/docs/recipes">recipes</a> for copy-paste patterns built on this handle.
     </div>
   </section>
 </DocsLayout>
