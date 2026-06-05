@@ -1,13 +1,64 @@
 /*
- * Force glyphs — a CSS-shape icon for every force and preset (no SVG, no deps).
- * A `.fg` is a square box drawn in `currentColor` (set via `--fc`), in the idiom of
- * the original design-system marks. The canonical nine are ported verbatim; the
- * natural/extended forces and the presets are drawn in the same spirit.
+ * Force glyphs. Two icon families:
+ *  - .fg  : the 33 forces — line-icons on a 24×24 grid, adopted from the Forces
+ *           Design System (lab-icons.js). Each is an SVG painted as a CSS mask;
+ *           the force colour fills the strokes via --fc (background-color).
+ *  - .fgp : the cosmic presets — CSS-shape composites (no bundle icon exists), in
+ *           the original idiom.
  *
  * Usage:  <i class="fg fg-attract" style="--fc:#4da3ff"></i>
+ *         <i class="fgp fgp-blackhole" style="--fc:#a78bfa"></i>
  */
 
 .fg {
+  --fc: currentColor;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  background-color: var(--fc);
+  -webkit-mask: var(--fg-i) center / contain no-repeat;
+  mask: var(--fg-i) center / contain no-repeat;
+}
+
+/* ── the 33 forces — masked SVG line-icons (24×24, stroke 1.6) ──────────────── */
+.fg-attract{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%222.3%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M9.5 5 L12 7.6 L14.5 5 M9.5 19 L12 16.4 L14.5 19 M5 9.5 L7.6 12 L5 14.5 M19 9.5 L16.4 12 L19 14.5%22%2F%3E%3C%2Fsvg%3E")}
+.fg-repel{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%222.3%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M9.5 6.4 L12 3.8 L14.5 6.4 M9.5 17.6 L12 20.2 L14.5 17.6 M6.4 9.5 L3.8 12 L6.4 14.5 M17.6 9.5 L20.2 12 L17.6 14.5%22%2F%3E%3C%2Fsvg%3E")}
+.fg-swirl{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M20 12a8 8 0 1 1-3.2-6.4%22%2F%3E%3Cpath d%3D%22M16.5 12a4.5 4.5 0 1 1-2-3.7%22%2F%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%221.6%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fg-stream{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M4 8l4 4-4 4M10 8l4 4-4 4M16 8l4 4-4 4%22%2F%3E%3C%2Fsvg%3E")}
+.fg-viscosity{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 8q3-2.6 6 0t6 0 6 0M3 12q3-2.6 6 0t6 0 6 0M3 16q3-2.6 6 0t6 0 6 0%22%2F%3E%3C%2Fsvg%3E")}
+.fg-jet{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%226.5%22 cy%3D%2212%22 r%3D%223%22%2F%3E%3Cpath d%3D%22M10.5 12H20M16 8l4 4-4 4%22%2F%3E%3C%2Fsvg%3E")}
+.fg-tether{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 12h2.5l1.6-5 2.6 10 2.6-10 2.6 10 1.6-5H21%22%2F%3E%3C%2Fsvg%3E")}
+.fg-wall{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M17 4v16%22%2F%3E%3Cpath d%3D%22M5 8l7 4-7 4%22%2F%3E%3C%2Fsvg%3E")}
+.fg-sink{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%228%22 stroke-dasharray%3D%222.4 2.6%22%2F%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%222.6%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M12 5.5a6.5 6.5 0 0 1 4.6 1.9%22%2F%3E%3C%2Fsvg%3E")}
+.fg-gravity{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 7Q12 13 21 7M5 11Q12 16 19 11M8 15Q12 18 16 15%22%2F%3E%3Ccircle cx%3D%2212%22 cy%3D%2218%22 r%3D%221.3%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fg-charge{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%228%22 cy%3D%2212%22 r%3D%223.4%22%2F%3E%3Cpath d%3D%22M6.3 12h3.4M8 10.3v3.4%22%2F%3E%3Ccircle cx%3D%2216%22 cy%3D%2212%22 r%3D%223.4%22%2F%3E%3Cpath d%3D%22M14.3 12h3.4%22%2F%3E%3C%2Fsvg%3E")}
+.fg-magnetism{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M7 5v8a5 5 0 0 0 10 0V5%22%2F%3E%3Cpath d%3D%22M4.5 5h5M14.5 5h5%22%2F%3E%3Cpath d%3D%22M5 9.5h2M17 9.5h2%22%2F%3E%3C%2Fsvg%3E")}
+.fg-thermal{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M8 20q-2.2-3 0-6t0-6M12 20q-2.2-3 0-6t0-6M16 20q-2.2-3 0-6t0-6%22%2F%3E%3C%2Fsvg%3E")}
+.fg-collide{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%225%22 cy%3D%2212%22 r%3D%222.3%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2219%22 cy%3D%2212%22 r%3D%222.3%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M12 8.5v-2M12 15.5v2M8.7 12h-1.6M15.3 12h1.6M9.7 9.7l-1.1-1.1M14.3 14.3l1.1 1.1M14.3 9.7l1.1-1.1M9.7 14.3l-1.1 1.1%22%2F%3E%3C%2Fsvg%3E")}
+.fg-diffuse{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%225%22 cy%3D%2212%22 r%3D%221.6%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%229.5%22 cy%3D%229%22 r%3D%221.3%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2210%22 cy%3D%2215%22 r%3D%221.3%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2215%22 cy%3D%228%22 r%3D%221%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2215.5%22 cy%3D%2216%22 r%3D%221%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2219%22 cy%3D%2212%22 r%3D%220.9%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2214%22 cy%3D%2212%22 r%3D%221.1%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fg-propagate{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%226%22 cy%3D%2212%22 r%3D%221.4%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M8 8.5a5 5 0 0 1 0 7M10.5 6.5a8.5 8.5 0 0 1 0 11M13 4.5a12 12 0 0 1 0 15%22%2F%3E%3C%2Fsvg%3E")}
+.fg-memory{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 14q4-6 8-3t8-3%22 stroke-dasharray%3D%221.5 2.4%22%2F%3E%3Ccircle cx%3D%223%22 cy%3D%2214%22 r%3D%221%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2219%22 cy%3D%228%22 r%3D%221%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fg-lens{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M5 12Q12 4 19 12Q12 20 5 12Z%22%2F%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%221.4%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fg-gate{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M8 4v16%22%2F%3E%3Cpath d%3D%22M5 12h11M12 8l4 4-4 4%22%2F%3E%3C%2Fsvg%3E")}
+.fg-buoyancy{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 12q3-1.6 6 0t6 0 6 0%22%2F%3E%3Cpath d%3D%22M8 9V4M5.6 6.4 8 4l2.4 2.4M16 15v5M13.6 17.6 16 20l2.4-2.4%22%2F%3E%3C%2Fsvg%3E")}
+.fg-shear{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M4 9h11M11 6l4 3-4 3%22%2F%3E%3Cpath d%3D%22M20 15H9M13 12l-4 3 4 3%22%2F%3E%3C%2Fsvg%3E")}
+.fg-crystallize{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M12 3l9 9-9 9-9-9z%22%2F%3E%3Cpath d%3D%22M12 3v18M3 12h18%22%2F%3E%3C%2Fsvg%3E")}
+.fg-align{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M4 17L11 9M9.5 19l7-8M15 21l7-8%22%2F%3E%3C%2Fsvg%3E")}
+.fg-wind{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 9h11a3 3 0 1 0-3-3%22%2F%3E%3Cpath d%3D%22M3 14h14a3 3 0 1 1-3 3%22%2F%3E%3C%2Fsvg%3E")}
+.fg-cohesion{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%229.5%22 cy%3D%2212%22 r%3D%225%22%2F%3E%3Ccircle cx%3D%2214.5%22 cy%3D%2212%22 r%3D%225%22%2F%3E%3C%2Fsvg%3E")}
+.fg-pressure{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Crect x%3D%224%22 y%3D%224%22 width%3D%2216%22 height%3D%2216%22 rx%3D%221.5%22%2F%3E%3Cpath d%3D%22M4 12h16M12 4v16%22%2F%3E%3C%2Fsvg%3E")}
+.fg-hunt{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2217.5%22 cy%3D%227.5%22 r%3D%222.5%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Cpath d%3D%22M3.5 18l6-2.4-2.4 6z%22%2F%3E%3Cpath d%3D%22M9.6 13.6l5.4-4%22 stroke-dasharray%3D%221.8 2%22%2F%3E%3C%2Fsvg%3E")}
+.fg-spawn{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M12 8v8M8 12h8%22%2F%3E%3Ccircle cx%3D%225%22 cy%3D%225%22 r%3D%221.1%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2219%22 cy%3D%226%22 r%3D%221.1%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%226%22 cy%3D%2219%22 r%3D%221.1%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3Ccircle cx%3D%2218%22 cy%3D%2218%22 r%3D%221.1%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fg-link{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Crect x%3D%223%22 y%3D%229.5%22 width%3D%2210%22 height%3D%225%22 rx%3D%222.5%22%2F%3E%3Crect x%3D%2211%22 y%3D%229.5%22 width%3D%2210%22 height%3D%225%22 rx%3D%222.5%22%2F%3E%3C%2Fsvg%3E")}
+.fg-morph{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Crect x%3D%223%22 y%3D%228%22 width%3D%228%22 height%3D%228%22 rx%3D%221%22%2F%3E%3Cpath d%3D%22M12.2 12h3.4%22%2F%3E%3Cpath d%3D%22M19.2 8l3.2 4-3.2 4-3.2-4z%22 stroke-dasharray%3D%222.2 2%22%2F%3E%3C%2Fsvg%3E")}
+.fg-resonate{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M3 12q3-8 6 0t6 0 6 0%22%2F%3E%3C%2Fsvg%3E")}
+.fg-spotlight{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M20 5L7 11v2l13 6z%22%2F%3E%3Ccircle cx%3D%225%22 cy%3D%2212%22 r%3D%221.6%22 fill%3D%22%23000%22 stroke%3D%22none%22%2F%3E%3C%2Fsvg%3E")}
+.fg-pigment{--fg-i:url("data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%23000%22 stroke-width%3D%221.6%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cpath d%3D%22M12 3.5C7.5 10 6.5 12.6 6.5 15a5.5 5.5 0 0 0 11 0c0-2.4-1-5-5.5-11.5z%22 fill%3D%22%23000%22 stroke%3D%22none%22 opacity%3D%220.92%22%2F%3E%3C%2Fsvg%3E")}
+
+/* ── presets — CSS-shape composites (.fgp) ─────────────────────────────────── */
+.fgp {
   --fc: currentColor;
   width: 14px;
   height: 14px;
@@ -17,542 +68,22 @@
   color: var(--fc);
   vertical-align: middle;
 }
-.fg::before,
-.fg::after {
+.fgp::before,
+.fgp::after {
   content: '';
   position: absolute;
-}
-@keyframes fg-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ── canonical nine (ported from the original lab.css) ──────────────────────── */
-
-/* attract — a solid glowing dot (a well) */
-.fg-attract::before {
-  inset: 3px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 6px currentColor;
-}
-
-/* repel — a glowing diamond */
-.fg-repel::before {
-  inset: 2.5px;
-  background: currentColor;
-  transform: rotate(45deg);
-  box-shadow: 0 0 6px currentColor;
-}
-
-/* swirl — a spinning broken conic ring */
-.fg-swirl::before {
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    currentColor 55deg,
-    transparent 135deg,
-    transparent 180deg,
-    currentColor 235deg,
-    transparent 315deg
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent 54%, #000 56%);
-  mask: radial-gradient(farthest-side, transparent 54%, #000 56%);
-  animation: fg-spin 2.1s linear infinite;
-}
-
-/* stream — a horizontal glowing bar (a current) */
-.fg-stream::before {
-  left: 1px;
-  right: 1px;
-  top: 4.5px;
-  height: 5px;
-  border-radius: 3px;
-  background: currentColor;
-  box-shadow: 0 0 6px currentColor;
-}
-
-/* viscosity — a thick dim circle (a viscous zone) */
-.fg-viscosity::before {
-  inset: 1px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  opacity: 0.7;
-}
-
-/* jet — a nozzle dot + a triangle jet */
-.fg-jet::before {
-  left: 1px;
-  top: 4.5px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 6px currentColor;
-}
-.fg-jet::after {
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  border-left: 5px solid currentColor;
-  border-top: 3px solid transparent;
-  border-bottom: 3px solid transparent;
-}
-
-/* tether — a dot inside a faint ring (tether at rest length) */
-.fg-tether::before {
-  left: 50%;
-  top: 50%;
-  width: 3px;
-  height: 3px;
-  margin: -1.5px 0 0 -1.5px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 5px currentColor;
-}
-.fg-tether::after {
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  opacity: 0.5;
-}
-
-/* wall — a rounded-square box */
-.fg-wall::before {
-  inset: 2px;
-  border-radius: 3px;
-  border: 1.5px solid currentColor;
-}
-
-/* sink — a dashed accretion ring */
-.fg-sink::before {
-  inset: 1px;
-  border-radius: 50%;
-  border: 1px dashed currentColor;
-}
-
-/* ── natural primitives (§20.10) ───────────────────────────────────────────── */
-
-/* gravity — a heavy core warping a ring (true 1/d² well) */
-.fg-gravity::before {
-  left: 50%;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  margin: -2.5px 0 0 -2.5px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 7px currentColor;
-}
-.fg-gravity::after {
-  inset: 0.5px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  opacity: 0.4;
-}
-
-/* charge — a ringed core with a plus (a charged body) */
-.fg-charge::before {
-  inset: 1px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-}
-.fg-charge::after {
-  left: 50%;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  transform: translate(-50%, -50%);
-  background:
-    linear-gradient(currentColor, currentColor) center / 6px 1.4px no-repeat,
-    linear-gradient(currentColor, currentColor) center / 1.4px 6px no-repeat;
-}
-
-/* magnetism — two opposing field arcs (a dipole) */
-.fg-magnetism::before {
-  left: 1px;
-  top: 2px;
-  bottom: 2px;
-  width: 6px;
-  border: 1.5px solid currentColor;
-  border-right: none;
-  border-radius: 7px 0 0 7px;
-}
-.fg-magnetism::after {
-  right: 1px;
-  top: 2px;
-  bottom: 2px;
-  width: 6px;
-  border: 1.5px solid currentColor;
-  border-left: none;
-  border-radius: 0 7px 7px 0;
-}
-
-/* thermal — a hot, radiating core */
-.fg-thermal::before {
-  inset: 3.5px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow:
-    0 0 5px currentColor,
-    0 0 10px currentColor;
-}
-.fg-thermal::after {
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  opacity: 0.3;
-  animation: fg-spin 6s linear infinite;
-  border-style: dotted;
-}
-
-/* collide — two discs meeting (billiard) */
-.fg-collide::before {
-  left: 0;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-}
-.fg-collide::after {
-  right: 0;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.85;
-}
-
-/* diffuse — a soft, spreading blob (pheromone) */
-.fg-diffuse::before {
-  inset: 1.5px;
-  border-radius: 50%;
-  background: radial-gradient(circle, currentColor 0%, transparent 70%);
-  filter: blur(0.5px);
-}
-
-/* propagate — concentric expanding rings (a wave) */
-.fg-propagate::before {
-  inset: 4.5px;
-  border-radius: 50%;
-  border: 1.4px solid currentColor;
-}
-.fg-propagate::after {
-  inset: 1px;
-  border-radius: 50%;
-  border: 1.2px solid currentColor;
-  opacity: 0.45;
-}
-
-/* memory — worn strata, the older layers fading (the field remembers) */
-.fg-memory::before {
-  inset: 2px;
-  border-radius: 2px;
-  background: repeating-linear-gradient(to bottom, currentColor 0 1.3px, transparent 1.3px 3.6px);
-  -webkit-mask: linear-gradient(to bottom, #000, rgba(0, 0, 0, 0.25));
-  mask: linear-gradient(to bottom, #000, rgba(0, 0, 0, 0.25));
-}
-
-/* ── designed-extended forces (§20.3) ──────────────────────────────────────── */
-
-/* lens — a lens ellipse (bends a flow) */
-.fg-lens::before {
-  inset: 1px 4px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-}
-
-/* gate — a membrane bar + a pass-through arrow (one-way) */
-.fg-gate::before {
-  left: 4px;
-  top: 1px;
-  bottom: 1px;
-  width: 1.5px;
-  background: currentColor;
-}
-.fg-gate::after {
-  right: 1px;
-  top: 50%;
-  transform: translateY(-50%);
-  border-left: 5px solid currentColor;
-  border-top: 3px solid transparent;
-  border-bottom: 3px solid transparent;
-}
-
-/* buoyancy — an upward triangle (lift) */
-.fg-buoyancy::before {
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  border-bottom: 8px solid currentColor;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-}
-
-/* shear — two offset bars sliding past (laminar) */
-.fg-shear::before {
-  left: 1px;
-  right: 4px;
-  top: 4px;
-  height: 2px;
-  border-radius: 2px;
-  background: currentColor;
-}
-.fg-shear::after {
-  left: 4px;
-  right: 1px;
-  bottom: 4px;
-  height: 2px;
-  border-radius: 2px;
-  background: currentColor;
-  opacity: 0.7;
-}
-
-/* crystallize — a lattice diamond with a node */
-.fg-crystallize::before {
-  inset: 2px;
-  border: 1.5px solid currentColor;
-  transform: rotate(45deg);
-}
-.fg-crystallize::after {
-  left: 50%;
-  top: 50%;
-  width: 2.5px;
-  height: 2.5px;
-  margin: -1.25px 0 0 -1.25px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-/* align — parallel headings (flocking) */
-.fg-align::before {
-  left: 2px;
-  top: 3px;
-  width: 9px;
-  height: 1.6px;
-  border-radius: 2px;
-  background: currentColor;
-  transform: rotate(-16deg);
-  box-shadow: 0 5px 0 currentColor;
-}
-
-/* wind — a curl of turbulence */
-.fg-wind::before {
-  inset: 1.5px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  border-bottom-color: transparent;
-  border-left-color: transparent;
-  transform: rotate(-30deg);
-}
-.fg-wind::after {
-  right: 1px;
-  top: 2px;
-  border-top: 4px solid currentColor;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-}
-
-/* cohesion — two merging droplets (a skin) */
-.fg-cohesion::before {
-  left: 1px;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-}
-.fg-cohesion::after {
-  right: 1.5px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  opacity: 0.7;
-}
-
-/* pressure — a packed cell relaxing outward (even fill) */
-.fg-pressure::before {
-  left: 50%;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  margin: -4.5px 0 0 -4.5px;
-  border: 1.5px solid currentColor;
-  border-radius: 2px;
-}
-.fg-pressure::after {
-  left: 50%;
-  top: 50%;
-  width: 3px;
-  height: 3px;
-  margin: -1.5px 0 0 -1.5px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.8;
-}
-
-/* hunt — a predator dot chasing a prey dot */
-.fg-hunt::before {
-  left: 1px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.fg-hunt::after {
-  right: 1.5px;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  margin-top: -2.5px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  opacity: 0.65;
-}
-
-/* spawn — a source point throwing matter out */
-.fg-spawn::before {
-  left: 1.5px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.fg-spawn::after {
-  left: 9px;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  margin-top: -2.5px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  opacity: 0.55;
-}
-
-/* link — two nodes joined by a bond */
-.fg-link::before {
-  left: 1px;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  margin-top: -2.5px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-}
-.fg-link::after {
-  right: 1px;
-  top: 50%;
-  width: 8px;
-  height: 0;
-  margin-top: -0.5px;
-  border-top: 1.5px solid currentColor;
-  opacity: 0.7;
-}
-
-/* morph — scattered dots gathering toward a mark */
-.fg-morph::before {
-  left: 1px;
-  top: 2px;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.55;
-  box-shadow:
-    1px 9px 0 currentColor,
-    9px 2px 0 currentColor;
-}
-.fg-morph::after {
-  right: 1.5px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border: 1.5px solid currentColor;
-  border-radius: 2px;
-}
-
-/* resonate — a standing wave */
-.fg-resonate::before {
-  left: 1px;
-  top: 4px;
-  width: 5.5px;
-  height: 5.5px;
-  border: 1.5px solid currentColor;
-  border-bottom: none;
-  border-right: none;
-  border-radius: 7px 0 0 0;
-}
-.fg-resonate::after {
-  right: 1px;
-  bottom: 4px;
-  width: 5.5px;
-  height: 5.5px;
-  border: 1.5px solid currentColor;
-  border-top: none;
-  border-left: none;
-  border-radius: 0 0 7px 0;
-}
-
-/* spotlight — a beam cone */
-.fg-spotlight::before {
-  left: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  border-left: 8px solid currentColor;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  opacity: 0.85;
-}
-.fg-spotlight::after {
-  left: 1px;
-  top: 50%;
-  width: 2.5px;
-  height: 2.5px;
-  margin-top: -1.25px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-/* pigment — two overlapping inks mixing (conserved colour transport) */
-.fg-pigment::before {
-  inset: 1.5px 5px 5px 1.5px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.85;
-}
-.fg-pigment::after {
-  inset: 5px 1.5px 1.5px 5px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.4;
 }
 
 /* ── presets (§20.9) — cosmic composites ───────────────────────────────────── */
 
 /* blackhole — a dark core ringed by an accretion disk */
-.fg-blackhole::before {
+.fgp-blackhole::before {
   inset: 3.5px;
   border-radius: 50%;
   background: #05060a;
   box-shadow: 0 0 0 1.5px currentColor;
 }
-.fg-blackhole::after {
+.fgp-blackhole::after {
   inset: 0.5px;
   border-radius: 50%;
   border: 1px solid currentColor;
@@ -560,7 +91,7 @@
 }
 
 /* whitehole — an emission core throwing rings outward */
-.fg-whitehole::before {
+.fgp-whitehole::before {
   left: 50%;
   top: 50%;
   width: 4px;
@@ -570,20 +101,20 @@
   background: currentColor;
   box-shadow: 0 0 7px currentColor;
 }
-.fg-whitehole::after {
+.fgp-whitehole::after {
   inset: 0.5px;
   border-radius: 50%;
   border: 1px dotted currentColor;
 }
 
 /* star — a glowing core with cross rays */
-.fg-star::before {
+.fgp-star::before {
   inset: 4px;
   border-radius: 50%;
   background: currentColor;
   box-shadow: 0 0 7px currentColor;
 }
-.fg-star::after {
+.fgp-star::after {
   left: 50%;
   top: 50%;
   width: 13px;
@@ -596,7 +127,7 @@
 }
 
 /* quasar — a black hole with polar jets */
-.fg-quasar::before {
+.fgp-quasar::before {
   left: 50%;
   top: 1px;
   bottom: 1px;
@@ -605,7 +136,7 @@
   background: currentColor;
   box-shadow: 0 0 5px currentColor;
 }
-.fg-quasar::after {
+.fgp-quasar::after {
   inset: 4px;
   border-radius: 50%;
   background: #05060a;
@@ -613,7 +144,7 @@
 }
 
 /* galaxy — a spiral disk */
-.fg-galaxy::before {
+.fgp-galaxy::before {
   inset: 0;
   border-radius: 50%;
   background: conic-gradient(
@@ -628,7 +159,7 @@
   -webkit-mask: radial-gradient(farthest-side, #000 12%, transparent 16%, #000 30%, transparent 64%);
   mask: radial-gradient(farthest-side, #000 12%, transparent 16%, #000 30%, transparent 64%);
 }
-.fg-galaxy::after {
+.fgp-galaxy::after {
   left: 50%;
   top: 50%;
   width: 3px;
@@ -640,13 +171,13 @@
 }
 
 /* nebula — a soft glowing cloud */
-.fg-nebula::before {
+.fgp-nebula::before {
   inset: 1px;
   border-radius: 50%;
   background: radial-gradient(circle at 40% 40%, currentColor 0%, transparent 60%);
   filter: blur(0.6px);
 }
-.fg-nebula::after {
+.fgp-nebula::after {
   inset: 3px;
   border-radius: 50%;
   background: radial-gradient(circle at 65% 60%, currentColor 0%, transparent 65%);
@@ -655,7 +186,7 @@
 }
 
 /* tornado — a funnel */
-.fg-tornado::before {
+.fgp-tornado::before {
   left: 50%;
   top: 1.5px;
   transform: translateX(-50%);
@@ -664,7 +195,7 @@
   border-right: 5px solid transparent;
   opacity: 0.85;
 }
-.fg-tornado::after {
+.fgp-tornado::after {
   left: 50%;
   top: 2px;
   width: 8px;
@@ -673,3 +204,4 @@
   border-radius: 50%;
   border-top: 1.4px solid currentColor;
 }
+
