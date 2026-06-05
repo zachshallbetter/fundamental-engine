@@ -730,6 +730,23 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       });
     });
 
+    // accretion meter — the engine writes --load onto the sink body as it fills;
+    // mirror that onto the meter bar's fill. Watch the body's inline style (the
+    // engine sets the var via setProperty) so the bar tracks load without polling.
+    document.querySelectorAll('.meter').forEach((meter) => {
+      const fill = meter.querySelector('i');
+      const core = meter.closest('.stage')?.querySelector('.body-core');
+      if (!fill || !core) return;
+      const sync = () => {
+        const load = parseFloat(getComputedStyle(core).getPropertyValue('--load')) || 0;
+        fill.style.width = (Math.min(1, Math.max(0, load)) * 100).toFixed(1) + '%';
+      };
+      const mo = new MutationObserver(sync);
+      mo.observe(core, { attributes: true, attributeFilter: ['style'] });
+      _obs.push(mo);
+      sync();
+    });
+
     // agitate — a burst at the target + a chip kick + a shock ring
     document.querySelectorAll('[data-agitate]').forEach((btn) => {
       btn.addEventListener('click', () => {
