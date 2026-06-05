@@ -235,7 +235,7 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
   ~71 invariant/exact checks), driven through the real engine and deterministic across
   runs, on top of the golden per-force unit tests and the integrator suite. A **safety
   sweep** then runs all 36 experiments through global finite/bounded/conserved invariants
-  (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count). **294 core tests** in all,
+  (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count). **301 core tests** in all,
   every merge green.
 - **Composition + conditions** are covered, not deferred: `COMPOSITE_EXPERIMENTS` verifies
   that forces compose (`attract repel` cancel; `attract swirl` sums to a spiral) and gate

@@ -37,5 +37,6 @@ ready for the source to be public alongside the packages.
 
 ## Versioning
 
-All three packages are at `0.1.0`. Bump them together for a coordinated release
-(e.g. `pnpm -r exec npm version patch`), then re-run the publish steps.
+All three packages are at `0.2.0`. Bump them together for a coordinated release
+(e.g. `pnpm --filter "./packages/*" exec npm version patch`, which skips the private
+site app), then re-run the publish steps.

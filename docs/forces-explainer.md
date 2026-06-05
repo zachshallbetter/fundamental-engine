@@ -18,7 +18,7 @@ in with plain HTML attributes — no framework required.
 The whole system is one loop with two halves.
 
 **Element → Field.** Any element you tag becomes a *force*. It pushes, pulls,
-swirls, or absorbs the particles around it. The layout of your page literally
+swirls, or captures the particles around it. The layout of your page literally
 shapes the motion of the field.
 
 **Field → Element.** Wherever particles gather, that element gains **weight, glow,
@@ -47,14 +47,14 @@ You turn any element into a force by adding attributes. No JavaScript:
 
 | Attribute | What it does |
 |---|---|
-| `data-body` | the force(s): `attract` · `repel` · `vortex` · `stream` · `drag` · `emitter` · `spring` · `reflect` · `absorb` (they compose) |
+| `data-body` | the force(s): `attract` · `repel` · `swirl` · `stream` · `viscosity` · `jet` · `tether` · `wall` · `sink` (they compose) |
 | `data-strength` | force magnitude |
 | `data-range` | influence radius, in px |
 | `data-color` | the element's accent (and the colour of any sparks it sheds) |
 | `data-feedback` | opt into the field → element write-back (`--d` density) |
 | `data-when` | a gate: act only when `fast` / `slow` / `hot` / `cool` / `active` |
 
-Nine forces, each a verb. Compose them on one element (`data-body="absorb attract"`)
+Nine forces, each a verb. Compose them on one element (`data-body="sink attract"`)
 and it pulls matter in *and* swallows it.
 
 ---
