@@ -43,6 +43,13 @@ metrics, and the transformation primitives, not re-building what exists.)
   matter with a gentle inward nudge, then the integrator's real `apply()` shapes it — so gentle
   forces read gently and strong ones strongly. (Modifiers `resonate`/`spotlight` and the pure
   source `spawn` correctly never tear.)
+- **`charge` and `magnetism` now act on the live field (charge induction).** Both forces
+  ignore neutral matter by contract — and every live particle starts neutral, so on the page
+  they did nothing. A charge/magnetism body now **polarizes** the matter in its range: a
+  neutral particle picks up a sign by which side of the body it sits on (a +/- domain split),
+  induced once so matter carries its charge. Induction is a field-level pass (`induceCharges`)
+  kept *outside* the integrator the conformance suite runs, so the force's golden contract
+  ("ignores neutral matter") stays exactly true while the field gains charged matter to push.
 
 ### Documentation
 

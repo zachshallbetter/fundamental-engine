@@ -24,7 +24,7 @@ import {
   type BoundParticle,
   type WavePull,
 } from './currents.ts';
-import { healWaves, tearBoundNear, tearBoundByForces } from './reservoir.ts';
+import { healWaves, tearBoundNear, tearBoundByForces, induceCharges } from './reservoir.ts';
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
 import { resolvePalette } from '../config/palettes.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
@@ -783,6 +783,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
     store.reindex();
     applyAttention();
+    if (env.dt) induceCharges(bodies, store.particles); // polarize neutral matter near charge/magnetism bodies (§20.10)
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
