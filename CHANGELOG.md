@@ -9,8 +9,25 @@ in progress (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
-- **Two more forces (28 total)** — `memory` (a worn-path occupancy field, class [C]) and
-  `pigment` (conserved colour transport, [E]).
+- **Seven more forces (33 total), spanning every input class.** `memory` (a worn-path
+  occupancy field, [C]) and `pigment` (conserved colour transport, [E]); `pressure`
+  (SPH density relaxation — incompressible even-fill, [B]); `link` (a Verlet distance
+  constraint — ropes, cloth, soft structures, [B]); `hunt` (two-species predator/prey
+  pursuit, [B]); `morph` (matter assembles into a mark/chart/logo — never words, §11; the
+  new shape-assignment class [D]); and `spawn` (a budgeted source atom that *creates*
+  matter, the new class [S]).
+- **The source system (class [S]).** A `source(b, env)` hook on the `Force` contract
+  (run once per body per frame, the dual of `modify`), plus an integrator source pass and
+  an aging/despawn **sink** for mortal matter. Sources are budgeted by a per-particle
+  lifespan and a hard pool ceiling, so they can't grow the field without bound. Adds the
+  `fountain` preset (a continuous upward jet arcing home under gravity).
+- **Two more render modes (six total)** — `metaballs` (a liquid iso-surface traced by
+  marching squares) and `voronoi` (shattered-glass nearest-neighbour cells), alongside
+  `dots` · `trails` · `links` · `streamlines`.
+- **Closed-loop concepts on the Field Manual** — **material typography** (one density,
+  `--d`, drives every type axis at once: weight, optical size, tracking, bloom, colour)
+  and a **self-laying-out page** (`data-move="layout"` elements find equilibrium positions
+  via anchor + mutual repulsion + density pressure, and re-settle on resize).
 - **Conserved attention** (§2.4) — one finite strength budget across the page; engaging a
   body pulls force off the others. Opt-in via `FieldOptions.attention` /
   `FieldHandle.setAttention` / `<forces-field attention>`.
@@ -23,9 +40,10 @@ in progress (see [RELEASING.md](RELEASING.md)).
 - **The Lab is a physics detector** — fire known particles into a force, watch the track,
   the field, and related particles, and see each conformance check pass frame-by-frame.
   Numeric tuning + presets, multi-particle firing, once/loop/unlocked playback, a
-  timeline with a marker at every test's pass-frame and a MATCH flag, a parameter-sweep
-  plot (vary one input across its range, see the response curve), and actionable save
-  (Export JSON / Copy report).
+  timeline with a per-particle **speed waveform** and a marker at every test's pass-frame
+  with a MATCH flag, a parameter-sweep plot (vary one input across its range, see the
+  response curve), and actionable save (Export JSON / Copy report). Handles class-[S]
+  sources that start with no test particle (drawing the emitted spray).
 - **Composition + condition experiments** — `COMPOSITE_EXPERIMENTS` verifies that forces
   compose (`attract repel` cancel; `attract vortex` sums to a spiral) and gate on
   conditions (`data-when` runs through the real condition registry).
