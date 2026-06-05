@@ -97,7 +97,7 @@ Real gaps (the actual work of this workover):
 - No `phase` particle attribute (only "phase change" in the `crystallize` comment).
 - No transformation primitives: `warp`, `wormhole`, `fuse`, `decay`, `fission`.
 - Absorber CSS export is still `--mass` (`field.ts:509`); it should be
-  `--accreted` with an optional `--mass` alias.
+  `--load` with an optional `--mass` alias.
 
 ## Phase 1 reconciliations
 
@@ -121,7 +121,7 @@ conformance check moves from an exact inward spiral to **tangential dominance**
 ### Absorber accreted
 
 `b.accreted` is the captured-particle count, not inertial mass. `p.m` is reserved
-for inertial mass. Remaining work: export `--accreted` CSS (keep `--mass` as a
+for inertial mass. Remaining work: export `--load` CSS (keep `--mass` as a
 temporary alias), fix the stale `forces.config.ts:146` comment, and confirm the
 docs say absorb tracks an accreted count.
 
@@ -340,7 +340,7 @@ modes, then migrate natural primitives, then transform. Do not start by ripping
 out the integrator. Preserve behaviour, add measurement, create compatibility
 seams, then make physical behaviour opt-in and testable.
 
-1. **Audit and reconciliation**: vortex to 0.12; absorber `--accreted`; global
+1. **Audit and reconciliation**: vortex to 0.12; absorber `--load`; global
    safety tests; velocity cap.
 2. **Compatibility infrastructure**: `PhysicsMode`, `IntegratorMode`, `MediumMode`;
    the force-accumulation path behind a compatibility flag, with the legacy
@@ -365,7 +365,7 @@ seams, then make physical behaviour opt-in and testable.
 drag/emitter/vortex conformance fixes). The brief's batches shift up by one:
 
 - **v0.3.0** — reconciliation, safety, boundary, metrics: vortex to 0.12, the
-  `--accreted` export, velocity cap, source-budget guard, modifier contract,
+  `--load` export, velocity cap, source-budget guard, modifier contract,
   `screen`, entropy and coherence, boundary docs, safety conformance.
 - **v0.4.0** — physical substrate: the mode type system, `dt` in seconds,
   semi-implicit Euler with `dt`, medium modes, linear and quadratic drag, the
