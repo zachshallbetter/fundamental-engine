@@ -20,16 +20,29 @@ export interface ManualEntry {
   token: string;
   /** display name. */
   label: string;
+  /** a two-letter periodic-table style symbol — the force's compact identity. */
+  symbol: string;
   /** the per-frame law, in plain text. */
   formula: string;
   /** the `data-*` attribute suffixes it reads (without the `data-` prefix). */
   attrs: readonly string[];
-  /** one-line description. */
+  /** one-line technical description (the manual register). */
   desc: string;
+  /** a sensory one-line headline — what the force feels like. */
+  summary: string;
+  /** the functional one-liner — what the force does, plainly. */
+  effect: string;
   /** the force's canonical accent colour (§20.2 reconciliation). */
   color: string;
   /** a one-line real-world use — what you'd reach for this force to do in a UI. */
   example: string;
+  /**
+   * Whether the force's physics is shipped and conformance-verified (`true`), or still
+   * a work-in-progress whose Lab experiment is provisional (`false`). The eight awaiting
+   * forces are the grid-based primitives (diffuse·propagate·memory) and the
+   * source/modifier/transform forces (spawn·morph·resonate·spotlight·pigment).
+   */
+  calibrated: boolean;
 }
 
 /**
@@ -121,8 +134,123 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   pigment: 'A section that stains passing matter its own colour, carried away.',
 };
 
+/**
+ * A two-letter symbol for every force — a periodic-table style identity used by the
+ * design system and the Lab's SYMBOL view. Mostly the first two letters, with curated
+ * exceptions so each is unique and reads well (memory → My, magnetism → Mg,
+ * crystallize → Cz, propagate → Pg, spotlight → Sl, pigment → Pm).
+ */
+export const FORCE_SYMBOLS: Record<string, string> = {
+  // canonical nine
+  attract: 'At', repel: 'Re', swirl: 'Sw', stream: 'St', viscosity: 'Vi',
+  jet: 'Jt', tether: 'Te', wall: 'Wl', sink: 'Sk',
+  // natural primitives
+  gravity: 'Gr', charge: 'Ch', magnetism: 'Mg', thermal: 'Th', collide: 'Co',
+  diffuse: 'Df', propagate: 'Pg', memory: 'My',
+  // designed-extended
+  lens: 'Le', gate: 'Ga', buoyancy: 'By', shear: 'Sh', crystallize: 'Cz',
+  align: 'Al', wind: 'Wd', cohesion: 'Cn', pressure: 'Pr', hunt: 'Hu',
+  spawn: 'Sp', link: 'Lk', morph: 'Mo', resonate: 'Rs', spotlight: 'Sl',
+  pigment: 'Pm',
+};
+
+/**
+ * A sensory one-line headline for every force — what it *feels* like, the register the
+ * Lab's force card leads with. Distinct from `desc` (technical) and `example` (UI use).
+ * Four entries (gravity·morph·resonate·spotlight) are written to match this engine's real
+ * physics rather than the design bundle's simplified reading of those names.
+ */
+export const FORCE_SUMMARIES: Record<string, string> = {
+  // canonical nine
+  attract: 'Pulls matter into a well — an inverse-square gravity well bent into a spiral.',
+  repel: 'Pushes matter away — an inverted well that carves a clean void.',
+  swirl: 'Spins matter into a whirlpool — a tangential force that circles without collapsing.',
+  stream: 'Blows a directional current — a constant push along a fixed heading.',
+  viscosity: 'Thickens the medium — viscosity that bleeds momentum off.',
+  jet: 'A fountain — draws matter in, then jets it back out along a heading.',
+  tether: 'A tether with a rest length — holds matter at a fixed radius.',
+  wall: 'A surface that bounces — an elastic collision off a bounding box.',
+  sink: 'Swallows matter and holds it — accretion, then supernova at the cap.',
+  // natural primitives
+  gravity: 'A true inverse-square well — the real GM/d² law, softened at the core.',
+  charge: 'Coulomb attraction or repulsion — inverse-square, set by sign.',
+  magnetism: 'A force perpendicular to motion — bends a moving particle without doing work.',
+  thermal: 'Brownian agitation — random kicks that heat the medium.',
+  collide: 'Hard-sphere contact — particles bounce off one another.',
+  diffuse: 'Spreads density down its gradient, high to low.',
+  propagate: 'A travelling wave — a disturbance that moves through the field.',
+  memory: 'A trace of where matter has been — past paths persist and pull.',
+  // designed-extended
+  lens: 'Bends passing tracks like refraction — focuses or scatters them.',
+  gate: 'A conditional aperture — passes some particles, blocks others.',
+  buoyancy: 'Lifts lighter matter and sinks heavier — density against a field.',
+  shear: 'Opposing currents at a boundary — a velocity gradient.',
+  crystallize: 'Snaps matter onto a lattice — order grown from a seed.',
+  align: 'Turns matter to a common heading — flocking orientation.',
+  wind: 'A broad, noisy current — turbulent drift across the field.',
+  cohesion: 'Mutual attraction within a group — a surface tension.',
+  pressure: 'Outward push from crowding — a density repulsion.',
+  hunt: 'Tracks and chases a target — pursuit steering.',
+  spawn: 'Seeds new matter at a source — emission of fresh particles.',
+  link: 'Binds two bodies with a constraint — rigid or elastic.',
+  morph: 'Matter assembles into a mark — a logo or chart grown from drifting particles, never words.',
+  resonate: 'A modifier that breathes — scales its sibling forces with a pulsing strength.',
+  spotlight: 'A modifier cone — confines its sibling forces to a directed beam.',
+  pigment: 'Carries colour through the medium — a dye that mixes.',
+};
+
+/** The functional one-liner for every force — what it does, plainly (the Lab's EFFECT line). */
+export const FORCE_EFFECTS: Record<string, string> = {
+  // canonical nine
+  attract: 'Draws particles inward.',
+  repel: 'Drives particles outward.',
+  swirl: 'Orbits particles around the body.',
+  stream: 'Carries particles down-heading.',
+  viscosity: 'Slows particles to rest.',
+  jet: 'Recycles the field into a stream.',
+  tether: 'Settles particles onto a shell.',
+  wall: 'Deflects particles, shedding energy.',
+  sink: 'Captures and conserves particles.',
+  // natural primitives
+  gravity: 'Pulls matter inward by gravity.',
+  charge: 'Pulls or pushes by polarity.',
+  magnetism: 'Curves paths at constant speed.',
+  thermal: 'Jitters particles, raises temperature.',
+  collide: 'Exchanges momentum on impact.',
+  diffuse: 'Evens particles across space.',
+  propagate: 'Passes energy particle to particle.',
+  memory: 'Biases motion toward old tracks.',
+  // designed-extended
+  lens: 'Concentrates particles to a focus.',
+  gate: 'Filters the stream by a rule.',
+  buoyancy: 'Sorts particles by weight.',
+  shear: 'Tears layers past each other.',
+  crystallize: 'Locks particles into a grid.',
+  align: 'Combs velocities parallel.',
+  wind: 'Pushes everything down-wind.',
+  cohesion: 'Pulls neighbours into clusters.',
+  pressure: 'Spaces particles evenly apart.',
+  hunt: 'Steers toward a moving goal.',
+  spawn: 'Adds particles to the field.',
+  link: "Couples particles' motion.",
+  morph: 'Gathers particles into a shape.',
+  resonate: 'Pulses a sibling force.',
+  spotlight: 'Beams a sibling force into a cone.',
+  pigment: 'Tints particles as they pass.',
+};
+
+/**
+ * The eight forces whose physics is not yet fully shipped — their Lab experiments are
+ * provisional ("awaiting calibration"). The grid-based primitives still ride a stubbed
+ * `env.grid`; the source/modifier/transform forces are not yet conformance-pinned.
+ * Everything else is calibrated. The Lab dims these and marks them AWAITING.
+ */
+export const AWAITING_FORCES: ReadonlySet<string> = new Set([
+  'diffuse', 'propagate', 'memory', 'spawn', 'morph', 'resonate', 'spotlight', 'pigment',
+]);
+
 /** Every force, in catalog order. The UI groups these by `family`. */
-const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
+const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 'summary' | 'effect' | 'calibrated'>[] = [
   // ── canonical nine (§6) ──────────────────────────────────────────────────────
   {
     family: 'canonical',
@@ -338,22 +466,6 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
   },
   {
     family: 'extended',
-    token: 'link',
-    label: 'Link',
-    formula: 'neighbours: e = d − L;  v += ½k·(e/L)·û  (holds rest length L = range·0.35)',
-    attrs: ['strength', 'range'],
-    desc: 'a Verlet distance constraint — ropes, chains, cloth, soft structures',
-  },
-  {
-    family: 'extended',
-    token: 'morph',
-    label: 'Morph',
-    formula: 'assign p → target t (hash of gx);  v += (t − p)·k + jitter·(1 − arrived)',
-    attrs: ['strength', 'target'],
-    desc: 'matter assembles into a mark / chart / logo — never words (§11)',
-  },
-  {
-    family: 'extended',
     token: 'hunt',
     label: 'Hunt',
     formula: 'predator: v += seek(nearest prey)·S;  prey: v += flee(nearest predator)·S',
@@ -367,6 +479,22 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
     formula: 'while engaged: emit S·2 particles/frame along the heading, each living ~90 frames',
     attrs: ['strength', 'angle'],
     desc: 'a source [S] — creates matter along the heading, budgeted by a lifespan + pool ceiling',
+  },
+  {
+    family: 'extended',
+    token: 'link',
+    label: 'Link',
+    formula: 'neighbours: e = d − L;  v += ½k·(e/L)·û  (holds rest length L = range·0.35)',
+    attrs: ['strength', 'range'],
+    desc: 'a Verlet distance constraint — ropes, chains, cloth, soft structures',
+  },
+  {
+    family: 'extended',
+    token: 'morph',
+    label: 'Morph',
+    formula: 'assign p → target t (hash of gx);  v += (t − p)·k + jitter·(1 − arrived)',
+    attrs: ['strength', 'target'],
+    desc: 'matter assembles into a mark / chart / logo — never words (§11)',
   },
   {
     family: 'extended',
@@ -394,11 +522,15 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
   },
 ];
 
-/** Every force with its canonical colour + real-use example merged in. Grouped by `family`. */
+/** Every force with its colour, symbol, copy, and calibration state merged in. Grouped by `family`. */
 export const MANUAL_FORCES: readonly ManualEntry[] = FORCES_RAW.map((e) => ({
   ...e,
+  symbol: FORCE_SYMBOLS[e.token] ?? e.label.slice(0, 2),
+  summary: FORCE_SUMMARIES[e.token] ?? e.desc,
+  effect: FORCE_EFFECTS[e.token] ?? '',
   color: FORCE_COLORS[e.token] ?? '#ffffff',
   example: FORCE_EXAMPLES[e.token] ?? '',
+  calibrated: !AWAITING_FORCES.has(e.token),
 }));
 
 /** A preset definition: its name, the primitive tokens it composes, and a real use (§20.9). */
