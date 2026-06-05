@@ -24,6 +24,19 @@ metrics, and the transformation primitives, not re-building what exists.)
   `mountField` now lives here as its canonical home; `@forces-ui/elements` re-exports it, so
   existing `import { mountField } from '@forces-ui/elements'` is unchanged. The developer portal
   gains a **TypeScript** guide for it.
+- **`waves` is now a real toggle.** `FieldOptions.waves` (and `<forces-field waves>` / the React
+  `waves` prop) now actually gates the background Currents — default stays `true`, set `false`
+  for the bare free-particle field. It was previously accepted but ignored.
+- **`scrolling` `data-when` gate wired.** `data-when="scrolling"` now acts only while the page is
+  actually scrolling: the engine eases a per-frame scroll speed into `env.scrollV` and the gate
+  fires above `0.25`. It was cataloged but inert before (silently acting "always").
+- **`mass` on the web component.** `<forces-field mass>` now opts into first-class mass (§21.3),
+  matching the React adapter and the `ForcesField` class; the option was previously React-only.
+- **SSR-safe imports + a browser-only guard.** Importing `@forces-ui/elements` no longer throws
+  `HTMLElement is not defined` under server-side rendering (the custom-element base is guarded),
+  and `new ForcesField()` / `mountField()` from `@forces-ui/vanilla` throw a clear "client only"
+  error during SSR instead of a cryptic `document is not defined`. A new `pnpm check:dist` smoke
+  check (in CI and the publish checklist) verifies every package's entry points import cleanly.
 - **Global velocity cap + safety conformance sweep.** The integrator now clamps every free
   particle's speed to the unit system's `c` (12) each step, so no canonical force or
   composite can produce a runaway (the natural primitives already self-clamped; this makes
@@ -45,6 +58,13 @@ metrics, and the transformation primitives, not re-building what exists.)
 
 ### Fixed
 
+- **First-class mass no longer corrupts velocity-replacing forces.** Under `mass: true` the
+  integrator scaled the *whole* per-frame velocity change by `1/m`, breaking forces that *set*
+  velocity rather than add to it: a `wall` bounce could drive matter through the wall, and a
+  `jet` launched heavy matter far too slowly (`lens`/`gate` likewise). Mass is now applied
+  per-force — additive forces scale by `1/m`, while velocity-replacing forces (newly flagged
+  `kinematic`: `wall`, `jet`, `lens`, `gate`) set velocity outright. New conformance scenarios
+  cover `m ≠ 1`, which the suite never exercised before.
 - **Canonical vortex swirls again (inward bias `0.6` → `0.12`).** Reverts the v0.2.0 bias:
   the spec (§6.8) and the catalog already specified `0.12`. Canonical `vortex` is a designed
   swirl verb — the tangential component dominates the inward one ~8×, so it holds shape — not
@@ -88,7 +108,7 @@ metrics, and the transformation primitives, not re-building what exists.)
   stale tokens the rename missed (the explainer's `data-body` list, ROADMAP prose, the Field
   Cell example), the formula handbook's forward registry (`pheromone` → `diffuse`;
   `diffuse`/`memory` flagged as natural [C]; the spec-only `warp`/`wormhole` and the
-  `supernova` event marked; the budgeted source named `spawn`), the test count (301),
+  `supernova` event marked; the budgeted source named `spawn`), the test count (306),
   ROADMAP's force counts (33), the spec's runtime-field list (drops the removed `b.mass`), and
   stopped PUBLISHING / SECURITY / the package READMEs from implying the packages are on npm.
 

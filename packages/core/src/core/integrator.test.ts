@@ -4,6 +4,7 @@ import { FieldStore } from './field-store.ts';
 import { step, FRICTION, HEAT_DECAY } from './integrator.ts';
 import type { Body, Env, Particle, Force } from './types.ts';
 import { resonate, spotlight } from '../forces/extended.ts';
+import { attract, jet, wall } from '../forces/index.ts';
 
 const makeEnv = (over: Partial<Env> = {}): Env => ({
   dx: 0,
@@ -41,6 +42,41 @@ const run = (p: Particle, env: Env): void => {
   const store = new FieldStore();
   store.add(p);
   step({ store, bodies: [], env, forces: {}, conditions: {} });
+};
+
+const makeBody = (over: Partial<Body> = {}): Body => ({
+  el: null as unknown as HTMLElement,
+  tokens: [],
+  strength: 1,
+  range: 300,
+  absorbR: 64,
+  capacity: 60,
+  spin: 1,
+  angle: 0,
+  ux: 1,
+  uy: 0,
+  when: '',
+  feedback: false,
+  fmin: 0,
+  fmax: 0,
+  opsz: '',
+  M: 1,
+  cx: 100,
+  cy: 100,
+  hw: 50,
+  hh: 20,
+  on: false,
+  vis: true,
+  accreted: 0,
+  count: 0,
+  d: 0,
+  ...over,
+});
+
+const runBodies = (p: Particle, bodies: Body[], forces: Record<string, Force>, env: Env): void => {
+  const store = new FieldStore();
+  store.add(p);
+  step({ store, bodies, env, forces, conditions: {} });
 };
 
 test('friction decays velocity each tick', () => {
@@ -210,4 +246,41 @@ test('the source pass runs a force.source() once per body per frame (class [S])'
   step({ store, bodies: [body], env: makeEnv({ spawn: (p) => void collected.push(p) }), forces: { src }, conditions: {} });
   assert.equal(calls, 1); // once for the body, not once per particle
   assert.equal(collected.length, 1);
+});
+
+// ── first-class mass (§21.3): additive forces scale by 1/m; kinematic forces don't ──
+
+test('mass scales an additive force (attract) by 1/m', () => {
+  // attract adds acceleration toward the body; a 4× heavier particle gains ¼ the velocity.
+  const bodies = [makeBody({ tokens: ['attract'], cx: 300, cy: 100, range: 300, strength: 1 })];
+  const light = makeP({ x: 100, y: 100, m: 1 });
+  const heavy = makeP({ x: 100, y: 100, m: 4 });
+  runBodies(light, bodies, { attract }, makeEnv());
+  runBodies(heavy, bodies, { attract }, makeEnv());
+  assert.ok(light.vx > 0 && heavy.vx > 0, 'both pulled toward the body at +x');
+  assert.ok(Math.abs(heavy.vx - light.vx / 4) < 1e-12, `heavy ${heavy.vx} vs light/4 ${light.vx / 4}`);
+});
+
+test('mass leaves a kinematic relaunch (jet) at full speed regardless of m', () => {
+  // jet relaunches matter at a fixed nozzle speed; inertia must not slow the launch.
+  const bodies = [makeBody({ tokens: ['jet'], cx: 100, cy: 100, strength: 1 })];
+  const light = makeP({ x: 100, y: 100, m: 1 });
+  const heavy = makeP({ x: 100, y: 100, m: 4 });
+  runBodies(light, bodies, { jet }, makeEnv());
+  runBodies(heavy, bodies, { jet }, makeEnv());
+  const sLight = Math.hypot(light.vx, light.vy);
+  const sHeavy = Math.hypot(heavy.vx, heavy.vy);
+  // nozzle speed (2.4 + 1·2.6 = 5) × friction 0.95 = 4.75, independent of mass and cone angle.
+  assert.ok(Math.abs(sLight - sHeavy) < 1e-9, `light ${sLight} vs heavy ${sHeavy}`);
+  assert.ok(sHeavy > 4.5, `heavy launched at ${sHeavy}; the old 1/m bug would give ~1.2`);
+});
+
+test('mass leaves a wall bounce a true reflection', () => {
+  // a heavy particle driven into a wall must bounce back, not pass through (the old bug).
+  const bodies = [makeBody({ tokens: ['wall'], range: 0, cx: 100, cy: 100, hw: 50, hh: 20 })];
+  const heavy = makeP({ x: 145, y: 100, vx: 2, vy: 0, m: 4 });
+  runBodies(heavy, bodies, { wall }, makeEnv());
+  assert.ok(heavy.vx < 0, `vx ${heavy.vx} should reflect negative, not keep driving into the wall`);
+  // reflect (−2 × 0.85 = −1.7) then friction × 0.95 = −1.615, mass-independent.
+  assert.ok(Math.abs(heavy.vx - -1.615) < 1e-9, `vx ${heavy.vx}`);
 });
