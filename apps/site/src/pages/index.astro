@@ -443,7 +443,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
             <div class="wrap concept-grid">
               <div>
                 <span class="concept-no" style={`--c:${color}`}>
-                  <i class={`fg fg-${p.name}`} /> {String(n).padStart(2, '0')} — {cap(p.name)}
+                  <i class={`fgp fgp-${p.name}`} /> {String(n).padStart(2, '0')} — {cap(p.name)}
                 </span>
                 <h2>{p.example}</h2>
                 <p>{cap(p.desc)}.</p>
@@ -459,7 +459,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
                   data-preset={p.name}
                   style={`--cc:${color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
                 >
-                  <i class={`fg fg-${p.name}`} />
+                  <i class={`fgp fgp-${p.name}`} />
                   {p.name}
                 </span>
                 <span class="hintline">a whole composite — {p.tokens.length} forces in one body</span>
