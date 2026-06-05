@@ -26,8 +26,6 @@ const families = [
 ] as const;
 const inFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
 const forceNo = (token: string) => MANUAL_FORCES.findIndex((f) => f.token === token) + 1;
-const calibratedCount = MANUAL_FORCES.filter((f) => f.calibrated).length;
-const awaitingCount = MANUAL_FORCES.length - calibratedCount;
 const z2 = (n: number) => String(n).padStart(2, '0');
 
 const surfaces = [
@@ -230,9 +228,9 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
                 <div class="force-grid">
                   {inFamily(fam.key).map((f) => (
                     <div
-                      class={`force-tile ${f.calibrated ? 'calib' : 'locked'}`}
+                      class="force-tile calib"
                       style={`--fc:${f.color}`}
-                      title={`${cap(f.label)} — ${f.effect}${f.calibrated ? '' : ' (awaiting calibration)'}`}
+                      title={`${cap(f.label)} — ${f.effect}`}
                     >
                       <span class="z">{z2(forceNo(f.token))}</span>
                       <span class="picon as-icon"><i class={`fg fg-${f.token}`} /></span>
@@ -244,7 +242,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
                 </div>
               </div>
             ))}
-            <p class="fb-foot"><b>{calibratedCount} calibrated</b> · {awaitingCount} awaiting · the lit forces fire in <a href="/lab">the Lab →</a></p>
+            <p class="fb-foot"><b>{MANUAL_FORCES.length} forces</b> · conformance-backed · every one fires in <a href="/lab">the Lab →</a></p>
           </div>
         </div>
 
