@@ -1,156 +1,206 @@
 ---
 import Base from '../layouts/Base.astro';
-import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { EXPERIMENTS, MANUAL_FORCES } from 'forces-ui';
 import '../styles/force-glyphs.css';
+import '../styles/instrument.css';
 import '../styles/lab.css';
 
-// The Lab — a physics detector. Fire known particle(s) into a force with known
-// attributes; the chamber shows the track + the surrounding field + related particles,
-// and the readout checks the measured behavior against the conformance catalog (the
-// same EXPERIMENTS the test suite runs) — including *when* during the run each check
-// passes. Tune the numbers (or pick a preset), fire more particles, loop the playback.
+// The Lab — a physics detector, rebuilt as an instrument. Fire a known particle
+// into a force with known attributes; the chamber shows its track + the field
+// structure, and the readout checks the measured behaviour against the conformance
+// catalog (the same EXPERIMENTS the test suite runs) — frame by frame. The eight
+// not-yet-calibrated forces are browsable but locked (no detector run).
 
-const META: Record<string, { color: string; label: string }> = Object.fromEntries(
-  MANUAL_FORCES.map((f) => [f.token, { color: f.color, label: f.label }]),
-);
+// every force that has a conformance experiment (the detector can run it)
+const HAS_EXP = new Set(EXPERIMENTS.map((e) => e.scenario.force));
 const families = [
   { key: 'canonical', label: 'Canonical' },
   { key: 'natural', label: 'Natural' },
   { key: 'extended', label: 'Designed-extended' },
 ] as const;
-const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === k);
+const inFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
+const forceNo = (token: string) => MANUAL_FORCES.findIndex((f) => f.token === token) + 1;
+const z2 = (n: number) => String(n).padStart(2, '0');
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const calibratedCount = MANUAL_FORCES.filter((f) => f.calibrated).length;
+const awaitingCount = MANUAL_FORCES.length - calibratedCount;
 ---
 
 <Base
   title="forces-ui — the Lab (physics detector)"
-  description="Fire known particles into a force with known attributes and watch what happens — their tracks, the surrounding field, related particles — then compare the measured behavior to what the math predicts, frame by frame. The Lab is a conformance instrument."
+  description="Fire known particles into a force with known attributes and watch what happens — their tracks, the field structure, the measured behaviour checked against what the math predicts, frame by frame. The Lab is a conformance instrument."
 >
-  <SiteNav current="lab" />
-  <main class="lab">
-    <header class="lab-head">
-      <p class="kicker">The Lab · physics detector</p>
-      <h1>Fire a particle into a force.</h1>
-      <p class="lede">
-        Send known particles into a force and watch their tracks, the surrounding field, and any
-        related particles. Each frame, the measured behavior is checked against what the math
-        predicts — you see exactly <em>when</em> every test passes. If it doesn’t match, tune the
-        numbers and fire again.
-      </p>
-    </header>
+  <main class="lab" id="lab">
+    <a class="lab-back" href="/design">← Forces Design System</a>
 
     <div class="lab-grid">
+      <!-- ── force picker — a periodic table of forces ── -->
       <aside class="lab-picker" aria-label="Force picker">
-        {
-          families.map((fam) => (
-            <div class="group">
-              <span class="glabel">{fam.label}</span>
-              {inFamily(fam.key).map((e) => (
-                <button
-                  type="button"
-                  class="lab-pick"
-                  data-force={e.scenario.force}
-                  style={`--c:${META[e.scenario.force]?.color ?? '#4da3ff'}`}
-                >
-                  <i class={`fg fg-${e.scenario.force}`} aria-hidden="true" />
-                  {META[e.scenario.force]?.label ?? e.scenario.force}
-                </button>
-              ))}
+        <div class="force-browser view-icon" data-force-browser>
+          <div class="fb-head">
+            <span class="fb-label">{MANUAL_FORCES.length} forces</span>
+            <div class="seg-toggle" role="group" aria-label="Tile display">
+              <button type="button" data-view="icon" class="on">Icon</button>
+              <button type="button" data-view="symbol">Symbol</button>
+              <button type="button" data-view="name">Name</button>
             </div>
-          ))
-        }
+          </div>
+          {families.map((fam) => (
+            <div class="fb-group">
+              <span class="glabel">{fam.label}</span>
+              <div class="force-grid">
+                {inFamily(fam.key).map((f) => (
+                  <button
+                    type="button"
+                    class={`force-tile ${f.calibrated && HAS_EXP.has(f.token) ? 'calib' : 'locked'}`}
+                    data-force={f.token}
+                    data-calibrated={f.calibrated && HAS_EXP.has(f.token) ? '1' : '0'}
+                    style={`--fc:${f.color}`}
+                    title={`${cap(f.label)} — ${f.effect}${f.calibrated ? '' : ' (awaiting calibration)'}`}
+                  >
+                    <span class="z">{z2(forceNo(f.token))}</span>
+                    <span class="picon as-icon"><i class={`fg fg-${f.token}`} aria-hidden="true" /></span>
+                    <span class="sym as-symbol">{f.symbol}</span>
+                    <span class="nameBig as-name">{cap(f.label)}</span>
+                    <span class="pname">{cap(f.label)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+          <p class="fb-foot"><b>{calibratedCount} calibrated</b> · {awaitingCount} awaiting<br />fire any lit force</p>
+        </div>
       </aside>
 
+      <!-- ── center — chamber, timeline, transport, sweep ── -->
       <section class="lab-center">
         <div class="lab-chamber">
           <span class="stage-label">detector chamber</span>
+          <span class="chamber-force"><span class="dot"></span><span id="chamberForce">Attract</span></span>
           <canvas id="chamber"></canvas>
-        </div>
-        <div
-          class="lab-timeline"
-          id="timeline"
-          role="slider"
-          tabindex="0"
-          aria-label="Timeline — viscosity to scrub; markers show where each test passes"
-          aria-valuemin="0"
-          aria-valuenow="0"
-        >
-          <div class="tl-wave-wrap">
-            <span class="tl-wave-label">particle speed</span>
-            <canvas class="tl-wave" id="tlWave"></canvas>
+          <div class="chamber-hud ds-readout" id="hud" aria-hidden="true"></div>
+          <button class="chamber-help" id="help" aria-label="What am I looking at?" aria-expanded="false">?</button>
+          <div class="chamber-legend" id="legend" role="dialog" aria-label="Legend" hidden>
+            <p class="info-title">What am I looking at?</p>
+            <ul class="legend-list">
+              <li><span class="legend-key body"></span>The body — the force, fixed at the chamber centre.</li>
+              <li><span class="legend-line"></span>The particle track — one frame of motion per segment.</li>
+              <li><span class="legend-key ring"></span>The range ring — beyond it the force reads zero.</li>
+              <li><span class="legend-key pass"></span>A passed expectation marker on the timeline.</li>
+              <li><span class="legend-key head"></span>The particle head + its velocity vector.</li>
+              <li><span class="legend-line dim"></span>Drag the timeline to scrub frame by frame.</li>
+            </ul>
+            <p class="info-title" style="margin-top:0.9rem">Keyboard</p>
+            <ul class="key-list">
+              <li><kbd class="kbd sm">Space</kbd><span>play / pause</span></li>
+              <li><kbd class="kbd sm">F</kbd><span>fire</span><kbd class="kbd sm">R</kbd><span>reset</span></li>
+              <li><kbd class="kbd sm">←</kbd><kbd class="kbd sm">→</kbd><span>step frames</span></li>
+              <li><kbd class="kbd sm">L</kbd><span>loop / once</span></li>
+            </ul>
           </div>
-          <div class="tl-track">
-            <div class="tl-ticks" id="tlTicks"></div>
-            <div class="tl-fill" id="tlFill"></div>
-            <div class="tl-markers" id="tlMarkers"></div>
+          <div class="uncalib-veil" id="veil" hidden>
+            <div class="big" id="veilName">—</div>
+            <div class="sub" id="veilMeta">awaiting calibration</div>
+            <div class="sub" style="color:var(--text-4)">physics &amp; expectations not yet pinned</div>
           </div>
-          <div class="tl-playhead" id="tlPlayhead"></div>
-        </div>
-        <div class="lab-transport">
-          <button type="button" id="fire" class="primary">↯ Fire</button>
-          <button type="button" id="play">▶ Play</button>
-          <button type="button" id="stepb">⏭ Step</button>
-          <button type="button" id="reset">⟲ Reset</button>
-          <button type="button" id="mode" data-mode="once" title="Playback: once · loop · unlocked (keep observing)">↦ Once</button>
-          <span class="frame-readout" id="frameReadout"></span>
         </div>
 
-        <details class="lab-legend">
-          <summary>What am I looking at?</summary>
-          <ul>
-            <li><i class="lg body"></i><b>Body</b> — the force source (an element). The ring is its <code>range</code>.</li>
-            <li><i class="lg field"></i><b>Field</b> — faint vectors: the push a still particle would feel at each point.</li>
-            <li><i class="lg particle"></i><b>Test particle</b> — fired in at a known state; bright track + a velocity arrow. Its behavior is what’s judged.</li>
-            <li><i class="lg related"></i><b>Related particles</b> — extra or neighbour matter (multi-particle and particle↔particle forces).</li>
-            <li><i class="lg expected"></i><b>Expected Δv</b> — the gold arrow: what the math predicts the force adds on the first frame.</li>
-            <li><b>Verdict</b> — every check must pass. Each shows measured vs expected and the frame it goes green; the run “matches” once they all have.</li>
-          </ul>
-        </details>
-
-        <details class="lab-sweep">
-          <summary>Parameter sweep</summary>
-          <div class="sweep-controls">
-            <label>Sweep <select id="sweepParam"></select></label>
-            <label>Measure <select id="sweepMetric">
-              <option value="delta">frame-0 |Δv| (force felt)</option>
-              <option value="finalDist">final distance to body</option>
-              <option value="passes">tests passed</option>
-            </select></label>
+        <div class="lab-detector" id="detector">
+          <div
+            class="lab-timeline"
+            id="timeline"
+            role="slider"
+            tabindex="0"
+            aria-label="Timeline — drag to scrub; markers show where each test passes"
+            aria-valuemin="0"
+            aria-valuenow="0"
+          >
+            <div class="tl-wave-wrap">
+              <span class="tl-wave-label">particle speed</span>
+              <canvas class="tl-wave" id="tlWave"></canvas>
+            </div>
+            <div class="tl-track">
+              <div class="tl-rail"></div>
+              <div class="tl-fill" id="tlFill"></div>
+              <div class="tl-markers" id="tlMarkers"></div>
+              <div class="tl-playhead" id="tlPlayhead"></div>
+            </div>
           </div>
-          <canvas id="sweepCanvas"></canvas>
-          <p class="sweep-note">Each point re-runs the experiment at that parameter value. The dashed line marks the current setting.</p>
-        </details>
+
+          <div class="lab-transport">
+            <button type="button" id="fire" class="tbtn primary">↯ Fire</button>
+            <button type="button" id="play" class="tbtn">▶ Play</button>
+            <button type="button" id="stepb" class="tbtn">⏭ Step</button>
+            <button type="button" id="reset" class="tbtn">⟲ Reset</button>
+            <button type="button" id="mode" class="tbtn" data-mode="once">↦ Once</button>
+            <button type="button" id="ghost" class="tbtn on">◌ Ghost</button>
+            <span class="frame-readout" id="frameReadout">frame 0 / 60</span>
+          </div>
+
+          <div class="lab-info">
+            <div class="info-col">
+              <div class="info-title sweep-head">
+                <span>Parameter sweep</span>
+                <span class="lab-select sweep-select"><select id="sweepParam"></select></span>
+              </div>
+              <canvas id="sweepCanvas"></canvas>
+              <p class="sweep-note">End distance vs <b id="sweepLabel">strength</b> across its range. Each point re-runs
+                the experiment; the dashed line marks the current value.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
+      <!-- ── readout — verdict, force card, expectations / tune ── -->
       <aside class="lab-readout" aria-label="Readout">
-        <div class="verdict" id="verdict">—</div>
-        <div>
+        <div class="verdict resolving" id="verdict">Resolving</div>
+
+        <div class="panel force-about">
+          <div class="about-head">
+            <span class="about-sym" id="aboutSym"><i class="fg fg-attract" aria-hidden="true"></i></span>
+            <div class="about-id">
+              <div class="about-name" id="aboutName">Attract</div>
+              <div class="about-meta" id="aboutMeta">Canonical · At · No. 01 · calibrated</div>
+            </div>
+          </div>
+          <p class="about-desc" id="aboutDesc"></p>
+          <div class="about-effect"><span class="k">Effect</span><span id="aboutEffect"></span></div>
+          <div class="param-formula" id="aboutFormula" style="margin-top:0.9rem;margin-bottom:0"></div>
+        </div>
+
+        <div class="readout-tabs" id="tabs" role="tablist" hidden>
+          <button type="button" role="tab" data-tab="expect" class="on">Expectations<i id="tabCount"></i></button>
+          <button type="button" role="tab" data-tab="tune">Tune</button>
+        </div>
+
+        <div class="panel" id="expectPanel" hidden>
           <p class="panel-title">Expectations <span class="pass-summary" id="passSummary"></span></p>
           <div class="checklist" id="checklist"></div>
         </div>
-        <div>
+
+        <div class="panel" id="tunePanel" hidden>
           <p class="panel-title">Tune &amp; refire</p>
           <label class="preset-row">
             <span>Preset</span>
-            <select id="preset"></select>
+            <span class="lab-select"><select id="preset"></select></span>
           </label>
           <div class="params" id="params"></div>
-          <div class="lab-actions">
-            <button type="button" id="share">Copy link</button>
-            <button type="button" id="export">Export JSON</button>
-            <button type="button" id="report">Copy report</button>
-            <button type="button" id="resetParams">Defaults</button>
+          <div class="export-row">
+            <button type="button" id="share" class="xbtn">⎘ Copy link</button>
+            <button type="button" id="export" class="xbtn">↧ Export JSON</button>
+            <button type="button" id="report" class="xbtn">≡ Copy report</button>
+            <button type="button" id="resetParams" class="xbtn">⟲ Defaults</button>
           </div>
+          <p class="scenario-note" id="note"></p>
         </div>
-        <p class="scenario-note" id="note"></p>
       </aside>
     </div>
   </main>
   <SiteFooter />
 
   <script>
-    import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from 'forces-ui';
+    import { EXPERIMENTS, runScenario, allForces, MANUAL_FORCES } from 'forces-ui';
 
     type Any = Record<string, any>;
     const forces = allForces();
@@ -160,108 +210,156 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
     for (const f of MANUAL_FORCES as Any[]) META[f.token] = f;
 
     const $ = (id: string) => document.getElementById(id);
-    const round = (n: number) => Math.round(n * 100) / 100;
+    const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+    const z2 = (n: number) => String(n).padStart(2, '0');
+    const round = (n: number, step = 0.01) => {
+      const d = step < 1 ? (String(step).split('.')[1] || '').length : 0;
+      return Number(n.toFixed(d));
+    };
 
-    // generic tuning presets — relative to each force's default scenario
-    const PRESETS = [
-      { id: 'default', label: 'Default' },
-      { id: 'strong', label: 'Strong force' },
-      { id: 'weak', label: 'Weak force' },
-      { id: 'far', label: 'Long range' },
-      { id: 'near', label: 'Short range' },
-      { id: 'fast', label: 'Fast particle' },
-      { id: 'burst', label: 'Particle burst (×14)' },
-    ];
+    // param metadata — label · symbol · unit · slider range (ported from the design)
+    const PMETA: Any = {
+      strength: { label: 'strength', sym: 'S', min: 0, max: 3, step: 0.03 },
+      range: { label: 'range', sym: 'd', unit: 'px', min: 50, max: 500, step: 5 },
+      spin: { label: 'spin', sym: 'σ', min: -2, max: 2, step: 0.1 },
+      angle: { label: 'heading', sym: 'θ', unit: 'deg', min: 0, max: 359, step: 1 },
+      vx: { label: 'initial v', sym: 'ₓ', min: -8, max: 8, step: 0.2 },
+      vy: { label: 'initial v', sym: 'ᵧ', min: -8, max: 8, step: 0.2 },
+      box: { label: 'wall size', sym: 'w', unit: 'px', min: 24, max: 100, step: 2 },
+      absorbR: { label: 'capture radius', sym: 'r', unit: 'px', min: 30, max: 140, step: 2 },
+      count: { label: 'particles', sym: 'n', min: 1, max: 14, step: 1 },
+    };
+    // which knobs each force exposes (matches the body fields its scenario reads)
+    const SCHEMA: Any = {
+      attract: ['strength', 'range', 'vx', 'vy', 'count'],
+      repel: ['strength', 'range', 'vx', 'vy', 'count'],
+      swirl: ['strength', 'range', 'spin', 'vx', 'vy', 'count'],
+      stream: ['strength', 'range', 'angle', 'vx', 'vy', 'count'],
+      viscosity: ['strength', 'range', 'vx', 'vy', 'count'],
+      jet: ['strength', 'range', 'angle', 'vx', 'count'],
+      tether: ['strength', 'range', 'vx', 'vy', 'count'],
+      wall: ['box', 'vx', 'vy', 'count'],
+      sink: ['absorbR', 'vx', 'count'],
+      gravity: ['strength', 'range', 'vx', 'vy', 'count'],
+      charge: ['strength', 'range', 'vx', 'vy', 'count'],
+      magnetism: ['strength', 'range', 'vx', 'vy', 'count'],
+      thermal: ['strength', 'range', 'count'],
+      lens: ['strength', 'range', 'spin', 'vx', 'vy', 'count'],
+      gate: ['range', 'angle', 'vx', 'vy', 'count'],
+      buoyancy: ['strength', 'range', 'vx', 'vy', 'count'],
+      shear: ['strength', 'range', 'angle', 'vx', 'vy', 'count'],
+      crystallize: ['strength', 'range', 'vx', 'vy', 'count'],
+      wind: ['strength', 'range', 'vx', 'vy', 'count'],
+      collide: ['strength', 'range'],
+      cohesion: ['strength', 'range'],
+      pressure: ['strength', 'range'],
+      link: ['strength', 'range'],
+      hunt: ['strength', 'range'],
+      align: ['strength', 'range'],
+    };
+    // the most characteristic axis to sweep, per force
+    const SIG: Any = { swirl: 'spin', stream: 'angle', jet: 'angle', shear: 'angle', gate: 'angle', wall: 'box', sink: 'absorbR' };
+    const sweepableOf = (id: string) => (SCHEMA[id] || ['strength']).filter((k: string) => !['vx', 'vy', 'count'].includes(k));
 
     // re-runs on each client-side navigation to /lab (ClientRouter); no-op elsewhere.
     function setup() {
+      const lab = $('lab');
       const canvas = $('chamber') as HTMLCanvasElement | null;
-      if (!canvas) return;
+      if (!lab || !canvas) return;
       const W = window as Any;
-      W.__labAbort?.abort(); // tear down a previous run's window listeners
+      W.__labAbort?.abort();
       const _ac = new AbortController();
       W.__labAbort = _ac;
       if (W.__labTimer) { clearInterval(W.__labTimer); W.__labTimer = 0; }
       const ctx = canvas.getContext('2d')!;
 
-      // a minimal env for the field-vector probe (forceAt)
-      const fenv: Any = {
-        dx: 0, dy: 0, dist: 1,
-        form: { driftX: 0, wander: 0, orbit: 0, spread: 0, conv: 0 },
-        W: 1200, H: 800, t: 0, frameN: 0, dt: 1, c: 12, G: 1,
-        spark() {}, supernova() {}, spawn() {},
-        neighbors: () => [],
-        grid: () => ({ sample: () => 0, deposit() {}, gradient: () => ({ x: 0, y: 0 }) }),
-      };
-
       let cur = 'attract';
       let overrides: Any = {};
       let result: Any = null;
-      let checks: Any[] = []; // {label, kind, pass, measured, expected, active, passFrame}
+      let checks: Any[] = [];
       let frame = 0;
-      let mode: 'once' | 'loop' | 'unlocked' = 'once';
-      const MODE_LABEL: Any = { once: '↦ Once', loop: '↻ Loop', unlocked: '∞ Unlocked' };
-      const MAX_FRAMES = 1800; // upper bound for unlocked free-running
+      let mode: 'once' | 'loop' = 'once';
       let view = { scale: 1, ox: 0, oy: 0 };
+      let pickView: 'icon' | 'symbol' | 'name' = 'icon';
+      let tab: 'expect' | 'tune' = 'expect';
+      let ghostOn = true;
+      let ghostTraj: Any = null; // previous setting's trajectory (same force)
+      let ghostForce = '';
 
       const clone = (o: any) => JSON.parse(JSON.stringify(o));
-      const hexRgb = (h: string) => {
-        const n = parseInt(h.replace('#', ''), 16);
-        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-      };
-      const rgba = (h: string, a: number) => {
-        const [r, g, b] = hexRgb(h);
-        return `rgba(${r},${g},${b},${a})`;
+      const hexA = (h: string, a: number) => {
+        if (h[0] !== '#') return h;
+        const n = parseInt(h.slice(1), 16);
+        return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
       };
       const color = () => META[cur]?.color ?? '#4da3ff';
+      const calibrated = () => !!META[cur]?.calibrated && !!byForce[cur];
+      const isPair = (id: string) => ['collide', 'cohesion', 'pressure', 'link', 'hunt', 'align'].includes(id);
+
+      function scenarioBase() { return byForce[cur].scenario; }
+      // the default value of a tunable key, read from the force's scenario
+      function defOf(key: string): number {
+        const s = scenarioBase(), b = s.body, p0 = s.particles[0];
+        switch (key) {
+          case 'strength': return b.strength ?? 1;
+          case 'range': return b.range ?? 300;
+          case 'spin': return b.spin ?? 1;
+          case 'angle': return Math.round(((b.angle ?? 0) * 180) / Math.PI);
+          case 'box': return b.hw ?? 40;
+          case 'absorbR': return b.absorbR ?? 64;
+          case 'vx': return p0?.vx ?? 0;
+          case 'vy': return p0?.vy ?? 0;
+          case 'count': return s.particles.length || 1;
+          default: return 0;
+        }
+      }
+      const valOf = (key: string) => (overrides[key] != null ? overrides[key] : defOf(key));
 
       function buildScenario(ov: Any = overrides) {
-        const s = clone(byForce[cur].scenario);
+        const s = clone(scenarioBase());
         const B: Any = s.body;
         if (ov.strength != null && B.strength != null) B.strength = ov.strength;
         if (ov.range != null && B.range != null) B.range = ov.range;
         if (ov.spin != null) B.spin = ov.spin;
-        if (ov.angle != null) B.angle = (ov.angle * Math.PI) / 180; // the slider is degrees
+        if (ov.angle != null) B.angle = (ov.angle * Math.PI) / 180;
+        if (ov.box != null) { B.hw = ov.box; B.hh = ov.box; }
+        if (ov.absorbR != null) B.absorbR = ov.absorbR;
         if (ov.vx != null && s.particles[0]) s.particles[0].vx = ov.vx;
         if (ov.vy != null && s.particles[0]) s.particles[0].vy = ov.vy;
-        if (ov.frames != null) s.frames = ov.frames; // unlocked free-run extends this
-        // class-[S] sources (spawn) start with no test particle — the source creates the
-        // matter — so there is nothing to fan out; leave the particle list empty.
+        if (ov.frames != null) s.frames = ov.frames;
         if (s.particles.length === 0) return s;
-        // multi-particle: fan extra particles through the test particle, same velocity
-        const count = Math.max(1, Math.min(40, Math.round(ov.count ?? s.particles.length)));
-        if (count > s.particles.length) {
-          const base = s.particles[0];
-          const extra = count - s.particles.length;
-          const spread = (s.body.range || 200) * 0.9;
-          for (let i = 0; i < extra; i++) {
-            const t = extra === 1 ? 0 : i / (extra - 1) - 0.5; // -0.5..0.5
-            s.particles.push({ ...base, x: base.x, y: base.y + t * spread, vx: base.vx, vy: base.vy });
+        if (!isPair(cur)) {
+          const count = Math.max(1, Math.min(14, Math.round(ov.count ?? s.particles.length)));
+          if (count > s.particles.length) {
+            const base = s.particles[0];
+            const extra = count - s.particles.length;
+            const spread = (s.body.range || 200) * 0.9;
+            for (let i = 0; i < extra; i++) {
+              const t = extra === 1 ? 0 : i / (extra - 1) - 0.5;
+              s.particles.push({ ...base, x: base.x, y: base.y + t * spread, vx: base.vx, vy: base.vy });
+            }
           }
         }
         return s;
       }
 
-      // first frame at which an expectation passes (evaluated on the growing trajectory),
-      // or -1 if it never does. Lets the checklist fill in as the particle moves.
       function firstPassFrame(exp: Any, res: Any) {
         const N = res.trajectory.length;
         for (let f = 0; f < N; f++) {
           const partial = { ...res, trajectory: res.trajectory.slice(0, f + 1) };
-          try {
-            if (exp.check(partial).pass) return f;
-          } catch {}
+          try { if (exp.check(partial).pass) return f; } catch {}
         }
         return -1;
       }
 
       function compute(resetFrame: boolean) {
         const s = buildScenario();
+        // ghost: keep the prior trajectory if the force is unchanged + ghost on
+        if (result && ghostOn && ghostForce === cur) ghostTraj = result.trajectory;
+        else if (ghostForce !== cur) ghostTraj = null;
         result = runScenario(s, forces);
-        // exact-formula checks are pinned to the experiment's default attributes; once you
-        // tune a parameter they go inactive (the physics is still right — the invariants
-        // prove it) and drop out of the verdict.
-        const tuned = ['strength', 'range', 'spin', 'angle', 'vx', 'vy'].some((k) => overrides[k] != null);
+        ghostForce = cur;
+        const tuned = ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy'].some((k) => overrides[k] != null);
         checks = byForce[cur].expectations.map((e: Any) => {
           const r = e.check(result);
           return {
@@ -278,15 +376,6 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       }
       const evaluate = () => compute(true);
 
-      // unlocked free-run: grow the simulation so observation continues past the cap.
-      function extend(): boolean {
-        const have = result.trajectory.length - 1;
-        if (have >= MAX_FRAMES) return false;
-        overrides.frames = Math.min(MAX_FRAMES, have + 240);
-        compute(false);
-        return true;
-      }
-
       function computeView() {
         const b = result.body;
         const ext = b.range > 0 && b.range < 1200 ? b.range : 70;
@@ -298,14 +387,11 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           }
         const w = canvas!.clientWidth, h = canvas!.clientHeight;
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        canvas!.width = Math.floor(w * dpr);
-        canvas!.height = Math.floor(h * dpr);
+        canvas!.width = Math.floor(w * dpr); canvas!.height = Math.floor(h * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        const pad = 56;
+        const pad = 60;
         const spanX = maxX - minX || 1, spanY = maxY - minY || 1;
-        // a wider view: zoom out so the particle sits in more of the surrounding field
-        // rather than filling the frame.
-        const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY) * 0.7;
+        const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY) * 0.72;
         const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
         view = { scale, ox: w / 2 - cx * scale, oy: h / 2 - cy * scale };
       }
@@ -313,31 +399,12 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
 
       function arrow(x1: number, y1: number, x2: number, y2: number, col: string, head = 4) {
         const a = Math.atan2(y2 - y1, x2 - x1);
-        ctx.strokeStyle = col;
-        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = col; ctx.lineWidth = 1.4;
         ctx.beginPath();
         ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
         ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(a - 0.4) * head, y2 - Math.sin(a - 0.4) * head);
         ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(a + 0.4) * head, y2 - Math.sin(a + 0.4) * head);
         ctx.stroke();
-      }
-
-      function drawField(b: Any) {
-        const w = canvas!.clientWidth, h = canvas!.clientHeight;
-        const stepPx = 34;
-        for (let sx = stepPx / 2; sx < w; sx += stepPx)
-          for (let sy = stepPx / 2; sy < h; sy += stepPx) {
-            const wx = (sx - view.ox) / view.scale;
-            const wy = (sy - view.oy) / view.scale;
-            const { fx, fy } = forceAt([b], forces, fenv, wx, wy);
-            const mag = Math.hypot(fx, fy);
-            if (mag < 1e-5) continue;
-            const ux = fx / mag, uy = fy / mag;
-            const len = Math.min(stepPx * 0.42, 4 + mag * 120);
-            ctx.strokeStyle = `rgba(125,150,200,${Math.min(0.05 + mag * 1.6, 0.36)})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + ux * len, sy + uy * len); ctx.stroke();
-          }
       }
 
       function draw() {
@@ -346,165 +413,175 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         ctx.clearRect(0, 0, w, h);
         const b = result.body;
         const col = color();
+        const pair = isPair(cur);
 
-        drawField(b);
+        // faint dot grid
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        const gs = 26;
+        for (let gx = (view.ox % gs + gs) % gs; gx < w; gx += gs)
+          for (let gy = (view.oy % gs + gs) % gs; gy < h; gy += gs) { ctx.beginPath(); ctx.arc(gx, gy, 0.8, 0, 7); ctx.fill(); }
 
-        // range ring
-        if (b.range > 0 && b.range < 1200) {
-          const [sx, sy] = w2s(b.cx, b.cy);
-          ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-          ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.arc(sx, sy, b.range * view.scale, 0, 6.283); ctx.stroke();
+        // range / structure ring
+        const [bx, by] = w2s(b.cx, b.cy);
+        if (!pair && cur !== 'wall' && cur !== 'sink' && b.range > 0 && b.range < 1200) {
+          ctx.strokeStyle = hexA(col, 0.32); ctx.setLineDash([4, 5]); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(bx, by, b.range * view.scale, 0, 7); ctx.stroke(); ctx.setLineDash([]);
         }
-        // body marker
-        {
-          const [sx, sy] = w2s(b.cx, b.cy);
-          ctx.fillStyle = col;
-          ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 6.283); ctx.fill();
-          ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+        if (cur === 'sink' && b.absorbR) {
+          ctx.strokeStyle = hexA(col, 0.5); ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(bx, by, b.absorbR * view.scale, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+        }
+        if (cur === 'wall') {
+          const hw = (b.hw ?? 40) * view.scale, hh = (b.hh ?? 40) * view.scale;
+          ctx.strokeStyle = hexA(col, 0.6); ctx.lineWidth = 1.5; ctx.fillStyle = hexA(col, 0.07);
+          ctx.beginPath(); ctx.rect(bx - hw, by - hh, hw * 2, hh * 2); ctx.fill(); ctx.stroke();
+        }
+        if (cur === 'stream' || cur === 'jet') {
+          const a = (b.angle ?? 0);
+          ctx.strokeStyle = hexA(col, 0.55); ctx.lineWidth = 1.5;
+          const ax = bx + Math.cos(a) * 42, ay = by + Math.sin(a) * 42;
+          ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(ax, ay); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(ax, ay);
+          ctx.lineTo(ax - Math.cos(a - 0.5) * 8, ay - Math.sin(a - 0.5) * 8);
+          ctx.lineTo(ax - Math.cos(a + 0.5) * 8, ay - Math.sin(a + 0.5) * 8);
+          ctx.closePath(); ctx.fillStyle = col; ctx.fill();
         }
 
-        // particle tracks (0 = test particle, prominent; others = related)
-        const traj = result.trajectory;
-        const nP = traj[0].length;
-        if (nP === 0) {
-          // a class-[S] source: matter is created over the run, so there are no stable
-          // tracks (the pool reorders as it grows/despawns). Draw the matter present at
-          // this frame as dots — the spray from the nozzle.
-          const here = traj[frame] || [];
-          for (const p of here) {
-            const [sx, sy] = w2s(p.x, p.y);
-            ctx.fillStyle = rgba(col, 0.7);
-            ctx.beginPath(); ctx.arc(sx, sy, 2.2, 0, 6.283); ctx.fill();
-          }
-        } else {
+        // body — radial glow + white core
+        if (!pair && cur !== 'wall') {
+          const grd = ctx.createRadialGradient(bx, by, 0, bx, by, 16);
+          grd.addColorStop(0, col); grd.addColorStop(1, hexA(col, 0));
+          ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(bx, by, 16, 0, 7); ctx.fill();
+          ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx, by, 3.2, 0, 7); ctx.fill();
+        }
+
+        // ghost — the previous setting's full path (dashed, faint)
+        if (ghostOn && ghostTraj && ghostForce === cur) {
+          ctx.save(); ctx.setLineDash([3, 4]); ctx.lineWidth = 1.4; ctx.strokeStyle = hexA('#9aa7c7', 0.34);
+          const nP = ghostTraj[0].length;
           for (let i = 0; i < nP; i++) {
             ctx.beginPath();
-            for (let f = 0; f <= frame; f++) {
-              const p = traj[f][i];
-              const [sx, sy] = w2s(p.x, p.y);
-              if (f === 0) ctx.moveTo(sx, sy);
-              else ctx.lineTo(sx, sy);
-            }
-            ctx.strokeStyle = i === 0 ? rgba(col, 0.9) : 'rgba(200,210,230,0.22)';
-            ctx.lineWidth = i === 0 ? 1.7 : 1;
+            for (let f = 0; f < ghostTraj.length; f++) { const [sx, sy] = w2s(ghostTraj[f][i].x, ghostTraj[f][i].y); f ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy); }
             ctx.stroke();
-            const p = traj[frame][i];
-            const [sx, sy] = w2s(p.x, p.y);
-            ctx.fillStyle = i === 0 ? col : 'rgba(200,210,230,0.5)';
-            ctx.beginPath(); ctx.arc(sx, sy, i === 0 ? 4 : 2.4, 0, 6.283); ctx.fill();
-            if (i === 0) {
-              const [vx2, vy2] = w2s(p.x + p.vx * 5, p.y + p.vy * 5);
-              arrow(sx, sy, vx2, vy2, rgba(col, 0.7), 3.5);
-            }
           }
+          ctx.restore();
+        }
 
-          // expected overlay: the predicted frame-0 Δv on the test particle (gold)
-          const p0 = traj[0][0];
-          const d = result.applyDelta[0];
+        const traj = result.trajectory;
+        const nP = traj[0].length;
+        // pair connector
+        if (pair && nP >= 2) {
+          const a = traj[frame][0], bb = traj[frame][1];
+          ctx.save(); ctx.setLineDash([3, 4]); ctx.strokeStyle = hexA(col, 0.4); ctx.lineWidth = 1;
+          const [ax, ay] = w2s(a.x, a.y), [bx2, by2] = w2s(bb.x, bb.y);
+          ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx2, by2); ctx.stroke(); ctx.restore();
+        }
+
+        if (nP === 0) {
+          const here = traj[frame] || [];
+          for (const p of here) { const [sx, sy] = w2s(p.x, p.y); ctx.fillStyle = hexA(col, 0.7); ctx.beginPath(); ctx.arc(sx, sy, 2.2, 0, 7); ctx.fill(); }
+        } else {
+          for (let i = 0; i < nP; i++) {
+            // fading trail to the current frame
+            ctx.lineJoin = 'round';
+            for (let f = 1; f <= frame && f < traj.length; f++) {
+              const a = (i === 0 ? 0.14 : 0.06) + (i === 0 ? 0.6 : 0.2) * (f / Math.max(1, frame));
+              ctx.strokeStyle = i === 0 ? hexA(col, a) : hexA('#c8d2e6', a);
+              ctx.lineWidth = i === 0 ? 1.7 : 1;
+              const [px, py] = w2s(traj[f - 1][i].x, traj[f - 1][i].y), [cx2, cy2] = w2s(traj[f][i].x, traj[f][i].y);
+              ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx2, cy2); ctx.stroke();
+            }
+            const p = traj[Math.min(frame, traj.length - 1)][i];
+            const [sx, sy] = w2s(p.x, p.y);
+            // heat halo
+            if ((p.heat ?? 0) > 0.1) { const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, 14); g.addColorStop(0, hexA('#fff', 0.5 * p.heat)); g.addColorStop(1, hexA(col, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, 14, 0, 7); ctx.fill(); }
+            // velocity vector
+            if (i === 0 && !p.cap && (Math.abs(p.vx) > 0.05 || Math.abs(p.vy) > 0.05)) {
+              ctx.strokeStyle = hexA('#ffffff', 0.55); ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + p.vx * 6, sy + p.vy * 6); ctx.stroke();
+            }
+            // head
+            const r = p.cap ? 3 : i === 0 ? 4.5 : 2.6;
+            ctx.fillStyle = p.cap ? col : i === 0 ? '#fff' : 'rgba(200,210,230,0.6)';
+            ctx.beginPath(); ctx.arc(sx, sy, r, 0, 7); ctx.fill();
+            if (i === 0) { ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(sx, sy, r + 2, 0, 7); ctx.stroke(); }
+          }
+          // expected frame-0 Δv (gold)
+          const p0 = traj[0][0], d = result.applyDelta?.[0];
           if (d && Math.hypot(d.dvx, d.dvy) > 1e-6) {
-            const k = 60;
-            const [ex, ey] = w2s(p0.x, p0.y);
-            const [ex2, ey2] = w2s(p0.x + d.dvx * k, p0.y + d.dvy * k);
-            arrow(ex, ey, ex2, ey2, 'rgba(255,206,107,0.95)', 4);
-            ctx.fillStyle = 'rgba(255,206,107,0.95)';
-            ctx.font = '10px ui-monospace, monospace';
-            ctx.fillText('expected Δv', ex2 + 4, ey2 - 4);
+            const k = 60, [ex, ey] = w2s(p0.x, p0.y), [ex2, ey2] = w2s(p0.x + d.dvx * k, p0.y + d.dvy * k);
+            arrow(ex, ey, ex2, ey2, 'rgba(255,206,107,0.9)', 4);
           }
         }
 
-        const fr = $('frameReadout');
-        if (fr) fr.textContent = `frame ${frame} / ${traj.length - 1}`;
+        updateHud();
         updateTimeline();
         paintChecklist();
       }
 
-      // the checklist fills in temporally: a check is ✓ once the frame reaches its
-      // pass-frame, ○ pending before that, ✗ if it never passes.
+      function updateHud() {
+        const hud = $('hud'); if (!hud) return;
+        const traj = result.trajectory, nP = traj[0].length;
+        if (nP === 0) { hud.innerHTML = `<div class="hud-row"><span class="k">frame</span><b>${frame}</b></div>`; return; }
+        const b = result.body;
+        const p = traj[Math.min(frame, traj.length - 1)][0];
+        const prev = frame > 0 ? traj[Math.min(frame, traj.length - 1) - 1][0] : null;
+        const dist = Math.hypot(p.x - b.cx, p.y - b.cy);
+        const speed = p.speed ?? Math.hypot(p.vx, p.vy);
+        const fmag = prev && !p.cap ? Math.hypot((p.vx / 0.95) - prev.vx, (p.vy / 0.95) - prev.vy) : 0;
+        let html = `<div class="hud-row"><span class="k">dist</span><b>${dist.toFixed(0)}</b><span class="u">px</span></div>`;
+        html += `<div class="hud-row"><span class="k">speed</span><b>${speed.toFixed(2)}</b><span class="u">px/f</span></div>`;
+        html += `<div class="hud-row"><span class="k">force</span><b>${fmag.toFixed(3)}</b><span class="u">|Δv|</span></div>`;
+        if ((p.heat ?? 0) > 0.01) html += `<div class="hud-row"><span class="k">heat</span><b>${p.heat.toFixed(2)}</b></div>`;
+        if (p.cap) html += `<div class="hud-row captured"><span class="k">state</span><b>captured</b></div>`;
+        hud.innerHTML = html;
+      }
+
       function paintChecklist() {
         const active = checks.filter((c) => c.active);
-        const live = active.map((c) => ({ ...c, satisfied: c.passFrame >= 0 && frame >= c.passFrame, fails: c.passFrame < 0 }));
+        const live = active.map((c) => ({ ...c, satisfied: c.passFrame >= 0 && frame >= c.passFrame, fails: c.passFrame < 0 && frame >= 0 }));
         const passedNow = live.filter((c) => c.satisfied).length;
-        const anyFail = live.some((c) => c.fails);
+        const anyFail = live.some((c) => c.passFrame < 0 && frame >= (result.trajectory.length - 1));
         const allPass = passedNow === active.length && active.length > 0;
         const v = $('verdict')!;
-        if (anyFail) {
-          v.className = 'verdict fail';
-          v.textContent = 'No match — tune & refire';
-        } else if (allPass) {
-          v.className = 'verdict pass';
-          v.textContent = 'Match — behaves as predicted';
-        } else {
-          v.className = 'verdict resolving';
-          v.textContent = `Resolving — ${passedNow}/${active.length} passed`;
-        }
-        const sum = $('passSummary');
-        if (sum) sum.textContent = active.length ? `${passedNow}/${active.length}` : '';
+        if (anyFail) { v.className = 'verdict mismatch'; v.textContent = `Mismatch — ${active.length - passedNow} failed`; }
+        else if (allPass) { v.className = 'verdict confirmed'; v.textContent = `Confirmed — ${passedNow}/${active.length} passed`; }
+        else { v.className = 'verdict resolving'; v.textContent = `Resolving — ${passedNow}/${active.length} passed`; }
+        const sum = $('passSummary'); if (sum) sum.textContent = active.length ? `${passedNow}/${active.length}` : '';
+        const tc = $('tabCount'); if (tc) tc.textContent = active.length ? `${passedNow}/${active.length}` : '';
 
         const list = $('checklist')!;
-        list.innerHTML = checks
-          .map((c) => {
-            if (!c.active) {
-              return checkRow('muted', '–', c, 'default-only', '');
-            }
-            if (c.passFrame < 0) return checkRow('fail', '✗', c, c.kind, 'never');
-            const satisfied = frame >= c.passFrame;
-            return checkRow(
-              satisfied ? 'pass' : 'pending',
-              satisfied ? '✓' : '○',
-              c, c.kind,
-              `passes @ frame ${c.passFrame}`,
-            );
-          })
-          .join('');
-        const note = $('note');
-        if (note) note.textContent = byForce[cur].scenario.label + '.';
+        list.innerHTML = checks.map((c) => {
+          if (!c.active) return checkRow('pending', '–', c, 'default-only');
+          if (c.passFrame < 0) {
+            const failedNow = frame >= (result.trajectory.length - 1);
+            return checkRow(failedNow ? 'fail' : 'pending', failedNow ? '✕' : '○', c, failedNow ? 'failed' : `resolves @ frame ${result.trajectory.length - 1}`);
+          }
+          const satisfied = frame >= c.passFrame;
+          return checkRow(satisfied ? 'pass' : 'pending', satisfied ? '✓' : '○', c, satisfied ? `passed @ frame ${c.passFrame}` : `resolves @ frame ${c.passFrame}`);
+        }).join('');
       }
-      function checkRow(cls: string, mark: string, c: Any, kind: string, when: string) {
+      function checkRow(cls: string, mark: string, c: Any, when: string) {
         return `<div class="check ${cls}">
-          <div class="row1"><span class="mark">${mark}</span>
-          <span class="label">${c.label}</span><span class="kind">${kind}</span></div>
-          <div class="nums"><span>measured <b>${c.measured}</b></span><span>expected <b>${c.expected}</b></span>${when ? `<span class="when">${when}</span>` : ''}</div>
+          <div class="row1"><span class="mark">${mark}</span><span class="label">${esc(c.label)}</span><span class="kind">${c.kind}</span></div>
+          <div class="nums"><span>measured <b>${esc(String(c.measured))}</b></span><span>expected <b>${esc(String(c.expected))}</b></span><span class="when">${esc(when)}</span></div>
         </div>`;
       }
 
-      // the timeline: ticks, a marker at each test's pass-frame, a MATCH flag at the
-      // frame where all tests have passed, and the playhead. Built on evaluate.
       function buildTimeline() {
         const max = result.trajectory.length - 1;
-        const tl = $('timeline');
-        if (tl) tl.setAttribute('aria-valuemax', String(max));
-        const ticks = $('tlTicks');
-        if (ticks) {
-          const n = 10;
-          ticks.innerHTML = Array.from({ length: n + 1 }, (_, i) => `<span style="left:${(i / n) * 100}%"></span>`).join('');
-        }
+        const tl = $('timeline'); if (tl) tl.setAttribute('aria-valuemax', String(max));
         const markers = $('tlMarkers');
         if (markers) {
           const active = checks.filter((c: Any) => c.active && c.passFrame >= 0);
-          let html = active
-            .map((c: Any) => {
-              const pct = max ? (c.passFrame / max) * 100 : 0;
-              return `<span class="tl-marker" data-pf="${c.passFrame}" style="left:${pct}%" title="${c.label} — passes @ frame ${c.passFrame}"></span>`;
-            })
-            .join('');
-          const allActive = checks.filter((c: Any) => c.active);
-          const matchFrame = allActive.length && allActive.every((c: Any) => c.passFrame >= 0)
-            ? Math.max(...allActive.map((c: Any) => c.passFrame)) : -1;
-          if (matchFrame >= 0) {
-            const pct = max ? (matchFrame / max) * 100 : 0;
-            html += `<span class="tl-flag" data-pf="${matchFrame}" style="left:${pct}%" title="MATCH — all tests pass by frame ${matchFrame}"></span>`;
-          }
-          markers.innerHTML = html;
-          markers.dataset.match = String(matchFrame);
+          markers.innerHTML = active.map((c: Any) => {
+            const pct = max ? (c.passFrame / max) * 100 : 0;
+            return `<div class="tl-marker${c.kind === 'exact' ? ' exact' : ''}" data-pf="${c.passFrame}" style="left:${pct}%" title="${esc(c.label)} — passes @ frame ${c.passFrame}"></div>`;
+          }).join('');
         }
         buildWaveform();
         updateTimeline();
       }
-      // the waveform: each particle's speed across the run, drawn like an oscilloscope
-      // trace — the test particle prominent, related particles dim. Reads acceleration
-      // (attract ramps up), bleed (viscosity decays), oscillation (tether), a bounce spike
-      // (collide), jitter (thermal), at a glance.
       function buildWaveform() {
         const cv = $('tlWave') as HTMLCanvasElement | null;
         if (!cv || !result) return;
@@ -513,30 +590,20 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         cv.width = Math.floor(w * dpr); cv.height = Math.floor(h * dpr);
         const c = cv.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0);
         c.clearRect(0, 0, w, h);
-        const traj = result.trajectory;
-        const N = traj.length;
-        const nP = traj[0].length;
-        let maxV = 1e-6;
-        for (const fr of traj) for (const p of fr) maxV = Math.max(maxV, p.speed);
-        const pad = 5;
-        const X = (f: number) => (N > 1 ? (f / (N - 1)) * w : 0);
-        const Y = (v: number) => h - pad - (v / maxV) * (h - 2 * pad);
-        // baseline
-        c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;
-        c.beginPath(); c.moveTo(0, h - pad); c.lineTo(w, h - pad); c.stroke();
-        const col = color();
-        const cap = Math.min(nP, 24); // keep dense clouds (thermal) legible
-        for (let i = cap - 1; i >= 0; i--) {
-          c.beginPath();
-          for (let f = 0; f < N; f++) {
-            const sx = X(f), sy = Y(traj[f][i].speed);
-            f ? c.lineTo(sx, sy) : c.moveTo(sx, sy);
-          }
-          if (i === 0) { c.strokeStyle = col; c.lineWidth = 1.6; c.globalAlpha = 1; }
-          else { c.strokeStyle = 'rgba(200,210,230,0.5)'; c.lineWidth = 0.7; c.globalAlpha = 0.45; }
-          c.stroke();
-        }
-        c.globalAlpha = 1;
+        const traj = result.trajectory, N = traj.length - 1, col = color();
+        let maxV = 1e-6; for (const fr of traj) for (const p of fr) maxV = Math.max(maxV, p.speed);
+        const X = (i: number) => (N > 0 ? (i / N) * w : 0), Y = (v: number) => h - 3 - (v / maxV) * (h - 8);
+        const spd = (i: number) => traj[i][0]?.speed ?? 0;
+        // full curve area (dim)
+        c.beginPath(); c.moveTo(0, h); for (let i = 0; i <= N; i++) c.lineTo(X(i), Y(spd(i))); c.lineTo(w, h); c.closePath();
+        c.fillStyle = hexA(col, 0.08); c.fill();
+        // played area (bright)
+        const pf = Math.min(frame, N);
+        c.beginPath(); c.moveTo(0, h); for (let i = 0; i <= pf; i++) c.lineTo(X(i), Y(spd(i))); c.lineTo(X(pf), h); c.closePath();
+        c.fillStyle = hexA(col, 0.22); c.fill();
+        // line
+        c.beginPath(); for (let i = 0; i <= N; i++) { const sx = X(i), sy = Y(spd(i)); i ? c.lineTo(sx, sy) : c.moveTo(sx, sy); }
+        c.strokeStyle = hexA(col, 0.5); c.lineWidth = 1.5; c.stroke();
       }
       function updateTimeline() {
         if (!result) return;
@@ -546,376 +613,273 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         const ph = $('tlPlayhead'); if (ph) ph.style.left = pct + '%';
         const tl = $('timeline'); if (tl) tl.setAttribute('aria-valuenow', String(frame));
         const markers = $('tlMarkers');
-        if (markers) {
-          markers.querySelectorAll('.tl-marker').forEach((m: Any) => m.classList.toggle('passed', frame >= +m.dataset.pf));
-          const matchFrame = +(markers.dataset.match ?? -1);
-          const fl = markers.querySelector('.tl-flag') as Any;
-          if (fl) fl.classList.toggle('reached', matchFrame >= 0 && frame >= matchFrame);
-          if (fill) (fill as HTMLElement).classList.toggle('matched', matchFrame >= 0 && frame >= matchFrame);
-        }
+        if (markers) markers.querySelectorAll('.tl-marker').forEach((m: Any) => m.classList.toggle('pass', frame >= +m.dataset.pf));
+        const fr = $('frameReadout'); if (fr) fr.textContent = `frame ${frame} / ${max}`;
+        buildWaveform();
       }
 
-      // ── parameter sweep: vary one param across its range, plot the response ────
-      function sweepable() {
-        const s = byForce[cur].scenario, b = s.body, p0 = s.particles[0];
-        const out: Any[] = [];
-        const attrs: string[] = (META[cur] && META[cur].attrs) || [];
-        if (b.strength != null) out.push({ key: 'strength', label: 'strength', min: 0, max: Math.max(0.5, b.strength * 3), base: b.strength });
-        if (b.range > 0) out.push({ key: 'range', label: 'range', min: 50, max: 500, base: b.range });
-        if (attrs.includes('spin')) out.push({ key: 'spin', label: 'spin σ', min: -2, max: 2, base: b.spin ?? 1 });
-        if (attrs.includes('angle')) out.push({ key: 'angle', label: 'angle θ°', min: -180, max: 180, base: Math.round(((b.angle ?? 0) * 180) / Math.PI) });
-        if (p0) {
-          out.push({ key: 'vx', label: 'initial vᵪ', min: -8, max: 8, base: p0.vx ?? 0 });
-          out.push({ key: 'vy', label: 'initial vᵧ', min: -8, max: 8, base: p0.vy ?? 0 });
-        }
-        return out;
-      }
+      // ── parameter sweep ──
       function populateSweep() {
-        const sel = $('sweepParam') as HTMLSelectElement | null;
-        if (!sel) return;
-        const opts = sweepable();
+        const sel = $('sweepParam') as HTMLSelectElement | null; if (!sel) return;
+        const opts = sweepableOf(cur);
         const prev = sel.value;
-        sel.innerHTML = opts.map((o: Any) => `<option value="${o.key}">${o.label}</option>`).join('');
-        if (opts.some((o: Any) => o.key === prev)) sel.value = prev;
-      }
-      function sweepOpen() {
-        const d = document.querySelector('.lab-sweep') as HTMLDetailsElement | null;
-        return !!(d && d.open);
+        sel.innerHTML = opts.map((k: string) => `<option value="${k}">${PMETA[k].label}</option>`).join('');
+        sel.value = opts.includes(prev) ? prev : (SIG[cur] && opts.includes(SIG[cur]) ? SIG[cur] : opts[0]);
+        const lbl = $('sweepLabel'); if (lbl) lbl.textContent = PMETA[sel.value]?.label ?? sel.value;
       }
       function runSweep() {
-        if (!sweepOpen() || !result) return;
-        const opts = sweepable();
+        if (!result) return;
         const sel = $('sweepParam') as HTMLSelectElement | null;
-        const key = (sel && sel.value) || opts[0].key;
-        const spec = opts.find((o: Any) => o.key === key) || opts[0];
-        const metric = ($('sweepMetric') as HTMLSelectElement).value;
-        const N = 48;
-        const pts: [number, number][] = [];
-        for (let i = 0; i < N; i++) {
-          const v = spec.min + (spec.max - spec.min) * (i / (N - 1));
-          const res = runScenario(buildScenario({ ...overrides, [key]: v }), forces);
-          let m = 0;
-          if (metric === 'delta') { const d = res.applyDelta[0]; m = d ? Math.hypot(d.dvx, d.dvy) : 0; }
-          else if (metric === 'finalDist') { const last = res.trajectory[res.trajectory.length - 1][0]; m = last ? Math.hypot(last.x - res.body.cx, last.y - res.body.cy) : 0; }
-          else { m = byForce[cur].expectations.filter((e: Any) => { try { return e.check(res).pass; } catch { return false; } }).length; }
-          pts.push([v, m]);
+        const key = (sel && sel.value) || sweepableOf(cur)[0];
+        const m = PMETA[key]; if (!m) return;
+        const N = 44, pts: [number, number][] = [];
+        for (let i = 0; i <= N; i++) {
+          const v = m.min + (m.max - m.min) * (i / N);
+          const res = runScenario(buildScenario({ ...overrides, [key]: v, count: 1 }), forces);
+          const last = res.trajectory[res.trajectory.length - 1][0];
+          pts.push([v, last ? Math.hypot(last.x - res.body.cx, last.y - res.body.cy) : 0]);
         }
-        drawSweep(pts, spec, overrides[key] ?? spec.base);
+        drawSweep(pts, m, valOf(key));
+        const lbl = $('sweepLabel'); if (lbl) lbl.textContent = m.label;
       }
-      function drawSweep(pts: [number, number][], spec: Any, curVal: number) {
-        const cv = $('sweepCanvas') as HTMLCanvasElement | null;
-        if (!cv) return;
-        const w = cv.clientWidth || 300, h = 150;
+      function drawSweep(pts: [number, number][], m: Any, curVal: number) {
+        const cv = $('sweepCanvas') as HTMLCanvasElement | null; if (!cv) return;
+        const w = cv.clientWidth || 300, h = 96;
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         cv.width = Math.floor(w * dpr); cv.height = Math.floor(h * dpr);
-        const c = cv.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0);
-        c.clearRect(0, 0, w, h);
-        const pad = { l: 42, r: 12, t: 12, b: 22 };
-        const ys = pts.map((p) => p[1]);
-        const yMax = Math.max(...ys, 1e-6), yMin = Math.min(...ys, 0);
-        const X = (x: number) => pad.l + ((x - spec.min) / ((spec.max - spec.min) || 1)) * (w - pad.l - pad.r);
-        const Y = (y: number) => h - pad.b - ((y - yMin) / ((yMax - yMin) || 1)) * (h - pad.t - pad.b);
-        c.strokeStyle = 'rgba(255,255,255,0.12)'; c.lineWidth = 1;
-        c.beginPath(); c.moveTo(pad.l, pad.t); c.lineTo(pad.l, h - pad.b); c.lineTo(w - pad.r, h - pad.b); c.stroke();
-        c.fillStyle = 'rgba(200,210,230,0.5)'; c.font = '10px ui-monospace,monospace';
-        c.fillText(yMax.toFixed(2), 4, pad.t + 8); c.fillText(yMin.toFixed(2), 4, h - pad.b);
-        c.fillText(spec.min.toFixed(0), pad.l, h - 6); c.fillText(spec.max.toFixed(0), w - pad.r - 22, h - 6);
-        c.strokeStyle = 'rgba(255,206,107,0.7)'; c.setLineDash([3, 3]);
-        c.beginPath(); c.moveTo(X(curVal), pad.t); c.lineTo(X(curVal), h - pad.b); c.stroke(); c.setLineDash([]);
-        c.strokeStyle = META[cur]?.color ?? '#4da3ff'; c.lineWidth = 1.8; c.beginPath();
+        const c = cv.getContext('2d')!; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+        const col = color(); const span = (m.max - m.min) || 1;
+        let maxM = 1e-6; pts.forEach((p) => (maxM = Math.max(maxM, p[1])));
+        const X = (x: number) => ((x - m.min) / span) * w, Y = (y: number) => h - 4 - (y / maxM) * (h - 10);
+        // current-value marker
+        c.strokeStyle = hexA('#ffffff', 0.45); c.setLineDash([3, 3]);
+        c.beginPath(); c.moveTo(X(curVal), 0); c.lineTo(X(curVal), h); c.stroke(); c.setLineDash([]);
+        // curve
+        c.strokeStyle = hexA(col, 0.85); c.lineWidth = 1.5; c.beginPath();
         pts.forEach((p, i) => { const sx = X(p[0]), sy = Y(p[1]); i ? c.lineTo(sx, sy) : c.moveTo(sx, sy); }); c.stroke();
       }
 
-      // tunable body-attribute specs (symbol · units · slider range). `angle` is shown in
-      // degrees and converted to radians when the scenario is built. Which of these appear
-      // is driven by the selected force's catalog `attrs`, so the panel only ever shows the
-      // knobs that actually matter for that force (e.g. `shear` exposes its flow `angle`).
-      const ATTR: Any = {
-        strength: (b: Any) => { const v = b.strength ?? 1, mx = Math.max(0.5, v * 3); return { key: 'strength', label: 'strength', sym: 'S', val: v, def: v, min: 0, max: mx, step: mx / 100 }; },
-        range: (b: Any) => ({ key: 'range', label: 'range', sym: 'd', unit: 'px', val: b.range ?? 300, def: b.range ?? 300, min: 50, max: 500, step: 5 }),
-        spin: (b: Any) => ({ key: 'spin', label: 'spin', sym: 'σ', val: b.spin ?? 1, def: b.spin ?? 1, min: -2, max: 2, step: 0.1 }),
-        angle: (b: Any) => { const d = Math.round(((b.angle ?? 0) * 180) / Math.PI); return { key: 'angle', label: 'angle', sym: 'θ', unit: '°', val: d, def: d, min: -180, max: 180, step: 5 }; },
-      };
-      const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-      // named quick-pick values per control, so you click a meaningful setting instead of
-      // guessing and dragging. Values are relative to the scenario's default where it helps.
-      function bands(sp: Any): [string, number][] {
-        const d = sp.def;
-        switch (sp.key) {
-          case 'strength': return [['weak', round(d * 0.4)], ['default', d], ['strong', round(d * 2.2)], ['max', round(sp.max)]];
-          case 'range': return [['near', Math.round(d * 0.55)], ['default', d], ['far', Math.min(sp.max, Math.round(d * 1.6))]];
-          case 'spin': return [['ccw', -1], ['off', 0], ['cw', 1]];
-          case 'angle': return [['0°', 0], ['45°', 45], ['90°', 90], ['180°', 180]];
-          case 'vx': case 'vy': return [['0', 0], ['slow', 2], ['fast', 6]];
-          case 'count': return [['1', 1], ['8', 8], ['24', 24]];
-          default: return [];
-        }
-      }
-
+      // ── tune panel ──
+      const esc = (t: string) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       function renderParams() {
-        const s = byForce[cur].scenario;
-        const b = s.body, p0 = s.particles[0], cur0 = overrides;
-        const meta: Any = META[cur] || {};
-        const rows: string[] = [];
-        const row = (sp: Any) => {
-          const cur = cur0[sp.key] ?? sp.val;
-          const frac = Math.max(0, Math.min(1, (sp.def - sp.min) / (sp.max - sp.min || 1)));
-          const sym = sp.sym ? `<span class="sym">${sp.sym}</span>` : '';
-          const unit = sp.unit ? `<span class="unit">${sp.unit}</span>` : '';
-          const chips = bands(sp)
-            .map((b) => `<button type="button" class="band${round(cur) === b[1] ? ' on' : ''}" data-band-key="${sp.key}" data-band-val="${b[1]}">${b[0]}</button>`)
-            .join('');
-          return `<div class="param"><label>${sp.label}${sym}${unit}</label>
-            <input type="number" class="num" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${round(cur)}">
+        const keys: string[] = SCHEMA[cur] || ['strength', 'range'];
+        const rows = keys.map((key) => {
+          const m = PMETA[key]; const cv = valOf(key); const def = defOf(key);
+          const frac = Math.max(0, Math.min(1, (def - m.min) / (m.max - m.min || 1)));
+          const sym = m.sym ? `<span class="sym">${m.sym}</span>` : '';
+          const unit = m.unit ? `<span class="unit">${m.unit}</span>` : '';
+          return `<div class="param">
+            <label>${m.label}${sym}${unit}</label>
+            <input class="num" type="number" data-param="${key}" min="${m.min}" max="${m.max}" step="${m.step}" value="${round(cv, m.step)}">
             <div class="track-wrap"><span class="tick" title="default" style="left:${(frac * 100).toFixed(1)}%"></span>
-            <input type="range" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${cur}"></div>
-            ${chips ? `<div class="bands">${chips}</div>` : ''}</div>`;
-        };
-        // the formula + class for the selected force, so the controls are self-explaining
-        let head = '';
-        if (meta.formula) head += `<div class="param-formula">${esc(meta.formula)}</div>`;
-        // body knobs that matter for this force (from the catalog), defaulted if the
-        // scenario didn't set them; everything is relative so a uniform default is fine.
-        const attrs: string[] = meta.attrs || ['strength', 'range'];
-        for (const a of attrs) {
-          if (a === 'strength' && b.strength == null) continue;
-          if (a === 'range' && !(b.range > 0)) continue;
-          if (ATTR[a]) rows.push(row(ATTR[a](b)));
-        }
-        // the injected test particle (class-[S] sources have none → skip these)
-        if (p0) {
-          rows.push(row({ key: 'vx', label: 'initial v', sym: 'ₓ', val: p0.vx ?? 0, def: p0.vx ?? 0, min: -8, max: 8, step: 0.5 }));
-          rows.push(row({ key: 'vy', label: 'initial v', sym: 'ᵧ', val: p0.vy ?? 0, def: p0.vy ?? 0, min: -8, max: 8, step: 0.5 }));
-          rows.push(row({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 }));
-        }
-        $('params')!.innerHTML = head + rows.join('');
-        $('params')!
-          .querySelectorAll('input[data-param]')
-          .forEach((el) =>
-            el.addEventListener('input', () => {
-              const inp = el as HTMLInputElement;
-              const key = inp.dataset.param!;
-              const val = parseFloat(inp.value);
-              if (Number.isNaN(val)) return;
-              overrides[key] = val;
-              // sync the sibling (slider ↔ number)
-              $('params')!
-                .querySelectorAll(`input[data-param="${key}"]`)
-                .forEach((o) => { if (o !== inp) (o as HTMLInputElement).value = String(val); });
-              setPresetSelect('');
-              evaluate();
-            }),
-          );
-        // quick-pick bands: set the control to a named value directly (no slider snap, so
-        // the chip reads as active), then refire — `evaluate` re-renders the panel.
-        $('params')!
-          .querySelectorAll('.band')
-          .forEach((el) =>
-            el.addEventListener('click', () => {
-              const key = (el as HTMLElement).dataset.bandKey!;
-              overrides[key] = parseFloat((el as HTMLElement).dataset.bandVal!);
-              setPresetSelect('');
-              evaluate();
-            }),
-          );
-        const sel = $('preset') as HTMLSelectElement | null;
-        if (sel && !sel.options.length) {
-          sel.innerHTML = PRESETS.map((p) => `<option value="${p.id}">${p.label}</option>`).join('');
-          sel.addEventListener('change', () => applyPreset(sel.value));
-        }
+            <input type="range" data-param="${key}" min="${m.min}" max="${m.max}" step="${m.step}" value="${cv}"></div>
+          </div>`;
+        }).join('');
+        $('params')!.innerHTML = rows;
+        $('params')!.querySelectorAll('input[data-param]').forEach((el) =>
+          el.addEventListener('input', () => {
+            const inp = el as HTMLInputElement, key = inp.dataset.param!, val = parseFloat(inp.value);
+            if (Number.isNaN(val)) return;
+            overrides[key] = val;
+            $('params')!.querySelectorAll(`input[data-param="${key}"]`).forEach((o) => { if (o !== inp) (o as HTMLInputElement).value = String(val); });
+            setPreset('custom');
+            evaluate();
+          }),
+        );
+        const note = $('note'); if (note) note.textContent = scenarioBase().label + '.';
       }
 
-      function setPresetSelect(id: string) {
-        const sel = $('preset') as HTMLSelectElement | null;
-        if (sel) sel.value = id || '';
+      const PRESETS = [
+        { id: 'default', label: 'Default' }, { id: 'strong', label: 'Strong force' }, { id: 'weak', label: 'Weak force' },
+        { id: 'far', label: 'Long range' }, { id: 'near', label: 'Short range' }, { id: 'fast', label: 'Fast particle' },
+        { id: 'burst', label: 'Particle burst (×14)' },
+      ];
+      function setPreset(id: string) {
+        const sel = $('preset') as HTMLSelectElement | null; if (!sel) return;
+        if (id === 'custom' && !Array.from(sel.options).some((o) => o.value === 'custom')) sel.add(new Option('Custom', 'custom'), 0);
+        sel.value = id;
       }
-
       function applyPreset(id: string) {
-        const s = byForce[cur].scenario, b = s.body;
+        const b = scenarioBase().body;
         overrides = {};
-        if (id === 'strong' && b.strength != null) overrides.strength = round(b.strength * 2.2);
-        else if (id === 'weak' && b.strength != null) overrides.strength = round(b.strength * 0.4);
-        else if (id === 'far' && b.range > 0) overrides.range = Math.round(b.range * 1.6);
+        if (id === 'strong' && b.strength != null) overrides.strength = round(b.strength * 2.2, 0.01);
+        else if (id === 'weak' && b.strength != null) overrides.strength = round(b.strength * 0.4, 0.01);
+        else if (id === 'far' && b.range > 0) overrides.range = Math.round(b.range * 1.5);
         else if (id === 'near' && b.range > 0) overrides.range = Math.round(b.range * 0.55);
         else if (id === 'fast') overrides.vx = 6;
         else if (id === 'burst') overrides.count = 14;
-        stopPlay();
-        evaluate();
+        stopPlay(); evaluate();
       }
 
-      // ── transport ──────────────────────────────────────────────────────────
-      function stopPlay() {
-        if (W.__labTimer) clearInterval(W.__labTimer);
-        W.__labTimer = 0;
-        const pb = $('play');
-        if (pb) pb.textContent = '▶ Play';
-      }
+      // ── transport ──
+      function stopPlay() { if (W.__labTimer) clearInterval(W.__labTimer); W.__labTimer = 0; const pb = $('play'); if (pb) pb.textContent = '▶ Play'; }
       function play() {
         if (W.__labTimer) return stopPlay();
         if (frame >= result.trajectory.length - 1) frame = 0;
-        const pb = $('play');
-        if (pb) pb.textContent = '⏸ Pause';
+        const pb = $('play'); if (pb) pb.textContent = '⏸ Pause';
         W.__labTimer = window.setInterval(() => {
           frame++;
           if (frame >= result.trajectory.length - 1) {
             if (mode === 'loop') { frame = 0; draw(); return; }
-            if (mode === 'unlocked') {
-              if (extend()) { draw(); return; } // grow the sim and keep observing
-              frame = 0; draw(); return; // hit the cap → wrap (still continuous)
-            }
-            frame = result.trajectory.length - 1; // once: stop at the end
-            draw();
-            stopPlay();
-            return;
+            frame = result.trajectory.length - 1; draw(); stopPlay(); return;
           }
           draw();
         }, 33);
       }
 
-      function select(force: string, keepOverrides = false) {
+      // ── select a force ──
+      function selectForce(force: string, keepOverrides = false) {
         cur = force;
         if (!keepOverrides) overrides = {};
-        document.querySelectorAll('.lab-pick').forEach((b) =>
-          b.classList.toggle('on', (b as HTMLElement).dataset.force === force),
-        );
-        setPresetSelect('default');
+        document.querySelectorAll('.force-tile').forEach((t) => t.classList.toggle('on', (t as HTMLElement).dataset.force === force));
+        lab!.style.setProperty('--fc', color());
+        updateAbout();
         stopPlay();
+        const cal = calibrated();
+        $('detector')!.hidden = !cal;
+        $('tabs')!.hidden = !cal;
+        $('veil')!.hidden = cal;
+        $('hud')!.style.display = cal ? '' : 'none';
+        if (!cal) {
+          const v = $('verdict')!; v.className = 'verdict resolving'; v.textContent = 'Awaiting calibration';
+          ($('veilName') as HTMLElement).textContent = META[cur]?.label ?? cur;
+          ($('veilMeta') as HTMLElement).textContent = `${famLabel(cur)} · awaiting calibration`;
+          ctx.clearRect(0, 0, canvas!.clientWidth, canvas!.clientHeight);
+          $('expectPanel')!.hidden = true; $('tunePanel')!.hidden = true;
+          return;
+        }
+        setPreset('default');
+        showTab(tab);
         evaluate();
       }
+      function famLabel(id: string) { const f = META[id]; return f ? cap(f.family === 'extended' ? 'designed-extended' : f.family) : ''; }
+      function updateAbout() {
+        const m = META[cur]; if (!m) return;
+        const sym = $('aboutSym')!; sym.innerHTML = `<i class="fg fg-${cur}"></i>`; sym.style.setProperty('--fc', m.color);
+        ($('aboutName') as HTMLElement).textContent = m.label;
+        ($('aboutMeta') as HTMLElement).textContent = `${famLabel(cur)} · ${m.symbol} · No. ${z2(forceNoJS(cur))} · ${m.calibrated && byForce[cur] ? 'calibrated' : 'awaiting calibration'}`;
+        ($('aboutDesc') as HTMLElement).textContent = m.summary;
+        ($('aboutEffect') as HTMLElement).textContent = m.effect;
+        const ff = $('aboutFormula')!; ff.textContent = m.formula; ff.style.display = calibrated() ? '' : 'none';
+        ($('chamberForce') as HTMLElement).textContent = m.label;
+      }
+      const forceNoJS = (token: string) => (MANUAL_FORCES as Any[]).findIndex((f) => f.token === token) + 1;
 
-      // ── actionable save: a reproducible record of inputs → outputs ───────────
+      function showTab(t: 'expect' | 'tune') {
+        tab = t;
+        document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', (b as HTMLElement).dataset.tab === t));
+        $('expectPanel')!.hidden = t !== 'expect';
+        $('tunePanel')!.hidden = t !== 'tune';
+      }
+
+      // ── export ──
       function buildHash() {
         const parts = [cur];
-        for (const k of ['strength', 'range', 'vx', 'vy', 'count'])
-          if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
+        for (const k of ['strength', 'range', 'spin', 'angle', 'box', 'absorbR', 'vx', 'vy', 'count']) if (overrides[k] != null) parts.push(`${k}=${overrides[k]}`);
         return parts.join(';');
       }
       function buildRecord() {
-        const s = byForce[cur].scenario, b = result.body;
         const active = checks.filter((c: Any) => c.active);
         return {
-          tool: 'forces-ui · the Lab',
-          force: cur,
-          scenario: { label: s.label, family: s.family, class: s.klass, frames: result.scenario.frames },
-          inputs: {
-            body: { strength: b.strength, range: b.range, spin: b.spin, angle: b.angle, M: b.M },
-            particles: result.trajectory[0].map((p: Any) => ({ x: p.x, y: p.y, vx: p.vx, vy: p.vy })),
-            overrides: { ...overrides },
-          },
+          tool: 'forces-ui · the Lab', force: cur, symbol: META[cur].symbol,
+          scenario: { label: scenarioBase().label, family: META[cur].family, frames: result.trajectory.length - 1 },
+          inputs: { overrides: { ...overrides } },
           outputs: {
-            verdict: active.every((c: Any) => c.passFrame >= 0) ? 'match' : 'no-match',
-            expectedDelta: result.applyDelta[0],
+            verdict: active.every((c: Any) => c.passFrame >= 0) ? 'confirmed' : 'unresolved',
+            expectedDelta: result.applyDelta?.[0],
             finalState: result.trajectory[result.trajectory.length - 1][0],
-            checks: checks.map((c: Any) => ({
-              label: c.label, kind: c.kind, active: c.active,
-              pass: c.passFrame >= 0, passFrame: c.passFrame,
-              measured: c.measured, expected: c.expected,
-            })),
+            checks: checks.map((c: Any) => ({ label: c.label, kind: c.kind, active: c.active, pass: c.passFrame >= 0, passFrame: c.passFrame, measured: c.measured, expected: c.expected })),
           },
           link: location.href.split('#')[0] + '#' + buildHash(),
         };
       }
-      function flash(id: string, msg: string) {
-        const el = $(id);
-        if (!el) return;
-        const prev = el.textContent;
-        el.textContent = msg;
-        setTimeout(() => (el.textContent = prev), 1200);
+      function flash(msg: string) {
+        let el = document.querySelector('.lab-flash') as HTMLElement | null;
+        if (!el) { el = document.createElement('div'); el.className = 'lab-flash'; document.body.appendChild(el); }
+        el.textContent = msg; el.classList.add('show');
+        clearTimeout((el as Any)._t); (el as Any)._t = setTimeout(() => el!.classList.remove('show'), 1300);
       }
       function exportJSON() {
         const blob = new Blob([JSON.stringify(buildRecord(), null, 2)], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `forces-lab-${cur}.json`;
-        a.click();
-        URL.revokeObjectURL(a.href);
-        flash('export', 'Saved ✓');
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `forces-lab-${cur}.json`; a.click(); URL.revokeObjectURL(a.href); flash('JSON exported');
       }
       function copyReport() {
         const r = buildRecord();
-        const lines = [
-          `forces-ui Lab — ${r.force} (${r.scenario.label})`,
-          `verdict: ${r.outputs.verdict.toUpperCase()}`,
-          '',
-          ...r.outputs.checks.map((c: Any) =>
-            `${c.active ? (c.pass ? '✓' : '✗') : '–'} ${c.label} — measured ${c.measured}, expected ${c.expected}` +
-            (c.active && c.pass ? ` (@ frame ${c.passFrame})` : ''),
-          ),
-          '',
-          r.link,
-        ];
-        navigator.clipboard?.writeText(lines.join('\n'));
-        flash('report', 'Copied ✓');
+        const lines = [`forces-ui Lab — ${META[cur].label} (${META[cur].symbol})`, META[cur].formula, '', ...r.outputs.checks.map((c: Any) => `${c.active ? (c.pass ? '✓' : '✗') : '–'} ${c.label} — measured ${c.measured}, expected ${c.expected}${c.active && c.pass ? ` (@ frame ${c.passFrame})` : ''}`), '', r.link];
+        navigator.clipboard?.writeText(lines.join('\n')); flash('Report copied');
+      }
+
+      // ── wiring ──
+      function initBrowserToggle() {
+        const seg = document.querySelector('.lab-picker .seg-toggle');
+        const br = document.querySelector('.lab-picker [data-force-browser]') as HTMLElement | null;
+        if (!seg || !br) return;
+        seg.addEventListener('click', (e) => {
+          const btn = (e.target as HTMLElement).closest('button[data-view]') as HTMLButtonElement | null; if (!btn) return;
+          pickView = btn.dataset.view as any;
+          br.classList.remove('view-icon', 'view-symbol', 'view-name'); br.classList.add('view-' + pickView);
+          seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn));
+        }, { signal: _ac.signal });
       }
 
       function init() {
-        document.querySelectorAll('.lab-pick').forEach((b) =>
-          b.addEventListener('click', () => select((b as HTMLElement).dataset.force!)),
-        );
-        $('fire')?.addEventListener('click', () => { stopPlay(); frame = 0; play(); });
-        $('play')?.addEventListener('click', play);
-        $('stepb')?.addEventListener('click', () => {
-          stopPlay();
-          frame = Math.min(frame + 1, result.trajectory.length - 1);
-          draw();
-        });
-        $('reset')?.addEventListener('click', () => { stopPlay(); frame = 0; draw(); });
+        document.querySelectorAll('.force-tile').forEach((t) =>
+          t.addEventListener('click', () => selectForce((t as HTMLElement).dataset.force!), { signal: _ac.signal }));
+        initBrowserToggle();
+        $('fire')?.addEventListener('click', () => { stopPlay(); frame = 0; play(); }, { signal: _ac.signal });
+        $('play')?.addEventListener('click', play, { signal: _ac.signal });
+        $('stepb')?.addEventListener('click', () => { stopPlay(); frame = Math.min(frame + 1, result.trajectory.length - 1); draw(); }, { signal: _ac.signal });
+        $('reset')?.addEventListener('click', () => { stopPlay(); frame = 0; draw(); }, { signal: _ac.signal });
         $('mode')?.addEventListener('click', () => {
-          mode = mode === 'once' ? 'loop' : mode === 'loop' ? 'unlocked' : 'once';
-          const mb = $('mode')!;
-          mb.textContent = MODE_LABEL[mode];
-          mb.dataset.mode = mode;
-          mb.classList.toggle('on', mode !== 'once');
-        });
-        $('export')?.addEventListener('click', exportJSON);
-        $('report')?.addEventListener('click', copyReport);
-        document.querySelector('.lab-sweep')?.addEventListener('toggle', runSweep);
-        $('sweepParam')?.addEventListener('change', runSweep);
-        $('sweepMetric')?.addEventListener('change', runSweep);
+          mode = mode === 'once' ? 'loop' : 'once';
+          const mb = $('mode')!; mb.textContent = mode === 'loop' ? '↻ Loop' : '↦ Once'; mb.dataset.mode = mode; mb.classList.toggle('on', mode === 'loop');
+        }, { signal: _ac.signal });
+        $('ghost')?.addEventListener('click', () => { ghostOn = !ghostOn; if (!ghostOn) ghostTraj = null; $('ghost')!.classList.toggle('on', ghostOn); draw(); }, { signal: _ac.signal });
+        document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => showTab((b as HTMLElement).dataset.tab as any), { signal: _ac.signal }));
+        $('sweepParam')?.addEventListener('change', () => runSweep(), { signal: _ac.signal });
+        $('export')?.addEventListener('click', exportJSON, { signal: _ac.signal });
+        $('report')?.addEventListener('click', copyReport, { signal: _ac.signal });
+        $('resetParams')?.addEventListener('click', () => { overrides = {}; setPreset('default'); evaluate(); }, { signal: _ac.signal });
+        $('share')?.addEventListener('click', () => { location.hash = buildHash(); navigator.clipboard?.writeText(location.href); flash('Link copied'); }, { signal: _ac.signal });
+        const presetSel = $('preset') as HTMLSelectElement | null;
+        if (presetSel) { presetSel.innerHTML = PRESETS.map((p) => `<option value="${p.id}">${p.label}</option>`).join(''); presetSel.addEventListener('change', () => applyPreset(presetSel.value), { signal: _ac.signal }); }
+
+        const help = $('help'), legend = $('legend');
+        help?.addEventListener('click', () => { const open = legend!.hidden; legend!.hidden = !open; help!.classList.toggle('on', open); help!.setAttribute('aria-expanded', String(open)); help!.textContent = open ? '×' : '?'; }, { signal: _ac.signal });
+
+        // timeline scrub
         const tl = $('timeline');
         if (tl) {
-          const frameFromX = (clientX: number) => {
-            const r = tl.getBoundingClientRect();
-            const t = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-            return Math.round(t * (result.trajectory.length - 1));
-          };
+          const frameFromX = (clientX: number) => { const r = tl.getBoundingClientRect(); const t = Math.max(0, Math.min(1, (clientX - r.left) / r.width)); return Math.round(t * (result.trajectory.length - 1)); };
           let dragging = false;
           const scrubTo = (clientX: number) => { stopPlay(); frame = frameFromX(clientX); draw(); };
-          tl.addEventListener('pointerdown', (e: Any) => { dragging = true; try { tl.setPointerCapture(e.pointerId); } catch {} scrubTo(e.clientX); });
-          tl.addEventListener('pointermove', (e: Any) => { if (dragging) scrubTo(e.clientX); });
-          tl.addEventListener('pointerup', () => { dragging = false; });
-          tl.addEventListener('keydown', (e: Any) => {
-            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-              stopPlay();
-              frame = Math.max(0, Math.min(result.trajectory.length - 1, frame + (e.key === 'ArrowRight' ? 1 : -1)));
-              draw();
-              e.preventDefault();
-            }
-          });
+          tl.addEventListener('pointerdown', (e: Any) => { dragging = true; try { tl.setPointerCapture(e.pointerId); } catch {} scrubTo(e.clientX); }, { signal: _ac.signal });
+          tl.addEventListener('pointermove', (e: Any) => { if (dragging) scrubTo(e.clientX); }, { signal: _ac.signal });
+          tl.addEventListener('pointerup', () => { dragging = false; }, { signal: _ac.signal });
         }
-        $('resetParams')?.addEventListener('click', () => select(cur));
-        $('share')?.addEventListener('click', () => {
-          location.hash = buildHash();
-          navigator.clipboard?.writeText(location.href);
-          flash('share', 'Copied ✓');
-        });
-        window.addEventListener('resize', () => { if (result) { computeView(); draw(); } }, { passive: true, signal: _ac.signal });
+
+        window.addEventListener('keydown', (e: Any) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || !calibrated()) return;
+          if (e.key === ' ') { e.preventDefault(); play(); }
+          else if (e.key === 'f') { stopPlay(); frame = 0; play(); }
+          else if (e.key === 'r') { stopPlay(); frame = 0; draw(); }
+          else if (e.key === 'ArrowRight') { e.preventDefault(); stopPlay(); frame = Math.min(result.trajectory.length - 1, frame + 1); draw(); }
+          else if (e.key === 'ArrowLeft') { e.preventDefault(); stopPlay(); frame = Math.max(0, frame - 1); draw(); }
+          else if (e.key === 'l') $('mode')?.dispatchEvent(new Event('click'));
+        }, { signal: _ac.signal });
+        window.addEventListener('resize', () => { if (result && calibrated()) { computeView(); draw(); } }, { passive: true, signal: _ac.signal });
 
         // restore from hash, else default
         const hash = decodeURIComponent(location.hash.replace(/^#/, ''));
         if (hash) {
           const [force, ...kv] = hash.split(';');
-          if (byForce[force]) {
-            for (const pair of kv) {
-              const [k, v] = pair.split('=');
-              if (v != null) overrides[k] = parseFloat(v);
-            }
-            select(force, true);
+          if (byForce[force] && META[force]?.calibrated) {
+            for (const pair of kv) { const [k, v] = pair.split('='); if (v != null) overrides[k] = parseFloat(v); }
+            selectForce(force, true);
             return;
           }
         }
-        select('attract');
+        selectForce('attract');
       }
 
       init();
