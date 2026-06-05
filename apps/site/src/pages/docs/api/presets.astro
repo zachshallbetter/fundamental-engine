@@ -7,7 +7,7 @@ import '../../../styles/force-glyphs.css';
 
 const PRESET_COLORS: Record<string, string> = {
   blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
-  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf', fountain: '#7dd3fc',
 };
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const usage = `<div data-preset="blackhole"></div>`;
@@ -15,7 +15,7 @@ const usage = `<div data-preset="blackhole"></div>`;
 
 <DocsLayout
   title="forces-ui — Presets"
-  description="Presets compose several primitive forces into one named effect — blackhole, whitehole, star, quasar, galaxy, nebula, tornado. Drop one with data-preset; no new engine code."
+  description="Presets compose several primitive forces into one named effect — blackhole, whitehole, star, quasar, galaxy, nebula, tornado, fountain. Drop one with data-preset; no new engine code."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>

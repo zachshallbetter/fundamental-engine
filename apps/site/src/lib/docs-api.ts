@@ -50,7 +50,7 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-spin', type: 'number', def: '1', desc: 'Sign/strength of rotation — swirl, charge, magnetism, lens.' },
   { name: 'data-angle', type: 'deg', def: '0', desc: 'Heading — stream, jet, gate, shear, align.' },
   { name: 'data-color', type: 'hex', desc: 'Accent override on engage, and the carried colour for pigment.' },
-  { name: 'data-when', type: 'condition', def: "''", desc: 'Gate the force on a condition: active, fast, slow, hot, cool.' },
+  { name: 'data-when', type: 'condition', def: "''", desc: 'Gate the force on a condition: active, fast, slow, hot, cool, scrolling.' },
   { name: 'data-feedback', type: 'flag', desc: 'Opt into two-way density write-back (the --d custom property).' },
   { name: 'data-absorb', type: 'px', def: '64', desc: 'Capture radius for the sink force.' },
   { name: 'data-max', type: 'number', def: '60', desc: 'Load at which a sink supernovas (releases).' },
