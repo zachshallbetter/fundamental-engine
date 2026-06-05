@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
 import { HANDLE } from '../../../lib/docs-api.ts';
 
 const getWc = `import '@forces-ui/elements';
@@ -98,10 +99,13 @@ field.destroy();`;
       together, react to events, and clean up:
     </p>
     <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: worked }]} />
-    <div class="callout">
-      <b>See also.</b> <a href="/docs/api/options">createField &amp; options</a> for the creation
-      config, the <a href="/docs/api/forces">forces catalog</a> for what bodies do, and
-      <a href="/docs/recipes">recipes</a> for copy-paste patterns built on this handle.
-    </div>
   </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/options', label: 'createField & options' },
+      { href: '/docs/api/forces', label: 'Forces' },
+      { href: '/docs/recipes', label: 'Recipes' },
+    ]}
+  />
 </DocsLayout>

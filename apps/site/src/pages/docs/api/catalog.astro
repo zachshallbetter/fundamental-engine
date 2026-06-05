@@ -2,6 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { CONDITIONS, FORMATIONS, PALETTES, PALETTE_NAMES } from 'forces-ui';
 import { RENDER_MODES } from '../../../lib/docs-api.ts';
+import SeeAlso from '../../../components/SeeAlso.astro';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
@@ -99,4 +100,12 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
       }
     </div>
   </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/forces', label: 'Forces' },
+      { href: '/docs/api/handle', label: 'FieldHandle' },
+      { href: '/docs/api/options', label: 'createField & options' },
+    ]}
+  />
 </DocsLayout>
