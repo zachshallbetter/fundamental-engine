@@ -60,14 +60,14 @@ export const vortex: Force = {
     const spin = b.spin;
     const ux = e.dx / e.dist;
     const uy = e.dy / e.dist;
-    // tangential swirl + an inward pull strong enough to *bind* the orbit: at a weak
-    // inward bias a particle just flings outward (no whirlpool); ~0.6 keeps it circling
-    // while it spirals gently in. Tangential still dominates ~1.7×, so it reads as a swirl.
-    p.vx += uy * f * spin + ux * f * 0.6;
-    p.vy += -ux * f * spin + uy * f * 0.6;
+    // tangential swirl with a light inward retention (0.12): the swirl dominates ~8×, so
+    // canonical vortex reads as a designed spin, not a drain. A tight inward-binding
+    // whirlpool belongs in a preset (`whirlpool` / `blackhole` / `accretion`), not here.
+    p.vx += uy * f * spin + ux * f * 0.12;
+    p.vy += -ux * f * spin + uy * f * 0.12;
     if (b.on) p.heat = Math.max(p.heat, (1 - e.dist / range) * 0.6);
   },
-  meta: { desc: 'tangential swirl — a whirlpool' },
+  meta: { desc: 'tangential swirl with light inward retention' },
 };
 
 /** §6.5 — a steady directional current along the heading. */

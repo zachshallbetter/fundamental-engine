@@ -77,11 +77,23 @@ export const EXPERIMENTS: ForceConformance[] = [
       klass: 'A',
       body: { cx: 150, range: 300, strength: 1, spin: 1 },
       particles: [{ x: 0, y: 0 }],
-      frames: 240, // long enough to show the whirlpool swirl, not just the first arc
+      frames: 120, // long enough to show the swirl arc (canonical vortex retains shape lightly)
     },
     expectations: [
-      movesToward(), // the inward pull (0.6) binds the orbit into a whirlpool
-      exactDelta(0.102311, -0.170518, 2e-3), // tangential-dominant, but bound
+      // canonical vortex is swirl-dominant with only light inward retention (0.12); it does
+      // NOT bind into an inward spiral — that is a preset (whirlpool / blackhole). So the
+      // check is tangential dominance, not movesToward.
+      exactDelta(0.020462, -0.170518, 2e-3), // first-frame Δv: tangential −0.1705 ≫ inward 0.0205
+      check('the swirl dominates the inward pull (§6.8)', 'invariant', (r) => {
+        const d = r.applyDelta[0]!;
+        const tangential = Math.abs(d.dvy);
+        const inward = Math.abs(d.dvx);
+        return {
+          pass: tangential > inward * 4,
+          measured: `|Δvᵧ| / |Δvₓ| = ${f3(tangential / Math.max(inward, 1e-9))}`,
+          expected: 'tangential > 4× inward',
+        };
+      }),
       noEffectBeyondRange(),
     ],
   },
@@ -761,9 +773,9 @@ export const COMPOSITE_EXPERIMENTS: ForceConformance[] = [
       }),
       check('composes to the sum of its parts (inward + swirl)', 'exact', (r) => {
         const d = r.applyDelta[0]!;
-        // attract Δv (0.125, 0) + vortex Δv (0.1023, −0.1705) on a still particle 150px out
-        const ok = Math.abs(d.dvx - 0.2273) < 0.005 && Math.abs(d.dvy + 0.1705) < 0.005;
-        return { pass: ok, measured: `(${f3(d.dvx)}, ${f3(d.dvy)})`, expected: '(0.2273, −0.1705) ±0.005' };
+        // attract Δv (0.125, 0) + vortex Δv (0.0205, −0.1705) on a still particle 150px out
+        const ok = Math.abs(d.dvx - 0.1455) < 0.005 && Math.abs(d.dvy + 0.1705) < 0.005;
+        return { pass: ok, measured: `(${f3(d.dvx)}, ${f3(d.dvy)})`, expected: '(0.1455, −0.1705) ±0.005' };
       }),
     ],
   },
