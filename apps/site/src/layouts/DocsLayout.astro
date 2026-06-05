@@ -101,6 +101,46 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
         });
       });
 
+      // CodeTabs (CodeTabs.astro): framework tab-switch + copy the active panel.
+      // Delegated on document so it survives view-transition swaps; bound under
+      // _sig so the previous page's binding is torn down (no double-fire).
+      document.addEventListener(
+        'click',
+        (e) => {
+          const tab = e.target.closest && e.target.closest('.ct-tab');
+          if (tab) {
+            const wrap = tab.closest('.code-tabs');
+            const i = tab.dataset.i;
+            wrap.querySelectorAll('.ct-tab').forEach((t) =>
+              t.setAttribute('aria-selected', t === tab ? 'true' : 'false'),
+            );
+            wrap.querySelectorAll('.ct-body').forEach((b) => {
+              b.hidden = b.dataset.i !== i;
+            });
+            return;
+          }
+          const copy = e.target.closest && e.target.closest('.ct-copy');
+          if (copy) {
+            const wrap = copy.closest('.code-tabs');
+            const body = wrap.querySelector('.ct-body:not([hidden])');
+            const text = body ? body.innerText : '';
+            if (navigator.clipboard && text) {
+              navigator.clipboard.writeText(text).then(() => {
+                copy.classList.add('copied');
+                const lbl = copy.querySelector('.ct-copy-label');
+                const prev = lbl && lbl.textContent;
+                if (lbl) lbl.textContent = 'Copied';
+                setTimeout(() => {
+                  copy.classList.remove('copied');
+                  if (lbl) lbl.textContent = prev;
+                }, 1100);
+              });
+            }
+          }
+        },
+        { signal: _sig },
+      );
+
       // build the "On this page" TOC from the content's h2/h3
       const content = document.querySelector('.docs-content');
       const toc = document.getElementById('docsToc');

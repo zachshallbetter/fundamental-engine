@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { OPTIONS } from '../../../lib/docs-api.ts';
+import CodeTabs from '../../../components/CodeTabs.astro';
 
 const sig = `import { createField } from 'forces-ui';
 
@@ -23,7 +24,7 @@ const field = createField(canvas, options);   // → FieldHandle`;
 
   <section class="docs-sec">
     <h2>Signature</h2>
-    <pre class="code"><code>{sig}</code></pre>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: sig }]} />
   </section>
 
   <section class="docs-sec">

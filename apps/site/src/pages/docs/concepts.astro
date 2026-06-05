@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
 
 const bodySnippet = `<a
   data-body="attract swirl"  // forces compose, space-separated
@@ -46,7 +47,7 @@ const feedbackSnippet = `.headline {
       can attract and swirl at once. The engine re-reads each body's bounding box every frame,
       so moving the element moves the force.
     </p>
-    <pre class="code"><code>{bodySnippet}</code></pre>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: bodySnippet }]} />
     <p>
       Common attributes — <code>data-strength</code>, <code>data-range</code>,
       <code>data-color</code>, <code>data-spin</code>, <code>data-angle</code> — are read by the
@@ -76,7 +77,7 @@ const feedbackSnippet = `.headline {
       Here the DOM <em>is</em> the simulation's geometry, and the simulation writes back into
       layout and type. Two pipes, every frame:
     </p>
-    <pre class="code"><code>{pipeSnippet}</code></pre>
+    <CodeTabs variants={[{ label: 'Per frame', lang: 'js', code: pipeSnippet }]} />
     <p>
       <strong>Pipe 1 (geometry in):</strong> any DOM change — reflow, transform, resize — is an
       instantaneous change to the force geometry, so animating the DOM animates the sim for free.
@@ -92,7 +93,7 @@ const feedbackSnippet = `.headline {
       eases the gathered density into a CSS custom property <code>--d</code> ∈ [0, 1] on the
       element. Your styles turn that number into anything — weight, glow, scale, colour:
     </p>
-    <pre class="code"><code>{feedbackSnippet}</code></pre>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: feedbackSnippet }]} />
     <p>
       The value is low-pass filtered (a ~0.2s time constant), so it eases rather than jitters.
       This is the sanctioned way to make type react — words gain weight where matter collects.

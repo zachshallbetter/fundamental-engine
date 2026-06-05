@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
 
 const force = `interface Force {
   token: string;                       // unique id, used in data-body
@@ -65,25 +66,25 @@ const env = `interface Env {
   <section class="docs-sec">
     <h2>Force</h2>
     <p>The contract every force implements. <code>apply</code> nudges one particle given one body and the shared env.</p>
-    <pre class="code"><code>{force}</code></pre>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: force }]} />
   </section>
 
   <section class="docs-sec">
     <h2>Body</h2>
     <p>A DOM element as a force source — parsed from <a href="/docs/api/attributes">data-* attributes</a>, then refreshed each frame.</p>
-    <pre class="code"><code>{body}</code></pre>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: body }]} />
   </section>
 
   <section class="docs-sec">
     <h2>Particle</h2>
     <p>A point-mass in the conserved pool.</p>
-    <pre class="code"><code>{particle}</code></pre>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: particle }]} />
   </section>
 
   <section class="docs-sec">
     <h2>Env</h2>
     <p>The shared per-frame environment handed to every force — precomputed vectors plus the engine services.</p>
-    <pre class="code"><code>{env}</code></pre>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: env }]} />
     <div class="callout">
       <b>See also.</b> <a href="/docs/api/options">FieldOptions</a> (creation config) and the
       <a href="/docs/api/handle">FieldHandle</a> (runtime API).
