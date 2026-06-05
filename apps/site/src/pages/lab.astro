@@ -133,6 +133,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
             <button type="button" id="reset" class="tbtn">⟲ Reset</button>
             <button type="button" id="mode" class="tbtn" data-mode="once">↦ Once</button>
             <button type="button" id="ghost" class="tbtn on">◌ Ghost</button>
+            <button type="button" id="field" class="tbtn" title="Overlay the force field across the chamber">▦ Field</button>
             <span class="frame-readout" id="frameReadout">frame 0 / 60</span>
           </div>
 
@@ -140,11 +141,18 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
             <div class="info-col">
               <div class="info-title sweep-head">
                 <span>Parameter sweep</span>
-                <span class="lab-select sweep-select"><select id="sweepParam"></select></span>
+                <span class="sweep-selects">
+                  <span class="lab-select sweep-select"><select id="sweepMetric" aria-label="Sweep measure">
+                    <option value="finalDist">final distance</option>
+                    <option value="delta">frame-0 |Δv|</option>
+                    <option value="passes">tests passed</option>
+                  </select></span>
+                  <span class="lab-select sweep-select"><select id="sweepParam" aria-label="Sweep axis"></select></span>
+                </span>
               </div>
               <canvas id="sweepCanvas"></canvas>
-              <p class="sweep-note">End distance vs <b id="sweepLabel">strength</b> across its range. Each point re-runs
-                the experiment; the dashed line marks the current value.</p>
+              <p class="sweep-note"><span id="sweepMetricLabel">Final distance</span> vs <b id="sweepLabel">strength</b> across its range. Each point
+                re-runs the experiment; the dashed line marks the current value.</p>
             </div>
           </div>
         </div>
@@ -198,7 +206,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
   <SiteFooter />
 
   <script>
-    import { EXPERIMENTS, runScenario, allForces, MANUAL_FORCES } from 'forces-ui';
+    import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from 'forces-ui';
 
     type Any = Record<string, any>;
     const forces = allForces();
@@ -256,6 +264,15 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
       W.__labAbort = _ac;
       if (W.__labTimer) { clearInterval(W.__labTimer); W.__labTimer = 0; }
       const ctx = canvas.getContext('2d')!;
+      // a minimal env for the optional field-vector probe (forceAt samples the field at a point)
+      const fenv: Any = {
+        dx: 0, dy: 0, dist: 1,
+        form: { driftX: 0, wander: 0, orbit: 0, spread: 0, conv: 0 },
+        W: 1200, H: 800, t: 0, frameN: 0, dt: 1, c: 12, G: 1,
+        spark() {}, supernova() {}, spawn() {},
+        neighbors: () => [],
+        grid: () => ({ sample: () => 0, deposit() {}, gradient: () => ({ x: 0, y: 0 }) }),
+      };
 
       let cur = 'attract';
       let overrides: Any = {};
@@ -271,6 +288,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
       let ghostOn = true;
       let ghostTraj: Any = null; // previous setting's trajectory (same force)
       let ghostForce = '';
+      let fieldOn = false; // optional force-field vector overlay
 
       const clone = (o: any) => JSON.parse(JSON.stringify(o));
       const hexA = (h: string, a: number) => {
@@ -395,6 +413,24 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
         ctx.stroke();
       }
 
+      // optional: a faint arrow-grid sampling the force field across the whole chamber,
+      // not just along the particle path (toggled by the Field button). forceAt probes the
+      // field at each world point; pair/grid forces have no point-field so it reads ~0.
+      function drawField(b: Any) {
+        const w = canvas!.clientWidth, h = canvas!.clientHeight, col = color(), stepPx = 34;
+        for (let sx = stepPx / 2; sx < w; sx += stepPx)
+          for (let sy = stepPx / 2; sy < h; sy += stepPx) {
+            const wx = (sx - view.ox) / view.scale, wy = (sy - view.oy) / view.scale;
+            const { fx, fy } = forceAt([b], forces, fenv, wx, wy);
+            const mag = Math.hypot(fx, fy);
+            if (mag < 1e-5) continue;
+            const ux = fx / mag, uy = fy / mag, len = Math.min(stepPx * 0.42, 4 + mag * 120);
+            ctx.strokeStyle = hexA(col, Math.min(0.06 + mag * 1.6, 0.4));
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + ux * len, sy + uy * len); ctx.stroke();
+          }
+      }
+
       function draw() {
         if (!result) return;
         const w = canvas!.clientWidth, h = canvas!.clientHeight;
@@ -408,6 +444,9 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
         const gs = 26;
         for (let gx = (view.ox % gs + gs) % gs; gx < w; gx += gs)
           for (let gy = (view.oy % gs + gs) % gs; gy < h; gy += gs) { ctx.beginPath(); ctx.arc(gx, gy, 0.8, 0, 7); ctx.fill(); }
+
+        // optional force-field overlay (behind rings + tracks)
+        if (fieldOn && !pair) drawField(b);
 
         // range / structure ring
         const [bx, by] = w2s(b.cx, b.cy);
@@ -623,15 +662,20 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
         const sel = $('sweepParam') as HTMLSelectElement | null;
         const key = (sel && sel.value) || specs[0]?.key;
         const m = specs.find((s: Any) => s.key === key) || specs[0]; if (!m) return;
+        const metric = ($('sweepMetric') as HTMLSelectElement | null)?.value || 'finalDist';
         const N = 44, pts: [number, number][] = [];
         for (let i = 0; i <= N; i++) {
           const v = m.min + (m.max - m.min) * (i / N);
           const res = runScenario(buildScenario({ ...overrides, [m.key]: v, count: 1 }), forces);
-          const last = res.trajectory[res.trajectory.length - 1][0];
-          pts.push([v, last ? Math.hypot(last.x - res.body.cx, last.y - res.body.cy) : 0]);
+          let y = 0;
+          if (metric === 'delta') { const d = res.applyDelta?.[0]; y = d ? Math.hypot(d.dvx, d.dvy) : 0; }
+          else if (metric === 'passes') { y = byForce[cur].expectations.filter((e: Any) => { try { return e.check(res).pass; } catch { return false; } }).length; }
+          else { const last = res.trajectory[res.trajectory.length - 1][0]; y = last ? Math.hypot(last.x - res.body.cx, last.y - res.body.cy) : 0; }
+          pts.push([v, y]);
         }
         drawSweep(pts, m, overrides[m.key] != null ? overrides[m.key] : m.def);
         const lbl = $('sweepLabel'); if (lbl) lbl.textContent = m.label;
+        const ml = $('sweepMetricLabel'); if (ml) ml.textContent = metric === 'delta' ? 'Frame-0 |Δv|' : metric === 'passes' ? 'Tests passed' : 'Final distance';
       }
       function drawSweep(pts: [number, number][], m: Any, curVal: number) {
         const cv = $('sweepCanvas') as HTMLCanvasElement | null; if (!cv) return;
@@ -868,8 +912,10 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
           const mb = $('mode')!; mb.textContent = MODE_LABEL[mode]; mb.dataset.mode = mode; mb.classList.toggle('on', mode !== 'once');
         }, { signal: _ac.signal });
         $('ghost')?.addEventListener('click', () => { ghostOn = !ghostOn; if (!ghostOn) ghostTraj = null; $('ghost')!.classList.toggle('on', ghostOn); draw(); }, { signal: _ac.signal });
+        $('field')?.addEventListener('click', () => { fieldOn = !fieldOn; $('field')!.classList.toggle('on', fieldOn); draw(); }, { signal: _ac.signal });
         document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => showTab((b as HTMLElement).dataset.tab as any), { signal: _ac.signal }));
         $('sweepParam')?.addEventListener('change', () => runSweep(), { signal: _ac.signal });
+        $('sweepMetric')?.addEventListener('change', () => runSweep(), { signal: _ac.signal });
         $('export')?.addEventListener('click', exportJSON, { signal: _ac.signal });
         $('report')?.addEventListener('click', copyReport, { signal: _ac.signal });
         $('resetParams')?.addEventListener('click', () => { overrides = {}; setPreset('default'); evaluate(); }, { signal: _ac.signal });
