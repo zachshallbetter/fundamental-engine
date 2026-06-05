@@ -787,7 +787,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
       healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
-      tearBoundByForces(bound, waves, bodies, W, H, env.t, (p) => void store.add(newParticle(p)));
+      tearBoundByForces(bound, waves, bodies, reg.forces, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
     }
     writeFeedback();
