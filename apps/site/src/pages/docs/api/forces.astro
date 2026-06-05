@@ -10,6 +10,8 @@ const families = [
   { key: 'extended', label: 'Designed extended', blurb: 'Pure per-particle effects — bends, gates, phase changes, modifiers.' },
 ] as const;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+// The forces the Field Cell poster engine can render live (cell-force.ts).
+const CELL_FORCES = new Set(['attract', 'repel', 'swirl', 'gravity', 'stream', 'buoyancy', 'tether']);
 ---
 
 <DocsLayout
@@ -38,7 +40,13 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
                 <div class="rc-head">
                   <i class={`fg fg-${f.token}`} style={`--fc:${f.color}`} />
                   <code>{f.token}</code>
+                  {CELL_FORCES.has(f.token) && <span class="rc-live">live</span>}
                 </div>
+                {CELL_FORCES.has(f.token) && (
+                  <div class="rc-cell">
+                    <forces-cell force={f.token} color={f.color} />
+                  </div>
+                )}
                 <code class="rc-formula">{f.formula}</code>
                 <p class="rc-desc">{cap(f.desc)}.</p>
                 <div class="rc-meta">
