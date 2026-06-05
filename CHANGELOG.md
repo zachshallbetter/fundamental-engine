@@ -62,6 +62,11 @@ metrics, and the transformation primitives, not re-building what exists.)
   induced once so matter carries its charge. Induction is a field-level pass (`induceCharges`)
   kept *outside* the integrator the conformance suite runs, so the force's golden contract
   ("ignores neutral matter") stays exactly true while the field gains charged matter to push.
+- **Field Cell + React adapter caught up to the rename.** The Field Cell's poster engine
+  still switched on `vortex`/`spring`, so the Lab's `swirl`/`tether` cells fell through to
+  `attract`; renamed to `swirl`/`tether`. React `<ForcesField>` / `useForcesField` had
+  silently dropped the `palette`, `attention`, and `causality` props; they are now forwarded.
+  The elements package gained a `test` script so its cell-force tests run in CI.
 
 ### Documentation
 
@@ -69,9 +74,16 @@ metrics, and the transformation primitives, not re-building what exists.)
   panel now reads as a swirl — the inward bias surfaces as `+ 0.12` in its formula, with no
   "whirlpool" — and the `absorb` panel uses `accreted / capacity`. The formula handbook's
   `absorb` row, the testing guide (the new safety-sweep layer, the corrected class list, the
-  `294`-test count), the spec's §20.10 (an as-built note on the global cap + safety sweep),
+  test count), the spec's §20.10 (an as-built note on the global cap + safety sweep),
   the possibilities doc, and the README status (`v0.2.0`; packages not yet on npm) are all
   brought in line.
+- **Repo-wide documentation audit.** Swept every doc against the shipped engine. Corrected
+  stale tokens the rename missed (the explainer's `data-body` list, ROADMAP prose, the Field
+  Cell example), the formula handbook's forward registry (`pheromone` → `diffuse`;
+  `diffuse`/`memory` flagged as natural [C]; the spec-only `warp`/`wormhole` and the
+  `supernova` event marked; the budgeted source named `spawn`), the test count (301),
+  ROADMAP's force counts (33), the spec's runtime-field list (drops the removed `b.mass`), and
+  stopped PUBLISHING / SECURITY / the package READMEs from implying the packages are on npm.
 
 ## [0.2.0] — 2026-06-04
 

@@ -115,7 +115,7 @@ Ordered for overnight (highest visible value first):
       out-of-plane sense. In `forces/natural.ts`, golden-tested (§20.10). Completes
       the EM pair with `charge`.
 - [x] **`thermal`** — Langevin/Brownian agitation (`v += √(2T)·ξ`), the honest
-      `wander`; paired with `drag` it's a fluctuation–dissipation thermostat. Pure
+      `wander`; paired with `viscosity` it's a fluctuation–dissipation thermostat. Pure
       `thermalSigma` + isotropic Box–Muller kick, in `forces/natural.ts` (§20.10).
 - [x] **`collide`** — elastic pairwise collision via the live `env.neighbors`: overlapping,
       approaching discs exchange normal momentum (half-impulse each, `e = strength`).
@@ -148,7 +148,7 @@ Ordered for overnight (highest visible value first):
       a path bend with no energy. In `forces/extended.ts`; also restored to the
       `blackhole` preset. Golden-tested (§20.3).
 - [x] **`gate`** — a one-way membrane: passes matter along its heading `n`, reflects
-      wrong-way crossers (`v −= 2(v·n)·n`); box-sized like `reflect`. `forces/extended.ts` (§20.3).
+      wrong-way crossers (`v −= 2(v·n)·n`); box-sized like `wall`. `forces/extended.ts` (§20.3).
 - [x] **`buoyancy`** — constant lift/sink by density difference (`ρ_p = base/(size·(1+heat))`);
       hot/large matter rises, dense settles; `range 0` = global. `forces/extended.ts` (§20.3).
 - [x] **`shear`** — a laminar velocity gradient (Couette): flow speed along the axis
@@ -200,12 +200,12 @@ Ordered for overnight (highest visible value first):
       React is a peer dependency (the one approved framework dep; core stays zero-dep).
       Typecheck + `pnpm -r build` green.
 - [x] **The Field Manual `/reference` — the complete definition, in the UI.** Renders
-      `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 26
+      `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 33
       forces with its law, `data-*` attributes, and description; presets as compositions;
       the `data-when` gates — all over the live field, linked from the home page. Driven by
       the catalog (completeness-tested), so it can't drift from the engine. Opens with a
-      **live, playable `<forces-cell>` demo** + a force switcher (attract/repel/vortex/stream/
-      gravity/spring/buoyancy) — the manual explains by being it.
+      **live, playable `<forces-cell>` demo** + a force switcher (attract/repel/swirl/stream/
+      gravity/tether/buoyancy) — the manual explains by being it.
 - [x] **forces-ui.com rebuilt on the engine.** The home page is now the engine-driven
       manual — the live `<forces-field>` runs the whole engine (its first real consumer);
       the hero `mass.` is a real `data-feedback` body that glows; the Field Cell row demos
@@ -214,7 +214,7 @@ Ordered for overnight (highest visible value first):
       present; copy says nine; a11y + perf passes done. The deep dives are `/reference` (the
       complete definition + a live demo) and `/lab` (interactive). _Optional future expansion:
       the full long-form 4-chapter arc with a demo behind every single concept._
-- [x] **Field Cell** (`<forces-cell force="vortex">`) — an in-frame, container-sized
+- [x] **Field Cell** (`<forces-cell force="swirl">`) — an in-frame, container-sized
       single-force/formation demo surface (§25.1); the embeddable unit for the
       manual's per-concept demos and the poster/render-mode variant.
 - [x] **The Lab** (§14) — `/lab`: pick a force, click to drop a real `[data-body]` node,
@@ -241,7 +241,7 @@ Ordered for overnight (highest visible value first):
       `infrared`, `spectrum`) selectable via the `palette` FieldOption / `<forces-field palette>`
       attribute, and swappable live with `field.setPalette(name | hex[])`; a switcher in the Lab.
       Golden-tested.
-- [x] **Naming/colour reconciliation** (§20.2) — every one of the 26 registered forces now
+- [x] **Naming/colour reconciliation** (§20.2) — every one of the 33 registered forces now
       carries a canonical colour (`FORCE_COLORS` in the manual catalog): the nine mirror
       `forces.config` (pinned by a no-drift test), the designed-extended forces take the §20.2
       registry colours, and the §20.10 naturals get principled clash-free accents. Surfaced as
