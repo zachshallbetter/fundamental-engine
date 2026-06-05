@@ -41,7 +41,7 @@ export interface Particle {
   heat: number;
   /** render-radius basis. */
   size: number;
-  /** the absorb/blackhole body holding this particle, or null (§6.9). */
+  /** the sink/blackhole body holding this particle, or null (§6.9). */
   cap: Body | null;
   /** stable per-particle scatter target fractions, for the `spread` formation (§7). */
   gx?: number;
@@ -70,13 +70,13 @@ export interface Body {
   strength: number;
   /** influence radius d_max, px. */
   range: number;
-  /** capture radius for `absorb`. */
+  /** capture radius for `sink`. */
   absorbR: number;
-  /** load at which an absorber supernovas (was `maxMass`, renamed §21.2). */
+  /** load at which a sink supernovas (was `maxMass`, renamed §21.2). */
   capacity: number;
-  /** vortex/charge sign or spin (±). */
+  /** swirl/charge sign or spin (±). */
   spin: number;
-  /** heading in radians, with its unit vector, for stream/emitter/etc. */
+  /** heading in radians, with its unit vector, for stream/jet/etc. */
   angle: number;
   ux: number;
   uy: number;

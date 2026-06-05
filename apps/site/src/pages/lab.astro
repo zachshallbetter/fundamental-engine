@@ -72,7 +72,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
           id="timeline"
           role="slider"
           tabindex="0"
-          aria-label="Timeline — drag to scrub; markers show where each test passes"
+          aria-label="Timeline — viscosity to scrub; markers show where each test passes"
           aria-valuemin="0"
           aria-valuenow="0"
         >
@@ -503,7 +503,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       }
       // the waveform: each particle's speed across the run, drawn like an oscilloscope
       // trace — the test particle prominent, related particles dim. Reads acceleration
-      // (attract ramps up), bleed (drag decays), oscillation (spring), a bounce spike
+      // (attract ramps up), bleed (viscosity decays), oscillation (tether), a bounce spike
       // (collide), jitter (thermal), at a glance.
       function buildWaveform() {
         const cv = $('tlWave') as HTMLCanvasElement | null;

@@ -1,7 +1,7 @@
 # Physics Workover
 
-Status: in progress. Phase 1 (v0.3) reconciliation has shipped — vortex `0.12`, the
-absorber `--load` export, the global velocity cap, and the conformance safety sweep; the
+Status: in progress. Phase 1 (v0.3) reconciliation has shipped — swirl `0.12`, the
+sink `--load` export, the global velocity cap, and the conformance safety sweep; the
 mode system, medium, metrics, and transformation primitives remain. This is the authority
 for the multi-version physics effort (v0.3 through v0.6). It sits under the spec
 ([`forces-system.md`](forces-system.md)); where this doc and the spec disagree,
@@ -52,10 +52,10 @@ Used throughout docs, implementation, Lab grouping, and tests.
 
 | Layer | Members | Semantics |
 | --- | --- | --- |
-| 1. Canonical UI forces | attract, repel, vortex, stream, drag, emitter, spring, reflect, absorb | designed, bounded, legible interface verbs (stable runtime tokens) |
+| 1. Canonical UI forces | attract, repel, swirl, stream, viscosity, jet, tether, wall, sink | designed, bounded, legible interface verbs (stable runtime tokens) |
 | 2. Natural primitives | gravity, charge, magnetism, thermal, collide, diffuse, propagate, memory | physically coherent laws |
 | 3. Material primitives | cohesion, pressure, link, crystallize, pigment, phase | matter-like behaviour |
-| 4. Boundary and modifiers | reflect, gate, spotlight, lens, shear, screen, absorb-horizon, world-wrap, DOM-rect | shape edges, membranes, cones, horizons, shields |
+| 4. Boundary and modifiers | wall, gate, spotlight, lens, shear, screen, sink-horizon, world-wrap, DOM-rect | shape edges, membranes, cones, horizons, shields |
 | 5. Transformation | morph, warp, fuse, fission, decay, spawn | change arrangement, location, identity, or count |
 | 6. Composites and presets | blackhole, whitehole, wormhole, supernova, fountain, star, pulsar, whirlpool, shielded-chamber | built from primitives, never new engines |
 | 7. Emergent behaviours | orbit, flock, demix, interfere, networks, phase-transitions, settling, accretion-disk, standing-waves | observed, not tokens (unless unavoidable) |
@@ -74,7 +74,7 @@ substrate already ships. Do not re-implement these:
   pre-force velocity and divides the force-induced delta by `p.m`
   (`core/integrator.ts:92-151`). A `mass` field option exists. The integrator
   header comment claiming this "arrives in Phase 6" is stale; it is already in.
-- **`b.accreted`**: the absorber captured-count field (`forces/index.ts:188`),
+- **`b.accreted`**: the sink captured-count field (`forces/index.ts:188`),
   with `capacity` and a conserved `supernova` release. (The `b.mass` to
   `b.accreted` rename is already done in TS.)
 - **Class [S] source and sink budgeting**: a `source()` hook on the `Force`
@@ -86,16 +86,16 @@ substrate already ships. Do not re-implement these:
 Real gaps (the actual work of this workover). Phase 1 (v0.3) has since closed the first
 three — they are kept here, marked **Done**, as the record of what shipped:
 
-- **Done (#113).** Vortex inward bias reconciled `0.6` → `0.12` in code, the formulas
+- **Done (#113).** Swirl inward bias reconciled `0.6` → `0.12` in code, the formulas
   reference, and the conformance check (now tangential dominance, not an exact inward spiral).
 - **Done (#117).** A global velocity cap (`|v| ≤ c`, `c = 12`) plus a conformance safety
   sweep — no NaN/Infinity, finite position, bounded heat, and a stable count across every
   experiment.
-- **Done (#115).** The absorber exports `--load` (`accreted / capacity`), with `--mass`
+- **Done (#115).** The sink exports `--load` (`accreted / capacity`), with `--mass`
   kept as a back-compat alias.
 - `FRICTION = 0.95` is an unnamed global damping constant, not a medium mode.
 - `dt` is frame-based (`0` or `1`), not seconds; no fixed-step accumulator.
-- `drag` is linear only; no quadratic or mixed.
+- `viscosity` is linear only; no quadratic or mixed.
 - No `PhysicsMode`, `IntegratorMode`, or `MediumMode` type system.
 - No `screen` modifier.
 - Modifier order relies on token-iteration order, not a formalized contract.
@@ -106,9 +106,9 @@ three — they are kept here, marked **Done**, as the record of what shipped:
 
 ## Phase 1 reconciliations
 
-### Vortex to 0.12
+### Swirl to 0.12
 
-Canonical vortex should primarily swirl and retain shape lightly. It is not a
+Canonical swirl should primarily swirl and retain shape lightly. It is not a
 spiral drain. The stronger inward pull belongs in a preset (`whirlpool`,
 `blackhole`, `accretion`).
 
@@ -123,12 +123,12 @@ Patch: implementation, docs, formulas reference, conformance expected values. Th
 conformance check moves from an exact inward spiral to **tangential dominance**
 (the swirl component exceeds the inward component by a wide margin).
 
-### Absorber accreted
+### Sink accreted
 
 `b.accreted` is the captured-particle count, not inertial mass. `p.m` is reserved
 for inertial mass. Shipped (#115, #116): the `--load` CSS export (`accreted / capacity`,
 with `--mass` kept as a back-compat alias), the corrected `forces.config.ts` comment, and
-the spec/docs now state that absorb tracks an accreted count.
+the spec/docs now state that sink tracks an accreted count.
 
 ### Global safety invariants
 
@@ -302,12 +302,12 @@ Boundary is a concept category, not a single force.
 
 | Boundary | Mechanism |
 | --- | --- |
-| Wall | reflect |
+| Wall | wall |
 | Membrane | gate |
 | Cone | spotlight |
 | Optical | lens |
 | Shear layer | shear |
-| Event horizon | absorb, blackhole |
+| Event horizon | sink, blackhole |
 | Shield | screen |
 | World edge | toroidal wrap |
 | Content | DOM rect |
@@ -319,7 +319,7 @@ Boundary is a concept category, not a single force.
 - **Global safety** (every force): no NaN, no Infinity, velocity ≤ `c` after
   integration, bounded heat, finite position, stable count unless [S] active.
 - **Conservation**: non-source forces never change count; collide/link/fuse/fission
-  conserve momentum within tolerance and mass where it exists; absorb/supernova
+  conserve momentum within tolerance and mass where it exists; sink/supernova
   release exactly the accreted count.
 - **Modifier determinism**: `spotlight screen resonate attract` behaves the same
   regardless of registration order.
@@ -327,7 +327,7 @@ Boundary is a concept category, not a single force.
   composes with spotlight and resonate, no NaN at zero range.
 - **Entropy**: thermal up, drag down (velocity), diffuse down (density variance),
   align up (coherence), crystallize down (spatial).
-- **Vortex**: tangential dominates the inward component; swirls without immediate
+- **Swirl**: tangential dominates the inward component; swirls without immediate
   collapse; heat rises on engagement; no effect beyond range.
 - **Source**: fountain reaches a steady count under cap and life; spawn, decay,
   fission respect budget.
@@ -345,7 +345,7 @@ modes, then migrate natural primitives, then transform. Do not start by ripping
 out the integrator. Preserve behaviour, add measurement, create compatibility
 seams, then make physical behaviour opt-in and testable.
 
-1. **Audit and reconciliation**: vortex to 0.12; absorber `--load`; global
+1. **Audit and reconciliation**: swirl to 0.12; sink `--load`; global
    safety tests; velocity cap.
 2. **Compatibility infrastructure**: `PhysicsMode`, `IntegratorMode`, `MediumMode`;
    the force-accumulation path behind a compatibility flag, with the legacy
@@ -367,9 +367,9 @@ seams, then make physical behaviour opt-in and testable.
 ## Version mapping
 
 `v0.2.0` is already cut (force-aware Lab controls, quick-pick bands, and the
-drag/emitter/vortex conformance fixes). The brief's batches shift up by one:
+viscosity/jet/swirl conformance fixes). The brief's batches shift up by one:
 
-- **v0.3.0** — reconciliation, safety, boundary, metrics: vortex to 0.12, the
+- **v0.3.0** — reconciliation, safety, boundary, metrics: swirl to 0.12, the
   `--load` export, velocity cap, source-budget guard, modifier contract,
   `screen`, entropy and coherence, boundary docs, safety conformance.
 - **v0.4.0** — physical substrate: the mode type system, `dt` in seconds,
@@ -387,7 +387,7 @@ The designed UI feel stays intact. Canonical forces are not misrepresented as
 literal physics. `attract` stays a bounded UI well; `gravity` is the true softened
 inverse-square force; `charge` is its signed sibling. Drag supports linear and
 quadratic behaviour. Global damping becomes an explicit medium, not an invisible
-hack. Particle mass is first-class. Absorber accretion is not confused with
+hack. Particle mass is first-class. Sink accretion is not confused with
 inertial mass. `dt` is explicit and frame-rate-independent modes exist. Source and
 sink forces cannot grow the pool without budget. `screen` provides boundary and
 shielding behaviour. Entropy and coherence make field state measurable.

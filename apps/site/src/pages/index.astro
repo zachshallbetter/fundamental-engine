@@ -14,7 +14,7 @@ const DEFAULTS = { strength: 1.5, range: 280, spin: 1, angle: -90 };
 const OVERRIDES: Record<string, Record<string, number>> = {
   gravity: { strength: 320, range: 360 },
   thermal: { strength: 2.5, range: 240 },
-  emitter: { strength: 1.3, range: 280 },
+  jet: { strength: 1.3, range: 280 },
 };
 const PRESET_COLORS: Record<string, string> = {
   blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
@@ -200,17 +200,17 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no"><i class="fg fg-reflect" style="--fc:#c4b5fd"></i>06 — Reflection</span>
+          <span class="concept-no"><i class="fg fg-wall" style="--fc:#c4b5fd"></i>06 — Reflection</span>
           <h2>A body can be a wall.</h2>
-          <p>A <strong>reflector</strong> is an axis-aligned box. A crossing particle has its
+          <p>A <strong>wall</strong> is an axis-aligned box. A crossing particle has its
             perpendicular velocity reversed and scaled by elasticity, then is projected back out — a
             hard hit throws a <strong>spark</strong>.</p>
           <div class="formula"><span class="c">vertical edge:</span> <span class="v">vₓ</span> ← −Cᵣ · <span class="v">vₓ</span></div>
           <p class="note">Drag the wall into the drifting particles to deflect them.</p>
         </div>
         <div class="stage">
-          <span class="stage-label">reflector — drag me</span>
-          <div class="body-wall" data-drag data-body="reflect" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">reflect</div>
+          <span class="stage-label">wall — drag me</span>
+          <div class="body-wall" data-drag data-body="wall" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">wall</div>
           <span class="hintline">particles bounce off the bounding box</span>
         </div>
       </div>
@@ -219,19 +219,19 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept" data-form="wells">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no"><i class="fg fg-vortex" style="--fc:#2dd4bf"></i>07 — Vortex</span>
+          <span class="concept-no"><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>07 — Swirl</span>
           <h2>A body can spin the field.</h2>
-          <p>A <strong>vortex</strong> applies a dominantly <strong>tangential</strong> force — a swirl, not
+          <p>A <strong>swirl</strong> applies a dominantly <strong>tangential</strong> force — a swirl, not
             a drain. The inward pull is light (the swirl dominates it roughly eightfold), so matter wheels
             around the body instead of falling in. A tight inward spiral is a preset (<code>whirlpool</code>),
             never the canonical verb.</p>
           <div class="formula"><span class="v">v</span> += (−<span class="v">d̂_y</span>, <span class="v">d̂_x</span>) · <span class="v">S</span> · spin <span class="c">+</span> <span class="v">d̂</span> · <span class="v">S</span> · <span class="c">0.12</span></div>
-          <p class="note">Drag the vortex into the swarm — particles orbit rather than fall in.</p>
-          <button class="agitate" data-agitate="#c-vortex">↯ Agitate the field</button>
+          <p class="note">Drag the swirl into the swarm — particles orbit rather than fall in.</p>
+          <button class="agitate" data-agitate="#c-swirl">↯ Agitate the field</button>
         </div>
         <div class="stage">
-          <span class="stage-label">vortex — drag me</span>
-          <span class="body-chip" id="c-vortex" data-drag data-body="vortex" data-spin="1" data-strength="1" data-range="320" style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-vortex"></i>vortex</span>
+          <span class="stage-label">swirl — drag me</span>
+          <span class="body-chip" id="c-swirl" data-drag data-body="swirl" data-spin="1" data-strength="1" data-range="320" style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-swirl"></i>swirl</span>
           <span class="hintline">tangential force — the field circles, never collapses</span>
         </div>
       </div>
@@ -245,7 +245,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
           <p>A <strong>stream</strong> emits a constant force along a heading — a fan, a jet, a prevailing
             wind. The swarm combs into parallel flow.</p>
           <div class="formula"><span class="v">v</span> += (cos θ, sin θ) · <span class="v">S</span> · (1 − <span class="v">d</span>/d<span class="c">max</span>)</div>
-          <p class="note">Drag the emitter and watch matter streak into lanes downwind.</p>
+          <p class="note">Drag the jet and watch matter streak into lanes downwind.</p>
           <button class="agitate" data-agitate="#c-stream">↯ Agitate the field</button>
         </div>
         <div class="stage">
@@ -259,17 +259,17 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept" data-form="wells">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no"><i class="fg fg-spring" style="--fc:#86e57f"></i>09 — Spring</span>
+          <span class="concept-no"><i class="fg fg-tether" style="--fc:#86e57f"></i>09 — Tether</span>
           <h2>A body can tether the field at a fixed distance.</h2>
-          <p>A <strong>spring</strong> has a <strong>rest length</strong>. Matter that crowds in is pushed
+          <p>A <strong>tether</strong> has a <strong>rest length</strong>. Matter that crowds in is pushed
             out; matter that strays is reeled in — the swarm settles into an orbiting shell.</p>
           <div class="formula"><span class="v">v</span> += û · (<span class="v">d</span> − <span class="v">r</span><span class="c">est</span>) · <span class="v">k</span></div>
           <p class="note">Drag the tether — matter springs back to its radius.</p>
-          <button class="agitate" data-agitate="#c-spring">↯ Agitate the field</button>
+          <button class="agitate" data-agitate="#c-tether">↯ Agitate the field</button>
         </div>
         <div class="stage">
-          <span class="stage-label">spring — drag me</span>
-          <span class="body-chip" id="c-spring" data-drag data-body="spring" data-strength="1" data-range="260" style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-spring"></i>spring</span>
+          <span class="stage-label">tether — drag me</span>
+          <span class="body-chip" id="c-tether" data-drag data-body="tether" data-strength="1" data-range="260" style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-tether"></i>tether</span>
           <span class="hintline">a tether — matter holds a shell at the rest radius</span>
         </div>
       </div>
@@ -278,9 +278,9 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse" data-form="lanes">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no"><i class="fg fg-drag" style="--fc:#8da2c0"></i>10 — Viscosity</span>
+          <span class="concept-no"><i class="fg fg-viscosity" style="--fc:#8da2c0"></i>10 — Viscosity</span>
           <h2>A body can thicken the medium.</h2>
-          <p>A <strong>drag</strong> body neither pulls nor pushes — it <strong>bleeds momentum</strong>,
+          <p>A <strong>viscosity</strong> body neither pulls nor pushes — it <strong>bleeds momentum</strong>,
             as if the field turned to honey. Paired with an attractor it turns a slingshot into a settled
             orbit.</p>
           <div class="formula"><span class="v">v</span> ← <span class="v">v</span> · (1 − <span class="v">k</span>), <span class="c">k ∝ (1 − d/d_max)·S</span></div>
@@ -289,7 +289,7 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
         </div>
         <div class="stage">
           <span class="stage-label">viscosity — move me</span>
-          <span class="body-chip" id="c-drag" data-drag data-body="drag" data-strength="1" data-range="300" style="--cc:#8da2c0; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-drag"></i>drag</span>
+          <span class="body-chip" id="c-drag" data-drag data-body="viscosity" data-strength="1" data-range="300" style="--cc:#8da2c0; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-viscosity"></i>viscosity</span>
           <span class="hintline">a viscous zone — momentum bleeds off, the swarm settles</span>
         </div>
       </div>
@@ -298,17 +298,17 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept" data-form="accretion">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no"><i class="fg fg-absorb" style="--fc:#ff6e9c"></i>11 — Accretion &amp; release</span>
+          <span class="concept-no"><i class="fg fg-sink" style="--fc:#ff6e9c"></i>11 — Accretion &amp; release</span>
           <h2>A body can hold matter — and give it back.</h2>
-          <p>An <strong>absorber</strong> captures particles at its core. They aren’t deleted — they’re
+          <p>An <strong>sink</strong> captures particles at its core. They aren’t deleted — they’re
             <strong>held inside</strong>, and the element inflates as it fills. When it saturates it goes
             supernova: the exact particles are <strong>released radially</strong>.</p>
           <div class="formula"><span class="c">scale =</span> 1 + (<span class="v">accreted</span> / <span class="v">capacity</span>) · 0.45 · <span class="v">captured = released</span></div>
           <p class="note">Nothing is conjured from thin air, and nothing vanishes. Matter changes hands.</p>
         </div>
         <div class="stage">
-          <span class="stage-label">absorber — fills, then pops</span>
-          <div class="body-core" data-drag data-body="absorb attract" data-absorb="64" data-max="30" data-strength="0.8" data-range="360" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">core</div>
+          <span class="stage-label">sink — fills, then pops</span>
+          <div class="body-core" data-drag data-body="sink attract" data-absorb="64" data-max="30" data-strength="0.8" data-range="360" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">core</div>
           <div class="meter" style="--cc:#ff9d5c;"><i></i></div>
           <span class="hintline">matter accumulates, then releases on supernova</span>
         </div>
@@ -318,17 +318,17 @@ let n = 16; // running concept number (canonical nine + substrate end at 12; we 
     <section class="concept reverse" data-form="lanes">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no"><i class="fg fg-emitter" style="--fc:#a78bfa"></i>12 — Emission</span>
+          <span class="concept-no"><i class="fg fg-jet" style="--fc:#a78bfa"></i>12 — Emission</span>
           <h2>A body can be a fountain.</h2>
-          <p>An <strong>emitter</strong> draws surrounding matter into its nozzle and relaunches it as a
+          <p>An <strong>jet</strong> draws surrounding matter into its nozzle and relaunches it as a
             hot jet — the field is <strong>recycled into a stream</strong>, nothing conjured.</p>
           <div class="formula"><span class="c">feed:</span> <span class="v">v</span> += d̂ · S · <span class="c">at nozzle:</span> <span class="v">v</span> = (cos θ, sin θ) · spd</div>
           <p class="note">Agitate to feed it, then watch the jet stream off along its heading.</p>
-          <button class="agitate" data-agitate="#c-emitter">↯ Feed the fountain</button>
+          <button class="agitate" data-agitate="#c-jet">↯ Feed the fountain</button>
         </div>
         <div class="stage">
-          <span class="stage-label">emitter — move me · jets →</span>
-          <span class="body-chip" id="c-emitter" data-drag data-body="emitter" data-angle="0" data-strength="1" data-range="300" style="--cc:#a78bfa; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-emitter"></i>emitter</span>
+          <span class="stage-label">jet — move me · jets →</span>
+          <span class="body-chip" id="c-jet" data-drag data-body="jet" data-angle="0" data-strength="1" data-range="300" style="--cc:#a78bfa; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"><i class="fg fg-jet"></i>jet</span>
           <span class="hintline">a fountain — matter is drawn in and jetted back out</span>
         </div>
       </div>
