@@ -15,7 +15,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
-import { createField, type FieldHandle, type FieldOptions } from 'forces-ui';
+import { createField, FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from 'forces-ui';
 
 export interface ForcesFieldProps extends FieldOptions {
   className?: string;
@@ -24,15 +24,8 @@ export interface ForcesFieldProps extends FieldOptions {
   onReady?: (field: FieldHandle) => void;
 }
 
-const FIXED: CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  width: '100%',
-  height: '100%',
-  zIndex: 0,
-  pointerEvents: 'none',
-  display: 'block',
-};
+// the fixed, click-through surface — shared with the vanilla mount via core/surface.ts.
+const FIXED = FIELD_CANVAS_STYLE as CSSProperties;
 
 export function ForcesField({
   className,

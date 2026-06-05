@@ -104,6 +104,7 @@ export const viscosity: Force = {
 export const jet: Force = {
   token: 'jet',
   label: 'Jet',
+  kinematic: true, // relaunches matter at the nozzle (sets velocity), so mass must not scale it
   apply(b, p, e) {
     const range = b.range * (b.on ? 1.4 : 1);
     if (e.dist >= range) return;
@@ -155,6 +156,7 @@ export const tether: Force = {
 export const wall: Force = {
   token: 'wall',
   label: 'Wall',
+  kinematic: true, // an elastic bounce reflects velocity regardless of inertia
   apply(b, p, e) {
     const pad = 6;
     const ox = Math.abs(p.x - b.cx);

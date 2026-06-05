@@ -5,9 +5,6 @@
  * the document for `[data-body]` bodies, runs the rAF loop (measure → reindex →
  * step → render), and exposes the public `FieldHandle`. Pure glue — the testable
  * physics lives in field-store / integrator / scanner.
- *
- * Phase 1: a minimal particle renderer (dots, heat-tinted) so the field is
- * visibly alive. Forces are Phase 2; the Currents and full rendering are Phase 3.
  */
 
 import type { Body, Env, FieldHandle, FieldOptions, Formation, Particle } from './types.ts';
@@ -61,6 +58,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     accent: opts.accent ?? resolvePalette(opts.palette)[0] ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'dots',
+    waves: opts.waves ?? true, // draw the background Currents (§24); opt-out for the bare field
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
@@ -72,6 +70,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // cached page scroll extent — reading scrollHeight forces a synchronous reflow, so
   // we cache it (refreshed on resize + sampled occasionally) rather than per frame.
   let maxScroll = 1;
+  let lastScrollY = 0; // for the per-frame scroll speed that drives the `scrolling` gate (§5)
   // last variable-font weight written per element — changing fontVariationSettings
   // reflows the text, so we only write it when the rounded weight actually changes.
   const lastWeight = new WeakMap<HTMLElement, number>();
@@ -110,6 +109,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     dt: reduceMotion ? 0 : 1,
     c: 12,
     G: 1,
+    scrollV: 0,
     spark: (x, y, power, color) => spawnSpark(x, y, power, color),
     supernova: (b) => {
       // release exactly what was captured — radial, from the core (§6.9).
@@ -195,8 +195,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     store.clear();
     const n = Math.round(130 * cfg.density);
     for (let i = 0; i < n; i++) store.add(newParticle());
-    waves = buildWaves(WAVE_RGB);
-    bound = buildBound(waves.length, cfg.density, Math.random);
+    // the Currents (§24) are opt-out: with waves off, the field is just the free particles.
+    waves = cfg.waves ? buildWaves(WAVE_RGB) : [];
+    bound = cfg.waves ? buildBound(waves.length, cfg.density, Math.random) : [];
     boundTarget = bound.length;
   }
 
@@ -750,6 +751,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
 
     const scrollY = window.scrollY || 0;
+    // eased page-scroll speed for the `scrolling` data-when gate (§5).
+    env.scrollV = (env.scrollV ?? 0) * 0.7 + Math.abs(scrollY - lastScrollY) * 0.3;
+    lastScrollY = scrollY;
     for (const w of waves) {
       const target = scrollY * (0.025 + w.depth * 0.08); // wave parallax (§24)
       w.offsetY += (target - w.offsetY) * 0.04;
