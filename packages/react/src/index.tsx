@@ -43,6 +43,9 @@ export function ForcesField({
   waves,
   render,
   mass,
+  palette,
+  attention,
+  causality,
 }: ForcesFieldProps): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onReadyRef = useRef(onReady);
@@ -51,11 +54,11 @@ export function ForcesField({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createField(canvas, { accent, density, waves, render, mass });
+    const field = createField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
     onReadyRef.current?.(field);
     return () => field.destroy();
     // re-create only when an engine option actually changes
-  }, [accent, density, waves, render, mass]);
+  }, [accent, density, waves, render, mass, palette, attention, causality]);
 
   return (
     <canvas ref={canvasRef} aria-hidden="true" className={className} style={{ ...FIXED, ...style }} />
@@ -72,16 +75,16 @@ export function useForcesField(opts: FieldOptions = {}): {
 } {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fieldRef = useRef<FieldHandle | null>(null);
-  const { accent, density, waves, render, mass } = opts;
+  const { accent, density, waves, render, mass, palette, attention, causality } = opts;
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createField(canvas, { accent, density, waves, render, mass });
+    const field = createField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
     fieldRef.current = field;
     return () => {
       field.destroy();
       fieldRef.current = null;
     };
-  }, [accent, density, waves, render, mass]);
+  }, [accent, density, waves, render, mass, palette, attention, causality]);
   return { canvasRef, fieldRef };
 }

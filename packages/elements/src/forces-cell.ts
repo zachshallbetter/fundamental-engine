@@ -12,7 +12,7 @@ const clamp = (v: number, lo: number, hi: number): number =>
   Math.max(lo, Math.min(hi, v));
 
 /**
- * `<forces-cell force="vortex" color="#2dd4bf">` — an in-frame field surface (§25.1).
+ * `<forces-cell force="swirl" color="#2dd4bf">` — an in-frame field surface (§25.1).
  *
  * A standalone field sized to its container that renders *one* force, with its own
  * lightweight particle pool, its own pointer interaction, and a lifecycle that pauses
