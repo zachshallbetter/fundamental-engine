@@ -1,0 +1,27 @@
+---
+// A labelled, captioned live <forces-cell> — the sanctioned demo surface (the
+// foreground "poster" engine, separate from the page field). Registered globally
+// by Base.astro's `import '@forces-ui/elements'`. Pointer-repel is built in, so
+// these are interactive: move the cursor through the frame.
+interface Props {
+  /** a cell-supported force: attract, repel, swirl, gravity, stream, buoyancy, tether */
+  force: string;
+  /** dot + label tint */
+  color?: string;
+  /** label (defaults to the force token) */
+  label?: string;
+  /** one-line caption under the frame */
+  caption?: string;
+  /** frame height in px */
+  height?: number;
+}
+const { force, color = '#4da3ff', label = force, caption, height = 140 } = Astro.props;
+---
+
+<figure class="force-cell" style={`--fc:${color}`}>
+  <forces-cell force={force} color={color} style={`height:${height}px`}></forces-cell>
+  <figcaption>
+    <b>{label}</b>
+    {caption && <span>{caption}</span>}
+  </figcaption>
+</figure>
