@@ -32,11 +32,10 @@ export function App() {
   );
 }`;
 
-const coreSnippet = `import { createField } from 'forces-ui';
+const coreSnippet = `import { ForcesField } from '@forces-ui/vanilla';
 
-const field = createField(document.querySelector('canvas'), {
-  accent: '#4da3ff',
-});
+// builds + manages a fixed full-viewport canvas, starts the engine
+const field = new ForcesField({ accent: '#4da3ff' });
 
 // any [data-body] element on the page becomes a force the field reacts to.
 // after adding bodies to the DOM, rescan:
@@ -70,6 +69,10 @@ field.scan();`;
       <div class="pkg">
         <code class="install" data-copy="npm i @forces-ui/react">npm i @forces-ui/react</code>
         <span>the <code>&lt;ForcesField&gt;</code> React component + <code>useForcesField</code> hook</span>
+      </div>
+      <div class="pkg">
+        <code class="install" data-copy="npm i @forces-ui/vanilla">npm i @forces-ui/vanilla</code>
+        <span>the framework-free <code>ForcesField</code> class + <code>mountField()</code> for plain TypeScript</span>
       </div>
       <div class="pkg">
         <code class="install" data-copy="npm i forces-ui">npm i forces-ui</code>
@@ -134,11 +137,15 @@ field.scan();`;
       </a>
       <a class="next-card" href="/docs/guides/web-component">
         <b>Framework guides</b>
-        <span>Web component, React, and the vanilla core — pick your entry point.</span>
+        <span>Web component, TypeScript, React, and the core engine — pick your entry point.</span>
       </a>
       <a class="next-card" href="/lab">
         <b>The Lab</b>
         <span>A physics detector — fire a particle into any force and verify its behavior.</span>
+      </a>
+      <a class="next-card" href="/design">
+        <b>Design system</b>
+        <span>The visual language behind the field — tokens, the force palette, type, and glyphs.</span>
       </a>
     </div>
   </section>
