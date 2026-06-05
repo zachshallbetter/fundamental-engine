@@ -513,15 +513,15 @@
 
 /* accretion core + meter */
 .body-core {
-  --mass: 0;
+  --load: 0;
   width: 96px;
   height: 96px;
   border-radius: 50%;
   cursor: grab;
   touch-action: none;
   border: 1px dashed color-mix(in srgb, var(--cc, #ff9d5c) 70%, transparent);
-  box-shadow: 0 0 calc(20px + var(--mass) * 80px) -6px var(--cc, #ff9d5c);
-  transform: scale(calc(1 + var(--mass) * 0.45));
+  box-shadow: 0 0 calc(20px + var(--load) * 80px) -6px var(--cc, #ff9d5c);
+  transform: scale(calc(1 + var(--load) * 0.45));
   transition: transform 0.2s linear;
   display: grid;
   place-items: center;

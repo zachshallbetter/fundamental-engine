@@ -506,7 +506,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
       if (b.capacity > 0 && b.tokens.indexOf('absorb') >= 0) {
-        b.el.style.setProperty('--mass', clamp(b.accreted / b.capacity, 0, 1).toFixed(3));
+        // accretion load ∈ [0,1] — the canonical author-facing var is `--load`; `--mass`
+        // is kept as a back-compat alias (§21.2). This is the fill fraction, not the
+        // captured count `b.accreted`.
+        const load = clamp(b.accreted / b.capacity, 0, 1).toFixed(3);
+        b.el.style.setProperty('--load', load);
+        b.el.style.setProperty('--mass', load);
       }
     }
   }
