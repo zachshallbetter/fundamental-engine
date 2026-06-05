@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
 
 const word = `<h1>Every element has
   <em data-body="attract" data-strength="0.9" data-range="320" data-feedback>mass</em>.
@@ -59,13 +60,13 @@ document.addEventListener('click', (e) => {
   <section class="docs-sec">
     <h2>A glowing hero word</h2>
     <p>The canonical reciprocity effect — a word gains weight and glow where matter gathers.</p>
-    <pre class="code"><code>{word}</code></pre>
+    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: word }]} />
   </section>
 
   <section class="docs-sec">
     <h2>A reacting card grid</h2>
     <p>Give each card a gentle attractor and let its <code>--d</code> drive a subtle lift and edge glow.</p>
-    <pre class="code"><code>{grid}</code></pre>
+    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: grid }]} />
   </section>
 
   <section class="docs-sec">
@@ -74,13 +75,13 @@ document.addEventListener('click', (e) => {
       With <code>attention</code> on, engaging one link pulls the field's finite budget toward it —
       so the nav physically can't emphasize two items at once.
     </p>
-    <pre class="code"><code>{nav}</code></pre>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: nav }]} />
   </section>
 
   <section class="docs-sec">
     <h2>A burst on click</h2>
     <p>Drive the field from your own events. <code>burst</code> takes viewport coordinates.</p>
-    <pre class="code"><code>{burst}</code></pre>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: burst }]} />
     <div class="callout">
       <b>Authoring a custom force?</b> A force is just an object implementing the
       <a href="/docs/api/types">Force contract</a> — <code>{'{ token, apply(b, p, env) }'}</code>.
