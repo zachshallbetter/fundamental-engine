@@ -2,12 +2,12 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 
 const bodySnippet = `<a
-  data-body="attract swirl"   // forces compose, space-separated
+  data-body="attract swirl"  // forces compose, space-separated
   data-strength="0.9"
   data-range="320"
   data-color="#4da3ff"
-  data-when="active"           // gate: only acts while engaged
-  data-feedback                // opt into density write-back
+  data-when="active"         // gate: only acts while engaged
+  data-feedback              // opt into density write-back
 >link</a>`;
 
 const pipeSnippet = `// DOM → field (every frame, per body)
@@ -119,7 +119,7 @@ const feedbackSnippet = `.headline {
       </li>
       <li>
         <b>Render modes</b> — the same physics drawn differently (dots, trails, links,
-        streamlines). <a href="/docs/api/catalog">Reference →</a>
+        metaballs, voronoi, streamlines). <a href="/docs/api/catalog">Reference →</a>
       </li>
     </ul>
   </section>
