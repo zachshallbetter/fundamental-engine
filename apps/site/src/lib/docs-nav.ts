@@ -18,6 +18,7 @@ export const DOCS_NAV: DocGroup[] = [
     title: 'Getting started',
     items: [
       { href: '/docs', label: 'Overview', ready: true },
+      { href: '/docs/tutorial', label: 'Your first field', ready: true },
       { href: '/docs/concepts', label: 'Concepts', ready: true },
     ],
   },
