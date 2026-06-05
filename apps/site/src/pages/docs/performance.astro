@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
 
 const bench = `scale     load              ms/frame    fps      throughput
 light     800p ×  3b          0.25      ~3900     ~9.5M int/s
@@ -35,7 +36,7 @@ stress    10000p × 16b        6.11       ~164     ~26M  int/s
   <section class="docs-sec">
     <h2>Benchmark</h2>
     <p>The integrator hot path, measured across scales well beyond a real page:</p>
-    <pre class="code"><code>{bench}</code></pre>
+    <CodeTabs variants={[{ label: 'Benchmark', lang: 'text', code: bench }]} />
     <p>
       A real page runs ~130 particles against a handful of bodies — the "light" row and below — so
       the simulation is a rounding error; the render and layout discipline above are what keep it

@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
 import { MANUAL_FORCES } from 'forces-ui';
 
 // Getting started — install + a 60-second quickstart for every entry point + the
@@ -79,15 +80,17 @@ field.scan();`;
 
   <section class="docs-sec">
     <h2>Quick start</h2>
-
-    <h3>Web component — any framework or plain HTML</h3>
-    <pre class="code"><code>{htmlSnippet}</code></pre>
-
-    <h3>React</h3>
-    <pre class="code"><code>{reactSnippet}</code></pre>
-
-    <h3>Vanilla — bring your own canvas</h3>
-    <pre class="code"><code>{coreSnippet}</code></pre>
+    <p>
+      The same field, three ways — pick the tab that matches your stack. Each snippet is the
+      whole setup: register the field, then mark an element as a body. Hit <b>Copy</b> and paste.
+    </p>
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'html', code: htmlSnippet },
+        { label: 'React', lang: 'tsx', code: reactSnippet },
+        { label: 'Vanilla', lang: 'ts', code: coreSnippet },
+      ]}
+    />
 
     <div class="callout">
       <b>The field reacts to the page.</b> A single full-viewport canvas runs behind your

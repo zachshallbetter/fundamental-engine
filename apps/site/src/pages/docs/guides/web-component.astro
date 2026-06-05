@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
 
 const setup = `<script type="module">
   import '@forces-ui/elements';
@@ -60,7 +61,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
       your page and runs the engine. It's decorative, so it marks itself
       <code>aria-hidden</code> automatically.
     </p>
-    <pre class="code"><code>{setup}</code></pre>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: setup }]} />
   </section>
 
   <section class="docs-sec">
@@ -69,7 +70,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
       The field reacts to every <code>[data-body]</code> element on the page (the field-reacts
       law). Forces compose, space-separated; each force reads only the attributes it uses.
     </p>
-    <pre class="code"><code>{bodies}</code></pre>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: bodies }]} />
     <div class="callout">
       <b>Rescan after DOM changes.</b> The engine reads bodies on mount. If you add or remove
       <code>[data-body]</code> elements later (a route change, a list update), call
@@ -98,7 +99,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
       The full <a href="/docs/api/handle">FieldHandle</a> is proxied onto the element, so any
       page can drive the field after it mounts:
     </p>
-    <pre class="code"><code>{methods}</code></pre>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: methods }]} />
   </section>
 
   <section class="docs-sec">
