@@ -143,8 +143,9 @@ export const FORCES: readonly ForceDef[] = [
     discipline: 'Attention',
     verb: 'holds, then releases',
     body: 'absorb attract',
-    // NOTE: `data-max` (capacity) and `--mass`/`b.mass` (accreted) are pending
-    // the §21.2 rename — kept here as the prototype's authoring attrs.
+    // §21.2 naming: the absorber's captured count is `b.accreted` (was `b.mass`), its
+    // limit is `capacity` (was `maxMass`), and the CSS fill var is `--load` (alias
+    // `--mass`). `data-max` is the authoring alias for capacity.
     attrs: {
       'data-absorb': '64',
       'data-max': '30',
