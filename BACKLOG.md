@@ -6,17 +6,44 @@ The running, granular queue. Strategic context lives in
 
 Legend: `[ ]` planned · `[~]` in progress · `[x]` done (then moved to the changelog).
 
+## Physics workover — designed / natural / hybrid substrate
+
+The major current thrust. Full plan and as-built audit in
+[`docs/physics-workover.md`](docs/physics-workover.md). Ships across v0.3 to v0.6.
+
+**v0.3 — reconciliation, safety, boundary, metrics (the live queue):**
+
+- [ ] **Vortex to 0.12.** Revert the #110 inward bias (`0.6` → `0.12`) to match the spec;
+      the conformance check becomes tangential dominance, not an exact inward spiral.
+- [ ] **Absorber `--accreted`.** Export `--accreted` (keep `--mass` as a temporary alias);
+      fix the stale `forces.config.ts` comment. (`b.accreted` already exists in TS.)
+- [ ] **Velocity cap + safety invariants.** A hard `velocityCap`; conformance guards for no
+      NaN / no Infinity / finite position / bounded velocity + heat / stable count.
+- [ ] **Source-budget guard.** Dev-mode warn + safe cap when an [S] force has no
+      `data-life` / `data-cap` / `data-budget` / `data-sink`.
+- [ ] **Modifier contract + parser.** Classify tokens into `{modifiers, forces, sources}`;
+      formalize order `spotlight → screen → resonate → core`.
+- [ ] **`screen` modifier.** Attenuate sibling forces inside a radius (quiet zones, text shielding).
+- [ ] **Entropy + coherence metrics.** Measured, not forces; exported as `--entropy` /
+      `--coherence` / `--temperature` / `--density`.
+- [ ] **Boundary docs.** The boundary-type table (wall / membrane / cone / horizon / shield / edge).
+
+**v0.4 — physical substrate:** `PhysicsMode` / `IntegratorMode` / `MediumMode`; real `dt` in
+seconds + fixed-step accumulator; semi-implicit Euler with `dt`; `FRICTION` → `designed-damping`
+medium; linear / quadratic / mixed drag; epsilon softening rules; frame-rate independence.
+(First-class mass and softened gravity/charge already ship.)
+
+**v0.5 — transformation:** `warp`, `wormhole`, `fuse`, `decay`, `fission`, `phase` (see Engine — forces below).
+
+**v0.6 — scale + natural Lab:** velocity-Verlet, the natural-physics Lab preset, record/replay,
+fuzzing, the CPU/GPU parity path, advanced overlays.
+
 ## Lab — the physics detector
 
-- [ ] **Force-aware controls.** Drive the tune panel off each force's real `attrs` from the
-      catalog (angle, spin, r₀, ρ₀, species, targets, …) instead of a fixed
-      strength/range/vx/vy set. (e.g. `shear` should expose `angle`, its defining knob.)
-- [ ] **Control definitions.** Per-control symbol + units + a force-specific caption; a live
-      formula line (from `MANUAL_FORCES.formula`) with the current values substituted; a
-      default tick on each slider track.
-- [ ] **Quick-pick presets/tags.** Per-control value bands (`weak · default · strong ·
-      extreme`); curated per-force scenario tags (e.g. collide → `head-on · glancing`);
-      save-and-tag custom configs with a note (`good · bad · edge`), kept in a list.
+- [~] **Quick-pick scenario tags + saved configs.** Value bands shipped (#107). Still want
+      curated per-force scenario tags (e.g. collide → `head-on · glancing`) and save-and-tag
+      custom configs with a note (`good · bad · edge`), kept in a list. (Force-aware controls
+      and control definitions shipped in #106.)
 - [ ] **Particle placement + seed.** Placement mode (`clone · fan · ring · scatter`) with a
       seed and a re-roll button; carry the seed in COPY LINK / EXPORT.
 - [ ] **Direct manipulation.** Drag the particle start, drag a velocity arrow, drag the
@@ -29,9 +56,9 @@ Legend: `[ ]` planned · `[~]` in progress · `[x]` done (then moved to the chan
 ## Engine — forces
 
 - [ ] **`warp` `[A · paired]`** + a `Body.pair` field (scanner resolves `data-pair`); the
-      `wormhole` preset then composes for free.
+      `wormhole` preset then composes for free. (Physics workover v0.5.)
 - [ ] **Transmutation** — `fuse` `[B]` (2 → 1, mass-conserving sink), `fission` / `decay`
-      `[S]` (1 → 2, budgeted source).
+      `[S]` (1 → 2, budgeted source). (Physics workover v0.5; conservation tests required.)
 
 ## Engine — reciprocal channels (input → physics)
 
