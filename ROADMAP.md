@@ -1,9 +1,9 @@
 # Roadmap — the refactor to world-class
 
-The prototype (`docs/reference/`) is plain global-script DOM + one `rAF` loop:
-brilliant, but untyped, monolithic, and bound to one page. The goal is a clean,
-typed, modular, framework-agnostic engine that realizes the spec
-(`docs/forces-system.md`) without losing the feel.
+It began as a plain global-script DOM prototype with one `rAF` loop: brilliant, but
+untyped, monolithic, and bound to one page. The goal is a clean, typed, modular,
+framework-agnostic engine that realizes the spec (`docs/forces-system.md`) without
+losing the feel.
 
 Guiding principles:
 

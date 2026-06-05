@@ -8,8 +8,8 @@
 > without re-reading the prototype.
 
 Status: **definition only** — nothing here is wired into the React app yet. The
-prototype lives in the Claude Design handoff bundle; this document is the spec
-extracted from it.
+prototype lives in the original design-system handoff bundle; this document is the
+spec extracted from it.
 
 Source of authority:
 - **Force identity** (id, color, discipline, default attrs, law) → `ds-data.js`
@@ -1750,7 +1750,7 @@ Today `field.js` hardcodes `waveColors = ['#4da3ff', '#2dd4bf', '#a78bfa']` — 
 ## 25. Additive concepts from the design system
 
 > **Precedence:** §1–§24 are the authority. The items here are *additive* concepts
-> mined from the design-system prototype (`docs/reference/ds-*`); where anything
+> mined from the original design-system prototype; where anything
 > conflicts with the canonical spec, **the spec wins**. In particular the Field
 > Cell runs a *deliberately simplified* demo engine — its constants are **not**
 > canonical; the authoritative force math stays §6.

@@ -60,7 +60,6 @@ docs/
   forces-possibilities.md  roadmap, DOM⇄Canvas concepts, the extended vocabulary
   forces-formulas.md       complete reference formulas & attributes handbook
   forces-tests.md          testing, validation, and physics conformance guide
-  reference/               the original prototype — read-only source of authority
 packages/
   core/      forces-ui            the engine — catalog, contracts, FieldStore, forces
              src/config/forces.config.ts   forces · formations · conditions
