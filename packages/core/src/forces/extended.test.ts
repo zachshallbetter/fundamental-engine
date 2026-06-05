@@ -163,7 +163,7 @@ test('lens bend vanishes at the rim and is inert beyond range', () => {
   assert.equal(beyond.vy, 0);
 });
 
-// gate is box-sized (like reflect): cx/cy = 0, hw=50, hh=20; n from ux/uy.
+// gate is box-sized (like wall): cx/cy = 0, hw=50, hh=20; n from ux/uy.
 const gateBody = (o: Partial<Body> = {}) => body({ hw: 50, hh: 20, ux: 1, uy: 0, ...o });
 
 test('gate reflects a wrong-way crosser back along its heading (§20.3)', () => {

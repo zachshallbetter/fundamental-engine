@@ -46,8 +46,8 @@
   box-shadow: 0 0 6px currentColor;
 }
 
-/* vortex — a spinning broken conic ring */
-.fg-vortex::before {
+/* swirl — a spinning broken conic ring */
+.fg-swirl::before {
   inset: 0;
   border-radius: 50%;
   background: conic-gradient(
@@ -75,16 +75,16 @@
   box-shadow: 0 0 6px currentColor;
 }
 
-/* drag — a thick dim circle (a viscous zone) */
-.fg-drag::before {
+/* viscosity — a thick dim circle (a viscous zone) */
+.fg-viscosity::before {
   inset: 1px;
   border-radius: 50%;
   border: 2px solid currentColor;
   opacity: 0.7;
 }
 
-/* emitter — a nozzle dot + a triangle jet */
-.fg-emitter::before {
+/* jet — a nozzle dot + a triangle jet */
+.fg-jet::before {
   left: 1px;
   top: 4.5px;
   width: 5px;
@@ -93,7 +93,7 @@
   background: currentColor;
   box-shadow: 0 0 6px currentColor;
 }
-.fg-emitter::after {
+.fg-jet::after {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
@@ -102,8 +102,8 @@
   border-bottom: 3px solid transparent;
 }
 
-/* spring — a dot inside a faint ring (tether at rest length) */
-.fg-spring::before {
+/* tether — a dot inside a faint ring (tether at rest length) */
+.fg-tether::before {
   left: 50%;
   top: 50%;
   width: 3px;
@@ -113,22 +113,22 @@
   background: currentColor;
   box-shadow: 0 0 5px currentColor;
 }
-.fg-spring::after {
+.fg-tether::after {
   inset: 0;
   border-radius: 50%;
   border: 1px solid currentColor;
   opacity: 0.5;
 }
 
-/* reflect — a rounded-square wall */
-.fg-reflect::before {
+/* wall — a rounded-square box */
+.fg-wall::before {
   inset: 2px;
   border-radius: 3px;
   border: 1.5px solid currentColor;
 }
 
-/* absorb — a dashed accretion ring */
-.fg-absorb::before {
+/* sink — a dashed accretion ring */
+.fg-sink::before {
   inset: 1px;
   border-radius: 50%;
   border: 1px dashed currentColor;
