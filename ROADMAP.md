@@ -15,7 +15,7 @@ Guiding principles:
 
 ## Phase 0 — Foundation ✅ (in progress)
 
-- [x] Project scaffold (TS, tsup, vitest, strict).
+- [x] Project scaffold (TS, `tsc`, `node:test`, strict).
 - [x] Canonical catalog typed from `ds-data.js` → `config/forces.config.ts`.
 - [x] Core contracts → `core/types.ts` (Particle · Body · Env · Force · Agent).
 - [x] `pnpm install` + green `typecheck` / `test`.

@@ -94,6 +94,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let movers: { el: HTMLElement; o: ElementOffset; mEl: number; layout: boolean }[] = [];
   let sparks: { x: number; y: number; vx: number; vy: number; life: number; c: RGB }[] = [];
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
+  let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = performance.now();
 
@@ -320,6 +321,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       el.addEventListener('pointerleave', leave);
       el.addEventListener('focus', enter);
       el.addEventListener('blur', leave);
+      engaged.push({ el, enter, leave });
     });
   }
 
@@ -913,6 +915,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       window.removeEventListener('scroll', scrollHandler);
       document.removeEventListener('visibilitychange', onVisibility);
       for (const ev of inputEvents) window.removeEventListener(ev, markInput);
+      // release the per-element [data-hot] engagement listeners, so repeated create/destroy
+      // on the same DOM doesn't accumulate handlers (§18 teardown).
+      for (const e of engaged) {
+        e.el.removeEventListener('pointerenter', e.enter);
+        e.el.removeEventListener('pointerleave', e.leave);
+        e.el.removeEventListener('focus', e.enter);
+        e.el.removeEventListener('blur', e.leave);
+        delete e.el.dataset.fxEngaged;
+      }
+      engaged = [];
       store.clear();
     },
   };
