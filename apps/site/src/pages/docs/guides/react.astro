@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
 
 const basic = `import { ForcesField } from '@forces-ui/react';
 
@@ -58,7 +59,7 @@ function Background() {
       the web component and <code>mountField()</code> wrap. Bodies are still plain
       <code>[data-body]</code> elements anywhere in your tree.
     </p>
-    <pre class="code"><code>{basic}</code></pre>
+    <CodeTabs variants={[{ label: 'React', lang: 'tsx', code: basic }]} />
     <p>
       It accepts every <a href="/docs/api/options">FieldOptions</a> prop
       (<code>accent</code>, <code>density</code>, <code>waves</code>, <code>render</code>,
@@ -74,7 +75,7 @@ function Background() {
       your elements are in the DOM. <code>onReady</code> hands you the live
       <a href="/docs/api/handle">FieldHandle</a>:
     </p>
-    <pre class="code"><code>{onReady}</code></pre>
+    <CodeTabs variants={[{ label: 'React', lang: 'tsx', code: onReady }]} />
   </section>
 
   <section class="docs-sec">
@@ -83,6 +84,6 @@ function Background() {
       For full control of the canvas element, use the hook form. It returns a
       <code>canvasRef</code> to attach and a <code>fieldRef</code> holding the handle.
     </p>
-    <pre class="code"><code>{hook}</code></pre>
+    <CodeTabs variants={[{ label: 'React', lang: 'tsx', code: hook }]} />
   </section>
 </DocsLayout>
