@@ -342,6 +342,34 @@
   margin-bottom: 0.65rem;
   overflow-wrap: anywhere;
 }
+/* quick-pick value bands under each control */
+.param .bands {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.1rem;
+}
+.param .band {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  padding: 0.14rem 0.42rem;
+  border-radius: 5px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.param .band:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.param .band.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
 .param .val {
   font-family: var(--mono);
   font-size: 0.66rem;
