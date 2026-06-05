@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
 import { MANUAL_FORCES } from 'forces-ui';
 import '../../../styles/force-glyphs.css';
 
@@ -55,4 +56,12 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
       );
     })
   }
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/attributes', label: 'data-* attributes' },
+      { href: '/docs/api/presets', label: 'Presets' },
+      { href: '/docs/api/catalog', label: 'Conditions, formations & modes' },
+    ]}
+  />
 </DocsLayout>

@@ -2,6 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { OPTIONS } from '../../../lib/docs-api.ts';
 import CodeTabs from '../../../components/CodeTabs.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
 
 const sig = `import { createField } from 'forces-ui';
 
@@ -46,4 +47,12 @@ const field = createField(canvas, options);   // → FieldHandle`;
       }
     </div>
   </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/handle', label: 'FieldHandle' },
+      { href: '/docs/api/attributes', label: 'data-* attributes' },
+      { href: '/docs/api/types', label: 'Types' },
+    ]}
+  />
 </DocsLayout>
