@@ -128,6 +128,46 @@ export class ForcesField extends HTMLElementBase {
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
     if (!this.hasAttribute('aria-hidden')) this.setAttribute('aria-hidden', 'true');
+    this.start();
+  }
+
+  disconnectedCallback(): void {
+    this.field?.destroy();
+    this.field = undefined;
+  }
+
+  /**
+   * React to live attribute changes after mount (§13). The colour / render / toggle attributes
+   * apply through the field's setters; the construction-time ones (`density`, `waves`, `mass`)
+   * rebuild the field. Fires before `connectedCallback` for the initial attributes too, which the
+   * `this.field` guard skips — the first mount reads every attribute itself.
+   */
+  attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {
+    if (!this.field || oldVal === newVal) return;
+    switch (name) {
+      case 'accent':
+        this.field.setAccent(this.accent);
+        break;
+      case 'palette':
+        this.field.setPalette(this.palette ?? 'ours');
+        break;
+      case 'render':
+        this.field.setRender(this.renderMode);
+        break;
+      case 'attention':
+        this.field.setAttention(this.attention);
+        break;
+      case 'causality':
+        this.field.setCausality(this.causality);
+        break;
+      default: // density / waves / mass are construction-time → rebuild
+        this.field.destroy();
+        this.start();
+    }
+  }
+
+  /** (re)create the engine on the canvas, reading the current attributes. */
+  private start(): void {
     this.field = createField(this.canvas, {
       // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
       accent: this.getAttribute('accent') ?? undefined,
@@ -139,11 +179,6 @@ export class ForcesField extends HTMLElementBase {
       attention: this.attention,
       causality: this.causality,
     });
-  }
-
-  disconnectedCallback(): void {
-    this.field?.destroy();
-    this.field = undefined;
   }
 }
 
