@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
 
 const force = `interface Force {
   token: string;                       // unique id, used in data-body
@@ -85,9 +86,13 @@ const env = `interface Env {
     <h2>Env</h2>
     <p>The shared per-frame environment handed to every force — precomputed vectors plus the engine services.</p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: env }]} />
-    <div class="callout">
-      <b>See also.</b> <a href="/docs/api/options">FieldOptions</a> (creation config) and the
-      <a href="/docs/api/handle">FieldHandle</a> (runtime API).
-    </div>
   </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/options', label: 'createField & options' },
+      { href: '/docs/api/handle', label: 'FieldHandle' },
+      { href: '/docs/api/forces', label: 'Forces' },
+    ]}
+  />
 </DocsLayout>

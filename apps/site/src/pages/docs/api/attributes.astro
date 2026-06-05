@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { ATTRS } from '../../../lib/docs-api.ts';
+import SeeAlso from '../../../components/SeeAlso.astro';
 import { MANUAL_FORCES } from 'forces-ui';
 import '../../../styles/force-glyphs.css';
 
@@ -71,4 +72,12 @@ const families = [
       ))
     }
   </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/api/forces', label: 'Forces' },
+      { href: '/docs/api/options', label: 'createField & options' },
+      { href: '/docs/api/catalog', label: 'Conditions, formations & modes' },
+    ]}
+  />
 </DocsLayout>
