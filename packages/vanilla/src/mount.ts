@@ -10,11 +10,25 @@
  * For object-oriented ergonomics (and driving a canvas you own), see the `ForcesField` class.
  */
 
-import { createField, type FieldHandle, type FieldOptions } from 'forces-ui';
+import { createField, FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from 'forces-ui';
 
 export interface MountOptions extends FieldOptions {
   /** where to append the canvas; defaults to `document.body`. */
   target?: HTMLElement;
+}
+
+/**
+ * Throw a clear error when there is no DOM (server-side render or build step). The field is a
+ * browser-only, client-side effect; construct it on the client (a `useEffect` / `onMount` /
+ * "client only" boundary), never during SSR. Call before any `document`/`window` access.
+ */
+export function assertBrowser(): void {
+  if (typeof document === 'undefined' || typeof window === 'undefined') {
+    throw new Error(
+      'forces-ui: the field runs in the browser only. Create it on the client (inside ' +
+        'useEffect / onMount / a "client only" boundary), not during server-side rendering.'
+    );
+  }
 }
 
 /**
@@ -24,14 +38,14 @@ export interface MountOptions extends FieldOptions {
 export function makeFieldCanvas(target: HTMLElement = document.body): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true'); // decorative field (§18 a11y)
-  canvas.style.cssText =
-    'position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block';
+  canvas.style.cssText = FIELD_CANVAS_CSS; // single source of truth (core/surface.ts)
   target.appendChild(canvas);
   return canvas;
 }
 
 /** Mount and start the field; returns the handle. `destroy()` also removes the canvas. */
 export function mountField(opts: MountOptions = {}): FieldHandle {
+  assertBrowser();
   const { target = document.body, ...fieldOpts } = opts;
   const canvas = makeFieldCanvas(target);
   const field = createField(canvas, fieldOpts);

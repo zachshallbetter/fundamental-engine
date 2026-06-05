@@ -38,3 +38,8 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      # Verify each publishable package's entry points resolve to built files and import
+      # cleanly — catches exports-map / `files` mistakes before they reach npm.
+      - name: Smoke-check dist
+        run: pnpm check:dist

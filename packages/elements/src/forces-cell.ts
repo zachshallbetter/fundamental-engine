@@ -1,4 +1,5 @@
 import { cellForce } from './cell-force.ts';
+import { HTMLElementBase } from './base.ts';
 
 /** A single particle in the cell's pool (frame-local coordinates). */
 interface CellParticle {
@@ -23,7 +24,7 @@ const clamp = (v: number, lo: number, hi: number): number =>
  * - `IntersectionObserver` gates the rAF loop — paused when off-screen.
  * - Honours `prefers-reduced-motion`: renders one static frame, no animation.
  */
-export class ForcesCell extends HTMLElement {
+export class ForcesCell extends HTMLElementBase {
   static readonly observedAttributes = ['force', 'color', 'count'];
 
   private readonly canvas: HTMLCanvasElement;
