@@ -217,8 +217,11 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
 
       function buildScenario(ov: Any = overrides) {
         const s = clone(byForce[cur].scenario);
-        if (ov.strength != null && s.body.strength != null) s.body.strength = ov.strength;
-        if (ov.range != null && s.body.range != null) s.body.range = ov.range;
+        const B: Any = s.body;
+        if (ov.strength != null && B.strength != null) B.strength = ov.strength;
+        if (ov.range != null && B.range != null) B.range = ov.range;
+        if (ov.spin != null) B.spin = ov.spin;
+        if (ov.angle != null) B.angle = (ov.angle * Math.PI) / 180; // the slider is degrees
         if (ov.vx != null && s.particles[0]) s.particles[0].vx = ov.vx;
         if (ov.vy != null && s.particles[0]) s.particles[0].vy = ov.vy;
         if (ov.frames != null) s.frames = ov.frames; // unlocked free-run extends this
@@ -258,7 +261,7 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         // exact-formula checks are pinned to the experiment's default attributes; once you
         // tune a parameter they go inactive (the physics is still right — the invariants
         // prove it) and drop out of the verdict.
-        const tuned = ['strength', 'range', 'vx', 'vy'].some((k) => overrides[k] != null);
+        const tuned = ['strength', 'range', 'spin', 'angle', 'vx', 'vy'].some((k) => overrides[k] != null);
         checks = byForce[cur].expectations.map((e: Any) => {
           const r = e.check(result);
           return {
@@ -556,8 +559,11 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
       function sweepable() {
         const s = byForce[cur].scenario, b = s.body, p0 = s.particles[0];
         const out: Any[] = [];
+        const attrs: string[] = (META[cur] && META[cur].attrs) || [];
         if (b.strength != null) out.push({ key: 'strength', label: 'strength', min: 0, max: Math.max(0.5, b.strength * 3), base: b.strength });
         if (b.range > 0) out.push({ key: 'range', label: 'range', min: 50, max: 500, base: b.range });
+        if (attrs.includes('spin')) out.push({ key: 'spin', label: 'spin σ', min: -2, max: 2, base: b.spin ?? 1 });
+        if (attrs.includes('angle')) out.push({ key: 'angle', label: 'angle θ°', min: -180, max: 180, base: Math.round(((b.angle ?? 0) * 180) / Math.PI) });
         if (p0) {
           out.push({ key: 'vx', label: 'initial vᵪ', min: -8, max: 8, base: p0.vx ?? 0 });
           out.push({ key: 'vy', label: 'initial vᵧ', min: -8, max: 8, base: p0.vy ?? 0 });
@@ -620,26 +626,51 @@ const inFamily = (k: string) => EXPERIMENTS.filter((e) => e.scenario.family === 
         pts.forEach((p, i) => { const sx = X(p[0]), sy = Y(p[1]); i ? c.lineTo(sx, sy) : c.moveTo(sx, sy); }); c.stroke();
       }
 
+      // tunable body-attribute specs (symbol · units · slider range). `angle` is shown in
+      // degrees and converted to radians when the scenario is built. Which of these appear
+      // is driven by the selected force's catalog `attrs`, so the panel only ever shows the
+      // knobs that actually matter for that force (e.g. `shear` exposes its flow `angle`).
+      const ATTR: Any = {
+        strength: (b: Any) => { const v = b.strength ?? 1, mx = Math.max(0.5, v * 3); return { key: 'strength', label: 'strength', sym: 'S', val: v, def: v, min: 0, max: mx, step: mx / 100 }; },
+        range: (b: Any) => ({ key: 'range', label: 'range', sym: 'd', unit: 'px', val: b.range ?? 300, def: b.range ?? 300, min: 50, max: 500, step: 5 }),
+        spin: (b: Any) => ({ key: 'spin', label: 'spin', sym: 'σ', val: b.spin ?? 1, def: b.spin ?? 1, min: -2, max: 2, step: 0.1 }),
+        angle: (b: Any) => { const d = Math.round(((b.angle ?? 0) * 180) / Math.PI); return { key: 'angle', label: 'angle', sym: 'θ', unit: '°', val: d, def: d, min: -180, max: 180, step: 5 }; },
+      };
+      const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
       function renderParams() {
         const s = byForce[cur].scenario;
         const b = s.body, p0 = s.particles[0], cur0 = overrides;
+        const meta: Any = META[cur] || {};
         const rows: string[] = [];
-        const row = (key: string, label: string, val: number, min: number, max: number, step: number) =>
-          `<div class="param"><label>${label}</label>
-            <input type="number" class="num" data-param="${key}" min="${min}" max="${max}" step="${step}" value="${round(val)}">
-            <input type="range" data-param="${key}" min="${min}" max="${max}" step="${step}" value="${val}"></div>`;
-        if (b.strength != null) {
-          const max = Math.max(0.5, b.strength * 3);
-          rows.push(row('strength', 'strength', cur0.strength ?? b.strength, 0, max, max / 100));
+        const row = (sp: Any) => {
+          const cur = cur0[sp.key] ?? sp.val;
+          const frac = Math.max(0, Math.min(1, (sp.def - sp.min) / (sp.max - sp.min || 1)));
+          const sym = sp.sym ? `<span class="sym">${sp.sym}</span>` : '';
+          const unit = sp.unit ? `<span class="unit">${sp.unit}</span>` : '';
+          return `<div class="param"><label>${sp.label}${sym}${unit}</label>
+            <input type="number" class="num" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${round(cur)}">
+            <div class="track-wrap"><span class="tick" title="default" style="left:${(frac * 100).toFixed(1)}%"></span>
+            <input type="range" data-param="${sp.key}" min="${sp.min}" max="${sp.max}" step="${sp.step}" value="${cur}"></div></div>`;
+        };
+        // the formula + class for the selected force, so the controls are self-explaining
+        let head = '';
+        if (meta.formula) head += `<div class="param-formula">${esc(meta.formula)}</div>`;
+        // body knobs that matter for this force (from the catalog), defaulted if the
+        // scenario didn't set them; everything is relative so a uniform default is fine.
+        const attrs: string[] = meta.attrs || ['strength', 'range'];
+        for (const a of attrs) {
+          if (a === 'strength' && b.strength == null) continue;
+          if (a === 'range' && !(b.range > 0)) continue;
+          if (ATTR[a]) rows.push(row(ATTR[a](b)));
         }
-        if (b.range > 0) rows.push(row('range', 'range (px)', cur0.range ?? b.range, 50, 500, 5));
-        // a class-[S] source has no injected test particle — skip the particle rows.
+        // the injected test particle (class-[S] sources have none → skip these)
         if (p0) {
-          rows.push(row('vx', 'initial vᵪ', cur0.vx ?? p0.vx ?? 0, -8, 8, 0.5));
-          rows.push(row('vy', 'initial vᵧ', cur0.vy ?? p0.vy ?? 0, -8, 8, 0.5));
-          rows.push(row('count', 'particles', cur0.count ?? s.particles.length, 1, 40, 1));
+          rows.push(row({ key: 'vx', label: 'initial v', sym: 'ₓ', val: p0.vx ?? 0, def: p0.vx ?? 0, min: -8, max: 8, step: 0.5 }));
+          rows.push(row({ key: 'vy', label: 'initial v', sym: 'ᵧ', val: p0.vy ?? 0, def: p0.vy ?? 0, min: -8, max: 8, step: 0.5 }));
+          rows.push(row({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 }));
         }
-        $('params')!.innerHTML = rows.join('');
+        $('params')!.innerHTML = head + rows.join('');
         $('params')!
           .querySelectorAll('input[data-param]')
           .forEach((el) =>
