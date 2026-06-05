@@ -36,13 +36,6 @@ export interface ManualEntry {
   color: string;
   /** a one-line real-world use — what you'd reach for this force to do in a UI. */
   example: string;
-  /**
-   * Whether the force's physics is shipped and conformance-verified (`true`), or still
-   * a work-in-progress whose Lab experiment is provisional (`false`). The eight awaiting
-   * forces are the grid-based primitives (diffuse·propagate·memory) and the
-   * source/modifier/transform forces (spawn·morph·resonate·spotlight·pigment).
-   */
-  calibrated: boolean;
 }
 
 /**
@@ -239,18 +232,8 @@ export const FORCE_EFFECTS: Record<string, string> = {
   pigment: 'Tints particles as they pass.',
 };
 
-/**
- * The eight forces whose physics is not yet fully shipped — their Lab experiments are
- * provisional ("awaiting calibration"). The grid-based primitives still ride a stubbed
- * `env.grid`; the source/modifier/transform forces are not yet conformance-pinned.
- * Everything else is calibrated. The Lab dims these and marks them AWAITING.
- */
-export const AWAITING_FORCES: ReadonlySet<string> = new Set([
-  'diffuse', 'propagate', 'memory', 'spawn', 'morph', 'resonate', 'spotlight', 'pigment',
-]);
-
 /** Every force, in catalog order. The UI groups these by `family`. */
-const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 'summary' | 'effect' | 'calibrated'>[] = [
+const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 'summary' | 'effect'>[] = [
   // ── canonical nine (§6) ──────────────────────────────────────────────────────
   {
     family: 'canonical',
@@ -530,7 +513,6 @@ export const MANUAL_FORCES: readonly ManualEntry[] = FORCES_RAW.map((e) => ({
   effect: FORCE_EFFECTS[e.token] ?? '',
   color: FORCE_COLORS[e.token] ?? '#ffffff',
   example: FORCE_EXAMPLES[e.token] ?? '',
-  calibrated: !AWAITING_FORCES.has(e.token),
 }));
 
 /** A preset definition: its name, the primitive tokens it composes, and a real use (§20.9). */

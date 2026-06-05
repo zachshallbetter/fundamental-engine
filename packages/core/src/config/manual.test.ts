@@ -35,11 +35,6 @@ test('every force has a unique two-letter symbol', () => {
   }
 });
 
-test('the calibration split is 25 calibrated · 8 awaiting', () => {
-  const awaiting = MANUAL_FORCES.filter((e) => !e.calibrated).map((e) => e.token).sort();
-  assert.equal(MANUAL_FORCES.filter((e) => e.calibrated).length, 25);
-  assert.deepEqual(awaiting, ['diffuse', 'memory', 'morph', 'pigment', 'propagate', 'resonate', 'spawn', 'spotlight']);
-});
 
 test('every preset has a real-use example', () => {
   for (const p of MANUAL_PRESETS) assert.ok(p.example.length > 0, `${p.name}: missing example`);

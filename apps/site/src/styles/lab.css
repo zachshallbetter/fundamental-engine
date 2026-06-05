@@ -160,6 +160,11 @@ body:has(.lab) { align-items: flex-start; }
 .param input[type='range'] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); outline: none; }
 .param input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid var(--fc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc) 16%, transparent), 0 0 12px -2px var(--fc); cursor: pointer; }
 .param input[type='range']::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid var(--fc); cursor: pointer; }
+/* quick-pick value bands under each control — jump to a named setting, then refire */
+.param .bands { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.05rem; }
+.param .band { font-family: var(--mono); font-size: 0.58rem; padding: 0.14rem 0.42rem; border-radius: 5px; border: 1px solid var(--line-2); background: transparent; color: var(--text-3); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.param .band:hover { color: var(--text); border-color: color-mix(in srgb, var(--fc) 45%, transparent); }
+.param .band.on { color: var(--fc); border-color: color-mix(in srgb, var(--fc) 55%, transparent); background: color-mix(in srgb, var(--fc) 10%, transparent); }
 
 .export-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 1rem; }
 .xbtn { flex: 1; min-width: 0; padding: 0.5rem 0.4rem; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: none; cursor: pointer; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; transition: border-color 0.18s, color 0.18s; }
