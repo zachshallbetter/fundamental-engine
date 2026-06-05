@@ -1,7 +1,8 @@
 ---
 // The shared site navigation — one fixed top bar on every public page. The wordmark
-// links home (the Field Manual); the destinations are the developer Docs and the Lab.
-// Position-fixed so it sits out of flow and never disturbs a page's own layout.
+// links home (the Field Manual); the destinations are the developer Docs, the Design
+// system, and the Lab. Position-fixed so it sits out of flow and never disturbs a
+// page's own layout.
 // (GitHub + npm links are added at launch, once the repo is public and packages ship.)
 interface Props {
   current?: 'home' | 'docs' | 'lab' | 'design';
@@ -9,6 +10,7 @@ interface Props {
 const { current } = Astro.props;
 const dest = [
   { href: '/docs', label: 'Docs', key: 'docs' },
+  { href: '/design', label: 'Design', key: 'design' },
   { href: '/lab', label: 'Lab', key: 'lab' },
 ] as const;
 ---
