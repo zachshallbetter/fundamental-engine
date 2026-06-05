@@ -56,6 +56,16 @@ test('position advances by velocity before damping', () => {
   assert.ok(Math.abs(p.y - 97) < 1e-9);
 });
 
+test('the velocity cap clamps a free particle to env.c before integrating (§20.10)', () => {
+  const p = makeP({ x: 100, y: 100, vx: 1000, vy: -1000 }); // wildly over the cap
+  run(p, makeEnv({ c: 12 }));
+  const speed = Math.hypot(p.vx, p.vy);
+  // clamped to 12, then damped by FRICTION → 12·0.95; far below the uncapped ~1342.
+  assert.ok(speed <= 12 + 1e-9, `speed ${speed} exceeds the cap`);
+  assert.ok(Math.abs(speed - 12 * FRICTION) < 1e-6, 'capped, then damped');
+  assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
+});
+
 test('reduced motion (dt = 0) freezes the sim', () => {
   const p = makeP({ x: 100, vx: 5, heat: 1 });
   run(p, makeEnv({ dt: 0 }));
