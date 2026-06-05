@@ -86,7 +86,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   // canonical nine
   attract: 'A hero word that pulls the field into orbit around it.',
   repel: 'A dismiss control that opens a clean void in the field.',
-  vortex: 'A loading state that spins the field into a whirlpool.',
+  vortex: 'A loading state that spins the field into a swirl.',
   stream: 'A scroll cue that combs the field downwind like a current.',
   drag: 'A modal backdrop the field thickens behind — motion settles.',
   emitter: 'A call-to-action that draws matter in and jets it back out.',
@@ -146,7 +146,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example'>[] = [
     label: 'Vortex',
     formula: 'v += û⊥ · (1 − d/r)^1.4 · S · 0.45 · spin   (+ 0.12 inward)',
     attrs: ['strength', 'range', 'spin'],
-    desc: 'tangential swirl with light inward retention — a whirlpool',
+    desc: 'tangential swirl with light inward retention',
   },
   {
     family: 'canonical',

@@ -104,8 +104,9 @@ test('vortex applies tangential force + slight inward (§6.8)', () => {
   const p = part();
   vortex.apply(body({ range: 320, strength: 1, spin: 1 }), p, env({ dx: 100, dy: 0, dist: 100 }));
   assert.ok(p.vy < 0); // tangential (clockwise for spin>0)
-  assert.ok(p.vx > 0); // inward retention holds shape
+  assert.ok(p.vx > 0); // light inward retention (0.12) holds shape
   assert.ok(near(p.vy, -0.2663, 1e-2));
+  assert.ok(Math.abs(p.vy) > Math.abs(p.vx) * 5); // swirl dominates the inward pull (~8×)
 });
 
 test('stream blows along the heading (§6.5)', () => {

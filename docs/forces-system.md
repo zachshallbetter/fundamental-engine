@@ -365,8 +365,9 @@ v −= v · k
 Default attrs: `data-strength="1" data-range="300"`.
 
 ### 6.8 Vortex — `vortex`
-Tangential swirl (a whirlpool) with light inward retention so it holds shape
-instead of flinging matter out. `spin` sets direction/strength.
+Tangential swirl with light inward retention so it holds shape instead of
+flinging matter out. A tight inward spiral (a drain) is a preset, not canonical
+vortex. `spin` sets direction/strength.
 ```
 range = range·(on?1.4:1);  S' = S·(on?2:1)
 if dist ≥ range: skip
