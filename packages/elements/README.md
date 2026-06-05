@@ -1,16 +1,16 @@
 # @forces-ui/elements
 
-The **web-component keystone** for [forces-ui](https://www.npmjs.com/package/forces-ui)
-— a reciprocal DOM-physics field that drops into any framework (or plain HTML)
-unchanged. "Every element is a body" is a web-components-shaped idea.
+The **web-component keystone** for [forces-ui](../core) — a reciprocal DOM-physics field
+that drops into any framework (or plain HTML) unchanged. "Every element is a body" is a
+web-components-shaped idea.
 
 → Live at **[forces-ui.com](https://forces-ui.com)**.
 
 ## Install
 
-```sh
-npm add @forces-ui/elements
-```
+> **Pre-release: not yet on npm.** Consume from the repository for now (see
+> [`RELEASING.md`](../../RELEASING.md)). `npm add @forces-ui/elements` lands with the
+> first published release.
 
 ## Use
 
@@ -51,6 +51,13 @@ field.burst(x, y);
 
 For a canvas you don't want declared in markup, `mountField(opts)` creates one,
 starts the engine, and returns the handle (its `destroy()` also removes the canvas).
+
+### Local cells
+
+This package also ships `<forces-cell>` — a self-contained, container-sized field surface
+for embedded demos (one force or formation inside a frame), separate from the page-wide
+`<forces-field>`. It runs a deliberately simplified in-frame model, not the canonical
+engine math.
 
 ## License
 
