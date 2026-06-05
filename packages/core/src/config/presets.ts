@@ -14,10 +14,10 @@
  * a page using `data-body` is entirely unaffected.
  *
  * This file is pure data (no imports), so it can't create an import cycle with the
- * scanner that consumes it. Entries use only *implemented* tokens — the canonical
- * nine (§6) plus the natural primitives (§20.10: gravity/charge/magnetism/thermal).
- * Composites that need the not-yet-built atoms (`lens`/`warp`/`spawn`/`resonate`/
- * `spotlight`) are deferred until those land.
+ * scanner that consumes it. Entries use only *implemented* tokens — the canonical nine
+ * (§6), the natural primitives (§20.10), and the designed-extended forces (§20.3, e.g.
+ * `lens`, `buoyancy`, `spawn`). A composite that needs a still-unbuilt atom (e.g. `warp`,
+ * §20.6) waits until it lands.
  */
 
 /** One virtual body in a preset — a single primitive with its own parameters (§20.9). */
