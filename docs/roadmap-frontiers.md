@@ -14,6 +14,11 @@ Two principles hold throughout, unchanged from the rest of the project:
   helpers, adapters, and one optional backend seam. The `Force` contract and the `data-*`
   vocabulary stay stable.
 
+> **Physics workover.** The current major thrust is the designed / natural / hybrid physics
+> substrate, planned separately in [`physics-workover.md`](physics-workover.md) (with an
+> as-built audit of what already ships). It is the source for v0.3 through v0.6; the
+> frontiers below (a GPU backend, reciprocal channels, render modes) continue alongside it.
+
 ---
 
 ## F1 · More reciprocal channels (input → physics)
