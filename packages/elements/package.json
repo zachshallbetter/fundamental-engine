@@ -1,6 +1,6 @@
 {
   "name": "@forces-ui/elements",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Web-component keystone for forces-ui — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
@@ -23,8 +23,14 @@
     "canvas",
     "field"
   ],
-  "sideEffects": ["./dist/index.js"],
-  "files": ["dist", "README.md", "LICENSE"],
+  "sideEffects": [
+    "./dist/index.js"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

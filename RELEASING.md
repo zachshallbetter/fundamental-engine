@@ -19,10 +19,10 @@ The engine's public surface is: the `forces-ui` exports (`createField`, `FieldOp
 `<forces-field>` element attributes/methods, and the React adapter's props. The internal
 integrator, render code, and the site are not part of the public contract.
 
-> **The packages are not yet published.** Until the first `npm publish`, the version
-> stays at the planned first-release number and all changes accumulate under
-> `## [Unreleased]` in the [CHANGELOG](CHANGELOG.md). Do not burn versions before the
-> first publish — cut the number at publish time.
+> **The packages are not yet published to npm.** Releases are cut as **git tags**
+> (e.g. `v0.2.0`) to checkpoint the engine; the `npm publish` step (below) is
+> deferred and runs later against an already-tagged release. Between tags, changes
+> accumulate under `## [Unreleased]` in the [CHANGELOG](CHANGELOG.md).
 
 ## Cutting a release
 
