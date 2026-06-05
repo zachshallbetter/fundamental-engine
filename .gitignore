@@ -1,0 +1,23 @@
+node_modules
+dist
+coverage
+*.log
+.DS_Store
+.idea
+.vscode
+*.tsbuildinfo
+
+# Astro generated cache
+.astro/
+.vercel/
+
+# env (defensive — none are used, but never commit secrets)
+.env
+.env.*
+!.env.example
+
+AGENTS.md
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md

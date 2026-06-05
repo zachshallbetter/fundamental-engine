@@ -1,0 +1,63 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+const bench = `scale     load              ms/frame    fps      throughput
+light     800p ×  3b          0.25      ~3900     ~9.5M int/s
+typical   2000p ×  6b         0.58      ~1730     ~21M  int/s
+heavy     5000p × 10b         1.84       ~540     ~27M  int/s
+stress    10000p × 16b        6.11       ~164     ~26M  int/s
+# pnpm --filter forces-ui bench  (Node 22, one core)`;
+---
+
+<DocsLayout
+  title="forces-ui — Performance"
+  description="How forces-ui performs: ~130 particles at default density, a range-culled integrator hot path, a render path with zero canvas shadowBlur, and automatic pausing when the tab is backgrounded."
+>
+  <header class="docs-hero">
+    <p class="kicker">Performance</p>
+    <h1>Cheap by <span class="accent">design</span></h1>
+    <p class="lede">
+      One canvas, one <code>requestAnimationFrame</code> loop, ~130 particles at default density.
+      The engine is built to stay off the main thread's way.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>What runs each frame</h2>
+    <ul class="model">
+      <li><b>The body-force loop</b> — O(particles × bodies), <b>range-culled</b>: a body past its reach is skipped before any maths, on squared distance (no <code>sqrt</code>).</li>
+      <li><b>Integration + damping</b> — a few flops per particle, plus a spatial-hash reindex for neighbour queries.</li>
+      <li><b>Render</b> — plain additive arcs. The path uses <b>zero <code>shadowBlur</code></b> (the most expensive canvas op); glow is a cheap halo under each dot.</li>
+      <li><b>No per-frame reflow</b> — <code>scrollHeight</code> is cached and variable-font writes are quantized, so the loop doesn't thrash layout.</li>
+    </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Benchmark</h2>
+    <p>The integrator hot path, measured across scales well beyond a real page:</p>
+    <pre class="code"><code>{bench}</code></pre>
+    <p>
+      A real page runs ~130 particles against a handful of bodies — the "light" row and below — so
+      the simulation is a rounding error; the render and layout discipline above are what keep it
+      smooth.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>It pauses itself</h2>
+    <ul class="model">
+      <li><b>Backgrounded tab</b> — the loop stops on <code>visibilitychange</code> and resumes on return.</li>
+      <li><b>Reduced motion</b> — <code>prefers-reduced-motion</code> freezes the sim (<code>dt = 0</code>) to a single static frame.</li>
+      <li><b>Field Cells</b> — <code>&lt;forces-cell&gt;</code> demos gate their loop on an <code>IntersectionObserver</code>, so off-screen cells cost nothing.</li>
+    </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Tuning</h2>
+    <p>
+      Lower <a href="/docs/api/options">density</a> for very large or low-power surfaces;
+      <code>density: 0.5</code> halves the particle count. The field is one shared canvas, so the
+      cost does not grow with the number of bodies on the page beyond the per-body loop term.
+    </p>
+  </section>
+</DocsLayout>

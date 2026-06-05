@@ -1,0 +1,59 @@
+{
+  "name": "@forces-ui/react",
+  "version": "0.1.0",
+  "description": "React adapter for forces-ui — a reciprocal DOM-physics field as a <ForcesField> component + useForcesField hook.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
+  "homepage": "https://forces-ui.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachshallbetter/forces-ui.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/zachshallbetter/forces-ui/issues"
+  },
+  "keywords": [
+    "forces-ui",
+    "react",
+    "particles",
+    "physics",
+    "canvas",
+    "field",
+    "react-component"
+  ],
+  "sideEffects": false,
+  "files": ["dist", "README.md", "LICENSE"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "forces-ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.9.3"
+  }
+}

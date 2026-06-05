@@ -1,0 +1,102 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import { CONDITIONS, FORMATIONS, PALETTES, PALETTE_NAMES } from 'forces-ui';
+import { RENDER_MODES } from '../../../lib/docs-api.ts';
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+---
+
+<DocsLayout
+  title="forces-ui — Conditions, formations & modes"
+  description="The orthogonal axes: conditions (when a force acts), formations (a global field bias), render modes (how the field draws), and the accent palettes."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>Conditions, formations &amp; <span class="accent">modes</span></h1>
+    <p class="lede">
+      The dimensions that shape the field independently of the forces themselves — <em>when</em> a
+      force acts, a bias on <em>every</em> particle, how the field is <em>drawn</em>, and its colour.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Conditions</h2>
+    <p>Gate any force with <code>data-when</code>; it acts only while the condition holds.</p>
+    <div class="api-table">
+      {
+        CONDITIONS.filter((c) => c.id).map((c) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{c.id}</code>
+              <span class="ty">{c.selective ? 'per particle' : 'per body'}</span>
+            </div>
+            <div class="d">{cap(c.desc)}.</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Formations</h2>
+    <p>
+      A formation is a single global bias on every particle at once. Switch it live with
+      <code>field.setFormation(name)</code>.
+    </p>
+    <div class="api-table">
+      {
+        FORMATIONS.map((f) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{f.id}</code>
+              <span class="ty">{f.cue}</span>
+            </div>
+            <div class="d">{f.name} — the {f.section} state.</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Render modes</h2>
+    <p>The same physics, drawn differently. Set <code>render</code> or call <code>field.setRender(mode)</code>.</p>
+    <div class="api-table">
+      {
+        RENDER_MODES.map((m) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{m.name}</code>
+            </div>
+            <div class="d">{m.desc}</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Palettes</h2>
+    <p>The colour template the travelling accent journeys through. Swap with <code>field.setPalette(name)</code>.</p>
+    <div class="api-table">
+      {
+        PALETTE_NAMES.map((name) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{name}</code>
+            </div>
+            <div class="d rc-meta">
+              {PALETTES[name].map((hex) => (
+                <span
+                  class="chip"
+                  style={`border-color:${hex}; color:${hex}`}
+                >
+                  {hex}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</DocsLayout>

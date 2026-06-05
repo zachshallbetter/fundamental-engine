@@ -1,0 +1,56 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="forces-ui — Accessibility"
+  description="forces-ui is built to be accessible: the canvas is decorative and aria-hidden, reduced motion freezes the sim, focus engages bodies like hover, and the field never carries essential content."
+>
+  <header class="docs-hero">
+    <p class="kicker">Accessibility</p>
+    <h1>Decorative by <span class="accent">contract</span></h1>
+    <p class="lede">
+      The field is ambiance, never content. It's built so assistive tech skips it, motion
+      preferences are honoured, and keyboard users get the same reactions as the mouse.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>The canvas is hidden from assistive tech</h2>
+    <p>
+      Every field surface — <code>&lt;forces-field&gt;</code>, <code>&lt;forces-cell&gt;</code>, and
+      <code>mountField()</code> — marks its canvas <code>aria-hidden="true"</code> automatically, sits
+      at <code>z-index: 0</code> behind the content, and is <code>pointer-events: none</code>. Screen
+      readers and tab order never touch it.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Reduced motion is honoured</h2>
+    <p>
+      Under <code>prefers-reduced-motion: reduce</code>, the integrator runs with <code>dt = 0</code> —
+      the simulation freezes to a single calm frame, and the CSS backdrop animation is disabled. The
+      field is present but still.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Focus engages, like hover</h2>
+    <p>
+      Bodies marked <code>data-hot</code> activate on <strong>focus</strong> as well as hover — so a
+      keyboard user tabbing through links gets the same field reaction (and the same
+      <code>--d</code> feedback) a pointer user gets. Reactions are progressive enhancement layered on
+      real, focusable elements.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Guidance for consumers</h2>
+    <ul class="model">
+      <li><b>Never put essential content in the field.</b> It's a backdrop; all meaning lives in real DOM.</li>
+      <li><b>Keep text legible on its own.</b> Don't rely on the field for contrast — <code>--d</code> effects should enhance already-readable type, not create it.</li>
+      <li><b>Respect the user's setting.</b> If you add your own <code>--d</code>-driven motion, gate it behind <code>prefers-reduced-motion</code> too.</li>
+      <li><b>Words glow, they are never drawn.</b> The engine never assembles particles into letterforms — text stays real and selectable.</li>
+    </ul>
+  </section>
+</DocsLayout>

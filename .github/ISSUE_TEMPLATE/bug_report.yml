@@ -1,0 +1,39 @@
+name: Bug report
+description: Something in the engine, an adapter, or the site isn't behaving as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the report. A minimal reproduction is the fastest path to a fix.
+  - type: input
+    id: package
+    attributes:
+      label: Package & version
+      placeholder: forces-ui 0.1.0 (or @forces-ui/elements, @forces-ui/react)
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: What should have happened — quote the spec/docs section if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Steps, a code snippet, or a link (the Lab supports shareable links).
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: browser + version, framework, Node version

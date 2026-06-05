@@ -1,0 +1,88 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+const basic = `import { ForcesField } from '@forces-ui/react';
+
+export function App() {
+  return (
+    <>
+      <ForcesField accent="#4da3ff" />
+      <a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
+        pull me
+      </a>
+    </>
+  );
+}`;
+
+const onReady = `// the field reacts to [data-body] elements anywhere on the page.
+// after rendering new bodies, rescan from onReady:
+<ForcesField
+  palette="heatmap"
+  attention
+  onReady={(field) => field.scan()}
+/>`;
+
+const hook = `import { useForcesField } from '@forces-ui/react';
+
+function Background() {
+  // own the canvas element yourself
+  const { canvasRef, fieldRef } = useForcesField({ accent: '#4da3ff' });
+  return <canvas ref={canvasRef} className="my-field" />;
+}`;
+---
+
+<DocsLayout
+  title="forces-ui — React guide"
+  description="Use forces-ui in React: the <ForcesField> component (every FieldOptions prop + onReady) and the useForcesField hook. React is a peer dependency; the core engine stays zero-dependency."
+>
+  <header class="docs-hero">
+    <p class="kicker">Guides</p>
+    <h1>The <span class="accent">React</span> adapter</h1>
+    <p class="lede">
+      A reciprocal field as a React component. React is a <strong>peer dependency</strong> — the
+      one approved framework dep; the core engine stays zero-dependency.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Install</h2>
+    <div class="pkg">
+      <code class="install" data-copy="npm i @forces-ui/react">npm i @forces-ui/react</code>
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>&lt;ForcesField&gt;</h2>
+    <p>
+      Mounts a fixed, full-viewport canvas behind your app and runs the engine — the same field
+      the web component and <code>mountField()</code> wrap. Bodies are still plain
+      <code>[data-body]</code> elements anywhere in your tree.
+    </p>
+    <pre class="code"><code>{basic}</code></pre>
+    <p>
+      It accepts every <a href="/docs/api/options">FieldOptions</a> prop
+      (<code>accent</code>, <code>density</code>, <code>waves</code>, <code>render</code>,
+      <code>palette</code>, <code>mass</code>, <code>attention</code>, <code>causality</code>) plus
+      <code>className</code> / <code>style</code>.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>onReady — get the handle</h2>
+    <p>
+      Because React renders bodies after the field mounts, call <code>field.scan()</code> once
+      your elements are in the DOM. <code>onReady</code> hands you the live
+      <a href="/docs/api/handle">FieldHandle</a>:
+    </p>
+    <pre class="code"><code>{onReady}</code></pre>
+  </section>
+
+  <section class="docs-sec">
+    <h2>useForcesField — own the canvas</h2>
+    <p>
+      For full control of the canvas element, use the hook form. It returns a
+      <code>canvasRef</code> to attach and a <code>fieldRef</code> holding the handle.
+    </p>
+    <pre class="code"><code>{hook}</code></pre>
+  </section>
+</DocsLayout>
