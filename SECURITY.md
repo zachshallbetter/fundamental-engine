@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 If you find a security issue in forces-ui, please report it privately rather than
-opening a public issue. Email **zach@zachshallbetter.com** with:
+opening a public issue. Email **hi@zachshallbetter.com** with:
 
 - a description of the issue and its impact,
 - steps to reproduce (a minimal example is ideal),

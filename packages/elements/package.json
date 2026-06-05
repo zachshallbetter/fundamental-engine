@@ -4,7 +4,7 @@
   "description": "Web-component keystone for forces-ui — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
-  "author": "Zach Shallbetter <zach@zachshallbetter.com> (https://zachshallbetter.com)",
+  "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
   "homepage": "https://forces-ui.com",
   "repository": {
     "type": "git",

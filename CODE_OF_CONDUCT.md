@@ -23,7 +23,7 @@ conduct that could reasonably be considered inappropriate.
 ## Enforcement
 
 Instances of abusive or unacceptable behavior may be reported to the maintainer at
-**zach@zachshallbetter.com**. All complaints will be reviewed and investigated promptly
+**hi@zachshallbetter.com**. All complaints will be reviewed and investigated promptly
 and fairly. The maintainer is obligated to respect the privacy and security of the
 reporter of any incident.
 
