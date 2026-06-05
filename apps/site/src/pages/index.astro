@@ -18,7 +18,7 @@ const OVERRIDES: Record<string, Record<string, number>> = {
 };
 const PRESET_COLORS: Record<string, string> = {
   blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
-  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf', fountain: '#7dd3fc',
 };
 const attrsFor = (t: string) => ({ ...DEFAULTS, ...(OVERRIDES[t] ?? {}) });
 const natural = MANUAL_FORCES.filter((f) => f.family === 'natural');
@@ -486,7 +486,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           <p>Any body can carry a <strong>condition</strong> — gated on being engaged, or on a particle’s
             <strong>speed</strong> or <strong>heat</strong>. A selective force reads every free agent and
             acts only on those that match.</p>
-          <div class="formula"><span class="c">when</span> = active · fast · slow · hot · cool</div>
+          <div class="formula"><span class="c">when</span> = active · fast · slow · hot · cool · scrolling</div>
           <p class="note">The catcher below only grips <strong>hot</strong> particles. Heat the field and
             the excited matter is pulled in while the calm passes through.</p>
           <button class="agitate" data-agitate="#c-cond">↯ Heat the field</button>
