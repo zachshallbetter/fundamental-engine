@@ -111,22 +111,42 @@ export const EXPERIMENTS: ForceConformance[] = [
       speedReduced(),
       exactDelta(-0.3, 0),
       check('direction unchanged (no redirection)', 'invariant', (r) => {
+        // drag is v -= v·k, so Δv is anti-parallel to v: it has NO perpendicular
+        // component, at any velocity (not just horizontal motion).
         const a = r.applyDelta[0]!;
-        return { pass: Math.abs(a.dvy) < 1e-9, measured: `Δvy = ${f3(a.dvy)}`, expected: '0' };
+        const p0 = r.scenario.particles[0]!;
+        const vx = p0.vx ?? 0, vy = p0.vy ?? 0;
+        const speed = Math.hypot(vx, vy) || 1;
+        const cross = (a.dvx * vy - a.dvy * vx) / speed; // ⟂ component of Δv ⇒ redirection
+        return { pass: Math.abs(cross) < 1e-6, measured: `⟂ Δv = ${f3(cross)}`, expected: '0 (no redirect)' };
       }),
     ],
   },
   {
     scenario: {
       force: 'emitter',
-      label: 'A particle in an emitter feed (outside the nozzle)',
+      label: 'A particle relaunched from the emitter nozzle (the jet)',
       family: 'canonical',
       klass: 'A',
-      body: { cx: 150, range: 300, strength: 1, angle: 0 },
-      particles: [{ x: 0, y: 0 }],
+      body: { cx: 0, cy: 0, range: 300, strength: 1, angle: 0 }, // jet heading +x
+      particles: [{ x: -15, y: 0 }], // inside the nozzle (d < 24) → relaunched outward
       frames: 40,
+      seed: 3, // the jet's spread cone uses RNG — seed it for reproducibility
     },
-    expectations: [movesToward(), exactDelta(0.1, 0)],
+    expectations: [
+      check('relaunched as a fast jet (not a gentle pull)', 'invariant', (r) => {
+        const a = r.applyDelta[0]!;
+        const sp = Math.hypot(a.dvx, a.dvy);
+        return { pass: sp > 2, measured: `|Δv| = ${f3(sp)}`, expected: '> 2 (a jet, not the feed)' };
+      }),
+      check('ejected along the heading', 'invariant', (r) => {
+        const a = r.applyDelta[0]!;
+        const sp = Math.hypot(a.dvx, a.dvy) || 1;
+        const along = (a.dvx * r.body.ux + a.dvy * r.body.uy) / sp;
+        return { pass: along > 0.7, measured: `along ${f3(along)}`, expected: '> 0.7 (follows the nozzle heading)' };
+      }),
+      recedesFromBody(),
+    ],
   },
   {
     scenario: {
