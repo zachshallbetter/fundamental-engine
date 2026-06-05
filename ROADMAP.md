@@ -167,8 +167,28 @@ Ordered for overnight (highest visible value first):
 - [x] **Modifier pass + `resonate` + `spotlight`** — the `Force` contract gains an optional
       `modify(b,p,env) → {strength?, gate?}`; the integrator runs modifiers before a body's
       core tokens, scaling their strength (`resonate`: `S(t)=S₀(1+sin ωt)`) or gating them to
-      a heading cone (`spotlight`). Live field unchanged (preview-verified). **The entire force
-      catalog — canonical nine + natural + extended + modifiers — is now complete.**
+      a heading cone (`spotlight`). Live field unchanged (preview-verified).
+
+## The extended vocabulary (§20.3/§20.6 — every input class)
+
+- [x] **`pressure` `[B]`** — SPH density relaxation: a smooth kernel estimates local
+      density, matter pushes down the gradient toward an even fill. Momentum-conserving.
+- [x] **`link` `[B]`** — a Verlet distance constraint to neighbours within a bond radius
+      (each applies half the correction); dense matter ropes and drapes like cloth.
+- [x] **`hunt` `[B]`** — two-species predator/prey: predators seek the nearest prey, prey
+      flee the nearest predator (the `Particle.species` tag).
+- [x] **`morph` `[D]`** — a new class: matter springs to assigned points in the body's
+      `targets` set (a mark/chart/logo — never words, §11), jitter fading on arrival.
+- [x] **`spawn` `[S]` + the source system** — a `source(b,env)` hook (once per body per
+      frame) that *creates* matter, budgeted by a per-particle lifespan + a pool ceiling
+      (the integrator's aging/despawn sink). The `fountain` preset composes it.
+- [x] **Render modes `metaballs` + `voronoi` (§20.6)** — a marching-squares liquid
+      iso-surface and shattered-glass nearest-neighbour cells, with golden-tested cores.
+- [x] **Closed-loop concepts on the Manual** — C1 material typography (one `--d` drives
+      every type axis) and C3 self-laying-out layout (anchor + repel + density pressure).
+
+> **The entire force catalog — canonical nine + natural + extended + modifiers + the
+> [B]/[C]/[D]/[E]/[S] classes — is complete (33 forces, six render modes).**
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
@@ -239,17 +259,23 @@ through a **web-component** keystone so it drops into anything.
 |---|---|---|
 | `packages/core` (`forces-ui`) | the engine — catalog, contracts, FieldStore, forces | vanilla TS |
 | `packages/elements` (`@forces-ui/elements`) | `<forces-field>` + declarative `data-body` | web components (plain now; Lit when there's UI to template, e.g. the Lab) |
-| `apps/site` (`@forces-ui/site`) | forces-ui.com — the manual / landing | Astro (static; Lit islands later) |
-| `packages/react` (later) | thin React adapter | React |
+| `apps/site` (`@forces-ui/site`) | forces-ui.com — the manual / landing / Lab | Astro (static) |
+| `packages/react` (`@forces-ui/react`) | thin React adapter | React |
 
 Why web components as the keystone: "every element is a body" is a web-components-
 shaped idea; a custom element works in React/Svelte/Astro/plain HTML unchanged →
 forces-ui is a *platform*, not a framework library. The site shell (Astro) is a
 separate, swappable choice and shares no code with the engine.
 
-## Open decisions
+## Resolved decisions
 
-- First-class mass everywhere vs. unit-mass UI + first-class Lab (§21.4) — leaning split.
-- Final package name & the 24-force palette reconciliation (§20.2).
-- Site shell stays Astro vs. SvelteKit/Next (Astro chosen; cheap to revisit — it
-  shares no engine code).
+- **First-class mass** — shipped as the split: unit-mass on the UI field by default,
+  first-class `a = F/m` opt-in via `FieldOptions.mass` (§21.3).
+- **Palette/registry reconciliation (§20.2)** — done: every one of the 33 registered
+  forces carries a canonical colour, cross-checked by a completeness test.
+- **Site shell** — Astro, chosen and built (static; it shares no code with the engine, so
+  it stays cheap to revisit).
+- **Package names** — `forces-ui` (core), `@forces-ui/elements`, `@forces-ui/react`.
+
+The only remaining gate is the deliberate, human-run **first publish** (npm + repo
+visibility) — see [`RELEASING.md`](RELEASING.md) and [`PUBLISHING.md`](PUBLISHING.md).

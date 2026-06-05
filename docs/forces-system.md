@@ -752,13 +752,15 @@ engine and the caps matrix against it.
 
 ---
 
-## 20. Extended force set — **proposed** (not yet in the engine)
+## 20. Extended force set — **implemented**
 
-> Everything in §6–§9 ships in the prototype. **This section is a forward registry**
-> — a vocabulary of forces, conditions, formations, and render modes we want to be
-> able to reach for. None are implemented yet. Rationale, "unique result," and
-> sequencing live in `docs/forces-possibilities.md`; this section is the **formal
-> spec** (token, class, formula, defaults) so each is build-ready when picked up.
+> This section is the **formal spec** (token, class, formula, defaults) for the extended
+> vocabulary, and it is now **built**: every force below ships in the engine except the two
+> relocation atoms `warp` and `wormhole` (still spec-only). Rationale, "unique result," and
+> sequencing live in `docs/forces-possibilities.md`. The foundational pass the classes
+> depend on — `FieldStore`, the spatial hash (`env.neighbors`), the scalar grid
+> (`env.grid`), the target store (`body.targets`), particle attributes, and the source
+> sink — all shipped, so [A]–[E] and [S] are live.
 
 **The layered model.** The vocabulary looks large, but everything sits in one of a
 few layers — keep them distinct and the apparent sprawl collapses:
@@ -793,10 +795,10 @@ class sets the architectural cost and whether it's a drop-in:
 | **[E]** | particle attribute (charge / species / age / color) | — | needs a **new particle field** |
 | **[S]** | **source / sink — creates or destroys matter** | — | needs pool mgmt; **breaks conservation** |
 
-Foundational pass that unlocks [B]–[E]: a `FieldStore` owning the particle pool, a
-spatial index (uniform grid / hash), optional scalar grids, and an extended `env`
-exposing `neighbors(p, r)` and `grid(name)`. Class [A] forces and **all** of §20.4–
-§20.5 are drop-in against the current engine.
+The foundational pass that unlocks [B]–[E] **shipped**: a `FieldStore` owning the particle
+pool, a spatial index (uniform hash), scalar grids, and an extended `env` exposing
+`neighbors(p, r)` and `grid(name)` — plus `body.targets` for [D] and the `source()` hook +
+aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were drop-in.
 
 > **Conservation note (class [S]).** The whole field's thesis is *"nothing created
 > from nothing"* (§2.4) — every canonical force only *moves* matter. A few of the
@@ -810,13 +812,22 @@ exposing `neighbors(p, r)` and `grid(name)`. Class [A] forces and **all** of §2
 > conserved path; reach for [S] only when the creation *is* the point (a star that
 > seeds the field, a literal water fountain).
 
-### 20.2 Registry (provisional **names & colors** — pending a reconciliation pass)
+### 20.2 Registry (**names & colors** — reconciled)
 
-> Both the `token` names and the colors below are **provisional**. They await one
-> reconciliation pass against `DS_FORCES` (colors → the canonical force palette;
-> names → final tokens, e.g. confirming `propagate`, the `mass`→`accreted` split of
-> §21.2, and whether cosmology presets keep discipline colors or become Lab-only).
-> Treat this table as a working registry, not frozen identity.
+> The reconciliation pass is **done**. The as-built registry lives in
+> `packages/core/src/config/manual.ts` (and is cross-checked against the live force
+> registry by a completeness test, so it can't drift). Every one of the **33 registered
+> forces** carries a canonical colour; the `mass`→`accreted` split (§21.2) shipped. The
+> table below is the design source for this — read it with three deltas:
+>
+> - **`pheromone` shipped as the token `diffuse`** (deposit + steer up a diffusing grid);
+>   its wave sibling is **`propagate`** (`∂²φ/∂t² = c²∇²φ`). Both are class [C].
+> - **`warp` and `wormhole` are not built.** They remain spec-only atoms/presets; the rest
+>   of the cosmology set is composed from existing tokens (`blackhole`, `whitehole`) or the
+>   conserved absorb→release event (`supernova`).
+> - **`spawn` [S] and `fountain`** shipped as written (a budgeted source + its preset).
+>
+> Everything else below is implemented under the listed token and colour.
 
 | Force | `token` | Class | Color | Discipline fit | Unique result |
 |---|---|---|---|---|---|
@@ -1211,13 +1222,14 @@ The cosmology forces are **named arrangements of primitives**, not new modules.
 This keeps the registry small and means the dramatic effects fall out of forces
 already specified.
 
-**The one blocker, and the fix.** Today a body shares a single `strength`/`range`
+**The one blocker, and the fix (shipped).** A body shares a single `strength`/`range`
 across every token in its `data-body` (§3.1) — so `attract vortex absorb` can't tune
-the horizon (`absorb`) independently of the well (`attract`). The fix is a thin
-**preset layer** that expands one element into several **co-located virtual bodies**,
-each a primitive with its *own* attrs, all bound to the same rect. The force loop is
-unchanged — it already iterates `bodies × tokens` (§4); the scanner just emits more
-bodies.
+the horizon (`absorb`) independently of the well (`attract`). The fix — now built — is a
+thin **preset layer** (`config/presets.ts` → `scanner.ts`) that expands one element into
+several **co-located virtual bodies**, each a primitive with its *own* attrs, all bound to
+the same rect. The force loop is unchanged — it already iterates `bodies × tokens` (§4);
+the scanner just emits more bodies. Shipped presets: `blackhole`, `whitehole`, `star`,
+`quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
 
 ```js
 // authoring:  <a data-preset="blackhole"> …  (or data-preset="wormhole" data-pair="#b">)
@@ -1420,19 +1432,18 @@ built:
 
 | Quantity | Status | Why |
 |---|---|---|
-| **Count** (particles) | ✅ respected | the §2.4 law — captured/released/detached/reclaimed, never spawned or deleted (except deliberate class [S]). |
-| **Mass** (inertial `m`) | ❌ unused | particles have no `m`; integration is `v += F` (unit mass). `baseSize` → render only. |
-| **Momentum** (`p = m·v`) | ❌ not respected | forces are accelerations; impulses (`burst`, `supernova`, `warp`) set/add velocity with **no reciprocal recoil** on the body; damping bleeds `p` every frame by design. |
+| **Count** (particles) | ✅ respected | the §2.4 law — captured/released/detached/reclaimed, never spawned or deleted (except deliberate class [S], which self-budgets via lifespan + pool ceiling). |
+| **Mass** (inertial `m`) | ✅ opt-in | particles carry `m` (default 1 = unit mass). With `FieldOptions.mass`, `m ∝ size` and body forces accelerate by `a = F/m` (§21.3). |
+| **Momentum** (`p = m·v`) | ◐ partial | `collide` now conserves it pairwise (equal & opposite impulses); `reflect`/`collide` push back on a `data-body` element (recoil, §23.5). The ambient field is still driven/damped by design — friction bleeds `p` every frame. |
 | **Energy** | ❌ not respected | friction + `heat` decay; it's a *driven, damped* field on purpose. |
 
-This is the right feel for a calm UI backdrop — but it means "mass" and
-"conservation" in the prose currently overpromise. Two honest options:
+This is the right feel for a calm UI backdrop. The honest split below **shipped**:
 
-- **Option A — keep unit mass.** Cheapest, matches today's engine. Then *delete* the
-  `m ∝ size` claims and treat `collide`/`fuse` as equal-mass. Fine for content surfaces.
-- **Option B — first-class mass.** Add real `m` and momentum. Physically honest, and
-  it's what makes the lifecycle (accretion → fusion → supernova) *actually conserve
-  mass*. Recommended for the cosmology/Lab surfaces.
+- **Option A — unit mass (default).** The ambient UI field stays unit-mass and damped:
+  cheap, calm, and `collide`/`fuse` read as equal-mass.
+- **Option B — first-class mass (opt-in).** `FieldOptions.mass` turns on real `m` and
+  `a = F/m`, so the cosmology/Lab lifecycle (accretion → fusion → supernova) conserves
+  mass. Both ship; the surface picks.
 
 ### 21.2 The `mass` rename (resolving the overload)
 "Mass" names two unrelated things today. Split them:
@@ -1491,12 +1502,14 @@ This section audits it and defines the unified model.
 |---|---|---|
 | **Source** — emits forces onto particles | ✅ as-built | §3.1, §6 |
 | **Density receiver** — gathered field → CSS (`--d`/`--mass`) → styling | ✅ as-built | §8 |
-| **Force target** — forces *move* the element itself | ❌ proposed | possibilities "self-laying-out" |
-| **Event host** — the field fires app behavior off it | ❌ proposed (ad-hoc only) | `data-agitate` §12 |
+| **Force target** — forces *move* the element itself | ✅ as-built | `data-move` (§22.4); self-laying-out (Concept 3) |
+| **Event host** — the field fires app behavior off it | ✅ as-built | `data-on` (§22.5); cross-boundary `field:lit` |
 
-So an element today **sources** force and **receives density**, but force can't yet
-*move* it, and the field can't yet *signal* through it. The capability exists in
-spirit (`--d` is force→DOM; `data-agitate` is event→force) but isn't one model.
+All four are now wired: an element **sources** force, **receives density**, is **moved**
+by the field (a `data-move` element agent — anchor spring + field force, with optional
+mutual repulsion + density pressure for self-laying-out layout), and the field **signals
+through it** (a saturated body fires `field:lit`/`field:dim`; `data-on` binds field state
+to DOM events). One model — agents and consumers (§22.2).
 
 ### 22.2 The unified model: agents & consumers
 Generalize "particle" to **agent** — anything a force can act on. A force produces
@@ -1612,10 +1625,11 @@ At any interaction, measure the energy removed and emit a reaction scaled to it:
 I  = clamp(k · ΔE, 0, I_max)                  // reaction intensity
 ```
 `I` drives spark count, flash magnitude, flash radius, recoil, (optional) sound. A
-glancing touch barely flickers; a hard hit erupts. `reflect` already ships a
-hand-tuned slice of this: spark when `speed > 0.7`, `heat = min(0.85, speed·0.4)`,
-spark count `3 + rand·speed·3` — i.e. `I ∝ speed`. §23 generalizes it to **every**
-dissipative interaction.
+glancing touch barely flickers; a hard hit erupts. **The budget kit shipped** in
+`core/reactions.ts`: `energyDelta` (ΔE), `reactionIntensity` (I), `sparkCount`, and
+`recoilImpulse` (the element-recoil side, §23.5). `reflect` ships the canonical slice
+(spark when `speed > 0.7`, `heat = min(0.85, speed·0.4)`); §23 generalizes it across
+dissipative interactions.
 
 ### 23.3 Catalog — where energy transfers, and the reaction it should shed
 | Interaction | Energy event | Reaction | Status |
@@ -1630,7 +1644,7 @@ dissipative interaction.
 | **Engage / hover** | a force switches on | lit state + accent shift (ripple, currently off) | ✅ / proposed |
 | **Gate block** | wrong-way crosser rejected | edge flicker at the boundary | proposed |
 | **Fuse** | binding energy released | a bright ignition flash + heat | proposed |
-| **Element pushed** (§22) | impulse into a DOM body | a recoil shudder + edge glow on the card | proposed |
+| **Element pushed** (§22) | impulse into a DOM body | a recoil shudder + edge glow on the card | ✅ as-built (`recoilImpulse`, §23.5) |
 
 ### 23.4 Reaction primitives (the kit of "juice")
 A small shared vocabulary the catalog draws from — keep them as renderable atoms:

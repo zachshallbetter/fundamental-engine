@@ -33,7 +33,7 @@ field-reacts law). It's decorative, so it's marked `aria-hidden` automatically.
 ### Attributes
 
 `accent` · `density` · `waves` · `render` (`dots` / `trails` / `links` /
-`streamlines`) · `palette` (`ours` / `heatmap` / `infrared` / `spectrum`) ·
+`metaballs` / `voronoi` / `streamlines`) · `palette` (`ours` / `heatmap` / `infrared` / `spectrum`) ·
 `attention` · `causality`.
 
 ### Methods (the `FieldHandle`, proxied onto the element)

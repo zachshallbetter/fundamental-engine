@@ -223,12 +223,14 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
 
 ---
 
-## Coverage & deferred
+## Coverage
 
-- **28 forces**, each with an experiment; the conformance suite is **30 `node:test`
-  cases** (completeness + per-force), deterministic across runs, on top of the ~60 golden
-  unit tests and the integrator suite. Total ≈ 220 core tests.
-- **Deferred:** multi-force composition experiments (`data-body="attract repel"`),
-  condition-gate (`data-when`) experiments, and a Lab "sweep" view (vary one parameter
-  across a range and plot the response curve) are natural extensions once the
-  single-experiment instrument is in hand.
+- **33 forces**, each with an experiment (33 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
+  ~71 invariant/exact checks), driven through the real engine and deterministic across
+  runs, on top of the golden per-force unit tests and the integrator suite. **257 core
+  tests** in all, every merge green.
+- **Composition + conditions** are covered, not deferred: `COMPOSITE_EXPERIMENTS` verifies
+  that forces compose (`attract repel` cancel; `attract vortex` sums to a spiral) and gate
+  on conditions (`data-when` runs through the real condition registry).
+- The Lab adds a **parameter-sweep** view (vary one input across its range and plot the
+  response curve) and a per-particle **speed waveform** on the timeline.
