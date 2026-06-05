@@ -28,6 +28,9 @@ importers:
 
   packages/elements:
     dependencies:
+      '@forces-ui/vanilla':
+        specifier: workspace:*
+        version: link:../vanilla
       forces-ui:
         specifier: workspace:*
         version: link:../core
@@ -48,6 +51,16 @@ importers:
       react:
         specifier: ^19.0.0
         version: 19.2.7
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/vanilla:
+    dependencies:
+      forces-ui:
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
