@@ -193,6 +193,19 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
           toggle.setAttribute('aria-expanded', String(open));
         });
       }
+
+      // The docs' own chrome participates in the field (the field-reacts law).
+      // Curated: prominent buttons become `wall` bodies (the field bounces off
+      // their box); prominent text becomes `shear` bodies (currents flow along
+      // their edges). Tag, then rescan so the persisted field picks them up.
+      const tagBodies = (sel, force) =>
+        document.querySelectorAll(sel).forEach((el) => {
+          if (!el.hasAttribute('data-body')) el.setAttribute('data-body', force);
+        });
+      tagBodies('.next-card, .install, .see-also a, .docs-prevnext .pn', 'wall');
+      tagBodies('.docs-hero .lede, .docs-content h2', 'shear');
+      const taggedField = document.querySelector('forces-field');
+      if (taggedField && taggedField.rescan) taggedField.rescan();
     })();
   </script>
 </Base>
