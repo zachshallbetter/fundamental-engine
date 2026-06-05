@@ -481,6 +481,58 @@
   color: var(--text-2);
 }
 
+/* live force demos (ForceCell.astro) — a grid of interactive <forces-cell>s */
+.cell-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 0.8rem;
+  margin: 1.1rem 0 0;
+}
+.force-cell {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-canvas, #07090e);
+  transition: border-color 0.2s;
+}
+.force-cell:hover {
+  border-color: color-mix(in srgb, var(--fc, var(--accent)) 45%, var(--line));
+}
+.force-cell forces-cell {
+  display: block;
+  width: 100%;
+  cursor: crosshair;
+  background: radial-gradient(
+    120% 120% at 50% 50%,
+    color-mix(in srgb, var(--fc, var(--accent)) 7%, transparent),
+    transparent 70%
+  );
+}
+.force-cell figcaption {
+  padding: 0.5rem 0.75rem 0.6rem;
+  border-top: 1px solid var(--line);
+}
+.force-cell figcaption b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fc, var(--accent));
+}
+.force-cell figcaption span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+/* a single inline demo (not in the grid) */
+.force-cell.solo {
+  max-width: 280px;
+}
+
 /* callouts */
 .callout {
   margin: 1.4rem 0;
