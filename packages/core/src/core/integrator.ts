@@ -151,6 +151,18 @@ export function step(input: StepInput): void {
       }
     }
 
+    // global safety cap (§20.10): no token or composite may drive a free particle past
+    // c (the unit system's "speed of light"). The natural primitives self-clamp; this
+    // enforces it for *every* force. A non-finite velocity slips the `> c²` test — the
+    // conformance safety sweep is what catches a NaN-producing force.
+    const cap = env.c;
+    const sp2 = p.vx * p.vx + p.vy * p.vy;
+    if (sp2 > cap * cap) {
+      const k = cap / Math.sqrt(sp2);
+      p.vx *= k;
+      p.vy *= k;
+    }
+
     // integrate, then damp (§2.2).
     p.x += p.vx * dt;
     p.y += p.vy * dt;
