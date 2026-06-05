@@ -1354,6 +1354,16 @@ Four forces; map each to a primitive, add the two that are missing:
 `gravity` and `charge` share one `1/d²` kernel — one source scalar (mass ≥ 0 or
 charge ±) selects which. That's the real unification worth coding once.
 
+> **As-built — charge induction (v0.3).** The `charge`/`magnetism` *force* acts only on
+> charged matter (`q = 0 → no force`); that contract is golden-tested. But the live field
+> starts every particle neutral, so the force alone would never move anything. The field
+> therefore **polarizes** matter that enters a charge/magnetism body's range — a neutral
+> particle picks up a sign by which side of the body it sits on (a two-domain +/- split),
+> induced once so matter carries its sign. Induction is a field-level pass
+> (`reservoir.ts induceCharges`), deliberately *outside* the integrator the conformance
+> suite drives — so "the force ignores neutral matter" stays exactly true in the math,
+> while the live field has charged matter for it to push.
+
 #### Effective / continuum primitives (faithful media)
 The medium itself needs a few atoms the prototype only faked:
 

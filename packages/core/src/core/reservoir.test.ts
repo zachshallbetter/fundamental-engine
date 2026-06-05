@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { healWaves, tearBoundNear, tearBoundByForces } from './reservoir.ts';
+import { healWaves, tearBoundNear, tearBoundByForces, induceCharges } from './reservoir.ts';
 import { FieldStore } from './field-store.ts';
 import type { Wave, BoundParticle } from './currents.ts';
 import type { Body, Particle, Force, ForceRegistry } from './types.ts';
@@ -136,4 +136,32 @@ test('tearBoundByForces ignores selective gates (free agents only)', () => {
   const bound: BoundParticle[] = [{ wi: 0, progress: 0.5, phase: 0, size: 1, glow: false, speed: 0 }];
   tearBoundByForces(bound, flat(), [mkBody(['attract'], { when: 'hot' })], REG, 1000, 800, 0, () => {});
   assert.equal(bound.length, 1); // selective gate → bound untouched
+});
+
+test('induceCharges polarizes neutral matter near a charge body, by side', () => {
+  const left = mkP({ x: 500 }); // dx = 550 − 500 = +50 → +1
+  const right = mkP({ x: 600 }); // dx = 550 − 600 = −50 → −1
+  induceCharges([mkBody(['charge'])], [left, right]);
+  assert.equal(left.charge, 1);
+  assert.equal(right.charge, -1); // a two-domain +/- split
+});
+
+test('induceCharges never overwrites matter that already carries charge', () => {
+  const p = mkP({ x: 500, charge: -1 });
+  induceCharges([mkBody(['charge'])], [p]);
+  assert.equal(p.charge, -1); // matter carries its sign; the conformance contract stays intact
+});
+
+test('induceCharges ignores matter outside the body range', () => {
+  const far = mkP({ x: 50 }); // dx = 500 > range 280
+  induceCharges([mkBody(['charge'])], [far]);
+  assert.equal(far.charge ?? 0, 0);
+});
+
+test('induceCharges fires for charge and magnetism bodies, not other forces', () => {
+  const p = mkP({ x: 500 });
+  induceCharges([mkBody(['attract'])], [p]); // a non-charge force never polarizes
+  assert.equal(p.charge ?? 0, 0);
+  induceCharges([mkBody(['magnetism'])], [p]); // magnetism needs charged matter too → it induces
+  assert.equal(p.charge, 1);
 });
