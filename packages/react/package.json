@@ -1,6 +1,6 @@
 {
   "name": "@forces-ui/react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React adapter for forces-ui — a reciprocal DOM-physics field as a <ForcesField> component + useForcesField hook.",
   "type": "module",
   "license": "MIT",
@@ -24,7 +24,11 @@
     "react-component"
   ],
   "sideEffects": false,
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
