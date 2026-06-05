@@ -152,8 +152,8 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `repel` | still p, 150px out, S 1, r 300 | pushed away; mirror of attract | `(−0.125, 0)` | same `f`, outward (§6.6) |
 | `vortex` | still p, 150px out, spin +1 | mostly tangential swirl + a small inward retention | `(0.020, −0.171)` | `f=(1−d/r)^1.4·S·0.45`; tangential ±`spin`, +0.12 inward (§6.8) |
 | `stream` | still p, heading +x | a steady current along the heading | `(0.233, 0)` | `f=(1−d/r)^1.1·S·0.5` along `(ux,uy)` (§6.5) |
-| `drag` | p moving `vx=5` | speed bled off, no redirection | `(−0.3, 0)` | `v −= v·k`, `k=(1−d/r)(0.05+S·0.07)` (§6.7) |
-| `emitter` | still p in the feed zone (d>24) | drawn toward the nozzle (inside it, relaunched as a hot jet) | `(0.1, 0)` | feed `f=(1−d/r)²(0.25+S·0.15)`; nozzle jet `spd=2.4+S·2.6` (§6.2) |
+| `drag` | p moving `vx=5` | speed bled off, no redirection (Δv ⟂-free at any velocity) | `(−0.3, 0)` | `v −= v·k`, `k=(1−d/r)(0.05+S·0.07)` (§6.7) |
+| `emitter` | p inside the nozzle (d<24) | relaunched as a fast jet along the heading, recedes from the body | — | feed `f=(1−d/r)²(0.25+S·0.15)`; nozzle jet `spd=2.4+S·2.6` (§6.2) |
 | `spring` | still p inside the rest shell (d 150 < rest 180) | pushed back out toward the rest radius, lightly damped | `(−0.532, 0)` | `v += û(d−rest)k`, `rest=r·0.6`, damp `×0.985` (§6.3) |
 | `reflect` | p moving into the wall box | elastic bounce — velocity reverses, damped (`e≈0.85`) | reverses sign | axis-aligned wall on the element box (§6.4) |
 | `absorb` | still p inside `absorbR` | captured (`accreted++`), then drifts to the core; releases at capacity | — | capture → supernova at `capacity` (§6.9) |
