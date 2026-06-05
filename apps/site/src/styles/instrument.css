@@ -1,0 +1,134 @@
+/* ============================================================
+   Instrument — shared, cross-surface patterns used by BOTH the
+   Design System (design.astro) and the Lab (lab.astro). One source
+   of truth for the "instrument" language: the periodic-table force
+   browser, the segmented toggle, the status pill, the readout tabs,
+   and the mono measurement readout.
+
+   Tinting hook: `--fc` (the active force colour) falls back to
+   `--accent` (the resting field). Ported from the design bundle's
+   ds-components.css + the Lab detector's picker.
+   ============================================================ */
+
+/* ── keyboard key ── */
+.kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; padding: 0 6px;
+  font-family: var(--mono); font-size: 0.7rem; color: var(--text-2);
+  background: var(--bg-card); border: 1px solid var(--line-2);
+  border-bottom-width: 2px; border-radius: 4px;
+}
+.kbd.sm { min-width: 14px; height: auto; padding: 3px 5px; font-size: 9px; line-height: 1; }
+
+/* ── segmented toggle (pill — 2-3 short options) ── */
+.seg-toggle { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--r-pill); overflow: hidden; }
+.seg-toggle button {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-4); background: none; border: none; padding: 0.32rem 0.6rem; cursor: pointer;
+  transition: color 0.16s, background 0.16s;
+}
+.seg-toggle button.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); }
+.seg-toggle button:not(.on):hover { color: var(--text-2); }
+
+/* ── tabbed control (full-width, force-tinted active tab) ── */
+.readout-tabs { display: flex; gap: 3px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; background: var(--bg-card); }
+.readout-tabs button {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.5rem 0.4rem; border: none; background: none; cursor: pointer; border-radius: var(--r-sm);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--text-4); transition: color 0.16s, background 0.16s;
+}
+.readout-tabs button:hover { color: var(--text-2); }
+.readout-tabs button.on {
+  color: var(--fc, var(--accent));
+  background: color-mix(in srgb, var(--fc, var(--accent)) 13%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fc, var(--accent)) 30%, transparent);
+}
+.readout-tabs button i { font-style: normal; font-size: 9px; font-variant-numeric: tabular-nums; color: var(--text-4); }
+.readout-tabs button.on i { color: var(--fc, var(--accent)); }
+
+/* ── status / verdict pill ── */
+.verdict {
+  border-radius: var(--r-md); padding: 0.85rem 1rem; border: 1px solid;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.verdict::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.verdict.resolving { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--warn) 9%, transparent); }
+.verdict.resolving::before { background: var(--warn); box-shadow: 0 0 8px var(--warn); animation: vpulse 1.6s var(--ease) infinite; }
+.verdict.confirmed { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 42%, transparent); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+.verdict.confirmed::before { background: var(--ok); box-shadow: 0 0 9px var(--ok); }
+.verdict.mismatch { color: var(--err); border-color: color-mix(in srgb, var(--err) 45%, transparent); background: color-mix(in srgb, var(--err) 10%, transparent); }
+.verdict.mismatch::before { background: var(--err); box-shadow: 0 0 9px var(--err); }
+@keyframes vpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .verdict.resolving::before { animation: none; } }
+
+/* ── readout block — mono metric rows (label · value · unit) ── */
+.ds-readout {
+  display: grid; gap: 3px; padding: 0.5rem 0.6rem; border-radius: var(--r-sm); border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-canvas) 64%, transparent); backdrop-filter: blur(4px);
+}
+.ds-readout .hud-row { display: flex; align-items: baseline; gap: 0.4rem; font-family: var(--mono); }
+.ds-readout .k { font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-4); width: 34px; }
+.ds-readout b { font-size: 12px; font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; min-width: 44px; }
+.ds-readout .u { font-size: 8px; color: var(--text-4); }
+.ds-readout .captured b { color: var(--fc, var(--accent)); }
+
+/* ════ Periodic-table force browser ════
+   A square-tile grid of every force, tinted by `--fc` per tile. Shared by the
+   design system's force set and the Lab's picker. Each tile: a number (.z),
+   a glyph (.picon) or symbol (.sym) or name (.nameBig), and a caption (.pname). */
+.force-browser { display: grid; gap: 16px; }
+.fb-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.fb-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); }
+.fb-group .glabel {
+  display: flex; align-items: center; gap: 0.6rem; margin-bottom: 9px;
+  font-family: var(--mono); font-size: 9.5px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-4);
+}
+.fb-group .glabel::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.fb-foot { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-4); line-height: 1.7; }
+.fb-foot b { color: var(--text-3); font-weight: 500; }
+
+.force-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.force-grid.names { grid-template-columns: repeat(3, 1fr); }
+
+.force-tile {
+  position: relative; aspect-ratio: 1; border: 1px solid var(--line-2); border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.015); color: inherit; cursor: pointer; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  transition: border-color 0.18s, background 0.18s, transform 0.12s var(--ease), box-shadow 0.18s;
+}
+.force-tile .z { position: absolute; top: 3px; left: 5px; font-family: var(--mono); font-size: 7px; color: var(--text-4); letter-spacing: 0.04em; }
+.force-tile .sym { font-family: var(--display); font-weight: 600; font-size: 1.04rem; letter-spacing: -0.02em; color: var(--text-2); line-height: 1; }
+.force-tile .pname { font-family: var(--mono); font-size: 6.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-4); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
+.force-tile .picon { color: var(--fc); display: grid; place-items: center; line-height: 0; }
+.force-tile .picon .fg { width: 20px; height: 20px; --fc: currentColor; }
+
+.force-tile.calib:hover { border-color: color-mix(in srgb, var(--fc) 65%, transparent); background: color-mix(in srgb, var(--fc) 10%, transparent); transform: translateY(-1px); }
+.force-tile.calib:hover .sym { color: var(--fc); }
+.force-tile.on { border-color: var(--fc); background: color-mix(in srgb, var(--fc) 16%, transparent); box-shadow: 0 0 0 1px var(--fc), 0 0 22px -6px var(--fc); }
+.force-tile.on .sym { color: #fff; }
+.force-tile.on .picon { color: #fff; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--fc) 80%, transparent)); }
+.force-tile.on .z, .force-tile.on .pname { color: color-mix(in srgb, var(--fc) 70%, #fff); }
+.force-tile.on::before { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 120%, color-mix(in srgb, var(--fc) 26%, transparent), transparent 70%); }
+
+.force-tile.locked { cursor: not-allowed; opacity: 0.4; }
+.force-tile.locked .sym, .force-tile.locked .nameBig { color: var(--text-4); }
+.force-tile.locked .picon { color: var(--text-3); }
+.force-tile.locked:hover { border-color: var(--line-3); opacity: 0.6; }
+.force-tile.locked::after { content: ''; position: absolute; top: 4px; right: 4px; width: 4px; height: 4px; border-radius: 50%; border: 1px solid var(--text-4); }
+
+/* name display mode — fewer columns, name fills the tile */
+.force-tile.namemode { aspect-ratio: auto; min-height: 46px; padding: 0.45rem 0.4rem 0.4rem; justify-content: center; }
+.force-tile .nameBig { font-family: var(--display); font-weight: 600; font-size: 0.74rem; letter-spacing: -0.01em; line-height: 1.05; color: var(--text-2); text-align: center; }
+.force-tile.on .nameBig { color: #fff; }
+.force-tile.calib.namemode:hover .nameBig { color: var(--fc); }
+
+/* the three tile faces — toggled by a `.view-*` class on the browser root */
+.force-browser .as-symbol, .force-browser .as-name { display: none; }
+.force-browser.view-symbol .as-icon, .force-browser.view-name .as-icon { display: none; }
+.force-browser.view-symbol .as-symbol { display: block; }
+.force-browser.view-name .as-name { display: block; }
+.force-browser.view-name .force-grid { grid-template-columns: repeat(3, 1fr); }
+.force-browser.view-name .force-tile { aspect-ratio: auto; min-height: 46px; padding: 0.45rem 0.4rem 0.4rem; }
+.force-browser.view-name .pname { display: none; }
