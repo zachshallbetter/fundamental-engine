@@ -531,7 +531,7 @@ Any element opts into the field by adding attributes — no JS needed:
    data-feedback                <!-- enable density write-back (--d)           -->
    data-fmin="300" data-fmax="800" data-opsz="96"  <!-- density→font weight    -->
    data-hot data-color="#ff9d5c"   <!-- engageable + its accent color          -->
->zach@zachshallbetter.com</a>
+>hi@zachshallbetter.com</a>
 ```
 
 Grouping: wrap a set in `[data-index]` so engaging one dims the rest; add
