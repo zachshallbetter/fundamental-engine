@@ -132,3 +132,102 @@
 .force-browser.view-name .force-grid { grid-template-columns: repeat(3, 1fr); }
 .force-browser.view-name .force-tile { aspect-ratio: auto; min-height: 46px; padding: 0.45rem 0.4rem 0.4rem; }
 .force-browser.view-name .pname { display: none; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Instrument controls — the Lab's advanced inputs, drawn properly. Adopted
+   from the Forces Design System (ds-inputs / ds-shell). The whole family reads
+   `--cc` (the active force colour) so it re-tints when the force flips.
+   ────────────────────────────────────────────────────────────────────────── */
+.ds-ctrls { --cc: var(--accent); display: grid; gap: 1.4rem; }
+.ctrl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.7rem; }
+.ctrl-label { font-family: var(--mono); font-size: 0.6rem; font-weight: 500; letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--text-3); }
+.ctrl-val { font-family: var(--mono); font-size: 0.74rem; font-weight: 500; letter-spacing: 0.02em; color: var(--cc); font-variant-numeric: tabular-nums; display: inline-flex; align-items: baseline; gap: 0.18em; }
+.ctrl-val .unit { font-size: 0.56rem; color: var(--text-4); letter-spacing: 0.08em; }
+.ctrl-sub { font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-4); }
+
+/* tint picker — flips the force every control inherits */
+.ds-tint-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.ds-tint-row .ctrl-sub { margin-right: 0.3rem; }
+.ds-tint { --cc: var(--accent); width: 24px; height: 24px; border-radius: 50%; position: relative; cursor: pointer;
+  background: color-mix(in srgb, var(--cc) 22%, transparent); border: 1px solid color-mix(in srgb, var(--cc) 45%, transparent);
+  transition: background .16s, border-color .16s, box-shadow .16s; }
+.ds-tint:hover { background: color-mix(in srgb, var(--cc) 38%, transparent); border-color: color-mix(in srgb, var(--cc) 70%, transparent); }
+.ds-tint.on { background: var(--cc); border-color: var(--cc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--cc) 26%, transparent); }
+
+/* slider — the centrepiece */
+.ds-slider { --pct: 0.5; width: 100%; }
+.ds-slider-track { position: relative; height: 22px; display: flex; align-items: center; cursor: pointer; touch-action: none; }
+.ds-slider-rail { position: absolute; left: 0; right: 0; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.07); box-shadow: inset 0 1px 1px rgba(0,0,0,0.5); overflow: hidden; }
+.ds-slider-fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(9px + (100% - 18px) * var(--pct));
+  border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 28%, transparent), var(--cc));
+  box-shadow: 0 0 14px -2px var(--cc); }
+.ds-slider-thumb { position: absolute; top: 50%; left: calc(9px + (100% - 18px) * var(--pct)); width: 18px; height: 18px; transform: translate(-50%,-50%);
+  border-radius: 50%; background: #fff; border: 2px solid var(--cc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cc) 16%, transparent), 0 0 18px -3px var(--cc), 0 2px 6px rgba(0,0,0,0.5);
+  transition: transform .12s var(--ease), box-shadow .18s; }
+.ds-slider-track:active .ds-slider-thumb, .ds-slider-track:focus-visible .ds-slider-thumb { transform: translate(-50%,-50%) scale(1.18); box-shadow: 0 0 0 6px color-mix(in srgb, var(--cc) 22%, transparent), 0 0 26px -2px var(--cc); }
+.ds-slider-track:focus-visible { outline: none; }
+.ds-slider-ticks { display: flex; justify-content: space-between; margin-top: 0.55rem; padding: 0 8px; }
+.ds-slider-ticks span { width: 1px; height: 5px; background: var(--line-2); }
+.ds-slider-ticks span:first-child, .ds-slider-ticks span:last-child { height: 8px; background: var(--line-3); }
+.ds-slider.ds-meter .ds-slider-track { height: 30px; }
+.ds-slider.ds-meter .ds-slider-rail { height: 10px; }
+.ds-slider.ds-meter .ds-slider-fill { background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 14%, transparent), var(--cc)); box-shadow: 0 0 18px -1px var(--cc), inset 0 0 8px color-mix(in srgb, var(--cc) 40%, transparent); }
+.ds-slider.ds-meter .ds-slider-bubble { position: absolute; top: -4px; left: calc(9px + (100% - 18px) * var(--pct)); transform: translate(-50%,-100%);
+  font-family: var(--mono); font-size: 0.62rem; font-variant-numeric: tabular-nums; color: #04050a; background: var(--cc); padding: 2px 7px; border-radius: 5px; white-space: nowrap; box-shadow: 0 0 16px -3px var(--cc); pointer-events: none; }
+.ds-slider.ds-meter .ds-slider-bubble::after { content: ''; position: absolute; left: 50%; bottom: -3px; width: 6px; height: 6px; background: var(--cc); transform: translateX(-50%) rotate(45deg); }
+
+/* stepper / number field */
+.ds-stepper { display: inline-flex; align-items: stretch; border: 1px solid var(--line-2); border-radius: var(--r-md); background: rgba(255,255,255,0.018); overflow: hidden; transition: border-color .2s, box-shadow .2s; }
+.ds-stepper:focus-within { border-color: color-mix(in srgb, var(--cc) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc) 13%, transparent); }
+.ds-stepper button { width: 36px; display: grid; place-items: center; color: var(--text-3); font-size: 1.1rem; line-height: 1; cursor: pointer; transition: color .15s, background .15s; }
+.ds-stepper button:hover { color: var(--cc); background: color-mix(in srgb, var(--cc) 12%, transparent); }
+.ds-stepper button:active { background: color-mix(in srgb, var(--cc) 22%, transparent); }
+.ds-stepper-mid { display: inline-flex; align-items: baseline; gap: 0.2em; padding: 0 0.5rem; border-left: 1px solid var(--line); border-right: 1px solid var(--line); min-width: 72px; justify-content: center; }
+.ds-stepper-mid input { width: 100%; min-width: 0; text-align: center; background: none; border: none; outline: none; font-family: var(--mono); font-size: 0.82rem; font-variant-numeric: tabular-nums; color: var(--text); padding: 0.55rem 0; }
+.ds-stepper-mid .unit { font-family: var(--mono); font-size: 0.56rem; color: var(--text-4); letter-spacing: 0.06em; }
+
+/* angle dial */
+.ds-dial { --ang: 0deg; width: 104px; height: 104px; position: relative; border-radius: 50%; cursor: grab; touch-action: none;
+  background: radial-gradient(circle at 50% 50%, var(--bg-subtle), var(--bg-canvas));
+  border: 1px solid var(--line-2); box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+.ds-dial:active { cursor: grabbing; }
+.ds-dial:focus-visible { outline: none; border-color: var(--cc); box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), 0 0 0 3px color-mix(in srgb, var(--cc) 16%, transparent); }
+.ds-dial-tick { position: absolute; top: 50%; left: 50%; width: 1px; height: 6px; background: var(--line-3); transform-origin: 50% 50%; }
+.ds-dial-tick.major { height: 9px; width: 1.5px; background: var(--text-4); }
+.ds-dial-needle { position: absolute; top: 50%; left: 50%; width: 50%; height: 2px; transform-origin: 0 50%; transform: rotate(var(--ang));
+  background: linear-gradient(90deg, transparent, var(--cc)); border-radius: 99px; }
+.ds-dial-needle::after { content: ''; position: absolute; right: 0; top: 50%; width: 12px; height: 12px; transform: translate(50%,-50%); border-radius: 50%; background: #fff; border: 2px solid var(--cc); box-shadow: 0 0 14px -2px var(--cc); }
+.ds-dial-hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 50px; height: 50px; border-radius: 50%; display: grid; place-content: center; text-align: center;
+  background: var(--bg-card); border: 1px solid var(--line); }
+.ds-dial-hub .deg { font-family: var(--mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; color: var(--cc); line-height: 1; }
+.ds-dial-hub .cap { font-family: var(--mono); font-size: 0.46rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); margin-top: 3px; }
+
+/* dual range — sweep bounds */
+.ds-range { --lo: 0.25; --hi: 0.75; width: 100%; }
+.ds-range-track { position: relative; height: 22px; display: flex; align-items: center; touch-action: none; }
+.ds-range-rail { position: absolute; left: 0; right: 0; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.07); box-shadow: inset 0 1px 1px rgba(0,0,0,0.5); }
+.ds-range-span { position: absolute; height: 5px; border-radius: 99px; left: calc(9px + (100% - 18px) * var(--lo)); right: calc((100% - 18px) * (1 - var(--hi)) + 9px);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 40%, transparent), var(--cc)); box-shadow: 0 0 14px -3px var(--cc); }
+.ds-range-thumb { position: absolute; top: 50%; width: 18px; height: 18px; transform: translate(-50%,-50%); border-radius: 50%; background: #fff; border: 2px solid var(--cc); cursor: grab;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cc) 16%, transparent), 0 0 16px -3px var(--cc), 0 2px 6px rgba(0,0,0,0.5); transition: transform .12s var(--ease); }
+.ds-range-thumb:active { cursor: grabbing; transform: translate(-50%,-50%) scale(1.16); }
+.ds-range-thumb.lo { left: calc(9px + (100% - 18px) * var(--lo)); }
+.ds-range-thumb.hi { left: calc(9px + (100% - 18px) * var(--hi)); }
+
+/* styled select */
+.ds-select { position: relative; display: inline-block; min-width: 200px; }
+.ds-select-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.7rem 0.9rem; border: 1px solid var(--line-2); border-radius: var(--r-md);
+  background: rgba(255,255,255,0.018); color: var(--text); font-size: 0.9rem; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.ds-select-btn:hover { border-color: var(--line-3); }
+.ds-select.open .ds-select-btn { border-color: color-mix(in srgb, var(--cc) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc) 13%, transparent); }
+.ds-select-chev { color: var(--text-4); font-size: 0.7rem; transition: transform .2s var(--ease); }
+.ds-select.open .ds-select-chev { transform: rotate(180deg); color: var(--cc); }
+.ds-select-menu { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 40; padding: 0.35rem; border: 1px solid var(--line-2); border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--bg-surface) 96%, transparent); backdrop-filter: blur(14px); box-shadow: var(--shadow-lg); display: grid; gap: 1px;
+  transform-origin: top; animation: dsSelIn .16s var(--ease); }
+@keyframes dsSelIn { from { opacity: 0; transform: translateY(-4px) scaleY(0.96); } to { opacity: 1; transform: none; } }
+.ds-select-opt { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.6rem; border-radius: var(--r-sm); color: var(--text-2); font-size: 0.88rem; text-align: left; cursor: pointer; transition: background .14s, color .14s; }
+.ds-select-opt:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.ds-select-opt .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line-3); flex: none; transition: background .14s, box-shadow .14s; }
+.ds-select-opt.on { color: var(--text); background: color-mix(in srgb, var(--cc) 13%, transparent); }
+.ds-select-opt.on .dot { background: var(--cc); box-shadow: 0 0 8px -1px var(--cc); }
