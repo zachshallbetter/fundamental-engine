@@ -410,9 +410,10 @@ test('memory is inert beyond range', () => {
 });
 
 // ── chargeable bodies source the field (field-systems Stage C2) ──────────────
-// A body's accumulated charge Q = b.d scales the dipole it radiates: a charged
-// (data-feedback) element's field() grows; an uncharged body radiates the base field.
-test('field(): a charged body radiates a stronger dipole than an uncharged one', () => {
+// A body's accumulated charge Q = b.d scales the field it radiates (magnetism's dipole and
+// charge's radial monopole alike): a charged (data-feedback) element's field() grows; an
+// uncharged body radiates the base field.
+test('field(): a charged body radiates a stronger field than an uncharged one', () => {
   const at = { x: 200, y: 40 }; // a fixed sample point off the dipole axis
   for (const f of [magnetism, charge]) {
     const base = body({ d: 0, strength: 1, M: 1, range: 300, hw: 70, hh: 20, ux: 1, uy: 0, spin: 1 });

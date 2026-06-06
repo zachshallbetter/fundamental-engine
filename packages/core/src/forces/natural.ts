@@ -13,7 +13,7 @@
 
 import type { Body, Particle, Env, Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
-import { polePair, dipoleField, type Pole } from '../core/geometry.ts';
+import { polePair, dipoleField, EPS, type Pole } from '../core/geometry.ts';
 
 /**
  * The body's dipole field at a world point (the visual/structure field, Stage B): the
@@ -51,6 +51,21 @@ function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: n
   const sq = s * (1 + Q_GAIN * (b.d ?? 0)); // charged elements radiate a stronger field
   const f = dipoleField(poles, x, y);
   return { x: f.x * sq, y: f.y * sq };
+}
+
+/**
+ * The radial monopole field of a single point charge (the electric field, §20.3): straight
+ * field lines out of a positive source, into a negative one — `E = σ·s·r̂/(d²+ε²)`, where `σ`
+ * is the body's polarity (`spin`). Unlike a magnet (a dipole — magnetic monopoles do not
+ * exist, so `magnetism` loops), a lone electric charge radiates, so `charge` is a monopole.
+ */
+function bodyMonopole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
+  const dx = x - b.cx;
+  const dy = y - b.cy;
+  const d = Math.max(Math.hypot(dx, dy), EPS);
+  const sgn = b.spin < 0 ? -1 : 1;
+  const mag = (sgn * s * (1 + Q_GAIN * (b.d ?? 0))) / (d * d); // 1/d², signed by polarity
+  return { x: (dx / d) * mag, y: (dy / d) * mag };
 }
 
 /**
@@ -107,9 +122,10 @@ export const charge: Force = {
     // inward-pointing kernel so like signs repel and opposite signs attract.
     inverseSquare(b, p, e, -(b.spin * q * e.G * b.M));
   },
-  // The electric dipole field the element projects (Stage B), sourced by its charge `M`.
-  // Rendered as +→− field lines; Stage C aligns the force to flow charged matter along it.
-  field: (b, x, y) => bodyDipole(b, x, y, b.M),
+  // The radial electric field the charge projects (Stage B), sourced by `M` and signed by
+  // `spin`: straight field lines, OUT of a + source and IN to a −. A lone charge is a
+  // monopole (unlike a magnet's dipole) — the force already flows charged matter along it.
+  field: (b, x, y) => bodyMonopole(b, x, y, b.M),
   meta: { desc: 'signed inverse-square — like repels, opposite attracts' },
 };
 

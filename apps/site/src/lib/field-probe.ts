@@ -400,13 +400,12 @@ export function traceField(token: string, override: ProbeOverride = {}): FieldTr
 const dipoleCache = new Map<string, FieldTrace>();
 
 /**
- * The body's dipole field lines (field-systems plan, Stage B render) — the bar-magnet
- * (N→S) and electric-dipole (+→−) diagram for `magnetism` and `charge`. Traces real
- * streamlines of the engine's `dipoleField` over the two poles `polePair` lays on the
- * heading axis, normalized to the same unit box `traceField` uses so the drawer scales
- * both together. This is the *structure* of the field; for magnetism the particles (the
- * `traceField` trajectories drawn on top) curve around these lines rather than following
- * them. Returns null for any non-dipole force.
+ * A force's field-line diagram (field-systems plan, Stage B render), traced through the real
+ * field with `traceFieldLines` and normalized to the same unit box `traceField` uses:
+ *  - `magnetism` → the bar-magnet DIPOLE (nested N→S loops); no magnetic monopoles exist.
+ *  - `charge`    → the radial MONOPOLE electric field (straight spokes, out of + / into −).
+ * Returns null for any other force. This is the *structure* of the field; the trajectory
+ * trace is suppressed for these two so the two representations never overlap.
  */
 export function traceDipole(token: string, override: ProbeOverride = {}): FieldTrace | null {
   if (token !== 'magnetism' && token !== 'charge') return null;
@@ -418,32 +417,54 @@ export function traceDipole(token: string, override: ProbeOverride = {}): FieldT
   const spin = override.spin ?? cfg?.spin ?? 1;
   const a = (angleDeg * Math.PI) / 180;
 
-  // a representative bar in a generous centred world box, so the outer loops have room to
-  // close into the textbook nested-loop pattern before bounds clip them.
+  // a generous centred world box, so the diagram has room to develop before bounds clip it.
   const W = 1000;
   const H = 800;
   const cx = W / 2;
   const cy = H / 2;
-  const body = { cx, cy, hw: 74, hh: 28, ux: Math.cos(a), uy: Math.sin(a), spin };
-  const poles = polePair(body);
-  const sample = (x: number, y: number) => dipoleField(poles, x, y);
 
-  // Seed along the perpendicular bisector of the dipole axis: each offset point lies on a
-  // distinct nested field line, so tracing both ways closes a clean loop from + around to −.
-  // (Seeding a ring on a pole instead sends the far-side seeds straight out as radial spokes.)
-  const perp = { x: -body.uy, y: body.ux }; // unit ⟂ to the heading axis
-  const RINGS = 8;
-  const SPACING = 22;
-  const seeds = [{ x: cx, y: cy }]; // the central axial line through both poles
-  for (let i = 1; i <= RINGS; i++) {
-    const off = i * SPACING;
-    seeds.push({ x: cx + perp.x * off, y: cy + perp.y * off });
-    seeds.push({ x: cx - perp.x * off, y: cy - perp.y * off });
+  let lines: Pt[][];
+  if (token === 'charge') {
+    // A lone electric charge is a MONOPOLE: straight radial field lines, OUT of a + source
+    // (spin ≥ 0) and IN to a −. Seed a ring close to the body and trace the radial field both
+    // ways, giving clean spokes from the core to the rim — the textbook electric-field diagram.
+    const sgn = spin < 0 ? -1 : 1;
+    const sample = (x: number, y: number) => {
+      const dx = x - cx;
+      const dy = y - cy;
+      const d = Math.max(Math.hypot(dx, dy), 1);
+      const m = sgn / (d * d); // radial 1/d², signed by polarity
+      return { x: (dx / d) * m, y: (dy / d) * m };
+    };
+    const N = 18;
+    const r0 = 38;
+    const seeds = [];
+    for (let i = 0; i < N; i++) {
+      const ang = (i / N) * Math.PI * 2;
+      seeds.push({ x: cx + Math.cos(ang) * r0, y: cy + Math.sin(ang) * r0 });
+    }
+    lines = traceFieldLines(sample, seeds, { step: 7, maxSteps: 240, bounds: { w: W, h: H } });
+  } else {
+    // magnetism: a DIPOLE (no magnetic monopoles exist) — the bar-magnet loops. Seed along the
+    // perpendicular bisector of the heading axis: each offset lies on a distinct nested field
+    // line, so tracing both ways closes a clean loop from + around to −.
+    const body = { cx, cy, hw: 74, hh: 28, ux: Math.cos(a), uy: Math.sin(a), spin };
+    const poles = polePair(body);
+    const sample = (x: number, y: number) => dipoleField(poles, x, y);
+    const perp = { x: -body.uy, y: body.ux }; // unit ⟂ to the heading axis
+    const RINGS = 8;
+    const SPACING = 22;
+    const seeds = [{ x: cx, y: cy }]; // the central axial line through both poles
+    for (let i = 1; i <= RINGS; i++) {
+      const off = i * SPACING;
+      seeds.push({ x: cx + perp.x * off, y: cy + perp.y * off });
+      seeds.push({ x: cx - perp.x * off, y: cy - perp.y * off });
+    }
+    lines = traceFieldLines(sample, seeds, { step: 5, maxSteps: 500, bounds: { w: W, h: H } });
   }
-  const lines = traceFieldLines(sample, seeds, { step: 5, maxSteps: 500, bounds: { w: W, h: H } });
 
-  // auto-frame about the body centre (88th-percentile extent so the largest loop sits inside
-  // the box), splitting each line on clip so an outer loop's excursion never chords across.
+  // auto-frame about the body centre (robust extent so the diagram sits inside the box),
+  // splitting each line on clip so an outer excursion never chords across.
   const { paths } = autoFrame(lines, cx, cy, { pct: 0.88, clip: 1.5, floor: 100, empty: 120 });
 
   const trace: FieldTrace = { paths, rings: [] };
