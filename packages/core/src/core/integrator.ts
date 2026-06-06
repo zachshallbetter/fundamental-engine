@@ -11,6 +11,7 @@ import type { Body, ConditionRegistry, Env, Force, ForceRegistry, Particle } fro
 import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, type Wave } from './currents.ts';
+import { netField } from './streamlines.ts';
 
 export const FRICTION = 0.95;
 export const HEAT_DECAY = 0.972;
@@ -55,6 +56,9 @@ export function step(input: StepInput): void {
   const dt = env.dt;
   if (dt === 0) return;
   const { W, H, form } = env;
+  // expose the net structure field so field-following forces (`fieldflow`) can read the
+  // superposition of every body's field() — the same vector the streamlines view draws.
+  env.fieldAt = (x, y) => netField(bodies, forces, x, y);
   for (const b of bodies) b.count = 0;
   const hasWaves = !!waves && waves.length > 0;
   const hasBodies = bodies.length > 0;
@@ -113,8 +117,24 @@ export function step(input: StepInput): void {
       const inv = p.m !== 1 && p.m > 0 ? 1 / p.m : 1;
       for (const b of bodies) {
         if (!b.vis || b.tokens.length === 0) continue;
-        const dx = b.cx - p.x;
-        const dy = b.cy - p.y;
+        // shaped sources (§ Stage C): reference the nearest point on the element's box, not
+        // its centre, so matter shells the shape. Clamp is inlined (no allocation in the hot
+        // loop); inside the box dx=dy=0 → no directional pull, the right no-op.
+        let dx: number;
+        let dy: number;
+        if (b.shaped) {
+          const lx = b.cx - b.hw;
+          const rx = b.cx + b.hw;
+          const ty = b.cy - b.hh;
+          const by = b.cy + b.hh;
+          const nx = p.x < lx ? lx : p.x > rx ? rx : p.x;
+          const ny = p.y < ty ? ty : p.y > by ? by : p.y;
+          dx = nx - p.x;
+          dy = ny - p.y;
+        } else {
+          dx = b.cx - p.x;
+          dy = b.cy - p.y;
+        }
         const d2 = dx * dx + dy * dy;
         // range cull: a ranged body can't reach past ~1.6× its range (the largest
         // on-state multiplier, tether's 1.575×). Skip the sqrt, the modifier pass,

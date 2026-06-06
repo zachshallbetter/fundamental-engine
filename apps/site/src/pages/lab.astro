@@ -12,7 +12,7 @@ import '../styles/lab.css';
 // catalog (the same EXPERIMENTS the test suite runs) — frame by frame. Every force
 // in the catalog has a conformance experiment, so all of them fire here.
 
-// every force that has a conformance experiment (the detector can run it — all 33 do)
+// every force that has a conformance experiment (the detector can run it — all 34 do)
 const HAS_EXP = new Set(EXPERIMENTS.map((e) => e.scenario.force));
 const families = [
   { key: 'canonical', label: 'Canonical' },
@@ -94,7 +94,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
               <li><kbd class="kbd sm">Space</kbd><span>play / pause</span></li>
               <li><kbd class="kbd sm">F</kbd><span>fire</span><kbd class="kbd sm">R</kbd><span>reset</span></li>
               <li><kbd class="kbd sm">←</kbd><kbd class="kbd sm">→</kbd><span>step frames</span></li>
-              <li><kbd class="kbd sm">L</kbd><span>loop / once</span></li>
+              <li><kbd class="kbd sm">L</kbd><span>cycle run mode (once / loop / free)</span></li>
             </ul>
           </div>
           <div class="uncalib-veil" id="veil" hidden>
@@ -227,7 +227,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
     // selected force's scenario body. `angle` is shown in degrees and converted to radians
     // in buildScenario. Which knobs appear is driven by the catalog `attrs` (so each force
     // shows only the knobs that matter), plus box/absorbR auto-added when the body has them,
-    // plus the injected particle's vx/vy/count. This covers all 33 forces with no per-force
+    // plus the injected particle's vx/vy/count. This covers all 34 forces with no per-force
     // table to drift.
     const ATTR: Any = {
       strength: (b: Any) => { const v = b.strength ?? 1, mx = Math.max(0.5, v * 3); return { key: 'strength', label: 'strength', sym: 'S', val: v, def: v, min: 0, max: mx, step: mx / 100 }; },
@@ -418,17 +418,28 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
       // field at each world point; pair/grid forces have no point-field so it reads ~0.
       function drawField(b: Any) {
         const w = canvas!.clientWidth, h = canvas!.clientHeight, col = color(), stepPx = 34;
+        // Sample first, then scale arrows RELATIVE to the field's own max magnitude — so a
+        // force shows whatever its absolute scale (the dipole field() of magnetism/charge is
+        // orders of magnitude weaker than attract's, but its pattern is just as real).
+        const samples: { sx: number; sy: number; ux: number; uy: number; mag: number }[] = [];
+        let maxMag = 0;
         for (let sx = stepPx / 2; sx < w; sx += stepPx)
           for (let sy = stepPx / 2; sy < h; sy += stepPx) {
             const wx = (sx - view.ox) / view.scale, wy = (sy - view.oy) / view.scale;
             const { fx, fy } = forceAt([b], forces, fenv, wx, wy);
             const mag = Math.hypot(fx, fy);
-            if (mag < 1e-5) continue;
-            const ux = fx / mag, uy = fy / mag, len = Math.min(stepPx * 0.42, 4 + mag * 120);
-            ctx.strokeStyle = hexA(col, Math.min(0.06 + mag * 1.6, 0.4));
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + ux * len, sy + uy * len); ctx.stroke();
+            if (mag < 1e-9) continue;
+            samples.push({ sx, sy, ux: fx / mag, uy: fy / mag, mag });
+            if (mag > maxMag) maxMag = mag;
           }
+        if (maxMag <= 0) return;
+        for (const s of samples) {
+          const rel = Math.sqrt(s.mag / maxMag); // sqrt compresses the range so weak vectors still read
+          const len = stepPx * 0.42 * (0.28 + 0.72 * rel);
+          ctx.strokeStyle = hexA(col, 0.1 + 0.32 * rel);
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(s.sx, s.sy); ctx.lineTo(s.sx + s.ux * len, s.sy + s.uy * len); ctx.stroke();
+        }
       }
 
       function draw() {
@@ -713,7 +724,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
         if (p0) {
           specs.push({ key: 'vx', label: 'initial v', sym: 'ₓ', val: p0.vx ?? 0, def: p0.vx ?? 0, min: -8, max: 8, step: 0.5 });
           specs.push({ key: 'vy', label: 'initial v', sym: 'ᵧ', val: p0.vy ?? 0, def: p0.vy ?? 0, min: -8, max: 8, step: 0.5 });
-          specs.push({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 });
+          if (!isPair(cur)) specs.push({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 });
         }
         return specs;
       }

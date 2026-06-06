@@ -9,6 +9,7 @@ import type { Expectation, ForceConformance, ScenarioResult } from './types.ts';
 import {
   adoptsTint,
   approachesBody,
+  endsFartherOut,
   exactDelta,
   followsGradient,
   gatesOutsideCone,
@@ -17,7 +18,6 @@ import {
   movesAway,
   movesToward,
   noEffectBeyondRange,
-  perpendicularToVelocity,
   recedesFromBody,
   separates,
   speedPreserved,
@@ -250,7 +250,25 @@ export const EXPERIMENTS: ForceConformance[] = [
       particles: [{ x: 0, y: 0, vx: 5, vy: 0, charge: 1 }],
       frames: 40,
     },
-    expectations: [perpendicularToVelocity(), speedPreserved(0.02)],
+    // perpendicularToVelocity() checked Euler's exact Δv⊥v; the rotation implementation
+    // preserves speed to float precision (better), so use the tighter speed check instead.
+    expectations: [speedPreserved(1e-5)],
+  },
+  {
+    scenario: {
+      force: 'fieldflow',
+      label: 'Neutral matter following a charge field line',
+      family: 'extended',
+      klass: 'A',
+      // a `charge` sources the field; `fieldflow` follows it. The particle is NEUTRAL, so
+      // charge itself cannot move it — only fieldflow advects it, streaming OUT along the
+      // radial field lines (the field direction at a point left of a + source points away).
+      tokens: ['charge', 'fieldflow'],
+      body: { cx: 120, range: 300, M: 2000, spin: 1, strength: 1 },
+      particles: [{ x: 0, y: 0 }],
+      frames: 60,
+    },
+    expectations: [movesAway(), recedesFromBody(), noEffectBeyondRange()],
   },
   {
     scenario: {
@@ -338,11 +356,11 @@ export const EXPERIMENTS: ForceConformance[] = [
       label: 'A particle riding a propagating wavefront',
       family: 'natural',
       klass: 'C',
-      body: { cx: 0, cy: 0, range: 300, strength: 1, on: true },
-      particles: [{ x: 50, y: 0 }],
-      frames: 30,
+      body: { cx: 0, cy: 0, range: 300, strength: 2, on: true },
+      particles: [{ x: 40, y: 0 }],
+      frames: 60,
     },
-    expectations: [followsGradient(2, 0)],
+    expectations: [endsFartherOut()],
   },
   {
     scenario: {

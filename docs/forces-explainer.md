@@ -52,7 +52,7 @@ You turn any element into a force by adding attributes. No JavaScript:
 | `data-range` | influence radius, in px |
 | `data-color` | the element's accent (and the colour of any sparks it sheds) |
 | `data-feedback` | opt into the field → element write-back (`--d` density) |
-| `data-when` | a gate: act only when `fast` / `slow` / `hot` / `cool` / `active` |
+| `data-when` | a gate: act only when `fast` / `slow` / `hot` / `cool` / `active` / `scrolling` |
 
 Nine forces, each a verb. Compose them on one element (`data-body="sink attract"`)
 and it pulls matter in *and* swallows it.

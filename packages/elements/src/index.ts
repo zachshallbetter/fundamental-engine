@@ -112,6 +112,10 @@ export class ForcesField extends HTMLElementBase {
   setCausality(on: boolean): void {
     this.field?.setCausality(on);
   }
+  /** toggle the density heatmap layer (field-systems H1) live. */
+  setHeatmap(on: boolean): void {
+    this.field?.setHeatmap(on);
+  }
   /** switch the render mode (§20.6) live. */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void {
     this.field?.setRender(mode);
@@ -195,3 +199,7 @@ declare global {
 export * from './forces-cell.ts';
 export * from './cell-force.ts';
 export * from './mount.ts';
+// shadow-DOM participation: the helper a custom element uses to join the field without
+// repeating registration-event boilerplate (docs/shadow-dom.md §31.1).
+export { ForcesController, REGISTER_BODY, UNREGISTER_BODY, UPDATE_BODY } from 'forces-ui';
+export type { RegisterBodyDetail } from 'forces-ui';

@@ -63,18 +63,20 @@ export const PRESETS: Record<string, readonly PresetEntry[]> = {
     { body: 'thermal', strength: 1.0, range: 220 }, // outward Brownian pressure
   ],
   // §20.9 — an accreting black hole that also jets along its poles.
+  // attract is softened (0.7) so the jet nozzle speed (2.4 + 2.6·S) at S=2.5 → 8.9 px/frame
+  // exceeds the escape velocity from the weakened well (~7 px/frame at d=50) — jets escape.
   quasar: [
-    { body: 'attract', strength: 1.4, range: 340 }, // the well
+    { body: 'attract', strength: 0.7, range: 340 }, // softened well — jets must escape it
     { body: 'swirl', strength: 1.2, range: 300, spin: 1 }, // accretion disk
     { body: 'sink', absorb: 40, max: 60 }, // horizon
     { body: 'lens', strength: 0.5, range: 380 }, // lensing
-    { body: 'jet', strength: 1.2, range: 260, angle: -90 }, // north pole jet
-    { body: 'jet', strength: 1.2, range: 260, angle: 90 }, // south pole jet
+    { body: 'jet', strength: 2.5, range: 280, angle: -90 }, // north pole jet (fast enough to escape)
+    { body: 'jet', strength: 2.5, range: 280, angle: 90 }, // south pole jet
   ],
   // A spiral disk: a soft well, a swirl for the arms, viscosity to settle into a plane,
-  // and lensing at the rim.
+  // and lensing at the rim. Attract is gentle (0.6) so swirl (1.3) dominates — spiral, not cluster.
   galaxy: [
-    { body: 'attract', strength: 1.0, range: 400 }, // the bulge
+    { body: 'attract', strength: 0.6, range: 400 }, // soft bulge — swirl must dominate
     { body: 'swirl', strength: 1.3, range: 380, spin: 1 }, // spiral arms
     { body: 'viscosity', strength: 0.4, range: 400 }, // settle into the disk
     { body: 'lens', strength: 0.3, range: 420 }, // halo lensing
