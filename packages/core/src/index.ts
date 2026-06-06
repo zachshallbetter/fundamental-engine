@@ -14,6 +14,7 @@ export * from './config/manual.ts';
 export * from './config/palettes.ts';
 export * from './config/tokens.ts';
 export * from './core/math.ts';
+export * from './core/geometry.ts';
 export * from './core/feedback.ts';
 export * from './core/attention.ts';
 export * from './core/causality.ts';
