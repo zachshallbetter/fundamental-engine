@@ -85,3 +85,25 @@ export function polePair(b: AxisRect): [Pole, Pole] {
     { x: b.cx - ax, y: b.cy - ay, q: -s },
   ];
 }
+
+/**
+ * The in-plane field of a set of poles at `(x, y)`: the superposition of each pole's
+ * radial `q/d²` monopole field (away from `+`, toward `−`). For the two poles of a body
+ * this is the classic dipole, whose streamlines are the bar-magnet (N→S) and
+ * electric-dipole (+→−) field-line diagrams. `EPS` floors the distance at a pole so the
+ * sample never divides by zero. Direction carries the geometry; magnitude (scaled by the
+ * body's strength downstream) sets line density and the tracer's min-strength cutoff.
+ */
+export function dipoleField(poles: readonly Pole[], x: number, y: number): Vec2 {
+  let fx = 0;
+  let fy = 0;
+  for (const p of poles) {
+    const dx = x - p.x;
+    const dy = y - p.y;
+    const d = Math.max(EPS, Math.hypot(dx, dy));
+    const k = p.q / (d * d); // radial monopole, 1/d² falloff
+    fx += (dx / d) * k;
+    fy += (dy / d) * k;
+  }
+  return { x: fx, y: fy };
+}

@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nearestOnRect, sdfRect, polePair, type AxisRect } from './geometry.ts';
+import { nearestOnRect, sdfRect, polePair, dipoleField, type AxisRect, type Pole } from './geometry.ts';
 
 const near = (a: number, b: number, eps = 1e-9): boolean => Math.abs(a - b) <= eps;
 
@@ -85,4 +85,37 @@ test('polePair: a diagonal heading is limited by the nearest box edge', () => {
   // reach = min(60/d, 10/d) = 10/d ≈ 14.14; offset = reach·(d, d) = (10, 10)
   assert.ok(near(pos.x, 110) && near(pos.y, 110));
   assert.ok(near(neg.x, 90) && near(neg.y, 90));
+});
+
+// a dipole on the x-axis: + pole left, − pole right
+const dipole: Pole[] = [
+  { x: -10, y: 0, q: 1 },
+  { x: 10, y: 0, q: -1 },
+];
+
+test('dipoleField: at the midpoint the field points from + to −', () => {
+  const f = dipoleField(dipole, 0, 0);
+  assert.ok(f.x > 0); // toward the − pole (to the right)
+  assert.ok(near(f.y, 0)); // symmetric, no vertical component
+});
+
+test('dipoleField: swapping polarity reverses the field', () => {
+  const flipped: Pole[] = [
+    { x: -10, y: 0, q: -1 },
+    { x: 10, y: 0, q: 1 },
+  ];
+  const a = dipoleField(dipole, 0, 0);
+  const b = dipoleField(flipped, 0, 0);
+  assert.ok(near(a.x, -b.x) && near(a.y, -b.y));
+});
+
+test('dipoleField: the field weakens with distance', () => {
+  const nearF = dipoleField(dipole, 0, 30);
+  const farF = dipoleField(dipole, 0, 300);
+  assert.ok(Math.hypot(nearF.x, nearF.y) > Math.hypot(farF.x, farF.y));
+});
+
+test('dipoleField: a pole sample is floored by EPS, never infinite', () => {
+  const f = dipoleField(dipole, -10, 0); // exactly on the + pole
+  assert.ok(Number.isFinite(f.x) && Number.isFinite(f.y));
 });

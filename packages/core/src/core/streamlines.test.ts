@@ -2,9 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { forceAt } from './streamlines.ts';
 import { coreForces } from '../forces/index.ts';
+import { naturalForces } from '../forces/natural.ts';
 import type { Body, Env } from './types.ts';
 
 const forces = Object.fromEntries(coreForces.map((f) => [f.token, f]));
+const allForces = Object.fromEntries([...coreForces, ...naturalForces].map((f) => [f.token, f]));
 
 const env = (): Env => ({
   dx: 0, dy: 0, dist: 1,
@@ -52,4 +54,18 @@ test('two bodies superpose', () => {
   const b = body('attract', 600, 300);
   const mid = forceAt([a, b], forces, env(), 400, 300); // exactly between → cancels horizontally
   assert.ok(Math.abs(mid.fx) < 1e-6, `symmetric pull cancels: ${mid.fx}`);
+});
+
+test('magnetism is visible in the field-flow view via field()', () => {
+  // magnetism.apply no-ops on a still, neutral probe, so before field() it was invisible
+  // here. Its dipole field() now contributes the structure of B.
+  const b = body('magnetism', 400, 300);
+  const { fx, fy } = forceAt([b], allForces, env(), 340, 300); // near the body, inside range
+  assert.ok(Math.hypot(fx, fy) > 0, 'magnetism projects a visual field on a still, neutral probe');
+});
+
+test('charge projects an electric dipole field', () => {
+  const b = body('charge', 400, 300);
+  const { fx, fy } = forceAt([b], allForces, env(), 360, 300);
+  assert.ok(Math.hypot(fx, fy) > 0);
 });

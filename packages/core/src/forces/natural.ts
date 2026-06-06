@@ -13,6 +13,18 @@
 
 import type { Body, Particle, Env, Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
+import { polePair, dipoleField } from '../core/geometry.ts';
+
+/**
+ * The body's dipole field at a world point (the visual/structure field, Stage B): the
+ * two-pole superposition scaled by the source magnitude. Shared by `magnetism` (the bar
+ * magnet, rendered but not followed) and `charge` (the electric field the force flows
+ * along). `s` is the source scalar — `strength` for B, `M` for the charge field.
+ */
+function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
+  const f = dipoleField(polePair(b), x, y);
+  return { x: f.x * s, y: f.y * s };
+}
 
 /**
  * The shared softened inverse-square kernel (§20.10): `s / (d² + ε²)` along the
@@ -68,6 +80,9 @@ export const charge: Force = {
     // inward-pointing kernel so like signs repel and opposite signs attract.
     inverseSquare(b, p, e, -(b.spin * q * e.G * b.M));
   },
+  // The electric dipole field the element projects (Stage B), sourced by its charge `M`.
+  // Rendered as +→− field lines; Stage C aligns the force to flow charged matter along it.
+  field: (b, x, y) => bodyDipole(b, x, y, b.M),
   meta: { desc: 'signed inverse-square — like repels, opposite attracts' },
 };
 
@@ -102,6 +117,9 @@ export const magnetism: Force = {
     p.vx = vx0 * cs - p.vy * sn;
     p.vy = vx0 * sn + p.vy * cs;
   },
+  // The dipole structure of B (Stage B). Rendered as field lines; particles curve
+  // perpendicular to it (the apply above) rather than following it. Sourced by `strength`.
+  field: (b, x, y) => bodyDipole(b, x, y, b.strength),
   meta: { desc: 'Lorentz force — curves a moving charge perpendicular to its velocity' },
 };
 

@@ -208,6 +208,15 @@ export interface Force {
    * pool ceiling keep the count bounded).
    */
   source?(b: Body, env: Env): void;
+  /**
+   * Optional *visual field* hook (field-systems plan, Stage B). The in-plane field vector
+   * the body projects at a world point, with no particle and no velocity. Renders field
+   * lines and makes velocity- or charge-dependent forces (whose `apply` is a no-op on a
+   * still probe) visible in the field-flow view. For `magnetism` this is the dipole
+   * structure of B — particles still curve perpendicular, they do not follow it; for
+   * `charge` it is the electric field the force pushes along. Pure: same input, same output.
+   */
+  field?(b: Body, x: number, y: number): Vec2;
   meta?: { desc?: string };
 }
 
