@@ -29,7 +29,7 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
 ---
 
 <DocsLayout
-  title="forces-ui — Vanilla TypeScript guide"
+  title="forces-ui — TypeScript guide"
   description="Use forces-ui from plain TypeScript with @forces-ui/vanilla: a typed ForcesField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
 >
   <header class="docs-hero">
@@ -77,7 +77,7 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
       Prefer a plain function over a class? <code>mountField()</code> returns the bare
       <a href="/docs/api/handle">FieldHandle</a>; its <code>destroy()</code> also removes the
       canvas it made. <code>createField()</code> is re-exported too, for when you own the canvas
-      and want the lowest-level entry — see the <a href="/docs/guides/vanilla">core engine</a> guide.
+      and want the lowest-level entry — see the <a href="/docs/guides/core">core engine</a> guide.
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: mount }]} />
     <div class="callout">
