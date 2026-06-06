@@ -560,12 +560,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
+    // metaballs (a molten iso-surface skin) and streamlines (the bare force field) REPLACE
+    // the matter per §20.6, so suppress the dot swarm for those two; dots/trails/links/voronoi
+    // keep it (their overlays read against the particles).
+    const showMatter = cfg.render !== 'metaballs' && cfg.render !== 'streamlines';
     ctx!.globalCompositeOperation = 'lighter';
     const acc = hexToRgb(cfg.accent);
     const cx = W / 2;
     const cy = H * 0.4;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
-    for (const p of store.particles) {
+    if (showMatter) for (const p of store.particles) {
       if (p.cap) {
         ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.55 * boot})`;
         ctx!.beginPath();

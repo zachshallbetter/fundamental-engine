@@ -3,24 +3,22 @@ import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
+import { BODY_TOKENS, attrsFor } from '../lib/demo-forces.ts';
 import '../styles/manual.css';
 import '../styles/force-glyphs.css';
 
 // The Field Manual — the original chapter-based explainer, rebuilt on the typed
 // engine and extended to the full catalog. Every concept is a two-column row: prose
 // + formula beside a live demo body the shared field reacts to (the field-reacts law).
+//
+// The demo attributes (DEFAULTS / OVERRIDES / BODY_TOKENS / attrsFor) live in
+// lib/demo-forces.ts — the single source the field-line traces and the accuracy test
+// (field-probe.test.ts) read too, so the on-screen body and its traced path can't drift.
 
-const DEFAULTS = { strength: 1.5, range: 280, spin: 1, angle: -90 };
-const OVERRIDES: Record<string, Record<string, number>> = {
-  gravity: { strength: 320, range: 360 },
-  thermal: { strength: 2.5, range: 240 },
-  jet: { strength: 1.3, range: 280 },
-};
 const PRESET_COLORS: Record<string, string> = {
   blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
-  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf', fountain: '#7dd3fc',
 };
-const attrsFor = (t: string) => ({ ...DEFAULTS, ...(OVERRIDES[t] ?? {}) });
 const natural = MANUAL_FORCES.filter((f) => f.family === 'natural');
 const extended = MANUAL_FORCES.filter((f) => f.family === 'extended');
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -308,7 +306,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
         </div>
         <div class="stage">
           <span class="stage-label">sink — fills, then pops</span>
-          <div class="body-core" data-drag data-body="sink attract" data-absorb="64" data-max="30" data-strength="0.8" data-range="360" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">core</div>
+          <div class="body-core" data-drag data-body="sink attract" data-absorb="64" data-max="8" data-strength="0.8" data-range="180" style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);">core</div>
           <div class="meter" style="--cc:#ff9d5c;"><i></i></div>
           <span class="hintline">matter accumulates, then releases on supernova</span>
         </div>
@@ -362,7 +360,8 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
                 <span
                   class="body-chip"
                   data-drag
-                  data-body={f.token}
+                  data-hot
+                  data-body={BODY_TOKENS[f.token] ?? f.token}
                   data-strength={a.strength}
                   data-range={a.range}
                   data-spin={a.spin}
@@ -408,11 +407,13 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
                 <span
                   class="body-chip"
                   data-drag
-                  data-body={f.token}
+                  data-hot
+                  data-body={BODY_TOKENS[f.token] ?? f.token}
                   data-strength={a.strength}
                   data-range={a.range}
                   data-spin={a.spin}
                   data-angle={a.angle}
+                  data-color={f.token === 'pigment' ? f.color : undefined}
                   style={`--cc:${f.color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
                 >
                   <i class={`fg fg-${f.token}`} />
@@ -456,13 +457,14 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
                 <span
                   class="body-chip"
                   data-drag
+                  data-hot
                   data-preset={p.name}
                   style={`--cc:${color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
                 >
                   <i class={`fgp fgp-${p.name}`} />
                   {p.name}
                 </span>
-                <span class="hintline">a whole composite — {p.tokens.length} forces in one body</span>
+                <span class="hintline">hover to engage · {p.tokens.length} forces in one body</span>
               </div>
             </div>
           </section>
@@ -869,3 +871,168 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
     setTimeout(rescan, 250);
   })();
 </script>
+
+<!-- Real field-line tracing — runs the actual engine (runScenario) to draw each
+     force's true trajectories. Bundled (not inline) so it can import the probe lib. -->
+<script>
+  import { traceField } from '../lib/field-probe.ts';
+
+  function hexToRgb(hex) {
+    const h = (hex || '#4da3ff').replace('#', '');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+
+  function drawTrace(cvs, stage, trace, color) {
+    const w = stage.offsetWidth || 400;
+    const h = stage.offsetHeight || 300;
+    cvs.width = w;
+    cvs.height = h;
+    const ctx = cvs.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2;
+    const R = Math.min(w, h) * 0.42; // a normalized extent of 1 maps to this many px
+    const [r, g, b] = hexToRgb(color);
+
+    if (trace.special === 'pigment') {
+      // pigment exerts no force — show the dye it carries: a stain + streaks that tint up
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+      grd.addColorStop(0, `rgba(${r},${g},${b},0.32)`);
+      grd.addColorStop(0.6, `rgba(${r},${g},${b},0.12)`);
+      grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+      for (let row = -1; row <= 1; row++) {
+        const y = cy + row * R * 0.4;
+        const steps = 26;
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x0 = cx - R + t * 2 * R;
+          // neutral entering left → full tint past the body centre (picks up the dye)
+          const mix = Math.max(0, Math.min(1, (t - 0.35) / 0.4));
+          const cr = Math.round(150 + (r - 150) * mix);
+          const cg = Math.round(160 + (g - 160) * mix);
+          const cb = Math.round(170 + (b - 170) * mix);
+          ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.45)`;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + (2 * R) / steps + 1, y); ctx.stroke();
+        }
+        // arrowhead
+        ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
+        ctx.beginPath();
+        ctx.moveTo(cx + R, y); ctx.lineTo(cx + R - 6, y - 3);
+        ctx.moveTo(cx + R, y); ctx.lineTo(cx + R - 6, y + 3);
+        ctx.stroke();
+      }
+      return;
+    }
+
+    // annotation rings (capture radius, rest shell)
+    ctx.setLineDash([3, 4]);
+    ctx.lineWidth = 1.3;
+    for (const ring of trace.rings) {
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
+      ctx.beginPath(); ctx.arc(cx, cy, ring.r * R, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // real trajectories — fade faint→bright along travel, arrowhead at the leading end
+    for (const path of trace.paths) {
+      const n = path.length;
+      if (n < 2) continue;
+      ctx.lineWidth = 1.1;
+      for (let i = 1; i < n; i++) {
+        const a = 0.07 + 0.4 * (i / n);
+        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.beginPath();
+        ctx.moveTo(cx + path[i - 1].x * R, cy + path[i - 1].y * R);
+        ctx.lineTo(cx + path[i].x * R, cy + path[i].y * R);
+        ctx.stroke();
+      }
+      const head = path[n - 1];
+      const tail = path[Math.max(0, n - 4)];
+      const hx = cx + head.x * R, hy = cy + head.y * R;
+      const dx = head.x - tail.x, dy = head.y - tail.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 1e-4) {
+        const ux = dx / d, uy = dy / d, sz = 5;
+        ctx.strokeStyle = `rgba(${r},${g},${b},0.62)`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy); ctx.lineTo(hx - ux * sz - uy * sz * 0.5, hy - uy * sz + ux * sz * 0.5);
+        ctx.moveTo(hx, hy); ctx.lineTo(hx - ux * sz + uy * sz * 0.5, hy - uy * sz - ux * sz * 0.5);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function paintFieldLines() {
+    if (window.__fieldLinesTeardown) window.__fieldLinesTeardown();
+    const observers = [];
+    const canvases = [];
+    window.__fieldLinesTeardown = () => {
+      observers.forEach((o) => o.disconnect());
+      canvases.forEach((c) => c.remove());
+    };
+
+    document.querySelectorAll('.stage').forEach((stage) => {
+      const chip = stage.querySelector('[data-body], [data-preset]');
+      if (!chip) return;
+      const raw = chip.dataset.body || chip.dataset.preset || '';
+      const token = raw.split(/\s+/)[0]; // primary force of a composed body
+      // Trace the SAME force the live chip configures — read its real data-* attrs so the
+      // path matches the on-screen particles (heading, strength, range, spin, sibling tokens).
+      const num = (v) => (v != null && v !== '' && isFinite(Number(v)) ? Number(v) : undefined);
+      const override = chip.dataset.body
+        ? {
+            tokens: raw.split(/\s+/).filter(Boolean),
+            strength: num(chip.dataset.strength),
+            range: num(chip.dataset.range),
+            spin: num(chip.dataset.spin),
+            angleDeg: num(chip.dataset.angle),
+          }
+        : {};
+      let trace;
+      try {
+        trace = traceField(token, override);
+      } catch (e) {
+        return;
+      }
+      if (!trace) return;
+      const cc = (getComputedStyle(chip).getPropertyValue('--cc') || '').trim() || '#4da3ff';
+
+      const cvs = document.createElement('canvas');
+      cvs.className = 'stage-field';
+      cvs.setAttribute('aria-hidden', 'true');
+      stage.insertBefore(cvs, stage.firstChild);
+      canvases.push(cvs);
+
+      const draw = () => drawTrace(cvs, stage, trace, cc);
+      draw();
+      const ro = new ResizeObserver(draw);
+      ro.observe(stage);
+      observers.push(ro);
+    });
+  }
+
+  if (document.readyState !== 'loading') paintFieldLines();
+  else document.addEventListener('DOMContentLoaded', paintFieldLines);
+  document.addEventListener('astro:page-load', paintFieldLines);
+</script>
+
+<style is:global>
+  .stage { position: relative; }
+  .stage-field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+  .stage-field ~ * { position: relative; z-index: 1; }
+  /* the nav field-line toggle flips this class on <html> */
+  html.hide-field-lines .stage-field { opacity: 0; }
+</style>

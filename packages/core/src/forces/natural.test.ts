@@ -107,28 +107,40 @@ test('diffuse deposits a mark and follows the gradient up-slope (§20.10)', () =
   assert.ok(near(p.vy, 0));
 });
 
-test('propagate injects at the source when engaged and rides the wavefront (§20.10)', () => {
+test('propagate injects a shock at the source via the source hook, on pulse frames (§20.10)', () => {
   const rec: number[][] = [];
-  const p = part({ x: 5, y: 5 });
-  propagate.apply(
-    body({ strength: 0.5, range: 300, on: true, cx: 100, cy: 50 }),
-    p,
-    env({ dist: 10, grid: () => fakeGrid({ x: 0, y: 3 }, rec) }),
+  // source() — body-level, once per frame: an engaged body deposits at its centre on a pulse
+  // frame (frameN % WAVE_PULSE_PERIOD === 0). 0 % 12 === 0, so frame 0 fires.
+  propagate.source!(
+    body({ strength: 0.5, on: true, cx: 100, cy: 50 }),
+    env({ frameN: 0, grid: () => fakeGrid({ x: 0, y: 0 }, rec) }),
   );
   assert.deepEqual(rec, [[100, 50, 0.5]]); // injected at the body centre
-  assert.ok(near(p.vy, 1.5)); // grad.y·strength
 });
 
-test('propagate rides the front without injecting when idle', () => {
-  const rec: number[][] = [];
-  const p = part({ x: 5, y: 5 });
+test('propagate rides the front OUTWARD, scaled by wavefront steepness (§20.10)', () => {
+  // apply() pushes matter radially away from the body where a front is passing (|∇φ| steep).
+  // Body at the origin, particle out along +x → outward is +x, independent of the gradient's
+  // direction (only its magnitude — the wave activity — matters).
+  const p = part({ x: 10, y: 0 });
   propagate.apply(
-    body({ strength: 0.5, range: 300, on: false }),
+    body({ strength: 0.5, range: 300, cx: 0, cy: 0 }),
     p,
-    env({ dist: 10, grid: () => fakeGrid({ x: 1, y: 0 }, rec) }),
+    env({ dx: -10, dy: 0, dist: 10, grid: () => fakeGrid({ x: 1, y: 2 }, []) }),
   );
-  assert.equal(rec.length, 0); // no injection when not engaged
-  assert.ok(near(p.vx, 0.5)); // still rides the gradient
+  const act = Math.hypot(1, 2); // |∇φ|
+  assert.ok(near(p.vx, act * 0.5 * 7)); // outward(+x)·act·strength·WAVE_PUSH
+  assert.ok(near(p.vy, 0)); // push is purely radial (outward), regardless of ∇φ direction
+});
+
+test('propagate emits only when engaged and only on pulse frames (a shock train)', () => {
+  const rec: number[][] = [];
+  // idle → nothing
+  propagate.source!(body({ on: false, cx: 0, cy: 0 }), env({ frameN: 0, grid: () => fakeGrid({ x: 0, y: 0 }, rec) }));
+  assert.equal(rec.length, 0);
+  // engaged but off a pulse frame → also nothing (no continuous DC drip)
+  propagate.source!(body({ on: true, cx: 0, cy: 0, strength: 1 }), env({ frameN: 5, grid: () => fakeGrid({ x: 0, y: 0 }, rec) }));
+  assert.equal(rec.length, 0);
 });
 
 test('diffuse and propagate are inert beyond range', () => {
@@ -198,25 +210,26 @@ test('charge: neutral matter is unaffected', () => {
 
 test('magnetism deflects a moving charge perpendicular (§20.10)', () => {
   const p = part({ vx: 1, vy: 0, charge: 1 });
-  // q=+1, B=spin·strength=+0.5, v=+x → F = qB·(−v_y, v_x) = (0, 0.5): curls toward +y.
+  // Exact rotation by θ=qB=0.5 rad; v=(1,0) → v'=(cos θ, sin θ).
   magnetism.apply(body({ spin: 1, strength: 0.5, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
-  assert.ok(near(p.vx, 1));
-  assert.ok(near(p.vy, 0.5));
+  assert.ok(near(p.vx, Math.cos(0.5)));
+  assert.ok(near(p.vy, Math.sin(0.5)));
 });
 
-test('magnetism does no work — impulse is perpendicular to velocity (§20.10)', () => {
+test('magnetism does no work — speed is preserved (§20.10)', () => {
   const before = { vx: 2, vy: 1 };
   const p = part({ ...before, charge: 1 });
+  const speedBefore = Math.hypot(before.vx, before.vy);
   magnetism.apply(body({ spin: 1, strength: 1, range: 300 }), p, env({ dx: 5, dy: 0, dist: 5 }));
-  const dvx = p.vx - before.vx;
-  const dvy = p.vy - before.vy;
-  assert.ok(near(dvx * before.vx + dvy * before.vy, 0)); // Δv ⟂ v → F·v = 0
+  const speedAfter = Math.hypot(p.vx, p.vy);
+  assert.ok(near(speedAfter, speedBefore, 1e-9)); // exact rotation preserves |v| to float precision
 });
 
 test('magnetism: body spin flips the sense of curl', () => {
   const p = part({ vx: 1, vy: 0, charge: 1 });
+  // Rotation by θ=−0.5 rad; v=(1,0) → v'=(cos 0.5, −sin 0.5).
   magnetism.apply(body({ spin: -1, strength: 0.5, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
-  assert.ok(near(p.vy, -0.5)); // opposite spin → curls toward −y
+  assert.ok(near(p.vy, -Math.sin(0.5))); // opposite spin → curls toward −y
 });
 
 test('magnetism: neutral matter is unaffected', () => {

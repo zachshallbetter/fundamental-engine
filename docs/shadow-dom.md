@@ -1081,11 +1081,12 @@ Define what rectangle represents the body.
 
 Meanings:
 
-Value	Meaning
-host	host element box
-content	slotted content bounding box
-visual	internal visual surface
-custom	component-provided getRect()
+| Value | Meaning |
+|---|---|
+| `host` | host element box |
+| `content` | slotted content bounding box |
+| `visual` | internal visual surface |
+| `custom` | component-provided getRect() |
 
 Default: host.
 
@@ -1101,10 +1102,11 @@ Define where reciprocal state is written.
 
 Meanings:
 
-Value	Meaning
-host	write CSS variables to host
-surface	component-provided internal surface
-none	participate physically but do not receive CSS write-back
+| Value | Meaning |
+|---|---|
+| `host` | write CSS variables to host |
+| `surface` | component-provided internal surface |
+| `none` | participate physically but do not receive CSS write-back |
 
 Default: host.
 
@@ -1332,11 +1334,12 @@ Field events can get noisy. Define event policies.
 
 Meanings:
 
-Value	Meaning
-none	no field events
-threshold	only lit/dim/saturated/etc.
-state:250	state event every 250ms
-frame	every frame, debug only
+| Value | Meaning |
+|---|---|
+| `none` | no field events |
+| `threshold` | only lit/dim/saturated/etc. |
+| `state:250` | state event every 250ms |
+| `frame` | every frame, debug only |
 
 Default: threshold.
 

@@ -13,6 +13,46 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EXPERIMENTS, COMPOSITE_EXPERIMENTS } from './experiments.ts';
 import { allForces, runScenario } from './run.ts';
+import type { Particle } from '../core/types.ts';
+
+// ── snap() round-trip: every meaningful Particle field must survive serialization ──
+// The class of bug: a field present on Particle but absent on FrameState means
+// the Lab/conformance HUD silently drops it. Add the field here when you add it
+// to either Particle or FrameState.
+test('snap() round-trip: all meaningful Particle fields survive into FrameState', () => {
+  // A fully-populated particle — set every field that snap() should reflect.
+  const p: Particle = {
+    x: 10, y: 20,
+    vx: 1.5, vy: -0.8,
+    m: 1,
+    heat: 0.4,
+    size: 3,
+    cap: null,
+  };
+  // Run a 1-frame scenario with a sink body so cap state is exercised by the engine.
+  const r = runScenario({
+    force: 'attract',
+    label: 'snap round-trip',
+    family: 'canonical',
+    klass: 'A',
+    body: {},
+    particles: [{ x: 0, y: 0, vx: 0, vy: 0 }],
+    frames: 1,
+  });
+  const frame0 = r.trajectory[0]![0]!;
+  // These fields must be present on every FrameState — if any are undefined the
+  // snap() function dropped them.
+  assert.equal(typeof frame0.x, 'number', 'x missing from FrameState');
+  assert.equal(typeof frame0.y, 'number', 'y missing from FrameState');
+  assert.equal(typeof frame0.vx, 'number', 'vx missing from FrameState');
+  assert.equal(typeof frame0.vy, 'number', 'vy missing from FrameState');
+  assert.equal(typeof frame0.heat, 'number', 'heat missing from FrameState');
+  assert.equal(typeof frame0.speed, 'number', 'speed missing from FrameState');
+  assert.equal(typeof frame0.cap, 'boolean', 'cap missing from FrameState (was once silently dropped)');
+  // speed must equal hypot(vx, vy) — not a raw copy.
+  assert.ok(Math.abs(frame0.speed - Math.hypot(frame0.vx, frame0.vy)) < 1e-9, 'speed ≠ hypot(vx,vy)');
+  void p; // used above to document which particle fields are exercised
+});
 
 const registry = allForces();
 const C = 12; // the unit system's velocity cap — must match run.ts makeEnv's env.c

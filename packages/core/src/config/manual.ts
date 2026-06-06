@@ -36,6 +36,18 @@ export interface ManualEntry {
   color: string;
   /** a one-line real-world use — what you'd reach for this force to do in a UI. */
   example: string;
+  /**
+   * True when the force only acts while `b.on` is true (element is engaged / data-hot).
+   * Propagate emits waves, spawn creates particles — both silently idle without engagement.
+   * Demo templates should add `data-hot` so hover activates the effect.
+   */
+  requiresEngagement?: boolean;
+  /**
+   * Concrete Δv per frame at a reference point: strength=1, range=280, d=100px, one frame.
+   * Lets developers calibrate forces without running the Lab.
+   * Format: "Δv ≈ X px/frame at d=100px (S=1, r=280)"
+   */
+  calibration?: string;
 }
 
 /**
@@ -170,7 +182,7 @@ export const FORCE_SUMMARIES: Record<string, string> = {
   magnetism: 'A force perpendicular to motion — bends a moving particle without doing work.',
   thermal: 'Brownian agitation — random kicks that heat the medium.',
   collide: 'Hard-sphere contact — particles bounce off one another.',
-  diffuse: 'Spreads density down its gradient, high to low.',
+  diffuse: 'Lays a trail and climbs it — matter follows the diffused mark up-gradient.',
   propagate: 'A travelling wave — a disturbance that moves through the field.',
   memory: 'A trace of where matter has been — past paths persist and pull.',
   // designed-extended
@@ -210,8 +222,8 @@ export const FORCE_EFFECTS: Record<string, string> = {
   magnetism: 'Curves paths at constant speed.',
   thermal: 'Jitters particles, raises temperature.',
   collide: 'Exchanges momentum on impact.',
-  diffuse: 'Evens particles across space.',
-  propagate: 'Passes energy particle to particle.',
+  diffuse: 'Lays and follows a trail.',
+  propagate: 'Carries matter outward on the wavefront.',
   memory: 'Biases motion toward old tracks.',
   // designed-extended
   lens: 'Concentrates particles to a focus.',
@@ -287,7 +299,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     family: 'canonical',
     token: 'tether',
     label: 'Tether',
-    formula: 'v += û · (d − rest) · k · 0.985,  rest = 0.6·r',
+    formula: 'v += û · (d − rest) · k;  v *= 0.985,  rest = 0.6·r',
     attrs: ['strength', 'range'],
     desc: 'a tether with a rest length — holds matter at a shell radius',
   },
@@ -329,7 +341,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     family: 'natural',
     token: 'magnetism',
     label: 'Magnetism',
-    formula: 'F = q·B·(−v_y, v_x)',
+    formula: 'v ← rotate(v, q·spin·B)',
     attrs: ['strength', 'range', 'spin'],
     desc: 'the Lorentz force — curves a moving charge, doing no work',
   },
@@ -337,7 +349,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     family: 'natural',
     token: 'thermal',
     label: 'Thermal',
-    formula: 'v += √(2T) · ξ,  ξ ~ N(0,1) per axis',
+    formula: 'v += √(2T) · ξ,  T = S·(1 − d/r),  ξ ~ N(0,1) per axis',
     attrs: ['strength', 'range'],
     desc: 'Langevin/Brownian agitation — a real temperature in the medium',
   },
@@ -361,15 +373,16 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     family: 'natural',
     token: 'propagate',
     label: 'Propagate',
-    formula: 'inject φ at the source; v += ∇φ · S;  ∂²φ/∂t² = c²∇²φ',
+    formula: 'pulse φ at the source; v += r̂·|∇φ|·S (ride the front out);  ∂²φ/∂t² = c²∇²φ',
     attrs: ['strength', 'range'],
     desc: 'a travelling wave — particles ride the expanding front',
+    requiresEngagement: true, // wave emission only fires while b.on=true (data-hot or engaged)
   },
   {
     family: 'natural',
     token: 'memory',
     label: 'Memory',
-    formula: 'M(x) += λ where matter sits;  v += û · (1 − d/r)² · S · (1 + μ·M)',
+    formula: 'M(x) += λ where matter sits;  v += û · (1 − d/r)² · S · 0.5 · (1 + μ·M)',
     attrs: ['strength', 'range'],
     desc: 'the field remembers — occupancy wears in paths that pull harder',
   },
@@ -427,7 +440,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     family: 'extended',
     token: 'wind',
     label: 'Wind',
-    formula: 'v += curl(ψ)·S,  ψ = sin(x·s + t)·cos(y·s − t)',
+    formula: 'v += curl(ψ)·S,  ψ = sin(x·s + 0.2t)·cos(y·s − 0.2t)',
     attrs: ['strength', 'range'],
     desc: 'divergence-free curl-noise turbulence',
   },
@@ -462,6 +475,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     formula: 'while engaged: emit S·2 particles/frame along the heading, each living ~90 frames',
     attrs: ['strength', 'angle'],
     desc: 'a source [S] — creates matter along the heading, budgeted by a lifespan + pool ceiling',
+    requiresEngagement: true, // source only fires while b.on=true — add data-hot to demo chips
   },
   {
     family: 'extended',
@@ -542,4 +556,5 @@ export const MANUAL_CONDITIONS: readonly { id: string; desc: string }[] = [
   { id: 'slow', desc: 'the particle is moving slowly' },
   { id: 'hot', desc: 'the particle is hot' },
   { id: 'cool', desc: 'the particle is cool' },
+  { id: 'scrolling', desc: 'the page is actively scrolling' },
 ];

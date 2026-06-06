@@ -174,6 +174,7 @@ const snap = (p: Particle): FrameState => ({
   vy: p.vy,
   heat: p.heat,
   speed: Math.hypot(p.vx, p.vy),
+  cap: !!p.cap,
 });
 
 /** Per-particle frame-0 force effect: one direct `apply` of the body's non-modifier

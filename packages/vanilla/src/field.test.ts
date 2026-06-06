@@ -107,3 +107,115 @@ test('ForcesField drives a canvas you own without creating or removing one', () 
   field.destroy();
   assert.equal(body.children.length, 0); // and we removed nothing
 });
+
+// ── FieldHandle method contracts ─────────────────────────────────────────────
+
+test('setAccent() accepts a hex string without throwing', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setAccent('#ff6e9c'));
+  assert.doesNotThrow(() => field.setAccent('#4da3ff'));
+  field.destroy();
+});
+
+test('setPalette() accepts a built-in name or a custom hex array', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setPalette('ours'));
+  assert.doesNotThrow(() => field.setPalette(['#111111', '#222222', '#333333']));
+  field.destroy();
+});
+
+test('setFormation() accepts every valid formation id', () => {
+  installDOM();
+  const field = new ForcesField();
+  const formations = ['ambient', 'wells', 'lanes', 'scatter', 'accretion'] as const;
+  for (const f of formations) {
+    assert.doesNotThrow(() => field.setFormation(f), `setFormation('${f}')`);
+  }
+  field.destroy();
+});
+
+test('setFormation() with an unknown name does not throw', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setFormation('nonexistent-formation'));
+  field.destroy();
+});
+
+test('setAttention() toggles the attention budget without throwing', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setAttention(true));
+  assert.doesNotThrow(() => field.setAttention(false));
+  assert.doesNotThrow(() => field.setAttention(true));
+  field.destroy();
+});
+
+test('setCausality() toggles cross-boundary density without throwing', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setCausality(true));
+  assert.doesNotThrow(() => field.setCausality(false));
+  field.destroy();
+});
+
+test('setRender() accepts all six render modes', () => {
+  installDOM();
+  const field = new ForcesField();
+  const modes = ['dots', 'trails', 'links', 'metaballs', 'voronoi', 'streamlines'] as const;
+  for (const mode of modes) {
+    assert.doesNotThrow(() => field.setRender(mode), `setRender('${mode}')`);
+  }
+  field.destroy();
+});
+
+test('threads() accepts a ThreadLink array and null', () => {
+  installDOM();
+  const field = new ForcesField();
+  const fakeEl = {} as HTMLElement;
+  assert.doesNotThrow(() => field.threads([{ a: fakeEl, b: fakeEl, color: '#ffffff' }]));
+  assert.doesNotThrow(() => field.threads(null));
+  field.destroy();
+});
+
+test('burst() fires without crashing at arbitrary coordinates', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.burst(400, 300));
+  assert.doesNotThrow(() => field.burst(0, 0, '#4da3ff'));
+  assert.doesNotThrow(() => field.burst(9999, 9999));
+  field.destroy();
+});
+
+test('scan() and rescan() run without crashing', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.scan());
+  assert.doesNotThrow(() => field.rescan());
+  field.destroy();
+});
+
+test('destroy() is idempotent — calling it twice does not throw', () => {
+  installDOM();
+  const field = new ForcesField();
+  field.destroy();
+  assert.doesNotThrow(() => field.destroy());
+});
+
+test('createField options: render, density, waves, palette, mass, attention, causality', () => {
+  const { makeCanvas } = installDOM();
+  const canvas = makeCanvas();
+  assert.doesNotThrow(() => {
+    const h = createField(canvas, {
+      render: 'trails',
+      density: 2,
+      waves: false,
+      palette: 'ours',
+      mass: true,
+      attention: true,
+      causality: true,
+    });
+    h.destroy();
+  });
+});

@@ -1,0 +1,985 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import CodeTabs from '../components/CodeTabs.astro';
+import '../styles/docs.css';
+
+// These demos are LIVE — the real <forces-field> on this page (from Base.astro)
+// reacts to the [data-body] elements below, and writes density back as --d. This
+// is the actual reciprocal system, not a poster.
+
+const heroSrc = `<span
+  class="hero"
+  data-body="attract"
+  data-strength="1"
+  data-range="340"
+  data-feedback
+>gravity</span>
+
+<style>
+  .hero {
+    --d: 0;  /* the field eases this in ∈ [0,1] */
+    font-weight: 700;
+    font-variation-settings: 'wght' calc(380 + var(--d) * 420);
+    color: color-mix(in srgb, #4da3ff calc(40% + var(--d) * 55%), #fff);
+    text-shadow: 0 0 calc(var(--d) * 44px) rgba(77, 163, 255, var(--d));
+  }
+</style>`;
+
+const gridSrc = `<article class="card" data-body="attract" data-strength="0.6" data-range="220" data-feedback>
+  …card…
+</article>
+
+<style>
+  .card {
+    --d: 0;
+    transform: scale(calc(1 + var(--d) * 0.03));
+    border-color: color-mix(in srgb, #4da3ff calc(var(--d) * 75%), rgba(255,255,255,0.1));
+    box-shadow: 0 0 calc(var(--d) * 30px) rgba(77, 163, 255, calc(var(--d) * 0.5));
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+</style>`;
+
+const burstSrc = `const field = document.querySelector('forces-field');
+
+stage.addEventListener('click', (e) => {
+  field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor
+});`;
+
+const emphSrc = `<ul class="reading-list">
+  <li data-hot data-feedback data-body="attract" data-strength="1.1" data-range="240">
+    Designing with force
+  </li>
+  <!-- …more items, each its own attractor… -->
+</ul>
+
+<script type="module">
+  const field = document.querySelector('forces-field');
+  field.setAttention(true);   // ONE conserved budget across the page:
+                              // focusing one body starves the others
+</script>
+
+<style>
+  .reading-list li {
+    --d: 0;                                  /* the field eases this in ∈ [0,1] */
+    opacity: calc(0.4 + var(--d) * 0.6);     /* idle recedes, focus rises */
+    font-weight: calc(400 + var(--d) * 320);
+    transition: opacity .25s, font-weight .25s;
+  }
+</style>`;
+
+const selfLaySrc = `<div class="tag-cloud">
+  <span class="tag" data-move="layout">design</span>
+  <span class="tag" data-move="layout">physics</span>
+  <span class="tag" data-move="layout">layout</span>
+  <!-- …more chips, all stacked at the same point… -->
+</div>
+
+<style>
+  .tag-cloud { position: relative; min-height: 260px; }
+  .tag {
+    position: absolute; left: 50%; top: 50%;   /* all start at one point */
+    margin: -1.05em 0 0 -3em;                  /* rough centring */
+    will-change: transform;                    /* the engine adds the offset */
+  }
+</style>
+
+<!-- data-move="layout": each chip anchors to home, repels its neighbours,
+     and drifts off dense field regions. Stacked at one point, the cluster
+     spreads itself to even spacing and re-settles on disturbance or resize.
+     No layout code. -->`;
+
+const springSrc = `// The tether force, applied to an element's transform instead of a particle:
+//   v += (target − x) · k;   v *= damping;   x += v
+// Critically damped (k≈0.18, damping≈0.72) → it settles without overshoot.
+function springTo(el, tx, ty) {
+  const s = (el._s ||= { x: 0, y: 0, vx: 0, vy: 0 });
+  s.tx = tx; s.ty = ty;
+  const tick = () => {
+    s.vx = (s.vx + (s.tx - s.x) * 0.18) * 0.72;
+    s.vy = (s.vy + (s.ty - s.y) * 0.18) * 0.72;
+    s.x += s.vx; s.y += s.vy;
+    el.style.transform = \`translate(\${s.x}px, \${s.y}px)\`;
+    if (Math.hypot(s.tx - s.x, s.ty - s.y) > 0.15) requestAnimationFrame(tick);
+  };
+  tick();
+}`;
+
+const snapSrc = `tile.addEventListener('pointerup', () => {
+  const s = tile._s;
+  // snap to the nearest grid cell — spring carries it the rest of the way
+  springTo(tile, Math.round(s.x / GRID) * GRID, Math.round(s.y / GRID) * GRID);
+});`;
+
+const reflowSrc = `// FLIP, but the Play step is a spring instead of a CSS curve.
+function reflow(items, mutate) {
+  const first = items.map((el) => el.getBoundingClientRect());
+  mutate();                                   // reorder / filter the DOM
+  items.forEach((el, i) => {
+    const last = el.getBoundingClientRect();
+    el._s.x += first[i].left - last.left;     // invert: jump back to the old spot
+    el._s.y += first[i].top - last.top;
+    springTo(el, 0, 0);                        // play: spring to the new spot
+  });
+}`;
+
+// The demos, grouped by concept — drives the sidebar, the in-content dividers, and scroll-spy.
+const GROUPS = [
+  {
+    id: 'reciprocity',
+    title: 'Reciprocity',
+    items: [
+      { id: 'hero-word', label: 'Glowing hero word' },
+      { id: 'card-grid', label: 'Reacting card grid' },
+      { id: 'conserved-emphasis', label: 'Conserved emphasis' },
+    ],
+  },
+  {
+    id: 'layout',
+    title: 'Layout as physics',
+    items: [
+      { id: 'self-spacing', label: 'Self-spacing labels' },
+      { id: 'magnetic-snapping', label: 'Magnetic snapping' },
+      { id: 'spring-reflow', label: 'Spring reflow' },
+    ],
+  },
+  {
+    id: 'control',
+    title: 'Field control',
+    items: [{ id: 'click-burst', label: 'Click to burst' }],
+  },
+];
+---
+
+<Base
+  title="forces-ui — Examples"
+  description="Live examples driven by the real field: a glowing hero word, a reacting card grid, conserved emphasis across a list, self-spacing labels, magnetic snapping, spring reflow, and a click-to-burst stage — each running on this page, paired with its copy-paste source."
+>
+  <SiteNav current="examples" />
+  <div class="examples-layout">
+    <aside class="examples-side" aria-label="Examples by concept">
+      <nav>
+        {
+          GROUPS.map((g) => (
+            <div class="ex-side-group">
+              <span class="ex-side-title">{g.title}</span>
+              <ul>
+                {g.items.map((it) => (
+                  <li>
+                    <a href={`#${it.id}`} data-spy={it.id}>
+                      {it.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </aside>
+    <main class="examples-shell">
+  <header class="docs-hero">
+    <p class="kicker">Examples</p>
+    <h1>Live <span class="accent">examples</span></h1>
+    <p class="lede">
+      Every demo here is real, grouped by what it shows. <strong>Reciprocity</strong>: the field
+      reacts to elements and writes density back. <strong>Layout as physics</strong>: the same
+      springs and repulsion, applied to where elements sit. <strong>Field control</strong>: driving
+      the field from your own events. Each comes with its source.
+    </p>
+  </header>
+
+  <div class="ex-group-head" id="reciprocity">Reciprocity</div>
+
+  <section class="docs-sec" id="hero-word">
+    <h2>A glowing hero word</h2>
+    <p>
+      The canonical reciprocity effect. The word is an <code>attract</code> body with
+      <code>data-feedback</code>; its <code>--d</code> drives weight and glow, so it grows where
+      matter gathers. Sweep your cursor across it.
+    </p>
+    <div class="sc-stage">
+      <span class="sc-hero" data-body="attract" data-strength="1" data-range="340" data-feedback
+        >gravity</span
+      >
+    </div>
+    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: heroSrc }]} />
+  </section>
+
+  <section class="docs-sec" id="card-grid">
+    <h2>A reacting card grid</h2>
+    <p>
+      Each card is a gentle attractor. Its <code>--d</code> drives a subtle lift, edge glow, and
+      shadow — the grid breathes as the field moves through it.
+    </p>
+    <div class="sc-cards">
+      <article class="sc-card" data-body="attract" data-strength="0.6" data-range="220" data-feedback>
+        <b>Reciprocal</b>
+        <span>the field bends to elements; elements bend back</span>
+      </article>
+      <article class="sc-card" data-body="attract" data-strength="0.6" data-range="220" data-feedback>
+        <b>Conserved</b>
+        <span>nothing is created from nothing — matter is moved</span>
+      </article>
+      <article class="sc-card" data-body="attract" data-strength="0.6" data-range="220" data-feedback>
+        <b>Physical</b>
+        <span>one field, not a pool of decorative particles</span>
+      </article>
+    </div>
+    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: gridSrc }]} />
+  </section>
+
+  <section class="docs-sec" id="conserved-emphasis">
+    <h2>Conserved emphasis</h2>
+    <p>
+      One finite attention budget across the page (<a href="/docs/api/handle"><code>setAttention</code></a>).
+      Focusing one item lifts it <em>and</em> makes the others recede by the same total — emphasis you
+      can't fake with hover styles, because the page can never over-emphasize more than the budget
+      allows. Hover or tab through the list, then flip the budget off to feel the difference.
+    </p>
+    <div class="sc-emph" data-emph>
+      <ul class="emph-list">
+        <li class="emph-item" data-hot data-feedback data-body="attract" data-strength="1.1" data-range="220" tabindex="0">
+          <b>Designing with force</b><span>why every element carries weight</span>
+        </li>
+        <li class="emph-item" data-hot data-feedback data-body="attract" data-strength="1.1" data-range="220" tabindex="0">
+          <b>The reciprocal field</b><span>elements bend it; it bends them back</span>
+        </li>
+        <li class="emph-item" data-hot data-feedback data-body="attract" data-strength="1.1" data-range="220" tabindex="0">
+          <b>Conservation as a law</b><span>nothing created from nothing</span>
+        </li>
+        <li class="emph-item" data-hot data-feedback data-body="attract" data-strength="1.1" data-range="220" tabindex="0">
+          <b>Reading as attention</b><span>a budget you spend by looking</span>
+        </li>
+        <li class="emph-item" data-hot data-feedback data-body="attract" data-strength="1.1" data-range="220" tabindex="0">
+          <b>Layout as physics</b><span>position is an equilibrium, not a value</span>
+        </li>
+      </ul>
+      <button type="button" class="emph-toggle" aria-pressed="true">Attention: conserved</button>
+    </div>
+    <CodeTabs variants={[{ label: 'HTML + CSS + JS', lang: 'html', code: emphSrc }]} />
+  </section>
+
+  <div class="ex-group-head" id="layout">Layout as physics</div>
+
+  <section class="docs-sec" id="self-spacing">
+    <h2>Self-spacing labels</h2>
+    <p>
+      Each chip is a <code>data-move="layout"</code> body: anchored to where it belongs, repelling its
+      neighbours, drifting off dense field regions. Drop them in a loose pile and they spread to even
+      spacing and re-settle when disturbed — collision-free placement with no layout code. Click the
+      stage to shove them.
+    </p>
+    <div class="sc-selflay" data-field-burst="#7dd3fc" role="presentation">
+      <div class="sc-cluster">
+        <span class="sc-chip" data-move="layout">design</span>
+        <span class="sc-chip" data-move="layout">physics</span>
+        <span class="sc-chip" data-move="layout">layout</span>
+        <span class="sc-chip" data-move="layout">field</span>
+        <span class="sc-chip" data-move="layout">density</span>
+        <span class="sc-chip" data-move="layout">motion</span>
+        <span class="sc-chip" data-move="layout">reciprocal</span>
+        <span class="sc-chip" data-move="layout">conserved</span>
+        <span class="sc-chip" data-move="layout">emergent</span>
+      </div>
+      <span class="sc-selflay-hint">click to disturb</span>
+    </div>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: selfLaySrc }]} />
+  </section>
+
+  <section class="docs-sec" id="magnetic-snapping">
+    <h2>Magnetic snapping</h2>
+    <p>
+      The same spring that powers the <a href="/docs/api/forces">tether</a> force, applied to an
+      element's transform. Drag the tile anywhere — on release it springs to the nearest grid cell.
+      A damped spring, not a stepped <code>round()</code>, so it carries momentum and settles.
+    </p>
+    <div class="sc-snap" data-snap role="presentation">
+      <div class="sc-snap-tile" tabindex="0">drag me</div>
+      <span class="sc-snap-hint">release to snap</span>
+    </div>
+    <CodeTabs
+      variants={[
+        { label: 'Spring', lang: 'js', code: springSrc },
+        { label: 'Snap', lang: 'js', code: snapSrc },
+      ]}
+    />
+  </section>
+
+  <section class="docs-sec" id="spring-reflow">
+    <h2>Spring reflow</h2>
+    <p>
+      Layout transitions as physics. When the order changes, each chip springs from its old position
+      to its new one — the FLIP technique, but the Play step is the tether spring instead of a CSS
+      curve, so the grid settles instead of snapping. Shuffle it.
+    </p>
+    <div class="sc-reflow-wrap">
+      <button type="button" class="sc-reflow-btn" data-reflow-shuffle>↯ Shuffle</button>
+      <div class="sc-reflow" data-reflow>
+        <span class="sc-reflow-item">attract</span>
+        <span class="sc-reflow-item">repel</span>
+        <span class="sc-reflow-item">swirl</span>
+        <span class="sc-reflow-item">stream</span>
+        <span class="sc-reflow-item">tether</span>
+        <span class="sc-reflow-item">gravity</span>
+        <span class="sc-reflow-item">charge</span>
+        <span class="sc-reflow-item">thermal</span>
+        <span class="sc-reflow-item">collide</span>
+        <span class="sc-reflow-item">diffuse</span>
+        <span class="sc-reflow-item">wind</span>
+        <span class="sc-reflow-item">align</span>
+      </div>
+    </div>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: reflowSrc }]} />
+  </section>
+
+  <div class="ex-group-head" id="control">Field control</div>
+
+  <section class="docs-sec" id="click-burst">
+    <h2>Click to burst</h2>
+    <p>
+      Drive the field from your own events. The <a href="/docs/api/handle">FieldHandle</a>'s
+      <code>burst</code> takes viewport coordinates — click anywhere in the stage to shove and heat
+      the matter there.
+    </p>
+    <div class="sc-stage sc-burst" data-field-burst="#4da3ff" role="presentation">
+      <span class="sc-burst-hint">click anywhere in here</span>
+    </div>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: burstSrc }]} />
+    <div class="callout">
+      <b>Want the recipes as a reference?</b> The copy-paste-first versions live on the
+      <a href="/docs/recipes">Recipes</a> page; these examples are the same patterns, running.
+    </div>
+  </section>
+    </main>
+  </div>
+  <SiteFooter />
+</Base>
+
+<script is:inline data-astro-rerun>
+  (() => {
+    // re-runs on each client-side navigation into this page; tear down the prior run.
+    if (window.__showcaseTeardown) window.__showcaseTeardown();
+    const ac = new AbortController();
+    const sig = ac.signal;
+    const obs = [];
+    const springing = new Set(); // elements with a live spring rAF
+    // the <forces-field> custom element upgrades asynchronously (its module loads after
+    // this inline script), so always look it up lazily — never gate binding on it.
+    const getField = () => document.querySelector('forces-field');
+    window.__showcaseTeardown = () => {
+      ac.abort();
+      obs.forEach((o) => o.disconnect());
+      springing.forEach((el) => cancelAnimationFrame(el._raf || 0));
+      const f = getField();
+      if (f && f.setAttention) f.setAttention(false); // release the budget on leave
+    };
+
+    // rescan once the field is upgraded, so the demo bodies + movers are registered.
+    let tries = 0;
+    const ensureScan = () => {
+      const f = getField();
+      if (f && f.rescan) {
+        f.rescan();
+        return;
+      }
+      if (tries++ < 20) setTimeout(ensureScan, 100);
+    };
+    ensureScan();
+
+    // CodeTabs tab-switch + copy, [data-copy] chips, and [data-field-burst] stages.
+    // The docs layout used to provide these; this page is standalone now, so wire them here.
+    document.addEventListener(
+      'click',
+      (e) => {
+        const t = e.target;
+        if (!t || !t.closest) return;
+        const tab = t.closest('.ct-tab');
+        if (tab) {
+          const wrap = tab.closest('.code-tabs');
+          const i = tab.dataset.i;
+          wrap.querySelectorAll('.ct-tab').forEach((x) =>
+            x.setAttribute('aria-selected', x === tab ? 'true' : 'false'),
+          );
+          wrap.querySelectorAll('.ct-body').forEach((b) => {
+            b.hidden = b.dataset.i !== i;
+          });
+          return;
+        }
+        const burst = t.closest('[data-field-burst]');
+        if (burst) {
+          const f = getField();
+          const color = burst.getAttribute('data-field-burst') || undefined;
+          if (f && f.burst) f.burst(e.clientX, e.clientY, color);
+          return;
+        }
+        const ctCopy = t.closest('.ct-copy');
+        if (ctCopy) {
+          const wrap = ctCopy.closest('.code-tabs');
+          const body = wrap.querySelector('.ct-body:not([hidden])');
+          const text = body ? body.innerText : '';
+          if (navigator.clipboard && text) {
+            navigator.clipboard.writeText(text).then(() => {
+              ctCopy.classList.add('copied');
+              const lbl = ctCopy.querySelector('.ct-copy-label');
+              const prev = lbl && lbl.textContent;
+              if (lbl) lbl.textContent = 'Copied';
+              setTimeout(() => {
+                ctCopy.classList.remove('copied');
+                if (lbl) lbl.textContent = prev;
+              }, 1100);
+            });
+          }
+          return;
+        }
+        const copy = t.closest('[data-copy]');
+        if (copy) {
+          const text = copy.getAttribute('data-copy') || copy.textContent || '';
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+              copy.classList.add('copied');
+              setTimeout(() => copy.classList.remove('copied'), 1100);
+            });
+          }
+        }
+      },
+      { signal: sig },
+    );
+
+    // Conserved-emphasis demo: turn the field's attention budget on only while the demo
+    // is on screen (so the rest of the page is unaffected); the toggle flips it live.
+    const emph = document.querySelector('[data-emph]');
+    const toggle = emph && emph.querySelector('.emph-toggle');
+    if (emph && toggle) {
+      let conserve = true;
+      let inView = false;
+      const apply = () => {
+        const f = getField();
+        if (f && f.setAttention) f.setAttention(conserve && inView);
+      };
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) inView = e.isIntersecting;
+          apply();
+        },
+        { threshold: 0.4 },
+      );
+      io.observe(emph);
+      obs.push(io);
+      toggle.addEventListener(
+        'click',
+        () => {
+          conserve = !conserve;
+          toggle.setAttribute('aria-pressed', String(conserve));
+          toggle.textContent = conserve ? 'Attention: conserved' : 'Attention: off';
+          apply();
+        },
+        { signal: sig },
+      );
+    }
+
+    // ── Spring physics for element layout — the tether force on a transform ──────
+    // v += (target − x)·k;  v *= damping;  x += v   (critically damped → no overshoot)
+    const springTo = (el, tx, ty) => {
+      const s = (el._s = el._s || { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 });
+      s.tx = tx;
+      s.ty = ty;
+      if (el._raf) return; // a loop is already carrying this element
+      const tick = () => {
+        s.vx = (s.vx + (s.tx - s.x) * 0.18) * 0.72;
+        s.vy = (s.vy + (s.ty - s.y) * 0.18) * 0.72;
+        s.x += s.vx;
+        s.y += s.vy;
+        el.style.transform = `translate(${s.x.toFixed(2)}px, ${s.y.toFixed(2)}px)`;
+        if (Math.hypot(s.tx - s.x, s.ty - s.y) + Math.hypot(s.vx, s.vy) > 0.2 && !sig.aborted) {
+          el._raf = requestAnimationFrame(tick);
+        } else {
+          s.x = s.tx;
+          s.y = s.ty;
+          el.style.transform = `translate(${s.x}px, ${s.y}px)`;
+          el._raf = 0;
+          springing.delete(el);
+        }
+      };
+      springing.add(el);
+      el._raf = requestAnimationFrame(tick);
+    };
+
+    // Magnetic snapping: drag freely, spring to the nearest grid cell on release.
+    const snap = document.querySelector('[data-snap]');
+    const tile = snap && snap.querySelector('.sc-snap-tile');
+    if (tile) {
+      const GRID = 56;
+      let drag = null;
+      tile.addEventListener('pointerdown', (e) => {
+        const s = (tile._s = tile._s || { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 });
+        if (tile._raf) {
+          cancelAnimationFrame(tile._raf);
+          tile._raf = 0;
+          springing.delete(tile);
+        }
+        s.vx = 0;
+        s.vy = 0;
+        drag = { ox: e.clientX - s.x, oy: e.clientY - s.y };
+        tile.classList.add('snap-dragging');
+        tile.setPointerCapture(e.pointerId);
+      }, { signal: sig });
+      tile.addEventListener('pointermove', (e) => {
+        if (!drag) return;
+        const s = tile._s;
+        s.x = e.clientX - drag.ox;
+        s.y = e.clientY - drag.oy;
+        tile.style.transform = `translate(${s.x}px, ${s.y}px)`;
+      }, { signal: sig });
+      const release = () => {
+        if (!drag) return;
+        drag = null;
+        tile.classList.remove('snap-dragging');
+        const s = tile._s;
+        springTo(tile, Math.round(s.x / GRID) * GRID, Math.round(s.y / GRID) * GRID);
+      };
+      tile.addEventListener('pointerup', release, { signal: sig });
+      tile.addEventListener('pointercancel', release, { signal: sig });
+    }
+
+    // Spring reflow (FLIP): reorder the DOM, then spring each item from old → new.
+    const reflowEl = document.querySelector('[data-reflow]');
+    const shuffleBtn = document.querySelector('[data-reflow-shuffle]');
+    if (reflowEl && shuffleBtn) {
+      const reflow = (mutate) => {
+        const items = [...reflowEl.children];
+        const first = items.map((el) => el.getBoundingClientRect());
+        mutate(); // reorder the DOM
+        const ordered = [...reflowEl.children];
+        ordered.forEach((el) => {
+          const i = items.indexOf(el);
+          const last = el.getBoundingClientRect();
+          const s = (el._s = el._s || { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 });
+          // invert: offset back to the old spot, then spring to the new one
+          s.x += first[i].left - last.left;
+          s.y += first[i].top - last.top;
+          springTo(el, 0, 0);
+        });
+      };
+      shuffleBtn.addEventListener('click', () => {
+        reflow(() => {
+          const kids = [...reflowEl.children];
+          for (let i = kids.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [kids[i], kids[j]] = [kids[j], kids[i]];
+          }
+          kids.forEach((el) => reflowEl.appendChild(el)); // re-append in shuffled order
+        });
+      }, { signal: sig });
+    }
+
+    // Sidebar scroll-spy: highlight the concept whose section sits at the top of the view.
+    const spyLinks = [...document.querySelectorAll('.examples-side [data-spy]')];
+    if (spyLinks.length) {
+      const targets = spyLinks
+        .map((a) => ({ a, el: document.getElementById(a.dataset.spy) }))
+        .filter((t) => t.el);
+      const spy = () => {
+        let cur = targets[0];
+        for (const t of targets) {
+          if (t.el.getBoundingClientRect().top < 140) cur = t;
+        }
+        spyLinks.forEach((a) => a.classList.toggle('active', !!cur && a === cur.a));
+      };
+      window.addEventListener('scroll', spy, { passive: true, signal: sig });
+      spy();
+    }
+  })();
+</script>
+
+<style>
+  /* Standalone top-level page: a grouped sidebar + content column, clear of the fixed
+     nav and above the persisted field canvas (field z-index 0, scrim 1). */
+  .examples-layout {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: calc(58px + 3rem) clamp(1.25rem, 4vw, 2rem) 5rem;
+    display: grid;
+    grid-template-columns: 196px minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+  .examples-shell {
+    min-width: 0;
+  }
+  .examples-side {
+    position: sticky;
+    top: calc(58px + 1.5rem);
+    align-self: start;
+  }
+  .examples-side nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .ex-side-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .ex-side-title {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    padding-left: 0.6rem;
+  }
+  .ex-side-group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .ex-side-group a {
+    display: block;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--text-3);
+    text-decoration: none;
+    padding: 0.2rem 0.5rem;
+    border-left: 2px solid transparent;
+    border-radius: 0 6px 6px 0;
+    transition:
+      color 0.18s,
+      border-color 0.18s,
+      background 0.18s;
+  }
+  .ex-side-group a:hover {
+    color: var(--text);
+  }
+  .ex-side-group a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+  .ex-group-head {
+    scroll-margin-top: calc(58px + 1rem);
+    margin: 2.6rem 0 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent) 60%, var(--text-3));
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .ex-group-head::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent) 30%, var(--line)),
+      transparent
+    );
+  }
+  .docs-sec {
+    scroll-margin-top: calc(58px + 1rem);
+  }
+  @media (max-width: 860px) {
+    .examples-layout {
+      grid-template-columns: 1fr;
+    }
+    .examples-side {
+      display: none;
+    }
+  }
+  .sc-stage {
+    display: grid;
+    place-items: center;
+    min-height: 200px;
+    margin: 1.1rem 0 0;
+    padding: 2rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .sc-hero {
+    --d: 0;
+    font-family: var(--display);
+    font-size: clamp(2.5rem, 9vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-variation-settings: 'wght' calc(380 + var(--d) * 420);
+    color: color-mix(in srgb, var(--accent) calc(40% + var(--d) * 55%), #fff);
+    text-shadow: 0 0 calc(var(--d) * 44px) rgba(77, 163, 255, var(--d));
+  }
+  .sc-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin: 1.1rem 0 0;
+  }
+  .sc-card {
+    --d: 0;
+    padding: 1.2rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-card, #0b0e16);
+    transform: scale(calc(1 + var(--d) * 0.03));
+    border-color: color-mix(in srgb, var(--accent) calc(var(--d) * 75%), var(--line));
+    box-shadow: 0 0 calc(var(--d) * 30px) rgba(77, 163, 255, calc(var(--d) * 0.5));
+    transition:
+      transform 0.25s var(--ease),
+      border-color 0.25s,
+      box-shadow 0.25s;
+  }
+  .sc-card b {
+    display: block;
+    font-family: var(--display);
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .sc-card span {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-3);
+  }
+  .sc-burst {
+    cursor: crosshair;
+    user-select: none;
+  }
+  .sc-burst-hint {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  /* Conserved-emphasis demo */
+  .sc-emph {
+    margin-top: 1.1rem;
+  }
+  .emph-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .emph-item {
+    --d: 0;
+    position: relative;
+    padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--accent) calc(var(--d) * 55%), var(--line));
+    background: color-mix(in srgb, var(--accent) calc(var(--d) * 9%), transparent);
+    opacity: calc(0.4 + var(--d) * 0.6);
+    transform: translateX(calc(var(--d) * 6px));
+    transition:
+      opacity 0.25s,
+      transform 0.25s,
+      border-color 0.25s,
+      background 0.25s;
+    outline: none;
+  }
+  .emph-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12%;
+    bottom: 12%;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: var(--d);
+    transition: opacity 0.25s;
+  }
+  .emph-item b {
+    display: block;
+    font-family: var(--display);
+    font-size: 1rem;
+    color: color-mix(in srgb, var(--text) calc(55% + var(--d) * 45%), var(--text-3));
+    font-weight: calc(500 + var(--d) * 300);
+    transition:
+      color 0.25s,
+      font-weight 0.25s;
+  }
+  .emph-item span {
+    font-size: 0.82rem;
+    color: var(--text-3);
+  }
+  .emph-item:focus-visible {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  .emph-toggle {
+    margin-top: 0.7rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-3);
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .emph-toggle[aria-pressed='true'] {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  }
+
+  /* Self-spacing labels demo — chips stack at centre and the engine's mutual
+     repulsion spreads them (the proven self-layout pattern). */
+  .sc-selflay {
+    position: relative;
+    min-height: 260px;
+    margin-top: 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.015);
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .sc-cluster {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .sc-chip {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -1.05em 0 0 -3em; /* rough centring; the engine's transform adds the offset */
+    min-width: 5em;
+    text-align: center;
+    padding: 0.4em 0.85em;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg-card, #0b0e16));
+    box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 16%, transparent);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: color-mix(in srgb, var(--accent) 70%, #fff);
+    white-space: nowrap;
+    user-select: none;
+    will-change: transform;
+  }
+  .sc-selflay-hint {
+    position: absolute;
+    bottom: 0.7rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    pointer-events: none;
+  }
+
+  /* Magnetic snapping demo */
+  .sc-snap {
+    position: relative;
+    min-height: 280px;
+    margin-top: 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 56px 56px,
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 56px 56px,
+      rgba(255, 255, 255, 0.015);
+    overflow: hidden;
+  }
+  .sc-snap-tile {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 84px;
+    height: 56px;
+    margin: -28px 0 0 -42px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+    background: color-mix(in srgb, var(--accent) 16%, var(--bg-card, #0b0e16));
+    box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 24%, transparent);
+    color: color-mix(in srgb, var(--accent) 75%, #fff);
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    will-change: transform;
+  }
+  .sc-snap-tile.snap-dragging {
+    cursor: grabbing;
+    box-shadow: 0 10px 34px color-mix(in srgb, var(--accent) 38%, transparent);
+  }
+  .sc-snap-hint {
+    position: absolute;
+    bottom: 0.7rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    pointer-events: none;
+  }
+
+  /* Spring reflow (FLIP) demo */
+  .sc-reflow-wrap {
+    margin-top: 1.1rem;
+  }
+  .sc-reflow-btn {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+    color: var(--accent);
+    cursor: pointer;
+    margin-bottom: 0.8rem;
+  }
+  .sc-reflow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .sc-reflow-item {
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+    background: color-mix(in srgb, var(--accent) 8%, var(--bg-card, #0b0e16));
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text);
+    white-space: nowrap;
+    will-change: transform;
+  }
+
+  @media (max-width: 620px) {
+    .sc-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

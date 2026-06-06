@@ -94,7 +94,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
               <li><kbd class="kbd sm">Space</kbd><span>play / pause</span></li>
               <li><kbd class="kbd sm">F</kbd><span>fire</span><kbd class="kbd sm">R</kbd><span>reset</span></li>
               <li><kbd class="kbd sm">←</kbd><kbd class="kbd sm">→</kbd><span>step frames</span></li>
-              <li><kbd class="kbd sm">L</kbd><span>loop / once</span></li>
+              <li><kbd class="kbd sm">L</kbd><span>cycle run mode (once / loop / free)</span></li>
             </ul>
           </div>
           <div class="uncalib-veil" id="veil" hidden>
@@ -713,7 +713,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
         if (p0) {
           specs.push({ key: 'vx', label: 'initial v', sym: 'ₓ', val: p0.vx ?? 0, def: p0.vx ?? 0, min: -8, max: 8, step: 0.5 });
           specs.push({ key: 'vy', label: 'initial v', sym: 'ᵧ', val: p0.vy ?? 0, def: p0.vy ?? 0, min: -8, max: 8, step: 0.5 });
-          specs.push({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 });
+          if (!isPair(cur)) specs.push({ key: 'count', label: 'particles', val: s.particles.length, def: s.particles.length, min: 1, max: 40, step: 1 });
         }
         return specs;
       }

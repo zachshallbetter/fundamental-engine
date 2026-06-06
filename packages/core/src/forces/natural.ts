@@ -86,12 +86,15 @@ export const magnetism: Force = {
     if (e.dist >= b.range) return; // inside the field region
     const q = p.charge ?? 0;
     if (q === 0) return; // the Lorentz force needs charge
-    const f = q * b.spin * b.strength; // qB; spin sets the out-of-plane sense
-    const fx = -p.vy * f; // F = qB·(−v_y, v_x) — ⟂ to v, so F·v = 0 (no work)
-    const fy = p.vx * f;
-    p.vx += fx;
-    p.vy += fy;
-    clampToC(p, e.c);
+    // Exact rotation by θ = qB per frame — preserves |v| to floating-point precision.
+    // The Euler form (p.vx += -vy*f; p.vy += vx*f) passes the ⟂ test but accumulates
+    // speed as sqrt(1+(qB)²)^N, which grows noticeably at strength > 0.1.
+    const theta = q * b.spin * b.strength;
+    const cs = Math.cos(theta);
+    const sn = Math.sin(theta);
+    const vx0 = p.vx;
+    p.vx = vx0 * cs - p.vy * sn;
+    p.vy = vx0 * sn + p.vy * cs;
   },
   meta: { desc: 'Lorentz force — curves a moving charge perpendicular to its velocity' },
 };
@@ -194,24 +197,48 @@ export const diffuse: Force = {
   meta: { desc: 'pheromone field — deposit a mark and follow the diffused gradient' },
 };
 
+/** Frames between emitted shocks while a propagate body is engaged. A *pulse train* — not a
+ *  continuous drip — is what keeps it a travelling wave: between pulses the grid radiates and
+ *  damps, so no standing bump builds at the source (that bump is what used to pull matter IN). */
+const WAVE_PULSE_PERIOD = 12;
+/** How hard a passing wavefront carries matter outward (radiation pressure gain). */
+const WAVE_PUSH = 7;
+
 /**
  * §20.10 — `propagate` (class [C], over a wave-mode `grid`): a travelling disturbance,
- * `∂²φ/∂t² = c²∇²φ`. An engaged body injects φ at its centre; the grid carries it
- * outward as a real expanding shock (reflecting and interfering for free) and every
- * particle rides the wavefront's gradient. `strength` sets the injection and the push.
+ * `∂²φ/∂t² = c²∇²φ`. An engaged body injects an impulsive shock at its centre (via the
+ * body-level `source` hook, once per frame — not once per particle), and the grid carries it
+ * outward as a real expanding ring. Matter **rides the front out**: where the wavefront is
+ * passing (`|∇φ|` is steep) a particle is pushed radially *away from the source*, so the
+ * expanding shock sweeps matter outward with it — radiation pressure, not an inward pull.
+ *
+ * Why a pulse train, not a continuous deposit: depositing every frame builds a standing φ bump
+ * at the centre, whose gradient points inward — `v += ∇φ` then sucks matter toward the source
+ * (the opposite of a wave). Emitting a shock every `WAVE_PULSE_PERIOD` frames lets each ring
+ * radiate and damp away, so the field stays a sequence of outgoing fronts.
  */
 export const propagate: Force = {
   token: 'propagate',
   label: 'Propagate',
+  source(b, e) {
+    if (!b.on) return; // only an engaged body emits
+    if (e.frameN % WAVE_PULSE_PERIOD !== 0) return; // a shock train, once per period (body-level)
+    e.grid('wave-propagate').deposit(b.cx, b.cy, b.strength); // 'wave…' name → wave stepping
+  },
   apply(b, p, e) {
     if (e.dist >= b.range) return;
-    const g = e.grid('wave-propagate'); // 'wave…' name → wave stepping
-    if (b.on) g.deposit(b.cx, b.cy, b.strength); // engaged → emit a disturbance at the source
-    const grad = g.gradient(p.x, p.y); // ride the wavefront
-    p.vx += grad.x * b.strength;
-    p.vy += grad.y * b.strength;
+    const g = e.grid('wave-propagate');
+    const grad = g.gradient(p.x, p.y);
+    const act = Math.hypot(grad.x, grad.y); // wavefront activity — steep where a front is passing
+    if (act < 1e-6) return; // no front here → coast (the wave has moved on or not yet arrived)
+    // ride the front: pushed radially OUTWARD (e.dx/e.dy point toward the body, so negate).
+    const ux = -e.dx / e.dist;
+    const uy = -e.dy / e.dist;
+    p.vx += ux * act * b.strength * WAVE_PUSH;
+    p.vy += uy * act * b.strength * WAVE_PUSH;
+    clampToC(p, e.c);
   },
-  meta: { desc: 'a travelling wave — inject a shock at the source, particles ride the front' },
+  meta: { desc: 'a travelling wave — a shock train expands from the source, sweeping matter out' },
 };
 
 /**
