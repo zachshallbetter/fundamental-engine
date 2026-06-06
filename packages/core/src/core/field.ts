@@ -11,7 +11,14 @@ import type { Body, Env, FieldHandle, FieldOptions, Formation, Particle } from '
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
-import { scanBodies, measureBodies } from './scanner.ts';
+import { scanBodies, measureBodies, bodyFromElement } from './scanner.ts';
+import {
+  ShadowRegistry,
+  REGISTER_BODY,
+  UNREGISTER_BODY,
+  UPDATE_BODY,
+  type RegisterBodyDetail,
+} from './shadow.ts';
 import { easeFormation } from './formations.ts';
 import {
   buildWaves,
@@ -95,6 +102,26 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let sparks: { x: number; y: number; vx: number; vy: number; life: number; c: RGB }[] = [];
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
+
+  // shadow-DOM participation (docs/shadow-dom.md): encapsulated components dispatch composed
+  // register/unregister/update events; the field registers the HOST and never inspects the
+  // shadow tree. The events bubble (composed) to the document, so we listen there.
+  const shadow = new ShadowRegistry();
+  const onRegister = (e: Event): void => {
+    const d = (e as CustomEvent<RegisterBodyDetail>).detail;
+    if (d?.element) {
+      shadow.register(d);
+      scan(); // pick up the new body (and re-measure) immediately
+    }
+  };
+  const onUnregister = (e: Event): void => {
+    const d = (e as CustomEvent<RegisterBodyDetail>).detail;
+    if (d?.element) {
+      shadow.unregister(d.element);
+      scan();
+    }
+  };
+  const onUpdateBody = (): void => scan(); // attrs/geometry changed → re-scan
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = performance.now();
 
@@ -203,7 +230,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function scan(): void {
-    bodies = scanBodies(document);
+    const scanned = scanBodies(document);
+    // merge event-registered shadow-DOM hosts (deduped — a light-DOM host that also fires
+    // a registration event is counted once). Registration is the canonical discovery path;
+    // light-DOM scanning is the compatibility fallback (shadow-dom.md §16).
+    if (shadow.size > 0) {
+      const seen = new Set(scanned.map((b) => b.el));
+      bodies = scanned.concat(shadow.bodies(bodyFromElement).filter((b) => !seen.has(b.el)));
+    } else {
+      bodies = scanned;
+    }
     measureBodies(bodies, W, H);
     bindEngagement();
     movers = [...document.querySelectorAll('[data-move]')].map((node) => {
@@ -500,12 +536,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (!b.feedback) continue;
       const target = feedbackTarget(b.count, b.on);
       b.d += (target - b.d) * 0.08;
-      b.el.style.setProperty('--d', b.d.toFixed(3));
+      // write to the host, or a separate write target for shadow-DOM bodies (§11). `--d` is
+      // the established var; `--forces-density` is its explicit alias (shadow CSS contract).
+      const writeEl = b.writeTarget ?? b.el;
+      const dStr = b.d.toFixed(3);
+      writeEl.style.setProperty('--d', dStr);
+      writeEl.style.setProperty('--forces-density', dStr);
       if (b.fmax) {
         const w = feedbackWeight(b.fmin, b.fmax, b.d);
-        if (lastWeight.get(b.el) !== w) {
-          lastWeight.set(b.el, w);
-          b.el.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
+        if (lastWeight.get(writeEl) !== w) {
+          lastWeight.set(writeEl, w);
+          writeEl.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
         }
       }
       if (b.capacity > 0 && b.tokens.indexOf('sink') >= 0) {
@@ -513,8 +554,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         // is kept as a back-compat alias (§21.2). This is the fill fraction, not the
         // captured count `b.accreted`.
         const load = clamp(b.accreted / b.capacity, 0, 1).toFixed(3);
-        b.el.style.setProperty('--load', load);
-        b.el.style.setProperty('--mass', load);
+        writeEl.style.setProperty('--load', load);
+        writeEl.style.setProperty('--mass', load);
       }
     }
   }
@@ -860,6 +901,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   window.addEventListener('scroll', scrollHandler, { passive: true });
   document.addEventListener('visibilitychange', onVisibility);
   for (const ev of inputEvents) window.addEventListener(ev, markInput, { passive: true });
+  document.addEventListener(REGISTER_BODY, onRegister);
+  document.addEventListener(UNREGISTER_BODY, onUnregister);
+  document.addEventListener(UPDATE_BODY, onUpdateBody);
   onScroll();
   raf = requestAnimationFrame(frame);
 
@@ -919,6 +963,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       window.removeEventListener('scroll', scrollHandler);
       document.removeEventListener('visibilitychange', onVisibility);
       for (const ev of inputEvents) window.removeEventListener(ev, markInput);
+      document.removeEventListener(REGISTER_BODY, onRegister);
+      document.removeEventListener(UNREGISTER_BODY, onUnregister);
+      document.removeEventListener(UPDATE_BODY, onUpdateBody);
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
       // on the same DOM doesn't accumulate handlers (§18 teardown).
       for (const e of engaged) {

@@ -116,6 +116,13 @@ export interface Body {
   /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
    *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
   targets?: readonly { x: number; y: number }[];
+  /** custom rectangle provider for a shadow-DOM body whose physical box is not the host
+   *  box (closed roots, internal cores). The measurer prefers this over the host's own
+   *  `getBoundingClientRect` (shadow-dom.md §10/§16). */
+  rect?: () => DOMRect;
+  /** element that receives the field's CSS-variable write-back, when it differs from the
+   *  body's element (shadow-dom.md §11). Defaults to `el`. */
+  writeTarget?: HTMLElement;
 }
 
 /** A formation preset — a global bias on every free particle (§7). */

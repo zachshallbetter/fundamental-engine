@@ -195,3 +195,7 @@ declare global {
 export * from './forces-cell.ts';
 export * from './cell-force.ts';
 export * from './mount.ts';
+// shadow-DOM participation: the helper a custom element uses to join the field without
+// repeating registration-event boilerplate (docs/shadow-dom.md §31.1).
+export { ForcesController, REGISTER_BODY, UNREGISTER_BODY, UPDATE_BODY } from 'forces-ui';
+export type { RegisterBodyDetail } from 'forces-ui';

@@ -1,9 +1,16 @@
 # Shadow DOM Participation Model for forces-ui
 
-> **Status: proposed design.** This model is **not yet implemented** — today the only custom
-> elements are `<forces-field>` and `<forces-cell>`. It is the design target for letting
-> encapsulated components (Web Components, design-system components) join the shared field
-> without exposing their internals. Summary in [`forces-concept.md`](forces-concept.md) §23–26.
+> **Status: core model implemented.** The host-first, event-driven registration model
+> (§§1–7, 10, 11, 15, 16) now ships: the field listens for the composed `forces:register-body`
+> / `forces:unregister-body` / `forces:update-body` events, registers the **host** without
+> inspecting the shadow tree, measures it by `getBoundingClientRect` or an optional `getRect`,
+> and writes `--d` / `--forces-density` back to the host (or a `writeTarget`). A
+> `ForcesController` helper (§31.1) removes the event boilerplate. Engine pieces:
+> `core/shadow.ts` (`ForcesController`, `ShadowRegistry`), `core/scanner.ts` (`bodyFromElement`,
+> rect-provider measurement), and the event wiring in `core/field.ts`; covered by
+> `core/shadow.test.ts`. The production-hardening additions in §31 (portals, scopes, the
+> registration handshake, SSR queue, throttled field events, local-cell budgets) remain
+> **proposed**. Summary in [`forces-concept.md`](forces-concept.md) §23–26.
 
 ## 1. Definition
 
