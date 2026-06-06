@@ -894,11 +894,12 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
     const R = Math.min(w, h) * 0.42; // a normalized extent of 1 maps to this many px
     const [r, g, b] = hexToRgb(color);
 
-    // dipole field lines (the structure of B / E) — faint continuous curves beneath the
-    // trajectories, so for magnetism you see particles curve *around* the lines, not along.
+    // dipole field lines (the structure of B / E) — the primary visualization for the
+    // magnetism/charge stages (the trajectory trace is suppressed for them by the caller, so
+    // the two don't overlap or sit off-centre). Continuous curves, no arrowheads.
     if (dipole) {
-      ctx.lineWidth = 0.9;
-      ctx.strokeStyle = `rgba(${r},${g},${b},0.20)`;
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.34)`;
       for (const path of dipole.paths) {
         if (path.length < 2) continue;
         ctx.beginPath();
@@ -1025,7 +1026,10 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       stage.insertBefore(cvs, stage.firstChild);
       canvases.push(cvs);
 
-      const draw = () => drawTrace(cvs, stage, trace, cc, dipole);
+      // a dipole force (magnetism/charge) shows ONLY its field-line diagram — suppress the
+      // trajectory trace so the two representations don't overlap or sit off-centre.
+      const shown = dipole ? { paths: [], rings: trace.rings } : trace;
+      const draw = () => drawTrace(cvs, stage, shown, cc, dipole);
       draw();
       const ro = new ResizeObserver(draw);
       ro.observe(stage);
