@@ -91,7 +91,7 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 
 ## What's in the box
 
-**33 forces**, in three families.
+**34 forces**, in three families.
 
 - **Canonical (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`, `sink`. Designed interface verbs with bounded, legible falloff.
 - **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`. Real field laws: softened inverse-square, Lorentz, Langevin, diffusion, travelling waves.

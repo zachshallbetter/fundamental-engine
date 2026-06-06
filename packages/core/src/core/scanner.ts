@@ -27,6 +27,7 @@ export type StaticBody = Pick<
   | 'uy'
   | 'when'
   | 'feedback'
+  | 'shaped'
   | 'fmin'
   | 'fmax'
   | 'opsz'
@@ -56,6 +57,7 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
     uy: Math.sin(angle),
     when: a.get('when') ?? '',
     feedback: a.has('feedback'),
+    shaped: a.has('shaped'), // data-shaped → forces sample the element's box surface (Stage C)
     fmin: num('fmin', 0),
     fmax: num('fmax', 0),
     opsz: a.get('opsz') ?? '',
@@ -107,18 +109,27 @@ function makeBody(el: HTMLElement, sb: StaticBody): Body {
   };
 }
 
+/** Read an element's own `data-*` attributes as a `BodyAttrs` view. */
+function elementAttrs(el: HTMLElement): BodyAttrs {
+  return {
+    get: (name) => el.getAttribute('data-' + name),
+    has: (name) => el.hasAttribute('data-' + name),
+  };
+}
+
+/** Build a single body from an element, parsing its `data-*` (or an explicit `attrs` view,
+ *  for event-registered shadow-DOM hosts whose attrs may be supplied out of band). */
+export function bodyFromElement(el: HTMLElement, attrs?: BodyAttrs): Body {
+  return makeBody(el, parseBodyParams(attrs ?? elementAttrs(el)));
+}
+
 /** Scan a DOM subtree for `[data-body]` and `[data-preset]` elements → bodies (§2.1,
  *  §20.9). A preset element emits one virtual body per entry, all sharing its rect;
  *  the plain `data-body` path is unchanged. */
 export function scanBodies(root: ParentNode): Body[] {
   const bodies: Body[] = [];
   root.querySelectorAll('[data-body]').forEach((node) => {
-    const el = node as HTMLElement;
-    const attrs: BodyAttrs = {
-      get: (name) => el.getAttribute('data-' + name),
-      has: (name) => el.hasAttribute('data-' + name),
-    };
-    bodies.push(makeBody(el, parseBodyParams(attrs)));
+    bodies.push(bodyFromElement(node as HTMLElement));
   });
   root.querySelectorAll('[data-preset]').forEach((node) => {
     const el = node as HTMLElement;
@@ -131,7 +142,9 @@ export function scanBodies(root: ParentNode): Body[] {
 export function measureBodies(bodies: readonly Body[], W: number, H: number): void {
   const margin = H * 0.15;
   for (const b of bodies) {
-    const r = b.el.getBoundingClientRect();
+    // a shadow-DOM body may carry a custom rect provider (closed root, internal core); the
+    // host's own box is the default (shadow-dom.md §10/§16).
+    const r = b.rect ? b.rect() : b.el.getBoundingClientRect();
     b.cx = r.left + r.width / 2;
     b.cy = r.top + r.height / 2;
     b.hw = r.width / 2;

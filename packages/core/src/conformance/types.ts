@@ -62,6 +62,7 @@ export interface FrameState {
   vy: number;
   heat: number;
   speed: number;
+  cap?: boolean;
 }
 
 /** The frame-0 force delta a particle receives (one direct `apply`, before friction). */
