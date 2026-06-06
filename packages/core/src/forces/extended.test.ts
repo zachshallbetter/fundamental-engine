@@ -17,6 +17,7 @@ import {
   resonate,
   spotlight,
   pigment,
+  fieldflow,
   curlNoise,
   extendedForces,
 } from './extended.ts';
@@ -105,6 +106,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'resonate',
       'spotlight',
       'pigment',
+      'fieldflow',
     ],
   );
 });
@@ -497,4 +499,35 @@ test('pigment is inert without a tint or beyond the overlap radius', () => {
   const farOff = part({});
   pigment.apply(body({ tint: '#ff0000', range: 100 }), farOff, env({ dist: 90 }));
   assert.equal(farOff.color, undefined); // beyond 0.6·range = overlap radius
+});
+
+test('fieldflow accelerates still matter down the field line (streaming)', () => {
+  // a field pointing +x; a still particle has no heading to steer, so it streams along it.
+  const p = part({});
+  const before = p.vx;
+  fieldflow.apply(body({ strength: 1, range: 300 }), p, env({ dist: 100, fieldAt: () => ({ x: 1, y: 0 }) }));
+  assert.ok(p.vx > before, 'accelerated along +x');
+  assert.ok(Math.abs(p.vy) < 1e-9, 'no cross-line drift for an axis-aligned field');
+});
+
+test('fieldflow steers a moving particle onto the field line, preserving heading toward it', () => {
+  // moving +y, field points +x: velocity should rotate toward +x (vx up, |vy| down).
+  const p = part({ vx: 0, vy: 5 });
+  fieldflow.apply(body({ strength: 1, range: 300 }), p, env({ dist: 100, fieldAt: () => ({ x: 1, y: 0 }) }));
+  assert.ok(p.vx > 0, 'turned toward the line (+x)');
+  assert.ok(p.vy < 5, 'cross-line component bled off');
+});
+
+test('fieldflow is inert without a field, at a null point, and beyond range', () => {
+  const noField = part({ vx: 3 });
+  fieldflow.apply(body({ range: 300 }), noField, env({ dist: 100 })); // no fieldAt service
+  assert.equal(noField.vx, 3);
+
+  const nullPoint = part({ vx: 3 });
+  fieldflow.apply(body({ range: 300 }), nullPoint, env({ dist: 100, fieldAt: () => ({ x: 0, y: 0 }) }));
+  assert.equal(nullPoint.vx, 3); // a true null field point has no line to follow
+
+  const farOff = part({ vx: 3 });
+  fieldflow.apply(body({ range: 300 }), farOff, env({ dist: 400, fieldAt: () => ({ x: 1, y: 0 }) }));
+  assert.equal(farOff.vx, 3); // beyond range
 });

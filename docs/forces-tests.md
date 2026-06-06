@@ -197,6 +197,7 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `resonate` | modifier on `attract` | scales the sibling's strength as `1 + sin(ωt)` (ω=3) | modifier | `modify → {strength}` |
 | `spotlight` | modifier on `stream` | gates the sibling outside a ~60° heading cone, lets it act inside | modifier | `modify → {gate}` when `û·heading < 0.5` |
 | `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved colour) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
+| `fieldflow` | neutral p in a charge's field | streams OUT along the field line; ends farther from the body; inert past range | A | steer `v += (n̂·\|v\| − v)·k` + stream `v += n̂·gain·a`, `n̂ = net field()/\|field\|` |
 
 ### Composition & conditions
 
@@ -231,11 +232,11 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
 
 ## Coverage
 
-- **33 forces**, each with an experiment (33 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
+- **34 forces**, each with an experiment (34 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
   ~71 invariant/exact checks), driven through the real engine and deterministic across
   runs, on top of the golden per-force unit tests and the integrator suite. A **safety
-  sweep** then runs all 36 experiments through global finite/bounded/conserved invariants
-  (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count). **306 core tests** in all,
+  sweep** then runs all 37 experiments through global finite/bounded/conserved invariants
+  (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count). **362 core tests** in all,
   every merge green.
 - **Composition + conditions** are covered, not deferred: `COMPOSITE_EXPERIMENTS` verifies
   that forces compose (`attract repel` cancel; `attract swirl` sums to a spiral) and gate

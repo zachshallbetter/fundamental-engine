@@ -107,28 +107,40 @@ test('diffuse deposits a mark and follows the gradient up-slope (§20.10)', () =
   assert.ok(near(p.vy, 0));
 });
 
-test('propagate injects at the source when engaged and rides the wavefront (§20.10)', () => {
+test('propagate injects a shock at the source via the source hook, on pulse frames (§20.10)', () => {
   const rec: number[][] = [];
-  const p = part({ x: 5, y: 5 });
-  propagate.apply(
-    body({ strength: 0.5, range: 300, on: true, cx: 100, cy: 50 }),
-    p,
-    env({ dist: 10, grid: () => fakeGrid({ x: 0, y: 3 }, rec) }),
+  // source() — body-level, once per frame: an engaged body deposits at its centre on a pulse
+  // frame (frameN % WAVE_PULSE_PERIOD === 0). 0 % 12 === 0, so frame 0 fires.
+  propagate.source!(
+    body({ strength: 0.5, on: true, cx: 100, cy: 50 }),
+    env({ frameN: 0, grid: () => fakeGrid({ x: 0, y: 0 }, rec) }),
   );
   assert.deepEqual(rec, [[100, 50, 0.5]]); // injected at the body centre
-  assert.ok(near(p.vy, 1.5)); // grad.y·strength
 });
 
-test('propagate rides the front without injecting when idle', () => {
-  const rec: number[][] = [];
-  const p = part({ x: 5, y: 5 });
+test('propagate rides the front OUTWARD, scaled by wavefront steepness (§20.10)', () => {
+  // apply() pushes matter radially away from the body where a front is passing (|∇φ| steep).
+  // Body at the origin, particle out along +x → outward is +x, independent of the gradient's
+  // direction (only its magnitude — the wave activity — matters).
+  const p = part({ x: 10, y: 0 });
   propagate.apply(
-    body({ strength: 0.5, range: 300, on: false }),
+    body({ strength: 0.5, range: 300, cx: 0, cy: 0 }),
     p,
-    env({ dist: 10, grid: () => fakeGrid({ x: 1, y: 0 }, rec) }),
+    env({ dx: -10, dy: 0, dist: 10, grid: () => fakeGrid({ x: 1, y: 2 }, []) }),
   );
-  assert.equal(rec.length, 0); // no injection when not engaged
-  assert.ok(near(p.vx, 0.5)); // still rides the gradient
+  const act = Math.hypot(1, 2); // |∇φ|
+  assert.ok(near(p.vx, act * 0.5 * 7)); // outward(+x)·act·strength·WAVE_PUSH
+  assert.ok(near(p.vy, 0)); // push is purely radial (outward), regardless of ∇φ direction
+});
+
+test('propagate emits only when engaged and only on pulse frames (a shock train)', () => {
+  const rec: number[][] = [];
+  // idle → nothing
+  propagate.source!(body({ on: false, cx: 0, cy: 0 }), env({ frameN: 0, grid: () => fakeGrid({ x: 0, y: 0 }, rec) }));
+  assert.equal(rec.length, 0);
+  // engaged but off a pulse frame → also nothing (no continuous DC drip)
+  propagate.source!(body({ on: true, cx: 0, cy: 0, strength: 1 }), env({ frameN: 5, grid: () => fakeGrid({ x: 0, y: 0 }, rec) }));
+  assert.equal(rec.length, 0);
 });
 
 test('diffuse and propagate are inert beyond range', () => {
@@ -196,27 +208,60 @@ test('charge: neutral matter is unaffected', () => {
   assert.equal(p2.vx, 0);
 });
 
-test('magnetism deflects a moving charge perpendicular (§20.10)', () => {
+// θ = q·spin·strength·(1 − d/r), the falloff-graded rotation angle the field applies.
+const magTheta = (q: number, spin: number, strength: number, d: number, r: number): number =>
+  q * spin * strength * (1 - d / r);
+
+test('magnetism rotates a moving charge by θ = q·spin·B·(1 − d/r) (§20.10)', () => {
   const p = part({ vx: 1, vy: 0, charge: 1 });
-  // q=+1, B=spin·strength=+0.5, v=+x → F = qB·(−v_y, v_x) = (0, 0.5): curls toward +y.
+  const theta = magTheta(1, 1, 0.5, 10, 300); // falloff at d=10, r=300
   magnetism.apply(body({ spin: 1, strength: 0.5, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
-  assert.ok(near(p.vx, 1));
-  assert.ok(near(p.vy, 0.5));
+  assert.ok(near(p.vx, Math.cos(theta)));
+  assert.ok(near(p.vy, Math.sin(theta)));
 });
 
-test('magnetism does no work — impulse is perpendicular to velocity (§20.10)', () => {
+test('magnetism does no work — speed is preserved (§20.10)', () => {
   const before = { vx: 2, vy: 1 };
   const p = part({ ...before, charge: 1 });
+  const speedBefore = Math.hypot(before.vx, before.vy);
   magnetism.apply(body({ spin: 1, strength: 1, range: 300 }), p, env({ dx: 5, dy: 0, dist: 5 }));
-  const dvx = p.vx - before.vx;
-  const dvy = p.vy - before.vy;
-  assert.ok(near(dvx * before.vx + dvy * before.vy, 0)); // Δv ⟂ v → F·v = 0
+  const speedAfter = Math.hypot(p.vx, p.vy);
+  assert.ok(near(speedAfter, speedBefore, 1e-9)); // exact rotation preserves |v| to float precision
 });
 
 test('magnetism: body spin flips the sense of curl', () => {
   const p = part({ vx: 1, vy: 0, charge: 1 });
+  const theta = magTheta(1, -1, 0.5, 10, 300); // negative → curls toward −y
   magnetism.apply(body({ spin: -1, strength: 0.5, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
-  assert.ok(near(p.vy, -0.5)); // opposite spin → curls toward −y
+  assert.ok(near(p.vy, Math.sin(theta)));
+  assert.ok(p.vy < 0);
+});
+
+test('magnetism: charge sign flips the curl direction', () => {
+  const pos = part({ vx: 1, vy: 0, charge: 1 });
+  const neg = part({ vx: 1, vy: 0, charge: -1 });
+  const b = body({ spin: 1, strength: 0.5, range: 300 });
+  magnetism.apply(b, pos, env({ dx: 10, dy: 0, dist: 10 }));
+  magnetism.apply(b, neg, env({ dx: 10, dy: 0, dist: 10 }));
+  assert.ok(pos.vy > 0 && neg.vy < 0); // opposite charges curve opposite ways
+  assert.ok(near(pos.vy, -neg.vy)); // and symmetrically
+});
+
+test('magnetism: deflection falls off toward the rim', () => {
+  const inner = part({ vx: 1, vy: 0, charge: 1 });
+  const outer = part({ vx: 1, vy: 0, charge: 1 });
+  const b = body({ spin: 1, strength: 0.5, range: 300 });
+  magnetism.apply(b, inner, env({ dx: 30, dy: 0, dist: 30 })); // near the core
+  magnetism.apply(b, outer, env({ dx: 290, dy: 0, dist: 290 })); // near the rim
+  assert.ok(inner.vy > outer.vy); // stronger curl closer in
+  assert.ok(outer.vy > 0); // still curls a little inside the region
+});
+
+test('magnetism: a still charge feels no force (needs motion)', () => {
+  const p = part({ vx: 0, vy: 0, charge: 1 });
+  magnetism.apply(body({ spin: 1, strength: 1, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
+  assert.equal(p.vx, 0);
+  assert.equal(p.vy, 0);
 });
 
 test('magnetism: neutral matter is unaffected', () => {
@@ -362,4 +407,29 @@ test('memory is inert beyond range', () => {
   );
   assert.equal(rec.length, 0); // no deposit out of range
   assert.ok(near(p.vx, 0));
+});
+
+// ── chargeable bodies source the field (field-systems Stage C2) ──────────────
+// A body's accumulated charge Q = b.d scales the field it radiates (magnetism's dipole and
+// charge's radial monopole alike): a charged (data-feedback) element's field() grows; an
+// uncharged body radiates the base field.
+test('field(): a charged body radiates a stronger field than an uncharged one', () => {
+  const at = { x: 200, y: 40 }; // a fixed sample point off the dipole axis
+  for (const f of [magnetism, charge]) {
+    const base = body({ d: 0, strength: 1, M: 1, range: 300, hw: 70, hh: 20, ux: 1, uy: 0, spin: 1 });
+    const charged = body({ d: 1, strength: 1, M: 1, range: 300, hw: 70, hh: 20, ux: 1, uy: 0, spin: 1 });
+    const fb = f.field!(base, at.x, at.y);
+    const fc = f.field!(charged, at.x, at.y);
+    const magB = Math.hypot(fb.x, fb.y);
+    const magC = Math.hypot(fc.x, fc.y);
+    assert.ok(magB > 0, `${f.token}: base field should be non-zero`);
+    // Q_GAIN = 1.5 → a fully charged body radiates 2.5× its base field
+    assert.ok(near(magC / magB, 2.5, 1e-6), `${f.token}: charged/base = ${(magC / magB).toFixed(3)}, want 2.5`);
+  }
+});
+
+test('field(): an undefined b.d reads as Q = 0, not NaN (point / synthetic bodies)', () => {
+  const b = { cx: 0, cy: 0, hw: 60, hh: 20, ux: 1, uy: 0, spin: 1, range: 300, strength: 1, M: 1 } as Body;
+  const f = magnetism.field!(b, 180, 50);
+  assert.ok(Number.isFinite(f.x) && Number.isFinite(f.y), 'field must be finite when b.d is undefined');
 });

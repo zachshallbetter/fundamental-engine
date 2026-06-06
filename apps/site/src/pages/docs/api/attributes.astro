@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import { ATTRS } from '../../../lib/docs-api.ts';
+import { ATTRS, WRITEBACK } from '../../../lib/docs-api.ts';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import { MANUAL_FORCES } from 'forces-ui';
 import '../../../styles/force-glyphs.css';
@@ -71,6 +71,29 @@ const families = [
         </>
       ))
     }
+  </section>
+
+  <section class="docs-sec">
+    <h2>What the field writes back</h2>
+    <p>
+      Reciprocity has two halves: bodies bend the field through <code>data-*</code>, and the field
+      bends them back through CSS custom properties. A body that opts in (<code>data-feedback</code>)
+      receives these on its element — read them in your own CSS to make type glow, cards lift, or a
+      meter fill. The write target is the element itself, or a body's <code>writeTarget</code>.
+    </p>
+    <div class="api-table">
+      {
+        WRITEBACK.map((v) => (
+          <div class="api-row">
+            <div class="k">
+              <code>{v.name}</code>
+              <span class="ty">on <b>{v.on}</b></span>
+            </div>
+            <div class="d">{v.desc}</div>
+          </div>
+        ))
+      }
+    </div>
   </section>
 
   <SeeAlso

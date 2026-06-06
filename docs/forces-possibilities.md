@@ -267,10 +267,11 @@ nudges one free particle given a shared env"):
 
 > **✅ Mostly shipped.** This curated list became the engine's extended set (§20.3/§20.10).
 > Built: `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`,
-> `pressure`, `link`, `hunt`, `morph`, `resonate`, `spotlight`, `pigment`, `spawn` (+ the
-> natural primitives `gravity`/`charge`/`magnetism`/`thermal`/`collide`/`diffuse`/
-> `propagate`/`memory`) — **33 forces** in all. Still spec-only: the `warp`/`wormhole`
-> relocation atoms. See the as-built registry in `forces-system.md §20.2`.
+> `pressure`, `link`, `hunt`, `morph`, `resonate`, `spotlight`, `pigment`, `spawn`,
+> `fieldflow` (+ the natural primitives `gravity`/`charge`/`magnetism`/`thermal`/`collide`/
+> `diffuse`/`propagate`/`memory`) — **34 forces** in all. Still spec-only: the `warp`
+> relocation atom (and the `wormhole` preset it would compose). See the as-built registry
+> in `forces-system.md §20.2`.
 
 **Lens — refract a flow without trapping it.** `[A]`
 ```
@@ -299,7 +300,7 @@ F = k·(d − r₀)   for r₀ < d < r₁ (pull) ;   F = −k_p·(r₀ − d)  f
 *Unique:* the swarm coalesces into **blobs with a skin** that merge and split — a
 liquid, not dots. *Fits:* Physical production (materials).
 
-**Pheromone — stigmergy / slime-mold networks.** `[C]`  (decaying scalar grid `T`)
+**Pheromone — stigmergy / slime-mold networks.** `[C]`  (decaying scalar grid `T`) — ships as `diffuse`.
 ```
 deposit:  T(x) += δ at each particle
 steer:    v += ∇T(x)·k_follow
@@ -346,7 +347,7 @@ assembly (§11) generalized to any geometry. The bridge to brand + data-viz: *a 
 chart whose bars are accreted matter.* Marks and data only — never words (§11).
 *Fits:* Creative technology / Design.
 
-**Constraint — Verlet ropes & cloth.** `[B]`  (linked pairs, rest length `L`)
+**Constraint — Verlet ropes & cloth.** `[B]`  (linked pairs, rest length `L`) — ships as `link`.
 ```
 each step, project both ends:  correct |p_a − p_b| → L  (split the error)
 ```
@@ -359,7 +360,7 @@ act only if  angle(û_{b→p}, heading) < φ                    // directional s
 ```
 *Unique:* scanning beams and **literal "attention" cones** — apt for AI. *Fits:* AI.
 
-**Predator–prey — a living two-species ecosystem.** `[B]+[E]`
+**Predator–prey — a living two-species ecosystem.** `[B]+[E]` — ships as `hunt`.
 ```
 species A: seek nearest B ;   species B: flee nearest A ;   Lotka–Volterra populations
 ```
@@ -411,10 +412,10 @@ moving through the medium, conserved. *Fits:* Commerce / brand.
 A coherent astrophysical set — most conserved, two deliberate **sources** (class
 [S], which *break* "nothing from nothing" and must be budgeted; see §20.1).
 **These are composites, not new modules:** the whole family is realized as a
-**preset layer** over the primitives (forces-system.md §20.9), needing only two new
-atoms — `warp` (teleport) and `spawn` (create matter). `blackhole` and `whitehole`
-are pure compositions of existing tokens (`attract swirl sink lens` /
-`repel stream`) and need zero new code.
+**preset layer** over the primitives (forces-system.md §20.9). `spawn` (create matter)
+has since shipped; the one still-missing atom is `warp` (teleport), needed only for the
+`wormhole` preset. `blackhole` and `whitehole` are pure compositions of existing tokens
+(`attract swirl sink lens` / `repel stream`) and ship as presets today.
 
 **Blackhole — `blackhole` [A].** Extreme `attract` with an event horizon (capture),
 frame-dragging (accretion disk), and path-bending (lensing). *Unique:* a real
@@ -426,16 +427,18 @@ matter. *Fits:* Commerce.
 
 **Wormhole — `wormhole` [A · paired].** Two linked throats; matter teleports A→B with
 momentum carried through. *Unique:* **conserved teleport** — routing made physical.
-*Fits:* Software architecture.
+*Fits:* Software architecture. *(Still future — waits on the `warp` atom.)*
 
 **Supernova — `supernova` [S].** Releases held matter, **mints new particles**
 (nucleosynthesis), shockwaves, and leaves a remnant. *Unique:* the field can
 *erupt and seed itself* — the dramatic superset of the conserved release event
-(§6.9). *Fits:* Creative technology. *(Source — pair with a sink.)*
+(§6.9). *Fits:* Creative technology. *(Ships as the sink-RELEASE event inside the `sink`
+force — not a standalone force or preset.)*
 
 **Fountain — `fountain` [S].** A true source: continuously *creates* particles at a
 nozzle (vs `jet`, which recycles the field). *Unique:* a literal spray — the
-minting sibling of jet. *Fits:* Motion. *(Source — cap with `age`/despawn.)*
+minting sibling of jet. *Fits:* Motion. *(Source — cap with `age`/despawn.)* ✅ Ships as a
+preset (one of the eight: blackhole, whitehole, star, quasar, galaxy, nebula, tornado, fountain).
 
 > **Relationships & color.** These forces relate by inversion, intensity,
 > composition, and lifecycle (e.g. `blackhole = attract + swirl + sink + lens`;
@@ -446,17 +449,20 @@ minting sibling of jet. *Fits:* Motion. *(Source — cap with `age`/despawn.)*
 > **Physical basis (caveats fixed).** The cosmology approximations (bounded well vs
 > `1/d²`, fudged `c`) are resolved in §20.10 by separating **designed** forces
 > (`attract`/`repel`, UI) from **natural** primitives in a consistent unit system:
-> add `gravity` (softened `1/d²`), `magnetism` (Lorentz), `thermal` (Langevin),
-> `propagate` (finite-speed propagation), `collide`, `diffuse`, and the transmutation
-> set (`fuse`/`fission`/`decay`). The payoff: a **star becomes literally `gravity ⇄
-> thermal` pressure with `fuse` in the core** — every term a primitive, nothing
-> hand-waved.
+> `gravity` (softened `1/d²`), `magnetism` (Lorentz), `thermal` (Langevin),
+> `propagate` (finite-speed propagation), `collide`, and `diffuse` all shipped; the
+> transmutation set (`fuse`/`fission`/`decay`) stays future. The payoff: a **star
+> becomes literally `gravity ⇄ thermal` pressure with `fuse` in the core** — every
+> term a primitive, nothing hand-waved.
 
 > **Formal specs** (tokens, classes, default attrs, exact formulas) for every force,
 > condition, formation, and render mode below now live in
 > `docs/forces-system.md` §20. This section keeps the *why*.
 
 ### New conditions (`data-when` extensions)
+> ✅ Shipped today: six conditions — `active`, `fast`, `slow`, `hot`, `cool`, `scrolling`.
+> The extensions below are still future possibilities (none implemented yet).
+
 `near` (proximity to cursor/another body) · `dense` / `sparse` (local density gate)
 · `aligned` (velocity direction matches) · `aging` (particle lifetime) · `charged`
 / `species` (attribute gate) · `dwell` (how long the body has been engaged) ·
@@ -464,6 +470,10 @@ minting sibling of jet. *Fits:* Motion. *(Source — cap with `age`/despawn.)*
 (intersection ratio band).
 
 ### New formations (global biases, joining the five in §7)
+> ✅ The five shipped formations are `ambient`, `wells`, `lanes`, `scatter`, `accretion`.
+> Everything below is still future — `flock`, `magnetic`, `lattice`, `turbulence`, etc. are
+> NOT shipped formations.
+
 `gravity` (constant down → particles fall and pile, sedimentation) · `tide`
 (oscillating global drift) · `lattice` (crystalline rest grid) · `flock` (global
 alignment) · `spiral` · `turbulence` (curl-noise wind) · `pressure`
@@ -472,7 +482,8 @@ then reform) · `magnetic` (follow field lines between charged bodies).
 
 ### New rendering modes (same sim, different material)
 The physics is decoupled from the look — these return wholly different aesthetics
-from identical forces (✅ marks the six that ship: `render` / `setRender`):
+from identical forces. Six render modes ship today (`render` / `setRender`): the base
+`dots`, plus the five alternates marked ✅ below. `knockout` stays future:
 - **Metaballs / iso-surface** → render density as a liquid skin, not dots. ✅ `metaballs`
 - **Trails / long-exposure** → persist faded history → light-painting. ✅ `trails`
 - **Voronoi / Delaunay** over particles → shattered glass, cells. ✅ `voronoi`

@@ -5,11 +5,12 @@
 // page's own layout.
 // (GitHub + npm links are added at launch, once the repo is public and packages ship.)
 interface Props {
-  current?: 'home' | 'docs' | 'lab' | 'design';
+  current?: 'home' | 'docs' | 'lab' | 'design' | 'examples';
 }
 const { current } = Astro.props;
 const dest = [
   { href: '/docs', label: 'Docs', key: 'docs' },
+  { href: '/examples', label: 'Examples', key: 'examples' },
   { href: '/design', label: 'Design', key: 'design' },
   { href: '/lab', label: 'Lab', key: 'lab' },
 ] as const;
@@ -44,9 +45,117 @@ const dest = [
           </a>
         ))
       }
+      <span class="sn-toggles">
+        {/* Global field flow — switch the whole background field between particles and streamline arrows */}
+        <button
+          id="sn-stream-toggle"
+          class="sn-field-btn"
+          aria-label="Toggle field-flow arrows"
+          title="Show field flow"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M1 4.5 Q5 2.5 9 4.5 T15 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <path d="M1 8 Q5 6 9 8 T15 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <path d="M1 11.5 Q5 9.5 9 11.5 T15 11.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <polyline points="13,6.5 15,8 13,9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+          </svg>
+        </button>
+        {/* Density heatmap — a glow underlay of where matter pools, sampled back to bodies */}
+        <button
+          id="sn-heatmap-toggle"
+          class="sn-field-btn"
+          aria-label="Toggle density heatmap"
+          title="Show density heatmap"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="2.2" fill="currentColor" />
+            <circle cx="8" cy="8" r="4.2" stroke="currentColor" stroke-width="1.2" opacity="0.6" />
+            <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1" opacity="0.35" />
+          </svg>
+        </button>
+        {
+          current === 'home' && (
+            <button
+              id="sn-field-toggle"
+              class="sn-field-btn"
+              aria-label="Toggle field lines"
+              title="Hide field lines"
+              aria-pressed="true"
+            >
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="1.7" fill="currentColor" />
+                <path d="M8 2.4 A5.6 5.6 0 0 1 13.6 8" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" />
+                <polyline points="11.8,6.2 13.6,8 11.7,9.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                <path d="M8 13.6 A5.6 5.6 0 0 1 2.4 8" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" />
+                <polyline points="4.2,9.8 2.4,8 4.3,6.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              </svg>
+            </button>
+          )
+        }
+      </span>
     </nav>
   </div>
 </header>
+
+<script>
+  // Two field toggles, both delegated + page-load synced so they survive view-transition
+  // navigation (which swaps the button elements but keeps the persisted <forces-field>).
+
+  // 1) Global field flow: switch the whole background field render between dots and streamlines.
+  function syncStreamBtn() {
+    const btn = document.getElementById('sn-stream-toggle');
+    if (!btn) return;
+    const on = btn.getAttribute('aria-pressed') === 'true';
+    btn.title = on ? 'Show particles' : 'Show field flow';
+  }
+  // 2) Per-stage field lines (home): show/hide the traced overlays.
+  function syncFieldBtn() {
+    const btn = document.getElementById('sn-field-toggle');
+    if (!btn) return;
+    const shown = !document.documentElement.classList.contains('hide-field-lines');
+    btn.setAttribute('aria-pressed', String(shown));
+    btn.title = shown ? 'Hide field lines' : 'Show field lines';
+  }
+  // 3) Density heatmap: toggle the global field's heatmap glow layer.
+  function syncHeatmapBtn() {
+    const btn = document.getElementById('sn-heatmap-toggle');
+    if (!btn) return;
+    const on = btn.getAttribute('aria-pressed') === 'true';
+    btn.title = on ? 'Hide density heatmap' : 'Show density heatmap';
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement | null;
+    if (!t) return;
+    if (t.closest('#sn-stream-toggle')) {
+      const btn = document.getElementById('sn-stream-toggle')!;
+      const next = btn.getAttribute('aria-pressed') !== 'true';
+      const field = document.querySelector('forces-field') as (HTMLElement & { setRender(m: string): void }) | null;
+      field?.setRender(next ? 'streamlines' : 'dots');
+      btn.setAttribute('aria-pressed', String(next));
+      syncStreamBtn();
+    } else if (t.closest('#sn-heatmap-toggle')) {
+      const btn = document.getElementById('sn-heatmap-toggle')!;
+      const next = btn.getAttribute('aria-pressed') !== 'true';
+      const field = document.querySelector('forces-field') as (HTMLElement & { setHeatmap(on: boolean): void }) | null;
+      field?.setHeatmap(next);
+      btn.setAttribute('aria-pressed', String(next));
+      syncHeatmapBtn();
+    } else if (t.closest('#sn-field-toggle')) {
+      document.documentElement.classList.toggle('hide-field-lines');
+      syncFieldBtn();
+    }
+  });
+  document.addEventListener('astro:page-load', () => {
+    syncStreamBtn();
+    syncHeatmapBtn();
+    syncFieldBtn();
+  });
+  syncStreamBtn();
+  syncHeatmapBtn();
+  syncFieldBtn();
+</script>
 
 <style>
   .site-nav {
@@ -130,5 +239,38 @@ const dest = [
     height: 1px;
     background: var(--accent, #4da3ff);
     box-shadow: 0 0 8px var(--accent, #4da3ff);
+  }
+  .sn-toggles {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .sn-field-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-3, rgba(200, 212, 230, 0.46));
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    flex: none;
+  }
+  .sn-field-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  .sn-field-btn:hover {
+    color: var(--text, #f3f6fc);
+    border-color: rgba(255, 255, 255, 0.24);
+  }
+  .sn-field-btn[aria-pressed='true'] {
+    color: var(--accent, #4da3ff);
+    border-color: var(--accent, #4da3ff);
+    background: color-mix(in srgb, var(--accent, #4da3ff) 10%, transparent);
   }
 </style>

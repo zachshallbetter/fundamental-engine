@@ -11,8 +11,16 @@ import type { Body, Env, FieldHandle, FieldOptions, Formation, Particle } from '
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
-import { scanBodies, measureBodies } from './scanner.ts';
+import { scanBodies, measureBodies, bodyFromElement } from './scanner.ts';
+import {
+  ShadowRegistry,
+  REGISTER_BODY,
+  UNREGISTER_BODY,
+  UPDATE_BODY,
+  type RegisterBodyDetail,
+} from './shadow.ts';
 import { easeFormation } from './formations.ts';
+import { Heatmap } from './heatmap.ts';
 import {
   buildWaves,
   buildBound,
@@ -62,7 +70,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
+    heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
   };
+  let heatmap: Heatmap | null = null; // lazily built once the viewport size is known
 
   let bodies: Body[] = [];
   let W = 0;
@@ -95,6 +105,43 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let sparks: { x: number; y: number; vx: number; vy: number; life: number; c: RGB }[] = [];
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
+
+  // shadow-DOM participation (docs/shadow-dom.md): encapsulated components dispatch composed
+  // register/unregister/update events; the field registers the HOST and never inspects the
+  // shadow tree. The events bubble (composed) to the document, so we listen there.
+  const shadow = new ShadowRegistry();
+  // Coalesce a burst of registration events (N components mounting at once) into ONE rescan on
+  // the next microtask, instead of a full-document scan per event.
+  let scanQueued = false;
+  const scheduleScan = (): void => {
+    if (scanQueued) return;
+    scanQueued = true;
+    queueMicrotask(() => {
+      scanQueued = false;
+      scan();
+    });
+  };
+  // clear the field's CSS write-back when a still-connected host leaves the field, so it
+  // doesn't keep a frozen `--d` glow (a removed light-DOM element is gone, so it needs no clear).
+  const clearWriteback = (el: HTMLElement): void => {
+    for (const v of ['--d', '--forces-density', '--load', '--mass']) el.style.removeProperty(v);
+  };
+  const onRegister = (e: Event): void => {
+    const d = (e as CustomEvent<RegisterBodyDetail>).detail;
+    if (d?.element) {
+      shadow.register(d);
+      scheduleScan();
+    }
+  };
+  const onUnregister = (e: Event): void => {
+    const d = (e as CustomEvent<RegisterBodyDetail>).detail;
+    if (d?.element) {
+      shadow.unregister(d.element);
+      clearWriteback(d.writeTarget ?? d.element);
+      scheduleScan();
+    }
+  };
+  const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = performance.now();
 
@@ -203,7 +250,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function scan(): void {
-    bodies = scanBodies(document);
+    const scanned = scanBodies(document);
+    // merge event-registered shadow-DOM hosts (deduped — a light-DOM host that also fires
+    // a registration event is counted once). Registration is the canonical discovery path;
+    // light-DOM scanning is the compatibility fallback (shadow-dom.md §16).
+    if (shadow.size > 0) {
+      const seen = new Set(scanned.map((b) => b.el));
+      bodies = scanned.concat(shadow.bodies(bodyFromElement).filter((b) => !seen.has(b.el)));
+    } else {
+      bodies = scanned;
+    }
     measureBodies(bodies, W, H);
     bindEngagement();
     movers = [...document.querySelectorAll('[data-move]')].map((node) => {
@@ -378,6 +434,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     env.H = H;
     maxScroll = document.documentElement.scrollHeight - H || 1;
     for (const g of grids.values()) g.resize(W, H); // keep field buffers viewport-sized
+    if (cfg.heatmap) {
+      if (!heatmap) heatmap = new Heatmap(W, H);
+      else heatmap.resize(W, H);
+    }
     build();
     scan();
   }
@@ -500,12 +560,20 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (!b.feedback) continue;
       const target = feedbackTarget(b.count, b.on);
       b.d += (target - b.d) * 0.08;
-      b.el.style.setProperty('--d', b.d.toFixed(3));
+      // write to the host, or a separate write target for shadow-DOM bodies (§11). `--d` is
+      // the established var; `--forces-density` is its explicit alias (shadow CSS contract).
+      const writeEl = b.writeTarget ?? b.el;
+      const dStr = b.d.toFixed(3);
+      writeEl.style.setProperty('--d', dStr);
+      writeEl.style.setProperty('--forces-density', dStr);
+      // the heatmap's local density under the body (field-systems H1) — distinct from `--d`,
+      // which is the body's own gathered density; this is the ambient heatmap at its position.
+      if (heatmap) writeEl.style.setProperty('--forces-heatmap-density', heatmap.norm(b.cx, b.cy).toFixed(3));
       if (b.fmax) {
         const w = feedbackWeight(b.fmin, b.fmax, b.d);
-        if (lastWeight.get(b.el) !== w) {
-          lastWeight.set(b.el, w);
-          b.el.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
+        if (lastWeight.get(writeEl) !== w) {
+          lastWeight.set(writeEl, w);
+          writeEl.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
         }
       }
       if (b.capacity > 0 && b.tokens.indexOf('sink') >= 0) {
@@ -513,8 +581,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         // is kept as a back-compat alias (§21.2). This is the fill fraction, not the
         // captured count `b.accreted`.
         const load = clamp(b.accreted / b.capacity, 0, 1).toFixed(3);
-        b.el.style.setProperty('--load', load);
-        b.el.style.setProperty('--mass', load);
+        writeEl.style.setProperty('--load', load);
+        writeEl.style.setProperty('--mass', load);
       }
     }
   }
@@ -548,6 +616,44 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.globalCompositeOperation = 'source-over';
   }
 
+  // density heatmap (H1) — a 'glow' underlay. Rasterize the normalized field to a tiny
+  // offscreen buffer (one texel per grid cell), then upscale it over the canvas with bilinear
+  // smoothing: a smooth glow for the cost of a small image, no blocky per-cell blobs.
+  let hmCanvas: HTMLCanvasElement | null = null;
+  let hmCtx: CanvasRenderingContext2D | null = null;
+  function drawHeatmap(): void {
+    if (!heatmap) return;
+    const cell = heatmap.cell;
+    const cols = Math.max(1, Math.ceil(W / cell));
+    const rows = Math.max(1, Math.ceil(H / cell));
+    if (!hmCanvas) {
+      hmCanvas = document.createElement('canvas');
+      hmCtx = hmCanvas.getContext('2d');
+    }
+    if (!hmCtx) return;
+    if (hmCanvas.width !== cols || hmCanvas.height !== rows) {
+      hmCanvas.width = cols;
+      hmCanvas.height = rows;
+    }
+    const acc = hexToRgb(cfg.accent);
+    const img = hmCtx.createImageData(cols, rows);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const v = heatmap.norm(c * cell + cell / 2, r * cell + cell / 2);
+        const i = (r * cols + c) * 4;
+        img.data[i] = acc[0];
+        img.data[i + 1] = acc[1];
+        img.data[i + 2] = acc[2];
+        img.data[i + 3] = Math.round(clamp(v * 0.5 * boot, 0, 1) * 255);
+      }
+    }
+    hmCtx.putImageData(img, 0, 0);
+    ctx!.globalCompositeOperation = 'lighter';
+    ctx!.imageSmoothingEnabled = true;
+    ctx!.drawImage(hmCanvas, 0, 0, W, H); // bilinear upscale → smooth glow
+    ctx!.globalCompositeOperation = 'source-over';
+  }
+
   function render(): void {
     // substrate clear — 'trails' uses a faded clear so motion light-paints (§20.6).
     if (cfg.render === 'trails') {
@@ -557,15 +663,20 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     ctx!.fillRect(0, 0, W, H);
     drawWaves();
+    if (heatmap) drawHeatmap();
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
+    // metaballs (a molten iso-surface skin) and streamlines (the bare force field) REPLACE
+    // the matter per §20.6, so suppress the dot swarm for those two; dots/trails/links/voronoi
+    // keep it (their overlays read against the particles).
+    const showMatter = cfg.render !== 'metaballs' && cfg.render !== 'streamlines';
     ctx!.globalCompositeOperation = 'lighter';
     const acc = hexToRgb(cfg.accent);
     const cx = W / 2;
     const cy = H * 0.4;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
-    for (const p of store.particles) {
+    if (showMatter) for (const p of store.particles) {
       if (p.cap) {
         ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.55 * boot})`;
         ctx!.beginPath();
@@ -715,29 +826,41 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const acc = hexToRgb(cfg.accent);
       ctx!.lineWidth = 1;
       ctx!.lineCap = 'round';
+      // Sample the field on the grid, then scale arrows RELATIVE to the strongest sample, so a
+      // weak field (a magnetic/electric dipole, magnitudes ~1e-5) reads as clearly as a strong
+      // one (an attractor). Absolute scaling drowned the dipole below the visibility cutoff.
+      const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
+      let maxMag = 0;
       for (let gx = GRID / 2; gx < W; gx += GRID) {
         for (let gy = GRID / 2; gy < H; gy += GRID) {
           const { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
           const mag = Math.hypot(fx, fy);
-          if (mag < 1e-4) {
+          // Skip only true dead zones / NaN (a tiny epsilon, not an absolute magnitude floor) —
+          // a weak dipole's outer field is still a real pattern and must survive to be scaled.
+          if (!(mag > 1e-9)) {
             ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
-            ctx!.fillRect(gx - 0.5, gy - 0.5, 1, 1); // quiescent field → a faint dot
+            ctx!.fillRect(gx - 0.5, gy - 0.5, 1, 1); // quiescent → a faint dot
             continue;
           }
-          const ux = fx / mag;
-          const uy = fy / mag;
-          const len = Math.min(GRID * 0.46, 6 + mag * 42);
-          const ex = gx + ux * len;
-          const ey = gy + uy * len;
-          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.12 + mag * 1.3, 0, 0.72)})`;
+          samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
+          if (mag > maxMag) maxMag = mag;
+        }
+      }
+      if (maxMag > 0) {
+        for (const s of samples) {
+          const rel = Math.sqrt(s.mag / maxMag); // sqrt compresses the range so weak vectors still read
+          const len = GRID * 0.46 * (0.28 + 0.72 * rel);
+          const ex = s.gx + s.ux * len;
+          const ey = s.gy + s.uy * len;
+          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.1 + rel * 0.5, 0, 0.72)})`;
           ctx!.beginPath();
-          ctx!.moveTo(gx, gy);
+          ctx!.moveTo(s.gx, s.gy);
           ctx!.lineTo(ex, ey);
           const ah = 3.4;
           ctx!.moveTo(ex, ey);
-          ctx!.lineTo(ex - ux * ah - uy * ah * 0.6, ey - uy * ah + ux * ah * 0.6);
+          ctx!.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
           ctx!.moveTo(ex, ey);
-          ctx!.lineTo(ex - ux * ah + uy * ah * 0.6, ey - uy * ah - ux * ah * 0.6);
+          ctx!.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
           ctx!.stroke();
         }
       }
@@ -793,6 +916,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
+      if (heatmap) heatmap.update(store.particles); // density heatmap buffer (H1)
       healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
       tearBoundByForces(bound, waves, bodies, reg.forces, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
@@ -856,6 +980,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   window.addEventListener('scroll', scrollHandler, { passive: true });
   document.addEventListener('visibilitychange', onVisibility);
   for (const ev of inputEvents) window.addEventListener(ev, markInput, { passive: true });
+  document.addEventListener(REGISTER_BODY, onRegister);
+  document.addEventListener(UNREGISTER_BODY, onUnregister);
+  document.addEventListener(UPDATE_BODY, onUpdateBody);
   onScroll();
   raf = requestAnimationFrame(frame);
 
@@ -892,6 +1019,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     setRender: (mode) => {
       cfg.render = mode;
     },
+    setHeatmap: (on) => {
+      cfg.heatmap = on;
+      if (on) {
+        if (!heatmap && W > 0) heatmap = new Heatmap(W, H);
+      } else if (heatmap) {
+        heatmap = null; // drop the buffer; clear the write-back the layer left on bodies
+        for (const b of bodies) (b.writeTarget ?? b.el).style.removeProperty('--forces-heatmap-density');
+      }
+    },
     threads: setThreads,
     burst: (x, y, hex) => {
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
@@ -915,6 +1051,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       window.removeEventListener('scroll', scrollHandler);
       document.removeEventListener('visibilitychange', onVisibility);
       for (const ev of inputEvents) window.removeEventListener(ev, markInput);
+      document.removeEventListener(REGISTER_BODY, onRegister);
+      document.removeEventListener(UNREGISTER_BODY, onUnregister);
+      document.removeEventListener(UPDATE_BODY, onUpdateBody);
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
       // on the same DOM doesn't accumulate handlers (§18 teardown).
       for (const e of engaged) {
