@@ -408,3 +408,27 @@ test('memory is inert beyond range', () => {
   assert.equal(rec.length, 0); // no deposit out of range
   assert.ok(near(p.vx, 0));
 });
+
+// ── chargeable bodies source the field (field-systems Stage C2) ──────────────
+// A body's accumulated charge Q = b.d scales the dipole it radiates: a charged
+// (data-feedback) element's field() grows; an uncharged body radiates the base field.
+test('field(): a charged body radiates a stronger dipole than an uncharged one', () => {
+  const at = { x: 200, y: 40 }; // a fixed sample point off the dipole axis
+  for (const f of [magnetism, charge]) {
+    const base = body({ d: 0, strength: 1, M: 1, range: 300, hw: 70, hh: 20, ux: 1, uy: 0, spin: 1 });
+    const charged = body({ d: 1, strength: 1, M: 1, range: 300, hw: 70, hh: 20, ux: 1, uy: 0, spin: 1 });
+    const fb = f.field!(base, at.x, at.y);
+    const fc = f.field!(charged, at.x, at.y);
+    const magB = Math.hypot(fb.x, fb.y);
+    const magC = Math.hypot(fc.x, fc.y);
+    assert.ok(magB > 0, `${f.token}: base field should be non-zero`);
+    // Q_GAIN = 1.5 → a fully charged body radiates 2.5× its base field
+    assert.ok(near(magC / magB, 2.5, 1e-6), `${f.token}: charged/base = ${(magC / magB).toFixed(3)}, want 2.5`);
+  }
+});
+
+test('field(): an undefined b.d reads as Q = 0, not NaN (point / synthetic bodies)', () => {
+  const b = { cx: 0, cy: 0, hw: 60, hh: 20, ux: 1, uy: 0, spin: 1, range: 300, strength: 1, M: 1 } as Body;
+  const f = magnetism.field!(b, 180, 50);
+  assert.ok(Number.isFinite(f.x) && Number.isFinite(f.y), 'field must be finite when b.d is undefined');
+});

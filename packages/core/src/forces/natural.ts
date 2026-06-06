@@ -25,7 +25,13 @@ import { polePair, dipoleField, type Pole } from '../core/geometry.ts';
  * poles at the centre, where the ± contributions cancel to zero. So when the rect-derived
  * separation is negligible, synthesize the dipole along the heading at a fraction of the
  * body's range — every magnetism/charge source then reads as a dipole, regardless of size.
+ *
+ * Chargeable bodies (field-systems Stage C2): a body's accumulated charge `Q = b.d` (the
+ * bounded, eased density the field writes back as `--d` on a `data-feedback` element)
+ * sources its field — as the element charges up, it radiates up to `1 + Q_GAIN`× its base
+ * field. `b.d` is 0 on point/headless bodies, so the base field is unchanged there.
  */
+const Q_GAIN = 1.5;
 function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
   let poles = polePair(b);
   const sep = Math.hypot(poles[0].x - poles[1].x, poles[0].y - poles[1].y);
@@ -37,8 +43,9 @@ function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: n
       { x: b.cx - b.ux * half, y: b.cy - b.uy * half, q: -sgn },
     ] as [Pole, Pole];
   }
+  const sq = s * (1 + Q_GAIN * (b.d ?? 0)); // charged elements radiate a stronger field
   const f = dipoleField(poles, x, y);
-  return { x: f.x * s, y: f.y * s };
+  return { x: f.x * sq, y: f.y * sq };
 }
 
 /**
