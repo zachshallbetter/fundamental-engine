@@ -54,3 +54,35 @@ export function forceAt(
   }
   return { fx: probe.vx + fxField, fy: probe.vy + fyField };
 }
+
+/** The net *structure* field at (x, y): the superposition of every visible body's `field()`
+ *  contribution (the dipoles and monopoles only — no apply-probe), with the same range cull
+ *  as the integrator. This is the field the streamlines view draws and the vector matter
+ *  follows under `fieldflow`. Pure: same inputs, same output, no `env` mutation (the `field()`
+ *  hooks read only `b` and the point, so it is safe to call mid-integration). */
+export function netField(
+  bodies: readonly Body[],
+  forces: ForceRegistry,
+  x: number,
+  y: number,
+): { x: number; y: number } {
+  let fx = 0;
+  let fy = 0;
+  for (const b of bodies) {
+    if (!b.vis || b.tokens.length === 0) continue;
+    if (b.range > 0) {
+      const dx = b.cx - x;
+      const dy = b.cy - y;
+      if (dx * dx + dy * dy >= b.range * b.range * 2.56) continue; // same cull as the integrator
+    }
+    for (const tok of b.tokens) {
+      const f = forces[tok];
+      if (f?.field) {
+        const v = f.field(b, x, y);
+        fx += v.x;
+        fy += v.y;
+      }
+    }
+  }
+  return { x: fx, y: fy };
+}

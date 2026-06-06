@@ -11,6 +11,7 @@ import type { Body, ConditionRegistry, Env, Force, ForceRegistry, Particle } fro
 import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, type Wave } from './currents.ts';
+import { netField } from './streamlines.ts';
 
 export const FRICTION = 0.95;
 export const HEAT_DECAY = 0.972;
@@ -55,6 +56,9 @@ export function step(input: StepInput): void {
   const dt = env.dt;
   if (dt === 0) return;
   const { W, H, form } = env;
+  // expose the net structure field so field-following forces (`fieldflow`) can read the
+  // superposition of every body's field() — the same vector the streamlines view draws.
+  env.fieldAt = (x, y) => netField(bodies, forces, x, y);
   for (const b of bodies) b.count = 0;
   const hasWaves = !!waves && waves.length > 0;
   const hasBodies = bodies.length > 0;

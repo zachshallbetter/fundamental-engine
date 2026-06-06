@@ -256,6 +256,22 @@ export const EXPERIMENTS: ForceConformance[] = [
   },
   {
     scenario: {
+      force: 'fieldflow',
+      label: 'Neutral matter following a charge field line',
+      family: 'extended',
+      klass: 'A',
+      // a `charge` sources the field; `fieldflow` follows it. The particle is NEUTRAL, so
+      // charge itself cannot move it — only fieldflow advects it, streaming OUT along the
+      // radial field lines (the field direction at a point left of a + source points away).
+      tokens: ['charge', 'fieldflow'],
+      body: { cx: 120, range: 300, M: 2000, spin: 1, strength: 1 },
+      particles: [{ x: 0, y: 0 }],
+      frames: 60,
+    },
+    expectations: [movesAway(), recedesFromBody(), noEffectBeyondRange()],
+  },
+  {
+    scenario: {
       force: 'thermal',
       label: 'A particle in a thermal bath',
       family: 'natural',

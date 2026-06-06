@@ -74,7 +74,7 @@ test('registerExtendedForces() installs all designed-extended forces', () => {
   }
 });
 
-test('allForces() covers all 33 forces (9 canonical + 8 natural + 16 extended)', () => {
+test('allForces() covers all 34 forces (9 canonical + 8 natural + 17 extended)', () => {
   const forces = allForces();
   const tokens = Object.keys(forces);
   assert.equal(tokens.length, coreForces.length + naturalForces.length + extendedForces.length);

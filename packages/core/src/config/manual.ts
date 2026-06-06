@@ -93,6 +93,7 @@ export const FORCE_COLORS: Record<string, string> = {
   resonate: '#f0abfc',
   spotlight: '#facc15',
   pigment: '#d6529e', // ink — conserved colour transport
+  fieldflow: '#22d3ee', // plasma — matter streaming along the field lines
 };
 
 /**
@@ -137,6 +138,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   resonate: 'Pair with attract: a well that breathes (pulsing strength).',
   spotlight: 'Pair with stream: a directed beam confined to a cone.',
   pigment: 'A section that stains passing matter its own colour, carried away.',
+  fieldflow: 'A magnet or charge whose field lines the swarm threads, like plasma along a solar prominence.',
 };
 
 /**
@@ -156,7 +158,7 @@ export const FORCE_SYMBOLS: Record<string, string> = {
   lens: 'Le', gate: 'Ga', buoyancy: 'By', shear: 'Sh', crystallize: 'Cz',
   align: 'Al', wind: 'Wd', cohesion: 'Cn', pressure: 'Pr', hunt: 'Hu',
   spawn: 'Sp', link: 'Lk', morph: 'Mo', resonate: 'Rs', spotlight: 'Sl',
-  pigment: 'Pm',
+  pigment: 'Pm', fieldflow: 'Ff',
 };
 
 /**
@@ -202,6 +204,7 @@ export const FORCE_SUMMARIES: Record<string, string> = {
   resonate: 'A modifier that breathes — scales its sibling forces with a pulsing strength.',
   spotlight: 'A modifier cone — confines its sibling forces to a directed beam.',
   pigment: 'Carries colour through the medium — a dye that mixes.',
+  fieldflow: 'Follows the field lines — matter streams along the field a body radiates.',
 };
 
 /** The functional one-liner for every force — what it does, plainly (the Lab's EFFECT line). */
@@ -242,6 +245,7 @@ export const FORCE_EFFECTS: Record<string, string> = {
   resonate: 'Pulses a sibling force.',
   spotlight: 'Beams a sibling force into a cone.',
   pigment: 'Tints particles as they pass.',
+  fieldflow: 'Streams matter along the field lines.',
 };
 
 /** Every force, in catalog order. The UI groups these by `family`. */
@@ -516,6 +520,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     formula: 'on overlap: c_p ← mix(c_p, tint, rate);  the colour advects with matter',
     attrs: ['range', 'color'],
     desc: 'conserved colour transport — matter takes on and carries a tint',
+  },
+  {
+    family: 'extended',
+    token: 'fieldflow',
+    label: 'Field Flow',
+    formula: 'n̂ = netField/|netField|;  v += (n̂·|v| − v)·k_steer + n̂·gain·a_accel,  gain = S·(1 − d/r)',
+    attrs: ['strength', 'range'],
+    desc: 'follow the field lines — steer onto and stream down the net field a body radiates',
   },
 ];
 

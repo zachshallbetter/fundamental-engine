@@ -181,6 +181,11 @@ export interface Env {
   neighbors(p: Particle, r: number): Particle[];
   /** a named scalar grid — field-buffer forces (§20.1 class [C]). */
   grid(name: string): ScalarGrid;
+  /** the net *structure* field at a world point — the superposition of every body's
+   *  `field()` hook (the dipoles and monopoles, field-systems Stage B). The vector matter
+   *  follows under `fieldflow`. Set by the integrator each step from the live bodies; absent
+   *  in bare/probe envs, where a field-following force simply no-ops. */
+  fieldAt?(x: number, y: number): Vec2;
 }
 
 /**

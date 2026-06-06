@@ -10,6 +10,7 @@
 import type { Body, Env, ForceRegistry, Particle } from '../core/types.ts';
 import { FieldStore } from '../core/field-store.ts';
 import { step } from '../core/integrator.ts';
+import { netField } from '../core/streamlines.ts';
 import { ScalarGridImpl } from '../core/scalar-grid.ts';
 import { createRegistry } from '../core/registry.ts';
 import { registerCoreForces } from '../forces/index.ts';
@@ -192,6 +193,9 @@ function frameZeroDelta(s: Scenario, body: Body, forces: ForceRegistry, store: F
     env.dx = dx;
     env.dy = dy;
     env.dist = d < 1 ? 1 : d;
+    // field-following forces (`fieldflow`) read the net structure field; step() sets this
+    // for the trajectory, so mirror it here so the frame-0 delta isn't a no-op.
+    env.fieldAt = (x, y) => netField([body], forces, x, y);
     for (const tok of body.tokens) {
       const f = forces[tok];
       if (f && !f.modify) f.apply(body, p, env);
