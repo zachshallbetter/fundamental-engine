@@ -341,7 +341,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     family: 'natural',
     token: 'magnetism',
     label: 'Magnetism',
-    formula: 'v ← rotate(v, q·spin·B)',
+    formula: 'v ← rotate(v, θ),  θ = q·spin·B·(1 − d/r)',
     attrs: ['strength', 'range', 'spin'],
     desc: 'the Lorentz force — curves a moving charge, doing no work',
   },

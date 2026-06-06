@@ -78,6 +78,11 @@ export const charge: Force = {
  * work** — speed is preserved, only the heading turns. The body's `spin` sets the
  * out-of-plane sense (which way it curls); `strength` is `|B|`. Acts only on charged,
  * *moving* matter; neutral particles pass straight through.
+ *
+ * `B` is graded by a `(1 − d/r)` falloff, so the curl is strongest at the core and eases
+ * to zero at the rim — a localized, soft-edged field rather than a uniform region with a
+ * hard cutoff (the field-systems plan, Stage 0). The rotation preserves speed at every
+ * distance; only the turn angle shrinks outward.
  */
 export const magnetism: Force = {
   token: 'magnetism',
@@ -86,10 +91,11 @@ export const magnetism: Force = {
     if (e.dist >= b.range) return; // inside the field region
     const q = p.charge ?? 0;
     if (q === 0) return; // the Lorentz force needs charge
-    // Exact rotation by θ = qB per frame — preserves |v| to floating-point precision.
+    // Exact rotation by θ = q·spin·B per frame — preserves |v| to floating-point precision.
     // The Euler form (p.vx += -vy*f; p.vy += vx*f) passes the ⟂ test but accumulates
     // speed as sqrt(1+(qB)²)^N, which grows noticeably at strength > 0.1.
-    const theta = q * b.spin * b.strength;
+    const falloff = 1 - e.dist / b.range; // ∈ (0, 1] inside the region
+    const theta = q * b.spin * b.strength * falloff;
     const cs = Math.cos(theta);
     const sn = Math.sin(theta);
     const vx0 = p.vx;

@@ -208,12 +208,16 @@ test('charge: neutral matter is unaffected', () => {
   assert.equal(p2.vx, 0);
 });
 
-test('magnetism deflects a moving charge perpendicular (§20.10)', () => {
+// θ = q·spin·strength·(1 − d/r), the falloff-graded rotation angle the field applies.
+const magTheta = (q: number, spin: number, strength: number, d: number, r: number): number =>
+  q * spin * strength * (1 - d / r);
+
+test('magnetism rotates a moving charge by θ = q·spin·B·(1 − d/r) (§20.10)', () => {
   const p = part({ vx: 1, vy: 0, charge: 1 });
-  // Exact rotation by θ=qB=0.5 rad; v=(1,0) → v'=(cos θ, sin θ).
+  const theta = magTheta(1, 1, 0.5, 10, 300); // falloff at d=10, r=300
   magnetism.apply(body({ spin: 1, strength: 0.5, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
-  assert.ok(near(p.vx, Math.cos(0.5)));
-  assert.ok(near(p.vy, Math.sin(0.5)));
+  assert.ok(near(p.vx, Math.cos(theta)));
+  assert.ok(near(p.vy, Math.sin(theta)));
 });
 
 test('magnetism does no work — speed is preserved (§20.10)', () => {
@@ -227,9 +231,37 @@ test('magnetism does no work — speed is preserved (§20.10)', () => {
 
 test('magnetism: body spin flips the sense of curl', () => {
   const p = part({ vx: 1, vy: 0, charge: 1 });
-  // Rotation by θ=−0.5 rad; v=(1,0) → v'=(cos 0.5, −sin 0.5).
+  const theta = magTheta(1, -1, 0.5, 10, 300); // negative → curls toward −y
   magnetism.apply(body({ spin: -1, strength: 0.5, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
-  assert.ok(near(p.vy, -Math.sin(0.5))); // opposite spin → curls toward −y
+  assert.ok(near(p.vy, Math.sin(theta)));
+  assert.ok(p.vy < 0);
+});
+
+test('magnetism: charge sign flips the curl direction', () => {
+  const pos = part({ vx: 1, vy: 0, charge: 1 });
+  const neg = part({ vx: 1, vy: 0, charge: -1 });
+  const b = body({ spin: 1, strength: 0.5, range: 300 });
+  magnetism.apply(b, pos, env({ dx: 10, dy: 0, dist: 10 }));
+  magnetism.apply(b, neg, env({ dx: 10, dy: 0, dist: 10 }));
+  assert.ok(pos.vy > 0 && neg.vy < 0); // opposite charges curve opposite ways
+  assert.ok(near(pos.vy, -neg.vy)); // and symmetrically
+});
+
+test('magnetism: deflection falls off toward the rim', () => {
+  const inner = part({ vx: 1, vy: 0, charge: 1 });
+  const outer = part({ vx: 1, vy: 0, charge: 1 });
+  const b = body({ spin: 1, strength: 0.5, range: 300 });
+  magnetism.apply(b, inner, env({ dx: 30, dy: 0, dist: 30 })); // near the core
+  magnetism.apply(b, outer, env({ dx: 290, dy: 0, dist: 290 })); // near the rim
+  assert.ok(inner.vy > outer.vy); // stronger curl closer in
+  assert.ok(outer.vy > 0); // still curls a little inside the region
+});
+
+test('magnetism: a still charge feels no force (needs motion)', () => {
+  const p = part({ vx: 0, vy: 0, charge: 1 });
+  magnetism.apply(body({ spin: 1, strength: 1, range: 300 }), p, env({ dx: 10, dy: 0, dist: 10 }));
+  assert.equal(p.vx, 0);
+  assert.equal(p.vy, 0);
 });
 
 test('magnetism: neutral matter is unaffected', () => {
