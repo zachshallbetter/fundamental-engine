@@ -12,7 +12,7 @@ import '../styles/instrument.css';
 
 const PRESET_COLORS: Record<string, string> = {
   blackhole: '#fbbf24', whitehole: '#e0f2fe', star: '#6366f1', quasar: '#fbbf24',
-  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf',
+  galaxy: '#a78bfa', nebula: '#38bdf8', tornado: '#2dd4bf', fountain: '#7dd3fc',
 };
 const DISCIPLINE: Record<string, string> = {
   attract: 'Product strategy', jet: 'AI systems', tether: 'Software architecture',
@@ -308,6 +308,116 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
             </div>
           </div>
         </div>
+        <span class="sub">Instrument controls</span>
+        <p class="sec-desc" style="margin-top:0">The Lab's advanced inputs, drawn properly — slider, stepper, angle dial,
+          dual range, and styled select. Pick a force to re-tint the whole set via <code class="ftok">--cc</code>.</p>
+        <div class="ds-ctrls" data-controls style="--cc:#4da3ff">
+          <div class="ds-tint-row">
+            <span class="ctrl-sub">Tint · active force</span>
+            <button type="button" class="ds-tint on" data-tint data-name="Attract" style="--cc:#4da3ff" aria-pressed="true" title="Attract" />
+            <button type="button" class="ds-tint" data-tint data-name="Swirl" style="--cc:#2dd4bf" aria-pressed="false" title="Swirl" />
+            <button type="button" class="ds-tint" data-tint data-name="Jet" style="--cc:#a78bfa" aria-pressed="false" title="Jet" />
+            <button type="button" class="ds-tint" data-tint data-name="Tether" style="--cc:#86e57f" aria-pressed="false" title="Tether" />
+            <button type="button" class="ds-tint" data-tint data-name="Repel" style="--cc:#ff9d5c" aria-pressed="false" title="Repel" />
+            <button type="button" class="ds-tint" data-tint data-name="Sink" style="--cc:#ff6e9c" aria-pressed="false" title="Sink" />
+            <button type="button" class="ds-tint" data-tint data-name="Magnetism" style="--cc:#c084fc" aria-pressed="false" title="Magnetism" />
+            <button type="button" class="ds-tint" data-tint data-name="Pigment" style="--cc:#d6529e" aria-pressed="false" title="Pigment" />
+            <span class="ctrl-sub" data-tint-name style="margin-left:auto;color:var(--cc)">Attract</span>
+          </div>
+
+          <div class="frame canvas" style="padding:1.6rem 1.4rem">
+            <span class="frame-label">Slider · two treatments</span>
+            <div style="display:grid;gap:1.9rem;max-width:480px">
+              <div class="ds-slider" data-slider data-min="0" data-max="3" data-step="0.05" data-value="1.4" style="--pct:0.4667">
+                <div class="ctrl-head"><span class="ctrl-label">strength</span><span class="ctrl-val"><span data-out>1.40</span></span></div>
+                <div class="ds-slider-track" tabindex="0" role="slider" aria-label="strength" aria-valuenow="1.4" aria-valuemin="0" aria-valuemax="3">
+                  <div class="ds-slider-rail"><div class="ds-slider-fill" /></div>
+                  <div class="ds-slider-thumb" />
+                </div>
+                <div class="ds-slider-ticks"><span /><span /><span /><span /><span /><span /><span /></div>
+              </div>
+              <div class="ds-slider ds-meter" data-slider data-min="0" data-max="100" data-step="1" data-value="62" data-unit="%" style="--pct:0.62">
+                <div class="ctrl-head"><span class="ctrl-label">charge</span><span class="ctrl-val"><span data-out>62</span><span class="unit">%</span></span></div>
+                <div class="ds-slider-track" tabindex="0" role="slider" aria-label="charge" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100">
+                  <div class="ds-slider-rail"><div class="ds-slider-fill" /></div>
+                  <div class="ds-slider-bubble" data-bubble>62%</div>
+                  <div class="ds-slider-thumb" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid cols-2">
+            <div class="frame canvas" style="padding:1.6rem 1.4rem">
+              <span class="frame-label">Stepper</span>
+              <div style="display:grid;gap:1.2rem">
+                <div>
+                  <div class="ctrl-head"><span class="ctrl-label">particles</span></div>
+                  <div class="ds-stepper" data-stepper data-min="0" data-max="200" data-step="1" data-value="24">
+                    <button type="button" data-step-dec aria-label="decrease">−</button>
+                    <span class="ds-stepper-mid"><input data-step-input value="24" inputmode="decimal" aria-label="value" /></span>
+                    <button type="button" data-step-inc aria-label="increase">+</button>
+                  </div>
+                </div>
+                <div>
+                  <div class="ctrl-head"><span class="ctrl-label">thickness</span></div>
+                  <div class="ds-stepper" data-stepper data-min="1" data-max="32" data-step="1" data-value="8" data-unit="px">
+                    <button type="button" data-step-dec aria-label="decrease">−</button>
+                    <span class="ds-stepper-mid"><input data-step-input value="8" inputmode="decimal" aria-label="value" /><span class="unit">px</span></span>
+                    <button type="button" data-step-inc aria-label="increase">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="frame canvas" style="padding:1.6rem 1.4rem">
+              <span class="frame-label">Angle dial</span>
+              <div style="display:flex;align-items:center;gap:1.4rem">
+                <div class="ds-dial" data-dial data-value="35" style="--ang:35deg" tabindex="0" role="slider" aria-label="angle" aria-valuenow="35" aria-valuemin="0" aria-valuemax="359">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <span class={`ds-dial-tick${i % 3 === 0 ? ' major' : ''}`} style={`transform:translate(-50%,-50%) rotate(${i * 30}deg) translateY(-43px)`} />
+                  ))}
+                  <div class="ds-dial-needle" />
+                  <div class="ds-dial-hub"><span class="deg"><span data-out>35</span>°</span><span class="cap">deg</span></div>
+                </div>
+                <div style="display:grid;gap:0.35rem">
+                  <span class="ctrl-label">heading</span>
+                  <span class="ctrl-val" style="font-size:1.3rem"><span data-dial-out>35</span>°</span>
+                  <span class="ctrl-sub" style="text-transform:none;letter-spacing:0">drag · or ←/→ · shift = 15°</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="frame canvas" style="padding:1.8rem 1.6rem">
+            <span class="frame-label">Dual range · sweep bounds</span>
+            <div class="ds-range" data-range data-min="40" data-max="520" data-step="4" data-lo="120" data-hi="380" data-unit="px" style="--lo:0.1667;--hi:0.7083;max-width:480px">
+              <div class="ctrl-head"><span class="ctrl-label">sweep bounds</span><span class="ctrl-val"><span data-lo-out>120</span><span class="unit">→</span><span data-hi-out>380</span><span class="unit">px</span></span></div>
+              <div class="ds-range-track">
+                <div class="ds-range-rail" />
+                <div class="ds-range-span" />
+                <div class="ds-range-thumb lo" data-thumb="lo" role="slider" aria-label="minimum" aria-valuenow="120" tabindex="0" />
+                <div class="ds-range-thumb hi" data-thumb="hi" role="slider" aria-label="maximum" aria-valuenow="380" tabindex="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="frame canvas" style="padding:1.6rem 1.4rem">
+            <span class="frame-label">Select</span>
+            <div style="display:grid;gap:0.6rem;max-width:240px">
+              <span class="ctrl-label">falloff curve</span>
+              <div class="ds-select" data-select>
+                <button type="button" class="ds-select-btn" aria-haspopup="listbox" aria-expanded="false"><span data-select-label>Inverse-square</span><span class="ds-select-chev">▾</span></button>
+                <div class="ds-select-menu" role="listbox" hidden>
+                  <button type="button" role="option" class="ds-select-opt" data-value="Linear"><span class="dot" />Linear</button>
+                  <button type="button" role="option" class="ds-select-opt on" data-value="Inverse-square" aria-selected="true"><span class="dot" />Inverse-square</button>
+                  <button type="button" role="option" class="ds-select-opt" data-value="Smoothstep"><span class="dot" />Smoothstep</button>
+                  <button type="button" role="option" class="ds-select-opt" data-value="Constant"><span class="dot" />Constant</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <span class="sub">Motion</span>
         <div class="grid cols-4 swatches">
           {motions.map((m) => (<article class="card mo"><b>{m.n}</b><code>{m.d}</code><span>{m.note}</span></article>)) }
@@ -337,8 +447,159 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         });
       });
     }
+    // The instrument controls — slider, stepper, angle dial, dual range, select.
+    // Vanilla port of the design system's ds-inputs; the whole set tints via --cc.
+    function initControls() {
+      const root = document.querySelector<HTMLElement>('[data-controls]');
+      if (!root || (root as any)._wired) return;
+      (root as any)._wired = true;
+
+      const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+      const snap = (v: number, lo: number, hi: number, step: number) => {
+        v = clamp(v, lo, hi);
+        if (step) v = Math.round((v - lo) / step) * step + lo;
+        return clamp(v, lo, hi);
+      };
+      const fmt = (v: number, step: number) => {
+        const d = step && step < 1 ? (String(step).split('.')[1] || '').length : 0;
+        return Number(v).toFixed(d);
+      };
+      const dragVal = (e: PointerEvent, track: HTMLElement, lo: number, hi: number, step: number) => {
+        const r = track.getBoundingClientRect();
+        const R = 9;
+        const p = clamp((e.clientX - r.left - R) / (r.width - 2 * R), 0, 1);
+        return snap(lo + p * (hi - lo), lo, hi, step);
+      };
+      const drag = (onMove: (e: PointerEvent) => void) => {
+        const move = (e: PointerEvent) => onMove(e);
+        const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+        window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+      };
+
+      // tint picker — re-tints every control
+      const tintName = root.querySelector<HTMLElement>('[data-tint-name]');
+      root.querySelectorAll<HTMLElement>('[data-tint]').forEach((t) => t.addEventListener('click', () => {
+        root.style.setProperty('--cc', t.style.getPropertyValue('--cc'));
+        root.querySelectorAll<HTMLElement>('[data-tint]').forEach((o) => {
+          o.classList.toggle('on', o === t); o.setAttribute('aria-pressed', String(o === t));
+        });
+        if (tintName) tintName.textContent = t.dataset.name || '';
+      }));
+
+      // sliders (track + meter)
+      root.querySelectorAll<HTMLElement>('[data-slider]').forEach((sl) => {
+        const lo = +sl.dataset.min!, hi = +sl.dataset.max!, step = +sl.dataset.step!, unit = sl.dataset.unit || '';
+        const track = sl.querySelector<HTMLElement>('.ds-slider-track')!;
+        const out = sl.querySelector<HTMLElement>('[data-out]');
+        const bubble = sl.querySelector<HTMLElement>('[data-bubble]');
+        let val = +sl.dataset.value!;
+        const set = (v: number) => {
+          val = v;
+          sl.style.setProperty('--pct', String((v - lo) / (hi - lo)));
+          if (out) out.textContent = fmt(v, step);
+          if (bubble) bubble.textContent = fmt(v, step) + unit;
+          track.setAttribute('aria-valuenow', String(v));
+        };
+        track.addEventListener('pointerdown', (e) => { e.preventDefault(); track.focus(); set(dragVal(e, track, lo, hi, step)); drag((ev) => set(dragVal(ev, track, lo, hi, step))); });
+        track.addEventListener('keydown', (e) => {
+          const big = e.shiftKey ? 5 : 1; let nv = val;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowUp') nv = val + step * big;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') nv = val - step * big;
+          else return;
+          e.preventDefault(); set(snap(nv, lo, hi, step));
+        });
+      });
+
+      // steppers
+      root.querySelectorAll<HTMLElement>('[data-stepper]').forEach((st) => {
+        const lo = +st.dataset.min!, hi = +st.dataset.max!, step = +st.dataset.step! || 1;
+        const input = st.querySelector<HTMLInputElement>('[data-step-input]')!;
+        let val = +st.dataset.value!;
+        const set = (v: number) => { val = snap(v, lo, hi, step); input.value = fmt(val, step); };
+        st.querySelector<HTMLElement>('[data-step-dec]')!.addEventListener('click', () => set(val - step));
+        st.querySelector<HTMLElement>('[data-step-inc]')!.addEventListener('click', () => set(val + step));
+        input.addEventListener('change', () => { const v = parseFloat(input.value); if (!isNaN(v)) set(v); });
+      });
+
+      // angle dial
+      root.querySelectorAll<HTMLElement>('[data-dial]').forEach((d) => {
+        const hubOut = d.querySelector<HTMLElement>('[data-out]');
+        const sideOut = d.closest<HTMLElement>('.frame')?.querySelector<HTMLElement>('[data-dial-out]');
+        let val = +d.dataset.value!;
+        const set = (v: number) => {
+          val = ((Math.round(v) % 360) + 360) % 360;
+          d.style.setProperty('--ang', val + 'deg');
+          if (hubOut) hubOut.textContent = String(val);
+          if (sideOut) sideOut.textContent = String(val);
+          d.setAttribute('aria-valuenow', String(val));
+        };
+        const fromEvent = (e: PointerEvent) => {
+          const r = d.getBoundingClientRect();
+          set(Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI);
+        };
+        d.addEventListener('pointerdown', (e) => { e.preventDefault(); d.focus(); fromEvent(e); drag(fromEvent); });
+        d.addEventListener('keydown', (e) => {
+          let nv = val;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowUp') nv = val + (e.shiftKey ? 15 : 1);
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') nv = val - (e.shiftKey ? 15 : 1);
+          else return;
+          e.preventDefault(); set(nv);
+        });
+      });
+
+      // dual range
+      root.querySelectorAll<HTMLElement>('[data-range]').forEach((rg) => {
+        const lo = +rg.dataset.min!, hi = +rg.dataset.max!, step = +rg.dataset.step!;
+        const track = rg.querySelector<HTMLElement>('.ds-range-track')!;
+        const loEl = rg.querySelector<HTMLElement>('.ds-range-thumb.lo')!, hiEl = rg.querySelector<HTMLElement>('.ds-range-thumb.hi')!;
+        const loOut = rg.querySelector<HTMLElement>('[data-lo-out]'), hiOut = rg.querySelector<HTMLElement>('[data-hi-out]');
+        let vlo = +rg.dataset.lo!, vhi = +rg.dataset.hi!;
+        const draw = () => {
+          rg.style.setProperty('--lo', String((vlo - lo) / (hi - lo)));
+          rg.style.setProperty('--hi', String((vhi - lo) / (hi - lo)));
+          if (loOut) loOut.textContent = fmt(vlo, step);
+          if (hiOut) hiOut.textContent = fmt(vhi, step);
+          loEl.setAttribute('aria-valuenow', String(vlo)); hiEl.setAttribute('aria-valuenow', String(vhi));
+        };
+        loEl.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); drag((ev) => { vlo = Math.min(dragVal(ev, track, lo, hi, step), vhi); draw(); }); });
+        hiEl.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); drag((ev) => { vhi = Math.max(dragVal(ev, track, lo, hi, step), vlo); draw(); }); });
+      });
+
+      // selects
+      root.querySelectorAll<HTMLElement>('[data-select]').forEach((sel) => {
+        const btn = sel.querySelector<HTMLElement>('.ds-select-btn')!;
+        const menu = sel.querySelector<HTMLElement>('.ds-select-menu')!;
+        const label = sel.querySelector<HTMLElement>('[data-select-label]');
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const open = !sel.classList.contains('open');
+          sel.classList.toggle('open', open); menu.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+        });
+        menu.querySelectorAll<HTMLElement>('.ds-select-opt').forEach((opt) => opt.addEventListener('click', () => {
+          menu.querySelectorAll<HTMLElement>('.ds-select-opt').forEach((o) => { o.classList.toggle('on', o === opt); o.setAttribute('aria-selected', String(o === opt)); });
+          if (label) label.textContent = opt.dataset.value || '';
+          sel.classList.remove('open'); menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
+        }));
+      });
+    }
+
+    // outside-click closes any open select — registered once, queries live DOM
+    if (!(window as any)._dsSelClose) {
+      (window as any)._dsSelClose = true;
+      document.addEventListener('pointerdown', (e) => {
+        document.querySelectorAll<HTMLElement>('.ds-select.open').forEach((s) => {
+          if (!s.contains(e.target as Node)) {
+            s.classList.remove('open');
+            const m = s.querySelector<HTMLElement>('.ds-select-menu'); if (m) m.hidden = true;
+            s.querySelector('.ds-select-btn')?.setAttribute('aria-expanded', 'false');
+          }
+        });
+      });
+    }
+
     initForceBrowsers();
-    document.addEventListener('astro:page-load', initForceBrowsers);
+    initControls();
+    document.addEventListener('astro:page-load', () => { initForceBrowsers(); initControls(); });
   </script>
 </Base>
 

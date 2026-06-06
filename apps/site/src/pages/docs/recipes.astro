@@ -41,6 +41,29 @@ const burst = `const field = document.querySelector('forces-field');
 document.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');   // shove + heat at the cursor
 });`;
+
+const navReact = `import { ForcesField } from '@forces-ui/react';
+
+<>
+  <ForcesField attention />
+
+  <nav>
+    <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Home</a>
+    <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Docs</a>
+    <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Lab</a>
+  </nav>
+</>`;
+
+const burstReact = `import { ForcesField } from '@forces-ui/react';
+
+// onReady hands you the same FieldHandle once the field mounts
+<ForcesField
+  onReady={(field) => {
+    document.addEventListener('click', (e) => {
+      field.burst(e.clientX, e.clientY, '#4da3ff');   // shove + heat at the cursor
+    });
+  }}
+/>`;
 ---
 
 <DocsLayout
@@ -75,13 +98,23 @@ document.addEventListener('click', (e) => {
       With <code>attention</code> on, engaging one link pulls the field's finite budget toward it —
       so the nav physically can't emphasize two items at once.
     </p>
-    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: nav }]} />
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'html', code: nav },
+        { label: 'React', lang: 'tsx', code: navReact },
+      ]}
+    />
   </section>
 
   <section class="docs-sec">
     <h2>A burst on click</h2>
     <p>Drive the field from your own events. <code>burst</code> takes viewport coordinates.</p>
-    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: burst }]} />
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'js', code: burst },
+        { label: 'React', lang: 'tsx', code: burstReact },
+      ]}
+    />
     <div class="callout">
       <b>Authoring a custom force?</b> A force is just an object implementing the
       <a href="/docs/api/types">Force contract</a> — <code>{'{ token, apply(b, p, env) }'}</code>.

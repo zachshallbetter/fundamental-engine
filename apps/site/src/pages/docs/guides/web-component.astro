@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
+import { MANUAL_FORCES } from 'forces-ui';
 
 const cell = `<forces-cell force="swirl" color="#2dd4bf"></forces-cell>`;
 
@@ -124,7 +125,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
       <b>Supported forces.</b> The cell is a simplified poster engine — it runs
       <code>attract</code>, <code>repel</code>, <code>swirl</code>, <code>gravity</code>,
       <code>stream</code>, <code>buoyancy</code>, and <code>tether</code>. For the full {''}
-      <a href="/docs/api/forces">catalog of 34</a> against the canonical math, use the page field
+      <a href="/docs/api/forces">catalog of {MANUAL_FORCES.length}</a> against the canonical math, use the page field
       or <a href="/lab">the Lab</a>.
     </div>
   </section>
