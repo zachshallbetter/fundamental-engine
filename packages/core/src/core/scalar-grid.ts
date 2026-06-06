@@ -74,6 +74,13 @@ export class ScalarGridImpl implements ScalarGrid {
     this.cur[iy * this.cols + ix]! += amount;
   }
 
+  /** the current peak value across the field — for normalizing a heatmap to [0, 1]. */
+  max(): number {
+    let m = 0;
+    for (let i = 0; i < this.cur.length; i++) if (this.cur[i]! > m) m = this.cur[i]!;
+    return m;
+  }
+
   /** central-difference gradient ∇φ in pixel space (points up-slope). */
   gradient(x: number, y: number): Vec2 {
     const h = this.cell;

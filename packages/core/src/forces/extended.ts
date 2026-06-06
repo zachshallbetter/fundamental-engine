@@ -479,6 +479,59 @@ export const pigment: Force = {
   meta: { desc: 'conserved colour transport — matter takes on and carries a tint' },
 };
 
+/**
+ * §20.3 — `fieldflow`: follow the field lines. Where `magnetism` curls a moving charge
+ * *across* the field (the perpendicular Lorentz force, no work) and `charge` pushes only
+ * *charged* matter along its own radial field, `fieldflow` advects ALL matter ALONG the net
+ * structure field every body radiates — the superposition of every `field()` hook, read
+ * through `env.fieldAt`. It both **steers** velocity onto the local field line (speed-
+ * preserving, like `align`) and **accelerates** matter down it (does work), so a swarm
+ * threads the dipole loops of a magnet or streams off a charge like plasma along a solar
+ * prominence. The line *direction* is used scale-free (normalized), so a weak dipole channels
+ * matter as surely as a strong monopole — the look no longer depends on the field's absolute
+ * magnitude. Because it follows the *net* field (not just this body's), matter routes along
+ * the lines that link two poles, so the channelling *between* bodies emerges from the geometry.
+ * `strength` is the gain; the `(1 − d/r)` falloff localizes it (range 0 ⇒ a global field-follow,
+ * the `magnetic` formation). Acts on neutral matter too — it is field transport of the medium,
+ * not the charge-gated Lorentz force.
+ */
+const FIELDFLOW_STEER = 0.5; // fraction of velocity turned onto the line per frame (× gain)
+const FIELDFLOW_ACCEL = 0.12; // streaming acceleration along the line (× gain)
+export const fieldflow: Force = {
+  token: 'fieldflow',
+  label: 'Field Flow',
+  apply(b, p, e) {
+    if (b.range > 0 && e.dist >= b.range) return; // range 0 ⇒ global
+    const F = e.fieldAt?.(p.x, p.y); // the net field every body's field() radiates here
+    if (!F) return;
+    const mag = Math.hypot(F.x, F.y);
+    if (!(mag > 1e-9)) return; // a true null point (or NaN) — no line to follow
+    const ux = F.x / mag; // the field-line tangent (direction only — scale-free, so a faint
+    const uy = F.y / mag; // dipole reads as clearly as a strong monopole)
+    const falloff = b.range > 0 ? 1 - e.dist / b.range : 1;
+    const gain = b.strength * falloff;
+    // 1) STEER onto the line — turn velocity toward the tangent without spending it (like `align`).
+    const sp = Math.hypot(p.vx, p.vy);
+    if (sp > 1e-6) {
+      const k = Math.min(1, gain * FIELDFLOW_STEER);
+      p.vx += (ux * sp - p.vx) * k;
+      p.vy += (uy * sp - p.vy) * k;
+    }
+    // 2) STREAM down the line — accelerate along it (the flare ejection; does work).
+    p.vx += ux * gain * FIELDFLOW_ACCEL;
+    p.vy += uy * gain * FIELDFLOW_ACCEL;
+    // bound by the unit system's speed of light (§20.10), as gravity/thermal do.
+    const s2 = p.vx * p.vx + p.vy * p.vy;
+    if (s2 > e.c * e.c) {
+      const inv = e.c / Math.sqrt(s2);
+      p.vx *= inv;
+      p.vy *= inv;
+    }
+    if (b.on) p.heat = Math.max(p.heat, falloff * 0.4);
+  },
+  meta: { desc: 'follow the field lines — steer onto and stream down the net field a body radiates' },
+};
+
 /** The designed extended forces, in spec order (§20.3). */
 export const extendedForces: readonly Force[] = [
   lens,
@@ -497,6 +550,7 @@ export const extendedForces: readonly Force[] = [
   resonate,
   spotlight,
   pigment,
+  fieldflow,
 ];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */

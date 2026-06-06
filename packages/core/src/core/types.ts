@@ -87,6 +87,10 @@ export interface Body {
   feedback: boolean;
   /** the body's tint from `data-color`, for `pigment` colour transport (§20.8). */
   tint?: string;
+  /** shaped source (`data-shaped`): forces reference the nearest point on the element's
+   *  box, not its centre, so matter gathers in a shell around the shape (field-systems
+   *  Stage C). Undefined ⇒ point source (the default). */
+  shaped?: boolean;
   fmin: number;
   fmax: number;
   opsz: string;
@@ -112,6 +116,13 @@ export interface Body {
   /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
    *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
   targets?: readonly { x: number; y: number }[];
+  /** custom rectangle provider for a shadow-DOM body whose physical box is not the host
+   *  box (closed roots, internal cores). The measurer prefers this over the host's own
+   *  `getBoundingClientRect` (shadow-dom.md §10/§16). */
+  rect?: () => DOMRect;
+  /** element that receives the field's CSS-variable write-back, when it differs from the
+   *  body's element (shadow-dom.md §11). Defaults to `el`. */
+  writeTarget?: HTMLElement;
 }
 
 /** A formation preset — a global bias on every free particle (§7). */
@@ -170,6 +181,11 @@ export interface Env {
   neighbors(p: Particle, r: number): Particle[];
   /** a named scalar grid — field-buffer forces (§20.1 class [C]). */
   grid(name: string): ScalarGrid;
+  /** the net *structure* field at a world point — the superposition of every body's
+   *  `field()` hook (the dipoles and monopoles, field-systems Stage B). The vector matter
+   *  follows under `fieldflow`. Set by the integrator each step from the live bodies; absent
+   *  in bare/probe envs, where a field-following force simply no-ops. */
+  fieldAt?(x: number, y: number): Vec2;
 }
 
 /**
@@ -208,6 +224,15 @@ export interface Force {
    * pool ceiling keep the count bounded).
    */
   source?(b: Body, env: Env): void;
+  /**
+   * Optional *visual field* hook (field-systems plan, Stage B). The in-plane field vector
+   * the body projects at a world point, with no particle and no velocity. Renders field
+   * lines and makes velocity- or charge-dependent forces (whose `apply` is a no-op on a
+   * still probe) visible in the field-flow view. For `magnetism` this is the dipole
+   * structure of B — particles still curve perpendicular, they do not follow it; for
+   * `charge` it is the electric field the force pushes along. Pure: same input, same output.
+   */
+  field?(b: Body, x: number, y: number): Vec2;
   meta?: { desc?: string };
 }
 
@@ -253,6 +278,9 @@ export interface FieldOptions {
   /** cross-boundary causality (Concept 4): a saturated body spills density to its
    *  neighbours (writing `--lit` + firing `field:lit`/`field:dim`). Default false. */
   causality?: boolean;
+  /** density heatmap (field-systems H1): a scalar buffer of where matter pools, drawn as a
+   *  glow underlay and sampled to bodies as `--forces-heatmap-density`. Default false. */
+  heatmap?: boolean;
 }
 
 /** The handle returned by `createField` — the public field API (§13). */
@@ -271,6 +299,8 @@ export interface FieldHandle {
   setAttention(on: boolean): void;
   /** toggle cross-boundary causality (Concept 4) live — density spills to neighbours. */
   setCausality(on: boolean): void;
+  /** toggle the density heatmap layer (field-systems H1) live. */
+  setHeatmap(on: boolean): void;
   /** switch the render mode (§20.6) live. */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */

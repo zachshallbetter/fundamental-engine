@@ -13,6 +13,60 @@
 
 import type { Body, Particle, Env, Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
+import { polePair, dipoleField, EPS, type Pole } from '../core/geometry.ts';
+
+/**
+ * The body's dipole field at a world point (the visual/structure field, Stage B): the
+ * two-pole superposition scaled by the source magnitude. Shared by `magnetism` (the bar
+ * magnet, rendered but not followed) and `charge` (the electric field the force flows
+ * along). `s` is the source scalar — `strength` for B, `M` for the charge field.
+ *
+ * A body with little or no extent (an abstract scenario, a point element) would put both
+ * poles at the centre, where the ± contributions cancel to zero. So when the rect-derived
+ * separation is negligible, synthesize the dipole along the heading at a fraction of the
+ * body's range — every magnetism/charge source then reads as a dipole, regardless of size.
+ *
+ * Chargeable bodies (field-systems Stage C2): a body's accumulated charge `Q = b.d` (the
+ * bounded, eased density the field writes back as `--d` on a `data-feedback` element)
+ * sources its field — as the element charges up, it radiates up to `1 + Q_GAIN`× its base
+ * field. `b.d` is 0 on point/headless bodies, so the base field is unchanged there.
+ */
+const Q_GAIN = 1.5;
+const DIPOLE_MIN_SEP = 8; // px — below this the rect gives no usable dipole axis
+const DIPOLE_MIN_REACH = 60; // px — synthesized pole reach floor (covers range-0 / point bodies)
+function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
+  let poles = polePair(b);
+  const sep = Math.hypot(poles[0].x - poles[1].x, poles[0].y - poles[1].y);
+  // synthesize when the rect gives no usable separation. The pixel floors matter for a global
+  // body (`data-range="0"`): `range*0.06`/`range*0.18` would be 0, collapsing the dipole to a
+  // zero field — the floors keep it a readable dipole regardless of size.
+  if (sep < Math.max(b.range * 0.06, DIPOLE_MIN_SEP)) {
+    const half = Math.max(b.range * 0.18, DIPOLE_MIN_REACH);
+    const sgn = b.spin < 0 ? -1 : 1;
+    poles = [
+      { x: b.cx + b.ux * half, y: b.cy + b.uy * half, q: sgn },
+      { x: b.cx - b.ux * half, y: b.cy - b.uy * half, q: -sgn },
+    ] as [Pole, Pole];
+  }
+  const sq = s * (1 + Q_GAIN * (b.d ?? 0)); // charged elements radiate a stronger field
+  const f = dipoleField(poles, x, y);
+  return { x: f.x * sq, y: f.y * sq };
+}
+
+/**
+ * The radial monopole field of a single point charge (the electric field, §20.3): straight
+ * field lines out of a positive source, into a negative one — `E = σ·s·r̂/(d²+ε²)`, where `σ`
+ * is the body's polarity (`spin`). Unlike a magnet (a dipole — magnetic monopoles do not
+ * exist, so `magnetism` loops), a lone electric charge radiates, so `charge` is a monopole.
+ */
+function bodyMonopole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
+  const dx = x - b.cx;
+  const dy = y - b.cy;
+  const d = Math.max(Math.hypot(dx, dy), EPS);
+  const sgn = b.spin < 0 ? -1 : 1;
+  const mag = (sgn * s * (1 + Q_GAIN * (b.d ?? 0))) / (d * d); // 1/d², signed by polarity
+  return { x: (dx / d) * mag, y: (dy / d) * mag };
+}
 
 /**
  * The shared softened inverse-square kernel (§20.10): `s / (d² + ε²)` along the
@@ -68,6 +122,10 @@ export const charge: Force = {
     // inward-pointing kernel so like signs repel and opposite signs attract.
     inverseSquare(b, p, e, -(b.spin * q * e.G * b.M));
   },
+  // The radial electric field the charge projects (Stage B), sourced by `M` and signed by
+  // `spin`: straight field lines, OUT of a + source and IN to a −. A lone charge is a
+  // monopole (unlike a magnet's dipole) — the force already flows charged matter along it.
+  field: (b, x, y) => bodyMonopole(b, x, y, b.M),
   meta: { desc: 'signed inverse-square — like repels, opposite attracts' },
 };
 
@@ -78,6 +136,11 @@ export const charge: Force = {
  * work** — speed is preserved, only the heading turns. The body's `spin` sets the
  * out-of-plane sense (which way it curls); `strength` is `|B|`. Acts only on charged,
  * *moving* matter; neutral particles pass straight through.
+ *
+ * `B` is graded by a `(1 − d/r)` falloff, so the curl is strongest at the core and eases
+ * to zero at the rim — a localized, soft-edged field rather than a uniform region with a
+ * hard cutoff (the field-systems plan, Stage 0). The rotation preserves speed at every
+ * distance; only the turn angle shrinks outward.
  */
 export const magnetism: Force = {
   token: 'magnetism',
@@ -86,13 +149,20 @@ export const magnetism: Force = {
     if (e.dist >= b.range) return; // inside the field region
     const q = p.charge ?? 0;
     if (q === 0) return; // the Lorentz force needs charge
-    const f = q * b.spin * b.strength; // qB; spin sets the out-of-plane sense
-    const fx = -p.vy * f; // F = qB·(−v_y, v_x) — ⟂ to v, so F·v = 0 (no work)
-    const fy = p.vx * f;
-    p.vx += fx;
-    p.vy += fy;
-    clampToC(p, e.c);
+    // Exact rotation by θ = q·spin·B per frame — preserves |v| to floating-point precision.
+    // The Euler form (p.vx += -vy*f; p.vy += vx*f) passes the ⟂ test but accumulates
+    // speed as sqrt(1+(qB)²)^N, which grows noticeably at strength > 0.1.
+    const falloff = 1 - e.dist / b.range; // ∈ (0, 1] inside the region
+    const theta = q * b.spin * b.strength * falloff;
+    const cs = Math.cos(theta);
+    const sn = Math.sin(theta);
+    const vx0 = p.vx;
+    p.vx = vx0 * cs - p.vy * sn;
+    p.vy = vx0 * sn + p.vy * cs;
   },
+  // The dipole structure of B (Stage B). Rendered as field lines; particles curve
+  // perpendicular to it (the apply above) rather than following it. Sourced by `strength`.
+  field: (b, x, y) => bodyDipole(b, x, y, b.strength),
   meta: { desc: 'Lorentz force — curves a moving charge perpendicular to its velocity' },
 };
 
@@ -194,24 +264,48 @@ export const diffuse: Force = {
   meta: { desc: 'pheromone field — deposit a mark and follow the diffused gradient' },
 };
 
+/** Frames between emitted shocks while a propagate body is engaged. A *pulse train* — not a
+ *  continuous drip — is what keeps it a travelling wave: between pulses the grid radiates and
+ *  damps, so no standing bump builds at the source (that bump is what used to pull matter IN). */
+const WAVE_PULSE_PERIOD = 12;
+/** How hard a passing wavefront carries matter outward (radiation pressure gain). */
+const WAVE_PUSH = 7;
+
 /**
  * §20.10 — `propagate` (class [C], over a wave-mode `grid`): a travelling disturbance,
- * `∂²φ/∂t² = c²∇²φ`. An engaged body injects φ at its centre; the grid carries it
- * outward as a real expanding shock (reflecting and interfering for free) and every
- * particle rides the wavefront's gradient. `strength` sets the injection and the push.
+ * `∂²φ/∂t² = c²∇²φ`. An engaged body injects an impulsive shock at its centre (via the
+ * body-level `source` hook, once per frame — not once per particle), and the grid carries it
+ * outward as a real expanding ring. Matter **rides the front out**: where the wavefront is
+ * passing (`|∇φ|` is steep) a particle is pushed radially *away from the source*, so the
+ * expanding shock sweeps matter outward with it — radiation pressure, not an inward pull.
+ *
+ * Why a pulse train, not a continuous deposit: depositing every frame builds a standing φ bump
+ * at the centre, whose gradient points inward — `v += ∇φ` then sucks matter toward the source
+ * (the opposite of a wave). Emitting a shock every `WAVE_PULSE_PERIOD` frames lets each ring
+ * radiate and damp away, so the field stays a sequence of outgoing fronts.
  */
 export const propagate: Force = {
   token: 'propagate',
   label: 'Propagate',
+  source(b, e) {
+    if (!b.on) return; // only an engaged body emits
+    if (e.frameN % WAVE_PULSE_PERIOD !== 0) return; // a shock train, once per period (body-level)
+    e.grid('wave-propagate').deposit(b.cx, b.cy, b.strength); // 'wave…' name → wave stepping
+  },
   apply(b, p, e) {
     if (e.dist >= b.range) return;
-    const g = e.grid('wave-propagate'); // 'wave…' name → wave stepping
-    if (b.on) g.deposit(b.cx, b.cy, b.strength); // engaged → emit a disturbance at the source
-    const grad = g.gradient(p.x, p.y); // ride the wavefront
-    p.vx += grad.x * b.strength;
-    p.vy += grad.y * b.strength;
+    const g = e.grid('wave-propagate');
+    const grad = g.gradient(p.x, p.y);
+    const act = Math.hypot(grad.x, grad.y); // wavefront activity — steep where a front is passing
+    if (act < 1e-6) return; // no front here → coast (the wave has moved on or not yet arrived)
+    // ride the front: pushed radially OUTWARD (e.dx/e.dy point toward the body, so negate).
+    const ux = -e.dx / e.dist;
+    const uy = -e.dy / e.dist;
+    p.vx += ux * act * b.strength * WAVE_PUSH;
+    p.vy += uy * act * b.strength * WAVE_PUSH;
+    clampToC(p, e.c);
   },
-  meta: { desc: 'a travelling wave — inject a shock at the source, particles ride the front' },
+  meta: { desc: 'a travelling wave — a shock train expands from the source, sweeping matter out' },
 };
 
 /**

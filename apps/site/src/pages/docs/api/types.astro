@@ -7,8 +7,12 @@ const force = `interface Force {
   token: string;                       // unique id, used in data-body
   label: string;
   apply(b: Body, p: Particle, env: Env): void;   // the per-frame law
+  kinematic?: boolean;                 // replaces velocity (wall/jet/lens/gate) — not mass-scaled
   modify?(b: Body, p: Particle, env: Env):        // optional (resonate, spotlight)
     { strength?: number; gate?: boolean };
+  source?(b: Body, env: Env): void;    // class [S] — create matter (spawn), once per body per frame
+  field?(b: Body, x: number, y: number): Vec2;    // the visual/structure field at a point:
+                                       // draws field lines + the streamlines field-flow view
 }`;
 
 const body = `interface Body {
@@ -21,12 +25,15 @@ const body = `interface Body {
   ux: number; uy: number;// heading unit vector
   when: string;          // condition gate id
   feedback: boolean;     // density write-back opt-in
+  shaped?: boolean;      // sample the box surface, not the centre (data-shaped)
+  rect?: () => DOMRect;  // custom rect provider (shadow-DOM body whose box ≠ host box)
+  writeTarget?: HTMLElement; // element that receives the CSS write-back (defaults to el)
   // runtime state, refreshed each frame:
   cx: number; cy: number;// rect centre (canvas space)
   hw: number; hh: number;// half-extents
   on: boolean;           // engaged (data-active)
   vis: boolean;          // on-screen
-  count: number; d: number; // density tally + eased value ∈ [0,1]
+  count: number; d: number; // density tally + eased value ∈ [0,1] (also the charge Q)
 }`;
 
 const particle = `interface Particle {

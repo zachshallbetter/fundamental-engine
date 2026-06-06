@@ -334,6 +334,8 @@ Extended designed and material forces include:
 | Wind | wind | A | curl-noise turbulence |
 | Shear | shear | A | boundary layer slip |
 | Buoyancy | buoyancy | A+E | hot/light particles rise |
+| Crystallize | crystallize | A | snaps cool matter onto a lattice; melts when hot |
+| Field Flow | fieldflow | A | follows the field lines — steers onto and streams down the net field a body radiates |
 | Align | align | A/B | coherent headings and flocking |
 | Cohesion | cohesion | B | surface tension and droplets |
 | Pressure | pressure | B | incompressible fill |
@@ -343,7 +345,7 @@ Extended designed and material forces include:
 | Pigment | pigment | E | conserved color transport |
 | Spawn | spawn | S | budgeted source |
 
-## 11. Recommended New Force: Screen
+## 11. Proposed Force: Screen
 
 screen should be implemented as a modifier.
 
@@ -455,8 +457,8 @@ They should not duplicate engine code unless a primitive is truly missing.
 | whirlpool | stronger swirl + attract/viscosity | proposed |
 | shielded-chamber | screen + wall/gate | proposed (needs `screen`) |
 
-The shipped preset table also includes `quasar`, `galaxy`, `nebula`, and `tornado`
-(see `config/presets.ts`). `blackhole` uses the designed `attract` well, **not** natural
+The eight shipped presets are `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`,
+`nebula`, `tornado`, and `fountain` (see `config/presets.ts`). `blackhole` uses the designed `attract` well, **not** natural
 `gravity` — only `star` and `fountain` reach for `gravity` (per the layered-physics rule:
 do not unify `attract` with `gravity`).
 
@@ -695,7 +697,7 @@ Affected by:
 - diffuse
 - propagate
 
-Render mapping:
+Render mapping (proposed — the six shipped modes are dots, trails, links, metaballs, voronoi, streamlines; `lattice` and `glow` are aspirational):
 - gas: loose particles
 - liquid: metaballs
 - solid: lattice
@@ -1211,7 +1213,7 @@ Required tests:
 
 > **Status note.** This roadmap predates the physics workover and uses an earlier version
 > numbering. The canonical, current plan is [`physics-workover.md`](physics-workover.md) and
-> [`BACKLOG.md`](../BACKLOG.md): **v0.2.0** shipped the 33-force engine, and the "v0.2" items
+> [`BACKLOG.md`](../BACKLOG.md): **v0.2.0** shipped the 34-force engine, and the "v0.2" items
 > below (vortex→swirl reconciliation, `b.accreted`, the velocity cap, the safety sweep) shipped
 > in the **v0.3** workover; the later phases map to v0.4–v0.6. Treat this as the conceptual arc,
 > not the live schedule.

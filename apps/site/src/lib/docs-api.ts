@@ -17,6 +17,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'palette', type: 'string | string[]', def: "'ours'", desc: 'Accent template — a built-in name or custom hex stops.' },
   { name: 'attention', type: 'boolean', def: 'false', desc: 'Conserved attention — one finite strength budget; engaging a body starves the others.' },
   { name: 'causality', type: 'boolean', def: 'false', desc: 'Cross-boundary causality — a saturated body spills density to its neighbours.' },
+  { name: 'heatmap', type: 'boolean', def: 'false', desc: 'Density heatmap — a glow layer of where matter pools, sampled back to bodies as --forces-heatmap-density.' },
 ];
 
 export interface MethodRow {
@@ -31,6 +32,7 @@ export const HANDLE: MethodRow[] = [
   { sig: 'setFormation(name)', desc: 'Switch the global formation.' },
   { sig: 'setAttention(on)', desc: 'Toggle conserved attention live (one finite strength budget).' },
   { sig: 'setCausality(on)', desc: 'Toggle cross-boundary causality live (density spills to neighbours).' },
+  { sig: 'setHeatmap(on)', desc: 'Toggle the density heatmap layer live (a glow of where matter pools).' },
   { sig: 'setRender(mode)', desc: 'Switch the render mode: dots / trails / links / metaballs / voronoi / streamlines.' },
   { sig: 'threads(list | null)', desc: 'Wire glowing connector lines between an engaged set, or clear with null.' },
   { sig: 'burst(x, y, hex?)', desc: 'A one-shot shove + heat near a point, optionally tinting the matter.' },
@@ -52,12 +54,24 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-color', type: 'hex', desc: 'Accent override on engage, and the carried colour for pigment.' },
   { name: 'data-when', type: 'condition', def: "''", desc: 'Gate the force on a condition: active, fast, slow, hot, cool, scrolling.' },
   { name: 'data-feedback', type: 'flag', desc: 'Opt into two-way density write-back (the --d custom property).' },
+  { name: 'data-shaped', type: 'flag', desc: 'Shaped source — forces reference the nearest point on the element box, so matter shells the shape instead of bunching at its centre.' },
   { name: 'data-absorb', type: 'px', def: '64', desc: 'Capture radius for the sink force.' },
   { name: 'data-max', type: 'number', def: '60', desc: 'Load at which a sink supernovas (releases).' },
   { name: 'data-fmin / data-fmax', type: 'number', desc: 'Variable-font weight range that --d drives on a feedback body.' },
   { name: 'data-opsz', type: 'number', desc: 'Optical-size axis to drive alongside weight.' },
   { name: 'data-active', type: '"1"', desc: 'Engagement state — set automatically on hover/focus of a [data-hot] element.' },
   { name: 'data-preset', type: 'name', desc: 'Expand a preset into several co-located bodies — blackhole, galaxy, tornado, …' },
+];
+
+/** The CSS custom properties the field writes back onto bodies — the reciprocal half of the
+ *  loop (the field measures, then writes state into the elements that made it). Read these in
+ *  your own CSS to make an element answer the field. Written only to bodies that opt in. */
+export const WRITEBACK: { name: string; on: string; desc: string }[] = [
+  { name: '--d', on: 'data-feedback', desc: "The body's own gathered density ∈ [0,1], eased. The canonical reaction var." },
+  { name: '--forces-density', on: 'data-feedback', desc: 'Explicit alias of --d (the namespaced name; same value).' },
+  { name: '--forces-heatmap-density', on: 'data-feedback + heatmap', desc: 'The ambient heatmap density under the body ∈ [0,1] — where matter pools around it, distinct from --d.' },
+  { name: '--load / --mass', on: 'sink body', desc: 'A sink’s accretion fill fraction ∈ [0,1] (--mass is a back-compat alias).' },
+  { name: '--lit', on: 'causality', desc: 'Spillover-lit density when a saturated neighbour bleeds density across a boundary.' },
 ];
 
 export const RENDER_MODES: { name: string; desc: string }[] = [

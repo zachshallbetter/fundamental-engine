@@ -817,7 +817,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 
 > The reconciliation pass is **done**. The as-built registry lives in
 > `packages/core/src/config/manual.ts` (and is cross-checked against the live force
-> registry by a completeness test, so it can't drift). Every one of the **33 registered
+> registry by a completeness test, so it can't drift). Every one of the **34 registered
 > forces** carries a canonical colour; the `mass`→`accreted` split (§21.2) shipped. The
 > table below is the design source for this — read it with three deltas:
 >
@@ -989,6 +989,24 @@ on contact/overlap:  c_p ← mix(c_p, c_other, rate)          // pigment moves w
 ```
 Attrs: bodies stamp `data-color`; particles carry `c`. Drives the accent journey as real transport.
 
+**Field Flow — `fieldflow` [A].** Follow the field lines. Where `magnetism` curls a charge
+*across* the field (perpendicular Lorentz, no work) and `charge` pushes only charged matter
+along its own radial field, `fieldflow` advects **all** matter **along** the net structure
+field every body radiates — the superposition of every `field()` hook, read through
+`env.fieldAt`. It steers velocity onto the local line (speed-preserving) and accelerates down
+it (does work), so a swarm threads the dipole loops of a magnet or streams off a charge like
+plasma along a solar prominence.
+```
+n̂ = netField(x,y) / |netField(x,y)|                         // line tangent, scale-free
+v += (n̂·|v| − v)·k_steer    +    n̂ · gain · a_accel          // steer onto + stream down
+gain = strength · (1 − d/r)                                  // range 0 ⇒ global field-follow (the planned `magnetic` formation, §20.5)
+```
+The line direction is used normalized, so a faint dipole channels matter as surely as a strong
+monopole — the look no longer depends on the field's absolute magnitude. Following the *net*
+field routes matter along the lines that link two poles, so channelling *between* bodies emerges
+from the geometry. Acts on neutral matter too — it is field transport of the medium, not the
+charge-gated Lorentz force. Attrs: `data-strength`(gain), `data-range`(locality).
+
 #### Cosmology set
 A themed family — **realized as composites of primitives, not new force modules**
 (see §20.9, the preset layer). Decomposed, the whole set needs only **two new
@@ -1092,6 +1110,10 @@ Drop-in [A]; selective ones read each particle (like `hot`/`cool`, §5).
 
 ### 20.5 Extended formations (global biases, joining the five in §7)
 
+> **Spec-only / not yet implemented.** The five shipped formations are the set in §7
+> (`ambient`, `wells`, `lanes`, `scatter`, `accretion`). Every row below is a *planned*
+> extension — none is wired today.
+
 | id | Bias |
 |---|---|
 | `gravity` | constant downward force → particles fall and pile (sedimentation) |
@@ -1102,7 +1124,7 @@ Drop-in [A]; selective ones read each particle (like `hot`/`cool`, §5).
 | `turbulence` | global curl-noise `wind` |
 | `pressure` | incompressible even-fill via mutual repulsion |
 | `shatter` | one-shot explosive scatter, then reform to the prior formation |
-| `magnetic` | follow field lines between charged bodies |
+| `magnetic` | follow field lines between charged bodies (global `fieldflow`) |
 | `disk` | matter settles into a banded accretion ring around the dominant `blackhole` |
 | `binary` | two orbiting cores share the field; matter trades between them |
 | `nebula` | low-density, slow cohesion clouds — the pre-stellar resting state |
@@ -1117,6 +1139,12 @@ The integrator is decoupled from the draw; these change the *look* without
 touching the physics. Each is a swap of the particle draw pass in the renderer.
 **Six ship today** — `dots` (the default), `trails`, `links`, `metaballs`, `voronoi`,
 and `streamlines`; the remaining rows are spec-only and marked **planned**.
+
+> **Not to be confused with the density heatmap.** The `heatmap` *render mode* below
+> (a planned density-contour draw) is distinct from the **shipped density-heatmap overlay
+> layer** (the `heatmap` field option / `toggleHeatmap`, drawn as a glow underlay and
+> sampled to bodies as `--forces-heatmap-density`, §2 / field-systems H1). The overlay is a
+> layer under the particle draw, not one of the six draw-pass modes.
 
 | Mode | How | Result | Status |
 |---|---|---|---|

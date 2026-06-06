@@ -53,6 +53,24 @@ export function movesAway(): Expectation {
   };
 }
 
+/** Over the whole run, the test particle ends farther from the body than it began — it rode
+ *  an outgoing wavefront out. Trajectory-based (a wave needs frames to form), for class-[C]
+ *  forces whose effect can't be read from a single frame-0 apply on an empty grid. */
+export function endsFartherOut(minGain = 1.05): Expectation {
+  return {
+    label: 'rides the wavefront outward',
+    kind: 'invariant',
+    check(r) {
+      const b = r.body;
+      const first = r.trajectory[0]![0]!;
+      const last = r.trajectory[r.trajectory.length - 1]![0]!;
+      const r0 = Math.hypot(first.x - b.cx, first.y - b.cy) || 1;
+      const rN = Math.hypot(last.x - b.cx, last.y - b.cy);
+      return ok(rN > r0 * minGain, `r ${f3(r0)}→${f3(rN)}`, `> ${minGain}× (outward)`);
+    },
+  };
+}
+
 /** The exact frame-0 Δv matches the spec formula. */
 export function exactDelta(dvx: number, dvy: number, tol = 2e-3): Expectation {
   return {
