@@ -708,18 +708,30 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       });
     });
 
-    // drag any [data-drag] body within its stage
+    // drag any [data-drag] body within its stage — pointer + keyboard
     document.querySelectorAll('[data-drag]').forEach((el) => {
+      const stage = el.closest('.stage');
+      if (!stage) return;
+      // it's an interactive control, so make it focusable + keyboard-operable
+      el.setAttribute('tabindex', '0');
+      if (!el.hasAttribute('role')) el.setAttribute('role', 'button');
+      if (!el.hasAttribute('aria-label')) {
+        const what = el.getAttribute('data-body') || (el.textContent || '').trim() || 'body';
+        el.setAttribute('aria-label', what + ' — drag, or use arrow keys to move');
+      }
+      // centre the body on (x, y) px within the stage, clamped, then rescan
+      const place = (x, y) => {
+        const r = stage.getBoundingClientRect();
+        el.style.left = Math.max(0, Math.min(r.width, x)) + 'px';
+        el.style.top = Math.max(0, Math.min(r.height, y)) + 'px';
+        rescan();
+      };
       el.addEventListener('pointerdown', (e) => {
-        const stage = el.closest('.stage');
-        if (!stage) return;
         e.preventDefault();
         el.setPointerCapture(e.pointerId);
         const move = (ev) => {
           const r = stage.getBoundingClientRect();
-          el.style.left = Math.max(0, Math.min(r.width, ev.clientX - r.left)) + 'px';
-          el.style.top = Math.max(0, Math.min(r.height, ev.clientY - r.top)) + 'px';
-          rescan();
+          place(ev.clientX - r.left, ev.clientY - r.top);
         };
         const up = () => {
           el.removeEventListener('pointermove', move);
@@ -727,6 +739,20 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
         };
         el.addEventListener('pointermove', move);
         el.addEventListener('pointerup', up);
+      });
+      el.addEventListener('keydown', (e) => {
+        const step = e.shiftKey ? 36 : 12;
+        const sr = stage.getBoundingClientRect();
+        const er = el.getBoundingClientRect();
+        let cx = er.left + er.width / 2 - sr.left; // current centre, stage-relative
+        let cy = er.top + er.height / 2 - sr.top;
+        if (e.key === 'ArrowLeft') cx -= step;
+        else if (e.key === 'ArrowRight') cx += step;
+        else if (e.key === 'ArrowUp') cy -= step;
+        else if (e.key === 'ArrowDown') cy += step;
+        else return;
+        e.preventDefault();
+        place(cx, cy);
       });
     });
 
