@@ -27,6 +27,7 @@ export type StaticBody = Pick<
   | 'uy'
   | 'when'
   | 'feedback'
+  | 'shaped'
   | 'fmin'
   | 'fmax'
   | 'opsz'
@@ -56,6 +57,7 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
     uy: Math.sin(angle),
     when: a.get('when') ?? '',
     feedback: a.has('feedback'),
+    shaped: a.has('shaped'), // data-shaped → forces sample the element's box surface (Stage C)
     fmin: num('fmin', 0),
     fmax: num('fmax', 0),
     opsz: a.get('opsz') ?? '',

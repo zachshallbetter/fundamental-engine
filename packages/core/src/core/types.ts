@@ -87,6 +87,10 @@ export interface Body {
   feedback: boolean;
   /** the body's tint from `data-color`, for `pigment` colour transport (§20.8). */
   tint?: string;
+  /** shaped source (`data-shaped`): forces reference the nearest point on the element's
+   *  box, not its centre, so matter gathers in a shell around the shape (field-systems
+   *  Stage C). Undefined ⇒ point source (the default). */
+  shaped?: boolean;
   fmin: number;
   fmax: number;
   opsz: string;

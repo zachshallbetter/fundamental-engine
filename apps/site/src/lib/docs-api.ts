@@ -52,6 +52,7 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-color', type: 'hex', desc: 'Accent override on engage, and the carried colour for pigment.' },
   { name: 'data-when', type: 'condition', def: "''", desc: 'Gate the force on a condition: active, fast, slow, hot, cool, scrolling.' },
   { name: 'data-feedback', type: 'flag', desc: 'Opt into two-way density write-back (the --d custom property).' },
+  { name: 'data-shaped', type: 'flag', desc: 'Shaped source — forces reference the nearest point on the element box, so matter shells the shape instead of bunching at its centre.' },
   { name: 'data-absorb', type: 'px', def: '64', desc: 'Capture radius for the sink force.' },
   { name: 'data-max', type: 'number', def: '60', desc: 'Load at which a sink supernovas (releases).' },
   { name: 'data-fmin / data-fmax', type: 'number', desc: 'Variable-font weight range that --d drives on a feedback body.' },
