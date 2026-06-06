@@ -616,23 +616,41 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.globalCompositeOperation = 'source-over';
   }
 
-  // density heatmap (H1) — a 'glow' raster underlay: soft additive blobs where matter pools,
-  // normalized so the field's own peak reads as full intensity. Empty cells are skipped.
+  // density heatmap (H1) — a 'glow' underlay. Rasterize the normalized field to a tiny
+  // offscreen buffer (one texel per grid cell), then upscale it over the canvas with bilinear
+  // smoothing: a smooth glow for the cost of a small image, no blocky per-cell blobs.
+  let hmCanvas: HTMLCanvasElement | null = null;
+  let hmCtx: CanvasRenderingContext2D | null = null;
   function drawHeatmap(): void {
     if (!heatmap) return;
-    const acc = hexToRgb(cfg.accent);
     const cell = heatmap.cell;
-    ctx!.globalCompositeOperation = 'lighter';
-    for (let x = 0; x < W; x += cell) {
-      for (let y = 0; y < H; y += cell) {
-        const v = heatmap.norm(x, y);
-        if (v < 0.05) continue; // skip the empty field — most cells, so this stays cheap
-        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${(v * 0.45 * boot).toFixed(3)})`;
-        ctx!.beginPath();
-        ctx!.arc(x, y, cell * 1.5, 0, 6.28318);
-        ctx!.fill();
+    const cols = Math.max(1, Math.ceil(W / cell));
+    const rows = Math.max(1, Math.ceil(H / cell));
+    if (!hmCanvas) {
+      hmCanvas = document.createElement('canvas');
+      hmCtx = hmCanvas.getContext('2d');
+    }
+    if (!hmCtx) return;
+    if (hmCanvas.width !== cols || hmCanvas.height !== rows) {
+      hmCanvas.width = cols;
+      hmCanvas.height = rows;
+    }
+    const acc = hexToRgb(cfg.accent);
+    const img = hmCtx.createImageData(cols, rows);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const v = heatmap.norm(c * cell + cell / 2, r * cell + cell / 2);
+        const i = (r * cols + c) * 4;
+        img.data[i] = acc[0];
+        img.data[i + 1] = acc[1];
+        img.data[i + 2] = acc[2];
+        img.data[i + 3] = Math.round(clamp(v * 0.5 * boot, 0, 1) * 255);
       }
     }
+    hmCtx.putImageData(img, 0, 0);
+    ctx!.globalCompositeOperation = 'lighter';
+    ctx!.imageSmoothingEnabled = true;
+    ctx!.drawImage(hmCanvas, 0, 0, W, H); // bilinear upscale → smooth glow
     ctx!.globalCompositeOperation = 'source-over';
   }
 
@@ -812,35 +830,39 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // weak field (a magnetic/electric dipole, magnitudes ~1e-5) reads as clearly as a strong
       // one (an attractor). Absolute scaling drowned the dipole below the visibility cutoff.
       const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
-      let maxMag = 1e-9;
+      let maxMag = 0;
       for (let gx = GRID / 2; gx < W; gx += GRID) {
         for (let gy = GRID / 2; gy < H; gy += GRID) {
           const { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
           const mag = Math.hypot(fx, fy);
+          // Skip only true dead zones / NaN (a tiny epsilon, not an absolute magnitude floor) —
+          // a weak dipole's outer field is still a real pattern and must survive to be scaled.
+          if (!(mag > 1e-9)) {
+            ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
+            ctx!.fillRect(gx - 0.5, gy - 0.5, 1, 1); // quiescent → a faint dot
+            continue;
+          }
+          samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
           if (mag > maxMag) maxMag = mag;
-          samples.push({ gx, gy, ux: mag > 0 ? fx / mag : 0, uy: mag > 0 ? fy / mag : 0, mag });
         }
       }
-      for (const s of samples) {
-        const rel = s.mag / maxMag; // ∈ [0, 1], normalized to the field's own peak
-        if (rel < 0.02) {
-          ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
-          ctx!.fillRect(s.gx - 0.5, s.gy - 0.5, 1, 1); // quiescent → a faint dot
-          continue;
+      if (maxMag > 0) {
+        for (const s of samples) {
+          const rel = Math.sqrt(s.mag / maxMag); // sqrt compresses the range so weak vectors still read
+          const len = GRID * 0.46 * (0.28 + 0.72 * rel);
+          const ex = s.gx + s.ux * len;
+          const ey = s.gy + s.uy * len;
+          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.1 + rel * 0.5, 0, 0.72)})`;
+          ctx!.beginPath();
+          ctx!.moveTo(s.gx, s.gy);
+          ctx!.lineTo(ex, ey);
+          const ah = 3.4;
+          ctx!.moveTo(ex, ey);
+          ctx!.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
+          ctx!.moveTo(ex, ey);
+          ctx!.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
+          ctx!.stroke();
         }
-        const len = GRID * 0.46 * (0.35 + 0.65 * rel);
-        const ex = s.gx + s.ux * len;
-        const ey = s.gy + s.uy * len;
-        ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.12 + rel * 0.6, 0, 0.72)})`;
-        ctx!.beginPath();
-        ctx!.moveTo(s.gx, s.gy);
-        ctx!.lineTo(ex, ey);
-        const ah = 3.4;
-        ctx!.moveTo(ex, ey);
-        ctx!.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
-        ctx!.moveTo(ex, ey);
-        ctx!.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
-        ctx!.stroke();
       }
     }
   }

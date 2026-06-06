@@ -61,6 +61,20 @@ const dest = [
             <polyline points="13,6.5 15,8 13,9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
           </svg>
         </button>
+        {/* Density heatmap — a glow underlay of where matter pools, sampled back to bodies */}
+        <button
+          id="sn-heatmap-toggle"
+          class="sn-field-btn"
+          aria-label="Toggle density heatmap"
+          title="Show density heatmap"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="2.2" fill="currentColor" />
+            <circle cx="8" cy="8" r="4.2" stroke="currentColor" stroke-width="1.2" opacity="0.6" />
+            <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1" opacity="0.35" />
+          </svg>
+        </button>
         {
           current === 'home' && (
             <button
@@ -104,6 +118,13 @@ const dest = [
     btn.setAttribute('aria-pressed', String(shown));
     btn.title = shown ? 'Hide field lines' : 'Show field lines';
   }
+  // 3) Density heatmap: toggle the global field's heatmap glow layer.
+  function syncHeatmapBtn() {
+    const btn = document.getElementById('sn-heatmap-toggle');
+    if (!btn) return;
+    const on = btn.getAttribute('aria-pressed') === 'true';
+    btn.title = on ? 'Hide density heatmap' : 'Show density heatmap';
+  }
   document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement | null;
     if (!t) return;
@@ -114,6 +135,13 @@ const dest = [
       field?.setRender(next ? 'streamlines' : 'dots');
       btn.setAttribute('aria-pressed', String(next));
       syncStreamBtn();
+    } else if (t.closest('#sn-heatmap-toggle')) {
+      const btn = document.getElementById('sn-heatmap-toggle')!;
+      const next = btn.getAttribute('aria-pressed') !== 'true';
+      const field = document.querySelector('forces-field') as (HTMLElement & { setHeatmap(on: boolean): void }) | null;
+      field?.setHeatmap(next);
+      btn.setAttribute('aria-pressed', String(next));
+      syncHeatmapBtn();
     } else if (t.closest('#sn-field-toggle')) {
       document.documentElement.classList.toggle('hide-field-lines');
       syncFieldBtn();
@@ -121,9 +149,11 @@ const dest = [
   });
   document.addEventListener('astro:page-load', () => {
     syncStreamBtn();
+    syncHeatmapBtn();
     syncFieldBtn();
   });
   syncStreamBtn();
+  syncHeatmapBtn();
   syncFieldBtn();
 </script>
 
