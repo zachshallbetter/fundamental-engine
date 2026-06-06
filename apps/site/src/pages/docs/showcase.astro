@@ -43,6 +43,17 @@ const burstSrc = `const field = document.querySelector('forces-field');
 stage.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor
 });`;
+
+const burstReact = `import { ForcesField } from '@forces-ui/react';
+
+// onReady hands you the same FieldHandle once the field mounts
+<ForcesField
+  onReady={(field) => {
+    stage.addEventListener('click', (e) => {
+      field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor
+    });
+  }}
+/>`;
 ---
 
 <DocsLayout
@@ -107,7 +118,12 @@ stage.addEventListener('click', (e) => {
     <div class="sc-stage sc-burst" data-field-burst="#4da3ff" role="presentation">
       <span class="sc-burst-hint">click anywhere in here</span>
     </div>
-    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: burstSrc }]} />
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'js', code: burstSrc },
+        { label: 'React', lang: 'tsx', code: burstReact },
+      ]}
+    />
     <div class="callout">
       <b>Want the recipes as a reference?</b> The copy-paste-first versions live on the
       <a href="/docs/recipes">Recipes</a> page; this showcase is the same patterns, running.
