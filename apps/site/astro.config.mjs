@@ -8,5 +8,8 @@ export default defineConfig({
   // The Field Manual became the home page; keep the old URL working.
   redirects: {
     '/reference': '/',
+    // The core-engine guide moved off the ambiguous "vanilla" slug (it collided
+    // with the @forces-ui/vanilla package, documented under /typescript).
+    '/docs/guides/vanilla': '/docs/guides/core',
   },
 });
