@@ -273,6 +273,9 @@ export interface FieldOptions {
   /** cross-boundary causality (Concept 4): a saturated body spills density to its
    *  neighbours (writing `--lit` + firing `field:lit`/`field:dim`). Default false. */
   causality?: boolean;
+  /** density heatmap (field-systems H1): a scalar buffer of where matter pools, drawn as a
+   *  glow underlay and sampled to bodies as `--forces-heatmap-density`. Default false. */
+  heatmap?: boolean;
 }
 
 /** The handle returned by `createField` — the public field API (§13). */
@@ -291,6 +294,8 @@ export interface FieldHandle {
   setAttention(on: boolean): void;
   /** toggle cross-boundary causality (Concept 4) live — density spills to neighbours. */
   setCausality(on: boolean): void;
+  /** toggle the density heatmap layer (field-systems H1) live. */
+  setHeatmap(on: boolean): void;
   /** switch the render mode (§20.6) live. */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */

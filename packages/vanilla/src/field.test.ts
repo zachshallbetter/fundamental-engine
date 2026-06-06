@@ -160,6 +160,14 @@ test('setCausality() toggles cross-boundary density without throwing', () => {
   field.destroy();
 });
 
+test('setHeatmap() toggles the density heatmap layer without throwing', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setHeatmap(true));
+  assert.doesNotThrow(() => field.setHeatmap(false));
+  field.destroy();
+});
+
 test('setRender() accepts all six render modes', () => {
   installDOM();
   const field = new ForcesField();

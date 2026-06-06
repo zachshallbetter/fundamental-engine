@@ -20,6 +20,7 @@ import {
   type RegisterBodyDetail,
 } from './shadow.ts';
 import { easeFormation } from './formations.ts';
+import { Heatmap } from './heatmap.ts';
 import {
   buildWaves,
   buildBound,
@@ -69,7 +70,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
+    heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
   };
+  let heatmap: Heatmap | null = null; // lazily built once the viewport size is known
 
   let bodies: Body[] = [];
   let W = 0;
@@ -431,6 +434,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     env.H = H;
     maxScroll = document.documentElement.scrollHeight - H || 1;
     for (const g of grids.values()) g.resize(W, H); // keep field buffers viewport-sized
+    if (cfg.heatmap) {
+      if (!heatmap) heatmap = new Heatmap(W, H);
+      else heatmap.resize(W, H);
+    }
     build();
     scan();
   }
@@ -559,6 +566,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const dStr = b.d.toFixed(3);
       writeEl.style.setProperty('--d', dStr);
       writeEl.style.setProperty('--forces-density', dStr);
+      // the heatmap's local density under the body (field-systems H1) — distinct from `--d`,
+      // which is the body's own gathered density; this is the ambient heatmap at its position.
+      if (heatmap) writeEl.style.setProperty('--forces-heatmap-density', heatmap.norm(b.cx, b.cy).toFixed(3));
       if (b.fmax) {
         const w = feedbackWeight(b.fmin, b.fmax, b.d);
         if (lastWeight.get(writeEl) !== w) {
@@ -606,6 +616,26 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.globalCompositeOperation = 'source-over';
   }
 
+  // density heatmap (H1) — a 'glow' raster underlay: soft additive blobs where matter pools,
+  // normalized so the field's own peak reads as full intensity. Empty cells are skipped.
+  function drawHeatmap(): void {
+    if (!heatmap) return;
+    const acc = hexToRgb(cfg.accent);
+    const cell = heatmap.cell;
+    ctx!.globalCompositeOperation = 'lighter';
+    for (let x = 0; x < W; x += cell) {
+      for (let y = 0; y < H; y += cell) {
+        const v = heatmap.norm(x, y);
+        if (v < 0.05) continue; // skip the empty field — most cells, so this stays cheap
+        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${(v * 0.45 * boot).toFixed(3)})`;
+        ctx!.beginPath();
+        ctx!.arc(x, y, cell * 1.5, 0, 6.28318);
+        ctx!.fill();
+      }
+    }
+    ctx!.globalCompositeOperation = 'source-over';
+  }
+
   function render(): void {
     // substrate clear — 'trails' uses a faded clear so motion light-paints (§20.6).
     if (cfg.render === 'trails') {
@@ -615,6 +645,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     ctx!.fillRect(0, 0, W, H);
     drawWaves();
+    if (heatmap) drawHeatmap();
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
@@ -863,6 +894,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
+      if (heatmap) heatmap.update(store.particles); // density heatmap buffer (H1)
       healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
       tearBoundByForces(bound, waves, bodies, reg.forces, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
@@ -964,6 +996,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     setRender: (mode) => {
       cfg.render = mode;
+    },
+    setHeatmap: (on) => {
+      cfg.heatmap = on;
+      if (on) {
+        if (!heatmap && W > 0) heatmap = new Heatmap(W, H);
+      } else if (heatmap) {
+        heatmap = null; // drop the buffer; clear the write-back the layer left on bodies
+        for (const b of bodies) (b.writeTarget ?? b.el).style.removeProperty('--forces-heatmap-density');
+      }
     },
     threads: setThreads,
     burst: (x, y, hex) => {

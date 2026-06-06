@@ -112,6 +112,10 @@ export class ForcesField extends HTMLElementBase {
   setCausality(on: boolean): void {
     this.field?.setCausality(on);
   }
+  /** toggle the density heatmap layer (field-systems H1) live. */
+  setHeatmap(on: boolean): void {
+    this.field?.setHeatmap(on);
+  }
   /** switch the render mode (§20.6) live. */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void {
     this.field?.setRender(mode);

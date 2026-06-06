@@ -71,6 +71,10 @@ export class ForcesField implements FieldHandle {
   setCausality(on: boolean): void {
     this.field.setCausality(on);
   }
+  /** toggle the density heatmap layer (field-systems H1) live. */
+  setHeatmap(on: boolean): void {
+    this.field.setHeatmap(on);
+  }
   /** switch the render mode (§20.6) live. */
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);
