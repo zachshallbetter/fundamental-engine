@@ -875,14 +875,14 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
 <!-- Real field-line tracing — runs the actual engine (runScenario) to draw each
      force's true trajectories. Bundled (not inline) so it can import the probe lib. -->
 <script>
-  import { traceField } from '../lib/field-probe.ts';
+  import { traceField, traceDipole } from '../lib/field-probe.ts';
 
   function hexToRgb(hex) {
     const h = (hex || '#4da3ff').replace('#', '');
     return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
   }
 
-  function drawTrace(cvs, stage, trace, color) {
+  function drawTrace(cvs, stage, trace, color, dipole) {
     const w = stage.offsetWidth || 400;
     const h = stage.offsetHeight || 300;
     cvs.width = w;
@@ -893,6 +893,22 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
     const cx = w / 2, cy = h / 2;
     const R = Math.min(w, h) * 0.42; // a normalized extent of 1 maps to this many px
     const [r, g, b] = hexToRgb(color);
+
+    // dipole field lines (the structure of B / E) — faint continuous curves beneath the
+    // trajectories, so for magnetism you see particles curve *around* the lines, not along.
+    if (dipole) {
+      ctx.lineWidth = 0.9;
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.20)`;
+      for (const path of dipole.paths) {
+        if (path.length < 2) continue;
+        ctx.beginPath();
+        for (let i = 0; i < path.length; i++) {
+          const px = cx + path[i].x * R, py = cy + path[i].y * R;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+    }
 
     if (trace.special === 'pigment') {
       // pigment exerts no force — show the dye it carries: a stain + streaks that tint up
@@ -993,8 +1009,10 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           }
         : {};
       let trace;
+      let dipole = null;
       try {
         trace = traceField(token, override);
+        dipole = traceDipole(token, override); // null unless magnetism / charge
       } catch (e) {
         return;
       }
@@ -1007,7 +1025,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       stage.insertBefore(cvs, stage.firstChild);
       canvases.push(cvs);
 
-      const draw = () => drawTrace(cvs, stage, trace, cc);
+      const draw = () => drawTrace(cvs, stage, trace, cc, dipole);
       draw();
       const ro = new ResizeObserver(draw);
       ro.observe(stage);

@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { traceRaw, type RawTrace } from './field-probe.ts';
+import { traceRaw, traceDipole, type RawTrace } from './field-probe.ts';
 import { DEMO_OVERRIDES } from './demo-forces.ts';
 
 const mean = (xs: number[]): number => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
@@ -285,4 +285,24 @@ test('demo accurate: pigment (no kinematic effect)', () => {
   const A = analyze(raw!);
   const moved = mean(A.parts.map((p) => Math.hypot(p.xN - p.x0, p.yN - p.y0)));
   assert.ok(moved < 2, `pigment must not move matter — mean displacement ${moved.toFixed(2)}`);
+});
+
+// Dipole field-line render (Stage B): magnetism and charge produce real traced field lines;
+// everything else opts out (null), so only the dipole forces get the diagram overlay.
+for (const token of ['magnetism', 'charge'] as const) {
+  test(`dipole field lines: ${token} traces a non-empty diagram`, () => {
+    const trace = traceDipole(token, DEMO_OVERRIDES[token]);
+    assert.ok(trace, `${token} should produce a dipole trace`);
+    assert.ok(trace!.paths.length >= 3, `${token} should draw multiple field lines`);
+    assert.ok(
+      trace!.paths.every((line) => line.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))),
+      `${token} field lines must be finite`,
+    );
+  });
+}
+
+test('dipole field lines: non-dipole forces opt out', () => {
+  assert.equal(traceDipole('attract'), null);
+  assert.equal(traceDipole('gravity'), null);
+  assert.equal(traceDipole('swirl'), null);
 });

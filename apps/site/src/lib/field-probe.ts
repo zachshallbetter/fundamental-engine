@@ -11,7 +11,16 @@
  * Paths come back in body-relative engine units, auto-framed to a unit box, so the
  * draw step can scale them to any canvas size without re-running the simulation.
  */
-import { runScenario, type Scenario, type ScenarioParticle, type ScenarioResult } from 'forces-ui';
+import {
+  runScenario,
+  polePair,
+  dipoleField,
+  traceFieldLines,
+  ringSeeds,
+  type Scenario,
+  type ScenarioParticle,
+  type ScenarioResult,
+} from 'forces-ui';
 
 export interface Pt {
   x: number;
@@ -361,5 +370,56 @@ export function traceField(token: string, override: ProbeOverride = {}): FieldTr
 
   const trace: FieldTrace = { paths, rings };
   traceCache.set(key, trace);
+  return trace;
+}
+
+const dipoleCache = new Map<string, FieldTrace>();
+
+/**
+ * The body's dipole field lines (field-systems plan, Stage B render) — the bar-magnet
+ * (N→S) and electric-dipole (+→−) diagram for `magnetism` and `charge`. Traces real
+ * streamlines of the engine's `dipoleField` over the two poles `polePair` lays on the
+ * heading axis, normalized to the same unit box `traceField` uses so the drawer scales
+ * both together. This is the *structure* of the field; for magnetism the particles (the
+ * `traceField` trajectories drawn on top) curve around these lines rather than following
+ * them. Returns null for any non-dipole force.
+ */
+export function traceDipole(token: string, override: ProbeOverride = {}): FieldTrace | null {
+  if (token !== 'magnetism' && token !== 'charge') return null;
+  const key = token + '|' + JSON.stringify(override);
+  if (dipoleCache.has(key)) return dipoleCache.get(key)!;
+
+  const cfg = CFG[token];
+  const angleDeg = override.angleDeg ?? cfg?.angle ?? -90;
+  const spin = override.spin ?? cfg?.spin ?? 1;
+  const a = (angleDeg * Math.PI) / 180;
+
+  // a representative bar in a centred world box; the aspect makes a legible magnet
+  const W = 520;
+  const H = 400;
+  const cx = W / 2;
+  const cy = H / 2;
+  const body = { cx, cy, hw: 74, hh: 28, ux: Math.cos(a), uy: Math.sin(a), spin };
+  const [pos] = polePair(body);
+  const sample = (x: number, y: number) => dipoleField([pos, polePair(body)[1]], x, y);
+  const seeds = ringSeeds(pos.x, pos.y, 20, 11); // a fan around the + pole
+  const lines = traceFieldLines(sample, seeds, { step: 5, maxSteps: 240, bounds: { w: W, h: H } });
+
+  // normalize about the body centre by the 90th-percentile point radius (auto-frame)
+  const radii: number[] = [];
+  for (const l of lines) for (const p of l) radii.push(Math.hypot(p.x - cx, p.y - cy));
+  radii.sort((u, v) => u - v);
+  const ext = radii.length ? Math.max(radii[Math.floor(radii.length * 0.9)]!, 90) : 100;
+  const norm = 1 / ext;
+  const paths = lines
+    .map((l) =>
+      l
+        .map((p) => ({ x: (p.x - cx) * norm, y: (p.y - cy) * norm }))
+        .filter((p) => Math.hypot(p.x, p.y) < 1.55),
+    )
+    .filter((l) => l.length > 1);
+
+  const trace: FieldTrace = { paths, rings: [] };
+  dipoleCache.set(key, trace);
   return trace;
 }
