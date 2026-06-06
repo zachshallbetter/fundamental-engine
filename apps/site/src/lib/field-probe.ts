@@ -16,7 +16,6 @@ import {
   polePair,
   dipoleField,
   traceFieldLines,
-  ringSeeds,
   type Scenario,
   type ScenarioParticle,
   type ScenarioResult,
@@ -394,28 +393,42 @@ export function traceDipole(token: string, override: ProbeOverride = {}): FieldT
   const spin = override.spin ?? cfg?.spin ?? 1;
   const a = (angleDeg * Math.PI) / 180;
 
-  // a representative bar in a centred world box; the aspect makes a legible magnet
-  const W = 520;
-  const H = 400;
+  // a representative bar in a generous centred world box, so the outer loops have room to
+  // close into the textbook nested-loop pattern before bounds clip them.
+  const W = 1000;
+  const H = 800;
   const cx = W / 2;
   const cy = H / 2;
   const body = { cx, cy, hw: 74, hh: 28, ux: Math.cos(a), uy: Math.sin(a), spin };
-  const [pos] = polePair(body);
-  const sample = (x: number, y: number) => dipoleField([pos, polePair(body)[1]], x, y);
-  const seeds = ringSeeds(pos.x, pos.y, 20, 11); // a fan around the + pole
-  const lines = traceFieldLines(sample, seeds, { step: 5, maxSteps: 240, bounds: { w: W, h: H } });
+  const poles = polePair(body);
+  const sample = (x: number, y: number) => dipoleField(poles, x, y);
 
-  // normalize about the body centre by the 90th-percentile point radius (auto-frame)
+  // Seed along the perpendicular bisector of the dipole axis: each offset point lies on a
+  // distinct nested field line, so tracing both ways closes a clean loop from + around to −.
+  // (Seeding a ring on a pole instead sends the far-side seeds straight out as radial spokes.)
+  const perp = { x: -body.uy, y: body.ux }; // unit ⟂ to the heading axis
+  const RINGS = 8;
+  const SPACING = 22;
+  const seeds = [{ x: cx, y: cy }]; // the central axial line through both poles
+  for (let i = 1; i <= RINGS; i++) {
+    const off = i * SPACING;
+    seeds.push({ x: cx + perp.x * off, y: cy + perp.y * off });
+    seeds.push({ x: cx - perp.x * off, y: cy - perp.y * off });
+  }
+  const lines = traceFieldLines(sample, seeds, { step: 5, maxSteps: 500, bounds: { w: W, h: H } });
+
+  // normalize about the body centre by the 88th-percentile point radius (auto-frame), so
+  // the largest loop sits inside the box without one runaway line shrinking the rest.
   const radii: number[] = [];
   for (const l of lines) for (const p of l) radii.push(Math.hypot(p.x - cx, p.y - cy));
   radii.sort((u, v) => u - v);
-  const ext = radii.length ? Math.max(radii[Math.floor(radii.length * 0.9)]!, 90) : 100;
+  const ext = radii.length ? Math.max(radii[Math.floor(radii.length * 0.88)]!, 100) : 120;
   const norm = 1 / ext;
   const paths = lines
     .map((l) =>
       l
         .map((p) => ({ x: (p.x - cx) * norm, y: (p.y - cy) * norm }))
-        .filter((p) => Math.hypot(p.x, p.y) < 1.55),
+        .filter((p) => Math.hypot(p.x, p.y) < 1.5),
     )
     .filter((l) => l.length > 1);
 
