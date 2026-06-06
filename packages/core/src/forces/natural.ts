@@ -13,16 +13,31 @@
 
 import type { Body, Particle, Env, Force } from '../core/types.ts';
 import type { Registry } from '../core/registry.ts';
-import { polePair, dipoleField } from '../core/geometry.ts';
+import { polePair, dipoleField, type Pole } from '../core/geometry.ts';
 
 /**
  * The body's dipole field at a world point (the visual/structure field, Stage B): the
  * two-pole superposition scaled by the source magnitude. Shared by `magnetism` (the bar
  * magnet, rendered but not followed) and `charge` (the electric field the force flows
  * along). `s` is the source scalar — `strength` for B, `M` for the charge field.
+ *
+ * A body with little or no extent (an abstract scenario, a point element) would put both
+ * poles at the centre, where the ± contributions cancel to zero. So when the rect-derived
+ * separation is negligible, synthesize the dipole along the heading at a fraction of the
+ * body's range — every magnetism/charge source then reads as a dipole, regardless of size.
  */
 function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
-  const f = dipoleField(polePair(b), x, y);
+  let poles = polePair(b);
+  const sep = Math.hypot(poles[0].x - poles[1].x, poles[0].y - poles[1].y);
+  if (sep < b.range * 0.06) {
+    const half = b.range * 0.18;
+    const sgn = b.spin < 0 ? -1 : 1;
+    poles = [
+      { x: b.cx + b.ux * half, y: b.cy + b.uy * half, q: sgn },
+      { x: b.cx - b.ux * half, y: b.cy - b.uy * half, q: -sgn },
+    ] as [Pole, Pole];
+  }
+  const f = dipoleField(poles, x, y);
   return { x: f.x * s, y: f.y * s };
 }
 

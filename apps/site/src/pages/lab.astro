@@ -418,17 +418,28 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
       // field at each world point; pair/grid forces have no point-field so it reads ~0.
       function drawField(b: Any) {
         const w = canvas!.clientWidth, h = canvas!.clientHeight, col = color(), stepPx = 34;
+        // Sample first, then scale arrows RELATIVE to the field's own max magnitude — so a
+        // force shows whatever its absolute scale (the dipole field() of magnetism/charge is
+        // orders of magnitude weaker than attract's, but its pattern is just as real).
+        const samples: { sx: number; sy: number; ux: number; uy: number; mag: number }[] = [];
+        let maxMag = 0;
         for (let sx = stepPx / 2; sx < w; sx += stepPx)
           for (let sy = stepPx / 2; sy < h; sy += stepPx) {
             const wx = (sx - view.ox) / view.scale, wy = (sy - view.oy) / view.scale;
             const { fx, fy } = forceAt([b], forces, fenv, wx, wy);
             const mag = Math.hypot(fx, fy);
-            if (mag < 1e-5) continue;
-            const ux = fx / mag, uy = fy / mag, len = Math.min(stepPx * 0.42, 4 + mag * 120);
-            ctx.strokeStyle = hexA(col, Math.min(0.06 + mag * 1.6, 0.4));
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + ux * len, sy + uy * len); ctx.stroke();
+            if (mag < 1e-9) continue;
+            samples.push({ sx, sy, ux: fx / mag, uy: fy / mag, mag });
+            if (mag > maxMag) maxMag = mag;
           }
+        if (maxMag <= 0) return;
+        for (const s of samples) {
+          const rel = Math.sqrt(s.mag / maxMag); // sqrt compresses the range so weak vectors still read
+          const len = stepPx * 0.42 * (0.28 + 0.72 * rel);
+          ctx.strokeStyle = hexA(col, 0.1 + 0.32 * rel);
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(s.sx, s.sy); ctx.lineTo(s.sx + s.ux * len, s.sy + s.uy * len); ctx.stroke();
+        }
       }
 
       function draw() {
