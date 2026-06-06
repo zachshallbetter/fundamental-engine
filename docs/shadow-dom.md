@@ -209,16 +209,14 @@ The composed: true flag is required. It allows the event to cross the shadow bou
 
 ## 7. Registration Event Contract
 
-The registration event payload may provide only an element, or it may provide additional metadata.
+The registration event payload may provide only an element, or it may provide additional metadata. The shipped type is `RegisterBodyDetail` (`core/shadow.ts`):
 
 ```ts
-type ForcesRegisterBodyDetail = {
-element: Element;
+interface RegisterBodyDetail {
+element: HTMLElement;
 getRect?: () => DOMRect;
-attrs?: Partial<ForcesBodyAttributes>;
-scope?: "global" | "local";
-field?: "nearest" | "root" | string;
-writeTarget?: Element; };
+attrs?: Record<string, string>;
+writeTarget?: HTMLElement; };
 ```
 
 ### element
@@ -235,29 +233,10 @@ Use this when the physical body is not the same as the host box.
 
 ### attrs
 
-Optional explicit body attributes.
+Optional explicit body attributes, keyed by the suffix after `data-`
+(e.g. `{ body: "attract", strength: "0.9" }`).
 
 If omitted, the engine reads attributes from element.
-
-### scope
-
-Controls whether the body registers with a local field or the global field.
-
-Default:
-
-```txt
-global
-```
-
-### field
-
-Selects a specific field target.
-
-Default:
-
-```txt
-nearest
-```
 
 ### writeTarget
 
@@ -340,28 +319,20 @@ This works for:
 - elements inside open shadow roots,
 - elements inside closed shadow roots when exposed through getRect.
 
-Canonical conversion:
+Canonical conversion (as built in `measureBodies`, `core/scanner.ts`): the rect is
+read viewport-relative, with no canvas-rect subtraction and no DPR scaling.
 
 ```ts
-const rect = body.getRect
-? body.getRect()
-: body.element.getBoundingClientRect();
-const canvasRect = canvas.getBoundingClientRect();
-const cx = (rect.left - canvasRect.left + rect.width / 2) * dpr; const cy = (rect.top - canvasRect.top + rect.height / 2) * dpr;
-const hw = (rect.width / 2) * dpr; const hh = (rect.height / 2) * dpr;
+const r = body.rect ? body.rect() : body.el.getBoundingClientRect();
+b.cx = r.left + r.width / 2;
+b.cy = r.top + r.height / 2;
+b.hw = r.width / 2;
+b.hh = r.height / 2;
 ```
 
-The engine should not assume the canvas begins at (0, 0).
-
-This matters for:
-
-- local simulation cells,
-- embedded canvases,
-- scroll containers,
-- transformed containers,
-- portal targets,
-- overlays,
-- iframes or future embedded contexts.
+The provided `getRect` is attached to the body as `body.rect` at registration
+(`ShadowRegistry.bodies`), so closed roots and internal cores feed their own box
+through the same path.
 
 ## 11. Density Write-Back Contract
 
@@ -465,94 +436,61 @@ The host should remain the write-back target unless a separate writeTarget is pr
 
 ## 14. Multiple Bodies in One Component
 
-A component may expose multiple virtual bodies.
+**As built:** the registry stores **one body per registered host element**. A registration
+event contributes exactly one body, keyed by `detail.element`; re-registering the same element
+updates that element's detail idempotently, and disconnected hosts are pruned. There is no
+`bodies` array in the event detail and no `::core` / `::rim` virtual indexing.
 
-Example:
-
-```ts
-this.dispatchEvent(new CustomEvent("forces:register-body", {
-bubbles: true,
-composed: true,
-detail: {
-element: this,
-bodies: [
-{
-id: "core",
-getRect: () => this.#core.getBoundingClientRect(),
-attrs: {
-body: "sink attract",
-strength: 0.8,
-range: 320
-}
-},
-{
-id: "rim",
-getRect: () => this.#rim.getBoundingClientRect(),
-attrs: {
-body: "wall"
-}
-}
-]
-} }));
-```
-
-Virtual bodies need stable IDs.
-
-Recommended key:
-
-```txt
-hostId::bodyId
-```
-
-Example:
-
-```txt
-forces-card-17::core forces-card-17::rim forces-card-17::meter
-```
-
-Stable IDs are important for:
-
-- record/replay,
-- conformance tests,
-- debug overlays,
-- URL serialization,
-- deterministic updates.
+> **Proposed (not implemented).** A component could expose multiple virtual bodies from one
+> host, each with its own rect and attrs and a stable `hostId::bodyId` key:
+>
+> ```ts
+> // PROPOSED — not in the shipped code.
+> this.dispatchEvent(new CustomEvent("forces:register-body", {
+> bubbles: true,
+> composed: true,
+> detail: {
+> element: this,
+> bodies: [
+> {
+> id: "core",
+> getRect: () => this.#core.getBoundingClientRect(),
+> attrs: { body: "sink attract", strength: 0.8, range: 320 }
+> },
+> {
+> id: "rim",
+> getRect: () => this.#rim.getBoundingClientRect(),
+> attrs: { body: "wall" }
+> }
+> ]
+> } }));
+> ```
+>
+> Stable IDs (`forces-card-17::core`, `forces-card-17::rim`, …) would matter for record/replay,
+> conformance tests, debug overlays, URL serialization, and deterministic updates.
 
 ## 15. Registry Contract
 
-The field engine should store bodies in a registry keyed by element or stable body ID.
-
-Single body per element:
-
-```ts
-const bodies = new WeakMap<Element, Body>();
-```
-
-Multiple virtual bodies:
+**As built (`ShadowRegistry`, `core/shadow.ts`):** the registry is a `Map` keyed by the host
+element, holding that host's registration detail. Each live host yields exactly one body.
 
 ```ts
-const bodies = new Map<string, Body>();
+const hosts = new Map<HTMLElement, RegisterBodyDetail>();
 ```
 
-Registration must be idempotent.
+Registration is idempotent — `register(detail)` simply does `hosts.set(detail.element, detail)`,
+so re-registering the same element overwrites (refreshes) its detail rather than creating a
+duplicate.
+
+The registry prunes disconnected hosts each time it builds bodies, rather than relying on
+`disconnectedCallback()` alone:
 
 ```ts
-function registerBody(input: RegisterBodyInput) {
-if (registry.has(input.key)) {
-updateBody(input);
-} else {
-createBody(input);
-} }
+for (const [el, detail] of hosts) {
+if (!el.isConnected) { hosts.delete(el); continue; }
+// build one body from el (or detail.attrs); attach detail.getRect / detail.writeTarget
+}
 ```
-
-The engine should periodically prune disconnected elements.
-
-```ts
-if (!body.element.isConnected) {
-unregisterBody(body); }
-```
-
-Do not rely only on disconnectedCallback().
 
 ## 16. Measurement Contract
 
@@ -958,34 +896,43 @@ Physics must be registered, measurable, and testable.
 ## 31. Additional Ideas (production resilience)
 
 The core model above is covered. These additions harden it for production — portals, SSR,
-nested fields, design-system usage, and debugging.
+nested fields, design-system usage, and debugging. Except where marked **shipped**, they are
+**proposed (not implemented)**.
+
+> **Proposed (not implemented) — `scope` / `field` on the registration detail.** The shipped
+> `RegisterBodyDetail` carries only `element`, `getRect`, `attrs`, and `writeTarget` (§7). Field
+> selection and scope are future additions:
+>
+> ```ts
+> // PROPOSED — not in the shipped type.
+> scope?: "global" | "local"; // default "global"
+> field?: "nearest" | "root" | string; // default "nearest"
+> ```
+>
+> See §17–§19 for the broader (also proposed) field-discovery, scope, and portal model.
 
 ### 1. A ForcesController helper for custom elements
 
-Instead of every custom element manually dispatching registration events, provide a tiny controller class.
+**Shipped (`ForcesController`, `core/shadow.ts`).** Instead of every custom element manually
+dispatching registration events, the engine provides a tiny controller class. Construct it with
+the host (and optional extra detail), then call `connect()` / `disconnect()` / `update()` from
+the element's lifecycle callbacks; each emits the corresponding composed event with
+`detail: { element: host, ...extra }`.
 
 ```ts
 class ForcesController {
-  constructor(private host: HTMLElement) {}
-  connect() {
-    this.host.dispatchEvent(new CustomEvent("forces:register-body", {
+  constructor(
+    private host: HTMLElement,
+    private detail: Omit<Partial<RegisterBodyDetail>, "element"> = {},
+  ) {}
+  connect() { this.emit("forces:register-body"); }
+  disconnect() { this.emit("forces:unregister-body"); }
+  update() { this.emit("forces:update-body"); }
+  private emit(type: string) {
+    this.host.dispatchEvent(new CustomEvent(type, {
       bubbles: true,
       composed: true,
-      detail: { element: this.host }
-    }));
-  }
-  disconnect() {
-    this.host.dispatchEvent(new CustomEvent("forces:unregister-body", {
-      bubbles: true,
-      composed: true,
-      detail: { element: this.host }
-    }));
-  }
-  update() {
-    this.host.dispatchEvent(new CustomEvent("forces:update-body", {
-      bubbles: true,
-      composed: true,
-      detail: { element: this.host }
+      detail: { element: this.host, ...this.detail },
     }));
   }
 }
@@ -1408,9 +1355,9 @@ Add a conformance/lifecycle test for this.
 
 The strongest additions to include
 
-For the standalone Shadow DOM definition, I would add these now:
+For the standalone Shadow DOM definition, the priority additions are:
 
-1. ForcesController helper so custom elements do not duplicate event boilerplate.
+1. ForcesController helper so custom elements do not duplicate event boilerplate. **(Shipped.)**
 2. Handshake events so components know whether they are registered.
 3. Field-ready / pending registration queue for SSR and hydration.
 4. data-field-contain and data-field-write to clarify body geometry and write-back.

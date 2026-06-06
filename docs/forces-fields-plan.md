@@ -1,9 +1,14 @@
-# Field lines, shaped sources, and heatmaps — implementation plan
+# Field lines, shaped sources, and heatmaps — implementation record
 
-Status: planned. This is the build plan for three connected additions to the engine:
-shaped (extended) bodies, dipole field-line rendering, and heatmap field buffers, plus
-the chargeable-body accumulator that ties them together. It records the design decisions
-already made and stages the work smallest-first.
+Status: **shipped** (as of 2026-06). This was the build plan for three connected additions
+to the engine — shaped (extended) bodies, dipole field-line rendering, and heatmap field
+buffers, plus the chargeable-body accumulator that ties them together — and all of it now
+ships: `geometry.ts` (Stage A), the `Force.field()` hook with `magnetism`/`charge` dipole &
+monopole fields and `fieldlines.ts` (Stage B), `data-shaped` sampling (Stage C), `heatmap.ts`
+(the density layer, H1), and `fieldflow` (follow the field lines). The document is kept as the
+**as-built design record** — the recorded decisions (D1–D5) are cited from the code (e.g.
+`heatmap.ts` cites D5) — not as open work. The as-shipped surface lives in
+[`forces-system.md`](forces-system.md) §20 and the catalog (`packages/core/src/config/manual.ts`).
 
 The grounding facts below reference the current engine (commit at time of writing):
 `Force`/`Env`/`Body` in `packages/core/src/core/types.ts`, the body-force loop in
