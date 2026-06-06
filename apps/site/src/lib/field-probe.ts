@@ -297,6 +297,43 @@ export function traceRaw(token: string, override: ProbeOverride = {}): RawTrace 
   return { result: runScenario(scenario), range, angleDeg, tokens, origin: org };
 }
 
+/**
+ * Auto-frame world-space polylines about `(cx, cy)`: scale so the robust extent (the `pct`
+ * percentile of point radii, floored at `floor`) maps to 1, then SPLIT each line into
+ * in-bounds runs at radius `clip`. Clipping must break a line, never chord across a gap — a
+ * dropped middle point would otherwise join its neighbours with a straight line through the
+ * body. Shared by the trajectory trace and the dipole field-line render.
+ */
+function autoFrame(
+  lines: Pt[][],
+  cx: number,
+  cy: number,
+  opts: { pct: number; clip: number; floor: number; empty: number },
+): { paths: Pt[][]; norm: number } {
+  const radii: number[] = [];
+  for (const l of lines) for (const p of l) radii.push(Math.hypot(p.x - cx, p.y - cy));
+  radii.sort((a, b) => a - b);
+  const ext = radii.length
+    ? Math.max(radii[Math.floor(radii.length * opts.pct)]!, opts.floor)
+    : opts.empty;
+  const norm = 1 / ext;
+  const paths: Pt[][] = [];
+  for (const l of lines) {
+    let run: Pt[] = [];
+    for (const p of l) {
+      const q = { x: (p.x - cx) * norm, y: (p.y - cy) * norm };
+      if (Math.hypot(q.x, q.y) < opts.clip) {
+        run.push(q);
+      } else {
+        if (run.length > 1) paths.push(run);
+        run = [];
+      }
+    }
+    if (run.length > 1) paths.push(run);
+  }
+  return { paths, norm };
+}
+
 const traceCache = new Map<string, FieldTrace>();
 
 /** Trace a force's real field lines by running the engine with the live body's attributes. */
@@ -350,21 +387,9 @@ export function traceField(token: string, override: ProbeOverride = {}): FieldTr
     if (cur.length > 1) rawPaths.push(cur);
   }
 
-  // auto-frame: scale so the bulk of the motion fills a unit box. Use a robust extent
-  // (95th percentile of point radii) so one runaway particle doesn't shrink everything.
-  const radii: number[] = [];
-  for (const path of rawPaths) for (const p of path) radii.push(Math.hypot(p.x, p.y));
-  radii.sort((a, b) => a - b);
-  const ext = radii.length ? Math.max(radii[Math.floor(radii.length * 0.95)]!, range * 0.5) : range;
-  const norm = 1 / ext;
-
-  const paths = rawPaths.map((path) =>
-    path
-      .map((p) => ({ x: p.x * norm, y: p.y * norm }))
-      // clip points that fly far outside the frame (keeps the viz tight)
-      .filter((p) => Math.hypot(p.x, p.y) < 1.6),
-  ).filter((p) => p.length > 1);
-
+  // auto-frame: scale so the bulk of the motion fills a unit box (95th-percentile extent so
+  // one runaway particle doesn't shrink everything), splitting on clip rather than chording.
+  const { paths, norm } = autoFrame(rawPaths, 0, 0, { pct: 0.95, clip: 1.6, floor: range * 0.5, empty: range });
   const rings = (cfg.rings ? cfg.rings(range) : []).map((r) => ({ r: r * norm, dash: true }));
 
   const trace: FieldTrace = { paths, rings };
@@ -417,20 +442,9 @@ export function traceDipole(token: string, override: ProbeOverride = {}): FieldT
   }
   const lines = traceFieldLines(sample, seeds, { step: 5, maxSteps: 500, bounds: { w: W, h: H } });
 
-  // normalize about the body centre by the 88th-percentile point radius (auto-frame), so
-  // the largest loop sits inside the box without one runaway line shrinking the rest.
-  const radii: number[] = [];
-  for (const l of lines) for (const p of l) radii.push(Math.hypot(p.x - cx, p.y - cy));
-  radii.sort((u, v) => u - v);
-  const ext = radii.length ? Math.max(radii[Math.floor(radii.length * 0.88)]!, 100) : 120;
-  const norm = 1 / ext;
-  const paths = lines
-    .map((l) =>
-      l
-        .map((p) => ({ x: (p.x - cx) * norm, y: (p.y - cy) * norm }))
-        .filter((p) => Math.hypot(p.x, p.y) < 1.5),
-    )
-    .filter((l) => l.length > 1);
+  // auto-frame about the body centre (88th-percentile extent so the largest loop sits inside
+  // the box), splitting each line on clip so an outer loop's excursion never chords across.
+  const { paths } = autoFrame(lines, cx, cy, { pct: 0.88, clip: 1.5, floor: 100, empty: 120 });
 
   const trace: FieldTrace = { paths, rings: [] };
   dipoleCache.set(key, trace);

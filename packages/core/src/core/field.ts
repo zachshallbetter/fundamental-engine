@@ -107,21 +107,38 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // register/unregister/update events; the field registers the HOST and never inspects the
   // shadow tree. The events bubble (composed) to the document, so we listen there.
   const shadow = new ShadowRegistry();
+  // Coalesce a burst of registration events (N components mounting at once) into ONE rescan on
+  // the next microtask, instead of a full-document scan per event.
+  let scanQueued = false;
+  const scheduleScan = (): void => {
+    if (scanQueued) return;
+    scanQueued = true;
+    queueMicrotask(() => {
+      scanQueued = false;
+      scan();
+    });
+  };
+  // clear the field's CSS write-back when a still-connected host leaves the field, so it
+  // doesn't keep a frozen `--d` glow (a removed light-DOM element is gone, so it needs no clear).
+  const clearWriteback = (el: HTMLElement): void => {
+    for (const v of ['--d', '--forces-density', '--load', '--mass']) el.style.removeProperty(v);
+  };
   const onRegister = (e: Event): void => {
     const d = (e as CustomEvent<RegisterBodyDetail>).detail;
     if (d?.element) {
       shadow.register(d);
-      scan(); // pick up the new body (and re-measure) immediately
+      scheduleScan();
     }
   };
   const onUnregister = (e: Event): void => {
     const d = (e as CustomEvent<RegisterBodyDetail>).detail;
     if (d?.element) {
       shadow.unregister(d.element);
-      scan();
+      clearWriteback(d.writeTarget ?? d.element);
+      scheduleScan();
     }
   };
-  const onUpdateBody = (): void => scan(); // attrs/geometry changed → re-scan
+  const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
   const t0 = performance.now();
 
@@ -760,31 +777,39 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const acc = hexToRgb(cfg.accent);
       ctx!.lineWidth = 1;
       ctx!.lineCap = 'round';
+      // Sample the field on the grid, then scale arrows RELATIVE to the strongest sample, so a
+      // weak field (a magnetic/electric dipole, magnitudes ~1e-5) reads as clearly as a strong
+      // one (an attractor). Absolute scaling drowned the dipole below the visibility cutoff.
+      const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
+      let maxMag = 1e-9;
       for (let gx = GRID / 2; gx < W; gx += GRID) {
         for (let gy = GRID / 2; gy < H; gy += GRID) {
           const { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
           const mag = Math.hypot(fx, fy);
-          if (mag < 1e-4) {
-            ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
-            ctx!.fillRect(gx - 0.5, gy - 0.5, 1, 1); // quiescent field → a faint dot
-            continue;
-          }
-          const ux = fx / mag;
-          const uy = fy / mag;
-          const len = Math.min(GRID * 0.46, 6 + mag * 42);
-          const ex = gx + ux * len;
-          const ey = gy + uy * len;
-          ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.12 + mag * 1.3, 0, 0.72)})`;
-          ctx!.beginPath();
-          ctx!.moveTo(gx, gy);
-          ctx!.lineTo(ex, ey);
-          const ah = 3.4;
-          ctx!.moveTo(ex, ey);
-          ctx!.lineTo(ex - ux * ah - uy * ah * 0.6, ey - uy * ah + ux * ah * 0.6);
-          ctx!.moveTo(ex, ey);
-          ctx!.lineTo(ex - ux * ah + uy * ah * 0.6, ey - uy * ah - ux * ah * 0.6);
-          ctx!.stroke();
+          if (mag > maxMag) maxMag = mag;
+          samples.push({ gx, gy, ux: mag > 0 ? fx / mag : 0, uy: mag > 0 ? fy / mag : 0, mag });
         }
+      }
+      for (const s of samples) {
+        const rel = s.mag / maxMag; // ∈ [0, 1], normalized to the field's own peak
+        if (rel < 0.02) {
+          ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
+          ctx!.fillRect(s.gx - 0.5, s.gy - 0.5, 1, 1); // quiescent → a faint dot
+          continue;
+        }
+        const len = GRID * 0.46 * (0.35 + 0.65 * rel);
+        const ex = s.gx + s.ux * len;
+        const ey = s.gy + s.uy * len;
+        ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.12 + rel * 0.6, 0, 0.72)})`;
+        ctx!.beginPath();
+        ctx!.moveTo(s.gx, s.gy);
+        ctx!.lineTo(ex, ey);
+        const ah = 3.4;
+        ctx!.moveTo(ex, ey);
+        ctx!.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
+        ctx!.moveTo(ex, ey);
+        ctx!.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
+        ctx!.stroke();
       }
     }
   }

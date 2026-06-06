@@ -32,11 +32,16 @@ import { polePair, dipoleField, type Pole } from '../core/geometry.ts';
  * field. `b.d` is 0 on point/headless bodies, so the base field is unchanged there.
  */
 const Q_GAIN = 1.5;
+const DIPOLE_MIN_SEP = 8; // px — below this the rect gives no usable dipole axis
+const DIPOLE_MIN_REACH = 60; // px — synthesized pole reach floor (covers range-0 / point bodies)
 function bodyDipole(b: Body, x: number, y: number, s: number): { x: number; y: number } {
   let poles = polePair(b);
   const sep = Math.hypot(poles[0].x - poles[1].x, poles[0].y - poles[1].y);
-  if (sep < b.range * 0.06) {
-    const half = b.range * 0.18;
+  // synthesize when the rect gives no usable separation. The pixel floors matter for a global
+  // body (`data-range="0"`): `range*0.06`/`range*0.18` would be 0, collapsing the dipole to a
+  // zero field — the floors keep it a readable dipole regardless of size.
+  if (sep < Math.max(b.range * 0.06, DIPOLE_MIN_SEP)) {
+    const half = Math.max(b.range * 0.18, DIPOLE_MIN_REACH);
     const sgn = b.spin < 0 ? -1 : 1;
     poles = [
       { x: b.cx + b.ux * half, y: b.cy + b.uy * half, q: sgn },

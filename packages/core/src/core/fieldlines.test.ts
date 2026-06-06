@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { traceFieldLine, traceFieldLines, ringSeeds } from './fieldlines.ts';
+import { traceFieldLine, traceFieldLines } from './fieldlines.ts';
 import { dipoleField, type Pole } from './geometry.ts';
 
 // a dipole in positive canvas space: + pole at (100, 200), − pole at (300, 200)
@@ -50,14 +50,14 @@ test('traceFieldLine: bounds stop the line leaving the viewport', () => {
 });
 
 test('traceFieldLines: traces one polyline per non-degenerate seed', () => {
-  const seeds = ringSeeds(100, 200, 14, 8); // ring around the + pole
+  // a small set of seeds spread around the + pole (100, 200)
+  const seeds = [
+    { x: 114, y: 200 },
+    { x: 100, y: 214 },
+    { x: 86, y: 200 },
+    { x: 100, y: 186 },
+  ];
   const lines = traceFieldLines(sample, seeds, { step: 4, maxSteps: 400, bounds });
   assert.ok(lines.length >= 1);
   assert.ok(lines.every((l) => l.length > 1 && finite(l)));
-});
-
-test('ringSeeds: places count points at the given radius', () => {
-  const seeds = ringSeeds(10, 20, 5, 6);
-  assert.equal(seeds.length, 6);
-  for (const s of seeds) assert.ok(Math.abs(Math.hypot(s.x - 10, s.y - 20) - 5) < 1e-9);
 });

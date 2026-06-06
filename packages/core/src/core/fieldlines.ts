@@ -81,16 +81,3 @@ export function traceFieldLines(sample: FieldSample, seeds: readonly Pt[], opts:
   return seeds.map((s) => traceFieldLine(sample, s.x, s.y, opts)).filter((line) => line.length > 1);
 }
 
-/**
- * Seed points spread on a small ring around a point (e.g. a pole), evenly by angle. The
- * field lines of a dipole emanate from the `+` pole, so seeding a ring there fans a readable
- * set of lines across the body.
- */
-export function ringSeeds(cx: number, cy: number, radius: number, count: number): Pt[] {
-  const seeds: Pt[] = [];
-  for (let i = 0; i < count; i++) {
-    const a = (i / count) * Math.PI * 2;
-    seeds.push({ x: cx + Math.cos(a) * radius, y: cy + Math.sin(a) * radius });
-  }
-  return seeds;
-}
