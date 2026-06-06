@@ -19,6 +19,7 @@ export * from './core/feedback.ts';
 export * from './core/attention.ts';
 export * from './core/causality.ts';
 export * from './core/streamlines.ts';
+export * from './core/fieldlines.ts';
 export * from './core/reactions.ts';
 export * from './core/agents.ts';
 export * from './core/currents.ts';
