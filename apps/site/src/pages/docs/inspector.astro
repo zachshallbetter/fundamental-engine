@@ -1,0 +1,156 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import {
+  systemReport,
+  PASSPORTS,
+  CONTRACTS,
+  AGENT_CONTRACTS,
+  VISUAL_CONTRACTS,
+  RECIPE_CONTRACTS,
+  SEMANTIC_CONTRACTS,
+} from 'field-ui';
+
+// The Inspector reads the system's own self-description: the system report, every contract, and the
+// force passports — plus a live reciprocity panel that reads the --field-* write-back the engine
+// emits onto real bodies (no extra engine API; the reciprocity is already in the DOM).
+const report = systemReport();
+const contracts = [
+  ...CONTRACTS,
+  ...AGENT_CONTRACTS,
+  ...VISUAL_CONTRACTS,
+  ...RECIPE_CONTRACTS,
+  ...SEMANTIC_CONTRACTS,
+];
+const passports = Object.values(PASSPORTS);
+---
+
+<DocsLayout
+  title="field-ui — Inspector"
+  description="The field-ui reciprocity inspector: live system report, the full contract catalog, the force passport table, and a live --field-density readback panel."
+>
+  <h1>Inspector</h1>
+  <p class="lede">
+    The system inspecting itself — coverage, contracts, passports, and a live reciprocity readout.
+  </p>
+
+  <section aria-labelledby="sr">
+    <h2 id="sr">System report</h2>
+    <div class="stat-grid">
+      <div class="stat"><b>{report.forces}</b><span>forces</span></div>
+      <div class="stat"><b>{report.passports}</b><span>passports</span></div>
+      <div class="stat"><b>{report.conformanceExperiments}</b><span>conformance</span></div>
+      <div class="stat"><b>{report.contracts}</b><span>contracts</span></div>
+      <div class="stat"><b>{report.agentTypes}</b><span>agent types</span></div>
+      <div class="stat"><b>{report.recipes}</b><span>recipes</span></div>
+    </div>
+    <p class="coverage">
+      {report.forcesMissingPassport.length === 0 && report.forcesMissingConformance.length === 0
+        ? '✓ every force is passported and conformance-covered'
+        : `⚠ gaps: ${[...report.forcesMissingPassport, ...report.forcesMissingConformance].join(', ')}`}
+    </p>
+  </section>
+
+  <section aria-labelledby="rp">
+    <h2 id="rp">Live reciprocity</h2>
+    <p>These are real bodies in the page-wide field. The bars read their live <code>--field-density</code> write-back each frame.</p>
+    <div class="insp-bodies">
+      <div class="insp-body" data-body="attract" data-strength="1.2" data-range="260" data-feedback data-hot>
+        <span class="ib-label">attract</span>
+        <span class="ib-meter"><span class="ib-fill"></span></span>
+        <span class="ib-val" data-val>0.000</span>
+      </div>
+      <div class="insp-body" data-body="swirl" data-strength="1" data-range="240" data-feedback data-hot>
+        <span class="ib-label">swirl</span>
+        <span class="ib-meter"><span class="ib-fill"></span></span>
+        <span class="ib-val" data-val>0.000</span>
+      </div>
+      <div class="insp-body" data-body="sink attract" data-strength="0.9" data-range="240" data-absorb="40" data-feedback data-hot>
+        <span class="ib-label">sink attract</span>
+        <span class="ib-meter"><span class="ib-fill"></span></span>
+        <span class="ib-val" data-val>0.000</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ct">
+    <h2 id="ct">Contracts ({contracts.length})</h2>
+    <details class="insp-contracts">
+      <summary>Show all contracts</summary>
+      <ul>
+        {contracts.map((c) => (
+          <li><b>{c.name}</b> — <span>{c.mustExist}</span></li>
+        ))}
+      </ul>
+    </details>
+  </section>
+
+  <section aria-labelledby="pp">
+    <h2 id="pp">Force passports ({passports.length})</h2>
+    <div class="table-scroll">
+      <table class="passport-table">
+        <thead>
+          <tr><th>Token</th><th>Family</th><th>Class</th><th>Truth</th><th>field()</th><th>Work</th><th>Cons. speed</th><th>Charge</th><th>Neutral</th></tr>
+        </thead>
+        <tbody>
+          {passports.map((p) => (
+            <tr>
+              <td><code>{p.token}</code></td>
+              <td>{p.family}</td>
+              <td>{p.klass}</td>
+              <td>{p.truthMode}</td>
+              <td>{p.ownsField ? '✓' : '·'}</td>
+              <td>{p.doesWork ? '✓' : '·'}</td>
+              <td>{p.conservesSpeed ? '✓' : '·'}</td>
+              <td>{p.requiresCharge ? '✓' : '·'}</td>
+              <td>{p.affectsNeutralMatter ? '✓' : '·'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</DocsLayout>
+
+<script>
+  // Live reciprocity readback: each frame, read the engine's --field-density write-back off each
+  // inspected body and reflect it in the meter. Decorative-safe (reads only); respects reduced motion.
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bodies = Array.from(document.querySelectorAll<HTMLElement>('.insp-body'));
+  let raf = 0;
+  function tick() {
+    for (const el of bodies) {
+      const d = parseFloat(getComputedStyle(el).getPropertyValue('--field-density') || '0') || 0;
+      const fill = el.querySelector<HTMLElement>('.ib-fill');
+      const val = el.querySelector<HTMLElement>('[data-val]');
+      if (fill) fill.style.width = `${Math.min(100, d * 100).toFixed(1)}%`;
+      if (val) val.textContent = d.toFixed(3);
+    }
+    raf = requestAnimationFrame(tick);
+  }
+  if (bodies.length) {
+    tick();
+    if (reduce) cancelAnimationFrame(raf); // one static read under reduced motion
+  }
+  document.addEventListener('astro:before-swap', () => cancelAnimationFrame(raf), { once: true });
+</script>
+
+<style>
+  .lede { color: var(--muted, #9aa); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+  .stat { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.75rem; text-align: center; }
+  .stat b { display: block; font-size: 1.6rem; color: #4da3ff; }
+  .stat span { font-size: 0.78rem; color: var(--muted, #9aa); }
+  .coverage { font-size: 0.9rem; }
+  .insp-bodies { display: grid; gap: 0.6rem; margin: 1rem 0; }
+  .insp-body { display: grid; grid-template-columns: 10ch 1fr 6ch; align-items: center; gap: 0.6rem; cursor: default; }
+  .ib-label { font-family: ui-monospace, monospace; font-size: 0.85rem; }
+  .ib-meter { height: 10px; border-radius: 6px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .ib-fill { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #4da3ff, #2dd4bf); transition: width 0.1s linear; }
+  .ib-val { font-family: ui-monospace, monospace; font-size: 0.8rem; color: var(--muted, #9aa); text-align: right; }
+  .insp-contracts ul { font-size: 0.85rem; line-height: 1.6; padding-left: 1.1rem; }
+  .insp-contracts span { color: var(--muted, #9aa); }
+  .table-scroll { overflow-x: auto; }
+  .passport-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .passport-table th, .passport-table td { text-align: left; padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); white-space: nowrap; }
+  .passport-table th { color: var(--muted, #9aa); font-weight: 600; }
+</style>
