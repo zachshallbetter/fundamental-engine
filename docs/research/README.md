@@ -35,9 +35,9 @@ The first paper names the paradigm. The rest prove it in specific interface doma
 | 3 | [`03-evidence-fields.md`](03-evidence-fields.md) | **Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces** | A field-based interaction model for evidence, confidence, contradiction, and provenance. | study *run* (`bindData()` + Evidence Field study page already ship) | HCI / AI interfaces / trust |
 | 4 | [`04-motion-equivalence.md`](04-motion-equivalence.md) | **Motion Is Not Meaning: Reduced-Motion Equivalence in Field-Based Interface Systems** | A conformance model for translating motion-heavy field behavior into static semantic equivalents. | a11y conformance | Accessibility / web standards |
 | 5 | [`05-host-driven-runtime.md`](05-host-driven-runtime.md) | **A Host-Driven Field Runtime for Portable Interface Behavior** | A runtime architecture for field-based UI behavior that targets DOM, Canvas, SVG, WebGL, native, or headless — including the recipe runtime, force-passport, and conformance-gate methodology. | zero-DOM-globals core + platform runtime | Web systems / engineering |
-| 6 | `06-portable-field-recipes.md` | **Recipes as Portable Field Programs for Interface Behavior** | A structured authoring model for composing relational field behavior without corrupting runtime vocabulary. | executable recipes | Design systems / authoring tools |
-| 7 | `07-data-as-field-participants.md` | **Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields** | A data-binding model for relational interface fields. | now writable — `bindData()` + study demos ship; eval still to run | Web systems / data UX |
-| 8 | `08-explainable-interface-behavior.md` | **Explainable Interface Behavior Through Field Diagnostics** | A diagnostic framework for explainable interaction behavior. | Platform Inspector | HCI / dev tools / explainability |
+| 6 | [`06-portable-field-recipes.md`](06-portable-field-recipes.md) | **Recipes as Portable Field Programs for Interface Behavior** | A structured authoring model for composing relational field behavior without corrupting runtime vocabulary. | executable recipes | Design systems / authoring tools |
+| 7 | [`07-data-as-field-participants.md`](07-data-as-field-participants.md) | **Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields** | A data-binding model for relational interface fields. | now writable — `bindData()` + study demos ship; eval still to run | Web systems / data UX |
+| 8 | [`08-explainable-interface-behavior.md`](08-explainable-interface-behavior.md) | **Explainable Interface Behavior Through Field Diagnostics** | A diagnostic framework for explainable interaction behavior. | Platform Inspector | HCI / dev tools / explainability |
 
 Shared assets:
 
@@ -62,7 +62,13 @@ before it:
 
 If only three are written, write **1, 2, 3**: paper 1 names the paradigm, paper 2 gives the clearest
 and least speculative empirical case study, and paper 3 connects the system to the most urgent
-current interface problem. **These three are the active drafting target.**
+current interface problem.
+
+**Status (2026-06-07): all eight papers are drafted in full** (this branch / draft PR #231). Papers
+1–3 have been through adversarial peer review (verified against code) and revised; the empirical
+papers (2, 3) carry full, pre-registerable study designs but **no results have been collected**
+(caveat canon item 6). Remaining work is review of Papers 4–8, filling `references.md`, and the
+markdown→LaTeX conversion — not first drafts.
 
 ## Development order (differs from publication order)
 
