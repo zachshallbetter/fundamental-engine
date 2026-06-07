@@ -23,6 +23,10 @@ const table = RENDER_MODES;
     <button data-mode="force-vectors">Force vectors</button>
     <button data-mode="velocity">Velocity</button>
     <button data-mode="energy">Energy</button>
+    <button data-mode="topology">Topology</button>
+    <button data-mode="inspector">Inspector</button>
+    <button data-mode="causality">Causality</button>
+    <button data-mode="prediction">Prediction</button>
   </div>
   <canvas id="diag-canvas" width="520" height="340" aria-label="Diagnostic overlay canvas"></canvas>
   <div class="diag-export" role="group" aria-label="Export">
@@ -62,6 +66,12 @@ const table = RENDER_MODES;
     segmentsToSvg,
     downloadCanvasPng,
     downloadText,
+    drawTopology,
+    drawInspector,
+    causalityAt,
+    drawCausality,
+    ghostTrajectory,
+    drawPrediction,
   } from 'field-ui';
 
   const canvas = document.getElementById('diag-canvas') as HTMLCanvasElement | null;
@@ -81,6 +91,20 @@ const table = RENDER_MODES;
       cap: null,
     })) as never[];
 
+    // demo data for the graph/debug modes (topology, causality, prediction, inspector)
+    const nodes: Record<string, { x: number; y: number }> = {
+      a: { x: 90, y: 90 }, b: { x: 430, y: 90 }, c: { x: 260, y: 250 }, d: { x: 120, y: 290 },
+    };
+    const agents = [
+      { id: 'a~b', from: 'a', to: 'b', type: 'cites', strength: 0.9, tension: 0, memory: 0.7, active: true },
+      { id: 'b~c', from: 'b', to: 'c', type: 'references', strength: 0.7, tension: 0, memory: 0.5, active: true },
+      { id: 'a~c', from: 'a', to: 'c', type: 'controls', strength: 0.5, tension: 0, memory: 0.3, active: false },
+      { id: 'c~d', from: 'c', to: 'd', type: 'describes', strength: 0.3, tension: 0, memory: 0.15, active: false },
+    ];
+    // a tiny registry: the canonical attractor + a constant wind, so causality has ≥2 sources
+    const wind = { apply: (_b: never, p: { vx: number }) => { p.vx += 0.6; } } as never;
+    const reg = { attract, wind } as never;
+
     const draw = (mode: string) => {
       ctx.clearRect(0, 0, W, H);
       const grid = () => sampleScalarGrid((x, y) => netPotentialAt([body], x, y), W, H, mode === 'potential' ? 8 : 14);
@@ -89,6 +113,30 @@ const table = RENDER_MODES;
       if (mode === 'force-vectors') drawForceVectors(ctx, attract, body, W, H, { spacing: 34, scale: 9 });
       if (mode === 'velocity') drawVelocityVectors(ctx, particles, { scale: 4 });
       if (mode === 'energy') drawEnergyBar(ctx, energyReport(particles));
+      if (mode === 'topology') {
+        drawTopology(ctx, agents as never, (id) => nodes[id]);
+        for (const id of Object.keys(nodes)) {
+          const n = nodes[id]!;
+          ctx.fillStyle = '#4da3ff';
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        return; // graph modes don't draw the single source body
+      }
+      if (mode === 'inspector') {
+        drawInspector(ctx, { bodies: 1, particles: particles.length, agents: agents.length, relationships: agents.length, metrics: { coherence: 0.62, mode: 'diagnostic' } });
+        return;
+      }
+      if (mode === 'causality') {
+        const origin = { x: 170, y: 180 };
+        const contribs = causalityAt(reg, ['attract', 'wind'], body, origin.x, origin.y);
+        drawCausality(ctx, contribs, origin, { scale: 12 });
+      }
+      if (mode === 'prediction') {
+        const path = ghostTrajectory(reg, ['attract'], [body], { x: 60, y: 60, vx: 1, vy: 0 }, { steps: 90, forceScale: 0.4 });
+        drawPrediction(ctx, path);
+      }
       // the source body
       ctx.fillStyle = '#4da3ff';
       ctx.beginPath();
