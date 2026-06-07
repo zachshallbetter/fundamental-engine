@@ -15,7 +15,7 @@ const bodyHtml = `<!-- the page is the medium; any element can be a body -->
 </article>
 
 <script type="module">
-  import { createField } from 'field-ui';
+  import { createField } from '@field-ui/vanilla'; // wires the browser host for you
   // mounts the field and scans the page for [data-body] elements
   createField(document.getElementById('field'));
 </script>`;

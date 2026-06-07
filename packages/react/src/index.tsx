@@ -15,7 +15,8 @@
 
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
-import { createField, FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from 'field-ui';
+import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from 'field-ui';
+import { createBrowserField } from '@field-ui/platform';
 
 export interface FieldFieldProps extends FieldOptions {
   className?: string;
@@ -47,7 +48,7 @@ export function FieldField({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
+    const field = createBrowserField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
     onReadyRef.current?.(field);
     return () => field.destroy();
     // re-create only when an engine option actually changes
@@ -72,7 +73,7 @@ export function useFieldField(opts: FieldOptions = {}): {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
+    const field = createBrowserField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
     fieldRef.current = field;
     return () => {
       field.destroy();

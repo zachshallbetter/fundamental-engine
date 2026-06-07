@@ -10,7 +10,8 @@
  * For object-oriented ergonomics (and driving a canvas you own), see the `ForcesField` class.
  */
 
-import { createField, FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from 'field-ui';
+import { FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from 'field-ui';
+import { createBrowserField } from '@field-ui/platform';
 
 export interface MountOptions extends FieldOptions {
   /** where to append the canvas; defaults to `document.body`. */
@@ -48,7 +49,7 @@ export function mountField(opts: MountOptions = {}): FieldHandle {
   assertBrowser();
   const { target = document.body, ...fieldOpts } = opts;
   const canvas = makeFieldCanvas(target);
-  const field = createField(canvas, fieldOpts);
+  const field = createBrowserField(canvas, fieldOpts);
   return {
     ...field,
     destroy: () => {
