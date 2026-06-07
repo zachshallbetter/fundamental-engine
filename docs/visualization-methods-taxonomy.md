@@ -421,6 +421,12 @@ poster image
 
 Snapshots should become regression tests where possible.
 
+> **Diagnostics implemented (data layer).** The pure math behind these overlays ships in
+> `packages/core/src/diagnostics/`: energy accounting (§7), scalar `potentialAt` + grid sampling for
+> contours/potential (§6), probe `forceVectorAt` + `causalityAt` (§3/§4/§11), and heatmap-variant
+> samplers density/heat/velocity (§5). The canvas *drawing* of these overlays is the remaining
+> Lab/Inspector UI layer.
+
 ## Implementation Priority
 
 ```txt
