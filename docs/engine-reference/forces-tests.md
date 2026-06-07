@@ -21,7 +21,7 @@ goes into a known force; you watch its track, the surrounding field, and any rel
 particles; the measured behavior is checked against the prediction. If it matches, good.
 If not, tune the attributes and fire again.
 
-Scope: this document covers the **force engine** inside `@field-ui/core` — the
+Scope: this document covers the **force engine** inside `field-ui` — the
 renderer-agnostic field computation, where particles are one agent type in the shared
 field context. The conformance that binds the field runtime to the DOM (the platform
 scheduler's phases, the six registries, `lintPlatform()`, and site-level conformance)

@@ -20,7 +20,7 @@ field-ui has moved beyond a particle-field prototype.
 The current architecture is:
 
 ```txt
-@field-ui/core   host-driven, renderer-agnostic field engine
+field-ui   host-driven, renderer-agnostic field engine
 @field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @field-ui/elements   native HTML and web component authoring
 @field-ui/react   React adapter over the same contracts
@@ -39,7 +39,7 @@ The following principles govern every frontier.
 
 ### 1.1 Core stays renderer-agnostic
 
-@field-ui/core must not import browser or DOM globals.
+field-ui must not import browser or DOM globals.
 
 Core owns:
 
@@ -56,7 +56,7 @@ browserHost() DOM export helpers measurement state feedback relationships visual
 The public browser setup should look like:
 
 ```ts
-import { createField } from "@field-ui/core";
+import { createField } from "field-ui";
 import { browserHost } from "@field-ui/platform";
 
 const field = createField(canvas, {
