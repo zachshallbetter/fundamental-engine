@@ -107,18 +107,24 @@ list. (The machine-readable form is `FORCE_KIND` + `FORCE_FIELD` in `config/manu
 
 ## The interface translation table
 
-| Interface need | Natural translation | Likely primitives |
-|---|---|---|
-| Show importance | Gravity | `gravity`, mass, potential |
-| Draw attention | Gravity + electromagnetic | `gravity`, `charge`, spawn |
-| Show opposition | Electromagnetic | `charge`, `repel` (canonical) |
-| Route signal | Electromagnetic | `propagate`, `fieldflow`, `stream` |
-| Show relationship | Strong + electromagnetic | `link`, `cohesion`, topology, field lines |
-| Keep things grouped | Strong | `cohesion`, `crystallize`, `align` |
-| Show instability / change | Weak | `morph`, entropy |
-| Let state fade | Weak + memory | `morph`, `memory` |
-| Show flow through structure | Electromagnetic + transport | `fieldflow`, `stream` |
-| Show reading history | Memory metric | `memory`, attention, feedback |
+The lanes are kept separate: **runtime tokens** (strict, real engine forces), **metrics** (measured
+state), and **diagnostics** (inspection modes). A word's lane is never left to the reader to guess.
+
+| Interface need | Natural field | Runtime tokens | Metrics | Diagnostics |
+|---|---|---|---|---|
+| Show importance | Gravity | `gravity`, `attract` | mass, priority, attention | potential, prediction |
+| Draw attention | Gravity + EM | `gravity`, `charge`, `spawn` | attention, confidence | potential, causality |
+| Show opposition | Electromagnetic | `charge`, `repel` | polarity, conflict | field-lines, causality |
+| Route signal | Electromagnetic | `charge`, `propagate`, `fieldflow`, `stream` | signal, strength | field-lines, force-vectors |
+| Show relationship | Strong + EM | `link`, `cohesion` | relation-strength | topology, causality |
+| Keep things grouped | Strong | `cohesion`, `crystallize`, `align` | cluster, density | topology, heatmap |
+| Show instability / change | Weak | `morph` | entropy, conflict | causality, contours |
+| Let state fade | Weak + memory | `morph`, `memory` | decay, age | heatmap, inspector |
+| Show flow through structure | EM + transport | `fieldflow`, `stream` | flow, velocity | field-lines, prediction |
+| Show reading history | Memory (metric) | `memory` | attention, recency | heatmap, inspector |
+
+In every row the `code-styled` words are real runtime tokens; the unstyled words are metrics or
+diagnostics, never forces. `mass` is a metric, `potential` is a diagnostic — neither is a token.
 
 ## Diagnostics by field
 
