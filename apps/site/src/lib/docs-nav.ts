@@ -60,6 +60,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/troubleshooting', label: 'Troubleshooting', ready: true },
       { href: '/docs/performance', label: 'Performance', ready: true },
       { href: '/docs/accessibility', label: 'Accessibility', ready: true },
+      { href: '/docs/accessibility-preview', label: 'Accessibility preview', ready: true },
     ],
   },
 ];
