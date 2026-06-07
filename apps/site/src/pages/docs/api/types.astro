@@ -58,6 +58,7 @@ const env = `interface Env {
 }`;
 
 const platform = `// @field-ui/platform — DOM participation (createFieldPlatform(root))
+// Phase = the SCHEDULER phase (a runtime loop step) — not a particle or transition phase.
 type Phase = 'discover' | 'read' | 'compute' | 'state' | 'write' | 'render';
 
 interface FieldPlatform {
@@ -125,6 +126,16 @@ interface FieldPlatform {
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: platform }]} />
   </section>
 
+  <section class="docs-sec">
+    <h2>Two words that mean different things</h2>
+    <p>A couple of terms recur across lanes — they are disambiguated here so a type is never misread:</p>
+    <dl class="ty-gloss">
+      <div><dt><code>phase</code></dt><dd><b>Scheduler phase</b> — a runtime loop step (<code>discover → read → compute → state → write → render</code>), the <code>Phase</code> type above. A <b>transition phase</b> (a weak-field state change, expressed by the <code>morph</code> token) and a <b>particle phase</b> (a particle property) are different things. There is no <code>phase</code> force token.</dd></div>
+      <div><dt><code>mass</code></dt><dd>A <b>property / metric</b> — the particle field <code>m</code>, or a recipe metric. It is not a runtime token; weight comes from <code>gravity</code> / <code>attract</code>.</dd></div>
+      <div><dt><code>potential</code></dt><dd>A <b>diagnostic</b> (a sampled scalar field), not a token — see <a href="/docs/diagnostics">diagnostic overlays</a>.</dd></div>
+    </dl>
+  </section>
+
   <SeeAlso
     links={[
       { href: '/docs/api/options', label: 'createField & options' },
@@ -133,3 +144,11 @@ interface FieldPlatform {
     ]}
   />
 </DocsLayout>
+
+<style>
+  .ty-gloss { display: grid; gap: 0.6rem; margin-top: 0.5rem; }
+  .ty-gloss > div { display: grid; grid-template-columns: 8rem 1fr; gap: 0.6rem; align-items: baseline; }
+  .ty-gloss dt { margin: 0; }
+  .ty-gloss dd { margin: 0; font-size: 0.9rem; color: var(--text-3); }
+  @media (max-width: 560px) { .ty-gloss > div { grid-template-columns: 1fr; gap: 0.15rem; } }
+</style>
