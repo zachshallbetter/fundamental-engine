@@ -18,7 +18,7 @@ are written or revised, they follow the framing below.
 ```
 field-ui is a platform-native relational field runtime for the DOM.
 
-@field-ui/core      computes renderer-agnostic field behavior.
+field-ui      computes renderer-agnostic field behavior.
 @field-ui/platform  binds field behavior to the DOM through measurement, state, feedback,
                     relationships, visual bindings, overlays, linting, and scheduling.
 @field-ui/elements  exposes native HTML and web-component authoring.
@@ -64,7 +64,7 @@ These are shipped and may be described in the present tense (verify specifics ag
 asserting anything new):
 
 ```
-@field-ui/core · @field-ui/platform · @field-ui/elements · @field-ui/react · @field-ui/vanilla
+field-ui · @field-ui/platform · @field-ui/elements · @field-ui/react · @field-ui/vanilla
 FrameScheduler (discover → read → compute → state → write → render)
 MeasurementRegistry · StateRegistry · FeedbackRegistry · RelationshipRegistry ·
   VisualBindingRegistry · OverlayRegistry · lintPlatform()
@@ -76,7 +76,7 @@ native HTML / web component / React authoring examples
 the Natural Field Translation System (four-field classification + /docs/natural-fields)
 ```
 
-`@field-ui/core` imports **zero DOM** — the engine routes the environment through an injected
+`field-ui` imports **zero DOM** — the engine routes the environment through an injected
 `FieldHost`; `browserHost()` lives in `@field-ui/platform`, and `createField` requires a host (the
 framework entry points wire it). `core/dom-boundary.test.ts` enforces this with an empty allowlist.
 
