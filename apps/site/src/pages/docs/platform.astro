@@ -1,0 +1,129 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { PHASES } from '@field-ui/platform';
+
+// The platform layer as a public page — data-driven from @field-ui/platform (PHASES) so the loop can't
+// drift. Companion to the canonical doc docs/canonical/field-ui-platform-architecture.md.
+
+const PHASE_DESC: Record<string, string> = {
+  discover: 'register/unregister bodies, relationships, and visual bindings (structure changes)',
+  read: 'measure the DOM once — geometry + visibility. The only place layout is read.',
+  compute: 'run field/force/agent logic against the immutable snapshot. No DOM.',
+  state: 'fold results into the StateRegistry + thresholds. Internal truth, no DOM writes.',
+  write: 'flush state to CSS variables, data attributes, and thresholded events.',
+  render: 'draw overlays, field lines, and heatmaps from the registries (read-only).',
+};
+
+const REGISTRIES = [
+  { name: 'MeasurementRegistry', phase: 'read', blurb: 'Frame-stable geometry: every registered element measured once per frame into an immutable snapshot, so nothing calls getBoundingClientRect ad hoc and thrashes layout. A getRect override covers closed Shadow roots.' },
+  { name: 'StateRegistry', phase: 'state', blurb: 'Typed, observable element state (number / boolean / string / vector2) — internal truth, distinct from ARIA. CSS and JS both consume it; only feedback writes it.' },
+  { name: 'FeedbackRegistry', phase: 'write', blurb: 'The write phase: held state → CSS custom properties (continuous) + thresholded, debounced events (discrete, with hysteresis). Mirrors --field-* → --forces-* and field:* → forces:* during the alias window.' },
+  { name: 'RelationshipRegistry', phase: 'discover', blurb: 'The DOM is a tree; interfaces are graphs. Normalizes native links (href#id, label[for], aria-controls/describedby/labelledby/flowto, data-field-relation) into one typed graph.' },
+  { name: 'VisualBindingRegistry', phase: 'discover', blurb: 'Binds an expressive visual layer (SVG/Canvas/WebGL) to its semantic DOM source without duplicating meaning. aria-hidden unless it carries independent meaning; lint flags orphan + un-hidden visuals.' },
+  { name: 'OverlayRegistry', phase: 'render', blurb: 'Relationship lines, field lines, debug layers. Render layers only — they read from measurement + relationships and produce geometry to draw. They never own relationships or mutate physics.' },
+];
+
+const LINT = [
+  ['relation-target-missing', '[data-field-relation] with a missing or unresolvable target'],
+  ['state-unregistered', 'an element holds field state but was never registered for measurement'],
+  ['overlay-without-links', 'a relationship overlay with no relationships behind it'],
+  ['feedback-non-css-var', 'a binding that writes ARIA/attributes instead of a --field-* variable'],
+  ['measurement-off-phase', 'a layout read recorded outside the read phase'],
+  ['visual-orphan / visual-not-hidden', 'accessibility hazards from VisualBindingRegistry'],
+];
+---
+
+<DocsLayout
+  title="field-ui — The platform layer"
+  description="@field-ui/platform binds field behavior to the DOM: the FrameScheduler (discover → read → compute → state → write → render) and six registries — measurement, state, feedback, relationships, visual bindings, overlays — plus lintPlatform(). The core engine stays renderer-agnostic."
+>
+  <header class="docs-hero">
+    <p class="kicker">Concepts</p>
+    <h1>The <span class="accent">platform</span> layer</h1>
+    <p class="lede">
+      <code>@field-ui/core</code> computes field behavior, renderer-agnostic. <code>@field-ui/platform</code>
+      binds it to the DOM — measurement, state, feedback, relationships, visual bindings, and overlays,
+      all driven by one frame scheduler. It is the DOM participation layer; canvas is one render surface.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>Package hierarchy</h2>
+    <pre class="pf-tree"><code>field-ui (@field-ui/core)   renderer-agnostic field, force, particle, metric, diagnostic logic
+@field-ui/platform          DOM participation: the six registries + scheduler + lintPlatform()
+@field-ui/elements          native web components — &lt;field-root&gt; + the [data-body] contract
+@field-ui/react             the React adapter over the same contracts
+@field-ui/vanilla           the FieldField class for plain TypeScript</code></pre>
+    <p>
+      Dependency direction is strict: <code>elements → platform → core</code>,
+      <code>react → platform → core</code>, <code>vanilla → core</code>. Since the runtime-unification
+      phase the platform runtime is the default for <code>&lt;field-root&gt;</code>.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The frame scheduler</h2>
+    <p>One shared loop with explicit, ordered phases, so reads never thrash against writes:</p>
+    <ol class="pf-phases">
+      {PHASES.map((p, i) => (
+        <li>
+          <span class="pf-no">{i + 1}</span>
+          <code>{p}</code>
+          <span class="pf-pd">{PHASE_DESC[p]}</span>
+        </li>
+      ))}
+    </ol>
+    <p class="note">
+      An off-phase layout read is caught by the scheduler's guard. <code>createFieldPlatform(root)</code>
+      wires <code>measure → read</code> and <code>flush → write</code> by default and exposes
+      <code>.on(phase, fn)</code> for the rest.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The six registries</h2>
+    <div class="pf-grid">
+      {REGISTRIES.map((r) => (
+        <article class="pf-card">
+          <div class="pf-head"><code>{r.name}</code><span class="pf-phase">{r.phase}</span></div>
+          <p>{r.blurb}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Platform lint</h2>
+    <p><code>lintPlatform(platform)</code> surfaces the quiet failures of a field system — it reads, never mutates:</p>
+    <table class="pf-lint">
+      <tbody>
+        {LINT.map(([code, desc]) => (<tr><td><code>{code}</code></td><td>{desc}</td></tr>))}
+      </tbody>
+    </table>
+  </section>
+
+  <div class="callout">
+    <b>See it whole.</b> The <a href="/docs/reading-field">Reading Field</a> demo exercises all six
+    registries on the scheduler over ordinary prose. The deep reference is the canonical
+    <a href="https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-platform-architecture.md">platform-architecture</a>
+    doc; the API surface is under <a href="/docs/api">API reference</a>.
+  </div>
+</DocsLayout>
+
+<style>
+  .lede { color: var(--text-3); }
+  .pf-tree { font-size: 0.78rem; line-height: 1.7; padding: 1rem; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.02); overflow-x: auto; }
+  .pf-phases { list-style: none; margin: 0.6rem 0 0.4rem; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .pf-phases li { display: grid; grid-template-columns: 1.6rem 6.5rem 1fr; gap: 0.6rem; align-items: baseline; }
+  .pf-no { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); }
+  .pf-pd { font-size: 0.84rem; color: var(--text-3); }
+  .pf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.8rem; margin-top: 0.6rem; }
+  .pf-card { padding: 1rem; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,0.015); }
+  .pf-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.4rem; }
+  .pf-head code { color: var(--accent); font-size: 0.9rem; }
+  .pf-phase { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-4); border: 1px solid var(--line); border-radius: 999px; padding: 0.1rem 0.45rem; }
+  .pf-card p { font-size: 0.85rem; line-height: 1.55; color: var(--text-3); margin: 0; }
+  .pf-lint { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .pf-lint td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .pf-lint td:first-child { white-space: nowrap; }
+</style>
