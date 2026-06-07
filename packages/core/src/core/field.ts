@@ -5,6 +5,15 @@
  * the document for `[data-body]` bodies, runs the rAF loop (measure → reindex →
  * step → render), and exposes the public `FieldHandle`. Pure glue — the testable
  * physics lives in field-store / integrator / scanner.
+ *
+ * ── LEGACY DOM GLUE — quarantined (Phase D, runtime-platform-unification) ──────────────
+ * This is the one core module that touches DOM globals (document / window / rAF) at runtime,
+ * because it is the canvas *renderer* + the original DOM-participation path. Since D6 the platform
+ * runtime (@field-ui/platform, via <field-root>) owns DOM participation — measurement, feedback
+ * writes, shadow registration, relationships — by default; this file's scanning/feedback now acts
+ * as the renderer + the `experimental-platform="off"` fallback. Every OTHER core module stays
+ * renderer-agnostic, enforced by `dom-boundary.test.ts`. Do not add new DOM-global call-sites to
+ * core outside this file and `export.ts`; put DOM participation in the platform instead.
  */
 
 import type { Body, Env, FieldHandle, FieldOptions, Formation, Particle } from './types.ts';
