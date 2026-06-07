@@ -37,7 +37,14 @@ export interface AppliedRecipeInspection {
   id: string;
   frame: number;
   measurements: number;
+  /** resolved relationships (both endpoints known). */
   relationships: number;
+  /** declared relationships whose target id-ref resolves to no element. */
+  relationshipsUnresolved: number;
+  /** resolved / (resolved + unresolved); undefined when no relationships are declared. */
+  relationshipResolution?: number;
+  /** the unresolved declarations, so inspection can name each missing endpoint. */
+  unresolvedRelationships: Array<{ from: string; type: string; target: string }>;
   /** elementKey → metric → value (the compiled recipe's lanes, live). */
   metrics: Record<string, Record<string, number>>;
   lint: number;
@@ -135,13 +142,18 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
       const vh = ctx.viewport?.height ?? (typeof window !== 'undefined' ? window.innerHeight : 800);
       const centre = vh / 2;
       const rels = platform.relationships.all();
+      const unresolved = platform.relationships.unresolvedAll();
       for (const m of platform.measure.last()) {
         const el = m.element;
         const proximity = Math.max(0, 1 - Math.abs(m.rect.cy - centre) / (vh * 0.55));
         const engaged = el.matches(':hover, :focus, :focus-within') || el.hasAttribute('data-active');
         // a body touches a relationship if either endpoint is the body or sits inside it (child anchors)
         const touching = rels.filter((r) => el.contains(r.from) || el.contains(r.to));
-        const relTotal = touching.length;
+        // declared-but-unresolved edges originating in this body count toward the total but not the
+        // resolved set, so resolution is real: a citation pointing at nothing lowers it (raising entropy).
+        const touchingUnresolved = unresolved.filter((u) => el.contains(u.from));
+        const relResolved = touching.length;
+        const relTotal = touching.length + touchingUnresolved.length;
         const relConflict = touching.filter((r) => r.type === 'contradicts' || r.type === 'opposes' || r.type === 'conflicts-with').length;
         const supplied: Partial<Record<MetricKind, number>> = {};
         for (const k of METRIC_KINDS) {
@@ -155,7 +167,7 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
             visible: m.visibilityRatio,
             engaged,
             dtFrames: 1,
-            relResolved: relTotal,
+            relResolved,
             relTotal,
             relConflict,
             supplied,
@@ -223,11 +235,21 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
       for (const metric of compiled.metrics) row[metric] = platform.state.number(el, metric);
       metrics[elementKey(el, i)] = row;
     });
+    const unresolved = platform.relationships.unresolvedAll();
+    const resolvedCount = platform.relationships.all().length;
+    const declaredTotal = resolvedCount + unresolved.length;
     return {
       id: recipe.id,
       frame: platform.scheduler.frame,
       measurements: platform.measure.size,
-      relationships: platform.relationships.all().length,
+      relationships: resolvedCount,
+      relationshipsUnresolved: unresolved.length,
+      relationshipResolution: declaredTotal > 0 ? resolvedCount / declaredTotal : undefined,
+      unresolvedRelationships: unresolved.map((u) => ({
+        from: u.from.id || u.from.tagName.toLowerCase(),
+        type: u.type,
+        target: u.target,
+      })),
       metrics,
       lint: lintPlatform(platform).length,
       reducedMotion,
