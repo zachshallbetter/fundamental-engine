@@ -139,7 +139,8 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
         const el = m.element;
         const proximity = Math.max(0, 1 - Math.abs(m.rect.cy - centre) / (vh * 0.55));
         const engaged = el.matches(':hover, :focus, :focus-within') || el.hasAttribute('data-active');
-        const touching = rels.filter((r) => r.from === el || r.to === el);
+        // a body touches a relationship if either endpoint is the body or sits inside it (child anchors)
+        const touching = rels.filter((r) => el.contains(r.from) || el.contains(r.to));
         const relTotal = touching.length;
         const relConflict = touching.filter((r) => r.type === 'contradicts' || r.type === 'opposes' || r.type === 'conflicts-with').length;
         const supplied: Partial<Record<MetricKind, number>> = {};

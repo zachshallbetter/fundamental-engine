@@ -45,6 +45,8 @@ export interface BindDataOptions {
   tag?: string;
   /** class added to each record element. */
   className?: string;
+  /** install the recipe's reduced-motion output instead of motion (passed to applyRecipe). */
+  reducedMotion?: boolean;
 }
 
 export interface DataBindingInspection {
@@ -127,7 +129,7 @@ export function bindData<T>(container: HTMLElement, records: T[], mapper: Record
     applied = null;
     const items = [...els.values()].filter((e) => !('bdExiting' in e.dataset));
     const recipe = typeof recipeArg === 'string' ? recipeById(recipeArg) : recipeArg;
-    if (recipe && items.length) applied = applyRecipe(container, recipe, { bodies: items, annotateBodies: false });
+    if (recipe && items.length) applied = applyRecipe(container, recipe, { bodies: items, annotateBodies: false, reducedMotion: options.reducedMotion });
   };
 
   const render = (recs: T[]): void => {

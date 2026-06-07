@@ -60,6 +60,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/studies/review-field', label: 'Review Field Study', ready: true },
       { href: '/docs/studies/search-field', label: 'Search Field Study', ready: true },
       { href: '/docs/studies/system-weather', label: 'System Weather Study', ready: true },
+      { href: '/docs/studies/evidence-field', label: 'Evidence Field Study', ready: true },
     ],
   },
   {
