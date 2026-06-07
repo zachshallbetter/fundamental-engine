@@ -171,9 +171,16 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
           const value = isMetricKind(metric)
             ? computed[metric]
             : (num(el.getAttribute(`data-field-${metric}`)) ?? 0);
-          // an unknown metric (e.g. confidence the host never supplied) is left unwritten: the
-          // FeedbackRegistry skips vars with no state, so no fabricated --field-confidence is emitted.
-          if (value == null) continue;
+          if (value == null) {
+            // The metric is absent this frame — e.g. the host supplied data-field-confidence on an
+            // earlier frame and has since removed it. Drop any stale state AND clear the bound CSS
+            // var, so the write phase neither re-emits a value nor leaves one written on a previous
+            // flush lingering on the element. Absent must read as absent, not last-known. Both calls
+            // are no-ops when nothing was ever set, so the common "never supplied" case stays cheap.
+            platform.state.delete(el, metric);
+            platform.feedback.clearVar(el, metric);
+            continue;
+          }
           platform.state.set(el, metric, value);
         }
       }
