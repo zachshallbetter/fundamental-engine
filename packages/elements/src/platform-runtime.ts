@@ -11,12 +11,21 @@
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
 import { createFieldPlatform, type FieldPlatform } from '@field-ui/platform';
-import { bodyElements, type FeedbackSink } from 'field-ui';
+import {
+  bodyElements,
+  REGISTER_BODY,
+  FIELD_REGISTER_BODY,
+  UNREGISTER_BODY,
+  FIELD_UNREGISTER_BODY,
+  type FeedbackSink,
+  type RegisterBodyDetail,
+} from 'field-ui';
 
-/** A minimal view of MeasurementRegistry — what body syncing needs. */
-interface BodySink {
+/** A minimal view of MeasurementRegistry — what body syncing + shadow registration need. */
+interface MeasureSink {
   has(el: Element): boolean;
-  register(el: Element, opts?: { role?: string }): void;
+  register(el: Element, opts?: { role?: string; getRect?: () => DOMRect }): void;
+  unregister(el: Element): void;
 }
 
 /**
@@ -28,7 +37,7 @@ interface BodySink {
  * yet unregistered — a later refinement; today the legacy engine remains the source of truth for
  * rendering, so this is measurement-only and has no observable effect.
  */
-export function syncBodies(sink: BodySink, root: ParentNode): number {
+export function syncBodies(sink: MeasureSink, root: ParentNode): number {
   let added = 0;
   for (const el of bodyElements(root)) {
     if (!sink.has(el)) {
@@ -37,6 +46,22 @@ export function syncBodies(sink: BodySink, root: ParentNode): number {
     }
   }
   return added;
+}
+
+/**
+ * Register a shadow-DOM host for measurement from a `register-body` event detail (D4). The host's
+ * custom `getRect` (for closed roots / inner cores) flows straight into MeasurementRegistry's rect
+ * override. Pure given the sink + detail. `syncBodies`' `if (!has)` guard means it won't clobber a
+ * host registered here, so the two discovery paths coexist (the legacy engine still drives the
+ * body's simulation; the platform owns its geometry).
+ */
+export function registerShadowBody(sink: MeasureSink, detail: RegisterBodyDetail | undefined): void {
+  if (detail?.element) sink.register(detail.element, { role: 'shadow-body', getRect: detail.getRect });
+}
+
+/** Unregister a shadow-DOM host from measurement on its `unregister-body` event (D4). Pure. */
+export function unregisterShadowBody(sink: MeasureSink, detail: RegisterBodyDetail | undefined): void {
+  if (detail?.element) sink.unregister(detail.element);
 }
 
 // ── the flag ──────────────────────────────────────────────────────────────────────
@@ -110,8 +135,25 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   // measures the same bodies the legacy scanner finds (geometry only — still no observable change).
   platform.on('discover', () => syncBodies(platform.measure, root));
 
+  // D4: shadow-DOM hosts join via composed register/unregister events (forces:* + field:* twins).
+  // The host's getRect (for closed roots) flows into MeasurementRegistry's rect override. Listening
+  // on the document catches the composed events that bubble out of any shadow tree.
+  const doc = root.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
+  const detailOf = (e: Event): RegisterBodyDetail | undefined => (e as CustomEvent<RegisterBodyDetail>).detail;
+  const onRegister = (e: Event): void => registerShadowBody(platform.measure, detailOf(e));
+  const onUnregister = (e: Event): void => unregisterShadowBody(platform.measure, detailOf(e));
+  const wired: Array<[string, EventListener]> = [];
+  if (doc) {
+    for (const name of [REGISTER_BODY, FIELD_REGISTER_BODY]) doc.addEventListener(name, onRegister as EventListener);
+    for (const name of [UNREGISTER_BODY, FIELD_UNREGISTER_BODY]) doc.addEventListener(name, onUnregister as EventListener);
+    wired.push([REGISTER_BODY, onRegister as EventListener], [FIELD_REGISTER_BODY, onRegister as EventListener], [UNREGISTER_BODY, onUnregister as EventListener], [FIELD_UNREGISTER_BODY, onUnregister as EventListener]);
+  }
+  const unwireShadow = (): void => {
+    if (doc) for (const [name, fn] of wired) doc.removeEventListener(name, fn);
+  };
+
   if (typeof window === 'undefined' || typeof requestAnimationFrame === 'undefined') {
-    return { platform, destroy() {} };
+    return { platform, destroy: unwireShadow };
   }
 
   let raf = 0;
@@ -125,6 +167,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
     destroy(): void {
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
+      unwireShadow();
     },
   };
 }
