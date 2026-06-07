@@ -15,6 +15,24 @@ inverse-square gravity/charge, `b.accreted`, and class-[S] source/sink budgeting
 ship, so the work is the mode system, medium formalization, safety layer, `screen`,
 metrics, and the transformation primitives, not re-building what exists.)
 
+### Expanded the field-ui model (migration plan Phases 4–8)
+
+On top of the migrated, stabilized base, the field-first model was built out — all engine-side,
+pure, and node-tested, with no change to the preserved physics:
+
+- **Contracts** (`core/contracts`): formal contract types, a validated `ForcePassport` for all 34
+  forces, the Error-Taxonomy dev-mode guards, and an inspectable contracts catalog.
+- **Agents** (`core/agents`): the FieldAgent model — element, relationship, user, layout, and data
+  agents, plus a thresholded EventAgent (hysteretic, debounced) runtime.
+- **Visual language** (`core/visual`): bounded metric→appearance mappings (typography, color,
+  shape, emission), lint rules, and the semantic-text fallback.
+- **Authoring & recipes** (`core/recipes`): the serializable SceneRecipe schema + validation, the
+  intent compiler, the essential-recipe gallery, and Explain-This-Field / Field-Diff.
+- **Inspection** (`core/inspect`): deterministic snapshot regression, a performance-budget
+  inspector, and an aggregate system report.
+
+The suite grew to 476 tests. App-level surfaces (Composer, Inspector UI) remain the frontier.
+
 ### Migrated to field-ui
 
 The project moved from `forces-ui` to **field-ui** — a field-first framing where the field (the
