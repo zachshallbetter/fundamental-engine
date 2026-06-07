@@ -1,12 +1,12 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import { FIELD_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, type BodyRecipe } from 'field-ui';
+import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, type BodyRecipe, type FieldRecipe } from 'field-ui';
 
-// The gallery renders the engine's own `FIELD_RECIPES` — the 16 named recipes that map the four-field
-// translation model onto practical interface patterns. Each card carries the recipe's natural field,
-// primitives, render stack, metrics, diagnostics, a live reciprocity demo (the page-wide field writes
-// --field-density back into the demo chip), the reduced-motion equivalent, and copyable JSON. Nothing
-// here adds engine behavior; recipes compose existing primitives.
+// The gallery renders the engine's own catalog — 64 `FieldRecipe`s across four tiers (RECIPE_TIERS)
+// that map the four-field translation model onto practical interface patterns. Each card carries the
+// recipe's natural field, primitives, render stack, metrics, diagnostics, a live reciprocity demo (the
+// page-wide field writes --field-density back into the demo chip), the reduced-motion equivalent, and
+// copyable JSON. Nothing here adds engine behavior; recipes compose existing primitives.
 
 const FIELD_COLOR: Record<string, string> = {
   gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
@@ -25,14 +25,12 @@ const authoringLine = (b: BodyRecipe): string => {
   return `<div ${parts.join(' ')}></div>`;
 };
 
-const recipes = FIELD_RECIPES.map((r) => {
-  const fieldKey = r.naturalField ?? (r.id === 'diagnostic-lens' ? 'diagnostic' : 'platform');
+const buildCard = (r: FieldRecipe, tierKey: string, tierLabel: string) => {
+  const fieldKey = r.naturalField ?? 'other';
   const fieldLabel =
     r.naturalField != null
       ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1)
-      : r.id === 'diagnostic-lens'
-        ? 'Diagnostic'
-        : 'Platform / semantic';
+      : 'Diagnostic / platform';
   // the demo chip uses the recipe's first feedback body (or first body), forced to feed back so the
   // page-wide field's reciprocity is visible.
   const demoBody = r.bodies.find((b) => b.feedback) ?? r.bodies[0]!;
@@ -43,15 +41,19 @@ const recipes = FIELD_RECIPES.map((r) => {
     authoring: authoringLine(r.bodies[0]!),
     fieldKey,
     fieldLabel,
+    tierKey,
+    tierLabel,
     color: FIELD_COLOR[fieldKey] ?? '#9aa7b4',
     isFirst: first.has(r.id),
     demo: demoBody,
   };
-});
+};
+const recipes = RECIPE_TIERS.flatMap((t) => t.recipes.map((r) => buildCard(r, t.key, t.label)));
 
 const filters = [
-  { key: 'all', label: 'All' },
+  { key: 'all', label: `All (${recipes.length})` },
   { key: 'first', label: 'First release' },
+  ...RECIPE_TIERS.map((t) => ({ key: t.key, label: t.label })),
   { key: 'gravity', label: 'Gravity' },
   { key: 'electromagnetic', label: 'Electromagnetic' },
   { key: 'strong', label: 'Strong' },
@@ -66,10 +68,12 @@ const filters = [
 >
   <h1>Recipe gallery</h1>
   <p class="lede">
-    Sixteen portable <code>FieldRecipe</code>s — the four-field translation model made practical. Each
-    is a real, validated recipe: every force token, render layer, and diagnostic is checked against the
-    engine catalog. The eight <b>first-release</b> recipes explain the system quickly; the full sixteen
-    give it range. Copy the JSON, read the plain-language explanation, or watch the live reciprocity demo.
+    Sixty-four portable <code>FieldRecipe</code>s across four tiers — the four-field translation model
+    made practical. Each is a real, validated recipe: every force token, render layer, and diagnostic is
+    checked against the engine catalog, and recipes only ever <i>compose existing primitives</i> (no new
+    engine behavior). The eight <b>first-release</b> recipes explain the system quickly; the full set
+    gives it range. Filter by tier or field; copy the JSON, read the plain-language explanation, or watch
+    the live reciprocity demo.
   </p>
 
   <div class="filters" role="group" aria-label="Filter recipes by field">
@@ -79,11 +83,12 @@ const filters = [
   </div>
 
   <div class="recipe-grid">
-    {recipes.map(({ recipe, explain, json, authoring, fieldKey, fieldLabel, color, isFirst, demo }) => (
-      <article class="recipe-card" data-field={fieldKey} data-first={isFirst ? 'true' : 'false'} style={`--rc: ${color}`}>
+    {recipes.map(({ recipe, explain, json, authoring, fieldKey, fieldLabel, tierKey, tierLabel, color, isFirst, demo }) => (
+      <article class="recipe-card" data-field={fieldKey} data-tier={tierKey} data-first={isFirst ? 'true' : 'false'} style={`--rc: ${color}`}>
         <header>
           <div class="rc-tags">
             <span class="rc-field">{fieldLabel}</span>
+            <span class="rc-tier" title={tierLabel}>{tierLabel}</span>
             {isFirst && <span class="rc-first">First release</span>}
           </div>
           <h2>{recipe.name}</h2>
@@ -157,15 +162,17 @@ const filters = [
   const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip'));
   const cards = Array.from(document.querySelectorAll<HTMLElement>('.recipe-card'));
   const empty = document.querySelector<HTMLElement>('.empty');
+  const TIERS = new Set(['core', 'product', 'systems', 'enterprise']);
   function apply(key: string) {
     let shown = 0;
     for (const card of cards) {
       const f = card.dataset.field ?? '';
+      const tier = card.dataset.tier ?? '';
       const isFirst = card.dataset.first === 'true';
       const match =
         key === 'all' ||
         (key === 'first' && isFirst) ||
-        (key === 'other' && (f === 'diagnostic' || f === 'platform')) ||
+        (TIERS.has(key) && key === tier) ||
         key === f;
       card.hidden = !match;
       if (match) shown++;
@@ -228,6 +235,13 @@ const filters = [
     border-radius: 5px;
     padding: 0.05rem 0.4rem;
     font-weight: 600;
+  }
+  .rc-tier {
+    font-size: 0.68rem;
+    color: var(--muted, #9aa);
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 5px;
+    padding: 0.05rem 0.4rem;
   }
   .recipe-card h2 { margin: 0.5rem 0 0; font-size: 1.1rem; }
   .recipe-card .intent { margin: 0.2rem 0 0.75rem; color: var(--muted, #9aa); font-size: 0.9rem; }

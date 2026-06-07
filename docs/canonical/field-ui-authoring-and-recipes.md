@@ -235,11 +235,41 @@ Example:
 
 ## 7. Field Recipes
 
-> **Implemented.** All sixteen ship as validated `FieldRecipe`s in
-> `packages/core/src/recipes/gallery.ts` (`FIELD_RECIPES`), live on
-> [`/docs/gallery`](https://field-ui.com/docs/gallery). They are the four-field translation model made
-> practical — and classification/authoring artifacts only: they compose existing primitives and add no
-> new engine behavior. Eight are the recommended first-release set (`FIRST_RELEASE_RECIPE_IDS`).
+> **Implemented.** All **sixty-four** ship as validated `FieldRecipe`s in
+> `packages/core/src/recipes/gallery.ts` (`FIELD_RECIPES`), grouped into four tiers (`RECIPE_TIERS`),
+> live on [`/docs/gallery`](https://field-ui.com/docs/gallery). They are the four-field translation
+> model made practical — and classification/authoring artifacts only: they **compose existing
+> primitives and add no new engine behavior**. Eight are the recommended first-release set
+> (`FIRST_RELEASE_RECIPE_IDS`).
+
+The four tiers (16 each): **Core interface & accessibility** (1–16), **Product, workflow &
+collaboration** (17–32), **Professional systems & governance** (33–48), **Enterprise, adaptive &
+operational** (49–64).
+
+### Recipe language vs engine vocabulary
+
+Recipe **prose** is expressive; recipe **runtime fields** are strict. A recipe can say "completion
+releases pressure and decays into memory," while its runtime fields stay
+`primitives: [morph, memory, gravity]`. The conformance gate rejects any recipe whose primitives are
+not real passported tokens, whose render layers / diagnostics are not real modes, or whose declared
+primitives drift from the body tokens. Conceptual words map as follows (never invent a force token):
+
+| Concept | Goes to | Real token / mode |
+|---|---|---|
+| `mass`, `risk`, `trust`, `confidence`, `priority`, `entropy` | `metrics` | — (free-form labels) |
+| `potential`, `velocity vectors`, `relationship overlay`, `wavefront contours` | `diagnostics` | `potential`, `force-vectors`, `topology`, `contours` |
+| `spring` | `primitives`/`bodies` | `tether` |
+| `drag` / `friction` | `primitives`/`bodies` | `viscosity` |
+| `reflect` | `primitives`/`bodies` | `wall` |
+| `absorb` | `primitives`/`bodies` | `sink` |
+| `threshold` | `primitives`/`bodies` | `gate` |
+| `emitter` / `source` | `primitives`/`bodies` | `spawn` |
+| `phase` / `transform` / `decay` | `primitives`/`bodies` | `morph` / `memory` |
+| `orbit` | `primitives`/`bodies` | `magnetism` + `tether` (+ `gravity`) |
+
+No new force tokens are added for recipes — only recipe records, conformance, mappings, and docs.
+
+### Tier 1 — Core interface & accessibility (the first-release set is starred)
 
 | # | Recipe | Natural field | Purpose |
 |---|---|---|---|
@@ -262,7 +292,31 @@ Example:
 
 ★ = the recommended first-release set: Priority Well, Signal Path, Relationship Bond, Reading Field,
 Evidence Field, Coherence Field, Memory Trace, Guided Flow. Those eight explain the system quickly; the
-full sixteen give the project its range.
+full catalog gives the project its range.
+
+### Tier 2 — Product, workflow & collaboration (17–32)
+
+Attention Weather (gravity), Navigation Current (EM), Citation Thread (EM), Form Stability Field
+(strong), Command Intent Field (gravity), Selection Wake (weak), Availability Pressure (gravity),
+Dependency Tension (strong), Staleness Drift (weak), Trust Gradient (EM), Completion Release (weak),
+Group Magnet (strong), Error Pressure (weak), Handoff Stream (EM), Context Halo (gravity), Field
+Tutorial (diagnostic).
+
+### Tier 3 — Professional systems & governance (33–48)
+
+Semantic Gravity Map (gravity), Polarity Filter (EM), Source Constellation (strong), Drift Correction
+(weak), Resonance Match (EM), Friction Gate (derived), Boundary Field (strong), Threshold Bloom (weak),
+Latency Ripple (EM), Provenance Trail (strong), Review Pressure (gravity), Semantic Snap (strong),
+Ambient Tutor (gravity), Relation Lens (strong), Priority Tide (gravity), Field Contract Preview
+(platform).
+
+### Tier 4 — Enterprise, adaptive & operational (49–64)
+
+Presence Field (EM), Consensus Well (gravity), Disagreement Charge (EM), Change Shockwave (EM),
+Permission Boundary (strong), Risk Horizon (gravity), Intent Magnet (gravity), Flow Checkpoint
+(strong), Version Gravity (gravity), Review Constellation (strong), Anomaly Bloom (weak), Scope Lens
+(diagnostic), Calibration Field (gravity), Semantic Drag (derived), Recovery Path (weak), System Pulse
+(EM).
 
 Each recipe declares its natural field, primitives, bodies, render stack, metrics, diagnostics, and an
 accessibility equivalent. See the executable cards (intent, primitives, diagnostics, reduced-motion
