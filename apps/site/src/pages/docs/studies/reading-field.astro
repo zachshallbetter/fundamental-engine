@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import RecipesApplied from '../../../components/RecipesApplied.astro';
 
 // Reading Field Study — the first "familiar-page concept study" (docs/planning-archive/live-web-examples.md).
 // A generic long-form article (no copied brand assets) reinterpreted as a field: semantic HTML first,
@@ -157,6 +158,11 @@ const sources = [
     </div>
     <ul class="si-rels" data-si-rels></ul>
   </aside>
+
+  <RecipesApplied
+    ids={['reading-field', 'citation-thread', 'evidence-field', 'context-halo', 'relation-lens']}
+    live={['reading-field']}
+  />
 </DocsLayout>
 
 <script>
