@@ -95,7 +95,7 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@field-ui/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns everything that touches the DOM around it. `@field-ui/core` stays renderer-agnostic — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@field-ui/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `@field-ui/core` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
 The package set: `field-ui` (a.k.a. `@field-ui/core`), `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `@field-ui/core` specifically carries zero runtime dependencies.
 
@@ -120,7 +120,7 @@ OverlayRegistry        manages overlay surfaces over linked bodies
 
 `FeedbackRegistry` auto-mirrors `--field-*` to the legacy `--forces-*` vars and `field:*` events to `forces:*`. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
 
-The Reading Field demo (`/docs/reading-field`) exercises all six registries on the scheduler in a normal content page: sections are bodies, viewport proximity drives attention, accumulation becomes memory, the table of contents reflects state, citations form relationships, and reduced motion preserves meaning.
+The Reading Field demo (`/docs/reading-field`) exercises all six scheduler phases across four registries (measurement, state, feedback, relationships) in a normal content page: sections are bodies, viewport proximity drives attention, accumulation becomes memory, the table of contents reflects state, citations form relationships, and reduced motion preserves meaning.
 
 ## 5. What Counts as a Body
 
@@ -307,7 +307,8 @@ Every behavior should be classified by truth mode.
 | Truth mode | Meaning | Examples |
 |---|---|---|
 | Physical truth | modeled after a real law | `gravity`, `charge`, `magnetism` |
-| Designed truth | shaped for readable UI behavior | `attract`, `repel`, `spring` |
+| Designed truth | shaped for readable UI behavior | `attract`, `repel`, `tether` |
+| Hybrid truth | a designed primitive operating over natural field geometry | `fieldflow` |
 | Diagnostic truth | reveals internal state | force vectors, heatmaps, inspectors |
 | Poetic truth | expressive composite from stable primitives | `blackhole`, `star`, `nebula` |
 | Semantic truth | maps data/interface meaning into physics | attention, memory, relation fields |
