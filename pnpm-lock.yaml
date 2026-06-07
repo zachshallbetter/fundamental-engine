@@ -13,6 +13,9 @@ importers:
       '@field-ui/elements':
         specifier: workspace:*
         version: link:../../packages/elements
+      '@field-ui/platform':
+        specifier: workspace:*
+        version: link:../../packages/platform
       astro:
         specifier: ^5
         version: 5.18.2(rollup@4.61.0)(typescript@5.9.3)
