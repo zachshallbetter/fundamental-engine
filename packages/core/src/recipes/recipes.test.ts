@@ -44,11 +44,43 @@ test('the catalog is the canonical 64 with unique kebab ids', () => {
   for (const id of ids) assert.match(id, /^[a-z][a-z0-9-]*$/, `${id} is kebab-case`);
 });
 
-test('the four tiers each hold 16 and concatenate to the full catalog in order', () => {
+test('the four tiers (core/workflow/professional/enterprise) each hold 16 and concatenate in order', () => {
   assert.equal(RECIPE_TIERS.length, 4);
-  for (const t of RECIPE_TIERS) assert.equal(t.recipes.length, 16, `tier ${t.key} has 16`);
+  assert.deepEqual(RECIPE_TIERS.map((t) => t.key), ['core', 'workflow', 'professional', 'enterprise']);
+  for (const t of RECIPE_TIERS) {
+    assert.equal(t.recipes.length, 16, `tier ${t.key} has 16`);
+    for (const r of t.recipes) assert.equal(r.tier, t.key, `${r.id} carries tier ${t.key}`);
+  }
   const flattened = RECIPE_TIERS.flatMap((t) => t.recipes);
   assert.deepEqual(flattened.map((r) => r.id), FIELD_RECIPES.map((r) => r.id), 'tiers == FIELD_RECIPES order');
+});
+
+test('every recipe carries an injected tier + status', () => {
+  for (const r of FIELD_RECIPES) {
+    assert.ok(r.tier, `${r.id} has a tier`);
+    assert.equal(r.status, 'shipped', `${r.id} status`);
+  }
+});
+
+test('no recipe primitive is ever a diagnostic, metric, concept, or condition (lanes never collapse)', () => {
+  for (const r of FIELD_RECIPES)
+    for (const p of r.primitives) {
+      assert.ok(passportFor(p), `${r.id}: primitive "${p}" is a real runtime token`);
+      assert.ok(!FIELD_MODES.has(p), `${r.id}: primitive "${p}" is not a diagnostic/render mode`);
+    }
+});
+
+test('validateRecipe gives a lane-aware error when a non-token slips into primitives', () => {
+  const mk = (token: string): FieldRecipe =>
+    ({
+      id: 'x', name: 'X', intent: 'i', primitives: [token], bodies: [{ body: token }],
+      render: ['particles'], metrics: [], diagnostics: [],
+      accessibility: { reducedMotion: 'r', meaningWithoutMotion: 'm' },
+    }) as unknown as FieldRecipe;
+  assert.ok(validateRecipe(mk('potential')).some((p) => p.path.startsWith('primitives') && /diagnostic/.test(p.issue)));
+  assert.ok(validateRecipe(mk('mass')).some((p) => p.path.startsWith('primitives') && /metric/.test(p.issue)));
+  assert.ok(validateRecipe(mk('orbit')).some((p) => p.path.startsWith('primitives') && /concept/.test(p.issue)));
+  assert.ok(validateRecipe(mk('dwell')).some((p) => p.path.startsWith('primitives') && /condition/.test(p.issue)));
 });
 
 test('declared primitives match the distinct body tokens for every recipe', () => {
