@@ -36,7 +36,7 @@ export interface MappedRecord {
 }
 export type RecordMapper<T> = (record: T, index: number) => MappedRecord;
 
-export interface BindDataOptions {
+export interface BindDataOptions<T = unknown> {
   /** the recipe whose metric/feedback framework drives the bound bodies (id or object). */
   recipe?: string | FieldRecipe;
   /** decay duration (ms) before a removed record leaves the DOM (default 400). */
@@ -47,6 +47,8 @@ export interface BindDataOptions {
   className?: string;
   /** install the recipe's reduced-motion output instead of motion (passed to applyRecipe). */
   reducedMotion?: boolean;
+  /** custom inner HTML per record (domain markup); overrides the default label. Relationship anchors are kept. */
+  content?: (record: T, mapped: MappedRecord) => string;
 }
 
 export interface DataBindingInspection {
@@ -80,8 +82,8 @@ const setNum = (el: HTMLElement, k: string, v: number | undefined): void => {
   else el.removeAttribute(k);
 };
 
-/** Apply a mapped record's body tokens, metric values, label, and relationship anchors to its element. */
-function applyMapped(el: HTMLElement, m: MappedRecord): void {
+/** Apply a mapped record's body tokens, metric values, label/content, and relationship anchors. */
+function applyMapped(el: HTMLElement, m: MappedRecord, contentHtml?: string): void {
   const doc = el.ownerDocument;
   el.setAttribute('data-body', m.body.tokens.join(' '));
   setNum(el, 'data-strength', m.body.strength);
@@ -91,8 +93,16 @@ function applyMapped(el: HTMLElement, m: MappedRecord): void {
   if (m.body.feedback) el.setAttribute('data-feedback', '');
   // metric values → data-field-<metric> (the recipe + applyRecipe turn these into --field-* state)
   for (const [k, v] of Object.entries(m.metrics ?? {})) setNum(el, `data-field-${k}`, v);
-  // label
-  if (m.label != null) {
+  // domain content (overrides label), else the plain label
+  if (contentHtml != null) {
+    let box = el.querySelector<HTMLElement>(':scope > .bd-content');
+    if (!box) {
+      box = doc.createElement('div');
+      box.className = 'bd-content';
+      el.prepend(box);
+    }
+    box.innerHTML = contentHtml;
+  } else if (m.label != null) {
     let lbl = el.querySelector<HTMLElement>(':scope > .bd-label');
     if (!lbl) {
       lbl = doc.createElement('span');
@@ -116,7 +126,7 @@ function applyMapped(el: HTMLElement, m: MappedRecord): void {
 }
 
 /** Bind records to a field. Returns a handle with update()/destroy(). */
-export function bindData<T>(container: HTMLElement, records: T[], mapper: RecordMapper<T>, options: BindDataOptions = {}): DataBinding<T> {
+export function bindData<T>(container: HTMLElement, records: T[], mapper: RecordMapper<T>, options: BindDataOptions<T> = {}): DataBinding<T> {
   const decayMs = options.decayMs ?? 400;
   const tag = options.tag ?? 'div';
   const doc = container.ownerDocument;
@@ -137,21 +147,23 @@ export function bindData<T>(container: HTMLElement, records: T[], mapper: Record
     const nextIds = mapped.map((m) => m.id);
     const { added, removed } = diffIds(els.keys(), nextIds);
 
-    for (const m of mapped) {
+    mapped.forEach((m, i) => {
       let el = els.get(m.id);
       if (!el) {
         el = doc.createElement(tag);
         el.dataset.bdId = m.id;
+        el.id = m.id; // addressable so relationships/anchors can target a record by id
         if (options.className) el.className = options.className;
         el.dataset.bdEntering = '';
         container.appendChild(el);
         els.set(m.id, el);
-        if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(() => el?.removeAttribute('data-bd-entering'));
+        const created = el;
+        if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(() => created.removeAttribute('data-bd-entering'));
         else el.removeAttribute('data-bd-entering');
       }
-      applyMapped(el, m);
+      applyMapped(el, m, options.content?.(recs[i]!, m));
       container.appendChild(el); // keep DOM order aligned with records
-    }
+    });
 
     for (const id of removed) {
       const el = els.get(id);
