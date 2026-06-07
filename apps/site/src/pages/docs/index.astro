@@ -1,7 +1,7 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
-import ForceCell from '../../components/ForceCell.astro';
+import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
 import { MANUAL_FORCES } from 'field-ui';
 
 // Getting started — install + a 60-second quickstart for every entry point + the
@@ -9,9 +9,9 @@ import { MANUAL_FORCES } from 'field-ui';
 // as literal escaped text.
 
 const htmlSnippet = `<!-- 1. register the element -->
-<script type="module">
+<` + `script type="module">
   import '@field-ui/elements';
-</script>
+</` + `script>
 
 <!-- 2. drop the field + mark any element as a body -->
 <field-root accent="#4da3ff"></field-root>
@@ -104,12 +104,20 @@ field.scan();`;
       to the force geometry. After you add or remove bodies, call <code>field.scan()</code>.
     </div>
 
-    <p class="see-it">See it before you build it — move your cursor through the frame:</p>
-    <ForceCell
-      force="attract"
-      label="A live field"
-      caption="The matter reacts to your cursor in real time. On a real page, your [data-body] elements drive the field the same way."
-      height={170}
+    <p class="see-it">
+      See it before you build it. These are semantic elements with <code>data-body</code> and a supplied
+      metric; <code>applyRecipe()</code> writes that metric back as <code>--field-*</code>, and the CSS
+      reads it. No canvas widget — the data-attribute contract, running.
+    </p>
+    <FieldLoopDemo
+      token="attract"
+      recipe="priority-well"
+      metric="priority"
+      items={[
+        { text: 'Ship the runtime', value: 0.9 },
+        { text: 'Write the guide', value: 0.5 },
+        { text: 'Tidy the changelog', value: 0.2 },
+      ]}
     />
   </section>
 

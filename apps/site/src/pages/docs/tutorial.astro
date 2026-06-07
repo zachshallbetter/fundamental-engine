@@ -7,9 +7,9 @@ const installWc = `npm i @field-ui/elements`;
 const installReact = `npm i @field-ui/react`;
 const installCore = `npm i @field-ui/vanilla`;
 
-const setupWc = `<script type="module">
+const setupWc = `<` + `script type="module">
   import '@field-ui/elements';
-</script>
+</` + `script>
 
 <!-- one field, behind everything -->
 <field-root accent="#4da3ff"></field-root>`;
@@ -128,7 +128,8 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
       <field-cell force="attract" color="#4da3ff" style="height:150px"></field-cell>
       <figcaption>
         <b>attract</b>
-        <span>what your headline now does to nearby matter</span>
+        <span>An isolated single-force microscope — not the system. Your headline above runs the same
+          <code>attract</code> on the page field through the <code>data-body</code> attribute.</span>
       </figcaption>
     </figure>
     <div class="callout">
@@ -151,6 +152,11 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
       <b>Words glow, they are never drawn.</b> The text stays real, selectable, and accessible —
       <code>--field-density</code> only enhances it; particles never assemble into letterforms.
     </div>
+    <div class="callout">
+      <b>Meaning without motion.</b> Under <code>prefers-reduced-motion</code> the field freezes and the
+      element holds a static, emphasised baseline. The point the motion made — which word carries weight
+      — survives with the motion off. Always give <code>--field-density</code> a reduced-motion fallback.
+    </div>
   </section>
 
   <section class="docs-sec">
@@ -165,7 +171,8 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
       <field-cell force="swirl" color="#2dd4bf" style="height:150px"></field-cell>
       <figcaption>
         <b>swirl</b>
-        <span>the spin you just composed on top of attract</span>
+        <span>Another single-force microscope. The system is the <code>data-body</code> markup above;
+          this cell just isolates one token so you can see its motion.</span>
       </figcaption>
     </figure>
   </section>
