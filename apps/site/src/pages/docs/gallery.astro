@@ -1,0 +1,144 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { ESSENTIAL_RECIPES, explainScene, serializeRecipe } from 'field-ui';
+
+// The gallery renders the engine's own `ESSENTIAL_RECIPES` — the same serializable SceneRecipes the
+// authoring layer ships — with the plain-language `explainScene()` and copyable JSON for each.
+const recipes = ESSENTIAL_RECIPES.map((r) => ({
+  recipe: r,
+  explain: explainScene(r),
+  json: serializeRecipe(r),
+}));
+---
+
+<DocsLayout
+  title="field-ui — Recipe Gallery"
+  description="Copyable field-ui scene recipes: bodies, render layers, metrics, and accessibility behavior, each explained in plain language and exportable as JSON."
+>
+  <h1>Recipe gallery</h1>
+  <p class="lede">
+    Portable <code>SceneRecipe</code>s straight from the engine catalog. Each is a real, validated
+    recipe — copy the JSON, or read the plain-language explanation of what it does.
+  </p>
+
+  <div class="recipe-grid">
+    {recipes.map(({ recipe, explain, json }) => (
+      <article class="recipe-card">
+        <header>
+          <h2>{recipe.name}</h2>
+          <p class="intent">{recipe.intent}</p>
+        </header>
+
+        <p class="explain">{explain}</p>
+
+        <dl class="meta">
+          <div>
+            <dt>Bodies</dt>
+            <dd>
+              {recipe.bodies.map((b) => (
+                <code class="token">{b.body}</code>
+              ))}
+            </dd>
+          </div>
+          <div>
+            <dt>Render</dt>
+            <dd>{recipe.render.join(' · ')}</dd>
+          </div>
+          <div>
+            <dt>Metrics</dt>
+            <dd>{recipe.metrics.join(' · ')}</dd>
+          </div>
+          {recipe.accessibility && (
+            <div>
+              <dt>Reduced motion</dt>
+              <dd>{recipe.accessibility.reducedMotion}</dd>
+            </div>
+          )}
+        </dl>
+
+        {recipe.notes && <p class="notes">{recipe.notes}</p>}
+
+        <details>
+          <summary>Recipe JSON</summary>
+          <pre><code>{json}</code></pre>
+        </details>
+      </article>
+    ))}
+  </div>
+</DocsLayout>
+
+<style>
+  .lede {
+    color: var(--muted, #9aa);
+    max-width: 60ch;
+  }
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .recipe-card {
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    background: var(--panel, rgba(255, 255, 255, 0.02));
+  }
+  .recipe-card h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .recipe-card .intent {
+    margin: 0.2rem 0 0.75rem;
+    color: var(--muted, #9aa);
+    font-size: 0.9rem;
+  }
+  .recipe-card .explain {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  .recipe-card .meta {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+  }
+  .recipe-card .meta div {
+    display: grid;
+    grid-template-columns: 9ch 1fr;
+    gap: 0.5rem;
+  }
+  .recipe-card dt {
+    color: var(--muted, #9aa);
+  }
+  .recipe-card dd {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .recipe-card .token {
+    background: color-mix(in srgb, #4da3ff 16%, transparent);
+    border-radius: 5px;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.82rem;
+  }
+  .recipe-card .notes {
+    font-size: 0.82rem;
+    color: var(--muted, #9aa);
+    border-left: 2px solid var(--line, #2a2a35);
+    padding-left: 0.7rem;
+  }
+  .recipe-card details {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .recipe-card pre {
+    max-height: 260px;
+    overflow: auto;
+    font-size: 0.78rem;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+</style>
