@@ -211,7 +211,7 @@ not tokens; tokens are translations* (Paper 1 §6.5): the recipe can *say* "orbi
 ### 3.3 A real recipe, annotated
 
 The `Evidence Field` recipe (`catalog.ts`, the `EVIDENCE_FIELD` record — also a first-release recipe
-and the substrate for Paper 3) reads verbatim:
+and the substrate for Paper 3) reads, in source, as follows — the assembled record additionally gains a `tier`, a `status`, and a `conditions` lane at catalog assembly (§5.1):
 
 ```ts
 export const EVIDENCE_FIELD: FieldRecipe = {
@@ -350,8 +350,8 @@ free; the token lane is sealed.*
 ```
 
 `RENDER_LAYERS` is the nine-member set of matter/structure/scalar surfaces; `FIELD_MODES` is
-`RENDER_LAYERS ∪ DIAGNOSTIC_MODES` plus the base `particles` layer. A test asserts that `FIELD_MODES`
-covers *every* mode in the live `RENDER_MODES` visualization catalog (and adds only `particles`), so a
+`RENDER_LAYERS ∪ DIAGNOSTIC_MODES` (`particles` is already a member of `RENDER_LAYERS`). A test asserts that `FIELD_MODES`
+covers *every* mode in the live `RENDER_MODES` visualization catalog plus `particles` (the base layer that catalog omits), so a
 recipe can never reference an overlay the renderer cannot produce, and the recipe-referenceable mode
 set cannot silently drift from the renderer's real one.
 
