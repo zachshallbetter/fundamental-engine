@@ -55,6 +55,25 @@ test('RelationshipRegistry.add + toAgents maps to core RelationshipAgents', () =
   assert.equal(agent.strength, 0.8);
 });
 
+test('distinct id-less elements to the same target are distinct edges (idOf collision fix)', () => {
+  // Regression: a content-hash fallback gave every id-less <a> the same key, so two anchors to the
+  // same section collapsed to one edge (and citations got overwritten by TOC links). The WeakMap
+  // fallback hands each element a stable, unique id.
+  const target = fakeEl('section', {}, 'panel');
+  const resolve = (id: string) => (id === 'panel' ? target : null);
+  const a1 = fakeEl('a', { href: '#panel' }); // id-less
+  const a2 = fakeEl('a', { href: '#panel' }); // id-less, a distinct element to the same target
+  const root = { querySelectorAll: () => [a1, a2] } as unknown as ParentNode;
+
+  const reg = new RelationshipRegistry();
+  reg.discover(root, resolve);
+  assert.equal(reg.size, 2, 'two distinct id-less anchors → two edges, not collapsed into one');
+
+  // stable ids: re-discovering the same elements does not multiply edges
+  reg.discover(root, resolve);
+  assert.equal(reg.size, 2, 'same elements keep the same id — no duplicate edges on rescan');
+});
+
 test('VisualBindingRegistry lints orphan representations + non-hidden decorative visuals', () => {
   const reg = new VisualBindingRegistry();
   const svg = fakeEl('svg', { 'aria-hidden': 'true' });
