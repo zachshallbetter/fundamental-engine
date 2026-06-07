@@ -51,3 +51,5 @@ export * from './agents/index.ts';
 export * from './visual/index.ts';
 // authoring & recipes (Phase 7) — SceneRecipe schema, intent compiler, gallery, explain/diff
 export * from './recipes/index.ts';
+// inspection & productization (Phase 8) — snapshot regression, budget inspector, system report
+export * from './inspect/index.ts';
