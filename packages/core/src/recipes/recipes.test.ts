@@ -21,6 +21,7 @@ import {
   ESSENTIAL_RECIPES,
   FIRST_RELEASE_RECIPE_IDS,
   FIRST_RELEASE_RECIPES,
+  RECIPE_TIERS,
   recipeById,
 } from './gallery.ts';
 import { explainScene, fieldDiff } from './explain.ts';
@@ -35,12 +36,19 @@ test('every field recipe is valid (real tokens, known render layers + diagnostic
   }
 });
 
-test('the gallery is the canonical 16 with unique kebab ids', () => {
-  assert.equal(FIELD_RECIPES.length, 16);
+test('the catalog is the canonical 64 with unique kebab ids', () => {
+  assert.equal(FIELD_RECIPES.length, 64);
   assert.equal(ESSENTIAL_RECIPES, FIELD_RECIPES, 'ESSENTIAL_RECIPES is the deprecated alias of FIELD_RECIPES');
   const ids = FIELD_RECIPES.map((r) => r.id);
   assert.equal(new Set(ids).size, ids.length, 'ids are unique');
   for (const id of ids) assert.match(id, /^[a-z][a-z0-9-]*$/, `${id} is kebab-case`);
+});
+
+test('the four tiers each hold 16 and concatenate to the full catalog in order', () => {
+  assert.equal(RECIPE_TIERS.length, 4);
+  for (const t of RECIPE_TIERS) assert.equal(t.recipes.length, 16, `tier ${t.key} has 16`);
+  const flattened = RECIPE_TIERS.flatMap((t) => t.recipes);
+  assert.deepEqual(flattened.map((r) => r.id), FIELD_RECIPES.map((r) => r.id), 'tiers == FIELD_RECIPES order');
 });
 
 test('declared primitives match the distinct body tokens for every recipe', () => {
