@@ -1,9 +1,13 @@
 /**
- * createFieldPlatform — the coordinator that binds the platform registries into one object and the
- * read → state → write loop. The native participation surface field-ui wishes the browser exposed.
+ * createFieldPlatform — the coordinator that binds the platform registries to one shared
+ * FrameScheduler. The native participation surface field-ui wishes the browser exposed.
  *
- * Loop discipline: measurements (read) → state updates → feedback (write). Relationships, visual
- * bindings, and overlays join in the next layer (PR-B); the shape is additive.
+ * The scheduler owns loop discipline: every frame walks discover → read → compute → state → write →
+ * render in order (see schedule.ts). By default the platform wires the two phases the registries own
+ * outright — `read` (MeasurementRegistry) and `write` (FeedbackRegistry) — and installs the read
+ * guard so an off-phase measurement is caught. Callers add `discover`/`compute`/`state`/`render`
+ * handlers with `platform.on(phase, fn)`; relationships, visual bindings, and overlays plug into
+ * those. The shape is additive — adding handlers never reorders the core read→write spine.
  */
 import { MeasurementRegistry } from './measurement.ts';
 import { StateRegistry } from './state.ts';
@@ -11,6 +15,8 @@ import { FeedbackRegistry } from './feedback.ts';
 import { RelationshipRegistry } from './relationships.ts';
 import { VisualBindingRegistry } from './visual-bindings.ts';
 import { OverlayRegistry } from './overlays.ts';
+import { FrameScheduler } from './schedule.ts';
+import type { Phase, PhaseHandler, FrameReport, SchedulerOptions } from './schedule.ts';
 import type { Viewport } from './types.ts';
 
 export interface FieldPlatform {
@@ -22,17 +28,32 @@ export interface FieldPlatform {
   relationships: RelationshipRegistry;
   visuals: VisualBindingRegistry;
   overlays: OverlayRegistry;
-  /** run one read→write cycle: snapshot geometry, then flush feedback. */
-  tick(now?: number, viewport?: Viewport): void;
+  /** the shared frame scheduler driving the six-phase loop. */
+  scheduler: FrameScheduler;
+  /** register a phase handler (discover/compute/state/render are open for callers). Returns unsubscribe. */
+  on(phase: Phase, handler: PhaseHandler): () => void;
+  /** run one full six-phase frame; returns the per-frame report (phases run + any violations). */
+  tick(now?: number, viewport?: Viewport): FrameReport;
 }
 
-export function createFieldPlatform(root: Element): FieldPlatform {
+export interface PlatformOptions extends SchedulerOptions {}
+
+export function createFieldPlatform(root: Element, opts: PlatformOptions = {}): FieldPlatform {
   const measure = new MeasurementRegistry();
   const state = new StateRegistry();
   const feedback = new FeedbackRegistry();
   const relationships = new RelationshipRegistry();
   const visuals = new VisualBindingRegistry();
   const overlays = new OverlayRegistry();
+  const scheduler = new FrameScheduler({ strict: opts.strict ?? false });
+
+  // read-phase discipline: measurement consults the scheduler before reading layout.
+  measure.setPhaseGuard(scheduler.readGuard());
+
+  // the two phases the registries own outright. Everything else is opt-in via platform.on(...).
+  scheduler.on('read', (ctx) => measure.measure(ctx.now, ctx.viewport));
+  scheduler.on('write', (ctx) => feedback.flush(state, ctx.now));
+
   return {
     root,
     measure,
@@ -41,10 +62,8 @@ export function createFieldPlatform(root: Element): FieldPlatform {
     relationships,
     visuals,
     overlays,
-    tick(now = 0, viewport?: Viewport): void {
-      measure.measure(now, viewport); // read-phase (relationships discovered out of band)
-      feedback.flush(state, now); // write-phase
-      // overlays render from the fresh measurement snapshot; they read, never mutate.
-    },
+    scheduler,
+    on: (phase, handler) => scheduler.on(phase, handler),
+    tick: (now = 0, viewport?: Viewport) => scheduler.runFrame(now, viewport),
   };
 }

@@ -52,6 +52,16 @@ function visibilityRatio(r: FieldRect, vp: Viewport): number {
 export class MeasurementRegistry {
   private readonly entries = new Map<Element, Entry>();
   private snapshot: readonly FieldMeasurement[] = [];
+  private guard: ((op: string) => void) | null = null;
+
+  /**
+   * Install a phase guard (the FrameScheduler supplies one via `readGuard()`). It is consulted
+   * before reading layout, so a measurement requested in the write phase is caught. Decoupled by
+   * design: measurement never imports the scheduler. Pass `null` to remove the guard.
+   */
+  setPhaseGuard(guard: ((op: string) => void) | null): void {
+    this.guard = guard;
+  }
 
   /** Register an element for measurement (idempotent — re-registering refreshes its options). */
   register(element: Element, opts: MeasureRegistration = {}): void {
@@ -71,6 +81,7 @@ export class MeasurementRegistry {
    * elements are pruned. `now`/`viewport` are injectable so this is testable without a live DOM.
    */
   measure(now = 0, viewport?: Viewport): readonly FieldMeasurement[] {
+    this.guard?.('measure'); // read-phase discipline: reading layout off-phase thrashes
     const vp = viewport ?? defaultViewport();
     const out: FieldMeasurement[] = [];
     for (const [el, e] of this.entries) {
