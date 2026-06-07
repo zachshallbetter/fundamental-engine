@@ -36,6 +36,8 @@ export const HANDLE: MethodRow[] = [
   { sig: 'setRender(mode)', desc: 'Switch the render mode: dots / trails / links / metaballs / voronoi / streamlines.' },
   { sig: 'threads(list | null)', desc: 'Wire glowing connector lines between an engaged set, or clear with null.' },
   { sig: 'burst(x, y, hex?)', desc: 'A one-shot shove + heat near a point, optionally tinting the matter.' },
+  { sig: 'flowTo(x, y, opts?)', desc: 'Place/move a dynamic flow focus the field bends toward — pulls matter in and curves the streamlines. Retarget it each frame to follow the pointer, an element, or a path. opts: { strength?, radius? }.' },
+  { sig: 'clearFlow()', desc: 'Remove the flow focus — the field relaxes back to its bodies-only shape.' },
   { sig: 'destroy()', desc: 'Stop the loop and release listeners.' },
 ];
 
