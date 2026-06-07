@@ -169,6 +169,9 @@ inspector
 
 ## 11. Field Design Tokens
 
+> **Implemented** (field-first names) as `FIELD_DESIGN_TOKENS` + `fieldTokensCss()` in
+> `packages/core/src/visual/tokens.ts`.
+
 ```css
 :root {
   --forces-motion-calm: 0.2;
@@ -183,6 +186,9 @@ inspector
 ```
 
 ## 12. Field Roles
+
+> **Implemented.** `FIELD_ROLES` + `isFieldRole()` in `packages/core/src/visual/tokens.ts`
+> (`data-field-role` values; runtime consumption is the Bucket-B authoring wiring).
 
 ```html
 <div data-field-role="source"></div>

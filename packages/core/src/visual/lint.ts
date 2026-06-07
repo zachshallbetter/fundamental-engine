@@ -41,7 +41,12 @@ export interface SceneDescriptor {
   colorOnlyMeaning?: boolean;
   /** is any expressive glyph missing accessible text? */
   glyphOnlySemanticText?: boolean;
+  /** per-body token lists, for the duplicate-pull check. */
+  bodyTokens?: readonly (readonly string[])[];
 }
+
+/** Forces that pull matter inward — stacking two on one body usually double-counts the pull. */
+const PULL_FORCES = new Set(['attract', 'gravity', 'tether', 'cohesion']);
 
 const LOCAL_CELL_MAX = 400;
 
@@ -66,6 +71,13 @@ export function runVisualLint(scene: SceneDescriptor): LintFinding[] {
   // field lines need a field() to trace
   if (scene.fieldLinesEnabled && scene.hasFieldSource === false)
     add('field-lines-no-source', 'warning', 'field lines are enabled but no force owns a field() to trace');
+
+  // duplicate pull on one body (e.g. data-body="gravity attract")
+  for (const tokens of scene.bodyTokens ?? []) {
+    const pulls = tokens.filter((t) => PULL_FORCES.has(t));
+    if (pulls.length > 1)
+      add('duplicate-pull', 'info', `body stacks multiple pull forces (${pulls.join(' + ')}) — may double-count the pull`);
+  }
 
   // sources must be budgeted
   for (const s of scene.sources ?? [])
