@@ -2,10 +2,10 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const create = `// @field-ui/core is renderer-agnostic — createField requires an explicit host.
+const create = `// field-ui is renderer-agnostic — createField requires an explicit host.
 // In the browser, browserHost() (from @field-ui/platform) is the host. Pass a custom
 // host to drive a headless or alternative renderer.
-import { createField } from '@field-ui/core';
+import { createField } from 'field-ui';
 import { browserHost } from '@field-ui/platform';
 
 const canvas = document.querySelector('canvas');
@@ -29,7 +29,7 @@ field.scan();`;
 const custom = `import type { Force } from 'field-ui';
 
 // Every force is one object: a token + an apply(body, particle, env).
-// This is the exact contract all 33 built-ins implement.
+// This is the exact contract all 34 built-ins implement.
 const lift: Force = {
   token: 'lift',
   label: 'Lift',
@@ -56,7 +56,7 @@ const lift: Force = {
   </header>
 
   <div class="callout">
-    <b>Where this fits.</b> Use <code>@field-ui/core</code> when you own the render surface and want
+    <b>Where this fits.</b> Use <code>field-ui</code> when you own the render surface and want
     renderer-agnostic field math. When you want DOM participation — measurement, feedback,
     relationships, visual bindings, and overlays on a frame scheduler — reach for
     <a href="/docs/api">@field-ui/platform</a>. Canvas is one render surface, not the whole system.
@@ -96,7 +96,7 @@ const lift: Force = {
     <p>
       A force is one small object — a <code>token</code> and an
       <code>apply(body, particle, env)</code> that nudges a particle's velocity. Every one of the
-      33 built-ins implements this exact contract, and the engine never special-cases any of them,
+      34 built-ins implements this exact contract, and the engine never special-cases any of them,
       which is why they compose. The shape:
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: custom }]} />
