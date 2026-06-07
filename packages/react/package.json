@@ -8,11 +8,11 @@
   "homepage": "https://field-ui.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zachshallbetter/forces-ui.git",
+    "url": "git+https://github.com/zachshallbetter/field-ui.git",
     "directory": "packages/react"
   },
   "bugs": {
-    "url": "https://github.com/zachshallbetter/forces-ui/issues"
+    "url": "https://github.com/zachshallbetter/field-ui/issues"
   },
   "keywords": [
     "field-ui",
