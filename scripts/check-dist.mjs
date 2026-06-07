@@ -16,7 +16,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const PACKAGES = ['core', 'vanilla', 'elements', 'react'];
+const PACKAGES = ['core', 'platform', 'vanilla', 'elements', 'react'];
 
 /** Collect every relative file path the package.json points at as an entry point. */
 function entryRefs(pkg) {
