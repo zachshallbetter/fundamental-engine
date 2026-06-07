@@ -219,6 +219,15 @@ const GROUPS = [
     </p>
   </header>
 
+  <div class="callout">
+    <b>Demo labels are human-facing behavior, not runtime tokens.</b> Words like <em>spring</em>,
+    <em>orbit</em>, and <em>drag</em> describe what a demo does — they are not engine tokens. The
+    spring here is the <a href="/docs/api/forces"><code>tether</code></a> force, <em>drag</em> maps to
+    <code>viscosity</code>, and <em>orbit</em> is composed motion (gravity + magnetism + tether), not a
+    token. Runtime tokens always appear in <code>data-body</code> and recipe <code>primitives</code>.
+    These compact demos also read <code>--d</code>, the compatibility alias of <code>--field-density</code>.
+  </div>
+
   <div class="ex-group-head" id="reciprocity">Reciprocity</div>
 
   <section class="docs-sec" id="hero-word">
