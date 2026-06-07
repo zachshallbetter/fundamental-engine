@@ -1,0 +1,60 @@
+---
+import ResearchLayout from '../../layouts/ResearchLayout.astro';
+import { RESEARCH_PAPERS } from '../../lib/research-nav.ts';
+---
+
+<ResearchLayout
+  title="Research"
+  description="The field-ui research paper family — preprint drafts on the concepts behind a relational field runtime for the DOM."
+>
+  <h1 data-body="attract" data-strength="0.6" data-feedback>field-ui research</h1>
+
+  <p class="lede">
+    A small family of focused papers on the ideas behind <a href="/">field-ui</a>, a platform-native
+    relational field runtime for the DOM. One flagship paper names the paradigm; the others each
+    validate one specific claim.
+  </p>
+
+  <blockquote>
+    <p><strong>Preprint drafts — work in progress.</strong> These are technical-preprint drafts, not
+    finished, peer-reviewed publications. They carry status banners, some citations are still
+    placeholders, and <strong>no user-study results have been collected</strong> — the empirical
+    papers present study <em>designs</em> and hypotheses, never measured outcomes. The canonical
+    source is <a href="https://github.com/zachshallbetter/field-ui/tree/main/docs/research">
+    <code>docs/research/</code></a> in the repository.</p>
+  </blockquote>
+
+  <h2>The unifying thesis</h2>
+  <p>
+    Interfaces are not only layouts of components. They are <strong>relational fields of meaning.</strong>
+    field-ui makes those fields <em>executable, inspectable, accessible, and authorable</em> on top of
+    semantic HTML — and the research question is whether a field-based model can improve orientation,
+    trust, explainability, and interaction coherence in complex web interfaces without replacing native
+    platform semantics.
+  </p>
+
+  <h2>The papers</h2>
+  <ol class="research-list">
+    {
+      RESEARCH_PAPERS.map((p) => (
+        <li>
+          <a href={p.href}><strong>{p.n}. {p.title}</strong></a>
+          <span class="rl-contrib">{p.contribution}</span>
+        </li>
+      ))
+    }
+  </ol>
+
+  <p>
+    See also the running <a href="/research/references">bibliography</a>. The first paper names the
+    paradigm; the rest prove it in specific interface domains — reading, evidence/trust, accessibility,
+    runtime architecture, authoring, data binding, and diagnostics.
+  </p>
+
+  <style>
+    .lede { font-size: 1.15rem; opacity: 0.95; }
+    .research-list { list-style: none; padding: 0; display: grid; gap: 0.9rem; }
+    .research-list li { display: grid; gap: 0.15rem; }
+    .research-list .rl-contrib { opacity: 0.8; font-size: 0.95rem; }
+  </style>
+</ResearchLayout>

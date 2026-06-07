@@ -1,0 +1,105 @@
+---
+// The research section layout — the field-ui paper family. Mirrors DocsLayout, but
+// its sidebar is the paper list (research-nav.ts) and it works for BOTH markdown
+// pages (which pass `frontmatter`) and the .astro index (which passes `title`).
+import Base from './Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { RESEARCH_PAPERS } from '../lib/research-nav.ts';
+import '../styles/ds-tokens.css';
+import '../styles/docs.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  frontmatter?: { title?: string; description?: string };
+}
+const { frontmatter } = Astro.props;
+const title = frontmatter?.title ?? Astro.props.title ?? 'Research';
+const description =
+  frontmatter?.description ??
+  Astro.props.description ??
+  'The field-ui research paper family — preprint drafts (work in progress).';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/research';
+const idx = RESEARCH_PAPERS.findIndex((p) => p.href === path);
+const prev = idx > 0 ? RESEARCH_PAPERS[idx - 1] : null;
+const next = idx >= 0 && idx < RESEARCH_PAPERS.length - 1 ? RESEARCH_PAPERS[idx + 1] : null;
+---
+
+<Base title={`${title} · field-ui research`} description={description}>
+  <SiteNav current="research" />
+  <div class="docs-shell">
+    <aside class="docs-sidebar" aria-label="Research navigation">
+      <button class="docs-side-toggle" aria-expanded="false" aria-controls="researchSide">Menu</button>
+      <nav id="researchSide">
+        <div class="docs-group">
+          <span class="docs-group-title">The paper family</span>
+          <ul>
+            <li>
+              <a href="/research" aria-current={path === '/research' ? 'page' : undefined}>Overview</a>
+            </li>
+            {
+              RESEARCH_PAPERS.map((p) => (
+                <li>
+                  <a href={p.href} aria-current={p.href === path ? 'page' : undefined}>
+                    {p.n}. {p.short}
+                  </a>
+                </li>
+              ))
+            }
+            <li>
+              <a href="/research/references" aria-current={path === '/research/references' ? 'page' : undefined}>
+                References
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="docs-content research-paper">
+      <slot />
+      <nav class="docs-prevnext" aria-label="Pagination">
+        {
+          prev ? (
+            <a class="pn prev" href={prev.href}>
+              <span>← Previous</span>
+              <b>{prev.short}</b>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a class="pn next" href={next.href}>
+              <span>Next →</span>
+              <b>{next.short}</b>
+            </a>
+          )
+        }
+      </nav>
+    </main>
+  </div>
+  <SiteFooter />
+</Base>
+
+<style>
+  /* Keep long-form preprint prose readable inside the docs shell. */
+  .research-paper :global(h1) {
+    font-size: clamp(1.6rem, 1.2rem + 2vw, 2.4rem);
+    line-height: 1.15;
+    margin: 0.2em 0 0.6em;
+  }
+  .research-paper :global(table) {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .research-paper :global(blockquote) {
+    border-left: 3px solid var(--ds-accent, #4da3ff);
+    padding-left: 1rem;
+    opacity: 0.92;
+  }
+</style>
