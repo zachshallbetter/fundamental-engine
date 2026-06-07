@@ -1,0 +1,51 @@
+---
+// "Recipes applied" panel for the concept studies — rendered from the engine catalog (recipeById), so
+// a study declares the actual recipe objects it runs, with their lanes. The `live` ids are the ones the
+// study drives through applyRecipe(); the rest are the conceptual family the study embodies.
+import VocabBadge from './VocabBadge.astro';
+import { recipeById, type FieldRecipe } from 'field-ui';
+
+interface Props {
+  ids: string[];
+  live?: string[];
+}
+const { ids, live = [] } = Astro.props;
+const liveSet = new Set(live);
+const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldRecipe => !!r);
+---
+
+<section class="recipes-applied" aria-label="Recipes applied">
+  <h2>Recipes applied</h2>
+  <p class="ra-lede">
+    Each is a real <a href="/docs/recipes"><code>FieldRecipe</code></a> from the catalog. The ones marked
+    <span class="ra-livedot">live</span> are driven through <code>applyRecipe()</code> on this page; the
+    rest are the conceptual family this study embodies.
+  </p>
+  <div class="ra-grid">
+    {
+      recipes.map((r) => (
+        <article class="ra-card">
+          <header>
+            <a href={`/docs/gallery#${r.id}`} class="ra-name">{r.name}</a>
+            {r.naturalField && <VocabBadge kind="field" label={r.naturalField} />}
+            {liveSet.has(r.id) && <span class="ra-live">live</span>}
+          </header>
+          <p class="ra-intent">{r.intent}</p>
+          <div class="ra-tokens">{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</div>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .recipes-applied { margin: 1.5rem 0; }
+  .ra-lede { color: var(--muted, #9aa); font-size: 0.9rem; max-width: 70ch; }
+  .ra-livedot, .ra-live { font-size: 0.66rem; color: #0b0b10; background: #2dd4bf; border-radius: 4px; padding: 0.02rem 0.35rem; font-weight: 600; }
+  .ra-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.7rem; margin-top: 0.8rem; }
+  .ra-card { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.7rem 0.8rem; }
+  .ra-card header { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+  .ra-name { font-weight: 600; font-size: 0.92rem; text-decoration: none; color: var(--text, #e8e8ef); }
+  .ra-intent { font-size: 0.82rem; color: var(--muted, #9aa); margin: 0.3rem 0 0.5rem; }
+  .ra-tokens { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+</style>
