@@ -1,13 +1,13 @@
 /**
- * Diagnostics (B4 — visualization-methods-taxonomy §3–§7, §11). The pure data behind the diagnostic
- * render overlays: energy accounting, scalar potential + grid sampling (contours/potential), probe
- * force-vectors + causality, and heatmap-variant samplers. These compute what the Lab/Inspector draw;
- * the canvas drawing of the overlays is the remaining UI layer. Nothing here mutates field state.
+ * Diagnostics (visualization-methods-taxonomy §3–§7, §11). The data behind the diagnostic overlays —
+ * energy accounting, scalar potential + grid sampling, probe force-vectors + causality, heatmap-variant
+ * samplers — plus `render.ts`, which draws them onto a Canvas 2D context (C1). Nothing mutates physics.
  */
 export * from './energy.ts';
 export * from './potential.ts';
 export * from './probes.ts';
 export * from './fields.ts';
+export * from './render.ts';
 
 /** The diagnostics this module provides (inspectable list; canvas drawing is the UI frontier). */
 export const DIAGNOSTICS = [
