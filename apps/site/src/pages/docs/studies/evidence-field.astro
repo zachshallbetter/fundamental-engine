@@ -1,0 +1,174 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import RecipesApplied from '../../../components/RecipesApplied.astro';
+
+// Evidence Field Study — built data-first with bindData(). Claims are records; each maps to a body with
+// support/contradiction relationships to its sources, and the evidence-field recipe turns those edges
+// into coherence/entropy. Flip a source's polarity or add/remove claims and the field updates
+// deterministically — no hand-wired behavior. Sources are static targets the relationship edges resolve.
+
+const sources = [
+  { id: 'src-1', label: 'Primary study (peer-reviewed)' },
+  { id: 'src-2', label: 'Replication attempt' },
+  { id: 'src-3', label: 'Industry whitepaper' },
+  { id: 'src-4', label: 'Forum rebuttal' },
+];
+const RECIPES = ['evidence-field', 'trust-gradient', 'source-constellation', 'citation-thread', 'conflict-field'];
+const LIVE = ['evidence-field'];
+---
+
+<DocsLayout
+  title="field-ui — Evidence Field Study"
+  description="A concept study built data-first with bindData(): claims are records, sources are targets, support and contradiction are relationship edges, and the evidence-field recipe turns them into coherence and entropy. Flip a source or add a claim and the field updates deterministically."
+>
+  <p class="kicker">Concept study · data-bound</p>
+  <h1>Evidence Field Study</h1>
+  <p class="lede">
+    Claims become bodies, sources bind to them, and contradictions raise entropy — the
+    <a href="/docs/gallery#evidence-field">Evidence Field</a> recipe, driven by real data through
+    <code>bindData()</code>. Flip a source's polarity or add a claim and the field updates
+    deterministically; removed claims decay rather than pop. Still a plain claim/source list with the
+    field off.
+  </p>
+
+  <div class="study-stages">
+    <div class="stage"><b>Before</b><span>A plain list of claims and their sources.</span></div>
+    <div class="stage"><b>After</b><span>Well-supported claims read coherent; contradicted claims gain entropy and read contested.</span></div>
+    <div class="stage"><b>Inspect</b><span>Live <code>bindData().inspect()</code> — records, bodies, relationship edges.</span></div>
+  </div>
+
+  <div class="study-controls" role="group" aria-label="Study controls">
+    <button type="button" class="sc-btn on" data-ev="field" aria-pressed="true">Field: on</button>
+    <button type="button" class="sc-btn" data-ev="add">Add claim</button>
+    <button type="button" class="sc-btn" data-ev="remove">Remove claim</button>
+    <button type="button" class="sc-btn" data-ev="flip">Flip a source</button>
+    <button type="button" class="sc-btn" data-ev="reduced" aria-pressed="false">Reduce motion</button>
+    <span class="sc-readout" data-ev-status>starting…</span>
+  </div>
+
+  <div class="ev">
+    <section>
+      <h2>Claims</h2>
+      <div class="ev-claims" id="ev-claims"></div>
+    </section>
+    <section>
+      <h2>Sources</h2>
+      <ul class="ev-sources">
+        {sources.map((s) => <li id={s.id}>{s.label}</li>)}
+      </ul>
+    </section>
+  </div>
+
+  <RecipesApplied ids={RECIPES} live={LIVE} />
+</DocsLayout>
+
+<script>
+  import { bindData, type DataBinding } from '@field-ui/platform';
+
+  interface Ref { src: string; kind: 'supports' | 'contradicts'; w: number; }
+  interface Claim { id: string; text: string; confidence: number; refs: Ref[]; }
+
+  const root = document.getElementById('ev-claims');
+  const status = document.querySelector<HTMLElement>('[data-ev-status]');
+  if (root) {
+    const SRC = ['src-1', 'src-2', 'src-3', 'src-4'];
+    const texts = [
+      'Relational field behavior improves orientation in long documents.',
+      'Reduced-motion equivalence preserves meaning without motion.',
+      'Diagnostic visibility increases author trust.',
+      'Field priority reduces alert fatigue in dashboards.',
+      'Source binding improves recall of which evidence supports a claim.',
+    ];
+    let seq = 0;
+    const rnd = () => Math.round(Math.random() * 100) / 100;
+    const make = (): Claim => {
+      const id = `c${seq++}`;
+      const n = 1 + Math.floor(Math.random() * 2);
+      const refs: Ref[] = Array.from({ length: n }, (_, i) => ({ src: SRC[(seq + i) % SRC.length]!, kind: Math.random() > 0.35 ? 'supports' : 'contradicts', w: rnd() }));
+      return { id, text: texts[seq % texts.length]!, confidence: rnd(), refs };
+    };
+    let claims: Claim[] = [make(), make(), make()];
+    let reduced = false;
+
+    const mapper = (c: Claim) => ({
+      id: c.id,
+      body: { tokens: ['charge', 'link', 'cohesion'], strength: 0.6 + c.confidence * 0.6, range: 300, feedback: true },
+      metrics: { confidence: c.confidence },
+      relationships: c.refs.map((r) => ({ to: r.src, type: r.kind, strength: r.w })),
+      label: c.text,
+    });
+
+    let binding: DataBinding<Claim> = bindData(root, claims, mapper, { recipe: 'evidence-field', className: 'ev-claim', reducedMotion: reduced });
+    let on = true;
+    let raf = 0;
+    const loop = (): void => {
+      if (status) {
+        if (!on) status.textContent = 'field off — plain claim/source list';
+        else {
+          const ins = binding.inspect();
+          status.textContent = ins ? `field on${reduced ? ' · reduced motion' : ''} · ${ins.records} claims · ${ins.bodies} bodies · ${ins.relationships} edges` : '—';
+        }
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+
+    const refresh = () => binding.update(claims);
+    const rebuild = () => { binding.destroy(); binding = bindData(root, claims, mapper, { recipe: 'evidence-field', className: 'ev-claim', reducedMotion: reduced }); };
+
+    for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-ev]')) {
+      btn.addEventListener('click', () => {
+        const k = btn.dataset.ev;
+        if (k === 'add') { claims = [...claims, make()]; refresh(); }
+        else if (k === 'remove') { claims = claims.slice(0, -1); refresh(); }
+        else if (k === 'flip') {
+          if (claims.length) {
+            const c = claims[Math.floor(Math.random() * claims.length)]!;
+            if (c.refs[0]) c.refs[0].kind = c.refs[0].kind === 'supports' ? 'contradicts' : 'supports';
+            refresh();
+          }
+        } else if (k === 'reduced') {
+          reduced = !reduced; btn.classList.toggle('on', reduced); btn.setAttribute('aria-pressed', String(reduced));
+          if (on) rebuild();
+        } else if (k === 'field') {
+          on = !on; btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on)); btn.textContent = on ? 'Field: on' : 'Field: off';
+          if (on) rebuild(); else binding.destroy();
+        }
+      });
+    }
+    document.addEventListener('astro:before-swap', () => { binding.destroy(); if (raf) cancelAnimationFrame(raf); }, { once: true });
+  }
+</script>
+
+<style>
+  .kicker { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0; }
+  .lede { color: var(--muted, #9aa); max-width: 72ch; }
+  .study-stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.6rem; margin: 1rem 0; }
+  .stage { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.6rem 0.8rem; }
+  .stage b { display: block; color: #4da3ff; font-size: 0.82rem; }
+  .stage span { font-size: 0.82rem; color: var(--muted, #9aa); }
+  .study-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.5rem 0 1rem; }
+  .sc-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
+  .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
+  .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+
+  .ev { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; align-items: start; }
+  @media (max-width: 720px) { .ev { grid-template-columns: 1fr; } }
+  .ev h2 { font-size: 1rem; margin: 0 0 0.6rem; }
+  .ev-claims { display: flex; flex-direction: column; gap: 0.5rem; min-height: 80px; }
+  .ev-claim {
+    --field-coherence: 0; --field-entropy: 0;
+    padding: 0.5rem 0.7rem; border-radius: 8px; font-size: 0.92rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-left: 3px solid color-mix(in srgb, #2dd4bf calc(var(--field-coherence) * 95%), #ff9d5c);
+    background: color-mix(in srgb, #2dd4bf calc(var(--field-coherence) * 12%), transparent);
+    opacity: 1; transition: opacity 0.35s ease, background 0.4s ease, border-color 0.4s ease, transform 0.35s ease;
+  }
+  .ev-claim[data-bd-entering] { opacity: 0; transform: translateY(-4px); }
+  .ev-claim[data-bd-exiting] { opacity: 0; transform: translateX(8px); }
+  .ev-claim .bd-rel { display: none; } /* relationship anchors are field structure, not visible text */
+  .ev-sources { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .ev-sources li { font-size: 0.86rem; color: var(--muted, #c3c9d4); border: 1px solid var(--line, #2a2a35); border-radius: 7px; padding: 0.4rem 0.6rem; }
+  @media (prefers-reduced-motion: reduce) { .ev-claim { transition: none; } }
+  [data-recipe-reduced] .ev-claim { transition: none; }
+</style>
