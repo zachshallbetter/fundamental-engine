@@ -9,6 +9,7 @@
  * This is the contract the engine implements: `createField`, the force registry,
  * the integrator, and the conformance harness all build on these shapes.
  */
+import type { FlowOptions } from './flow.ts';
 
 export interface Vec2 {
   x: number;
@@ -337,6 +338,14 @@ export interface FieldHandle {
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void;
+  /**
+   * Place or move a dynamic flow focus at `(x, y)` — a movable target the field bends toward: it
+   * pulls free matter in, curves the streamlines, and eases the wave spine to it. Call repeatedly to
+   * retarget it (follow the pointer, track an element, animate a path); clear with `clearFlow()`.
+   */
+  flowTo(x: number, y: number, opts?: FlowOptions): void;
+  /** Remove the flow focus — the field relaxes back to its bodies-only shape. */
+  clearFlow(): void;
   /** stop the loop and release listeners. */
   destroy(): void;
 }
