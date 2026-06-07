@@ -136,8 +136,9 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 | [`@field-ui/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
 | [`@field-ui/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
 
-The dependency direction is strict: `elements → platform → core`, `react → platform → core`,
-`vanilla → core`. See [`docs/canonical/field-ui-platform-architecture.md`](docs/canonical/field-ui-platform-architecture.md).
+The dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
+`vanilla → platform → core`. `@field-ui/core` imports zero DOM (renderer-agnostic); the browser host
+adapter lives in `@field-ui/platform`. See [`docs/canonical/field-ui-platform-architecture.md`](docs/canonical/field-ui-platform-architecture.md).
 
 ## Availability
 

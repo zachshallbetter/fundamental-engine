@@ -65,8 +65,6 @@ const table = RENDER_MODES;
     contourSegments,
     canvasToPng,
     segmentsToSvg,
-    downloadCanvasPng,
-    downloadText,
     drawTopology,
     drawInspector,
     causalityAt,
@@ -74,6 +72,7 @@ const table = RENDER_MODES;
     ghostTrajectory,
     drawPrediction,
   } from 'field-ui';
+  import { downloadCanvasPng, downloadText } from '@field-ui/platform';
 
   const canvas = document.getElementById('diag-canvas') as HTMLCanvasElement | null;
   const ctx = canvas?.getContext('2d');

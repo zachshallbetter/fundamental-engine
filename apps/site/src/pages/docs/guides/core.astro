@@ -2,7 +2,10 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const create = `import { createField } from 'field-ui';
+const create = `// @field-ui/core is renderer-agnostic — createField needs a host. In the browser, the
+// simplest path wires it for you (createField from @field-ui/vanilla, or createBrowserField
+// from @field-ui/platform); pass a custom host to drive a headless/alternative renderer.
+import { createField } from '@field-ui/vanilla';
 
 const canvas = document.querySelector('canvas');
 const field = createField(canvas, {
@@ -11,6 +14,11 @@ const field = createField(canvas, {
   attention: false,
   causality: false,
 });
+
+// equivalently, with the explicit host:
+//   import { createField } from 'field-ui';
+//   import { browserHost } from '@field-ui/platform';
+//   const field = createField(canvas, { accent: '#4da3ff', host: browserHost() });
 
 // the field reads every [data-body] element on the page.
 // after you add or remove bodies, rescan:
@@ -33,7 +41,7 @@ const lift: Force = {
 
 <DocsLayout
   title="field-ui — Core engine guide"
-  description="Drive the field-ui engine directly: createField() on a canvas you own, returning the FieldHandle. Zero runtime dependencies. For a managed canvas and a typed class, see the TypeScript guide."
+  description="Drive the field-ui engine directly: createField() on a canvas you own, returning the FieldHandle. The renderer-agnostic core takes an injected host (browserHost from @field-ui/platform, or use @field-ui/vanilla which wires it). For a managed canvas and a typed class, see the TypeScript guide."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>

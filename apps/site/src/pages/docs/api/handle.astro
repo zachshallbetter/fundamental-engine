@@ -10,7 +10,7 @@ const getWc = `import '@field-ui/elements';
 const field = document.querySelector('field-root');
 field.setFormation('wells');`;
 
-const getVanilla = `import { createField } from 'field-ui';
+const getVanilla = `import { createField } from '@field-ui/vanilla'; // wires the browser host
 
 const field = createField(canvas);   // ← createField returns the handle
 field.setRender('links');`;
@@ -41,7 +41,7 @@ field.scan();
 // release the loop + listeners when you're done
 field.destroy();`;
 
-const workedVanilla = `import { createField } from 'field-ui';
+const workedVanilla = `import { createField } from '@field-ui/vanilla';
 
 const field = createField(canvas);   // the handle
 

@@ -56,7 +56,6 @@ import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
 import { forceAt } from './streamlines.ts';
 import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
-import { browserHost } from './browser-host.ts';
 import type { FieldHost } from './host.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -72,8 +71,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
   registerExtendedForces(reg); // designed extended forces: lens, … (§20.3), opt-in
-  // the environment seam: all DOM access goes through this host (default = the browser).
-  const host: FieldHost = opts.host ?? browserHost();
+  // the environment seam: all DOM access goes through this injected host — core imports zero DOM.
+  // In the browser, pass `browserHost()` from @field-ui/platform (or use createBrowserField); the
+  // @field-ui/{elements,react,vanilla} entry points wire it for you.
+  if (!opts.host) {
+    throw new Error(
+      'field-ui: createField requires opts.host. Use @field-ui/vanilla (createField/mountField) or ' +
+        '@field-ui/elements / @field-ui/react, or pass browserHost() from @field-ui/platform.',
+    );
+  }
+  const host: FieldHost = opts.host;
   const teardowns: Array<() => void> = []; // host event unsubscribers, called on destroy
   const reduceMotion = host.reducedMotion();
 

@@ -50,6 +50,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@field-ui/platform": "workspace:*",
     "field-ui": "workspace:*"
   },
   "peerDependencies": {

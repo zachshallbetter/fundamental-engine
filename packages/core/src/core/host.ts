@@ -2,7 +2,7 @@
  * FieldHost — the renderer/environment seam (Phase: frontier). `createField`'s engine is
  * renderer-agnostic: every DOM-global touchpoint (viewport size, scroll, rAF, reduced-motion,
  * visibility, the scan root, and event wiring) goes through this injected host instead of `window` /
- * `document` / `requestAnimationFrame` directly. The default `browserHost()` (in `browser-host.ts`)
+ * `document` / `requestAnimationFrame` directly. `browserHost()` (in `@field-ui/platform`)
  * binds it to the browser; an alternative host could drive the same engine from a headless renderer,
  * a different document, or a test harness. This interface is pure types — no globals — so `field.ts`
  * imports zero DOM (enforced by `dom-boundary.test.ts`).
