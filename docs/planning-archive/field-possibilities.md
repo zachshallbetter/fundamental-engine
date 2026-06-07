@@ -73,7 +73,7 @@ The interface becomes a shared, inspectable field of meaning.
 The current architecture should guide every possibility.
 
 ```txt
-@field-ui/core   host-driven, renderer-agnostic field engine
+field-ui   host-driven, renderer-agnostic field engine
 @field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @field-ui/elements   native HTML and web component authoring
 @field-ui/react   React adapter over the same contracts

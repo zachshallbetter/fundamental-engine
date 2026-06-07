@@ -3,13 +3,13 @@
 
 # The Forces Engine — Module Map
 
-A comprehensive map of the `@field-ui/core` engine: every source module, what it owns,
+A comprehensive map of the `field-ui` engine: every source module, what it owns,
 the data-flow that ties them together, and the catalogs (forces, classes, services, render
 modes, formations, conditions, presets) the engine ships. This is the *engineering* companion
 to [`forces-system.md`](forces-system.md) (the spec) and the per-force catalog in
 [`packages/core/src/config/manual.ts`](../packages/core/src/config/manual.ts).
 
-Source root: `packages/core/src/`. The `@field-ui/core` package itself has zero runtime
+Source root: `packages/core/src/`. The `field-ui` package itself has zero runtime
 dependencies (the wider field-ui system is native-platform-first, dependency-light, and
 framework-agnostic). Section refs (§) point into [`forces-system.md`](forces-system.md).
 
@@ -52,7 +52,7 @@ Under the platform runtime (Phase D, the default for `<field-root>`), the DOM-fa
 scan (0), measure (1), feedback (7), shadow registration, and relationships — are owned by
 `@field-ui/platform` and sequenced by its `FrameScheduler` (discover → read → compute → state →
 write → render). The engine still drives the conserved physics (steps 2–6) and the render pass
-(9). A `core/dom-boundary.test.ts` guard keeps `@field-ui/core` renderer-agnostic, allowlisting
+(9). A `core/dom-boundary.test.ts` guard keeps `field-ui` renderer-agnostic, allowlisting
 only `core/field.ts` and `export.ts` to touch the DOM.
 
 ---
