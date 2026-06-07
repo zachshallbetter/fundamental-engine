@@ -2,6 +2,10 @@
  * Field export (visualization-methods-taxonomy §15). Turn a field into a portable artifact: a PNG
  * raster of the canvas, or an SVG of vector segments (field lines, contours, relationship overlays).
  * `segmentsToSvg` is pure and testable; the canvas/download helpers are thin DOM glue.
+ *
+ * Quarantine note (Phase D): this is the only core module besides `core/field.ts` that touches DOM
+ * globals (`document.createElement` for the download anchor). It is allowlisted in
+ * `core/dom-boundary.test.ts`; keep the rest of core renderer-agnostic.
  */
 import type { Segment } from './diagnostics/render.ts';
 
