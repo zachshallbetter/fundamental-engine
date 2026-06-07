@@ -33,23 +33,26 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
 
 <Base
   title="field-ui — a platform-native relational field runtime for the DOM"
-  description="Elements are bodies in one shared field context — they carry weight, exert force, and the field's density bends them back. A renderer-agnostic core with a platform layer for DOM participation (measurement, state, feedback, relationships, overlays); framework-agnostic (vanilla · web component · React), dependency-light. The complete, executable manual, live over the running engine."
+  description="Semantic HTML becomes a participant in one shared field: add a data-* attribute and the runtime measures the element, computes metrics (density, priority, memory) and writes them back as --field-* CSS variables you style with. A renderer-agnostic core with a platform layer for DOM participation (measurement, state, feedback, relationships, overlays); framework-agnostic (vanilla · web component · React), dependency-light. The complete, executable manual, live over the running engine."
 >
   <SiteNav current="home" />
   <div class="manual-shell">
     <header class="manual-hero" id="top">
       <div class="wrap">
-        <p class="kicker">field-ui · a reciprocal DOM-physics field</p>
-        <h1>Elements have <span class="accent">mass.</span></h1>
+        <p class="kicker">field-ui · semantic HTML in one shared field</p>
+        <h1>Semantic HTML can <span class="accent">participate.</span></h1>
         <p class="standfirst">
-          This isn’t a layout on top of an effect. The words, links, and cards
-          are physical bodies inside a single field — they carry weight, exert
-          force, and the field pushes back. Here’s exactly how it works, with
-          the real engine running behind every example.
+          Words, links, and cards stay ordinary semantic HTML — but with a
+          single <code>data-*</code> attribute they register as participants in
+          one shared field. The runtime measures each one and computes its
+          metrics — density, priority, weight, memory — then writes them back as
+          <code>--field-*</code> CSS variables you style with. Here’s exactly how
+          it works, live over the real engine behind every example.
         </p>
         <p class="thesis">
-          <strong>Every part exerts force on the others</strong> — and the whole only
-          works when you can feel them.
+          <strong>You author meaning; the field returns measurement</strong> —
+          <code>data-*</code> in, <code>--field-*</code> out. The physics is how it
+          feels; the contract is how you use it.
         </p>
         <div class="hero-cta">
           <code class="install" data-copy="npm i field-ui">npm i field-ui</code>
@@ -57,7 +60,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           <a class="btn" href="/lab">Open the Lab →</a>
         </div>
         <div class="meta">
-          <span><b>Substrate</b> &nbsp;DOM ⇄ field runtime</span>
+          <span><b>Contract</b> &nbsp;data-* in · --field-* out</span>
           <span
             ><b>Forces</b> &nbsp;{MANUAL_FORCES.length}, composable · gated by
             conditions</span
@@ -84,6 +87,70 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
         </div>
       </div>
     </header>
+
+    <!-- The smallest example — the whole authoring contract in one element, shown before
+         the deeper manual. Semantic HTML in, a CSS variable out; the live card to the
+         right is a real participant the shared field is measuring right now. -->
+    <section class="concept lede" id="start" aria-labelledby="start-h">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">Start here — the whole contract in one element</span>
+          <h2 id="start-h">Add a <code>data-*</code> attribute. Style the result.</h2>
+          <p>
+            A body is any semantic element with a <code>data-body</code>
+            attribute. The shared runtime measures it, computes its local
+            <strong>density</strong>, and writes that back as
+            <code>--field-density</code>. You read that variable in plain CSS —
+            the element is still your HTML, still readable with the field turned
+            off.
+          </p>
+          <div class="loop-line" aria-hidden="true">
+            <code>data-body</code><span>→</span>runtime token<span>→</span>local
+            density<span>→</span><code>--field-density</code><span>→</span>CSS
+          </div>
+          <pre class="code-block"><code>&lt;article
+  data-body="attract"
+  data-strength="0.8"
+  data-range="320"
+  data-feedback
+&gt;
+  &lt;h3&gt;Semantic HTML participates in the field.&lt;/h3&gt;
+&lt;/article&gt;
+
+article &#123;
+  opacity: calc(0.55 + var(--field-density, 0) * 0.45);
+&#125;</code></pre>
+          <p class="note">
+            That is the entire surface. The manual below goes deeper — the force
+            catalog, conditions, and the system that emerges — but every demo on
+            this page is just this contract, repeated.
+          </p>
+        </div>
+        <div class="stage lede-stage">
+          <span class="stage-label">live — a real participant</span>
+          <article
+            class="lede-live"
+            data-hot
+            data-feedback
+            data-body="attract"
+            data-strength="0.9"
+            data-range="300"
+            data-color="#4da3ff"
+            style="--cc:#4da3ff; --cat:#4da3ff;"
+          >
+            <h3>Semantic HTML participates in the field.</h3>
+            <p>
+              An ordinary <code>&lt;article&gt;</code>. Its brightness is
+              <code>--field-density</code>, written by the runtime as matter
+              gathers on it.
+            </p>
+          </article>
+          <span class="hintline"
+            >opacity = 0.55 + var(--field-density) · 0.45</span
+          >
+        </div>
+      </div>
+    </section>
 
     <nav class="chapter-rail" aria-label="Chapters">
       <a href="#ch-substrate" data-ch="ch-substrate"
@@ -125,21 +192,19 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no">01 — Synchronization</span>
-          <h2>The page and the field share one coordinate space.</h2>
+          <h2>The platform maps semantic elements into field coordinates.</h2>
           <p>
-            A registry samples every body’s <strong
-              >getBoundingClientRect()</strong
-            > each animation frame and maps it onto the canvas — scaled by device
-            pixel ratio.
+            The runtime measures registered bodies through the
+            <strong>host / platform boundary</strong> and maps each element’s box
+            into the field — so the field and the page describe the same space.
           </p>
           <p class="note">
-            Because it re-reads every frame, the invisible force fields stay
-            locked to the visible boxes through scroll, resize, and reflow.
+            Because it re-measures as the page changes, the field stays locked to
+            the visible boxes through scroll, resize, and reflow.
           </p>
           <div class="formula">
-            <span class="c">canvasₓ =</span> rect.left + rect.width / 2 · <span
-              class="v">DPR</span
-            >
+            <span class="c">measure:</span> rect(el) <span class="c">→</span>
+            <span class="v">field(x, y)</span>
           </div>
         </div>
         <div class="stage" aria-hidden="true">
@@ -147,7 +212,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           <svg class="diagram" viewBox="0 0 420 300" fill="none">
             <rect x="60" y="70" width="180" height="90" rx="10" class="dim"
             ></rect>
-            <text x="70" y="60" class="lbl">getBoundingClientRect</text>
+            <text x="70" y="60" class="lbl">measure(el)</text>
             <circle cx="150" cy="115" r="3" class="accf"></circle>
             <line
               x1="150"
@@ -157,7 +222,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
               class="acc"
               stroke-dasharray="3 4"></line>
             <circle cx="340" cy="210" r="4" class="accf"></circle>
-            <text x="300" y="240" class="lbl">field (x·DPR, y·DPR)</text>
+            <text x="300" y="240" class="lbl">field (x, y)</text>
           </svg>
         </div>
       </div>
@@ -649,19 +714,18 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       </div>
     </section>
 
-    <!-- III · Natural primitives -->
+    <!-- III · Natural-field translations -->
     <div class="chapter" id="ch-natural">
       <div class="wrap">
         <span class="chapter-no">III</span>
-        <h2 class="chapter-title">Natural primitives</h2>
+        <h2 class="chapter-title">Natural-field translations</h2>
         <p class="chapter-sub">
           Translations of the four fundamental fields — gravity becomes
           priority, electromagnetism becomes polarity and signal, strong becomes
-          binding, weak becomes transformation. The primitives below are the
-          engine expressions of that grammar (true 1/d², Lorentz, Langevin,
-          diffusion, waves). See the <a href="/docs/natural-fields"
-            >Natural Fields</a
-          > model.
+          binding, weak becomes transformation. The runtime tokens below are
+          implementation expressions of that grammar (true 1/d², Lorentz,
+          Langevin, diffusion, waves) — they are not additional fundamental
+          fields. See the <a href="/docs/natural-fields">Natural Fields</a> model.
         </p>
       </div>
     </div>
@@ -1757,6 +1821,90 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
 <style is:global>
   .stage {
     position: relative;
+  }
+
+  /* ── Start-here lede: the smallest data-* → --field-* example ─────────────── */
+  .lede .loop-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.55rem;
+    margin: 0.9rem 0;
+    font-size: 0.8rem;
+    color: var(--muted, #9aa);
+  }
+  .lede .loop-line code {
+    font-size: 0.92em;
+    color: var(--text, #e8e8ef);
+    background: color-mix(in srgb, #4da3ff 16%, transparent);
+    padding: 0.1rem 0.4rem;
+    border-radius: 5px;
+  }
+  .lede .loop-line span {
+    opacity: 0.45;
+  }
+  .lede .code-block {
+    margin: 0.2rem 0 0;
+    padding: 0.95rem 1.05rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.34);
+    overflow-x: auto;
+    font-family: var(--mono, "Martian Mono", ui-monospace, monospace);
+    font-size: 0.74rem;
+    line-height: 1.55;
+    color: #cdd6e4;
+  }
+  .lede .code-block code {
+    font: inherit;
+    white-space: pre;
+  }
+  .lede-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    min-height: 340px;
+    padding: 2.5rem 1.25rem;
+  }
+  /* the live participant: an ordinary card whose brightness IS --field-density,
+     written by the runtime because it carries data-feedback. */
+  .lede-live {
+    position: relative;
+    z-index: 1;
+    max-width: 22rem;
+    margin: 0;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid
+      color-mix(in srgb, var(--cc, #4da3ff) 45%, var(--line, #2a2a35));
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--cc, #4da3ff) 8%, rgba(8, 10, 18, 0.7));
+    cursor: default;
+    /* the one line the example teaches — opacity tracks the written density */
+    opacity: calc(0.55 + var(--field-density, 0) * 0.45);
+    box-shadow: 0 0 calc(var(--field-density, 0) * 40px)
+      color-mix(in srgb, var(--cc, #4da3ff) 55%, transparent);
+    transition:
+      opacity 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .lede-live h3 {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+  }
+  .lede-live p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted, #aab);
+  }
+  .lede-live code {
+    font-size: 0.9em;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lede-live {
+      transition: none;
+    }
   }
   .stage-field {
     position: absolute;
