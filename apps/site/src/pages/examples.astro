@@ -47,6 +47,32 @@ stage.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor
 });`;
 
+const flowWcSrc = `const field = document.querySelector('field-root');
+
+// A flow focus is a movable target the field bends toward — it pulls matter in and
+// curves the streamlines. Retarget it on every pointer move for live, dynamic flow:
+stage.addEventListener('pointermove', (e) => {
+  field.flowTo(e.clientX, e.clientY, { strength: 1.4, radius: 480 });
+});
+stage.addEventListener('pointerleave', () => field.clearFlow());
+
+field.setRender('streamlines'); // optional: watch the flow LINES bend, not just the matter`;
+
+const flowCoreSrc = `import { createField } from 'field-ui';
+
+const field = createField(canvas);
+
+// place or move the flow focus — one call, retargeted as often as you like
+field.flowTo(x, y, { strength: 1.4, radius: 480 });
+
+// animate it: follow the pointer, orbit a path, or track an element
+requestAnimationFrame(function tick(t) {
+  field.flowTo(cx + Math.cos(t / 700) * 180, cy + Math.sin(t / 700) * 180);
+  requestAnimationFrame(tick);
+});
+
+field.clearFlow(); // relax back to the bodies-only field`;
+
 const emphSrc = `<ul class="reading-list">
   <li data-hot data-feedback data-body="attract" data-strength="1.1" data-range="240">
     Designing with force
@@ -147,7 +173,10 @@ const GROUPS = [
   {
     id: 'control',
     title: 'Field control',
-    items: [{ id: 'click-burst', label: 'Click to burst' }],
+    items: [
+      { id: 'flow-field', label: 'Controlled flow field' },
+      { id: 'click-burst', label: 'Click to burst' },
+    ],
   },
 ];
 ---
@@ -335,6 +364,30 @@ const GROUPS = [
   </section>
 
   <div class="ex-group-head" id="control">Field control</div>
+
+  <section class="docs-sec" id="flow-field">
+    <h2>Controlled flow field</h2>
+    <p>
+      A <strong>flow focus</strong> is a movable target the whole field bends toward — matter streams
+      in and the streamlines curve to it. Move your pointer across the stage to steer it, or let it
+      <em>auto-orbit</em>; toggle <em>Trace lines</em> to switch the field to streamlines and watch the
+      flow lines bend in real time. It's one call — <code>field.flowTo(x, y)</code> — retargeted each
+      frame.
+    </p>
+    <div class="sc-stage sc-flow" data-flow role="presentation">
+      <div class="sc-flow-controls">
+        <button type="button" class="sc-flow-btn" data-flow-trace aria-pressed="false">Trace lines</button>
+        <button type="button" class="sc-flow-btn" data-flow-orbit aria-pressed="false">Auto-orbit</button>
+      </div>
+      <span class="sc-flow-hint">move your pointer here — the field follows</span>
+    </div>
+    <CodeTabs
+      variants={[
+        { label: 'Web component', lang: 'js', code: flowWcSrc },
+        { label: 'Core', lang: 'ts', code: flowCoreSrc },
+      ]}
+    />
+  </section>
 
   <section class="docs-sec" id="click-burst">
     <h2>Click to burst</h2>
@@ -572,6 +625,75 @@ const GROUPS = [
           kids.forEach((el) => reflowEl.appendChild(el)); // re-append in shuffled order
         });
       }, { signal: sig });
+    }
+
+    // Controlled flow field: steer field.flowTo() with the pointer, optionally trace the lines,
+    // or auto-orbit. Drives the real flow-field API on the shared <field-root>.
+    const flowStage = document.querySelector('[data-flow]');
+    if (flowStage) {
+      let orbitRaf = 0;
+      let traced = false;
+      const prevRender = 'dots'; // the page's default render mode, restored when tracing turns off
+      const onFlowMove = (e) => {
+        const f = getField();
+        if (f && f.flowTo) f.flowTo(e.clientX, e.clientY, { strength: 1.4, radius: 480 });
+      };
+      flowStage.addEventListener('pointermove', onFlowMove, { signal: sig });
+      flowStage.addEventListener('pointerleave', () => {
+        const f = getField();
+        if (!orbitRaf && f && f.clearFlow) f.clearFlow();
+      }, { signal: sig });
+
+      const traceBtn = flowStage.querySelector('[data-flow-trace]');
+      if (traceBtn) {
+        traceBtn.addEventListener('click', () => {
+          const f = getField();
+          if (!f || !f.setRender) return;
+          traced = !traced;
+          traceBtn.setAttribute('aria-pressed', String(traced));
+          traceBtn.classList.toggle('on', traced);
+          f.setRender(traced ? 'streamlines' : prevRender);
+        }, { signal: sig });
+      }
+
+      const orbitBtn = flowStage.querySelector('[data-flow-orbit]');
+      if (orbitBtn) {
+        orbitBtn.addEventListener('click', () => {
+          const f = getField();
+          if (!f || !f.flowTo) return;
+          const on = !orbitRaf;
+          orbitBtn.setAttribute('aria-pressed', String(on));
+          orbitBtn.classList.toggle('on', on);
+          if (on) {
+            const r = flowStage.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+            const rx = Math.min(220, r.width * 0.32);
+            const ry = Math.min(150, r.height * 0.32);
+            const tick = (t) => {
+              f.flowTo(cx + Math.cos(t / 700) * rx, cy + Math.sin(t / 700) * ry, { strength: 1.4, radius: 480 });
+              orbitRaf = requestAnimationFrame(tick);
+            };
+            orbitRaf = requestAnimationFrame(tick);
+          } else {
+            cancelAnimationFrame(orbitRaf);
+            orbitRaf = 0;
+            if (f.clearFlow) f.clearFlow();
+          }
+        }, { signal: sig });
+      }
+
+      // restore the field on navigation away: drop the focus + render mode
+      obs.push({
+        disconnect: () => {
+          if (orbitRaf) cancelAnimationFrame(orbitRaf);
+          const f = getField();
+          if (f) {
+            if (f.clearFlow) f.clearFlow();
+            if (traced && f.setRender) f.setRender(prevRender);
+          }
+        },
+      });
     }
 
     // Sidebar scroll-spy: highlight the concept whose section sits at the top of the view.
@@ -975,6 +1097,52 @@ const GROUPS = [
     color: var(--text);
     white-space: nowrap;
     will-change: transform;
+  }
+
+  /* Controlled flow field demo */
+  .sc-flow {
+    position: relative;
+    min-height: 300px;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .sc-flow-controls {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    display: flex;
+    gap: 0.4rem;
+    z-index: 1;
+  }
+  .sc-flow-btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-3);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .sc-flow-btn.on {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .sc-flow-hint {
+    position: absolute;
+    bottom: 0.7rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    pointer-events: none;
   }
 
   @media (max-width: 620px) {
