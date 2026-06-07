@@ -282,6 +282,9 @@ Every behavior should be classified by truth mode.
 
 This makes the project honest about which parts are physics, which are design, and which are expressive composites.
 
+> **Implemented.** The `TruthMode` union + `TRUTH_MODES` catalog ship in `contracts/passport.ts`
+> (Physical → `physical`); each force passport declares its mode.
+
 ## 12. Visualization Grammar
 
 Visualization is how the system explains itself.

@@ -52,6 +52,11 @@ Feedback = how the field writes back to the DOM
 | Poetic truth | expressive composite | `blackhole`, `nebula` |
 | Semantic truth | maps meaning into physics | attention, memory |
 
+> **Implemented.** These are the `TruthMode` union + `TRUTH_MODES` catalog in
+> `packages/core/src/contracts/passport.ts`. Forces classify as `physical` / `designed` / `hybrid`
+> (fieldflow); `diagnostic` / `poetic` / `semantic` classify visualizations, composite presets, and
+> the meaning→metric mappings respectively.
+
 ## Fundamental Table
 
 | Field / interaction | Field structure | `field(b, x, y)` should return | `apply(b, p, env)` should do | Particle relationship to field lines | Render expectation | Correct field-ui role |
@@ -85,6 +90,12 @@ Do not make `magnetism.apply()` follow magnetic field lines.
 That behavior belongs to `fieldflow`.
 
 ## Gravity
+
+> **Implemented.** `gravity.field()` now ships (`packages/core/src/forces/natural.ts`,
+> `bodyGravityField`): a radial inward field so gravity owns `field()`, renders as field lines, and
+> can be followed by `fieldflow`. `gravity.apply()` is unchanged — adding the field only makes the
+> structure visible/followable (a field line is not always a particle path). The passport's
+> `ownsField` is now `true`.
 
 ### Field
 

@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { allForces } from '../conformance/run.ts';
 import { EXPERIMENTS } from '../conformance/experiments.ts';
-import { PASSPORTS, passportFor, validatePassports } from './passport.ts';
+import { PASSPORTS, passportFor, validatePassports, conformanceTests, TRUTH_MODES } from './passport.ts';
 
 test('every force passport is consistent with the registry and conformance catalog', () => {
   const problems = validatePassports(allForces(), EXPERIMENTS);
@@ -56,6 +56,33 @@ test('charge requires charge and owns a field; gravity does neither-charge but a
   assert.equal(c.ownsField, true);
   assert.equal(g.requiresCharge, false);
   assert.equal(g.affectsNeutralMatter, true);
+});
+
+test('gravity now owns a field() and can render field lines (BA1)', () => {
+  const g = passportFor('gravity');
+  assert.ok(g);
+  assert.equal(g.ownsField, true, 'gravity owns a radial field()');
+  assert.equal(g.canVisualizeFieldLines, true);
+  assert.ok(g.bestRenderModes.includes('field-lines'));
+});
+
+test('natural forces are truth-mode "physical"; the 5-mode taxonomy is published', () => {
+  assert.equal(passportFor('gravity')?.truthMode, 'physical');
+  assert.equal(passportFor('charge')?.truthMode, 'physical');
+  assert.equal(passportFor('attract')?.truthMode, 'designed');
+  assert.equal(passportFor('fieldflow')?.truthMode, 'hybrid');
+  for (const m of ['physical', 'designed', 'diagnostic', 'poetic', 'semantic'])
+    assert.ok(m in TRUTH_MODES, `${m} is a documented truth mode`);
+});
+
+test('every passport carries bestRenderModes + commonComposites; conformanceTests is derived', () => {
+  for (const t of Object.keys(PASSPORTS)) {
+    assert.ok(Array.isArray(passportFor(t)!.bestRenderModes) && passportFor(t)!.bestRenderModes.length > 0);
+    assert.ok(Array.isArray(passportFor(t)!.commonComposites));
+  }
+  // conformanceTests pulls live check labels from the catalog (no drift)
+  assert.ok(conformanceTests('magnetism').length >= 1);
+  assert.deepEqual(conformanceTests('not-a-force'), []);
 });
 
 test('modifiers and sources are flagged from their class', () => {
