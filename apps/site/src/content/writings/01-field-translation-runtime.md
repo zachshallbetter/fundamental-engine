@@ -1,22 +1,27 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "field-ui: A Field Translation Runtime for Relational DOM Interfaces"
-paper: 1
+description: "The paradigm: UI as a shared, inspectable field of meaning."
+summary: "The paradigm: UI as a shared, inspectable field of meaning."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 1
+author: "Zach Shallbetter"
 ---
 
 # field-ui: A Field Translation Runtime for Relational DOM Interfaces
 
 > **Status: research draft (preprint, work in progress).** Paper 1 of the field-ui family — the
 > flagship paradigm paper. Claims verified against the codebase and canonical docs as of 2026-06-07. See the
-> [series index](/research) and *the caveat canon* therein. This is a preprint draft, not canonical
+> [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not canonical
 > product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 1 of 8 (the flagship paradigm paper)
-**Companion papers (domain validators):** [Reading Field](/research/02-reading-field) (reading);
-[Evidence Fields](/research/03-evidence-fields) (AI trust); Motion Equivalence (accessibility);
+**Companion papers (domain validators):** [Reading Field](/writings/02-reading-field) (reading);
+[Evidence Fields](/writings/03-evidence-fields) (AI trust); Motion Equivalence (accessibility);
 Host-Driven Runtime (architecture); Portable Field Recipes (authoring); Data as Field Participants
-(data binding); Explainable Interface Behavior (diagnostics). See the [series index](/research).
+(data binding); Explainable Interface Behavior (diagnostics). See the [series index](/writings).
 
 ---
 
@@ -798,4 +803,4 @@ Notation is kept LaTeX-compatible (inline math and fenced blocks translate direc
 referenced in prose but not yet drawn — the package dependency graph (§4.1), the reciprocal loop
 (§3.1), the six-phase scheduler timeline (§5.1), and a field-vs-particle-path diagram (§3.3) — are
 produced at conversion time. External citations marked `[TODO: cite]` and the `[key]` placeholders in
-[`references.md`](/research/references) must be resolved and verified before submission.
+[`references.md`](/writings/references) must be resolved and verified before submission.

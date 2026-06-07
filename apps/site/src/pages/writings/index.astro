@@ -1,0 +1,65 @@
+---
+import Base from '../../layouts/Base.astro';
+import SiteNav from '../../components/SiteNav.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import '../../styles/ds-tokens.css';
+import '../../styles/writings.css';
+
+const CATS = [
+  { key: 'research', label: 'Research', blurb: 'Longer-form papers on the ideas behind field-ui.' },
+  { key: 'release', label: 'Releases', blurb: 'What shipped, and what it means.' },
+  { key: 'feature', label: 'Features', blurb: 'New capabilities, explained.' },
+  { key: 'note', label: 'Notes', blurb: 'Shorter thoughts and updates.' },
+];
+const sortEntries = (a: CollectionEntry<'writings'>, b: CollectionEntry<'writings'>) => {
+  if (a.data.order != null && b.data.order != null) return a.data.order - b.data.order;
+  return +b.data.date - +a.data.date;
+};
+const all = (await getCollection('writings', (e) => !e.data.draft)).sort(sortEntries);
+const byCat = (k: string) => all.filter((e) => e.data.category === k);
+const fmt = (d: Date) => new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(d);
+const num = (e: CollectionEntry<'writings'>) =>
+  e.data.category === 'research' && e.data.order != null && e.data.order < 90 ? `${e.data.order}. ` : '';
+---
+
+<Base
+  title="Writings · field-ui"
+  description="field-ui writings — features, releases, and research on a relational field runtime for the DOM."
+>
+  <SiteNav current="writings" />
+  <main class="writings-index">
+    <header class="wi-hero">
+      <h1 data-body="attract" data-strength="0.6" data-feedback>Writings</h1>
+      <p class="lede">
+        What we are building and thinking about — <strong>features</strong>, <strong>releases</strong>,
+        and longer-form <strong>research</strong> — written in markdown. The first things going in are
+        the research papers on the ideas behind field-ui.
+      </p>
+    </header>
+
+    {
+      CATS.filter((c) => byCat(c.key).length > 0).map((c) => (
+        <section class="wi-section" aria-labelledby={`wi-${c.key}`}>
+          <div class="wi-section-head">
+            <h2 id={`wi-${c.key}`}>{c.label}</h2>
+            <p class="wi-blurb">{c.blurb}</p>
+          </div>
+          <ul class="wi-cards">
+            {byCat(c.key).map((e) => (
+              <li class="wi-card">
+                <a class="wi-card-link" href={`/writings/${e.id}`}>
+                  <span class={`w-badge w-${e.data.category}`}>{e.data.category}</span>
+                  <h3>{num(e)}{e.data.title}</h3>
+                  {e.data.summary && <p class="wi-summary">{e.data.summary}</p>}
+                  <time class="wi-date" datetime={e.data.date.toISOString()}>{fmt(e.data.date)}</time>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </main>
+  <SiteFooter />
+</Base>

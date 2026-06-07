@@ -1,20 +1,25 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "A Host-Driven Field Runtime for Portable Interface Behavior"
-paper: 5
+description: "A runtime architecture that targets DOM, Canvas, SVG, WebGL, native, or headless."
+summary: "A runtime architecture that targets DOM, Canvas, SVG, WebGL, native, or headless."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 5
+author: "Zach Shallbetter"
 ---
 
 # A Host-Driven Field Runtime for Portable Interface Behavior
 
 > **Status: research draft (preprint, work in progress).** Paper 5 of the field-ui family — the
 > systems-architecture paper. Claims verified against the codebase and canonical docs as of
-> 2026-06-07. See the [series index](/research) and *the caveat canon* therein. This is a preprint
+> 2026-06-07. See the [series index](/writings) and *the caveat canon* therein. This is a preprint
 > draft, not canonical product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 5 of 8 (the runtime-architecture paper)
 **Companion paper (flagship):** [field-ui: A Field Translation Runtime for Relational DOM
-Interfaces](/research/01-field-translation-runtime) — the paradigm, the reciprocal model, and the
+Interfaces](/writings/01-field-translation-runtime) — the paradigm, the reciprocal model, and the
 architecture in overview. This paper goes *deep* where the flagship was an overview; it does not
 restate the model.
 
@@ -758,13 +763,13 @@ referenced in prose but not yet drawn — the package dependency graph and host 
 six-phase scheduler timeline and read/write discipline (§4.1–4.2), the registry-to-phase map (§4.3),
 and the recipe-to-platform compilation pipeline (§5.1) — are produced at conversion time from the
 prose descriptions. External citations marked `[TODO: cite]` and the `[key]` placeholders in
-[`references.md`](/research/references) must be resolved and verified before submission. Cross-references to
+[`references.md`](/writings/references) must be resolved and verified before submission. Cross-references to
 sibling papers use their series numbers; replace with citation keys at conversion time.
 
 ## Citations needed
 
 The following external references are cited as `[TODO: cite]` in the text and must be located and
-verified against [`references.md`](/research/references) before submission — never fabricated:
+verified against [`references.md`](/writings/references) before submission — never fabricated:
 
 - **Retained-mode vs immediate-mode UI** (§2) — the architectural distinction between a persistent
   object model redrawn from state and per-frame re-issued draw calls.

@@ -1,6 +1,12 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "References"
+description: "Running bibliography for the field-ui research paper family."
+summary: "The shared bibliography for the paper family."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 99
+author: "Zach Shallbetter"
 ---
 
 # References (running bibliography)
