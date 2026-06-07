@@ -1,76 +1,124 @@
 # field-ui
 
-**A reciprocal DOM-physics field.** Your page's elements are physical bodies in a
-single particle field: they carry weight and exert force, and the field's local
-density bends them back — glowing, growing, gaining weight where matter gathers.
-Not a background effect; a medium your interface lives inside.
+**The renderer-agnostic field engine.** `field-ui` computes the field: forces, particles, metrics,
+recipes, diagnostics, and conformance, against plain data, with **zero runtime dependencies** and
+**zero DOM**. Your page's elements become physical bodies in one shared field; they exert force, and
+the field's local density bends them back. The visible canvas is one render surface, not the system.
 
-- **Zero runtime dependencies.** Pure TypeScript, one `<canvas>`, one `rAF` loop.
-- **34 forces** — nine canonical verbs, eight natural primitives (gravity, charge,
-  magnetism, thermal, collide, diffuse, propagate, memory), and seventeen designed
-  extended forces (including SPH `pressure`, Verlet `link`, predator/prey `hunt`,
-  field-line transport `fieldflow`,
-  shape-assembly `morph`, and the budgeted `spawn` source) — plus presets, conditions,
-  formations, and six render modes (dots, trails, links, metaballs, voronoi, streamlines).
-- **Reciprocal.** Two-way density feedback writes `--d` back onto your elements (driving
-  material typography and self-laying-out layout); opt-in conserved attention and
-  cross-boundary causality couple them.
+This is the core. Most apps consume it through a thin adapter that wires the browser for you:
+[`@field-ui/elements`](../elements) (web component), [`@field-ui/react`](../react), or
+[`@field-ui/vanilla`](../vanilla). Reach for the core directly when you own the render loop or target a
+renderer other than the DOM canvas.
 
-→ Live manual, lab, and design system at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and design system at **[field-ui.com](https://field-ui.com)**.
 
 ## Install
 
 > **Pre-release: not yet on npm.** Releases are cut as git tags for now (see
-> [`RELEASING.md`](../../RELEASING.md)); consume the package from the repository as a
-> workspace dependency or a git install. `npm add field-ui` lands with the first
-> published release.
+> [`RELEASING.md`](../../RELEASING.md) and [`PUBLISHING.md`](../../PUBLISHING.md)). Consume the package
+> from this repository as a workspace dependency or a git install. `npm add field-ui` lands with the
+> first published release. The public surface is frozen for `0.x` (see
+> [API stability](../../docs/canonical/field-ui-api-stability.md)).
 
-Most apps want the `@field-ui/elements` web component or the `@field-ui/react` adapter,
-which wrap this engine. Use the core directly when you own the canvas.
+## What's inside
+
+- **34 forces** in three families: **9 canonical** verbs (`attract`, `repel`, `swirl`, `stream`,
+  `viscosity`, `jet`, `tether`, `wall`, `sink`), **8 natural** primitives (`gravity`, `charge`,
+  `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`), and **17 designed-extended**
+  forces (`lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`,
+  `link`, `morph`, `hunt`, `spawn`, `resonate`, `spotlight`, `pigment`, and field-line transport
+  `fieldflow`).
+- **8 presets** compose those primitives into cosmology with no new engine code (`blackhole`, `star`,
+  `galaxy`, `tornado`, …), plus **5 formations** that bias the whole field and **6 condition** gates.
+- **16 render modes**: matter/structure (`dots`, `trails`, `links`, `streamlines`, `metaballs`,
+  `voronoi`, `field-lines`, `heatmap`) and diagnostics (`force-vectors`, `contours`, `potential`,
+  `energy`, `topology`, `inspector`, `causality`, `prediction`).
+- **64 recipes** across 4 tiers: a recipe is a portable field program. `compileRecipe()` lives here
+  (pure, no DOM); `applyRecipe()` and `bindData()` are in [`@field-ui/platform`](../platform).
+- **A conformance framework** that fires known particles into each force and checks the measured
+  trajectory against the math. The same catalog drives the tests and the visual Lab.
 
 ## Quick start
 
+`createField` is renderer-agnostic, so it **requires a host** (a `FieldHost`: viewport, scroll, raf,
+and a canvas). In the browser, the host comes from [`@field-ui/platform`](../platform):
+
 ```ts
 import { createField } from 'field-ui';
+import { browserHost } from '@field-ui/platform';
 
 const canvas = document.querySelector('canvas')!;
-const field = createField(canvas, { accent: '#4da3ff' });
+const field = createField(canvas, { host: browserHost(), accent: '#4da3ff' });
 
-// any [data-body] element on the page becomes a force the field reacts to:
+// Any [data-body] element on the page becomes a force the field reacts to:
 //   <a data-body="attract" data-strength="0.9" data-range="320" data-feedback>pull me</a>
-// after adding bodies to the DOM, rescan:
-field.scan();
+field.scan(); // re-scan [data-body] after a DOM change
 ```
+
+If you do not want to wire the host yourself, [`@field-ui/vanilla`](../vanilla) re-exports a
+host-bundled `createField` (and a `FieldField` class), and [`@field-ui/elements`](../elements) /
+[`@field-ui/react`](../react) wrap it as a custom element / component. `createField` called without a
+host throws a clear error pointing you to those doors.
 
 ## The model
 
-- **Bodies** are declared in markup with `data-body="<force> <force>…"` (forces
-  compose). Common attributes: `data-strength`, `data-range`, `data-color`,
-  `data-when` (a condition gate), `data-feedback` (two-way density write-back).
-- **The field** is one conserved pool of particles. It re-reads every body's
-  rectangle each frame, so any layout change *is* a change to the force geometry.
-- **Feedback** (`data-feedback`) samples the density gathered on a body and eases it
-  into the element's `--d` custom property — drive weight, glow, and scale from it.
+- **Bodies** are declared in markup with `data-body="<force> <force>…"` (forces compose). Common
+  attributes: `data-strength`, `data-range`, `data-color`, `data-when` (a condition gate), and
+  `data-feedback` (two-way density write-back).
+- **The field** is one conserved pool of particles. It re-reads every body's rectangle each frame, so
+  any layout change *is* a change to the force geometry.
+- **Feedback** samples the density gathered on a body and eases it into the element's `--field-density`
+  custom property (with `--d` and `--forces-density` as legacy aliases). Drive weight, glow, and scale
+  from it.
 
 ## The handle
 
 `createField` returns a `FieldHandle`:
 
 ```ts
-field.scan();                  // re-scan [data-body] after a DOM change
-field.setAccent('#a78bfa');    // recolour the travelling accent
-field.setPalette('heatmap');   // swap the accent colour template
-field.setFormation('wells');   // switch the global formation
-field.setAttention(true);      // conserved attention — one finite strength budget
-field.setCausality(true);      // cross-boundary causality — density spills to neighbours
-field.setRender('streamlines'); // draw the force field itself (diagnostic)
-field.burst(x, y, '#fff');     // a one-shot shove + heat near a point
-field.threads(list);           // glowing connectors between an engaged set
-field.destroy();               // stop the loop, release listeners
+field.scan();                   // re-scan [data-body] after a DOM change
+field.setAccent('#a78bfa');     // recolour the travelling accent
+field.setPalette('heatmap');    // swap the accent colour template
+field.setFormation('wells');    // switch the global formation
+field.setAttention(true);       // conserved attention — one finite strength budget
+field.setCausality(true);       // cross-boundary causality — density spills to neighbours
+field.setRender('streamlines'); // draw the force field itself (a diagnostic mode)
+field.flowTo(x, y);             // place a movable flow focus the field bends toward
+field.burst(x, y, '#fff');      // a one-shot shove + heat near a point
+field.destroy();                // stop the loop, release listeners
 ```
 
-Reduced motion is honoured (`prefers-reduced-motion` freezes the sim), and the loop
-pauses when the tab is backgrounded.
+Reduced motion is honoured (`prefers-reduced-motion` freezes the sim), and the loop pauses when the tab
+is backgrounded.
+
+## Recipes
+
+A recipe names an intent and composes existing tokens into behavior. It never adds engine behavior, and
+its lanes stay separate: concepts describe, tokens execute, metrics measure, diagnostics explain,
+conditions activate. `compileRecipe()` turns a `FieldRecipe` into a compiled plan with no DOM:
+
+```ts
+import { compileRecipe, recipeById } from 'field-ui';
+
+const plan = compileRecipe(recipeById('priority-well')!);
+// → bodies, relationships, feedback, diagnostics, metrics, and a reduced-motion output.
+```
+
+`applyRecipe()` (run a recipe on a live DOM platform) and `bindData()` (records → bodies) are in
+[`@field-ui/platform`](../platform). Browse all 64 at [`/docs/gallery`](https://field-ui.com/docs/gallery).
+
+## Renderer-agnostic
+
+The engine touches no DOM globals (a boundary test keeps the allowlist empty). Everything the browser
+provides arrives through an injected `FieldHost`, so the same engine runs on a DOM canvas, an offscreen
+canvas, a headless harness, or any renderer you implement. `browserHost()` (in
+[`@field-ui/platform`](../platform)) is the canonical DOM implementation of that contract.
+
+## Related
+
+[`@field-ui/platform`](../platform) · [`@field-ui/elements`](../elements) ·
+[`@field-ui/react`](../react) · [`@field-ui/vanilla`](../vanilla) · the
+[documentation map](../../docs/README.md).
 
 ## License
 

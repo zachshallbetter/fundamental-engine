@@ -10,6 +10,7 @@
     "test": "pnpm -r test",
     "check:dist": "node scripts/check-dist.mjs",
     "check:api": "tsc -p scripts/tsconfig.api.json --noEmit && node scripts/check-api-surface.mjs",
+    "check:readme": "node scripts/check-readme.mjs",
     "dev": "pnpm --filter @field-ui/site dev",
     "build:site": "pnpm --filter @field-ui/site build",
     "docs:dev": "pnpm --filter @field-ui/docs dev",
