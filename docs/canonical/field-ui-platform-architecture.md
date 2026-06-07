@@ -39,8 +39,12 @@ apps/site · lab · docs
   product surfaces, executable documentation, diagnostics, examples, and previews.
 ```
 
-Dependency direction is strict: `elements → platform → core`, `react → platform → core`,
-`vanilla → core`. Compatibility alias packages (`@forces-ui/*`, `forces-ui`) re-export the renamed
+Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
+`vanilla → platform → core`. `@field-ui/core` is renderer-agnostic and imports **zero** DOM (enforced
+by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
+`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@field-ui/platform`.
+`createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
+you. Compatibility alias packages (`@forces-ui/*`, `forces-ui`) re-export the renamed
 families during the migration window.
 
 ## The FrameScheduler
@@ -119,8 +123,12 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 - **D7** — the legacy DOM glue quarantined behind a renderer-agnostic boundary guard
   (`core/dom-boundary.test.ts`), so core stays DOM-free outside the two allowlisted modules.
 
-**Remaining frontier:** the canvas render loop itself still lives in `core/field.ts`. Moving
-rendering onto the platform so core imports zero DOM is future work beyond Phase D.
+**Frontier — done:** `core/field.ts` (the engine + canvas render loop) no longer touches any DOM
+globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
+scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
+to `@field-ui/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
+source file in `@field-ui/core` is provably DOM-global-free, so the engine is portable to any renderer
+(Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
 ## Reading Field
 

@@ -17,7 +17,8 @@
  * ```
  */
 
-import { createField, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from 'field-ui';
+import { type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from 'field-ui';
+import { createBrowserField } from '@field-ui/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
 export interface FieldFieldInit extends FieldOptions {
@@ -40,7 +41,7 @@ export class FieldField implements FieldHandle {
     const { canvas, target, ...opts } = init;
     this.managed = !canvas;
     this.canvas = canvas ?? makeFieldCanvas(target);
-    this.field = createField(this.canvas, opts);
+    this.field = createBrowserField(this.canvas, opts);
   }
 
   /** (re)scan the document for `[data-body]` bodies after a layout change. */

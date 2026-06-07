@@ -1,12 +1,11 @@
 /**
- * browserHost — the default {@link FieldHost}, binding the engine to the browser (`window` /
- * `document` / `requestAnimationFrame`). This is the one core module that touches DOM globals at
- * runtime, isolated here on purpose: the engine in `field.ts` is renderer-agnostic and routes
- * everything through the host, so all of core's DOM surface is this small, explicit adapter. It is
- * the allowlisted exception in `dom-boundary.test.ts`. `createField` builds one of these by default;
- * pass `opts.host` to drive the same engine from a different environment.
+ * browserHost — the default {@link FieldHost}, binding the renderer-agnostic core engine to the
+ * browser (`window` / `document` / `requestAnimationFrame`). It lives in `@field-ui/platform` (the DOM
+ * participation layer), NOT in `@field-ui/core` — core imports zero DOM. `createField(canvas, opts)`
+ * requires a host; pass `browserHost()` in the browser (or `createBrowserField` for the convenience),
+ * or a custom host to drive the same engine from a headless renderer / a different document / a test.
  */
-import type { FieldHost } from './host.ts';
+import type { FieldHost } from 'field-ui';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 
