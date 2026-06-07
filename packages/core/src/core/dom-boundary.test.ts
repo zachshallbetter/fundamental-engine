@@ -1,9 +1,9 @@
 /**
- * DOM-boundary guard (Phase D7, runtime-platform-unification). @field-ui/core must stay
- * renderer-agnostic: it computes field/force/particle/metric/diagnostic logic and must not reach for
- * browser globals. The two exceptions are quarantined and allowlisted — `core/field.ts` (the legacy
- * canvas renderer + `experimental-platform="off"` fallback) and `export.ts` (the download-anchor
- * helper). DOM participation belongs in @field-ui/platform.
+ * DOM-boundary guard. @field-ui/core must stay renderer-agnostic: it computes field/force/particle/
+ * metric/diagnostic logic and must not reach for browser globals. The two allowlisted exceptions are
+ * `core/browser-host.ts` (the engine's one environment adapter — the default FieldHost) and
+ * `export.ts` (the download-anchor helper). The engine (`core/field.ts`) routes every DOM touchpoint
+ * through the injected FieldHost, so it is now DOM-global-free.
  *
  * This test scans every other core source file for DOM-global *call-sites* (matched as access /
  * construction patterns, so prose like "scan the document" or "debounce window" doesn't trip it) and
@@ -17,8 +17,10 @@ import { dirname, join, relative, sep } from 'node:path';
 
 const SRC = join(dirname(fileURLToPath(import.meta.url)), '..'); // packages/core/src
 
-// allowlisted legacy/thin DOM modules (paths relative to src, normalized to forward slashes)
-const ALLOW = new Set(['core/field.ts', 'export.ts']);
+// allowlisted DOM modules (paths relative to src, normalized to forward slashes): the browser host
+// adapter (the engine's one environment binding) and the download-anchor helper. The engine itself
+// (core/field.ts) is now renderer-agnostic — it routes all DOM access through the injected FieldHost.
+const ALLOW = new Set(['core/browser-host.ts', 'export.ts']);
 
 // DOM-global call-sites — access/construction patterns that won't appear in ordinary prose.
 const FORBIDDEN: Array<[string, RegExp]> = [

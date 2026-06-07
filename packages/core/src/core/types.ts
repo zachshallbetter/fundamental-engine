@@ -10,6 +10,7 @@
  * the integrator, and the conformance harness all build on these shapes.
  */
 import type { FlowOptions } from './flow.ts';
+import type { FieldHost } from './host.ts';
 
 export interface Vec2 {
   x: number;
@@ -297,6 +298,12 @@ export interface FieldOptions {
    * Font-variation weight is a typographic render effect and stays in the engine.
    */
   feedbackSink?: FeedbackSink;
+  /**
+   * The environment seam (frontier): inject a {@link FieldHost} to drive the engine from a non-browser
+   * renderer/environment. Defaults to `browserHost()` (window/document/rAF). The engine itself touches
+   * no DOM globals — all of them flow through this host.
+   */
+  host?: FieldHost;
 }
 
 /** Per-element feedback values the engine produces each frame (Phase D3 seam). */
