@@ -38,6 +38,7 @@ The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-ar
 | [`field-ui-definition-document.md`](canonical/field-ui-definition-document.md) | Canonical concept and operating model |
 | [`field-ui-system-contracts.md`](canonical/field-ui-system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
 | [`field-ui-platform-architecture.md`](canonical/field-ui-platform-architecture.md) | `@field-ui/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
+| [`field-ui-natural-fields.md`](canonical/field-ui-natural-fields.md) | The Natural Field Translation System — the four fundamental fields translated into interface behavior |
 | [`fundamental-field-behavior-table.md`](canonical/fundamental-field-behavior-table.md) | Field/force laws, electromagnetic split, `fieldflow`, and truth modes |
 | [`visualization-methods-taxonomy.md`](canonical/visualization-methods-taxonomy.md) | Render layers and diagnostics (all modes shipped: contours, potential, vectors, energy, topology, inspector, causality, prediction) |
 | [`field-ui-interaction-and-relationship-model.md`](canonical/field-ui-interaction-and-relationship-model.md) | Agents beyond particles; the relationship model; Reading Field |
@@ -76,9 +77,6 @@ the canonical docs and the code.
 | [`forces-explainer.md`](planning-archive/forces-explainer.md) | Legacy single-canvas explainer |
 | [`roadmap-frontiers.md`](planning-archive/roadmap-frontiers.md) | Frontier roadmap |
 | [`docs-showcase-overhaul.md`](planning-archive/docs-showcase-overhaul.md) | Docs-surface planning record |
-
-[`field-ui-brand-mark-field-fold.md`](field-ui-brand-mark-field-fold.md) is a standalone brand spec at
-the docs root.
 
 ## Authority order
 

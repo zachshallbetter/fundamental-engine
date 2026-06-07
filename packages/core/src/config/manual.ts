@@ -570,3 +570,108 @@ export const MANUAL_CONDITIONS: readonly { id: string; desc: string }[] = [
   { id: 'cool', desc: 'the particle is cool' },
   { id: 'scrolling', desc: 'the page is actively scrolling' },
 ];
+
+// ── Natural Field Translation System ───────────────────────────────────────────────
+//
+// field-ui does not copy physics into UI; it TRANSLATES the four fundamental fields into
+// interface behavior. Natural fields are conceptual; engine primitives are translations; canonical
+// forces are designed verbs. This classification is data — the manual cards, the Lab badges/filters,
+// and /docs/natural-fields all read it, and `natural-fields.test.ts` checks it covers every force, so
+// the taxonomy can never drift from the catalog. It changes NO particle/engine behavior — only how
+// each token is explained and organized.
+
+/** The four fundamental fields field-ui translates into interface behavior. */
+export type FundamentalField = 'gravity' | 'electromagnetic' | 'strong' | 'weak';
+
+/**
+ * How a token sits in the translation model:
+ * - `designed`  — a designed UI verb (the canonical forces + designed-extended); not a natural force.
+ * - `primitive` — a direct engine expression of a fundamental field (gravity, charge, magnetism…).
+ * - `derived`   — an effective behavior from many interactions or scalar fields (thermal, diffuse…).
+ * - `analogue`  — a material/structural analogue of strong/weak (cohesion, crystallize, morph…).
+ * - `transport` — motion ALONG field structure (fieldflow, pigment), not a force itself.
+ * - `metric`    — a persistence/measurement signal, not physics (memory).
+ */
+export type ForceKind = 'designed' | 'primitive' | 'derived' | 'analogue' | 'transport' | 'metric';
+
+/** Every force token's translation kind (covers all of MANUAL_FORCES; checked by a test). */
+export const FORCE_KIND: Record<string, ForceKind> = {
+  // canonical nine — designed UI verbs (attract is not gravity; repel is not charge)
+  attract: 'designed', repel: 'designed', swirl: 'designed', stream: 'designed', viscosity: 'designed',
+  jet: 'designed', tether: 'designed', wall: 'designed', sink: 'designed',
+  // natural — direct field expressions, derived behaviors, and one metric
+  gravity: 'primitive', charge: 'primitive', magnetism: 'primitive', propagate: 'primitive',
+  thermal: 'derived', collide: 'derived', diffuse: 'derived', memory: 'metric',
+  // designed-extended verbs
+  lens: 'designed', gate: 'designed', buoyancy: 'designed', shear: 'designed', wind: 'designed',
+  hunt: 'designed', spawn: 'designed', resonate: 'designed', spotlight: 'designed',
+  // strong/weak material analogues
+  crystallize: 'analogue', align: 'analogue', cohesion: 'analogue', pressure: 'analogue', link: 'analogue',
+  morph: 'analogue',
+  // transport — motion along field structure
+  fieldflow: 'transport', pigment: 'transport',
+};
+
+/** The fundamental-field parent for tokens that translate one (omitted for designed/derived/metric/transport with no single parent). */
+export const FORCE_FIELD: Record<string, FundamentalField> = {
+  gravity: 'gravity',
+  charge: 'electromagnetic', magnetism: 'electromagnetic', propagate: 'electromagnetic',
+  crystallize: 'strong', align: 'strong', cohesion: 'strong', pressure: 'strong', link: 'strong',
+  morph: 'weak',
+};
+
+/** A token's translation classification: its kind, and its fundamental-field parent if it has one. */
+export function classifyForce(token: string): { kind: ForceKind | undefined; field: FundamentalField | undefined } {
+  return { kind: FORCE_KIND[token], field: FORCE_FIELD[token] };
+}
+
+/** One fundamental field, its interface translation, and the engine tokens that express it. */
+export interface NaturalFieldInfo {
+  field: FundamentalField;
+  /** display title. */
+  title: string;
+  /** the interface behavior it translates into. */
+  translation: string;
+  /** one-line gloss. */
+  summary: string;
+  /** interface needs this field serves. */
+  interfaceUses: readonly string[];
+  /** the engine tokens that express this field (derived from FORCE_FIELD). */
+  expressions: readonly string[];
+}
+
+/** The four fundamental fields as interface grammar — the spine of the Natural Field Translation System. */
+export const NATURAL_FIELDS: readonly NaturalFieldInfo[] = [
+  {
+    field: 'gravity',
+    title: 'Gravity',
+    translation: 'priority, convergence, hierarchy',
+    summary: 'the field of what matters — important bodies bend attention and gather related matter into stable wells.',
+    interfaceUses: ['priority', 'ranking', 'search relevance', 'centrality', 'anchoring', 'settling', 'attention wells'],
+    expressions: Object.keys(FORCE_FIELD).filter((t) => FORCE_FIELD[t] === 'gravity'),
+  },
+  {
+    field: 'electromagnetic',
+    title: 'Electromagnetic',
+    translation: 'polarity, signal, field lines, flow',
+    summary: 'the field of difference and signal. Electric fields push; magnetic fields bend; fieldflow carries.',
+    interfaceUses: ['polarity', 'contrast', 'signal', 'routing', 'state opposition', 'field lines', 'guided flow', 'activation'],
+    expressions: Object.keys(FORCE_FIELD).filter((t) => FORCE_FIELD[t] === 'electromagnetic'),
+  },
+  {
+    field: 'strong',
+    title: 'Strong',
+    translation: 'binding, cohesion, structure',
+    summary: 'the field of what holds together — groups, clusters, bonds, constraints, and durable local structure.',
+    interfaceUses: ['grouping', 'relationship strength', 'clusters', 'bonds', 'constraints', 'local structure', 'material integrity'],
+    expressions: Object.keys(FORCE_FIELD).filter((t) => FORCE_FIELD[t] === 'strong'),
+  },
+  {
+    field: 'weak',
+    title: 'Weak',
+    translation: 'transformation, decay, release',
+    summary: 'the field of change — fading, mutation, release, phase shift, expiration, and handoff.',
+    interfaceUses: ['state change', 'release', 'decay', 'expiration', 'handoff', 'transformation', 'instability'],
+    expressions: Object.keys(FORCE_FIELD).filter((t) => FORCE_FIELD[t] === 'weak'),
+  },
+];
