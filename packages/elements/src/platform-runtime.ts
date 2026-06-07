@@ -73,9 +73,14 @@ export function shouldDiscoverRelationships(frame: number, every = 30): boolean 
 }
 
 // ── the flag ──────────────────────────────────────────────────────────────────────
-let runtimeDefault = false;
+// D6: the platform runtime is now the DEFAULT (parity proven across D1-D5). Every <field-root> runs
+// it alongside the legacy engine, which still simulates + renders while the platform owns
+// measurement, feedback writes, shadow registration, and the relationship graph. Opt a single
+// element back onto the pure-legacy path with experimental-platform="off", or globally with
+// usePlatformRuntime(false). D7 trims the now-redundant legacy DOM glue.
+let runtimeDefault = true;
 
-/** Enable (or disable) the platform runtime for every `<field-root>` by default. Off until D6. */
+/** Enable (or disable) the platform runtime for every `<field-root>` by default (D6: default on). */
 export function usePlatformRuntime(on = true): void {
   runtimeDefault = on;
 }
@@ -87,8 +92,8 @@ export function isPlatformRuntimeDefault(): boolean {
 
 /**
  * Decide whether an element should use the platform runtime: an explicit `experimental-platform`
- * attribute opts a single element in (or `experimental-platform="off"` opts out of the default),
- * otherwise the global default applies. Pure — the element's only branch point.
+ * attribute opts a single element in/out (`="off"` forces the legacy path), otherwise the global
+ * default applies (on since D6). Pure — the element's only branch point.
  */
 export function shouldUsePlatformRuntime(el: { getAttribute(name: string): string | null; hasAttribute(name: string): boolean }, def = runtimeDefault): boolean {
   if (el.hasAttribute('experimental-platform')) return el.getAttribute('experimental-platform') !== 'off';
