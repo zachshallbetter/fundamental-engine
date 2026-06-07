@@ -8,5 +8,6 @@ import { createField } from 'forces-ui'; // still works
 import { createField } from 'field-ui';  // preferred
 ```
 
-Install `field-ui` for new code. This alias will be removed in a future major release.
-See `docs/field-ui-migration-plan.md`.
+Install `field-ui` for new code. This alias keeps working behavior-identically through `0.x` and is
+removal-gated: see the `forces-*` → `field-*` alias window in
+[API stability](../../docs/canonical/field-ui-api-stability.md) and the [documentation map](../../docs/README.md).
