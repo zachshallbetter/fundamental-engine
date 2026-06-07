@@ -1,5 +1,10 @@
 import { createField, PALETTE, type FieldHandle, type ThreadLink } from 'field-ui';
 import { HTMLElementBase } from './base.ts';
+import { shouldUsePlatformRuntime, startPlatformRuntime, type PlatformRuntime } from './platform-runtime.ts';
+
+// Experimental platform runtime (Phase D). Re-exported so apps can opt in globally.
+export { usePlatformRuntime, isPlatformRuntimeDefault, shouldUsePlatformRuntime, startPlatformRuntime } from './platform-runtime.ts';
+export type { PlatformRuntime } from './platform-runtime.ts';
 
 /**
  * `<forces-field>` — the reciprocal field as a custom element.
@@ -29,6 +34,8 @@ export class FieldField extends HTMLElementBase {
 
   private readonly canvas: HTMLCanvasElement;
   private field?: FieldHandle;
+  /** experimental platform runtime (Phase D); present only when the flag is on. */
+  platformRuntime?: PlatformRuntime;
 
   constructor() {
     super();
@@ -138,6 +145,8 @@ export class FieldField extends HTMLElementBase {
   disconnectedCallback(): void {
     this.field?.destroy();
     this.field = undefined;
+    this.platformRuntime?.destroy();
+    this.platformRuntime = undefined;
   }
 
   /**
@@ -172,6 +181,9 @@ export class FieldField extends HTMLElementBase {
 
   /** (re)create the engine on the canvas, reading the current attributes. */
   private start(): void {
+    // tear down any prior platform runtime before a rebuild (idempotent)
+    this.platformRuntime?.destroy();
+    this.platformRuntime = undefined;
     this.field = createField(this.canvas, {
       // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
       accent: this.getAttribute('accent') ?? undefined,
@@ -183,6 +195,12 @@ export class FieldField extends HTMLElementBase {
       attention: this.attention,
       causality: this.causality,
     });
+    // Phase D: when the experimental flag is on, run the platform runtime alongside the legacy
+    // engine. D1 measures the scan root only — no observable change; the seam for D2+.
+    if (shouldUsePlatformRuntime(this)) {
+      const scanRoot = this.ownerDocument?.documentElement ?? this;
+      this.platformRuntime = startPlatformRuntime(scanRoot);
+    }
   }
 }
 
