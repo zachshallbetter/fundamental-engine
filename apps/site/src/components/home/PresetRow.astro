@@ -1,0 +1,47 @@
+---
+// One preset row in the manual — a named composite of forces, dragged as a single body.
+// Cosmology as composition; the chip expands its `data-preset` into several virtual bodies.
+interface Props {
+  /** a MANUAL_PRESETS entry. */
+  p: any;
+  /** running concept number. */
+  num: number;
+  /** the preset's accent colour. */
+  color: string;
+  /** alternate the two-column layout. */
+  reverse?: boolean;
+}
+const { p, num, color, reverse = false } = Astro.props;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+---
+
+<section class={"concept" + (reverse ? " reverse" : "")}>
+  <div class="wrap concept-grid">
+    <div>
+      <span class="concept-no" style={`--c:${color}`}>
+        <i class={`fgp fgp-${p.name}`} /> {String(num).padStart(2, "0")} — {cap(p.name)}
+      </span>
+      <h2>{p.example}</h2>
+      <p>{cap(p.desc)}.</p>
+      <div class="formula" style={`--c:${color}`}>
+        expands to: {p.tokens.join(" · ")}
+      </div>
+    </div>
+    <div class="stage">
+      <span class="stage-label">{p.name} — drag me</span>
+      <span
+        class="body-chip"
+        data-drag
+        data-hot
+        data-preset={p.name}
+        style={`--cc:${color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
+      >
+        <i class={`fgp fgp-${p.name}`} />
+        {p.name}
+      </span>
+      <span class="hintline">
+        hover to engage · {p.tokens.length} forces in one body
+      </span>
+    </div>
+  </div>
+</section>
