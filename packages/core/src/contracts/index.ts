@@ -98,6 +98,14 @@ export const CONTRACTS: readonly ContractMeta[] = [
     inspectable: 'the budget vs. live counts',
   },
   {
+    name: 'Accessibility Contract',
+    mustExist: 'a reduced-motion fallback for any motion-dependent meaning; labels for interactive fields',
+    mayMutate: 'nothing physical — it constrains how feedback/visualization may present',
+    sideEffectFree: 'the checks (reduced-motion gating, lint) are pure',
+    testable: 'meaning survives without motion; events do not spam AT; color is not the sole carrier',
+    inspectable: 'reduced-motion state, the a11y lint findings, and ARIA on interactive fields',
+  },
+  {
     name: 'Conformance Contract',
     mustExist: 'proof for every force, render mode, agent, source/sink, recipe',
     mayMutate: 'nothing',
