@@ -114,7 +114,7 @@ const LIVE = ['evidence-field'];
     raf = requestAnimationFrame(loop);
 
     const refresh = () => binding.update(claims);
-    const rebuild = () => { binding.destroy(); binding = bindData(root, claims, mapper, { recipe: 'evidence-field', className: 'ev-claim', reducedMotion: reduced }); };
+    const rebuild = () => { binding.destroy(); binding = bindData(root, claims, mapper, { recipe: on ? 'evidence-field' : undefined, className: 'ev-claim', reducedMotion: reduced }); };
 
     for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-ev]')) {
       btn.addEventListener('click', () => {
@@ -132,7 +132,7 @@ const LIVE = ['evidence-field'];
           if (on) rebuild();
         } else if (k === 'field') {
           on = !on; btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on)); btn.textContent = on ? 'Field: on' : 'Field: off';
-          if (on) rebuild(); else binding.destroy();
+          rebuild(); // keep claims rendered; recipe only attaches when on
         }
       });
     }
