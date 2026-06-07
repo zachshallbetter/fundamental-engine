@@ -74,6 +74,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
+    feedbackSink: opts.feedbackSink, // Phase D3: route feedback writes to the platform, opt-in
   };
   let heatmap: Heatmap | null = null; // lazily built once the viewport size is known
 
@@ -548,6 +549,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function writeLit(b: Body, lit: number): void {
+    if (cfg.feedbackSink) {
+      // D3: route the lit channel to the platform; it writes --lit + fires field:lit/dim with hysteresis.
+      cfg.feedbackSink(b.el, { lit });
+      return;
+    }
     b.el.style.setProperty('--lit', lit.toFixed(3));
     const armed = b.el.dataset.fxLit === '1';
     if (lit > 0.5 && !armed) {
@@ -564,22 +570,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (!b.feedback) continue;
       const target = feedbackTarget(b.count, b.on);
       b.d += (target - b.d) * 0.08;
-      // write to the host, or a separate write target for shadow-DOM bodies (§11). `--d` is the
-      // established var; `--forces-density` is its explicit alias (shadow CSS contract), and
-      // `--field-density` is the field-ui-migration alias written alongside it (both same value).
+      // write to the host, or a separate write target for shadow-DOM bodies (§11).
       const writeEl = b.writeTarget ?? b.el;
-      const dStr = b.d.toFixed(3);
-      writeEl.style.setProperty('--d', dStr);
-      writeEl.style.setProperty('--forces-density', dStr);
-      writeEl.style.setProperty('--field-density', dStr);
-      // the heatmap's local density under the body (field-systems H1) — distinct from `--d`,
-      // which is the body's own gathered density; this is the ambient heatmap at its position.
-      // `--field-heatmap-density` mirrors `--forces-heatmap-density` for the migration.
-      if (heatmap) {
-        const hStr = heatmap.norm(b.cx, b.cy).toFixed(3);
-        writeEl.style.setProperty('--forces-heatmap-density', hStr);
-        writeEl.style.setProperty('--field-heatmap-density', hStr);
-      }
+
+      // font-variation weight is a typographic render effect (not a CSS custom property), so it is
+      // applied in-engine on both paths, idempotently via lastWeight.
       if (b.fmax) {
         const w = feedbackWeight(b.fmin, b.fmax, b.d);
         if (lastWeight.get(writeEl) !== w) {
@@ -587,13 +582,35 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           writeEl.style.fontVariationSettings = `"wght" ${w}` + (b.opsz ? `, "opsz" ${b.opsz}` : '');
         }
       }
-      if (b.capacity > 0 && b.tokens.indexOf('sink') >= 0) {
-        // accretion load ∈ [0,1] — the canonical author-facing var is `--load`; `--mass`
-        // is kept as a back-compat alias (§21.2). This is the fill fraction, not the
-        // captured count `b.accreted`.
-        const load = clamp(b.accreted / b.capacity, 0, 1).toFixed(3);
-        writeEl.style.setProperty('--load', load);
-        writeEl.style.setProperty('--mass', load);
+
+      // the heatmap's local density at the body (distinct from `--d`, the body's own gathered
+      // density); the accretion load is the sink fill fraction ∈ [0,1].
+      const heatmapDensity = heatmap ? heatmap.norm(b.cx, b.cy) : undefined;
+      const load = b.capacity > 0 && b.tokens.indexOf('sink') >= 0 ? clamp(b.accreted / b.capacity, 0, 1) : undefined;
+
+      if (cfg.feedbackSink) {
+        // D3: hand the CSS-var channels to the platform's FeedbackRegistry instead of writing here.
+        cfg.feedbackSink(writeEl, { density: b.d, heatmapDensity, load });
+        continue;
+      }
+
+      // `--d` is the established var; `--forces-density` is its explicit alias (shadow CSS contract),
+      // and `--field-density` is the field-ui-migration alias written alongside it (same value).
+      const dStr = b.d.toFixed(3);
+      writeEl.style.setProperty('--d', dStr);
+      writeEl.style.setProperty('--forces-density', dStr);
+      writeEl.style.setProperty('--field-density', dStr);
+      // `--field-heatmap-density` mirrors `--forces-heatmap-density` for the migration.
+      if (heatmapDensity !== undefined) {
+        const hStr = heatmapDensity.toFixed(3);
+        writeEl.style.setProperty('--forces-heatmap-density', hStr);
+        writeEl.style.setProperty('--field-heatmap-density', hStr);
+      }
+      if (load !== undefined) {
+        // the canonical author-facing var is `--load`; `--mass` is kept as a back-compat alias (§21.2).
+        const loadStr = load.toFixed(3);
+        writeEl.style.setProperty('--load', loadStr);
+        writeEl.style.setProperty('--mass', loadStr);
       }
     }
   }
