@@ -11,9 +11,10 @@ interaction participate in one **shared field context**. Elements bend the field
 back. The visible particle canvas is **one render surface**, not the whole system.
 
 ```txt
-@field-ui/core      computes renderer-agnostic field, force, particle, metric, and diagnostic behavior.
-@field-ui/platform  binds field behavior to the DOM: measurement, state, feedback, relationships,
-                    visual bindings, overlays, linting, and scheduling.
+field-ui            computes renderer-agnostic field, force, particle, metric, recipe, and diagnostic
+                    behavior. (The core package is named field-ui; there is no scoped core package.)
+@field-ui/platform  binds field behavior to the DOM: the browser host, measurement, state, feedback,
+                    relationships, visual bindings, overlays, recipes, data binding, lint, scheduling.
 @field-ui/elements  native web components and the [data-body] HTML authoring contract.
 @field-ui/react     the React adapter over the same contracts.
 @field-ui/vanilla   the FieldField class for plain TypeScript.
