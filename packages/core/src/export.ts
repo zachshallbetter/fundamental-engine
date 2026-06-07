@@ -1,11 +1,9 @@
 /**
- * Field export (visualization-methods-taxonomy §15). Turn a field into a portable artifact: a PNG
- * raster of the canvas, or an SVG of vector segments (field lines, contours, relationship overlays).
- * `segmentsToSvg` is pure and testable; the canvas/download helpers are thin DOM glue.
- *
- * Quarantine note: this is the only core module besides `core/browser-host.ts` that touches DOM
- * globals (`document.createElement` for the download anchor). It is allowlisted in
- * `core/dom-boundary.test.ts`; keep the rest of core renderer-agnostic.
+ * Field export serializers (visualization-methods-taxonomy §15). Turn a field into a portable
+ * artifact: an SVG of vector segments (field lines, contours, relationship overlays), or a PNG data
+ * URL of the canvas. Both are DOM-global-free — `segmentsToSvg` is pure, and `canvasToPng` calls the
+ * passed canvas's own `toDataURL`. The download helpers (which need `document`) live in
+ * `@field-ui/platform` (`downloadUrl` / `downloadText` / `downloadCanvasPng`).
  */
 import type { Segment } from './diagnostics/render.ts';
 
@@ -31,30 +29,7 @@ export function segmentsToSvg(segments: readonly Segment[], width: number, heigh
   );
 }
 
-/** A PNG data URL of a canvas (the rasterized field). Thin DOM. */
+/** A PNG data URL of a canvas (the rasterized field) — the canvas's own `toDataURL`, no globals. */
 export function canvasToPng(canvas: HTMLCanvasElement): string {
   return canvas.toDataURL('image/png');
-}
-
-/** Trigger a browser download of a data/blob URL. Thin DOM. */
-export function downloadUrl(url: string, filename: string): void {
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.rel = 'noopener';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-
-/** Download arbitrary text (e.g. an SVG document) as a file. Thin DOM. */
-export function downloadText(text: string, filename: string, mime = 'image/svg+xml'): void {
-  const url = URL.createObjectURL(new Blob([text], { type: mime }));
-  downloadUrl(url, filename);
-  URL.revokeObjectURL(url);
-}
-
-/** Download a canvas as a PNG file. Thin DOM. */
-export function downloadCanvasPng(canvas: HTMLCanvasElement, filename = 'field.png'): void {
-  downloadUrl(canvasToPng(canvas), filename);
 }

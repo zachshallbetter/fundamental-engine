@@ -1,4 +1,5 @@
-import { createField, PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions } from 'field-ui';
+import { PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions } from 'field-ui';
+import { createBrowserField } from '@field-ui/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 
@@ -201,7 +202,7 @@ export class FieldField extends HTMLElementBase {
       this.platformRuntime = startPlatformRuntime(scanRoot);
       feedbackSink = makeFeedbackSink(this.platformRuntime.platform);
     }
-    this.field = createField(this.canvas, {
+    this.field = createBrowserField(this.canvas, {
       // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
       accent: this.getAttribute('accent') ?? undefined,
       density: this.density,

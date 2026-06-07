@@ -5,7 +5,14 @@
  *
  * Registries: MeasurementRegistry · StateRegistry · FeedbackRegistry · RelationshipRegistry ·
  * VisualBindingRegistry · OverlayRegistry, bound by createFieldPlatform.
+ *
+ * Also the browser environment adapter for the renderer-agnostic core engine: `browserHost()` (the
+ * default FieldHost), `createBrowserField()` (createField + browserHost), and the DOM download
+ * helpers — so core can import zero DOM.
  */
+import { createField, type FieldHandle, type FieldOptions } from 'field-ui';
+import { browserHost } from './browser-host.ts';
+
 export * from './types.ts';
 export * from './schedule.ts';
 export * from './measurement.ts';
@@ -16,3 +23,10 @@ export * from './visual-bindings.ts';
 export * from './overlays.ts';
 export * from './lint.ts';
 export * from './platform.ts';
+export * from './browser-host.ts';
+export * from './export-dom.ts';
+
+/** Start the core engine on a canvas with the default browser host — `createField` + `browserHost()`. */
+export function createBrowserField(canvas: HTMLCanvasElement, opts: Omit<FieldOptions, 'host'> = {}): FieldHandle {
+  return createField(canvas, { ...opts, host: browserHost() });
+}

@@ -38,7 +38,6 @@ export * from './core/render-modes.ts';
 export * from './core/heatmap.ts';
 export * from './core/surface.ts';
 export * from './core/host.ts';
-export * from './core/browser-host.ts';
 export * from './core/field.ts';
 export * from './forces/index.ts';
 // physics conformance — the Lab-as-detector framework (shared by tests + the Lab UI)
