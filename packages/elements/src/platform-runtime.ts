@@ -11,7 +11,7 @@
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
 import { createFieldPlatform, type FieldPlatform } from '@field-ui/platform';
-import { bodyElements } from 'field-ui';
+import { bodyElements, type FeedbackSink } from 'field-ui';
 
 /** A minimal view of MeasurementRegistry — what body syncing needs. */
 interface BodySink {
@@ -60,6 +60,36 @@ export function isPlatformRuntimeDefault(): boolean {
 export function shouldUsePlatformRuntime(el: { getAttribute(name: string): string | null; hasAttribute(name: string): boolean }, def = runtimeDefault): boolean {
   if (el.hasAttribute('experimental-platform')) return el.getAttribute('experimental-platform') !== 'off';
   return def;
+}
+
+/**
+ * Build a feedback sink (D3) that routes the engine's per-body channels through the platform's
+ * FeedbackRegistry instead of letting the engine write the DOM. The eased density value is the
+ * engine's own — only the *write* moves — so the signal is preserved exactly. FeedbackRegistry
+ * mirrors `--field-*` → `--forces-*` and `field:*` → `forces:*`, so both alias families stay live.
+ * Writes apply on the platform's write phase (its scheduler tick).
+ */
+export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
+  const litArmed = new WeakSet<Element>();
+  // match the legacy engine's 3-decimal var formatting exactly, so the platform path is byte-identical.
+  const f3 = (n: number): string => n.toFixed(3);
+  return (el, ch) => {
+    // density → --d (original) + --field-density (auto-mirrors --forces-density)
+    if (ch.density !== undefined) platform.feedback.set(el, { '--d': f3(ch.density), '--field-density': f3(ch.density) });
+    // heatmap density → --field-heatmap-density (auto-mirrors --forces-heatmap-density)
+    if (ch.heatmapDensity !== undefined) platform.feedback.set(el, { '--field-heatmap-density': f3(ch.heatmapDensity) });
+    // accretion load → --load + --mass (back-compat alias)
+    if (ch.load !== undefined) platform.feedback.set(el, { '--load': f3(ch.load), '--mass': f3(ch.load) });
+    // lit → --lit (continuous) + a thresholded field:lit/field:dim (discrete, hysteretic) via state
+    if (ch.lit !== undefined) {
+      platform.feedback.set(el, { '--lit': f3(ch.lit) });
+      if (!litArmed.has(el)) {
+        litArmed.add(el);
+        platform.feedback.threshold(el, 'field:lit', { metric: 'lit', enter: 0.5, exit: 0.4, exitEvent: 'field:dim' });
+      }
+      platform.state.set(el, 'lit', ch.lit); // numeric — the threshold compares the raw value
+    }
+  };
 }
 
 // ── the runtime ─────────────────────────────────────────────────────────────────────
