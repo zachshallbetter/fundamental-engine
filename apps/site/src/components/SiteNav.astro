@@ -100,17 +100,41 @@ const dest = [
 </header>
 
 <script>
-  // Two field toggles, both delegated + page-load synced so they survive view-transition
-  // navigation (which swaps the button elements but keeps the persisted <field-root>).
+  // The two global field toggles (flow render + density heatmap) drive the persisted
+  // <field-root>. It survives client-side navigation (transition:persist) while these nav
+  // buttons are re-rendered fresh on every page — so storing the on/off state only in a
+  // button's aria-pressed let the buttons drift out of sync with the field after a
+  // navigation. The source of truth is now the persisted field-root element itself
+  // (data-nav-render / data-nav-heatmap, which ride along with it), so the freshly rendered
+  // buttons re-sync from the field's real state on every astro:page-load. On a hard reload
+  // the field-root is recreated at its defaults (dots, no heatmap) with the markers absent,
+  // so buttons and field reset together — no drift either way.
+  //
+  // The field-lines toggle (home only) stays a class on <html>; it's re-toggled per visit.
 
-  // 1) Global field flow: switch the whole background field render between dots and streamlines.
+  type FieldEl = HTMLElement & {
+    setRender(m: string): void;
+    setHeatmap(on: boolean): void;
+  };
+  const fieldEl = () => document.querySelector('field-root') as FieldEl | null;
+
+  // 1) Global field flow: dots ⇄ streamlines, read back from the persisted field.
   function syncStreamBtn() {
     const btn = document.getElementById('sn-stream-toggle');
     if (!btn) return;
-    const on = btn.getAttribute('aria-pressed') === 'true';
+    const on = fieldEl()?.dataset.navRender === 'streamlines';
+    btn.setAttribute('aria-pressed', String(on));
     btn.title = on ? 'Show particles' : 'Show field flow';
   }
-  // 2) Per-stage field lines (home): show/hide the traced overlays.
+  // 2) Density heatmap: the glow underlay, read back from the persisted field.
+  function syncHeatmapBtn() {
+    const btn = document.getElementById('sn-heatmap-toggle');
+    if (!btn) return;
+    const on = fieldEl()?.dataset.navHeatmap === 'on';
+    btn.setAttribute('aria-pressed', String(on));
+    btn.title = on ? 'Hide density heatmap' : 'Show density heatmap';
+  }
+  // 3) Per-stage field lines (home): show/hide the traced overlays.
   function syncFieldBtn() {
     const btn = document.getElementById('sn-field-toggle');
     if (!btn) return;
@@ -118,43 +142,35 @@ const dest = [
     btn.setAttribute('aria-pressed', String(shown));
     btn.title = shown ? 'Hide field lines' : 'Show field lines';
   }
-  // 3) Density heatmap: toggle the global field's heatmap glow layer.
-  function syncHeatmapBtn() {
-    const btn = document.getElementById('sn-heatmap-toggle');
-    if (!btn) return;
-    const on = btn.getAttribute('aria-pressed') === 'true';
-    btn.title = on ? 'Hide density heatmap' : 'Show density heatmap';
-  }
+
   document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement | null;
     if (!t) return;
     if (t.closest('#sn-stream-toggle')) {
-      const btn = document.getElementById('sn-stream-toggle')!;
-      const next = btn.getAttribute('aria-pressed') !== 'true';
-      const field = document.querySelector('field-root') as (HTMLElement & { setRender(m: string): void }) | null;
+      const field = fieldEl();
+      const next = field?.dataset.navRender !== 'streamlines';
       field?.setRender(next ? 'streamlines' : 'dots');
-      btn.setAttribute('aria-pressed', String(next));
+      if (field) field.dataset.navRender = next ? 'streamlines' : 'dots';
       syncStreamBtn();
     } else if (t.closest('#sn-heatmap-toggle')) {
-      const btn = document.getElementById('sn-heatmap-toggle')!;
-      const next = btn.getAttribute('aria-pressed') !== 'true';
-      const field = document.querySelector('field-root') as (HTMLElement & { setHeatmap(on: boolean): void }) | null;
+      const field = fieldEl();
+      const next = field?.dataset.navHeatmap !== 'on';
       field?.setHeatmap(next);
-      btn.setAttribute('aria-pressed', String(next));
+      if (field) field.dataset.navHeatmap = next ? 'on' : 'off';
       syncHeatmapBtn();
     } else if (t.closest('#sn-field-toggle')) {
       document.documentElement.classList.toggle('hide-field-lines');
       syncFieldBtn();
     }
   });
-  document.addEventListener('astro:page-load', () => {
+
+  function syncAll() {
     syncStreamBtn();
     syncHeatmapBtn();
     syncFieldBtn();
-  });
-  syncStreamBtn();
-  syncHeatmapBtn();
-  syncFieldBtn();
+  }
+  document.addEventListener('astro:page-load', syncAll);
+  syncAll();
 </script>
 
 <style>
