@@ -29,8 +29,10 @@ moved), `prediction` (its expected path), and `inspector` (all of these at once)
 *what state it reads from* and *what question it answers*. Second, the **reveal-never-mutate
 invariant**: every diagnostic visualizes field state without feeding back into the force computation
 it depicts. This is not a convention but a property the code is organized around and the design
-documents assert as canonical ("Diagnostic truth is read-only"); we argue it is precisely what makes
-the explanations *trustworthy* — a view that cannot change what it shows cannot lie about it. Third,
+documents assert as canonical ("Diagnostic truth is read-only"); we argue it is what keeps
+the explanations *non-perturbing* — producing the view cannot change what it shows (no observer
+effect). Faithfulness of the labels is a separate matter, carried by the passport and conformance
+audits (§5). Third,
 the runtime's **self-explanation**: a live Platform Inspector that reads the running registries, an
 `applyRecipe.inspect()` surface that now reports real relationship resolution including unresolved
 endpoints, a `lintPlatform()` self-audit that surfaces quiet field failures, and per-force *passports*
@@ -175,7 +177,7 @@ This table is not aspirational: `VISUALIZATION_TRUTH_TABLE`, the `RENDER_MODES` 
 mode is marked `shipped`. The diagnostic math behind the overlays ships in
 `packages/core/src/diagnostics/` and the canvas drawing of them in `diagnostics/render.ts` (the C1
 overlays: `force-vectors`, `contours`, `potential`, `energy`) and `diagnostics/modes.ts` (`topology`,
-`inspector`, `causality`, `prediction`). All are exercised on the live `/docs/diagnostics` page.
+`inspector`, `causality`, `prediction`). The diagnostic math is pure and unit-tested (`diagnostics.test.ts`); the `/docs/diagnostics` page renders the overlays over *demo* data, while the Platform Inspector (§5.1) reads *live* runtime state.
 
 ### 3.2 Three views worth drawing out
 
@@ -294,10 +296,11 @@ lint layer are the same idea applied to two surfaces.
 An explanation is only worth trusting if producing it cannot change the thing being explained. A
 debugger that perturbs the program it inspects (a Heisenbug) is a familiar hazard; a behavior
 explanation that subtly nudged the behavior would be worse, because the user would be shown a reason
-that the act of showing had altered. The reveal-never-mutate invariant forecloses this: a field-ui
-diagnostic *cannot* be lying about the behavior, because it has no channel through which to change what
-it shows. The same field state drives both the behavior and the picture of it, and the picture has no
-write access. We regard this as the diagnostic analogue of the family's broader epistemic stance —
+that the act of showing had altered. The reveal-never-mutate invariant forecloses *that* failure: a field-ui
+diagnostic cannot **perturb** the behavior it reports, because it has no channel through which to change
+what it shows. The same field state drives both the behavior and the picture of it, and the picture has
+no write access. (This is non-perturbation, not fidelity: a read-only view can still mislabel or
+mis-aggregate — that the labels are *faithful* rests on the passport and conformance audits of §5.) We regard this as the diagnostic analogue of the family's broader epistemic stance —
 truth modes, passports, conformance, lint (Paper 1, §6, §9.2) — where honesty is *mechanical* rather
 than rhetorical: the diagnostic's read-only-ness is a property the code is shaped by, not a promise in
 prose.
@@ -485,8 +488,8 @@ behavior as inspectable field state in the first place (Paper 1).
 state is readable; it must be readable *without the act of reading changing it*. §4's invariant — the
 diagnostic has no write channel to the physics — is what lets an author believe the picture. Combined
 with the static honesty of passports and the continuous audit of lint and conformance, field-ui's claim
-is not merely "you can see what the field is doing" but "what you see cannot be lying, and producing the
-view cannot have changed the answer."
+is not merely "you can see what the field is doing" but "producing the view cannot have changed the
+answer, and the labels you see are audited — by passports and conformance — rather than merely asserted."
 
 **Cost.** Diagnostics are not free; rendering overlays and running lint every frame has a price, and on
 a simple, flat interface that price may exceed the explanatory benefit — the same "does the field pay

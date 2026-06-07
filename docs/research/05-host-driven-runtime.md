@@ -258,8 +258,8 @@ const FORBIDDEN: Array<[string, RegExp]> = [
 
 The decisive line is `const ALLOW = new Set<string>()` — an **empty allowlist**. There is no file in
 the core that is permitted to touch a DOM global; a single new call-site, anywhere in the core, fails
-the test. A second test asserts the (currently empty) allowlist's modules still exist, so the guard
-cannot quietly rot. The practical consequence: *the core imports no DOM globals and computes field
+the test. A second test guards any future allowlisted module; with the allowlist currently empty its loop is a
+no-op, so today's anti-rot protection comes entirely from the first test — any new call-site fails it. The practical consequence: *the core imports no DOM globals and computes field
 behavior with no document present*, which is exactly what makes it portable to any renderer through a
 custom host.
 
@@ -505,7 +505,7 @@ The decisive property of the recipe format is its *conformance gate*. `validateR
 The effect is that a recipe is *auditable against the engine's actual capabilities*. Recipe prose may
 be expressive ("completion releases pressure and decays into memory") while the runtime fields stay
 strict (`primitives: ['morph', 'memory', 'gravity']`), and a concept word can never silently invent a
-force. The shipped catalog (`packages/core/src/recipes/catalog.ts`) is itself a conformance fixture:
+force. The shipped catalog (the records in `packages/core/src/recipes/catalog.ts`, re-exported by `gallery.ts`) is itself a conformance fixture — a test runs every recipe through `validateRecipe` (`recipes/schema.ts`):
 every one of the 64 portable recipes passes `validateRecipe`, enforced by a test, so the catalog
 cannot drift from the engine's vocabulary.
 

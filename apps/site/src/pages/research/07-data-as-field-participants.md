@@ -259,7 +259,7 @@ emphasis because the engine is deliberately constrained about them:
   : 0`, i.e. "any citation ⇒ fully confident" — was removed precisely because it was "the wrong default
   for an evidence/trust surface": a citation is not certainty, a source is not proof. Confidence is
   present only when the data supplies it; relationship resolution is a *separate* signal, not
-  confidence. (This is the substance of the project's #220/#226 corrections.)
+  confidence. (This is the substance of the project's #220 confidence and #222 resolution corrections.)
 - **Risk is a placeholder, not an inference.** `risk` is a `0` placeholder "until a real risk model
   exists" (`metrics.ts`); a binding that wants risk must supply it.
 
@@ -489,7 +489,7 @@ are reported**, consistent with the caveat canon.
    *executable and inspectable*, not *correct*. The field faithfully renders whatever relational claim
    the mapper makes; the responsibility for that claim's validity is the host's.
 2. **Confidence and risk must be supplied, not invented.** As §3.3 details, the engine refuses to
-   fabricate `confidence` (it is supplied-only) and treats `risk` as a placeholder (#220/#226). This is
+   fabricate `confidence` (it is supplied-only — the #220 correction) and treats `risk` as a placeholder (its `0` default is tracked in the open issue #226). This is
    a deliberate honesty constraint, but it is also a *limitation on the binding's reach*: a data source
    that lacks a confidence or risk signal cannot have one synthesized by the field, and a host that
    wants those metrics must bring its own trust/risk model. The binding will not paper over missing
@@ -577,7 +577,7 @@ Every mechanism claim in this paper is checkable against the repository:
   (`DataAgent` property→field mapping), §21 (Search), §26 (AI use cases).
 
 The mechanism landed in #210; the data-bound study pages in #213–#214; the confidence-provenance
-constraint in #220/#226; the unresolved-target tracking in #222.
+constraint in #220; the real relationship resolution and unresolved-target tracking in #222 (the `risk` placeholder is tracked in the open issue #226).
 
 ## Appendix B. Conversion notes (markdown → preprint)
 
