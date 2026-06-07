@@ -1,0 +1,112 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { RENDER_MODES } from 'field-ui';
+
+// Live diagnostic overlays: the C1 renderers draw the diagnostics data onto a canvas. The status
+// table below is rendered from the engine catalog so the "shipped vs planned" status stays honest.
+const table = RENDER_MODES;
+---
+
+<DocsLayout
+  title="field-ui — Diagnostic Overlays"
+  description="Live diagnostic render overlays drawn from the field-ui diagnostics module: contours, potential wells, force vectors, velocity vectors, and an energy bar."
+>
+  <h1>Diagnostic overlays</h1>
+  <p class="lede">
+    The diagnostics module computes the data; these overlays draw it. Toggle a layer — each reads
+    field state and never mutates it.
+  </p>
+
+  <div class="diag-controls" role="group" aria-label="Overlay">
+    <button data-mode="contours" class="active">Contours</button>
+    <button data-mode="potential">Potential</button>
+    <button data-mode="force-vectors">Force vectors</button>
+    <button data-mode="velocity">Velocity</button>
+    <button data-mode="energy">Energy</button>
+  </div>
+  <canvas id="diag-canvas" width="520" height="340" aria-label="Diagnostic overlay canvas"></canvas>
+
+  <h2>Render-mode status</h2>
+  <table class="vt-table">
+    <thead><tr><th>Mode</th><th>Type</th><th>Shows</th><th>Status</th></tr></thead>
+    <tbody>
+      {table.map((m) => (
+        <tr>
+          <td><code>{m.mode}</code></td>
+          <td>{m.type}</td>
+          <td>{m.shows}</td>
+          <td class={m.status === 'shipped' ? 'ok' : 'planned'}>{m.status}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</DocsLayout>
+
+<script>
+  import {
+    sampleScalarGrid,
+    netPotentialAt,
+    drawContours,
+    drawPotential,
+    drawForceVectors,
+    drawVelocityVectors,
+    drawEnergyBar,
+    energyReport,
+    attract,
+  } from 'field-ui';
+
+  const canvas = document.getElementById('diag-canvas') as HTMLCanvasElement | null;
+  const ctx = canvas?.getContext('2d');
+  if (canvas && ctx) {
+    const W = canvas.width;
+    const H = canvas.height;
+    const body = { cx: W / 2, cy: H / 2, M: 4200, strength: 1, range: 240, spin: 1, on: false } as never;
+    const particles = Array.from({ length: 70 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 5,
+      vy: (Math.random() - 0.5) * 5,
+      m: 1,
+      heat: Math.random() * 0.6,
+      size: 1,
+      cap: null,
+    })) as never[];
+
+    const draw = (mode: string) => {
+      ctx.clearRect(0, 0, W, H);
+      const grid = () => sampleScalarGrid((x, y) => netPotentialAt([body], x, y), W, H, mode === 'potential' ? 8 : 14);
+      if (mode === 'potential') drawPotential(ctx, grid());
+      if (mode === 'contours') drawContours(ctx, grid(), { levels: 11 });
+      if (mode === 'force-vectors') drawForceVectors(ctx, attract, body, W, H, { spacing: 34, scale: 9 });
+      if (mode === 'velocity') drawVelocityVectors(ctx, particles, { scale: 4 });
+      if (mode === 'energy') drawEnergyBar(ctx, energyReport(particles));
+      // the source body
+      ctx.fillStyle = '#4da3ff';
+      ctx.beginPath();
+      ctx.arc(body.cx, body.cy, 5, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.diag-controls button'));
+    for (const b of buttons) {
+      b.addEventListener('click', () => {
+        buttons.forEach((x) => x.classList.toggle('active', x === b));
+        draw(b.dataset.mode!);
+      });
+    }
+    draw('contours');
+  }
+</script>
+
+<style>
+  .lede { color: var(--muted, #9aa); }
+  .diag-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 0.6rem; }
+  .diag-controls button { font: inherit; font-size: 0.85rem; padding: 0.3rem 0.7rem; border: 1px solid var(--line, #2a2a35); border-radius: 7px; background: transparent; color: inherit; cursor: pointer; }
+  .diag-controls button.active { border-color: #4da3ff; background: color-mix(in srgb, #4da3ff 18%, transparent); }
+  #diag-canvas { width: 100%; max-width: 520px; height: auto; aspect-ratio: 520 / 340; border: 1px solid var(--line, #2a2a35); border-radius: 10px; background: #0b0b10; }
+  .vt-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.5rem; }
+  .vt-table th, .vt-table td { text-align: left; padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); }
+  .vt-table th { color: var(--muted, #9aa); }
+  .vt-table .ok { color: #2dd4bf; }
+  .vt-table .planned { color: var(--muted, #9aa); }
+</style>
