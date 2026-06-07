@@ -53,6 +53,11 @@ export class StateRegistry {
     return this.store.get(element) ?? new Map();
   }
 
+  /** Every element that currently holds state (for lint / iteration). */
+  elements(): Element[] {
+    return [...this.store.keys()];
+  }
+
   delete(element: Element, key: string): void {
     this.store.get(element)?.delete(key);
   }

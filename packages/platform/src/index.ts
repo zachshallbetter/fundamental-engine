@@ -14,4 +14,5 @@ export * from './feedback.ts';
 export * from './relationships.ts';
 export * from './visual-bindings.ts';
 export * from './overlays.ts';
+export * from './lint.ts';
 export * from './platform.ts';

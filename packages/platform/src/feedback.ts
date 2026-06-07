@@ -54,6 +54,11 @@ export class FeedbackRegistry {
     this.bindings.set(element, { ...this.bindings.get(element), ...map });
   }
 
+  /** The declared bindings (element → the CSS-var names it writes), for lint / inspection. */
+  boundVars(): Array<{ element: Element; vars: string[] }> {
+    return [...this.bindings].map(([element, map]) => ({ element, vars: Object.values(map) }));
+  }
+
   /** Queue a direct CSS-var write (applied on the next `flush`). */
   set(element: Element, vars: Record<string, number | string>): void {
     const cur = this.direct.get(element) ?? {};
