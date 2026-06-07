@@ -14,13 +14,42 @@
  */
 import type { Token, Force } from '../core/types.ts';
 import type { ForceClass, ForceConformance } from '../conformance/types.ts';
+import { EXPERIMENTS } from '../conformance/experiments.ts';
 
+/**
+ * The five truth modes the docs classify behavior by (definition §11, behavior-table, worldclass §1),
+ * plus `hybrid`. Forces are `physical`, `designed`, or `hybrid`; `diagnostic` classifies
+ * visualizations, `poetic` classifies composite presets, and `semantic` classifies the
+ * meaning→metric mappings (see `semantic/`).
+ */
 export type TruthMode =
-  | 'natural' // a real physical law (gravity, Lorentz, Langevin, diffusion)
+  | 'physical' // a real physical law (gravity, Lorentz, Langevin, diffusion)
   | 'designed' // a tuned interface verb (the canonical nine, most extended forces)
-  | 'hybrid'; // a designed primitive operating over natural geometry (fieldflow)
+  | 'hybrid' // a designed primitive operating over natural geometry (fieldflow)
+  | 'diagnostic' // reveals internal state (heatmaps, inspectors, force vectors)
+  | 'poetic' // an expressive composite from stable primitives (blackhole, nebula)
+  | 'semantic'; // maps data/interface meaning into physics (attention, memory)
 
-export type RenderMode = 'dots' | 'trails' | 'links' | 'streamlines' | 'metaballs' | 'voronoi';
+/** The truth-mode catalog (what each mode classifies), for inspectors. */
+export const TRUTH_MODES: Readonly<Record<TruthMode, string>> = {
+  physical: 'modeled after a real physical law',
+  designed: 'shaped for readable UI behavior',
+  hybrid: 'a designed primitive operating over natural field geometry',
+  diagnostic: 'reveals internal state (visualizations, inspectors)',
+  poetic: 'an expressive composite from stable primitives (presets)',
+  semantic: 'maps data/interface meaning into physics',
+};
+
+/** Render modes + the renderable structure layers a force reads best in (incl. field-lines/heatmap). */
+export type RenderMode =
+  | 'dots'
+  | 'trails'
+  | 'links'
+  | 'streamlines'
+  | 'metaballs'
+  | 'voronoi'
+  | 'field-lines'
+  | 'heatmap';
 
 /** A force's complete, inspectable contract description. */
 export interface ForcePassport {
@@ -54,6 +83,10 @@ export interface ForcePassport {
   canVisualizeFieldLines: boolean;
   /** can be drawn as force vectors via a probe (iff it moves particles). */
   canVisualizeForceVectors: boolean;
+  /** the render modes that read best for this force (testing §2 "Best render modes"). */
+  bestRenderModes: readonly RenderMode[];
+  /** preset composites this force commonly appears in (testing §2 "Common composites"). */
+  commonComposites: readonly string[];
   designUse: string;
   physicsNote: string;
 }
@@ -61,18 +94,44 @@ export interface ForcePassport {
 /** Shorthand for the per-force authored rows below. */
 type Row = Omit<
   ForcePassport,
-  'isSource' | 'isModifier' | 'canVisualizeFieldLines' | 'canVisualizeForceVectors'
+  | 'isSource'
+  | 'isModifier'
+  | 'canVisualizeFieldLines'
+  | 'canVisualizeForceVectors'
+  | 'bestRenderModes'
+  | 'commonComposites'
 >;
 
-// Derived fields (isSource, isModifier, canVisualize*) are computed from klass + ownsField +
-// movesParticles in `finish()`, so they can never contradict the structural facts.
+/** Per-force render-mode + composite hints (the forces where they're meaningful). Others default. */
+const EXTRA: Readonly<Record<string, { render?: RenderMode[]; composites?: string[] }>> = {
+  attract: { render: ['dots', 'metaballs'], composites: ['blackhole', 'galaxy', 'star'] },
+  repel: { render: ['dots'], composites: ['whitehole', 'nebula'] },
+  swirl: { render: ['trails', 'streamlines'], composites: ['galaxy', 'tornado'] },
+  stream: { render: ['trails', 'streamlines'], composites: ['fountain'] },
+  jet: { render: ['trails'], composites: ['fountain', 'quasar'] },
+  sink: { render: ['dots', 'metaballs'], composites: ['blackhole', 'accretion'] },
+  gravity: { render: ['field-lines', 'trails'], composites: ['blackhole', 'galaxy', 'star'] },
+  charge: { render: ['field-lines', 'dots'], composites: ['quasar'] },
+  magnetism: { render: ['field-lines', 'trails'], composites: ['star', 'quasar'] },
+  thermal: { render: ['heatmap', 'trails'], composites: ['star', 'nebula'] },
+  fieldflow: { render: ['streamlines', 'trails', 'field-lines'], composites: ['star', 'nebula', 'quasar'] },
+  diffuse: { render: ['heatmap'], composites: ['nebula'] },
+  link: { render: ['links'], composites: [] },
+  morph: { render: ['dots'], composites: [] },
+};
+
+// Derived fields (isSource, isModifier, canVisualize*, render/composite hints) are computed in
+// `finish()`, so they can never contradict the structural facts.
 function finish(r: Row): ForcePassport {
+  const extra = EXTRA[r.token];
   return {
     ...r,
     isSource: r.klass === 'S',
     isModifier: r.klass === 'modifier',
     canVisualizeFieldLines: r.ownsField,
     canVisualizeForceVectors: r.movesParticles,
+    bestRenderModes: extra?.render ?? (r.ownsField ? ['field-lines', 'dots'] : ['dots']),
+    commonComposites: extra?.composites ?? [],
   };
 }
 
@@ -93,14 +152,14 @@ const ROWS: Row[] = [
   { token: 'sink', label: 'Sink', family: C, klass: 'A', truthMode: 'designed', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'capture matter (accretion well)', physicsNote: 'pull + capture within data-absorb radius, budgeted by data-max' },
 
   // ── natural primitives (§20.10): real field laws ─────────────────────────────────────────
-  { token: 'gravity', label: 'Gravity', family: N, klass: 'A', truthMode: 'natural', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'universal attraction toward mass', physicsNote: 'softened inverse-square GM/(d² + ε²), always attractive' },
-  { token: 'charge', label: 'Charge', family: N, klass: 'A', truthMode: 'natural', ownsField: true, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: true, requiresVelocity: false, affectsNeutralMatter: false, designUse: 'attract/repel charged matter', physicsNote: 'F = σ·q·GM/(d² + ε²); like repels, opposite attracts; monopole E field()' },
-  { token: 'magnetism', label: 'Magnetism', family: N, klass: 'A', truthMode: 'natural', ownsField: true, usesFieldAt: false, movesParticles: true, doesWork: false, conservesSpeed: true, requiresCharge: true, requiresVelocity: true, affectsNeutralMatter: false, designUse: 'curve moving charges (cyclotron)', physicsNote: 'Lorentz F = q(v × B); perpendicular, does no work; dipole B field()' },
-  { token: 'thermal', label: 'Thermal', family: N, klass: 'A', truthMode: 'natural', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'agitate matter at a temperature', physicsNote: 'Langevin/Brownian kicks, σ = √(2T)' },
-  { token: 'collide', label: 'Collide', family: N, klass: 'B', truthMode: 'natural', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: true, affectsNeutralMatter: true, designUse: 'hard-sphere / granular collision', physicsNote: 'elastic pairwise impulse, momentum-conserving (energy too at e = 1)' },
-  { token: 'diffuse', label: 'Diffuse', family: N, klass: 'C', truthMode: 'natural', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'spread a quantity over the medium', physicsNote: 'scalar diffusion over env.grid' },
-  { token: 'propagate', label: 'Propagate', family: N, klass: 'C', truthMode: 'natural', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'travelling waves through the medium', physicsNote: 'wave propagation over env.grid' },
-  { token: 'memory', label: 'Memory', family: N, klass: 'C', truthMode: 'natural', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'a decaying trail / hysteresis', physicsNote: 'decaying density memory on env.grid' },
+  { token: 'gravity', label: 'Gravity', family: N, klass: 'A', truthMode: 'physical', ownsField: true, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'universal attraction toward mass', physicsNote: 'softened inverse-square GM/(d² + ε²), always attractive' },
+  { token: 'charge', label: 'Charge', family: N, klass: 'A', truthMode: 'physical', ownsField: true, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: true, requiresVelocity: false, affectsNeutralMatter: false, designUse: 'attract/repel charged matter', physicsNote: 'F = σ·q·GM/(d² + ε²); like repels, opposite attracts; monopole E field()' },
+  { token: 'magnetism', label: 'Magnetism', family: N, klass: 'A', truthMode: 'physical', ownsField: true, usesFieldAt: false, movesParticles: true, doesWork: false, conservesSpeed: true, requiresCharge: true, requiresVelocity: true, affectsNeutralMatter: false, designUse: 'curve moving charges (cyclotron)', physicsNote: 'Lorentz F = q(v × B); perpendicular, does no work; dipole B field()' },
+  { token: 'thermal', label: 'Thermal', family: N, klass: 'A', truthMode: 'physical', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'agitate matter at a temperature', physicsNote: 'Langevin/Brownian kicks, σ = √(2T)' },
+  { token: 'collide', label: 'Collide', family: N, klass: 'B', truthMode: 'physical', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: true, affectsNeutralMatter: true, designUse: 'hard-sphere / granular collision', physicsNote: 'elastic pairwise impulse, momentum-conserving (energy too at e = 1)' },
+  { token: 'diffuse', label: 'Diffuse', family: N, klass: 'C', truthMode: 'physical', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'spread a quantity over the medium', physicsNote: 'scalar diffusion over env.grid' },
+  { token: 'propagate', label: 'Propagate', family: N, klass: 'C', truthMode: 'physical', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'travelling waves through the medium', physicsNote: 'wave propagation over env.grid' },
+  { token: 'memory', label: 'Memory', family: N, klass: 'C', truthMode: 'physical', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'a decaying trail / hysteresis', physicsNote: 'decaying density memory on env.grid' },
 
   // ── extended designed forces (§20.3) ─────────────────────────────────────────────────────
   { token: 'fieldflow', label: 'Fieldflow', family: E, klass: 'A', truthMode: 'hybrid', ownsField: false, usesFieldAt: true, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'solar prominences, aurora, plasma streams, guided matter', physicsNote: 'field-aligned transport: steers + accelerates matter along env.fieldAt(); carries neutral matter (magnetism does not)' },
@@ -130,6 +189,16 @@ export const PASSPORTS: Readonly<Record<Token, ForcePassport>> = Object.freeze(
 /** The passport for a force token, or `undefined` if none is registered. */
 export function passportFor(token: Token): ForcePassport | undefined {
   return PASSPORTS[token];
+}
+
+/**
+ * The conformance-check labels that prove a force (testing-and-conformance §2 "Conformance tests"),
+ * derived from the live conformance catalog so the passport's proof list never drifts from the
+ * tests that actually run. Empty when a force has no experiment.
+ */
+export function conformanceTests(token: Token): string[] {
+  const c = EXPERIMENTS.find((e) => e.scenario.force === token);
+  return c ? c.expectations.map((x) => x.label) : [];
 }
 
 /** A problem found while validating passports against ground truth. */

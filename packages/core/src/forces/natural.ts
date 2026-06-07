@@ -101,6 +101,21 @@ function clampToC(p: Particle, c: number): void {
   }
 }
 
+/**
+ * The radial gravitational field at a world point (Stage B — renderable structure, not a particle
+ * path). Always points toward the mass: `g = M·r̂/(d²+ε²)` toward the body, sourced by `M` (the
+ * same `b.d` mass-gain as the EM fields, so a dense element radiates a stronger well). Pure: no
+ * particle, no velocity. Rendered as inward radial field lines; matter still accelerates through
+ * `apply()`, and a sideways-moving particle can orbit rather than fall straight in.
+ */
+function bodyGravityField(b: Body, x: number, y: number): { x: number; y: number } {
+  const dx = b.cx - x; // toward the body — gravity attracts
+  const dy = b.cy - y;
+  const d = Math.max(Math.hypot(dx, dy), EPS);
+  const mag = (b.M * (1 + Q_GAIN * (b.d ?? 0))) / (d * d); // M/d², stronger as the body charges up
+  return { x: (dx / d) * mag, y: (dy / d) * mag };
+}
+
 /** §20.10 — true softened inverse-square: `F = GM·d̂/(d²+ε²)`, always attractive. */
 export const gravity: Force = {
   token: 'gravity',
@@ -108,6 +123,10 @@ export const gravity: Force = {
   apply(b, p, e) {
     inverseSquare(b, p, e, e.G * b.M); // GM, mass-sourced (M ≥ 0 → pulls in)
   },
+  // The inward radial gravitational field (Stage B): renderable structure that `fieldflow` can
+  // also follow. `apply()` is unchanged — this only makes gravity visible/followable, never
+  // altering the force law (a field line is not always a particle path).
+  field: (b, x, y) => bodyGravityField(b, x, y),
   meta: { desc: 'true softened inverse-square gravity (a real 1/d² law)' },
 };
 
