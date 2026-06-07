@@ -142,7 +142,7 @@ The system is the shared field context that connects them.
 The current architecture is:
 
 ```txt
-@field-ui/core   host-driven, renderer-agnostic field engine
+field-ui   host-driven, renderer-agnostic field engine
 @field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @field-ui/elements   native HTML and web component authoring
 @field-ui/react   React adapter over the same contracts
@@ -756,7 +756,7 @@ The field is the behavior layer.
 Use the host-driven core when you own the canvas or renderer.
 
 ```ts
-import { createField } from "@field-ui/core";
+import { createField } from "field-ui";
 import { browserHost } from "@field-ui/platform";
 
 const field = createField(canvas, {

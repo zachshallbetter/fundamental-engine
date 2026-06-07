@@ -1,7 +1,7 @@
 /**
  * browserHost — the default {@link FieldHost}, binding the renderer-agnostic core engine to the
  * browser (`window` / `document` / `requestAnimationFrame`). It lives in `@field-ui/platform` (the DOM
- * participation layer), NOT in `@field-ui/core` — core imports zero DOM. `createField(canvas, opts)`
+ * participation layer), NOT in `field-ui` — core imports zero DOM. `createField(canvas, opts)`
  * requires a host; pass `browserHost()` in the browser (or `createBrowserField` for the convenience),
  * or a custom host to drive the same engine from a headless renderer / a different document / a test.
  */

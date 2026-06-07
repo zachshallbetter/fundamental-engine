@@ -117,7 +117,7 @@ It turns them into measurable, inspectable, accessible field behavior.
 The current system is organized into packages and layers.
 
 ```txt
-@field-ui/core   host-driven, renderer-agnostic field engine
+field-ui   host-driven, renderer-agnostic field engine
 @field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @field-ui/elements   native HTML and web component authoring
 @field-ui/react   React adapter over the same contracts
@@ -276,7 +276,7 @@ The field should never drift away from the interface it describes.
 
 ## 7. The FieldHost principle
 
-@field-ui/core is host-driven.
+field-ui is host-driven.
 
 It should not import browser or DOM globals.
 
@@ -285,7 +285,7 @@ Core may compute field behavior, integrate particles, run diagnostics, and draw 
 Browser setup should look like this:
 
 ```ts
-import { createField } from "@field-ui/core";
+import { createField } from "field-ui";
 import { browserHost } from "@field-ui/platform";
 
 const field = createField(canvas, {
@@ -1395,7 +1395,7 @@ field.registerBody(element, {
 Core plus platform:
 
 ```ts
-import { createField } from "@field-ui/core";
+import { createField } from "field-ui";
 import { browserHost } from "@field-ui/platform";
 
 const field = createField(canvas, {
