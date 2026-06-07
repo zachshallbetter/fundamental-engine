@@ -31,8 +31,8 @@ const table = RENDER_MODES;
   </div>
   <canvas id="diag-canvas" width="520" height="340" aria-label="Diagnostic overlay canvas"></canvas>
   <div class="diag-export" role="group" aria-label="Export">
-    <button id="exp-png">Export PNG</button>
-    <button id="exp-svg">Export SVG</button>
+    <button id="exp-png">Export PNG (current mode)</button>
+    <button id="exp-svg" title="The contours mode is the only one with a clean vector form; SVG always exports that potential-field contour set.">Export contours (SVG)</button>
   </div>
 
   <h2>Render-mode status</h2>
@@ -144,14 +144,16 @@ const table = RENDER_MODES;
       ctx.fill();
     };
 
+    let currentMode = 'contours';
     const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.diag-controls button'));
     for (const b of buttons) {
       b.addEventListener('click', () => {
         buttons.forEach((x) => x.classList.toggle('active', x === b));
-        draw(b.dataset.mode!);
+        currentMode = b.dataset.mode!;
+        draw(currentMode);
       });
     }
-    draw('contours');
+    draw(currentMode);
 
     // Export (C4): PNG raster of the canvas, or SVG vector of the current contour set. Exposed on
     // window for verification; the buttons download.
@@ -166,7 +168,10 @@ const table = RENDER_MODES;
       png: () => canvasToPng(canvas),
       svg: svgDoc,
     };
-    document.getElementById('exp-png')?.addEventListener('click', () => downloadCanvasPng(canvas, 'field-diagnostic.png'));
+    // PNG captures whatever mode is on screen, so name it for that mode. SVG is the potential-field
+    // contour vector specifically — the only mode with a clean vector form — so it always exports the
+    // contour set (and is labelled as such), regardless of the on-screen mode.
+    document.getElementById('exp-png')?.addEventListener('click', () => downloadCanvasPng(canvas, `field-${currentMode}.png`));
     document.getElementById('exp-svg')?.addEventListener('click', () => downloadText(svgDoc(), 'field-contours.svg'));
   }
 </script>
