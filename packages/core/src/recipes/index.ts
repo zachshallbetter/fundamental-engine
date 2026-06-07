@@ -10,6 +10,7 @@ export * from './schema.ts';
 export * from './intent.ts';
 export * from './gallery.ts';
 export * from './explain.ts';
+export * from './compile.ts';
 
 /** The Recipe / Authoring contracts (system-contracts §13). */
 export const RECIPE_CONTRACTS: readonly ContractMeta[] = [
@@ -20,6 +21,14 @@ export const RECIPE_CONTRACTS: readonly ContractMeta[] = [
     sideEffectFree: 'serialize / parse / validate are pure',
     testable: 'validateRecipe rejects unknown tokens, render layers, diagnostics, and fields; primitives must match the body tokens; round-trips through JSON',
     inspectable: 'the recipe is plain serializable data; explainScene renders it in plain language',
+  },
+  {
+    name: 'Recipe Runtime Contract',
+    mustExist: 'compileRecipe(recipe) → a runtime plan (bodies/relationships/feedback/diagnostics/metrics/conditions/reducedMotion); applyRecipe(root, recipe) registers it and returns an inspectable, destroyable handle (@field-ui/platform)',
+    mayMutate: 'applyRecipe mutates the DOM it is given (registers bodies, writes --field-* vars); compileRecipe is pure',
+    sideEffectFree: 'compileRecipe / recipeToMarkup are pure; applyRecipe owns its lifecycle and cleans up on destroy()',
+    testable: 'compiled bodies carry only real tokens (concepts never become tokens); metrics map to --field-* feedback; every shipped recipe compiles a reduced-motion output path',
+    inspectable: 'applied.inspect() returns live measurements, relationships, metric values, and lint',
   },
   {
     name: 'Intent Compiler Contract',

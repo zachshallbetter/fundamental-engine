@@ -23,6 +23,8 @@ export * from './visual-bindings.ts';
 export * from './overlays.ts';
 export * from './lint.ts';
 export * from './platform.ts';
+export * from './metrics.ts';
+export * from './apply-recipe.ts';
 export * from './browser-host.ts';
 export * from './export-dom.ts';
 
