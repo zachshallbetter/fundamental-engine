@@ -42,6 +42,11 @@ reduced-motion tests
 
 ## 2. Force Passport Requirement
 
+> **Implemented.** `ForcePassport` (`packages/core/src/contracts/passport.ts`) carries all of these
+> fields — including `bestRenderModes` and `commonComposites` — and `conformanceTests(token)` derives
+> the proof list from the live conformance catalog so it never drifts. `validatePassports()`
+> cross-checks `family` / `klass` / `ownsField` against the registry + conformance.
+
 Every force needs:
 
 ```txt
