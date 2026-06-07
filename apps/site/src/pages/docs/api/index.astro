@@ -4,7 +4,7 @@ import { MANUAL_FORCES, MANUAL_PRESETS, MANUAL_CONDITIONS, FORMATIONS, PALETTE_N
 import { RENDER_MODES } from '../../../lib/docs-api.ts';
 
 const cards = [
-  { href: '/docs/api/options', t: 'createField & options', d: 'The entry point and every FieldOptions knob.' },
+  { href: '/docs/api/options', t: 'createField & options', d: 'The entry points and every FieldOptions knob. Core requires a host; @field-ui/vanilla and <field-root> wire browserHost() for you.' },
   { href: '/docs/api/handle', t: 'FieldHandle', d: 'The object every entry point returns — drive the field at runtime.' },
   { href: '/docs/api/attributes', t: 'data-* attributes', d: 'Every attribute a body reads, and which force reads which.' },
   { href: '/docs/api/forces', t: `Forces (${MANUAL_FORCES.length})`, d: 'The full catalog — law, attributes, and example per force.' },

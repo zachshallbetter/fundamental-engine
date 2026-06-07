@@ -4,9 +4,15 @@ import { OPTIONS } from '../../../lib/docs-api.ts';
 import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 
-const sig = `import { createField } from 'field-ui';
+// lowest-level: @field-ui/core is renderer-agnostic, so createField requires an explicit host.
+const sig = `import { createField } from '@field-ui/core';
+import { browserHost } from '@field-ui/platform';
 
-const field = createField(canvas, options);   // → FieldHandle`;
+const field = createField(canvas, { host: browserHost(), ...options });   // → FieldHandle
+
+// browser convenience — @field-ui/vanilla re-exports a createField that wires browserHost() for you:
+import { createField } from '@field-ui/vanilla';
+const field2 = createField(canvas, options);                              // host wired internally`;
 
 const cfgResting = `// the resting field — an accent and a palette, nothing else
 createField(canvas, { accent: '#4da3ff', palette: 'ours' });`;
@@ -75,7 +81,8 @@ createField(canvas, { mass: true });`;
     <h2>Common configurations</h2>
     <p>
       Every option is optional and the defaults keep the field calm. These are the combinations
-      worth knowing — each is the whole <code>options</code> object. Switch tabs to compare.
+      worth knowing — each is the whole <code>options</code> object (the <code>host</code> is omitted;
+      wire it per the signature above, or use <code>@field-ui/vanilla</code>). Switch tabs to compare.
     </p>
     <CodeTabs
       variants={[
