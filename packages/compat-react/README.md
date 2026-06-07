@@ -8,4 +8,6 @@ import { ForcesField, useForcesField } from '@forces-ui/react'; // still works
 import { ForcesField, useForcesField } from '@field-ui/react';  // preferred
 ```
 
-Install `@field-ui/react` for new code. This alias will be removed in a future major release.
+Install `@field-ui/react` for new code. This alias keeps working behavior-identically through `0.x`
+and is removal-gated: see the `forces-*` → `field-*` alias window in
+[API stability](../../docs/canonical/field-ui-api-stability.md).

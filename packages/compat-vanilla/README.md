@@ -8,4 +8,6 @@ import { ForcesField, mountField } from '@forces-ui/vanilla'; // still works
 import { ForcesField, mountField } from '@field-ui/vanilla';  // preferred
 ```
 
-Install `@field-ui/vanilla` for new code. This alias will be removed in a future major release.
+Install `@field-ui/vanilla` for new code. This alias keeps working behavior-identically through `0.x`
+and is removal-gated: see the `forces-*` → `field-*` alias window in
+[API stability](../../docs/canonical/field-ui-api-stability.md).
