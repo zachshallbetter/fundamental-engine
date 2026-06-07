@@ -57,6 +57,7 @@ import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
 import { forceAt } from './streamlines.ts';
+import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
@@ -110,6 +111,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // base field so emission is never starved, but bounded so the sim can't grow forever.
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
+  let flow: FlowFocus | null = null; // a movable flow focus the field bends toward (field.flowTo)
   let JOURNEY: RGB[] = resolvePalette(opts.palette).map(hexToRgb); // the accent journey (§9)
   let curAccent: RGB = hexToRgb(cfg.accent);
   let hoverAccent: string | null = null;
@@ -870,7 +872,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       let maxMag = 0;
       for (let gx = GRID / 2; gx < W; gx += GRID) {
         for (let gy = GRID / 2; gy < H; gy += GRID) {
-          const { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
+          let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
+          // a live flow focus bends the rendered field lines toward the target (field.flowTo).
+          if (flow) {
+            const b = flowBias(gx, gy, flow, 0.04);
+            fx += b.x;
+            fy += b.y;
+          }
           const mag = Math.hypot(fx, fy);
           // Skip only true dead zones / NaN (a tiny epsilon, not an absolute magnitude floor) —
           // a weak dipole's outer field is still a real pattern and must survive to be scaled.
@@ -922,7 +930,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     if (bodies.length && frameN % 6 === 0) measureBodies(bodies, W, H);
 
-    // spine: ease the wave-bend toward the engaged element (§24).
+    // spine: ease the wave-bend toward the flow focus (if set) or the engaged element (§24). A live
+    // flow focus (field.flowTo) takes priority, so the streamline spine curves to the moving target.
     let engaged: Body | null = null;
     for (const b of bodies) {
       if (b.on && b.vis) {
@@ -930,10 +939,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         break;
       }
     }
-    pull.k += ((engaged ? 1 : 0) - pull.k) * 0.07;
-    if (engaged) {
-      pull.x = pull.x ? pull.x + (engaged.cx - pull.x) * 0.16 : engaged.cx;
-      pull.y = pull.y ? pull.y + (engaged.cy - pull.y) * 0.16 : engaged.cy;
+    const spineTo = flow ?? engaged;
+    pull.k += ((spineTo ? 1 : 0) - pull.k) * 0.07;
+    if (spineTo) {
+      const tx = flow ? flow.x : (engaged as Body).cx;
+      const ty = flow ? flow.y : (engaged as Body).cy;
+      pull.x = pull.x ? pull.x + (tx - pull.x) * 0.16 : tx;
+      pull.y = pull.y ? pull.y + (ty - pull.y) * 0.16 : ty;
     }
 
     // accent journey (§9): scroll travels the palette; a hovered element overrides.
@@ -950,6 +962,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     store.reindex();
     applyAttention();
     if (env.dt) induceCharges(bodies, store.particles); // polarize neutral matter near charge/magnetism bodies (§20.10)
+    // flow focus (field.flowTo): nudge free matter toward the moving target before integration, so
+    // it visibly streams in. The streamline render bends toward it too (see drawField).
+    if (flow && env.dt) {
+      for (const p of store.particles) {
+        if (p.cap) continue;
+        const b = flowBias(p.x, p.y, flow, 0.6);
+        p.vx += b.x;
+        p.vy += b.y;
+      }
+    }
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
@@ -1089,6 +1111,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // detach nearby bound matter so the shock is actually felt (§2.4, like supernova)
       tearBoundNear(bound, waves, x, y, R, W, H, env.t, (p) => void store.add(newParticle(p)));
       spawnSpark(x, y, 2, hex); // a visible pop at the blast point (§23)
+    },
+    flowTo: (x: number, y: number, opts?: FlowOptions) => {
+      // place/move the flow focus; the frame loop eases the spine + pulls matter toward it, and the
+      // streamline render bends to it. Called repeatedly (e.g. on pointermove) for dynamic targeting.
+      flow = makeFlowFocus(x, y, opts);
+    },
+    clearFlow: () => {
+      flow = null;
     },
     destroy: () => {
       cancelAnimationFrame(raf);

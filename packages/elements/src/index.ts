@@ -1,4 +1,4 @@
-import { createField, PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink } from 'field-ui';
+import { createField, PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions } from 'field-ui';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 
@@ -134,6 +134,14 @@ export class FieldField extends HTMLElementBase {
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
   burst(x: number, y: number, hex?: string): void {
     this.field?.burst(x, y, hex);
+  }
+  /** place/move a dynamic flow focus the field bends toward — pulls matter, curves the streamlines. */
+  flowTo(x: number, y: number, opts?: FlowOptions): void {
+    this.field?.flowTo(x, y, opts);
+  }
+  /** remove the flow focus. */
+  clearFlow(): void {
+    this.field?.clearFlow();
   }
 
   connectedCallback(): void {
