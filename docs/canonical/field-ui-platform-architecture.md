@@ -16,7 +16,7 @@ system.
 ## Package hierarchy
 
 ```
-field-ui (@field-ui/core)
+field-ui
   renderer-agnostic field, force, particle, metric, diagnostic, and conformance logic.
   Computes field behavior against plain data. Touches no DOM globals (guarded by
   core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
@@ -40,7 +40,7 @@ apps/site · lab · docs
 ```
 
 Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
-`vanilla → platform → core`. `@field-ui/core` is renderer-agnostic and imports **zero** DOM (enforced
+`vanilla → platform → core`. `field-ui` is renderer-agnostic and imports **zero** DOM (enforced
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
 `browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@field-ui/platform`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
@@ -127,7 +127,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
 to `@field-ui/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
-source file in `@field-ui/core` is provably DOM-global-free, so the engine is portable to any renderer
+source file in `field-ui` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
 ## Reading Field
