@@ -30,6 +30,18 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
 const NF_COLOR: Record<string, string> = { gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c' };
 const NF_ABBR: Record<string, string> = { gravity: 'G', electromagnetic: 'EM', strong: 'S', weak: 'W' };
 const fieldOf = (token: string) => classifyForce(token).field;
+const kindOf = (token: string) => classifyForce(token).kind;
+// the filter chips: by fundamental field, then by kind. `f` is "type:value"; "" clears.
+const FIELD_FILTERS = [
+  { f: '', label: 'All' },
+  { f: 'field:gravity', label: 'Gravity' },
+  { f: 'field:electromagnetic', label: 'EM' },
+  { f: 'field:strong', label: 'Strong' },
+  { f: 'field:weak', label: 'Weak' },
+  { f: 'kind:designed', label: 'Designed' },
+  { f: 'kind:derived', label: 'Derived' },
+  { f: 'kind:transport', label: 'Transport' },
+] as const;
 ---
 
 <Base
@@ -51,6 +63,11 @@ const fieldOf = (token: string) => classifyForce(token).field;
               <button type="button" data-view="name">Name</button>
             </div>
           </div>
+          <div class="fb-fields" role="group" aria-label="Filter by natural field" data-field-filter>
+            {FIELD_FILTERS.map((ff) => (
+              <button type="button" class={`fbf ${ff.f === '' ? 'on' : ''}`} data-filter={ff.f}>{ff.label}</button>
+            ))}
+          </div>
           {families.map((fam) => (
             <div class="fb-group">
               <span class="glabel">{fam.label}</span>
@@ -63,6 +80,7 @@ const fieldOf = (token: string) => classifyForce(token).field;
                     class={`force-tile ${HAS_EXP.has(f.token) ? 'calib' : 'locked'}`}
                     data-force={f.token}
                     data-field={nf ?? ''}
+                    data-kind={kindOf(f.token) ?? ''}
                     style={`--fc:${f.color}`}
                     title={`${cap(f.label)} — ${f.effect}${nf ? ` · ${nf} field` : ''}`}
                   >
@@ -997,7 +1015,59 @@ const fieldOf = (token: string) => classifyForce(token).field;
   </script>
 </Base>
 
+<script is:inline>
+  // Natural-field filter for the force picker — self-contained, independent of the detector logic.
+  (() => {
+    const setupFilter = () => {
+      const bar = document.querySelector('[data-field-filter]');
+      const browser = document.querySelector('[data-force-browser]');
+      if (!bar || !browser) return;
+      const chips = [...bar.querySelectorAll('.fbf')];
+      const tiles = [...browser.querySelectorAll('.force-tile')];
+      const groups = [...browser.querySelectorAll('.fb-group')];
+      const apply = (filter) => {
+        const [type, value] = filter ? filter.split(':') : ['', ''];
+        for (const t of tiles) {
+          const show = !filter || t.dataset[type] === value;
+          t.classList.toggle('fb-hidden', !show);
+        }
+        for (const g of groups) {
+          const anyVisible = [...g.querySelectorAll('.force-tile')].some((t) => !t.classList.contains('fb-hidden'));
+          g.classList.toggle('fb-hidden', !anyVisible);
+        }
+      };
+      for (const c of chips) {
+        c.addEventListener('click', () => {
+          chips.forEach((x) => x.classList.toggle('on', x === c));
+          apply(c.dataset.filter || '');
+        });
+      }
+    };
+    if (document.readyState !== 'loading') setupFilter();
+    else document.addEventListener('DOMContentLoaded', setupFilter);
+    document.addEventListener('astro:page-load', setupFilter);
+  })();
+</script>
+
 <style>
+  /* natural-field filter chips */
+  .fb-fields { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.5rem; }
+  .fbf {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    padding: 0.18rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .fbf:hover { color: var(--text); }
+  .fbf.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .fb-hidden { display: none !important; }
+
   /* natural-field marker on a force tile + the picker legend */
   .force-tile { position: relative; }
   .nf-mark {
