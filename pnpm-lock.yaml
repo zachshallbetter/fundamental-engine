@@ -77,6 +77,9 @@ importers:
 
   packages/elements:
     dependencies:
+      '@field-ui/platform':
+        specifier: workspace:*
+        version: link:../platform
       '@field-ui/vanilla':
         specifier: workspace:*
         version: link:../vanilla
