@@ -25,6 +25,7 @@ import {
   recipeById,
 } from './gallery.ts';
 import { explainScene, fieldDiff } from './explain.ts';
+import { compileRecipe, recipeToMarkup, recipeBodyAttributes, metricVar } from './compile.ts';
 import { passportFor } from '../contracts/passport.ts';
 import { RENDER_MODES } from '../visual/visualization.ts';
 import { FUNDAMENTAL_FIELDS } from '../config/manual.ts';
@@ -198,6 +199,47 @@ test('explainScene names the forces and the fieldflow transport caveat', () => {
   assert.match(text, /fieldflow/i);
   assert.match(text, /because of fieldflow/i);
   assert.match(text, /field-lines/);
+});
+
+test('every recipe compiles; bodies carry only real tokens; concepts never leak into the token lane', () => {
+  for (const r of FIELD_RECIPES) {
+    const c = compileRecipe(r);
+    assert.equal(c.bodies.length, r.bodies.length, `${r.id}: body count`);
+    const tokens = c.bodies.flatMap((b) => b.tokens);
+    for (const t of tokens) assert.ok(passportFor(t), `${r.id}: token "${t}" is real`);
+    // the metric lane becomes feedback-variable bindings
+    assert.deepEqual(c.feedback.map((f) => f.metric), r.metrics, `${r.id}: feedback covers metrics`);
+    for (const f of c.feedback) assert.equal(f.var, metricVar(f.metric));
+    // every recipe gets a reduced-motion output plan, not just prose
+    assert.ok(c.reducedMotion.staticOutputs.length > 0, `${r.id}: reduced-motion outputs`);
+    assert.ok(c.reducedMotion.reducedMotion && c.reducedMotion.meaningWithoutMotion, `${r.id}: reduced-motion text`);
+    // lane discipline: a concept word never appears as a runtime token
+    for (const concept of r.concepts ?? []) assert.ok(!tokens.includes(concept), `${r.id}: concept "${concept}" is not a token`);
+  }
+});
+
+test('accessibility conformance: every shipped recipe compiles a reduced-motion output path', () => {
+  for (const r of FIELD_RECIPES) {
+    const plan = compileRecipe(r).reducedMotion;
+    assert.ok(plan.reducedMotion.length > 0, `${r.id}: reduced-motion behavior`);
+    assert.ok(plan.meaningWithoutMotion.length > 0, `${r.id}: meaning without motion (motion is never the only source)`);
+    // a real output path, not just prose: at least the reduced-motion note, plus a surface per lane present
+    assert.ok(plan.staticOutputs.includes('reduced-motion-note'), `${r.id}: note`);
+    if (r.metrics.length) assert.ok(plan.staticOutputs.includes('metric-badges'), `${r.id}: metric badges`);
+    if ((r.relationships?.length ?? 0) > 0) assert.ok(plan.staticOutputs.includes('relationship-list'), `${r.id}: relationship list`);
+  }
+});
+
+test('recipeToMarkup + recipeBodyAttributes emit real data-body authoring', () => {
+  const gf = recipeById('guided-flow')!;
+  const markup = recipeToMarkup(gf);
+  assert.match(markup, /<field-root><\/field-root>/);
+  for (const b of gf.bodies) assert.ok(markup.includes(`data-body="${b.body}"`), `markup has ${b.body}`);
+  const attrs = recipeBodyAttributes({ body: 'attract', strength: 1.2, range: 320, feedback: true });
+  assert.equal(attrs['data-body'], 'attract');
+  assert.equal(attrs['data-strength'], '1.2');
+  assert.equal(attrs['data-range'], '320');
+  assert.ok('data-feedback' in attrs);
 });
 
 test('fieldDiff describes direction of change', () => {
