@@ -1,5 +1,5 @@
 import { PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions } from 'field-ui';
-import { createBrowserField } from '@field-ui/platform';
+import { createBrowserField, type FieldPlatform } from '@field-ui/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 
@@ -37,6 +37,16 @@ export class FieldField extends HTMLElementBase {
   private field?: FieldHandle;
   /** experimental platform runtime (Phase D); present only when the flag is on. */
   platformRuntime?: PlatformRuntime;
+
+  /**
+   * The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on
+   * the legacy path. Read-only introspection for tools like the Inspector — the registries here are
+   * the real running state (measurements, state, feedback bindings, relationships, overlays, lint).
+   * Read with `measure.last()` etc.; don't call `measure.measure()` off the read phase.
+   */
+  get platform(): FieldPlatform | undefined {
+    return this.platformRuntime?.platform;
+  }
 
   constructor() {
     super();
