@@ -1,0 +1,148 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+
+// Authoring across surfaces — the three-surfaces-one-contract standard. Native HTML, the web
+// component, and the React adapter all funnel into the same authoring contract the scanner reads
+// (`[data-body]` + its data-* params), so a body authored any of the three ways is the same body in
+// the field. The cards lower down are live: the site's persistent <field-root> reacts to them.
+
+const bodyHtml = `<!-- the page is the medium; any element can be a body -->
+<canvas id="field"></canvas>
+
+<article data-body="attract" data-strength="0.8">
+  Pulls matter inward
+</article>
+
+<script type="module">
+  import { createField } from 'field-ui';
+  // mounts the field and scans the page for [data-body] elements
+  createField(document.getElementById('field'));
+</script>`;
+
+const bodyWc = `<!-- <field-root> is the singleton field; it scans [data-body] for you -->
+<script type="module">import '@field-ui/elements';</script>
+
+<field-root accent="#4da3ff"></field-root>
+
+<article data-body="attract" data-strength="0.8">
+  Pulls matter inward
+</article>`;
+
+const bodyReact = `import { FieldField } from '@field-ui/react';
+
+export function Page() {
+  return (
+    <>
+      <FieldField accent="#4da3ff" />
+      {/* the same [data-body] contract — the field reacts to it */}
+      <article data-body="attract" data-strength="0.8">
+        Pulls matter inward
+      </article>
+    </>
+  );
+}`;
+
+const platformExample = `import { createFieldPlatform } from '@field-ui/platform';
+
+// the substrate beneath every surface: measure → state → write, on one scheduler
+const platform = createFieldPlatform(document.querySelector('article'));
+const card = document.querySelector('[data-body]');
+
+platform.measure.register(card);                          // read phase
+platform.feedback.bind(card, { attention: '--field-attention' }); // write phase
+platform.on('compute', () => {                            // compute phase
+  const m = platform.measure.for(card);
+  if (m) platform.state.set(card, 'attention', m.visibilityRatio);
+});
+
+const tick = (t) => { platform.tick(t); requestAnimationFrame(tick); };
+requestAnimationFrame(tick);`;
+
+const CONTRACT = [
+  ['data-body', 'force tokens, space-separated', 'attract, repel swirl'],
+  ['data-strength', 'source mass / pull (default 0.5)', '0.8'],
+  ['data-range', 'reach in px (default 280)', '220'],
+  ['data-preset', 'a named bundle of virtual bodies', 'dipole'],
+  ['data-intent', 'authored intent, compiled to forces', 'gather'],
+  ['data-field-role', 'semantic role → a default force', 'source, sink, anchor'],
+];
+---
+
+<DocsLayout
+  title="field-ui — Authoring across surfaces"
+  description="Three surfaces, one contract. Author a field body in native HTML, the web component, or the React adapter — all compile to the same [data-body] contract the scanner reads."
+>
+  <h1>Authoring across surfaces</h1>
+  <p class="lede">
+    Three surfaces, one contract. A body authored in plain HTML, as a web component, or in React is
+    the <em>same</em> body in the field — each is just a different way to write the
+    <code>[data-body]</code> contract the scanner reads. Pick the surface your stack already uses;
+    field-ui does not ask you to adopt a framework.
+  </p>
+
+  <h2>A body, three ways</h2>
+  <p>Each of these authors one attractor of strength 0.8. They compile to identical bodies.</p>
+  <CodeTabs
+    variants={[
+      { label: 'Native HTML', lang: 'html', code: bodyHtml },
+      { label: 'Web component', lang: 'html', code: bodyWc },
+      { label: 'React', lang: 'tsx', code: bodyReact },
+    ]}
+    caption="The same body — <code>attract</code>, strength 0.8 — across all three surfaces."
+  />
+
+  <h2>Live</h2>
+  <p>
+    These cards carry real <code>data-body</code> attributes, so the page's field reacts to them right
+    now. Move your pointer near one and watch the field gather around it.
+  </p>
+  <div class="au-live">
+    <article class="au-card" data-body="attract" data-strength="0.8" data-range="220">
+      <strong>attract</strong><span>pulls matter inward</span>
+    </article>
+    <article class="au-card" data-body="repel" data-strength="0.7" data-range="200">
+      <strong>repel</strong><span>pushes matter away</span>
+    </article>
+    <article class="au-card" data-body="swirl" data-strength="0.6" data-range="240">
+      <strong>swirl</strong><span>orbits matter around</span>
+    </article>
+  </div>
+
+  <h2>The shared contract</h2>
+  <p>Every surface writes the same <code>data-*</code> attributes. This is the contract:</p>
+  <table class="au-table">
+    <thead><tr><th>Attribute</th><th>Meaning</th><th>Example</th></tr></thead>
+    <tbody>
+      {CONTRACT.map(([attr, meaning, ex]) => (
+        <tr><td><code>{attr}</code></td><td>{meaning}</td><td><code>{ex}</code></td></tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Beneath the surfaces: the platform</h2>
+  <p>
+    The surfaces above author <em>bodies</em>. When you need the page itself to participate — to
+    measure elements, hold state, and write feedback on a disciplined loop — reach for
+    <code>@field-ui/platform</code> directly. It is framework-agnostic; the same code runs under any
+    surface.
+  </p>
+  <CodeTabs
+    variants={[{ label: 'TypeScript', lang: 'ts', code: platformExample }]}
+    caption="The measure → state → write loop, on the six-phase scheduler. See the <a href='/docs/reading-field'>Reading Field</a> demo for a full page built on it."
+  />
+</DocsLayout>
+
+<style>
+  .lede { color: var(--muted, #9aa); }
+  .au-live { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin: 1rem 0 1.5rem; }
+  .au-card {
+    display: flex; flex-direction: column; gap: 0.2rem; padding: 1rem; border-radius: 10px;
+    border: 1px solid var(--line, #2a2a35); background: color-mix(in srgb, #4da3ff 6%, transparent);
+  }
+  .au-card strong { color: #4da3ff; font: 600 0.95rem ui-monospace, monospace; }
+  .au-card span { font-size: 0.82rem; color: var(--muted, #9aa); }
+  .au-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.5rem 0 1.5rem; }
+  .au-table th, .au-table td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); vertical-align: top; }
+  .au-table th { color: var(--muted, #9aa); }
+</style>
