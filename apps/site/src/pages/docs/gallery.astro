@@ -112,7 +112,7 @@ const filters = [
             data-feedback
             data-hot
           >{recipe.name}</span>
-          <span class="rc-demo-note">live reciprocity — hover</span>
+          <button type="button" class="rc-run" data-run={recipe.id}>▶ Run</button>
         </div>
 
         <p class="explain">{explain}</p>
@@ -173,9 +173,29 @@ const filters = [
   </div>
 
   <p class="empty" hidden>No recipes match that field.</p>
+
+  <aside class="rg-runner" data-runner hidden aria-label="Recipe runner">
+    <div class="rr-head">
+      <b data-rr-name>Recipe</b>
+      <span class="rr-sub">running via <code>applyRecipe()</code> — the actual recipe object, not a mock</span>
+      <label class="rr-rm"><input type="checkbox" data-rr-reduced /> reduced motion</label>
+      <button type="button" class="rr-close" data-rr-close aria-label="Close runner">✕</button>
+    </div>
+    <div class="rr-stage" data-rr-stage></div>
+    <div class="rr-inspect">
+      <span>frame <b data-rr="frame">—</b></span>
+      <span>bodies <b data-rr="measurements">0</b></span>
+      <span>relationships <b data-rr="relationships">0</b></span>
+      <span>lint <b data-rr="lint">✓</b></span>
+    </div>
+    <div class="rr-metrics" data-rr-metrics></div>
+  </aside>
 </DocsLayout>
 
 <script>
+  import { recipeById } from 'field-ui';
+  import { applyRecipe, type AppliedRecipe } from '@field-ui/platform';
+
   // Self-contained filter: chips toggle which cards show, by fundamental field / first-release. Reads
   // data-field + data-first off each card. No framework; decorative-safe.
   const grid = document.querySelector<HTMLElement>('.recipe-grid');
@@ -209,6 +229,55 @@ const filters = [
   const field = document.querySelector('field-root') as (HTMLElement & { rescan?: () => void }) | null;
   field?.rescan?.();
   void grid;
+
+  // ── recipe runner: a shared stage that executes the ACTUAL recipe object via applyRecipe() ──
+  const runner = document.querySelector<HTMLElement>('[data-runner]');
+  const stage = document.querySelector<HTMLElement>('[data-rr-stage]');
+  const nameEl = document.querySelector<HTMLElement>('[data-rr-name]');
+  const reducedCb = document.querySelector<HTMLInputElement>('[data-rr-reduced]');
+  const metricsEl = document.querySelector<HTMLElement>('[data-rr-metrics]');
+  const rrSet = (k: string, v: string) => { const e = document.querySelector(`[data-rr="${k}"]`); if (e) e.textContent = v; };
+  let applied: AppliedRecipe | null = null;
+  let pollRaf = 0;
+  let currentId = '';
+  const stopPoll = () => { if (pollRaf) cancelAnimationFrame(pollRaf); pollRaf = 0; };
+  const poll = () => {
+    if (applied) {
+      const ins = applied.inspect();
+      rrSet('frame', String(ins.frame));
+      rrSet('measurements', String(ins.measurements));
+      rrSet('relationships', String(ins.relationships));
+      rrSet('lint', ins.lint ? String(ins.lint) : '✓');
+      if (metricsEl) {
+        const first = Object.values(ins.metrics)[0] ?? {};
+        metricsEl.innerHTML = Object.entries(first)
+          .map(([m, v]) => `<span class="rr-metric">${m} <b>${(v as number).toFixed(2)}</b></span>`)
+          .join('');
+      }
+    }
+    pollRaf = requestAnimationFrame(poll);
+  };
+  const run = (id: string) => {
+    const recipe = recipeById(id);
+    if (!recipe || !stage || !runner) return;
+    applied?.destroy();
+    stage.innerHTML = '';
+    currentId = id;
+    if (nameEl) nameEl.textContent = recipe.name;
+    applied = applyRecipe(stage, recipe, { reducedMotion: reducedCb?.checked });
+    runner.hidden = false;
+    stopPoll();
+    poll();
+  };
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-run]')) {
+    b.addEventListener('click', () => run(b.dataset.run!));
+  }
+  reducedCb?.addEventListener('change', () => { if (currentId) run(currentId); });
+  document.querySelector('[data-rr-close]')?.addEventListener('click', () => {
+    applied?.destroy(); applied = null; stopPoll();
+    if (runner) runner.hidden = true;
+  });
+  document.addEventListener('astro:before-swap', () => { applied?.destroy(); stopPoll(); }, { once: true });
 </script>
 
 <style>
@@ -313,4 +382,44 @@ const filters = [
     border-radius: 8px;
   }
   .empty { color: var(--muted, #9aa); margin-top: 1.5rem; }
+
+  .rc-run {
+    margin-left: auto;
+    border: 1px solid color-mix(in srgb, var(--rc, #4da3ff) 55%, var(--line, #2a2a35));
+    background: color-mix(in srgb, var(--rc, #4da3ff) 14%, transparent);
+    color: var(--rc, #4da3ff);
+    border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.74rem; cursor: pointer;
+  }
+
+  .rg-runner {
+    position: fixed; right: 1rem; bottom: 1rem; width: min(360px, calc(100vw - 2rem)); z-index: 50;
+    background: var(--panel-solid, #14141b); border: 1px solid var(--line, #2a2a35);
+    border-radius: 12px; padding: 0.8rem 0.9rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  }
+  .rg-runner[hidden] { display: none; }
+  .rr-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .rr-head b { font-size: 0.95rem; }
+  .rr-sub { font-size: 0.7rem; color: var(--muted, #9aa); flex: 1 1 100%; order: 3; }
+  .rr-rm { font-size: 0.72rem; color: var(--muted, #9aa); display: flex; align-items: center; gap: 0.25rem; }
+  .rr-close { margin-left: auto; background: none; border: none; color: var(--muted, #9aa); cursor: pointer; font-size: 0.9rem; }
+  .rr-stage {
+    position: relative; min-height: 64px; margin: 0.6rem 0; padding: 0.5rem; border-radius: 8px;
+    background: rgba(0, 0, 0, 0.25); display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+  }
+  .rr-stage [data-recipe-body] {
+    --field-attention: 0; --field-density: 0;
+    font-family: ui-monospace, monospace; font-size: 0.74rem; padding: 0.1rem 0.45rem; border-radius: 5px;
+    background: color-mix(in srgb, #4da3ff calc(14% + var(--field-attention, 0) * 50%), transparent);
+    color: color-mix(in srgb, #4da3ff calc(40% + var(--field-attention, 0) * 55%), var(--text, #e8e8ef));
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .rr-stage .recipe-static { font-size: 0.78rem; color: var(--muted, #c3c9d4); }
+  .rr-stage .recipe-static p { margin: 0.2rem 0; }
+  .rr-stage .recipe-static span { color: #2dd4bf; }
+  .rr-inspect { display: flex; flex-wrap: wrap; gap: 0.8rem; font-size: 0.76rem; color: var(--muted, #9aa); }
+  .rr-inspect b { color: var(--text, #e8e8ef); font-family: ui-monospace, monospace; }
+  .rr-metrics { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+  .rr-metric { font-size: 0.7rem; color: var(--muted, #9aa); border: 1px solid var(--line, #2a2a35); border-radius: 5px; padding: 0.05rem 0.4rem; }
+  .rr-metric b { color: #7bd88f; }
+  [data-reduced='on'] .rr-stage [data-recipe-body] { transition: none; }
 </style>
