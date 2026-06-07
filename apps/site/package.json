@@ -14,5 +14,10 @@
     "@field-ui/platform": "workspace:*",
     "astro": "^5",
     "field-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "katex": "^0.17.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   }
 }
