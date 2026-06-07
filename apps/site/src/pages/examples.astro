@@ -5,7 +5,7 @@ import SiteFooter from '../components/SiteFooter.astro';
 import CodeTabs from '../components/CodeTabs.astro';
 import '../styles/docs.css';
 
-// These demos are LIVE — the real <forces-field> on this page (from Base.astro)
+// These demos are LIVE — the real <field-root> on this page (from Base.astro)
 // reacts to the [data-body] elements below, and writes density back as --d. This
 // is the actual reciprocal system, not a poster.
 
@@ -41,7 +41,7 @@ const gridSrc = `<article class="card" data-body="attract" data-strength="0.6" d
   }
 </style>`;
 
-const burstSrc = `const field = document.querySelector('forces-field');
+const burstSrc = `const field = document.querySelector('field-root');
 
 stage.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor
@@ -55,7 +55,7 @@ const emphSrc = `<ul class="reading-list">
 </ul>
 
 <script type="module">
-  const field = document.querySelector('forces-field');
+  const field = document.querySelector('field-root');
   field.setAttention(true);   // ONE conserved budget across the page:
                               // focusing one body starves the others
 </script>
@@ -365,9 +365,9 @@ const GROUPS = [
     const sig = ac.signal;
     const obs = [];
     const springing = new Set(); // elements with a live spring rAF
-    // the <forces-field> custom element upgrades asynchronously (its module loads after
+    // the <field-root> custom element upgrades asynchronously (its module loads after
     // this inline script), so always look it up lazily — never gate binding on it.
-    const getField = () => document.querySelector('forces-field');
+    const getField = () => document.querySelector('field-root');
     window.__showcaseTeardown = () => {
       ac.abort();
       obs.forEach((o) => o.disconnect());

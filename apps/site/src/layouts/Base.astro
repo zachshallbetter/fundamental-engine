@@ -20,7 +20,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
 <!doctype html>
 <!-- transition:animate="none" disables the view-transition snapshot/cross-fade for
      the whole document. ClientRouter still does no-reload navigation, but with no
-     animation the persisted <forces-field> canvas keeps rendering live instead of
+     animation the persisted <field-root> canvas keeps rendering live instead of
      being snapshotted (canvas snapshots come out blank → a flash). Content swaps
      instantly over one continuous, uninterrupted field. -->
 <html lang="en" transition:animate="none">
@@ -55,23 +55,23 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
     <ClientRouter />
   </head>
   <body>
-    <!-- the CSS gradient is colour ambiance; the live <forces-field> renders the
+    <!-- the CSS gradient is colour ambiance; the live <field-root> renders the
          particle field over it, reacting to [data-body] elements on the page.
          transition:persist keeps the engine running across client-side navigation —
          the field is one continuous medium, never reset between pages. -->
     <div class="field" aria-hidden="true" transition:persist></div>
-    <forces-field accent="#4da3ff" transition:persist></forces-field>
+    <field-root accent="#4da3ff" transition:persist></field-root>
     <div class="scrim" aria-hidden="true" transition:persist></div>
     <slot />
 
     <script>
-      // registers <forces-field> (the engine mounts on connect). Bundled by Astro,
+      // registers <field-root> (the engine mounts on connect). Bundled by Astro,
       // so this runs once — the perfect place to wire the persisted field into the
       // navigation lifecycle. After each content swap, re-scan so the continuous
       // field reacts to the new page's [data-body] bodies (scan re-binds engagement).
       import '@field-ui/elements';
       document.addEventListener('astro:after-swap', () => {
-        const field = document.querySelector('forces-field') as
+        const field = document.querySelector('field-root') as
           | (HTMLElement & { rescan?: () => void; setFormation?: (n: string) => void })
           | null;
         field?.rescan?.();

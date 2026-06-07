@@ -1,6 +1,6 @@
 # The Forces Engine — Module Map
 
-A comprehensive map of the `@forces-ui/core` engine: every source module, what it owns,
+A comprehensive map of the `@field-ui/core` engine: every source module, what it owns,
 the data-flow that ties them together, and the catalogs (forces, classes, services, render
 modes, formations, conditions, presets) the engine ships. This is the *engineering* companion
 to [`forces-system.md`](forces-system.md) (the spec) and the per-force catalog in
@@ -25,7 +25,7 @@ Source root: `packages/core/src/`. Zero runtime dependencies. Section refs (§) 
 | 4 | **Step** | `integrator.ts` | per free particle: body forces (§4) → formation bias (§7) → integrate + damp. Class [B]/[C] forces read neighbours/grids via `Env`. |
 | 5 | **Grids** | `scalar-grid.ts` | advance class-[C] fields one step (`diffuse` heat eq., `wave` leapfrog). |
 | 6 | **Reservoir / currents** | `reservoir.ts`, `currents.ts` | bound↔free exchange (wave-healing, tearing), carrier-wave flow. |
-| 7 | **Feedback / heatmap** | `feedback.ts`, `heatmap.ts` | write `--d` density + `--forces-heatmap-density` back onto elements. |
+| 7 | **Feedback / heatmap** | `feedback.ts`, `heatmap.ts` | write `--d` density + `--field-heatmap-density` back onto elements. |
 | 8 | **Agents / events** | `agents.ts`, `events.ts` | move DOM elements by transform offset; dispatch debounced CustomEvents. |
 | 9 | **Render** | `field.ts`, `render-modes.ts`, `streamlines.ts`, `fieldlines.ts` | draw the chosen render mode + optional field-line / heatmap overlays. |
 
@@ -69,7 +69,7 @@ Path is relative to `packages/core/src/`. "Pure" = no DOM/canvas, unit-testable 
 | Module | Key symbols | Purpose | Pure |
 |---|---|---|---|
 | `core/scanner.ts` | `scanBodies`, `parseBodyParams`, `bodyFromElement`, `expandPreset` | `[data-body]`/`[data-preset]` → bodies (§2.1/§3.1). Parsing is pure; measurement is thin `getBoundingClientRect` glue. | parse: yes |
-| `core/shadow.ts` | `ForcesController`, `ShadowRegistry`, `REGISTER_BODY`/`UNREGISTER_BODY`/`UPDATE_BODY`, `RegisterBodyDetail` | Host-first shadow-DOM participation ([shadow-dom.md](shadow-dom.md)). Component dispatches a `composed` event; the engine registers the HOST (never the shadow tree). | registry: yes |
+| `core/shadow.ts` | `FieldController`, `ShadowRegistry`, `REGISTER_BODY`/`UNREGISTER_BODY`/`UPDATE_BODY`, `RegisterBodyDetail` | Host-first shadow-DOM participation ([shadow-dom.md](shadow-dom.md)). Component dispatches a `composed` event; the engine registers the HOST (never the shadow tree). | registry: yes |
 | `core/feedback.ts` | `feedbackTarget`, `feedbackWeight` | Two-way density feedback (§8): the field writes gathered density back as `--d` so type glows/grows where matter collects. | yes |
 | `core/agents.ts` | `integrateOffset`, `anchorForce`, `elementMass`, `repelForce`, `densityPush` | Element agents (§22.4): a force moves a DOM element by a transform offset with an anchor spring back to its layout slot. | yes |
 | `core/events.ts` | `parseEventBindings`, `triggerActive`, `EventBinding` | Event agents (§22.5): a force/condition firing on a body dispatches a debounced rising-edge CustomEvent (`data-on="dense:field:lit"`). | yes |
@@ -89,7 +89,7 @@ Path is relative to `packages/core/src/`. "Pure" = no DOM/canvas, unit-testable 
 | `core/geometry.ts` | `nearestOnRect`, `sdfRect`, `dipoleField`, `polePair`, `Pole`, `Rect` | Shaped-source geometry (Stage A): nearest point on a body's box, signed distance, and the two dipole poles along its heading — so `magnetism`/`charge` act/draw as real N→S / +→− fields. | yes |
 | `core/fieldlines.ts` | `traceFieldLine`, `traceFieldLines`, `FieldSample` | Field-line tracer (Stage B2): step along a normalized vector field from a seed. Engine-agnostic — takes any `sample(x, y)`. | yes |
 | `core/streamlines.ts` | `forceAt`, `netField` | Vector-field probe (§20.6 diagnostic): `forceAt` = net push on a still test particle (mirrors the integrator cull); `netField` = superposition of every body's `field()` hook (drives `fieldflow` via `env.fieldAt`). | yes |
-| `core/heatmap.ts` | `Heatmap` | Density heatmap layer (H1) — a class-[C] scalar buffer of where matter pools, drawn as a glow underlay and sampled back as `--forces-heatmap-density`. **Measures, never pushes** — not a force. | yes |
+| `core/heatmap.ts` | `Heatmap` | Density heatmap layer (H1) — a class-[C] scalar buffer of where matter pools, drawn as a glow underlay and sampled back as `--field-heatmap-density`. **Measures, never pushes** — not a force. | yes |
 
 ### Field structure & exchange
 

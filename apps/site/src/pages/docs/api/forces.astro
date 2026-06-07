@@ -44,7 +44,7 @@ const CELL_FORCES = new Set(['attract', 'repel', 'swirl', 'gravity', 'stream', '
                 </div>
                 {CELL_FORCES.has(f.token) && (
                   <div class="rc-cell">
-                    <forces-cell force={f.token} color={f.color} />
+                    <field-cell force={f.token} color={f.color} />
                   </div>
                 )}
                 <code class="rc-formula">{f.formula}</code>

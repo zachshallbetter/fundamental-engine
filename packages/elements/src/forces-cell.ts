@@ -24,7 +24,7 @@ const clamp = (v: number, lo: number, hi: number): number =>
  * - `IntersectionObserver` gates the rAF loop — paused when off-screen.
  * - Honours `prefers-reduced-motion`: renders one static frame, no animation.
  */
-export class ForcesCell extends HTMLElementBase {
+export class FieldCell extends HTMLElementBase {
   static readonly observedAttributes = ['force', 'color', 'count'];
 
   private readonly canvas: HTMLCanvasElement;
@@ -240,24 +240,24 @@ export class ForcesCell extends HTMLElementBase {
   }
 }
 
-if (typeof customElements !== 'undefined' && !customElements.get('forces-cell')) {
-  customElements.define('forces-cell', ForcesCell);
-}
-
-/**
- * `<field-cell>` — field-ui-migration alias of `<forces-cell>` (a thin subclass, since the
- * registry forbids two tag names per constructor). Identical behaviour; prefer `<field-cell>`
- * in new markup. `<forces-cell>` keeps working until the migration removal version.
- */
-export class FieldCell extends ForcesCell {}
-
 if (typeof customElements !== 'undefined' && !customElements.get('field-cell')) {
   customElements.define('field-cell', FieldCell);
 }
 
+/**
+ * `<forces-cell>` — deprecated field-ui-migration alias of `<field-cell>` (a thin subclass, since
+ * the registry forbids two tag names per constructor). Identical behaviour; prefer `<field-cell>`
+ * in new markup. Kept working until the migration removal version.
+ */
+export class ForcesCell extends FieldCell {}
+
+if (typeof customElements !== 'undefined' && !customElements.get('forces-cell')) {
+  customElements.define('forces-cell', ForcesCell);
+}
+
 declare global {
   interface HTMLElementTagNameMap {
-    'forces-cell': ForcesCell;
     'field-cell': FieldCell;
+    'forces-cell': ForcesCell;
   }
 }
