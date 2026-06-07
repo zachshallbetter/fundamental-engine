@@ -21,8 +21,9 @@ const feedback = `<!-- 1. opt the element in -->
 
 <style>
   h1 {
-    --d: 0;  /* the engine eases this in ∈ [0,1]; default it yourself */
-    font-variation-settings: 'wght' calc(380 + var(--d) * 420);
+    /* the engine eases this in ∈ [0,1]; default it yourself so it renders before
+       the first write. --field-density is primary; --d is the compact alias. */
+    font-variation-settings: 'wght' calc(380 + var(--field-density, 0) * 420);
   }
 </style>`;
 ---
@@ -87,17 +88,18 @@ const feedback = `<!-- 1. opt the element in -->
   </section>
 
   <section class="docs-sec">
-    <h2><code>--d</code> isn't updating my element</h2>
+    <h2><code>--field-density</code> isn't updating my element</h2>
     <p>
       Density write-back is opt-in. The element needs <code>data-feedback</code>, and your CSS
-      should default <code>--d</code> so it renders before the first write. The value is low-pass
-      filtered (~0.2s), so it eases rather than jumps.
+      should default <code>--field-density</code> (via the <code>var(--field-density, 0)</code>
+      fallback) so it renders before the first write. The value is low-pass filtered (~0.2s), so it
+      eases rather than jumps. (The compact <code>--d</code> is written too, as a compatibility alias.)
     </p>
     <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: feedback }]} />
     <div class="callout">
       <b>Words glow, they are never drawn.</b> The engine never assembles particles into
-      letterforms — text stays real, selectable, and accessible; <code>--d</code> drives weight,
-      glow, and scale on the real element.
+      letterforms — text stays real, selectable, and accessible; <code>--field-density</code> drives
+      weight, glow, and scale on the real element.
     </div>
   </section>
 
