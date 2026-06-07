@@ -1,0 +1,120 @@
+/**
+ * Recipe compiler (authoring-and-recipes §5). Turns a portable `FieldRecipe` from validated catalog
+ * data into a runtime plan — the bridge from "recipe as record" to "recipe as program". Pure +
+ * node-testable; the DOM-applying counterpart is `applyRecipe` in `@field-ui/platform`.
+ *
+ * The lane split is preserved on purpose:
+ *   concepts describe · tokens execute · metrics measure · diagnostics explain · conditions activate.
+ * Only the `primitives` lane (the runtime tokens) becomes `data-body` behavior. Concepts are carried
+ * through descriptively and NEVER compiled into force tokens; metrics become feedback-variable
+ * bindings; diagnostics become inspector/render toggles; conditions become activation gates;
+ * accessibility becomes a reduced-motion output plan.
+ */
+import type { BodyRecipe, FieldRecipe } from './schema.ts';
+
+/** The CSS feedback variable a metric writes to (`attention` → `--field-attention`). */
+export function metricVar(metric: string): string {
+  return `--field-${metric}`;
+}
+
+/** The data-* attributes a single recipe body authors onto an element (token lane → behavior). */
+export function recipeBodyAttributes(b: BodyRecipe): Record<string, string> {
+  const a: Record<string, string> = { 'data-body': b.body };
+  if (b.strength != null) a['data-strength'] = String(b.strength);
+  if (b.range != null) a['data-range'] = String(b.range);
+  if (b.spin != null) a['data-spin'] = String(b.spin);
+  if (b.angle != null) a['data-angle'] = String(b.angle);
+  if (b.feedback) a['data-feedback'] = '';
+  return a;
+}
+
+/** One compiled body: the attribute set + the runtime tokens it carries. */
+export interface RecipeBodyRegistration {
+  attributes: Record<string, string>;
+  tokens: string[];
+}
+
+/** A relationship the recipe declares (from/to are conceptual endpoints, resolved at apply time). */
+export interface RecipeRelationshipRegistration {
+  from: string;
+  to: string;
+  type: string;
+  strength?: number;
+}
+
+/** A metric → feedback-variable binding (the metric lane becoming measurable state). */
+export interface RecipeFeedbackBinding {
+  metric: string;
+  var: string;
+}
+
+/** The reduced-motion output plan — what the runtime renders when motion is reduced (not just prose). */
+export interface RecipeReducedMotionPlan {
+  reducedMotion: string;
+  meaningWithoutMotion: string;
+  /** the static surfaces the runtime should render in place of motion. */
+  staticOutputs: string[];
+}
+
+/** A compiled recipe — the runtime plan, lanes preserved. */
+export interface CompiledRecipe {
+  id: string;
+  recipe: FieldRecipe;
+  bodies: RecipeBodyRegistration[];
+  relationships: RecipeRelationshipRegistration[];
+  feedback: RecipeFeedbackBinding[];
+  diagnostics: string[];
+  metrics: string[];
+  conditions: string[];
+  reducedMotion: RecipeReducedMotionPlan;
+}
+
+const tokensOf = (body: string): string[] => (body ?? '').split(/\s+/).filter(Boolean);
+
+/** Derive the static surfaces a reduced-motion render should produce from the recipe's lanes. */
+function staticOutputs(r: FieldRecipe): string[] {
+  const out: string[] = [];
+  if (r.metrics.length) out.push('metric-badges');
+  if ((r.relationships?.length ?? 0) > 0) out.push('relationship-list');
+  if (r.diagnostics.length) out.push('inspector-table');
+  if ((r.conditions?.length ?? 0) > 0) out.push('condition-list');
+  out.push('reduced-motion-note');
+  return out;
+}
+
+/**
+ * Compile a recipe into a runtime plan (pure). Reads behavior ONLY from the strict token lane — a
+ * concept word never becomes a token. Metrics become feedback bindings; the accessibility block
+ * becomes a reduced-motion output plan.
+ */
+export function compileRecipe(r: FieldRecipe): CompiledRecipe {
+  return {
+    id: r.id,
+    recipe: r,
+    bodies: r.bodies.map((b) => ({ attributes: recipeBodyAttributes(b), tokens: tokensOf(b.body) })),
+    relationships: (r.relationships ?? []).map((rel) => ({ from: rel.from, to: rel.to, type: rel.type, strength: rel.strength })),
+    feedback: r.metrics.map((m) => ({ metric: m, var: metricVar(m) })),
+    diagnostics: [...r.diagnostics],
+    metrics: [...r.metrics],
+    conditions: [...(r.conditions ?? [])],
+    reducedMotion: {
+      reducedMotion: r.accessibility.reducedMotion,
+      meaningWithoutMotion: r.accessibility.meaningWithoutMotion,
+      staticOutputs: staticOutputs(r),
+    },
+  };
+}
+
+const attrsToString = (a: Record<string, string>): string =>
+  Object.entries(a)
+    .map(([k, v]) => (v === '' ? k : `${k}="${v}"`))
+    .join(' ');
+
+/**
+ * Emit the `[data-body]` markup a recipe authors — a `<field-root>` plus one element per body. This is
+ * the copy-paste authoring for a recipe; drop it on a page and the field runs the recipe.
+ */
+export function recipeToMarkup(r: FieldRecipe): string {
+  const bodies = r.bodies.map((b) => `  <div ${attrsToString(recipeBodyAttributes(b))}></div>`).join('\n');
+  return `<field-root></field-root>\n${bodies}`;
+}
