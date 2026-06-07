@@ -27,6 +27,13 @@ function writeVar(element: Element, name: string, value: string): void {
   if (name.startsWith('--field-')) style.setProperty('--forces-' + name.slice('--field-'.length), value);
 }
 
+function removeVar(element: Element, name: string): void {
+  const style = (element as HTMLElement).style;
+  if (!style || typeof style.removeProperty !== 'function') return;
+  style.removeProperty(name);
+  if (name.startsWith('--field-')) style.removeProperty('--forces-' + name.slice('--field-'.length));
+}
+
 function fire(element: Element, type: string, detail: unknown): void {
   if (typeof element.dispatchEvent !== 'function') return;
   element.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail }));
@@ -52,6 +59,18 @@ export class FeedbackRegistry {
   /** Declare which state keys map to which CSS vars on an element (e.g. `{ density: '--field-density' }`). */
   bind(element: Element, map: VarBinding): void {
     this.bindings.set(element, { ...this.bindings.get(element), ...map });
+  }
+
+  /**
+   * Remove the CSS var bound to `key` on `element` (and its `--forces-*` mirror) from the DOM. Use
+   * when a metric becomes absent — e.g. the host stops supplying `data-field-confidence` — so a value
+   * written on an earlier `flush()` doesn't linger. A no-op when nothing is bound for `key`; the
+   * binding itself is left intact, so the var is rewritten if the metric returns. `flush()` already
+   * skips keys with no state, so this only clears the previously written inline value.
+   */
+  clearVar(element: Element, key: string): void {
+    const name = this.bindings.get(element)?.[key];
+    if (name) removeVar(element, name);
   }
 
   /** The declared bindings (element → the CSS-var names it writes), for lint / inspection. */
