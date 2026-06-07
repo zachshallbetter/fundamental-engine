@@ -1,12 +1,12 @@
-# Shadow DOM Participation Model for forces-ui
+# Shadow DOM Participation Model for field-ui
 
 > **Status: core model implemented.** The host-first, event-driven registration model
-> (§§1–7, 10, 11, 15, 16) now ships: the field listens for the composed `forces:register-body`
-> / `forces:unregister-body` / `forces:update-body` events, registers the **host** without
+> (§§1–7, 10, 11, 15, 16) now ships: the field listens for the composed `field:register-body`
+> / `field:unregister-body` / `field:update-body` events, registers the **host** without
 > inspecting the shadow tree, measures it by `getBoundingClientRect` or an optional `getRect`,
-> and writes `--d` / `--forces-density` back to the host (or a `writeTarget`). A
-> `ForcesController` helper (§31.1) removes the event boilerplate. Engine pieces:
-> `core/shadow.ts` (`ForcesController`, `ShadowRegistry`), `core/scanner.ts` (`bodyFromElement`,
+> and writes `--d` / `--field-density` back to the host (or a `writeTarget`). A
+> `FieldController` helper (§31.1) removes the event boilerplate. Engine pieces:
+> `core/shadow.ts` (`FieldController`, `ShadowRegistry`), `core/scanner.ts` (`bodyFromElement`,
 > rect-provider measurement), and the event wiring in `core/field.ts`; covered by
 > `core/shadow.test.ts`. The production-hardening additions in §31 (portals, scopes, the
 > registration handshake, SSR queue, throttled field events, local-cell budgets) remain
@@ -14,7 +14,7 @@
 
 ## 1. Definition
 
-Shadow DOM support in forces-ui means that encapsulated components can participate in the same reciprocal field as normal DOM elements without exposing their internal markup.
+Shadow DOM support in field-ui means that encapsulated components can participate in the same reciprocal field as normal DOM elements without exposing their internal markup.
 
 A component may hide its structure, styles, and rendering details inside a shadow root, but if it participates in the field, it must expose a public physical body to the field engine.
 
@@ -45,7 +45,7 @@ I am a body. Here is my rectangle. Here are my forces. Write my field state here
 
 ## 3. Purpose
 
-The Shadow DOM participation model allows forces-ui to work across:
+The Shadow DOM participation model allows field-ui to work across:
 
 - plain HTML elements,
 - custom elements,
@@ -125,9 +125,9 @@ Use this for:
 Example:
 
 ```html
-<forces-cell mode="local" formation="wells" density="0.8">
+<field-cell mode="local" formation="wells" density="0.8">
 <forces-body data-body="attract" data-strength="1"></forces-body>
-<forces-body data-body="repel" data-strength="1"></forces-body> </forces-cell>
+<forces-body data-body="repel" data-strength="1"></forces-body> </field-cell>
 ```
 
 A local cell is explicit. Components should not create a private canvas by default.
@@ -170,7 +170,7 @@ A participating custom element should register itself from connectedCallback().
 
 ```ts
 connectedCallback() {
-this.dispatchEvent(new CustomEvent("forces:register-body", {
+this.dispatchEvent(new CustomEvent("field:register-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -183,7 +183,7 @@ It should unregister from disconnectedCallback().
 
 ```ts
 disconnectedCallback() {
-this.dispatchEvent(new CustomEvent("forces:unregister-body", {
+this.dispatchEvent(new CustomEvent("field:unregister-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -196,7 +196,7 @@ It should dispatch an update when force-relevant attributes change.
 
 ```ts
 attributeChangedCallback() {
-this.dispatchEvent(new CustomEvent("forces:update-body", {
+this.dispatchEvent(new CustomEvent("field:update-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -297,7 +297,7 @@ When an observed attribute changes, the component should notify the field engine
 
 ```ts
 attributeChangedCallback() {
-this.dispatchEvent(new CustomEvent("forces:update-body", {
+this.dispatchEvent(new CustomEvent("field:update-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -347,14 +347,14 @@ Minimum variables:
 Explicit variables:
 
 ```css
---forces-density --forces-accent --forces-heat --forces-entropy --forces-coherence --forces-accreted
+--field-density --field-accent --field-heat --field-entropy --field-coherence --field-accreted
 ```
 
 Engine write example:
 
 ```ts
 const target = body.writeTarget ?? body.element;
-target.style.setProperty("--d", String(body.d)); target.style.setProperty("--forces-density", String(body.d)); target.style.setProperty("--accent", accent); target.style.setProperty("--forces-accent", accent); target.style.setProperty("--forces-heat", String(body.heat ?? 0)); target.style.setProperty("--forces-entropy", String(body.entropy ?? 0)); target.style.setProperty("--forces-coherence", String(body.coherence ?? 0)); target.style.setProperty("--forces-accreted", String(body.accretedRatio ?? 0));
+target.style.setProperty("--d", String(body.d)); target.style.setProperty("--field-density", String(body.d)); target.style.setProperty("--accent", accent); target.style.setProperty("--field-accent", accent); target.style.setProperty("--field-heat", String(body.heat ?? 0)); target.style.setProperty("--field-entropy", String(body.entropy ?? 0)); target.style.setProperty("--field-coherence", String(body.coherence ?? 0)); target.style.setProperty("--field-accreted", String(body.accretedRatio ?? 0));
 ```
 
 Shadow CSS consumes those variables internally.
@@ -362,10 +362,10 @@ Shadow CSS consumes those variables internally.
 ```css
 :host {
 font-variation-settings:
-"wght" calc(300 + var(--forces-density, var(--d, 0)) * 500);
+"wght" calc(300 + var(--field-density, var(--d, 0)) * 500);
 text-shadow:
-0 0 calc(var(--forces-density, var(--d, 0)) * 14px)
-var(--forces-accent, var(--accent)); }
+0 0 calc(var(--field-density, var(--d, 0)) * 14px)
+var(--field-accent, var(--accent)); }
 ```
 
 The engine should not need to mutate internal shadow elements.
@@ -423,7 +423,7 @@ Use cases:
 Closed-root-safe registration:
 
 ```ts
-this.dispatchEvent(new CustomEvent("forces:register-body", {
+this.dispatchEvent(new CustomEvent("field:register-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -446,7 +446,7 @@ updates that element's detail idempotently, and disconnected hosts are pruned. T
 >
 > ```ts
 > // PROPOSED — not in the shipped code.
-> this.dispatchEvent(new CustomEvent("forces:register-body", {
+> this.dispatchEvent(new CustomEvent("field:register-body", {
 > bubbles: true,
 > composed: true,
 > detail: {
@@ -531,7 +531,7 @@ A body should register with the nearest appropriate field.
 Resolution order:
 
 ```txt
-1. explicit data-field target 2. nearest local forces-cell 3. root forces-field 4. no-op until a field is available
+1. explicit data-field target 2. nearest local field-cell 3. root field-root 4. no-op until a field is available
 ```
 
 Example:
@@ -619,7 +619,7 @@ External styling:
 
 ```css
 forces-text::part(glow) {
-opacity: var(--forces-density, var(--d, 0)); }
+opacity: var(--field-density, var(--d, 0)); }
 ```
 
 Recommended standard parts:
@@ -628,7 +628,7 @@ Recommended standard parts:
 |---|---|
 | forces-text | label, glow, mark |
 | forces-card | surface, content, aura, meter |
-| forces-cell | canvas, overlay, controls |
+| field-cell | canvas, overlay, controls |
 | forces-body | body, icon, meter |
 
 Use ::part() for stable styling hooks.
@@ -649,7 +649,7 @@ Possible CSS:
 
 ```css
 :host(:state(field-active)) {
-outline: 1px solid var(--forces-accent, var(--accent)); }
+outline: 1px solid var(--field-accent, var(--accent)); }
 ```
 
 Use this for component-local semantics.
@@ -663,13 +663,13 @@ The field may dispatch behavior events on registered hosts.
 Recommended events:
 
 ```txt
-forces:lit forces:dim forces:saturated forces:supernova forces:entered forces:exited forces:density-change forces:captured forces:released
+field:lit field:dim field:saturated field:supernova field:entered field:exited field:density-change field:captured field:released
 ```
 
 Example:
 
 ```ts
-body.element.dispatchEvent(new CustomEvent("forces:lit", {
+body.element.dispatchEvent(new CustomEvent("field:lit", {
 bubbles: true,
 composed: true,
 detail: {
@@ -724,13 +724,13 @@ Rules:
 Decorative:
 
 ```html
-<forces-cell aria-hidden="true"></forces-cell>
+<field-cell aria-hidden="true"></field-cell>
 ```
 
 Interactive:
 
 ```html
-<forces-cell aria-label="Interactive force simulation"></forces-cell>
+<field-cell aria-label="Interactive force simulation"></field-cell>
 ```
 
 Reduced motion behavior:
@@ -757,8 +757,8 @@ Example fallback CSS:
 
 ```css
 forces-text {
-color: var(--forces-accent, var(--accent, currentColor)); }
-forces-cell:not(:defined) {
+color: var(--field-accent, var(--accent, currentColor)); }
+field-cell:not(:defined) {
 display: block;
 min-height: 240px; }
 ```
@@ -781,10 +781,10 @@ Default variables:
 ```css
 :root {
 --d: 0;
---forces-density: 0;
---forces-heat: 0;
---forces-entropy: 0;
---forces-coherence: 1; }
+--field-density: 0;
+--field-heat: 0;
+--field-entropy: 0;
+--field-coherence: 1; }
 ```
 
 ## 27. Debugging
@@ -850,7 +850,7 @@ host rect maps to root canvas local cell rect maps to local canvas canvas offset
 ### Density Write-Back
 
 ```txt
---d is written to host --forces-density is written to host --forces-accent is written to host shadow CSS responds to density internal mutation is not required
+--d is written to host --field-density is written to host --field-accent is written to host shadow CSS responds to density internal mutation is not required
 ```
 
 ### Local Cell Isolation
@@ -873,7 +873,7 @@ data-field targets a specific field data-scope global bypasses local cell data-s
 
 ## 30. Summary
 
-Shadow DOM participation in forces-ui is a host-first, event-driven body registration model.
+Shadow DOM participation in field-ui is a host-first, event-driven body registration model.
 
 The root engine does not inspect component internals.
 
@@ -883,7 +883,7 @@ The default body is the custom element host.
 
 Closed shadow roots are supported.
 
-Local canvases are explicit through <forces-cell> only.
+Local canvases are explicit through <field-cell> only.
 
 The shared reciprocal field remains the default.
 
@@ -911,23 +911,23 @@ nested fields, design-system usage, and debugging. Except where marked **shipped
 >
 > See §17–§19 for the broader (also proposed) field-discovery, scope, and portal model.
 
-### 1. A ForcesController helper for custom elements
+### 1. A FieldController helper for custom elements
 
-**Shipped (`ForcesController`, `core/shadow.ts`).** Instead of every custom element manually
+**Shipped (`FieldController`, `core/shadow.ts`).** Instead of every custom element manually
 dispatching registration events, the engine provides a tiny controller class. Construct it with
 the host (and optional extra detail), then call `connect()` / `disconnect()` / `update()` from
 the element's lifecycle callbacks; each emits the corresponding composed event with
 `detail: { element: host, ...extra }`.
 
 ```ts
-class ForcesController {
+class FieldController {
   constructor(
     private host: HTMLElement,
     private detail: Omit<Partial<RegisterBodyDetail>, "element"> = {},
   ) {}
-  connect() { this.emit("forces:register-body"); }
-  disconnect() { this.emit("forces:unregister-body"); }
-  update() { this.emit("forces:update-body"); }
+  connect() { this.emit("field:register-body"); }
+  disconnect() { this.emit("field:unregister-body"); }
+  update() { this.emit("field:update-body"); }
   private emit(type: string) {
     this.host.dispatchEvent(new CustomEvent(type, {
       bubbles: true,
@@ -942,7 +942,7 @@ Then a component can do:
 
 ```ts
 class ForcesText extends HTMLElement {
-  #forces = new ForcesController(this);
+  #forces = new FieldController(this);
   connectedCallback() {
     this.#forces.connect();
   }
@@ -1072,11 +1072,11 @@ Instead of fire-and-forget registration, the engine can confirm registration.
 
 Component dispatches:
 
-forces:register-body
+field:register-body
 
 Engine responds on the same element:
 
-forces:body-registered
+field:body-registered
 
 With detail:
 
@@ -1122,7 +1122,7 @@ Then:
 When a field mounts, it can announce itself:
 
 ```ts
-document.dispatchEvent(new CustomEvent("forces:field-ready", {
+document.dispatchEvent(new CustomEvent("field:field-ready", {
   bubbles: true,
   composed: true,
   detail: {
@@ -1178,7 +1178,7 @@ For Web Components, ship shared component CSS as a constructable stylesheet.
 const forcesTextSheet = new CSSStyleSheet();
 forcesTextSheet.replaceSync(`
   :host {
-    --forces-density: var(--forces-density, var(--d, 0));
+    --field-density: var(--field-density, var(--d, 0));
   }
 `);
 ```
@@ -1204,7 +1204,7 @@ Example:
 </forces-card>
 ```
 
-The host registers as the body, but --forces-density is also mirrored to the surface.
+The host registers as the body, but --field-density is also mirrored to the surface.
 
 This helps when:
 
@@ -1252,12 +1252,12 @@ Useful for:
 * complex components
 * replay serialization
 
-### 16. Add forces:body-state event for debug and observers
+### 16. Add field:body-state event for debug and observers
 
 Instead of every observer needing direct engine access, the engine can optionally dispatch throttled state events.
 
 ```ts
-element.dispatchEvent(new CustomEvent("forces:body-state", {
+element.dispatchEvent(new CustomEvent("field:body-state", {
   bubbles: false,
   composed: false,
   detail: {
@@ -1327,13 +1327,13 @@ motion="static"
 Local cells need hard caps.
 
 ```html
-<forces-cell
+<field-cell
   mode="local"
   density="0.5"
   max-particles="120"
   max-bodies="12"
   fps="30"
-></forces-cell>
+></field-cell>
 ```
 
 This prevents docs pages from becoming expensive when many examples exist.
@@ -1357,7 +1357,7 @@ The strongest additions to include
 
 For the standalone Shadow DOM definition, the priority additions are:
 
-1. ForcesController helper so custom elements do not duplicate event boilerplate. **(Shipped.)**
+1. FieldController helper so custom elements do not duplicate event boilerplate. **(Shipped.)**
 2. Handshake events so components know whether they are registered.
 3. Field-ready / pending registration queue for SSR and hydration.
 4. data-field-contain and data-field-write to clarify body geometry and write-back.

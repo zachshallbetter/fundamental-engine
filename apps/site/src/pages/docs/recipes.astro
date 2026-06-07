@@ -2,7 +2,7 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
-const word = `<h1>Every element has
+const word = `<h1>Elements have
   <em data-body="attract" data-strength="0.9" data-range="320" data-feedback>mass</em>.
 </h1>
 
@@ -28,7 +28,7 @@ const grid = `<article data-body="attract" data-strength="0.5" data-range="220" 
   }
 </style>`;
 
-const nav = `<forces-field attention></forces-field>
+const nav = `<field-root attention></field-root>
 
 <nav>
   <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Home</a>
@@ -36,16 +36,16 @@ const nav = `<forces-field attention></forces-field>
   <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Lab</a>
 </nav>`;
 
-const burst = `const field = document.querySelector('forces-field');
+const burst = `const field = document.querySelector('field-root');
 
 document.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');   // shove + heat at the cursor
 });`;
 
-const navReact = `import { ForcesField } from '@field-ui/react';
+const navReact = `import { FieldField } from '@field-ui/react';
 
 <>
-  <ForcesField attention />
+  <FieldField attention />
 
   <nav>
     <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Home</a>
@@ -54,10 +54,10 @@ const navReact = `import { ForcesField } from '@field-ui/react';
   </nav>
 </>`;
 
-const burstReact = `import { ForcesField } from '@field-ui/react';
+const burstReact = `import { FieldField } from '@field-ui/react';
 
 // onReady hands you the same FieldHandle once the field mounts
-<ForcesField
+<FieldField
   onReady={(field) => {
     document.addEventListener('click', (e) => {
       field.burst(e.clientX, e.clientY, '#4da3ff');   // shove + heat at the cursor
@@ -75,7 +75,7 @@ const burstReact = `import { ForcesField } from '@field-ui/react';
     <h1>Practical <span class="accent">patterns</span></h1>
     <p class="lede">
       Copy-paste starting points, each built from the public <a href="/docs/api/attributes">attributes</a>
-      and the <a href="/docs/api/handle">FieldHandle</a>. They assume a <code>&lt;forces-field&gt;</code>
+      and the <a href="/docs/api/handle">FieldHandle</a>. They assume a <code>&lt;field-root&gt;</code>
       is on the page.
     </p>
   </header>

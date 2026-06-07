@@ -45,9 +45,9 @@ How they relate:
   finite, speed ≤ `c`, heat bounded, and the particle count stable unless a budgeted [S]
   source is active — the net that catches a runaway a bespoke check would miss.
 - **The benchmark is not a correctness gate** — it tracks throughput so a regression is
-  visible (`pnpm --filter forces-ui bench`).
+  visible (`pnpm --filter field-ui bench`).
 
-Run everything with `pnpm --filter forces-ui test` (Node's built-in `node:test`, zero
+Run everything with `pnpm --filter field-ui test` (Node's built-in `node:test`, zero
 test framework). RNG forces are seeded, so the suite is deterministic across runs.
 
 ---

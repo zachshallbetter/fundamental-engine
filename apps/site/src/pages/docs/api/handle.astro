@@ -6,8 +6,8 @@ import { HANDLE } from '../../../lib/docs-api.ts';
 
 const getWc = `import '@field-ui/elements';
 
-// the <forces-field> element proxies the entire FieldHandle:
-const field = document.querySelector('forces-field');
+// the <field-root> element proxies the entire FieldHandle:
+const field = document.querySelector('field-root');
 field.setFormation('wells');`;
 
 const getVanilla = `import { createField } from 'field-ui';
@@ -15,12 +15,12 @@ const getVanilla = `import { createField } from 'field-ui';
 const field = createField(canvas);   // ← createField returns the handle
 field.setRender('links');`;
 
-const getReact = `import { ForcesField } from '@field-ui/react';
+const getReact = `import { FieldField } from '@field-ui/react';
 
 // onReady hands you the live handle once the field mounts:
-<ForcesField onReady={(field) => field.setPalette('heatmap')} />`;
+<FieldField onReady={(field) => field.setPalette('heatmap')} />`;
 
-const worked = `const field = document.querySelector('forces-field');
+const worked = `const field = document.querySelector('field-root');
 
 // recolour + reshape the whole field at runtime
 field.setPalette('infrared');
@@ -61,12 +61,12 @@ addEventListener('click', (e) => field.burst(e.clientX, e.clientY));
 field.scan();      // re-scan after the DOM changes
 field.destroy();   // release the loop + listeners`;
 
-const workedReact = `import { ForcesField } from '@field-ui/react';
+const workedReact = `import { FieldField } from '@field-ui/react';
 
 export function Background() {
   // onReady hands you the same handle once the field mounts
   return (
-    <ForcesField
+    <FieldField
       onReady={(field) => {
         field.setPalette('infrared');
         field.setFormation('accretion');
@@ -92,7 +92,7 @@ export function Background() {
     <h1>The <span class="accent">FieldHandle</span></h1>
     <p class="lede">
       Every entry point — <code>createField</code>, <code>mountField</code>, the
-      <code>ForcesField</code> class, the <code>&lt;forces-field&gt;</code> element (proxied), and
+      <code>FieldField</code> class, the <code>&lt;field-root&gt;</code> element (proxied), and
       the React <code>onReady</code> — hands you a <code>FieldHandle</code>. Use it to drive the
       field after it mounts.
     </p>
@@ -129,8 +129,8 @@ export function Background() {
       }
     </dl>
     <div class="callout">
-      <b>On the element.</b> When you use <code>&lt;forces-field&gt;</code>, these are proxied onto
-      the element itself — <code>document.querySelector('forces-field').setFormation('wells')</code>.
+      <b>On the element.</b> When you use <code>&lt;field-root&gt;</code>, these are proxied onto
+      the element itself — <code>document.querySelector('field-root').setFormation('wells')</code>.
     </div>
   </section>
 

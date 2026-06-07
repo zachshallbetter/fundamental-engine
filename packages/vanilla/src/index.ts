@@ -10,12 +10,8 @@
  * Spec: `docs/forces-system.md`.
  */
 
-export { ForcesField } from './field.ts';
-export type { ForcesFieldInit } from './field.ts';
-// field-ui-migration aliases: `FieldField` is the field-first name; `ForcesField` keeps working
-// until the migration removal version (docs/field-ui-migration-plan.md §3).
-export { ForcesField as FieldField } from './field.ts';
-export type { ForcesFieldInit as FieldFieldInit } from './field.ts';
+export { FieldField, ForcesField } from './field.ts';
+export type { FieldFieldInit, ForcesFieldInit } from './field.ts';
 export { mountField, makeFieldCanvas } from './mount.ts';
 export type { MountOptions } from './mount.ts';
 

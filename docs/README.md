@@ -130,12 +130,13 @@ EventAgent = threshold trigger
 
 Visualization layers reveal state. They must not mutate physics unless explicitly declared as feedback.
 
-## Legacy Reference (as-built engine, under the former `forces-ui` naming)
+## Engine Reference (as-built)
 
-The documents below describe the engine **as it currently ships**. They predate the field-ui
-rename and still use the legacy `forces-ui` / `--forces-*` / `forces:*` / `<forces-field>` names —
-all of which keep working as aliases. Treat them as the authoritative behavior baseline until the
-field-first docs above fully absorb them; do not delete them during the migration.
+The documents below specify the engine **as it currently ships**, migrated to field-first naming
+(`field-ui` / `--field-*` / `field:*` / `<field-root>`; the old `forces-*` names still work as
+aliases). The physics vocabulary — `force`, the force tokens, the `FORCES` catalog — is the domain
+model and stays. These are the authoritative behavior reference for the force/field engine; the
+field-first conceptual docs above build the broader field-ui model on top of them.
 
 | Document | Role |
 |---|---|

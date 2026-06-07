@@ -481,7 +481,7 @@
   color: var(--text-2);
 }
 
-/* live force demos (ForceCell.astro) — a grid of interactive <forces-cell>s */
+/* live force demos (ForceCell.astro) — a grid of interactive <field-cell>s */
 .cell-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
@@ -499,7 +499,7 @@
 .force-cell:hover {
   border-color: color-mix(in srgb, var(--fc, var(--accent)) 45%, var(--line));
 }
-.force-cell forces-cell {
+.force-cell field-cell {
   display: block;
   width: 100%;
   cursor: crosshair;
@@ -751,7 +751,7 @@
   border-radius: 8px;
   overflow: hidden;
 }
-.ref-card .rc-cell forces-cell {
+.ref-card .rc-cell field-cell {
   display: block;
   height: 96px;
   cursor: crosshair;

@@ -1,7 +1,7 @@
 {
   "name": "@field-ui/vanilla",
   "version": "0.2.0",
-  "description": "Framework-free TypeScript wrapper for forces-ui — the reciprocal DOM-physics field as a typed ForcesField class + mountField(), with no custom-element registration and no framework dependency.",
+  "description": "Framework-free TypeScript wrapper for field-ui — the reciprocal DOM-physics field as a typed FieldField class + mountField(), with no custom-element registration and no framework dependency.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",

@@ -2,7 +2,7 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 
-// These demos are LIVE — the real <forces-field> on this page (from Base.astro)
+// These demos are LIVE — the real <field-root> on this page (from Base.astro)
 // reacts to the [data-body] elements below, and writes density back as --d. This
 // is the actual reciprocal system, not a poster.
 
@@ -38,16 +38,16 @@ const gridSrc = `<article class="card" data-body="attract" data-strength="0.6" d
   }
 </style>`;
 
-const burstSrc = `const field = document.querySelector('forces-field');
+const burstSrc = `const field = document.querySelector('field-root');
 
 stage.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor
 });`;
 
-const burstReact = `import { ForcesField } from '@field-ui/react';
+const burstReact = `import { FieldField } from '@field-ui/react';
 
 // onReady hands you the same FieldHandle once the field mounts
-<ForcesField
+<FieldField
   onReady={(field) => {
     stage.addEventListener('click', (e) => {
       field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor

@@ -1,5 +1,5 @@
 ---
-// A labelled, captioned live <forces-cell> — the sanctioned demo surface (the
+// A labelled, captioned live <field-cell> — the sanctioned demo surface (the
 // foreground "poster" engine, separate from the page field). Registered globally
 // by Base.astro's `import '@field-ui/elements'`. Pointer-repel is built in, so
 // these are interactive: move the cursor through the frame.
@@ -19,7 +19,7 @@ const { force, color = '#4da3ff', label = force, caption, height = 140 } = Astro
 ---
 
 <figure class="force-cell" style={`--fc:${color}`}>
-  <forces-cell force={force} color={color} style={`height:${height}px`}></forces-cell>
+  <field-cell force={force} color={color} style={`height:${height}px`}></field-cell>
   <figcaption>
     <b>{label}</b>
     {caption && <span>{caption}</span>}

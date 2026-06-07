@@ -2,12 +2,12 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const basic = `import { ForcesField } from '@field-ui/react';
+const basic = `import { FieldField } from '@field-ui/react';
 
 export function App() {
   return (
     <>
-      <ForcesField accent="#4da3ff" />
+      <FieldField accent="#4da3ff" />
       <a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
         pull me
       </a>
@@ -17,24 +17,24 @@ export function App() {
 
 const onReady = `// the field reacts to [data-body] elements anywhere on the page.
 // after rendering new bodies, rescan from onReady:
-<ForcesField
+<FieldField
   palette="heatmap"
   attention
   onReady={(field) => field.scan()}
 />`;
 
-const hook = `import { useForcesField } from '@field-ui/react';
+const hook = `import { useFieldField } from '@field-ui/react';
 
 function Background() {
   // own the canvas element yourself
-  const { canvasRef, fieldRef } = useForcesField({ accent: '#4da3ff' });
+  const { canvasRef, fieldRef } = useFieldField({ accent: '#4da3ff' });
   return <canvas ref={canvasRef} className="my-field" />;
 }`;
 ---
 
 <DocsLayout
   title="field-ui — React guide"
-  description="Use field-ui in React: the <ForcesField> component (every FieldOptions prop + onReady) and the useForcesField hook. React is a peer dependency; the core engine stays zero-dependency."
+  description="Use field-ui in React: the <FieldField> component (every FieldOptions prop + onReady) and the useFieldField hook. React is a peer dependency; the core engine stays zero-dependency."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
@@ -53,7 +53,7 @@ function Background() {
   </section>
 
   <section class="docs-sec">
-    <h2>&lt;ForcesField&gt;</h2>
+    <h2>&lt;FieldField&gt;</h2>
     <p>
       Mounts a fixed, full-viewport canvas behind your app and runs the engine — the same field
       the web component and <code>mountField()</code> wrap. Bodies are still plain
@@ -79,7 +79,7 @@ function Background() {
   </section>
 
   <section class="docs-sec">
-    <h2>useForcesField — own the canvas</h2>
+    <h2>useFieldField — own the canvas</h2>
     <p>
       For full control of the canvas element, use the hook form. It returns a
       <code>canvasRef</code> to attach and a <code>fieldRef</code> holding the handle.

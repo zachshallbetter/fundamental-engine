@@ -12,14 +12,14 @@ const setupWc = `<script type="module">
 </script>
 
 <!-- one field, behind everything -->
-<forces-field accent="#4da3ff"></forces-field>`;
+<field-root accent="#4da3ff"></field-root>`;
 
-const setupReact = `import { ForcesField } from '@field-ui/react';
+const setupReact = `import { FieldField } from '@field-ui/react';
 
 export default function App() {
   return (
     <>
-      <ForcesField accent="#4da3ff" />
+      <FieldField accent="#4da3ff" />
       {/* your app */}
     </>
   );
@@ -40,7 +40,7 @@ const react1 = `// bodies are plain elements anywhere in your tree
 </h1>
 
 // React renders bodies after the field mounts — rescan once they're in:
-<ForcesField accent="#4da3ff" onReady={(field) => field.scan()} />`;
+<FieldField accent="#4da3ff" onReady={(field) => field.scan()} />`;
 
 const reciprocity = `<h1 data-body="attract" data-range="320" data-feedback>field-ui</h1>
 
@@ -64,7 +64,7 @@ const condition = `<a data-hot data-body="swirl" data-when="active" data-spin="1
   hover me
 </a>`;
 
-const drive = `const field = document.querySelector('forces-field');
+const drive = `const field = document.querySelector('field-root');
 
 // a global bias on every particle
 field.setFormation('wells');
@@ -102,7 +102,7 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
     <h2>2. Drop the field</h2>
     <p>
       One field lives behind your whole page. Register the element and drop a single
-      <code>&lt;forces-field&gt;</code> — it mounts a fixed, full-viewport canvas and starts the
+      <code>&lt;field-root&gt;</code> — it mounts a fixed, full-viewport canvas and starts the
       engine. Nothing reacts yet; there are no bodies.
     </p>
     <CodeTabs
@@ -123,7 +123,7 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
     </p>
     <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: body1 }]} />
     <figure class="force-cell solo" style="--fc:#4da3ff; margin-top:0.9rem">
-      <forces-cell force="attract" color="#4da3ff" style="height:150px"></forces-cell>
+      <field-cell force="attract" color="#4da3ff" style="height:150px"></field-cell>
       <figcaption>
         <b>attract</b>
         <span>what your headline now does to nearby matter</span>
@@ -159,7 +159,7 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
     </p>
     <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: compose }]} />
     <figure class="force-cell solo" style="--fc:#2dd4bf; margin-top:0.9rem">
-      <forces-cell force="swirl" color="#2dd4bf" style="height:150px"></forces-cell>
+      <field-cell force="swirl" color="#2dd4bf" style="height:150px"></field-cell>
       <figcaption>
         <b>swirl</b>
         <span>the spin you just composed on top of attract</span>

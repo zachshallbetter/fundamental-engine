@@ -1,9 +1,9 @@
-# forces-ui — what it is
+# field-ui — what it is
 
 > **Elements bend the field; the field bends them back.**
 
 Most "particle background" effects are wallpaper: a pretty animation that sits
-*behind* your page and ignores it. **forces-ui is the opposite.** It's a single
+*behind* your page and ignores it. **field-ui is the opposite.** It's a single
 physical field that your interface lives *inside* — where the words, links, and
 cards on the page are real bodies with mass, and the field reacts to them while
 they react to it.
@@ -95,6 +95,6 @@ where a simple silhouette stays clean.
 
 ---
 
-*forces-ui is pre-alpha and building in the open. The full developer specification
+*field-ui is pre-alpha and building in the open. The full developer specification
 lives in [`forces-system.md`](forces-system.md); the roadmap and the wider idea
 space are in [`forces-possibilities.md`](forces-possibilities.md).*

@@ -122,7 +122,7 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
           // live demo: burst the persisted page field at the click point
           const burst = e.target.closest && e.target.closest('[data-field-burst]');
           if (burst) {
-            const field = document.querySelector('forces-field');
+            const field = document.querySelector('field-root');
             const color = burst.getAttribute('data-field-burst') || undefined;
             if (field && field.burst) field.burst(e.clientX, e.clientY, color || undefined);
             return;
@@ -204,7 +204,7 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
         });
       tagBodies('.next-card, .install, .see-also a, .docs-prevnext .pn', 'wall');
       tagBodies('.docs-hero .lede, .docs-content h2', 'shear');
-      const taggedField = document.querySelector('forces-field');
+      const taggedField = document.querySelector('field-root');
       if (taggedField && taggedField.rescan) taggedField.rescan();
     })();
   </script>

@@ -1,4 +1,4 @@
-# forces-ui
+# field-ui
 
 **A reciprocal DOM-physics field.** Your page's elements are physical bodies in a
 single particle field: they carry weight and exert force, and the field's local
@@ -22,16 +22,16 @@ Not a background effect; a medium your interface lives inside.
 
 > **Pre-release: not yet on npm.** Releases are cut as git tags for now (see
 > [`RELEASING.md`](../../RELEASING.md)); consume the package from the repository as a
-> workspace dependency or a git install. `npm add forces-ui` lands with the first
+> workspace dependency or a git install. `npm add field-ui` lands with the first
 > published release.
 
-Most apps want the `@forces-ui/elements` web component or the `@forces-ui/react` adapter,
+Most apps want the `@field-ui/elements` web component or the `@field-ui/react` adapter,
 which wrap this engine. Use the core directly when you own the canvas.
 
 ## Quick start
 
 ```ts
-import { createField } from 'forces-ui';
+import { createField } from 'field-ui';
 
 const canvas = document.querySelector('canvas')!;
 const field = createField(canvas, { accent: '#4da3ff' });

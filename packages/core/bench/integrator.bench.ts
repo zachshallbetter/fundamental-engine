@@ -1,7 +1,7 @@
 /**
  * Integrator benchmark — measures the hot path: the per-frame body-force loop
  * (O(particles × bodies)) plus integration, friction, formation bias, and the
- * spatial-hash reindex. Run: `pnpm --filter forces-ui bench`.
+ * spatial-hash reindex. Run: `pnpm --filter field-ui bench`.
  *
  * Prints avg ms/frame and throughput (particle·body interactions/sec) at a few
  * realistic scales. Deterministic-ish; warms up before timing.
@@ -143,7 +143,7 @@ function run(label: string, nParticles: number, nBodies: number, frames: number)
   );
 }
 
-console.log('\nforces-ui · integrator benchmark (Node ' + process.version + ')\n');
+console.log('\nfield-ui · integrator benchmark (Node ' + process.version + ')\n');
 console.log(
   'scale'.padEnd(10) + '  load             ms/frame      fps        throughput   frame budget',
 );

@@ -644,8 +644,7 @@ Clicking a card focuses it and fans out 14 facets (`caps.js` `RELATED`).
 `manual.html` ("Field Manual · v6 · the physics of this page") is the prose
 explanation of the system, with the **real engine running live behind every
 example**. It is the authority for *how the system is explained* and the order it
-builds up. Thesis: *every element has mass* — "I design systems where every part
-exerts force on the others, and the whole only works when you can feel them."
+builds up. Thesis: *elements have mass*
 
 Structured as **four chapters / sixteen numbered concepts**:
 
@@ -734,7 +733,7 @@ The original prototype was plain DOM + a `requestAnimationFrame` loop reading
 
 1. **Mount the engine once** as a single canvas component at the app root that scans
    `[data-body]` elements — keeping the declarative authoring model intact. This is what
-   the shipped adapters do (`<forces-field>`, `mountField()`, `<ForcesField>`); or
+   the shipped adapters do (`<field-root>`, `mountField()`, `<FieldField>`); or
 2. **Re-express the forces** on top of an existing particle/behavior system, mapping each
    force in §6 to that system's primitive.
 
@@ -1143,7 +1142,7 @@ and `streamlines`; the remaining rows are spec-only and marked **planned**.
 > **Not to be confused with the density heatmap.** The `heatmap` *render mode* below
 > (a planned density-contour draw) is distinct from the **shipped density-heatmap overlay
 > layer** (the `heatmap` field option / `toggleHeatmap`, drawn as a glow underlay and
-> sampled to bodies as `--forces-heatmap-density`, §2 / field-systems H1). The overlay is a
+> sampled to bodies as `--field-heatmap-density`, §2 / field-systems H1). The overlay is a
 > layer under the particle draw, not one of the six draw-pass modes.
 
 | Mode | How | Result | Status |
@@ -1809,7 +1808,7 @@ The spec describes one field: the full-viewport background. The design system ad
 second surface — a **standalone field sized to its container** that renders *one*
 force or *one* formation, with its own particle pool, its own pointer interaction,
 and a lifecycle that pauses when off-screen. It's the unit behind every live demo,
-the natural embeddable (`<forces-cell force="swirl">`), and a concrete realization
+the natural embeddable (`<field-cell force="swirl">`), and a concrete realization
 of the poster/reduced variant (possibilities §1.4) and render modes (§20.6).
 
 ```js

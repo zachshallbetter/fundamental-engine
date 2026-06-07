@@ -6,7 +6,7 @@ const rescan = `// plain DOM / web component
 field.scan();
 
 // React — bodies render after the field mounts, so scan from onReady
-<ForcesField onReady={(field) => field.scan()} />`;
+<FieldField onReady={(field) => field.scan()} />`;
 
 const layer = `/* the canvas is decorative — behind content, never intercepting clicks */
 .forces-canvas {
@@ -65,7 +65,7 @@ const feedback = `<!-- 1. opt the element in -->
         the tab is foregrounded again, so a hidden tab costs nothing.
       </li>
       <li>
-        <b>Off-screen cells.</b> A <code>&lt;forces-cell&gt;</code> gates its loop on an
+        <b>Off-screen cells.</b> A <code>&lt;field-cell&gt;</code> gates its loop on an
         <code>IntersectionObserver</code> — it only runs while visible.
       </li>
     </ul>
@@ -74,15 +74,15 @@ const feedback = `<!-- 1. opt the element in -->
   <section class="docs-sec">
     <h2>The canvas covers my content or eats clicks</h2>
     <p>
-      With <code>&lt;forces-field&gt;</code> and the React component this is handled for you. If
+      With <code>&lt;field-root&gt;</code> and the React component this is handled for you. If
       you own the canvas via <code>createField</code>, position it fixed behind your content and
       let pointer events pass through:
     </p>
     <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: layer }]} />
     <div class="callout">
       <b>One field per page.</b> There is exactly one background field. Don't mount several
-      <code>&lt;forces-field&gt;</code> elements — for small in-frame effects use
-      <code>&lt;forces-cell&gt;</code> instead, which is built to be embedded many times.
+      <code>&lt;field-root&gt;</code> elements — for small in-frame effects use
+      <code>&lt;field-cell&gt;</code> instead, which is built to be embedded many times.
     </div>
   </section>
 
