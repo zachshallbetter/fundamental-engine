@@ -53,3 +53,5 @@ export * from './visual/index.ts';
 export * from './recipes/index.ts';
 // inspection & productization (Phase 8) — snapshot regression, budget inspector, system report
 export * from './inspect/index.ts';
+// the semantic layer (BA2) — meaning→metric maps, interaction materials, field states
+export * from './semantic/index.ts';
