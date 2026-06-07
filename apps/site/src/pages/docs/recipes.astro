@@ -1,123 +1,145 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
+import SeeAlso from '../../components/SeeAlso.astro';
+import VocabLegend from '../../components/VocabLegend.astro';
+import VocabBadge from '../../components/VocabBadge.astro';
+import { FIELD_RECIPES, RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, recipeById, serializeRecipe } from 'field-ui';
 
-const word = `<h1>Elements have
-  <em data-body="attract" data-strength="0.9" data-range="320" data-feedback>mass</em>.
-</h1>
+// The Recipe Model page: how a FieldRecipe separates the vocabulary lanes, the schema, the strict rule
+// (prose expressive, runtime tokens real), and the concept->token mapping. Counts are data-driven.
+const schema = `type FieldRecipe = {
+  id: string;
+  name: string;
+  intent: string;
+  tier: "core" | "workflow" | "professional" | "enterprise";
+  naturalField?: "gravity" | "electromagnetic" | "strong" | "weak";  // FIELD lane (conceptual)
+  translation?: string;                  // a short natural-field phrase
 
-<style>
-  h1 em {
-    --d: 0;                                   /* the engine writes this */
-    font-style: normal;
-    color: color-mix(in srgb, #4da3ff calc(40% + var(--d) * 55%), #fff);
-    text-shadow: 0 0 calc(var(--d) * 50px) rgba(77, 163, 255, var(--d));
-  }
-</style>`;
+  // ── the lanes — a word lives in exactly one ───────────────────────────
+  primitives: ForceToken[];   // RUNTIME TOKEN — strict, passported, conformance-gated
+  concepts?:  string[];       // CONCEPT       — orbit, spring, trust, staleness
+  metrics:    string[];       // METRIC        — mass, attention, pressure, confidence
+  diagnostics:string[];       // DIAGNOSTIC    — potential, topology, causality
+  conditions?:string[];       // CONDITION     — dwell, threshold, stale, in-view
 
-const grid = `<article data-body="attract" data-strength="0.5" data-range="220" data-feedback>
-  …card…
-</article>
+  bodies: BodyRecipe[];       // how the runtime tokens are authored on elements
+  render: RenderLayer[];
+  accessibility: {            // required — no recipe is motion-only
+    reducedMotion: string;
+    meaningWithoutMotion: string;
+  };
+  status: "shipped" | "experimental" | "planned" | "conceptual";
+};`;
 
-<style>
-  article {
-    --d: 0;
-    transform: scale(calc(1 + var(--d) * 0.03));
-    border-color: color-mix(in srgb, #4da3ff calc(var(--d) * 70%), var(--line));
-    transition: transform 0.3s, border-color 0.3s;
-  }
-</style>`;
+const MAPPING: [string, string, string][] = [
+  ['mass', 'metric', 'a measured property — use gravity / attract as the token'],
+  ['potential', 'diagnostic', 'a field-sampling overlay — never a token'],
+  ['spring', 'concept', 'runtime token: tether'],
+  ['drag', 'concept', 'runtime token: viscosity'],
+  ['reflect', 'concept', 'runtime token: wall'],
+  ['absorb', 'concept', 'runtime token: sink'],
+  ['threshold', 'condition', 'runtime token: gate (if a gate is intended)'],
+  ['orbit', 'concept', 'composed from gravity + magnetism + tether'],
+  ['emitter', 'concept', 'runtime token: spawn'],
+  ['phase / decay', 'concept', 'runtime token: morph / memory'],
+  ['trust / risk / confidence', 'metric', 'measured state — never a token'],
+];
 
-const nav = `<field-root attention></field-root>
-
-<nav>
-  <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Home</a>
-  <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Docs</a>
-  <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Lab</a>
-</nav>`;
-
-const burst = `const field = document.querySelector('field-root');
-
-document.addEventListener('click', (e) => {
-  field.burst(e.clientX, e.clientY, '#4da3ff');   // shove + heat at the cursor
-});`;
-
-const navReact = `import { FieldField } from '@field-ui/react';
-
-<>
-  <FieldField attention />
-
-  <nav>
-    <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Home</a>
-    <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Docs</a>
-    <a data-hot data-body="attract" data-strength="1.2" data-range="200" data-feedback>Lab</a>
-  </nav>
-</>`;
-
-const burstReact = `import { FieldField } from '@field-ui/react';
-
-// onReady hands you the same FieldHandle once the field mounts
-<FieldField
-  onReady={(field) => {
-    document.addEventListener('click', (e) => {
-      field.burst(e.clientX, e.clientY, '#4da3ff');   // shove + heat at the cursor
-    });
-  }}
-/>`;
+const example = serializeRecipe(recipeById('guided-flow')!);
+const tokenCount = new Set(FIELD_RECIPES.flatMap((r) => r.primitives)).size;
 ---
 
 <DocsLayout
-  title="field-ui — Recipes"
-  description="Practical, copy-paste recipes: a glowing hero word, a reacting card grid, a conserved-attention nav, and a click burst — all built from the public attributes and FieldHandle."
+  title="field-ui — Recipe model"
+  description="The FieldRecipe model: how a recipe separates runtime tokens, concepts, metrics, diagnostics, and conditions into distinct lanes. Recipe prose can be expressive; runtime tokens must be real and conformance-gated."
 >
   <header class="docs-hero">
     <p class="kicker">Recipes</p>
-    <h1>Practical <span class="accent">patterns</span></h1>
+    <h1>The <span class="accent">recipe model</span></h1>
     <p class="lede">
-      Copy-paste starting points, each built from the public <a href="/docs/api/attributes">attributes</a>
-      and the <a href="/docs/api/handle">FieldHandle</a>. They assume a <code>&lt;field-root&gt;</code>
-      is on the page.
+      A <code>FieldRecipe</code> is a portable, serializable field program — the reusable unit that
+      connects the natural-field model, engine primitives, DOM authoring, platform feedback, diagnostics,
+      and the accessibility fallback. The catalog ships
+      <b>{FIELD_RECIPES.length}</b> recipes across <b>{RECIPE_TIERS.length}</b> tiers
+      (<b>{FIRST_RELEASE_RECIPE_IDS.length}</b> first-release), composed from {tokenCount} distinct runtime
+      tokens. See them all in the <a href="/docs/gallery">recipe gallery</a>.
     </p>
   </header>
 
+  <div class="callout">
+    <b>Recipe prose can be expressive. Runtime tokens must be real.</b> A recipe may say “completion
+    releases pressure and decays into memory,” but its runtime fields stay strict:
+    <code>primitives: ["morph", "memory"]</code>. The conformance gate rejects any recipe whose
+    primitives are not real passported tokens — or that puts a diagnostic, metric, condition, or concept
+    in the token lane.
+  </div>
+
   <section class="docs-sec">
-    <h2>A glowing hero word</h2>
-    <p>The canonical reciprocity effect — a word gains weight and glow where matter gathers.</p>
-    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: word }]} />
+    <h2>The vocabulary lanes</h2>
+    <p>A recipe separates these on purpose. A word lives in exactly one lane, and the lane says which:</p>
+    <VocabLegend />
   </section>
 
   <section class="docs-sec">
-    <h2>A reacting card grid</h2>
-    <p>Give each card a gentle attractor and let its <code>--d</code> drive a subtle lift and edge glow.</p>
-    <CodeTabs variants={[{ label: 'HTML + CSS', lang: 'html', code: grid }]} />
+    <h2>The schema</h2>
+    <CodeTabs variants={[{ label: 'FieldRecipe', lang: 'ts', code: schema }]} />
   </section>
 
   <section class="docs-sec">
-    <h2>A conserved-attention nav</h2>
+    <h2>Concept → token mapping</h2>
     <p>
-      With <code>attention</code> on, engaging one link pulls the field's finite budget toward it —
-      so the nav physically can't emphasize two items at once.
+      When a product word is not a real engine token, it goes to its proper lane — it is never invented
+      as a force. No new force tokens are added for recipes.
     </p>
-    <CodeTabs
-      variants={[
-        { label: 'Web component', lang: 'html', code: nav },
-        { label: 'React', lang: 'tsx', code: navReact },
-      ]}
-    />
+    <table class="rm-table">
+      <thead><tr><th>Concept word</th><th>Lane</th><th>Resolution</th></tr></thead>
+      <tbody>
+        {MAPPING.map(([word, lane, res]) => (
+          <tr>
+            <td><VocabBadge kind="concept" label={word} /></td>
+            <td><VocabBadge kind={lane} /></td>
+            <td>{res}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </section>
 
   <section class="docs-sec">
-    <h2>A burst on click</h2>
-    <p>Drive the field from your own events. <code>burst</code> takes viewport coordinates.</p>
-    <CodeTabs
-      variants={[
-        { label: 'Web component', lang: 'js', code: burst },
-        { label: 'React', lang: 'tsx', code: burstReact },
-      ]}
-    />
-    <div class="callout">
-      <b>Authoring a custom force?</b> A force is just an object implementing the
-      <a href="/docs/api/types">Force contract</a> — <code>{'{ token, apply(b, p, env) }'}</code>.
-    </div>
+    <h2>A worked recipe</h2>
+    <p>
+      Every recipe is plain, serializable data. This is <code>Guided Flow</code> straight from the
+      catalog — note the strict <code>primitives</code> beside the expressive <code>notes</code>:
+    </p>
+    <CodeTabs variants={[{ label: 'guided-flow.json', lang: 'json', code: example }]} />
   </section>
+
+  <section class="docs-sec">
+    <h2>What the conformance gate enforces</h2>
+    <ul class="rm-rules">
+      <li>Every <VocabBadge kind="token" label="runtime token" /> is a real, passported engine force.</li>
+      <li>No token is a <VocabBadge kind="diagnostic" label="diagnostic" />, <VocabBadge kind="metric" label="metric" />, <VocabBadge kind="condition" label="condition" />, or <VocabBadge kind="concept" label="concept" />.</li>
+      <li>Declared <code>primitives</code> exactly match the body tokens (no drift).</li>
+      <li>Every <VocabBadge kind="diagnostic" label="diagnostic" /> is a real render / inspection mode.</li>
+      <li>Every <VocabBadge kind="field" label="natural field" /> is one of gravity / electromagnetic / strong / weak.</li>
+      <li>Every recipe declares a reduced-motion equivalent — no recipe is motion-only.</li>
+    </ul>
+  </section>
+
+  <SeeAlso
+    links={[
+      { href: '/docs/gallery', label: 'Recipe gallery' },
+      { href: '/docs/natural-fields', label: 'Natural fields' },
+      { href: '/docs/authoring', label: 'Authoring across surfaces' },
+    ]}
+  />
 </DocsLayout>
+
+<style>
+  .lede { color: var(--text-3, #9aa); max-width: 72ch; }
+  .rm-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 0.5rem; }
+  .rm-table th, .rm-table td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); vertical-align: middle; }
+  .rm-table th { color: var(--text-3, #9aa); font-weight: 600; }
+  .rm-rules { line-height: 2; font-size: 0.92rem; }
+</style>
