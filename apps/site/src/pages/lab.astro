@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { EXPERIMENTS, MANUAL_FORCES } from 'forces-ui';
+import { EXPERIMENTS, MANUAL_FORCES } from 'field-ui';
 import '../styles/force-glyphs.css';
 import '../styles/instrument.css';
 import '../styles/lab.css';
@@ -27,7 +27,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
 ---
 
 <Base
-  title="forces-ui — the Lab (physics detector)"
+  title="field-ui — the Lab (physics detector)"
   description="Fire known particles into a force with known attributes and watch what happens — their tracks, the field structure, the measured behaviour checked against what the math predicts, frame by frame. The Lab is a conformance instrument."
 >
   <main class="lab" id="lab">
@@ -206,7 +206,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
   <SiteFooter />
 
   <script>
-    import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from 'forces-ui';
+    import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from 'field-ui';
 
     type Any = Record<string, any>;
     const forces = allForces();
@@ -869,7 +869,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
       function buildRecord() {
         const active = checks.filter((c: Any) => c.active);
         return {
-          tool: 'forces-ui · the Lab', force: cur, symbol: META[cur].symbol,
+          tool: 'field-ui · the Lab', force: cur, symbol: META[cur].symbol,
           scenario: { label: scenarioBase().label, family: META[cur].family, frames: result.trajectory.length - 1 },
           inputs: { overrides: { ...overrides } },
           outputs: {
@@ -893,7 +893,7 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
       }
       function copyReport() {
         const r = buildRecord();
-        const lines = [`forces-ui Lab — ${META[cur].label} (${META[cur].symbol})`, META[cur].formula, '', ...r.outputs.checks.map((c: Any) => `${c.active ? (c.pass ? '✓' : '✗') : '–'} ${c.label} — measured ${c.measured}, expected ${c.expected}${c.active && c.pass ? ` (@ frame ${c.passFrame})` : ''}`), '', r.link];
+        const lines = [`field-ui Lab — ${META[cur].label} (${META[cur].symbol})`, META[cur].formula, '', ...r.outputs.checks.map((c: Any) => `${c.active ? (c.pass ? '✓' : '✗') : '–'} ${c.label} — measured ${c.measured}, expected ${c.expected}${c.active && c.pass ? ` (@ frame ${c.passFrame})` : ''}`), '', r.link];
         navigator.clipboard?.writeText(lines.join('\n')); flash('Report copied');
       }
 

@@ -1,13 +1,13 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import { CONDITIONS, FORMATIONS, PALETTES, PALETTE_NAMES } from 'forces-ui';
+import { CONDITIONS, FORMATIONS, PALETTES, PALETTE_NAMES } from 'field-ui';
 import { RENDER_MODES } from '../../../lib/docs-api.ts';
 import SeeAlso from '../../../components/SeeAlso.astro';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
 <DocsLayout
-  title="forces-ui — Conditions, formations & modes"
+  title="field-ui — Conditions, formations & modes"
   description="The orthogonal axes: conditions (when a force acts), formations (a global field bias), render modes (how the field draws), and the accent palettes."
 >
   <header class="docs-hero">

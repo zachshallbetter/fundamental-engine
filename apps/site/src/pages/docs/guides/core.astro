@@ -2,7 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const create = `import { createField } from 'forces-ui';
+const create = `import { createField } from 'field-ui';
 
 const canvas = document.querySelector('canvas');
 const field = createField(canvas, {
@@ -16,7 +16,7 @@ const field = createField(canvas, {
 // after you add or remove bodies, rescan:
 field.scan();`;
 
-const custom = `import type { Force } from 'forces-ui';
+const custom = `import type { Force } from 'field-ui';
 
 // Every force is one object: a token + an apply(body, particle, env).
 // This is the exact contract all 33 built-ins implement.
@@ -32,8 +32,8 @@ const lift: Force = {
 ---
 
 <DocsLayout
-  title="forces-ui — Core engine guide"
-  description="Drive the forces-ui engine directly: createField() on a canvas you own, returning the FieldHandle. Zero runtime dependencies. For a managed canvas and a typed class, see the TypeScript guide."
+  title="field-ui — Core engine guide"
+  description="Drive the field-ui engine directly: createField() on a canvas you own, returning the FieldHandle. Zero runtime dependencies. For a managed canvas and a typed class, see the TypeScript guide."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
@@ -48,7 +48,7 @@ const lift: Force = {
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">
-      <code class="install" data-copy="npm i forces-ui">npm i forces-ui</code>
+      <code class="install" data-copy="npm i field-ui">npm i field-ui</code>
       <span>the engine itself — when you own the canvas</span>
     </div>
   </section>
@@ -58,7 +58,7 @@ const lift: Force = {
     <p>
       When you want to place and size the canvas yourself, hand it to <code>createField</code>.
       You get the <a href="/docs/api/handle">FieldHandle</a>. This is the lowest-level entry
-      point; the web component, the React adapter, and <code>@forces-ui/vanilla</code> all wrap it.
+      point; the web component, the React adapter, and <code>@field-ui/vanilla</code> all wrap it.
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: create }]} />
     <div class="callout">
@@ -68,7 +68,7 @@ const lift: Force = {
       when the tab is backgrounded.
     </div>
     <div class="callout">
-      <b>Want a managed canvas?</b> <code>@forces-ui/vanilla</code> creates and tears down the
+      <b>Want a managed canvas?</b> <code>@field-ui/vanilla</code> creates and tears down the
       canvas for you — as a <code>ForcesField</code> class or the <code>mountField()</code>
       function. See the <a href="/docs/guides/typescript">TypeScript guide</a>.
     </div>

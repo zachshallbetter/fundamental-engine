@@ -42,7 +42,7 @@ document.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');   // shove + heat at the cursor
 });`;
 
-const navReact = `import { ForcesField } from '@forces-ui/react';
+const navReact = `import { ForcesField } from '@field-ui/react';
 
 <>
   <ForcesField attention />
@@ -54,7 +54,7 @@ const navReact = `import { ForcesField } from '@forces-ui/react';
   </nav>
 </>`;
 
-const burstReact = `import { ForcesField } from '@forces-ui/react';
+const burstReact = `import { ForcesField } from '@field-ui/react';
 
 // onReady hands you the same FieldHandle once the field mounts
 <ForcesField
@@ -67,7 +67,7 @@ const burstReact = `import { ForcesField } from '@forces-ui/react';
 ---
 
 <DocsLayout
-  title="forces-ui — Recipes"
+  title="field-ui — Recipes"
   description="Practical, copy-paste recipes: a glowing hero word, a reacting card grid, a conserved-attention nav, and a click burst — all built from the public attributes and FieldHandle."
 >
   <header class="docs-hero">

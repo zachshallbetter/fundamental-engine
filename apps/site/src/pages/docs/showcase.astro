@@ -44,7 +44,7 @@ stage.addEventListener('click', (e) => {
   field.burst(e.clientX, e.clientY, '#4da3ff');  // shove + heat at the cursor
 });`;
 
-const burstReact = `import { ForcesField } from '@forces-ui/react';
+const burstReact = `import { ForcesField } from '@field-ui/react';
 
 // onReady hands you the same FieldHandle once the field mounts
 <ForcesField
@@ -57,7 +57,7 @@ const burstReact = `import { ForcesField } from '@forces-ui/react';
 ---
 
 <DocsLayout
-  title="forces-ui — Showcase"
+  title="field-ui — Showcase"
   description="Live examples driven by the real field: a glowing hero word, a reacting card grid, and a click-to-burst stage — each running on this page, paired with its copy-paste source."
 >
   <header class="docs-hero">
