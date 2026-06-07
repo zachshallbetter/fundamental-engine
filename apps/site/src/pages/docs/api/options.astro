@@ -33,14 +33,16 @@ createField(canvas, { mass: true });`;
 
 <DocsLayout
   title="field-ui — createField & options"
-  description="createField(canvas, options) starts the engine on a canvas and returns the FieldHandle. Every FieldOptions field: accent, density, waves, render, mass, palette, attention, causality — with types and defaults."
+  description="createField(canvas, { host, ...options }) starts the engine on a canvas and returns the FieldHandle. A host is required (the core is renderer-agnostic); @field-ui/vanilla wires the browser host for you. Every FieldOptions field: accent, density, waves, render, mass, palette, attention, causality — with types and defaults."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
     <h1><span class="accent">createField</span> &amp; options</h1>
     <p class="lede">
-      The lowest-level entry point. <code>createField(canvas, options)</code> starts the engine on
-      a canvas you provide and returns the <a href="/docs/api/handle">FieldHandle</a>. The web
+      The lowest-level entry point. <code>createField(canvas, &#123; host, ...options &#125;)</code>
+      starts the engine on a canvas you provide and returns the
+      <a href="/docs/api/handle">FieldHandle</a> — a <code>host</code> is required (the core is
+      renderer-agnostic; <code>@field-ui/vanilla</code> wires the browser host for you). The web
       component, the <code>FieldField</code> class, and <code>mountField()</code> all wrap it.
     </p>
   </header>
