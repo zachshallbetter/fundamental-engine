@@ -72,6 +72,11 @@ export class MeasurementRegistry {
     this.entries.delete(element);
   }
 
+  /** Whether an element is registered for measurement (does not require a measure pass). */
+  has(element: Element): boolean {
+    return this.entries.has(element);
+  }
+
   get size(): number {
     return this.entries.size;
   }
