@@ -16,7 +16,7 @@
 
 ## Purpose
 
-field-ui is a platform-native relational field runtime for the DOM. `@field-ui/core` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+field-ui is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -571,7 +571,7 @@ The semantic layer should remain real HTML text.
 > **Implemented.** `@field-ui/platform` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
-`@field-ui/platform` binds the renderer-agnostic field computed by `@field-ui/core` to the DOM. It owns DOM participation; core stays free of DOM side effects.
+`@field-ui/platform` binds the renderer-agnostic field computed by `field-ui` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:
 
@@ -579,7 +579,7 @@ The platform must:
 own measurement, state, feedback, relationships, visual bindings, and overlays
 schedule all DOM reads and writes through explicit phases
 register Shadow DOM bodies for physical participation
-keep @field-ui/core renderer-agnostic (imports no DOM globals)
+keep field-ui renderer-agnostic (imports no DOM globals)
 expose createFieldPlatform(root) to construct a runtime over a root
 expose lintPlatform() to validate registry usage
 ```
@@ -673,7 +673,7 @@ In the platform-runtime phase the layers are unified as follows:
 
 ```txt
 The platform runtime is the DEFAULT for <field-root>.
-@field-ui/core is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
+field-ui is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
 The platform owns DOM participation: measurement, feedback writes, shadow registration, relationships.
 The legacy core path still simulates and renders the canvas surface.
 The DOM boundary is guarded by a test allowlist; core must not reach into the DOM outside it.

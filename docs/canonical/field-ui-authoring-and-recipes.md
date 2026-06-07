@@ -16,7 +16,7 @@
 ## Purpose
 
 This document defines how authors use `field-ui`. `field-ui` is a platform-native relational field
-runtime for the DOM: `@field-ui/core` computes renderer-agnostic field behavior, `@field-ui/platform`
+runtime for the DOM: `field-ui` computes renderer-agnostic field behavior, `@field-ui/platform`
 binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
 scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
 field context. Authors write the same `[data-body]` contract regardless of surface.
