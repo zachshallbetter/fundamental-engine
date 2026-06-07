@@ -1,0 +1,54 @@
+---
+// A vocabulary-lane badge. Each lane gets a distinct colour AND a distinct border/shape so the
+// category is visually impossible to miss — the taxonomy is structural, not just labelled. Kinds:
+// field · token · designed · derived · transport · metric · diagnostic · condition · phase · alias · concept.
+interface Props {
+  kind: string;
+  label?: string;
+  title?: string;
+}
+const { kind, label, title } = Astro.props;
+const COLOR: Record<string, string> = {
+  field: '#4da3ff',
+  token: '#2dd4bf',
+  designed: '#2dd4bf',
+  derived: '#ff9d5c',
+  transport: '#a78bfa',
+  metric: '#7bd88f',
+  diagnostic: '#9aa7b4',
+  condition: '#e6c84d',
+  phase: '#f06ab0',
+  alias: '#7a7a88',
+  concept: '#c4a3ff',
+};
+const c = COLOR[kind] ?? '#9aa7b4';
+const text = label ?? kind;
+---
+
+<span class:list={['vbadge', `vk-${kind}`]} style={`--vc:${c}`} title={title ?? kind}>{text}</span>
+
+<style>
+  .vbadge {
+    display: inline-block;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    padding: 0.05rem 0.45rem;
+    border: 1px solid var(--vc);
+    border-radius: 999px;
+    color: var(--vc);
+    background: color-mix(in srgb, var(--vc) 13%, transparent);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  /* shape cues, layered on top of colour, so the lanes never collapse visually */
+  .vk-token,
+  .vk-designed,
+  .vk-metric,
+  .vk-phase { border-radius: 4px; }
+  .vk-concept { font-style: italic; border-style: dotted; }
+  .vk-diagnostic { border-style: dashed; }
+  .vk-condition { border-style: dotted; }
+  .vk-alias { border-style: dashed; opacity: 0.85; }
+</style>

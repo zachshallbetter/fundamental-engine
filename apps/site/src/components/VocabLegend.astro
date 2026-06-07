@@ -1,0 +1,60 @@
+---
+// The structural-vocabulary legend: one row per lane, so a reader can see — before any prose — that
+// concepts, runtime tokens, metrics, diagnostics, conditions, and phases are different kinds of thing.
+// Reused across natural-fields, the recipe model, and the gallery.
+import VocabBadge from './VocabBadge.astro';
+
+interface Item {
+  kind: string;
+  label: string;
+  def: string;
+}
+interface Props {
+  items?: Item[];
+}
+const DEFAULT: Item[] = [
+  { kind: 'field', label: 'Natural field', def: 'conceptual translation — gravity, electromagnetic, strong, weak' },
+  { kind: 'token', label: 'Runtime token', def: 'a real passported engine force (attract, gravity, fieldflow…) — strict, conformance-gated' },
+  { kind: 'concept', label: 'Concept', def: 'human-facing product language (orbit, spring, trust, staleness) — not a token' },
+  { kind: 'metric', label: 'Metric', def: 'measured / semantic state (mass, attention, pressure, confidence)' },
+  { kind: 'diagnostic', label: 'Diagnostic', def: 'inspection or render mode (potential, topology, causality, field-lines)' },
+  { kind: 'condition', label: 'Condition', def: 'activation logic (dwell, threshold, stale, in-view, focused)' },
+  { kind: 'phase', label: 'Scheduler phase', def: 'runtime step — discover → read → compute → state → write → render' },
+  { kind: 'alias', label: 'Compatibility alias', def: 'older naming (--d, --forces-*, forces:*) — kept, but not the primary path' },
+];
+const { items = DEFAULT } = Astro.props;
+---
+
+<dl class="vocab-legend">
+  {
+    items.map((it) => (
+      <div class="vl-row">
+        <dt><VocabBadge kind={it.kind} label={it.label} /></dt>
+        <dd>{it.def}</dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .vocab-legend {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0.8rem 0 1.2rem;
+  }
+  .vl-row {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: 0.6rem;
+    align-items: baseline;
+  }
+  .vl-row dt { margin: 0; }
+  .vl-row dd {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--text-3, #9aa);
+  }
+  @media (max-width: 560px) {
+    .vl-row { grid-template-columns: 1fr; gap: 0.2rem; }
+  }
+</style>
