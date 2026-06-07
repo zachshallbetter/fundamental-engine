@@ -138,7 +138,8 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           </p>
           <div class="formula">
             <span class="c">canvasₓ =</span> rect.left + rect.width / 2 · <span
-              class="v">DPR</span>
+              class="v">DPR</span
+            >
           </div>
         </div>
         <div class="stage" aria-hidden="true">
@@ -268,7 +269,8 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           </p>
           <div class="formula">
             F = (1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span
-              class="v">S</span>
+              class="v">S</span
+            >
           </div>
           <p class="note">
             Drag the attractor — the force is bound to the element, not the
@@ -311,7 +313,8 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           </p>
           <div class="formula">
             F = −(1 − <span class="v">d</span> / d<span class="c">max</span>)² · <span
-              class="v">S</span>
+              class="v">S</span
+            >
           </div>
           <p class="note">
             Drag the repeller and watch a clearing open around it.
@@ -394,7 +397,8 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
               class="v">d̂_x</span
             >) · <span class="v">S</span> · spin <span class="c">+</span>
             <span class="v">d̂</span> · <span class="v">S</span> · <span
-              class="c">0.12</span>
+              class="c">0.12</span
+            >
           </div>
           <p class="note">
             Drag the swirl into the swarm — particles orbit rather than fall in.
@@ -559,7 +563,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           >
           <h2>A body can hold matter — and give it back.</h2>
           <p>
-            An <strong>sink</strong> captures particles at its core. They aren’t deleted
+            A <strong>sink</strong> captures particles at its core. They aren’t deleted
             — they’re
             <strong>held inside</strong>, and the element inflates as it fills.
             When it saturates it goes supernova: the exact particles are <strong
@@ -569,7 +573,8 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           <div class="formula">
             <span class="c">scale =</span> 1 + (<span class="v">accreted</span> /
             <span class="v">capacity</span>) · 0.45 · <span class="v"
-              >captured = released</span>
+              >captured = released</span
+            >
           </div>
           <p class="note">
             Nothing is conjured from thin air, and nothing vanishes. Matter
@@ -606,7 +611,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           >
           <h2>A body can be a fountain.</h2>
           <p>
-            An <strong>jet</strong> draws surrounding matter into its nozzle and relaunches
+            A <strong>jet</strong> draws surrounding matter into its nozzle and relaunches
             it as a hot jet — the field is <strong
               >recycled into a stream</strong
             >, nothing conjured.
@@ -1341,12 +1346,17 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           what + " — drag, or use arrow keys to move",
         );
       }
-      // centre the body on (x, y) px within the stage, clamped, then rescan
+      // centre the body on (x, y) px within the stage, clamped
       const place = (x, y) => {
         const r = stage.getBoundingClientRect();
         el.style.left = Math.max(0, Math.min(r.width, x)) + "px";
         el.style.top = Math.max(0, Math.min(r.height, y)) + "px";
-        rescan();
+        // no rescan here: the engine re-measures every body's rect on its own
+        // (frameN % 6), so the force centre follows the moved chip automatically.
+        // rescan() rebuilds the whole body set from scratch (the scanner zeroes
+        // each body's accreted/density/count), so calling it on every pointermove
+        // would reset the accretion meter, the density feedback, and the self-layout
+        // offsets — the very things these demos are meant to show.
       };
       el.addEventListener("pointerdown", (e) => {
         e.preventDefault();
@@ -1532,7 +1542,9 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       });
     });
 
-    window.addEventListener("resize", rescan, { passive: true, signal: _sig });
+    // the engine runs its own resize handler (resize → scan), so we don't mirror
+    // resize here. One deferred rescan after <field-root> upgrades, as a startup
+    // safety net for the body set on first paint.
     setTimeout(rescan, 250);
   })();
 </script>
