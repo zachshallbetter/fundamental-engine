@@ -1,7 +1,7 @@
 /**
  * Heatmaps (field-systems plan, H1) — a scalar field buffer that reveals where field state
  * accumulates, rendered as a diagnostic/ambient layer and sampled back into DOM. NOT a force:
- * it measures, it does not push (docs/forces-fields-plan.md, D5).
+ * it measures, it does not push (docs/engine-reference/forces-fields-plan.md, D5).
  *
  * H1 ships the **density** layer: each frame every particle deposits into a coarse grid that
  * decays and lightly blurs, so the buffer tracks where matter currently gathers. Values are

@@ -1,6 +1,9 @@
+> **Status: as-built force-engine reference.**
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+
 # The Forces & Fields — Reference Formulas & Attributes
 
-This document serves as the canonical reference for the physics formulas, DOM attribute APIs, and substrate math backing the reciprocal field system. It merges the active engine rules with the proposed extended/cosmological vocabulary.
+This document serves as the canonical reference for the physics formulas, DOM attribute APIs, and substrate math backing the reciprocal field system. It merges the active engine rules with the extended/cosmological vocabulary. The force engine is one layer of field-ui: @field-ui/core computes this renderer-agnostic field behavior, while @field-ui/platform binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling) and the canvas is one render surface among many. This reference covers the force/substrate math; the platform architecture lives in the canonical docs linked in the status banner above.
 
 ---
 
@@ -63,9 +66,9 @@ These forces are fully implemented in `packages/core/src/forces/index.ts` and dr
 
 ---
 
-## 2. Extended Force Vocabulary (Proposed & Physical Primitives)
+## 2. Extended Force Vocabulary (Designed Forces, Physical Primitives & Presets)
 
-These forces constitute the roadmap's forward registry, splitting into designed behaviors, physical primitives, and virtual cosmology presets.
+These forces split into designed behaviors, physical primitives, and virtual cosmology presets. Most of this vocabulary now ships; the few genuinely spec-only items are called out explicitly below.
 
 > **Status.** Most of this vocabulary now ships; the as-built set and exact tokens live in §1, [`forces-system.md`](forces-system.md) §20, and the catalog. Names here are the shipped tokens: the pheromone field ships as `diffuse`, `diffuse` and `memory` are class [C] natural primitives, and the budgeted class-[S] source ships as `spawn`. Still spec-only: the relocation atom `warp` and the `wormhole` preset it composes. The registered presets are `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`; `supernova` below is the sink-release *event*, not a `data-preset`.
 
@@ -230,15 +233,16 @@ Global currents affect free particle motion, overriding or reinforcing local bod
 ---
 
 ### 3.6 Two-Way Density Feedback (The Bridge)
-- **DOM $\rightarrow$ Canvas (Pipe 1):**
+This is the bidirectional DOM $\leftrightarrow$ field runtime loop. In the platform runtime the MeasurementRegistry reads body geometry and the FeedbackRegistry writes the density variable; the canvas is the render surface where particle proximity is tallied.
+- **DOM $\rightarrow$ field runtime (Pipe 1):**
   $$c_x = (\text{rect.left} + \text{rect.width}/2) \cdot \text{DPR}$$
   $$c_y = (\text{rect.top} + \text{rect.height}/2) \cdot \text{DPR}$$
   $$\text{DPR} = \min(\text{devicePixelRatio}, 2)$$
-- **Canvas $\rightarrow$ DOM (Pipe 2):**
+- **Field runtime $\rightarrow$ DOM (Pipe 2):**
   $$b.\text{count} = \sum_p \max(0, 1 - \text{dist}(p,b)/r_s) \quad \text{for}\ \text{dist} < r_s\ (r_s = d_{\max} \cdot 0.5)$$
   $$\text{target} = \text{clamp}(b.\text{count}/20 + (\text{on}\ ?\ 0.45 : 0), 0, 1)$$
   $$b.\text{d} += (\text{target} - b.\text{d}) \cdot 0.08$$
-  $$\text{CSS:}\ \text{element.style.setProperty}('--d', b.\text{d})$$
+  $$\text{CSS:}\ \text{element.style.setProperty}('--field-density', b.\text{d})\ \ (\text{mirrored to compat aliases}\ \texttt{--d},\ \texttt{--forces-density})$$
   $$\text{Time Constant:}\ \tau = -1 / (60 \cdot \ln(1 - 0.08)) \approx 0.20\ \text{seconds}$$
 
 ---
@@ -280,21 +284,21 @@ These guidelines ensure visual consistency and typography legibility. They prese
 * **Symptom:** Text words or case study headings are assembled from, or morphed out of, loose particles. The typography becomes noisy, jagged, and illegible.
 * **Root Cause:** Direct morphing or glyph assembly (`data-glyph`) applied to prose words.
 * **Correct Pattern:** Words must remain solid, vector-drawn typographic elements. The field must *decorate* and interact with the text box, not form the text itself. Reserve particle shape-assembly strictly for simple punctuation and marks (e.g., `.`, `—`, `·`, brackets, logos) where the silhouette remains simple and legible.
-* **Typographic Interaction:** To make words feel alive, alter their typographic properties using the eased `--d` local density variable written back by the engine:
+* **Typographic Interaction:** To make words feel alive, alter their typographic properties using the eased local density variable written back by the engine. The primary token is `--field-density` (`--d` and `--forces-density` are legacy/compat aliases the FeedbackRegistry keeps mirrored):
   ```css
   .liveword {
     /* Drive weight from local density */
-    font-variation-settings: "wght" calc(300 + var(--d) * 500);
+    font-variation-settings: "wght" calc(300 + var(--field-density) * 500);
     /* Drive glow bloom from local density */
-    text-shadow: 0 0 calc(var(--d) * 15px) var(--accent);
+    text-shadow: 0 0 calc(var(--field-density) * 15px) var(--accent);
     /* Subtly mix color towards accent based on density */
-    color: color-mix(in srgb, var(--accent) calc(var(--d) * 100%), var(--ink-base));
+    color: color-mix(in srgb, var(--accent) calc(var(--field-density) * 100%), var(--ink-base));
   }
   ```
 
 #### 5.1.2 Static Metaphors (One-Way Fields)
 * **Symptom:** Particles react to mouse cursor movement, but layout cards and text headers do not react to the particle concentration. The canvas feels like a passive backdrop screensaver.
-* **Root Cause:** Neglecting to declare the `data-feedback` attribute on elements, or failing to bind the `--d` CSS variable to typographic/layout properties.
+* **Root Cause:** Neglecting to declare the `data-feedback` attribute on elements, or failing to bind the `--field-density` CSS variable (primary; `--d`/`--forces-density` are compat aliases) to typographic/layout properties.
 * **Correct Pattern:** Every engageable DOM element must opt into the reciprocal loop. When particles gather, the element must visually swell, glow, or shift weights to close the interaction loop.
 
 #### 5.1.3 Over-Agitation & Lack of Restraint (Visual Fatigue)
@@ -383,7 +387,7 @@ These engineering guidelines keep the viewport rendering at a stable 60 fps on m
 #### 5.2.5 Multiple Root Canvas Instances
 * **Symptom:** The browser struggles to clear and draw to multiple full-viewport canvases running concurrent requestAnimationFrame loops.
 * **Root Cause:** Instantiating a new canvas for every element or view that needs a background field.
-* **Correct Pattern:** Mount a single, shared canvas (`<FieldCanvas />`) at the application root for the viewport background. For isolated inline demonstrations, use container-scoped, low-particle-count, paused `<field-cell>` instances.
+* **Correct Pattern:** Mount a single, shared canvas (`<FieldCanvas />`) at the application root for the viewport background — one canvas render surface drawing the one shared field context, not one canvas per element. For isolated inline demonstrations, use container-scoped, low-particle-count, paused `<field-cell>` instances.
 
 ---
 

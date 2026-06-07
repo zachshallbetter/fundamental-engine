@@ -1,5 +1,5 @@
 /**
- * Shadow-DOM participation (docs/shadow-dom.md §29) — the registration contract. Uses tiny
+ * Shadow-DOM participation (docs/engine-reference/shadow-dom.md §29) — the registration contract. Uses tiny
  * EventTarget-backed fake hosts so the logic is exercised without a real DOM or jsdom.
  */
 import { test } from 'node:test';
@@ -51,7 +51,7 @@ test('ForcesController dispatches composed register/update/unregister carrying t
   assert.ok(seen.every((s) => s.composed && s.bubbles), 'events cross the shadow boundary');
 });
 
-// ── field-ui migration: event aliases (docs/field-ui-migration-plan.md §15) ──────────────────
+// ── field-ui migration: event aliases (docs/planning-archive/field-ui-migration-plan.md §15) ──────────────────
 test('field:* event constants carry the field namespace', () => {
   assert.equal(FIELD_REGISTER_BODY, 'field:register-body');
   assert.equal(FIELD_UNREGISTER_BODY, 'field:unregister-body');

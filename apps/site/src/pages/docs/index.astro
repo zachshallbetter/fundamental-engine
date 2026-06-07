@@ -44,14 +44,14 @@ field.scan();`;
 
 <DocsLayout
   title="field-ui — Developer docs"
-  description="Install field-ui and get a reciprocal field reacting to your elements in under a minute — for plain HTML, React, or your own canvas. Zero runtime dependencies."
+  description="Install field-ui and get a reciprocal field reacting to your elements in under a minute — for plain HTML, React, or your own canvas. A renderer-agnostic core (zero runtime deps) with a platform layer for DOM participation."
 >
   <header class="docs-hero">
     <p class="kicker">Getting started</p>
     <h1>Build with <span class="accent">field-ui</span>.</h1>
     <p class="lede">
-      A reciprocal DOM-physics field for the web — framework-agnostic, zero runtime
-      dependencies. Get a field reacting to your elements in under a minute.
+      A platform-native relational field runtime for the DOM — framework-agnostic, with a
+      renderer-agnostic core. Get a field reacting to your elements in under a minute.
     </p>
   </header>
 
@@ -96,10 +96,11 @@ field.scan();`;
     />
 
     <div class="callout">
-      <b>The field reacts to the page.</b> A single full-viewport canvas runs behind your
-      content and reads every <code>[data-body]</code> element each frame — so any layout
-      change <em>is</em> a change to the force geometry. After you add or remove bodies,
-      call <code>field.scan()</code>.
+      <b>The field reacts to the page.</b> A field root creates a shared field context: the platform
+      layer discovers and measures every <code>[data-body]</code> element each frame, the core
+      computes the field, and feedback returns density to the DOM as CSS variables and events. A
+      canvas renders the visible field behind your content — so any layout change <em>is</em> a change
+      to the force geometry. After you add or remove bodies, call <code>field.scan()</code>.
     </div>
   </section>
 
@@ -113,13 +114,19 @@ field.scan();`;
         <code>data-when</code>.
       </li>
       <li>
-        <b>The field.</b> One conserved pool of particles. Nothing is created from nothing;
-        matter is moved, captured, and released — never faked.
+        <b>Platform.</b> <code>@field-ui/platform</code> binds bodies to the DOM — measurement,
+        state, feedback, relationships, visual bindings, and overlays, on a six-phase scheduler
+        (<code>discover → read → compute → state → write → render</code>).
       </li>
       <li>
-        <b>Reciprocity.</b> Add <code>data-feedback</code> and the field writes the local
-        density it gathered back into your element as the <code>--d</code> custom property —
-        drive weight, glow, and scale from it.
+        <b>Core &amp; render surfaces.</b> <code>@field-ui/core</code> computes the field
+        (renderer-agnostic) over one shared, conserved context. Canvas, SVG overlays, and DOM
+        feedback are render surfaces that reveal it — nothing is created from nothing.
+      </li>
+      <li>
+        <b>Reciprocity.</b> Add <code>data-feedback</code> and the field writes the gathered density
+        back into your element as <code>--field-density</code> (compact <code>--d</code> /
+        <code>--forces-density</code> aliases too) — drive weight, glow, and scale from it.
       </li>
     </ul>
   </section>
@@ -129,7 +136,7 @@ field.scan();`;
     <div class="next-grid">
       <a class="next-card" href="/docs/concepts">
         <b>Concepts</b>
-        <span>The model in depth — bodies, the single field, reciprocity, conservation.</span>
+        <span>The model in depth — bodies, the shared field context, the platform layer, reciprocity.</span>
       </a>
       <a class="next-card" href="/docs/api/forces">
         <b>The {MANUAL_FORCES.length} forces</b>

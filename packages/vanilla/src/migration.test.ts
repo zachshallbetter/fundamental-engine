@@ -1,5 +1,5 @@
 /**
- * field-ui migration: the vanilla `FieldField` alias (docs/field-ui-migration-plan.md §3) is the
+ * field-ui migration: the vanilla `FieldField` alias (docs/planning-archive/field-ui-migration-plan.md §3) is the
  * same class as `ForcesField`, so existing imports and the field-first name resolve identically.
  */
 import { test } from 'node:test';

@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> The canonical concept and operating model. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # field-ui Definition Document
 
 ## Related Documents
@@ -5,18 +8,20 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map and authority order |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Canonical contracts |
-| [`fundamental-field-behavior-table.md`](./fundamental-field-behavior-table.md) | Field laws and `fieldflow` |
-| [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md) | Agents beyond particles |
-| [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md) | Visualization and diagnostics |
-| [`field-ui-authoring-and-recipes.md`](./field-ui-authoring-and-recipes.md) | Authoring and recipes |
-| [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Testing and conformance |
+| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Canonical contracts |
+| [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field laws and `fieldflow` |
+| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Agents beyond particles |
+| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization and diagnostics |
+| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring and recipes |
+| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Testing and conformance |
 
 ## 1. Definition
 
 `field-ui` is an inspectable field language for interfaces.
 
-It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared reciprocal field. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests.
+It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
+
+`field-ui` is a platform-native relational field runtime for the DOM. `@field-ui/core` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@field-ui/elements` and `@field-ui/react` are authoring surfaces. Canvas is one render surface, not the whole system.
 
 Core principle:
 
@@ -90,6 +95,33 @@ DOM body
 
 This loop is the core product.
 
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@field-ui/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns everything that touches the DOM around it. `@field-ui/core` stays renderer-agnostic — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+
+The package set: `field-ui` (a.k.a. `@field-ui/core`), `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `@field-ui/core` specifically carries zero runtime dependencies.
+
+### Platform layer
+
+`createFieldPlatform(root)` binds a root to the field runtime. The platform ships a `FrameScheduler` with explicit phases that order every frame:
+
+```txt
+discover -> read -> compute -> state -> write -> render
+```
+
+It also ships six registries, each owning one kind of DOM participation:
+
+```txt
+MeasurementRegistry    measures body geometry in the read phase
+StateRegistry          accumulates and holds body state
+FeedbackRegistry       writes --field-* CSS vars and field:* events back to the DOM
+RelationshipRegistry   resolves links and constraints between bodies
+VisualBindingRegistry  binds field metrics to hidden visual elements
+OverlayRegistry        manages overlay surfaces over linked bodies
+```
+
+`FeedbackRegistry` auto-mirrors `--field-*` to the legacy `--forces-*` vars and `field:*` events to `forces:*`. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
+
+The Reading Field demo (`/docs/reading-field`) exercises all six registries on the scheduler in a normal content page: sections are bodies, viewport proximity drives attention, accumulation becomes memory, the table of contents reflects state, citations form relationships, and reduced motion preserves meaning.
+
 ## 5. What Counts as a Body
 
 A body is a registered interface object that can originate influence or participate in the field.
@@ -154,7 +186,7 @@ Particles are only one class of field participant.
 
 Users, elements, relationships, events, layout, and data can also be agents.
 
-See [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md).
+See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md).
 
 ## 7. Field vs Force
 
@@ -213,7 +245,7 @@ Fieldflow transports matter along field geometry.
 
 Do not make `magnetism.apply()` follow magnetic field lines. Use `fieldflow` for solar prominences, auroras, plasma ribbons, and field-aligned transport.
 
-See [`fundamental-field-behavior-table.md`](./fundamental-field-behavior-table.md).
+See [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md).
 
 ## 9. Field Grammar
 
@@ -301,7 +333,7 @@ Topology shows relationships.
 DOM state shows reciprocity.
 ```
 
-See [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md).
+See [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md).
 
 ## 13. Attention as a Field
 
@@ -332,7 +364,7 @@ become paths
 pulse with activity
 ```
 
-See [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md).
+See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md).
 
 ## 15. Authoring Levels
 
@@ -342,7 +374,7 @@ See [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-an
 | Level 2 | developer | `data-body`, render modes, recipes |
 | Level 3 | engine author | custom `field()` / `apply()` / conformance |
 
-See [`field-ui-authoring-and-recipes.md`](./field-ui-authoring-and-recipes.md).
+See [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md).
 
 ## 16. World Model Diagram
 
@@ -355,9 +387,11 @@ Agents
    -> density / metrics
 Scalar grids
    -> sample
-CSS variables + events
+--field-* vars + field:* events
    -> DOM bodies
 ```
+
+The runtime drives this loop through the `FrameScheduler` phases (`discover -> read -> compute -> state -> write -> render`); the `FeedbackRegistry` performs the write step, with `--field-density` as the primary feedback var (`--d` and `--forces-density` are legacy/compat aliases).
 
 ## 17. Design Philosophy
 

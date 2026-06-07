@@ -9,12 +9,13 @@ const table = RENDER_MODES;
 
 <DocsLayout
   title="field-ui — Diagnostic Overlays"
-  description="Live diagnostic render overlays drawn from the field-ui diagnostics module: contours, potential wells, force vectors, velocity vectors, and an energy bar."
+  description="Live diagnostic render overlays drawn from the field-ui diagnostics module: contours, potential, force and velocity vectors, energy, topology, inspector, causality, and prediction — all shipped."
 >
   <h1>Diagnostic overlays</h1>
   <p class="lede">
-    The diagnostics module computes the data; these overlays draw it. Toggle a layer — each reads
-    field state and never mutates it.
+    The diagnostics module computes the data; these overlays draw it. Every diagnostic mode now ships
+    — contours, potential, force and velocity vectors, energy, topology, inspector, causality, and
+    prediction. Toggle a layer — each reads field state and never mutates it.
   </p>
 
   <div class="diag-controls" role="group" aria-label="Overlay">

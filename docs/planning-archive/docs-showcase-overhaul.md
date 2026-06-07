@@ -1,4 +1,14 @@
+> **Status: planning / roadmap.**
+> Forward-looking record. Items here may have shipped since — verify against the canonical docs ([../canonical/](../canonical/)) and the code before treating anything as current or as still-pending.
+
 # Docs & showcase overhaul — inventory and plan
+
+> **Historical planning record (completed).** Most of this plan has since shipped: the recipe
+> gallery, inspector, snapshots, diagnostics, the accessibility/reduced-motion preview, the
+> narrative concept pages, and the authoring-across-surfaces docs are all live. The render modes,
+> field-line / dipole / monopole rendering, heatmaps, shaped sources, chargeable bodies, and
+> shadow-DOM participation listed below as gaps or TODOs are now part of the shipped surface. Kept
+> for provenance; treat the TODO/DONE markers below as the state at the time of writing.
 
 The field-systems work added a lot of surface that lives only in the engine, the internal
 specs, and the marketing/Lab demos. This is the inventory of every new detail and concept,
@@ -23,7 +33,8 @@ the gap against the public `/docs` portal, and the page-by-page plan to close it
   rendering and the streamlines field-flow view (used by `forceAt`).
 - `Body.shaped?`, `Body.rect?`, `Body.writeTarget?`.
 - `data-shaped` body attribute.
-- CSS write-back: `--field-density` (alias of `--d`), `--field-heatmap-density`.
+- CSS write-back: `--field-density` (primary; `--d` and `--forces-density` are legacy/compat
+  aliases), `--field-heatmap-density`.
 
 ### New concepts (the prose to write)
 1. **Field lines & the field-flow view** — `Force.field()`, the streamlines render as a
@@ -35,8 +46,9 @@ the gap against the public `/docs` portal, and the page-by-page plan to close it
 3. **Magnetism**: exact rotation (preserves |v|), graded by a `(1 − d/r)` falloff.
 4. **Shaped sources** (`data-shaped`) — forces reference the nearest point on the element's box,
    so matter shells the shape instead of bunching at its centre.
-5. **Chargeable bodies** — a `data-feedback` body's accumulated density `Q = --d` sources its
-   own field (radiates up to `1 + Q_GAIN`× stronger): particles → density → DOM → field.
+5. **Chargeable bodies** — a `data-feedback` body's accumulated density `Q = --field-density` (legacy
+   `--d`) sources its own field (radiates up to `1 + Q_GAIN`× stronger): agents → density → DOM →
+   field, one shared field context closing the reciprocal loop.
 6. **Heatmaps** — a scalar buffer of where matter pools (deposit → decay → glow → write-back),
    not a force; `heatmap` / `setHeatmap` / `--field-heatmap-density`.
 7. **Shadow-DOM participation** — host-first, event-driven registration (`FieldController`),
@@ -61,7 +73,8 @@ the gap against the public `/docs` portal, and the page-by-page plan to close it
 New pages under `/docs`, each with a live demo and added to `docs-nav.ts`:
 - **`/docs/concepts/field-lines`** — `field()`, field-flow, magnetism dipole vs charge monopole.
 - **`/docs/concepts/shaped-sources`** — `data-shaped`, the shell vs the blob.
-- **`/docs/concepts/chargeable`** — `Q = --d` sources the field; the reciprocal loop closing.
+- **`/docs/concepts/chargeable`** — `Q = --field-density` (legacy `--d`) sources the field; the
+  reciprocal loop closing.
 - **`/docs/concepts/heatmaps`** — the buffer, `setHeatmap`, `--field-heatmap-density`, the glow.
 - **`/docs/guides/shadow-dom`** — `FieldController`, the register events, closed roots, write
   targets (promoted from `docs/shadow-dom.md`).

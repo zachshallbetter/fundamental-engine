@@ -1,3 +1,6 @@
+> **Status: as-built force-engine reference.**
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+
 # The Forces Engine — Module Map
 
 A comprehensive map of the `@field-ui/core` engine: every source module, what it owns,
@@ -6,8 +9,20 @@ modes, formations, conditions, presets) the engine ships. This is the *engineeri
 to [`forces-system.md`](forces-system.md) (the spec) and the per-force catalog in
 [`packages/core/src/config/manual.ts`](../packages/core/src/config/manual.ts).
 
-Source root: `packages/core/src/`. Zero runtime dependencies. Section refs (§) point into
-[`forces-system.md`](forces-system.md).
+Source root: `packages/core/src/`. The `@field-ui/core` package itself has zero runtime
+dependencies (the wider field-ui system is native-platform-first, dependency-light, and
+framework-agnostic). Section refs (§) point into [`forces-system.md`](forces-system.md).
+
+**Scope note (Phase D).** As of Phase D, DOM participation — scanning, measurement, CSS
+feedback writes, shadow-DOM registration, and relationships — is owned by `@field-ui/platform`,
+which is the default runtime for `<field-root>`. This engine remains the **renderer + force
+math**: it computes renderer-agnostic field behavior and draws the canvas render surface.
+`core/field.ts` still simulates and renders the canvas, while the platform owns DOM
+participation; the two are wired together by the platform's `FrameScheduler` (phases:
+discover → read → compute → state → write → render). You can opt back to pure-legacy behavior
+with `experimental-platform="off"` or `usePlatformRuntime(false)`. Canvas is one render
+surface, not the whole system; the platform binds the engine into a shared field context across
+bodies, agents, relationships, measurements, metrics, feedback, and render surfaces.
 
 ---
 
@@ -25,13 +40,20 @@ Source root: `packages/core/src/`. Zero runtime dependencies. Section refs (§) 
 | 4 | **Step** | `integrator.ts` | per free particle: body forces (§4) → formation bias (§7) → integrate + damp. Class [B]/[C] forces read neighbours/grids via `Env`. |
 | 5 | **Grids** | `scalar-grid.ts` | advance class-[C] fields one step (`diffuse` heat eq., `wave` leapfrog). |
 | 6 | **Reservoir / currents** | `reservoir.ts`, `currents.ts` | bound↔free exchange (wave-healing, tearing), carrier-wave flow. |
-| 7 | **Feedback / heatmap** | `feedback.ts`, `heatmap.ts` | write `--d` density + `--field-heatmap-density` back onto elements. |
+| 7 | **Feedback / heatmap** | `feedback.ts`, `heatmap.ts` | write `--field-density` (compact alias `--d`) + `--field-heatmap-density` back onto elements. Under the platform runtime, `FeedbackRegistry` owns these writes and auto-mirrors `--field-*` → `--forces-*` and `field:*` → `forces:*`. |
 | 8 | **Agents / events** | `agents.ts`, `events.ts` | move DOM elements by transform offset; dispatch debounced CustomEvents. |
 | 9 | **Render** | `field.ts`, `render-modes.ts`, `streamlines.ts`, `fieldlines.ts` | draw the chosen render mode + optional field-line / heatmap overlays. |
 
 The physics (steps 2–6) is pure and headless — the same code the conformance harness drives
 ([`conformance/run.ts`](../packages/core/src/conformance/run.ts)). `field.ts` is the only
 browser/canvas glue.
+
+Under the platform runtime (Phase D, the default for `<field-root>`), the DOM-facing stages —
+scan (0), measure (1), feedback (7), shadow registration, and relationships — are owned by
+`@field-ui/platform` and sequenced by its `FrameScheduler` (discover → read → compute → state →
+write → render). The engine still drives the conserved physics (steps 2–6) and the render pass
+(9). A `core/dom-boundary.test.ts` guard keeps `@field-ui/core` renderer-agnostic, allowlisting
+only `core/field.ts` and `export.ts` to touch the DOM.
 
 ---
 
@@ -66,11 +88,16 @@ Path is relative to `packages/core/src/`. "Pure" = no DOM/canvas, unit-testable 
 
 ### DOM bridge
 
+These are the engine's DOM-facing helpers. Under the platform runtime (Phase D), `@field-ui/platform`
+owns the live DOM participation — measurement (`MeasurementRegistry`), CSS feedback writes
+(`FeedbackRegistry`), shadow-host registration, and relationships (`RelationshipRegistry`) — and
+calls into these as needed via the `FrameScheduler`. The parsing/geometry below stays pure.
+
 | Module | Key symbols | Purpose | Pure |
 |---|---|---|---|
-| `core/scanner.ts` | `scanBodies`, `parseBodyParams`, `bodyFromElement`, `expandPreset` | `[data-body]`/`[data-preset]` → bodies (§2.1/§3.1). Parsing is pure; measurement is thin `getBoundingClientRect` glue. | parse: yes |
+| `core/scanner.ts` | `scanBodies`, `parseBodyParams`, `bodyFromElement`, `expandPreset` | `[data-body]`/`[data-preset]` → bodies (§2.1/§3.1). Parsing is pure; measurement is thin `getBoundingClientRect` glue (the platform's `MeasurementRegistry` owns when this runs in the scheduler's read phase). | parse: yes |
 | `core/shadow.ts` | `FieldController`, `ShadowRegistry`, `REGISTER_BODY`/`UNREGISTER_BODY`/`UPDATE_BODY`, `RegisterBodyDetail` | Host-first shadow-DOM participation ([shadow-dom.md](shadow-dom.md)). Component dispatches a `composed` event; the engine registers the HOST (never the shadow tree). | registry: yes |
-| `core/feedback.ts` | `feedbackTarget`, `feedbackWeight` | Two-way density feedback (§8): the field writes gathered density back as `--d` so type glows/grows where matter collects. | yes |
+| `core/feedback.ts` | `feedbackTarget`, `feedbackWeight` | Two-way density feedback (§8): the field writes gathered density back as `--field-density` (compact alias `--d`; `--forces-density` is a legacy/compat alias) so type glows/grows where matter collects. Under the platform runtime, `FeedbackRegistry` owns the write phase. | yes |
 | `core/agents.ts` | `integrateOffset`, `anchorForce`, `elementMass`, `repelForce`, `densityPush` | Element agents (§22.4): a force moves a DOM element by a transform offset with an anchor spring back to its layout slot. | yes |
 | `core/events.ts` | `parseEventBindings`, `triggerActive`, `EventBinding` | Event agents (§22.5): a force/condition firing on a body dispatches a debounced rising-edge CustomEvent (`data-on="dense:field:lit"`). | yes |
 
@@ -102,7 +129,7 @@ Path is relative to `packages/core/src/`. "Pure" = no DOM/canvas, unit-testable 
 | `core/attention.ts` | `attentionMuls`, `AttnInput` | Conserved attention (§2.4): one finite strength budget for the page; engaging a body pulls allocation off the rest. Returns per-body multipliers. | yes |
 | `core/causality.ts` | `spillover`, `SpillBody` | Cross-boundary causality: a saturated body spills excess density to neighbours (conserved), so wiring between elements emerges. | yes |
 | `core/reactions.ts` | `reactionIntensity`, `sparkCount`, `burstImpulse`, `recoilImpulse` | Micro-reactions (§23): energy removed at an interaction is rendered as sparks/flash. | yes |
-| `core/render-modes.ts` | `linkAlpha`, `marchingCell`, `splatDensity`, `nearestSite`, `isoCross` | Draw-pass helpers for the non-`dots` render modes (links, metaballs/marching squares, voronoi). | yes |
+| `core/render-modes.ts` | `linkAlpha`, `marchingCell`, `splatDensity`, `nearestSite`, `isoCross` | Draw-pass helpers for the non-`dots` render modes (links, metaballs/marching squares, voronoi) and the diagnostics render modes (field-lines, heatmap, force-vectors, contours, potential, energy, topology, inspector, causality, prediction — see §6 and `/docs/diagnostics`). | yes |
 
 ### Catalog / configuration (single sources of truth)
 
@@ -218,11 +245,18 @@ The shared per-frame environment handed to every force (`core/types.ts`), filled
 
 ## 6. Render modes, formations, conditions, presets
 
-**Render modes** (6 shipped; one draw-pass swap, physics unchanged — §20.6): `dots` (default,
-heat-tinted points), `trails` (long-exposure), `links` (particle threads), `metaballs`
-(marching-squares iso-surface), `voronoi` (nearest-site cells), `streamlines` (vector-field
-diagnostic). The **density heatmap** is a separate glow *overlay layer* (`heatmap` option /
-`toggleHeatmap`), not a render mode.
+**Render modes** (one draw-pass swap, physics unchanged — §20.6). All modes are shipped and live
+at `/docs/diagnostics`.
+
+*Base modes:* `dots` (default, heat-tinted points), `trails` (long-exposure), `links` (particle
+threads), `streamlines` (vector-field flow), `metaballs` (marching-squares iso-surface),
+`voronoi` (nearest-site cells).
+
+*Diagnostics modes:* `field-lines`, `heatmap`, `force-vectors`, `contours`, `potential`,
+`energy`, `topology`, `inspector`, `causality`, `prediction`.
+
+The **density heatmap** is also available as a separate glow *overlay layer* (`heatmap` option /
+`toggleHeatmap`) layered under any base mode.
 
 **Formations** (5 shipped — §7; global per-particle biases `{driftX, wander, orbit, spread,
 conv}`): `ambient`, `wells`, `lanes`, `scatter`, `accretion`. (The larger list in

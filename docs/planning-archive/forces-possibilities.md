@@ -1,6 +1,9 @@
+> **Status: legacy / superseded.**
+> Preserved for design history. The current architecture is governed by the canonical docs ([../canonical/](../canonical/)) and @field-ui/platform; do not treat this as the current implementation.
+
 # The Forces System — Possibilities & Design Notes
 
-> What the [reciprocal field](forces-system.md) unlocks once it stops being a
+> What the [reciprocal field](../engine-reference/forces-system.md) unlocks once it stops being a
 > background effect and becomes wired to *meaning* — your data, your taxonomy, your
 > users' attention. A menu of directions and the math behind them. Companion to
 > `docs/forces-system.md` (the definition); section refs like §6 point there.
@@ -42,7 +45,7 @@ A few directions the engine opens up, independent of any one site:
 
 ---
 
-## DOM ⇄ Canvas — concepts & formulas
+## DOM <-> field runtime — concepts & formulas
 
 The reciprocal field's rarest property is a **two-way binding between layout and a
 physics sim**. Most particle backgrounds are one-way (canvas reacts to the mouse).
