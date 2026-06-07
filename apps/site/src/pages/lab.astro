@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { EXPERIMENTS, MANUAL_FORCES } from 'field-ui';
+import { EXPERIMENTS, MANUAL_FORCES, classifyForce } from 'field-ui';
 import '../styles/force-glyphs.css';
 import '../styles/instrument.css';
 import '../styles/lab.css';
@@ -24,6 +24,12 @@ const forceNo = (token: string) => MANUAL_FORCES.findIndex((f) => f.token === to
 const z2 = (n: number) => String(n).padStart(2, '0');
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
+// natural-field badge per tile (from the engine's classification) — gravity/EM/strong/weak get a
+// colored marker; designed/derived/transport/metric get none. A second, conceptual axis over the
+// family grouping (Natural Fields model).
+const NF_COLOR: Record<string, string> = { gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c' };
+const NF_ABBR: Record<string, string> = { gravity: 'G', electromagnetic: 'EM', strong: 'S', weak: 'W' };
+const fieldOf = (token: string) => classifyForce(token).field;
 ---
 
 <Base
@@ -49,25 +55,37 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
             <div class="fb-group">
               <span class="glabel">{fam.label}</span>
               <div class="force-grid">
-                {inFamily(fam.key).map((f) => (
+                {inFamily(fam.key).map((f) => {
+                  const nf = fieldOf(f.token);
+                  return (
                   <button
                     type="button"
                     class={`force-tile ${HAS_EXP.has(f.token) ? 'calib' : 'locked'}`}
                     data-force={f.token}
+                    data-field={nf ?? ''}
                     style={`--fc:${f.color}`}
-                    title={`${cap(f.label)} — ${f.effect}`}
+                    title={`${cap(f.label)} — ${f.effect}${nf ? ` · ${nf} field` : ''}`}
                   >
                     <span class="z">{z2(forceNo(f.token))}</span>
+                    {nf && <span class="nf-mark" style={`--nfc:${NF_COLOR[nf]}`} title={`${nf} field`}>{NF_ABBR[nf]}</span>}
                     <span class="picon as-icon"><i class={`fg fg-${f.token}`} aria-hidden="true" /></span>
                     <span class="sym as-symbol">{f.symbol}</span>
                     <span class="nameBig as-name">{cap(f.label)}</span>
                     <span class="pname">{cap(f.label)}</span>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
           <p class="fb-foot"><b>{liveCount} forces</b> · conformance-backed<br />fire any force</p>
+          <p class="fb-legend">
+            <a href="/docs/natural-fields">Natural fields</a>:
+            <span class="nf-mark" style="--nfc:#4da3ff">G</span> gravity
+            <span class="nf-mark" style="--nfc:#2dd4bf">EM</span> electromagnetic
+            <span class="nf-mark" style="--nfc:#a78bfa">S</span> strong
+            <span class="nf-mark" style="--nfc:#ff9d5c">W</span> weak
+          </p>
         </div>
       </aside>
 
@@ -978,3 +996,34 @@ const liveCount = MANUAL_FORCES.filter((f) => HAS_EXP.has(f.token)).length;
     document.addEventListener('astro:page-load', setup);
   </script>
 </Base>
+
+<style>
+  /* natural-field marker on a force tile + the picker legend */
+  .force-tile { position: relative; }
+  .nf-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.1em;
+    height: 1.1em;
+    padding: 0 0.25em;
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    font-weight: 600;
+    border-radius: 999px;
+    color: var(--nfc);
+    border: 1px solid color-mix(in srgb, var(--nfc) 55%, transparent);
+    background: color-mix(in srgb, var(--nfc) 16%, transparent);
+  }
+  .force-tile .nf-mark { position: absolute; top: 3px; right: 3px; }
+  .fb-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.62rem;
+    color: var(--text-4);
+  }
+  .fb-legend .nf-mark { position: static; }
+</style>
