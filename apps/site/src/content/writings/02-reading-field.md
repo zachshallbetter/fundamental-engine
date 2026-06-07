@@ -1,21 +1,26 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "Reading Field: Attention, Memory, and Relationship Awareness in Long-Form Web Documents"
-paper: 2
+description: "A field model for reading attention and document memory that preserves semantic HTML."
+summary: "A field model for reading attention and document memory that preserves semantic HTML."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 2
+author: "Zach Shallbetter"
 ---
 
 # Reading Field: Attention, Memory, and Relationship Awareness in Long-Form Web Documents
 
 > **Status: research draft (preprint, work in progress).** Paper 2 of the field-ui family — the
 > reading / long-form document validator. Claims verified against the codebase and canonical docs as
-> of 2026-06-07. See the [series index](/research) and *the caveat canon* therein. This is a preprint
+> of 2026-06-07. See the [series index](/writings) and *the caveat canon* therein. This is a preprint
 > draft, not canonical product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 2 of 8 (the reading / long-form document case study)
-**Companion papers:** [Field Translation Runtime](/research/01-field-translation-runtime) (the flagship
-paradigm paper, whose vocabulary this paper assumes); [Evidence Fields](/research/03-evidence-fields) (AI
-trust and provenance). See the [series index](/research).
+**Companion papers:** [Field Translation Runtime](/writings/01-field-translation-runtime) (the flagship
+paradigm paper, whose vocabulary this paper assumes); [Evidence Fields](/writings/03-evidence-fields) (AI
+trust and provenance). See the [series index](/writings).
 
 ---
 
@@ -132,7 +137,7 @@ than re-derive.
 The Reading Field sits at the intersection of several literatures. We position field-ui against each
 and, following the family's convention, mark every external citation that still needs a confirmed
 reference as `[TODO: cite]`, with stable keys that should be assembled into
-[`references.md`](/research/references) (the *Reading on screen, navigation, and document orientation* section already reserves space
+[`references.md`](/writings/references) (the *Reading on screen, navigation, and document orientation* section already reserves space
 for them).
 
 **Reading on screen.** A substantial literature compares reading on screens to reading on paper and
@@ -791,7 +796,7 @@ directly). Figures referenced in prose but not yet drawn, to be produced at conv
   task-phase flow, and the mapping of tasks to primary measures (§5.2–§5.4).
 
 External citations are marked `[TODO: cite]` throughout §2 and must be located, verified, and merged
-into [`references.md`](/research/references) before submission — never fabricated (README convention; caveat
+into [`references.md`](/writings/references) before submission — never fabricated (README convention; caveat
 canon).
 
 ## Citations needed

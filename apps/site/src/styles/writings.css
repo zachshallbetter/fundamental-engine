@@ -1,0 +1,119 @@
+/* Writings section — custom styling for the index, the per-writing header, long-form
+   prose, framed code (Shiki one-dark-pro), client-rendered Mermaid, and KaTeX math.
+   Dark, in keeping with the field manual. Reuses the docs-shell/docs-content scaffolding. */
+
+:root {
+  --w-ink: #dfe8ff;
+  --w-dim: #9aa6c7;
+  --w-line: rgba(120, 140, 190, 0.18);
+  --w-panel: rgba(12, 18, 38, 0.55);
+  --w-accent: #4da3ff;
+  --w-research: #4da3ff;
+  --w-release: #2dd4bf;
+  --w-feature: #a78bfa;
+  --w-note: #ffb35c;
+}
+
+/* ── category badges ─────────────────────────────────────────────────────── */
+.w-badge {
+  display: inline-block;
+  font: 600 0.66rem/1 'Martian Mono', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28em 0.55em;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: color-mix(in oklab, currentColor 12%, transparent);
+}
+.w-research { color: var(--w-research); }
+.w-release { color: var(--w-release); }
+.w-feature { color: var(--w-feature); }
+.w-note { color: var(--w-note); }
+
+/* ── index ───────────────────────────────────────────────────────────────── */
+.writings-index {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: clamp(5rem, 8vh, 8rem) clamp(1rem, 4vw, 2.5rem) 6rem;
+  color: var(--w-ink);
+}
+.wi-hero h1 {
+  font: 700 clamp(2.2rem, 1.6rem + 3vw, 3.4rem) / 1.05 'Bricolage Grotesque', system-ui, sans-serif;
+  margin: 0 0 0.4em;
+}
+.wi-hero .lede {
+  font-size: clamp(1.05rem, 1rem + 0.5vw, 1.25rem);
+  color: var(--w-dim);
+  max-width: 46rem;
+}
+.wi-section { margin-top: 3.25rem; }
+.wi-section-head { display: flex; align-items: baseline; gap: 0.9rem; flex-wrap: wrap; border-bottom: 1px solid var(--w-line); padding-bottom: 0.5rem; }
+.wi-section-head h2 { font: 600 1.4rem/1 'Bricolage Grotesque', system-ui, sans-serif; margin: 0; }
+.wi-blurb { color: var(--w-dim); font-size: 0.95rem; margin: 0; }
+.wi-cards { list-style: none; padding: 0; margin: 1.25rem 0 0; display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
+.wi-card-link {
+  display: grid; gap: 0.45rem; height: 100%;
+  padding: 1rem 1.1rem; border: 1px solid var(--w-line); border-radius: 14px;
+  background: var(--w-panel); color: inherit; text-decoration: none;
+  transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+.wi-card-link:hover { border-color: color-mix(in oklab, var(--w-accent) 55%, var(--w-line)); transform: translateY(-2px); }
+.wi-card-link h3 { font: 600 1.05rem/1.25 'Bricolage Grotesque', system-ui, sans-serif; margin: 0.1rem 0 0; }
+.wi-card .wi-summary { color: var(--w-dim); font-size: 0.92rem; margin: 0; }
+.wi-card .wi-date { color: var(--w-dim); font: 500 0.74rem/1 'Martian Mono', monospace; }
+.wi-card .w-badge { justify-self: start; }
+
+/* ── per-writing header ──────────────────────────────────────────────────── */
+.writing-head { margin: 0 0 1.5rem; }
+.writing-meta { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; color: var(--w-dim); font: 500 0.8rem/1 'Martian Mono', monospace; }
+.writing-meta time, .writing-meta .w-series, .writing-meta .w-author { letter-spacing: 0.01em; }
+.writing-meta .w-series::before { content: '— '; opacity: 0.6; }
+.writing-meta .w-author::before { content: '· '; opacity: 0.6; }
+
+/* ── long-form prose ─────────────────────────────────────────────────────── */
+.writing-body { color: var(--w-ink); line-height: 1.7; max-width: 46rem; }
+.writing-body h1 { font: 700 clamp(1.7rem, 1.3rem + 2vw, 2.5rem)/1.12 'Bricolage Grotesque', system-ui, sans-serif; margin: 0.1em 0 0.6em; }
+.writing-body h2 { font: 600 1.5rem/1.2 'Bricolage Grotesque', system-ui, sans-serif; margin: 2.2rem 0 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--w-line); }
+.writing-body h3 { font: 600 1.18rem/1.25 'Bricolage Grotesque', system-ui, sans-serif; margin: 1.6rem 0 0.5rem; }
+.writing-body h4 { font-weight: 600; margin: 1.3rem 0 0.4rem; }
+.writing-body p, .writing-body li { font-size: 1.02rem; }
+.writing-body a { color: var(--w-accent); text-underline-offset: 0.18em; }
+.writing-body strong { color: #fff; }
+.writing-body blockquote { border-left: 3px solid var(--w-accent); margin: 1.2rem 0; padding: 0.1rem 0 0.1rem 1.1rem; color: var(--w-dim); }
+.writing-body hr { border: 0; border-top: 1px solid var(--w-line); margin: 2.2rem 0; }
+
+/* tables (the papers lean on them) */
+.writing-body table { display: block; overflow-x: auto; max-width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 1.2rem 0; }
+.writing-body th, .writing-body td { border: 1px solid var(--w-line); padding: 0.45rem 0.7rem; text-align: left; vertical-align: top; }
+.writing-body thead th { background: rgba(77, 163, 255, 0.08); }
+
+/* inline code */
+.writing-body :not(pre) > code {
+  font: 0.88em/1.4 'Martian Mono', ui-monospace, monospace;
+  background: rgba(120, 140, 190, 0.14);
+  border: 1px solid var(--w-line);
+  border-radius: 6px; padding: 0.08em 0.36em;
+}
+
+/* code blocks — Shiki (one-dark-pro) brings the colours; we frame them */
+.writing-body pre.astro-code,
+.writing-body pre:not(.mermaid) {
+  margin: 1.2rem 0; padding: 1rem 1.15rem; border-radius: 12px;
+  border: 1px solid var(--w-line); overflow-x: auto;
+  font-size: 0.86rem; line-height: 1.6;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.writing-body pre code { font-family: 'Martian Mono', ui-monospace, monospace; }
+
+/* Mermaid — the client renderer replaces <pre.mermaid> textContent with an <svg> */
+.writing-body pre.mermaid {
+  margin: 1.4rem 0; padding: 1.2rem; border: 1px solid var(--w-line); border-radius: 12px;
+  background: #0b1020; text-align: center; overflow-x: auto;
+  /* hide the raw source for the instant before the client renderer runs */
+  color: transparent;
+}
+.writing-body pre.mermaid svg { max-width: 100%; height: auto; color: var(--w-ink); }
+.writing-body pre.mermaid[data-processed] { color: var(--w-ink); }
+
+/* KaTeX display math: keep wide formulas scrollable, not clipped */
+.writing-body .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.2rem 0; }

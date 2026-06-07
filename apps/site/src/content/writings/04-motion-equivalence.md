@@ -1,23 +1,28 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "Motion Is Not Meaning: Reduced-Motion Equivalence in Field-Based Interface Systems"
-paper: 4
+description: "A conformance model for translating motion-heavy behavior into static semantic equivalents."
+summary: "A conformance model for translating motion-heavy behavior into static semantic equivalents."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 4
+author: "Zach Shallbetter"
 ---
 
 # Motion Is Not Meaning: Reduced-Motion Equivalence in Field-Based Interface Systems
 
 > **Status: research draft (preprint, work in progress).** Paper 4 of the field-ui family — the
 > accessibility validator. Claims verified against the codebase and canonical docs as of 2026-06-07.
-> See the [series index](/research) and *the caveat canon* therein. This is a preprint draft, not
+> See the [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 4 of 8 (accessibility / reduced-motion equivalence)
 **Companion papers:** the flagship paradigm paper, [field-ui: A Field Translation Runtime for
-Relational DOM Interfaces](/research/01-field-translation-runtime), establishes the model, the six-registry
-platform, and the truth-mode vocabulary this paper assumes; see also [Reading Field](/research/02-reading-field)
-(the empirical reading study), [Evidence Fields](/research/03-evidence-fields) (trust and provenance). See
-the [series index](/research).
+Relational DOM Interfaces](/writings/01-field-translation-runtime), establishes the model, the six-registry
+platform, and the truth-mode vocabulary this paper assumes; see also [Reading Field](/writings/02-reading-field)
+(the empirical reading study), [Evidence Fields](/writings/03-evidence-fields) (trust and provenance). See
+the [series index](/writings).
 
 ---
 
@@ -635,14 +640,14 @@ Notation is kept LaTeX-compatible (the non-inferiority margin $\delta$ and the i
 directly). Figures referenced in prose but not yet drawn — the equivalence chain (§3, semantic source →
 binding → motion / static equivalent), the motion→static mapping table rendered as a figure (§3.3), and
 the three-condition study design (§5.1) — are produced at conversion time. External citations marked
-`[TODO: cite]` and the `[key]` placeholders in [`references.md`](/research/references) must be resolved and
+`[TODO: cite]` and the `[key]` placeholders in [`references.md`](/writings/references) must be resolved and
 verified before submission — never fabricated.
 
 ## Citations needed
 
 External references this paper relies on, to be located and verified (none fabricated; cite by `[key]`
 once resolved). The existing family key `[prefers-reduced-motion]` in
-[`references.md`](/research/references) covers several of these and should be split as the topics are located:
+[`references.md`](/writings/references) covers several of these and should be split as the topics are located:
 
 - `[prefers-reduced-motion]` — the `prefers-reduced-motion` media-query specification (CSS Media
   Queries Level 5 / platform docs). *(existing family key; **[TODO: locate]**)*
