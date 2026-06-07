@@ -175,6 +175,25 @@ export function authoredAttrs(el: HTMLElement): BodyAttrs | null {
   };
 }
 
+/**
+ * The selector matching every element the scanner turns into one or more bodies: a raw `data-body`,
+ * a `data-preset`, or an element authored via `data-intent` / `data-field-role`. This is the single
+ * source of truth shared with the platform's MeasurementRegistry (Phase D) so the two never drift.
+ * `querySelectorAll` returns each element once, even if it matches several clauses.
+ */
+export const BODY_SELECTOR =
+  '[data-body], [data-preset], [data-intent]:not([data-body]), [data-field-role]:not([data-body]):not([data-intent])';
+
+/**
+ * Every element in `root` that contributes a body, deduped and in document order. The geometry
+ * source for the platform MeasurementRegistry; pure over the passed root (no globals). A
+ * `data-preset` element still expands to several virtual bodies in `scanBodies`, but it is one
+ * element with one rect — which is exactly what measurement registers.
+ */
+export function bodyElements(root: ParentNode): Element[] {
+  return [...root.querySelectorAll(BODY_SELECTOR)];
+}
+
 /** Scan a DOM subtree for `[data-body]` and `[data-preset]` elements → bodies (§2.1,
  *  §20.9). A preset element emits one virtual body per entry, all sharing its rect;
  *  the plain `data-body` path is unchanged. */
