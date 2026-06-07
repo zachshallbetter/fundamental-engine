@@ -15,6 +15,28 @@ inverse-square gravity/charge, `b.accreted`, and class-[S] source/sink budgeting
 ship, so the work is the mode system, medium formalization, safety layer, `screen`,
 metrics, and the transformation primitives, not re-building what exists.)
 
+### Migrated to field-ui
+
+The project moved from `forces-ui` to **field-ui** — a field-first framing where the field (the
+invisible structure) is the primary abstraction. This is a rename + alias pass, **not** a rewrite:
+no force formulas, integrator behavior, magnetism (Lorentz `F = q(v × B)`), fieldflow, render
+math, heatmap math, force tokens, or `data-*` authoring changed. The migration plan is
+[`docs/field-ui-migration-plan.md`](docs/field-ui-migration-plan.md).
+
+Every old public name keeps working as a compatibility alias during the transition:
+
+- **Packages** renamed: `forces-ui` → `field-ui`, `@forces-ui/{elements,react,vanilla}` →
+  `@field-ui/*`. Thin re-export alias packages keep the old specifiers resolving.
+- **Events**: `field:register-body` / `field:unregister-body` / `field:update-body` are now
+  dispatched and listened for alongside the `forces:*` names.
+- **CSS variables**: `--field-density` / `--field-heatmap-density` are written alongside
+  `--forces-density` / `--forces-heatmap-density` (same values).
+- **Elements**: `<field-root>` / `<field-field>` / `<field-cell>` register alongside
+  `<forces-field>` / `<forces-cell>`; React gains `FieldField` / `useFieldField`, vanilla gains a
+  `FieldField` alias.
+
+Aliases will be removed in a future major once docs, examples, and downstream code have moved.
+
 ### Added
 
 - **`@forces-ui/vanilla` — a framework-free TypeScript wrapper.** A fourth package exposes the
@@ -240,7 +262,7 @@ self-documenting site, and adapters for any stack. Every ROADMAP item is checked
 - **Colour templates** — `ours`, `heatmap`, `infrared`, `spectrum`.
 - **§20.2 reconciliation** — a canonical colour for every registered force.
 
-### Site (forces-ui.com)
+### Site (field-ui.com)
 
 - The engine-driven **home** page; **`/reference`** — the Field Manual, rendered from
   the catalog (pinned to the engine by a completeness test) with a playable demo;

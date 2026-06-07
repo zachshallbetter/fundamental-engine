@@ -4,18 +4,18 @@ import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import { HANDLE } from '../../../lib/docs-api.ts';
 
-const getWc = `import '@forces-ui/elements';
+const getWc = `import '@field-ui/elements';
 
 // the <forces-field> element proxies the entire FieldHandle:
 const field = document.querySelector('forces-field');
 field.setFormation('wells');`;
 
-const getVanilla = `import { createField } from 'forces-ui';
+const getVanilla = `import { createField } from 'field-ui';
 
 const field = createField(canvas);   // ← createField returns the handle
 field.setRender('links');`;
 
-const getReact = `import { ForcesField } from '@forces-ui/react';
+const getReact = `import { ForcesField } from '@field-ui/react';
 
 // onReady hands you the live handle once the field mounts:
 <ForcesField onReady={(field) => field.setPalette('heatmap')} />`;
@@ -41,7 +41,7 @@ field.scan();
 // release the loop + listeners when you're done
 field.destroy();`;
 
-const workedVanilla = `import { createField } from 'forces-ui';
+const workedVanilla = `import { createField } from 'field-ui';
 
 const field = createField(canvas);   // the handle
 
@@ -61,7 +61,7 @@ addEventListener('click', (e) => field.burst(e.clientX, e.clientY));
 field.scan();      // re-scan after the DOM changes
 field.destroy();   // release the loop + listeners`;
 
-const workedReact = `import { ForcesField } from '@forces-ui/react';
+const workedReact = `import { ForcesField } from '@field-ui/react';
 
 export function Background() {
   // onReady hands you the same handle once the field mounts
@@ -84,7 +84,7 @@ export function Background() {
 ---
 
 <DocsLayout
-  title="forces-ui — FieldHandle"
+  title="field-ui — FieldHandle"
   description="The FieldHandle is the object every entry point returns. Methods: scan, setAccent, setPalette, setFormation, setAttention, setCausality, setRender, threads, burst, destroy — drive the field at runtime."
 >
   <header class="docs-hero">

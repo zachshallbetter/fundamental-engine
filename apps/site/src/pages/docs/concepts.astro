@@ -2,7 +2,7 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import ForceCell from '../../components/ForceCell.astro';
-import { MANUAL_FORCES } from 'forces-ui';
+import { MANUAL_FORCES } from 'field-ui';
 
 const bodySnippet = `<a
   data-body="attract swirl"  // forces compose, space-separated
@@ -40,14 +40,14 @@ const DEMOS = [
 ---
 
 <DocsLayout
-  title="forces-ui — Concepts"
-  description="The mental model behind forces-ui: bodies, the single conserved field, the two-way DOM⇄canvas binding, reciprocity via --d, and the orthogonal axes (forces, conditions, formations, render modes, agents)."
+  title="field-ui — Concepts"
+  description="The mental model behind field-ui: bodies, the single conserved field, the two-way DOM⇄canvas binding, reciprocity via --d, and the orthogonal axes (forces, conditions, formations, render modes, agents)."
 >
   <header class="docs-hero">
     <p class="kicker">Concepts</p>
     <h1>How the field <span class="accent">thinks</span>.</h1>
     <p class="lede">
-      forces-ui is one particle field that the page lives inside. Elements are bodies that
+      field-ui is one particle field that the page lives inside. Elements are bodies that
       bend it; the field's density bends them back. Everything else is a way to shape that
       one reciprocal loop.
     </p>

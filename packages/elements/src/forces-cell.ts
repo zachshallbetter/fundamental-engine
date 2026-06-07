@@ -244,8 +244,20 @@ if (typeof customElements !== 'undefined' && !customElements.get('forces-cell'))
   customElements.define('forces-cell', ForcesCell);
 }
 
+/**
+ * `<field-cell>` — field-ui-migration alias of `<forces-cell>` (a thin subclass, since the
+ * registry forbids two tag names per constructor). Identical behaviour; prefer `<field-cell>`
+ * in new markup. `<forces-cell>` keeps working until the migration removal version.
+ */
+export class FieldCell extends ForcesCell {}
+
+if (typeof customElements !== 'undefined' && !customElements.get('field-cell')) {
+  customElements.define('field-cell', FieldCell);
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'forces-cell': ForcesCell;
+    'field-cell': FieldCell;
   }
 }

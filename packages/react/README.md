@@ -4,7 +4,7 @@ The React adapter for [forces-ui](../core) — a reciprocal DOM-physics field as
 component. Elements you mark with `data-body` become forces; the single background field
 reacts to them, and its density reacts back.
 
-→ Live at **[forces-ui.com](https://forces-ui.com)**.
+→ Live at **[field-ui.com](https://field-ui.com)**.
 
 > **Pre-release: not yet on npm.** Consume from the repository for now (see
 > [`RELEASING.md`](../../RELEASING.md)).

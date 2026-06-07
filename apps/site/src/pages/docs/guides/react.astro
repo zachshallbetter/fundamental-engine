@@ -2,7 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const basic = `import { ForcesField } from '@forces-ui/react';
+const basic = `import { ForcesField } from '@field-ui/react';
 
 export function App() {
   return (
@@ -23,7 +23,7 @@ const onReady = `// the field reacts to [data-body] elements anywhere on the pag
   onReady={(field) => field.scan()}
 />`;
 
-const hook = `import { useForcesField } from '@forces-ui/react';
+const hook = `import { useForcesField } from '@field-ui/react';
 
 function Background() {
   // own the canvas element yourself
@@ -33,8 +33,8 @@ function Background() {
 ---
 
 <DocsLayout
-  title="forces-ui — React guide"
-  description="Use forces-ui in React: the <ForcesField> component (every FieldOptions prop + onReady) and the useForcesField hook. React is a peer dependency; the core engine stays zero-dependency."
+  title="field-ui — React guide"
+  description="Use field-ui in React: the <ForcesField> component (every FieldOptions prop + onReady) and the useForcesField hook. React is a peer dependency; the core engine stays zero-dependency."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
@@ -48,7 +48,7 @@ function Background() {
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">
-      <code class="install" data-copy="npm i @forces-ui/react">npm i @forces-ui/react</code>
+      <code class="install" data-copy="npm i @field-ui/react">npm i @field-ui/react</code>
     </div>
   </section>
 

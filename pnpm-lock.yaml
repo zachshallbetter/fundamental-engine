@@ -10,15 +10,61 @@ importers:
 
   apps/site:
     dependencies:
-      '@forces-ui/elements':
+      '@field-ui/elements':
         specifier: workspace:*
         version: link:../../packages/elements
       astro:
         specifier: ^5
         version: 5.18.2(rollup@4.61.0)(typescript@5.9.3)
-      forces-ui:
+      field-ui:
         specifier: workspace:*
         version: link:../../packages/core
+
+  packages/compat-core:
+    dependencies:
+      field-ui:
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/compat-elements:
+    dependencies:
+      '@field-ui/elements':
+        specifier: workspace:*
+        version: link:../elements
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/compat-react:
+    dependencies:
+      '@field-ui/react':
+        specifier: workspace:*
+        version: link:../react
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.16
+      react:
+        specifier: ^19.0.0
+        version: 19.2.7
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/compat-vanilla:
+    dependencies:
+      '@field-ui/vanilla':
+        specifier: workspace:*
+        version: link:../vanilla
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/core:
     devDependencies:
@@ -28,10 +74,10 @@ importers:
 
   packages/elements:
     dependencies:
-      '@forces-ui/vanilla':
+      '@field-ui/vanilla':
         specifier: workspace:*
         version: link:../vanilla
-      forces-ui:
+      field-ui:
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -41,7 +87,7 @@ importers:
 
   packages/react:
     dependencies:
-      forces-ui:
+      field-ui:
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -57,7 +103,7 @@ importers:
 
   packages/vanilla:
     dependencies:
-      forces-ui:
+      field-ui:
         specifier: workspace:*
         version: link:../core
     devDependencies:

@@ -206,7 +206,7 @@ Ordered for overnight (highest visible value first):
       the catalog (completeness-tested), so it can't drift from the engine. Opens with a
       **live, playable `<forces-cell>` demo** + a force switcher (attract/repel/swirl/stream/
       gravity/tether/buoyancy) — the manual explains by being it.
-- [x] **forces-ui.com rebuilt on the engine.** The home page is now the engine-driven
+- [x] **field-ui.com rebuilt on the engine.** The home page is now the engine-driven
       manual — the live `<forces-field>` runs the whole engine (its first real consumer);
       the hero `mass.` is a real `data-feedback` body that glows; the Field Cell row demos
       forces; the chapter rail (Substrate → Forces → Conditions → System), the "every element
@@ -260,7 +260,7 @@ through a **web-component** keystone so it drops into anything.
 | `packages/core` (`forces-ui`) | the engine — catalog, contracts, FieldStore, forces | vanilla TS |
 | `packages/vanilla` (`@forces-ui/vanilla`) | framework-free door — `ForcesField` class + `mountField()`, no side effects | vanilla TS |
 | `packages/elements` (`@forces-ui/elements`) | `<forces-field>` + declarative `data-body` | web components (plain now; Lit when there's UI to template, e.g. the Lab) |
-| `apps/site` (`@forces-ui/site`) | forces-ui.com — the manual / landing / Lab | Astro (static) |
+| `apps/site` (`@forces-ui/site`) | field-ui.com — the manual / landing / Lab | Astro (static) |
 | `packages/react` (`@forces-ui/react`) | thin React adapter | React |
 
 Why web components as the keystone: "every element is a body" is a web-components-

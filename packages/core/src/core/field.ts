@@ -17,6 +17,9 @@ import {
   REGISTER_BODY,
   UNREGISTER_BODY,
   UPDATE_BODY,
+  FIELD_REGISTER_BODY,
+  FIELD_UNREGISTER_BODY,
+  FIELD_UPDATE_BODY,
   type RegisterBodyDetail,
 } from './shadow.ts';
 import { easeFormation } from './formations.ts';
@@ -51,7 +54,7 @@ const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('forces-ui: 2D canvas context unavailable');
+  if (!ctx) throw new Error('field-ui: 2D canvas context unavailable');
 
   const store = new FieldStore();
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
@@ -124,7 +127,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // clear the field's CSS write-back when a still-connected host leaves the field, so it
   // doesn't keep a frozen `--d` glow (a removed light-DOM element is gone, so it needs no clear).
   const clearWriteback = (el: HTMLElement): void => {
-    for (const v of ['--d', '--forces-density', '--load', '--mass']) el.style.removeProperty(v);
+    for (const v of ['--d', '--forces-density', '--field-density', '--load', '--mass'])
+      el.style.removeProperty(v);
   };
   const onRegister = (e: Event): void => {
     const d = (e as CustomEvent<RegisterBodyDetail>).detail;
@@ -560,15 +564,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (!b.feedback) continue;
       const target = feedbackTarget(b.count, b.on);
       b.d += (target - b.d) * 0.08;
-      // write to the host, or a separate write target for shadow-DOM bodies (§11). `--d` is
-      // the established var; `--forces-density` is its explicit alias (shadow CSS contract).
+      // write to the host, or a separate write target for shadow-DOM bodies (§11). `--d` is the
+      // established var; `--forces-density` is its explicit alias (shadow CSS contract), and
+      // `--field-density` is the field-ui-migration alias written alongside it (both same value).
       const writeEl = b.writeTarget ?? b.el;
       const dStr = b.d.toFixed(3);
       writeEl.style.setProperty('--d', dStr);
       writeEl.style.setProperty('--forces-density', dStr);
+      writeEl.style.setProperty('--field-density', dStr);
       // the heatmap's local density under the body (field-systems H1) — distinct from `--d`,
       // which is the body's own gathered density; this is the ambient heatmap at its position.
-      if (heatmap) writeEl.style.setProperty('--forces-heatmap-density', heatmap.norm(b.cx, b.cy).toFixed(3));
+      // `--field-heatmap-density` mirrors `--forces-heatmap-density` for the migration.
+      if (heatmap) {
+        const hStr = heatmap.norm(b.cx, b.cy).toFixed(3);
+        writeEl.style.setProperty('--forces-heatmap-density', hStr);
+        writeEl.style.setProperty('--field-heatmap-density', hStr);
+      }
       if (b.fmax) {
         const w = feedbackWeight(b.fmin, b.fmax, b.d);
         if (lastWeight.get(writeEl) !== w) {
@@ -983,6 +994,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   document.addEventListener(REGISTER_BODY, onRegister);
   document.addEventListener(UNREGISTER_BODY, onUnregister);
   document.addEventListener(UPDATE_BODY, onUpdateBody);
+  // field:* aliases (field-ui migration) — same idempotent handlers, so a body registers under
+  // either namespace; the controller dispatches both, the engine listens to both.
+  document.addEventListener(FIELD_REGISTER_BODY, onRegister);
+  document.addEventListener(FIELD_UNREGISTER_BODY, onUnregister);
+  document.addEventListener(FIELD_UPDATE_BODY, onUpdateBody);
   onScroll();
   raf = requestAnimationFrame(frame);
 
@@ -1025,7 +1041,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (!heatmap && W > 0) heatmap = new Heatmap(W, H);
       } else if (heatmap) {
         heatmap = null; // drop the buffer; clear the write-back the layer left on bodies
-        for (const b of bodies) (b.writeTarget ?? b.el).style.removeProperty('--forces-heatmap-density');
+        for (const b of bodies) {
+          const el = b.writeTarget ?? b.el;
+          el.style.removeProperty('--forces-heatmap-density');
+          el.style.removeProperty('--field-heatmap-density');
+        }
       }
     },
     threads: setThreads,
@@ -1054,6 +1074,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       document.removeEventListener(REGISTER_BODY, onRegister);
       document.removeEventListener(UNREGISTER_BODY, onUnregister);
       document.removeEventListener(UPDATE_BODY, onUpdateBody);
+      document.removeEventListener(FIELD_REGISTER_BODY, onRegister);
+      document.removeEventListener(FIELD_UNREGISTER_BODY, onUnregister);
+      document.removeEventListener(FIELD_UPDATE_BODY, onUpdateBody);
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
       // on the same DOM doesn't accumulate handlers (§18 teardown).
       for (const e of engaged) {

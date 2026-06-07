@@ -4,7 +4,7 @@
  * wrap. React is a peer dependency (the one framework dep; the core stays zero-dep).
  *
  * ```tsx
- * import { ForcesField } from '@forces-ui/react';
+ * import { ForcesField } from '@field-ui/react';
  * <ForcesField accent="#4da3ff" />            // a full-viewport reciprocal field
  * <ForcesField onReady={(f) => f.scan()} />   // grab the handle to drive it
  * ```
@@ -15,7 +15,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
-import { createField, FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from 'forces-ui';
+import { createField, FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from 'field-ui';
 
 export interface ForcesFieldProps extends FieldOptions {
   className?: string;
@@ -81,3 +81,13 @@ export function useForcesField(opts: FieldOptions = {}): {
   }, [accent, density, waves, render, mass, palette, attention, causality]);
   return { canvasRef, fieldRef };
 }
+
+// ── field-ui-migration aliases ─────────────────────────────────────────────────
+// `Field*` are the field-first names; the `Forces*` exports above keep working unchanged
+// until the migration removal version (docs/field-ui-migration-plan.md §3).
+/** Alias of {@link ForcesFieldProps}. */
+export type FieldFieldProps = ForcesFieldProps;
+/** Alias of {@link ForcesField}. */
+export const FieldField = ForcesField;
+/** Alias of {@link useForcesField}. */
+export const useFieldField = useForcesField;

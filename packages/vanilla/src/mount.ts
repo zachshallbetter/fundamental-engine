@@ -6,11 +6,11 @@
  * same engine the `<forces-field>` custom element and the React `<ForcesField>` wrap, for
  * plain scripts and imperative mounts: `const field = mountField(); field.scan()`.
  *
- * This is the canonical home of the imperative mount; `@forces-ui/elements` re-exports it.
+ * This is the canonical home of the imperative mount; `@field-ui/elements` re-exports it.
  * For object-oriented ergonomics (and driving a canvas you own), see the `ForcesField` class.
  */
 
-import { createField, FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from 'forces-ui';
+import { createField, FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from 'field-ui';
 
 export interface MountOptions extends FieldOptions {
   /** where to append the canvas; defaults to `document.body`. */
@@ -25,7 +25,7 @@ export interface MountOptions extends FieldOptions {
 export function assertBrowser(): void {
   if (typeof document === 'undefined' || typeof window === 'undefined') {
     throw new Error(
-      'forces-ui: the field runs in the browser only. Create it on the client (inside ' +
+      'field-ui: the field runs in the browser only. Create it on the client (inside ' +
         'useEffect / onMount / a "client only" boundary), not during server-side rendering.'
     );
   }

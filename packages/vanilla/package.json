@@ -1,11 +1,11 @@
 {
-  "name": "@forces-ui/vanilla",
+  "name": "@field-ui/vanilla",
   "version": "0.2.0",
   "description": "Framework-free TypeScript wrapper for forces-ui — the reciprocal DOM-physics field as a typed ForcesField class + mountField(), with no custom-element registration and no framework dependency.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://forces-ui.com",
+  "homepage": "https://field-ui.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/forces-ui.git",
@@ -15,7 +15,7 @@
     "url": "https://github.com/zachshallbetter/forces-ui/issues"
   },
   "keywords": [
-    "forces-ui",
+    "field-ui",
     "typescript",
     "vanilla",
     "particles",
@@ -53,7 +53,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "forces-ui": "workspace:*"
+    "field-ui": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

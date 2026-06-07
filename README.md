@@ -1,22 +1,24 @@
-# forces-ui
+# field-ui
 
 **A reciprocal DOM-physics field.** Every element on the page is a body in one particle field. Bodies bend the field; the field's local density bends the elements back.
 
-[![Live demo: forces-ui.com](https://img.shields.io/badge/demo-forces--ui.com-4da3ff)](https://forces-ui.com)
+[![Live demo: field-ui.com](https://img.shields.io/badge/demo-field--ui.com-4da3ff)](https://field-ui.com)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20deps-0-2dd4bf)
 ![TypeScript: strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
 ![Tests: 300+ passing](https://img.shields.io/badge/tests-300%2B%20passing-2dd4bf)
 
-forces-ui renders a single particle field on a canvas behind your content. Mark any element as a body with one attribute and it starts to pull, push, swirl, or hold the matter around it. Where the field gathers, it writes that density back into the element as weight, glow, and motion. The interface lives inside one medium instead of sitting on top of an effect.
+field-ui renders a single particle field on a canvas behind your content. Mark any element as a body with one attribute and it starts to pull, push, swirl, or hold the matter around it. Where the field gathers, it writes that density back into the element as weight, glow, and motion. The interface lives inside one medium instead of sitting on top of an effect.
 
 It is framework-agnostic (a custom element, a React component, or a plain function), written in TypeScript, and ships with zero runtime dependencies.
 
-> **See it live.** The whole system runs over the engine at **[forces-ui.com](https://forces-ui.com)**, with a physics [Lab](https://forces-ui.com/lab) where you fire particles into a force and watch the math hold.
+> **See it live.** The whole system runs over the engine at **[field-ui.com](https://field-ui.com)**, with a physics [Lab](https://field-ui.com/lab) where you fire particles into a force and watch the math hold.
+
+> **Renamed to `field-ui`.** This project was `forces-ui`; it is now **field-ui**, putting the field — the invisible structure — first. Every old public name still works as a compatibility alias during the transition: the `forces-ui` / `@forces-ui/*` packages, the `forces:*` events, the `--forces-*` CSS variables, and the `<forces-field>` / `<forces-cell>` elements all keep working alongside their `field-ui` / `field:*` / `--field-*` / `<field-root>` equivalents. See the [migration plan](docs/field-ui-migration-plan.md) and the [docs map](docs/README.md).
 
 ## The idea
 
-Most particle backgrounds are one-way: the canvas reacts to the cursor. forces-ui is two-way, and it is bound to your layout.
+Most particle backgrounds are one-way: the canvas reacts to the cursor. field-ui is two-way, and it is bound to your layout.
 
 1. **Elements to field.** A registry reads each body's `getBoundingClientRect()` every frame and maps it onto the canvas. The body exerts force on the particles near it.
 2. **Field to elements.** The field samples particle density around each body and writes it to a CSS variable (`--d`). Your CSS reads `--d` to drive weight, size, colour, or position.
@@ -29,21 +31,21 @@ The geometry is re-read every frame, so the invisible forces stay locked to the 
 
 ```html
 <script type="module">
-  import '@forces-ui/elements';
+  import '@field-ui/elements';
 </script>
 
-<forces-field></forces-field>
+<field-root></field-root>
 
 <h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
 <button data-body="repel" data-range="240">Keep clear</button>
 ```
 
-Drop `<forces-field>` once. It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
+Drop `<field-root>` once (the `<forces-field>` alias still works). It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
 
 ### React
 
 ```tsx
-import { ForcesField } from '@forces-ui/react';
+import { ForcesField } from '@field-ui/react';
 
 export default function Page() {
   return (
@@ -60,7 +62,7 @@ Reach for `useForcesField(options)` when you want the field handle instead of th
 ### Vanilla TypeScript
 
 ```ts
-import { ForcesField } from '@forces-ui/vanilla';
+import { ForcesField } from '@field-ui/vanilla';
 
 const field = new ForcesField({ render: 'dots' });
 field.setFormation('wells');
@@ -68,7 +70,7 @@ field.burst(window.innerWidth / 2, 200);
 // field.scan(); field.destroy();
 ```
 
-`@forces-ui/vanilla` is the framework-free door: a typed `ForcesField` class, with `mountField()` and `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
+`@field-ui/vanilla` is the framework-free door: a typed `ForcesField` class, with `mountField()` and `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
 
 ## Author bodies in markup
 
@@ -116,19 +118,19 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 
 | Package | What it is |
 |---|---|
-| [`forces-ui`](packages/core) | the engine: catalog, contracts, `FieldStore`, integrator, the force set, conformance |
-| [`@forces-ui/vanilla`](packages/vanilla) | the framework-free door: the `ForcesField` class and `mountField()`, no custom element |
-| [`@forces-ui/elements`](packages/elements) | the `<forces-field>` and `<forces-cell>` custom elements |
-| [`@forces-ui/react`](packages/react) | the `<ForcesField>` component and the `useForcesField()` hook |
+| [`field-ui`](packages/core) | the engine: catalog, contracts, `FieldStore`, integrator, the force set, conformance |
+| [`@field-ui/vanilla`](packages/vanilla) | the framework-free door: the `ForcesField` class and `mountField()`, no custom element |
+| [`@field-ui/elements`](packages/elements) | the `<forces-field>` and `<forces-cell>` custom elements |
+| [`@field-ui/react`](packages/react) | the `<ForcesField>` component and the `useForcesField()` hook |
 
 ## Availability
 
-The packages are pre-release and not yet published to npm. Each release is cut as a git tag (see [`RELEASING.md`](RELEASING.md)). To use forces-ui today, consume it from this repository as a workspace dependency, a git install, or a local link. The public API shown above is stable; the `npm install` path arrives with the first published release.
+The packages are pre-release and not yet published to npm. Each release is cut as a git tag (see [`RELEASING.md`](RELEASING.md)). To use field-ui today, consume it from this repository as a workspace dependency, a git install, or a local link. The public API shown above is stable; the `npm install` path arrives with the first published release.
 
 ## Documentation
 
-- **Field Manual** at [forces-ui.com](https://forces-ui.com): every concept running live over the engine.
-- **Lab** at [forces-ui.com/lab](https://forces-ui.com/lab): fire particles into a force, watch the track, share the result through a URL.
+- **Field Manual** at [field-ui.com](https://field-ui.com): every concept running live over the engine.
+- **Lab** at [field-ui.com/lab](https://field-ui.com/lab): fire particles into a force, watch the track, share the result through a URL.
 - [`docs/forces-system.md`](docs/forces-system.md): the full specification, the contract the engine implements.
 - [`docs/forces-formulas.md`](docs/forces-formulas.md): per-force formulas and the attribute handbook.
 - [`docs/forces-tests.md`](docs/forces-tests.md): the testing and physics-conformance guide.
@@ -136,7 +138,7 @@ The packages are pre-release and not yet published to npm. Each release is cut a
 
 ## Develop
 
-forces-ui is a pnpm monorepo. Development needs Node 22 or newer, because the test runner executes TypeScript directly.
+field-ui is a pnpm monorepo. Development needs Node 22 or newer, because the test runner executes TypeScript directly.
 
 ```bash
 pnpm install
@@ -162,7 +164,7 @@ Issues and pull requests are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTIN
 
 ## Origins
 
-forces-ui began as the homepage of [zachshallbetter.com](https://zachshallbetter.com) and outgrew it. This repository is the engine, its specification, and the prototype it was refactored from.
+field-ui began as the homepage of [zachshallbetter.com](https://zachshallbetter.com) and outgrew it. This repository is the engine, its specification, and the prototype it was refactored from.
 
 ## License
 

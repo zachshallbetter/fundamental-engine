@@ -1,5 +1,5 @@
 /**
- * `@forces-ui/vanilla` — the framework-free TypeScript door to the reciprocal field.
+ * `@field-ui/vanilla` — the framework-free TypeScript door to the reciprocal field.
  *
  * The same engine the `<forces-field>` custom element and the React `<ForcesField>` wrap,
  * exposed as a typed `ForcesField` class and the imperative `mountField()` / `createField()`,
@@ -12,11 +12,15 @@
 
 export { ForcesField } from './field.ts';
 export type { ForcesFieldInit } from './field.ts';
+// field-ui-migration aliases: `FieldField` is the field-first name; `ForcesField` keeps working
+// until the migration removal version (docs/field-ui-migration-plan.md §3).
+export { ForcesField as FieldField } from './field.ts';
+export type { ForcesFieldInit as FieldFieldInit } from './field.ts';
 export { mountField, makeFieldCanvas } from './mount.ts';
 export type { MountOptions } from './mount.ts';
 
 // The engine entry + its contracts, re-exported so one install covers a vanilla app.
-export { createField } from 'forces-ui';
+export { createField } from 'field-ui';
 export type {
   FieldHandle,
   FieldOptions,
@@ -26,8 +30,8 @@ export type {
   Force,
   Formation,
   Vec2,
-} from 'forces-ui';
+} from 'field-ui';
 
 // The catalog data a vanilla UI commonly reads — the force list, formations, `data-when`
 // gates, and the palette — so a force picker or legend needs no second install.
-export { FORCES, FORMATIONS, CONDITIONS, PALETTE } from 'forces-ui';
+export { FORCES, FORMATIONS, CONDITIONS, PALETTE } from 'field-ui';
