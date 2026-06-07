@@ -1,6 +1,6 @@
-import { createField, PALETTE, type FieldHandle, type ThreadLink } from 'field-ui';
+import { createField, PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink } from 'field-ui';
 import { HTMLElementBase } from './base.ts';
-import { shouldUsePlatformRuntime, startPlatformRuntime, type PlatformRuntime } from './platform-runtime.ts';
+import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 
 // Experimental platform runtime (Phase D). Re-exported so apps can opt in globally.
 export { usePlatformRuntime, isPlatformRuntimeDefault, shouldUsePlatformRuntime, startPlatformRuntime } from './platform-runtime.ts';
@@ -184,6 +184,15 @@ export class FieldField extends HTMLElementBase {
     // tear down any prior platform runtime before a rebuild (idempotent)
     this.platformRuntime?.destroy();
     this.platformRuntime = undefined;
+    // Phase D: when the experimental flag is on, start the platform runtime FIRST (so the engine can
+    // hand it feedback via a sink), then create the engine with that sink. D2 measures bodies; D3
+    // routes feedback through FeedbackRegistry. Default off → no runtime, no sink (unchanged).
+    let feedbackSink: FeedbackSink | undefined;
+    if (shouldUsePlatformRuntime(this)) {
+      const scanRoot = this.ownerDocument?.documentElement ?? this;
+      this.platformRuntime = startPlatformRuntime(scanRoot);
+      feedbackSink = makeFeedbackSink(this.platformRuntime.platform);
+    }
     this.field = createField(this.canvas, {
       // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
       accent: this.getAttribute('accent') ?? undefined,
@@ -194,13 +203,8 @@ export class FieldField extends HTMLElementBase {
       mass: this.mass,
       attention: this.attention,
       causality: this.causality,
+      feedbackSink,
     });
-    // Phase D: when the experimental flag is on, run the platform runtime alongside the legacy
-    // engine. D1 measures the scan root only — no observable change; the seam for D2+.
-    if (shouldUsePlatformRuntime(this)) {
-      const scanRoot = this.ownerDocument?.documentElement ?? this;
-      this.platformRuntime = startPlatformRuntime(scanRoot);
-    }
   }
 }
 

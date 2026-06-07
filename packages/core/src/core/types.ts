@@ -288,7 +288,30 @@ export interface FieldOptions {
   /** density heatmap (field-systems H1): a scalar buffer of where matter pools, drawn as a
    *  glow underlay and sampled to bodies as `--forces-heatmap-density`. Default false. */
   heatmap?: boolean;
+  /**
+   * Feedback seam (Phase D3): when set, the engine routes its per-body feedback channels to this
+   * sink each frame *instead of* writing CSS variables / dispatching events directly — so the
+   * platform's FeedbackRegistry can own the write phase. The simulation (the eased density value) is
+   * unchanged; only the write target moves. Default unset → the engine writes directly (unchanged).
+   * Font-variation weight is a typographic render effect and stays in the engine.
+   */
+  feedbackSink?: FeedbackSink;
 }
+
+/** Per-element feedback values the engine produces each frame (Phase D3 seam). */
+export interface FeedbackChannels {
+  /** the body's eased gathered density `d` ∈ [0,1] → `--d` / `--field-density` / `--forces-density`. */
+  density?: number;
+  /** the ambient heatmap density at the body → `--field-heatmap-density` / `--forces-heatmap-density`. */
+  heatmapDensity?: number;
+  /** sink accretion fill ∈ [0,1] → `--load` / `--mass`. */
+  load?: number;
+  /** cross-boundary lit signal ∈ [0,1] → `--lit` + thresholded `field:lit` / `field:dim`. */
+  lit?: number;
+}
+
+/** Receives a body's feedback channels in place of direct DOM writes (Phase D3). */
+export type FeedbackSink = (el: HTMLElement, channels: FeedbackChannels) => void;
 
 /** The handle returned by `createField` — the public field API (§13). */
 export interface FieldHandle {
