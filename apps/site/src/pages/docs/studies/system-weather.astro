@@ -2,40 +2,30 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
 
-// System Weather Study — a generic ops/admin dashboard (no brand assets) driven by real recipes through
-// applyRecipe(): metric cards develop "weather" — heat, pressure, risk — while healthy regions stay
-// calm and anomalies bloom locally. Per-card data-field-* values are supplied; applyRecipe writes them
-// to --field-* and CSS renders calm-vs-storm. A header carries the System Pulse.
-
-const cards = [
-  { id: 'w-traffic', label: 'Requests / s', value: '12.4k', heat: 0.2, pressure: 0.15 },
-  { id: 'w-errors', label: 'Error rate', value: '4.8%', heat: 0.9, pressure: 0.8, anomaly: true },
-  { id: 'w-latency', label: 'p99 latency', value: '820ms', heat: 0.6, pressure: 0.55 },
-  { id: 'w-queue', label: 'Queue depth', value: '1,203', heat: 0.5, pressure: 0.7 },
-  { id: 'w-cpu', label: 'CPU', value: '38%', heat: 0.15, pressure: 0.1 },
-  { id: 'w-disputes', label: 'Disputes', value: '7', heat: 0.75, pressure: 0.4, anomaly: true },
-];
+// System Weather Study — data-driven via bindData(). Dashboard metric cards are records; the
+// attention-weather recipe turns supplied heat/pressure into --field-* the CSS renders as weather.
+// Calm regions stay quiet, hot regions warm. No hand-wired behavior — the cards come from data.
 const RECIPES = ['attention-weather', 'anomaly-bloom', 'risk-horizon', 'dependency-tension', 'system-pulse'];
 const LIVE = ['attention-weather'];
-const health = 1 - cards.reduce((s, c) => s + c.heat, 0) / cards.length;
 ---
 
 <DocsLayout
   title="field-ui — System Weather Study"
-  description="A concept study: a generic dashboard reinterpreted as a field. Metric cards develop weather — heat, pressure, risk — healthy regions stay calm, anomalies bloom locally, and a header carries the system pulse. Driven by real recipes through applyRecipe()."
+  description="A concept study driven by data through bindData(): dashboard metric cards become a field — heat, pressure, anomalies — while healthy regions stay calm. Driven by the attention-weather recipe."
 >
-  <p class="kicker">Concept study</p>
+  <p class="kicker">Concept study · data-bound</p>
   <h1>System Weather Study</h1>
   <p class="lede">
-    A dashboard read as weather. Calm regions stay quiet; hot or overloaded metrics gain heat and
-    pressure; anomalies bloom locally and a header carries the system pulse — driven by real recipes
-    through <code>applyRecipe()</code>, and still a legible grid with the field off.
+    A dashboard read as weather. Metric cards are <b>records</b> bound through <code>bindData()</code>;
+    the <a href="/docs/gallery#attention-weather">Attention Weather</a> recipe turns each card's heat and
+    pressure into field state, so hot or overloaded metrics gain weight and calm regions stay quiet —
+    still a legible grid with the field off.
   </p>
 
   <div class="study-stages">
     <div class="stage"><b>Before</b><span>A plain grid of metric cards.</span></div>
-    <div class="stage"><b>After</b><span>Cards develop heat and pressure by activity; anomalies bloom; calm regions stay quiet.</span></div>
-    <div class="stage"><b>Inspect</b><span>Live <code>applyRecipe().inspect()</code> — bodies, relationships, lint.</span></div>
+    <div class="stage"><b>After</b><span>Cards develop heat and pressure by activity; anomalies stand out; calm regions stay quiet.</span></div>
+    <div class="stage"><b>Inspect</b><span>Live <code>bindData().inspect()</code> — records · bodies · edges.</span></div>
   </div>
 
   <div class="study-controls" role="group" aria-label="Study controls">
@@ -44,37 +34,43 @@ const health = 1 - cards.reduce((s, c) => s + c.heat, 0) / cards.length;
     <span class="sc-readout" data-study-status>starting…</span>
   </div>
 
-  <div class="sw-pulse" style={`--field-coherence:${health}`}>
-    <span class="sw-dot"></span>
-    <b>System pulse</b>
-    <span class="sw-health">{Math.round(health * 100)}% calm</span>
-  </div>
-
-  <div class="sw-grid" id="sw-grid">
-    {cards.map((c) => (
-      <article
-        class="sw-card"
-        id={c.id}
-        data-field-heat={c.heat}
-        data-field-pressure={c.pressure}
-        data-field-risk={c.heat}
-        data-anomaly={c.anomaly ? 'true' : 'false'}
-      >
-        <p class="sw-label">{c.label}{c.anomaly && <span class="sw-bloom">anomaly</span>}</p>
-        <p class="sw-value">{c.value}</p>
-        <span class="sw-meter"><span class="sw-fill"></span></span>
-      </article>
-    ))}
-  </div>
+  <div class="sw-pulse"><span class="sw-dot"></span><b>System pulse</b><span class="sw-health" data-sw-health>—</span></div>
+  <div class="sw-grid" id="sw-grid"></div>
 
   <RecipesApplied ids={RECIPES} live={LIVE} />
 </DocsLayout>
 
 <script>
-  import { mountStudy } from '../../../lib/study.ts';
-  const root = document.getElementById('sw-grid');
-  if (root) {
-    mountStudy([{ root, recipeId: 'attention-weather', items: Array.from(root.querySelectorAll<HTMLElement>('.sw-card')) }]);
+  import { mountBindStudy } from '../../../lib/study.ts';
+  import { bindData } from '@field-ui/platform';
+
+  interface Card { id: string; label: string; value: string; heat: number; pressure: number; anomaly?: boolean; }
+  const cards: Card[] = [
+    { id: 'w-traffic', label: 'Requests / s', value: '12.4k', heat: 0.2, pressure: 0.15 },
+    { id: 'w-errors', label: 'Error rate', value: '4.8%', heat: 0.9, pressure: 0.8, anomaly: true },
+    { id: 'w-latency', label: 'p99 latency', value: '820ms', heat: 0.6, pressure: 0.55 },
+    { id: 'w-queue', label: 'Queue depth', value: '1,203', heat: 0.5, pressure: 0.7 },
+    { id: 'w-cpu', label: 'CPU', value: '38%', heat: 0.15, pressure: 0.1 },
+    { id: 'w-disputes', label: 'Disputes', value: '7', heat: 0.75, pressure: 0.4, anomaly: true },
+  ];
+  const grid = document.getElementById('sw-grid');
+  const healthEl = document.querySelector<HTMLElement>('[data-sw-health]');
+  if (grid) {
+    const health = 1 - cards.reduce((s, c) => s + c.heat, 0) / cards.length;
+    if (healthEl) healthEl.textContent = `${Math.round(health * 100)}% calm`;
+    const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
+    const mapper = (c: Card) => ({
+      id: c.id,
+      body: { tokens: ['gravity', 'thermal', 'pressure'], strength: 0.5 + c.heat, range: 300, feedback: true },
+      metrics: { heat: c.heat, pressure: c.pressure },
+      label: c.label,
+    });
+    const content = (c: Card) =>
+      `<p class="sw-label">${esc(c.label)}${c.anomaly ? '<span class="sw-bloom">anomaly</span>' : ''}</p>` +
+      `<p class="sw-value">${esc(c.value)}</p><span class="sw-meter"><span class="sw-fill"></span></span>`;
+    mountBindStudy((reduced, on) => [
+      bindData(grid, cards, mapper, { recipe: on ? 'attention-weather' : undefined, className: 'sw-card', content, reducedMotion: reduced }),
+    ]);
   }
 </script>
 
@@ -90,27 +86,26 @@ const health = 1 - cards.reduce((s, c) => s + c.heat, 0) / cards.length;
   .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
   .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
 
-  .sw-pulse { --field-coherence: 0; display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem; }
+  .sw-pulse { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem; }
   .sw-pulse b { font-size: 0.9rem; }
-  .sw-health { font-size: 0.82rem; color: color-mix(in srgb, #2dd4bf calc(40% + var(--field-coherence) * 60%), var(--muted, #9aa)); }
-  .sw-dot { width: 10px; height: 10px; border-radius: 50%; background: color-mix(in srgb, #2dd4bf calc(var(--field-coherence) * 100%), #ff9d5c); animation: sw-beat 2.4s ease-in-out infinite; }
+  .sw-health { font-size: 0.82rem; color: var(--muted, #9aa); }
+  .sw-dot { width: 10px; height: 10px; border-radius: 50%; background: #2dd4bf; animation: sw-beat 2.4s ease-in-out infinite; }
   @keyframes sw-beat { 0%, 100% { opacity: 0.5; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.15); } }
 
-  .sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem; }
+  .sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem; min-height: 80px; }
   .sw-card {
     --field-heat: 0; --field-pressure: 0;
     padding: 0.7rem 0.8rem; border-radius: 10px;
     border: 1px solid color-mix(in srgb, #ff9d5c calc(var(--field-heat) * 80%), var(--line, #2a2a35));
     background: color-mix(in srgb, #ff9d5c calc(var(--field-heat) * 12%), transparent);
-    transition: border-color 0.5s ease, background 0.5s ease;
+    opacity: 1; transition: border-color 0.5s ease, background 0.5s ease, opacity 0.35s ease;
   }
+  .sw-card[data-bd-entering] { opacity: 0; }
   .sw-label { margin: 0; font-size: 0.78rem; color: var(--muted, #9aa); display: flex; align-items: center; gap: 0.4rem; }
   .sw-bloom { font-size: 0.64rem; color: #ff5c5c; border: 1px solid #ff5c5c; border-radius: 4px; padding: 0.02rem 0.3rem; }
-  .sw-card[data-anomaly='true'] { animation: sw-bloom 3s ease-in-out infinite; }
-  @keyframes sw-bloom { 0%, 100% { box-shadow: 0 0 0 rgba(255, 92, 92, 0); } 50% { box-shadow: 0 0 16px rgba(255, 92, 92, calc(var(--field-heat) * 0.5)); } }
   .sw-value { margin: 0.2rem 0 0.4rem; font-size: 1.4rem; font-weight: 600; }
   .sw-meter { display: block; height: 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
   .sw-fill { display: block; height: 100%; width: calc(var(--field-pressure) * 100%); background: linear-gradient(90deg, #4da3ff, #ff9d5c); transition: width 0.5s ease; }
-  @media (prefers-reduced-motion: reduce) { .sw-dot, .sw-card[data-anomaly='true'] { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .sw-dot { animation: none; } .sw-card, .sw-fill { transition: none; } }
   [data-recipe-reduced] .sw-card, [data-recipe-reduced] .sw-fill { transition: none; }
 </style>
