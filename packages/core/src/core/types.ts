@@ -233,6 +233,13 @@ export interface Force {
    * `charge` it is the electric field the force pushes along. Pure: same input, same output.
    */
   field?(b: Body, x: number, y: number): Vec2;
+  /**
+   * Optional *scalar field* hook (system-contracts §2 — a field may be vector, scalar, or compound).
+   * Returns a scalar value at a world point (e.g. a potential `Φ`, a density, a temperature) for
+   * contour / potential / heatmap rendering, with no particle. Pure: same input, same output. A
+   * force may own a vector `field()`, a `scalarField()`, both, or neither.
+   */
+  scalarField?(b: Body, x: number, y: number): number;
   meta?: { desc?: string };
 }
 

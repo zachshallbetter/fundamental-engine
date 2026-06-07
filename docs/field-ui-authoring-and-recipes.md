@@ -155,6 +155,9 @@ Example:
 
 ## 7. Essential Recipes
 
+> **Implemented.** All nine ship as validated `SceneRecipe`s in
+> `packages/core/src/recipes/gallery.ts` (`ESSENTIAL_RECIPES`).
+
 ### Living Headline
 
 Intent:
