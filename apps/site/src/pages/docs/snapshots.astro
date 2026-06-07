@@ -1,0 +1,62 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { captureSnapshot, EXPERIMENTS } from 'field-ui';
+
+// Deterministic regression fingerprints: each force scenario is run through the real engine at
+// build time and reduced to a small, stable signature. Because the runner is seeded, these values
+// are reproducible — a snapshot saved today catches an accidental physics change tomorrow.
+const snapshots = EXPERIMENTS.map((e) => ({
+  ...captureSnapshot(e.scenario),
+  label: e.scenario.label,
+  family: e.scenario.family,
+}));
+const families = ['canonical', 'natural', 'extended'] as const;
+---
+
+<DocsLayout
+  title="field-ui — Snapshot Viewer"
+  description="Deterministic snapshot fingerprints for every force scenario — particle count, mean speed, and mean heat at the final frame — the regression baseline that catches physics drift."
+>
+  <h1>Snapshot viewer</h1>
+  <p class="lede">
+    Every force scenario, run through the real engine and reduced to a deterministic fingerprint.
+    These are the regression baseline: re-run them and any change in the numbers is a change in the
+    physics. Captured at build time via <code>captureSnapshot()</code>.
+  </p>
+
+  {families.map((fam) => (
+    <section>
+      <h2>{fam}</h2>
+      <div class="table-scroll">
+        <table class="snap-table">
+          <thead>
+            <tr><th>Force</th><th>Scenario</th><th>Frames</th><th>Particles</th><th>Mean speed</th><th>Mean heat</th></tr>
+          </thead>
+          <tbody>
+            {snapshots.filter((s) => s.family === fam).map((s) => (
+              <tr>
+                <td><code>{s.force}</code></td>
+                <td>{s.label}</td>
+                <td>{s.frames}</td>
+                <td>{s.particleCount}</td>
+                <td>{s.meanSpeed.toFixed(3)}</td>
+                <td>{s.meanHeat.toFixed(3)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+</DocsLayout>
+
+<style>
+  .lede { color: var(--muted, #9aa); max-width: 62ch; }
+  section { margin-top: 1.5rem; }
+  section h2 { text-transform: capitalize; font-size: 1.1rem; }
+  .table-scroll { overflow-x: auto; }
+  .snap-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .snap-table th, .snap-table td { text-align: left; padding: 0.3rem 0.7rem; border-bottom: 1px solid var(--line, #2a2a35); white-space: nowrap; }
+  .snap-table th { color: var(--muted, #9aa); font-weight: 600; }
+  .snap-table td:nth-child(5), .snap-table td:nth-child(6) { font-family: ui-monospace, monospace; }
+</style>
