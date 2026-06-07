@@ -1,0 +1,151 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { NATURAL_FIELDS, MANUAL_FORCES, FORCE_KIND, FORCE_FIELD } from 'field-ui';
+
+// The Natural Field Translation System — the canonical explanation of how field-ui translates the
+// four fundamental fields into interface behavior. Data-driven from config/manual.ts (NATURAL_FIELDS
+// + FORCE_KIND + FORCE_FIELD), so it can't drift from the catalog. No engine behavior is described
+// here that the classification doesn't back.
+
+const FIELD_COLOR: Record<string, string> = {
+  gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
+};
+const KIND_LABEL: Record<string, string> = {
+  designed: 'Designed UI verb', primitive: 'Field primitive', derived: 'Derived behavior',
+  analogue: 'Material analogue', transport: 'Transport', metric: 'Metric',
+};
+const KIND_ORDER = ['primitive', 'analogue', 'transport', 'derived', 'metric', 'designed'] as const;
+// group every catalog token by its translation kind (from the engine's classification)
+const byKind = KIND_ORDER.map((kind) => ({
+  kind,
+  label: KIND_LABEL[kind],
+  tokens: MANUAL_FORCES.filter((f) => FORCE_KIND[f.token] === kind).map((f) => ({ token: f.token, field: FORCE_FIELD[f.token] })),
+})).filter((g) => g.tokens.length);
+
+const TRANSLATION = [
+  ['Show importance', 'Gravity', 'gravity, mass, potential'],
+  ['Route signal', 'Electromagnetic', 'propagate, fieldflow, stream'],
+  ['Show relationship', 'Strong + electromagnetic', 'link, cohesion, topology, field lines'],
+  ['Keep things grouped', 'Strong', 'cohesion, crystallize, align'],
+  ['Show change / decay', 'Weak', 'morph, memory'],
+  ['Show flow through structure', 'Electromagnetic + transport', 'fieldflow, stream'],
+  ['Show reading history', 'Memory metric', 'memory, attention, feedback'],
+];
+const DIAG = [
+  ['Potential', 'wells and energy landscape', 'Gravity'],
+  ['Field lines', 'electromagnetic structure', 'Electromagnetic'],
+  ['Topology', 'binding and relationships', 'Strong'],
+  ['Causality', 'which primitive caused change', 'any'],
+  ['Prediction', 'near-future path', 'Gravity / flow'],
+  ['Contours', 'scalar fields', 'derived'],
+];
+---
+
+<DocsLayout
+  title="field-ui — Natural Fields"
+  description="How field-ui translates the four fundamental fields into interface behavior: gravity becomes priority, electromagnetism becomes polarity and signal, strong interaction becomes binding, weak interaction becomes transformation. Natural fields are conceptual; engine primitives are translations."
+>
+  <header class="docs-hero">
+    <p class="kicker">Concepts</p>
+    <h1>Natural <span class="accent">fields</span></h1>
+    <p class="lede">
+      field-ui does not copy physics into the interface. It <strong>translates</strong> the four
+      fundamental fields into interface behavior. Every interface already has priority, polarity,
+      binding, and transformation — physics already has a language for those relations.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <p class="nf-doctrine">
+      Natural fields are conceptual. Engine primitives are translations. Canonical forces are designed
+      verbs. <strong>Natural fields are not tokens; tokens are translations.</strong> This reframe
+      changes nothing the particles do — it only gives each behavior a clean place in the hierarchy:
+    </p>
+    <div class="formula" style="--c:#4da3ff">field → translation → primitive → metric → diagnostic → recipe</div>
+  </section>
+
+  <h2>The four fields</h2>
+  <div class="nf-grid">
+    {NATURAL_FIELDS.map((f) => (
+      <article class="nf-card" style={`--fc:${FIELD_COLOR[f.field]}`}>
+        <h3>{f.title}</h3>
+        <p class="nf-translation">{f.translation}</p>
+        <p class="nf-summary">{f.summary}</p>
+        <p class="nf-uses"><b>Use for</b> {f.interfaceUses.join(' · ')}</p>
+        <p class="nf-expr">
+          <b>Expressions</b>{' '}
+          {f.expressions.length ? f.expressions.map((t) => <code>{t}</code>) : <span class="nf-none">conceptual — closest shipped analogue is <code>memory</code> decay</span>}
+        </p>
+      </article>
+    ))}
+  </div>
+
+  <div class="callout">
+    <b>Electric fields push. Magnetic fields bend. Fieldflow carries.</b> Do not make
+    <code>magnetism.apply()</code> follow magnetic field lines — field-aligned transport belongs to
+    <code>fieldflow</code>. And <code>attract</code> is not gravity; <code>repel</code> is not charge —
+    those are designed UI verbs.
+  </div>
+
+  <h2>Fields vs primitives vs forces</h2>
+  <p>Every catalog token has a place. This grouping is read straight from the engine's classification:</p>
+  <div class="nf-kinds">
+    {byKind.map((g) => (
+      <div class="nf-kind">
+        <span class="nf-kind-label">{g.label}</span>
+        <div class="nf-tokens">
+          {g.tokens.map((t) => (
+            <code class="nf-token" style={t.field ? `--fc:${FIELD_COLOR[t.field]}` : ''} data-field={t.field ?? ''}>{t.token}</code>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <h2>Interface translation table</h2>
+  <table class="nf-table">
+    <thead><tr><th>Interface need</th><th>Natural translation</th><th>Likely primitives</th></tr></thead>
+    <tbody>
+      {TRANSLATION.map(([need, field, prims]) => (<tr><td>{need}</td><td>{field}</td><td><code>{prims}</code></td></tr>))}
+    </tbody>
+  </table>
+
+  <h2>Diagnostics by field</h2>
+  <p>Each diagnostic answers “which invisible relation am I revealing?” — all shipped (<a href="/docs/diagnostics">see them live</a>).</p>
+  <table class="nf-table">
+    <thead><tr><th>Diagnostic</th><th>Reveals</th><th>Field</th></tr></thead>
+    <tbody>
+      {DIAG.map(([d, reveals, field]) => (<tr><td><code>{d}</code></td><td>{reveals}</td><td>{field}</td></tr>))}
+    </tbody>
+  </table>
+
+  <div class="callout nf-final">
+    <b>Four fields. Many expressions. One DOM runtime.</b> Every interface has priority, polarity,
+    binding, and transformation. field-ui gives those relations a field model.
+  </div>
+</DocsLayout>
+
+<style>
+  .lede { color: var(--text-3); }
+  .nf-doctrine { color: var(--text-2); }
+  .nf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.9rem; margin: 0.8rem 0 1.4rem; }
+  .nf-card { padding: 1.1rem; border-radius: 12px; border: 1px solid var(--line); border-left: 3px solid var(--fc); background: color-mix(in srgb, var(--fc) 5%, transparent); }
+  .nf-card h3 { margin: 0 0 0.15rem; color: var(--fc); }
+  .nf-translation { margin: 0 0 0.5rem; font-family: var(--mono); font-size: 0.8rem; color: var(--text-2); }
+  .nf-summary { font-size: 0.86rem; line-height: 1.5; color: var(--text-3); margin: 0 0 0.6rem; }
+  .nf-uses, .nf-expr { font-size: 0.78rem; color: var(--text-3); margin: 0.3rem 0 0; }
+  .nf-uses b, .nf-expr b { color: var(--text-2); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.2rem; }
+  .nf-expr code { margin-right: 0.3rem; }
+  .nf-none { font-style: italic; }
+  .nf-kinds { display: flex; flex-direction: column; gap: 0.7rem; margin: 0.8rem 0 1.4rem; }
+  .nf-kind { display: grid; grid-template-columns: 150px 1fr; gap: 0.8rem; align-items: baseline; }
+  .nf-kind-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--text-3); }
+  .nf-tokens { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .nf-token { font-size: 0.78rem; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid var(--line); }
+  .nf-token[data-field]:not([data-field=""]) { border-color: color-mix(in srgb, var(--fc) 55%, var(--line)); color: var(--fc); background: color-mix(in srgb, var(--fc) 10%, transparent); }
+  .nf-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin: 0.5rem 0 1.4rem; }
+  .nf-table th, .nf-table td { text-align: left; padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .nf-table th { color: var(--text-3); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .nf-final b { color: var(--accent); }
+  @media (max-width: 620px) { .nf-kind { grid-template-columns: 1fr; gap: 0.3rem; } }
+</style>
