@@ -1,16 +1,34 @@
+> **Status: planning / roadmap.**
+> Forward-looking record. Items here may have shipped since — verify against the canonical docs ([../canonical/](../canonical/)) and the code before treating anything as current or as still-pending.
+
 # Agent Handoff: Connected field-ui Refactor
 
 ## Purpose
 
 This brief tells an implementation agent how to treat the refactored document set.
 
+> **Historical brief.** Much of the work scoped below has since shipped. The
+> `@field-ui/platform` package now binds the renderer-agnostic core to the DOM
+> through an explicit `FrameScheduler` (phases: discover → read → compute → state
+> → write → render) and six registries (measurement, state, feedback,
+> relationship, visual-binding, overlay), with `lintPlatform()` enforcing the
+> authoring rules. The diagnostics render modes (field-lines, force-vectors,
+> heatmap, energy, topology, causality, prediction, and the rest) ship and are
+> live at `/docs/diagnostics`. The Reading Field demo (`/docs/reading-field`)
+> exercises all six registries on the scheduler. Under Phase D the platform
+> runtime is the default for `<field-root>`: it owns DOM participation
+> (measurement, feedback writes, shadow registration, relationships) while the
+> legacy core still simulates and renders the canvas, and the core/canvas
+> boundary is guarded by a dom-boundary test. Read this brief for intent and
+> sequencing, not as a current status report.
+
 Do not treat the files as separate idea dumps. Treat them as a connected specification.
 
 Start with:
 
 1. [`README.md`](./README.md)
-2. [`field-ui-system-contracts.md`](./field-ui-system-contracts.md)
-3. [`field-ui-definition-document.md`](./field-ui-definition-document.md)
+2. [`field-ui-system-contracts.md`](../canonical/field-ui-system-contracts.md)
+3. [`field-ui-definition-document.md`](../canonical/field-ui-definition-document.md)
 
 Then use the domain-specific documents as needed.
 
@@ -107,7 +125,7 @@ Visualization layers reveal state.
 
 They must not mutate physics unless explicitly declared as feedback.
 
-Required layers:
+Required layers (now shipped as diagnostics render modes, live at `/docs/diagnostics`):
 
 ```txt
 field-lines
@@ -164,7 +182,9 @@ Physics note:
 
 ## Build Order
 
-Implement in this order:
+Implement in this order (later-stage items including the diagnostics render
+modes, the platform scheduler/registries, and the authoring lint rules
+(`lintPlatform()`) have since shipped):
 
 ```txt
 1. System contracts and type surfaces

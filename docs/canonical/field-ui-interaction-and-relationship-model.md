@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # field-ui Interaction and Relationship Model
 
 ## Related Documents
@@ -5,14 +8,16 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](./field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Agent contracts |
-| [`field-ui-authoring-and-recipes.md`](./field-ui-authoring-and-recipes.md) | Recipes |
-| [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md) | Relationship visualization |
+| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
+| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Agent contracts |
+| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Recipes |
+| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Relationship visualization |
 
 ## Purpose
 
 This document expands `field-ui` beyond particles.
+
+`field-ui` is a platform-native relational field runtime for the DOM. `@field-ui/core` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
@@ -69,7 +74,7 @@ Traditional UI state is local.
 Recommended positioning:
 
 ```txt
-field-ui treats the interface as a shared context field, not a collection of isolated components.
+field-ui treats the interface as a shared field context — one shared context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces — not a collection of isolated components.
 ```
 
 ## 4. Interaction as Continuity
@@ -179,6 +184,10 @@ Relationship types:
 | similarity | cohesion |
 | history | memory path |
 | active relation | pulsing field link |
+
+### Platform binding
+
+On the platform runtime (Phase D), the `RelationshipAgent` model is backed by the **`RelationshipRegistry`**. The registry reads native DOM signals — `href`, ARIA references (`aria-controls`, `aria-describedby`, `aria-labelledby`), and `data-field-relation` — and resolves them into a typed relationship graph between registered bodies. Relationships become edges the field can pull, resist, decay, strengthen, route attention along, and carry memory through, exactly as described above. The `relation-target-missing` lint rule flags edges whose target body is not registered, so the authored graph stays consistent with what the runtime sees.
 
 ## 8. UserAgent
 
@@ -446,6 +455,8 @@ formation = scatter -> wells
 
 ## 22. Reading and Editorial Experiences
 
+Reading is the flagship normal-content use case for this model: an ordinary article, not a particle demo. The **Reading Field** demo (shipped, at `/docs/reading-field`) is a plain content page that exercises all six platform registries on the `FrameScheduler`. Sections become bodies (`MeasurementRegistry`); viewport proximity becomes attention (`StateRegistry`); dwell accumulates into memory; the table of contents reflects the field state (`FeedbackRegistry`); and citations resolve into typed relationships (`RelationshipRegistry`) via the native-signal binding described in section 7. Under reduced motion the meaning is preserved — emphasis and state survive even when travel does not.
+
 | Reading signal | Field behavior |
 |---|---|
 | viewport center | attention well |
@@ -552,17 +563,19 @@ Every visible behavior should be traceable to a field cause.
 
 ## 28. Implementation Priority
 
+Several items below have shipped on the platform runtime (Phase D). The `RelationshipAgent` model is backed by the `RelationshipRegistry`; the reading/editorial use case ships as the Reading Field demo (section 22). Remaining items stay as authoring priorities and experiments.
+
 ```txt
 1. Formal FieldAgent model
 2. ElementAgent responder variables beyond density
-3. RelationshipAgent model
+3. RelationshipAgent model — shipped (RelationshipRegistry)
 4. Attention budget
 5. UserAgent model for pointer/focus/selection
 6. Thresholded field events
 7. Relationship heatmaps
 8. Navigation/search recipes
 9. Form state recipes
-10. Reading/editorial recipes
+10. Reading/editorial recipes — shipped (Reading Field, /docs/reading-field)
 11. Collaborative presence experiments
 12. AI state visualization recipes
 ```

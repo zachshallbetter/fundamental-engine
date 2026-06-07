@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # field-ui Visual Language and Geometry System
 
 ## Related Documents
@@ -5,11 +8,11 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](./field-ui-definition-document.md) | Core concept |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Contracts |
-| [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md) | Render and diagnostic layers |
-| [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md) | User, relationship, and DOM agents |
-| [`field-ui-authoring-and-recipes.md`](./field-ui-authoring-and-recipes.md) | Authoring model |
+| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Core concept |
+| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contracts |
+| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render and diagnostic layers |
+| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | User, relationship, and DOM agents |
+| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring model |
 
 ## Purpose
 
@@ -17,7 +20,9 @@ This document defines how `field-ui` should treat visual form as part of the fie
 
 The field should not only move particles. It should be able to influence typography, color, shape, distance, pattern, emission, containers, surfaces, hierarchy, and semantic visual state.
 
-The visual system must remain dependency-free by default.
+The visual system is native-platform-first, dependency-light, and framework-agnostic. The `@field-ui/core` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
+
+These visual layers are render surfaces bound to the field runtime by `@field-ui/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `@field-ui/core` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
 
 Implementation should use fundamental web APIs wherever possible:
 
@@ -114,12 +119,13 @@ Example:
 
 ```css
 .field-text {
+  /* --field-density is the primary feedback variable; --d is a compact legacy alias. */
   --d: var(--field-density, 0);
   --a: var(--field-attention, 0);
   --h: var(--field-heat, 0);
 
   font-variation-settings:
-    "wght" calc(300 + var(--d) * 500),
+    "wght" calc(300 + var(--field-density, 0) * 500),
     "wdth" calc(90 + var(--a) * 20),
     "slnt" calc(var(--field-pull-x, 0) * -8);
 
@@ -717,6 +723,10 @@ Suggested order:
 
 Some experiences may place particles above DOM, but the default should protect readability.
 
+These layers are not a single canvas. The canvas render surface owns the field washes, scalar fields, field lines, particles, and topology; SVG overlays own path-accurate relationship lines and crisp diagnostic marks; and diagnostic overlays own the inspector and debug views. The `@field-ui/platform` `OverlayRegistry` registers and orders the SVG and diagnostic overlays, while the `FrameScheduler` keeps each layer on its phase (`discover -> read -> compute -> state -> write -> render`) so render surfaces never measure or mutate physics mid-frame.
+
+The full set of render and diagnostic modes ships and is browsable at `/docs/diagnostics`: `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`, `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, and `prediction`. None of these are planned; they are all live render surfaces over the shared field context.
+
 ## 15. Visual Semantics
 
 Visual state should carry meaning consistently.
@@ -827,6 +837,33 @@ Accessibility: semantic text remains live
 Performance: CSS only
 ```
 
+## 18.1 Visual Binding and Overlay Registries
+
+The `@field-ui/platform` runtime makes the visual contract above operational. Two registries on the `FrameScheduler` own the visual-to-semantic boundary.
+
+`VisualBindingRegistry` pairs each visual layer with the semantic body it expresses. A binding declares its source metrics, its target properties, and the semantic element it must stay paired with, so an expressive canvas or SVG layer is never the sole carrier of meaning. The platform lint surfaces two relevant rules here:
+
+```txt
+visual-orphan      -> a visual binding with no semantic body to pair with
+visual-not-hidden  -> a decorative visual layer not marked aria-hidden / non-semantic
+```
+
+`OverlayRegistry` registers and orders the SVG and diagnostic overlays that sit above the canvas render surface, and ties each overlay to the links or relationships it visualizes. Its lint rule:
+
+```txt
+overlay-without-links -> a relationship overlay registered with no links to draw
+```
+
+Both registries run as scheduler phases (`discover -> read -> compute -> state -> write -> render`), so overlays read in the read phase and draw in the render phase and never mutate physics. `lintPlatform()` reports these rules alongside the other platform checks (`relation-target-missing`, `state-unregistered`, `feedback-non-css-var`, `measurement-off-phase`).
+
+## 18.2 Accessibility Preview and Exported Diagnostics
+
+The visual layers are accessibility-aware render surfaces, and the platform exposes that property directly.
+
+An accessibility preview lets you view any composition as the reduced surface: motion stilled, glow bounded, and state preserved through static tone, outline, icon, text, or layout. This makes the "color is not the only carrier of meaning" and "reduced motion preserves state" rules verifiable rather than aspirational, by rendering the meaning-preserving fallback for a body and its visual bindings.
+
+Diagnostic overlays can be exported as SVG or PNG. SVG export captures the path-accurate overlay layers (relationship lines, contours, field lines, vector marks) as resolution-independent geometry; PNG export captures the rasterized canvas render surface for any of the modes at `/docs/diagnostics`. Exported diagnostics are render output only: they read field state, never mutate physics, and never replace the semantic DOM.
+
 ## 19. Visual Authoring Attributes
 
 Suggested attributes:
@@ -911,6 +948,8 @@ container changes tone/pattern based on field weather
 ```
 
 ## 21. Implementation Priority
+
+The platform-runtime phase (Phase D) makes this layer the default for `<field-root>`: the visual binding and overlay registries, the visual lint rules, the SVG glyph/path layer with semantic fallback, and relationship visualization all ship. The order below remains the recommended sequencing for any new visual layer built on the runtime.
 
 Build this visual layer in this order:
 

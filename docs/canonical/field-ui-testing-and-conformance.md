@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # field-ui Testing and Conformance
 
 ## Related Documents
@@ -5,10 +8,10 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Contract requirements |
-| [`fundamental-field-behavior-table.md`](./fundamental-field-behavior-table.md) | Force law requirements |
-| [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md) | Visualization tests |
-| [`field-ui-authoring-and-recipes.md`](./field-ui-authoring-and-recipes.md) | Recipe tests |
+| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contract requirements |
+| [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Force law requirements |
+| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization tests |
+| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Recipe tests |
 
 ## Purpose
 
@@ -38,6 +41,11 @@ snapshot regression tests
 recipe conformance tests
 Shadow DOM registration tests
 reduced-motion tests
+platform registry tests
+scheduler phase-ordering tests
+platform lint tests
+diagnostic render-mode tests
+DOM-boundary (renderer-agnostic core) tests
 ```
 
 ## 2. Force Passport Requirement
@@ -135,6 +143,21 @@ energy view does not mutate physics
 debug overlays do not affect integration
 prediction mode does not mutate live state
 causality overlay matches force contribution
+```
+
+### Diagnostic render-mode coverage
+
+All render modes ship and are exercised at `/docs/diagnostics`: dots, trails, links,
+streamlines, metaballs, voronoi, field-lines, heatmap, force-vectors, contours, potential, energy,
+topology, inspector, causality, and prediction. Canvas is one render surface among these; the field
+runtime can drive any of them from the same shared field context. Each mode needs:
+
+```txt
+mode renders without throwing across the diagnostics gallery
+mode reads field state but does not mutate physics
+prediction / causality / inspector remain read-only over live state
+mode degrades to a static or meaning-preserving form under reduced motion
+mode respects its resolution / capping budget
 ```
 
 ## 7. Agent Tests
@@ -295,7 +318,82 @@ error
 fatal
 ```
 
-## 15. Acceptance Criteria
+## 15. Platform Tests
+
+`@field-ui/platform` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
+(Phase D) it is the default runtime for `<field-root>`: the platform owns DOM participation
+(measurement, feedback writes, shadow registration, relationships) while the legacy `core/field.ts`
+still simulates and renders the canvas. `createFieldPlatform(root)` wires the six registries onto the
+scheduler. Each registry needs coverage:
+
+```txt
+MeasurementRegistry reads element geometry only in the read phase
+StateRegistry tracks registered state and flags unregistered access
+FeedbackRegistry writes CSS variables (--field-density primary) only in the write phase
+FeedbackRegistry mirrors --field-* to --forces-* and field:* to forces:*
+RelationshipRegistry resolves from/to targets and reports missing targets
+VisualBindingRegistry keeps decorative bindings hidden / non-orphaned
+OverlayRegistry attaches overlays only where links exist
+opting out (experimental-platform="off" / usePlatformRuntime(false)) restores pure-legacy behavior
+```
+
+### DOM-boundary (renderer-agnostic core)
+
+`core/dom-boundary.test.ts` guards the boundary: core stays renderer-agnostic and only the allowlist
+(`core/field.ts`, `export.ts`) may touch DOM APIs.
+
+```txt
+core modules outside the allowlist reference no DOM globals
+field behavior computes without a document present
+canvas is treated as one render surface, not a core dependency
+```
+
+## 16. Scheduler Tests
+
+The `FrameScheduler` runs explicit phases in a fixed order: discover -> read -> compute -> state ->
+write -> render. Tests prove the ordering and the off-phase guard:
+
+```txt
+phases run in order: discover, read, compute, state, write, render
+reads happen before writes within a frame (no read-after-write tearing)
+work registered to a phase only runs in that phase
+off-phase access is rejected (measurement-off-phase guard)
+a missing or empty phase does not stall the frame loop
+```
+
+## 17. Platform Lint Tests
+
+`lintPlatform()` reports platform-level violations with the same info/warning/error/fatal severities.
+Each rule needs a positive and negative case:
+
+```txt
+relation-target-missing fires when a relationship references an unknown target
+state-unregistered fires when state is read without registration
+overlay-without-links fires for an overlay with no links
+feedback-non-css-var fires when feedback writes something other than a CSS variable
+measurement-off-phase fires when measurement runs outside the read phase
+visual-orphan fires for a visual binding with no owner
+visual-not-hidden fires when a decorative visual binding is not hidden
+```
+
+## 18. Reading Field Browser Verification
+
+`/docs/reading-field` is a normal content page that exercises all six registries on the scheduler in
+the browser. It is the end-to-end check that the shared field context behaves on real content:
+
+```txt
+sections register as bodies
+viewport proximity drives attention
+attention accumulates as memory over dwell
+the table of contents reflects current field state
+citations register as relationships
+reduced motion preserves meaning (state and structure survive without travel-heavy motion)
+```
+
+The authoring surfaces at `/docs/authoring` (native HTML, `<field-root>`, `<FieldField>`) are verified
+to compile to the same `[data-body]` contract.
+
+## 19. Acceptance Criteria
 
 A feature is acceptable when:
 

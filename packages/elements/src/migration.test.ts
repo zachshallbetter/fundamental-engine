@@ -1,5 +1,5 @@
 /**
- * field-ui migration: component aliases (docs/field-ui-migration-plan.md §3). The live
+ * field-ui migration: component aliases (docs/planning-archive/field-ui-migration-plan.md §3). The live
  * `customElements.define` calls are guarded for SSR and so are not exercised in the node:test
  * harness (no DOM) — same as the original `forces-field` / `forces-cell` registrations. What is
  * checkable here is that importing the package is SSR-safe and that the field-* alias classes

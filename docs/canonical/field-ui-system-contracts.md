@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # field-ui System Contracts
 
 ## Related Documents
@@ -5,13 +8,15 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](./field-ui-definition-document.md) | Canonical definition |
-| [`fundamental-field-behavior-table.md`](./fundamental-field-behavior-table.md) | Field/force laws |
-| [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md) | Agent model |
-| [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md) | Render contracts |
-| [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Test contracts |
+| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Canonical definition |
+| [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field/force laws |
+| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Agent model |
+| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render contracts |
+| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Test contracts |
 
 ## Purpose
+
+field-ui is a platform-native relational field runtime for the DOM. `@field-ui/core` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -217,18 +222,18 @@ thresholded events
 debug metadata
 ```
 
-Suggested CSS variables:
+Suggested CSS variables (canonical `--field-*`; the `--forces-*` names are legacy/compat aliases the FeedbackRegistry auto-mirrors, and `--d` is the compact alias for density):
 
 ```css
---forces-density
---forces-attention
---forces-heat
---forces-entropy
---forces-coherence
---forces-memory
---forces-pressure
---forces-pull-x
---forces-pull-y
+--field-density
+--field-attention
+--field-heat
+--field-entropy
+--field-coherence
+--field-memory
+--field-pressure
+--field-pull-x
+--field-pull-y
 ```
 
 ElementAgents should not directly mutate particle state unless they are also registered bodies.
@@ -300,20 +305,20 @@ Focus must be a first-class field source.
 
 Field events must be thresholded, debounced, and inspectable.
 
-Allowed event types:
+Allowed event types (canonical `field:*`; each has a `forces:*` compat alias the FeedbackRegistry mirrors):
 
 ```txt
-forces:entered
-forces:exited
-forces:lit
-forces:dim
-forces:saturated
-forces:captured
-forces:released
-forces:attention-shifted
-forces:relationship-strengthened
-forces:memory-threshold
-forces:entropy-warning
+field:entered
+field:exited
+field:lit
+field:dim
+field:saturated
+field:captured
+field:released
+field:attention-shifted
+field:relationship-strengthened
+field:memory-threshold
+field:entropy-warning
 ```
 
 Rules:
@@ -528,7 +533,7 @@ Every visible behavior should be traceable to a field cause.
 
 ## 19. Visual Language Contract
 
-The visual language system is defined in [`field-ui-visual-language-and-geometry.md`](./field-ui-visual-language-and-geometry.md).
+The visual language system is defined in [`field-ui-visual-language-and-geometry.md`](field-ui-visual-language-and-geometry.md).
 
 Rules:
 
@@ -560,6 +565,128 @@ The visual layer may be vectorized, distorted, animated, or custom-rendered.
 The semantic layer should remain real HTML text.
 ```
 
+
+## 20. Platform Contract
+
+> **Implemented.** `@field-ui/platform` ships `createFieldPlatform(root)` plus the six registries, the
+> `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
+
+`@field-ui/platform` binds the renderer-agnostic field computed by `@field-ui/core` to the DOM. It owns DOM participation; core stays free of DOM side effects.
+
+The platform must:
+
+```txt
+own measurement, state, feedback, relationships, visual bindings, and overlays
+schedule all DOM reads and writes through explicit phases
+register Shadow DOM bodies for physical participation
+keep @field-ui/core renderer-agnostic (no DOM side effects)
+expose createFieldPlatform(root) to construct a runtime over a root
+expose lintPlatform() to validate registry usage
+```
+
+Construction:
+
+```txt
+createFieldPlatform(root) -> a platform runtime bound to root
+```
+
+The platform must not move force-engine math into the DOM layer. Core computes field behavior; the platform observes and writes the DOM.
+
+## 21. Registry Contract
+
+> **Implemented.** Six registries ship in `@field-ui/platform`: `MeasurementRegistry`,
+> `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`,
+> `OverlayRegistry`.
+
+Each registry owns one concern and participates in the scheduler in its declared phase.
+
+| Registry | Concern | Phase ownership |
+|---|---|---|
+| `MeasurementRegistry` | geometry/rects for bodies | read |
+| `StateRegistry` | registered field/agent state | compute / state |
+| `FeedbackRegistry` | CSS-variable and event write-back | write |
+| `RelationshipRegistry` | active connections between bodies | compute |
+| `VisualBindingRegistry` | binding field metrics to visual properties | write |
+| `OverlayRegistry` | overlay/render-surface participation | render |
+
+Registry rules:
+
+```txt
+A registry must declare which scheduler phase it runs in.
+Measurement must read geometry only in the read phase.
+Feedback must write only in the write phase.
+The FeedbackRegistry auto-mirrors --field-* -> --forces-* and field:* -> forces:*.
+Relationship targets must resolve to registered bodies.
+Visual bindings must target hidden, non-orphan elements.
+Overlays must reference real links.
+```
+
+## 22. Scheduler Contract
+
+> **Implemented.** `FrameScheduler` in `@field-ui/platform` runs the explicit phase pipeline below.
+
+The scheduler runs registries in a fixed phase order each frame. Reads never interleave with writes.
+
+The six phases, in order:
+
+```txt
+discover  -> find participants (bodies, agents, relationships)
+read      -> measure geometry; no writes allowed
+compute   -> evaluate field/relationship state; side-effect free
+state     -> reconcile registered state
+write     -> emit CSS variables, data attributes, feedback, events
+render    -> draw render surfaces and overlays
+```
+
+Scheduler rules:
+
+```txt
+No DOM writes during read or compute.
+No geometry reads during write.
+Every registry declares its phase and runs only in that phase.
+The phase order is fixed; registries do not reorder it.
+```
+
+## 23. Platform-Lint Contract
+
+> **Implemented.** `lintPlatform()` in `@field-ui/platform` enforces the rules below.
+
+Platform lint validates that registries are used correctly before behavior depends on them.
+
+| Rule | Catches |
+|---|---|
+| `relation-target-missing` | a relationship points at an unregistered body |
+| `state-unregistered` | state read or written without registration |
+| `overlay-without-links` | an overlay with no real links to reference |
+| `feedback-non-css-var` | feedback writing something other than a CSS variable |
+| `measurement-off-phase` | geometry read outside the read phase |
+| `visual-orphan` | a visual binding with no target |
+| `visual-not-hidden` | a visual binding whose target is not hidden |
+
+Lint must run against a constructed platform and report violations by rule name.
+
+## 24. Phase D Runtime-Unification Note
+
+> **Implemented (Phase D).** The platform runtime is the default for `<field-root>`.
+
+In the platform-runtime phase the layers are unified as follows:
+
+```txt
+The platform runtime is the DEFAULT for <field-root>.
+@field-ui/core is renderer-agnostic and owns no DOM side effects.
+The platform owns DOM participation: measurement, feedback writes, shadow registration, relationships.
+The legacy core path still simulates and renders the canvas surface.
+The DOM boundary is guarded by a test allowlist; core must not reach into the DOM outside it.
+```
+
+Opting back to the pure-legacy path:
+
+```txt
+experimental-platform="off" on <field-root>
+usePlatformRuntime(false)
+```
+
+The legacy path is quarantined, not removed: it remains the canvas simulate-and-render surface while the platform owns DOM participation.
 
 ## Migration and Alias Contract
 

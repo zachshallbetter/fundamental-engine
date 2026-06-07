@@ -7,7 +7,7 @@
  * no side effects: importing it never defines a custom element. Reach for it from plain
  * TypeScript, or any stack where you want to drive the field by hand.
  *
- * Spec: `docs/forces-system.md`.
+ * Spec: `docs/engine-reference/forces-system.md`.
  */
 
 export { FieldField, ForcesField } from './field.ts';

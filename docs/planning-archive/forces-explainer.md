@@ -1,6 +1,11 @@
+> **Status: legacy / superseded.**
+> Preserved for design history. The current architecture is governed by the canonical docs ([../canonical/](../canonical/)) and @field-ui/platform; do not treat this as the current implementation.
+
 # field-ui — what it is
 
 > **Elements bend the field; the field bends them back.**
+
+*For the current model, see the canonical definition ([../canonical/](../canonical/)): field-ui is a platform-native relational field runtime for the DOM — @field-ui/core computes renderer-agnostic field behavior and @field-ui/platform binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling). The single-canvas, zero-dependency framing below is the original narrow pitch.*
 
 Most "particle background" effects are wallpaper: a pretty animation that sits
 *behind* your page and ignores it. **field-ui is the opposite.** It's a single
@@ -96,5 +101,5 @@ where a simple silhouette stays clean.
 ---
 
 *field-ui is pre-alpha and building in the open. The full developer specification
-lives in [`forces-system.md`](forces-system.md); the roadmap and the wider idea
+lives in [`forces-system.md`](../engine-reference/forces-system.md); the roadmap and the wider idea
 space are in [`forces-possibilities.md`](forces-possibilities.md).*

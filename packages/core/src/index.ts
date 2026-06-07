@@ -2,7 +2,7 @@
  * field-ui — a reciprocal DOM-physics field (formerly `forces-ui`).
  *
  * Elements bend the field; the field's density bends them back.
- * Spec: `docs/forces-system.md`. Roadmap: `ROADMAP.md`.
+ * Spec: `docs/engine-reference/forces-system.md`. Roadmap: `ROADMAP.md`.
  *
  * Feature-complete: the catalog, core contracts, FieldStore, integrator, and the
  * full force set (canonical · natural · designed-extended). Zero runtime dependencies.

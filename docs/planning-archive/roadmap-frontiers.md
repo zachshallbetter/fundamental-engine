@@ -1,9 +1,19 @@
+> **Status: planning / roadmap.**
+> Forward-looking record. Items here may have shipped since — verify against the canonical docs ([../canonical/](../canonical/)) and the code before treating anything as current or as still-pending.
+
 # Roadmap — Frontiers
 
 Forward-looking implementation notes for the engine's next frontiers. Companion to
 `ROADMAP.md` (the completed refactor) and `docs/forces-possibilities.md` (the design
 menu). Each entry defines *how* it would be built — contract surface, work, verification,
 effort — not just *what*. The running, granular queue lives in [`BACKLOG.md`](../BACKLOG.md).
+
+field-ui is a platform-native relational field runtime for the DOM: `@field-ui/core`
+computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM
+(measurement, state, feedback, relationships, visual bindings, overlays, scheduling,
+linting); `@field-ui/elements` and `@field-ui/react` are authoring surfaces. Canvas is one
+render surface, not the whole system. Much of what was a frontier here has since shipped —
+see the **Already shipped** section below.
 
 Two principles hold throughout, unchanged from the rest of the project:
 
@@ -15,16 +25,60 @@ Two principles hold throughout, unchanged from the rest of the project:
   vocabulary stay stable.
 
 > **Physics workover.** The current major thrust is the designed / natural / hybrid physics
-> substrate, planned separately in [`physics-workover.md`](physics-workover.md) (with an
+> substrate, planned separately in [`physics-workover.md`](../engine-reference/physics-workover.md) (with an
 > as-built audit of what already ships). It is the source for v0.3 through v0.6; the
 > frontiers below (a GPU backend, reciprocal channels, render modes) continue alongside it.
 
 ---
 
+## Already shipped
+
+Several themes that were frontiers when this doc was written have since landed. They are
+recorded here as **implemented** so the remaining frontiers below read accurately; verify
+against the canonical docs and code for current detail.
+
+- **The platform runtime.** `@field-ui/platform` ships and is the **default** for
+  `<field-root>`: a `FrameScheduler` with explicit phases (discover → read → compute →
+  state → write → render) and six registries — `MeasurementRegistry`, `StateRegistry`,
+  `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`, `OverlayRegistry`.
+  The platform owns DOM participation (measurement, feedback writes, shadow registration,
+  relationships) while the legacy `core/field.ts` still simulates and renders the canvas.
+  Core is renderer-agnostic, guarded by `core/dom-boundary.test.ts`. Opt back to
+  pure-legacy with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+- **Platform lint.** `lintPlatform()` ships with rules `relation-target-missing`,
+  `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`,
+  `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
+- **All render modes.** dots, trails, links, streamlines, metaballs, voronoi, field-lines,
+  heatmap, force-vectors, contours, potential, energy, topology, inspector, causality, and
+  prediction all ship — live at `/docs/diagnostics`. (This subsumes the `knockout` / depth /
+  LIC render frontiers only where they overlap; those three specifically remain below.)
+- **The flow-field API.** `field.flowTo(x, y, { strength?, radius? })` / `field.clearFlow()`
+  ships — a movable flow focus that pulls matter in and bends the streamlines. Available on
+  `FieldHandle`, on `<field-root>` (proxied), on the `@field-ui/vanilla` `FieldField`, and
+  in React via `onReady`. Shown on the homepage toggle and `/examples`.
+- **Reading Field.** A normal content page exercising all six registries on the scheduler
+  ships at `/docs/reading-field` (sections as bodies, viewport proximity as attention,
+  accumulates as memory, TOC reflection, citations as relationships; reduced motion
+  preserves meaning).
+- **Authoring across surfaces.** Native HTML, `<field-root>`, and `<FieldField>` all ship
+  and compile to the same `[data-body]` contract — see `/docs/authoring`.
+- **CSS feedback.** `--field-density` is the primary write-back; `--d` (compact) and
+  `--forces-density` remain as legacy/compat aliases. `field:*` events are primary with
+  `forces:*` as compat; `FeedbackRegistry` auto-mirrors `--field-*` → `--forces-*` and
+  `field:*` → `forces:*`.
+
+The remaining frontiers (a GPU compute backend, more reciprocal input channels,
+`bindData()`, finishing the physics cosmology, conformance-as-a-tool, and the `knockout` /
+depth / LIC render layers) are below.
+
+---
+
 ## F1 · More reciprocal channels (input → physics)
 
-Today the only Canvas→DOM channel is the `--d` density write-back (density → type). The
-seam with the most room is the **input** side, expressed through the §22 element-agent model.
+The field-runtime→DOM channel is the density write-back (`--field-density`, with `--d` /
+`--forces-density` as legacy aliases; density → type), now owned by the `FeedbackRegistry`.
+The seam with the most room is the **input** side, expressed through the §22 element-agent
+model.
 
 - **Focus / accessibility as physics.** A `core/focus.ts` agent listens (capture phase)
   for `focusin`/`focusout`, maps the focused element to its body (or nearest `[data-body]`
@@ -63,11 +117,12 @@ neighbour/grid path is the hard part; keep the whole backend opt-in.
 
 ## F3 · Compositor-native bridge
 
-Make the DOM⇄Canvas bridge cheaper and smoother with platform features the original notes
-predate. All additive and feature-detected.
+Make the DOM ⇄ field-runtime bridge cheaper and smoother with platform features the
+original notes predate. All additive and feature-detected.
 
-- **Typed `--d`.** `CSS.registerProperty` for `--d` / `--lit` as `<number>` so they
-  interpolate on the compositor and authors can write `transition: --d .2s`.
+- **Typed feedback vars.** `CSS.registerProperty` for `--field-density` / `--lit` (and the
+  `--d` compact alias) as `<number>` so they interpolate on the compositor and authors can
+  write `transition: --field-density .2s`.
 - **Scroll-driven animation.** Drive formation/accent as registered properties bound to
   `animation-timeline: scroll()` / `view()` — the global bias follows scroll with no JS
   scroll listener. Ship as a helper + recipe.

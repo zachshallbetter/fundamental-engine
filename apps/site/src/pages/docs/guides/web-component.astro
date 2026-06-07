@@ -49,6 +49,13 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
     </p>
   </header>
 
+  <div class="callout">
+    <b>An authoring surface, not a separate engine.</b> <code>&lt;field-root&gt;</code> mounts the
+    visible field surface and participates in the same field-ui contracts. DOM-facing behavior belongs
+    to the <a href="/docs/api">platform layer</a> — measurement, state, feedback, relationships,
+    visual bindings, and overlays — which the element runs by default (Phase D).
+  </div>
+
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">

@@ -2,7 +2,7 @@
  * The canonical nine forces (§6) as registry modules.
  *
  * Each is an independent `Force` — the engine never changes to add one (§4).
- * The math is the exact per-frame implementation from `docs/forces-system.md`
+ * The math is the exact per-frame implementation from `docs/engine-reference/forces-system.md`
  * §6.1–§6.9. `e.dx/e.dy` point from the particle toward the body; `e.dist ≥ 1`.
  * On-state (`b.on`) widens range and boosts strength per the spec.
  */

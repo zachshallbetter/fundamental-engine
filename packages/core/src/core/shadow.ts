@@ -1,5 +1,5 @@
 /**
- * Shadow-DOM participation (docs/shadow-dom.md) — the host-first, event-driven body
+ * Shadow-DOM participation (docs/engine-reference/shadow-dom.md) — the host-first, event-driven body
  * registration model. A component encapsulates its rendering but exposes a public physical
  * body: it dispatches a `composed` registration event, the field registers the HOST (never
  * inspecting the shadow tree), measures it by `getBoundingClientRect` or an optional
@@ -21,7 +21,7 @@ export const UPDATE_BODY = 'forces:update-body';
 /**
  * `field:*` aliases (field-ui migration). Dispatched alongside the `forces:*` names and listened
  * for in parallel, so register / unregister / update work under either namespace during the
- * transition (docs/field-ui-migration-plan.md §15, Alias Implementation Contract). The `forces:*`
+ * transition (docs/planning-archive/field-ui-migration-plan.md §15, Alias Implementation Contract). The `forces:*`
  * names remain canonical until the migration removal version.
  */
 export const FIELD_REGISTER_BODY = 'field:register-body';

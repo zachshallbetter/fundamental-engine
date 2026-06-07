@@ -4,7 +4,7 @@
  * Lifted from the prototype's `ds-data.js` (`DS_FORCES` / `DS_FORMATIONS` /
  * `DS_CONDITIONS`), which the design treats as the authority. Force identity
  * **colours are canonical**; disciplines inherit their mapped force's colour.
- * See `docs/forces-system.md` §6 (forces), §7 (formations), §5 (conditions),
+ * See `docs/engine-reference/forces-system.md` §6 (forces), §7 (formations), §5 (conditions),
  * §15 (disciplines).
  *
  * This is the *designed* nine (the implemented prototype set). Extended,
