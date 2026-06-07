@@ -579,7 +579,7 @@ The platform must:
 own measurement, state, feedback, relationships, visual bindings, and overlays
 schedule all DOM reads and writes through explicit phases
 register Shadow DOM bodies for physical participation
-keep @field-ui/core renderer-agnostic (no DOM side effects)
+keep @field-ui/core renderer-agnostic (imports no DOM globals)
 expose createFieldPlatform(root) to construct a runtime over a root
 expose lintPlatform() to validate registry usage
 ```
@@ -673,7 +673,7 @@ In the platform-runtime phase the layers are unified as follows:
 
 ```txt
 The platform runtime is the DEFAULT for <field-root>.
-@field-ui/core is renderer-agnostic and owns no DOM side effects.
+@field-ui/core is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
 The platform owns DOM participation: measurement, feedback writes, shadow registration, relationships.
 The legacy core path still simulates and renders the canvas surface.
 The DOM boundary is guarded by a test allowlist; core must not reach into the DOM outside it.
