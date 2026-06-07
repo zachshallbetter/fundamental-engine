@@ -13,7 +13,7 @@
 > rect-provider measurement), and the event wiring in `core/field.ts`; covered by
 > `core/shadow.test.ts`. The production-hardening additions in §31 (portals, scopes, the
 > registration handshake, SSR queue, throttled field events, local-cell budgets) remain
-> **proposed**. Summary in [`forces-concept.md`](../planning-archive/forces-concept.md) §23–26.
+> **proposed**. Summary in [`field-concept.md`](../planning-archive/field-concept.md) §24–26.
 
 > **Phase D note (platform runtime).** Shadow-DOM host registration is now handled by
 > `@field-ui/platform`: the platform owns DOM participation, so a registered host's `getRect`

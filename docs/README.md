@@ -70,14 +70,11 @@ the canonical docs and the code.
 
 | Document | Role |
 |---|---|
-| [`field-ui-migration-plan.md`](planning-archive/field-ui-migration-plan.md) | The `force/` → `field-ui/` migration plan (complete; superseded by Phase D for runtime unification) |
-| [`field-ui-worldclass-next-layer.md`](planning-archive/field-ui-worldclass-next-layer.md) | Next-layer plan (much now shipped — see canonical) |
-| [`agent-handoff-fieldflow-visualization.md`](planning-archive/agent-handoff-fieldflow-visualization.md) | Implementation brief |
-| [`forces-concept.md`](planning-archive/forces-concept.md) | North-star concept / vision |
-| [`forces-possibilities.md`](planning-archive/forces-possibilities.md) | Design notes |
-| [`forces-explainer.md`](planning-archive/forces-explainer.md) | Legacy single-canvas explainer |
-| [`roadmap-frontiers.md`](planning-archive/roadmap-frontiers.md) | Frontier roadmap |
-| [`docs-showcase-overhaul.md`](planning-archive/docs-showcase-overhaul.md) | Docs-surface planning record |
+| [`field-concept.md`](planning-archive/field-concept.md) | North-star concept / vision (full conceptual arc) |
+| [`field-explainer.md`](planning-archive/field-explainer.md) | Plain-language "what it is" explainer |
+| [`field-possibilities.md`](planning-archive/field-possibilities.md) | Possibility space / design notes |
+| [`roadmap-frontiers.md`](planning-archive/roadmap-frontiers.md) | Frontier roadmap (R1–R4 shipped; R5+ planned) |
+| [`live-web-examples.md`](planning-archive/live-web-examples.md) | Plan for familiar-page "concept study" demos |
 
 ## Authority order
 
