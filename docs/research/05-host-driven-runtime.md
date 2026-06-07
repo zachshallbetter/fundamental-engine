@@ -68,7 +68,7 @@ rhetorical rather than structural.
 field-ui's answer is to separate *what the field does* from *how the browser participates in it*, and
 to let the two communicate through exactly one injected interface:
 
-- A renderer-agnostic **core** (`@field-ui/core`) computes field, force, particle, metric,
+- A renderer-agnostic **core** (`field-ui`) computes field, force, particle, metric,
   diagnostic, and conformance logic against plain data. It imports no DOM globals.
 - A browser **platform** (`@field-ui/platform`) owns DOM participation: measurement, state, feedback,
   relationships, visual bindings, overlays, scheduling, and linting.
@@ -162,7 +162,7 @@ field-ui's runtime is split across packages whose dependency direction is strict
 package hierarchy is given in `docs/canonical/field-ui-platform-architecture.md`):
 
 ```
-@field-ui/core      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
+field-ui      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
                     Computes field behavior against plain data. Imports no DOM globals.
 @field-ui/platform  DOM participation: measurement, state, feedback, relationships, visual bindings,
                     overlays, scheduling, linting — plus the browser host adapter.
@@ -241,7 +241,7 @@ different object with the same shape. `createBrowserField()` is the convenience 
 
 The renderer-agnostic claim is not asserted; it is *enforced* by
 `packages/core/src/core/dom-boundary.test.ts`, the architectural keystone. The test walks every
-non-test source file in `@field-ui/core` and fails if any of them contains a DOM-global *call-site*,
+non-test source file in `field-ui` and fails if any of them contains a DOM-global *call-site*,
 matched as access/construction patterns so that ordinary prose ("scan the document", "debounce
 window") does not trip it:
 
@@ -290,7 +290,7 @@ so it does not break the empty-allowlist boundary — but it does mean the platf
 *all* DOM writes. We therefore do **not** claim "the platform owns all DOM writes." The canonical
 contracts state the same thing plainly:
 
-> `@field-ui/core` is renderer-agnostic and imports no DOM globals (a legacy element write-back path
+> `field-ui` is renderer-agnostic and imports no DOM globals (a legacy element write-back path
 > still lives in `core/field.ts`, pending migration).
 > — `field-ui-system-contracts.md` §24
 
