@@ -128,9 +128,9 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
   });
 
   // ── metric computation (compute → state); write phase flushes state → --field-* vars ───
-  const prev = new Map<Element, Record<string, number>>();
+  const prev = new Map<Element, Partial<Record<MetricKind, number>>>();
   if (wantMetrics) {
-    const pending = new Map<Element, Record<MetricKind, number>>();
+    const pending = new Map<Element, Partial<Record<MetricKind, number>>>();
     platform.on('compute', (ctx) => {
       const vh = ctx.viewport?.height ?? (typeof window !== 'undefined' ? window.innerHeight : 800);
       const centre = vh / 2;
@@ -168,7 +168,19 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
       for (const [el, computed] of pending) {
         prev.set(el, computed);
         for (const metric of compiled.metrics) {
-          const value = isMetricKind(metric) ? computed[metric] : num(el.getAttribute(`data-field-${metric}`)) ?? 0;
+          const value = isMetricKind(metric)
+            ? computed[metric]
+            : (num(el.getAttribute(`data-field-${metric}`)) ?? 0);
+          if (value == null) {
+            // The metric is absent this frame — e.g. the host supplied data-field-confidence on an
+            // earlier frame and has since removed it. Drop any stale state AND clear the bound CSS
+            // var, so the write phase neither re-emits a value nor leaves one written on a previous
+            // flush lingering on the element. Absent must read as absent, not last-known. Both calls
+            // are no-ops when nothing was ever set, so the common "never supplied" case stays cheap.
+            platform.state.delete(el, metric);
+            platform.feedback.clearVar(el, metric);
+            continue;
+          }
           platform.state.set(el, metric, value);
         }
       }
