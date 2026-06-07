@@ -15,8 +15,10 @@ export type { FieldFieldInit, ForcesFieldInit } from './field.ts';
 export { mountField, makeFieldCanvas } from './mount.ts';
 export type { MountOptions } from './mount.ts';
 
-// The engine entry + its contracts, re-exported so one install covers a vanilla app.
-export { createField } from 'field-ui';
+// The engine entry, wired to the browser host (core is renderer-agnostic and requires a host).
+// `createBrowserField` = `createField` + `browserHost()`; re-exported here as `createField` so the
+// framework-free door stays a one-liner. `browserHost` is re-exported for custom wiring.
+export { createBrowserField as createField, browserHost } from '@field-ui/platform';
 export type {
   FieldHandle,
   FieldOptions,

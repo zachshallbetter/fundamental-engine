@@ -299,9 +299,10 @@ export interface FieldOptions {
    */
   feedbackSink?: FeedbackSink;
   /**
-   * The environment seam (frontier): inject a {@link FieldHost} to drive the engine from a non-browser
-   * renderer/environment. Defaults to `browserHost()` (window/document/rAF). The engine itself touches
-   * no DOM globals — all of them flow through this host.
+   * The environment seam (frontier): the {@link FieldHost} the engine drives the DOM through. REQUIRED
+   * by `createField` (core imports zero DOM). In the browser, use `browserHost()` from
+   * `@field-ui/platform`, or the `@field-ui/{vanilla,elements,react}` entry points that wire it for
+   * you; inject a custom host for a headless renderer / different document / tests.
    */
   host?: FieldHost;
 }

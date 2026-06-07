@@ -76,8 +76,9 @@ native HTML / web component / React authoring examples
 the Natural Field Translation System (four-field classification + /docs/natural-fields)
 ```
 
-Remaining frontier: moving the canvas render loop out of `core/field.ts` so `@field-ui/core` imports
-zero DOM (it is the one allowlisted exception in `core/dom-boundary.test.ts`).
+`@field-ui/core` imports **zero DOM** — the engine routes the environment through an injected
+`FieldHost`; `browserHost()` lives in `@field-ui/platform`, and `createField` requires a host (the
+framework entry points wire it). `core/dom-boundary.test.ts` enforces this with an empty allowlist.
 
 ## Document-status taxonomy
 

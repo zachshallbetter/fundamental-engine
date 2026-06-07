@@ -58,7 +58,7 @@ stage.addEventListener('pointerleave', () => field.clearFlow());
 
 field.setRender('streamlines'); // optional: watch the flow LINES bend, not just the matter`;
 
-const flowCoreSrc = `import { createField } from 'field-ui';
+const flowCoreSrc = `import { createField } from '@field-ui/vanilla'; // wires the browser host for you
 
 const field = createField(canvas);
 
