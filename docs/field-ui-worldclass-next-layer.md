@@ -187,8 +187,10 @@ inspector
 
 ## 12. Field Roles
 
-> **Implemented.** `FIELD_ROLES` + `isFieldRole()` in `packages/core/src/visual/tokens.ts`
-> (`data-field-role` values; runtime consumption is the Bucket-B authoring wiring).
+> **Implemented + runtime-wired.** `FIELD_ROLES` + `isFieldRole()` in `visual/tokens.ts`; the scanner
+> (`core/scanner.ts`) maps a `data-field-role` (with no explicit `data-body`/`data-intent`) to a
+> default token — anchor→tether, boundary→wall, sink→sink, source→jet; sensor/display are
+> feedback-only responders.
 
 ```html
 <div data-field-role="source"></div>
