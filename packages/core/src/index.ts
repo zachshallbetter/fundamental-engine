@@ -57,3 +57,5 @@ export * from './inspect/index.ts';
 export * from './semantic/index.ts';
 // diagnostics (B4) — energy, potential, probe force-vectors + causality, heatmap variants
 export * from './diagnostics/index.ts';
+// field export (C4) — PNG raster + SVG vector serialization + download helpers
+export * from './export.ts';
