@@ -9,7 +9,7 @@ body:
     id: package
     attributes:
       label: Package & version
-      placeholder: forces-ui 0.1.0 (or @forces-ui/elements, @forces-ui/react)
+      placeholder: field-ui 0.2.0 (or @field-ui/elements, @field-ui/react)
     validations:
       required: true
   - type: textarea

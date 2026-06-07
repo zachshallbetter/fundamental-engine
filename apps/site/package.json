@@ -1,5 +1,5 @@
 {
-  "name": "@forces-ui/site",
+  "name": "@field-ui/site",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,8 +10,8 @@
     "test": "node --test \"src/lib/**/*.test.ts\""
   },
   "dependencies": {
-    "@forces-ui/elements": "workspace:*",
+    "@field-ui/elements": "workspace:*",
     "astro": "^5",
-    "forces-ui": "workspace:*"
+    "field-ui": "workspace:*"
   }
 }

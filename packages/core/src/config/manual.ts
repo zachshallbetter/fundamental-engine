@@ -4,7 +4,7 @@
  * `docs/forces-system.md` §6/§20.3/§20.10), the `data-*` attributes it reads, and a
  * one-line description.
  *
- * This is the single source the UI renders (the manual on forces-ui.com) and the
+ * This is the single source the UI renders (the manual on field-ui.com) and the
  * shared reference for developers. A test cross-checks it against the registered
  * force arrays, so the catalog can never silently fall out of sync with the engine —
  * every force the engine knows has a definition here, and vice versa.

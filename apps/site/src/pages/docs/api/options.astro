@@ -4,7 +4,7 @@ import { OPTIONS } from '../../../lib/docs-api.ts';
 import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 
-const sig = `import { createField } from 'forces-ui';
+const sig = `import { createField } from 'field-ui';
 
 const field = createField(canvas, options);   // → FieldHandle`;
 
@@ -26,7 +26,7 @@ createField(canvas, { mass: true });`;
 ---
 
 <DocsLayout
-  title="forces-ui — createField & options"
+  title="field-ui — createField & options"
   description="createField(canvas, options) starts the engine on a canvas and returns the FieldHandle. Every FieldOptions field: accent, density, waves, render, mass, palette, attention, causality — with types and defaults."
 >
   <header class="docs-hero">

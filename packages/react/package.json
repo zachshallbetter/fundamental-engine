@@ -1,11 +1,11 @@
 {
-  "name": "@forces-ui/react",
+  "name": "@field-ui/react",
   "version": "0.2.0",
   "description": "React adapter for forces-ui — a reciprocal DOM-physics field as a <ForcesField> component + useForcesField hook.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://forces-ui.com",
+  "homepage": "https://field-ui.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/forces-ui.git",
@@ -15,7 +15,7 @@
     "url": "https://github.com/zachshallbetter/forces-ui/issues"
   },
   "keywords": [
-    "forces-ui",
+    "field-ui",
     "react",
     "particles",
     "physics",
@@ -50,7 +50,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "forces-ui": "workspace:*"
+    "field-ui": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18"

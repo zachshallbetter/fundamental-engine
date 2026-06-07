@@ -1,5 +1,5 @@
 /**
- * forces-ui — a reciprocal DOM-physics field.
+ * field-ui — a reciprocal DOM-physics field (formerly `forces-ui`).
  *
  * Elements bend the field; the field's density bends them back.
  * Spec: `docs/forces-system.md`. Roadmap: `ROADMAP.md`.

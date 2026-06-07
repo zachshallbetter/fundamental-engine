@@ -4,7 +4,7 @@ The **web-component keystone** for [forces-ui](../core) — a reciprocal DOM-phy
 that drops into any framework (or plain HTML) unchanged. "Every element is a body" is a
 web-components-shaped idea.
 
-→ Live at **[forces-ui.com](https://forces-ui.com)**.
+→ Live at **[field-ui.com](https://field-ui.com)**.
 
 ## Install
 

@@ -1,20 +1,20 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
-import { MANUAL_FORCES } from 'forces-ui';
+import { MANUAL_FORCES } from 'field-ui';
 
-const installWc = `npm i @forces-ui/elements`;
-const installReact = `npm i @forces-ui/react`;
-const installCore = `npm i @forces-ui/vanilla`;
+const installWc = `npm i @field-ui/elements`;
+const installReact = `npm i @field-ui/react`;
+const installCore = `npm i @field-ui/vanilla`;
 
 const setupWc = `<script type="module">
-  import '@forces-ui/elements';
+  import '@field-ui/elements';
 </script>
 
 <!-- one field, behind everything -->
 <forces-field accent="#4da3ff"></forces-field>`;
 
-const setupReact = `import { ForcesField } from '@forces-ui/react';
+const setupReact = `import { ForcesField } from '@field-ui/react';
 
 export default function App() {
   return (
@@ -25,24 +25,24 @@ export default function App() {
   );
 }`;
 
-const setupCore = `import { mountField } from '@forces-ui/vanilla';
+const setupCore = `import { mountField } from '@field-ui/vanilla';
 
 // creates + manages a fixed full-viewport canvas, returns the handle
 const field = mountField({ accent: '#4da3ff' });`;
 
 const body1 = `<h1 data-body="attract" data-strength="0.9" data-range="320">
-  forces-ui
+  field-ui
 </h1>`;
 
 const react1 = `// bodies are plain elements anywhere in your tree
 <h1 data-body="attract" data-strength="0.9" data-range="320">
-  forces-ui
+  field-ui
 </h1>
 
 // React renders bodies after the field mounts — rescan once they're in:
 <ForcesField accent="#4da3ff" onReady={(field) => field.scan()} />`;
 
-const reciprocity = `<h1 data-body="attract" data-range="320" data-feedback>forces-ui</h1>
+const reciprocity = `<h1 data-body="attract" data-range="320" data-feedback>field-ui</h1>
 
 <style>
   h1 {
@@ -58,7 +58,7 @@ const compose = `<h1
   data-range="320"
   data-spin="1"
   data-feedback
->forces-ui</h1>`;
+>field-ui</h1>`;
 
 const condition = `<a data-hot data-body="swirl" data-when="active" data-spin="1" data-range="220">
   hover me
@@ -74,8 +74,8 @@ document.addEventListener('click', (e) => field.burst(e.clientX, e.clientY));`;
 ---
 
 <DocsLayout
-  title="forces-ui — Your first field"
-  description="A step-by-step tutorial: install forces-ui, drop the field, add your first body, make type react with --d, compose forces, gate on a condition, and drive the field from code. From npm install to a glowing, reacting headline."
+  title="field-ui — Your first field"
+  description="A step-by-step tutorial: install field-ui, drop the field, add your first body, make type react with --d, compose forces, gate on a condition, and drive the field from code. From npm install to a glowing, reacting headline."
 >
   <header class="docs-hero">
     <p class="kicker">Getting started</p>

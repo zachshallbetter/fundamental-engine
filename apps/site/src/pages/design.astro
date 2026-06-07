@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
+import { MANUAL_FORCES, MANUAL_PRESETS } from 'field-ui';
 import '../styles/ds-tokens.css';
 import '../styles/force-glyphs.css';
 import '../styles/instrument.css';
@@ -69,7 +69,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
 <Base
-  title="forces-ui — Design System"
+  title="field-ui — Design System"
   description="The Design System — the tokens, the 34-force palette, the glyphs, and the type that document the reciprocal field. A design language you can operate, with the physics live behind it."
 >
   <SiteNav current="design" />

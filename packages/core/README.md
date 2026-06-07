@@ -16,7 +16,7 @@ Not a background effect; a medium your interface lives inside.
   material typography and self-laying-out layout); opt-in conserved attention and
   cross-boundary causality couple them.
 
-→ Live manual, lab, and design system at **[forces-ui.com](https://forces-ui.com)**.
+→ Live manual, lab, and design system at **[field-ui.com](https://field-ui.com)**.
 
 ## Install
 

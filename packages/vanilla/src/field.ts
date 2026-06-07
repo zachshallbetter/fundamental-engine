@@ -8,7 +8,7 @@
  * and it exposes the `canvas` it renders to.
  *
  * ```ts
- * import { ForcesField } from '@forces-ui/vanilla';
+ * import { ForcesField } from '@field-ui/vanilla';
  *
  * const field = new ForcesField({ accent: '#4da3ff', render: 'dots' });
  * field.setFormation('wells');
@@ -17,7 +17,7 @@
  * ```
  */
 
-import { createField, type FieldHandle, type FieldOptions, type ThreadLink } from 'forces-ui';
+import { createField, type FieldHandle, type FieldOptions, type ThreadLink } from 'field-ui';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
 export interface ForcesFieldInit extends FieldOptions {

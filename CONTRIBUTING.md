@@ -1,4 +1,4 @@
-# Contributing to forces-ui
+# Contributing to field-ui
 
 Thanks for your interest. This guide covers the setup, the conventions that keep the
 codebase coherent, and the workflow for the most common change — adding a force.
@@ -17,10 +17,10 @@ The repo is a pnpm monorepo:
 
 | Package | What |
 |---|---|
-| `packages/core` (`forces-ui`) | the engine — catalog, contracts, FieldStore, forces, conformance |
-| `packages/elements` (`@forces-ui/elements`) | `<forces-field>` + the declarative `data-body` keystone |
-| `packages/react` (`@forces-ui/react`) | the React adapter |
-| `apps/site` (`@forces-ui/site`) | forces-ui.com — Manual, Lab, Docs |
+| `packages/core` (`field-ui`) | the engine — catalog, contracts, FieldStore, forces, conformance |
+| `packages/elements` (`@field-ui/elements`) | `<forces-field>` + the declarative `data-body` keystone |
+| `packages/react` (`@field-ui/react`) | the React adapter |
+| `apps/site` (`@field-ui/site`) | field-ui.com — Manual, Lab, Docs |
 
 ## Conventions
 

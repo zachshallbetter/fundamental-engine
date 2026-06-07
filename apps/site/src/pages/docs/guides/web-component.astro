@@ -1,12 +1,12 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
-import { MANUAL_FORCES } from 'forces-ui';
+import { MANUAL_FORCES } from 'field-ui';
 
 const cell = `<forces-cell force="swirl" color="#2dd4bf"></forces-cell>`;
 
 const setup = `<script type="module">
-  import '@forces-ui/elements';
+  import '@field-ui/elements';
 </script>
 
 <forces-field accent="#4da3ff"></forces-field>`;
@@ -36,8 +36,8 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
 ---
 
 <DocsLayout
-  title="forces-ui — Web component guide"
-  description="Use the <forces-field> web component from @forces-ui/elements: register it, mark elements as bodies, set attributes, and drive the field through the proxied FieldHandle. Works in any framework or plain HTML."
+  title="field-ui — Web component guide"
+  description="Use the <forces-field> web component from @field-ui/elements: register it, mark elements as bodies, set attributes, and drive the field through the proxied FieldHandle. Works in any framework or plain HTML."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
@@ -52,7 +52,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">
-      <code class="install" data-copy="npm i @forces-ui/elements">npm i @forces-ui/elements</code>
+      <code class="install" data-copy="npm i @field-ui/elements">npm i @field-ui/elements</code>
     </div>
   </section>
 

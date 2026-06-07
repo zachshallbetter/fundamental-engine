@@ -1,4 +1,4 @@
-import { createField, PALETTE, type FieldHandle, type ThreadLink } from 'forces-ui';
+import { createField, PALETTE, type FieldHandle, type ThreadLink } from 'field-ui';
 import { HTMLElementBase } from './base.ts';
 
 /**
@@ -190,9 +190,27 @@ if (typeof customElements !== 'undefined' && !customElements.get('forces-field')
   customElements.define('forces-field', ForcesField);
 }
 
+/**
+ * `<field-field>` / `<field-root>` — field-ui-migration aliases of `<forces-field>`.
+ *
+ * The custom-element registry rejects registering one constructor under two tag names, so each
+ * alias is a thin subclass. All three tags share identical behaviour, attributes, and the same
+ * body contract (docs/field-ui-migration-plan.md §3). Prefer `<field-root>` / `<field-field>` in
+ * new markup; `<forces-field>` keeps working until the migration removal version.
+ */
+export class FieldField extends ForcesField {}
+export class FieldRoot extends ForcesField {}
+
+if (typeof customElements !== 'undefined') {
+  if (!customElements.get('field-field')) customElements.define('field-field', FieldField);
+  if (!customElements.get('field-root')) customElements.define('field-root', FieldRoot);
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'forces-field': ForcesField;
+    'field-field': FieldField;
+    'field-root': FieldRoot;
   }
 }
 
@@ -201,5 +219,14 @@ export * from './cell-force.ts';
 export * from './mount.ts';
 // shadow-DOM participation: the helper a custom element uses to join the field without
 // repeating registration-event boilerplate (docs/shadow-dom.md §31.1).
-export { ForcesController, REGISTER_BODY, UNREGISTER_BODY, UPDATE_BODY } from 'forces-ui';
-export type { RegisterBodyDetail } from 'forces-ui';
+export {
+  ForcesController,
+  REGISTER_BODY,
+  UNREGISTER_BODY,
+  UPDATE_BODY,
+  // field:* event aliases (field-ui migration) — dispatched and listened alongside forces:*.
+  FIELD_REGISTER_BODY,
+  FIELD_UNREGISTER_BODY,
+  FIELD_UPDATE_BODY,
+} from 'field-ui';
+export type { RegisterBodyDetail } from 'field-ui';
