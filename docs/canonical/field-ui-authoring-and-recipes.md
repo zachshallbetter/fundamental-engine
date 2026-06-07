@@ -151,16 +151,22 @@ Compiled output:
 
 Intent presets:
 
-| Intent | Compiles to |
-|---|---|
-| `draw-focus` | `attract + feedback` |
-| `clear-space` | `repel + screen` |
-| `show-motion` | `stream + trails` |
-| `show-relationship` | `threads + memory` |
-| `contain-energy` | `screen + drag + reflect` |
-| `ignite` | `thermal + fieldflow + heatmap` |
-| `stabilize` | `drag + cohesion + coherence` |
-| `warn` | `repel + thermal + entropy` |
+| Intent | Concept | Runtime tokens | Render / feedback | Notes |
+|---|---|---|---|---|
+| `draw-focus` | draw attention to a focus | `attract` | feedback (`--field-density`) | range 280 |
+| `clear-space` | open a keep-clear region | `repel` | — | range 240; `screen` is not a token |
+| `show-motion` | flow along a heading | `stream` | render: `trails` | `trails` is a render mode, not a token |
+| `show-relationship` | link related things | `memory` | render: `links` | `links` is a render mode; `threads` is not a token |
+| `contain-energy` | damp + bound a region | `viscosity`, `wall` | — | `drag`→`viscosity`, `reflect`→`wall`; `screen` is not a token |
+| `ignite` | energize / heat | `thermal`, `fieldflow` | render: `heatmap`, `particles` | `heatmap` is a render mode, not a token |
+| `stabilize` | calm + hold together | `viscosity`, `cohesion` | — | `drag`→`viscosity`; `coherence` is a metric, not a token |
+| `warn` | warning / instability | `repel`, `thermal` | feedback | `entropy` is a metric, not a token |
+
+The **Runtime tokens** column holds real, passported engine forces only. Render modes, metrics, and
+human concepts live in their own columns and are never executed as forces: `screen`, `drag`,
+`reflect`, and `threads` are not tokens; `entropy` and `coherence` are metrics; `trails`, `links`,
+and `heatmap` are render modes. The machine-readable source of truth is `compileIntent` in
+`packages/core/src/recipes/intent.ts`.
 
 The compiler must be inspectable. Authors should be able to see the generated force tokens and render layers.
 
