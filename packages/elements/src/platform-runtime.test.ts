@@ -11,8 +11,10 @@ function el(attrs: Record<string, string> = {}): { getAttribute(n: string): stri
   return { getAttribute: (n) => attrs[n] ?? null, hasAttribute: (n) => n in attrs };
 }
 
-test('default is off, so an unflagged element stays on the legacy path', () => {
-  assert.equal(isPlatformRuntimeDefault(), false);
+test('default is on (D6), so an unflagged element uses the platform path', () => {
+  assert.equal(isPlatformRuntimeDefault(), true);
+  assert.equal(shouldUsePlatformRuntime(el()), true);
+  // an explicit def arg still overrides for callers that pass one
   assert.equal(shouldUsePlatformRuntime(el(), false), false);
 });
 
@@ -30,10 +32,10 @@ test('with no attribute, the global default decides', () => {
   assert.equal(shouldUsePlatformRuntime(el(), false), false);
 });
 
-test('usePlatformRuntime toggles the global default', () => {
-  usePlatformRuntime(true);
-  assert.equal(isPlatformRuntimeDefault(), true);
-  assert.equal(shouldUsePlatformRuntime(el()), true, 'unflagged element now follows the default');
-  usePlatformRuntime(false); // restore (avoid leaking into other tests)
+test('usePlatformRuntime toggles the global default both ways', () => {
+  usePlatformRuntime(false);
   assert.equal(isPlatformRuntimeDefault(), false);
+  assert.equal(shouldUsePlatformRuntime(el()), false, 'unflagged element follows the legacy path when off');
+  usePlatformRuntime(true); // restore the D6 default
+  assert.equal(isPlatformRuntimeDefault(), true);
 });
