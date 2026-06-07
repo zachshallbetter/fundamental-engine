@@ -58,33 +58,54 @@ const Tag = tag as any;
   import { applyRecipe } from '@field-ui/platform';
   import { recipeById } from 'field-ui';
 
-  const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  for (const root of document.querySelectorAll<HTMLElement>('.field-loop[data-field-root]')) {
-    const recipe = recipeById(root.dataset.recipe || 'priority-well');
-    const metric = root.dataset.metric || 'priority';
-    const bodies = [...root.querySelectorAll<HTMLElement>('.fl-body')];
-    // the supplied value lives on data-field-strength for authoring clarity; applyRecipe reads the
-    // metric from data-field-<metric>, so mirror it across before applying.
-    for (const b of bodies) {
-      const v = b.getAttribute('data-field-strength');
-      if (v != null) b.setAttribute(`data-field-${metric}`, v);
-    }
-    if (!recipe || !bodies.length) continue;
-    // Deterministic: drive manually (drive:false) + tick to flush compute → state → write, so
-    // --field-<metric> is written without depending on requestAnimationFrame (background tabs pause it).
-    const applied = applyRecipe(root, recipe, { bodies, annotateBodies: false, drive: false, reducedMotion: reduced });
-    applied.tick();
-    applied.tick();
-    // Reflect the value the FIELD wrote, inline (the path that renders through Astro's scoping):
-    // weight and presence rise with the metric, and the readout shows the field's actual value.
-    for (const b of bodies) {
-      const v = parseFloat(getComputedStyle(b).getPropertyValue(`--field-${metric}`)) || 0;
-      const t = b.querySelector<HTMLElement>('.fl-text');
-      if (t) t.style.fontWeight = String(Math.round(400 + v * 340));
-      const ro = b.querySelector<HTMLElement>('.fl-readout');
-      if (ro) ro.innerHTML = `--field-${metric}: <b>${v.toFixed(2)}</b>`;
+  // applyRecipe registers bodies and a scoped platform per .field-loop and writes --field-* back.
+  // Hold the returned handles so we can destroy() them — on astro:before-swap (navigating away) and
+  // before any re-init — so applied-recipe state never accumulates across client-side navigation.
+  // (This component's <script> is also re-run via astro:page-load so the demo initialises on every
+  // visit, not just the first module load.)
+  let applied: Array<{ destroy?: () => void }> = [];
+
+  function teardown() {
+    for (const a of applied) a.destroy?.();
+    applied = [];
+  }
+
+  function init() {
+    teardown(); // never stack a second set of applied recipes over a previous run
+    const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    for (const root of document.querySelectorAll<HTMLElement>('.field-loop[data-field-root]')) {
+      const recipe = recipeById(root.dataset.recipe || 'priority-well');
+      const metric = root.dataset.metric || 'priority';
+      const bodies = [...root.querySelectorAll<HTMLElement>('.fl-body')];
+      // the supplied value lives on data-field-strength for authoring clarity; applyRecipe reads the
+      // metric from data-field-<metric>, so mirror it across before applying.
+      for (const b of bodies) {
+        const v = b.getAttribute('data-field-strength');
+        if (v != null) b.setAttribute(`data-field-${metric}`, v);
+      }
+      if (!recipe || !bodies.length) continue;
+      // Deterministic: drive manually (drive:false) + tick to flush compute → state → write, so
+      // --field-<metric> is written without depending on requestAnimationFrame (background tabs pause it).
+      const a = applyRecipe(root, recipe, { bodies, annotateBodies: false, drive: false, reducedMotion: reduced });
+      a.tick();
+      a.tick();
+      applied.push(a);
+      // Reflect the value the FIELD wrote, inline (the path that renders through Astro's scoping):
+      // weight and presence rise with the metric, and the readout shows the field's actual value.
+      for (const b of bodies) {
+        const v = parseFloat(getComputedStyle(b).getPropertyValue(`--field-${metric}`)) || 0;
+        const t = b.querySelector<HTMLElement>('.fl-text');
+        if (t) t.style.fontWeight = String(Math.round(400 + v * 340));
+        const ro = b.querySelector<HTMLElement>('.fl-readout');
+        if (ro) ro.innerHTML = `--field-${metric}: <b>${v.toFixed(2)}</b>`;
+      }
     }
   }
+
+  if (document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', teardown);
 </script>
 
 <style>
