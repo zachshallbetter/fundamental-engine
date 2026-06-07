@@ -2,7 +2,29 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
 import VocabLegend from '../../components/VocabLegend.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
 import { NATURAL_FIELDS, MANUAL_FORCES, FORCE_KIND, FORCE_FIELD } from 'field-ui';
+
+// The data-attribute pattern per field — honest runtime tokens only. A token's field is its
+// classification, not a separate API; you author with data attributes on semantic HTML.
+const patGravity = `<!-- Gravity → priority: the element converges attention -->
+<section data-body="gravity" data-field-role="priority" data-strength="0.9">
+  <h2>What matters most</h2>
+</section>`;
+const patEm = `<!-- Electromagnetic → polarity / signal. Electric pushes, magnetic bends. -->
+<button data-body="charge" data-spin="1" data-range="280">positive</button>
+<button data-body="charge" data-spin="-1" data-range="280">negative</button>
+<!-- magnetism bends matter along the field; fieldflow carries it along the lines -->`;
+const patStrong = `<!-- Strong → binding. A native link IS the relationship — no new API. -->
+<p id="claim">The runtime is renderer-agnostic.</p>
+<a href="#claim" data-field-relation="supports" data-field-target="#claim">
+  Evidence: the boundary test
+</a>`;
+const patWeak = `<!-- Weak → transformation / decay. Not a fake force — state that ages. -->
+<article data-body="morph" data-field-role="revising">
+  <!-- or: a memory metric that decays, or a recipe that releases over time -->
+</article>`;
 
 // The Natural Field Translation System — the canonical explanation of how field-ui translates the
 // four fundamental fields into interface behavior. Data-driven from config/manual.ts (NATURAL_FIELDS
@@ -99,6 +121,39 @@ const DIAG = [
     <code>fieldflow</code>. And <code>attract</code> is not gravity; <code>repel</code> is not charge —
     those are designed UI verbs.
   </div>
+
+  <h2>Author each field — the data-attribute patterns</h2>
+  <p>
+    You express a field's translation with <strong>data attributes on semantic HTML</strong>, using
+    honest runtime tokens only. A token's field is its classification, not a separate API — there is no
+    <code>&lt;gravity&gt;</code> element, only <code>data-body="gravity"</code>. Strong binding is the
+    clearest case: a native <code>href</code> (or <code>data-field-relation</code> /
+    <code>data-field-target</code>) <em>is</em> the relationship — the graph is discovered from the DOM,
+    not declared in code.
+  </p>
+  <CodeTabs
+    variants={[
+      { label: 'Gravity → priority', lang: 'html', code: patGravity },
+      { label: 'EM → polarity', lang: 'html', code: patEm },
+      { label: 'Strong → binding', lang: 'html', code: patStrong },
+      { label: 'Weak → decay', lang: 'html', code: patWeak },
+    ]}
+  />
+  <p>
+    Live — gravity bodies carrying a supplied <code>priority</code>; <code>applyRecipe()</code> writes
+    it back as <code>--field-priority</code> and the CSS reads it (gravity's interface translation,
+    running):
+  </p>
+  <FieldLoopDemo
+    token="gravity"
+    recipe="priority-well"
+    metric="priority"
+    items={[
+      { text: 'Headline — converges attention', value: 0.9, role: 'priority' },
+      { text: 'Supporting detail', value: 0.45, role: 'priority' },
+      { text: 'Fine print', value: 0.15, role: 'priority' },
+    ]}
+  />
 
   <h2>Fields vs primitives vs forces</h2>
   <p>Every catalog token has a place. This grouping is read straight from the engine's classification:</p>
