@@ -25,6 +25,7 @@ export * from './lint.ts';
 export * from './platform.ts';
 export * from './metrics.ts';
 export * from './apply-recipe.ts';
+export * from './bind-data.ts';
 export * from './browser-host.ts';
 export * from './export-dom.ts';
 

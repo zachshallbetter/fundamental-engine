@@ -21,6 +21,8 @@ import {
 export interface ApplyRecipeOptions {
   /** existing elements (or a selector within root) to annotate as the recipe's bodies; if omitted, demo elements are created. */
   bodies?: Element[] | string;
+  /** when bodies are provided, whether to overwrite their data-body attributes with the recipe's (default true). Set false to keep caller-owned tokens (e.g. bindData) while still binding the recipe's metrics. */
+  annotateBodies?: boolean;
   /** force the reduced-motion output (defaults to the OS prefers-reduced-motion setting). */
   reducedMotion?: boolean;
   /** compute + bind metrics (default true). */
@@ -85,15 +87,17 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
   let elements: Element[];
   if (options.bodies) {
     elements = typeof options.bodies === 'string' ? Array.from(root.querySelectorAll(options.bodies)) : options.bodies.slice();
-    elements.forEach((el, i) => {
-      const body = compiled.bodies[i % compiled.bodies.length]!;
-      const snap: Record<string, string | null> = {};
-      for (const [k, v] of Object.entries(body.attributes)) {
-        snap[k] = el.getAttribute(k);
-        el.setAttribute(k, v);
-      }
-      restore.push({ el, attrs: snap });
-    });
+    if (options.annotateBodies !== false) {
+      elements.forEach((el, i) => {
+        const body = compiled.bodies[i % compiled.bodies.length]!;
+        const snap: Record<string, string | null> = {};
+        for (const [k, v] of Object.entries(body.attributes)) {
+          snap[k] = el.getAttribute(k);
+          el.setAttribute(k, v);
+        }
+        restore.push({ el, attrs: snap });
+      });
+    }
   } else {
     elements = compiled.bodies.map((body, i) => {
       const el = (root.ownerDocument ?? document).createElement('span');

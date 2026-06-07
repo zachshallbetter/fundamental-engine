@@ -127,6 +127,24 @@ const tokenCount = new Set(FIELD_RECIPES.flatMap((r) => r.primitives)).size;
     </ul>
   </section>
 
+  <section class="docs-sec">
+    <h2>Data binding — <code>bindData()</code></h2>
+    <p>
+      Recipes make behavior portable; <code>bindData()</code> makes real records participate in it.
+      Records become bodies, mapped metrics become state, mapped relationships become edges, and a
+      recipe supplies the behavior. Updates are deterministic and removed records decay rather than pop.
+    </p>
+    <div class="bd-demo">
+      <div class="bd-controls" role="group" aria-label="Data binding demo">
+        <button type="button" class="sc-btn" data-bd="add">Add record</button>
+        <button type="button" class="sc-btn" data-bd="remove">Remove one</button>
+        <button type="button" class="sc-btn" data-bd="shuffle">Shuffle values</button>
+        <span class="bd-status" data-bd-status>—</span>
+      </div>
+      <div class="bd-stage" data-bd-stage></div>
+    </div>
+  </section>
+
   <SeeAlso
     links={[
       { href: '/docs/gallery', label: 'Recipe gallery' },
@@ -136,6 +154,65 @@ const tokenCount = new Set(FIELD_RECIPES.flatMap((r) => r.primitives)).size;
   />
 </DocsLayout>
 
+<script>
+  import { bindData } from '@field-ui/platform';
+
+  const stage = document.querySelector<HTMLElement>('[data-bd-stage]');
+  const status = document.querySelector<HTMLElement>('[data-bd-status]');
+  if (stage) {
+    interface Rec { id: string; title: string; relevance: number; confidence: number; }
+    const titles = ['Field translation runtime', 'Reciprocal DOM interfaces', 'Reduced-motion equivalence', 'Relationship graph recovery', 'Evidence-aware AI answers', 'Dashboard weather', 'Host-driven core'];
+    let seq = 0;
+    const rnd = () => Math.round(Math.random() * 100) / 100;
+    const make = (): Rec => { const id = `r${seq++}`; return { id, title: titles[seq % titles.length]!, relevance: rnd(), confidence: rnd() }; };
+    let records: Rec[] = Array.from({ length: 4 }, make);
+
+    const mapper = (r: Rec) => ({
+      id: r.id,
+      body: { tokens: ['attract', 'memory'], strength: 0.4 + r.relevance, range: 240, feedback: true },
+      metrics: { confidence: r.confidence, priority: r.relevance },
+      label: r.title,
+    });
+
+    const binding = bindData(stage, records, mapper, { recipe: 'trust-gradient', className: 'bd-rec' });
+
+    const loop = (): void => {
+      const ins = binding.inspect();
+      if (status) status.textContent = ins ? `${ins.records} records · ${ins.bodies} bodies · ${ins.relationships} relationships` : `${records.length} records`;
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+
+    for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-bd]')) {
+      btn.addEventListener('click', () => {
+        const k = btn.dataset.bd;
+        if (k === 'add') records = [...records, make()];
+        else if (k === 'remove') records = records.slice(0, -1);
+        else if (k === 'shuffle') records = records.map((r) => ({ ...r, relevance: rnd(), confidence: rnd() }));
+        binding.update(records);
+      });
+    }
+    document.addEventListener('astro:before-swap', () => binding.destroy(), { once: true });
+  }
+</script>
+
+<style>
+  .bd-demo { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.8rem; margin-top: 0.6rem; }
+  .bd-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-bottom: 0.7rem; }
+  .bd-status { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+  .bd-stage { display: flex; flex-direction: column; gap: 0.4rem; min-height: 60px; }
+  .bd-rec {
+    --field-confidence: 0;
+    padding: 0.4rem 0.7rem; border-radius: 7px; font-size: 0.9rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-left: 3px solid color-mix(in srgb, #2dd4bf calc(var(--field-confidence) * 95%), color-mix(in srgb, #ff9d5c 55%, transparent));
+    background: color-mix(in srgb, #2dd4bf calc(var(--field-confidence) * 12%), transparent);
+    opacity: 1; transition: opacity 0.35s ease, background 0.4s ease, border-color 0.4s ease, transform 0.35s ease;
+  }
+  .bd-rec[data-bd-entering] { opacity: 0; transform: translateY(-4px); }
+  .bd-rec[data-bd-exiting] { opacity: 0; transform: translateX(8px); }
+  @media (prefers-reduced-motion: reduce) { .bd-rec { transition: none; } }
+</style>
 <style>
   .lede { color: var(--text-3, #9aa); max-width: 72ch; }
   .rm-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 0.5rem; }
