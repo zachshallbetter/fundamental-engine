@@ -8,6 +8,8 @@ import SiteFooter from '../components/SiteFooter.astro';
 import { RESEARCH_PAPERS } from '../lib/research-nav.ts';
 import '../styles/ds-tokens.css';
 import '../styles/docs.css';
+// KaTeX-rendered math on the paper pages (remark-math + rehype-katex in astro.config).
+import 'katex/dist/katex.min.css';
 
 interface Props {
   title?: string;
