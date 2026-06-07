@@ -51,8 +51,9 @@ All 29 `from 'forces-ui'` imports, 34 `@forces-ui/*` references, workspace deps,
 filters were updated. Product-name strings in the README, the Astro site (titles, prose, install
 commands, demo copy), CONTRIBUTING, the core module header, and two thrown error messages were
 rebranded to `field-ui`. The production domain was moved to **`field-ui.com`** (Astro `site:`,
-canonical/OG URLs, package `homepage` fields, README/docs links). The GitHub repo URL
-(`github.com/zachshallbetter/forces-ui`) is left as-is — the repository itself is not renamed.
+canonical/OG URLs, package `homepage` fields, README/docs links). The GitHub repository was renamed
+to **`github.com/zachshallbetter/field-ui`** (the old `forces-ui` URL still redirects); the
+`repository` / `bugs` URLs across all package manifests were updated to match.
 
 ## 4. Aliases added (old + new both resolve)
 
@@ -118,14 +119,13 @@ After field-ui was adopted as the working repo and the domain moved to **field-u
 
 ## 8. What remains / deferred
 
-- **GitHub repo URL** (`github.com/zachshallbetter/forces-ui`) is unchanged — the repository is not
-  renamed. The production domain is now `field-ui.com`.
 - **Alias removal**: the `forces-ui` / `@forces-ui/*` packages, `forces:*` events, `--forces-*`
-  vars, and `<forces-*>` elements are kept until a future major, per the alias deprecation policy.
+  vars, and `<forces-*>` elements / `Forces*` classes are kept as deprecated aliases until a future
+  major, per the alias deprecation policy.
 - **Phases 4–8** (FieldAgent model, visual-language layer, recipe/intent compiler, productization)
   are the intended next work, after this stabilized base.
 
-## 8. Validation checklist (migration-plan §17)
+## 9. Validation checklist (migration-plan §17)
 
 ✅ runs from field-ui/ · ✅ typecheck · ✅ tests · ✅ Lab/site builds · ✅ docs links resolve ·
 ✅ examples use new naming (imports + product name) · ✅ old names work as aliases · ✅ CSS writes
