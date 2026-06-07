@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> Field/force laws, the electromagnetic split, fieldflow, and truth modes. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # Fundamental Field Behavior Table for field-ui
 
 ## Related Documents
@@ -5,10 +8,10 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](./field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Contracts |
-| [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md) | Field rendering and diagnostics |
-| [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Tests |
+| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
+| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contracts |
+| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Field rendering and diagnostics |
+| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Tests |
 
 ## Core Distinction
 
@@ -56,6 +59,12 @@ Feedback = how the field writes back to the DOM
 > `packages/core/src/contracts/passport.ts`. Forces classify as `physical` / `designed` / `hybrid`
 > (fieldflow); `diagnostic` / `poetic` / `semantic` classify visualizations, composite presets, and
 > the meaning→metric mappings respectively.
+
+> **Diagnostic truth is read-only.** All diagnostic render modes — including `causality` and
+> `prediction`, both shipped and live at `/docs/diagnostics` — only *visualize* field state. They
+> read the field and draw on a render surface; they never feed back into `apply()` or mutate physics.
+> Visualization and physics stay separate: a diagnostic overlay reveals internal structure without
+> changing how matter responds.
 
 ## Fundamental Table
 

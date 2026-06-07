@@ -1,3 +1,6 @@
+> **Status: reference (brand).**
+> A standalone brand/identity spec, not architecture. See [README.md](README.md) for the documentation map.
+
 # field-ui Brand Mark Concept: Field Fold
 
 ## Core idea

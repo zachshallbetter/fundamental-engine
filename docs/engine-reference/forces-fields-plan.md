@@ -1,3 +1,6 @@
+> **Status: as-built force-engine reference.**
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+
 # Field lines, shaped sources, and heatmaps — implementation record
 
 Status: **shipped** (as of 2026-06). This was the build plan for three connected additions
@@ -9,6 +12,15 @@ monopole fields and `fieldlines.ts` (Stage B), `data-shaped` sampling (Stage C),
 **as-built design record** — the recorded decisions (D1–D5) are cited from the code (e.g.
 `heatmap.ts` cites D5) — not as open work. The as-shipped surface lives in
 [`forces-system.md`](forces-system.md) §20 and the catalog (`packages/core/src/config/manual.ts`).
+
+> **Note — scope has since grown well beyond this plan.** This document records the original
+> field-line / heatmap build. Diagnostics, platform overlays, and render modes have since
+> expanded far past it: the full render-mode set now ships (dots, trails, links, streamlines,
+> metaballs, voronoi, field-lines, heatmap, force-vectors, contours, potential, energy,
+> **topology, inspector, causality, prediction**) and is live at `/docs/diagnostics`, while
+> overlays are now owned by `@field-ui/platform`'s `OverlayRegistry` on the frame scheduler.
+> Treat the stage list below as historical for this slice, not as the bound on what the engine
+> renders today.
 
 The grounding facts below reference the current engine (commit at time of writing):
 `Force`/`Env`/`Body` in `packages/core/src/core/types.ts`, the body-force loop in
@@ -44,8 +56,11 @@ backing the `diffuse`/`propagate`/`memory` class-[C] forces).
 The reciprocal loop gets one more turn of the wheel:
 
 ```
-particles → heatmap / body charge Q → DOM (--d, --field-heatmap-*) → field → particles
+particles → heatmap / body charge Q → DOM (--field-density, --field-heatmap-*) → field → particles
 ```
+
+The primary density variable is `--field-density`; `--d` (and `--forces-density`) are kept as
+legacy/compat aliases and still mirror the same number, so older selectors keep working.
 
 Three pillars, plus the accumulator threaded through:
 
@@ -118,8 +133,9 @@ Three pillars, plus the accumulator threaded through:
   field (force parallel to `B_visual`), so the right-hand diagram both renders and behaves.
 - **Chargeable accumulator (`Q`).** Extend `writeFeedback` (`field.ts`): a chargeable body
   samples local field intensity over its rect each frame and accumulates `Q` with decay and a
-  saturation ceiling (`Q' = Q·decay + deposit`, clamped). It writes `Q` to `--d` and a new
-  `--field-charge`, and can drive color (`tint`), weight, and mass. `field()` (Stage B) reads
+  saturation ceiling (`Q' = Q·decay + deposit`, clamped). It writes `Q` to `--field-density`
+  (with `--d` retained as a compat alias) and a new `--field-charge`, and can drive color
+  (`tint`), weight, and mass. `field()` (Stage B) reads
   `Q` as the pole strength, closing the loop: a charged element radiates a stronger field.
 - Per D4: lightweight and bounded now; pool-conservation later (tie to accretion bookkeeping).
 - Tests: shell-formation invariant (matter settles off-center, around the box) for a shaped

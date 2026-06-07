@@ -1,7 +1,7 @@
 /**
  * Core contracts for the reciprocal field.
  *
- * These types encode the spec in `docs/forces-system.md`:
+ * These types encode the spec in `docs/engine-reference/forces-system.md`:
  *   - the data model (§3): Particle, Body, Env
  *   - the force-registry contract (§4) generalized to agents (§22)
  *   - mass & momentum (§21), conditions (§5), formations (§7)

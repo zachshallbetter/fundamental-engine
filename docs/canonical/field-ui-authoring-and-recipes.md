@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # field-ui Authoring and Recipes
 
 ## Related Documents
@@ -5,16 +8,20 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](./field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Recipe contract |
-| [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md) | Interaction recipes |
-| [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Recipe tests |
+| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
+| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Recipe contract |
+| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Interaction recipes |
+| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Recipe tests |
 
 ## Purpose
 
-This document defines how authors use `field-ui`.
+This document defines how authors use `field-ui`. `field-ui` is a platform-native relational field
+runtime for the DOM: `@field-ui/core` computes renderer-agnostic field behavior, `@field-ui/platform`
+binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
+scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
+field context. Authors write the same `[data-body]` contract regardless of surface.
 
-The system should support three authoring levels:
+The system supports three authoring levels:
 
 | Level | User | API |
 |---|---|---|
@@ -34,6 +41,53 @@ The system should support three authoring levels:
 | Composer | visual authoring and copy-code tool |
 | Lab | executable spec and tuning |
 | Inspector | debugging and reciprocity view |
+
+### Authoring across surfaces (shipped)
+
+The three authoring surfaces all compile to the same `[data-body]` contract, so a body authored in
+native HTML, as a web component, or in React participates identically in the shared field context. See
+the live walkthrough at `/docs/authoring`.
+
+Native HTML — the platform runtime attaches to any element carrying `data-body`:
+
+```html
+<div data-body="attract" data-strength="0.8" data-range="280" data-feedback>
+  Living headline
+</div>
+<style>
+  [data-body] { color-mix(in oklch, currentColor, white calc(var(--field-density, 0) * 40%)); }
+</style>
+```
+
+Web component — `<field-root>` wraps content and registers each `[data-body]` with the field; the
+platform runtime is the default participation path:
+
+```html
+<field-root>
+  <article data-body="attract" data-strength="0.8" data-range="280" data-feedback>
+    Living headline
+  </article>
+</field-root>
+```
+
+React — `<FieldField>` renders the same contract; props map onto the same `data-*` tokens:
+
+```tsx
+import { FieldField } from "@field-ui/react";
+
+function Headline() {
+  return (
+    <FieldField>
+      <h1 data-body="attract" data-strength={0.8} data-range={280} data-feedback>
+        Living headline
+      </h1>
+    </FieldField>
+  );
+}
+```
+
+All three forms emit identical `[data-body]` markup, drive the same `--field-density` feedback
+variable, and are measured, fed back, and related to one another through the same platform registries.
 
 ## 2. Core Attributes
 
@@ -77,22 +131,22 @@ Authors may describe intent instead of raw tokens.
 Example:
 
 ```html
-<forces-body
+<field-cell
   data-intent="draw-focus"
   data-intensity="0.8"
   data-risk="low"
-></forces-body>
+></field-cell>
 ```
 
 Compiled output:
 
 ```html
-<forces-body
+<field-cell
   data-body="attract screen"
   data-strength="0.8"
   data-range="280"
   data-feedback
-></forces-body>
+></field-cell>
 ```
 
 Intent presets:

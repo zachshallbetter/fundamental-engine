@@ -1,13 +1,18 @@
+> **Status: planning / roadmap.**
+> Forward-looking record. Items here may have shipped since — verify against the canonical docs ([../canonical/](../canonical/)) and the code before treating anything as current or as still-pending.
+
 # field-ui Migration Plan
+
+> **Migration status (verified against code):** Phases 1–8 below are complete. The directory move, the field-ui rename, the field:* / --field-* / `<field-root>`/`<field-cell>` aliases, the connected docs, the formalized contracts, the expanded agents, the visual language layer, authoring/recipes, and the testing/productization surfaces have all landed. The remaining runtime-unification work — making the DOM participation model (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting) a first-class platform rather than canvas-coupled engine code — was delivered by **Phase D (platform runtime)**: `@field-ui/platform` now ships the `FrameScheduler` (discover → read → compute → state → write → render) and six registries, and is the DEFAULT runtime for `<field-root>` (opt out with `experimental-platform="off"` / `usePlatformRuntime(false)`). The migration/alias detail below is retained for history.
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map and authority order |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Contracts that must remain true during migration |
-| [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Migration validation and acceptance criteria |
-| [`agent-handoff-fieldflow-visualization.md`](./agent-handoff-fieldflow-visualization.md) | Agent implementation handoff |
+| [`field-ui-system-contracts.md`](../canonical/field-ui-system-contracts.md) | Contracts that must remain true during migration |
+| [`field-ui-testing-and-conformance.md`](../canonical/field-ui-testing-and-conformance.md) | Migration validation and acceptance criteria |
+| [`agent-handoff-fieldflow-visualization.md`](agent-handoff-fieldflow-visualization.md) | Agent implementation handoff |
 
 ## Purpose
 
@@ -466,7 +471,9 @@ migration notes identify the removal version
 
 ## 16. Migration Phases
 
-### Phase 1: Move and Stabilize
+All eight phases below are complete. The runtime-unification work that followed them (making DOM participation a platform rather than canvas-coupled engine code) shipped as Phase D (platform runtime); see the migration-status note near the top.
+
+### Phase 1: Move and Stabilize ✅ complete
 
 ```txt
 copy force/ -> field-ui/
@@ -478,7 +485,7 @@ verify typecheck
 verify tests
 ```
 
-### Phase 2: Rename Public Surface
+### Phase 2: Rename Public Surface ✅ complete
 
 ```txt
 add field-ui naming
@@ -489,7 +496,7 @@ update docs references
 keep old names working
 ```
 
-### Phase 3: Refactor Documentation
+### Phase 3: Refactor Documentation ✅ complete
 
 ```txt
 install connected docs
@@ -500,7 +507,7 @@ link field laws, visualization, interaction, visual language, authoring, testing
 remove duplicate or stale documents
 ```
 
-### Phase 4: Formalize Contracts
+### Phase 4: Formalize Contracts ✅ complete
 
 ```txt
 Body Contract
@@ -514,7 +521,7 @@ Conformance Contract
 Visual Language Contract
 ```
 
-### Phase 5: Expand Agents
+### Phase 5: Expand Agents ✅ complete
 
 ```txt
 ElementAgent variables beyond density
@@ -527,7 +534,7 @@ MediaAgent
 thresholded EventAgent
 ```
 
-### Phase 6: Visual Language
+### Phase 6: Visual Language ✅ complete
 
 ```txt
 typography mapping
@@ -542,7 +549,7 @@ semantic text fallback
 visual lint rules
 ```
 
-### Phase 7: Authoring and Recipes
+### Phase 7: Authoring and Recipes ✅ complete
 
 ```txt
 SceneRecipe schema
@@ -554,7 +561,7 @@ Explain This Field
 Field Diff
 ```
 
-### Phase 8: Testing and Productization
+### Phase 8: Testing and Productization ✅ complete
 
 ```txt
 snapshot regression
@@ -565,9 +572,27 @@ product surfaces
 migration report
 ```
 
+### Phase D: Platform Runtime ✅ delivered
+
+Phases 1–8 stabilized naming, structure, docs, contracts, agents, visual language, authoring, and productization. The remaining runtime-unification work — separating renderer-agnostic field computation from DOM participation — was delivered afterward as Phase D:
+
+```txt
+@field-ui/platform package (native-platform-first, framework-agnostic)
+FrameScheduler with explicit phases: discover -> read -> compute -> state -> write -> render
+MeasurementRegistry, StateRegistry, FeedbackRegistry,
+  RelationshipRegistry, VisualBindingRegistry, OverlayRegistry
+lintPlatform() + createFieldPlatform(root)
+platform runtime is the DEFAULT for <field-root>
+  (opt out: experimental-platform="off" / usePlatformRuntime(false))
+core stays renderer-agnostic (guarded by core/dom-boundary.test.ts);
+  canvas is one render surface, not the whole system
+```
+
+After Phase D, the field-ui model is no longer "DOM ⇄ canvas" but DOM bound to a shared field runtime: `@field-ui/core` computes field behavior, `@field-ui/platform` binds it to the DOM, and elements/react are authoring surfaces over the same `[data-body]` contract.
+
 ## 17. Migration Validation Checklist
 
-Migration is complete when:
+Every item below was met. Migration was complete when:
 
 ```txt
 project runs from field-ui/

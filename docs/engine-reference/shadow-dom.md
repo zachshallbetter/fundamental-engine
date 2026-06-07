@@ -1,3 +1,6 @@
+> **Status: as-built force-engine reference.**
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+
 # Shadow DOM Participation Model for field-ui
 
 > **Status: core model implemented.** The host-first, event-driven registration model
@@ -10,7 +13,14 @@
 > rect-provider measurement), and the event wiring in `core/field.ts`; covered by
 > `core/shadow.test.ts`. The production-hardening additions in §31 (portals, scopes, the
 > registration handshake, SSR queue, throttled field events, local-cell budgets) remain
-> **proposed**. Summary in [`forces-concept.md`](forces-concept.md) §23–26.
+> **proposed**. Summary in [`forces-concept.md`](../planning-archive/forces-concept.md) §23–26.
+
+> **Phase D note (platform runtime).** Shadow-DOM host registration is now handled by
+> `@field-ui/platform`: the platform owns DOM participation, so a registered host's `getRect`
+> flows into the `MeasurementRegistry` and feedback writes are issued through the
+> `FeedbackRegistry`. The legacy `core/shadow.ts` path remains and behaves as documented below,
+> but on a default `<field-root>` the platform runtime is what binds these bodies to the field
+> (opt back to pure-legacy with `experimental-platform="off"` / `usePlatformRuntime(false)`).
 
 ## 1. Definition
 
@@ -338,10 +348,13 @@ through the same path.
 
 The field writes state back to the registered element or write target using CSS custom properties.
 
+`--field-density` is the primary density variable (with `--d` and `--forces-density` as legacy/compat
+aliases). The platform `FeedbackRegistry` also auto-mirrors `--field-*` to `--forces-*`.
+
 Minimum variables:
 
 ```css
---d --accent
+--field-density --field-accent
 ```
 
 Explicit variables:

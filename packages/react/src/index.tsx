@@ -84,7 +84,7 @@ export function useFieldField(opts: FieldOptions = {}): {
 
 // ── deprecated field-ui-migration aliases ──────────────────────────────────────
 // `Field*` (above) are canonical; these `Forces*` exports keep working unchanged until the
-// migration removal version (docs/field-ui-migration-plan.md §3).
+// migration removal version (docs/planning-archive/field-ui-migration-plan.md §3).
 /** @deprecated alias of {@link FieldFieldProps}. */
 export type ForcesFieldProps = FieldFieldProps;
 /** @deprecated alias of {@link FieldField}. */
