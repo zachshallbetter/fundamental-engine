@@ -359,6 +359,9 @@ Data records can become field agents.
 | user interest | memory |
 | priority | attention share |
 
+> **Implemented.** `SEMANTIC_LAYERS` + `semanticToMetrics()` in `packages/core/src/semantic/layers.ts`
+> map each meaning to its field metric.
+
 ## 16. Relationship Heatmaps
 
 | Heatmap | Meaning |
@@ -478,6 +481,8 @@ type ButtonFieldState =
 | success | release |
 | error | repel + thermal |
 
+> **Implemented.** `FieldState` + `FIELD_STATES` in `packages/core/src/semantic/states.ts`.
+
 ## 24. Interaction Materials
 
 Forces define behavior. Materials define feel.
@@ -494,6 +499,9 @@ Forces define behavior. Materials define feel.
 | paper | low motion + memory |
 | stone | high mass + low response |
 | smoke | diffuse + stream + entropy |
+
+> **Implemented.** `INTERACTION_MATERIALS` + `materialBody()` in
+> `packages/core/src/semantic/materials.ts`, composed from real force tokens.
 
 ## 25. Field Affordances
 

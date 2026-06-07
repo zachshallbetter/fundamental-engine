@@ -133,6 +133,8 @@ forces test snapshot solar-prominence.json
 | hierarchy | potential |
 | interactivity | feedback gain |
 
+> **Implemented.** `semantic/layers.ts` (`SEMANTIC_LAYERS`, `semanticToMetrics`).
+
 ## 9. Field State Machine
 
 ```ts
@@ -146,6 +148,9 @@ type FieldState =
   | "critical"
   | "celebrating";
 ```
+
+> **Implemented.** `FieldState` + `FIELD_STATES` in `semantic/states.ts` (incl. the control-level
+> states from interaction §23).
 
 ## 10. Field Narrative Mode
 
