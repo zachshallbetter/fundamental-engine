@@ -57,6 +57,9 @@ export const DOCS_NAV: DocGroup[] = [
     title: 'Concept studies',
     items: [
       { href: '/docs/studies/reading-field', label: 'Reading Field Study', ready: true },
+      { href: '/docs/studies/review-field', label: 'Review Field Study', ready: true },
+      { href: '/docs/studies/search-field', label: 'Search Field Study', ready: true },
+      { href: '/docs/studies/system-weather', label: 'System Weather Study', ready: true },
     ],
   },
   {
