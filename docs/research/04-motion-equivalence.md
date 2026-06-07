@@ -237,7 +237,7 @@ animated presets (`beautiful`, `plasma`, `thermal`).
 
 The emission channel shows the swap at the level of a single value. Under reduced motion, glow does
 not pulse — it flattens to a static highlight: `emission()` maps heat to radius with linear (not
-eased) interpolation and halves the alpha when `reducedMotion` is set, so a pulsing bloom becomes a
+eased) interpolation and lowers the alpha (0.8 → 0.5) when `reducedMotion` is set, so a pulsing bloom becomes a
 flat, bounded highlight (`packages/core/src/visual/channels.ts`). The state (heat) is identical; only
 its rendering loses its temporal dimension.
 
@@ -294,7 +294,7 @@ physics, or the DOM* (file header), so running it is side-effect free.
   *representing* a carrier — exactly the condition under which reducing or hiding the visual would lose
   meaning. Surfaced from `VisualBindingRegistry.lint()` as `orphan-representation` (severity *error*)
   and mapped to `visual-orphan` in `lintVisuals()`.
-- **`visual-not-hidden`.** A decorative or non-representational visual that is not `aria-hidden`. This
+- **`visual-not-hidden`.** A visual whose role is not `representation` and that is not `aria-hidden`. This
   catches the inverse failure: a layer with no independent meaning that nonetheless exposes itself to
   assistive technology, doubling what the screen reader reads. Severity *warning*.
 - **`feedback-non-css-var`.** A feedback binding that writes ARIA or attributes instead of a `--field-*`
