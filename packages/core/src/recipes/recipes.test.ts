@@ -25,7 +25,7 @@ import {
   recipeById,
 } from './gallery.ts';
 import { explainScene, fieldDiff } from './explain.ts';
-import { compileRecipe, recipeToMarkup, recipeBodyAttributes, metricVar } from './compile.ts';
+import { compileRecipe, recipeToMarkup, recipeBodyAttributes, metricVar, recipeAuthoring } from './compile.ts';
 import { passportFor } from '../contracts/passport.ts';
 import { RENDER_MODES } from '../visual/visualization.ts';
 import { FUNDAMENTAL_FIELDS } from '../config/manual.ts';
@@ -240,6 +240,16 @@ test('recipeToMarkup + recipeBodyAttributes emit real data-body authoring', () =
   assert.equal(attrs['data-strength'], '1.2');
   assert.equal(attrs['data-range'], '320');
   assert.ok('data-feedback' in attrs);
+});
+
+test('recipeAuthoring emits html / web-component / react surfaces with real tokens', () => {
+  const a = recipeAuthoring(recipeById('priority-well')!);
+  assert.match(a.html, /<field-root><\/field-root>/);
+  assert.match(a.html, /data-body="attract"/);
+  assert.match(a.webComponent, /@field-ui\/elements/);
+  assert.match(a.react, /@field-ui\/react/);
+  assert.match(a.react, /<FieldField>/);
+  assert.match(a.react, /data-body="attract"/);
 });
 
 test('fieldDiff describes direction of change', () => {

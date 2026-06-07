@@ -118,3 +118,24 @@ export function recipeToMarkup(r: FieldRecipe): string {
   const bodies = r.bodies.map((b) => `  <div ${attrsToString(recipeBodyAttributes(b))}></div>`).join('\n');
   return `<field-root></field-root>\n${bodies}`;
 }
+
+const pascal = (id: string): string =>
+  id.split(/[^a-z0-9]+/i).filter(Boolean).map((s) => s[0]!.toUpperCase() + s.slice(1)).join('') || 'Field';
+
+/** A recipe's copy-paste authoring across the three surfaces. */
+export interface RecipeAuthoring {
+  html: string;
+  webComponent: string;
+  react: string;
+}
+
+/** Emit a recipe's authoring for native HTML, the web component, and React (pure). */
+export function recipeAuthoring(r: FieldRecipe): RecipeAuthoring {
+  const bodyLines = r.bodies.map((b) => `  <div ${attrsToString(recipeBodyAttributes(b))}></div>`).join('\n');
+  const reactBodies = r.bodies.map((b) => `      <div ${attrsToString(recipeBodyAttributes(b))} />`).join('\n');
+  return {
+    html: recipeToMarkup(r),
+    webComponent: `<script type="module">\n  import '@field-ui/elements';\n</script>\n\n<field-root></field-root>\n${bodyLines}`,
+    react: `import { FieldField } from '@field-ui/react';\n\nexport default function ${pascal(r.id)}() {\n  return (\n    <FieldField>\n${reactBodies}\n    </FieldField>\n  );\n}`,
+  };
+}
