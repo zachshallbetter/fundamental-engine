@@ -1,0 +1,59 @@
+{
+  "name": "@field-ui/platform",
+  "version": "0.2.0",
+  "description": "The platform-adjacent layer for field-ui — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives field-ui wishes existed, built on the ones it has.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
+  "homepage": "https://field-ui.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachshallbetter/field-ui.git",
+    "directory": "packages/platform"
+  },
+  "bugs": {
+    "url": "https://github.com/zachshallbetter/field-ui/issues"
+  },
+  "keywords": [
+    "field-ui",
+    "dom",
+    "measurement",
+    "relationships",
+    "state",
+    "feedback",
+    "overlays",
+    "web"
+  ],
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "field-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
