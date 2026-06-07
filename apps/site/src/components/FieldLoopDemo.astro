@@ -1,0 +1,109 @@
+---
+// A LIVE, deterministic demonstration of the core loop, built on the PRIMARY contract: data
+// attributes on semantic HTML, driven by the recipe runtime (applyRecipe). No <field-cell>, no
+// canvas widget. The loop, made provable:
+//
+//   semantic element → [data-body] + supplied data-field-* → applyRecipe() registers it →
+//   the metric becomes --field-<metric> → CSS reads it → (motion off: a static, legible baseline)
+//
+// Each body carries a real runtime token (data-body) and a supplied metric value; applyRecipe writes
+// that metric back as a --field-* custom property the CSS reads. The values are deterministic, so the
+// difference is visible immediately (not dependent on cursor proximity). The text stays real and
+// accessible; the field only enhances it.
+interface Item {
+  text: string;
+  /** supplied metric value 0..1 (becomes --field-<metric>) */
+  value: number;
+  /** data-field-role — the element's semantic role */
+  role?: string;
+}
+interface Props {
+  items: Item[];
+  /** the runtime token every body carries (any real token: attract, gravity, tether, …) */
+  token?: string;
+  /** the recipe whose metric lane drives the feedback var (must track `metric`) */
+  recipe?: string;
+  /** the metric these bodies supply + the recipe tracks (→ --field-<metric>) */
+  metric?: string;
+  /** the semantic tag the bodies live on */
+  tag?: 'h3' | 'p' | 'li' | 'section';
+}
+const { items, token = 'attract', recipe = 'priority-well', metric = 'priority', tag = 'p' } = Astro.props;
+const Tag = tag as any;
+---
+
+<figure class="field-loop" data-field-root data-recipe={recipe} data-metric={metric}>
+  <div class="fl-bodies">
+    {items.map((it) => (
+      <Tag
+        class="fl-body"
+        data-body={token}
+        data-field-role={it.role ?? 'concept'}
+        data-field-strength={it.value}
+        style={`--fl-var: var(--field-${metric}, 0)`}
+        set:html={`<span class="fl-text">${it.text}</span><span class="fl-readout" aria-hidden="true">--field-${metric}: <b>${it.value.toFixed(2)}</b></span>`}
+      />
+    ))}
+  </div>
+  <figcaption>
+    <span class="fl-loop">
+      <code>data-body="{token}"</code> + supplied <code>{metric}</code> → <code>applyRecipe()</code> →
+      <code>--field-{metric}</code> → this element
+    </span>
+    <span class="fl-cap">Each row supplies a different value, so the field's feedback is visible at a glance. Toggle reduced motion and the weight holds without travel.</span>
+  </figcaption>
+</figure>
+
+<script>
+  import { applyRecipe } from '@field-ui/platform';
+  import { recipeById } from 'field-ui';
+
+  const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  for (const root of document.querySelectorAll<HTMLElement>('.field-loop[data-field-root]')) {
+    const recipe = recipeById(root.dataset.recipe || 'priority-well');
+    const metric = root.dataset.metric || 'priority';
+    const bodies = [...root.querySelectorAll<HTMLElement>('.fl-body')];
+    // the supplied value lives on data-field-strength for authoring clarity; applyRecipe reads the
+    // metric from data-field-<metric>, so mirror it across before applying.
+    for (const b of bodies) {
+      const v = b.getAttribute('data-field-strength');
+      if (v != null) b.setAttribute(`data-field-${metric}`, v);
+    }
+    if (!recipe || !bodies.length) continue;
+    // The supplied metric values are fixed, so this demo is deterministic — it needs no animation
+    // loop. Drive it manually (drive: false) and tick once to flush compute → state → write, so the
+    // --field-* values are written on load (works even where a background tab pauses requestAnimationFrame).
+    const applied = applyRecipe(root, recipe, { bodies, annotateBodies: false, drive: false, reducedMotion: reduced });
+    applied.tick();
+    applied.tick();
+  }
+</script>
+
+<style>
+  .field-loop {
+    margin: 1.1rem 0;
+    padding: 1.3rem 1.2rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 12px;
+    background: color-mix(in srgb, #0e121b 72%, transparent);
+  }
+  .fl-bodies { display: flex; flex-direction: column; gap: 0.55rem; }
+  .fl-body {
+    --fl-var: 0;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+    margin: 0; padding: 0.5rem 0.8rem; border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--accent, #4da3ff) calc(var(--fl-var) * 70%), var(--line, #2a2a35));
+    background: color-mix(in srgb, var(--accent, #4da3ff) calc(var(--fl-var) * 12%), transparent);
+    color: var(--text, #e8e8ef);
+    transition: border-color 0.4s ease, background 0.4s ease;
+  }
+  .fl-text { font-size: 1.05rem; font-weight: calc(400 + var(--fl-var) * 340); }
+  .fl-readout { font: 0.72rem ui-monospace, SFMono-Regular, monospace; color: var(--muted, #9aa); }
+  .fl-readout b { color: var(--accent, #4da3ff); }
+  .field-loop figcaption { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.9rem; }
+  .fl-loop { font: 0.74rem ui-monospace, SFMono-Regular, monospace; color: var(--muted, #9aa); }
+  .fl-loop code { color: var(--accent, #4da3ff); }
+  .fl-cap { font-size: 0.8rem; color: var(--muted, #9aa); }
+  @media (prefers-reduced-motion: reduce) { .fl-body { transition: none; } }
+  [data-recipe-reduced] .fl-body { transition: none; }
+</style>
