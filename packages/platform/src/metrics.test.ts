@@ -17,12 +17,17 @@ const base: MetricInputs = {
   prev: {},
 };
 
-test('computeMetrics returns every metric kind, all in [0,1]', () => {
+const COMPUTED_KINDS = ['attention', 'memory', 'recency', 'coherence', 'entropy', 'pressure', 'risk', 'priority'] as const;
+
+test('computeMetrics returns the computed lanes in [0,1]; confidence is absent unless supplied', () => {
   const m = computeMetrics({ ...base, proximity: 0.8, visible: 1 });
-  for (const k of METRIC_KINDS) {
+  for (const k of COMPUTED_KINDS) {
     assert.ok(k in m, `${k} present`);
     assert.ok(m[k] >= 0 && m[k] <= 1, `${k} in [0,1] (${m[k]})`);
   }
+  assert.ok(!('confidence' in m), 'confidence absent when not supplied');
+  // completeness: every metric kind is either a computed lane or the supplied-only `confidence`
+  for (const k of METRIC_KINDS) assert.ok(k === 'confidence' || k in m, `${k} accounted for`);
 });
 
 test('attention rises with proximity + visibility, and engagement boosts it', () => {
@@ -52,4 +57,19 @@ test('supplied values override computed ones (confidence/risk/priority are data-
   const m = computeMetrics({ ...base, proximity: 1, visible: 1, supplied: { risk: 0.9, confidence: 0.3 } });
   assert.equal(m.risk, 0.9);
   assert.equal(m.confidence, 0.3);
+});
+
+test('confidence is never fabricated from relationship presence', () => {
+  // no supplied confidence + no relationships → absent (not 0)
+  const none = computeMetrics({ ...base });
+  assert.ok(!('confidence' in none), 'absent with no relationships');
+  // no supplied confidence + fully-resolved relationships → STILL absent (a citation is not certainty)
+  const cited = computeMetrics({ ...base, relTotal: 3, relResolved: 3, relConflict: 0 });
+  assert.ok(!('confidence' in cited), 'absent even with fully-resolved relationships');
+  assert.ok(cited.coherence > 0.9, 'relationship resolution still drives coherence — just not confidence');
+});
+
+test('confidence is present only when supplied, and is clamped to [0,1]', () => {
+  assert.equal(computeMetrics({ ...base, supplied: { confidence: 0.62 } }).confidence, 0.62);
+  assert.equal(computeMetrics({ ...base, supplied: { confidence: 1.5 } }).confidence, 1, 'out-of-range supplied confidence is clamped');
 });

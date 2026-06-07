@@ -128,9 +128,9 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
   });
 
   // ── metric computation (compute → state); write phase flushes state → --field-* vars ───
-  const prev = new Map<Element, Record<string, number>>();
+  const prev = new Map<Element, Partial<Record<MetricKind, number>>>();
   if (wantMetrics) {
-    const pending = new Map<Element, Record<MetricKind, number>>();
+    const pending = new Map<Element, Partial<Record<MetricKind, number>>>();
     platform.on('compute', (ctx) => {
       const vh = ctx.viewport?.height ?? (typeof window !== 'undefined' ? window.innerHeight : 800);
       const centre = vh / 2;
@@ -168,7 +168,12 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
       for (const [el, computed] of pending) {
         prev.set(el, computed);
         for (const metric of compiled.metrics) {
-          const value = isMetricKind(metric) ? computed[metric] : num(el.getAttribute(`data-field-${metric}`)) ?? 0;
+          const value = isMetricKind(metric)
+            ? computed[metric]
+            : (num(el.getAttribute(`data-field-${metric}`)) ?? 0);
+          // an unknown metric (e.g. confidence the host never supplied) is left unwritten: the
+          // FeedbackRegistry skips vars with no state, so no fabricated --field-confidence is emitted.
+          if (value == null) continue;
           platform.state.set(el, metric, value);
         }
       }
