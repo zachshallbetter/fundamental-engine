@@ -1,0 +1,50 @@
+---
+// One force row in the manual — prose + formula beside a draggable demo body the shared
+// field reacts to. Used by the Natural-field and Designed-extended catalogs (the `data-color`
+// pigment line is a no-op for non-pigment tokens, so the one component serves both). Demo
+// attrs come from lib/demo-forces.ts, the single source the field-line traces read too.
+import { BODY_TOKENS, attrsFor } from "../../lib/demo-forces.ts";
+interface Props {
+  /** a MANUAL_FORCES entry. */
+  f: any;
+  /** running concept number. */
+  num: number;
+  /** alternate the two-column layout. */
+  reverse?: boolean;
+}
+const { f, num, reverse = false } = Astro.props;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const a = attrsFor(f.token);
+---
+
+<section class={"concept" + (reverse ? " reverse" : "")}>
+  <div class="wrap concept-grid">
+    <div>
+      <span class="concept-no" style={`--c:${f.color}`}>
+        <i class={`fg fg-${f.token}`} /> {String(num).padStart(2, "0")} — {cap(f.label)}
+      </span>
+      <h2>{f.example}</h2>
+      <p>{cap(f.desc)}.</p>
+      <div class="formula" style={`--c:${f.color}`}>{f.formula}</div>
+    </div>
+    <div class="stage">
+      <span class="stage-label">{f.token} — drag me</span>
+      <span
+        class="body-chip"
+        data-drag
+        data-hot
+        data-body={BODY_TOKENS[f.token] ?? f.token}
+        data-strength={a.strength}
+        data-range={a.range}
+        data-spin={a.spin}
+        data-angle={a.angle}
+        data-color={f.token === "pigment" ? f.color : undefined}
+        style={`--cc:${f.color}; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);`}
+      >
+        <i class={`fg fg-${f.token}`} />
+        {f.token}
+      </span>
+      <span class="hintline">{f.desc}</span>
+    </div>
+  </div>
+</section>
