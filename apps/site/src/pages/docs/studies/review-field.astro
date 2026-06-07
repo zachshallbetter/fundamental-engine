@@ -1,0 +1,178 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import RecipesApplied from '../../../components/RecipesApplied.astro';
+
+// Review Field Study — a generic pull-request / review page (no brand assets) driven by real recipes
+// through applyRecipe(): changed files become a Dependency-Tension field (heat + tension + blocked),
+// reviewers a Review Constellation, comments bind to files, and the merge box reads coherence. The
+// per-item data-field-* values are supplied; applyRecipe writes them to --field-* and CSS renders them.
+
+const files = [
+  { id: 'f-core', name: 'core/field.ts', delta: '+82 −14', heat: 0.9, tension: 0.8, blocked: true },
+  { id: 'f-feedback', name: 'platform/feedback.ts', delta: '+20 −3', heat: 0.45, tension: 0.35 },
+  { id: 'f-schema', name: 'recipes/schema.ts', delta: '+11 −2', heat: 0.3, tension: 0.2 },
+  { id: 'f-gallery', name: 'site/gallery.astro', delta: '+60 −1', heat: 0.55, tension: 0.4 },
+  { id: 'f-test', name: 'recipes/recipes.test.ts', delta: '+24 −0', heat: 0.15, tension: 0.1 },
+];
+const reviewers = [
+  { id: 'r-ada', name: '@ada', attention: 0.9 },
+  { id: 'r-lin', name: '@lin', attention: 0.5 },
+  { id: 'r-rob', name: '@rob', attention: 0.2 },
+];
+const comments = [
+  { text: 'This branch in the integrator looks unguarded.', target: 'f-core' },
+  { text: 'Nit: prefer the bound helper here.', target: 'f-feedback' },
+  { text: 'Can we add a case for the empty render stack?', target: 'f-gallery' },
+];
+const checks = [
+  { name: 'typecheck', ok: true },
+  { name: 'tests', ok: true },
+  { name: 'build', ok: true },
+  { name: 'a11y lint', ok: false },
+];
+const RECIPES = ['review-constellation', 'dependency-tension', 'consensus-well', 'change-shockwave', 'completion-release'];
+const LIVE = ['dependency-tension', 'review-constellation'];
+const coherent = checks.filter((c) => c.ok).length / checks.length;
+---
+
+<DocsLayout
+  title="field-ui — Review Field Study"
+  description="A concept study: a generic pull-request page reinterpreted as a field. Changed files become a Dependency-Tension field, reviewers a Review Constellation, comments bind to files, and merge readiness reads as coherence — all driven by real recipes through applyRecipe()."
+>
+  <p class="kicker">Concept study</p>
+  <h1>Review Field Study</h1>
+  <p class="lede">
+    A generic pull request, reinterpreted as a field. Changed files carry heat and tension, reviewers
+    emit attention, comments bind to the files they touch, and merge readiness reads as coherence —
+    driven by real recipes through <code>applyRecipe()</code>, usable with the field off.
+  </p>
+
+  <div class="study-stages">
+    <div class="stage"><b>Before</b><span>A plain PR: files, comments, reviewers, checks, a merge box.</span></div>
+    <div class="stage"><b>After</b><span>Files heat by impact, blocked files hold tension, reviewers' attention shows, unresolved review reads as entropy.</span></div>
+    <div class="stage"><b>Inspect</b><span>The status line is live <code>applyRecipe().inspect()</code> — bodies, relationships, lint.</span></div>
+  </div>
+
+  <div class="study-controls" role="group" aria-label="Study controls">
+    <button type="button" class="sc-btn on" data-study="field" aria-pressed="true">Field: on</button>
+    <button type="button" class="sc-btn" data-study="reduced" aria-pressed="false">Reduce motion</button>
+    <span class="sc-readout" data-study-status>starting…</span>
+  </div>
+
+  <div class="rv">
+    <header class="rv-head">
+      <h2 class="rv-title">Make the recipe runtime executable</h2>
+      <p class="rv-branch"><code>feat/recipe-runtime</code> → <code>main</code></p>
+      <div class="rv-merge" style={`--field-coherence:${coherent}`}>
+        <b>Merge readiness</b>
+        <span class="rv-coh">{Math.round(coherent * 100)}% coherent</span>
+      </div>
+    </header>
+
+    <section>
+      <h3>Changed files <span class="rv-dim">Dependency Tension</span></h3>
+      <ul class="rv-files" id="rv-files">
+        {files.map((f) => (
+          <li
+            class="rv-file"
+            id={f.id}
+            data-field-heat={f.heat}
+            data-field-tension={f.tension}
+            data-field-blocked={f.blocked ? 1 : 0}
+          >
+            <code>{f.name}</code>
+            <span class="rv-delta">{f.delta}</span>
+            {f.blocked && <span class="rv-flag">blocked</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h3>Reviewers <span class="rv-dim">Review Constellation</span></h3>
+      <ul class="rv-reviewers" id="rv-reviewers">
+        {reviewers.map((r) => (
+          <li class="rv-reviewer" id={r.id} data-field-attention={r.attention}>{r.name}</li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h3>Review comments</h3>
+      <ul class="rv-comments">
+        {comments.map((c) => (
+          <li>{c.text} <a href={`#${c.target}`} data-field-relation="affects" data-field-target={`#${c.target}`}>affected file</a></li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h3>Checks</h3>
+      <ul class="rv-checks">
+        {checks.map((c) => <li class={c.ok ? 'ok' : 'bad'}>{c.ok ? '✓' : '✕'} {c.name}</li>)}
+      </ul>
+    </section>
+  </div>
+
+  <RecipesApplied ids={RECIPES} live={LIVE} />
+</DocsLayout>
+
+<script>
+  import { mountStudy } from '../../../lib/study.ts';
+  const filesRoot = document.getElementById('rv-files');
+  const reviewersRoot = document.getElementById('rv-reviewers');
+  if (filesRoot && reviewersRoot) {
+    mountStudy([
+      { root: filesRoot, recipeId: 'dependency-tension', items: Array.from(filesRoot.querySelectorAll<HTMLElement>('.rv-file')) },
+      { root: reviewersRoot, recipeId: 'review-constellation', items: Array.from(reviewersRoot.querySelectorAll<HTMLElement>('.rv-reviewer')) },
+    ]);
+  }
+</script>
+
+<style>
+  .kicker { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0; }
+  .lede { color: var(--muted, #9aa); max-width: 72ch; }
+  .study-stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.6rem; margin: 1rem 0; }
+  .stage { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.6rem 0.8rem; }
+  .stage b { display: block; color: #4da3ff; font-size: 0.82rem; }
+  .stage span { font-size: 0.82rem; color: var(--muted, #9aa); }
+  .study-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.5rem 0 1rem; }
+  .sc-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
+  .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
+  .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+
+  .rv { display: grid; gap: 1.2rem; }
+  .rv-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); padding-bottom: 0.6rem; }
+  .rv-title { margin: 0; font-size: 1.15rem; }
+  .rv-branch { margin: 0; color: var(--muted, #9aa); font-size: 0.82rem; }
+  .rv-merge { --field-coherence: 0; margin-left: auto; text-align: right; }
+  .rv-merge b { display: block; font-size: 0.78rem; }
+  .rv-coh { font-size: 0.82rem; color: color-mix(in srgb, #2dd4bf calc(40% + var(--field-coherence) * 60%), var(--muted, #9aa)); }
+  .rv h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+  .rv-dim { font-size: 0.7rem; color: var(--muted, #9aa); border: 1px solid var(--line, #2a2a35); border-radius: 5px; padding: 0.02rem 0.4rem; margin-left: 0.4rem; }
+  .rv-files, .rv-reviewers, .rv-comments, .rv-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+  .rv-reviewers, .rv-checks { flex-direction: row; flex-wrap: wrap; gap: 0.5rem; }
+  .rv-file {
+    --field-heat: 0; --field-tension: 0;
+    display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.6rem; border-radius: 7px;
+    border: 1px solid color-mix(in srgb, #ff9d5c calc(var(--field-heat) * 75%), var(--line, #2a2a35));
+    background: color-mix(in srgb, #ff9d5c calc(var(--field-heat) * 12%), transparent);
+    border-left: 3px solid color-mix(in srgb, #ff5c5c calc(var(--field-tension) * 90%), transparent);
+    transition: border-color 0.4s ease, background 0.4s ease;
+  }
+  .rv-delta { font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--muted, #9aa); margin-left: auto; }
+  .rv-flag { font-size: 0.68rem; color: #ff5c5c; border: 1px solid #ff5c5c; border-radius: 4px; padding: 0.02rem 0.35rem; }
+  .rv-reviewer {
+    --field-attention: 0;
+    padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.85rem;
+    border: 1px solid color-mix(in srgb, #4da3ff calc(40% + var(--field-attention) * 60%), var(--line, #2a2a35));
+    background: color-mix(in srgb, #4da3ff calc(var(--field-attention) * 22%), transparent);
+    transition: border-color 0.4s ease, background 0.4s ease;
+  }
+  .rv-comments a { color: #4da3ff; }
+  .rv-comments li { font-size: 0.9rem; }
+  .rv-checks .ok { color: #2dd4bf; }
+  .rv-checks .bad { color: #ff9d5c; }
+  .rv-checks li { font-size: 0.85rem; }
+  [data-recipe-reduced] .rv-file, [data-recipe-reduced] .rv-reviewer { transition: none; }
+</style>

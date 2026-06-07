@@ -220,6 +220,8 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
   const destroy = (): void => {
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
+    // clear the feedback variables this recipe wrote, so a torn-down recipe leaves the DOM plain
+    for (const el of elements) if (el instanceof HTMLElement) for (const f of compiled.feedback) el.style.removeProperty(f.var);
     for (const el of created) el.remove();
     for (const { el, attrs } of restore) for (const [k, v] of Object.entries(attrs)) v == null ? el.removeAttribute(k) : el.setAttribute(k, v);
     staticNode?.remove();
