@@ -7,6 +7,7 @@
  * VisualBindingRegistry · OverlayRegistry, bound by createFieldPlatform.
  */
 export * from './types.ts';
+export * from './schedule.ts';
 export * from './measurement.ts';
 export * from './state.ts';
 export * from './feedback.ts';
