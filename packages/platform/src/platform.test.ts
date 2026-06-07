@@ -19,8 +19,9 @@ function fakeEl(rect: { x: number; y: number; w: number; h: number }, connected 
   el.isConnected = connected;
   (el as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
     ({ left: rect.x, top: rect.y, width: rect.w, height: rect.h, right: rect.x + rect.w, bottom: rect.y + rect.h, x: rect.x, y: rect.y }) as DOMRect;
-  (el as unknown as { style: { setProperty: (k: string, v: string) => void } }).style = {
+  (el as unknown as { style: { setProperty: (k: string, v: string) => void; removeProperty: (k: string) => void } }).style = {
     setProperty: (k: string, v: string) => void (props[k] = v),
+    removeProperty: (k: string) => void delete props[k],
   };
   el.props = props;
   return el;
@@ -75,6 +76,29 @@ test('FeedbackRegistry writes bound vars (dual --field/--forces) on flush', () =
   f.flush(s, 0);
   assert.equal(el.props['--field-heat'], '0.25');
   assert.equal(el.props['--forces-heat'], '0.25');
+});
+
+test('FeedbackRegistry.clearVar removes a stale bound var when its state goes absent', () => {
+  const s = new StateRegistry();
+  const f = new FeedbackRegistry();
+  const el = fakeEl({ x: 0, y: 0, w: 1, h: 1 });
+  f.bind(el, { confidence: '--field-confidence' });
+  // host supplied confidence on an earlier frame → var written (with the --forces mirror)
+  s.set(el, 'confidence', 0.3);
+  f.flush(s, 0);
+  assert.equal(el.props['--field-confidence'], '0.300');
+  assert.equal(el.props['--forces-confidence'], '0.300');
+  // host stops supplying it: drop the state and clear the bound var. flush() alone would only skip
+  // re-writing — the previously written value would otherwise linger and read as last-known.
+  s.delete(el, 'confidence');
+  f.clearVar(el, 'confidence');
+  f.flush(s, 16);
+  assert.equal(el.props['--field-confidence'], undefined, 'stale --field-confidence cleared');
+  assert.equal(el.props['--forces-confidence'], undefined, 'the --forces mirror is cleared too');
+  // the binding survives, so the var is re-emitted if the metric returns
+  s.set(el, 'confidence', 0.8);
+  f.flush(s, 32);
+  assert.equal(el.props['--field-confidence'], '0.800', 'rebinds on return');
 });
 
 test('FeedbackRegistry fires thresholded, hysteretic events (field:* + forces:* twins)', () => {
