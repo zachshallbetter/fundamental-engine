@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import VocabBadge from '../../components/VocabBadge.astro';
 import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, type BodyRecipe, type FieldRecipe } from 'field-ui';
 
 // The gallery renders the engine's own catalog — 64 `FieldRecipe`s across four tiers (RECIPE_TIERS)
@@ -68,12 +69,19 @@ const filters = [
 >
   <h1>Recipe gallery</h1>
   <p class="lede">
-    Sixty-four portable <code>FieldRecipe</code>s across four tiers — the four-field translation model
-    made practical. Each is a real, validated recipe: every force token, render layer, and diagnostic is
-    checked against the engine catalog, and recipes only ever <i>compose existing primitives</i> (no new
-    engine behavior). The eight <b>first-release</b> recipes explain the system quickly; the full set
-    gives it range. Filter by tier or field; copy the JSON, read the plain-language explanation, or watch
-    the live reciprocity demo.
+    {recipes.length} portable <code>FieldRecipe</code>s across four tiers — the four-field translation
+    model made practical. Each is a real, validated recipe: every runtime token, render layer, and
+    diagnostic is checked against the engine catalog, and recipes only ever <i>compose existing
+    primitives</i> (no new engine behavior). The eight <b>first-release</b> recipes explain the system
+    quickly; the full set gives it range. Filter by tier or field; copy the JSON, read the plain-language
+    explanation, or watch the live reciprocity demo.
+  </p>
+  <p class="lede lede-lanes">
+    Each card keeps the vocabulary lanes separate: <VocabBadge kind="token" label="runtime tokens" />
+    execute, <VocabBadge kind="concept" label="concepts" /> name product behavior,
+    <VocabBadge kind="metric" label="metrics" /> measure state,
+    <VocabBadge kind="diagnostic" label="diagnostics" /> explain it, and
+    <VocabBadge kind="condition" label="conditions" /> activate it.
   </p>
 
   <div class="filters" role="group" aria-label="Filter recipes by field">
@@ -111,20 +119,32 @@ const filters = [
 
         <dl class="meta">
           <div>
-            <dt>Primitives</dt>
-            <dd>{recipe.primitives.map((p) => <code class="token">{p}</code>)}</dd>
+            <dt>Runtime tokens</dt>
+            <dd>{recipe.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd>
           </div>
-          <div>
-            <dt>Render</dt>
-            <dd>{recipe.render.join(' · ')}</dd>
-          </div>
+          {recipe.concepts && recipe.concepts.length > 0 && (
+            <div>
+              <dt>Concepts</dt>
+              <dd>{recipe.concepts.map((c) => <VocabBadge kind="concept" label={c} />)}</dd>
+            </div>
+          )}
           <div>
             <dt>Metrics</dt>
-            <dd>{recipe.metrics.join(' · ')}</dd>
+            <dd>{recipe.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd>
           </div>
           <div>
             <dt>Diagnostics</dt>
-            <dd>{recipe.diagnostics.map((d) => <a class="diag" href="/docs/diagnostics">{d}</a>)}</dd>
+            <dd>{recipe.diagnostics.map((d) => <VocabBadge kind="diagnostic" label={d} />)}</dd>
+          </div>
+          {recipe.conditions && recipe.conditions.length > 0 && (
+            <div>
+              <dt>Conditions</dt>
+              <dd>{recipe.conditions.map((c) => <VocabBadge kind="condition" label={c} />)}</dd>
+            </div>
+          )}
+          <div>
+            <dt>Render</dt>
+            <dd class="rc-render">{recipe.render.join(' · ')}</dd>
           </div>
           <div>
             <dt>Reduced motion</dt>
@@ -162,7 +182,7 @@ const filters = [
   const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip'));
   const cards = Array.from(document.querySelectorAll<HTMLElement>('.recipe-card'));
   const empty = document.querySelector<HTMLElement>('.empty');
-  const TIERS = new Set(['core', 'product', 'systems', 'enterprise']);
+  const TIERS = new Set(['core', 'workflow', 'professional', 'enterprise']);
   function apply(key: string) {
     let shown = 0;
     for (const card of cards) {
@@ -193,6 +213,8 @@ const filters = [
 
 <style>
   .lede { color: var(--muted, #9aa); max-width: 70ch; }
+  .lede-lanes { font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: baseline; }
+  .rc-render { font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--muted, #c3c9d4); }
   .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1.25rem 0 0.5rem; }
   .chip {
     border: 1px solid var(--line, #2a2a35);

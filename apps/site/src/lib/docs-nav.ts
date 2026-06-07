@@ -56,7 +56,7 @@ export const DOCS_NAV: DocGroup[] = [
   {
     title: 'Resources',
     items: [
-      { href: '/docs/recipes', label: 'Recipes', ready: true },
+      { href: '/docs/recipes', label: 'Recipe model', ready: true },
       { href: '/docs/authoring', label: 'Authoring across surfaces', ready: true },
       { href: '/docs/gallery', label: 'Recipe gallery', ready: true },
       { href: '/docs/inspector', label: 'Inspector', ready: true },
