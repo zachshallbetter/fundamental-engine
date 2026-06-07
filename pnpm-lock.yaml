@@ -23,6 +23,25 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
 
+  apps/starter:
+    dependencies:
+      '@field-ui/elements':
+        specifier: workspace:*
+        version: link:../../packages/elements
+      '@field-ui/platform':
+        specifier: workspace:*
+        version: link:../../packages/platform
+      field-ui:
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^6
+        version: 6.4.3
+
   packages/compat-core:
     dependencies:
       field-ui:

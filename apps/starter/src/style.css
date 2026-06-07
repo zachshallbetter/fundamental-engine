@@ -1,0 +1,84 @@
+:root {
+  --bg: #0d0d12;
+  --panel: #14141c;
+  --line: #2a2a35;
+  --text: #e8e8ef;
+  --muted: #9aa0ad;
+  --accent: #4da3ff;
+  --warm: #ff9d5c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* <field-root> renders a fixed canvas at z-index:0; keep content above it. */
+main { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; color: var(--accent); }
+
+.kicker { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.intro h1 { font-size: 2rem; margin: 0.3rem 0 0.6rem; }
+.lede { color: var(--muted); max-width: 64ch; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.75rem 0; }
+.controls button {
+  border: 1px solid var(--line); background: transparent; color: var(--text);
+  border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.85rem; cursor: pointer;
+}
+.controls button:hover { border-color: var(--accent); }
+.controls button.on { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); }
+.rm-note { font: 0.76rem ui-monospace, monospace; color: var(--muted); }
+
+.card {
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: 1.2rem 1.3rem; margin: 1.4rem 0;
+}
+.card h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
+.card p { color: var(--muted); font-size: 0.92rem; margin: 0.3rem 0 0.9rem; }
+
+/* 1 · declarative chips */
+.row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.chip {
+  border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--text); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.92rem; cursor: pointer;
+}
+.chip.ghost { border-color: var(--line); background: transparent; color: var(--muted); }
+
+/* 2 · applyRecipe + 3 · bindData share a task list; --field-priority drives weight/glow. */
+.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; min-height: 44px; }
+.tasks > * {
+  --field-priority: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 0.55rem 0.8rem; border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) calc(var(--field-priority) * 70%), var(--line));
+  background: color-mix(in srgb, var(--accent) calc(var(--field-priority) * 13%), transparent);
+  font-weight: calc(400 + var(--field-priority) * 300);
+  transition: border-color 0.4s ease, background 0.4s ease, opacity 0.35s ease, transform 0.35s ease;
+}
+.tasks b { color: var(--muted); font-weight: 500; font-size: 0.82rem; }
+
+.task[data-bd-entering] { opacity: 0; transform: translateY(4px); }
+.task[data-bd-exiting] { opacity: 0; }
+.t-title { flex: 1; }
+.t-badge { font-size: 0.7rem; border-radius: 5px; padding: 0.05rem 0.45rem; border: 1px solid var(--line); color: var(--muted); }
+.t-high { color: var(--warm); border-color: var(--warm); }
+.t-medium { color: var(--accent); border-color: var(--accent); }
+
+.inspect { font: 0.74rem ui-monospace, monospace; color: var(--muted); margin: 0.9rem 0 0; }
+
+.foot { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 1rem; margin-top: 2rem; }
+
+/* When the recipe runs in reduced-motion mode it marks the root; honor the OS setting too. */
+[data-recipe-reduced] .tasks > *,
+[data-recipe-reduced] .chip { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .tasks > *, .chip { transition: none; }
+}
