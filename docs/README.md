@@ -39,6 +39,7 @@ The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-ar
 | [`field-ui-system-contracts.md`](canonical/field-ui-system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
 | [`field-ui-platform-architecture.md`](canonical/field-ui-platform-architecture.md) | `@field-ui/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
 | [`field-ui-natural-fields.md`](canonical/field-ui-natural-fields.md) | The Natural Field Translation System — the four fundamental fields translated into interface behavior |
+| [`field-ui-documentation-standards.md`](canonical/field-ui-documentation-standards.md) | How field-ui is described everywhere — the architecture statement, doctrine, status taxonomy, naming policy, and verify-against-code rule |
 | [`fundamental-field-behavior-table.md`](canonical/fundamental-field-behavior-table.md) | Field/force laws, electromagnetic split, `fieldflow`, and truth modes |
 | [`visualization-methods-taxonomy.md`](canonical/visualization-methods-taxonomy.md) | Render layers and diagnostics (all modes shipped: contours, potential, vectors, energy, topology, inspector, causality, prediction) |
 | [`field-ui-interaction-and-relationship-model.md`](canonical/field-ui-interaction-and-relationship-model.md) | Agents beyond particles; the relationship model; Reading Field |
