@@ -1,0 +1,99 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+// The reduced-motion fallback table (system-contracts §14). Meaning is never motion-only — every
+// travelling effect has a static equivalent that still conveys the state.
+const fallbacks: [string, string][] = [
+  ['particles travel', 'particles freeze or fade'],
+  ['sparks', 'static highlight'],
+  ['fieldflow ribbons', 'static field lines'],
+  ['heat trails', 'soft wash'],
+  ['body motion', 'CSS state only'],
+  ['turbulence', 'contour snapshot'],
+];
+---
+
+<DocsLayout
+  title="field-ui — Accessibility Preview"
+  description="See field-ui's reduced-motion behavior: meaning survives without motion. A side-by-side of the animated field vs the static fallback, and the full→reduced mapping table."
+>
+  <h1>Accessibility preview</h1>
+  <p class="lede">
+    The contract: <b>motion is optional, meaning is never motion-only.</b> Under
+    <code>prefers-reduced-motion: reduce</code> the engine freezes the simulation (<code>dt = 0</code>)
+    — but the field's <em>state</em> still reads, because it lives in CSS variables, not in travel.
+  </p>
+
+  <div class="ap-toolbar">
+    <button id="ap-toggle" aria-pressed="false">Preview as reduced motion</button>
+    <span class="ap-hint" id="ap-hint">Showing: motion on</span>
+  </div>
+
+  <div class="ap-demo" id="ap-demo">
+    <figure class="ap-panel">
+      <figcaption>Motion on</figcaption>
+      <h2 class="ap-headline ap-motion">mass</h2>
+      <p class="ap-cap">particles travel; the headline pulses</p>
+    </figure>
+    <figure class="ap-panel ap-reduced">
+      <figcaption>Reduced motion</figcaption>
+      <h2 class="ap-headline">mass</h2>
+      <p class="ap-cap">no travel — the lit state still reads</p>
+    </figure>
+  </div>
+
+  <h2>Reduced-motion fallbacks</h2>
+  <table class="ap-table">
+    <thead><tr><th>Full mode</th><th>Reduced mode</th></tr></thead>
+    <tbody>
+      {fallbacks.map(([full, reduced]) => (
+        <tr><td>{full}</td><td>{reduced}</td></tr>
+      ))}
+    </tbody>
+  </table>
+</DocsLayout>
+
+<script>
+  // The toggle simulates the reduced-motion state for sighted testing without changing the OS
+  // setting: it forces the motion panel into the static fallback. The real engine keys off
+  // prefers-reduced-motion globally; this is a preview.
+  const demo = document.getElementById('ap-demo');
+  const btn = document.getElementById('ap-toggle');
+  const hint = document.getElementById('ap-hint');
+  btn?.addEventListener('click', () => {
+    const on = demo?.toggleAttribute('data-all-reduced');
+    btn.setAttribute('aria-pressed', String(on));
+    if (hint) hint.textContent = on ? 'Showing: reduced motion' : 'Showing: motion on';
+  });
+</script>
+
+<style>
+  .lede { color: var(--muted, #9aa); max-width: 62ch; }
+  .ap-toolbar { display: flex; align-items: center; gap: 0.8rem; margin: 1rem 0 0.6rem; }
+  .ap-toolbar button { font: inherit; font-size: 0.85rem; padding: 0.35rem 0.8rem; border: 1px solid var(--line, #2a2a35); border-radius: 7px; background: transparent; color: inherit; cursor: pointer; }
+  .ap-toolbar button[aria-pressed='true'] { border-color: #2dd4bf; background: color-mix(in srgb, #2dd4bf 18%, transparent); }
+  .ap-hint { font-size: 0.82rem; color: var(--muted, #9aa); }
+  .ap-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .ap-panel { margin: 0; border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 1.2rem; text-align: center; background: rgba(255, 255, 255, 0.02); }
+  .ap-panel figcaption { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #9aa); }
+  /* the headline reads its 'lit' state from --d: weight + glow + colour. State, not motion. */
+  .ap-headline {
+    --d: 0.72;
+    margin: 0.6rem 0 0.3rem;
+    font-size: 2.4rem;
+    font-variation-settings: 'wght' calc(300 + var(--d) * 500);
+    color: color-mix(in srgb, #4da3ff calc(40% + var(--d) * 55%), #fff);
+    text-shadow: 0 0 calc(var(--d) * 26px) rgba(77, 163, 255, var(--d));
+  }
+  /* motion is purely decorative — a gentle pulse, gated by reduced-motion + the toggle */
+  .ap-motion { animation: ap-pulse 2.4s ease-in-out infinite; }
+  .ap-cap { font-size: 0.8rem; color: var(--muted, #9aa); margin: 0; }
+  @keyframes ap-pulse { 0%, 100% { --d: 0.45; } 50% { --d: 0.92; } }
+  /* both the OS setting and the in-page toggle drop the motion to the static lit state */
+  @media (prefers-reduced-motion: reduce) { .ap-motion { animation: none; --d: 0.72; } }
+  .ap-demo[data-all-reduced] .ap-motion { animation: none; --d: 0.72; }
+  @property --d { syntax: '<number>'; inherits: true; initial-value: 0; }
+  .ap-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; max-width: 420px; }
+  .ap-table th, .ap-table td { text-align: left; padding: 0.3rem 0.7rem; border-bottom: 1px solid var(--line, #2a2a35); }
+  .ap-table th { color: var(--muted, #9aa); }
+</style>
