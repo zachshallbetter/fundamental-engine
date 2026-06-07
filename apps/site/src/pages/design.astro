@@ -21,7 +21,7 @@ const DISCIPLINE: Record<string, string> = {
 };
 const families = [
   { key: 'canonical', label: 'Canonical nine' },
-  { key: 'natural', label: 'Natural primitives' },
+  { key: 'natural', label: 'Natural & derived' },
   { key: 'extended', label: 'Designed-extended' },
 ] as const;
 const inFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);

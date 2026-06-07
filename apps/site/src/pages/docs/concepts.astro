@@ -110,9 +110,10 @@ const DEMOS = [
     <h2>The DOM ⇄ field runtime binding</h2>
     <p>
       The rarest property of the system is a <strong>two-way binding between layout and a
-      physics runtime</strong>. Most particle backgrounds are one-way (canvas reacts to the mouse).
-      Here the DOM <em>is</em> the runtime's geometry, and the runtime writes back into layout and
-      type. Two flows, on the scheduler's read and write phases:
+      physics runtime</strong>. field-ui is <em>not</em> a particle background: those are one-way (a
+      canvas reacts to the mouse). Here the DOM <em>is</em> the runtime's geometry, and the runtime
+      writes back into layout and type — a shared field context, not a decorative layer. Two flows, on
+      the scheduler's read and write phases:
     </p>
     <CodeTabs variants={[{ label: 'Per frame', lang: 'js', code: pipeSnippet }]} />
     <p>

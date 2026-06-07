@@ -5,9 +5,9 @@ import { MANUAL_FORCES, classifyForce } from 'field-ui';
 import '../../../styles/force-glyphs.css';
 
 const families = [
-  { key: 'canonical', label: 'Canonical nine', blurb: 'The bounded, UI-legible verbs — what a body does to nearby matter. Designed forces, not natural translations.' },
-  { key: 'natural', label: 'Natural primitives', blurb: 'Engine expressions of the four fundamental fields — see the Natural Fields model.' },
-  { key: 'extended', label: 'Designed extended', blurb: 'Pure per-particle effects — bends, gates, phase changes, modifiers, and strong/weak analogues.' },
+  { key: 'canonical', label: 'Canonical nine', blurb: 'The bounded, UI-legible verbs — what a body does to nearby matter. Designed runtime tokens, not natural translations.' },
+  { key: 'natural', label: 'Natural & derived', blurb: 'Runtime tokens drawn from physics: some express a fundamental field (gravity, charge, magnetism), others are derived behaviors (thermal, diffuse, collide), a transport (propagate), or a metric (memory). The per-card badge tells you which — see the Natural Fields model.' },
+  { key: 'extended', label: 'Designed extended', blurb: 'Pure per-particle effects — bends, gates, transitions, modifiers, and strong/weak analogues.' },
 ] as const;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // Natural-field badge per force, from the engine's classification (config/manual.ts).
@@ -23,7 +23,7 @@ const CELL_FORCES = new Set(['attract', 'repel', 'swirl', 'gravity', 'stream', '
 
 <DocsLayout
   title="field-ui — Forces reference"
-  description="Every force in field-ui, generated from the engine's catalog: the canonical nine, the natural primitives, and the designed-extended forces — each with its per-frame law, the data-* attributes it reads, a description, and a real-world example."
+  description="Every force in field-ui, generated from the engine catalog — real runtime tokens only: designed UI verbs, natural-field translations, derived behaviors, transports, material analogues, and a metric. Each card carries its per-frame law, the data-* attributes it reads, a description, and a real-world example."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
@@ -35,13 +35,21 @@ const CELL_FORCES = new Set(['attract', 'repel', 'swirl', 'gravity', 'stream', '
   </header>
 
   <div class="callout">
-    <b>Natural fields, not a flat list.</b> Each card carries a badge from the engine's classification:
-    a fundamental-field parent (<span class="rc-kind" style="--kc:#4da3ff">gravity</span>
+    <b>Runtime tokens only.</b> Every card here is a real, passported engine token. Each carries a badge
+    from the engine's classification — either a fundamental-field parent
+    (<span class="rc-kind" style="--kc:#4da3ff">gravity</span>
     <span class="rc-kind" style="--kc:#2dd4bf">EM</span>
     <span class="rc-kind" style="--kc:#a78bfa">strong</span>
-    <span class="rc-kind" style="--kc:#ff9d5c">weak</span>) or a kind (<span class="rc-kind">designed</span>,
-    <span class="rc-kind">derived</span>, <span class="rc-kind">transport</span>, <span class="rc-kind">metric</span>).
-    See the <a href="/docs/natural-fields">Natural Fields</a> model.
+    <span class="rc-kind" style="--kc:#ff9d5c">weak</span>) or a kind
+    (<span class="rc-kind">designed</span>, <span class="rc-kind">derived</span>,
+    <span class="rc-kind">transport</span>, <span class="rc-kind">metric</span>). Only
+    <b>gravity / electromagnetic / strong / weak</b> are conceptual natural fields;
+    <code>charge</code> and <code>magnetism</code> are electromagnetic <em>expressions</em>, while
+    <code>thermal</code>, <code>diffuse</code>, and <code>collide</code> are derived behaviors. Concepts
+    (<code>spring</code>, <code>orbit</code>), metrics (<code>mass</code>), and diagnostics
+    (<code>potential</code>) are <em>not</em> tokens and do not appear here — see the
+    <a href="/docs/natural-fields">Natural Fields</a> model and the
+    <a href="/docs/recipes">recipe model</a>.
   </div>
 
   {
