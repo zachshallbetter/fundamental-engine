@@ -56,10 +56,10 @@ export const RENDER_MODES: readonly RenderModeInfo[] = [
   { mode: 'contours', type: 'scalar', shows: 'equal-value isolines', status: 'shipped' },
   { mode: 'potential', type: 'scalar', shows: 'wells and gradients', status: 'shipped' },
   { mode: 'energy', type: 'scalar', shows: 'kinetic / potential / thermal', status: 'shipped' },
-  { mode: 'topology', type: 'graph', shows: 'threads, flux links', status: 'planned' },
-  { mode: 'inspector', type: 'debug', shows: 'bodies, agents, metrics, contracts', status: 'planned' },
-  { mode: 'causality', type: 'debug', shows: 'contribution sources', status: 'planned' },
-  { mode: 'prediction', type: 'debug', shows: 'ghost trajectory', status: 'planned' },
+  { mode: 'topology', type: 'graph', shows: 'threads, flux links', status: 'shipped' },
+  { mode: 'inspector', type: 'debug', shows: 'bodies, agents, metrics, contracts', status: 'shipped' },
+  { mode: 'causality', type: 'debug', shows: 'contribution sources', status: 'shipped' },
+  { mode: 'prediction', type: 'debug', shows: 'ghost trajectory', status: 'shipped' },
 ];
 
 /** Named visualization presets (viz-taxonomy "Visualization Presets") as render-layer stacks. */
