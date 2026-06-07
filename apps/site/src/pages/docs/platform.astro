@@ -41,7 +41,7 @@ const LINT = [
     <p class="kicker">Concepts</p>
     <h1>The <span class="accent">platform</span> layer</h1>
     <p class="lede">
-      <code>@field-ui/core</code> computes field behavior, renderer-agnostic. <code>@field-ui/platform</code>
+      <code>field-ui</code> (the core) computes field behavior, renderer-agnostic. <code>@field-ui/platform</code>
       binds it to the DOM — measurement, state, feedback, relationships, visual bindings, and overlays,
       all driven by one frame scheduler. It is the DOM participation layer; canvas is one render surface.
     </p>
@@ -49,7 +49,7 @@ const LINT = [
 
   <section class="docs-sec">
     <h2>Package hierarchy</h2>
-    <pre class="pf-tree"><code>field-ui (@field-ui/core)   renderer-agnostic field, force, particle, metric, diagnostic logic
+    <pre class="pf-tree"><code>field-ui                    renderer-agnostic field, force, particle, metric, recipe, diagnostic logic
 @field-ui/platform          DOM participation: the six registries + scheduler + lintPlatform()
 @field-ui/elements          native web components — &lt;field-root&gt; + the [data-body] contract
 @field-ui/react             the React adapter over the same contracts
