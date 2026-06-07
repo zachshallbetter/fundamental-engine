@@ -455,7 +455,7 @@ formation = scatter -> wells
 
 ## 22. Reading and Editorial Experiences
 
-Reading is the flagship normal-content use case for this model: an ordinary article, not a particle demo. The **Reading Field** demo (shipped, at `/docs/reading-field`) is a plain content page that exercises all six platform registries on the `FrameScheduler`. Sections become bodies (`MeasurementRegistry`); viewport proximity becomes attention (`StateRegistry`); dwell accumulates into memory; the table of contents reflects the field state (`FeedbackRegistry`); and citations resolve into typed relationships (`RelationshipRegistry`) via the native-signal binding described in section 7. Under reduced motion the meaning is preserved — emphasis and state survive even when travel does not.
+Reading is the flagship normal-content use case for this model: an ordinary article, not a particle demo. The **Reading Field** demo (shipped, at `/docs/reading-field`) is a plain content page that exercises all six phases of the `FrameScheduler` across four platform registries (it does not use the visual-binding or overlay registries). Sections become bodies (`MeasurementRegistry`); viewport proximity becomes attention (`StateRegistry`); dwell accumulates into memory; the table of contents reflects the field state (`FeedbackRegistry`); and citations resolve into typed relationships (`RelationshipRegistry`) via the native-signal binding described in section 7. Under reduced motion the meaning is preserved — emphasis and state survive even when travel does not.
 
 | Reading signal | Field behavior |
 |---|---|

@@ -378,7 +378,7 @@ visual-not-hidden fires when a decorative visual binding is not hidden
 
 ## 18. Reading Field Browser Verification
 
-`/docs/reading-field` is a normal content page that exercises all six registries on the scheduler in
+`/docs/reading-field` is a normal content page that exercises all six scheduler phases across four registries (measurement, state, feedback, relationships) in
 the browser. It is the end-to-end check that the shared field context behaves on real content:
 
 ```txt
