@@ -2,7 +2,7 @@
 import { defineConfig } from 'astro/config';
 
 // Static output (default) → apps/site/dist, served by Vercel.
-// The live `<forces-field>` element (@field-ui/elements) runs the engine.
+// The live `<field-root>` element (@field-ui/elements) runs the engine.
 export default defineConfig({
   site: 'https://field-ui.com',
   // The Field Manual became the home page; keep the old URL working.

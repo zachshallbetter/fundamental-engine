@@ -101,7 +101,7 @@ const dest = [
 
 <script>
   // Two field toggles, both delegated + page-load synced so they survive view-transition
-  // navigation (which swaps the button elements but keeps the persisted <forces-field>).
+  // navigation (which swaps the button elements but keeps the persisted <field-root>).
 
   // 1) Global field flow: switch the whole background field render between dots and streamlines.
   function syncStreamBtn() {
@@ -131,14 +131,14 @@ const dest = [
     if (t.closest('#sn-stream-toggle')) {
       const btn = document.getElementById('sn-stream-toggle')!;
       const next = btn.getAttribute('aria-pressed') !== 'true';
-      const field = document.querySelector('forces-field') as (HTMLElement & { setRender(m: string): void }) | null;
+      const field = document.querySelector('field-root') as (HTMLElement & { setRender(m: string): void }) | null;
       field?.setRender(next ? 'streamlines' : 'dots');
       btn.setAttribute('aria-pressed', String(next));
       syncStreamBtn();
     } else if (t.closest('#sn-heatmap-toggle')) {
       const btn = document.getElementById('sn-heatmap-toggle')!;
       const next = btn.getAttribute('aria-pressed') !== 'true';
-      const field = document.querySelector('forces-field') as (HTMLElement & { setHeatmap(on: boolean): void }) | null;
+      const field = document.querySelector('field-root') as (HTMLElement & { setHeatmap(on: boolean): void }) | null;
       field?.setHeatmap(next);
       btn.setAttribute('aria-pressed', String(next));
       syncHeatmapBtn();

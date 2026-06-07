@@ -3,13 +3,13 @@ import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 import { MANUAL_FORCES } from 'field-ui';
 
-const cell = `<forces-cell force="swirl" color="#2dd4bf"></forces-cell>`;
+const cell = `<field-cell force="swirl" color="#2dd4bf"></field-cell>`;
 
 const setup = `<script type="module">
   import '@field-ui/elements';
 </script>
 
-<forces-field accent="#4da3ff"></forces-field>`;
+<field-root accent="#4da3ff"></field-root>`;
 
 const bodies = `<!-- one force -->
 <a data-body="attract" data-strength="0.9" data-range="320">pull me</a>
@@ -24,7 +24,7 @@ const bodies = `<!-- one force -->
   data-feedback
 >swirl</button>`;
 
-const methods = `const field = document.querySelector('forces-field');
+const methods = `const field = document.querySelector('field-root');
 
 field.scan();                    // after adding/removing [data-body] elements
 field.setFormation('wells');     // global field bias
@@ -37,13 +37,13 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
 
 <DocsLayout
   title="field-ui — Web component guide"
-  description="Use the <forces-field> web component from @field-ui/elements: register it, mark elements as bodies, set attributes, and drive the field through the proxied FieldHandle. Works in any framework or plain HTML."
+  description="Use the <field-root> web component from @field-ui/elements: register it, mark elements as bodies, set attributes, and drive the field through the proxied FieldHandle. Works in any framework or plain HTML."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">web component</span></h1>
     <p class="lede">
-      <code>&lt;forces-field&gt;</code> is the keystone — a custom element that drops into any
+      <code>&lt;field-root&gt;</code> is the keystone — a custom element that drops into any
       framework (or plain HTML) unchanged. "Every element is a body" is a web-components-shaped
       idea.
     </p>
@@ -60,7 +60,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
     <h2>Set up the field</h2>
     <p>
       Import the package once to register the element, then drop a single
-      <code>&lt;forces-field&gt;</code> anywhere. It mounts a fixed, full-viewport canvas behind
+      <code>&lt;field-root&gt;</code> anywhere. It mounts a fixed, full-viewport canvas behind
       your page and runs the engine. It's decorative, so it marks itself
       <code>aria-hidden</code> automatically.
     </p>
@@ -83,7 +83,7 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
 
   <section class="docs-sec">
     <h2>Attributes</h2>
-    <p>Set these on the <code>&lt;forces-field&gt;</code> element:</p>
+    <p>Set these on the <code>&lt;field-root&gt;</code> element:</p>
     <ul class="model">
       <li><b>accent</b> — the travelling accent colour (a hex string).</li>
       <li><b>density</b> — particle-count multiplier (default 1).</li>
@@ -109,13 +109,13 @@ field.burst(x, y, '#fff');       // a one-shot shove + heat near a point`;
     <h2>The Field Cell</h2>
     <p>
       For a small, in-frame, single-force demo (instead of the page-wide field), use
-      <code>&lt;forces-cell&gt;</code> — a container-sized canvas that runs one force with its own
+      <code>&lt;field-cell&gt;</code> — a container-sized canvas that runs one force with its own
       particle pool. It pauses off-screen (IntersectionObserver), re-fits on resize, and honours
       reduced motion. It's the embeddable unit behind the Manual's per-concept demos.
     </p>
     <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: cell }]} />
     <figure class="force-cell solo" style="--fc:#2dd4bf; margin-top:0.9rem">
-      <forces-cell force="swirl" color="#2dd4bf" style="height:150px"></forces-cell>
+      <field-cell force="swirl" color="#2dd4bf" style="height:150px"></field-cell>
       <figcaption>
         <b>swirl</b>
         <span>live — move your cursor through the frame</span>

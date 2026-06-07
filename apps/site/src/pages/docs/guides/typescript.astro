@@ -2,10 +2,10 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const cls = `import { ForcesField } from '@field-ui/vanilla';
+const cls = `import { FieldField } from '@field-ui/vanilla';
 
 // builds + manages a fixed full-viewport canvas, starts the engine
-const field = new ForcesField({ accent: '#4da3ff', render: 'dots' });
+const field = new FieldField({ accent: '#4da3ff', render: 'dots' });
 
 field.setFormation('wells');
 field.burst(window.innerWidth / 2, 200);
@@ -13,11 +13,11 @@ field.burst(window.innerWidth / 2, 200);
 // …later
 field.destroy();   // stops the loop AND removes the managed canvas`;
 
-const own = `import { ForcesField } from '@field-ui/vanilla';
+const own = `import { FieldField } from '@field-ui/vanilla';
 
 // drive a <canvas> you place and size yourself — nothing is created or removed,
 // and destroy() only stops the engine.
-const field = new ForcesField({ canvas: myCanvas, density: 1.2 });`;
+const field = new FieldField({ canvas: myCanvas, density: 1.2 });`;
 
 const mount = `import { mountField, createField } from '@field-ui/vanilla';
 
@@ -30,13 +30,13 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
 
 <DocsLayout
   title="field-ui — TypeScript guide"
-  description="Use field-ui from plain TypeScript with @field-ui/vanilla: a typed ForcesField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
+  description="Use field-ui from plain TypeScript with @field-ui/vanilla: a typed FieldField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">TypeScript</span> wrapper</h1>
     <p class="lede">
-      <code>@field-ui/vanilla</code> is the framework-free door — a typed <code>ForcesField</code>
+      <code>@field-ui/vanilla</code> is the framework-free door — a typed <code>FieldField</code>
       class for plain TypeScript apps, with no custom element to register and no framework
       dependency. It wraps the same zero-dependency engine the web component and React adapter do.
     </p>
@@ -50,9 +50,9 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
   </section>
 
   <section class="docs-sec">
-    <h2>The ForcesField class</h2>
+    <h2>The FieldField class</h2>
     <p>
-      <code>new ForcesField()</code> builds a fixed, full-viewport canvas behind your page and
+      <code>new FieldField()</code> builds a fixed, full-viewport canvas behind your page and
       starts the engine on it. It takes every <a href="/docs/api/options">FieldOptions</a> value,
       implements the full <a href="/docs/api/handle">FieldHandle</a> surface, and exposes the
       <code>canvas</code> it runs on. Importing the package has no side effects — it never

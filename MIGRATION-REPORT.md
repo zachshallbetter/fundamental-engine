@@ -67,9 +67,11 @@ canonical/OG URLs, package `homepage` fields, README/docs links). The GitHub rep
   Handlers are idempotent, so the paired dispatch is safe.
 - **CSS variables** — `--field-density` and `--field-heatmap-density` are written alongside
   `--forces-density` / `--forces-heatmap-density` (identical values); cleanup clears both.
-- **Components** — `<field-root>`, `<field-field>` (⊂ `ForcesField`) and `<field-cell>`
-  (⊂ `ForcesCell`) register alongside `<forces-field>` / `<forces-cell>`. React adds
-  `FieldField` / `useFieldField` / `FieldFieldProps`; vanilla adds a `FieldField` class alias.
+- **Components** — `<field-field>` / `<field-root>` / `<field-cell>` register alongside
+  `<forces-field>` / `<forces-cell>`. (After the §7 follow-up the canonical classes are
+  `FieldField` / `FieldCell`; the `forces-*` tags and `Forces*` classes are the thin deprecated
+  aliases.) React exposes `FieldField` / `useFieldField` / `FieldFieldProps`; vanilla a `FieldField`
+  class — each with a `Forces*` alias.
 
 ## 5. Migration tests added (+12)
 
@@ -93,12 +95,29 @@ canonical/OG URLs, package `homepage` fields, README/docs links). The GitHub rep
 - No hardcoded `force/` **directory** paths exist outside the migration docs (the other `force/`
   hits are prose like "force/condition registry"). All checked internal doc links resolve.
 
-## 7. What remains / deferred (not in this pass)
+## 7. Follow-up pass (field-first completion, post-adoption)
 
-- **Element tags inside the site demos** still use the working `<forces-field>` alias (the README
-  quick-start uses `<field-root>`). Switching the demos is optional polish; behavior is identical.
-- **Legacy `forces-*.md` docs** still use old naming throughout (kept intentionally as the behavior
-  reference). A future pass can fold them into the field-first docs.
+After field-ui was adopted as the working repo and the domain moved to **field-ui.com**:
+
+- **Canonical class/hook names flipped to field-first.** `FieldField` / `FieldController` /
+  `FieldCell` / `useFieldField` / `FieldFieldProps` / `FieldFieldInit` are now the canonical
+  declarations across core/elements/react/vanilla; `ForcesField` / `ForcesController` / `ForcesCell`
+  / `useForcesField` remain as deprecated aliases. The `<forces-field>` / `<forces-cell>` tags are
+  now thin subclasses of the canonical `FieldField` / `FieldCell`.
+- **Site demos converted** to `<field-root>` / `<field-cell>` (markup, `querySelector`s, CSS
+  selectors, code samples, prose). Zero `<forces-field>` in the built site.
+- **Legacy `forces-*.md` + `shadow-dom.md` migrated to field-first naming** (product, packages,
+  elements, events, CSS vars, class names). The physics `force` vocabulary, the force tokens, and
+  `forces.config.ts` stay. The docs map now presents them as the as-built **Engine Reference**, not
+  a "legacy" set.
+- **Active product strings** (package descriptions + READMEs, the bench `--filter`, publish/release
+  docs, SECURITY/ROADMAP/CONTRIBUTING) rebranded to field-ui.
+- Result: `forces` occurrences fell from ~1693 to ~1309 — the remainder is the irreducible physics
+  vocabulary (`force`, the tokens, the `FORCES` catalog), the intentional alias surface, and the
+  GitHub repo URL.
+
+## 8. What remains / deferred
+
 - **GitHub repo URL** (`github.com/zachshallbetter/forces-ui`) is unchanged — the repository is not
   renamed. The production domain is now `field-ui.com`.
 - **Alias removal**: the `forces-ui` / `@forces-ui/*` packages, `forces:*` events, `--forces-*`

@@ -1,7 +1,7 @@
 {
   "name": "@field-ui/elements",
   "version": "0.2.0",
-  "description": "Web-component keystone for forces-ui — the <forces-field> custom element + declarative data-body bodies.",
+  "description": "Web-component keystone for field-ui — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",

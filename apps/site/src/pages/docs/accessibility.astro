@@ -18,7 +18,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
   <section class="docs-sec">
     <h2>The canvas is hidden from assistive tech</h2>
     <p>
-      Every field surface — <code>&lt;forces-field&gt;</code>, <code>&lt;forces-cell&gt;</code>, and
+      Every field surface — <code>&lt;field-root&gt;</code>, <code>&lt;field-cell&gt;</code>, and
       <code>mountField()</code> — marks its canvas <code>aria-hidden="true"</code> automatically, sits
       at <code>z-index: 0</code> behind the content, and is <code>pointer-events: none</code>. Screen
       readers and tab order never touch it.

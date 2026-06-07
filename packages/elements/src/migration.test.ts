@@ -18,13 +18,15 @@ import {
   FIELD_UPDATE_BODY,
 } from './index.ts';
 
-test('field-* element aliases subclass their forces-* originals', () => {
-  assert.ok(FieldField.prototype instanceof ForcesField, '<field-field> ⊂ ForcesField');
-  assert.ok(FieldRoot.prototype instanceof ForcesField, '<field-root> ⊂ ForcesField');
-  assert.ok(FieldCell.prototype instanceof ForcesCell, '<field-cell> ⊂ ForcesCell');
+test('forces-* element aliases subclass their field-* canonicals', () => {
+  // FieldField/FieldCell are canonical; the forces-* aliases subclass them, and <field-root>
+  // is a thin subclass of FieldField — so the old tags keep the same behaviour and contract.
+  assert.ok(ForcesField.prototype instanceof FieldField, '<forces-field> ⊂ FieldField');
+  assert.ok(FieldRoot.prototype instanceof FieldField, '<field-root> ⊂ FieldField');
+  assert.ok(ForcesCell.prototype instanceof FieldCell, '<forces-cell> ⊂ FieldCell');
   // static inheritance too, so observedAttributes / behaviour carry over unchanged
-  assert.equal(Object.getPrototypeOf(FieldField), ForcesField);
-  assert.equal(Object.getPrototypeOf(FieldCell), ForcesCell);
+  assert.equal(Object.getPrototypeOf(ForcesField), FieldField);
+  assert.equal(Object.getPrototypeOf(ForcesCell), FieldCell);
 });
 
 test('elements re-exports the field:* event aliases', () => {

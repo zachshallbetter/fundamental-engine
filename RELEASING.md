@@ -5,8 +5,8 @@ How versions are cut and published. The mechanical publish steps live in
 
 ## Versioning policy
 
-The four published packages — `forces-ui`, `@forces-ui/vanilla`, `@forces-ui/elements`,
-`@forces-ui/react` — are versioned **together** and follow [Semantic Versioning](https://semver.org):
+The four published packages — `field-ui`, `@field-ui/vanilla`, `@field-ui/elements`,
+`@field-ui/react` — are versioned **together** and follow [Semantic Versioning](https://semver.org):
 
 - **patch** (`0.1.x`) — bug fixes, internal changes, no API change.
 - **minor** (`0.x.0`) — additive, backward-compatible features (a new force, a new
@@ -14,9 +14,9 @@ The four published packages — `forces-ui`, `@forces-ui/vanilla`, `@forces-ui/e
 - **major** — a breaking change to the public API. **Pre-1.0**, breaking changes may land
   in a **minor** bump, but the CHANGELOG must call them out under a **Breaking** heading.
 
-The engine's public surface is: the `forces-ui` exports (`createField`, `FieldOptions`,
+The engine's public surface is: the `field-ui` exports (`createField`, `FieldOptions`,
 `FieldHandle`, the catalog, the conformance API), the `data-*` attribute vocabulary, the
-`<forces-field>` element attributes/methods, the `@forces-ui/vanilla` `ForcesField` class and
+`<field-root>` element attributes/methods, the `@field-ui/vanilla` `FieldField` class and
 `mountField`, and the React adapter's props. The internal integrator, render code, and the
 site are not part of the public contract.
 
@@ -32,7 +32,7 @@ site are not part of the public contract.
    (`## [x.y.z] — YYYY-MM-DD`) following [Keep a Changelog](https://keepachangelog.com).
 3. **Bump the three packages together:**
    ```sh
-   pnpm --filter forces-ui --filter @forces-ui/vanilla --filter @forces-ui/elements --filter @forces-ui/react \
+   pnpm --filter field-ui --filter @field-ui/vanilla --filter @field-ui/elements --filter @field-ui/react \
      exec npm version <patch|minor|major> --no-git-tag-version
    ```
    Keep them at the same version. (The site app is versioned independently and is not
@@ -43,12 +43,12 @@ site are not part of the public contract.
    git tag vX.Y.Z
    git push --follow-tags
    ```
-5. **Publish** per [`PUBLISHING.md`](PUBLISHING.md) in **dependency order** — `forces-ui`
-   (core) first, then `@forces-ui/vanilla`, then `@forces-ui/elements` (which depends on
-   vanilla) and `@forces-ui/react`. `pnpm` rewrites `workspace:*` to the real version
+5. **Publish** per [`PUBLISHING.md`](PUBLISHING.md) in **dependency order** — `field-ui`
+   (core) first, then `@field-ui/vanilla`, then `@field-ui/elements` (which depends on
+   vanilla) and `@field-ui/react`. `pnpm` rewrites `workspace:*` to the real version
    automatically, so each dependency must already be published when its dependents go out.
 6. **Create the GitHub release** for the tag, pasting the CHANGELOG section.
-7. **Smoke-test** a clean install (`npm i forces-ui` in a fresh directory) and confirm the
+7. **Smoke-test** a clean install (`npm i field-ui` in a fresh directory) and confirm the
    scoped adapters resolve the core dependency.
 
 ## What CI does (and does not) do
