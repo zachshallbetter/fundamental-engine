@@ -1,0 +1,39 @@
+---
+// A responsive grid of live <field-cell> demos (via ForceCell). Each cell runs the in-frame poster
+// engine and is interactive — pointer-repel is built in, so moving the cursor through a frame pushes
+// the matter. Only the seven cell-supported forces render: attract, repel, swirl, gravity, stream,
+// buoyancy, tether (see packages/elements/src/cell-force.ts). One place to lay out a row of them.
+import ForceCell from './ForceCell.astro';
+
+interface Cell {
+  force: string;
+  label?: string;
+  color?: string;
+  caption?: string;
+}
+interface Props {
+  cells: Cell[];
+  /** frame height in px */
+  height?: number;
+  /** optional one-line lead-in shown above the grid */
+  hint?: string;
+}
+const { cells, height = 132, hint } = Astro.props;
+---
+
+{hint && <p class="cg-hint">{hint}</p>}
+<div class="cell-gallery">
+  {cells.map((c) => (
+    <ForceCell force={c.force} label={c.label} color={c.color} caption={c.caption} height={height} />
+  ))}
+</div>
+
+<style>
+  .cg-hint { font-size: 0.82rem; color: var(--muted, #9aa); margin: 0 0 0.5rem; }
+  .cell-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.8rem;
+    margin: 0.6rem 0 1.2rem;
+  }
+</style>
