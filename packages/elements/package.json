@@ -53,6 +53,7 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@field-ui/platform": "workspace:*",
     "@field-ui/vanilla": "workspace:*",
     "field-ui": "workspace:*"
   },
