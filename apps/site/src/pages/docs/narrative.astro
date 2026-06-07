@@ -1,0 +1,95 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+// Field Narrative Mode (visualization-methods-taxonomy §13): teach the system by progressively
+// revealing its layers. Each stage drives the live background field (render mode / heatmap) and
+// reveals the next explanation, so the reader builds the model one layer at a time.
+const stages = [
+  { title: 'Particles', body: 'Matter you can see. A single conserved particle field renders behind the page.', render: 'dots' },
+  { title: 'Field structure', body: 'The invisible structure every body radiates — streamlines trace the net field.', render: 'streamlines' },
+  { title: 'Forces move matter', body: 'Bodies bend the field; trails show where matter has travelled under force.', render: 'trails' },
+  { title: 'DOM feedback', body: 'The field bends elements back: local density writes to --d, and the headline lights up.', render: 'dots', feedback: true },
+  { title: 'Heatmap', body: 'Where matter pools, sampled into a scalar grid and glowed back.', render: 'dots', heatmap: true },
+  { title: 'Inspect it all', body: 'Every body, metric, and contract is inspectable — open the Inspector.', render: 'dots', link: '/docs/inspector' },
+];
+---
+
+<DocsLayout
+  title="field-ui — Narrative"
+  description="Field narrative mode: learn field-ui by progressively revealing its layers — particles, field structure, forces, DOM feedback, heatmap, and the inspector — over the live field."
+>
+  <h1>The field, one layer at a time</h1>
+  <p class="lede">Step through the system. Each stage reveals another layer over the live background field.</p>
+
+  <div class="nr-stage" aria-live="polite">
+    <div class="nr-progress" id="nr-progress"></div>
+    <h2 id="nr-title">{stages[0].title}</h2>
+    <p id="nr-body">{stages[0].body}</p>
+    <h3 class="nr-headline" id="nr-demo" data-body="attract" data-strength="1" data-range="280" data-feedback hidden>mass</h3>
+    <a class="nr-link" id="nr-link" href="/docs/inspector" hidden>Open the Inspector →</a>
+  </div>
+
+  <div class="nr-controls">
+    <button id="nr-prev" disabled>← Back</button>
+    <span id="nr-count">1 / {stages.length}</span>
+    <button id="nr-next">Next →</button>
+  </div>
+</DocsLayout>
+
+<script>
+  interface Stage { title: string; body: string; render: string; feedback?: boolean; heatmap?: boolean; link?: string }
+  // stages are handed from the build via the inline define:vars script below.
+  const data: Stage[] = (window as unknown as { __NR__?: Stage[] }).__NR__ ?? [];
+
+  const field = () =>
+    document.querySelector('field-root') as (HTMLElement & { setRender(m: string): void; setHeatmap(on: boolean): void }) | null;
+  const $ = (id: string) => document.getElementById(id);
+  let i = 0;
+
+  function show(n: number) {
+    const list: Stage[] = data;
+    if (!list.length) return;
+    i = Math.max(0, Math.min(list.length - 1, n));
+    const s = list[i];
+    $('nr-title')!.textContent = s.title;
+    $('nr-body')!.textContent = s.body;
+    $('nr-count')!.textContent = `${i + 1} / ${list.length}`;
+    ($('nr-prev') as HTMLButtonElement).disabled = i === 0;
+    ($('nr-next') as HTMLButtonElement).disabled = i === list.length - 1;
+    $('nr-demo')!.toggleAttribute('hidden', !s.feedback);
+    const link = $('nr-link') as HTMLAnchorElement;
+    link.toggleAttribute('hidden', !s.link);
+    if (s.link) link.href = s.link;
+    const prog = $('nr-progress')!;
+    prog.innerHTML = list.map((_, k) => `<span class="${k <= i ? 'on' : ''}"></span>`).join('');
+    const f = field();
+    if (f) {
+      try { f.setRender(s.render); f.setHeatmap(!!s.heatmap); } catch {}
+    }
+  }
+  $('nr-next')?.addEventListener('click', () => show(i + 1));
+  $('nr-prev')?.addEventListener('click', () => show(i - 1));
+  show(0);
+</script>
+
+<script is:inline define:vars={{ stagesData: stages }}>
+  // hand the build-time stages to the client (define:vars serializes safely)
+  window.__NR__ = stagesData;
+</script>
+
+<style>
+  .lede { color: var(--muted, #9aa); }
+  .nr-stage { border: 1px solid var(--line, #2a2a35); border-radius: 12px; padding: 1.5rem; min-height: 180px; background: rgba(255, 255, 255, 0.02); }
+  .nr-stage h2 { margin: 0.4rem 0 0.3rem; }
+  .nr-progress { display: flex; gap: 6px; margin-bottom: 0.5rem; }
+  .nr-progress span { width: 26px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+  .nr-progress span.on { background: #4da3ff; }
+  .nr-headline { --d: 0.85; font-size: 2rem; margin: 0.8rem 0 0; font-variation-settings: 'wght' calc(300 + var(--d) * 500); color: color-mix(in srgb, #4da3ff calc(40% + var(--d) * 55%), #fff); text-shadow: 0 0 calc(var(--d) * 24px) rgba(77, 163, 255, var(--d)); }
+  .nr-link { display: inline-block; margin-top: 0.8rem; color: #4da3ff; }
+  /* an element's `display` overrides the UA [hidden] rule — restore it so the toggles actually hide. */
+  #nr-link[hidden], #nr-demo[hidden] { display: none !important; }
+  .nr-controls { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
+  .nr-controls button { font: inherit; font-size: 0.9rem; padding: 0.4rem 0.9rem; border: 1px solid var(--line, #2a2a35); border-radius: 8px; background: transparent; color: inherit; cursor: pointer; }
+  .nr-controls button:disabled { opacity: 0.4; cursor: default; }
+  .nr-controls #nr-count { font-size: 0.85rem; color: var(--muted, #9aa); }
+</style>
