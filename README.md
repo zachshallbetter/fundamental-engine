@@ -24,7 +24,7 @@ are adapters, not requirements.
 
 > **See it live.** The whole system runs over the engine at **[field-ui.com](https://field-ui.com)**, with a physics [Lab](https://field-ui.com/lab) where you fire particles into a force and watch the math hold.
 
-> **Renamed to `field-ui`.** This project was `forces-ui`; it is now **field-ui**, putting the field — the invisible structure — first. Every old public name still works as a compatibility alias during the transition: the `forces-ui` / `@forces-ui/*` packages, the `forces:*` events, the `--forces-*` CSS variables, and the `<forces-field>` / `<forces-cell>` elements all keep working alongside their `field-ui` / `field:*` / `--field-*` / `<field-root>` equivalents. See the [migration plan](docs/planning-archive/field-ui-migration-plan.md) and the [docs map](docs/README.md).
+> **Renamed to `field-ui`.** This project was `forces-ui`; it is now **field-ui**, putting the field — the invisible structure — first. Every old public name still works as a compatibility alias during the transition: the `forces-ui` / `@forces-ui/*` packages, the `forces:*` events, the `--forces-*` CSS variables, and the `<forces-field>` / `<forces-cell>` elements all keep working alongside their `field-ui` / `field:*` / `--field-*` / `<field-root>` equivalents. See the [docs map](docs/README.md).
 
 ## The idea
 
@@ -151,7 +151,7 @@ The packages are pre-release and not yet published to npm. Each release is cut a
 - [`docs/engine-reference/forces-system.md`](docs/engine-reference/forces-system.md): the full specification, the contract the engine implements.
 - [`docs/engine-reference/forces-formulas.md`](docs/engine-reference/forces-formulas.md): per-force formulas and the attribute handbook.
 - [`docs/engine-reference/forces-tests.md`](docs/engine-reference/forces-tests.md): the testing and physics-conformance guide.
-- [`docs/planning-archive/forces-concept.md`](docs/planning-archive/forces-concept.md): the design vision and the layered-physics model.
+- [`docs/planning-archive/field-concept.md`](docs/planning-archive/field-concept.md): the design vision and the full conceptual arc.
 
 ## Develop
 
