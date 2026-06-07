@@ -25,6 +25,19 @@ export interface FieldRelationship {
   memory: number;
 }
 
+/**
+ * A relationship an element DECLARES whose target id-ref does not resolve to an element. Tracked so
+ * resolution is real (a declared edge that points at nothing counts toward the total but not the
+ * resolved set) and so inspection can name the missing endpoint — rather than silently dropping it.
+ */
+export interface UnresolvedRelationship {
+  from: Element;
+  type: string;
+  /** the id-ref as authored (e.g. `#ghost` or `ghost`). */
+  target: string;
+  source: RelationshipSource;
+}
+
 /** Resolve an id-ref to an element. */
 export type Resolver = (id: string) => Element | null;
 
@@ -49,23 +62,36 @@ function rel(from: Element, to: Element, type: string, source: RelationshipSourc
   return { id: `${idOf(from)}~${type}~${idOf(to)}`, from, to, type, strength, direction: 'from-to', source, active: false, memory: 0 };
 }
 
+export interface ScanResult {
+  resolved: FieldRelationship[];
+  unresolved: UnresolvedRelationship[];
+}
+
 /**
- * Extract the relationships a single element declares. Pure given a `resolve` for id-refs, so it is
- * testable without a document. Native relationships first; `data-field-relation` last.
+ * Scan the relationships a single element declares, partitioning them into RESOLVED edges (both
+ * endpoints known) and UNRESOLVED declarations (an id-ref that points at no element). Pure given a
+ * `resolve` for id-refs, so it is testable without a document. Native relationships first;
+ * `data-field-relation` last.
  */
-export function relationshipsFromElement(el: Element, resolve: Resolver): FieldRelationship[] {
-  const out: FieldRelationship[] = [];
+export function scanRelationships(el: Element, resolve: Resolver): ScanResult {
+  const resolved: FieldRelationship[] = [];
+  const unresolved: UnresolvedRelationship[] = [];
   const tag = el.tagName?.toUpperCase();
   const get = (n: string) => el.getAttribute(n);
 
+  // one declared id-ref edge: resolved if the target exists, unresolved otherwise — never dropped.
+  const edge = (idref: string, type: string, source: RelationshipSource, strength: number): void => {
+    const id = idref.startsWith('#') ? idref.slice(1) : idref;
+    const t = resolve(id);
+    if (t) resolved.push(rel(el, t, type, source, strength));
+    else unresolved.push({ from: el, type, target: idref, source });
+  };
+
   const href = get('href');
-  if (tag === 'A' && href && href.startsWith('#')) {
-    const t = resolve(href.slice(1));
-    if (t) out.push(rel(el, t, 'references', 'html', 0.5));
-  }
+  if (tag === 'A' && href && href.startsWith('#')) edge(href, 'references', 'html', 0.5);
   if (tag === 'LABEL') {
-    const t = get('for') && resolve(get('for')!);
-    if (t) out.push(rel(el, t, 'labels', 'html', 0.8));
+    const f = get('for');
+    if (f) edge(f, 'labels', 'html', 0.8);
   }
   for (const [attr, type] of [
     ['aria-controls', 'controls'],
@@ -73,25 +99,30 @@ export function relationshipsFromElement(el: Element, resolve: Resolver): FieldR
     ['aria-labelledby', 'labelledby'],
     ['aria-flowto', 'flowto'],
   ] as const) {
-    for (const id of ids(get(attr))) {
-      const t = resolve(id);
-      if (t) out.push(rel(el, t, type, 'aria', 0.6));
-    }
+    for (const id of ids(get(attr))) edge(id, type, 'aria', 0.6);
   }
   const declared = get('data-field-relation');
   const target = get('data-field-target');
   if (declared && target) {
-    const t = resolve(target.startsWith('#') ? target.slice(1) : target);
-    if (t) {
-      const s = Number(get('data-field-strength'));
-      out.push(rel(el, t, declared, 'data', Number.isFinite(s) && s > 0 ? s : 0.7));
-    }
+    const s = Number(get('data-field-strength'));
+    edge(target, declared, 'data', Number.isFinite(s) && s > 0 ? s : 0.7);
   }
-  return out;
+  return { resolved, unresolved };
+}
+
+/** The RESOLVED relationships an element declares (back-compat wrapper over {@link scanRelationships}). */
+export function relationshipsFromElement(el: Element, resolve: Resolver): FieldRelationship[] {
+  return scanRelationships(el, resolve).resolved;
+}
+
+/** The DECLARED-but-UNRESOLVED relationships an element points at (targets that resolve to nothing). */
+export function unresolvedRelationshipsFromElement(el: Element, resolve: Resolver): UnresolvedRelationship[] {
+  return scanRelationships(el, resolve).unresolved;
 }
 
 export class RelationshipRegistry {
   private readonly rels = new Map<string, FieldRelationship>();
+  private readonly unresolvedRels = new Map<string, UnresolvedRelationship>();
 
   /** Scan a root for native + declared relationships (idempotent — keys dedupe). */
   discover(root: ParentNode, resolve?: Resolver): void {
@@ -99,7 +130,9 @@ export class RelationshipRegistry {
       resolve ?? ((id) => (typeof document !== 'undefined' ? document.getElementById(id) : null));
     const sel = 'a[href^="#"], label[for], [aria-controls], [aria-describedby], [aria-labelledby], [aria-flowto], [data-field-relation]';
     root.querySelectorAll(sel).forEach((el) => {
-      for (const rl of relationshipsFromElement(el, r)) this.rels.set(rl.id, rl);
+      const { resolved, unresolved } = scanRelationships(el, r);
+      for (const rl of resolved) this.rels.set(rl.id, rl);
+      for (const u of unresolved) this.unresolvedRels.set(`${idOf(u.from)}~${u.type}~${u.target}`, u);
     });
   }
 
@@ -122,6 +155,15 @@ export class RelationshipRegistry {
 
   get size(): number {
     return this.rels.size;
+  }
+
+  /** Declared relationships whose target id-ref resolved to no element. */
+  unresolvedAll(): UnresolvedRelationship[] {
+    return [...this.unresolvedRels.values()];
+  }
+
+  get unresolvedSize(): number {
+    return this.unresolvedRels.size;
   }
 
   /** Map the graph onto core `RelationshipAgent`s (endpoints keyed by element id). */
