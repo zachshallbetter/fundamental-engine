@@ -47,3 +47,5 @@ export * from './conformance/experiments.ts';
 export * from './contracts/index.ts';
 // the FieldAgent model (Phase 5) — element/relationship/user/layout/data agents + event thresholder
 export * from './agents/index.ts';
+// the visual language layer (Phase 6) — metric→appearance mappings, lint rules, semantic-text
+export * from './visual/index.ts';
