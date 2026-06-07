@@ -64,6 +64,14 @@ export function unregisterShadowBody(sink: MeasureSink, detail: RegisterBodyDeta
   if (detail?.element) sink.unregister(detail.element);
 }
 
+/**
+ * Relationship discovery is heavier than body syncing (it builds graph edges from every native
+ * link), so the runtime re-discovers on a throttle rather than every frame (D5). Pure.
+ */
+export function shouldDiscoverRelationships(frame: number, every = 30): boolean {
+  return frame % every === 0;
+}
+
 // ── the flag ──────────────────────────────────────────────────────────────────────
 let runtimeDefault = false;
 
@@ -133,7 +141,11 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   platform.measure.register(root, { role: 'field-root' });
   // D2: the discover phase syncs body elements into MeasurementRegistry each frame, so the platform
   // measures the same bodies the legacy scanner finds (geometry only — still no observable change).
-  platform.on('discover', () => syncBodies(platform.measure, root));
+  platform.on('discover', (ctx) => {
+    syncBodies(platform.measure, root);
+    // D5: maintain the relationship graph from the page's native links (throttled — see above).
+    if (shouldDiscoverRelationships(ctx.frame)) platform.relationships.discover(root);
+  });
 
   // D4: shadow-DOM hosts join via composed register/unregister events (forces:* + field:* twins).
   // The host's getRect (for closed roots) flows into MeasurementRegistry's rect override. Listening
