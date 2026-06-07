@@ -1,7 +1,7 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
-import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, type BodyRecipe, type FieldRecipe } from 'field-ui';
+import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe } from 'field-ui';
 
 // The gallery renders the engine's own catalog — 64 `FieldRecipe`s across four tiers (RECIPE_TIERS)
 // that map the four-field translation model onto practical interface patterns. Each card carries the
@@ -15,17 +15,6 @@ const FIELD_COLOR: Record<string, string> = {
 };
 const first = new Set(FIRST_RELEASE_RECIPE_IDS);
 
-// the data-body authoring line for a recipe body (what an author writes in markup)
-const authoringLine = (b: BodyRecipe): string => {
-  const parts = [`data-body="${b.body}"`];
-  if (b.strength != null) parts.push(`data-strength="${b.strength}"`);
-  if (b.range != null) parts.push(`data-range="${b.range}"`);
-  if (b.spin != null) parts.push(`data-spin="${b.spin}"`);
-  if (b.angle != null) parts.push(`data-angle="${b.angle}"`);
-  if (b.feedback) parts.push('data-feedback');
-  return `<div ${parts.join(' ')}></div>`;
-};
-
 const buildCard = (r: FieldRecipe, tierKey: string, tierLabel: string) => {
   const fieldKey = r.naturalField ?? 'other';
   const fieldLabel =
@@ -35,11 +24,11 @@ const buildCard = (r: FieldRecipe, tierKey: string, tierLabel: string) => {
   // the demo chip uses the recipe's first feedback body (or first body), forced to feed back so the
   // page-wide field's reciprocity is visible.
   const demoBody = r.bodies.find((b) => b.feedback) ?? r.bodies[0]!;
+  const auth = recipeAuthoring(r);
   return {
     recipe: r,
     explain: explainScene(r),
-    json: serializeRecipe(r),
-    authoring: authoringLine(r.bodies[0]!),
+    exports: { html: auth.html, wc: auth.webComponent, react: auth.react, json: serializeRecipe(r) },
     fieldKey,
     fieldLabel,
     tierKey,
@@ -91,7 +80,7 @@ const filters = [
   </div>
 
   <div class="recipe-grid">
-    {recipes.map(({ recipe, explain, json, authoring, fieldKey, fieldLabel, tierKey, tierLabel, color, isFirst, demo }) => (
+    {recipes.map(({ recipe, explain, exports, fieldKey, fieldLabel, tierKey, tierLabel, color, isFirst, demo }) => (
       <article class="recipe-card" data-field={fieldKey} data-tier={tierKey} data-first={isFirst ? 'true' : 'false'} style={`--rc: ${color}`}>
         <header>
           <div class="rc-tags">
@@ -158,15 +147,19 @@ const filters = [
 
         {recipe.notes && <p class="notes">{recipe.notes}</p>}
 
-        <details class="rc-author">
-          <summary>Author this</summary>
-          <pre><code>{authoring}</code></pre>
-          <p class="rc-author-note">Drop inside a <code>&lt;field-root&gt;</code>. See <a href="/docs/authoring">authoring across surfaces</a> for the web-component and React forms.</p>
-        </details>
-
-        <details>
-          <summary>Recipe JSON</summary>
-          <pre><code>{json}</code></pre>
+        <details class="rc-export">
+          <summary>Copy this recipe</summary>
+          <div class="rc-ex" data-ex>
+            <div class="rc-ex-tabs" role="tablist">
+              <button type="button" class="on" data-ex-tab="html">HTML</button>
+              <button type="button" data-ex-tab="wc">Web component</button>
+              <button type="button" data-ex-tab="react">React</button>
+              <button type="button" data-ex-tab="json">JSON</button>
+              <button type="button" class="rc-ex-copy" data-ex-copy>Copy</button>
+            </div>
+            <pre class="rc-ex-pre"><code>{exports.html}</code></pre>
+            <script type="application/json" data-ex-data set:html={JSON.stringify(exports).split('</').join('<\\/')}></script>
+          </div>
         </details>
       </article>
     ))}
@@ -278,6 +271,30 @@ const filters = [
     if (runner) runner.hidden = true;
   });
   document.addEventListener('astro:before-swap', () => { applied?.destroy(); stopPoll(); }, { once: true });
+
+  // ── copy-this-recipe: HTML / Web component / React / JSON per card ──────────────────────────
+  for (const ex of document.querySelectorAll<HTMLElement>('[data-ex]')) {
+    let data: Record<string, string> = {};
+    try { data = JSON.parse(ex.querySelector('[data-ex-data]')?.textContent ?? '{}'); } catch { data = {}; }
+    const pre = ex.querySelector<HTMLElement>('.rc-ex-pre code');
+    const tabs = Array.from(ex.querySelectorAll<HTMLButtonElement>('[data-ex-tab]'));
+    const copyBtn = ex.querySelector<HTMLButtonElement>('[data-ex-copy]');
+    let current = 'html';
+    for (const t of tabs) {
+      t.addEventListener('click', () => {
+        current = t.dataset.exTab ?? 'html';
+        tabs.forEach((x) => x.classList.toggle('on', x === t));
+        if (pre) pre.textContent = data[current] ?? '';
+      });
+    }
+    copyBtn?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(data[current] ?? '');
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200);
+      } catch { copyBtn.textContent = 'Copy failed'; }
+    });
+  }
 </script>
 
 <style>
@@ -372,7 +389,11 @@ const filters = [
     padding-left: 0.7rem;
   }
   .recipe-card details { margin-top: 0.5rem; font-size: 0.85rem; }
-  .rc-author-note { font-size: 0.78rem; color: var(--muted, #9aa); margin: 0.4rem 0 0; }
+  .rc-ex-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0.4rem 0; }
+  .rc-ex-tabs button { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--muted, #9aa); border-radius: 5px; padding: 0.1rem 0.5rem; font-size: 0.74rem; cursor: pointer; }
+  .rc-ex-tabs button.on { background: color-mix(in srgb, #4da3ff 20%, transparent); border-color: #4da3ff; color: var(--text, #e8e8ef); }
+  .rc-ex-copy { margin-left: auto; color: #2dd4bf !important; border-color: color-mix(in srgb, #2dd4bf 50%, var(--line)) !important; }
+  .rc-ex-pre { max-height: 260px; overflow: auto; font-size: 0.76rem; background: rgba(0, 0, 0, 0.25); padding: 0.75rem; border-radius: 8px; white-space: pre; }
   .recipe-card pre {
     max-height: 260px;
     overflow: auto;
