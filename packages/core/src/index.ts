@@ -43,3 +43,5 @@ export * from './conformance/types.ts';
 export * from './conformance/run.ts';
 export * from './conformance/expectations.ts';
 export * from './conformance/experiments.ts';
+// formal contracts (Phase 4) — contract types, force passports, and dev-mode enforcement guards
+export * from './contracts/index.ts';
