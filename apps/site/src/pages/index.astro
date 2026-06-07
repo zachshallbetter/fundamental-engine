@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { MANUAL_FORCES, MANUAL_PRESETS } from 'forces-ui';
+import { MANUAL_FORCES, MANUAL_PRESETS } from 'field-ui';
 import { BODY_TOKENS, attrsFor } from '../lib/demo-forces.ts';
 import '../styles/manual.css';
 import '../styles/force-glyphs.css';
@@ -26,14 +26,14 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
 ---
 
 <Base
-  title="forces-ui — a reciprocal DOM-physics field"
+  title="field-ui — a reciprocal DOM-physics field"
   description="Every element on the page is a body in one particle field — it carries weight, exerts force, and the field's density bends it back. A framework-agnostic engine (vanilla · web component · React) with zero runtime dependencies. This is the complete, executable manual, live over the running engine."
 >
   <SiteNav current="home" />
   <div class="manual-shell">
     <header class="manual-hero" id="top">
       <div class="wrap">
-        <p class="kicker">forces-ui · a reciprocal DOM-physics field</p>
+        <p class="kicker">field-ui · a reciprocal DOM-physics field</p>
         <h1>Every element has <span class="accent">mass.</span></h1>
         <p class="standfirst">
           This isn’t a layout on top of an effect. The words, links, and cards are physical bodies
@@ -45,7 +45,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
           can feel them.
         </p>
         <div class="hero-cta">
-          <code class="install" data-copy="npm i forces-ui">npm i forces-ui</code>
+          <code class="install" data-copy="npm i field-ui">npm i field-ui</code>
           <a class="btn primary" href="/docs">Read the docs →</a>
           <a class="btn" href="/lab">Open the Lab →</a>
         </div>

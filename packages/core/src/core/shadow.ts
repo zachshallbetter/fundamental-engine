@@ -18,6 +18,23 @@ export const REGISTER_BODY = 'forces:register-body';
 export const UNREGISTER_BODY = 'forces:unregister-body';
 export const UPDATE_BODY = 'forces:update-body';
 
+/**
+ * `field:*` aliases (field-ui migration). Dispatched alongside the `forces:*` names and listened
+ * for in parallel, so register / unregister / update work under either namespace during the
+ * transition (docs/field-ui-migration-plan.md §15, Alias Implementation Contract). The `forces:*`
+ * names remain canonical until the migration removal version.
+ */
+export const FIELD_REGISTER_BODY = 'field:register-body';
+export const FIELD_UNREGISTER_BODY = 'field:unregister-body';
+export const FIELD_UPDATE_BODY = 'field:update-body';
+
+/** Each `forces:*` registration event mapped to its `field:*` twin, for paired dispatch. */
+const FIELD_EVENT_ALIAS: Record<string, string> = {
+  [REGISTER_BODY]: FIELD_REGISTER_BODY,
+  [UNREGISTER_BODY]: FIELD_UNREGISTER_BODY,
+  [UPDATE_BODY]: FIELD_UPDATE_BODY,
+};
+
 /** Payload of a `forces:register-body` event (shadow-dom.md §7). */
 export interface RegisterBodyDetail {
   /** the public physical element — usually the custom-element host. */
@@ -59,13 +76,12 @@ export class ForcesController {
   }
 
   private emit(type: string): void {
-    this.host.dispatchEvent(
-      new CustomEvent(type, {
-        bubbles: true,
-        composed: true,
-        detail: { element: this.host, ...this.detail },
-      }),
-    );
+    const detail = { element: this.host, ...this.detail };
+    const fire = (t: string): void =>
+      void this.host.dispatchEvent(new CustomEvent(t, { bubbles: true, composed: true, detail }));
+    fire(type); // canonical forces:* event
+    const twin = FIELD_EVENT_ALIAS[type];
+    if (twin) fire(twin); // field:* alias, so listeners on either namespace are reached
   }
 }
 

@@ -1,11 +1,11 @@
 {
-  "name": "@forces-ui/elements",
+  "name": "@field-ui/elements",
   "version": "0.2.0",
   "description": "Web-component keystone for forces-ui — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://forces-ui.com",
+  "homepage": "https://field-ui.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/forces-ui.git",
@@ -15,7 +15,7 @@
     "url": "https://github.com/zachshallbetter/forces-ui/issues"
   },
   "keywords": [
-    "forces-ui",
+    "field-ui",
     "web-components",
     "custom-elements",
     "particles",
@@ -53,8 +53,8 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@forces-ui/vanilla": "workspace:*",
-    "forces-ui": "workspace:*"
+    "@field-ui/vanilla": "workspace:*",
+    "field-ui": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

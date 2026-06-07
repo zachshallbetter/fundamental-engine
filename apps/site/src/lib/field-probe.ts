@@ -19,7 +19,7 @@ import {
   type Scenario,
   type ScenarioParticle,
   type ScenarioResult,
-} from 'forces-ui';
+} from 'field-ui';
 
 export interface Pt {
   x: number;

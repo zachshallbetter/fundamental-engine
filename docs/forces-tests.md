@@ -7,7 +7,7 @@ A physics engine is only as trustworthy as its proof that each force behaves. Th
 document is that proof, in two registers: the **unit math** (each force's exact
 per-frame Δv) and the **behavior** (the invariants that define "reacts appropriately").
 The behavioral layer is a single declarative catalog that drives both the test suite
-and the **Lab detector** ([`/lab`](https://forces-ui.com/lab)) — so "did the expected
+and the **Lab detector** ([`/lab`](https://field-ui.com/lab)) — so "did the expected
 thing happen?" is answered identically in code and on screen.
 
 The Lab is the human face of it: think of it like a particle collider. A known particle
