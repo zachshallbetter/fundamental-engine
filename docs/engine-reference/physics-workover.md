@@ -57,7 +57,7 @@ Used throughout docs, implementation, Lab grouping, and tests.
 | Layer | Members | Semantics |
 | --- | --- | --- |
 | 1. Canonical UI forces | attract, repel, swirl, stream, viscosity, jet, tether, wall, sink | designed, bounded, legible interface verbs (stable runtime tokens) |
-| 2. Natural primitives | gravity, charge, magnetism, thermal, collide, diffuse, propagate, memory | physically coherent laws |
+| 2. Natural primitives | gravity, charge, magnetism, thermal, collide, diffuse, propagate, memory | physically coherent laws (`memory` is the metric exception — a persistence signal / decaying occupancy grid, `FORCE_KIND = metric`, truth-mode `semantic`, not a physical law) |
 | 3. Material primitives | cohesion, pressure, link, crystallize, pigment, phase | matter-like behaviour |
 | 4. Boundary and modifiers | wall, gate, spotlight, lens, shear, screen, sink-horizon, world-wrap, DOM-rect | shape edges, membranes, cones, horizons, shields |
 | 5. Transformation | morph, warp, fuse, fission, decay, spawn | change arrangement, location, identity, or count |
