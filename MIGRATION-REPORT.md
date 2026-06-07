@@ -117,15 +117,35 @@ After field-ui was adopted as the working repo and the domain moved to **field-u
   vocabulary (`force`, the tokens, the `FORCES` catalog), the intentional alias surface, and the
   GitHub repo URL.
 
-## 8. What remains / deferred
+## 8. Expansion (plan §16 Phases 4–8) — shipped
+
+The broader field-ui model was built on the migrated, stabilized base. All engine-side; pure +
+node-testable; no change to the preserved physics.
+
+- **Phase 4 — Contracts** (`core/contracts/`): contract types, a validated `ForcePassport` for all
+  34 forces, the §17 Error-Taxonomy dev guards, and the inspectable `CONTRACTS` catalog.
+- **Phase 5 — Agents** (`core/agents/`): the FieldAgent model — element/relationship/user/layout/
+  data agents + the thresholded EventAgent runtime + agent-type contracts.
+- **Phase 6 — Visual Language** (`core/visual/`): bounded metric→appearance mappings (typography,
+  color, shape, emission), lint rules, semantic-text fallback, the Visual Language Contract.
+- **Phase 7 — Authoring & Recipes** (`core/recipes/`): SceneRecipe schema + validation, the intent
+  compiler, the essential-recipe gallery, Explain-This-Field + Field-Diff.
+- **Phase 8 — Inspection & Productization** (`core/inspect/`): deterministic snapshot regression,
+  the performance-budget inspector, and the aggregate system report.
+
+Test suite: **476** (449 → 476 across Phases 4–8). App-level product surfaces (the Composer UI,
+the live Inspector panels, a recipe-gallery site section) are the remaining frontier — the
+engine-side data + harnesses they need now exist.
+
+## 9. What remains / deferred
 
 - **Alias removal**: the `forces-ui` / `@forces-ui/*` packages, `forces:*` events, `--forces-*`
   vars, and `<forces-*>` elements / `Forces*` classes are kept as deprecated aliases until a future
   major, per the alias deprecation policy.
-- **Phases 4–8** (FieldAgent model, visual-language layer, recipe/intent compiler, productization)
-  are the intended next work, after this stabilized base.
+- **App-level product surfaces**: Composer UI, Inspector panels, recipe gallery page (the engine
+  layer they consume is complete).
 
-## 9. Validation checklist (migration-plan §17)
+## 10. Validation checklist (migration-plan §17)
 
 ✅ runs from field-ui/ · ✅ typecheck · ✅ tests · ✅ Lab/site builds · ✅ docs links resolve ·
 ✅ examples use new naming (imports + product name) · ✅ old names work as aliases · ✅ CSS writes
