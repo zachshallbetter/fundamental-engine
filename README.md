@@ -94,7 +94,7 @@ A body is any element with a `data-body` attribute. The value is one or more for
 | `data-range` | influence radius in pixels |
 | `data-spin` | rotation sign and strength (`swirl`, `charge`, `magnetism`) |
 | `data-angle` | heading in degrees (`stream`, `jet`) |
-| `data-when` | act only on a condition: `active`, `fast`, `slow`, `hot`, `cool` |
+| `data-when` | act only on a condition: `active`, `fast`, `slow`, `hot`, `cool`, `scrolling` |
 | `data-feedback` | opt into the two-way write-back (sets `--field-density` on the element) |
 | `data-color` | accent colour when the body is engaged |
 | `data-absorb` / `data-max` | capture radius and capacity for `sink` |

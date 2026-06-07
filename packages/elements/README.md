@@ -33,8 +33,9 @@ is marked `aria-hidden` automatically. The deprecated `<forces-field>` tag still
 ### Attributes
 
 `accent` · `density` · `waves` · `render` (`dots` / `trails` / `links` / `streamlines` / `metaballs` /
-`voronoi` / `field-lines` / `heatmap`) · `palette` (`ours` / `heatmap` / `infrared` / `spectrum`) ·
-`mass` · `attention` · `causality`.
+`voronoi`) · `palette` (`ours` / `heatmap` / `infrared` / `spectrum`) · `mass` · `attention` ·
+`causality`. The engine ships 16 render modes in all (including `field-lines`, `heatmap`, and the
+diagnostics); the others are reached through `setRender()` / the core, not this attribute.
 
 ### Methods (the `FieldHandle`, proxied onto the element)
 
