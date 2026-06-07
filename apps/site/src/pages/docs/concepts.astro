@@ -2,6 +2,7 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import ForceCell from '../../components/ForceCell.astro';
+import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
 import { MANUAL_FORCES } from 'field-ui';
 
 const bodySnippet = `<a
@@ -71,6 +72,13 @@ const DEMOS = [
       forces that use them; each force ignores the ones it doesn't. See the
       <a href="/docs/api/attributes">attribute reference</a> for the full matrix.
     </p>
+    <div class="callout">
+      <b>Data attributes are the contract.</b> You make semantic HTML participate in the field by adding
+      attributes to it — there is no special body element. <code>&lt;field-root&gt;</code> only hosts the
+      field; <code>applyRecipe()</code> and <code>bindData()</code> adapt it to recipes and data; and the
+      <code>&lt;field-cell&gt;</code> frames lower down are just isolated single-force microscopes. The
+      system is the markup, not the components.
+    </div>
   </section>
 
   <section class="docs-sec">
@@ -139,6 +147,43 @@ const DEMOS = [
       This is the sanctioned way to make type react — words gain weight where matter collects.
       (The engine never assembles particles into letterforms; words glow and grow, they are not
       drawn from dots.)
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Metrics, and the lanes that stay separate</h2>
+    <p>
+      Density is one channel. The field also computes higher-level <strong>metrics</strong> — attention,
+      priority, coherence, entropy — and writes each back as a <code>--field-&lt;metric&gt;</code> custom
+      property. A <a href="/docs/recipes">recipe</a> declares which metrics it tracks; the runtime writes
+      them. Below, real elements carry a runtime token (<code>data-body="attract"</code>) and a supplied
+      <code>priority</code>; <code>applyRecipe()</code> writes it back as <code>--field-priority</code>,
+      and the CSS reads it — no canvas, no cursor needed:
+    </p>
+    <FieldLoopDemo
+      token="attract"
+      recipe="priority-well"
+      metric="priority"
+      items={[
+        { text: 'Primary — ship the runtime', value: 0.9 },
+        { text: 'Secondary — write the guide', value: 0.5 },
+        { text: 'Later — tidy the changelog', value: 0.2 },
+      ]}
+    />
+    <p>
+      The vocabulary works because each word lives in exactly one <strong>lane</strong>, and the lanes
+      never bleed into each other:
+    </p>
+    <ul class="model">
+      <li><b>Concept</b> <em>describes</em> (priority, polarity, binding) — it is never executed.</li>
+      <li><b>Token</b> <em>executes</em> (<code>attract</code>, <code>gravity</code>) — the only thing a <code>data-body</code> runs.</li>
+      <li><b>Metric</b> <em>measures</em> (<code>--field-priority</code>, <code>--field-attention</code>) — state the field writes back, not a force.</li>
+      <li><b>Diagnostic</b> <em>explains</em> (potential, topology, causality) — it inspects behavior, it does not cause it.</li>
+      <li><b>Condition</b> <em>activates</em> (<code>data-when="active"</code>) — when a token is allowed to act.</li>
+    </ul>
+    <p class="note">
+      So: a concept is not a token, a token is not a metric, and a diagnostic is not behavior. The
+      <a href="/docs/recipes">recipe model</a> composes these lanes without ever inventing a new force.
     </p>
   </section>
 
