@@ -191,6 +191,10 @@ sink emits saturation event
 
 ## 10. Accessibility Tests
 
+> **Implemented.** A dedicated set in `packages/core/src/contracts/a11y.test.ts` covers the
+> reduced-motion fallback (guard), meaning-without-motion (UserAgent keeps focus, drops travel;
+> emission flattens), thresholded events (no per-frame spam), and color/glyph-not-sole-carrier (lint).
+
 ```txt
 reduced motion fallback exists
 meaning survives without motion

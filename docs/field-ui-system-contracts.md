@@ -294,6 +294,10 @@ Focus must be a first-class field source.
 
 ## 9. Event Contract
 
+> **Implemented.** `FIELD_EVENTS` (`packages/core/src/agents/event-agent.ts`) names every event here
+> with its `field:*` canonical + `forces:*` alias and source metric; the `Thresholder` runtime makes
+> them hysteretic + debounced. `field:lit`/`dim` and the `*-body` lifecycle events dispatch today.
+
 Field events must be thresholded, debounced, and inspectable.
 
 Allowed event types:
@@ -412,6 +416,10 @@ notes
 Recipes must be serializable and inspectable.
 
 ## 14. Accessibility Contract
+
+> **Implemented.** Now a named entry in the `CONTRACTS` catalog (`contracts/index.ts`), enforced by
+> the reduced-motion guard, the UserAgent travel-gating, and the a11y lint rules, with a dedicated
+> test set (`contracts/a11y.test.ts`).
 
 ```txt
 Motion is optional.
@@ -595,38 +603,3 @@ migration notes identify the removal version
 ```
 
 Do not remove old names in the same pass that introduces new names.
-
-
-## Visual Language Contract
-
-The visual language system is defined in [`field-ui-visual-language-and-geometry.md`](./field-ui-visual-language-and-geometry.md).
-
-Rules:
-
-```txt
-Visual form can become geometry.
-Semantic meaning must remain accessible.
-Field state can shape appearance.
-Appearance must not corrupt the field.
-Core implementation should use fundamental platform APIs without dependencies.
-```
-
-Every visual layer must declare:
-
-```txt
-source metrics
-target properties
-whether it mutates physics
-whether it writes DOM state
-reduced-motion behavior
-accessibility fallback
-performance cost
-debug visibility
-```
-
-Typography rule:
-
-```txt
-The visual layer may be vectorized, distorted, animated, or custom-rendered.
-The semantic layer should remain real HTML text.
-```

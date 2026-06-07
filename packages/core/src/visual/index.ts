@@ -11,6 +11,7 @@ export * from './mapping.ts';
 export * from './channels.ts';
 export * from './lint.ts';
 export * from './semantic-text.ts';
+export * from './visualization.ts';
 
 /** A visual layer's self-declaration (visual-language §18). Inspectable + lintable. */
 export interface VisualLayerDeclaration {

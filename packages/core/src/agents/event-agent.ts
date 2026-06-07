@@ -54,6 +54,37 @@ export class Thresholder {
   }
 }
 
+/** A named field event with its `field:*` canonical name and `forces:*` migration alias. */
+export interface FieldEventName {
+  field: string;
+  forces: string;
+  /** the metric whose threshold crossing fires it (where applicable). */
+  metric?: string;
+}
+
+/**
+ * The named field-event catalog (system-contracts §9, shadow-dom §22, interaction §12). These are
+ * the thresholded, debounced events the engine may dispatch — never per-frame by default. Each
+ * carries both namespaces during the migration. `field:lit`/`dim` and the `*-body` lifecycle events
+ * are dispatched today; the rest are the agreed names for agent/threshold events as they wire up.
+ */
+export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
+  registerBody: { field: 'field:register-body', forces: 'forces:register-body' },
+  unregisterBody: { field: 'field:unregister-body', forces: 'forces:unregister-body' },
+  updateBody: { field: 'field:update-body', forces: 'forces:update-body' },
+  lit: { field: 'field:lit', forces: 'forces:lit', metric: 'density' },
+  dim: { field: 'field:dim', forces: 'forces:dim', metric: 'density' },
+  entered: { field: 'field:entered', forces: 'forces:entered', metric: 'density' },
+  exited: { field: 'field:exited', forces: 'forces:exited', metric: 'density' },
+  saturated: { field: 'field:saturated', forces: 'forces:saturated', metric: 'accreted' },
+  captured: { field: 'field:captured', forces: 'forces:captured' },
+  released: { field: 'field:released', forces: 'forces:released' },
+  attentionShifted: { field: 'field:attention-shifted', forces: 'forces:attention-shifted', metric: 'attention' },
+  relationshipStrengthened: { field: 'field:relationship-strengthened', forces: 'forces:relationship-strengthened', metric: 'strength' },
+  memoryThreshold: { field: 'field:memory-threshold', forces: 'forces:memory-threshold', metric: 'memory' },
+  entropyWarning: { field: 'field:entropy-warning', forces: 'forces:entropy-warning', metric: 'entropy' },
+};
+
 /** Map a metric to its conventional `field:*` / `forces:*` event names for an edge. */
 export function eventNamesFor(metric: string, edge: Exclude<ThresholdEdge, null>): {
   field: string;
