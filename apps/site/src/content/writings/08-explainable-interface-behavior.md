@@ -1,22 +1,27 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "Explainable Interface Behavior Through Field Diagnostics"
-paper: 8
+description: "A diagnostic framework for explainable interaction behavior."
+summary: "A diagnostic framework for explainable interaction behavior."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 8
+author: "Zach Shallbetter"
 ---
 
 # Explainable Interface Behavior Through Field Diagnostics
 
 > **Status: research draft (preprint, work in progress).** Paper 8 of 8 in the field-ui family — the
 > diagnostics paper. Claims verified against the codebase and canonical docs as of 2026-06-07. See the
-> [series index](/research) and *the caveat canon* therein. This is a preprint draft, not canonical
+> [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not canonical
 > product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 8 of 8
 **Companion paper (flagship):** [field-ui: A Field Translation Runtime for Relational DOM
-Interfaces](/research/01-field-translation-runtime). This paper assumes the vocabulary, the reciprocal model,
+Interfaces](/writings/01-field-translation-runtime). This paper assumes the vocabulary, the reciprocal model,
 and the truth-mode taxonomy established there — especially §8 ("the reverse half") and §6 (the force
-model). See the [series index](/research).
+model). See the [series index](/writings).
 
 ---
 
@@ -140,7 +145,7 @@ rather than a coding convention (§4). `[TODO: cite force-directed / physics-bas
 debugging tools]`
 
 The external citations above are placeholders to be resolved against the family bibliography before
-submission (see [`references.md`](/research/references)); none are fabricated.
+submission (see [`references.md`](/writings/references)); none are fabricated.
 
 ---
 
@@ -559,7 +564,7 @@ Notation is kept LaTeX-compatible (inline math and fenced blocks translate direc
 in prose but not yet drawn — the diagnostic-taxonomy map (§3.1), a causality bar/vector decomposition
 (§3.2), an actual-vs-ghost trajectory with divergence (§3.2), and the Inspector registry-readout layout
 (§5.1) — are produced at conversion time from these descriptions. External citations marked `[TODO: cite]`
-must be resolved against [`references.md`](/research/references) and verified before submission; none are
+must be resolved against [`references.md`](/writings/references) and verified before submission; none are
 fabricated.
 
 ## Citations needed

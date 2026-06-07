@@ -1,21 +1,26 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces"
-paper: 3
+description: "A field-based interaction model for evidence, confidence, contradiction, and provenance."
+summary: "A field-based interaction model for evidence, confidence, contradiction, and provenance."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 3
+author: "Zach Shallbetter"
 ---
 
 # Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces
 
 > **Status: research draft (preprint, work in progress).** Paper 3 of the field-ui family — a domain
 > validator for evidence and trust in AI interfaces. Claims verified against the codebase and
-> canonical docs as of 2026-06-07. See the [series index](/research) and *the caveat canon* therein.
+> canonical docs as of 2026-06-07. See the [series index](/writings) and *the caveat canon* therein.
 > This is a preprint draft, not canonical product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 3 of 8
-**Companion papers:** [field-ui: A Field Translation Runtime for Relational DOM Interfaces](/research/01-field-translation-runtime)
-(flagship paradigm paper); [Reading Field](/research/02-reading-field) (reading attention and document memory).
-See the [series index](/research).
+**Companion papers:** [field-ui: A Field Translation Runtime for Relational DOM Interfaces](/writings/01-field-translation-runtime)
+(flagship paradigm paper); [Reading Field](/writings/02-reading-field) (reading attention and document memory).
+See the [series index](/writings).
 
 ---
 
@@ -144,7 +149,7 @@ rather than re-explaining.
 ## 2. Background and related work
 
 The Evidence Field sits at the intersection of several lines of work. We position it against each;
-keys below correspond to entries to be assembled and verified in [`references.md`](/research/references),
+keys below correspond to entries to be assembled and verified in [`references.md`](/writings/references),
 and every one is a placeholder, never a fabricated citation.
 
 **Trust calibration in decision support.** Work on human–automation trust holds that the goal is not
@@ -731,14 +736,14 @@ drawn — the evidence-graph schematic (claims, sources, `supports`/`contradicts
 field/metric write-back diagram (§3.4), the three study conditions side by side (§5.2), and a sample
 reliability diagram with the *d′*/criterion decomposition annotated (§5.4) — are produced at
 conversion time. External citations are all `[TODO: cite]` placeholders and must be resolved and
-verified against [`references.md`](/research/references) before submission; none is invented.
+verified against [`references.md`](/writings/references) before submission; none is invented.
 
 ---
 
 ## Citations needed
 
 External citation keys/topics referenced above, for the lead to merge into
-[`references.md`](/research/references) under the trust/evidence group (all currently `[TODO: cite]`, none
+[`references.md`](/writings/references) under the trust/evidence group (all currently `[TODO: cite]`, none
 fabricated):
 
 - `[trust-calibration]` — trust calibration in human–automation interaction; over-trust vs.
