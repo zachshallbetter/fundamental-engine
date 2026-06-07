@@ -38,6 +38,7 @@ The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-ar
 | [`field-ui-definition-document.md`](canonical/field-ui-definition-document.md) | Canonical concept and operating model |
 | [`field-ui-system-contracts.md`](canonical/field-ui-system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
 | [`field-ui-platform-architecture.md`](canonical/field-ui-platform-architecture.md) | `@field-ui/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
+| [`field-ui-api-stability.md`](canonical/field-ui-api-stability.md) | The frozen `0.x` public API surface, the experimental surface, and the compatibility rules — enforced by `pnpm check:api` |
 | [`field-ui-natural-fields.md`](canonical/field-ui-natural-fields.md) | The Natural Field Translation System — the four fundamental fields translated into interface behavior |
 | [`field-ui-documentation-standards.md`](canonical/field-ui-documentation-standards.md) | How field-ui is described everywhere — the architecture statement, doctrine, status taxonomy, naming policy, and verify-against-code rule |
 | [`fundamental-field-behavior-table.md`](canonical/fundamental-field-behavior-table.md) | Field/force laws, electromagnetic split, `fieldflow`, and truth modes |
