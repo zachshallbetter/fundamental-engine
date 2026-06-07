@@ -5,13 +5,13 @@
 // page's own layout.
 // (GitHub + npm links are added at launch, once the repo is public and packages ship.)
 interface Props {
-  current?: 'home' | 'docs' | 'lab' | 'design' | 'examples' | 'research';
+  current?: 'home' | 'docs' | 'lab' | 'design' | 'examples' | 'writings';
 }
 const { current } = Astro.props;
 const dest = [
   { href: '/docs', label: 'Docs', key: 'docs' },
   { href: '/examples', label: 'Examples', key: 'examples' },
-  { href: '/research', label: 'Research', key: 'research' },
+  { href: '/writings', label: 'Writings', key: 'writings' },
   { href: '/design', label: 'Design', key: 'design' },
   { href: '/lab', label: 'Lab', key: 'lab' },
 ] as const;

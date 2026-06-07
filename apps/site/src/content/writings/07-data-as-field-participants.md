@@ -1,20 +1,25 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields"
-paper: 7
+description: "A data-binding model for relational interface fields."
+summary: "A data-binding model for relational interface fields."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 7
+author: "Zach Shallbetter"
 ---
 
 # Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields
 
 > **Status: research draft (preprint, work in progress).** Paper 7 of the field-ui family — the
 > data-binding validator. Claims verified against the codebase and canonical docs as of 2026-06-07.
-> See the [series index](/research) and *the caveat canon* therein. This is a preprint draft, not
+> See the [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 7 of 8
 **Companion paper (the flagship):** [field-ui: A Field Translation Runtime for Relational DOM
-Interfaces](/research/01-field-translation-runtime). See the [series index](/research).
+Interfaces](/writings/01-field-translation-runtime). See the [series index](/writings).
 
 ---
 
@@ -585,7 +590,7 @@ Notation is kept LaTeX-compatible; the fenced TypeScript blocks are the binding'
 should be reproduced verbatim. Figures referenced in prose but not yet drawn — the records → bodies →
 edges → metrics mapping (§3), the id-diff lifecycle with enter/update/decay (§4), the recipe-over-data
 composition (§5), and a before/after of one demo (§6) — are produced at conversion time. External
-citations marked `[TODO: cite]` and the `[key]` placeholders in [`references.md`](/research/references) must
+citations marked `[TODO: cite]` and the `[key]` placeholders in [`references.md`](/writings/references) must
 be resolved and verified before submission; none are fabricated here.
 
 ## Citations needed

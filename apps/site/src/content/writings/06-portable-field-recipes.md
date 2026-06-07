@@ -1,20 +1,25 @@
 ---
-layout: ../../layouts/ResearchLayout.astro
 title: "Recipes as Portable Field Programs for Interface Behavior"
-paper: 6
+description: "A structured authoring model that composes behavior without corrupting runtime vocabulary."
+summary: "A structured authoring model that composes behavior without corrupting runtime vocabulary."
+date: 2026-06-07
+category: research
+series: "field-ui research"
+order: 6
+author: "Zach Shallbetter"
 ---
 
 # Recipes as Portable Field Programs for Interface Behavior
 
 > **Status: research draft (preprint, work in progress).** Paper 6 of the field-ui family — the
 > authoring-model paper. Claims verified against the codebase and canonical docs as of 2026-06-07.
-> See the [series index](/research) and *the caveat canon* therein. This is a preprint draft, not
+> See the [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 
 **Author:** Zach Shallbetter
 **Series:** field-ui Research Papers, Paper 6 of 8
 **Companion paper (flagship):** [field-ui: A Field Translation Runtime for Relational DOM
-Interfaces](/research/01-field-translation-runtime). This paper goes deep where the flagship's §6.6 (taxonomy
+Interfaces](/writings/01-field-translation-runtime). This paper goes deep where the flagship's §6.6 (taxonomy
 hygiene) and §7.3 (recipe runtime) were an overview; it cross-references rather than repeats.
 
 ---

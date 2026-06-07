@@ -1,0 +1,150 @@
+---
+// The layout for a single writing. Sidebar is built from the writings collection
+// (grouped by category); the content area carries KaTeX math, client-rendered Mermaid,
+// and Shiki-highlighted code. Prev/next walk the entry's series (e.g. the research family).
+import Base from './Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import '../styles/ds-tokens.css';
+import '../styles/docs.css';
+import '../styles/writings.css';
+import 'katex/dist/katex.min.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  category?: string;
+  date?: Date;
+  author?: string;
+  series?: string;
+  slug: string;
+}
+const { title, description, category, date, author, series, slug } = Astro.props;
+
+const CATS = [
+  { key: 'research', label: 'Research' },
+  { key: 'release', label: 'Releases' },
+  { key: 'feature', label: 'Features' },
+  { key: 'note', label: 'Notes' },
+];
+const sortEntries = (a: CollectionEntry<'writings'>, b: CollectionEntry<'writings'>) => {
+  if (a.data.order != null && b.data.order != null) return a.data.order - b.data.order;
+  return +b.data.date - +a.data.date;
+};
+const all = (await getCollection('writings', (e) => !e.data.draft)).sort(sortEntries);
+const byCat = (k: string) => all.filter((e) => e.data.category === k);
+
+const seriesItems = series ? all.filter((e) => e.data.series === series).sort(sortEntries) : [];
+const i = seriesItems.findIndex((e) => e.id === slug);
+const prev = i > 0 ? seriesItems[i - 1] : null;
+const next = i >= 0 && i < seriesItems.length - 1 ? seriesItems[i + 1] : null;
+
+const path = `/writings/${slug}`;
+const fmtDate = date
+  ? new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(date)
+  : '';
+const numbered = (e: CollectionEntry<'writings'>) =>
+  e.data.category === 'research' && e.data.order != null && e.data.order < 90 ? `${e.data.order}. ` : '';
+---
+
+<Base title={`${title} · field-ui writings`} description={description}>
+  <SiteNav current="writings" />
+  <div class="docs-shell">
+    <aside class="docs-sidebar" aria-label="Writings navigation">
+      <button class="docs-side-toggle" aria-expanded="false" aria-controls="writingsSide">Menu</button>
+      <nav id="writingsSide">
+        <div class="docs-group">
+          <span class="docs-group-title"><a href="/writings">All writings</a></span>
+        </div>
+        {
+          CATS.filter((c) => byCat(c.key).length > 0).map((c) => (
+            <div class="docs-group">
+              <span class="docs-group-title">{c.label}</span>
+              <ul>
+                {byCat(c.key).map((e) => (
+                  <li>
+                    <a href={`/writings/${e.id}`} aria-current={`/writings/${e.id}` === path ? 'page' : undefined}>
+                      {numbered(e)}
+                      {e.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <main class="docs-content writing">
+      <header class="writing-head">
+        <div class="writing-meta">
+          <span class={`w-badge w-${category}`}>{category}</span>
+          {series && <span class="w-series">{series}</span>}
+          {fmtDate && <time datetime={date?.toISOString()}>{fmtDate}</time>}
+          {author && <span class="w-author">{author}</span>}
+        </div>
+      </header>
+
+      <article class="writing-body">
+        <slot />
+      </article>
+
+      <nav class="docs-prevnext" aria-label="Pagination">
+        {
+          prev ? (
+            <a class="pn prev" href={`/writings/${prev.id}`}>
+              <span>← Previous</span>
+              <b>{prev.data.title}</b>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a class="pn next" href={`/writings/${next.id}`}>
+              <span>Next →</span>
+              <b>{next.data.title}</b>
+            </a>
+          )
+        }
+      </nav>
+    </main>
+  </div>
+  <SiteFooter />
+</Base>
+
+<script>
+  // Render Mermaid client-side with a field-ui dark theme. Dynamic import so mermaid only
+  // loads on pages that actually contain a diagram; re-run after view-transition navigations.
+  async function renderMermaid() {
+    const nodes = document.querySelectorAll<HTMLElement>('pre.mermaid:not([data-processed])');
+    if (!nodes.length) return;
+    const { default: mermaid } = await import('mermaid');
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'base',
+      fontFamily: 'inherit',
+      themeVariables: {
+        background: '#0b1020',
+        primaryColor: '#0e1530',
+        primaryBorderColor: '#4da3ff',
+        primaryTextColor: '#dfe8ff',
+        lineColor: '#7c8bb5',
+        secondaryColor: '#10182e',
+        tertiaryColor: '#10182e',
+        fontSize: '15px',
+      },
+    });
+    try {
+      await mermaid.run({ nodes: Array.from(nodes) });
+    } catch {
+      /* a malformed diagram should not break the page */
+    }
+    nodes.forEach((n) => n.setAttribute('data-processed', 'true'));
+  }
+  document.addEventListener('astro:page-load', renderMermaid);
+</script>
