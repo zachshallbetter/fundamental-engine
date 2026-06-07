@@ -9,10 +9,13 @@ import {
   RECIPE_CONTRACTS,
   SEMANTIC_CONTRACTS,
 } from 'field-ui';
+import { PHASES } from '@field-ui/platform';
 
 // The Inspector reads the system's own self-description: the system report, every contract, and the
-// force passports — plus a live reciprocity panel that reads the --field-* write-back the engine
-// emits onto real bodies (no extra engine API; the reciprocity is already in the DOM).
+// force passports — plus the LIVE platform runtime (the running <field-root>'s registries, read each
+// frame: measurements, state, feedback bindings, relationships, overlays, scheduler, lint) and a live
+// reciprocity panel that reads the --field-* write-back the engine emits onto real bodies. The trust
+// layer: it answers "why is this moving, what's influencing it, which relationship binds these?".
 const report = systemReport();
 const contracts = [
   ...CONTRACTS,
@@ -30,7 +33,8 @@ const passports = Object.values(PASSPORTS);
 >
   <h1>Inspector</h1>
   <p class="lede">
-    The system inspecting itself — coverage, contracts, passports, and a live reciprocity readout.
+    The system inspecting itself — the live platform runtime, coverage, contracts, passports, and a
+    reciprocity readout. It proves the field is measured, related, and fed back, not magic.
   </p>
 
   <section aria-labelledby="sr">
@@ -48,6 +52,52 @@ const passports = Object.values(PASSPORTS);
         ? '✓ every force is passported and conformance-covered'
         : `⚠ gaps: ${[...report.forcesMissingPassport, ...report.forcesMissingConformance].join(', ')}`}
     </p>
+  </section>
+
+  <section aria-labelledby="lp">
+    <h2 id="lp">Live platform runtime</h2>
+    <p>
+      The running <code>&lt;field-root&gt;</code>'s <a href="/docs/platform">platform</a> registries,
+      read live each frame — the actual production runtime (Phase D), not a mock. The six-phase
+      scheduler runs <code>discover → read → compute → state → write → render</code>; the counts below
+      are the real registered measurements, state, feedback bindings, relationships, visuals, and
+      overlays on this page.
+    </p>
+    <p class="lp-status" data-lp-status>Connecting to the field-root platform…</p>
+
+    <nav class="lp-jump" aria-label="Jump to inspector sections">
+      <a href="#sr">System report</a>
+      <a href="#lp">Platform</a>
+      <a href="#rp">Reciprocity</a>
+      <a href="#ct">Contracts</a>
+      <a href="#pp">Passports</a>
+    </nav>
+
+    <div class="lp-phases" aria-label="Frame scheduler phase order">
+      {PHASES.map((p) => <span class="lp-phase">{p}</span>)}
+      <span class="lp-frame" data-lp-frame>frame —</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat"><b data-lp="measurements">0</b><span>measurements</span></div>
+      <div class="stat"><b data-lp="state">0</b><span>state elements</span></div>
+      <div class="stat"><b data-lp="feedback">0</b><span>feedback bindings</span></div>
+      <div class="stat"><b data-lp="relationships">0</b><span>relationships</span></div>
+      <div class="stat"><b data-lp="visuals">0</b><span>visual bindings</span></div>
+      <div class="stat"><b data-lp="overlays">0</b><span>overlays</span></div>
+    </div>
+    <p class="lp-note">
+      These are live, not mocked — and the zeroes are real too. This docs page registers bodies and
+      relationships, but declares no visual bindings, overlays, or thresholded state, so the inspector
+      shows exactly what is running. The <a href="/docs/reading-field">Reading Field</a> exercises
+      state and feedback in full.
+    </p>
+
+    <h3 class="lp-h3">Relationship graph <span class="lp-count" data-lp-rel-count></span></h3>
+    <ul class="lp-list" data-lp-rels><li class="lp-empty">no relationships discovered yet</li></ul>
+
+    <h3 class="lp-h3">Platform lint <span class="lp-count" data-lp-lint-count></span></h3>
+    <ul class="lp-list" data-lp-lint><li class="lp-empty">—</li></ul>
   </section>
 
   <section aria-labelledby="rp">
@@ -134,6 +184,81 @@ const passports = Object.values(PASSPORTS);
   document.addEventListener('astro:before-swap', () => cancelAnimationFrame(raf), { once: true });
 </script>
 
+<script>
+  // Live platform readout: each frame, read the running <field-root>'s platform registries. Reads
+  // only (measure.last(), never measure() — no off-phase reads), so the inspector never perturbs the
+  // runtime it observes. This is the production Phase-D platform, so the numbers are real. Respects
+  // reduced motion (one static read).
+  import { lintPlatform, type FieldPlatform } from '@field-ui/platform';
+
+  const reduceP = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const statusEl = document.querySelector<HTMLElement>('[data-lp-status]');
+  const frameEl = document.querySelector<HTMLElement>('[data-lp-frame]');
+  const relsEl = document.querySelector<HTMLElement>('[data-lp-rels]');
+  const relCountEl = document.querySelector<HTMLElement>('[data-lp-rel-count]');
+  const lintEl = document.querySelector<HTMLElement>('[data-lp-lint]');
+  const lintCountEl = document.querySelector<HTMLElement>('[data-lp-lint-count]');
+  const setNum = (k: string, n: number): void => {
+    const el = document.querySelector<HTMLElement>(`[data-lp="${k}"]`);
+    if (el) el.textContent = String(n);
+  };
+  const esc = (s: string): string =>
+    s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
+  const labelOf = (el: Element | null): string => {
+    if (!el) return '∅';
+    if (el.id) return `#${el.id}`;
+    const t = (el.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 22);
+    return `${el.tagName.toLowerCase()}${t ? ` "${t}"` : ''}`;
+  };
+
+  let lraf = 0;
+  function lpTick(): void {
+    const fr = document.querySelector('field-root') as (HTMLElement & { platform?: FieldPlatform }) | null;
+    const p = fr?.platform;
+    if (!p) {
+      if (statusEl) statusEl.textContent = 'Platform runtime not active on this field-root (legacy path).';
+      lraf = requestAnimationFrame(lpTick);
+      return;
+    }
+    if (statusEl) statusEl.textContent = '● live — reading the running platform each frame';
+    if (frameEl) frameEl.textContent = `frame ${p.scheduler.frame}`;
+    setNum('measurements', p.measure.size);
+    setNum('state', p.state.elements().length);
+    setNum('feedback', p.feedback.boundVars().length);
+    const rels = p.relationships.all();
+    setNum('relationships', rels.length);
+    setNum('visuals', p.visuals.all().length);
+    setNum('overlays', p.overlays.all().length);
+
+    if (relCountEl) relCountEl.textContent = `(${rels.length})`;
+    if (relsEl)
+      relsEl.innerHTML = rels.length
+        ? rels
+            .slice(0, 12)
+            .map(
+              (r) =>
+                `<li><code>${esc(labelOf(r.from))}</code> <span class="lp-arrow">→</span> <code>${esc(labelOf(r.to))}</code> <span class="lp-type">${esc(r.type)}</span> <span class="lp-w">${r.strength.toFixed(2)}${r.active ? ' ·active' : ''}</span></li>`,
+            )
+            .join('') + (rels.length > 12 ? `<li class="lp-empty">+${rels.length - 12} more</li>` : '')
+        : '<li class="lp-empty">no relationships discovered yet</li>';
+
+    const warnings = lintPlatform(p);
+    if (lintCountEl) lintCountEl.textContent = warnings.length ? `(${warnings.length})` : '✓';
+    if (lintEl)
+      lintEl.innerHTML = warnings.length
+        ? warnings
+            .slice(0, 12)
+            .map((w) => `<li><span class="lp-code lp-${w.severity}">${esc(w.code)}</span> ${esc(w.message)}</li>`)
+            .join('')
+        : '<li class="lp-empty">✓ no warnings — relations resolve, state is registered, feedback writes CSS vars, reads stay on-phase</li>';
+
+    lraf = requestAnimationFrame(lpTick);
+  }
+  lpTick();
+  if (reduceP && lraf) cancelAnimationFrame(lraf); // one static read under reduced motion
+  document.addEventListener('astro:before-swap', () => cancelAnimationFrame(lraf), { once: true });
+</script>
+
 <style>
   .lede { color: var(--muted, #9aa); }
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
@@ -141,6 +266,25 @@ const passports = Object.values(PASSPORTS);
   .stat b { display: block; font-size: 1.6rem; color: #4da3ff; }
   .stat span { font-size: 0.78rem; color: var(--muted, #9aa); }
   .coverage { font-size: 0.9rem; }
+  .lp-status { font-size: 0.9rem; color: #2dd4bf; }
+  .lp-jump { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 0.75rem; }
+  .lp-jump a { font-size: 0.8rem; color: var(--muted, #9aa); border: 1px solid var(--line, #2a2a35); border-radius: 999px; padding: 0.15rem 0.7rem; text-decoration: none; }
+  .lp-phases { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin: 0.75rem 0; }
+  .lp-phase { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--muted, #c3c9d4); border: 1px solid var(--line, #2a2a35); border-radius: 5px; padding: 0.1rem 0.45rem; }
+  .lp-phase + .lp-phase::before { content: '→'; color: var(--muted, #555); margin: 0 0.35rem 0 -0.2rem; }
+  .lp-frame { margin-left: auto; font-family: ui-monospace, monospace; font-size: 0.78rem; color: #4da3ff; }
+  .lp-note { font-size: 0.82rem; color: var(--muted, #9aa); margin: 0.5rem 0 0; }
+  .lp-h3 { font-size: 0.95rem; margin: 1.1rem 0 0.4rem; }
+  .lp-count { color: var(--muted, #9aa); font-weight: 400; font-size: 0.85rem; }
+  .lp-list { list-style: none; padding: 0; margin: 0; font-size: 0.82rem; display: grid; gap: 0.25rem; }
+  .lp-list code { font-family: ui-monospace, monospace; font-size: 0.78rem; }
+  .lp-arrow { color: #4da3ff; }
+  .lp-type { color: #2dd4bf; font-size: 0.76rem; }
+  .lp-w { color: var(--muted, #9aa); font-size: 0.76rem; }
+  .lp-empty { color: var(--muted, #9aa); }
+  .lp-code { font-family: ui-monospace, monospace; font-size: 0.74rem; border-radius: 4px; padding: 0.02rem 0.35rem; }
+  .lp-warning { background: color-mix(in srgb, #ff9d5c 22%, transparent); color: #ffc99a; }
+  .lp-error { background: color-mix(in srgb, #ff5c5c 26%, transparent); color: #ffb0b0; }
   .insp-bodies { display: grid; gap: 0.6rem; margin: 1rem 0; }
   .insp-body { display: grid; grid-template-columns: 10ch 1fr 6ch; align-items: center; gap: 0.6rem; cursor: default; }
   .ib-label { font-family: ui-monospace, monospace; font-size: 0.85rem; }
