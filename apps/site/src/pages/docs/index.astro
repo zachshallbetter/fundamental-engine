@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
+import ForceCell from '../../components/ForceCell.astro';
 import { MANUAL_FORCES } from 'field-ui';
 
 // Getting started — install + a 60-second quickstart for every entry point + the
@@ -102,6 +103,14 @@ field.scan();`;
       canvas renders the visible field behind your content — so any layout change <em>is</em> a change
       to the force geometry. After you add or remove bodies, call <code>field.scan()</code>.
     </div>
+
+    <p class="see-it">See it before you build it — move your cursor through the frame:</p>
+    <ForceCell
+      force="attract"
+      label="A live field"
+      caption="The matter reacts to your cursor in real time. On a real page, your [data-body] elements drive the field the same way."
+      height={170}
+    />
   </section>
 
   <section class="docs-sec">
@@ -119,7 +128,7 @@ field.scan();`;
         (<code>discover → read → compute → state → write → render</code>).
       </li>
       <li>
-        <b>Core &amp; render surfaces.</b> <code>@field-ui/core</code> computes the field
+        <b>Core &amp; render surfaces.</b> <code>field-ui</code> (the core) computes the field
         (renderer-agnostic) over one shared, conserved context. Canvas, SVG overlays, and DOM
         feedback are render surfaces that reveal it — nothing is created from nothing.
       </li>

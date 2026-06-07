@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { MANUAL_FORCES, MANUAL_PRESETS } from 'field-ui';
+import CellGallery from '../components/CellGallery.astro';
 import '../styles/ds-tokens.css';
 import '../styles/force-glyphs.css';
 import '../styles/instrument.css';
@@ -27,6 +28,17 @@ const families = [
 const inFamily = (k: string) => MANUAL_FORCES.filter((f) => f.family === k);
 const forceNo = (token: string) => MANUAL_FORCES.findIndex((f) => f.token === token) + 1;
 const z2 = (n: number) => String(n).padStart(2, '0');
+
+// The seven cell-renderable forces, for the live demo grid (cell-force.ts supports only these).
+const CELL_CAPTIONS: Record<string, string> = {
+  attract: 'pulls matter in', repel: 'pushes it away', swirl: 'orbits it around',
+  gravity: 'a true 1/d² fall-in', stream: 'a uniform current', buoyancy: 'a steady lift',
+  tether: 'a spring to a rest shell',
+};
+const liveCells = ['attract', 'repel', 'swirl', 'gravity', 'stream', 'buoyancy', 'tether'].map((t) => {
+  const f = MANUAL_FORCES.find((x) => x.token === t);
+  return { force: t, label: f?.label ?? t, color: f?.color, caption: CELL_CAPTIONS[t] };
+});
 
 const surfaces = [
   { n: 'Page', v: '#04050a' }, { n: 'Surface', v: '#0a0d14' }, { n: 'Subtle', v: '#0e121b' },
@@ -245,6 +257,9 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
             <p class="fb-foot"><b>{MANUAL_FORCES.length} forces</b> · conformance-backed · every one fires in <a href="/lab">the Lab →</a></p>
           </div>
         </div>
+
+        <span class="sub">Live — move your cursor through a frame</span>
+        <CellGallery cells={liveCells} hint="Seven of the forces render as in-frame poster cells. Move your cursor through one and it pushes back." />
 
         <span class="sub">Formulas</span>
         <div class="grid cols-2 formulas">
