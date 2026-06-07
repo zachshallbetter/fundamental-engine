@@ -11,7 +11,7 @@
 > without re-reading the prototype.
 
 Status: **as-built** — the engine ships. The force math, conditions, formations,
-render modes, and two-way feedback described here are live in `@field-ui/core` and
+render modes, and two-way feedback described here are live in `field-ui` and
 exercised through the authoring surfaces (`<field-root>`, `mountField()`,
 `<FieldField>`). This document is the canonical reference for the **force engine**;
 it does **not** define the full field-ui platform architecture. DOM participation —
@@ -746,7 +746,7 @@ pattern for embedding the (cost-heavy) field inside a denser documentation UI.
 ## 19. Notes for adapting the engine
 
 > **As-built note.** This section describes how the *force engine* is mounted; it is
-> not the full platform architecture. In the shipped system, `@field-ui/core`
+> not the full platform architecture. In the shipped system, `field-ui`
 > computes renderer-agnostic field behavior (force math, conservation, conditions,
 > formations) and `@field-ui/platform` binds it to the DOM — measurement, state,
 > feedback writes, relationships, visual bindings, overlays, scheduling (the explicit
