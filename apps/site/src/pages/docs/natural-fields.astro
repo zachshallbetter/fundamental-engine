@@ -1,5 +1,7 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import VocabBadge from '../../components/VocabBadge.astro';
+import VocabLegend from '../../components/VocabLegend.astro';
 import { NATURAL_FIELDS, MANUAL_FORCES, FORCE_KIND, FORCE_FIELD } from 'field-ui';
 
 // The Natural Field Translation System — the canonical explanation of how field-ui translates the
@@ -22,14 +24,16 @@ const byKind = KIND_ORDER.map((kind) => ({
   tokens: MANUAL_FORCES.filter((f) => FORCE_KIND[f.token] === kind).map((f) => ({ token: f.token, field: FORCE_FIELD[f.token] })),
 })).filter((g) => g.tokens.length);
 
-const TRANSLATION = [
-  ['Show importance', 'Gravity', 'gravity, mass, potential'],
-  ['Route signal', 'Electromagnetic', 'propagate, fieldflow, stream'],
-  ['Show relationship', 'Strong + electromagnetic', 'link, cohesion, topology, field lines'],
-  ['Keep things grouped', 'Strong', 'cohesion, crystallize, align'],
-  ['Show change / decay', 'Weak', 'morph, memory'],
-  ['Show flow through structure', 'Electromagnetic + transport', 'fieldflow, stream'],
-  ['Show reading history', 'Memory metric', 'memory, attention, feedback'],
+// Each row separates the lanes: runtime tokens (strict), metrics (measured state), diagnostics
+// (inspection modes). They are deliberately NOT merged into one "primitives" column.
+const TRANSLATION: [string, string, string, string, string][] = [
+  ['Show importance', 'Gravity', 'gravity, attract', 'mass, priority, attention', 'potential, prediction'],
+  ['Route signal', 'Electromagnetic', 'charge, propagate, fieldflow, stream', 'signal, strength', 'field-lines, force-vectors'],
+  ['Show relationship', 'Strong + EM', 'link, cohesion', 'relation-strength', 'topology, causality'],
+  ['Keep things grouped', 'Strong', 'cohesion, crystallize, align', 'cluster, density', 'topology, heatmap'],
+  ['Show change / decay', 'Weak', 'morph, memory', 'decay, age', 'causality, contours'],
+  ['Show flow through structure', 'EM + transport', 'fieldflow, stream', 'flow, velocity', 'field-lines, prediction'],
+  ['Show reading history', 'Memory (metric)', 'memory', 'attention, recency', 'heatmap, inspector'],
 ];
 const DIAG = [
   ['Potential', 'wells and energy landscape', 'Gravity'],
@@ -61,7 +65,16 @@ const DIAG = [
       verbs. <strong>Natural fields are not tokens; tokens are translations.</strong> This reframe
       changes nothing the particles do — it only gives each behavior a clean place in the hierarchy:
     </p>
-    <div class="formula" style="--c:#4da3ff">field → translation → primitive → metric → diagnostic → recipe</div>
+    <div class="formula" style="--c:#4da3ff">field → translation → runtime token → metric → diagnostic → recipe</div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The vocabulary lanes</h2>
+    <p>
+      field-ui keeps these categories separate on purpose. A reader should never have to guess whether a
+      word is a runtime token, a metric, or a diagnostic — the lane says so:
+    </p>
+    <VocabLegend />
   </section>
 
   <h2>The four fields</h2>
@@ -103,19 +116,28 @@ const DIAG = [
   </div>
 
   <h2>Interface translation table</h2>
+  <p>One need, separated into lanes: the runtime tokens that execute it, the metrics it measures, and the diagnostics that reveal it.</p>
   <table class="nf-table">
-    <thead><tr><th>Interface need</th><th>Natural translation</th><th>Likely primitives</th></tr></thead>
+    <thead><tr><th>Interface need</th><th>Natural field</th><th>Runtime tokens</th><th>Metrics</th><th>Diagnostics</th></tr></thead>
     <tbody>
-      {TRANSLATION.map(([need, field, prims]) => (<tr><td>{need}</td><td>{field}</td><td><code>{prims}</code></td></tr>))}
+      {TRANSLATION.map(([need, field, tokens, metrics, diags]) => (
+        <tr>
+          <td>{need}</td>
+          <td>{field}</td>
+          <td class="nf-lane">{tokens.split(', ').map((t) => <VocabBadge kind="token" label={t} />)}</td>
+          <td class="nf-lane">{metrics.split(', ').map((m) => <VocabBadge kind="metric" label={m} />)}</td>
+          <td class="nf-lane">{diags.split(', ').map((d) => <VocabBadge kind="diagnostic" label={d} />)}</td>
+        </tr>
+      ))}
     </tbody>
   </table>
 
   <h2>Diagnostics by field</h2>
-  <p>Each diagnostic answers “which invisible relation am I revealing?” — all shipped (<a href="/docs/diagnostics">see them live</a>).</p>
+  <p>Each diagnostic answers “which invisible relation am I revealing?” — all shipped (<a href="/docs/diagnostics">see them live</a>). Diagnostics are inspection modes, not runtime tokens.</p>
   <table class="nf-table">
     <thead><tr><th>Diagnostic</th><th>Reveals</th><th>Field</th></tr></thead>
     <tbody>
-      {DIAG.map(([d, reveals, field]) => (<tr><td><code>{d}</code></td><td>{reveals}</td><td>{field}</td></tr>))}
+      {DIAG.map(([d, reveals, field]) => (<tr><td><VocabBadge kind="diagnostic" label={d} /></td><td>{reveals}</td><td>{field}</td></tr>))}
     </tbody>
   </table>
 
@@ -128,6 +150,7 @@ const DIAG = [
 <style>
   .lede { color: var(--text-3); }
   .nf-doctrine { color: var(--text-2); }
+  .nf-lane { display: flex; flex-wrap: wrap; gap: 0.25rem; }
   .nf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.9rem; margin: 0.8rem 0 1.4rem; }
   .nf-card { padding: 1.1rem; border-radius: 12px; border: 1px solid var(--line); border-left: 3px solid var(--fc); background: color-mix(in srgb, var(--fc) 5%, transparent); }
   .nf-card h3 { margin: 0 0 0.15rem; color: var(--fc); }
