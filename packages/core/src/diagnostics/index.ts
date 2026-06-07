@@ -8,12 +8,16 @@ export * from './potential.ts';
 export * from './probes.ts';
 export * from './fields.ts';
 export * from './render.ts';
+export * from './modes.ts';
 
 /** The diagnostics this module provides (inspectable list; canvas drawing is the UI frontier). */
 export const DIAGNOSTICS = [
   { name: 'energy', provides: 'kinetic / thermal / total energy + drift', reads: 'particles' },
   { name: 'potential', provides: 'scalar potential Φ + grid sampling for contours', reads: 'bodies' },
   { name: 'force-vectors', provides: 'a force’s Δv on a probe at a point', reads: 'force + probe' },
-  { name: 'causality', provides: 'per-token contribution to motion', reads: 'registry + tokens' },
+  { name: 'causality', provides: 'per-token contribution to motion (ranked bars + vectors)', reads: 'registry + tokens' },
   { name: 'heatmap-variants', provides: 'density / heat / velocity scalar grids', reads: 'particles' },
+  { name: 'topology', provides: 'relationship-agent coupling edges (strength / memory)', reads: 'relationship agents + positions' },
+  { name: 'inspector', provides: 'body / agent / metric / contract HUD rows', reads: 'system snapshot' },
+  { name: 'prediction', provides: 'deterministic forward ghost trajectory', reads: 'forces + bodies + probe' },
 ] as const;

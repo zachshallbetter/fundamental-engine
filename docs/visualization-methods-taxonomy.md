@@ -47,10 +47,13 @@ DOM state shows reciprocity.
 | Causality | per-force contributions | no | why motion happened |
 | Prediction | deterministic ghost step | no | expected future path |
 
-> **Implemented (as data).** `VISUALIZATION_TRUTH_TABLE`, the `RENDER_MODES` catalog (with honest
-> shipped/planned status), and `VISUALIZATION_PRESETS` live in `packages/core/src/visual/visualization.ts`.
-> The matter/structure modes ship; the diagnostic modes (force-vectors, contours, potential, energy,
-> topology, inspector, causality, prediction) are marked `planned` (Bucket B / Inspector work).
+> **Implemented (as data + renderers).** `VISUALIZATION_TRUTH_TABLE`, the `RENDER_MODES` catalog (with
+> honest shipped/planned status), and `VISUALIZATION_PRESETS` live in `packages/core/src/visual/visualization.ts`.
+> The matter/structure modes ship; the diagnostic modes force-vectors, contours, potential and energy
+> ship with canvas renderers in `diagnostics/render.ts` (C1), and topology, inspector, causality and
+> prediction ship in `diagnostics/modes.ts` (`drawTopology`, `drawInspector`, `causalityAt` +
+> `drawCausality`, `ghostTrajectory` + `drawPrediction`). Every catalog mode is now `shipped`; see the
+> live `/docs/diagnostics` page.
 
 ## Render Modes Catalog
 
