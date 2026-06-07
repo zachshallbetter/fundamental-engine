@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>field-ui — starter</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!--
+      One background field for the whole page. <field-root> renders a canvas behind the content and
+      scans the document for [data-body] elements, turning each into a body in the field. Importing
+      "@field-ui/elements" in src/main.ts is what upgrades this tag — that single import is the field.
+    -->
+    <field-root></field-root>
+
+    <main>
+      <header class="intro">
+        <p class="kicker">field-ui · starter</p>
+        <h1>The first five minutes</h1>
+        <p class="lede">
+          A plain Vite + HTML app that uses field-ui the way any outside project would: one
+          declarative <code>&lt;field-root&gt;</code>, then the same recipe applied three ways. No
+          framework, no canvas code, no per-element wiring. Toggle reduced motion at any time — the
+          page stays meaningful with the motion off.
+        </p>
+        <div class="controls" role="group" aria-label="Starter controls">
+          <button type="button" id="reduce" aria-pressed="false">Reduce motion: off</button>
+          <span class="rm-note" id="rm-note"></span>
+        </div>
+      </header>
+
+      <!-- 1 · Declarative — body tokens on ordinary elements; the field reads them on its own. -->
+      <section class="card">
+        <h2>1 · Declarative</h2>
+        <p>
+          Put a real body token on any element with <code>data-body</code>. These are the
+          <code>priority-well</code> recipe's own tokens — <code>attract</code> and
+          <code>gravity</code> — so the elements participate the moment the page loads.
+        </p>
+        <div class="row">
+          <button data-body="attract" data-strength="1.4" class="chip">Primary action</button>
+          <button data-body="attract" class="chip">Secondary</button>
+          <span data-body="gravity" class="chip ghost">Anchor</span>
+        </div>
+      </section>
+
+      <!-- 2 · applyRecipe — run a recipe over existing markup; read --field-* state it writes. -->
+      <section class="card">
+        <h2>2 · <code>applyRecipe()</code></h2>
+        <p>
+          Apply <code>priority-well</code> to elements already on the page. The recipe frames which
+          metrics it tracks; it writes them back as <code>--field-*</code> custom properties the CSS
+          reads — here <code>--field-priority</code> sets each task's weight.
+        </p>
+        <ul class="tasks" id="apply-tasks">
+          <li data-body="attract" data-field-priority="0.9">Ship the runtime <b>· high</b></li>
+          <li data-body="attract" data-field-priority="0.5">Write the guide <b>· medium</b></li>
+          <li data-body="attract" data-field-priority="0.2">Tidy the changelog <b>· low</b></li>
+        </ul>
+        <p class="inspect" id="apply-inspect">inspector: starting…</p>
+      </section>
+
+      <!-- 3 · bindData — records drive the field; updates diff by id and decay on removal. -->
+      <section class="card">
+        <h2>3 · <code>bindData()</code></h2>
+        <p>
+          Hand <code>bindData()</code> your data and a mapper. Each record becomes a body, its mapped
+          metrics become field state, and the same recipe supplies the behavior. Add and remove
+          records — the diff is deterministic and removed records decay before they leave.
+        </p>
+        <div class="controls">
+          <button type="button" id="bind-add">Add task</button>
+          <button type="button" id="bind-remove">Remove newest</button>
+          <button type="button" id="bind-shuffle">Shuffle priorities</button>
+        </div>
+        <div class="tasks bound" id="bind-root"></div>
+        <p class="inspect" id="bind-inspect">inspector: starting…</p>
+      </section>
+
+      <footer class="foot">
+        <p>
+          Three surfaces, one recipe. Read <code>src/main.ts</code> — it is the whole integration.
+        </p>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
