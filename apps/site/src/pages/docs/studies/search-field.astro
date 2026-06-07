@@ -2,38 +2,30 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import RecipesApplied from '../../../components/RecipesApplied.astro';
 
-// Search Field Study — a generic search-results page (no brand assets) driven by real recipes through
-// applyRecipe(): results settle by relevance (gravity), source confidence reads as a trust gradient,
-// opened results retain memory, and contradictory results carry polarity. Per-result data-field-*
-// values are supplied; applyRecipe writes them to --field-* and CSS renders the evidence landscape.
-
-const results = [
-  { id: 's1', title: 'Field translation runtime — overview', host: 'docs', confidence: 0.95, recency: 0.9, polarity: 'support' },
-  { id: 's2', title: 'Reciprocal DOM interfaces (paper draft)', host: 'research', confidence: 0.8, recency: 0.5, polarity: 'support' },
-  { id: 's3', title: 'Why particle backgrounds fail at meaning', host: 'blog', confidence: 0.55, recency: 0.3, polarity: 'neutral' },
-  { id: 's4', title: 'Field UI is just a canvas effect (rebuttal)', host: 'forum', confidence: 0.3, recency: 0.7, polarity: 'contradict' },
-  { id: 's5', title: 'Accessibility of motion-driven UI', host: 'standards', confidence: 0.85, recency: 0.6, polarity: 'support' },
-];
+// Search Field Study — data-driven via bindData(). Results are records; the trust-gradient recipe turns
+// each result's confidence into a --field-confidence gradient, and contradictory results carry polarity.
+// Relevance is the ranked order; opening a result marks it. No hand-wired behavior — results come from data.
 const RECIPES = ['search-relevance-field', 'trust-gradient', 'source-constellation', 'polarity-filter', 'memory-trace'];
-const LIVE = ['search-relevance-field', 'trust-gradient'];
+const LIVE = ['trust-gradient'];
 ---
 
 <DocsLayout
   title="field-ui — Search Field Study"
-  description="A concept study: a generic search-results page reinterpreted as a field. Relevance becomes gravity, source confidence a trust gradient, opened results retain memory, and contradictions carry polarity — driven by real recipes through applyRecipe()."
+  description="A concept study driven by data through bindData(): search results become a field — source confidence reads as a trust gradient, contradictions carry polarity. Driven by the trust-gradient recipe."
 >
-  <p class="kicker">Concept study</p>
+  <p class="kicker">Concept study · data-bound</p>
   <h1>Search Field Study</h1>
   <p class="lede">
-    A ranked list becomes an evidence landscape. High-confidence sources gain weight, contradictory
-    results separate by polarity, and results you open retain memory — driven by real recipes through
-    <code>applyRecipe()</code>, and still a plain list with the field off.
+    A ranked list becomes an evidence landscape. Results are <b>records</b> bound through
+    <code>bindData()</code>; the <a href="/docs/gallery#trust-gradient">Trust Gradient</a> recipe turns
+    each result's confidence into a gradient and contradictions stand apart — still a plain list with the
+    field off.
   </p>
 
   <div class="study-stages">
     <div class="stage"><b>Before</b><span>A plain ranked list of results with sources.</span></div>
-    <div class="stage"><b>After</b><span>Confidence reads as a trust gradient, contradictions are flagged, opened results warm with memory.</span></div>
-    <div class="stage"><b>Inspect</b><span>Live <code>applyRecipe().inspect()</code> — bodies, relationships, lint.</span></div>
+    <div class="stage"><b>After</b><span>Confidence reads as a trust gradient; contradictions are flagged; opened results are marked.</span></div>
+    <div class="stage"><b>Inspect</b><span>Live <code>bindData().inspect()</code> — records · bodies · edges.</span></div>
   </div>
 
   <div class="study-controls" role="group" aria-label="Study controls">
@@ -43,47 +35,46 @@ const LIVE = ['search-relevance-field', 'trust-gradient'];
   </div>
 
   <div class="se">
-    <div class="se-query"><span class="se-q">field ui evidence</span><span class="se-count">{results.length} results</span></div>
-    <ul class="se-results" id="se-results">
-      {results.map((r, i) => (
-        <li
-          class="se-result"
-          id={r.id}
-          data-field-confidence={r.confidence}
-          data-field-recency={r.recency}
-          data-field-priority={(results.length - i) / results.length}
-          data-polarity={r.polarity}
-          tabindex="0"
-        >
-          <p class="se-title">{r.title}</p>
-          <p class="se-meta">
-            <span class="se-host">{r.host}</span>
-            <span class="se-conf">confidence {Math.round(r.confidence * 100)}%</span>
-            {r.polarity === 'contradict' && <span class="se-contra">contradicts</span>}
-          </p>
-        </li>
-      ))}
-    </ul>
+    <div class="se-query"><span class="se-q">field ui evidence</span><span class="se-count" data-se-count>—</span></div>
+    <div class="se-results" id="se-results"></div>
   </div>
 
   <RecipesApplied ids={RECIPES} live={LIVE} />
 </DocsLayout>
 
 <script>
-  import { mountStudy } from '../../../lib/study.ts';
+  import { mountBindStudy } from '../../../lib/study.ts';
+  import { bindData } from '@field-ui/platform';
+
+  interface Result { id: string; title: string; host: string; confidence: number; recency: number; polarity: 'support' | 'neutral' | 'contradict'; }
+  const results: Result[] = [
+    { id: 's1', title: 'Field translation runtime — overview', host: 'docs', confidence: 0.95, recency: 0.9, polarity: 'support' },
+    { id: 's2', title: 'Reciprocal DOM interfaces (paper draft)', host: 'research', confidence: 0.8, recency: 0.5, polarity: 'support' },
+    { id: 's3', title: 'Why particle backgrounds fail at meaning', host: 'blog', confidence: 0.55, recency: 0.3, polarity: 'neutral' },
+    { id: 's4', title: 'Field UI is just a canvas effect (rebuttal)', host: 'forum', confidence: 0.3, recency: 0.7, polarity: 'contradict' },
+    { id: 's5', title: 'Accessibility of motion-driven UI', host: 'standards', confidence: 0.85, recency: 0.6, polarity: 'support' },
+  ];
   const root = document.getElementById('se-results');
+  const countEl = document.querySelector<HTMLElement>('[data-se-count]');
   if (root) {
-    const items = Array.from(root.querySelectorAll<HTMLElement>('.se-result'));
-    // opening a result deposits memory (data-active boosts attention → memory accrues)
-    for (const el of items) {
-      el.addEventListener('click', () => el.toggleAttribute('data-active'));
-      el.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') el.toggleAttribute('data-active'); });
-    }
-    // search-relevance-field drives relevance/memory; trust-gradient drives the confidence gradient
-    mountStudy([
-      { root, recipeId: 'search-relevance-field', items },
-      { root, recipeId: 'trust-gradient', items },
+    if (countEl) countEl.textContent = `${results.length} results`;
+    const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
+    const mapper = (r: Result) => ({
+      id: r.id,
+      body: { tokens: ['charge', 'link'], strength: 0.4 + r.confidence, range: 280, feedback: true, spin: r.polarity === 'contradict' ? -1 : 1 },
+      metrics: { confidence: r.confidence, recency: r.recency },
+      label: r.title,
+    });
+    const content = (r: Result) =>
+      `<p class="se-title">${esc(r.title)}</p><p class="se-meta">` +
+      `<span class="se-host">${esc(r.host)}</span>` +
+      `<span class="se-conf">confidence ${Math.round(r.confidence * 100)}%</span>` +
+      `${r.polarity === 'contradict' ? '<span class="se-contra">contradicts</span>' : ''}</p>`;
+    mountBindStudy((reduced, on) => [
+      bindData(root, results, mapper, { recipe: on ? 'trust-gradient' : undefined, className: 'se-result', content, reducedMotion: reduced }),
     ]);
+    // opening a result marks it
+    root.addEventListener('click', (e) => { (e.target as HTMLElement)?.closest('.se-result')?.toggleAttribute('data-active'); });
   }
 </script>
 
@@ -102,16 +93,15 @@ const LIVE = ['search-relevance-field', 'trust-gradient'];
   .se-query { display: flex; align-items: baseline; gap: 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); padding-bottom: 0.4rem; margin-bottom: 0.8rem; }
   .se-q { font-size: 1.05rem; font-weight: 600; }
   .se-count { font-size: 0.8rem; color: var(--muted, #9aa); }
-  .se-results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .se-results { display: flex; flex-direction: column; gap: 0.5rem; min-height: 80px; }
   .se-result {
-    --field-confidence: 0; --field-recency: 0; --field-memory: 0;
+    --field-confidence: 0;
     padding: 0.5rem 0.7rem; border-radius: 8px; cursor: pointer;
     border: 1px solid var(--line, #2a2a35);
-    border-left: 3px solid color-mix(in srgb, #2dd4bf calc(var(--field-confidence) * 95%), color-mix(in srgb, #ff9d5c 60%, transparent));
-    background: color-mix(in srgb, #2dd4bf calc(var(--field-memory) * 16%), transparent);
-    transition: background 0.4s ease, border-color 0.4s ease;
+    border-left: 3px solid color-mix(in srgb, #2dd4bf calc(var(--field-confidence) * 95%), color-mix(in srgb, #ff9d5c 55%, transparent));
+    opacity: 1; transition: border-color 0.4s ease, background 0.3s ease, opacity 0.35s ease;
   }
-  .se-result[data-polarity='contradict'] { border-left-color: #ff5c5c; }
+  .se-result[data-bd-entering] { opacity: 0; }
   .se-result[data-active] { background: color-mix(in srgb, #4da3ff 14%, transparent); }
   .se-title { margin: 0; font-size: 0.95rem; color: color-mix(in srgb, var(--text, #e8e8ef) calc(60% + var(--field-confidence) * 40%), var(--muted, #9aa)); }
   .se-meta { margin: 0.2rem 0 0; display: flex; gap: 0.8rem; font-size: 0.78rem; color: var(--muted, #9aa); }
