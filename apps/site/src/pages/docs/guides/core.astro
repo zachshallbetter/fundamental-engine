@@ -2,23 +2,25 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const create = `// @field-ui/core is renderer-agnostic — createField needs a host. In the browser, the
-// simplest path wires it for you (createField from @field-ui/vanilla, or createBrowserField
-// from @field-ui/platform); pass a custom host to drive a headless/alternative renderer.
-import { createField } from '@field-ui/vanilla';
+const create = `// @field-ui/core is renderer-agnostic — createField requires an explicit host.
+// In the browser, browserHost() (from @field-ui/platform) is the host. Pass a custom
+// host to drive a headless or alternative renderer.
+import { createField } from '@field-ui/core';
+import { browserHost } from '@field-ui/platform';
 
 const canvas = document.querySelector('canvas');
 const field = createField(canvas, {
+  host: browserHost(),
   accent: '#4da3ff',
   density: 1,
   attention: false,
   causality: false,
 });
 
-// equivalently, with the explicit host:
-//   import { createField } from 'field-ui';
-//   import { browserHost } from '@field-ui/platform';
-//   const field = createField(canvas, { accent: '#4da3ff', host: browserHost() });
+// Prefer a browser convenience wrapper? @field-ui/vanilla re-exports a createField
+// that wires browserHost() for you, so you can drop the host:
+//   import { createField } from '@field-ui/vanilla';
+//   const field = createField(canvas, { accent: '#4da3ff' });
 
 // the field reads every [data-body] element on the page.
 // after you add or remove bodies, rescan:
