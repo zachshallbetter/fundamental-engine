@@ -1,97 +1,104 @@
 # field-ui Documentation Index
 
-## Purpose
-
-This document set defines `field-ui` as an inspectable field language for interfaces.
-
-Core statement:
+## What field-ui is
 
 ```txt
-field-ui is an engine for interface physics.
+field-ui is a platform-native relational field runtime for the DOM.
 ```
 
-Expanded:
+It lets semantic HTML, DOM elements, particles, relationships, measurements, visual layers, and user
+interaction participate in one **shared field context**. Elements bend the field; the field bends them
+back. The visible particle canvas is **one render surface**, not the whole system.
 
 ```txt
-DOM elements, users, relationships, events, layout regions, and data records can participate in a shared reciprocal field.
-
-Bodies emit influence.
-Agents respond to influence.
-Metrics record the result.
-The interface adapts.
+@field-ui/core      computes renderer-agnostic field, force, particle, metric, and diagnostic behavior.
+@field-ui/platform  binds field behavior to the DOM: measurement, state, feedback, relationships,
+                    visual bindings, overlays, linting, and scheduling.
+@field-ui/elements  native web components and the [data-body] HTML authoring contract.
+@field-ui/react     the React adapter over the same contracts.
+@field-ui/vanilla   the FieldField class for plain TypeScript.
 ```
 
-## Canonical Principle
+## Document statuses
 
-```txt
-Elements bend the field.
-The field bends them back.
-```
+Every document carries a status banner at the top. The four statuses:
 
+- **canonical** — current source of truth for product, architecture, contracts, and public framing.
+- **as-built reference** — historically/technically accurate engine record, narrower than the whole
+  product.
+- **legacy / superseded** — preserved for design history; not authoritative.
+- **planning / roadmap** — forward-looking only; does not describe planned work as shipped.
 
-## Document Map
+The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-archive/`.
 
-Read in this order.
+## canonical/ — current architecture, contracts, and product framing
 
-| Order | Document | Role |
-|---:|---|---|
-| 1 | [`field-ui-migration-plan.md`](./field-ui-migration-plan.md) | Immediate migration plan from `force/` to `field-ui/` |
-| 2 | [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, and conformance |
-| 3 | [`field-ui-definition-document.md`](./field-ui-definition-document.md) | Canonical concept and operating model |
-| 4 | [`fundamental-field-behavior-table.md`](./fundamental-field-behavior-table.md) | Field/force laws, electromagnetic split, `fieldflow`, and truth modes |
-| 5 | [`visualization-methods-taxonomy.md`](./visualization-methods-taxonomy.md) | Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, and prediction |
-| 6 | [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md) | Agents beyond particles: users, elements, relationships, events, layout, data, attention, and interaction grammar |
-| 7 | [`field-ui-visual-language-and-geometry.md`](./field-ui-visual-language-and-geometry.md) | Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics |
-| 8 | [`field-ui-authoring-and-recipes.md`](./field-ui-authoring-and-recipes.md) | Authoring levels, intent compiler, recipe schema, examples, and precedence rules |
-| 9 | [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Test matrix, conformance gates, force passports, snapshot regression, linting, and acceptance criteria |
-| 10 | [`field-ui-worldclass-next-layer.md`](./field-ui-worldclass-next-layer.md) | Strategic next-layer systems and product maturity plan |
-| 11 | [`agent-handoff-fieldflow-visualization.md`](./agent-handoff-fieldflow-visualization.md) | Implementation-ready brief for agents |
+| Document | Role |
+|---|---|
+| [`field-ui-definition-document.md`](canonical/field-ui-definition-document.md) | Canonical concept and operating model |
+| [`field-ui-system-contracts.md`](canonical/field-ui-system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
+| [`field-ui-platform-architecture.md`](canonical/field-ui-platform-architecture.md) | `@field-ui/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
+| [`fundamental-field-behavior-table.md`](canonical/fundamental-field-behavior-table.md) | Field/force laws, electromagnetic split, `fieldflow`, and truth modes |
+| [`visualization-methods-taxonomy.md`](canonical/visualization-methods-taxonomy.md) | Render layers and diagnostics (all modes shipped: contours, potential, vectors, energy, topology, inspector, causality, prediction) |
+| [`field-ui-interaction-and-relationship-model.md`](canonical/field-ui-interaction-and-relationship-model.md) | Agents beyond particles; the relationship model; Reading Field |
+| [`field-ui-visual-language-and-geometry.md`](canonical/field-ui-visual-language-and-geometry.md) | Typography, color, shape, visual-semantic pairing, overlays, export |
+| [`field-ui-authoring-and-recipes.md`](canonical/field-ui-authoring-and-recipes.md) | Authoring across native HTML / web component / React; intent compiler; recipe schema |
+| [`field-ui-testing-and-conformance.md`](canonical/field-ui-testing-and-conformance.md) | Test matrix, conformance gates, force passports, platform + scheduler + lint tests |
 
-## Authority Order
+## engine-reference/ — as-built force-engine record
 
-When documents conflict, use this priority:
+These specify the force/field engine as it currently ships. They remain authoritative for force
+formulas, catalogs, and engine behavior, but do **not** define the whole platform architecture (see
+`canonical/` for that).
 
-1. `field-ui-migration-plan.md` for migration, directory, naming, and compatibility decisions.
-2. `field-ui-system-contracts.md` for implementation contracts.
-3. `field-ui-definition-document.md` for conceptual definitions.
-4. `fundamental-field-behavior-table.md` for physical and field behavior.
-5. `field-ui-testing-and-conformance.md` for validation and acceptance.
-6. `agent-handoff-fieldflow-visualization.md` for implementation sequencing.
-7. Other supporting docs.
+| Document | Role |
+|---|---|
+| [`forces-system.md`](engine-reference/forces-system.md) | The full engine specification (forces, formations, conditions, render modes, feedback) |
+| [`forces-engine.md`](engine-reference/forces-engine.md) | Module map and pipeline stages |
+| [`forces-formulas.md`](engine-reference/forces-formulas.md) | Exact per-force math |
+| [`forces-tests.md`](engine-reference/forces-tests.md) | Force-engine conformance coverage |
+| [`forces-fields-plan.md`](engine-reference/forces-fields-plan.md) | As-built field-line / heatmap record |
+| [`physics-workover.md`](engine-reference/physics-workover.md) | Physics correctness pass |
+| [`shadow-dom.md`](engine-reference/shadow-dom.md) | Shadow-DOM participation model (now owned by the platform) |
 
-## Naming Policy
+## planning-archive/ — design history & planning records
 
-Use `field-ui` for the project, package, documentation, and target directory name.
+Preserved for design history and sequencing. Do not treat as current implementation without checking
+the canonical docs and the code.
 
-Use `field` for runtime concepts:
+| Document | Role |
+|---|---|
+| [`field-ui-migration-plan.md`](planning-archive/field-ui-migration-plan.md) | The `force/` → `field-ui/` migration plan (complete; superseded by Phase D for runtime unification) |
+| [`field-ui-worldclass-next-layer.md`](planning-archive/field-ui-worldclass-next-layer.md) | Next-layer plan (much now shipped — see canonical) |
+| [`agent-handoff-fieldflow-visualization.md`](planning-archive/agent-handoff-fieldflow-visualization.md) | Implementation brief |
+| [`forces-concept.md`](planning-archive/forces-concept.md) | North-star concept / vision |
+| [`forces-possibilities.md`](planning-archive/forces-possibilities.md) | Design notes |
+| [`forces-explainer.md`](planning-archive/forces-explainer.md) | Legacy single-canvas explainer |
+| [`roadmap-frontiers.md`](planning-archive/roadmap-frontiers.md) | Frontier roadmap |
+| [`docs-showcase-overhaul.md`](planning-archive/docs-showcase-overhaul.md) | Docs-surface planning record |
 
-```txt
-field state
-field root
-field body
-field event
-field metric
-field density
-field heat
-```
+[`field-ui-brand-mark-field-fold.md`](field-ui-brand-mark-field-fold.md) is a standalone brand spec at
+the docs root.
 
-Use `--field-*` for CSS variables.
+## Authority order
 
-Use `field:*` for DOM events.
+When documents conflict, prefer:
 
-Keep existing `forces-*`, `--forces-*`, and `forces:*` names as compatibility aliases until migration tests prove the new names work across core, components, docs, Lab, and examples.
+1. `canonical/field-ui-system-contracts.md` and `canonical/field-ui-platform-architecture.md` for implementation contracts.
+2. `canonical/field-ui-definition-document.md` for conceptual definitions.
+3. `canonical/fundamental-field-behavior-table.md` for field behavior.
+4. `canonical/field-ui-testing-and-conformance.md` for validation and acceptance.
+5. `engine-reference/*` for force formulas and engine internals.
+6. `planning-archive/*` for history and intent only.
 
-## Migration Principle
+## Naming policy
 
-```txt
-This is a migration and cleanup, not a rewrite.
-Preserve behavior first.
-Rename and alias second.
-Expand the field-ui model third.
-```
+Use `field-ui` for the project, packages, and docs. Use `field` for runtime concepts (field state,
+field root, field body, field event, field metric). New code uses `--field-*` CSS variables and
+`field:*` events; legacy aliases `--forces-*`, compact `--d`, and `forces:*` remain where
+compatibility requires them.
 
-
-## Core Distinctions
+## Core distinctions
 
 ### Field vs Force
 
@@ -102,47 +109,27 @@ apply(b, p, env) = actual cause/effect
 
 Field lines are not always particle paths.
 
-### Electromagnetic Rule
+### DOM ⇄ field runtime
+
+The binding is **DOM ⇄ field runtime**, not DOM ⇄ canvas. Canvas is one render surface; SVG overlays
+are another; CSS-variable + event feedback is another. The platform layer is the DOM participation
+layer; the core engine is renderer-agnostic.
+
+### Electromagnetic rule
 
 ```txt
-Electric fields push.
-Magnetic fields bend.
-Fieldflow carries.
+Electric fields push. Magnetic fields bend. Fieldflow carries.
 ```
 
-Do not make `magnetism.apply()` follow magnetic field lines. Use `fieldflow` for field-aligned transport.
+Do not make `magnetism.apply()` follow magnetic field lines. Use `fieldflow` for field-aligned
+transport.
 
 ### Particle vs Agent
 
-Particles are only one kind of agent.
-
-```txt
-ParticleAgent = visual matter
-ElementAgent = DOM responder
-RelationshipAgent = active connection
-UserAgent = pointer/focus/selection field participant
-LayoutAgent = region-level responder
-DataAgent = semantic record in the field
-EventAgent = threshold trigger
-```
+Particles are one kind of agent (`ParticleAgent`, `ElementAgent`, `RelationshipAgent`, `UserAgent`,
+`LayoutAgent`, `DataAgent`, `EventAgent`).
 
 ### Visualization vs Physics
 
-Visualization layers reveal state. They must not mutate physics unless explicitly declared as feedback.
-
-## Engine Reference (as-built)
-
-The documents below specify the engine **as it currently ships**, migrated to field-first naming
-(`field-ui` / `--field-*` / `field:*` / `<field-root>`; the old `forces-*` names still work as
-aliases). The physics vocabulary — `force`, the force tokens, the `FORCES` catalog — is the domain
-model and stays. These are the authoritative behavior reference for the force/field engine; the
-field-first conceptual docs above build the broader field-ui model on top of them.
-
-| Document | Role |
-|---|---|
-| [`forces-system.md`](./forces-system.md) | The full engine specification (forces, formations, conditions, render modes, feedback) |
-| [`forces-engine.md`](./forces-engine.md) | Module map and pipeline stages |
-| [`forces-formulas.md`](./forces-formulas.md) | Exact per-force math |
-| [`forces-concept.md`](./forces-concept.md) | Conceptual model and authoring |
-| [`forces-tests.md`](./forces-tests.md) | Conformance coverage |
-| [`shadow-dom.md`](./shadow-dom.md) | Shadow-DOM participation model |
+Visualization layers reveal state. They must not mutate physics unless explicitly declared as
+feedback.

@@ -121,7 +121,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
 
-  // shadow-DOM participation (docs/shadow-dom.md): encapsulated components dispatch composed
+  // shadow-DOM participation (docs/engine-reference/shadow-dom.md): encapsulated components dispatch composed
   // register/unregister/update events; the field registers the HOST and never inspects the
   // shadow tree. The events bubble (composed) to the document, so we listen there.
   const shadow = new ShadowRegistry();

@@ -1,3 +1,6 @@
+> **Status: canonical.**
+> Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+
 # Visualization Methods Taxonomy for field-ui
 
 ## Related Documents
@@ -5,9 +8,9 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Visualization contract |
-| [`fundamental-field-behavior-table.md`](./fundamental-field-behavior-table.md) | Field vs force laws |
-| [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Visualization tests |
+| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Visualization contract |
+| [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field vs force laws |
+| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Visualization tests |
 
 ## Purpose
 
@@ -47,13 +50,15 @@ DOM state shows reciprocity.
 | Causality | per-force contributions | no | why motion happened |
 | Prediction | deterministic ghost step | no | expected future path |
 
-> **Implemented (as data + renderers).** `VISUALIZATION_TRUTH_TABLE`, the `RENDER_MODES` catalog (with
-> honest shipped/planned status), and `VISUALIZATION_PRESETS` live in `packages/core/src/visual/visualization.ts`.
-> The matter/structure modes ship; the diagnostic modes force-vectors, contours, potential and energy
-> ship with canvas renderers in `diagnostics/render.ts` (C1), and topology, inspector, causality and
-> prediction ship in `diagnostics/modes.ts` (`drawTopology`, `drawInspector`, `causalityAt` +
-> `drawCausality`, `ghostTrajectory` + `drawPrediction`). Every catalog mode is now `shipped`; see the
-> live `/docs/diagnostics` page.
+> **Shipped (as data + renderers).** `VISUALIZATION_TRUTH_TABLE`, the `RENDER_MODES` catalog, and
+> `VISUALIZATION_PRESETS` live in `packages/core/src/visual/visualization.ts`. Every catalog mode is
+> `shipped` — none are planned. The matter/structure modes ship; the diagnostic modes force-vectors,
+> contours, potential and energy ship with canvas renderers in `diagnostics/render.ts` (C1); and
+> topology, inspector, causality and prediction ship in `diagnostics/modes.ts` (`drawTopology`,
+> `drawInspector`, `causalityAt` + `drawCausality`, `ghostTrajectory` + `drawPrediction`). All of these
+> are exercised on the live `/docs/diagnostics` page. The canvas is one render surface among these
+> layers, not the whole system: `@field-ui/core` computes renderer-agnostic field behavior and
+> `@field-ui/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
 
 ## Render Modes Catalog
 
@@ -383,6 +388,14 @@ A page can teach the system by progressively revealing layers.
 8. inspector shows reciprocity
 ```
 
+This narrative reveal ships: the diagnostics surface steps through the layers above, and the live
+`/docs/diagnostics` page walks the reveal in order.
+
+An accessible preview ships alongside it. Under `prefers-reduced-motion`, the narrative collapses to a
+static preview that still names each layer and shows its current state, so the explanation reaches
+keyboard and reduced-motion users without animation. Reduced motion preserves meaning rather than
+hiding it.
+
 ## 14. Field Diff
 
 When parameters change, explain the difference.
@@ -422,15 +435,21 @@ debug trace
 poster image
 ```
 
-Snapshots should become regression tests where possible.
+Field export ships: the diagnostics surface exports the current field as an image — SVG (vector field
+lines and overlays) or PNG (rasterized canvas) — alongside the JSON scene recipe. Snapshots should
+become regression tests where possible.
 
-> **Diagnostics implemented (data layer).** The pure math behind these overlays ships in
+> **Diagnostics shipped (data layer + renderers).** The pure math behind these overlays ships in
 > `packages/core/src/diagnostics/`: energy accounting (§7), scalar `potentialAt` + grid sampling for
 > contours/potential (§6), probe `forceVectorAt` + `causalityAt` (§3/§4/§11), and heatmap-variant
-> samplers density/heat/velocity (§5). The canvas *drawing* of these overlays is the remaining
-> Lab/Inspector UI layer.
+> samplers density/heat/velocity (§5). The canvas *drawing* of these overlays also ships in
+> `diagnostics/render.ts` and `diagnostics/modes.ts`, and the SVG/PNG field export above is wired up.
+> All of it is live and interactive on the `/docs/diagnostics` page.
 
 ## Implementation Priority
+
+This list records the build order that has now shipped; every item below is live (see
+`/docs/diagnostics`).
 
 ```txt
 1. Visualization truth table

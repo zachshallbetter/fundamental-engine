@@ -4,7 +4,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 
 <DocsLayout
   title="field-ui — Accessibility"
-  description="field-ui is built to be accessible: the canvas is decorative and aria-hidden, reduced motion freezes the sim, focus engages bodies like hover, and the field never carries essential content."
+  description="field-ui is built to be accessible: visual render layers (canvas, SVG overlays, diagnostics) are decorative by default and aria-hidden unless paired with a semantic source via VisualBindingRegistry; reduced motion freezes the sim with no loss of meaning; focus engages bodies like hover; meaning always lives in semantic DOM."
 >
   <header class="docs-hero">
     <p class="kicker">Accessibility</p>
@@ -39,7 +39,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
     <p>
       Bodies marked <code>data-hot</code> activate on <strong>focus</strong> as well as hover — so a
       keyboard user tabbing through links gets the same field reaction (and the same
-      <code>--d</code> feedback) a pointer user gets. Reactions are progressive enhancement layered on
+      <code>--field-density</code> feedback) a pointer user gets. Reactions are progressive enhancement layered on
       real, focusable elements.
     </p>
   </section>
@@ -47,9 +47,10 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
   <section class="docs-sec">
     <h2>Guidance for consumers</h2>
     <ul class="model">
-      <li><b>Never put essential content in the field.</b> It's a backdrop; all meaning lives in real DOM.</li>
-      <li><b>Keep text legible on its own.</b> Don't rely on the field for contrast — <code>--d</code> effects should enhance already-readable type, not create it.</li>
-      <li><b>Respect the user's setting.</b> If you add your own <code>--d</code>-driven motion, gate it behind <code>prefers-reduced-motion</code> too.</li>
+      <li><b>Never put essential content only in a render layer.</b> Semantic HTML is the source of meaning. Canvas, SVG overlays, diagnostic views, and vectorized visuals may clarify, emphasize, or represent state, but the interface must remain usable without them.</li>
+      <li><b>Pair visuals with a semantic source.</b> When a visual layer represents content, bind it through the platform's <code>VisualBindingRegistry</code> so it is <code>aria-hidden</code> unless it carries independent meaning; <code>lint()</code> flags orphan and un-hidden visuals. See the live <a href="/docs/accessibility-preview">accessibility preview</a>.</li>
+      <li><b>Keep text legible on its own.</b> Don't rely on the field for contrast — <code>--field-density</code> effects should enhance already-readable type, not create it.</li>
+      <li><b>Respect the user's setting.</b> If you add your own <code>--field-density</code>-driven motion, gate it behind <code>prefers-reduced-motion</code> too. Meaning lives in state, not motion — reduced motion loses none of it.</li>
       <li><b>Words glow, they are never drawn.</b> The engine never assembles particles into letterforms — text stays real and selectable.</li>
     </ul>
   </section>

@@ -12,16 +12,31 @@ stress    10000p × 16b        6.11       ~164     ~26M  int/s
 
 <DocsLayout
   title="field-ui — Performance"
-  description="How field-ui performs: ~130 particles at default density, a range-culled integrator hot path, a render path with zero canvas shadowBlur, and automatic pausing when the tab is backgrounded."
+  description="How field-ui performs: a six-phase scheduler that separates DOM reads from writes to avoid layout thrash, ~130 particles at default density, a range-culled integrator hot path, a render path with zero canvas shadowBlur, and automatic pausing when the tab is backgrounded."
 >
   <header class="docs-hero">
     <p class="kicker">Performance</p>
     <h1>Cheap by <span class="accent">design</span></h1>
     <p class="lede">
-      One canvas, one <code>requestAnimationFrame</code> loop, ~130 particles at default density.
-      The engine is built to stay off the main thread's way.
+      field-ui separates DOM participation from engine computation. The platform runs a six-phase
+      scheduler over ~130 particles at default density, and the core stays off the main thread's way.
     </p>
   </header>
+
+  <section class="docs-sec">
+    <h2>The platform scheduler</h2>
+    <p>
+      The platform runs one frame loop with explicit, ordered phases, so geometry reads never thrash
+      against DOM writes:
+    </p>
+    <div class="formula" style="--c:#4da3ff">discover → read → compute → state → write → render</div>
+    <p>
+      Measurement happens in the <b>read</b> phase; CSS-variable and event feedback happen in the
+      <b>write</b> phase; overlays draw in <b>render</b>. Batching all reads before all writes is the
+      single most important layout-performance property — it prevents the read/write interleaving that
+      forces synchronous reflow. An off-phase read is caught by the scheduler's guard.
+    </p>
+  </section>
 
   <section class="docs-sec">
     <h2>What runs each frame</h2>

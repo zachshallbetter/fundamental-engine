@@ -225,7 +225,7 @@ if (typeof customElements !== 'undefined' && !customElements.get('field-field'))
  * constructor under two tag names, so each alias is a thin subclass with identical behaviour,
  * attributes, and body contract. `<field-root>` is the recommended tag for the singleton field;
  * `<forces-field>` is the deprecated field-ui-migration alias kept until the removal version
- * (docs/field-ui-migration-plan.md §3).
+ * (docs/planning-archive/field-ui-migration-plan.md §3).
  */
 export class FieldRoot extends FieldField {}
 /** @deprecated use `<field-root>` / `FieldField`. */
@@ -248,7 +248,7 @@ export * from './forces-cell.ts';
 export * from './cell-force.ts';
 export * from './mount.ts';
 // shadow-DOM participation: the helper a custom element uses to join the field without
-// repeating registration-event boilerplate (docs/shadow-dom.md §31.1).
+// repeating registration-event boilerplate (docs/engine-reference/shadow-dom.md §31.1).
 export {
   FieldController,
   ForcesController, // @deprecated alias of FieldController

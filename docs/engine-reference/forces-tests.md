@@ -1,7 +1,13 @@
+> **Status: as-built force-engine reference.**
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+
 # Forces — Testing & Conformance
 
 > How every force in the engine is verified to do what the math says. Companion to
 > [`forces-system.md`](forces-system.md) (the spec). Section refs like §6 point there.
+> This is the **force-engine conformance reference**; for the platform runtime, scheduler,
+> lint, and site conformance see
+> [`../canonical/field-ui-testing-and-conformance.md`](../canonical/field-ui-testing-and-conformance.md).
 
 A physics engine is only as trustworthy as its proof that each force behaves. This
 document is that proof, in two registers: the **unit math** (each force's exact
@@ -14,6 +20,12 @@ The Lab is the human face of it: think of it like a particle collider. A known p
 goes into a known force; you watch its track, the surrounding field, and any related
 particles; the measured behavior is checked against the prediction. If it matches, good.
 If not, tune the attributes and fire again.
+
+Scope: this document covers the **force engine** inside `@field-ui/core` — the
+renderer-agnostic field computation, where particles are one agent type in the shared
+field context. The conformance that binds the field runtime to the DOM (the platform
+scheduler's phases, the six registries, `lintPlatform()`, and site-level conformance)
+lives in [`../canonical/field-ui-testing-and-conformance.md`](../canonical/field-ui-testing-and-conformance.md).
 
 ---
 

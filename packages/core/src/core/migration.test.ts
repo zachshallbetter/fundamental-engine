@@ -1,5 +1,5 @@
 /**
- * field-ui migration conformance (docs/field-ui-migration-plan.md §17, testing-and-conformance.md
+ * field-ui migration conformance (docs/planning-archive/field-ui-migration-plan.md §17, testing-and-conformance.md
  * §"Migration Validation"). These tests encode the migration acceptance rule — "a rename is not
  * complete until the old and new names both work" — for the parts checkable in the node:test
  * harness: package metadata, the CSS-variable write-both contract (source-level, since the live

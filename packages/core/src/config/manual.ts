@@ -1,7 +1,7 @@
 /**
  * The Field Manual catalog — the *complete, public-facing definition* of every force
  * in the system: its family, token, the per-frame formula (transcribed from
- * `docs/forces-system.md` §6/§20.3/§20.10), the `data-*` attributes it reads, and a
+ * `docs/engine-reference/forces-system.md` §6/§20.3/§20.10), the `data-*` attributes it reads, and a
  * one-line description.
  *
  * This is the single source the UI renders (the manual on field-ui.com) and the
