@@ -67,6 +67,11 @@ debug render layers do not mutate physics
 
 ## 4. Intent Compiler
 
+> **Implemented + runtime-wired.** `compileIntent` (`packages/core/src/recipes/intent.ts`) and the
+> scanner (`core/scanner.ts`): an element with `data-intent` (and `data-intensity` / `data-risk`),
+> and no explicit `data-body`, becomes a body from the compiled tokens. Explicit `data-*` wins over
+> intent defaults (precedence §3).
+
 Authors may describe intent instead of raw tokens.
 
 Example:

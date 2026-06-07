@@ -6,6 +6,7 @@
 
 import type { Body } from './types.ts';
 import { PRESETS, type PresetEntry } from '../config/presets.ts';
+import { compileIntent } from '../recipes/intent.ts';
 
 /** A minimal attribute accessor — `name` is the suffix after `data-`. */
 export interface BodyAttrs {
@@ -123,6 +124,57 @@ export function bodyFromElement(el: HTMLElement, attrs?: BodyAttrs): Body {
   return makeBody(el, parseBodyParams(attrs ?? elementAttrs(el)));
 }
 
+/**
+ * Default force tokens per `data-field-role` (worldclass §12). Force-like roles map to a token;
+ * `sensor`/`display` are feedback-only responders (no token, density still sampled). Used only when
+ * a role element has no explicit `data-body`/`data-intent`.
+ */
+const FIELD_ROLE_TOKENS: Readonly<Record<string, string>> = {
+  source: 'jet',
+  sink: 'sink',
+  anchor: 'tether',
+  boundary: 'wall',
+  sensor: '', // feedback-only
+  display: '', // feedback-only
+};
+
+/**
+ * A `BodyAttrs` for an element authored via `data-intent` or `data-field-role` instead of a raw
+ * `data-body`. The intent is compiled (authoring §4) or the role mapped to a default token; explicit
+ * `data-*` on the element still wins over the compiled defaults (precedence §3 — component props beat
+ * intent defaults). Returns null when the element carries neither an intent nor a known role.
+ */
+export function authoredAttrs(el: HTMLElement): BodyAttrs | null {
+  let compiled: Record<string, string> | null = null;
+
+  const intent = el.getAttribute('data-intent');
+  if (intent) {
+    const intensityAttr = el.getAttribute('data-intensity');
+    const c = compileIntent(intent, {
+      intensity: intensityAttr != null ? Number(intensityAttr) : undefined,
+      risk: (el.getAttribute('data-risk') as 'low' | 'medium' | 'high' | null) ?? undefined,
+    });
+    if (c) {
+      compiled = { body: c.body };
+      if (c.strength != null) compiled.strength = String(c.strength);
+      if (c.range != null) compiled.range = String(c.range);
+      if (c.feedback) compiled.feedback = '';
+    }
+  }
+
+  if (!compiled) {
+    const role = el.getAttribute('data-field-role');
+    if (role != null && role in FIELD_ROLE_TOKENS) compiled = { body: FIELD_ROLE_TOKENS[role]!, feedback: '' };
+  }
+  if (!compiled) return null;
+
+  const defaults = compiled;
+  return {
+    get: (name) => el.getAttribute('data-' + name) ?? defaults[name] ?? null,
+    has: (name) => el.hasAttribute('data-' + name) || name in defaults,
+  };
+}
+
 /** Scan a DOM subtree for `[data-body]` and `[data-preset]` elements → bodies (§2.1,
  *  §20.9). A preset element emits one virtual body per entry, all sharing its rect;
  *  the plain `data-body` path is unchanged. */
@@ -135,6 +187,14 @@ export function scanBodies(root: ParentNode): Body[] {
     const el = node as HTMLElement;
     for (const sb of expandPreset(el.dataset.preset ?? '')) bodies.push(makeBody(el, sb));
   });
+  // authored via intent/role rather than a raw data-body (authoring §4, worldclass §12). An
+  // explicit data-body always takes the plain path above, so these never double-register.
+  root
+    .querySelectorAll('[data-intent]:not([data-body]), [data-field-role]:not([data-body]):not([data-intent])')
+    .forEach((node) => {
+      const a = authoredAttrs(node as HTMLElement);
+      if (a) bodies.push(bodyFromElement(node as HTMLElement, a));
+    });
   return bodies;
 }
 
