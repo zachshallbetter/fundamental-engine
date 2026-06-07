@@ -11,6 +11,33 @@
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
 import { createFieldPlatform, type FieldPlatform } from '@field-ui/platform';
+import { bodyElements } from 'field-ui';
+
+/** A minimal view of MeasurementRegistry — what body syncing needs. */
+interface BodySink {
+  has(el: Element): boolean;
+  register(el: Element, opts?: { role?: string }): void;
+}
+
+/**
+ * Sync the scan root's body elements into the MeasurementRegistry (D2). New `[data-body]` /
+ * `[data-preset]` / `[data-intent]` / `[data-field-role]` elements are registered for measurement;
+ * disconnected ones are pruned by the read phase. Returns how many were newly registered. Pure given
+ * the sink + root — the selector is core's `bodyElements`, so the platform never drifts from the
+ * legacy scanner. Note (D2): an element that loses its body attribute while staying connected is not
+ * yet unregistered — a later refinement; today the legacy engine remains the source of truth for
+ * rendering, so this is measurement-only and has no observable effect.
+ */
+export function syncBodies(sink: BodySink, root: ParentNode): number {
+  let added = 0;
+  for (const el of bodyElements(root)) {
+    if (!sink.has(el)) {
+      sink.register(el, { role: 'body' });
+      added++;
+    }
+  }
+  return added;
+}
 
 // ── the flag ──────────────────────────────────────────────────────────────────────
 let runtimeDefault = false;
@@ -49,6 +76,9 @@ export interface PlatformRuntime {
 export function startPlatformRuntime(root: Element): PlatformRuntime {
   const platform = createFieldPlatform(root);
   platform.measure.register(root, { role: 'field-root' });
+  // D2: the discover phase syncs body elements into MeasurementRegistry each frame, so the platform
+  // measures the same bodies the legacy scanner finds (geometry only — still no observable change).
+  platform.on('discover', () => syncBodies(platform.measure, root));
 
   if (typeof window === 'undefined' || typeof requestAnimationFrame === 'undefined') {
     return { platform, destroy() {} };
