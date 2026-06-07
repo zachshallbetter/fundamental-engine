@@ -5,10 +5,46 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { relationshipsFromElement, RelationshipRegistry } from './relationships.ts';
+import { relationshipsFromElement, unresolvedRelationshipsFromElement, RelationshipRegistry } from './relationships.ts';
 import { VisualBindingRegistry } from './visual-bindings.ts';
 import { OverlayRegistry } from './overlays.ts';
 import { MeasurementRegistry } from './measurement.ts';
+
+test('unresolvedRelationshipsFromElement flags declared edges whose target does not resolve', () => {
+  const target = fakeEl('section', {}, 'panel');
+  const resolve = (id: string) => (id === 'panel' ? target : null);
+
+  // resolves → one resolved edge, nothing unresolved
+  const ok = fakeEl('div', { 'data-field-relation': 'supports', 'data-field-target': '#panel' });
+  assert.equal(relationshipsFromElement(ok, resolve).length, 1);
+  assert.equal(unresolvedRelationshipsFromElement(ok, resolve).length, 0);
+
+  // missing target → no resolved edge, one unresolved (named) — never silently dropped
+  const miss = fakeEl('div', { 'data-field-relation': 'supports', 'data-field-target': '#ghost' });
+  assert.equal(relationshipsFromElement(miss, resolve).length, 0);
+  const u = unresolvedRelationshipsFromElement(miss, resolve);
+  assert.equal(u.length, 1);
+  assert.equal(u[0]!.type, 'supports');
+  assert.equal(u[0]!.target, '#ghost');
+});
+
+test('RelationshipRegistry.discover tracks resolved vs unresolved (resolution is real)', () => {
+  const panel = fakeEl('section', {}, 'panel');
+  const resolve = (id: string) => (id === 'panel' ? panel : null);
+  const good = fakeEl('a', { href: '#panel' }, 'g'); // resolves
+  const broken = fakeEl('a', { href: '#ghost' }, 'b'); // points at nothing
+  const root = { querySelectorAll: () => [good, broken] } as unknown as ParentNode;
+
+  const reg = new RelationshipRegistry();
+  reg.discover(root, resolve);
+  assert.equal(reg.size, 1, 'one resolved edge');
+  assert.equal(reg.unresolvedSize, 1, 'one unresolved declaration — not dropped');
+  assert.equal(reg.unresolvedAll()[0]!.target, '#ghost');
+
+  // idempotent: re-discovering the same elements does not multiply unresolved entries
+  reg.discover(root, resolve);
+  assert.equal(reg.unresolvedSize, 1, 'stable key — no duplicate unresolved on rescan');
+});
 
 function fakeEl(tag: string, attrs: Record<string, string> = {}, id = ''): Element {
   return {
