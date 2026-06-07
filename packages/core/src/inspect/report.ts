@@ -9,7 +9,7 @@ import { CONTRACTS } from '../contracts/index.ts';
 import { PASSPORTS } from '../contracts/passport.ts';
 import { AGENT_CONTRACTS } from '../agents/index.ts';
 import { VISUAL_CONTRACTS } from '../visual/index.ts';
-import { RECIPE_CONTRACTS, ESSENTIAL_RECIPES } from '../recipes/index.ts';
+import { RECIPE_CONTRACTS, FIELD_RECIPES } from '../recipes/index.ts';
 import { EXPERIMENTS } from '../conformance/experiments.ts';
 import { allForces } from '../conformance/run.ts';
 
@@ -37,7 +37,7 @@ export function systemReport(): SystemReport {
     conformanceExperiments: EXPERIMENTS.length,
     contracts: CONTRACTS.length + AGENT_CONTRACTS.length + VISUAL_CONTRACTS.length + RECIPE_CONTRACTS.length,
     agentTypes: AGENT_CONTRACTS.length,
-    recipes: ESSENTIAL_RECIPES.length,
+    recipes: FIELD_RECIPES.length,
     forcesMissingPassport: tokens.filter((t) => !PASSPORTS[t]),
     forcesMissingConformance: tokens.filter((t) => !experimented.has(t)),
   };
@@ -51,7 +51,7 @@ export function reportText(r: SystemReport = systemReport()): string {
     '',
     `- Forces: **${r.forces}** (passports: ${r.passports}, conformance experiments: ${r.conformanceExperiments})`,
     `- Contracts: **${r.contracts}** (agent types: ${r.agentTypes})`,
-    `- Essential recipes: **${r.recipes}**`,
+    `- Field recipes: **${r.recipes}**`,
     `- Forces missing a passport: ${ok(r.forcesMissingPassport)}`,
     `- Forces missing conformance: ${ok(r.forcesMissingConformance)}`,
   ].join('\n');

@@ -1,44 +1,113 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import { ESSENTIAL_RECIPES, explainScene, serializeRecipe } from 'field-ui';
+import { FIELD_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, type BodyRecipe } from 'field-ui';
 
-// The gallery renders the engine's own `ESSENTIAL_RECIPES` — the same serializable SceneRecipes the
-// authoring layer ships — with the plain-language `explainScene()` and copyable JSON for each.
-const recipes = ESSENTIAL_RECIPES.map((r) => ({
-  recipe: r,
-  explain: explainScene(r),
-  json: serializeRecipe(r),
-}));
+// The gallery renders the engine's own `FIELD_RECIPES` — the 16 named recipes that map the four-field
+// translation model onto practical interface patterns. Each card carries the recipe's natural field,
+// primitives, render stack, metrics, diagnostics, a live reciprocity demo (the page-wide field writes
+// --field-density back into the demo chip), the reduced-motion equivalent, and copyable JSON. Nothing
+// here adds engine behavior; recipes compose existing primitives.
+
+const FIELD_COLOR: Record<string, string> = {
+  gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
+  diagnostic: '#9aa7b4', platform: '#9aa7b4',
+};
+const first = new Set(FIRST_RELEASE_RECIPE_IDS);
+
+// the data-body authoring line for a recipe body (what an author writes in markup)
+const authoringLine = (b: BodyRecipe): string => {
+  const parts = [`data-body="${b.body}"`];
+  if (b.strength != null) parts.push(`data-strength="${b.strength}"`);
+  if (b.range != null) parts.push(`data-range="${b.range}"`);
+  if (b.spin != null) parts.push(`data-spin="${b.spin}"`);
+  if (b.angle != null) parts.push(`data-angle="${b.angle}"`);
+  if (b.feedback) parts.push('data-feedback');
+  return `<div ${parts.join(' ')}></div>`;
+};
+
+const recipes = FIELD_RECIPES.map((r) => {
+  const fieldKey = r.naturalField ?? (r.id === 'diagnostic-lens' ? 'diagnostic' : 'platform');
+  const fieldLabel =
+    r.naturalField != null
+      ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1)
+      : r.id === 'diagnostic-lens'
+        ? 'Diagnostic'
+        : 'Platform / semantic';
+  // the demo chip uses the recipe's first feedback body (or first body), forced to feed back so the
+  // page-wide field's reciprocity is visible.
+  const demoBody = r.bodies.find((b) => b.feedback) ?? r.bodies[0]!;
+  return {
+    recipe: r,
+    explain: explainScene(r),
+    json: serializeRecipe(r),
+    authoring: authoringLine(r.bodies[0]!),
+    fieldKey,
+    fieldLabel,
+    color: FIELD_COLOR[fieldKey] ?? '#9aa7b4',
+    isFirst: first.has(r.id),
+    demo: demoBody,
+  };
+});
+
+const filters = [
+  { key: 'all', label: 'All' },
+  { key: 'first', label: 'First release' },
+  { key: 'gravity', label: 'Gravity' },
+  { key: 'electromagnetic', label: 'Electromagnetic' },
+  { key: 'strong', label: 'Strong' },
+  { key: 'weak', label: 'Weak' },
+  { key: 'other', label: 'Diagnostic / platform' },
+];
 ---
 
 <DocsLayout
   title="field-ui — Recipe Gallery"
-  description="Copyable field-ui scene recipes: bodies, render layers, metrics, and accessibility behavior, each explained in plain language and exportable as JSON."
+  description="The 16 field-ui recipes: portable field programs mapped to the four fundamental fields. Each is executable — natural field, primitives, render stack, metrics, diagnostics, a live reciprocity demo, the reduced-motion equivalent, and copyable JSON."
 >
   <h1>Recipe gallery</h1>
   <p class="lede">
-    Portable <code>SceneRecipe</code>s straight from the engine catalog. Each is a real, validated
-    recipe — copy the JSON, or read the plain-language explanation of what it does.
+    Sixteen portable <code>FieldRecipe</code>s — the four-field translation model made practical. Each
+    is a real, validated recipe: every force token, render layer, and diagnostic is checked against the
+    engine catalog. The eight <b>first-release</b> recipes explain the system quickly; the full sixteen
+    give it range. Copy the JSON, read the plain-language explanation, or watch the live reciprocity demo.
   </p>
 
+  <div class="filters" role="group" aria-label="Filter recipes by field">
+    {filters.map((f) => (
+      <button class:list={['chip', { on: f.key === 'all' }]} data-filter={f.key} type="button">{f.label}</button>
+    ))}
+  </div>
+
   <div class="recipe-grid">
-    {recipes.map(({ recipe, explain, json }) => (
-      <article class="recipe-card">
+    {recipes.map(({ recipe, explain, json, authoring, fieldKey, fieldLabel, color, isFirst, demo }) => (
+      <article class="recipe-card" data-field={fieldKey} data-first={isFirst ? 'true' : 'false'} style={`--rc: ${color}`}>
         <header>
+          <div class="rc-tags">
+            <span class="rc-field">{fieldLabel}</span>
+            {isFirst && <span class="rc-first">First release</span>}
+          </div>
           <h2>{recipe.name}</h2>
           <p class="intent">{recipe.intent}</p>
         </header>
+
+        <div class="rc-demo-row">
+          <span
+            class="rc-demo"
+            data-body={demo.body}
+            data-strength={demo.strength ?? 1}
+            data-range={demo.range ?? 280}
+            data-feedback
+            data-hot
+          >{recipe.name}</span>
+          <span class="rc-demo-note">live reciprocity — hover</span>
+        </div>
 
         <p class="explain">{explain}</p>
 
         <dl class="meta">
           <div>
-            <dt>Bodies</dt>
-            <dd>
-              {recipe.bodies.map((b) => (
-                <code class="token">{b.body}</code>
-              ))}
-            </dd>
+            <dt>Primitives</dt>
+            <dd>{recipe.primitives.map((p) => <code class="token">{p}</code>)}</dd>
           </div>
           <div>
             <dt>Render</dt>
@@ -48,15 +117,27 @@ const recipes = ESSENTIAL_RECIPES.map((r) => ({
             <dt>Metrics</dt>
             <dd>{recipe.metrics.join(' · ')}</dd>
           </div>
-          {recipe.accessibility && (
-            <div>
-              <dt>Reduced motion</dt>
-              <dd>{recipe.accessibility.reducedMotion}</dd>
-            </div>
-          )}
+          <div>
+            <dt>Diagnostics</dt>
+            <dd>{recipe.diagnostics.map((d) => <a class="diag" href="/docs/diagnostics">{d}</a>)}</dd>
+          </div>
+          <div>
+            <dt>Reduced motion</dt>
+            <dd class="rc-a11y">{recipe.accessibility.reducedMotion}</dd>
+          </div>
+          <div>
+            <dt>Without motion</dt>
+            <dd class="rc-a11y">{recipe.accessibility.meaningWithoutMotion}</dd>
+          </div>
         </dl>
 
         {recipe.notes && <p class="notes">{recipe.notes}</p>}
+
+        <details class="rc-author">
+          <summary>Author this</summary>
+          <pre><code>{authoring}</code></pre>
+          <p class="rc-author-note">Drop inside a <code>&lt;field-root&gt;</code>. See <a href="/docs/authoring">authoring across surfaces</a> for the web-component and React forms.</p>
+        </details>
 
         <details>
           <summary>Recipe JSON</summary>
@@ -65,63 +146,119 @@ const recipes = ESSENTIAL_RECIPES.map((r) => ({
       </article>
     ))}
   </div>
+
+  <p class="empty" hidden>No recipes match that field.</p>
 </DocsLayout>
 
-<style>
-  .lede {
-    color: var(--muted, #9aa);
-    max-width: 60ch;
+<script>
+  // Self-contained filter: chips toggle which cards show, by fundamental field / first-release. Reads
+  // data-field + data-first off each card. No framework; decorative-safe.
+  const grid = document.querySelector<HTMLElement>('.recipe-grid');
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.recipe-card'));
+  const empty = document.querySelector<HTMLElement>('.empty');
+  function apply(key: string) {
+    let shown = 0;
+    for (const card of cards) {
+      const f = card.dataset.field ?? '';
+      const isFirst = card.dataset.first === 'true';
+      const match =
+        key === 'all' ||
+        (key === 'first' && isFirst) ||
+        (key === 'other' && (f === 'diagnostic' || f === 'platform')) ||
+        key === f;
+      card.hidden = !match;
+      if (match) shown++;
+    }
+    if (empty) empty.hidden = shown > 0;
   }
+  for (const chip of chips) {
+    chip.addEventListener('click', () => {
+      chips.forEach((c) => c.classList.toggle('on', c === chip));
+      apply(chip.dataset.filter ?? 'all');
+    });
+  }
+  // re-scan the page-wide field so the new demo bodies participate
+  const field = document.querySelector('field-root') as (HTMLElement & { rescan?: () => void }) | null;
+  field?.rescan?.();
+  void grid;
+</script>
+
+<style>
+  .lede { color: var(--muted, #9aa); max-width: 70ch; }
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1.25rem 0 0.5rem; }
+  .chip {
+    border: 1px solid var(--line, #2a2a35);
+    background: transparent;
+    color: var(--text, #e8e8ef);
+    border-radius: 999px;
+    padding: 0.25rem 0.8rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .chip.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
   .recipe-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 1.25rem;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
   }
+  .recipe-card[hidden] { display: none; }
   .recipe-card {
     border: 1px solid var(--line, #2a2a35);
+    border-top: 3px solid var(--rc, #4da3ff);
     border-radius: 12px;
     padding: 1.1rem 1.2rem;
     background: var(--panel, rgba(255, 255, 255, 0.02));
   }
-  .recipe-card h2 {
-    margin: 0;
-    font-size: 1.05rem;
-  }
-  .recipe-card .intent {
-    margin: 0.2rem 0 0.75rem;
-    color: var(--muted, #9aa);
-    font-size: 0.9rem;
-  }
-  .recipe-card .explain {
-    font-size: 0.92rem;
-    line-height: 1.5;
-  }
-  .recipe-card .meta {
-    display: grid;
-    gap: 0.4rem;
-    margin: 0.75rem 0;
-    font-size: 0.85rem;
-  }
-  .recipe-card .meta div {
-    display: grid;
-    grid-template-columns: 9ch 1fr;
-    gap: 0.5rem;
-  }
-  .recipe-card dt {
-    color: var(--muted, #9aa);
-  }
-  .recipe-card dd {
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-  }
-  .recipe-card .token {
-    background: color-mix(in srgb, #4da3ff 16%, transparent);
+  .rc-tags { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+  .rc-field {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--rc, #4da3ff);
+    border: 1px solid color-mix(in srgb, var(--rc, #4da3ff) 50%, transparent);
     border-radius: 5px;
     padding: 0.05rem 0.4rem;
-    font-size: 0.82rem;
+  }
+  .rc-first {
+    font-size: 0.72rem;
+    color: #0b0b10;
+    background: var(--rc, #4da3ff);
+    border-radius: 5px;
+    padding: 0.05rem 0.4rem;
+    font-weight: 600;
+  }
+  .recipe-card h2 { margin: 0.5rem 0 0; font-size: 1.1rem; }
+  .recipe-card .intent { margin: 0.2rem 0 0.75rem; color: var(--muted, #9aa); font-size: 0.9rem; }
+  .rc-demo-row { display: flex; align-items: baseline; gap: 0.6rem; margin: 0.25rem 0 0.75rem; }
+  .rc-demo {
+    --field-density: 0; /* the page-wide field writes this back */
+    display: inline-block;
+    font-size: 1.1rem;
+    font-variation-settings: 'wght' calc(420 + var(--field-density, 0) * 460);
+    color: color-mix(in srgb, var(--rc, #4da3ff) calc(35% + var(--field-density, 0) * 60%), var(--text, #fff));
+    text-shadow: 0 0 calc(var(--field-density, 0) * 30px) color-mix(in srgb, var(--rc, #4da3ff) 80%, transparent);
+    cursor: default;
+  }
+  .rc-demo-note { font-size: 0.72rem; color: var(--muted, #9aa); }
+  .recipe-card .explain { font-size: 0.9rem; line-height: 1.5; }
+  .recipe-card .meta { display: grid; gap: 0.4rem; margin: 0.75rem 0; font-size: 0.84rem; }
+  .recipe-card .meta div { display: grid; grid-template-columns: 11ch 1fr; gap: 0.5rem; align-items: start; }
+  .recipe-card dt { color: var(--muted, #9aa); }
+  .recipe-card dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .recipe-card dd.rc-a11y { display: block; color: var(--muted, #c3c9d4); }
+  .recipe-card .token {
+    background: color-mix(in srgb, var(--rc, #4da3ff) 16%, transparent);
+    border-radius: 5px;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.8rem;
+  }
+  .recipe-card .diag {
+    font-size: 0.78rem;
+    color: var(--muted, #c3c9d4);
+    border-bottom: 1px dotted var(--line, #3a3a45);
+    text-decoration: none;
   }
   .recipe-card .notes {
     font-size: 0.82rem;
@@ -129,16 +266,15 @@ const recipes = ESSENTIAL_RECIPES.map((r) => ({
     border-left: 2px solid var(--line, #2a2a35);
     padding-left: 0.7rem;
   }
-  .recipe-card details {
-    margin-top: 0.5rem;
-    font-size: 0.85rem;
-  }
+  .recipe-card details { margin-top: 0.5rem; font-size: 0.85rem; }
+  .rc-author-note { font-size: 0.78rem; color: var(--muted, #9aa); margin: 0.4rem 0 0; }
   .recipe-card pre {
     max-height: 260px;
     overflow: auto;
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     background: rgba(0, 0, 0, 0.25);
     padding: 0.75rem;
     border-radius: 8px;
   }
+  .empty { color: var(--muted, #9aa); margin-top: 1.5rem; }
 </style>

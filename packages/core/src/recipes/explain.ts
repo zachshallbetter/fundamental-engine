@@ -5,10 +5,10 @@
  * explanation reflects the real physics (magnetism curves, fieldflow carries).
  */
 import { passportFor } from '../contracts/passport.ts';
-import type { SceneRecipe } from './schema.ts';
+import type { FieldRecipe } from './schema.ts';
 
-/** A plain-language explanation of what a scene does, grounded in the force passports. */
-export function explainScene(r: SceneRecipe): string {
+/** A plain-language explanation of what a recipe does, grounded in the force passports. */
+export function explainScene(r: FieldRecipe): string {
   const parts: string[] = [];
   for (const b of r.bodies) {
     const tokens = b.body.split(/\s+/).filter(Boolean);

@@ -583,6 +583,9 @@ export const MANUAL_CONDITIONS: readonly { id: string; desc: string }[] = [
 /** The four fundamental fields field-ui translates into interface behavior. */
 export type FundamentalField = 'gravity' | 'electromagnetic' | 'strong' | 'weak';
 
+/** The four fundamental fields as a runtime list (for validation + iteration). */
+export const FUNDAMENTAL_FIELDS: readonly FundamentalField[] = ['gravity', 'electromagnetic', 'strong', 'weak'];
+
 /**
  * How a token sits in the translation model:
  * - `designed`  — a designed UI verb (the canonical forces + designed-extended); not a natural force.
