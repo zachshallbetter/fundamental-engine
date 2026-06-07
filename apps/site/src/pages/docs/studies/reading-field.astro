@@ -1,0 +1,376 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+// Reading Field Study — the first "familiar-page concept study" (docs/planning-archive/live-web-examples.md).
+// A generic long-form article (no copied brand assets) reinterpreted as a field: semantic HTML first,
+// then the platform runtime layers Reading Field (attention + memory + TOC), Citation Thread
+// (citations <-> sources), Evidence Field (claims with support/contradiction), Context Halo / Relation
+// Lens (reveal relationships), with diagnostics and a reduced-motion equivalent. Field is opt-in via a
+// toggle so the "before / after / inspect" comparison is immediate, and the page is fully usable with
+// the field off or motion reduced.
+
+const sections = [
+  {
+    id: 'origins',
+    title: 'Origins',
+    body: [
+      'Early interfaces were instruments before they were screens: panels of switches and dials where every control mapped to one machine state.<sup><a href="#src-licklider" data-field-relation="cites" data-field-target="#src-licklider">1</a></sup> The operator held the model in their head.',
+      'The shift toward <a href="#metaphor" data-field-relation="references" data-field-target="#metaphor">metaphor</a> began when displays became cheap enough to show a representation of state rather than the state itself.',
+    ],
+  },
+  {
+    id: 'metaphor',
+    title: 'The metaphor era',
+    body: [
+      'The desktop metaphor made the computer legible to non-specialists by borrowing objects people already understood — documents, folders, a trash can.<sup><a href="#src-smith" data-field-relation="cites" data-field-target="#src-smith">2</a></sup>',
+      'Metaphor traded fidelity for familiarity. It is widely held that the desktop metaphor was the decisive factor in personal-computer adoption — a claim worth examining, since timing and price fell at once.<sup><a href="#src-norman" data-field-relation="cites" data-field-target="#src-norman">3</a></sup>',
+    ],
+  },
+  {
+    id: 'direct',
+    title: 'Direct manipulation',
+    body: [
+      'Direct manipulation replaced commands with continuous, reversible action on visible objects: drag, drop, resize, undo.<sup><a href="#src-shneiderman" data-field-relation="cites" data-field-target="#src-shneiderman">4</a></sup>',
+      'Its cost is that everything must be on screen to be actuated. As systems grew, <a href="#origins" data-field-relation="references" data-field-target="#origins">the operator\'s mental model</a> returned — now as navigation rather than memorized commands.',
+    ],
+  },
+  {
+    id: 'relational',
+    title: 'Relational interfaces',
+    body: [
+      'A document is a tree, but meaning is a graph: a citation relates to a source, a claim to its evidence, a control to the thing it changes. Interfaces have mostly represented those relations passively, as links to click.',
+      'A relational interface treats them as live structure — visible, weighted, inspectable — without abandoning <a href="#direct" data-field-relation="references" data-field-target="#direct">direct manipulation</a> or semantic HTML.',
+    ],
+  },
+];
+
+// Evidence Field: two claims with their sources. One is well supported; one is contested.
+const claims = [
+  {
+    id: 'claim-adoption',
+    text: 'The desktop metaphor caused personal-computer adoption.',
+    verdict: 'contested',
+    sources: [
+      { id: 'src-smith', rel: 'supports', label: 'Smith et al. — Star design' },
+      { id: 'src-norman', rel: 'contradicts', label: 'Norman — confounded by price/timing' },
+    ],
+  },
+  {
+    id: 'claim-direct',
+    text: 'Direct manipulation reduces error rates for visible tasks.',
+    verdict: 'supported',
+    sources: [
+      { id: 'src-shneiderman', rel: 'supports', label: 'Shneiderman — direct manipulation' },
+      { id: 'src-licklider', rel: 'supports', label: 'Licklider — man-computer symbiosis' },
+    ],
+  },
+];
+
+const sources = [
+  { id: 'src-licklider', label: 'Licklider, “Man-Computer Symbiosis” (1960)' },
+  { id: 'src-smith', label: 'Smith et al., “Designing the Star User Interface” (1982)' },
+  { id: 'src-norman', label: 'Norman, “The Design of Everyday Things” (1988)' },
+  { id: 'src-shneiderman', label: 'Shneiderman, “Direct Manipulation” (1983)' },
+];
+---
+
+<DocsLayout
+  title="field-ui — Reading Field Study"
+  description="A concept study: a generic long-form article reinterpreted as a field. Semantic HTML first, then the platform layers Reading Field (attention + memory), Citation Thread, Evidence Field, and a Relation Lens — with diagnostics and a reduced-motion equivalent. Usable with the field off or motion reduced."
+>
+  <p class="kicker">Concept study</p>
+  <h1>Reading Field Study</h1>
+  <p class="lede">
+    A familiar page — a long-form article — reinterpreted as a field. The structure stays ordinary
+    semantic HTML; the field adds a second layer: orientation, memory, and relationship. It remains
+    fully readable with the field off or motion reduced. This is the first of the
+    <a href="/docs/planning-archive">concept studies</a>.
+  </p>
+
+  <div class="study-stages">
+    <div class="stage"><b>Before</b><span>A plain semantic article — headings, citations, a source list. Toggle the field off to see it.</span></div>
+    <div class="stage"><b>After</b><span>Field on: sections gather attention and accrue memory, citations thread to sources, claims show support and conflict.</span></div>
+    <div class="stage"><b>Inspect</b><span>Reveal the live relationship graph and the platform readout — why the page behaves as it does.</span></div>
+  </div>
+
+  <div class="study-controls" role="group" aria-label="Study controls">
+    <button type="button" class="sc-btn on" data-toggle="field" aria-pressed="true">Field: on</button>
+    <button type="button" class="sc-btn" data-toggle="lens" aria-pressed="false">Relation lens</button>
+    <button type="button" class="sc-btn" data-toggle="inspect" aria-pressed="false">Inspect</button>
+    <button type="button" class="sc-btn" data-toggle="reduced" aria-pressed="false">Reduce motion</button>
+    <span class="sc-readout" data-readout>semantic article — field off</span>
+  </div>
+
+  <div class="rf-grid">
+    <nav class="rf-toc" aria-label="Contents">
+      <p class="rf-toc-h">Contents</p>
+      <ol>
+        {sections.map((s) => <li><a href={`#${s.id}`} data-toc>{s.title}</a></li>)}
+        <li><a href="#evidence" data-toc>Evidence</a></li>
+        <li><a href="#sources" data-toc>Sources</a></li>
+      </ol>
+    </nav>
+
+    <article id="reading" class="rf-article" data-field-root data-field-scope="reading" data-field="on">
+      {sections.map((s) => (
+        <section data-field-body>
+          <h2 id={s.id}>{s.title}</h2>
+          {s.body.map((p) => <p set:html={p} />)}
+        </section>
+      ))}
+
+      <section data-field-body id="evidence-sec">
+        <h2 id="evidence">Evidence</h2>
+        <p>Claims are bodies; sources bind to them. A claim with a contradiction reads as <em>contested</em>; one with only support reads as <em>supported</em>. Hover a claim to thread it to its sources.</p>
+        {claims.map((c) => (
+          <div class="claim" data-field-role="claim" data-verdict={c.verdict} id={c.id}>
+            <p class="claim-text">{c.text} <span class={`claim-badge v-${c.verdict}`}>{c.verdict}</span></p>
+            <ul class="claim-sources">
+              {c.sources.map((s) => (
+                <li>
+                  <a href={`#${s.id}`} data-field-relation={s.rel} data-field-target={`#${s.id}`} class={`ev-${s.rel}`}>
+                    {s.rel === 'supports' ? '✓' : '✕'} {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section data-field-body id="sources-sec">
+        <h2 id="sources">Sources</h2>
+        <ol class="src-list">
+          {sources.map((s) => <li id={s.id}>{s.label}</li>)}
+        </ol>
+      </section>
+    </article>
+  </div>
+
+  <aside class="study-inspect" data-inspect hidden aria-label="Platform inspector">
+    <p class="si-h">Live platform <span data-si-frame>frame —</span></p>
+    <div class="si-stats">
+      <span>sections <b data-si="measurements">0</b></span>
+      <span>relationships <b data-si="relationships">0</b></span>
+      <span>read <b data-si="read">0</b></span>
+      <span>lint <b data-si="lint">✓</b></span>
+    </div>
+    <ul class="si-rels" data-si-rels></ul>
+  </aside>
+</DocsLayout>
+
+<script>
+  import { createFieldPlatform, lintPlatform, type FieldPlatform } from '@field-ui/platform';
+
+  const article = document.getElementById('reading');
+  if (article) {
+    const platform: FieldPlatform = createFieldPlatform(article);
+    const sections = Array.from(article.querySelectorAll<HTMLElement>('section'));
+    const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc]'));
+    const tocById = new Map(tocLinks.map((a) => [a.getAttribute('href')!.slice(1), a]));
+    const headingId = (s: Element) => s.querySelector('[id]')?.id ?? '';
+    const readout = document.querySelector<HTMLElement>('[data-readout]');
+    const inspectEl = document.querySelector<HTMLElement>('[data-inspect]');
+    const reduceMq = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // state flags driven by the controls
+    let fieldOn = true;
+    let inspectOn = false;
+
+    // Reading Field: each section is a measured body, bound to feedback vars + a thresholded lit event
+    for (const s of sections) {
+      platform.measure.register(s, { role: 'section' });
+      platform.feedback.bind(s, { attention: '--field-attention', memory: '--field-memory' });
+      platform.feedback.threshold(s, 'field:lit', { metric: 'attention', enter: 0.7, exit: 0.45, exitEvent: 'field:dim' });
+      s.addEventListener('field:lit', () => fieldOn && s.classList.add('lit'));
+      s.addEventListener('field:dim', () => s.classList.remove('lit'));
+    }
+
+    // discover: citations + cross-references + claim/source edges → one relationship graph
+    let discovered = false;
+    platform.on('discover', () => {
+      if (!discovered) {
+        platform.relationships.discover(article);
+        discovered = true;
+      }
+    });
+
+    // compute: viewport-centre proximity → attention
+    const pending = new Map<Element, number>();
+    const memory = new Map<Element, number>();
+    platform.on('compute', (ctx) => {
+      const vh = ctx.viewport?.height ?? window.innerHeight;
+      const centre = vh / 2;
+      for (const m of platform.measure.last()) {
+        const d = Math.abs(m.rect.cy - centre);
+        pending.set(m.element, Math.max(0, 1 - d / (vh * 0.55)) * m.visibilityRatio);
+      }
+    });
+
+    // state: fold attention into memory
+    platform.on('state', () => {
+      for (const [el, attention] of pending) {
+        platform.state.set(el, 'attention', attention);
+        const next = Math.min(1, (memory.get(el) ?? 0) + (attention > 0.7 ? 0.006 : 0));
+        memory.set(el, next);
+        platform.state.set(el, 'memory', next);
+      }
+    });
+
+    // render: TOC reflects memory + current section; readout + inspector update
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
+    const labelOf = (el: Element | null) => (el?.id ? `#${el.id}` : el?.tagName.toLowerCase() ?? '∅');
+    const setSI = (k: string, v: string) => { const e = document.querySelector(`[data-si="${k}"]`); if (e) e.textContent = v; };
+
+    platform.on('render', () => {
+      let best: HTMLAnchorElement | null = null;
+      let bestA = -1;
+      for (const s of sections) {
+        const a = platform.state.number(s, 'attention');
+        const toc = tocById.get(headingId(s));
+        if (toc) toc.style.setProperty('--field-memory', platform.state.number(s, 'memory').toFixed(3));
+        if (a > bestA) { bestA = a; best = toc ?? null; }
+      }
+      for (const a of tocLinks) a.classList.toggle('current', fieldOn && a === best);
+      const read = sections.filter((s) => platform.state.number(s, 'memory') > 0.4).length;
+      if (readout) readout.textContent = fieldOn
+        ? `field on · ${platform.scheduler.frame} frames · current: ${best?.textContent ?? '—'} · read ${read}/${sections.length}`
+        : 'semantic article — field off';
+      if (inspectOn && inspectEl) {
+        const frameEl = inspectEl.querySelector('[data-si-frame]'); if (frameEl) frameEl.textContent = `frame ${platform.scheduler.frame}`;
+        setSI('measurements', String(platform.measure.size));
+        const rels = platform.relationships.all();
+        setSI('relationships', String(rels.length));
+        setSI('read', `${read}/${sections.length}`);
+        const warns = lintPlatform(platform);
+        setSI('lint', warns.length ? String(warns.length) : '✓');
+        const relsEl = inspectEl.querySelector('[data-si-rels]');
+        if (relsEl) relsEl.innerHTML = rels.slice(0, 10).map((r) =>
+          `<li><code>${esc(labelOf(r.from))}</code> → <code>${esc(labelOf(r.to))}</code> <span>${esc(r.type)}</span></li>`).join('');
+      }
+    });
+
+    // Citation Thread + Context Halo: hovering/focusing a relationship endpoint threads it to its target.
+    const threadEls = Array.from(article.querySelectorAll<HTMLElement>('a[data-field-relation][href^="#"]'));
+    const targetOf = (a: HTMLElement) => document.getElementById((a.getAttribute('href') || '').slice(1));
+    for (const a of threadEls) {
+      const on = () => { a.classList.add('threaded'); targetOf(a)?.classList.add('threaded'); };
+      const off = () => { a.classList.remove('threaded'); targetOf(a)?.classList.remove('threaded'); };
+      a.addEventListener('pointerenter', on); a.addEventListener('focusin', on);
+      a.addEventListener('pointerleave', off); a.addEventListener('blur', off);
+    }
+
+    // drive the loop; CSS drops easing under reduced motion, so meaning survives without motion
+    const tick = (now: number) => { platform.tick(now, { width: window.innerWidth, height: window.innerHeight }); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+
+    // controls
+    const setPressed = (btn: HTMLButtonElement, v: boolean) => { btn.setAttribute('aria-pressed', String(v)); btn.classList.toggle('on', v); };
+    const fieldBtn = document.querySelector<HTMLButtonElement>('[data-toggle="field"]');
+    document.querySelectorAll<HTMLButtonElement>('.sc-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const kind = btn.dataset.toggle!;
+        const next = btn.getAttribute('aria-pressed') !== 'true';
+        if (kind === 'field') {
+          fieldOn = next; article.dataset.field = next ? 'on' : 'off';
+          if (fieldBtn) fieldBtn.textContent = next ? 'Field: on' : 'Field: off';
+          if (!next) sections.forEach((s) => s.classList.remove('lit'));
+        } else if (kind === 'lens') {
+          article.dataset.lens = next ? 'on' : 'off';
+        } else if (kind === 'inspect') {
+          inspectOn = next; if (inspectEl) inspectEl.hidden = !next;
+        } else if (kind === 'reduced') {
+          article.dataset.reduced = next ? 'on' : 'off';
+        }
+        setPressed(btn, next);
+      });
+    });
+    if (reduceMq.matches) article.dataset.reduced = 'on';
+
+    (window as unknown as { __readingFieldStudy?: unknown }).__readingFieldStudy = {
+      memoryOf: (i: number) => platform.state.number(sections[i]!, 'memory'),
+      relationships: () => platform.relationships.size,
+      frames: () => platform.scheduler.frame,
+      violations: () => platform.scheduler.violations().length,
+    };
+  }
+</script>
+
+<style>
+  .kicker { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0; }
+  .lede { color: var(--muted, #9aa); max-width: 70ch; }
+  .study-stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.6rem; margin: 1rem 0; }
+  .stage { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.6rem 0.8rem; }
+  .stage b { display: block; color: #4da3ff; font-size: 0.82rem; }
+  .stage span { font-size: 0.82rem; color: var(--muted, #9aa); }
+
+  .study-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.5rem 0 1rem; }
+  .sc-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
+  .sc-btn.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
+  .sc-readout { font: 0.76rem ui-monospace, monospace; color: var(--muted, #9aa); margin-left: auto; }
+
+  .rf-grid { display: grid; grid-template-columns: 180px 1fr; gap: 1.5rem; align-items: start; }
+  @media (max-width: 720px) { .rf-grid { grid-template-columns: 1fr; } .rf-toc { position: static !important; } }
+  .rf-toc { position: sticky; top: 5rem; }
+  .rf-toc-h { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0 0 0.5rem; }
+  .rf-toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+  .rf-toc a {
+    --field-memory: 0;
+    display: block; padding: 0.25rem 0.5rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem;
+    color: color-mix(in srgb, var(--fg, #e8e8ef) calc(45% + 55% * var(--field-memory)), var(--muted, #9aa));
+    border-left: 2px solid color-mix(in srgb, #4da3ff calc(var(--field-memory) * 100%), transparent);
+    transition: color 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+  }
+  .rf-toc a.current { background: color-mix(in srgb, #4da3ff 16%, transparent); color: var(--fg, #e8e8ef); }
+
+  .rf-article section {
+    --field-attention: 0; --field-memory: 0;
+    padding: 0.5rem 0 0.5rem 1rem; margin: 0 0 1.5rem;
+    border-left: 3px solid color-mix(in srgb, #4da3ff calc(var(--field-memory) * 100%), transparent);
+    transition: border-color 0.5s ease;
+  }
+  .rf-article h2 { margin: 0 0 0.4rem; opacity: calc(0.55 + 0.45 * var(--field-attention)); transition: opacity 0.45s ease; }
+  .rf-article section.lit h2 { color: #4da3ff; }
+  .rf-article p { margin: 0 0 0.6rem; line-height: 1.6; }
+  .rf-article a[data-field-relation] { color: #4da3ff; text-decoration: underline; text-underline-offset: 2px; }
+  .rf-article sup a { text-decoration: none; }
+
+  /* threading (Citation Thread / Context Halo): highlight the endpoint pair */
+  .threaded { background: color-mix(in srgb, #2dd4bf 26%, transparent); border-radius: 4px; outline: 1px solid #2dd4bf; }
+
+  /* Evidence Field */
+  .claim { border: 1px solid var(--line, #2a2a35); border-left: 3px solid var(--line, #2a2a35); border-radius: 8px; padding: 0.5rem 0.8rem; margin: 0 0 0.7rem; }
+  .claim[data-verdict='contested'] { border-left-color: #ff9d5c; }
+  .claim[data-verdict='supported'] { border-left-color: #2dd4bf; }
+  .claim-text { margin: 0 0 0.3rem; }
+  .claim-badge { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.05rem 0.4rem; border-radius: 5px; }
+  .claim-badge.v-contested { color: #ff9d5c; border: 1px solid #ff9d5c; }
+  .claim-badge.v-supported { color: #2dd4bf; border: 1px solid #2dd4bf; }
+  .claim-sources { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; font-size: 0.82rem; }
+  .ev-supports { color: #2dd4bf !important; }
+  .ev-contradicts { color: #ff9d5c !important; }
+  .src-list { font-size: 0.86rem; color: var(--muted, #c3c9d4); line-height: 1.8; }
+
+  /* Relation lens: reveal every relationship endpoint at once */
+  [data-lens='on'] a[data-field-relation] { outline: 1px dashed color-mix(in srgb, #4da3ff 70%, transparent); border-radius: 4px; }
+  [data-lens='on'] [id^='src-'] { outline: 1px dashed color-mix(in srgb, #2dd4bf 60%, transparent); border-radius: 4px; }
+
+  /* Field off: strip all field affordances — plain semantic article */
+  [data-field='off'] section { border-left-color: transparent !important; }
+  [data-field='off'] h2 { opacity: 1 !important; color: inherit !important; }
+
+  .study-inspect { border: 1px solid var(--line, #2a2a35); border-radius: 10px; padding: 0.6rem 0.9rem; margin-top: 1.5rem; }
+  .si-h { font-size: 0.82rem; margin: 0 0 0.4rem; }
+  .si-h span { font-family: ui-monospace, monospace; color: #4da3ff; font-weight: 400; margin-left: 0.4rem; }
+  .si-stats { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.82rem; color: var(--muted, #9aa); }
+  .si-stats b { color: var(--text, #e8e8ef); }
+  .si-rels { list-style: none; margin: 0.5rem 0 0; padding: 0; font-size: 0.78rem; display: grid; gap: 0.2rem; }
+  .si-rels code { font-family: ui-monospace, monospace; }
+  .si-rels span { color: #2dd4bf; }
+
+  /* Reduced motion (OS or the toggle): no easing; meaning stays in state, badges, and the source list */
+  @media (prefers-reduced-motion: reduce) {
+    .rf-toc a, .rf-article section, .rf-article h2 { transition: none !important; }
+  }
+  [data-reduced='on'] .rf-toc a, [data-reduced='on'] .rf-article section, [data-reduced='on'] .rf-article h2 { transition: none !important; }
+</style>

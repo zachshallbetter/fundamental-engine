@@ -54,6 +54,12 @@ export const DOCS_NAV: DocGroup[] = [
     ],
   },
   {
+    title: 'Concept studies',
+    items: [
+      { href: '/docs/studies/reading-field', label: 'Reading Field Study', ready: true },
+    ],
+  },
+  {
     title: 'Resources',
     items: [
       { href: '/docs/recipes', label: 'Recipe model', ready: true },
