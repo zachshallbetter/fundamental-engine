@@ -12,6 +12,7 @@ export * from './channels.ts';
 export * from './lint.ts';
 export * from './semantic-text.ts';
 export * from './visualization.ts';
+export * from './tokens.ts';
 
 /** A visual layer's self-declaration (visual-language §18). Inspectable + lintable. */
 export interface VisualLayerDeclaration {
