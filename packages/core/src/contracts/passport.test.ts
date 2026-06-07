@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { allForces } from '../conformance/run.ts';
 import { EXPERIMENTS } from '../conformance/experiments.ts';
 import { PASSPORTS, passportFor, validatePassports, conformanceTests, TRUTH_MODES } from './passport.ts';
+import { FORCE_KIND } from '../config/manual.ts';
 
 test('every force passport is consistent with the registry and conformance catalog', () => {
   const problems = validatePassports(allForces(), EXPERIMENTS);
@@ -66,13 +67,26 @@ test('gravity now owns a field() and can render field lines (BA1)', () => {
   assert.ok(g.bestRenderModes.includes('field-lines'));
 });
 
-test('natural forces are truth-mode "physical"; the 5-mode taxonomy is published', () => {
+test('natural forces are truth-mode "physical"; the 6-mode taxonomy is published', () => {
   assert.equal(passportFor('gravity')?.truthMode, 'physical');
   assert.equal(passportFor('charge')?.truthMode, 'physical');
   assert.equal(passportFor('attract')?.truthMode, 'designed');
   assert.equal(passportFor('fieldflow')?.truthMode, 'hybrid');
-  for (const m of ['physical', 'designed', 'diagnostic', 'poetic', 'semantic'])
+  for (const m of ['physical', 'designed', 'hybrid', 'diagnostic', 'poetic', 'semantic'])
     assert.ok(m in TRUTH_MODES, `${m} is a documented truth mode`);
+});
+
+test('memory is a semantic metric, not a physical natural force (kind/truth-mode coherence)', () => {
+  const mem = passportFor('memory')!;
+  assert.equal(mem.truthMode, 'semantic', 'memory maps meaning→metric; it is not a physical law');
+  assert.notEqual(mem.truthMode, 'physical');
+  assert.equal(FORCE_KIND['memory'], 'metric', 'FORCE_KIND agrees: memory is a metric');
+  // drift guard: no token classified kind:'metric' may also claim to be a physical law
+  for (const [token, kind] of Object.entries(FORCE_KIND)) {
+    if (kind !== 'metric') continue;
+    const p = passportFor(token);
+    if (p) assert.notEqual(p.truthMode, 'physical', `${token} (kind=metric) must not be truthMode 'physical'`);
+  }
 });
 
 test('every passport carries bestRenderModes + commonComposites; conformanceTests is derived', () => {
