@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "paths": {
+      "field-ui": ["../packages/core/dist/index.d.ts"],
+      "@field-ui/platform": ["../packages/platform/dist/index.d.ts"],
+      "@field-ui/elements": ["../packages/elements/dist/index.d.ts"],
+      "@field-ui/react": ["../packages/react/dist/index.d.ts"],
+      "@field-ui/vanilla": ["../packages/vanilla/dist/index.d.ts"]
+    }
+  },
+  "include": ["api-surface.ts"]
+}
