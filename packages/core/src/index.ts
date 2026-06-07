@@ -55,3 +55,5 @@ export * from './recipes/index.ts';
 export * from './inspect/index.ts';
 // the semantic layer (BA2) — meaning→metric maps, interaction materials, field states
 export * from './semantic/index.ts';
+// diagnostics (B4) — energy, potential, probe force-vectors + causality, heatmap variants
+export * from './diagnostics/index.ts';
