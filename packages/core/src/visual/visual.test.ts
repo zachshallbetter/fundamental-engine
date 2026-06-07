@@ -11,6 +11,7 @@ import { typography, typographyCss, fieldColor, hslString, emission, DEFAULT_COL
 import { runVisualLint } from './lint.ts';
 import { hasAccessibleText, semanticGlyphMarkup, type TextNodeLike } from './semantic-text.ts';
 import { VISUAL_CONTRACTS, VISUAL_AUTHORING_ATTRIBUTES } from './index.ts';
+import { FIELD_DESIGN_TOKENS, fieldTokensCss, isFieldRole, FIELD_OUTPUT_VARS } from './tokens.ts';
 
 test('mapping primitives: clamp, lerp, mapRange, falloff, curve', () => {
   assert.equal(clamp01(2), 1);
@@ -96,4 +97,20 @@ test('semantic-text fallback: detects accessible text and builds the pattern', (
 test('the Visual Language Contract and authoring attributes are published', () => {
   assert.ok(VISUAL_CONTRACTS.some((c) => c.name === 'Visual Language Contract'));
   assert.ok(VISUAL_AUTHORING_ATTRIBUTES.includes('data-field-material'));
+});
+
+test('design tokens, field roles, and the output-var catalog (BA4)', () => {
+  assert.equal(FIELD_DESIGN_TOKENS['--field-range-md'], '320px');
+  assert.match(fieldTokensCss(), /:root \{[\s\S]*--field-motion-calm: 0\.2;[\s\S]*\}/);
+  assert.equal(isFieldRole('sensor'), true);
+  assert.equal(isFieldRole('nope'), false);
+  assert.ok(FIELD_OUTPUT_VARS.includes('--field-attention-share'));
+  assert.ok(FIELD_OUTPUT_VARS.includes('--field-layout-shift'));
+});
+
+test('lint flags duplicate pull forces on one body', () => {
+  const f = runVisualLint({ bodyTokens: [['gravity', 'attract']], reducedMotionFallback: true });
+  assert.ok(f.some((x) => x.rule === 'duplicate-pull'));
+  // a single pull force is fine
+  assert.deepEqual(runVisualLint({ bodyTokens: [['attract']], reducedMotionFallback: true }), []);
 });

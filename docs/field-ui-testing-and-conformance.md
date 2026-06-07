@@ -92,6 +92,10 @@ magnetism.apply() must remain Lorentz behavior.
 
 ## 4. Required Fieldflow Tests
 
+> **Implemented.** `packages/core/src/forces/fieldflow.test.ts` covers does-work, moves-neutral-
+> matter, zero-field→no-motion, range-0-global, beyond-range-inert, and the speed-of-light cap; the
+> scenario catalog adds "neutral matter follows a charge field line".
+
 ```txt
 neutral matter moves
 fieldflow does work
@@ -267,6 +271,10 @@ Solar prominence:
 ```
 
 ## 14. Lint Rules
+
+> **Implemented.** All of these (including the `data-body="gravity attract"` duplicate-pull rule)
+> ship in `packages/core/src/visual/lint.ts` (`runVisualLint`), with `info`/`warning`/`error`/`fatal`
+> severities.
 
 ```txt
 Warning: magnetism without charged or moving particles may appear inactive.
