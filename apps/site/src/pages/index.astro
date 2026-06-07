@@ -34,7 +34,8 @@ const PRESET_COLORS: Record<string, string> = {
 };
 const natural = MANUAL_FORCES.filter((f) => f.family === "natural");
 const extended = MANUAL_FORCES.filter((f) => f.family === "extended");
-let n = 12; // running concept number (substrate + canonical forces end at 12; we continue)
+let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), then every
+// chapter after it increments this in render order (Natural, Forces, Extended, Presets, …).
 ---
 
 <Base
@@ -181,13 +182,39 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       </div>
     </section>
 
-    <!-- II · Forces (canonical nine) -->
-    <div class="chapter" id="ch-forces">
+    <!-- II · Natural-field translations -->
+    <div class="chapter" id="ch-natural">
       <div class="wrap">
         <span class="chapter-no">II</span>
+        <h2 class="chapter-title">Natural-field translations</h2>
+        <p class="chapter-sub">
+          Every interface already has priority, polarity, binding, and
+          transformation. field-ui translates the four fundamental fields into
+          those relations — gravity becomes priority, electromagnetism becomes
+          polarity and signal, strong becomes binding, weak becomes
+          transformation. The runtime tokens below are engine expressions of that
+          grammar (true 1/d², Lorentz, Langevin, diffusion, waves) —
+          translations, not additional fundamental fields. See the
+          <a href="/docs/natural-fields">Natural Fields</a> model.
+        </p>
+      </div>
+    </div>
+    {
+      natural.map((f, i) => {
+        n += 1;
+        return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
+      })
+    }
+
+    <!-- III · Forces (canonical nine) -->
+    <div class="chapter" id="ch-forces">
+      <div class="wrap">
+        <span class="chapter-no">III</span>
         <h2 class="chapter-title">Forces</h2>
         <p class="chapter-sub">
-          What a single body can do to the matter around it.
+          What a single body can do to the matter around it — designed UI verbs,
+          stable and bounded. A designed verb is not a natural field: an attractor
+          is not gravity, a repeller is not charge.
         </p>
       </div>
     </div>
@@ -196,7 +223,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-attract" style="--fc:#4da3ff"></i>04 — Attraction</span
+            ><i class="fg fg-attract" style="--fc:#4da3ff"></i>{String((n += 1)).padStart(2, "0")} — Attraction</span
           >
           <h2>A body can pull the field into orbit.</h2>
           <p>
@@ -240,7 +267,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-repel" style="--fc:#ff9d5c"></i>05 — Repulsion</span
+            ><i class="fg fg-repel" style="--fc:#ff9d5c"></i>{String((n += 1)).padStart(2, "0")} — Repulsion</span
           >
           <h2>A body can push the field away.</h2>
           <p>
@@ -283,7 +310,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-wall" style="--fc:#c4b5fd"></i>06 — Reflection</span
+            ><i class="fg fg-wall" style="--fc:#c4b5fd"></i>{String((n += 1)).padStart(2, "0")} — Reflection</span
           >
           <h2>A body can be a wall.</h2>
           <p>
@@ -318,7 +345,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>07 — Swirl</span
+            ><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>{String((n += 1)).padStart(2, "0")} — Swirl</span
           >
           <h2>A body can spin the field.</h2>
           <p>
@@ -368,7 +395,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-stream" style="--fc:#7dd3fc"></i>08 — Stream</span
+            ><i class="fg fg-stream" style="--fc:#7dd3fc"></i>{String((n += 1)).padStart(2, "0")} — Stream</span
           >
           <h2>A body can blow a current.</h2>
           <p>
@@ -410,7 +437,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-tether" style="--fc:#86e57f"></i>09 — Tether</span
+            ><i class="fg fg-tether" style="--fc:#86e57f"></i>{String((n += 1)).padStart(2, "0")} — Tether</span
           >
           <h2>A body can tether the field at a fixed distance.</h2>
           <p>
@@ -453,7 +480,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-viscosity" style="--fc:#8da2c0"></i>10 — Viscosity</span
+            ><i class="fg fg-viscosity" style="--fc:#8da2c0"></i>{String((n += 1)).padStart(2, "0")} — Viscosity</span
           >
           <h2>A body can thicken the medium.</h2>
           <p>
@@ -495,7 +522,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-sink" style="--fc:#ff6e9c"></i>11 — Accretion &amp;
+            ><i class="fg fg-sink" style="--fc:#ff6e9c"></i>{String((n += 1)).padStart(2, "0")} — Accretion &amp;
             release</span
           >
           <h2>A body can hold matter — and give it back.</h2>
@@ -544,7 +571,7 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
       <div class="wrap concept-grid">
         <div>
           <span class="concept-no"
-            ><i class="fg fg-jet" style="--fc:#a78bfa"></i>12 — Emission</span
+            ><i class="fg fg-jet" style="--fc:#a78bfa"></i>{String((n += 1)).padStart(2, "0")} — Emission</span
           >
           <h2>A body can be a fountain.</h2>
           <p>
@@ -585,28 +612,6 @@ let n = 12; // running concept number (substrate + canonical forces end at 12; w
         </div>
       </div>
     </section>
-
-    <!-- III · Natural-field translations -->
-    <div class="chapter" id="ch-natural">
-      <div class="wrap">
-        <span class="chapter-no">III</span>
-        <h2 class="chapter-title">Natural-field translations</h2>
-        <p class="chapter-sub">
-          Translations of the four fundamental fields — gravity becomes
-          priority, electromagnetism becomes polarity and signal, strong becomes
-          binding, weak becomes transformation. The runtime tokens below are
-          implementation expressions of that grammar (true 1/d², Lorentz,
-          Langevin, diffusion, waves) — they are not additional fundamental
-          fields. See the <a href="/docs/natural-fields">Natural Fields</a> model.
-        </p>
-      </div>
-    </div>
-    {
-      natural.map((f, i) => {
-        n += 1;
-        return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
-      })
-    }
 
     <!-- IV · Designed-extended -->
     <div class="chapter" id="ch-extended">
