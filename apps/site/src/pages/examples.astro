@@ -6,7 +6,7 @@ import CodeTabs from '../components/CodeTabs.astro';
 import '../styles/docs.css';
 
 // These demos are LIVE — the real <field-root> on this page (from Base.astro)
-// reacts to the [data-body] elements below, and writes density back as --d. This
+// reacts to the [data-body] elements below, and writes density back as --field-density. This
 // is the actual reciprocal system, not a poster.
 
 const heroSrc = `<span
@@ -19,11 +19,11 @@ const heroSrc = `<span
 
 <style>
   .hero {
-    --d: 0;  /* the field eases this in ∈ [0,1] */
+    --field-density: 0;  /* the field eases this in ∈ [0,1] */
     font-weight: 700;
-    font-variation-settings: 'wght' calc(380 + var(--d) * 420);
-    color: color-mix(in srgb, #4da3ff calc(40% + var(--d) * 55%), #fff);
-    text-shadow: 0 0 calc(var(--d) * 44px) rgba(77, 163, 255, var(--d));
+    font-variation-settings: 'wght' calc(380 + var(--field-density) * 420);
+    color: color-mix(in srgb, #4da3ff calc(40% + var(--field-density) * 55%), #fff);
+    text-shadow: 0 0 calc(var(--field-density) * 44px) rgba(77, 163, 255, var(--field-density));
   }
 </style>`;
 
@@ -33,10 +33,10 @@ const gridSrc = `<article class="card" data-body="attract" data-strength="0.6" d
 
 <style>
   .card {
-    --d: 0;
-    transform: scale(calc(1 + var(--d) * 0.03));
-    border-color: color-mix(in srgb, #4da3ff calc(var(--d) * 75%), rgba(255,255,255,0.1));
-    box-shadow: 0 0 calc(var(--d) * 30px) rgba(77, 163, 255, calc(var(--d) * 0.5));
+    --field-density: 0;
+    transform: scale(calc(1 + var(--field-density) * 0.03));
+    border-color: color-mix(in srgb, #4da3ff calc(var(--field-density) * 75%), rgba(255,255,255,0.1));
+    box-shadow: 0 0 calc(var(--field-density) * 30px) rgba(77, 163, 255, calc(var(--field-density) * 0.5));
     transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
   }
 </style>`;
@@ -88,9 +88,9 @@ const emphSrc = `<ul class="reading-list">
 
 <style>
   .reading-list li {
-    --d: 0;                                  /* the field eases this in ∈ [0,1] */
-    opacity: calc(0.4 + var(--d) * 0.6);     /* idle recedes, focus rises */
-    font-weight: calc(400 + var(--d) * 320);
+    --field-density: 0;                                  /* the field eases this in ∈ [0,1] */
+    opacity: calc(0.4 + var(--field-density) * 0.6);     /* idle recedes, focus rises */
+    font-weight: calc(400 + var(--field-density) * 320);
     transition: opacity .25s, font-weight .25s;
   }
 </style>`;
@@ -225,7 +225,7 @@ const GROUPS = [
     spring here is the <a href="/docs/api/forces"><code>tether</code></a> force, <em>drag</em> maps to
     <code>viscosity</code>, and <em>orbit</em> is composed motion (gravity + magnetism + tether), not a
     token. Runtime tokens always appear in <code>data-body</code> and recipe <code>primitives</code>.
-    These compact demos also read <code>--d</code>, the compatibility alias of <code>--field-density</code>.
+    Each demo reads <code>--field-density</code>; <code>--d</code> is a compact compatibility alias the engine writes alongside it.
   </div>
 
   <div class="ex-group-head" id="reciprocity">Reciprocity</div>
@@ -234,7 +234,7 @@ const GROUPS = [
     <h2>A glowing hero word</h2>
     <p>
       The canonical reciprocity effect. The word is an <code>attract</code> body with
-      <code>data-feedback</code>; its <code>--d</code> drives weight and glow, so it grows where
+      <code>data-feedback</code>; its <code>--field-density</code> drives weight and glow, so it grows where
       matter gathers. Sweep your cursor across it.
     </p>
     <div class="sc-stage">
@@ -248,7 +248,7 @@ const GROUPS = [
   <section class="docs-sec" id="card-grid">
     <h2>A reacting card grid</h2>
     <p>
-      Each card is a gentle attractor. Its <code>--d</code> drives a subtle lift, edge glow, and
+      Each card is a gentle attractor. Its <code>--field-density</code> drives a subtle lift, edge glow, and
       shadow — the grid breathes as the field moves through it.
     </p>
     <div class="sc-cards">
@@ -841,14 +841,14 @@ const GROUPS = [
     background: rgba(255, 255, 255, 0.015);
   }
   .sc-hero {
-    --d: 0;
+    --field-density: 0;
     font-family: var(--display);
     font-size: clamp(2.5rem, 9vw, 5rem);
     font-weight: 700;
     letter-spacing: -0.03em;
-    font-variation-settings: 'wght' calc(380 + var(--d) * 420);
-    color: color-mix(in srgb, var(--accent) calc(40% + var(--d) * 55%), #fff);
-    text-shadow: 0 0 calc(var(--d) * 44px) rgba(77, 163, 255, var(--d));
+    font-variation-settings: 'wght' calc(380 + var(--field-density) * 420);
+    color: color-mix(in srgb, var(--accent) calc(40% + var(--field-density) * 55%), #fff);
+    text-shadow: 0 0 calc(var(--field-density) * 44px) rgba(77, 163, 255, var(--field-density));
   }
   .sc-cards {
     display: grid;
@@ -857,14 +857,14 @@ const GROUPS = [
     margin: 1.1rem 0 0;
   }
   .sc-card {
-    --d: 0;
+    --field-density: 0;
     padding: 1.2rem 1.1rem;
     border: 1px solid var(--line);
     border-radius: 12px;
     background: var(--bg-card, #0b0e16);
-    transform: scale(calc(1 + var(--d) * 0.03));
-    border-color: color-mix(in srgb, var(--accent) calc(var(--d) * 75%), var(--line));
-    box-shadow: 0 0 calc(var(--d) * 30px) rgba(77, 163, 255, calc(var(--d) * 0.5));
+    transform: scale(calc(1 + var(--field-density) * 0.03));
+    border-color: color-mix(in srgb, var(--accent) calc(var(--field-density) * 75%), var(--line));
+    box-shadow: 0 0 calc(var(--field-density) * 30px) rgba(77, 163, 255, calc(var(--field-density) * 0.5));
     transition:
       transform 0.25s var(--ease),
       border-color 0.25s,
@@ -906,14 +906,14 @@ const GROUPS = [
     gap: 0.4rem;
   }
   .emph-item {
-    --d: 0;
+    --field-density: 0;
     position: relative;
     padding: 0.7rem 0.9rem 0.7rem 1.1rem;
     border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--accent) calc(var(--d) * 55%), var(--line));
-    background: color-mix(in srgb, var(--accent) calc(var(--d) * 9%), transparent);
-    opacity: calc(0.4 + var(--d) * 0.6);
-    transform: translateX(calc(var(--d) * 6px));
+    border: 1px solid color-mix(in srgb, var(--accent) calc(var(--field-density) * 55%), var(--line));
+    background: color-mix(in srgb, var(--accent) calc(var(--field-density) * 9%), transparent);
+    opacity: calc(0.4 + var(--field-density) * 0.6);
+    transform: translateX(calc(var(--field-density) * 6px));
     transition:
       opacity 0.25s,
       transform 0.25s,
@@ -930,15 +930,15 @@ const GROUPS = [
     width: 2px;
     border-radius: 2px;
     background: var(--accent);
-    opacity: var(--d);
+    opacity: var(--field-density);
     transition: opacity 0.25s;
   }
   .emph-item b {
     display: block;
     font-family: var(--display);
     font-size: 1rem;
-    color: color-mix(in srgb, var(--text) calc(55% + var(--d) * 45%), var(--text-3));
-    font-weight: calc(500 + var(--d) * 300);
+    color: color-mix(in srgb, var(--text) calc(55% + var(--field-density) * 45%), var(--text-3));
+    font-weight: calc(500 + var(--field-density) * 300);
     transition:
       color 0.25s,
       font-weight 0.25s;
