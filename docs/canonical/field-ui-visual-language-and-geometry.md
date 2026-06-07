@@ -20,9 +20,9 @@ This document defines how `field-ui` should treat visual form as part of the fie
 
 The field should not only move particles. It should be able to influence typography, color, shape, distance, pattern, emission, containers, surfaces, hierarchy, and semantic visual state.
 
-The visual system is native-platform-first, dependency-light, and framework-agnostic. The `@field-ui/core` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
+The visual system is native-platform-first, dependency-light, and framework-agnostic. The `field-ui` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
 
-These visual layers are render surfaces bound to the field runtime by `@field-ui/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `@field-ui/core` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
+These visual layers are render surfaces bound to the field runtime by `@field-ui/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `field-ui` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
 
 Implementation should use fundamental web APIs wherever possible:
 
