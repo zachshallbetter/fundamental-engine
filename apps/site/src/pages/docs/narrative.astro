@@ -1,76 +1,180 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 
-// Field Narrative Mode (visualization-methods-taxonomy §13): teach the system by progressively
-// revealing its layers. Each stage drives the live background field (render mode / heatmap) and
-// reveals the next explanation, so the reader builds the model one layer at a time.
+// Field narrative mode, rebuilt on the CURRENT model: one ordinary element, revealed as a field
+// participant one layer at a time. The story is the data-attribute runtime, not "particles over a
+// page" — semantic DOM → data attributes → registered body → runtime token → metric → feedback →
+// relationships → diagnostics → reduced motion. The running example is a real [data-body] element; at
+// the feedback stage it is driven deterministically by applyRecipe (no canvas, no cursor needed).
 const stages = [
-  { title: 'Particles', body: 'Matter you can see — one render surface. Particles are one agent type in the shared field context, conserved: nothing is created from nothing.', render: 'dots' },
-  { title: 'Field structure', body: 'The invisible structure every body radiates — streamlines trace the net field the platform measures.', render: 'streamlines' },
-  { title: 'Forces move matter', body: 'Bodies bend the field; trails show where matter has travelled under force.', render: 'trails' },
-  { title: 'Relationships', body: 'The platform reads native links (href, aria-controls, data-field-relation) into one typed graph — connectors show the coupling.', render: 'links' },
-  { title: 'DOM feedback', body: 'The field bends elements back: the FeedbackRegistry writes local density to --field-density (with --d / --forces-density aliases), and the headline lights up.', render: 'dots', feedback: true },
-  { title: 'Heatmap', body: 'Where matter pools, sampled into a scalar grid and glowed back.', render: 'dots', heatmap: true },
-  { title: 'Inspect it all', body: 'Every body, metric, and contract is inspectable — open the Inspector.', render: 'dots', link: '/docs/inspector' },
+  {
+    title: 'Semantic DOM',
+    body: 'Start with real, accessible HTML — a heading and a note. No field yet, nothing to undo. Whatever happens next, this stays selectable, focusable, and readable.',
+    markup: '<article>\n  <h3>Reciprocal interfaces</h3>\n</article>',
+  },
+  {
+    title: 'Data attributes',
+    body: 'Mark the element a body with one attribute. This is the entire authoring contract — there is no special element, you add attributes to the HTML you already have.',
+    markup: '<article\n  data-body="attract"\n  data-strength="0.8"\n  data-range="280"\n>\n  <h3>Reciprocal interfaces</h3>\n</article>',
+  },
+  {
+    title: 'A registered body',
+    body: 'The platform scanner discovers every [data-body] element each frame and registers its box for measurement. The element is now a body in the one shared field — no JS wiring required.',
+    markup: '// platform scanner (per frame)\nBODY_SELECTOR // [data-body], [data-preset],\n              // [data-intent], [data-field-role]\n→ MeasurementRegistry.register(el)',
+  },
+  {
+    title: 'A runtime token',
+    body: 'The value of data-body is a runtime token — attract — and only real tokens execute. A concept (priority, polarity) describes; it never runs. attract pulls matter toward the element each frame.',
+    markup: 'data-body="attract"\n// attract: a designed force token\n// (a concept like "priority" is NOT a token —\n//  it is translated to one)',
+  },
+  {
+    title: 'Metrics',
+    body: 'From the body and its neighbours the field computes metrics — attention, priority, coherence, entropy. Metrics are measured numbers, not forces. A recipe declares which metrics a field tracks.',
+    markup: '// computeMetrics(body, neighbours, relationships)\n→ { attention: 0.7, priority: 0.85, … }\n// a metric measures; it does not push',
+  },
+  {
+    title: 'Feedback',
+    body: 'Add data-feedback and the field writes a metric back as a --field-* custom property on the element. CSS reads it — the heading gains weight. The value below is written by applyRecipe, deterministically.',
+    markup: 'data-feedback\n// → element.style[\'--field-priority\'] = 0.85\n.h3 { font-weight: calc(400 + var(--field-priority) * 320) }',
+    feedback: true,
+  },
+  {
+    title: 'Relationships',
+    body: 'A native link — an href, aria-controls, or data-field-relation/-target — becomes an edge in the relationship graph. The graph is discovered from the DOM, never declared in JS.',
+    markup: '<a href="#claim"\n   data-field-relation="supports"\n   data-field-target="#claim">evidence</a>\n// RelationshipRegistry → one typed graph',
+    rel: true,
+  },
+  {
+    title: 'Diagnostics',
+    body: 'A diagnostic reveals the invisible structure — potential, topology, causality. It inspects behaviour; it never causes it. Open the Inspector to read the live registries each frame.',
+    markup: '// diagnostics EXPLAIN, they do not execute\npotential · topology · causality · prediction\n→ /docs/inspector (read-only)',
+    link: '/docs/inspector',
+  },
+  {
+    title: 'Reduced motion',
+    body: 'Under prefers-reduced-motion the field freezes and the element holds a static, emphasised baseline. The point the motion made — which element carries weight — survives with the motion off.',
+    markup: '@media (prefers-reduced-motion: reduce) {\n  /* hold the last value, no travel */\n  .h3 { font-weight: 560; transition: none }\n}',
+    reduced: true,
+  },
 ];
 ---
 
 <DocsLayout
   title="field-ui — Narrative"
-  description="Field narrative mode: learn field-ui by progressively revealing its layers — particles, field structure, forces, relationships, DOM feedback, heatmap, and the inspector — over the live field, with the platform measuring and feeding back each frame."
+  description="Learn field-ui one layer at a time: how an ordinary semantic element becomes a field participant — data attributes, a registered body, a runtime token, metrics, feedback, relationships, diagnostics, and the reduced-motion equivalent. The data-attribute runtime, revealed step by step."
 >
-  <h1>The field, one layer at a time</h1>
-  <p class="lede">Step through the system. Each stage reveals another layer over the live background field.</p>
+  <h1>One element, revealed as a field participant</h1>
+  <p class="lede">
+    Step through the system the way the runtime sees it. The same ordinary element gains one layer at a
+    time — from plain HTML to a body that the field measures, drives, and feeds back, all through data
+    attributes.
+  </p>
 
   <div class="nr-stage" aria-live="polite">
     <div class="nr-progress" id="nr-progress"></div>
-    <h2 id="nr-title">{stages[0].title}</h2>
-    <p id="nr-body">{stages[0].body}</p>
-    <h3 class="nr-headline" id="nr-demo" data-body="attract" data-strength="1" data-range="280" data-feedback hidden>mass</h3>
-    <a class="nr-link" id="nr-link" href="/docs/inspector" hidden>Open the Inspector →</a>
+    <div class="nr-grid">
+      <div class="nr-text">
+        <p class="nr-step"><span id="nr-step">1</span> / {stages.length}</p>
+        <h2 id="nr-title">{stages[0].title}</h2>
+        <p id="nr-body">{stages[0].body}</p>
+        <a class="nr-link" id="nr-link" href="/docs/inspector" hidden>Open the Inspector →</a>
+      </div>
+      <div class="nr-show">
+        <pre class="nr-markup"><code id="nr-markup">{stages[0].markup}</code></pre>
+        <div class="nr-demo-wrap" id="nr-demo-root">
+          <article class="nr-demo" id="nr-demo" data-body="attract" data-strength="0.8" data-range="280" data-field-role="concept">
+            <span class="nr-demo-h">Reciprocal interfaces</span>
+            <span class="nr-demo-p">An ordinary element, participating.</span>
+            <a class="nr-demo-rel" id="nr-demo-rel" href="#nr-demo" data-field-relation="supports" data-field-target="#nr-demo" hidden>supporting evidence</a>
+          </article>
+          <span class="nr-readout" id="nr-readout" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="nr-controls">
     <button id="nr-prev" disabled>← Back</button>
-    <span id="nr-count">1 / {stages.length}</span>
     <button id="nr-next">Next →</button>
   </div>
 </DocsLayout>
 
 <script>
-  interface Stage { title: string; body: string; render: string; feedback?: boolean; heatmap?: boolean; link?: string }
-  // stages are handed from the build via the inline define:vars script below.
-  const data: Stage[] = (window as unknown as { __NR__?: Stage[] }).__NR__ ?? [];
+  import { applyRecipe } from '@field-ui/platform';
+  import { recipeById } from 'field-ui';
 
-  const field = () =>
-    document.querySelector('field-root') as (HTMLElement & { setRender(m: string): void; setHeatmap(on: boolean): void }) | null;
+  interface Stage { title: string; body: string; markup: string; feedback?: boolean; rel?: boolean; link?: string; reduced?: boolean }
+  const data: Stage[] = (window as unknown as { __NR__?: Stage[] }).__NR__ ?? [];
   const $ = (id: string) => document.getElementById(id);
   let i = 0;
+  let applied: ReturnType<typeof applyRecipe> | null = null;
+
+  // Drive the running example deterministically with applyRecipe: supply a priority, the recipe writes
+  // --field-priority back. No requestAnimationFrame, no cursor — the feedback is real and repeatable.
+  function driveFeedback(reduced: boolean) {
+    const root = $('nr-demo-root');
+    const demo = $('nr-demo');
+    if (!root || !demo) return;
+    demo.setAttribute('data-feedback', '');
+    demo.setAttribute('data-field-priority', '0.85');
+    applied?.destroy();
+    const recipe = recipeById('priority-well');
+    if (!recipe) return;
+    applied = applyRecipe(root, recipe, { bodies: [demo], annotateBodies: false, drive: false, reducedMotion: reduced });
+    applied.tick();
+    applied.tick();
+  }
 
   function show(n: number) {
-    const list: Stage[] = data;
-    if (!list.length) return;
-    i = Math.max(0, Math.min(list.length - 1, n));
-    const s = list[i];
+    if (!data.length) return;
+    i = Math.max(0, Math.min(data.length - 1, n));
+    const s = data[i];
     $('nr-title')!.textContent = s.title;
     $('nr-body')!.textContent = s.body;
-    $('nr-count')!.textContent = `${i + 1} / ${list.length}`;
+    $('nr-step')!.textContent = String(i + 1);
+    $('nr-markup')!.textContent = s.markup;
     ($('nr-prev') as HTMLButtonElement).disabled = i === 0;
-    ($('nr-next') as HTMLButtonElement).disabled = i === list.length - 1;
-    $('nr-demo')!.toggleAttribute('hidden', !s.feedback);
+    ($('nr-next') as HTMLButtonElement).disabled = i === data.length - 1;
+
     const link = $('nr-link') as HTMLAnchorElement;
     link.toggleAttribute('hidden', !s.link);
     if (s.link) link.href = s.link;
-    const prog = $('nr-progress')!;
-    prog.innerHTML = list.map((_, k) => `<span class="${k <= i ? 'on' : ''}"></span>`).join('');
-    const f = field();
-    if (f) {
-      try { f.setRender(s.render); f.setHeatmap(!!s.heatmap); } catch {}
+
+    // the relationship anchor appears at the relationships stage and stays
+    $('nr-demo-rel')!.toggleAttribute('hidden', i < 6);
+    $('nr-demo-root')!.classList.toggle('rel-on', !!s.rel || i > 6);
+
+    // reduced-motion class for the static-baseline stage
+    const root = $('nr-demo-root')!;
+    root.classList.toggle('reduced', !!s.reduced);
+
+    // feedback turns on at the feedback stage and stays on for the rest
+    const readout = $('nr-readout')!;
+    if (i >= 5) {
+      driveFeedback(!!s.reduced);
+      // read the value the field wrote back off the element — the live proof the loop ran.
+      const v = parseFloat(getComputedStyle($('nr-demo')!).getPropertyValue('--field-priority')) || 0;
+      readout.textContent = `the field wrote → --field-priority: ${v.toFixed(2)}`;
+    } else {
+      applied?.destroy();
+      applied = null;
+      const demo = $('nr-demo')!;
+      demo.removeAttribute('data-feedback');
+      demo.removeAttribute('data-field-priority');
+      readout.textContent = '';
     }
+
+    const prog = $('nr-progress')!;
+    prog.innerHTML = data.map((_, k) => `<span class="${k <= i ? 'on' : ''}"></span>`).join('');
   }
   $('nr-next')?.addEventListener('click', () => show(i + 1));
   $('nr-prev')?.addEventListener('click', () => show(i - 1));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') show(i + 1);
+    if (e.key === 'ArrowLeft') show(i - 1);
+  });
   show(0);
+  document.addEventListener('astro:before-swap', () => applied?.destroy(), { once: true });
 </script>
 
 <script is:inline define:vars={{ stagesData: stages }}>
@@ -79,18 +183,43 @@ const stages = [
 </script>
 
 <style>
-  .lede { color: var(--muted, #9aa); }
-  .nr-stage { border: 1px solid var(--line, #2a2a35); border-radius: 12px; padding: 1.5rem; min-height: 180px; background: rgba(255, 255, 255, 0.02); }
-  .nr-stage h2 { margin: 0.4rem 0 0.3rem; }
-  .nr-progress { display: flex; gap: 6px; margin-bottom: 0.5rem; }
-  .nr-progress span { width: 26px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+  .lede { color: var(--muted, #9aa); max-width: 70ch; }
+  .nr-stage { border: 1px solid var(--line, #2a2a35); border-radius: 12px; padding: 1.4rem; background: rgba(255, 255, 255, 0.02); }
+  .nr-progress { display: flex; gap: 6px; margin-bottom: 1rem; }
+  .nr-progress span { flex: 1; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); transition: background 0.3s ease; }
   .nr-progress span.on { background: #4da3ff; }
-  .nr-headline { --d: 0.85; font-size: 2rem; margin: 0.8rem 0 0; font-variation-settings: 'wght' calc(300 + var(--d) * 500); color: color-mix(in srgb, #4da3ff calc(40% + var(--d) * 55%), #fff); text-shadow: 0 0 calc(var(--d) * 24px) rgba(77, 163, 255, var(--d)); }
-  .nr-link { display: inline-block; margin-top: 0.8rem; color: #4da3ff; }
-  /* an element's `display` overrides the UA [hidden] rule — restore it so the toggles actually hide. */
-  #nr-link[hidden], #nr-demo[hidden] { display: none !important; }
+  .nr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 720px) { .nr-grid { grid-template-columns: 1fr; } }
+  .nr-step { font: 0.74rem ui-monospace, monospace; color: var(--muted, #9aa); margin: 0 0 0.3rem; }
+  .nr-text h2 { margin: 0 0 0.5rem; }
+  .nr-text p { color: var(--muted, #9aa); line-height: 1.55; }
+  .nr-link { display: inline-block; margin-top: 0.6rem; color: #4da3ff; }
+  #nr-link[hidden] { display: none !important; }
+
+  .nr-markup { background: #0b0e16; border: 1px solid var(--line, #2a2a35); border-radius: 9px; padding: 0.8rem 0.9rem; overflow-x: auto; margin: 0 0 0.9rem; }
+  .nr-markup code { font: 0.78rem/1.55 ui-monospace, SFMono-Regular, monospace; color: #c8d2e0; white-space: pre; }
+
+  .nr-demo-wrap { position: relative; }
+  .nr-demo {
+    /* the field writes --field-priority on this element at the feedback stage; the reaction (heading
+       weight + border) is applied inline from that value by the script, because Astro's scoped
+       <style> calc(var()) does not render reliably. */
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 10px; padding: 0.9rem 1rem;
+    transition: opacity 0.4s ease;
+  }
+  .nr-demo-h { display: block; margin: 0; font-size: 1.2rem; color: var(--text, #e8e8ef); font-weight: 600; }
+  .nr-demo-p { display: block; margin: 0.3rem 0 0; font-size: 0.85rem; font-weight: 400; color: var(--muted, #9aa); }
+  .nr-demo-rel { display: inline-block; margin-top: 0.6rem; font-size: 0.8rem; color: #2dd4bf; }
+  #nr-demo-rel[hidden] { display: none !important; }
+  .rel-on .nr-demo { border-left: 3px solid #2dd4bf; }
+  .nr-readout { display: block; margin-top: 0.7rem; font: 0.8rem ui-monospace, monospace; color: #4da3ff; min-height: 1.2em; padding: 0.3rem 0.5rem; border-radius: 6px; background: color-mix(in srgb, #4da3ff 10%, transparent); }
+  .nr-readout:empty { display: none; }
+  .nr-demo-root.reduced .nr-demo, .nr-demo-root.reduced .nr-demo-h { transition: none; }
+  @media (prefers-reduced-motion: reduce) { .nr-demo, .nr-demo-h { transition: none; } }
+
   .nr-controls { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
   .nr-controls button { font: inherit; font-size: 0.9rem; padding: 0.4rem 0.9rem; border: 1px solid var(--line, #2a2a35); border-radius: 8px; background: transparent; color: inherit; cursor: pointer; }
+  .nr-controls button:hover:not(:disabled) { border-color: #4da3ff; }
   .nr-controls button:disabled { opacity: 0.4; cursor: default; }
-  .nr-controls #nr-count { font-size: 0.85rem; color: var(--muted, #9aa); }
 </style>
