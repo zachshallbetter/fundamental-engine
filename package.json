@@ -10,6 +10,8 @@
     "test": "pnpm -r test",
     "check:dist": "node scripts/check-dist.mjs",
     "dev": "pnpm --filter @field-ui/site dev",
-    "build:site": "pnpm --filter @field-ui/site build"
+    "build:site": "pnpm --filter @field-ui/site build",
+    "docs:dev": "pnpm --filter @field-ui/docs dev",
+    "docs:build": "pnpm --filter @field-ui/docs build"
   }
 }

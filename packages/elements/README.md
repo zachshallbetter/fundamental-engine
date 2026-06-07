@@ -1,6 +1,6 @@
-# @forces-ui/elements
+# @field-ui/elements
 
-The **web-component keystone** for [forces-ui](../core) — a reciprocal DOM-physics field
+The **web-component keystone** for [field-ui](../core) — a reciprocal DOM-physics field
 that drops into any framework (or plain HTML) unchanged. "Every element is a body" is a
 web-components-shaped idea.
 
@@ -9,7 +9,7 @@ web-components-shaped idea.
 ## Install
 
 > **Pre-release: not yet on npm.** Consume from the repository for now (see
-> [`RELEASING.md`](../../RELEASING.md)). `npm add @forces-ui/elements` lands with the
+> [`RELEASING.md`](../../RELEASING.md)). `npm add @field-ui/elements` lands with the
 > first published release.
 
 ## Use
@@ -18,7 +18,7 @@ Register the element, then mark up the field and your bodies:
 
 ```html
 <script type="module">
-  import '@forces-ui/elements';
+  import '@field-ui/elements';
 </script>
 
 <forces-field accent="#4da3ff"></forces-field>

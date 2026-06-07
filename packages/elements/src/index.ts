@@ -15,7 +15,7 @@ import { HTMLElementBase } from './base.ts';
  * Plain `HTMLElement` (the field is just a canvas — no templating). Lit earns its
  * place when there's UI to template, e.g. the Lab controls (§14).
  */
-export class ForcesField extends HTMLElementBase {
+export class FieldField extends HTMLElementBase {
   static readonly observedAttributes = [
     'accent',
     'density',
@@ -186,31 +186,31 @@ export class ForcesField extends HTMLElementBase {
   }
 }
 
-if (typeof customElements !== 'undefined' && !customElements.get('forces-field')) {
-  customElements.define('forces-field', ForcesField);
+if (typeof customElements !== 'undefined' && !customElements.get('field-field')) {
+  customElements.define('field-field', FieldField);
 }
 
 /**
- * `<field-field>` / `<field-root>` — field-ui-migration aliases of `<forces-field>`.
- *
- * The custom-element registry rejects registering one constructor under two tag names, so each
- * alias is a thin subclass. All three tags share identical behaviour, attributes, and the same
- * body contract (docs/field-ui-migration-plan.md §3). Prefer `<field-root>` / `<field-field>` in
- * new markup; `<forces-field>` keeps working until the migration removal version.
+ * Tag aliases of the canonical {@link FieldField} element. The registry rejects registering one
+ * constructor under two tag names, so each alias is a thin subclass with identical behaviour,
+ * attributes, and body contract. `<field-root>` is the recommended tag for the singleton field;
+ * `<forces-field>` is the deprecated field-ui-migration alias kept until the removal version
+ * (docs/field-ui-migration-plan.md §3).
  */
-export class FieldField extends ForcesField {}
-export class FieldRoot extends ForcesField {}
+export class FieldRoot extends FieldField {}
+/** @deprecated use `<field-root>` / `FieldField`. */
+export class ForcesField extends FieldField {}
 
 if (typeof customElements !== 'undefined') {
-  if (!customElements.get('field-field')) customElements.define('field-field', FieldField);
   if (!customElements.get('field-root')) customElements.define('field-root', FieldRoot);
+  if (!customElements.get('forces-field')) customElements.define('forces-field', ForcesField);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'forces-field': ForcesField;
     'field-field': FieldField;
     'field-root': FieldRoot;
+    'forces-field': ForcesField;
   }
 }
 
@@ -220,7 +220,8 @@ export * from './mount.ts';
 // shadow-DOM participation: the helper a custom element uses to join the field without
 // repeating registration-event boilerplate (docs/shadow-dom.md §31.1).
 export {
-  ForcesController,
+  FieldController,
+  ForcesController, // @deprecated alias of FieldController
   REGISTER_BODY,
   UNREGISTER_BODY,
   UPDATE_BODY,

@@ -44,7 +44,7 @@ backing the `diffuse`/`propagate`/`memory` class-[C] forces).
 The reciprocal loop gets one more turn of the wheel:
 
 ```
-particles → heatmap / body charge Q → DOM (--d, --forces-heatmap-*) → field → particles
+particles → heatmap / body charge Q → DOM (--d, --field-heatmap-*) → field → particles
 ```
 
 Three pillars, plus the accumulator threaded through:
@@ -119,7 +119,7 @@ Three pillars, plus the accumulator threaded through:
 - **Chargeable accumulator (`Q`).** Extend `writeFeedback` (`field.ts`): a chargeable body
   samples local field intensity over its rect each frame and accumulates `Q` with decay and a
   saturation ceiling (`Q' = Q·decay + deposit`, clamped). It writes `Q` to `--d` and a new
-  `--forces-charge`, and can drive color (`tint`), weight, and mass. `field()` (Stage B) reads
+  `--field-charge`, and can drive color (`tint`), weight, and mass. `field()` (Stage B) reads
   `Q` as the pole strength, closing the loop: a charged element radiates a stronger field.
 - Per D4: lightweight and bounded now; pool-conservation later (tie to accretion bookkeeping).
 - Tests: shell-formation invariant (matter settles off-center, around the box) for a shaped
@@ -131,7 +131,7 @@ Three pillars, plus the accumulator threaded through:
 Reuses `ScalarGridImpl`. A heatmap manager in `field.ts` owns named grids, runs a deposit pass
 per enabled layer, a render pass, and the DOM sample/write.
 
-- **H1.** Density layer + `glow` raster render + `--forces-heatmap-density` write-back. Kernel
+- **H1.** Density layer + `glow` raster render + `--field-heatmap-density` write-back. Kernel
   default `K(d, r) = max(0, 1 − d²/r²)²`. Prove the full particles → grid → DOM → field loop on
   one example.
 - **H2.** Attention layer (deposits `density · strength · visibility · engagement` around each
@@ -140,9 +140,9 @@ per enabled layer, a render pass, and the DOM sample/write.
 - **H3.** Diagnostic layers (force magnitude, velocity, entropy) and the memory heatmap
   (render the existing memory grid). A Lab "Field Inspector" overlay.
 - API: `heatmap="density heat memory"`, `heatmap-render="glow|contour|debug-grid"`,
-  `heatmap-resolution="4"` on `<forces-field>`; a `HeatmapConfig`/`HeatmapLayer` type;
+  `heatmap-resolution="4"` on `<field-root>`; a `HeatmapConfig`/`HeatmapLayer` type;
   matching `scanner.ts` + `packages/elements` attributes.
-- CSS outputs: `--forces-heatmap-{density,heat,force,velocity,entropy,memory,attention}`.
+- CSS outputs: `--field-heatmap-{density,heat,force,velocity,entropy,memory,attention}`.
 - Performance: low-resolution grid (4–8px/cell), blur, upscale, composite. Debug-grid draws
   cells directly. Decay defaults: heat 0.94–0.985, memory 0.995–0.9995.
 
@@ -165,7 +165,7 @@ per enabled layer, a render pass, and the DOM sample/write.
 - `docs/forces-system.md`: new sections for shaped sources, dipole field lines, body charge,
   and heatmaps as field buffers, in the §20 numbering.
 - `docs/api/attributes` + `lib/docs-api.ts`: `data-extent`/`data-charge`, the `heatmap-*`
-  attributes, and the `--forces-heatmap-*` outputs.
+  attributes, and the `--field-heatmap-*` outputs.
 
 ## Risks and sequencing
 

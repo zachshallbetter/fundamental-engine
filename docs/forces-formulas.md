@@ -383,7 +383,7 @@ These engineering guidelines keep the viewport rendering at a stable 60 fps on m
 #### 5.2.5 Multiple Root Canvas Instances
 * **Symptom:** The browser struggles to clear and draw to multiple full-viewport canvases running concurrent requestAnimationFrame loops.
 * **Root Cause:** Instantiating a new canvas for every element or view that needs a background field.
-* **Correct Pattern:** Mount a single, shared canvas (`<FieldCanvas />`) at the application root for the viewport background. For isolated inline demonstrations, use container-scoped, low-particle-count, paused `<forces-cell>` instances.
+* **Correct Pattern:** Mount a single, shared canvas (`<FieldCanvas />`) at the application root for the viewport background. For isolated inline demonstrations, use container-scoped, low-particle-count, paused `<field-cell>` instances.
 
 ---
 

@@ -45,32 +45,32 @@ Drop `<field-root>` once (the `<forces-field>` alias still works). It scans the 
 ### React
 
 ```tsx
-import { ForcesField } from '@field-ui/react';
+import { FieldField } from '@field-ui/react';
 
 export default function Page() {
   return (
     <>
-      <ForcesField density={1} />
+      <FieldField density={1} />
       <h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
     </>
   );
 }
 ```
 
-Reach for `useForcesField(options)` when you want the field handle instead of the component.
+Reach for `useFieldField(options)` when you want the field handle instead of the component.
 
 ### Vanilla TypeScript
 
 ```ts
-import { ForcesField } from '@field-ui/vanilla';
+import { FieldField } from '@field-ui/vanilla';
 
-const field = new ForcesField({ render: 'dots' });
+const field = new FieldField({ render: 'dots' });
 field.setFormation('wells');
 field.burst(window.innerWidth / 2, 200);
 // field.scan(); field.destroy();
 ```
 
-`@field-ui/vanilla` is the framework-free door: a typed `ForcesField` class, with `mountField()` and `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
+`@field-ui/vanilla` is the framework-free door: a typed `FieldField` class, with `mountField()` and `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
 
 ## Author bodies in markup
 
@@ -119,9 +119,9 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 | Package | What it is |
 |---|---|
 | [`field-ui`](packages/core) | the engine: catalog, contracts, `FieldStore`, integrator, the force set, conformance |
-| [`@field-ui/vanilla`](packages/vanilla) | the framework-free door: the `ForcesField` class and `mountField()`, no custom element |
-| [`@field-ui/elements`](packages/elements) | the `<forces-field>` and `<forces-cell>` custom elements |
-| [`@field-ui/react`](packages/react) | the `<ForcesField>` component and the `useForcesField()` hook |
+| [`@field-ui/vanilla`](packages/vanilla) | the framework-free door: the `FieldField` class and `mountField()`, no custom element |
+| [`@field-ui/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
+| [`@field-ui/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
 
 ## Availability
 

@@ -17,7 +17,7 @@ import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
 import { createField, FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from 'field-ui';
 
-export interface ForcesFieldProps extends FieldOptions {
+export interface FieldFieldProps extends FieldOptions {
   className?: string;
   style?: CSSProperties;
   /** called once the field is created, with its handle (scan/burst/setAccent/…). */
@@ -27,7 +27,7 @@ export interface ForcesFieldProps extends FieldOptions {
 // the fixed, click-through surface — shared with the vanilla mount via core/surface.ts.
 const FIXED = FIELD_CANVAS_STYLE as CSSProperties;
 
-export function ForcesField({
+export function FieldField({
   className,
   style,
   onReady,
@@ -39,7 +39,7 @@ export function ForcesField({
   palette,
   attention,
   causality,
-}: ForcesFieldProps): ReactElement {
+}: FieldFieldProps): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
@@ -62,7 +62,7 @@ export function ForcesField({
  * Hook form — returns a ref to attach to your own `<canvas>` and the live handle.
  * Use when you need to own the canvas element (sizing, placement) yourself.
  */
-export function useForcesField(opts: FieldOptions = {}): {
+export function useFieldField(opts: FieldOptions = {}): {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   fieldRef: RefObject<FieldHandle | null>;
 } {
@@ -82,12 +82,12 @@ export function useForcesField(opts: FieldOptions = {}): {
   return { canvasRef, fieldRef };
 }
 
-// ── field-ui-migration aliases ─────────────────────────────────────────────────
-// `Field*` are the field-first names; the `Forces*` exports above keep working unchanged
-// until the migration removal version (docs/field-ui-migration-plan.md §3).
-/** Alias of {@link ForcesFieldProps}. */
-export type FieldFieldProps = ForcesFieldProps;
-/** Alias of {@link ForcesField}. */
-export const FieldField = ForcesField;
-/** Alias of {@link useForcesField}. */
-export const useFieldField = useForcesField;
+// ── deprecated field-ui-migration aliases ──────────────────────────────────────
+// `Field*` (above) are canonical; these `Forces*` exports keep working unchanged until the
+// migration removal version (docs/field-ui-migration-plan.md §3).
+/** @deprecated alias of {@link FieldFieldProps}. */
+export type ForcesFieldProps = FieldFieldProps;
+/** @deprecated alias of {@link FieldField}. */
+export const ForcesField = FieldField;
+/** @deprecated alias of {@link useFieldField}. */
+export const useForcesField = useFieldField;

@@ -1,22 +1,22 @@
-# forces-ui: Complete Concept Document
+# field-ui: Complete Concept Document
 
-> **Status: vision document.** This is the north-star concept for forces-ui — the full arc,
+> **Status: vision document.** This is the north-star concept for field-ui — the full arc,
 > including parts not yet built. For what ships today, the contract is
 > [`forces-system.md`](forces-system.md) and the live plan is
 > [`physics-workover.md`](physics-workover.md) / [`BACKLOG.md`](../BACKLOG.md). Sections on the
 > Shadow DOM model, field portals, the `<forces-text>` / `<forces-card>` component family, the
-> `--forces-*` CSS namespace, `screen`, the transformation primitives, and the physics-mode
+> `--field-*` CSS namespace, `screen`, the transformation primitives, and the physics-mode
 > system are **proposed design**, not shipped.
 
 ## 1. Thesis
 
-forces-ui is a reciprocal interface field.
+field-ui is a reciprocal interface field.
 
 Elements bend the field. The field bends them back.
 
 The page is not placed on top of a particle background. The page lives inside a shared physical field. Words, links, cards, marks, controls, and components can become bodies. Bodies exert force on particles. Particles gather around bodies. Local density writes back into the elements as weight, glow, color, movement, state, and behavior.
 
-Most particle effects are wallpaper. forces-ui is a substrate.
+Most particle effects are wallpaper. field-ui is a substrate.
 
 The interface is not only styled. It participates.
 
@@ -49,15 +49,15 @@ The field samples local particle density around each feedback-enabled body.
 That density becomes CSS state.
 
 ```css
---d --forces-density --forces-heat --forces-entropy --forces-coherence --forces-accent --forces-accreted
+--d --field-density --field-heat --field-entropy --field-coherence --field-accent --field-accreted
 ```
 
 The element consumes those variables.
 
 ```css
 .liveword {
-font-variation-settings: "wght" calc(300 + var(--forces-density, var(--d, 0)) * 500);
-text-shadow: 0 0 calc(var(--forces-density, var(--d, 0)) * 14px) var(--forces-accent, var(--accent)); }
+font-variation-settings: "wght" calc(300 + var(--field-density, var(--d, 0)) * 500);
+text-shadow: 0 0 calc(var(--field-density, var(--d, 0)) * 14px) var(--field-accent, var(--accent)); }
 ```
 
 The word gets heavier because the field actually gathered around it.
@@ -183,7 +183,7 @@ getRect?: () => DOMRect; };
 Important naming rule:
 
 ```txt
-p.m = inertial particle mass body.M = source mass for gravity-like laws body.accreted = captured-particle count body.capacity = saturation threshold --forces-accreted or --load = accreted / capacity
+p.m = inertial particle mass body.M = source mass for gravity-like laws body.accreted = captured-particle count body.capacity = saturation threshold --field-accreted or --load = accreted / capacity
 ```
 
 Do not use body.mass for accretion count.
@@ -739,7 +739,7 @@ The field can drive behavior, not just pixels.
 Recommended field events:
 
 ```txt
-forces:lit forces:dim forces:saturated forces:supernova forces:entered forces:exited forces:density-change forces:captured forces:released
+field:lit field:dim field:saturated field:supernova field:entered field:exited field:density-change field:captured field:released
 ```
 
 Events dispatch on the registered host.
@@ -747,7 +747,7 @@ Events dispatch on the registered host.
 Example:
 
 ```ts
-host.dispatchEvent(new CustomEvent("forces:lit", {
+host.dispatchEvent(new CustomEvent("field:lit", {
 bubbles: true,
 composed: true,
 detail: {
@@ -762,9 +762,9 @@ Use event thresholds carefully and debounce where necessary.
 ## 23. Shadow DOM Participation
 
 > The full model — closed roots, `getRect` providers, virtual bodies, portals, SSR, and a
-> `ForcesController` helper — is specified in [`shadow-dom.md`](shadow-dom.md). This is the
-> summary. (Status: **proposed** — today the only custom elements are `<forces-field>` and
-> `<forces-cell>`.)
+> `FieldController` helper — is specified in [`shadow-dom.md`](shadow-dom.md). This is the
+> summary. (Status: **proposed** — today the only custom elements are `<field-root>` and
+> `<field-cell>`.)
 
 Shadow DOM support means encapsulated components can participate in the same reciprocal field without exposing their internals.
 
@@ -802,7 +802,7 @@ The engine tracks <forces-text>, not its internal span.
 Use composed custom events.
 
 ```ts
-this.dispatchEvent(new CustomEvent("forces:register-body", {
+this.dispatchEvent(new CustomEvent("field:register-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -813,7 +813,7 @@ element: this
 Unregister:
 
 ```ts
-this.dispatchEvent(new CustomEvent("forces:unregister-body", {
+this.dispatchEvent(new CustomEvent("field:unregister-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -824,7 +824,7 @@ element: this
 Update:
 
 ```ts
-this.dispatchEvent(new CustomEvent("forces:update-body", {
+this.dispatchEvent(new CustomEvent("field:update-body", {
 bubbles: true,
 composed: true,
 detail: {
@@ -908,9 +908,9 @@ Use for:
 Example:
 
 ```html
-<forces-cell mode="local" formation="wells" density="0.8">
+<field-cell mode="local" formation="wells" density="0.8">
 <forces-body data-body="attract" data-strength="1"></forces-body>
-<forces-body data-body="repel" data-strength="1"></forces-body> </forces-cell>
+<forces-body data-body="repel" data-strength="1"></forces-body> </field-cell>
 ```
 
 A local cell should not affect the root field unless explicitly bridged.
@@ -941,7 +941,7 @@ Use cases:
 The engine writes to the registered host.
 
 > **Proposed namespace.** Today the engine emits `--d` (density), `--load` (accretion
-> fraction), and `--lit` (causality). The explicit `--forces-*` names below are a proposed,
+> fraction), and `--lit` (causality). The explicit `--field-*` names below are a proposed,
 > collision-safe namespace — not yet written.
 
 Minimum variables:
@@ -953,14 +953,14 @@ Minimum variables:
 Explicit variables:
 
 ```css
---forces-density --forces-accent --forces-heat --forces-entropy --forces-coherence --forces-accreted
+--field-density --field-accent --field-heat --field-entropy --field-coherence --field-accreted
 ```
 
 Inside Shadow DOM, use explicit names and fall back to short names.
 
 ```css
 :host {
---forces-density: var(--forces-density, var(--d, 0)); }
+--field-density: var(--field-density, var(--d, 0)); }
 ```
 
 Recommended parts:
@@ -969,7 +969,7 @@ Recommended parts:
 |---|---|
 | forces-text | label, glow, mark |
 | forces-card | surface, content, aura, meter |
-| forces-cell | canvas, overlay, controls |
+| field-cell | canvas, overlay, controls |
 | forces-body | body, icon, meter |
 
 Use ::part() for controlled styling. Do not expose fragile internals.
@@ -1094,13 +1094,13 @@ Rules:
 Example:
 
 ```html
-<forces-cell aria-label="Interactive force simulation"></forces-cell>
+<field-cell aria-label="Interactive force simulation"></field-cell>
 ```
 
 Decorative:
 
 ```html
-<forces-cell aria-hidden="true"></forces-cell>
+<field-cell aria-hidden="true"></field-cell>
 ```
 
 ## 33. Performance
@@ -1134,18 +1134,18 @@ one root field, explicit local cells only
 Register typed CSS properties:
 
 ```css
-@property --forces-density {
+@property --field-density {
 syntax: "<number>";
 inherits: true;
 initial-value: 0; }
 ```
 
 Also register:
-- --forces-heat
-- --forces-entropy
-- --forces-coherence
-- --forces-accreted
-- --forces-lit
+- --field-heat
+- --field-entropy
+- --field-coherence
+- --field-accreted
+- --field-lit
 
 Use these for smoother interpolation and lower main-thread cost.
 
@@ -1283,8 +1283,8 @@ Recommended custom elements:
 
 | Element | Purpose |
 |---|---|
-| <forces-field> | root shared field |
-| <forces-cell> | isolated local simulation |
+| <field-root> | root shared field |
+| <field-cell> | isolated local simulation |
 | <forces-body> | generic body |
 | <forces-text> | text body with density-driven type |
 | <forces-mark> | mark/punctuation target |

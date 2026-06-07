@@ -53,7 +53,7 @@ export interface RegisterBodyDetail {
  * repeating event boilerplate. Construct with the host (and optional extra detail), then
  * call `connect()` / `disconnect()` / `update()` from the element's lifecycle callbacks.
  */
-export class ForcesController {
+export class FieldController {
   private readonly host: HTMLElement;
   private readonly detail: Omit<Partial<RegisterBodyDetail>, 'element'>;
 
@@ -84,6 +84,9 @@ export class ForcesController {
     if (twin) fire(twin); // field:* alias, so listeners on either namespace are reached
   }
 }
+
+/** @deprecated field-ui-migration alias of {@link FieldController}; use `FieldController`. */
+export { FieldController as ForcesController };
 
 /** A minimal element shape the registry needs — kept structural so tests need no real DOM. */
 interface RegistrableElement extends HTMLElement {

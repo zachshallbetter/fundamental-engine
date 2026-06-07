@@ -13,18 +13,18 @@ const htmlSnippet = `<!-- 1. register the element -->
 </script>
 
 <!-- 2. drop the field + mark any element as a body -->
-<forces-field accent="#4da3ff"></forces-field>
+<field-root accent="#4da3ff"></field-root>
 
 <a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
   pull me
 </a>`;
 
-const reactSnippet = `import { ForcesField } from '@field-ui/react';
+const reactSnippet = `import { FieldField } from '@field-ui/react';
 
 export function App() {
   return (
     <>
-      <ForcesField accent="#4da3ff" onReady={(field) => field.scan()} />
+      <FieldField accent="#4da3ff" onReady={(field) => field.scan()} />
       <a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
         pull me
       </a>
@@ -32,10 +32,10 @@ export function App() {
   );
 }`;
 
-const coreSnippet = `import { ForcesField } from '@field-ui/vanilla';
+const coreSnippet = `import { FieldField } from '@field-ui/vanilla';
 
 // builds + manages a fixed full-viewport canvas, starts the engine
-const field = new ForcesField({ accent: '#4da3ff' });
+const field = new FieldField({ accent: '#4da3ff' });
 
 // any [data-body] element on the page becomes a force the field reacts to.
 // after adding bodies to the DOM, rescan:
@@ -64,15 +64,15 @@ field.scan();`;
     <div class="pkg-grid">
       <div class="pkg">
         <code class="install" data-copy="npm i @field-ui/elements">npm i @field-ui/elements</code>
-        <span>the <code>&lt;forces-field&gt;</code> web component — drops into any framework or plain HTML</span>
+        <span>the <code>&lt;field-root&gt;</code> web component — drops into any framework or plain HTML</span>
       </div>
       <div class="pkg">
         <code class="install" data-copy="npm i @field-ui/react">npm i @field-ui/react</code>
-        <span>the <code>&lt;ForcesField&gt;</code> React component + <code>useForcesField</code> hook</span>
+        <span>the <code>&lt;FieldField&gt;</code> React component + <code>useFieldField</code> hook</span>
       </div>
       <div class="pkg">
         <code class="install" data-copy="npm i @field-ui/vanilla">npm i @field-ui/vanilla</code>
-        <span>the framework-free <code>ForcesField</code> class + <code>mountField()</code> for plain TypeScript</span>
+        <span>the framework-free <code>FieldField</code> class + <code>mountField()</code> for plain TypeScript</span>
       </div>
       <div class="pkg">
         <code class="install" data-copy="npm i field-ui">npm i field-ui</code>

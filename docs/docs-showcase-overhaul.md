@@ -13,8 +13,8 @@ the gap against the public `/docs` portal, and the page-by-page plan to close it
   `FieldLineOpts`.
 - **`heatmap.ts`** — the density heatmap buffer: `class Heatmap` (`update`, `norm`, `resize`,
   `cell`).
-- **`shadow.ts`** — shadow-DOM participation: `ForcesController`, `ShadowRegistry`,
-  `RegisterBodyDetail`, the `forces:register-body` / `…unregister-body` / `…update-body` events.
+- **`shadow.ts`** — shadow-DOM participation: `FieldController`, `ShadowRegistry`,
+  `RegisterBodyDetail`, the `field:register-body` / `…unregister-body` / `…update-body` events.
 
 ### New API surface
 - `FieldOptions.heatmap` (default false); `FieldHandle.setHeatmap(on)` (proxied through
@@ -23,7 +23,7 @@ the gap against the public `/docs` portal, and the page-by-page plan to close it
   rendering and the streamlines field-flow view (used by `forceAt`).
 - `Body.shaped?`, `Body.rect?`, `Body.writeTarget?`.
 - `data-shaped` body attribute.
-- CSS write-back: `--forces-density` (alias of `--d`), `--forces-heatmap-density`.
+- CSS write-back: `--field-density` (alias of `--d`), `--field-heatmap-density`.
 
 ### New concepts (the prose to write)
 1. **Field lines & the field-flow view** — `Force.field()`, the streamlines render as a
@@ -38,13 +38,13 @@ the gap against the public `/docs` portal, and the page-by-page plan to close it
 5. **Chargeable bodies** — a `data-feedback` body's accumulated density `Q = --d` sources its
    own field (radiates up to `1 + Q_GAIN`× stronger): particles → density → DOM → field.
 6. **Heatmaps** — a scalar buffer of where matter pools (deposit → decay → glow → write-back),
-   not a force; `heatmap` / `setHeatmap` / `--forces-heatmap-density`.
-7. **Shadow-DOM participation** — host-first, event-driven registration (`ForcesController`),
+   not a force; `heatmap` / `setHeatmap` / `--field-heatmap-density`.
+7. **Shadow-DOM participation** — host-first, event-driven registration (`FieldController`),
    closed-root support via `getRect`, write-back via `writeTarget`. (Spec: `docs/shadow-dom.md`.)
 
 ## Gap — current public-docs coverage
 
-- **Fully absent**: the heatmap option/`setHeatmap`/`--forces-heatmap-density`, the `Force.field()`
+- **Fully absent**: the heatmap option/`setHeatmap`/`--field-heatmap-density`, the `Force.field()`
   hook, field-line / dipole / monopole rendering, the chargeable-body `Q = --d` concept, the whole
   shadow-DOM model.
 - **Table/formula only (no concept)**: `data-shaped`, the charge/magnetism physics.
@@ -62,8 +62,8 @@ New pages under `/docs`, each with a live demo and added to `docs-nav.ts`:
 - **`/docs/concepts/field-lines`** — `field()`, field-flow, magnetism dipole vs charge monopole.
 - **`/docs/concepts/shaped-sources`** — `data-shaped`, the shell vs the blob.
 - **`/docs/concepts/chargeable`** — `Q = --d` sources the field; the reciprocal loop closing.
-- **`/docs/concepts/heatmaps`** — the buffer, `setHeatmap`, `--forces-heatmap-density`, the glow.
-- **`/docs/guides/shadow-dom`** — `ForcesController`, the register events, closed roots, write
+- **`/docs/concepts/heatmaps`** — the buffer, `setHeatmap`, `--field-heatmap-density`, the glow.
+- **`/docs/guides/shadow-dom`** — `FieldController`, the register events, closed roots, write
   targets (promoted from `docs/shadow-dom.md`).
 - Update `docs/api/forces` charge/magnetism cards and `concepts.astro` to cross-link the above.
 
@@ -73,7 +73,7 @@ Add live, toggleable demos grouped by concept:
 - the density heatmap glow (with the nav toggle),
 - a `data-shaped` body (shell formation),
 - a chargeable element (charges up, radiates more),
-- a shadow-DOM component joining the field via `ForcesController`.
+- a shadow-DOM component joining the field via `FieldController`.
 
 ## Execution order
 Workstream 1 (done) → the five concept/guide pages (one commit each, with a demo) → the showcase
