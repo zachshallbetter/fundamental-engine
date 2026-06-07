@@ -6,14 +6,12 @@
  * step → render), and exposes the public `FieldHandle`. Pure glue — the testable
  * physics lives in field-store / integrator / scanner.
  *
- * ── LEGACY DOM GLUE — quarantined (Phase D, runtime-platform-unification) ──────────────
- * This is the one core module that touches DOM globals (document / window / rAF) at runtime,
- * because it is the canvas *renderer* + the original DOM-participation path. Since D6 the platform
- * runtime (@field-ui/platform, via <field-root>) owns DOM participation — measurement, feedback
- * writes, shadow registration, relationships — by default; this file's scanning/feedback now acts
- * as the renderer + the `experimental-platform="off"` fallback. Every OTHER core module stays
- * renderer-agnostic, enforced by `dom-boundary.test.ts`. Do not add new DOM-global call-sites to
- * core outside this file and `export.ts`; put DOM participation in the platform instead.
+ * ── Renderer-agnostic (frontier) ──────────────────────────────────────────────────────
+ * This engine touches NO DOM globals. Every environment touchpoint — viewport size, scroll, rAF,
+ * reduced-motion, visibility, the scan root, and event wiring — goes through an injected
+ * {@link FieldHost} (default `browserHost()`). The browser's `window`/`document` surface is isolated
+ * in `browser-host.ts` (the one allowlisted DOM module, with `export.ts`). Pass `opts.host` to drive
+ * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
 import type { Body, Env, FieldHandle, FieldOptions, Formation, Particle } from './types.ts';
@@ -58,6 +56,8 @@ import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
 import { forceAt } from './streamlines.ts';
 import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
+import { browserHost } from './browser-host.ts';
+import type { FieldHost } from './host.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
@@ -72,8 +72,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
   registerExtendedForces(reg); // designed extended forces: lens, … (§20.3), opt-in
-  const reduceMotion =
-    typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // the environment seam: all DOM access goes through this host (default = the browser).
+  const host: FieldHost = opts.host ?? browserHost();
+  const teardowns: Array<() => void> = []; // host event unsubscribers, called on destroy
+  const reduceMotion = host.reducedMotion();
 
   const cfg = {
     accent: opts.accent ?? resolvePalette(opts.palette)[0] ?? PALETTE[0] ?? '#4da3ff',
@@ -266,7 +268,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function scan(): void {
-    const scanned = scanBodies(document);
+    const scanned = scanBodies(host.root);
     // merge event-registered shadow-DOM hosts (deduped — a light-DOM host that also fires
     // a registration event is counted once). Registration is the canonical discovery path;
     // light-DOM scanning is the compatibility fallback (shadow-dom.md §16).
@@ -278,7 +280,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     measureBodies(bodies, W, H);
     bindEngagement();
-    movers = [...document.querySelectorAll('[data-move]')].map((node) => {
+    movers = [...host.root.querySelectorAll('[data-move]')].map((node) => {
       const el = node as HTMLElement;
       const r = el.getBoundingClientRect();
       const seeded = Number.parseFloat(el.dataset.mass ?? '');
@@ -288,7 +290,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const layout = (el.dataset.move ?? '').trim() === 'layout';
       return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl, layout };
     });
-    eventEls = [...document.querySelectorAll('[data-on]')].map((node) => {
+    eventEls = [...host.root.querySelectorAll('[data-on]')].map((node) => {
       const el = node as HTMLElement;
       return {
         el,
@@ -371,7 +373,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // engagement: hover/focus a [data-hot] element → it activates (b.on, lighting
   // the spine + on-state forces) and overrides the accent with its data-color (§9).
   function bindEngagement(): void {
-    document.querySelectorAll('[data-hot]').forEach((node) => {
+    host.root.querySelectorAll('[data-hot]').forEach((node) => {
       const el = node as HTMLElement;
       if (el.dataset.fxEngaged === '1') return;
       el.dataset.fxEngaged = '1';
@@ -438,9 +440,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function resize(): void {
-    W = window.innerWidth;
-    H = window.innerHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const vp = host.viewport();
+    W = vp.width;
+    H = vp.height;
+    const dpr = Math.min(vp.dpr || 1, 2);
     canvas.width = Math.floor(W * dpr);
     canvas.height = Math.floor(H * dpr);
     canvas.style.width = W + 'px';
@@ -448,7 +451,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     env.W = W;
     env.H = H;
-    maxScroll = document.documentElement.scrollHeight - H || 1;
+    maxScroll = host.scrollHeight() - H || 1;
     for (const g of grids.values()) g.resize(W, H); // keep field buffers viewport-sized
     if (cfg.heatmap) {
       if (!heatmap) heatmap = new Heatmap(W, H);
@@ -666,7 +669,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const cols = Math.max(1, Math.ceil(W / cell));
     const rows = Math.max(1, Math.ceil(H / cell));
     if (!hmCanvas) {
-      hmCanvas = document.createElement('canvas');
+      hmCanvas = host.createCanvas();
       hmCtx = hmCanvas.getContext('2d');
     }
     if (!hmCtx) return;
@@ -920,7 +923,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (boot < 1) boot = Math.min(1, boot + 0.012);
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
 
-    const scrollY = window.scrollY || 0;
+    const scrollY = host.scrollY();
     // eased page-scroll speed for the `scrolling` data-when gate (§5).
     env.scrollV = (env.scrollV ?? 0) * 0.7 + Math.abs(scrollY - lastScrollY) * 0.3;
     lastScrollY = scrollY;
@@ -950,7 +953,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
     // accent journey (§9): scroll travels the palette; a hovered element overrides.
     // maxScroll is cached (scrollHeight forces a reflow); resample it twice a second.
-    if (frameN % 30 === 0) maxScroll = document.documentElement.scrollHeight - H || 1;
+    if (frameN % 30 === 0) maxScroll = host.scrollHeight() - H || 1;
     const targetAcc = hoverAccent ? hexToRgb(hoverAccent) : sampleStops(JOURNEY, scrollY / maxScroll);
     curAccent = [
       curAccent[0] + (targetAcc[0] - curAccent[0]) * 0.08,
@@ -984,7 +987,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     applyCausality();
     updateEvents();
     render();
-    raf = requestAnimationFrame(frame);
+    raf = host.raf(frame);
   }
 
   function setFormation(name: string): void {
@@ -998,9 +1001,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let activeForm = '';
   let lastInput = t0;
   function onScroll(): void {
-    const mid = window.innerHeight * 0.5;
+    const mid = host.viewport().height * 0.5;
     let next = '';
-    document.querySelectorAll('[data-formation]').forEach((node) => {
+    host.root.querySelectorAll('[data-formation]').forEach((node) => {
       const r = (node as HTMLElement).getBoundingClientRect();
       if (r.top <= mid && r.bottom >= mid) next = (node as HTMLElement).dataset.formation ?? '';
     });
@@ -1014,7 +1017,6 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     markInput();
     onScroll();
   };
-  const inputEvents = ['pointerdown', 'wheel', 'keydown', 'touchstart'];
   const idleTimer = setInterval(() => {
     if (performance.now() - lastInput > 6000 && activeForm !== 'ambient') {
       activeForm = 'ambient';
@@ -1028,27 +1030,27 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // resume cleanly when it returns (browsers throttle rAF in the background, but this
   // guarantees zero work and avoids drift on return).
   const onVisibility = (): void => {
-    if (document.hidden) {
-      cancelAnimationFrame(raf);
+    if (host.hidden()) {
+      host.cancelRaf(raf);
       raf = 0;
     } else if (!raf) {
-      raf = requestAnimationFrame(frame);
+      raf = host.raf(frame);
     }
   };
-  window.addEventListener('resize', onResize, { passive: true });
-  window.addEventListener('scroll', scrollHandler, { passive: true });
-  document.addEventListener('visibilitychange', onVisibility);
-  for (const ev of inputEvents) window.addEventListener(ev, markInput, { passive: true });
-  document.addEventListener(REGISTER_BODY, onRegister);
-  document.addEventListener(UNREGISTER_BODY, onUnregister);
-  document.addEventListener(UPDATE_BODY, onUpdateBody);
-  // field:* aliases (field-ui migration) — same idempotent handlers, so a body registers under
-  // either namespace; the controller dispatches both, the engine listens to both.
-  document.addEventListener(FIELD_REGISTER_BODY, onRegister);
-  document.addEventListener(FIELD_UNREGISTER_BODY, onUnregister);
-  document.addEventListener(FIELD_UPDATE_BODY, onUpdateBody);
+  teardowns.push(host.onResize(onResize));
+  teardowns.push(host.onScroll(scrollHandler));
+  teardowns.push(host.onVisibility(onVisibility));
+  teardowns.push(host.onInput(markInput));
+  // shadow-DOM body events: forces:* + field:* aliases share the same idempotent handlers, so a body
+  // registers under either namespace; the controller dispatches both, the engine listens to both.
+  teardowns.push(host.onBodyEvent(REGISTER_BODY, onRegister as (e: Event) => void));
+  teardowns.push(host.onBodyEvent(UNREGISTER_BODY, onUnregister as (e: Event) => void));
+  teardowns.push(host.onBodyEvent(UPDATE_BODY, onUpdateBody as (e: Event) => void));
+  teardowns.push(host.onBodyEvent(FIELD_REGISTER_BODY, onRegister as (e: Event) => void));
+  teardowns.push(host.onBodyEvent(FIELD_UNREGISTER_BODY, onUnregister as (e: Event) => void));
+  teardowns.push(host.onBodyEvent(FIELD_UPDATE_BODY, onUpdateBody as (e: Event) => void));
   onScroll();
-  raf = requestAnimationFrame(frame);
+  raf = host.raf(frame);
 
   return {
     scan,
@@ -1121,18 +1123,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       flow = null;
     },
     destroy: () => {
-      cancelAnimationFrame(raf);
+      host.cancelRaf(raf);
       clearInterval(idleTimer);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('scroll', scrollHandler);
-      document.removeEventListener('visibilitychange', onVisibility);
-      for (const ev of inputEvents) window.removeEventListener(ev, markInput);
-      document.removeEventListener(REGISTER_BODY, onRegister);
-      document.removeEventListener(UNREGISTER_BODY, onUnregister);
-      document.removeEventListener(UPDATE_BODY, onUpdateBody);
-      document.removeEventListener(FIELD_REGISTER_BODY, onRegister);
-      document.removeEventListener(FIELD_UNREGISTER_BODY, onUnregister);
-      document.removeEventListener(FIELD_UPDATE_BODY, onUpdateBody);
+      for (const off of teardowns) off(); // release every host event subscription
       // release the per-element [data-hot] engagement listeners, so repeated create/destroy
       // on the same DOM doesn't accumulate handlers (§18 teardown).
       for (const e of engaged) {

@@ -3,7 +3,7 @@
  * raster of the canvas, or an SVG of vector segments (field lines, contours, relationship overlays).
  * `segmentsToSvg` is pure and testable; the canvas/download helpers are thin DOM glue.
  *
- * Quarantine note (Phase D): this is the only core module besides `core/field.ts` that touches DOM
+ * Quarantine note: this is the only core module besides `core/browser-host.ts` that touches DOM
  * globals (`document.createElement` for the download anchor). It is allowlisted in
  * `core/dom-boundary.test.ts`; keep the rest of core renderer-agnostic.
  */
