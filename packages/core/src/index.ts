@@ -51,7 +51,7 @@ export * from './contracts/index.ts';
 export * from './agents/index.ts';
 // the visual language layer (Phase 6) — metric→appearance mappings, lint rules, semantic-text
 export * from './visual/index.ts';
-// authoring & recipes (Phase 7) — SceneRecipe schema, intent compiler, gallery, explain/diff
+// authoring & recipes (Phase 7) — FieldRecipe schema, intent compiler, gallery, explain/diff
 export * from './recipes/index.ts';
 // inspection & productization (Phase 8) — snapshot regression, budget inspector, system report
 export * from './inspect/index.ts';

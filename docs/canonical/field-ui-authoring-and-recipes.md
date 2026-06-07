@@ -37,7 +37,7 @@ The system supports three authoring levels:
 | Web Components | encapsulated field participation |
 | React props | framework integration |
 | Core API | engine-level control |
-| Scene recipes | portable scene definitions |
+| Field recipes | portable field programs |
 | Composer | visual authoring and copy-code tool |
 | Lab | executable spec and tuning |
 | Inspector | debugging and reciprocity view |
@@ -164,40 +164,61 @@ Intent presets:
 
 The compiler must be inspectable. Authors should be able to see the generated force tokens and render layers.
 
-## 5. SceneRecipe Schema
+## 5. FieldRecipe Schema
 
-A recipe is a portable scene or behavior definition.
+> **Implemented.** `FieldRecipe` (`packages/core/src/recipes/schema.ts`). A recipe is a portable,
+> serializable, inspectable field program — the reusable unit that connects the natural-field model,
+> engine primitives, DOM authoring, platform feedback, diagnostics, and the accessibility fallback.
+> `validateRecipe` enforces every reference against the engine catalog. (`SceneRecipe` is a deprecated
+> alias of `FieldRecipe`.)
 
 ```ts
-type SceneRecipe = {
+type FieldRecipe = {
+  id: string                          // stable kebab-case id (e.g. "priority-well")
   name: string
   intent: string
+  naturalField?: "gravity" | "electromagnetic" | "strong" | "weak"
+  primitives: string[]                // the distinct body tokens, in first-seen order
   bodies: BodyRecipe[]
-  agents?: AgentRecipe[]
   relationships?: RelationshipRecipe[]
-  render: VisualizationLayer[]
-  metrics: string[]
-  accessibility: AccessibilityRecipe
-  budget: FieldBudget
+  render: RenderLayer[]
+  metrics: string[]                   // signal names; --field-density is the one written today
+  diagnostics: string[]               // render/diagnostic modes that reveal the behavior
+  accessibility: AccessibilityRecipe  // required: reducedMotion + meaningWithoutMotion
+  budget?: Partial<PerformanceBudget>
   expected?: ExpectedMetrics
   notes?: string
 }
 ```
 
+`validateRecipe` returns a problem for any unknown force token, unknown render layer, unknown
+diagnostic mode, unknown fundamental field, declared `primitives` that drift from the body tokens, or a
+missing accessibility equivalent. A recipe can't reference anything the engine doesn't have, and no
+recipe is motion-only.
+
 Example:
 
 ```json
 {
-  "name": "Solar prominence",
-  "intent": "field-aligned plasma stream",
+  "id": "guided-flow",
+  "name": "Guided Flow",
+  "intent": "move particles or attention along field lines, relationships, or paths",
+  "naturalField": "electromagnetic",
+  "primitives": ["magnetism", "fieldflow", "stream", "propagate"],
   "bodies": [
-    { "body": "magnetism", "strength": 1.2, "range": 420 },
+    { "body": "magnetism", "strength": 1, "range": 420, "spin": 1 },
     { "body": "fieldflow", "strength": 0.8, "range": 0 },
-    { "body": "thermal", "strength": 0.2, "range": 320 }
+    { "body": "stream", "strength": 0.6, "range": 320, "angle": 0 },
+    { "body": "propagate", "strength": 0.5, "range": 300 }
   ],
-  "render": ["particles", "field-lines", "trails", "heatmap"],
-  "metrics": ["heat", "velocity", "entropy"],
-  "notes": "Magnetism defines loops. Fieldflow carries matter along them."
+  "render": ["streamlines", "field-lines", "trails", "particles"],
+  "metrics": ["flow", "velocity", "density"],
+  "diagnostics": ["field-lines", "force-vectors", "prediction"],
+  "accessibility": {
+    "reducedMotion": "a static path contour with a numbered route and direction markers",
+    "meaningWithoutMotion": "the route is an ordered list of steps with direction labels"
+  },
+  "notes": "Magnetism bends, fieldflow carries — the recipe-level expression of field.flowTo()."
 }
 ```
 
@@ -205,176 +226,48 @@ Example:
 
 | Recipe | Purpose |
 |---|---|
-| `SceneRecipe` | full field scene |
+| `FieldRecipe` | full field program (bodies, render, metrics, diagnostics, a11y) |
 | `ForceRecipe` | reusable force configuration |
 | `InteractionRecipe` | behavior tied to user input |
 | `VisualizationPreset` | render stack |
 | `MaterialPreset` | feel/material behavior |
 | `StatePreset` | field state configuration |
 
-## 7. Essential Recipes
+## 7. Field Recipes
 
-> **Implemented.** All nine ship as validated `SceneRecipe`s in
-> `packages/core/src/recipes/gallery.ts` (`ESSENTIAL_RECIPES`).
+> **Implemented.** All sixteen ship as validated `FieldRecipe`s in
+> `packages/core/src/recipes/gallery.ts` (`FIELD_RECIPES`), live on
+> [`/docs/gallery`](https://field-ui.com/docs/gallery). They are the four-field translation model made
+> practical — and classification/authoring artifacts only: they compose existing primitives and add no
+> new engine behavior. Eight are the recommended first-release set (`FIRST_RELEASE_RECIPE_IDS`).
 
-### Living Headline
+| # | Recipe | Natural field | Purpose |
+|---|---|---|---|
+| 1 | **Priority Well** ★ | gravity | make important elements feel naturally weighted without shouting |
+| 2 | Focus Orbit | gravity (+ electromagnetic) | keep related options moving around the active item |
+| 3 | Search Relevance Field | gravity | let results settle by relevance, confidence, and recency |
+| 4 | **Signal Path** ★ | electromagnetic | show information flowing through citations, dependencies, routes |
+| 5 | **Evidence Field** ★ | electromagnetic (+ strong) | show how sources support, weaken, or contradict a claim |
+| 6 | Conflict Field | weak (+ electromagnetic) | make contradiction, uncertainty, and unstable state visible |
+| 7 | **Relationship Bond** ★ | strong | keep related elements visually and behaviorally connected |
+| 8 | Concept Cluster | strong | group related terms or sections without hard layout changes |
+| 9 | **Coherence Field** ★ | strong | show whether a form, workflow, or dataset is becoming stable |
+| 10 | **Reading Field** ★ | gravity (+ memory + relationships) | reveal attention, memory, and concept links in long content |
+| 11 | **Memory Trace** ★ | weak | show where a user has been, paused, returned, or accumulated attention |
+| 12 | Decay Notice | weak | let stale, temporary, or completed state fade gracefully |
+| 13 | Phase Shift | weak | show a state transition (draft → published, pending → complete) |
+| 14 | **Guided Flow** ★ | electromagnetic (+ transport) | move particles or attention along field lines, relationships, paths |
+| 15 | Diagnostic Lens | diagnostic | reveal field lines, causality, prediction, topology, energy, overlays |
+| 16 | Accessibility Equivalence | platform / semantic | convert motion-heavy behavior into static, semantic equivalents |
 
-Intent:
+★ = the recommended first-release set: Priority Well, Signal Path, Relationship Bond, Reading Field,
+Evidence Field, Coherence Field, Memory Trace, Guided Flow. Those eight explain the system quickly; the
+full sixteen give the project its range.
 
-```txt
-Text receives density and becomes heavier/glowing as matter gathers.
-```
-
-Forces:
-
-```txt
-attract + feedback
-```
-
-Render:
-
-```txt
-particles + subtle field lines
-```
-
-### Attention Budget
-
-Intent:
-
-```txt
-One element gains emphasis while others surrender attention.
-```
-
-Mechanics:
-
-```txt
-conserved attention scalar
-attention heatmap
-ElementAgent feedback
-```
-
-### Relationship Map
-
-Intent:
-
-```txt
-Relationships act as physical constraints with memory.
-```
-
-Mechanics:
-
-```txt
-RelationshipAgent
-threads
-memory heatmap
-attention transfer
-```
-
-### Solar Prominence
-
-Intent:
-
-```txt
-Matter follows magnetic structure without corrupting magnetism.
-```
-
-Mechanics:
-
-```txt
-magnetism defines B field
-fieldflow carries matter along B
-thermal adds excitation
-```
-
-### Search Relevance Wells
-
-Intent:
-
-```txt
-Search results arrange around relevance and uncertainty.
-```
-
-Mechanics:
-
-```txt
-relevance -> strength
-uncertainty -> entropy
-clicked result -> memory
-exact match -> attract
-excluded result -> repel
-```
-
-### Form Validation Field
-
-Intent:
-
-```txt
-Form state becomes coherent or unstable.
-```
-
-Mechanics:
-
-```txt
-focused -> attract
-valid -> coherence
-invalid -> heat + entropy
-submitting -> stream
-success -> release
-```
-
-### Reading Memory Trail
-
-Intent:
-
-```txt
-Long-form content remembers reading path.
-```
-
-Mechanics:
-
-```txt
-viewport center -> attention well
-read paragraphs -> memory trail
-citations -> threads
-unresolved terms -> entropy
-```
-
-### Collaborative Presence
-
-Intent:
-
-```txt
-Multiple users become subtle field participants.
-```
-
-Mechanics:
-
-```txt
-cursor -> wake
-selection -> attention well
-edit -> heat
-conflict -> entropy
-handoff -> stream
-```
-
-### AI Confidence Field
-
-Intent:
-
-```txt
-AI state becomes spatial and inspectable.
-```
-
-Mechanics:
-
-```txt
-candidate answer -> attractor
-uncertainty -> entropy
-source support -> relationship tension
-contradiction -> repulsion
-verified claim -> coherence
-active generation -> stream
-```
+Each recipe declares its natural field, primitives, bodies, render stack, metrics, diagnostics, and an
+accessibility equivalent. See the executable cards (intent, primitives, diagnostics, reduced-motion
+equivalent, copyable JSON) on the gallery page, and the per-recipe plain-language explanation from
+`explainScene`.
 
 ## 8. Material Presets
 
