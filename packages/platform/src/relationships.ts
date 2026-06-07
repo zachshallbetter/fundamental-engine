@@ -28,12 +28,18 @@ export interface FieldRelationship {
 /** Resolve an id-ref to an element. */
 export type Resolver = (id: string) => Element | null;
 
-const idOf = (el: Element): string => el.id || `el-${Math.abs(hash(el.tagName + (el.id || '')))}`;
-function hash(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return h;
-}
+// Id-less elements need a STABLE, UNIQUE fallback id. A content hash (tagName) collapsed every
+// id-less <a> onto one key, so edges keyed by `${idOf(from)}~type~${idOf(to)}` collided and
+// silently overwrote each other. A WeakMap hands out `el-<seq>` on first sight: same element → same
+// id, distinct elements → distinct ids, entries released when the element is collected.
+const fallbackIds = new WeakMap<Element, string>();
+let fallbackSeq = 0;
+const idOf = (el: Element): string => {
+  if (el.id) return el.id;
+  let id = fallbackIds.get(el);
+  if (id === undefined) fallbackIds.set(el, (id = `el-${++fallbackSeq}`));
+  return id;
+};
 
 function ids(attr: string | null): string[] {
   return (attr ?? '').split(/\s+/).filter(Boolean);
