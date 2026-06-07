@@ -119,8 +119,8 @@ This paper contributes:
    relationships, and metrics, grounded in the shipped Evidence Field recipe family and classified by
    truth mode. The model's honesty constraint (visualize, do not adjudicate) is made concrete by the
    code: the platform *derives* coherence and entropy from relationship resolution, while a claim's
-   *confidence* is carried from the host (a host-supplied value overrides the engine's fallback) and
-   is never adjudicated.
+   *confidence* is carried from the host — since #220 the engine computes **no** confidence fallback,
+   so confidence is present only when supplied, and is never adjudicated.
 2. **A full controlled user-study design** (§5): research questions, hypotheses, three conditions
    (a current-practice baseline, the Evidence Field, and a reduced-motion variant), a curated
    ground-truth corpus, tasks and measures keyed to the project's stated evaluation targets, a
@@ -202,8 +202,10 @@ relax it:
 This is not only rhetoric; it is enforced by the code. The platform metric library
 (`packages/platform/src/metrics.ts`) is explicit about provenance: `coherence` and `entropy` are
 *derived* from how relationships resolve (the ratio of resolved to total edges, minus the
-conflicting ratio), but `confidence`, `risk`, and `priority` are **supplied** by the host through
-`data-field-<metric>`, "with a sensible fallback — they are not invented by the engine." A claim's
+conflicting ratio), but `confidence` is **supplied** by the host through `data-field-<metric>` and —
+since #220 — has **no computed fallback at all**: the engine never infers confidence from relationship
+presence (a citation is not certainty), so `--field-confidence` is written only when the host supplies
+it. (`risk` and `priority` retain computed defaults; see the metric library.) A claim's
 confidence enters the field because the application put it there. The field's job is to make the
 *consequences* of that supplied evidence — which claims read coherent, which read contested — visible
 and consistent.
@@ -325,10 +327,11 @@ coherence     = clamp01(resolvedRatio − conflictRatio)
 entropy       = clamp01(conflictRatio + (1 − resolvedRatio) · 0.5)
 ```
 
-In the *current DOM binding* (`packages/platform/src/apply-recipe.ts`), every present edge is counted
-as resolved (`relResolved = relTotal`), so `resolvedRatio = 1` and coherence reduces in practice to
-`1 − conflictRatio`; the block above is the metric library's general definition, of which the
-as-wired behavior is the no-unresolved-edges special case.
+Since #222, this resolution is **real**: `applyRecipe` counts `relResolved` as the edges whose
+endpoints actually resolve and `relTotal` as resolved + declared-but-unresolved, so a citation
+pointing at nothing lowers `resolvedRatio`, lowers coherence, and *raises* entropy (the
+`(1 − resolvedRatio)` term is live, not dead code). The registry now tracks the unresolved declarations
+rather than silently dropping them, and inspection can name each missing endpoint.
 
 A claim with many resolved supporting edges and no contradictions reads as coherent (high
 `--field-coherence`, low `--field-entropy`); a claim touched by contradictions reads as contested;
