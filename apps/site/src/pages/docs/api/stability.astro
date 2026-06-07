@@ -1,0 +1,140 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import {
+  FROZEN_VALUES, FROZEN_TYPES, FROZEN_ELEMENTS, FROZEN_BODY_ATTR, EXPERIMENTAL, COMPAT_RULES,
+} from '../../../../../../scripts/api-surface.data.mjs';
+
+// This page renders the SAME data the lock enforces (scripts/api-surface.data.mjs), so it can't drift
+// from `pnpm check:api`. The canonical prose contract is docs/canonical/field-ui-api-stability.md.
+const statusClass = (s: string) => `st st-${s}`;
+const frozenCount = FROZEN_VALUES.length + FROZEN_TYPES.length + FROZEN_ELEMENTS.length + 1;
+---
+
+<DocsLayout
+  title="field-ui — API stability"
+  description="The frozen 0.x public API surface, the experimental surface, and the compatibility rules. Enforced by pnpm check:api in CI, so a release can't break the contract by accident."
+>
+  <p class="kicker">API reference</p>
+  <h1>API <span class="accent">stability</span></h1>
+  <p class="lede">
+    The architecture has stopped being fluid. The surface below is <b>frozen for <code>0.x</code></b>:
+    each symbol stays exported, from the same package, with the same kind, and does not break for the
+    life of the <code>0.x</code> line. The freeze is enforced in CI by <code>pnpm check:api</code> —
+    {frozenCount} entries that fail the build if they change.
+  </p>
+
+  <div class="callout">
+    <b>Package names.</b> Core publishes as <code>field-ui</code> (not <code>@field-ui/core</code>);
+    the rest are <code>@field-ui/platform</code>, <code>@field-ui/elements</code>,
+    <code>@field-ui/react</code>, <code>@field-ui/vanilla</code>.
+  </div>
+
+  <section class="docs-sec">
+    <h2>Stable — entry points &amp; runtime</h2>
+    <table class="api-tbl">
+      <thead><tr><th>Symbol</th><th>Package</th><th>What it is</th></tr></thead>
+      <tbody>
+        {FROZEN_VALUES.map((v: any) => (
+          <tr>
+            <td><code>{v.name}</code> <span class="tag tag-value">value</span></td>
+            <td><code>{v.pkg}</code></td>
+            <td>{v.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="aside">
+      <code>createField</code> has <b>two doors on purpose</b>: the core primitive is renderer-agnostic
+      and host-required; <code>@field-ui/vanilla</code> re-exports the host-bundled convenience so the
+      no-framework path stays one call. Both are frozen.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Stable — types</h2>
+    <table class="api-tbl">
+      <thead><tr><th>Type</th><th>Package</th><th>What it is</th></tr></thead>
+      <tbody>
+        {FROZEN_TYPES.map((t: any) => (
+          <tr><td><code>{t.name}</code> <span class="tag tag-type">type</span></td><td><code>{t.pkg}</code></td><td>{t.note}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Stable — elements &amp; the body contract</h2>
+    <table class="api-tbl">
+      <thead><tr><th>Surface</th><th>Package</th><th>What it is</th></tr></thead>
+      <tbody>
+        {FROZEN_ELEMENTS.map((e: any) => (
+          <tr><td><code>&lt;{e.tag}&gt;</code> <span class="tag tag-el">element</span></td><td><code>{e.pkg}</code></td><td>{e.note}</td></tr>
+        ))}
+        <tr>
+          <td><code>{FROZEN_BODY_ATTR}</code> <span class="tag tag-attr">attribute</span></td>
+          <td>core <code>BODY_SELECTOR</code></td>
+          <td>The body contract. "Every element is a body" via the <code>{FROZEN_BODY_ATTR}</code> attribute on ordinary elements.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="aside">
+      <b>There is no <code>&lt;field-body&gt;</code> element.</b> Bodies are an attribute on ordinary
+      elements, not a tag. <code>&lt;forces-field&gt;</code> / <code>&lt;forces-cell&gt;</code> are
+      deprecated aliases (see the alias window in rule 6).
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Experimental — not frozen</h2>
+    <p>
+      These carry <b>no</b> stability guarantee and may change shape or be removed in any release. Some
+      have exported building blocks today — those are <i>shipped-but-unfrozen</i>: present in the
+      package, but not part of the contract until promoted above.
+    </p>
+    <table class="api-tbl">
+      <thead><tr><th>Area</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        {EXPERIMENTAL.map((x: any) => (
+          <tr><td>{x.item}</td><td><span class={statusClass(x.status)}>{x.status}</span></td><td>{x.note}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Compatibility rules</h2>
+    <ol class="rules">
+      {COMPAT_RULES.map((r: string) => <li>{r}</li>)}
+    </ol>
+    <div class="callout">
+      <b>Enforced.</b> <code>scripts/api-surface.ts</code> (typechecked) locks every value and type;
+      <code>scripts/check-api-surface.mjs</code> locks the element tags and the <code>data-body</code>
+      contract; both run via <code>pnpm check:api</code> in CI. The full contract is in
+      <code>docs/canonical/field-ui-api-stability.md</code>; publish order is in <code>PUBLISHING.md</code>.
+    </div>
+  </section>
+</DocsLayout>
+
+<style>
+  .kicker { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0; }
+  .accent { color: #4da3ff; }
+  .lede { color: var(--muted, #9aa); max-width: 74ch; }
+  .docs-sec { margin: 1.6rem 0; }
+  .api-tbl { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .api-tbl th, .api-tbl td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--line, #2a2a35); vertical-align: top; }
+  .api-tbl th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted, #9aa); }
+  .api-tbl code { color: #e8e8ef; }
+  .tag { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 4px; padding: 0.04rem 0.34rem; border: 1px solid var(--line, #2a2a35); margin-left: 0.3rem; white-space: nowrap; }
+  .tag-value { color: #2dd4bf; border-color: #2dd4bf; }
+  .tag-type { color: #4da3ff; border-color: #4da3ff; }
+  .tag-el { color: #c084fc; border-color: #c084fc; }
+  .tag-attr { color: #ff9d5c; border-color: #ff9d5c; }
+  .st { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 4px; padding: 0.04rem 0.4rem; border: 1px solid var(--line, #2a2a35); }
+  .st-partial { color: #ff9d5c; border-color: #ff9d5c; }
+  .st-planned { color: #4da3ff; border-color: #4da3ff; }
+  .st-absent { color: #9aa0ad; }
+  .aside { color: var(--muted, #9aa); font-size: 0.85rem; max-width: 74ch; }
+  .rules { color: var(--muted, #9aa); max-width: 78ch; padding-left: 1.2rem; }
+  .rules li { margin: 0.4rem 0; }
+  .callout { border: 1px solid var(--line, #2a2a35); border-left: 3px solid #4da3ff; border-radius: 8px; padding: 0.7rem 0.9rem; margin: 1rem 0; font-size: 0.86rem; }
+</style>

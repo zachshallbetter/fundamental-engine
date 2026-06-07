@@ -43,6 +43,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/api/handle', label: 'FieldHandle', ready: true },
       { href: '/docs/api/attributes', label: 'Attributes', ready: true },
       { href: '/docs/api/types', label: 'Types', ready: true },
+      { href: '/docs/api/stability', label: 'API stability', ready: true },
     ],
   },
   {

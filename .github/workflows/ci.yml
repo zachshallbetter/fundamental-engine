@@ -43,3 +43,9 @@ jobs:
       # cleanly — catches exports-map / `files` mistakes before they reach npm.
       - name: Smoke-check dist
         run: pnpm check:dist
+
+      # Lock the frozen 0.x public API surface: every stable value/type still exported with the
+      # right kind (typechecked) and every stable element/attribute contract intact. A break here
+      # means the public contract changed — see docs/canonical/field-ui-api-stability.md.
+      - name: Check API surface
+        run: pnpm check:api
