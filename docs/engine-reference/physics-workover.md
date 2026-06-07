@@ -1,6 +1,10 @@
+> **Status: as-built force-engine reference.**
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+
 # Physics Workover
 
-Status: in progress. Phase 1 (v0.3) reconciliation has shipped — swirl `0.12`, the
+Status: a multi-version physics roadmap (v0.3 through v0.6), partly shipped. Phase 1 (v0.3)
+reconciliation has shipped — swirl `0.12`, the
 sink `--load` export, the global velocity cap, and the conformance safety sweep; the
 mode system, medium, metrics, and transformation primitives remain. This is the authority
 for the multi-version physics effort (v0.3 through v0.6). It sits under the spec

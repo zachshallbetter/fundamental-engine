@@ -1,3 +1,6 @@
+> **Status: as-built force-engine reference.**
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+
 # The Forces System — Full Definition
 
 > A complete, implementation-ready specification of the **reciprocal field** that
@@ -7,9 +10,19 @@
 > `ds-data.js`). A coding agent should be able to port the system from this doc
 > without re-reading the prototype.
 
-Status: **definition only** — nothing here is wired into the React app yet. The
-prototype lives in the original design-system handoff bundle; this document is the
-spec extracted from it.
+Status: **as-built** — the engine ships. The force math, conditions, formations,
+render modes, and two-way feedback described here are live in `@field-ui/core` and
+exercised through the authoring surfaces (`<field-root>`, `mountField()`,
+`<FieldField>`). This document is the canonical reference for the **force engine**;
+it does **not** define the full field-ui platform architecture. DOM participation —
+measurement, state, feedback writes, relationships, visual bindings, overlays,
+scheduling, and linting — now lives in `@field-ui/platform`, which binds the
+renderer-agnostic core to the DOM (the platform runtime is the default for
+`<field-root>`). For that architecture see
+[../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md)
+and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+This spec was originally extracted from the design-system prototype; the engine
+behavior it describes has since been built.
 
 Source of authority:
 - **Force identity** (id, color, discipline, default attrs, law) → `ds-data.js`
@@ -28,11 +41,14 @@ Source of authority:
 > elements back.
 
 Every meaningful thing on the page — a word in the hero, a capability card, the
-contact email — is registered as a **body** in a particle field rendered on a
-full-viewport `<canvas>` behind the content. Bodies exert **forces** on free
-particles. In return, the local particle **density** around a body is written
-back into that element as a CSS variable (`--d`), so type can swell, glow, and
-gain weight where the field gathers. The interaction is two-way and continuous.
+contact email — is registered as a **body** in a shared field context. The
+conserved particle field is one engine/render layer of that context, drawn on a
+full-viewport `<canvas>` behind the content (canvas is one render surface of
+several — see the render modes in §20.6 and the diagnostic surfaces). Bodies exert
+**forces** on free particles. In return, the local particle **density** around a
+body is written back into that element as a CSS variable (`--field-density`, with
+the legacy/compat alias `--d`), so type can swell, glow, and gain weight where the
+field gathers. The interaction is two-way and continuous.
 
 Three invariants define the system:
 
@@ -442,13 +458,14 @@ if dist < range·0.5:  b.count += (1 − dist / (range·0.5))
 // write density back into the element, eased
 target = clamp(b.count/20 + (on ? 0.45 : 0), 0, 1)
 b.d   += (target − b.d) · 0.08
-element.style.setProperty('--d', b.d)
+element.style.setProperty('--field-density', b.d)   // primary; --d / --forces-density are legacy/compat aliases
 
 // optional: drive a variable font weight from density
 if fmax:  element.style.fontVariationSettings = `"wght" lerp(fmin, fmax, b.d)` (+ opsz)
 ```
 
-So `--d` ∈ [0,1] is "how much field is gathered on me right now." CSS uses it for
+So `--field-density` (primary; `--d` and `--forces-density` are legacy/compat
+aliases) ∈ [0,1] is "how much field is gathered on me right now." CSS uses it for
 glow, color-mix, weight, and the per-card density wash. Sink bodies additionally
 expose `--load` ∈ [0,1] (alias `--mass`) so they can inflate as they fill.
 
@@ -728,10 +745,19 @@ pattern for embedding the (cost-heavy) field inside a denser documentation UI.
 
 ## 19. Notes for adapting the engine
 
+> **As-built note.** This section describes how the *force engine* is mounted; it is
+> not the full platform architecture. In the shipped system, `@field-ui/core`
+> computes renderer-agnostic field behavior (force math, conservation, conditions,
+> formations) and `@field-ui/platform` binds it to the DOM — measurement, state,
+> feedback writes, relationships, visual bindings, overlays, scheduling (the explicit
+> discover → read → compute → state → write → render phases), and linting. The
+> platform runtime is the **default** for `<field-root>`. For the complete
+> architecture see the canonical docs linked in the status banner at the top.
+
 The original prototype was plain DOM + a `requestAnimationFrame` loop reading
 `[data-body]` attributes. Adapting it into any app comes down to one decision:
 
-1. **Mount the engine once** as a single canvas component at the app root that scans
+1. **Mount the engine once** as a single canvas render surface at the app root that scans
    `[data-body]` elements — keeping the declarative authoring model intact. This is what
    the shipped adapters do (`<field-root>`, `mountField()`, `<FieldField>`); or
 2. **Re-express the forces** on top of an existing particle/behavior system, mapping each
@@ -1136,14 +1162,24 @@ Drop-in [A]; selective ones read each particle (like `hot`/`cool`, §5).
 ### 20.6 Render modes (same sim, different material)
 The integrator is decoupled from the draw; these change the *look* without
 touching the physics. Each is a swap of the particle draw pass in the renderer.
-**Six ship today** — `dots` (the default), `trails`, `links`, `metaballs`, `voronoi`,
-and `streamlines`; the remaining rows are spec-only and marked **planned**.
+The render-mode catalog (authoritative in `packages/core/src/visual/visualization.ts`
+`RENDER_MODES`, with per-mode shipped/planned status) **now ships a broad set** — the
+six core particle-draw swaps plus the structure, scalar, graph, and debug/diagnostic
+modes that drive `/docs/diagnostics`. The core `setRender()` API surfaces the six
+particle-draw modes (`dots`, `trails`, `links`, `metaballs`, `voronoi`,
+`streamlines`); the remaining shipped modes are render *layers* exposed through the
+visualization/diagnostics surface (`field-lines`, `heatmap`, `force-vectors`,
+`contours`, `potential`, `energy`, `topology`, `inspector`, `causality`,
+`prediction`). `knockout`, `redshift`, and `blackbody` remain spec-only and are
+marked **planned**.
 
-> **Not to be confused with the density heatmap.** The `heatmap` *render mode* below
-> (a planned density-contour draw) is distinct from the **shipped density-heatmap overlay
-> layer** (the `heatmap` field option / `toggleHeatmap`, drawn as a glow underlay and
-> sampled to bodies as `--field-heatmap-density`, §2 / field-systems H1). The overlay is a
-> layer under the particle draw, not one of the six draw-pass modes.
+> **The shipped `heatmap` render mode vs. the density-heatmap overlay.** The shipped
+> `heatmap` render mode renders the density/`heat` grid as an attention contour
+> (`status: 'shipped'` in the catalog). It is distinct from the **density-heatmap
+> overlay layer** (the `heatmap` field option / `toggleHeatmap`, drawn as a glow
+> underlay and sampled to bodies as `--field-heatmap-density`, §2 / field-systems H1).
+> The overlay is a layer under the particle draw, not one of the six core draw-pass
+> modes.
 
 | Mode | How | Result | Status |
 |---|---|---|---|
@@ -1153,8 +1189,17 @@ and `streamlines`; the remaining rows are spec-only and marked **planned**.
 | `voronoi` | nearest-site cells over particle centers | shattered glass / cells | shipped |
 | `links` | line between particles within `r` (particle↔particle threads) | constellation / neural-net | shipped |
 | `streamlines` | trace the force field itself, not the particles | a diagnostic vector view | shipped |
+| `field-lines` | trace the `field()` geometry every body radiates | the net structure field as lines | shipped |
+| `heatmap` | render the density/`heat` grid as a contour | an attention contour map | shipped |
+| `force-vectors` | draw the actual per-agent cause from `apply()` | a debug vector field of real forces | shipped |
+| `contours` | equal-value isolines over a scalar field | topographic contour map | shipped |
+| `potential` | shade the potential field | wells and gradients | shipped |
+| `energy` | shade kinetic / potential / thermal energy | an energy map | shipped |
+| `topology` | draw threads and flux links between bodies | the relationship graph | shipped |
+| `inspector` | overlay bodies, agents, metrics, contracts | live diagnostic readout | shipped |
+| `causality` | draw each agent's contribution sources | what is acting on what | shipped |
+| `prediction` | draw a ghost trajectory ahead of each agent | predicted motion | shipped |
 | `knockout` | clip particle draw to text via `destination-in` | the field visible only inside letters | planned |
-| `heatmap` | render the density/`heat` grid as a contour | an attention contour map | planned |
 | `redshift` | tint by velocity/proximity (Doppler + gravitational, §20.8) | relativistic accretion-disk look | planned |
 | `blackbody` | tint by energy on a blackbody ramp (§20.8) | physically-warm temperature color | planned |
 
@@ -1605,7 +1650,7 @@ stays locked to where the element actually is. (Rationale & forces: possibilitie
 
 ### 22.5 Events as targets — the field drives behavior
 A force targeting an **event sink** turns physics into app logic — the write side of
-Canvas→DOM *beyond* styling. Declare bindings on a body:
+field → DOM *beyond* styling. Declare bindings on a body:
 ```html
 <article data-body="sink attract"
          data-on="captured:field:dock, dense:field:lit, spotlight:field:seen">…</article>

@@ -56,18 +56,37 @@ const env = `interface Env {
   grid(name: string): ScalarGrid;                 // persistent field buffer
   spark(x, y, power, color?): void;               // micro-reaction
 }`;
+
+const platform = `// @field-ui/platform — DOM participation (createFieldPlatform(root))
+type Phase = 'discover' | 'read' | 'compute' | 'state' | 'write' | 'render';
+
+interface FieldPlatform {
+  measure: MeasurementRegistry;        // frame-stable geometry (read phase)
+  state: StateRegistry;                // typed element state (number/boolean/string/vector2)
+  feedback: FeedbackRegistry;          // CSS vars + thresholded events (write phase)
+  relationships: RelationshipRegistry; // native href/aria/data-field-relation graph
+  visuals: VisualBindingRegistry;      // visual ↔ semantic pairing (a11y)
+  overlays: OverlayRegistry;           // render layers — read-only, never mutate physics
+  scheduler: FrameScheduler;           // the six-phase loop
+  on(phase: Phase, fn: (ctx: FrameContext) => void): () => void;
+  tick(now?: number, viewport?: Viewport): FrameReport;
+}
+
+// lintPlatform(platform): PlatformLintWarning[]  — the field-system guardrails`;
 ---
 
 <DocsLayout
   title="field-ui — Types"
-  description="The core TypeScript contracts for advanced use and custom forces: Force (the per-frame contract), Body, Particle, and Env (the shared per-frame environment)."
+  description="The TypeScript contracts: core types (Force, Body, Particle, Env) describe field computation; platform types (FieldPlatform, the registries, the scheduler) describe DOM participation."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
-    <h1>Core <span class="accent">types</span></h1>
+    <h1>Core &amp; platform <span class="accent">types</span></h1>
     <p class="lede">
-      For advanced use and authoring your own forces. A force is just an object implementing the
-      <code>Force</code> contract — the engine never special-cases any single one.
+      For advanced use and authoring your own forces. <strong>Core types</strong> describe field
+      computation (renderer-agnostic); <strong>platform types</strong> describe DOM participation. A
+      force is just an object implementing the <code>Force</code> contract — the engine never
+      special-cases any single one.
     </p>
   </header>
 
@@ -93,6 +112,17 @@ const env = `interface Env {
     <h2>Env</h2>
     <p>The shared per-frame environment handed to every force — precomputed vectors plus the engine services.</p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: env }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Platform types</h2>
+    <p>
+      The core types above are renderer-agnostic. <code>@field-ui/platform</code> adds the DOM
+      participation layer: <code>createFieldPlatform(root)</code> returns a <code>FieldPlatform</code>
+      binding the six registries to the <code>FrameScheduler</code>. See
+      <a href="/docs/api">the platform overview</a>.
+    </p>
+    <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: platform }]} />
   </section>
 
   <SeeAlso

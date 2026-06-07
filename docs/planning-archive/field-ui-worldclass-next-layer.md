@@ -1,3 +1,6 @@
+> **Status: planning / roadmap.**
+> Forward-looking record. Items here may have shipped since — verify against the canonical docs ([../canonical/](../canonical/)) and the code before treating anything as current or as still-pending.
+
 # field-ui World-Class Next Layer
 
 ## Related Documents
@@ -5,14 +8,14 @@
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](./field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](./field-ui-system-contracts.md) | Contracts |
-| [`field-ui-authoring-and-recipes.md`](./field-ui-authoring-and-recipes.md) | Authoring |
-| [`field-ui-testing-and-conformance.md`](./field-ui-testing-and-conformance.md) | Tests |
+| [`field-ui-definition-document.md`](../canonical/field-ui-definition-document.md) | Concept |
+| [`field-ui-system-contracts.md`](../canonical/field-ui-system-contracts.md) | Contracts |
+| [`field-ui-authoring-and-recipes.md`](../canonical/field-ui-authoring-and-recipes.md) | Authoring |
+| [`field-ui-testing-and-conformance.md`](../canonical/field-ui-testing-and-conformance.md) | Tests |
 
 ## Purpose
 
-This document captures next-layer systems that move `field-ui` from impressive engine to complete interface physics language.
+This document captures next-layer systems that move `field-ui` from impressive engine to complete interface physics language. `field-ui` is a platform-native relational field runtime for the DOM: `@field-ui/core` computes renderer-agnostic field behavior, `@field-ui/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting), and elements/react are authoring surfaces. Canvas is one render surface, not the whole system.
 
 The baseline system defines:
 
@@ -40,6 +43,25 @@ explainability
 product surfaces
 ```
 
+## Implemented
+
+Much of this layer has since shipped. The platform runtime is now the default for `<field-root>`: `@field-ui/platform` ships the `FrameScheduler` (explicit phases: discover → read → compute → state → write → render) and six registries — `MeasurementRegistry`, `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`, `OverlayRegistry` — plus `lintPlatform()` and `createFieldPlatform(root)`. `@field-ui/core` stays renderer-agnostic; the platform owns DOM participation.
+
+Shipped from the items below:
+
+```txt
+Field linting (§3) — platform lint rules over the scheduler
+Semantic layers (§8) — semantic/layers.ts
+Field state machine (§9) — semantic/states.ts
+Field design tokens (§11) — visual/tokens.ts
+Field roles (§12) — visual/tokens.ts + core/scanner.ts wiring
+Diagnostics render modes (§10) — all modes live at /docs/diagnostics
+Reading Field demo — exercises all six registries (/docs/reading-field)
+Authoring across surfaces — native HTML / <field-root> / <FieldField> (/docs/authoring)
+```
+
+All render modes ship and are live at `/docs/diagnostics`: dots, trails, links, streamlines, metaballs, voronoi, field-lines, heatmap, force-vectors, contours, potential, energy, topology, inspector, causality, prediction. The remaining sections record genuine frontier work (intent compiler depth, error taxonomy, snapshot regression, narrative mode, explain/diff, the broader product surfaces) and forward-looking targets.
+
 ## 1. Truth Modes
 
 Classify every behavior.
@@ -63,6 +85,10 @@ Authors describe intent.
 Compiles to force tokens and render settings.
 
 ## 3. Field Linting
+
+> **Implemented.** `lintPlatform()` runs platform lint rules over the scheduler:
+> `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`,
+> `measurement-off-phase`, `visual-orphan`, `visual-not-hidden`.
 
 Catch bad configurations.
 
@@ -154,6 +180,11 @@ type FieldState =
 
 ## 10. Field Narrative Mode
 
+> The underlying render surfaces all ship and are live at `/docs/diagnostics` (dots, trails, links,
+> streamlines, metaballs, voronoi, field-lines, heatmap, force-vectors, contours, potential, energy,
+> topology, inspector, causality, prediction). The progressive-reveal *narrative* sequencing over
+> them remains frontier work.
+
 Progressively reveal:
 
 ```txt
@@ -170,18 +201,19 @@ inspector
 ## 11. Field Design Tokens
 
 > **Implemented** (field-first names) as `FIELD_DESIGN_TOKENS` + `fieldTokensCss()` in
-> `packages/core/src/visual/tokens.ts`.
+> `packages/core/src/visual/tokens.ts`. `--field-*` names are primary; the `--forces-*` forms are
+> legacy/compat aliases (the `FeedbackRegistry` auto-mirrors `--field-*` → `--forces-*`).
 
 ```css
 :root {
-  --forces-motion-calm: 0.2;
-  --forces-motion-active: 0.8;
-  --forces-field-range-sm: 180px;
-  --forces-field-range-md: 320px;
-  --forces-field-range-lg: 520px;
-  --forces-density-soft: 0.25;
-  --forces-density-lit: 0.65;
-  --forces-entropy-warning: 0.72;
+  --field-motion-calm: 0.2;
+  --field-motion-active: 0.8;
+  --field-range-sm: 180px;
+  --field-range-md: 320px;
+  --field-range-lg: 520px;
+  --field-density-soft: 0.25;
+  --field-density-lit: 0.65;
+  --field-entropy-warning: 0.72;
 }
 ```
 
@@ -231,6 +263,11 @@ Change: stronger fieldflow increases velocity and lowers center density.
 
 ## 16. Product Surfaces
 
+> Several of these ship: the Inspector render mode is live at `/docs/diagnostics`, the Reading Field
+> demo (`/docs/reading-field`) exercises all six registries on the scheduler, and authoring across
+> native HTML / `<field-root>` / `<FieldField>` ships at `/docs/authoring`. Composer, Snapshot
+> Viewer, Accessibility Preview, and Agent Report remain frontier surfaces.
+
 | Surface | Purpose |
 |---|---|
 | Homepage | concept and product story |
@@ -252,7 +289,7 @@ Particles are only one class of field participant.
 Users, elements, relationships, events, layout, and data can also be agents.
 ```
 
-See [`field-ui-interaction-and-relationship-model.md`](./field-ui-interaction-and-relationship-model.md).
+See [`field-ui-interaction-and-relationship-model.md`](../canonical/field-ui-interaction-and-relationship-model.md).
 
 ## 18. Implementation Priority
 

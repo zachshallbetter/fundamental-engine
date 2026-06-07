@@ -13,17 +13,19 @@ const bodySnippet = `<a
   data-feedback              // opt into density write-back
 >link</a>`;
 
-const pipeSnippet = `// DOM → field (every frame, per body)
+const pipeSnippet = `// read phase — DOM → field (platform MeasurementRegistry, once per frame, per body)
 cx = (rect.left + rect.width / 2) * DPR
 cy = (rect.top  + rect.height / 2) * DPR
 
-// field → DOM (every frame, per data-feedback body)
-element.style.setProperty('--d', density)   // d ∈ [0, 1]`;
+// write phase — field → DOM (platform FeedbackRegistry, per data-feedback body)
+element.style.setProperty('--field-density', density)   // d ∈ [0, 1]
+// (the compact --d and --forces-density are written too, as aliases)`;
 
 const feedbackSnippet = `.headline {
-  /* the engine writes --d; CSS turns density into weight + glow */
-  font-variation-settings: 'wght' calc(380 + var(--d) * 420);
-  text-shadow: 0 0 calc(var(--d) * 40px) rgba(77, 163, 255, calc(var(--d)));
+  /* the field writes --field-density; CSS turns density into weight + glow.
+     --d is a compact legacy alias; new code should prefer --field-density. */
+  font-variation-settings: 'wght' calc(380 + var(--field-density, 0) * 420);
+  text-shadow: 0 0 calc(var(--field-density, 0) * 40px) rgba(77, 163, 255, var(--field-density, 0));
 }`;
 
 // The cell-supported primitives (the poster engine implements these seven).
@@ -41,15 +43,16 @@ const DEMOS = [
 
 <DocsLayout
   title="field-ui — Concepts"
-  description="The mental model behind field-ui: bodies, the single conserved field, the two-way DOM⇄canvas binding, reciprocity via --d, and the orthogonal axes (forces, conditions, formations, render modes, agents)."
+  description="The mental model behind field-ui: bodies, the shared field context, the two-way DOM ⇄ field runtime loop, the platform layer (measurement, state, feedback, relationships, overlays) on a six-phase scheduler, reciprocity via --field-density, and the orthogonal axes."
 >
   <header class="docs-hero">
     <p class="kicker">Concepts</p>
     <h1>How the field <span class="accent">thinks</span>.</h1>
     <p class="lede">
-      field-ui is one particle field that the page lives inside. Elements are bodies that
-      bend it; the field's density bends them back. Everything else is a way to shape that
-      one reciprocal loop.
+      field-ui is a relational field runtime for the DOM. Elements are bodies in one
+      <strong>shared field context</strong> — they bend the field; its density bends them back. A
+      renderer-agnostic core computes the field; a platform layer binds it to the DOM. The visible
+      canvas is one render surface, not the whole system.
     </p>
   </header>
 
@@ -71,41 +74,63 @@ const DEMOS = [
   </section>
 
   <section class="docs-sec">
-    <h2>The single field</h2>
+    <h2>The shared field context</h2>
     <p>
-      There is exactly one field — a fixed, full-viewport <code>&lt;canvas&gt;</code> behind your
-      content, running one <code>requestAnimationFrame</code> loop over a conserved pool of
-      particles (~130 at default density). Every body acts on that same pool. This is the
-      central law: <strong>nothing is created from nothing</strong>. Matter is moved, captured,
-      and released — a sink that swallows particles must later release them; the reservoir
-      keeps the count constant. Effects can't cheat by spawning matter, which is what makes the
-      field feel physical rather than decorative.
+      Bodies, particles, relationships, measurements, metrics, feedback, and overlays all share one
+      field context. The visible particle layer is a conserved pool (~130 at default density) drawn
+      on a full-viewport <code>&lt;canvas&gt;</code> — one render surface among several (SVG overlays
+      and DOM feedback are others). Particles are <em>one agent type</em>, not the whole substrate.
+      The conserved pool carries a central law: <strong>nothing is created from nothing</strong> —
+      matter is moved, captured, and released; a sink that swallows particles must later release
+      them, so the count stays constant. That is what makes the field feel physical rather than
+      decorative.
     </p>
   </section>
 
   <section class="docs-sec">
-    <h2>The DOM ⇄ canvas binding</h2>
+    <h2>The platform layer</h2>
+    <p>
+      <code>@field-ui/core</code> computes the field against plain data and stays renderer-agnostic.
+      <code>@field-ui/platform</code> binds it to the DOM through six registries — <strong>measurement</strong>
+      (frame-stable geometry), <strong>state</strong> (typed element state), <strong>feedback</strong>
+      (CSS variables + thresholded events), <strong>relationships</strong> (the native href/aria/data
+      graph), <strong>visual bindings</strong> (visual ↔ semantic pairing), and <strong>overlays</strong>
+      (render layers) — all driven by one <strong>frame scheduler</strong> with explicit phases:
+    </p>
+    <div class="formula" style="--c:#4da3ff">discover → read → compute → state → write → render</div>
+    <p>
+      Reads happen in the read phase and writes in the write phase, so geometry reads never thrash
+      against DOM writes. Since the runtime-unification phase the platform is the default for
+      <code>&lt;field-root&gt;</code>; the core engine still renders the canvas. See the
+      <a href="/docs/api">platform API</a> for the registries.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The DOM ⇄ field runtime binding</h2>
     <p>
       The rarest property of the system is a <strong>two-way binding between layout and a
-      physics sim</strong>. Most particle backgrounds are one-way (canvas reacts to the mouse).
-      Here the DOM <em>is</em> the simulation's geometry, and the simulation writes back into
-      layout and type. Two pipes, every frame:
+      physics runtime</strong>. Most particle backgrounds are one-way (canvas reacts to the mouse).
+      Here the DOM <em>is</em> the runtime's geometry, and the runtime writes back into layout and
+      type. Two flows, on the scheduler's read and write phases:
     </p>
     <CodeTabs variants={[{ label: 'Per frame', lang: 'js', code: pipeSnippet }]} />
     <p>
-      <strong>Pipe 1 (geometry in):</strong> any DOM change — reflow, transform, resize — is an
-      instantaneous change to the force geometry, so animating the DOM animates the sim for free.
-      <strong>Pipe 2 (density out):</strong> the field samples how much matter pooled on each
-      <code>data-feedback</code> body and writes it back as <code>--d</code>.
+      <strong>Read (geometry in):</strong> any DOM change — reflow, transform, resize — is an
+      instantaneous change to the force geometry, so animating the DOM animates the runtime for free.
+      <strong>Write (feedback out):</strong> the field samples how much matter pooled on each
+      <code>data-feedback</code> body and writes it back as <code>--field-density</code> (with the
+      compact <code>--d</code> and <code>--forces-density</code> as aliases).
     </p>
   </section>
 
   <section class="docs-sec">
-    <h2>Reciprocity &amp; <code>--d</code></h2>
+    <h2>Reciprocity &amp; <code>--field-density</code></h2>
     <p>
-      Reciprocity is the payoff. Opt a body in with <code>data-feedback</code> and the engine
-      eases the gathered density into a CSS custom property <code>--d</code> ∈ [0, 1] on the
-      element. Your styles turn that number into anything — weight, glow, scale, colour:
+      Reciprocity is the payoff. Opt a body in with <code>data-feedback</code> and the FeedbackRegistry
+      eases the gathered density into a CSS custom property <code>--field-density</code> ∈ [0, 1] on the
+      element (the compact <code>--d</code> and <code>--forces-density</code> are written alongside it as
+      aliases). Your styles turn that number into anything — weight, glow, scale, colour:
     </p>
     <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: feedbackSnippet }]} />
     <p>
@@ -133,8 +158,10 @@ const DEMOS = [
         (ambient, wells, lanes, scatter, accretion). <a href="/docs/api/catalog">Reference →</a>
       </li>
       <li>
-        <b>Render modes</b> — the same physics drawn differently (dots, trails, links,
-        metaballs, voronoi, streamlines). <a href="/docs/api/catalog">Reference →</a>
+        <b>Render modes</b> — the same physics drawn differently. Matter/structure: dots, trails,
+        links, metaballs, voronoi, streamlines, field-lines, heatmap. Diagnostics (all shipped):
+        force-vectors, contours, potential, energy, topology, inspector, causality, prediction.
+        <a href="/docs/diagnostics">Diagnostics →</a>
       </li>
     </ul>
   </section>

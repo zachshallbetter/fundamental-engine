@@ -5,10 +5,11 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 // revealing its layers. Each stage drives the live background field (render mode / heatmap) and
 // reveals the next explanation, so the reader builds the model one layer at a time.
 const stages = [
-  { title: 'Particles', body: 'Matter you can see. A single conserved particle field renders behind the page.', render: 'dots' },
-  { title: 'Field structure', body: 'The invisible structure every body radiates — streamlines trace the net field.', render: 'streamlines' },
+  { title: 'Particles', body: 'Matter you can see — one render surface. Particles are one agent type in the shared field context, conserved: nothing is created from nothing.', render: 'dots' },
+  { title: 'Field structure', body: 'The invisible structure every body radiates — streamlines trace the net field the platform measures.', render: 'streamlines' },
   { title: 'Forces move matter', body: 'Bodies bend the field; trails show where matter has travelled under force.', render: 'trails' },
-  { title: 'DOM feedback', body: 'The field bends elements back: local density writes to --d, and the headline lights up.', render: 'dots', feedback: true },
+  { title: 'Relationships', body: 'The platform reads native links (href, aria-controls, data-field-relation) into one typed graph — connectors show the coupling.', render: 'links' },
+  { title: 'DOM feedback', body: 'The field bends elements back: the FeedbackRegistry writes local density to --field-density (with --d / --forces-density aliases), and the headline lights up.', render: 'dots', feedback: true },
   { title: 'Heatmap', body: 'Where matter pools, sampled into a scalar grid and glowed back.', render: 'dots', heatmap: true },
   { title: 'Inspect it all', body: 'Every body, metric, and contract is inspectable — open the Inspector.', render: 'dots', link: '/docs/inspector' },
 ];
@@ -16,7 +17,7 @@ const stages = [
 
 <DocsLayout
   title="field-ui — Narrative"
-  description="Field narrative mode: learn field-ui by progressively revealing its layers — particles, field structure, forces, DOM feedback, heatmap, and the inspector — over the live field."
+  description="Field narrative mode: learn field-ui by progressively revealing its layers — particles, field structure, forces, relationships, DOM feedback, heatmap, and the inspector — over the live field, with the platform measuring and feeding back each frame."
 >
   <h1>The field, one layer at a time</h1>
   <p class="lede">Step through the system. Each stage reveals another layer over the live background field.</p>

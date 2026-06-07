@@ -1,9 +1,12 @@
+> **Status: legacy / superseded.**
+> Preserved for design history. The current architecture is governed by the canonical docs ([../canonical/](../canonical/)) and @field-ui/platform; do not treat this as the current implementation.
+
 # field-ui: Complete Concept Document
 
 > **Status: vision document.** This is the north-star concept for field-ui — the full arc,
 > including parts not yet built. For what ships today, the contract is
-> [`forces-system.md`](forces-system.md) and the live plan is
-> [`physics-workover.md`](physics-workover.md) / [`BACKLOG.md`](../BACKLOG.md). Sections on the
+> [`forces-system.md`](../engine-reference/forces-system.md) and the live plan is
+> [`physics-workover.md`](../engine-reference/physics-workover.md) / [`BACKLOG.md`](../BACKLOG.md). Sections on the
 > Shadow DOM model, field portals, the `<forces-text>` / `<forces-card>` component family, the
 > `--field-*` CSS namespace, `screen`, the transformation primitives, and the physics-mode
 > system are **proposed design**, not shipped.
@@ -14,7 +17,7 @@ field-ui is a reciprocal interface field.
 
 Elements bend the field. The field bends them back.
 
-The page is not placed on top of a particle background. The page lives inside a shared physical field. Words, links, cards, marks, controls, and components can become bodies. Bodies exert force on particles. Particles gather around bodies. Local density writes back into the elements as weight, glow, color, movement, state, and behavior.
+The page is not placed on top of a particle background. The page lives inside a shared field context. Words, links, cards, marks, controls, and components can become bodies. Bodies exert force on particles. Particles gather around bodies. Local density writes back into the elements as weight, glow, color, movement, state, and behavior. (Today this shared context spans bodies, agents, relationships, measurements, metrics, feedback, and render surfaces — particles are one agent type and the canvas is one render surface, not the whole system.)
 
 Most particle effects are wallpaper. field-ui is a substrate.
 
@@ -95,9 +98,9 @@ Source/sink forces may break conservation only when explicitly budgeted.
 
 ### Synchronization
 
-The DOM and the canvas share one coordinate space.
+The DOM and the field runtime share one coordinate space.
 
-Every registered body is measured through its viewport rectangle and mapped into the canvas.
+Every registered body is measured through its viewport rectangle and mapped into the field (and, for the canvas render surface, into the canvas).
 
 ```ts
 const rect = element.getBoundingClientRect(); const canvasRect = canvas.getBoundingClientRect();
@@ -108,11 +111,11 @@ The invisible force geometry stays locked to the visible interface.
 
 ## 4. The Substrate
 
-The field is built from particles, bodies, currents, formations, density feedback, and a shared canvas.
+The field is built from particles, bodies, currents, formations, density feedback, and a shared field context that drives one or more render surfaces. The canvas is one such render surface, not the whole substrate.
 
 ### Canvas
 
-The default surface is a single shared canvas mounted at the application root.
+The default render surface is a single shared canvas mounted at the application root. (It is one of several render modes; the shared field context — not the canvas — is the substrate.)
 
 Do not create one canvas per component by default.
 
@@ -762,7 +765,7 @@ Use event thresholds carefully and debounce where necessary.
 ## 23. Shadow DOM Participation
 
 > The full model — closed roots, `getRect` providers, virtual bodies, portals, SSR, and a
-> `FieldController` helper — is specified in [`shadow-dom.md`](shadow-dom.md). This is the
+> `FieldController` helper — is specified in [`shadow-dom.md`](../engine-reference/shadow-dom.md). This is the
 > summary. (Status: **proposed** — today the only custom elements are `<field-root>` and
 > `<field-cell>`.)
 
@@ -1212,7 +1215,7 @@ Required tests:
 ## 38. Roadmap
 
 > **Status note.** This roadmap predates the physics workover and uses an earlier version
-> numbering. The canonical, current plan is [`physics-workover.md`](physics-workover.md) and
+> numbering. The canonical, current plan is [`physics-workover.md`](../engine-reference/physics-workover.md) and
 > [`BACKLOG.md`](../BACKLOG.md): **v0.2.0** shipped the 34-force engine, and the "v0.2" items
 > below (vortex→swirl reconciliation, `b.accreted`, the velocity cap, the safety sweep) shipped
 > in the **v0.3** workover; the later phases map to v0.4–v0.6. Treat this as the conceptual arc,
@@ -1325,7 +1328,7 @@ The final architecture has four layers.
 
 ### The Field
 
-A shared physical substrate rendered through canvas.
+A shared field context: the substrate spans bodies, agents, relationships, measurements, metrics, and feedback, and drives one or more render surfaces (canvas is one of them).
 
 ### The Body System
 

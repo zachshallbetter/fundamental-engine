@@ -10,7 +10,8 @@ const cards = [
   { href: '/docs/api/forces', t: `Forces (${MANUAL_FORCES.length})`, d: 'The full catalog — law, attributes, and example per force.' },
   { href: '/docs/api/presets', t: `Presets (${MANUAL_PRESETS.length})`, d: 'Whole compositions as one attribute. No new engine code.' },
   { href: '/docs/api/catalog', t: 'Conditions, formations & modes', d: 'The orthogonal axes — when, field-wide, and how it draws.' },
-  { href: '/docs/api/types', t: 'Types', d: 'Body, Particle, Force, Env — for advanced and custom forces.' },
+  { href: '/docs/api/types', t: 'Types', d: 'Core types (Body, Particle, Force, Env) and platform types.' },
+  { href: '/docs/reading-field', t: '@field-ui/platform', d: 'DOM participation: the FrameScheduler + six registries (measurement, state, feedback, relationships, visual bindings, overlays) + lintPlatform().' },
 ];
 ---
 
@@ -43,8 +44,8 @@ const cards = [
     <div class="callout">
       <b>At a glance.</b> {MANUAL_FORCES.length} forces · {MANUAL_PRESETS.length} presets ·
       {MANUAL_CONDITIONS.length} conditions · {FORMATIONS.length} formations ·
-      {RENDER_MODES.length} render modes · {PALETTE_NAMES.length} palettes — one
-      conserved field, zero runtime dependencies.
+      {RENDER_MODES.length} render modes · {PALETTE_NAMES.length} palettes — one shared field
+      runtime, platform-native DOM participation, and a dependency-light core.
     </div>
   </section>
 </DocsLayout>
