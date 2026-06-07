@@ -1,0 +1,187 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+// Reading Field — the flagship platform demo. A normal content page (sections, headings, citations,
+// a table of contents) wired to createFieldPlatform. It exercises every registry through the
+// six-phase scheduler: sections are measured bodies (read); proximity to the viewport centre becomes
+// attention (compute) which accumulates into memory (state); attention/memory are written as
+// --field-* vars + a thresholded field:lit event (write); the TOC reflects memory and the current
+// section (render); citations become relationships (discover). No spectacle — that is the point: it
+// proves the substrate on ordinary prose, and reduced motion loses no meaning.
+const sections = [
+  { id: 'field', title: 'The field', body: ['A field-ui page has one field. Elements bend it; its density bends them back. Nothing here is a particle pool laid over the page — the page itself is the medium.', 'Every <strong>section</strong> below is a body in that field. As one nears the centre of your viewport it gathers <a href="#attention" data-field-relation="references" data-field-target="#attention">attention</a>, and what you dwell on accrues <a href="#memory" data-field-relation="references" data-field-target="#memory">memory</a>.'] },
+  { id: 'reciprocity', title: 'Reciprocity', body: ['The defining law: influence runs both ways. The viewport reads the page, and the page reads the viewport back. A heading you are reading brightens; one you have left dims — but only after a threshold, so a glance does not flicker it.', 'This reciprocity is what the <a href="#field" data-field-relation="references" data-field-target="#field">field</a> buys you over a scroll listener: state with hysteresis, not raw events.'] },
+  { id: 'attention', title: 'Attention', body: ['Attention is the live signal: how centred a section is, scaled by how much of it is visible. It is continuous and momentary — it rises as you arrive and falls as you leave.', 'Watch the table of contents: the section you are reading is marked <em>current</em>.'] },
+  { id: 'memory', title: 'Memory', body: ['Memory is the slow signal: attention, integrated over time. A section you have truly read stays warm; one you skimmed does not. The left rail of each section fills with its memory, and the contents list carries the same trace.', 'Memory is why <a href="#reciprocity" data-field-relation="references" data-field-target="#reciprocity">reciprocity</a> feels like reading rather than scrolling — the page remembers where you have been.'] },
+  { id: 'relationships', title: 'Relationships', body: ['The cross-references in this page are real relationships, not decoration. The platform reads them from the native HTML — every <code>a[href^="#"]</code> with <code>data-field-relation</code> — into one typed graph, the same graph the topology overlay draws.', 'A document is a tree; meaning is a graph. The relationship registry recovers the graph the markup already implies.'] },
+  { id: 'reduced-motion', title: 'Reduced motion', body: ['Turn on “reduce motion” in your OS and reload. The animation stops; the meaning does not. Attention and memory still track, the current section is still marked, the rails still fill — the values simply snap instead of easing.', 'Meaning lives in state, not in motion. That is the accessibility contract the platform is built to keep.'] },
+];
+---
+
+<DocsLayout
+  title="field-ui — Reading Field"
+  description="The flagship platform demo: an ordinary content page wired to createFieldPlatform. Sections are measured bodies; viewport proximity becomes attention; attention accumulates into memory; the table of contents reflects it; citations become relationships. Reduced motion loses no meaning."
+>
+  <h1>Reading Field</h1>
+  <p class="lede">
+    An ordinary article, wired to the platform. Scroll: sections gather attention as they centre,
+    accrue memory as you read, and the contents list remembers where you have been. The whole page is
+    one field — no spectacle, just the substrate doing its job.
+  </p>
+
+  <div id="rf-status" class="rf-status" role="status" aria-live="off">platform: starting…</div>
+
+  <div class="rf-grid">
+    <nav class="rf-toc" aria-label="Contents">
+      <p class="rf-toc-h">Contents</p>
+      <ol>
+        {sections.map((s) => (
+          <li><a href={`#${s.id}`} data-toc>{s.title}</a></li>
+        ))}
+      </ol>
+    </nav>
+
+    <article id="reading" class="rf-article" data-field-root data-field-scope="reading">
+      {sections.map((s) => (
+        <section data-field-body>
+          <h2 id={s.id}>{s.title}</h2>
+          {s.body.map((p) => <p set:html={p} />)}
+        </section>
+      ))}
+    </article>
+  </div>
+</DocsLayout>
+
+<script>
+  import { createFieldPlatform } from '@field-ui/platform';
+
+  const article = document.getElementById('reading');
+  const statusEl = document.getElementById('rf-status');
+  if (article) {
+    const platform = createFieldPlatform(article);
+    const sections = Array.from(article.querySelectorAll('section'));
+    const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc]'));
+    const tocById = new Map(tocLinks.map((a) => [a.getAttribute('href')!.slice(1), a]));
+    const headingId = (s: Element) => s.querySelector('[id]')?.id ?? '';
+
+    // each section is a measured body, bound to feedback vars + a thresholded lit event
+    for (const s of sections) {
+      platform.measure.register(s, { role: 'section' });
+      platform.feedback.bind(s, { attention: '--field-attention', memory: '--field-memory' });
+      platform.feedback.threshold(s, 'field:lit', { metric: 'attention', enter: 0.7, exit: 0.45, exitEvent: 'field:dim' });
+      s.addEventListener('field:lit', () => s.classList.add('lit'));
+      s.addEventListener('field:dim', () => s.classList.remove('lit'));
+    }
+
+    // discover phase: citations → relationship graph (once)
+    let discovered = false;
+    platform.on('discover', () => {
+      if (!discovered) {
+        platform.relationships.discover(article);
+        discovered = true;
+      }
+    });
+
+    // compute phase: viewport-centre proximity → attention (reads the fresh measurement snapshot)
+    const pending = new Map<Element, number>();
+    const memory = new Map<Element, number>();
+    platform.on('compute', (ctx) => {
+      const vh = ctx.viewport?.height ?? window.innerHeight;
+      const centre = vh / 2;
+      for (const m of platform.measure.last()) {
+        const d = Math.abs(m.rect.cy - centre);
+        const attention = Math.max(0, 1 - d / (vh * 0.55)) * m.visibilityRatio;
+        pending.set(m.element, attention);
+      }
+    });
+
+    // state phase: fold attention into internal state + accumulate memory (no DOM writes here)
+    platform.on('state', () => {
+      for (const [el, attention] of pending) {
+        platform.state.set(el, 'attention', attention);
+        const prev = memory.get(el) ?? 0;
+        const next = Math.min(1, prev + (attention > 0.7 ? 0.006 : 0));
+        memory.set(el, next);
+        platform.state.set(el, 'memory', next);
+      }
+    });
+
+    // write phase auto-flushes --field-attention / --field-memory + fires field:lit
+
+    // render phase: reflect memory + the current section in the TOC (reads state, writes nav DOM)
+    platform.on('render', () => {
+      let best: HTMLAnchorElement | null = null;
+      let bestA = -1;
+      for (const s of sections) {
+        const a = platform.state.number(s, 'attention');
+        const mem = platform.state.number(s, 'memory');
+        const toc = tocById.get(headingId(s));
+        if (toc) toc.style.setProperty('--field-memory', mem.toFixed(3));
+        if (a > bestA) {
+          bestA = a;
+          best = toc ?? null;
+        }
+      }
+      for (const a of tocLinks) a.classList.toggle('current', a === best);
+      if (statusEl) {
+        const read = sections.filter((s) => platform.state.number(s, 'memory') > 0.4).length;
+        statusEl.textContent = `platform: ${platform.scheduler.frame} frames · current: ${best?.textContent ?? '—'} · read: ${read}/${sections.length} · relationships: ${platform.relationships.size}`;
+      }
+    });
+
+    // drive the loop. The platform runs every frame; CSS (not JS) drops the easing under reduced
+    // motion, so meaning is preserved while motion is not.
+    const tick = (now: number) => {
+      platform.tick(now, { width: window.innerWidth, height: window.innerHeight });
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    // expose for verification
+    (window as unknown as { __readingField?: unknown }).__readingField = {
+      attentionOf: (i: number) => platform.state.number(sections[i]!, 'attention'),
+      memoryOf: (i: number) => platform.state.number(sections[i]!, 'memory'),
+      relationships: () => platform.relationships.size,
+      frames: () => platform.scheduler.frame,
+      violations: () => platform.scheduler.violations().length,
+    };
+  }
+</script>
+
+<style>
+  .lede { color: var(--muted, #9aa); }
+  .rf-status { font: 0.78rem ui-monospace, monospace; color: var(--muted, #9aa); border: 1px solid var(--line, #2a2a35); border-radius: 7px; padding: 0.35rem 0.6rem; margin: 0.4rem 0 1rem; }
+  .rf-grid { display: grid; grid-template-columns: 180px 1fr; gap: 1.5rem; align-items: start; }
+  @media (max-width: 720px) { .rf-grid { grid-template-columns: 1fr; } .rf-toc { position: static !important; } }
+
+  .rf-toc { position: sticky; top: 5rem; }
+  .rf-toc-h { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0 0 0.5rem; }
+  .rf-toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+  .rf-toc a {
+    --field-memory: 0;
+    display: block; padding: 0.25rem 0.5rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem;
+    color: color-mix(in srgb, var(--fg, #e8e8ef) calc(45% + 55% * var(--field-memory)), var(--muted, #9aa));
+    border-left: 2px solid color-mix(in srgb, #4da3ff calc(var(--field-memory) * 100%), transparent);
+    transition: color 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+  }
+  .rf-toc a.current { background: color-mix(in srgb, #4da3ff 16%, transparent); color: var(--fg, #e8e8ef); }
+
+  .rf-article section {
+    --field-attention: 0; --field-memory: 0;
+    padding: 0.5rem 0 0.5rem 1rem; margin: 0 0 1.5rem;
+    border-left: 3px solid color-mix(in srgb, #4da3ff calc(var(--field-memory) * 100%), transparent);
+    transition: border-color 0.5s ease;
+  }
+  .rf-article h2 {
+    margin: 0 0 0.4rem;
+    opacity: calc(0.5 + 0.5 * var(--field-attention));
+    transition: opacity 0.45s ease;
+  }
+  .rf-article section.lit h2 { color: #4da3ff; }
+  .rf-article p { margin: 0 0 0.6rem; line-height: 1.6; }
+  .rf-article a[data-field-relation] { color: #4da3ff; text-decoration: underline; text-underline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rf-toc a, .rf-article section, .rf-article h2 { transition: none; }
+  }
+</style>
