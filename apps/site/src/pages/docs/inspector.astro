@@ -8,6 +8,7 @@ import {
   VISUAL_CONTRACTS,
   RECIPE_CONTRACTS,
   SEMANTIC_CONTRACTS,
+  FIELD_RECIPES,
 } from 'field-ui';
 import { PHASES } from '@field-ui/platform';
 
@@ -25,6 +26,7 @@ const contracts = [
   ...SEMANTIC_CONTRACTS,
 ];
 const passports = Object.values(PASSPORTS);
+const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
 ---
 
 <DocsLayout
@@ -68,6 +70,7 @@ const passports = Object.values(PASSPORTS);
     <nav class="lp-jump" aria-label="Jump to inspector sections">
       <a href="#sr">System report</a>
       <a href="#lp">Platform</a>
+      <a href="#ri">Recipe inspector</a>
       <a href="#rp">Reciprocity</a>
       <a href="#ct">Contracts</a>
       <a href="#pp">Passports</a>
@@ -98,6 +101,43 @@ const passports = Object.values(PASSPORTS);
 
     <h3 class="lp-h3">Platform lint <span class="lp-count" data-lp-lint-count></span></h3>
     <ul class="lp-list" data-lp-lint><li class="lp-empty">—</li></ul>
+  </section>
+
+  <section aria-labelledby="ri">
+    <h2 id="ri">Recipe inspector</h2>
+    <p>
+      Pick a recipe to see its <b>compiled plan</b> (<code>compileRecipe</code>) and then run it through
+      <code>applyRecipe</code> live. This answers <em>why is this moving</em>: which runtime tokens execute,
+      which metrics are written, which relationships bind, and what the reduced-motion output is.
+    </p>
+    <div class="ri-bar">
+      <label class="ri-pick">Recipe
+        <select data-ri-pick>
+          {recipeOptions.map((r) => <option value={r.id}>{r.name}</option>)}
+        </select>
+      </label>
+      <label class="ri-rm"><input type="checkbox" data-ri-reduced /> reduced motion</label>
+      <span class="ri-live" data-ri-live>—</span>
+    </div>
+
+    <div class="ri-grid">
+      <div class="ri-plan">
+        <h3 class="lp-h3">Compiled plan</h3>
+        <dl class="ri-dl">
+          <div><dt>Natural field</dt><dd data-ri="field">—</dd></div>
+          <div><dt>Runtime tokens</dt><dd data-ri="tokens">—</dd></div>
+          <div><dt>Metrics → vars</dt><dd data-ri="feedback">—</dd></div>
+          <div><dt>Diagnostics</dt><dd data-ri="diagnostics">—</dd></div>
+          <div><dt>Conditions</dt><dd data-ri="conditions">—</dd></div>
+          <div><dt>Reduced-motion</dt><dd data-ri="reduced">—</dd></div>
+        </dl>
+      </div>
+      <div class="ri-run">
+        <h3 class="lp-h3">Live application</h3>
+        <div class="ri-stage" data-ri-stage></div>
+        <ul class="lp-list" data-ri-metrics><li class="lp-empty">run a recipe to see live metrics</li></ul>
+      </div>
+    </div>
   </section>
 
   <section aria-labelledby="rp">
@@ -258,6 +298,75 @@ const passports = Object.values(PASSPORTS);
   if (reduceP && lraf) cancelAnimationFrame(lraf); // one static read under reduced motion
   document.addEventListener('astro:before-swap', () => cancelAnimationFrame(lraf), { once: true });
 </script>
+
+<script>
+  // Recipe inspector: compile a chosen recipe (compileRecipe) + run it (applyRecipe), exposing the
+  // plan and live metrics — "why is this moving" made answerable from the recipe object.
+  import { compileRecipe, recipeById } from 'field-ui';
+  import { applyRecipe, type AppliedRecipe } from '@field-ui/platform';
+
+  const pick = document.querySelector<HTMLSelectElement>('[data-ri-pick]');
+  const reducedRi = document.querySelector<HTMLInputElement>('[data-ri-reduced]');
+  const riStage = document.querySelector<HTMLElement>('[data-ri-stage]');
+  const riLive = document.querySelector<HTMLElement>('[data-ri-live]');
+  const riMetrics = document.querySelector<HTMLElement>('[data-ri-metrics]');
+  const setPlan = (k: string, v: string): void => { const e = document.querySelector(`[data-ri="${k}"]`); if (e) e.textContent = v; };
+  let riApplied: AppliedRecipe | null = null;
+  let riRaf = 0;
+  const riStop = (): void => { if (riRaf) cancelAnimationFrame(riRaf); riRaf = 0; };
+  const showRecipe = (id: string): void => {
+    const r = recipeById(id);
+    if (!r || !riStage) return;
+    const c = compileRecipe(r);
+    setPlan('field', r.naturalField ?? '— (diagnostic / platform)');
+    setPlan('tokens', c.bodies.flatMap((b) => b.tokens).join(', '));
+    setPlan('feedback', c.feedback.map((f) => `${f.metric} → ${f.var}`).join('   ') || '—');
+    setPlan('diagnostics', c.diagnostics.join(', ') || '—');
+    setPlan('conditions', c.conditions.join(', ') || '—');
+    setPlan('reduced', c.reducedMotion.staticOutputs.join(', '));
+    riApplied?.destroy();
+    riStage.innerHTML = '';
+    riApplied = applyRecipe(riStage, r, { reducedMotion: reducedRi?.checked });
+    riStop();
+    const loop = (): void => {
+      if (riApplied) {
+        const ins = riApplied.inspect();
+        if (riLive) riLive.textContent = `● ${ins.frame} frames · ${ins.measurements} bodies · ${ins.relationships} rel · lint ${ins.lint || '✓'}`;
+        if (riMetrics) {
+          const first = Object.values(ins.metrics)[0] ?? {};
+          riMetrics.innerHTML = Object.keys(first).length
+            ? Object.entries(first).map(([m, v]) => `<li><code>${m}</code> ${(v as number).toFixed(2)}</li>`).join('')
+            : '<li class="lp-empty">no metrics for this recipe</li>';
+        }
+      }
+      riRaf = requestAnimationFrame(loop);
+    };
+    loop();
+  };
+  if (pick) {
+    showRecipe(pick.value);
+    pick.addEventListener('change', () => showRecipe(pick.value));
+  }
+  reducedRi?.addEventListener('change', () => { if (pick) showRecipe(pick.value); });
+  document.addEventListener('astro:before-swap', () => { riApplied?.destroy(); riStop(); }, { once: true });
+</script>
+
+<style>
+  .ri-bar { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; margin: 0.6rem 0; }
+  .ri-pick { font-size: 0.82rem; color: var(--muted, #9aa); display: flex; gap: 0.4rem; align-items: center; }
+  .ri-pick select { background: var(--panel, #14141b); color: var(--text, #e8e8ef); border: 1px solid var(--line, #2a2a35); border-radius: 6px; padding: 0.2rem 0.4rem; }
+  .ri-rm { font-size: 0.78rem; color: var(--muted, #9aa); display: flex; gap: 0.3rem; align-items: center; }
+  .ri-live { margin-left: auto; font: 0.76rem ui-monospace, monospace; color: #2dd4bf; }
+  .ri-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  @media (max-width: 640px) { .ri-grid { grid-template-columns: 1fr; } }
+  .ri-dl { display: grid; gap: 0.4rem; font-size: 0.82rem; }
+  .ri-dl > div { display: grid; grid-template-columns: 9rem 1fr; gap: 0.5rem; }
+  .ri-dl dt { color: var(--muted, #9aa); margin: 0; }
+  .ri-dl dd { margin: 0; font-family: ui-monospace, monospace; font-size: 0.78rem; }
+  .ri-stage { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem; border-radius: 8px; background: rgba(0,0,0,0.25); min-height: 44px; }
+  .ri-stage [data-recipe-body] { --field-attention: 0; font: 0.74rem ui-monospace, monospace; padding: 0.1rem 0.45rem; border-radius: 5px; background: color-mix(in srgb, #4da3ff calc(14% + var(--field-attention,0) * 50%), transparent); }
+  .ri-stage .recipe-static { font-size: 0.78rem; color: var(--muted, #c3c9d4); }
+</style>
 
 <style>
   .lede { color: var(--muted, #9aa); }
