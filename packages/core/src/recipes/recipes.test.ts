@@ -45,9 +45,9 @@ test('the catalog is the canonical 64 with unique kebab ids', () => {
   for (const id of ids) assert.match(id, /^[a-z][a-z0-9-]*$/, `${id} is kebab-case`);
 });
 
-test('the four tiers (core/workflow/professional/enterprise) each hold 16 and concatenate in order', () => {
+test('the four tiers (core/applied/systems/operational) each hold 16 and concatenate in order', () => {
   assert.equal(RECIPE_TIERS.length, 4);
-  assert.deepEqual(RECIPE_TIERS.map((t) => t.key), ['core', 'workflow', 'professional', 'enterprise']);
+  assert.deepEqual(RECIPE_TIERS.map((t) => t.key), ['core', 'applied', 'systems', 'operational']);
   for (const t of RECIPE_TIERS) {
     assert.equal(t.recipes.length, 16, `tier ${t.key} has 16`);
     for (const r of t.recipes) assert.equal(r.tier, t.key, `${r.id} carries tier ${t.key}`);
