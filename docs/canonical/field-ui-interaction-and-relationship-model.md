@@ -65,6 +65,11 @@ type FieldAgent =
 | LayoutAgent | region/panel | spacing, grouping, ordering |
 | DataAgent | semantic record | strength, category, state |
 
+The `FieldAgent` union above is the conceptual model. At runtime the discriminant is the lowercase
+`FieldAgentKind` string union (`'particle' | 'element' | 'relationship' | 'event' | 'user' | 'layout'
+| 'data'`) in `packages/core/src/agents/`; the per-kind shapes (e.g. `RelationshipAgent`, `UserAgent`)
+are the agent state those kinds carry.
+
 ## 3. Shared Context Layer
 
 Traditional UI state is local.

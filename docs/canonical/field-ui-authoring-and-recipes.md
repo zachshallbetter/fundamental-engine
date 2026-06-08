@@ -183,19 +183,28 @@ type FieldRecipe = {
   id: string                          // stable kebab-case id (e.g. "priority-well")
   name: string
   intent: string
+  tier?: RecipeTier                   // core | workflow | professional | enterprise
   naturalField?: "gravity" | "electromagnetic" | "strong" | "weak"
+  translation?: string                // the field→interface translation phrase (concept lane)
   primitives: string[]                // the distinct body tokens, in first-seen order
+  concepts?: string[]                 // product-language lane — describes; never executed
+  metrics: string[]                   // signal names; --field-density is the one written today
+  diagnostics: string[]               // render/diagnostic modes that reveal the behavior
+  conditions?: string[]               // activation lane — when the behavior applies
   bodies: BodyRecipe[]
   relationships?: RelationshipRecipe[]
   render: RenderLayer[]
-  metrics: string[]                   // signal names; --field-density is the one written today
-  diagnostics: string[]               // render/diagnostic modes that reveal the behavior
   accessibility: AccessibilityRecipe  // required: reducedMotion + meaningWithoutMotion
+  status?: RecipeStatus               // implementation status
   budget?: Partial<PerformanceBudget>
   expected?: ExpectedMetrics
   notes?: string
 }
 ```
+
+The lanes stay separate: `primitives` (runtime tokens) execute, `concepts` / `translation` describe,
+`metrics` measure, `diagnostics` explain, `conditions` activate. `validateRecipe` rejects a token that
+appears in more than one lane.
 
 `validateRecipe` returns a problem for any unknown force token, unknown render layer, unknown
 diagnostic mode, unknown fundamental field, declared `primitives` that drift from the body tokens, or a
@@ -242,7 +251,7 @@ Example:
 ## 7. Field Recipes
 
 > **Implemented.** All **sixty-four** ship as validated `FieldRecipe`s in
-> `packages/core/src/recipes/gallery.ts` (`FIELD_RECIPES`), grouped into four tiers (`RECIPE_TIERS`),
+> `packages/core/src/recipes/catalog.ts` (`FIELD_RECIPES`; `gallery.ts` re-exports it), grouped into four tiers (`RECIPE_TIERS`),
 > live on [`/docs/gallery`](https://field-ui.com/docs/gallery). They are the four-field translation
 > model made practical — and classification/authoring artifacts only: they **compose existing
 > primitives and add no new engine behavior**. Eight are the recommended first-release set
