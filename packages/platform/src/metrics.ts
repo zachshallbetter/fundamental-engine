@@ -5,12 +5,13 @@
  *
  * Honest about provenance:
  * - COMPUTED generically: attention / memory / recency (proximity + engagement + decay) and
- *   coherence / entropy / pressure / priority (from relationship resolution + age). `risk` is a 0
- *   placeholder until a real risk model exists. Any of these may be overridden by a supplied value.
- * - SUPPLIED-ONLY: `confidence` is an external judgment the engine has no evidence for. It is present
- *   ONLY when the host supplies it (`data-field-confidence` / recipe options / a domain trust model);
- *   it is NEVER inferred from relationship presence — a citation is not certainty, a source is not
- *   proof. Relationship resolution is a separate signal (see `apply-recipe.ts`), not confidence.
+ *   coherence / entropy / pressure / priority (from relationship resolution + age). Any of these may
+ *   be overridden by a supplied value.
+ * - SUPPLIED-ONLY: `confidence` and `risk` are external judgments the engine has no evidence for.
+ *   They are present ONLY when the host supplies them (`data-field-<metric>` / recipe options / a
+ *   domain model). Confidence is NEVER inferred from relationship presence — a citation is not
+ *   certainty. Risk is NEVER defaulted to 0 — "no risk" is a claim, not a safe blank. (Relationship
+ *   resolution is a separate signal, see `apply-recipe.ts`, not confidence.)
  */
 export const METRIC_KINDS = [
   'attention',
@@ -26,10 +27,13 @@ export const METRIC_KINDS = [
 export type MetricKind = (typeof METRIC_KINDS)[number];
 
 /**
- * One frame of computed metrics: every lane is a number except `confidence`, which is present ONLY
- * when the host supplies it (the engine never invents it — see `computeMetrics`).
+ * One frame of computed metrics: every lane is a number except `confidence` and `risk`, which are
+ * present ONLY when the host supplies them (the engine never invents them — see `computeMetrics`).
  */
-export type ComputedMetrics = Record<Exclude<MetricKind, 'confidence'>, number> & { confidence?: number };
+export type ComputedMetrics = Record<Exclude<MetricKind, 'confidence' | 'risk'>, number> & {
+  confidence?: number;
+  risk?: number;
+};
 
 const clamp01 = (n: number): number => (n < 0 ? 0 : n > 1 ? 1 : n);
 
@@ -66,10 +70,10 @@ export function computeMetrics(inp: MetricInputs): ComputedMetrics {
   const conflictRatio = inp.relTotal > 0 ? inp.relConflict / inp.relTotal : 0;
   const coherence = inp.relTotal > 0 ? clamp01(resolvedRatio - conflictRatio) : prevOf(inp, 'coherence');
   const entropy = inp.relTotal > 0 ? clamp01(conflictRatio + (1 - resolvedRatio) * 0.5) : prevOf(inp, 'entropy');
-  // COMPUTED lanes (+ a `risk` placeholder). `confidence` is intentionally absent here: the engine
-  // has no evidence for a claim's truth, so it stays unset unless the host supplies it below. The old
-  // `confidence: relTotal > 0 ? resolvedRatio : 0` meant "any citation ⇒ fully confident" — exactly
-  // the wrong default for an evidence/trust surface.
+  // COMPUTED lanes only. `confidence` and `risk` are intentionally absent: the engine has no evidence
+  // for a claim's truth or its danger, so they stay unset unless the host supplies them below. The old
+  // `confidence: relTotal > 0 ? resolvedRatio : 0` meant "any citation ⇒ fully confident", and the old
+  // `risk: 0` meant "everything is safe by default" — both the wrong default for a trust/ops surface.
   const computed: Partial<Record<MetricKind, number>> = {
     attention,
     memory,
@@ -77,7 +81,6 @@ export function computeMetrics(inp: MetricInputs): ComputedMetrics {
     coherence,
     entropy,
     pressure: clamp01(entropy * 0.6 + (1 - recency) * 0.4),
-    risk: 0,
     priority: attention,
   };
   // supplied values win — these lanes (incl. confidence) are recipe/data-driven, not invented

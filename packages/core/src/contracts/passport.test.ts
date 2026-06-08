@@ -28,6 +28,21 @@ test('passport coverage: every registered force is documented', () => {
   assert.deepEqual(orphan, [], `passports without a force: ${orphan.join(', ')}`);
 });
 
+test('FORCE_KIND "metric" forces are never passported as physical (memory is semantic)', () => {
+  // memory lives in natural.ts (file grouping → passport family "natural") but it is a persistence
+  // METRIC (FORCE_KIND = 'metric'), not a physical law. The metric-ness is carried by FORCE_KIND +
+  // truthMode, NOT by `family`. Guard against drifting back to truthMode "physical" (see issue #227).
+  const memory = passportFor('memory');
+  assert.ok(memory, 'memory has a passport');
+  assert.equal(FORCE_KIND['memory'], 'metric', 'memory is FORCE_KIND "metric"');
+  assert.equal(memory!.truthMode, 'semantic', 'memory truthMode is "semantic", not "physical"');
+  // general drift guard: no force the manual classifies as a "metric" may claim to be physical.
+  const offenders = Object.keys(PASSPORTS).filter(
+    (t) => FORCE_KIND[t] === 'metric' && passportFor(t)?.truthMode === 'physical',
+  );
+  assert.deepEqual(offenders, [], `metric-kind forces wrongly marked physical: ${offenders.join(', ')}`);
+});
+
 test('magnetism passport encodes the Lorentz facts (no work, needs charge + motion)', () => {
   const m = passportFor('magnetism');
   assert.ok(m);
