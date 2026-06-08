@@ -1,0 +1,152 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+
+// Visual Binding Study — declarative visual binding. A real HTML heading is the semantic source; a
+// hand-authored SVG is bound to it as a `representation` via data-field-visual-for. The platform's
+// VisualBindingRegistry.scan() discovers the pairing, and lint() enforces the accessibility contract
+// (a representation must be aria-hidden so assistive tech reads only the semantic source). No glyph
+// extraction, no font parsing — the SVG is authored by hand, the text stays real and inspectable.
+---
+
+<DocsLayout
+  title="field-ui — Visual Binding Study"
+  description="Declarative visual binding: a real HTML heading is the semantic source, a hand-authored SVG is bound to it as a representation via data-field-visual-for, and the platform discovers, lints, and inspects the pairing — keeping the visual expressive while the semantic source stays accessible."
+>
+  <p class="kicker">Concept study · declarative visual binding</p>
+  <h1>Visual Binding Study</h1>
+  <p class="lede">
+    An expressive visual can stand in for a semantic element without stealing its meaning. Mark the
+    visual with <code>data-field-visual-for</code> and a <code>data-field-visual-role</code>, call
+    <code>platform.visuals.scan()</code>, and the field binds, lints, and inspects the pairing. The
+    text remains real HTML. The SVG is a bound representation. The visual can be expressive, but the
+    semantic source remains inspectable and accessible.
+  </p>
+
+  <div class="vb-demo">
+    <section class="vb-pane">
+      <h2 class="vb-h">Semantic source <span class="vb-tag">real HTML</span></h2>
+      <!-- The actual heading. Real text, in the accessibility tree, selectable, inspectable. -->
+      <h3 id="vb-source" class="vb-source">Fields read the page</h3>
+      <p class="vb-note">This <code>&lt;h3 id="vb-source"&gt;</code> is the source of truth. Screen
+      readers and search engines read this, not the SVG.</p>
+    </section>
+
+    <section class="vb-pane">
+      <h2 class="vb-h">Bound representation <span class="vb-tag">hand-authored SVG</span></h2>
+      <!--
+        A hand-authored SVG, bound to #vb-source as a representation. aria-hidden so assistive tech
+        reads only the heading above. These are decorative strokes drawn by hand — NOT glyph outlines
+        extracted from a font.
+      -->
+      <svg
+        id="vb-visual"
+        class="vb-visual"
+        viewBox="0 0 240 80"
+        role="img"
+        aria-hidden="true"
+        data-field-visual-for="vb-source"
+        data-field-visual-role="representation"
+      >
+        <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 60 V20 H44 M20 42 H40" />
+          <path d="M60 60 V20 M60 20 H82 a10 10 0 0 1 0 20 H60 M72 40 l14 20" />
+          <circle cx="112" cy="40" r="16" />
+          <path d="M150 60 V20 l24 40 V20" />
+          <path d="M196 28 a14 14 0 1 0 0 24 a14 14 0 1 0 0 -24" />
+        </g>
+      </svg>
+      <p class="vb-note">Expressive, but carries no independent meaning — so it is
+      <code>aria-hidden</code>.</p>
+    </section>
+  </div>
+
+  <div class="vb-controls" role="group" aria-label="Study controls">
+    <button type="button" class="vb-btn" data-vb="rescan">Re-scan</button>
+    <button type="button" class="vb-btn" data-vb="hidden" aria-pressed="true">aria-hidden: on</button>
+    <button type="button" class="vb-btn" data-vb="target" aria-pressed="true">Target: resolved</button>
+  </div>
+
+  <section class="vb-inspect" aria-live="polite">
+    <h2 class="vb-h">Inspector</h2>
+    <dl class="vb-readout">
+      <div><dt>scan</dt><dd data-vb-scan>—</dd></div>
+      <div><dt>binding</dt><dd data-vb-binding>—</dd></div>
+      <div><dt>lint</dt><dd data-vb-lint>—</dd></div>
+    </dl>
+    <p class="vb-hint">Toggle <code>aria-hidden</code> off and the lint flips to
+    <code>visual-not-hidden</code> (the representation would double-expose the heading). Break the
+    target and it flips to <code>visual-orphan</code> (a representation must bind a real source).</p>
+  </section>
+</DocsLayout>
+
+<script>
+  import { createFieldPlatform, lintPlatform } from '@field-ui/platform';
+
+  const host = document.querySelector<HTMLElement>('.vb-demo');
+  const visual = document.getElementById('vb-visual');
+  const scanOut = document.querySelector<HTMLElement>('[data-vb-scan]');
+  const bindOut = document.querySelector<HTMLElement>('[data-vb-binding]');
+  const lintOut = document.querySelector<HTMLElement>('[data-vb-lint]');
+
+  if (host && visual) {
+    const platform = createFieldPlatform(host);
+
+    const render = () => {
+      const res = platform.visuals.scan(host);
+      const binding = platform.visuals.get(visual);
+      const warns = lintPlatform(platform).filter((w) => w.code === 'visual-orphan' || w.code === 'visual-not-hidden');
+
+      if (scanOut)
+        scanOut.textContent = `${res.total} total · ${res.bound} bound · ${res.unresolved} unresolved · ${res.warnings.length} scan warning(s)`;
+      if (bindOut)
+        bindOut.textContent = binding
+          ? `role=${binding.role} · source=${binding.semanticSource ? '#' + (binding.semanticSource as HTMLElement).id : 'none'} · aria-hidden=${binding.accessibility.ariaHidden}`
+          : 'no binding';
+      if (lintOut) lintOut.textContent = warns.length ? warns.map((w) => w.code).join(', ') : 'clean ✓';
+    };
+
+    render();
+
+    for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-vb]')) {
+      btn.addEventListener('click', () => {
+        const k = btn.dataset.vb;
+        if (k === 'hidden') {
+          const on = visual.getAttribute('aria-hidden') !== 'true';
+          if (on) visual.setAttribute('aria-hidden', 'true');
+          else visual.removeAttribute('aria-hidden');
+          btn.setAttribute('aria-pressed', String(on));
+          btn.textContent = `aria-hidden: ${on ? 'on' : 'off'}`;
+        } else if (k === 'target') {
+          const resolved = visual.getAttribute('data-field-visual-for') === 'vb-source';
+          visual.setAttribute('data-field-visual-for', resolved ? 'vb-ghost' : 'vb-source');
+          btn.setAttribute('aria-pressed', String(!resolved));
+          btn.textContent = `Target: ${resolved ? 'broken' : 'resolved'}`;
+        }
+        render(); // every control rescans — the binding always reflects current DOM
+      });
+    }
+    // createFieldPlatform starts no rAF loop and attaches no observers — nothing to tear down.
+  }
+</script>
+
+<style>
+  .kicker { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0; }
+  .lede { color: var(--muted, #9aa); max-width: 74ch; }
+  .vb-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: stretch; margin: 1.2rem 0; }
+  @media (max-width: 720px) { .vb-demo { grid-template-columns: 1fr; } }
+  .vb-pane { border: 1px solid var(--line, #2a2a35); border-radius: 12px; padding: 1rem 1.1rem; }
+  .vb-h { font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0 0 0.7rem; display: flex; align-items: center; gap: 0.5rem; }
+  .vb-tag { font: 0.66rem ui-monospace, monospace; text-transform: none; letter-spacing: 0; color: #4da3ff; border: 1px solid color-mix(in srgb, #4da3ff 40%, transparent); border-radius: 999px; padding: 0.05rem 0.5rem; }
+  .vb-source { font-size: 1.8rem; margin: 0.2rem 0 0.6rem; line-height: 1.1; }
+  .vb-visual { width: 100%; height: auto; max-height: 90px; color: #2dd4bf; display: block; }
+  .vb-note { font-size: 0.8rem; color: var(--muted, #9aa); margin: 0.5rem 0 0; }
+  .vb-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.5rem 0 1.2rem; }
+  .vb-btn { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.85rem; font-size: 0.82rem; cursor: pointer; }
+  .vb-btn[aria-pressed='false'] { opacity: 0.6; border-style: dashed; }
+  .vb-inspect { border: 1px solid var(--line, #2a2a35); border-radius: 12px; padding: 1rem 1.1rem; }
+  .vb-readout { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; margin: 0; font: 0.84rem ui-monospace, monospace; }
+  .vb-readout > div { display: contents; }
+  .vb-readout dt { color: var(--muted, #9aa); }
+  .vb-readout dd { margin: 0; color: var(--text, #e8e8ef); }
+  .vb-hint { font-size: 0.8rem; color: var(--muted, #9aa); margin: 0.8rem 0 0; }
+</style>

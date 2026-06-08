@@ -19,7 +19,7 @@ const REGISTRIES = [
   { name: 'StateRegistry', phase: 'state', blurb: 'Typed, observable element state (number / boolean / string / vector2) — internal truth, distinct from ARIA. CSS and JS both consume it; only feedback writes it.' },
   { name: 'FeedbackRegistry', phase: 'write', blurb: 'The write phase: held state → CSS custom properties (continuous) + thresholded, debounced events (discrete, with hysteresis). Mirrors --field-* → --forces-* and field:* → forces:* during the alias window.' },
   { name: 'RelationshipRegistry', phase: 'discover', blurb: 'The DOM is a tree; interfaces are graphs. Normalizes native links (href#id, label[for], aria-controls/describedby/labelledby/flowto, data-field-relation) into one typed graph.' },
-  { name: 'VisualBindingRegistry', phase: 'discover', blurb: 'Binds an expressive visual layer (SVG/Canvas/WebGL) to its semantic DOM source without duplicating meaning. aria-hidden unless it carries independent meaning; lint flags orphan + un-hidden visuals.' },
+  { name: 'VisualBindingRegistry', phase: 'discover', blurb: 'Binds an expressive visual layer (SVG/Canvas/WebGL) to its semantic DOM source without duplicating meaning. Author declaratively with data-field-visual-for + data-field-visual-role, then platform.visuals.scan(root) — idempotent, navigation-safe. aria-hidden unless it carries independent meaning; lint flags orphan + un-hidden visuals. Binds authored visuals; does not extract glyph outlines.' },
   { name: 'OverlayRegistry', phase: 'render', blurb: 'Relationship lines, field lines, debug layers. Render layers only — they read from measurement + relationships and produce geometry to draw. They never own relationships or mutate physics.' },
 ];
 

@@ -86,7 +86,20 @@ report of the phases that ran and any violations.
    graph, mapped onto core `RelationshipAgent`s.
 5. **VisualBindingRegistry** — binds an expressive visual layer (SVG, Canvas, WebGL) to its semantic
    DOM source without duplicating meaning. The visual is `aria-hidden` unless it carries independent
-   meaning; `lint()` flags orphan and un-hidden visuals.
+   meaning; `lint()` flags orphan and un-hidden visuals. Bindings can be authored declaratively:
+   mark the visual with `data-field-visual-for` (the source's id or selector) and
+   `data-field-visual-role` (`decorative` · `representation` · `debug` · `relationship` ·
+   `measurement`), then call `platform.visuals.scan(root)`. `scan()` resolves each source, binds it,
+   and returns `{ total, bound, unresolved, warnings }`. It is idempotent (keyed by the visual
+   element, so re-scanning updates role/source and prunes disconnected visuals) — safe to re-run after
+   navigation. `representation` and `relationship` roles require a resolved source; a missing one is
+   reported as unresolved rather than throwing.
+
+   - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
+     `data-field-visual-role` (`scan()`), and the accessibility lint.
+   - **Not implemented:** font outline extraction, text → SVG path conversion, and glyph-contour
+     geometry. `scan()` binds an *authored* visual to its source; it does not generate vector
+     typography from text. (Tracked as a future frontier.)
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*
