@@ -11,6 +11,8 @@
     "check:dist": "node scripts/check-dist.mjs",
     "check:api": "tsc -p scripts/tsconfig.api.json --noEmit && node scripts/check-api-surface.mjs",
     "check:readme": "node scripts/check-readme.mjs",
+    "gen:recipes": "node --experimental-strip-types scripts/export-recipes.mjs",
+    "check:recipes": "node --experimental-strip-types scripts/export-recipes.mjs && git diff --exit-code data/recipes.json",
     "dev": "pnpm --filter @field-ui/site dev",
     "build:site": "pnpm --filter @field-ui/site build",
     "docs:dev": "pnpm --filter @field-ui/docs dev",

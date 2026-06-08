@@ -54,3 +54,7 @@ jobs:
       # catalog counts match the catalog, and no README uses the wrong core package name.
       - name: Check READMEs
         run: pnpm check:readme
+
+      # data/recipes.json is generated from the catalog source (pnpm gen:recipes); fail if it drifted.
+      - name: Check recipes datafile
+        run: pnpm check:recipes
