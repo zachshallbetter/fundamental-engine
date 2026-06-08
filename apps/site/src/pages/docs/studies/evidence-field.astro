@@ -93,7 +93,8 @@ const LIVE = ['evidence-field'];
     const mapper = (c: Claim) => ({
       id: c.id,
       body: { tokens: ['charge', 'link', 'cohesion'], strength: 0.6 + c.confidence * 0.6, range: 300, feedback: true },
-      metrics: { confidence: c.confidence },
+      // evidence-field tracks coherence + entropy, both computed from the supports/contradicts edges
+      // below — no per-claim metric is supplied (confidence drives the body strength above).
       relationships: c.refs.map((r) => ({ to: r.src, type: r.kind, strength: r.w })),
       label: c.text,
     });
