@@ -79,6 +79,8 @@ export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
   // field:released on supernova; docked elements fire them too. Edge-debounced (see field.ts).
   captured: { field: 'field:captured', forces: 'forces:captured' },
   released: { field: 'field:released', forces: 'forces:released' },
+  // relocate (§22.3): a [data-warp] element teleports its transform to its paired throat.
+  relocated: { field: 'field:relocated', forces: 'forces:relocated' },
   // --- names reserved; NOT yet dispatched by the engine (planned agent-threshold events).
   //     See docs/canonical/field-ui-agent-consumption-model.md (Events). ---
   entered: { field: 'field:entered', forces: 'forces:entered', metric: 'density' },
