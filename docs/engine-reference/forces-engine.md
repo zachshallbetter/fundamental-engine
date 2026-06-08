@@ -1,294 +1,330 @@
-> **Status: as-built force-engine reference.**
-> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+> **Status: as-built engine + platform module map.**
+> Accurate for the source tree, force catalog, classes, services, render modes, and the
+> platform topology as of current `main`. For the authoritative *architecture* narrative see
+> [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md),
+> [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md), and
+> [../canonical/field-ui-agent-consumption-model.md](../canonical/field-ui-agent-consumption-model.md).
+> The per-force formulas live in [forces-formulas.md](forces-formulas.md) and the catalog in
+> `packages/core/src/config/manual.ts` (pinned to the registry by a test).
 
-# The Forces Engine — Module Map
+# The Field-UI Engine — Module Map
 
-A comprehensive map of the `field-ui` engine: every source module, what it owns,
-the data-flow that ties them together, and the catalogs (forces, classes, services, render
-modes, formations, conditions, presets) the engine ships. This is the *engineering* companion
-to [`forces-system.md`](forces-system.md) (the spec) and the per-force catalog in
-[`packages/core/src/config/manual.ts`](../packages/core/src/config/manual.ts).
+A comprehensive map of the engine: every source module, what it owns, the data-flow that ties
+them together, and the catalogs (forces, classes, services, render modes, formations,
+conditions, presets, recipes) it ships.
 
-Source root: `packages/core/src/`. The `field-ui` package itself has zero runtime
-dependencies (the wider field-ui system is native-platform-first, dependency-light, and
-framework-agnostic). Section refs (§) point into [`forces-system.md`](forces-system.md).
+Two packages do the engine work (three thin authoring surfaces — `@field-ui/{elements,react,vanilla}`
+— wrap them; `@forces-ui/*` are deprecated aliases):
 
-**Scope note (Phase D).** As of Phase D, DOM participation — scanning, measurement, CSS
-feedback writes, shadow-DOM registration, and relationships — is owned by `@field-ui/platform`,
-which is the default runtime for `<field-root>`. This engine remains the **renderer + force
-math**: it computes renderer-agnostic field behavior and draws the canvas render surface.
-`core/field.ts` still simulates and renders the canvas, while the platform owns DOM
-participation; the two are wired together by the platform's `FrameScheduler` (phases:
-discover → read → compute → state → write → render). You can opt back to pure-legacy behavior
-with `experimental-platform="off"` or `usePlatformRuntime(false)`. Canvas is one render
-surface, not the whole system; the platform binds the engine into a shared field context across
-bodies, agents, relationships, measurements, metrics, feedback, and render surfaces.
+- **`field-ui` (core)** — `packages/core/src/`. The renderer + force math + the conserved
+  simulation, plus the contracts, diagnostics, recipes, semantic/visual layers, and inspection.
+  **Zero runtime dependencies** and renderer-agnostic: the `core/dom-boundary.test.ts` guard keeps an
+  **empty allowlist** — no file in core may reference a DOM global. `field.ts` reaches the page only
+  through the injected `FieldHost`; `export.ts` serializes a caller-supplied canvas.
+- **`@field-ui/platform`** — `packages/platform/src/`. The DOM participation layer: native-first
+  registries (measurement, state, feedback, relationship, visual-binding, overlay) sequenced by
+  one `FrameScheduler`. **Strict dependency direction:** platform depends on core for contracts;
+  core never depends on platform.
+
+Section refs (§) point into [forces-system.md](forces-system.md) and the canonical docs.
 
 ---
 
 ## 1. The frame pipeline
 
-`createField` ([`core/field.ts`](../packages/core/src/core/field.ts)) mounts the sim against a
-`<canvas>` and runs a `requestAnimationFrame` loop. One tick:
+`createField(canvas, opts)` (`core/field.ts`) needs a `FieldHost` (`core/host.ts`) — the seam
+that abstracts every DOM-global (viewport, scroll, rAF, reduced-motion, scan root). In the
+browser the host is `browserHost()` from `@field-ui/platform` (or the `createBrowserField`
+convenience). Under the platform runtime (Phase D, the default for `<field-root>`) the DOM-facing
+work is owned by the platform and sequenced by its `FrameScheduler`'s six phases:
 
-| # | Stage | Owner | What happens |
-|---|---|---|---|
-| 0 | **Scan** (once + on `rescan`) | `scanner.ts`, `shadow.ts` | `[data-body]` elements + registered shadow hosts → `Body[]` (tokens, attrs, rect provider). Presets expand into co-located virtual bodies. |
-| 1 | **Measure** | `field.ts` + `scanner.ts` | each body's `getBoundingClientRect()` → `cx/cy/hw/hh` (viewport coords). |
-| 2 | **Reindex** | `field-store.ts` + `spatial-hash.ts` | rebuild the neighbour index over the live particle pool. |
-| 3 | **Attention / causality** | `attention.ts`, `causality.ts` | conserved per-body strength multipliers; density spillover between neighbours. |
-| 4 | **Step** | `integrator.ts` | per free particle: body forces (§4) → formation bias (§7) → integrate + damp. Class [B]/[C] forces read neighbours/grids via `Env`. |
-| 5 | **Grids** | `scalar-grid.ts` | advance class-[C] fields one step (`diffuse` heat eq., `wave` leapfrog). |
-| 6 | **Reservoir / currents** | `reservoir.ts`, `currents.ts` | bound↔free exchange (wave-healing, tearing), carrier-wave flow. |
-| 7 | **Feedback / heatmap** | `feedback.ts`, `heatmap.ts` | write `--field-density` (compact alias `--d`) + `--field-heatmap-density` back onto elements. Under the platform runtime, `FeedbackRegistry` owns these writes and auto-mirrors `--field-*` → `--forces-*` and `field:*` → `forces:*`. |
-| 8 | **Agents / events** | `agents.ts`, `events.ts` | move DOM elements by transform offset; dispatch debounced CustomEvents. |
-| 9 | **Render** | `field.ts`, `render-modes.ts`, `streamlines.ts`, `fieldlines.ts` | draw the chosen render mode + optional field-line / heatmap overlays. |
+| Phase | Owner | What happens |
+|---|---|---|
+| **discover** | `scanner.ts`, `shadow.ts`, platform `relationships.ts` | `[data-body]`/`[data-preset]` elements + registered shadow hosts → `Body[]`; relationships normalized from HTML/ARIA into a typed graph. |
+| **read** | platform `measurement.ts` | every registered element's box read **once** per frame → an immutable geometry snapshot (no layout thrash). |
+| **compute** | `integrator.ts` (+ `attention.ts`, `causality.ts`, `scalar-grid.ts`, `reservoir.ts`, `currents.ts`) | the conserved physics: body forces → formation bias → integrate + damp; grids advance; bound↔free exchange. **Pure & headless** — the same code the conformance harness drives. |
+| **state** | platform `state.ts`, `metrics.ts` | typed per-element channels (density, attention, lit, pull, heat, entropy, coherence…) held, separate from ARIA. |
+| **write** | platform `feedback.ts` (core `feedback.ts` math) | state → DOM: `--field-*` CSS vars (compact alias `--d`; legacy `--forces-*` auto-mirrored) + thresholded, debounced `field:*` events (legacy `forces:*` mirrored). |
+| **render** | `field.ts`, `render-modes.ts`, `diagnostics/`, platform `overlays.ts` | draw the chosen render mode + optional field-line / heatmap / overlay layers. |
 
-The physics (steps 2–6) is pure and headless — the same code the conformance harness drives
-([`conformance/run.ts`](../packages/core/src/conformance/run.ts)). `field.ts` is the only
-browser/canvas glue.
-
-Under the platform runtime (Phase D, the default for `<field-root>`), the DOM-facing stages —
-scan (0), measure (1), feedback (7), shadow registration, and relationships — are owned by
-`@field-ui/platform` and sequenced by its `FrameScheduler` (discover → read → compute → state →
-write → render). The engine still drives the conserved physics (steps 2–6) and the render pass
-(9). A `core/dom-boundary.test.ts` guard keeps `field-ui` renderer-agnostic, allowlisting
-only `core/field.ts` and `export.ts` to touch the DOM.
+Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platform="off"` /
+`usePlatformRuntime(false)`. Canvas is one render surface, not the whole system.
 
 ---
 
-## 2. Module map
+## 2. Core module map (`packages/core/src/`)
 
-Path is relative to `packages/core/src/`. "Pure" = no DOM/canvas, unit-testable directly.
+"Pure" = no DOM/canvas, unit-testable directly.
 
-### Entry & orchestration
-
-| Module | Key symbols | Purpose | Pure |
-|---|---|---|---|
-| `index.ts` | (re-exports) | Package entry — re-exports the whole public surface. | — |
-| `core/field.ts` | `createField` | Browser entry (§13). Mounts canvas, scans bodies, runs the rAF loop (measure → reindex → step → render), exposes the `FieldHandle`. Pure glue. | no |
-| `core/surface.ts` | `FIELD_CANVAS_STYLE`, `FIELD_CANVAS_CSS` | One source of truth for the fixed, click-through, behind-everything canvas styling every mount (vanilla / React / web component) uses. | yes |
-
-### Core contracts & registry
+### Entry & seam
 
 | Module | Key symbols | Purpose | Pure |
 |---|---|---|---|
-| `core/types.ts` | `Particle`, `Body`, `Env`, `Force`, `Formation`, `Vec2`, `Token`, `AgentKind` | The contracts encoding the spec: data model (§3), force/agent registry (§4/§22), mass (§21), conditions (§5), formations (§7). | yes |
-| `core/registry.ts` | `Registry`, `createRegistry` | The force + condition registry (§4). Engine owns the loop; forces/conditions register here. Seeds built-in conditions. | yes |
-| `core/math.ts` | `clamp`, `lerp`, `dist`, `hexToRgb`, `RGB` | Small dependency-free math/colour helpers. | yes |
+| `index.ts` / `export.ts` | (re-exports) / `segmentsToSvg`, `canvasToPng` | Package entry; field export serializers (SVG vector / PNG). | mixed |
+| `core/field.ts` | `createField` | Mounts the canvas, runs the sim + render. The one DOM-touching engine module. | no |
+| `core/host.ts` | `FieldHost`, `browserHost` (re-exported from platform) | The renderer/environment seam — every DOM-global goes through the injected host. | yes |
+| `core/surface.ts` | `FIELD_CANVAS_STYLE` | One source of truth for the fixed, click-through canvas styling. | yes |
 
-### Simulation core
-
-| Module | Key symbols | Purpose | Pure |
-|---|---|---|---|
-| `core/integrator.ts` | `step`, `StepInput`, `FRICTION`, `HEAT_DECAY` | Advances the field one tick (§2.2/§7): body forces → formation bias → integrate + damp. Additive forces scaled by `1/m`; `kinematic` forces replace velocity. `dt=0` freezes (reduced motion, §18). | yes |
-| `core/field-store.ts` | `FieldStore` | Owns the particle pool + spatial index (§20.1). add/remove, rebuild index per frame, answer `neighbors(p, r)`. Count is the conserved quantity (§2.4). | yes |
-| `core/spatial-hash.ts` | `SpatialHash`, `Point` | Uniform-grid neighbour index — makes class-[B] forces O(n·k) not O(n²). Rebuilt each frame; `near(x, y, r)`. | yes |
-| `core/scalar-grid.ts` | `ScalarGridImpl`, `GridMode` | Backing store for class-[C] forces: `diffuse` (heat eq. `∂φ/∂t=D∇²φ`) and `wave` (leapfrog `∂²φ/∂t²=c²∇²φ`). `deposit` / `gradient` / `step`. | yes |
-
-### DOM bridge
-
-These are the engine's DOM-facing helpers. Under the platform runtime (Phase D), `@field-ui/platform`
-owns the live DOM participation — measurement (`MeasurementRegistry`), CSS feedback writes
-(`FeedbackRegistry`), shadow-host registration, and relationships (`RelationshipRegistry`) — and
-calls into these as needed via the `FrameScheduler`. The parsing/geometry below stays pure.
-
-| Module | Key symbols | Purpose | Pure |
-|---|---|---|---|
-| `core/scanner.ts` | `scanBodies`, `parseBodyParams`, `bodyFromElement`, `expandPreset` | `[data-body]`/`[data-preset]` → bodies (§2.1/§3.1). Parsing is pure; measurement is thin `getBoundingClientRect` glue (the platform's `MeasurementRegistry` owns when this runs in the scheduler's read phase). | parse: yes |
-| `core/shadow.ts` | `FieldController`, `ShadowRegistry`, `REGISTER_BODY`/`UNREGISTER_BODY`/`UPDATE_BODY`, `RegisterBodyDetail` | Host-first shadow-DOM participation ([shadow-dom.md](shadow-dom.md)). Component dispatches a `composed` event; the engine registers the HOST (never the shadow tree). | registry: yes |
-| `core/feedback.ts` | `feedbackTarget`, `feedbackWeight` | Two-way density feedback (§8): the field writes gathered density back as `--field-density` (compact alias `--d`; `--forces-density` is a legacy/compat alias) so type glows/grows where matter collects. Under the platform runtime, `FeedbackRegistry` owns the write phase. | yes |
-| `core/agents.ts` | `integrateOffset`, `anchorForce`, `elementMass`, `repelForce`, `densityPush` | Element agents (§22.4): a force moves a DOM element by a transform offset with an anchor spring back to its layout slot. | yes |
-| `core/events.ts` | `parseEventBindings`, `triggerActive`, `EventBinding` | Event agents (§22.5): a force/condition firing on a body dispatches a debounced rising-edge CustomEvent (`data-on="dense:field:lit"`). | yes |
-
-### Forces
+### Contracts & registry
 
 | Module | Key symbols | Purpose |
 |---|---|---|
-| `forces/index.ts` | `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`, `sink`, `registerCoreForces` | The **canonical nine** (§6) — designed, finite-range, soft falloff. |
-| `forces/natural.ts` | `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`, `registerNaturalForces` | The **natural eight** (§20.10) — real laws (softened `1/d²`, Lorentz, Langevin). `gravity`/`charge` share one kernel. Also exports the `field()` hooks (dipole/monopole). |
-| `forces/extended.ts` | `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `hunt`, `link`, `morph`, `spawn`, `resonate`, `spotlight`, `pigment`, `fieldflow`, `registerExtendedForces` | The **designed-extended seventeen** (§20.3) — opt-in enrichments across classes [A]–[E],[S]. |
+| `core/types.ts` | `Particle`, `Body`, `Env`, `Force`, `Formation`, `Token`, `AgentKind` | The data model + force/agent contract (§3/§4/§22). |
+| `core/registry.ts` | `Registry`, `createRegistry` | Force + condition registry; seeds built-in conditions. |
+| `contracts/passport.ts` | `ForcePassport`, passports | Every force declares what it mutates, whether it does work / needs charge or velocity / touches neutral matter, and how it visualizes (system-contracts §3). |
+| `contracts/guards.ts` | contract guards | Dev-mode runtime assertions: sources must be budgeted, visualizations must not mutate physics, particles stay finite (§17/§18). |
+| `core/math.ts` | `clamp`, `lerp`, `hexToRgb`, `RGB` | Dependency-free math/colour helpers. |
 
-### Field systems (the visual / structure field)
-
-| Module | Key symbols | Purpose | Pure |
-|---|---|---|---|
-| `core/geometry.ts` | `nearestOnRect`, `sdfRect`, `dipoleField`, `polePair`, `Pole`, `Rect` | Shaped-source geometry (Stage A): nearest point on a body's box, signed distance, and the two dipole poles along its heading — so `magnetism`/`charge` act/draw as real N→S / +→− fields. | yes |
-| `core/fieldlines.ts` | `traceFieldLine`, `traceFieldLines`, `FieldSample` | Field-line tracer (Stage B2): step along a normalized vector field from a seed. Engine-agnostic — takes any `sample(x, y)`. | yes |
-| `core/streamlines.ts` | `forceAt`, `netField` | Vector-field probe (§20.6 diagnostic): `forceAt` = net push on a still test particle (mirrors the integrator cull); `netField` = superposition of every body's `field()` hook (drives `fieldflow` via `env.fieldAt`). | yes |
-| `core/heatmap.ts` | `Heatmap` | Density heatmap layer (H1) — a class-[C] scalar buffer of where matter pools, drawn as a glow underlay and sampled back as `--field-heatmap-density`. **Measures, never pushes** — not a force. | yes |
-
-### Field structure & exchange
-
-| Module | Key symbols | Purpose | Pure |
-|---|---|---|---|
-| `core/currents.ts` | `buildWaves`, `buildBound`, `waveYat`, `Wave`, `WavePull` | Carrier waves (§24/§2.3): five standing waveforms — the resting structure that carries bound particles and biases free ones. | yes |
-| `core/reservoir.ts` | `healWaves`, `tearBoundNear`, `tearBoundByForces`, `induceCharges` | Bound↔free exchange (§2.4): calm matter snaps onto wave lines (capped); disturbances tear it loose. `induceCharges` polarizes neutral matter near charge/magnetism. | yes |
-| `core/formations.ts` | `easeFormation`, `accretionTarget` | Formation helpers (§7): a global per-particle bias; the active preset eases toward target so transitions glide. | yes |
-| `core/conditions.ts` | `conditions`, `passes` | Built-in `data-when` gate predicates (§5): `active`, `fast`, `slow`, `hot`, `cool`, `scrolling`. | yes |
-| `core/attention.ts` | `attentionMuls`, `AttnInput` | Conserved attention (§2.4): one finite strength budget for the page; engaging a body pulls allocation off the rest. Returns per-body multipliers. | yes |
-| `core/causality.ts` | `spillover`, `SpillBody` | Cross-boundary causality: a saturated body spills excess density to neighbours (conserved), so wiring between elements emerges. | yes |
-| `core/reactions.ts` | `reactionIntensity`, `sparkCount`, `burstImpulse`, `recoilImpulse` | Micro-reactions (§23): energy removed at an interaction is rendered as sparks/flash. | yes |
-| `core/render-modes.ts` | `linkAlpha`, `marchingCell`, `splatDensity`, `nearestSite`, `isoCross` | Draw-pass helpers for the non-`dots` render modes (links, metaballs/marching squares, voronoi) and the diagnostics render modes (field-lines, heatmap, force-vectors, contours, potential, energy, topology, inspector, causality, prediction — see §6 and `/docs/diagnostics`). | yes |
-
-### Catalog / configuration (single sources of truth)
+### Simulation core (all pure)
 
 | Module | Key symbols | Purpose |
 |---|---|---|
-| `config/forces.config.ts` | `FORCES`, `FORCE_BY`, `FORMATIONS`, `CONDITIONS`, `PALETTE`, `ACCENT_JOURNEY` | Canonical catalog — the designed nine + the five formations + six conditions, with identity colours. |
-| `config/manual.ts` | `MANUAL_FORCES`, `MANUAL_PRESETS`, `MANUAL_CONDITIONS`, `FORCE_COLORS`/`SYMBOLS`/`SUMMARIES`/`EFFECTS`/`EXAMPLES` | The **Field Manual** — the complete public definition of all 35 forces (formula, attrs, copy, colour, symbol). A test pins it to the registry so it can't drift. |
-| `config/presets.ts` | `PRESETS`, `PresetEntry` | The eight cosmology presets (§20.9) as named arrangements of co-located virtual bodies. |
-| `config/palettes.ts` | `PALETTES`, `resolvePalette` | Accent/particle colour ramps (`ours`, `heatmap`, `infrared`, `spectrum`, …) for the scroll journey (§9). |
-| `config/tokens.ts` | `cssTokens` | Design tokens (§25.2) — the force palette + coherence + ease as injectable CSS custom properties. |
+| `core/integrator.ts` | `step`, `FRICTION`, `HEAT_DECAY` | One tick: body forces → formation bias → integrate + damp. Additive forces ×`1/m`; `kinematic` forces replace velocity; `dt=0` freezes (reduced motion). |
+| `core/field-store.ts` | `FieldStore` | Owns the particle pool + spatial index; count is the conserved quantity (§2.4). |
+| `core/spatial-hash.ts` | `SpatialHash` | Uniform-grid neighbour index — class-[B] forces O(n·k) not O(n²). |
+| `core/scalar-grid.ts` | `ScalarGridImpl` | Class-[C] backing store: `diffuse` (`∂φ/∂t=D∇²φ`) and `wave` (leapfrog) fields. |
+| `core/accretion.ts` | accretion core | Pure sink submodel (§6.9): capture → hold (`cap=b`) → release exactly what was held. |
 
-### Conformance (the Lab as a detector)
+### Forces (registries)
+
+| Module | Forces | Purpose |
+|---|---|---|
+| `forces/index.ts` | attract, repel, swirl, stream, viscosity, jet, tether, wall, sink | The **canonical nine** (§6) — designed, finite-range, soft falloff, class [A]. |
+| `forces/natural.ts` | gravity, charge, magnetism, thermal, collide, diffuse, propagate, memory | The **natural eight** (§20.10) — real laws; `gravity`/`charge` share one kernel. Exports the `field()` hooks (dipole/monopole). |
+| `forces/extended.ts` | lens, gate, buoyancy, shear, crystallize, align, wind, cohesion, pressure, hunt, link, morph, spawn, resonate, spotlight, pigment, fieldflow, **warp** | The **designed-extended eighteen** (§20.3) — opt-in enrichments across classes [A]–[E],[S]. |
+
+### Field systems (visual / structure field)
 
 | Module | Key symbols | Purpose |
 |---|---|---|
-| `conformance/types.ts` | `Scenario`, `Expectation`, `ScenarioResult`, `FrameState`, `ForceClass` | A `Scenario` fires a known particle into a known force; an `Expectation` is a predicate over the result. Same catalog drives tests + the Lab. |
-| `conformance/run.ts` | `runScenario`, `allForces`, `resolveBody` | Headless simulator — real `FieldStore`+`Env`+`step()`, real neighbours/grids, seeded RNG. Returns the trajectory + frame-0 force delta. |
-| `conformance/expectations.ts` | `movesToward`, `speedPreserved`, `momentumConserved`, `exactDelta`, … | Named checks: invariants (robust to tuning) + exact per-frame Δv (pins the spec formula). |
-| `conformance/experiments.ts` | `EXPERIMENTS`, `COMPOSITE_EXPERIMENTS` | One experiment per registered force (34) + 3 composites — the single source of truth for `conformance.test.ts` and the Lab. |
+| `core/geometry.ts` | `nearestOnRect`, `sdfRect`, `dipoleField`, `polePair` | Shaped-source geometry: nearest box point, signed distance, dipole poles — so `magnetism`/`charge` act/draw as real N→S / +→− fields. |
+| `core/fieldlines.ts` | `traceFieldLine(s)` | Field-line tracer: step along any normalized `sample(x,y)` vector field. |
+| `core/streamlines.ts` | `forceAt`, `netField` | Vector-field probe: net push on a still probe; `netField` = Σ of every body's `field()` (drives `fieldflow` via `env.fieldAt`). |
+| `core/heatmap.ts` | `Heatmap` | Density scalar buffer drawn as a glow underlay, sampled back as `--field-heatmap-density`. Measures, never pushes. |
+| `core/flow.ts` | `flowTo` | A movable *flow focus* the field bends toward (pull + curved streamlines), retargetable each frame (`field.flowTo()`). |
+| `core/dock.ts` | dock decision | Element-level capture: a `[data-move][data-dock]` element inside a `sink`'s radius docks to the core (§22.3). |
+
+### Field structure & exchange (all pure)
+
+| Module | Key symbols | Purpose |
+|---|---|---|
+| `core/currents.ts` | `buildWaves`, `buildBound`, `waveYat` | Five carrier waveforms — the resting structure that carries bound particles, biases free ones (§24). |
+| `core/reservoir.ts` | `healWaves`, `tearBound*`, `induceCharges` | Bound↔free exchange (§2.4); `induceCharges` polarizes neutral matter near charge/magnetism. |
+| `core/formations.ts` | `easeFormation`, `accretionTarget` | Global per-particle bias, eased toward target so transitions glide (§7). |
+| `core/conditions.ts` | `conditions`, `passes` | `data-when` gate predicates: active, fast, slow, hot, cool, scrolling (§5). |
+| `core/attention.ts` | `attentionMuls` | Conserved attention: one finite strength budget; engaging a body pulls allocation off the rest (§2.4). |
+| `core/causality.ts` | `spillover` | Cross-boundary causality: a saturated body spills excess density to neighbours (conserved). |
+| `core/reactions.ts` | `sparkCount`, `burstImpulse` | Micro-reactions: energy removed at an interaction → sparks/flash (§23). |
+| `core/render-modes.ts` | `marchingCell`, `splatDensity`, `nearestSite`, `linkAlpha` | Draw-pass helpers for the non-`dots` base modes (links, metaballs, voronoi). |
+
+### Agents (§22 — field participants beyond particles)
+
+| Module | Agent | Purpose |
+|---|---|---|
+| `core/agents.ts` | element offset | `integrateOffset`/`anchorForce`/`elementMass` — a force moves a DOM element by a transform offset, anchor-sprung back to its slot (§22.4). |
+| `agents/element-agent.ts` | `ElementAgent` | A DOM element that receives the full metric set (density, attention, heat, entropy, coherence, memory, pressure, pull) and writes DOM state. |
+| `agents/relationship.ts` | `RelationshipAgent` | An active connection between two bodies — strength/tension/memory; strengthens with use, decays, transfers attention, emits events (§7). |
+| `agents/user-agent.ts` | `UserAgent` | User input as participation: pointer = wake, focus = attention source, selection = capture, scroll = current (a11y-aware). |
+| `agents/region-agents.ts` | `LayoutAgent`, `DataAgent` | Region-level (a column/card aggregates the metrics under it) and record-level (a semantic record with decaying salience) participants. |
+| `core/events.ts` / `agents/event-agent.ts` | `EventAgent`, `Thresholder` | Thresholded, debounced, hysteresis edges (`entered`/`exited`) → discrete `field:*` events, not per-frame noise (§9). |
+
+### Diagnostics (reveal state, never mutate physics)
+
+| Module | Purpose |
+|---|---|
+| `diagnostics/probes.ts` | A force's *vector* at a point (Δv on a probe) + per-token causality breakdown of why motion happened. |
+| `diagnostics/render.ts` | Draw force-vectors, contours (marching squares), potential, energy onto a 2D context. |
+| `diagnostics/modes.ts` | The four debug/graph modes: topology, inspector, causality, prediction. |
+| `diagnostics/fields.ts` / `potential.ts` / `energy.ts` | Heatmap-variant samplers; scalar potential `Φ = −s/√(d²+ε²)` + grid sampler; pure kinetic/thermal/total energy accounting. |
+
+### Recipes (portable field programs — authoring §5/§7)
+
+| Module | Purpose |
+|---|---|
+| `recipes/schema.ts` | `FieldRecipe` schema + validation + serialization — a portable, inspectable field program. |
+| `recipes/compile.ts` | Compiles a validated recipe → a runtime plan (DOM counterpart is platform `applyRecipe`). |
+| `recipes/intent.ts` | Intent compiler: author says "draw-focus" → concrete tokens/attrs/render layers. |
+| `recipes/explain.ts` | "Explain this field" + "field diff" — plain-language strings built from the passports. |
+| `recipes/catalog.ts` / `gallery.ts` | The **64 portable recipes** in four `RECIPE_TIERS`; each doubles as a worked example + conformance fixture. |
+
+### Semantic & visual language
+
+| Module | Purpose |
+|---|---|
+| `semantic/layers.ts` | meaning→metric mapping (importance/confidence/urgency → the metric that expresses it). |
+| `semantic/materials.ts` | Named compositions of real force tokens that define *feel* (validated against the passport registry). |
+| `semantic/states.ts` | A named field-state set + the behavior each implies (state machines as physical scenes). |
+| `visual/visualization.ts` | The visualization truth-table + render-mode catalog as inspectable data (what each mode reads, whether it mutates physics). |
+| `visual/mapping.ts` / `channels.ts` | Pure metric(0..1)→visual-property functions (weight/hue/scale/glow) with accessibility caps; CSS string builders. |
+| `visual/semantic-text.ts` / `lint.ts` | Keep expressive glyphs from being the only source of meaning; static scene-lint (magnetism w/o charge, fieldflow w/o a field, unbudgeted source, missing reduced-motion, color-only meaning). |
+
+### Inspection & DOM bridge
+
+| Module | Purpose |
+|---|---|
+| `inspect/snapshot.ts` | Deterministic seeded-scenario fingerprint (count + mean speed/heat) → catches accidental physics change (§12). |
+| `inspect/report.ts` | Aggregates the whole model (contracts, passports, experiments, agents, recipes) + "is every force passported AND conformance-covered?". |
+| `inspect/budget.ts` | Live counts vs a `PerformanceBudget`; reports every metric over its limit (§15). |
+| `core/scanner.ts` | `[data-body]`/`[data-preset]` → bodies (parsing pure; measurement runs in the platform read-phase). |
+| `core/shadow.ts` | `FieldController` / `ShadowRegistry` — host-first shadow-DOM registration (register the HOST, never the shadow tree). |
+| `core/feedback.ts` | The density→`--field-density` write math (platform's `FeedbackRegistry` owns *when* it runs). |
+
+### Catalog / config & conformance
+
+| Module | Purpose |
+|---|---|
+| `config/manual.ts` | The **Field Manual** — complete public definition of all **35** forces (formula, attrs, copy, colour, symbol). A test pins it to the registry. |
+| `config/forces.config.ts` | Canonical nine + five formations + six conditions + identity colours. |
+| `config/presets.ts` | The eight cosmology presets as co-located virtual bodies. |
+| `config/palettes.ts` / `tokens.ts` | Accent/particle colour ramps; design tokens as injectable CSS vars. |
+| `conformance/{types,run,expectations,experiments}.ts` | Headless real-engine scenarios + named expectations; **35 `EXPERIMENTS` (one per force) + 3 `COMPOSITE_EXPERIMENTS`**. Source of truth shared by the tests and the Lab. |
 
 ---
 
-## 3. The force catalog (34)
+## 3. The platform package (`@field-ui/platform`)
 
-Source of truth: [`config/manual.ts`](../packages/core/src/config/manual.ts). Class = the
-implementation tier (see §4). Attrs are `data-*` (without the prefix).
+Native-first registries; the participation surface field-ui wishes the browser exposed. Depends
+on core, never the reverse. Full architecture: [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md).
 
-### Canonical nine — `forces/index.ts` (§6, all class [A])
-
-| Token | Does | Key attrs |
-|---|---|---|
-| `attract` | soft gravity-like well (optional orbital swirl) | strength, range |
-| `repel` | soft outward push — carves a void | strength, range |
-| `swirl` | tangential swirl + light inward retention | strength, range, spin |
-| `stream` | steady directional current along a heading | strength, range, angle |
-| `viscosity` | thickens the medium — bleeds momentum | strength, range |
-| `jet` | draws matter in, jets it out (kinematic) | strength, range, angle |
-| `tether` | holds matter at a rest-length shell | strength, range |
-| `wall` | axis-aligned elastic bounce, sparks (kinematic) | — |
-| `sink` | captures matter, then releases it (supernova) | absorb, max |
-
-### Natural eight — `forces/natural.ts` (§20.10)
-
-| Token | Class | Does | Key attrs |
-|---|---|---|---|
-| `gravity` | A | true softened inverse-square `GM/d²`; `|v|≤c` | strength, range |
-| `charge` | A | signed `1/d²` — like repels, opposite attracts; radiates a monopole `field()` | strength, range, spin |
-| `magnetism` | A | Lorentz rotation (⟂ to v, no work); radiates a dipole `field()` | strength, range, spin |
-| `thermal` | A | Langevin/Brownian agitation (`√(2T)·ξ`) | strength, range |
-| `collide` | B | elastic hard-sphere pair collisions | strength, range |
-| `diffuse` | C | pheromone field — deposit a mark, follow the gradient | strength, range |
-| `propagate` | C | travelling wave — ride the expanding front | strength, range |
-| `memory` | C | occupancy grid — worn paths pull harder | strength, range |
-
-### Designed-extended seventeen — `forces/extended.ts` (§20.3)
-
-| Token | Class | Does | Key attrs |
-|---|---|---|---|
-| `lens` | A | rotates velocity (preserves speed) — bends paths | strength, range, spin |
-| `gate` | A | one-way membrane — reflects the reverse direction | angle |
-| `buoyancy` | A+E | lift/sink by density (size·heat) | strength, range |
-| `shear` | A | laminar velocity gradient | strength, range, angle |
-| `crystallize` | A | snaps cool matter to a lattice; melts when hot | strength, range |
-| `align` | A/B | steers to a heading (preserves speed) — flocking | strength, range, angle |
-| `wind` | A | divergence-free curl-noise turbulence | strength, range |
-| `cohesion` | B | short-range push + mid-range pull — surface tension | strength, range |
-| `pressure` | B | SPH density relaxation — even fill | strength, range |
-| `hunt` | B+E | two-species predator/prey pursuit | strength, range |
-| `link` | B | Verlet distance constraint — ropes, chains, cloth | strength, range |
-| `morph` | D | assembles matter into a mark/chart (never words, §11) | strength, target |
-| `spawn` | S | source — emits budgeted matter along a heading | strength, angle |
-| `resonate` | A (modifier) | pulses sibling forces with a time-varying strength | strength, spin |
-| `spotlight` | A (modifier) | gates sibling forces to an angular cone | angle |
-| `pigment` | E | conserved colour transport — a dye that mixes | range, color |
-| `fieldflow` | A | follow the field lines — steer onto + stream down the net `field()` (range 0 ⇒ global `magnetic` formation) | strength, range |
+| Module | Registry / role |
+|---|---|
+| `platform.ts` | `createFieldPlatform` — binds the registries to one shared `FrameScheduler`. |
+| `schedule.ts` | `FrameScheduler` — the six ordered phases (discover → read → compute → state → write → render) so reads/writes never thrash layout. |
+| `browser-host.ts` | `browserHost` / `createBrowserField` — the default `FieldHost` binding core to `window`/`document`/rAF. |
+| `measurement.ts` | `MeasurementRegistry` — frame-stable geometry (read every box once per frame). |
+| `state.ts` | `StateRegistry` — typed observable per-element channels, separate from ARIA. |
+| `feedback.ts` | `FeedbackRegistry` — the write-phase: state → CSS vars + thresholded/debounced events. |
+| `relationships.ts` | `RelationshipRegistry` — normalizes HTML/ARIA (`for`, `aria-controls`/`-describedby`/`-flowto`, `data-field-relation`) into one typed relationship graph. |
+| `visual-bindings.ts` | `VisualBindingRegistry` — bind an expressive visual (SVG/Canvas/WebGL) to its semantic DOM source without double-exposing meaning (`data-field-visual-for` + `scan()`). |
+| `overlays.ts` | `OverlayRegistry` — **Field Surfaces**: relationship lines, field lines, callouts, debug layers as render layers (`setOverlay` / `overlay="…"`). Reads registries; never mutates physics. |
+| `bind-data.ts` | `bindData` — real application data as field participants (records→bodies, mapped metrics→state, relationships→edges; deterministic diff-by-id, decay-on-remove). |
+| `apply-recipe.ts` | `applyRecipe` — the DOM counterpart to core's `compileRecipe` (registers bodies, binds metrics, installs reduced-motion output). |
+| `metrics.ts` | The platform metric library (typed state values; pure math). |
+| `export-dom.ts` / `lint.ts` | DOM download helpers (need `document`); platform guardrails (relation→missing id, visual duplicates text, state-without-registration). |
 
 ---
 
-## 4. Particle (agent) classes
+## 4. The force catalog (35)
 
-The implementation tier each force needs from `Env` (§20.1 / §22). Most forces are class [A].
+Source of truth: `packages/core/src/config/manual.ts`. Class = implementation tier (§5).
+Attrs are `data-*` (prefix dropped).
+
+**Canonical nine** — `forces/index.ts` (§6, all class [A]): `attract`, `repel`, `swirl`,
+`stream`, `viscosity`, `jet` (kinematic), `tether`, `wall` (kinematic), `sink`.
+
+**Natural eight** — `forces/natural.ts` (§20.10):
+
+| Token | Class | Does |
+|---|---|---|
+| `gravity` | A | true softened inverse-square `GM/d²`; `|v|≤c` |
+| `charge` | A | signed `1/d²`; radiates a monopole `field()` |
+| `magnetism` | A | Lorentz rotation (⟂v, no work); radiates a dipole `field()` |
+| `thermal` | A | Langevin/Brownian agitation `√(2T)·ξ` |
+| `collide` | B | elastic hard-sphere pair collisions |
+| `diffuse` | C | pheromone field — deposit + follow the gradient |
+| `propagate` | C | travelling wave — ride the expanding front |
+| `memory` | C | occupancy grid — worn paths pull harder. *Classified as a semantic occupancy metric, not a physical force (#223).* |
+
+**Designed-extended eighteen** — `forces/extended.ts` (§20.3):
+
+| Token | Class | Does |
+|---|---|---|
+| `lens` | A | rotates velocity (preserves speed) — bends paths |
+| `gate` | A | one-way membrane — reflects the reverse |
+| `buoyancy` | A+E | lift/sink by density (size·heat) |
+| `shear` | A | laminar velocity gradient |
+| `crystallize` | A | snaps cool matter to a lattice; melts when hot |
+| `align` | A/B | steers to a heading (preserves speed) — flocking |
+| `wind` | A | divergence-free curl-noise turbulence |
+| `cohesion` | B | short-range push + mid-range pull — surface tension |
+| `pressure` | B | SPH density relaxation — even fill |
+| `hunt` | B+E | two-species predator/prey pursuit |
+| `link` | B | Verlet distance constraint — ropes/chains/cloth |
+| `morph` | D | assembles matter into a mark/chart (never words, §11) |
+| `spawn` | S | source — emits budgeted matter along a heading |
+| `resonate` | A (mod) | pulses sibling forces `1 + sin(ωt)` |
+| `spotlight` | A (mod) | gates sibling forces to an angular cone |
+| `pigment` | E | conserved colour transport — a dye that mixes |
+| `fieldflow` | A | follow the field lines — steer onto + stream down the net `field()` (range 0 ⇒ global field-follow) |
+| `warp` | A | relocates matter through a paired warp target (a portal): twist + scale, skips captured matter. Powers the `data-warp` element-relocate consumer. |
+
+---
+
+## 5. Particle (agent) classes
+
+The tier each force needs from `Env` (§20.1/§22). Most forces are class [A].
 
 | Class | Needs | Examples |
 |---|---|---|
-| **[A]** single-particle | only the shared per-frame `Env` (dx/dy/dist) | the nine, gravity, charge, magnetism, thermal, lens, gate, buoyancy, shear, crystallize, wind, fieldflow |
-| **[B]** neighbour-coupled | `env.neighbors(p, r)` (spatial hash) | collide, cohesion, pressure, link, hunt, align |
-| **[C]** field-buffer | `env.grid(name)` (scalar grid) | diffuse, propagate, memory, (heatmap layer) |
-| **[D]** targeted | a per-particle assignment/target | morph |
-| **[E]** conserved-carry | a conserved per-particle quantity (colour, tint) | pigment, (buoyancy/hunt tint) |
-| **[S]** source | `env.spawn()` (budgeted, breaks conservation by design) | spawn, (sink release) |
+| **[A]** single-particle | the shared `Env` (dx/dy/dist) | the nine, gravity/charge/magnetism/thermal, lens, gate, buoyancy, shear, crystallize, wind, fieldflow, warp |
+| **[B]** neighbour-coupled | `env.neighbors(p,r)` | collide, cohesion, pressure, link, hunt, align |
+| **[C]** field-buffer | `env.grid(name)` | diffuse, propagate, memory, (heatmap) |
+| **[D]** targeted | a per-particle target | morph |
+| **[E]** conserved-carry | a conserved per-particle quantity | pigment, (buoyancy/hunt tint) |
+| **[S]** source | `env.spawn()` (budgeted) | spawn, (sink release) |
 
 ---
 
-## 5. The `Env` services
+## 6. The `Env` services
 
-The shared per-frame environment handed to every force (`core/types.ts`), filled by the engine.
-
-| Member | Type | Used by |
-|---|---|---|
-| `dx`, `dy`, `dist` | vector + distance, particle→body | every class-[A] force |
-| `form` | the eased `Formation` | formation-aware forces (orbit, etc.) |
-| `t`, `frameN`, `dt` | time / frame / step (0 = reduced motion) | time-varying terms (wind, resonate) |
-| `c`, `G` | speed-of-light cap, gravitational constant (§20.10) | gravity, charge, clamps |
-| `scrollV` | eased page-scroll speed | the `scrolling` condition |
-| `spark(x,y,power,color?)` | micro-reaction | wall, impacts |
-| `supernova(b)` | release captured matter | sink |
-| `spawn(p)` | create a particle (pool-capped) | spawn, sources |
-| `neighbors(p, r)` | spatial-hash query | class [B] |
-| `grid(name)` | a named `ScalarGrid` | class [C] |
-| `fieldAt(x, y)` | the net structure field (Σ `field()` hooks) | fieldflow |
+Shared per-frame environment (`core/types.ts`), filled by the engine: `dx/dy/dist`, `form`,
+`t/frameN/dt`, `c/G`, `scrollV`, and services `spark`, `supernova`, `spawn`, `neighbors(p,r)`
+(class B), `grid(name)` (class C), `fieldAt(x,y)` (net `field()` superposition — drives `fieldflow`).
 
 ---
 
-## 6. Render modes, formations, conditions, presets
+## 7. Render modes, formations, conditions, presets
 
-**Render modes** (one draw-pass swap, physics unchanged — §20.6). All modes are shipped and live
-at `/docs/diagnostics`.
+**Render modes** — one draw-pass swap, physics unchanged (§20.6); all shipped, live at
+`/docs/diagnostics`.
+- *Base:* `dots` (default), `trails`, `links`, `streamlines`, `metaballs`, `voronoi`.
+- *Diagnostics:* `field-lines`, `heatmap`, `force-vectors`, `contours`, `potential`, `energy`,
+  `topology`, `inspector`, `causality`, `prediction`.
+- The density heatmap is also a separate glow *overlay layer* (`heatmap` option / `toggleHeatmap`).
 
-*Base modes:* `dots` (default, heat-tinted points), `trails` (long-exposure), `links` (particle
-threads), `streamlines` (vector-field flow), `metaballs` (marching-squares iso-surface),
-`voronoi` (nearest-site cells).
+**Formations** (5 — §7; biases `{driftX,wander,orbit,spread,conv}`): `ambient`, `wells`, `lanes`,
+`scatter`, `accretion`. (The longer §20.5 list is spec-only.)
 
-*Diagnostics modes:* `field-lines`, `heatmap`, `force-vectors`, `contours`, `potential`,
-`energy`, `topology`, `inspector`, `causality`, `prediction`.
+**Conditions** (6 — `data-when`): `active`, `fast`, `slow`, `hot`, `cool`, `scrolling`.
 
-The **density heatmap** is also available as a separate glow *overlay layer* (`heatmap` option /
-`toggleHeatmap`) layered under any base mode.
-
-**Formations** (5 shipped — §7; global per-particle biases `{driftX, wander, orbit, spread,
-conv}`): `ambient`, `wells`, `lanes`, `scatter`, `accretion`. (The larger list in
-[`forces-system.md`](forces-system.md) §20.5 is spec-only.)
-
-**Conditions** (6 — `data-when`, §5): `active`, `fast`, `slow`, `hot`, `cool`, `scrolling`.
-
-**Presets** (8 — `data-preset`, §20.9; compositions of co-located virtual bodies):
-`blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
+**Presets** (8 — `data-preset`): `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`,
+`tornado`, `fountain`.
 
 ---
 
-## 7. Key types (`core/types.ts`)
+## 8. Declarative surfaces (the author-facing contract)
 
-| Type | What it is |
+| Attribute / API | What it does |
 |---|---|
-| `Particle` | a unit of matter: `x,y,vx,vy,m,heat,size`, optional `charge`, `age`, `cap` (captured-by body) |
-| `Body` | a DOM element as a force source: `tokens`, geometry (`cx/cy/hw/hh`), `strength`, `range`, `spin`, `M`, `d` (eased density), `on` (engaged), `shaped`, `attn` |
-| `Env` | the shared per-frame environment + services (see §5) |
-| `Force` | `{ token, apply(b,p,env), kinematic?, modify?, source?, field?, targets? }` — the module contract (§4) |
-| `Formation` | the global bias preset `{ driftX, wander, orbit, spread, conv }` |
+| `data-body` / `data-preset` | turn an element into a force source / preset composition |
+| `data-strength` `data-range` `data-spin` `data-angle` `data-color` `data-feedback` `data-shaped` | force params + opt-in density write-back + shaped sampling |
+| `data-when` | condition gate (§5) |
+| `data-move` + `data-dock` / `data-warp` / `data-emit` | **element agent consumers**: a moved element docks into a sink, relocates through a warp, or emits clones |
+| `field:captured` / `field:released` / `field:relocated` | dispatched agent events (legacy `forces:*` mirrored) |
+| `data-field-relation` / ARIA (`for`, `aria-controls`, …) | relationships normalized into the typed graph |
+| `data-field-visual-for` + `scan()` | declarative visual binding (an expressive visual ↔ its semantic source) |
+| `setOverlay` / `overlay="…"` | Field Surfaces overlay layers over/under content |
+| `field.flowTo(x,y)` | retarget the flow focus each frame |
+| `bindData(...)` / `applyRecipe(...)` | data + portable recipes as field programs |
 
 ---
 
-## 8. Tests & conformance
+## 9. Key types (`core/types.ts`)
 
-- **362 tests**, every merge green. Golden per-force unit tests + the integrator suite +
-  the conformance pass.
-- **Conformance**: 34 `EXPERIMENTS` (one per registered force) + 3 `COMPOSITE_EXPERIMENTS`,
-  driven through the real engine and deterministic. A **safety sweep** runs all 37 through
-  global finite/bounded/conserved invariants (no NaN/Inf, `|v|≤c`, bounded heat, stable count).
-- **Drift guards**: a test pins `manual.ts` to the registered force arrays (catalog can't fall
-  out of sync); another asserts every registered force appears in
-  [`forces-tests.md`](forces-tests.md). See [`forces-tests.md`](forces-tests.md) for the full
-  conformance write-up.
+`Particle` (`x,y,vx,vy,m,heat,size`, optional `charge`/`age`/`cap`, plus warp fields), `Body`
+(tokens + geometry + `strength/range/spin/M/d/on/shaped/attn` + warp params), `Env` (§6), `Force`
+(`{token, apply, kinematic?, modify?, source?, field?, targets?}` + a `passport`), `Formation`.
+
+---
+
+## 10. Tests & conformance
+
+- **Conformance**: 35 `EXPERIMENTS` (one per registered force) + 3 `COMPOSITE_EXPERIMENTS`,
+  driven through the real engine and deterministic (seeded RNG). A **safety sweep** runs them all
+  through global finite/bounded/conserved invariants (no NaN/Inf, `|v|≤c`, bounded heat, stable
+  count). Snapshot regression (`inspect/snapshot.ts`) catches accidental physics drift.
+- **Drift guards**: `config/manual.ts` is pinned to the registered force arrays; `forces-tests.md`
+  must backtick every registered force; `core/dom-boundary.test.ts` keeps core renderer-agnostic;
+  every force is checked to be both **passported** and **conformance-covered** (`inspect/report.ts`).
+- Run `pnpm --filter field-ui test` (Node's built-in `node:test`, zero framework). Full write-up:
+  [forces-tests.md](forces-tests.md) and [../canonical/field-ui-testing-and-conformance.md](../canonical/field-ui-testing-and-conformance.md).
