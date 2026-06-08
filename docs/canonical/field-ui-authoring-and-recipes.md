@@ -183,7 +183,7 @@ type FieldRecipe = {
   id: string                          // stable kebab-case id (e.g. "priority-well")
   name: string
   intent: string
-  tier?: RecipeTier                   // core | workflow | professional | enterprise
+  tier?: RecipeTier                   // core | applied | systems | operational
   naturalField?: "gravity" | "electromagnetic" | "strong" | "weak"
   translation?: string                // the field→interface translation phrase (concept lane)
   primitives: string[]                // the distinct body tokens, in first-seen order
@@ -257,9 +257,10 @@ Example:
 > primitives and add no new engine behavior**. Eight are the recommended first-release set
 > (`FIRST_RELEASE_RECIPE_IDS`).
 
-The four tiers (16 each): **Core interface & accessibility** (1–16), **Product, workflow &
-collaboration** (17–32), **Professional systems & governance** (33–48), **Enterprise, adaptive &
-operational** (49–64).
+The four tiers (16 each): **Core — interface & accessibility** (1–16), **Applied — product, workflow &
+collaboration** (17–32), **Systems — safety, provenance & governance** (33–48), **Operational —
+multi-actor, adaptive & live** (49–64). The keys are a complexity ladder (`core` → `applied` →
+`systems` → `operational`), not access tiers — nothing is gated.
 
 ### Recipe language vs engine vocabulary
 
@@ -309,7 +310,7 @@ No new force tokens are added for recipes — only recipe records, conformance, 
 Evidence Field, Coherence Field, Memory Trace, Guided Flow. Those eight explain the system quickly; the
 full catalog gives the project its range.
 
-### Tier 2 — Product, workflow & collaboration (17–32)
+### Tier 2 — Applied: product, workflow & collaboration (17–32)
 
 Attention Weather (gravity), Navigation Current (EM), Citation Thread (EM), Form Stability Field
 (strong), Command Intent Field (gravity), Selection Wake (weak), Availability Pressure (gravity),
@@ -317,7 +318,7 @@ Dependency Tension (strong), Staleness Drift (weak), Trust Gradient (EM), Comple
 Group Magnet (strong), Error Pressure (weak), Handoff Stream (EM), Context Halo (gravity), Field
 Tutorial (diagnostic).
 
-### Tier 3 — Professional systems & governance (33–48)
+### Tier 3 — Systems: safety, provenance & governance (33–48)
 
 Semantic Gravity Map (gravity), Polarity Filter (EM), Source Constellation (strong), Drift Correction
 (weak), Resonance Match (EM), Friction Gate (derived), Boundary Field (strong), Threshold Bloom (weak),
@@ -325,7 +326,7 @@ Latency Ripple (EM), Provenance Trail (strong), Review Pressure (gravity), Seman
 Ambient Tutor (gravity), Relation Lens (strong), Priority Tide (gravity), Field Contract Preview
 (platform).
 
-### Tier 4 — Enterprise, adaptive & operational (49–64)
+### Tier 4 — Operational: multi-actor, adaptive & live (49–64)
 
 Presence Field (EM), Consensus Well (gravity), Disagreement Charge (EM), Change Shockwave (EM),
 Permission Boundary (strong), Risk Horizon (gravity), Intent Magnet (gravity), Flow Checkpoint

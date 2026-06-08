@@ -68,7 +68,7 @@ export interface ExpectedMetrics {
 }
 
 /** Which catalog tier a recipe belongs to. */
-export type RecipeTier = 'core' | 'workflow' | 'professional' | 'enterprise';
+export type RecipeTier = 'core' | 'applied' | 'systems' | 'operational';
 
 /** A recipe's implementation status. */
 export type RecipeStatus = 'shipped' | 'experimental' | 'planned' | 'conceptual';
@@ -132,7 +132,7 @@ const DIAGNOSTIC_MODES: ReadonlySet<string> = new Set<DiagnosticMode>([
 export const FIELD_MODES: ReadonlySet<string> = new Set<string>([...RENDER_LAYERS, ...DIAGNOSTIC_MODES]);
 
 const VALID_FIELDS: ReadonlySet<string> = new Set<string>(FUNDAMENTAL_FIELDS);
-const VALID_TIERS: ReadonlySet<string> = new Set<RecipeTier>(['core', 'workflow', 'professional', 'enterprise']);
+const VALID_TIERS: ReadonlySet<string> = new Set<RecipeTier>(['core', 'applied', 'systems', 'operational']);
 const VALID_STATUS: ReadonlySet<string> = new Set<RecipeStatus>(['shipped', 'experimental', 'planned', 'conceptual']);
 
 /**
