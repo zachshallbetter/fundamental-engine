@@ -261,11 +261,19 @@ const DEMOS = [
   <section class="docs-sec">
     <h2>Agents: particles, elements, events</h2>
     <p>
-      Forces don't only push particles. The same force can target a <strong>particle</strong>
-      (the default), a <strong>DOM element</strong> (it gets moved by a transform offset, with
-      an anchor tether), or an <strong>event</strong> (crossing a density threshold fires a
-      <code>CustomEvent</code> you can listen for). One mechanism, three kinds of target — so the
+      A force doesn't only push particles — it produces an <strong>influence at a location</strong>,
+      and whatever sits there decides how to consume it. A <strong>particle</strong> consumes it as
+      motion (the lightest agent); a <strong>DOM element</strong> consumes it as a transform offset
+      with an anchor tether; an <strong>event sink</strong> consumes a density threshold by firing a
+      <code>CustomEvent</code> you can listen for. One influence, three kinds of consumer — so the
       field can drive real app behaviour, not just pixels.
+    </p>
+    <p class="note">
+      field-ui calls this the <strong>Field Agent Consumption Model</strong>. A single DOM body can
+      play several roles at once — force source, density receiver, force target, and event host. Its
+      capture-hold-release behaviour (the <code>sink</code> token, <code>data-absorb</code>,
+      <code>data-max</code>, <code>--load</code>) is the <em>Body Matter Interaction</em> submodel —
+      <code>sink</code> is the token; <code>absorb</code> is concept language, not a runtime token.
     </p>
     <div class="callout">
       <b>Composites, not new code.</b> Bigger ideas — <code>blackhole</code>, <code>galaxy</code>,

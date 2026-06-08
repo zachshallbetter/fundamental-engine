@@ -51,6 +51,7 @@ Feedback = how the field writes back to the DOM
 |---|---|---|
 | Physical truth | modeled after a recognizable physical law | `gravity`, `charge`, `magnetism` |
 | Designed truth | shaped for stable UI behavior | `attract`, `repel`, `spring` |
+| Hybrid truth | a designed primitive operating over natural geometry | `fieldflow` |
 | Diagnostic truth | reveals internal state | force vectors, heatmaps |
 | Poetic truth | expressive composite | `blackhole`, `nebula` |
 | Semantic truth | maps meaning into physics | attention, memory |
