@@ -42,7 +42,7 @@ const particle = `interface Particle {
   m: number;                 // mass (1 = nominal)
   heat: number;              // ∈ [0,1] → colour, size, glow
   size: number;
-  cap: Body | null;          // capturing absorb body
+  cap: Body | null;          // the sink body that captured it
   color?: string;            // carried pigment
 }`;
 
