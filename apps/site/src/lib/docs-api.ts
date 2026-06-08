@@ -9,6 +9,7 @@ export interface OptionRow {
   desc: string;
 }
 export const OPTIONS: OptionRow[] = [
+  { name: 'host', type: 'FieldHost', def: 'required', desc: 'The environment seam (viewport, scroll, rAF, canvas). createField throws without it — pass browserHost() from @field-ui/platform, or use @field-ui/vanilla / the web component, which wire it for you.' },
   { name: 'accent', type: 'string', def: "palette's first stop", desc: 'The travelling accent colour (a hex string).' },
   { name: 'density', type: 'number', def: '1', desc: 'Particle-count multiplier.' },
   { name: 'waves', type: 'boolean', def: 'true', desc: 'Draw the background Currents (the wave layers).' },
@@ -18,6 +19,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'attention', type: 'boolean', def: 'false', desc: 'Conserved attention — one finite strength budget; engaging a body starves the others.' },
   { name: 'causality', type: 'boolean', def: 'false', desc: 'Cross-boundary causality — a saturated body spills density to its neighbours.' },
   { name: 'heatmap', type: 'boolean', def: 'false', desc: 'Density heatmap — a glow layer of where matter pools, sampled back to bodies as --forces-heatmap-density.' },
+  { name: 'feedbackSink', type: 'FeedbackSink', def: 'undefined', desc: 'Advanced: route per-body density/feedback writes to the platform FeedbackRegistry instead of letting the engine write the DOM (Phase D3).' },
 ];
 
 export interface MethodRow {
