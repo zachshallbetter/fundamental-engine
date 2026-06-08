@@ -17,17 +17,18 @@ const base: MetricInputs = {
   prev: {},
 };
 
-const COMPUTED_KINDS = ['attention', 'memory', 'recency', 'coherence', 'entropy', 'pressure', 'risk', 'priority'] as const;
+const COMPUTED_KINDS = ['attention', 'memory', 'recency', 'coherence', 'entropy', 'pressure', 'priority'] as const;
 
-test('computeMetrics returns the computed lanes in [0,1]; confidence is absent unless supplied', () => {
+test('computeMetrics returns the computed lanes in [0,1]; confidence + risk are absent unless supplied', () => {
   const m = computeMetrics({ ...base, proximity: 0.8, visible: 1 });
   for (const k of COMPUTED_KINDS) {
     assert.ok(k in m, `${k} present`);
     assert.ok(m[k] >= 0 && m[k] <= 1, `${k} in [0,1] (${m[k]})`);
   }
   assert.ok(!('confidence' in m), 'confidence absent when not supplied');
-  // completeness: every metric kind is either a computed lane or the supplied-only `confidence`
-  for (const k of METRIC_KINDS) assert.ok(k === 'confidence' || k in m, `${k} accounted for`);
+  assert.ok(!('risk' in m), 'risk absent when not supplied');
+  // completeness: every metric kind is either a computed lane or a supplied-only lane (confidence/risk)
+  for (const k of METRIC_KINDS) assert.ok(k === 'confidence' || k === 'risk' || k in m, `${k} accounted for`);
 });
 
 test('attention rises with proximity + visibility, and engagement boosts it', () => {
@@ -72,4 +73,16 @@ test('confidence is never fabricated from relationship presence', () => {
 test('confidence is present only when supplied, and is clamped to [0,1]', () => {
   assert.equal(computeMetrics({ ...base, supplied: { confidence: 0.62 } }).confidence, 0.62);
   assert.equal(computeMetrics({ ...base, supplied: { confidence: 1.5 } }).confidence, 1, 'out-of-range supplied confidence is clamped');
+});
+
+test('risk is never defaulted to safe — absent unless supplied', () => {
+  // "no risk" is a claim the engine has no basis to make; the old `risk: 0` asserted it for everything.
+  const none = computeMetrics({ ...base, proximity: 1, visible: 1 });
+  assert.ok(!('risk' in none), 'risk absent by default (not 0)');
+  // even a fully-resolved, calm element gets no risk asserted on its behalf
+  const calm = computeMetrics({ ...base, relTotal: 3, relResolved: 3, relConflict: 0 });
+  assert.ok(!('risk' in calm), 'risk still absent — resolution is not a safety signal');
+  // present + clamped only when the host supplies it
+  assert.equal(computeMetrics({ ...base, supplied: { risk: 0.8 } }).risk, 0.8);
+  assert.equal(computeMetrics({ ...base, supplied: { risk: 1.5 } }).risk, 1, 'out-of-range supplied risk is clamped');
 });
