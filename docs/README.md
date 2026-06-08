@@ -45,6 +45,7 @@ The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-ar
 | [`fundamental-field-behavior-table.md`](canonical/fundamental-field-behavior-table.md) | Field/force laws, electromagnetic split, `fieldflow`, and truth modes |
 | [`visualization-methods-taxonomy.md`](canonical/visualization-methods-taxonomy.md) | Render layers and diagnostics (all modes shipped: contours, potential, vectors, energy, topology, inspector, causality, prediction) |
 | [`field-ui-interaction-and-relationship-model.md`](canonical/field-ui-interaction-and-relationship-model.md) | Agents beyond particles; the relationship model; Reading Field |
+| [`field-ui-agent-consumption-model.md`](canonical/field-ui-agent-consumption-model.md) | The Field Agent Consumption Model: agents (particle/element/event/…), the influence-kind → consumer matrix with per-cell status, the Body Matter Interaction (sink/accretion) submodel, events, and text/vector semantics |
 | [`field-ui-visual-language-and-geometry.md`](canonical/field-ui-visual-language-and-geometry.md) | Typography, color, shape, visual-semantic pairing, overlays, export |
 | [`field-ui-authoring-and-recipes.md`](canonical/field-ui-authoring-and-recipes.md) | Authoring across native HTML / web component / React; intent compiler; recipe schema |
 | [`field-ui-testing-and-conformance.md`](canonical/field-ui-testing-and-conformance.md) | Test matrix, conformance gates, force passports, platform + scheduler + lint tests |
