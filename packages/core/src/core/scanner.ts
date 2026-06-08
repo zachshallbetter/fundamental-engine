@@ -32,6 +32,9 @@ export type StaticBody = Pick<
   | 'fmin'
   | 'fmax'
   | 'opsz'
+  | 'pair'
+  | 'twist'
+  | 'warpScale'
   | 'M'
 >;
 
@@ -62,6 +65,11 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
     fmin: num('fmin', 0),
     fmax: num('fmax', 0),
     opsz: a.get('opsz') ?? '',
+    // `warp` relocate pairing (§22.3): the paired body's selector + the twist/scale applied to
+    // matter that crosses the throat. Undefined `pair` ⇒ not a wormhole (the force no-ops).
+    pair: a.get('pair') || undefined,
+    twist: (num('twist', 0) * Math.PI) / 180,
+    warpScale: num('scale', 1),
     // source mass M = strength · k_g (k_g = 1 for now, §20.10).
     M: strength,
   };

@@ -741,6 +741,31 @@ export const EXPERIMENTS: ForceConformance[] = [
     },
     expectations: [adoptsTint()],
   },
+  {
+    // warp is position-dependent (reads warpX/warpY) and in NO_OFFSET, so coords are absolute.
+    scenario: {
+      force: 'warp',
+      label: 'A particle entering a warp throat relocates to its pair (conserved)',
+      family: 'extended',
+      klass: 'A',
+      body: { cx: 2000, cy: 2000, absorbR: 64, warpHas: true, warpX: 3000, warpY: 2000, twist: 0, warpScale: 1 },
+      particles: [{ x: 1990, y: 2000 }], // 10px inside throat A
+      frames: 5,
+    },
+    expectations: [
+      check('relocates to the paired throat', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]![0]!;
+        const dxPair = Math.hypot(last.x - 3000, last.y - 2000);
+        return { pass: dxPair < 90, measured: `${f3(dxPair)}px from the pair`, expected: '< ~throat (arrived at pair B)' };
+      }),
+      check('leaves the entry throat — conserved, not captured', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]![0]!;
+        const fromA = Math.hypot(last.x - 2000, last.y - 2000);
+        const count = r.trajectory[r.trajectory.length - 1]!.length;
+        return { pass: fromA > 64 && count === 1, measured: `${f3(fromA)}px from throat A, ${count} particle(s)`, expected: '> absorbR, count unchanged' };
+      }),
+    ],
+  },
 ];
 
 /**

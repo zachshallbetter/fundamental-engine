@@ -28,7 +28,7 @@ const CENTER = { x: 3000, y: 2000 };
 // position-dependent forces (a fixed lattice / a curl-noise field) are left at their
 // original coordinates — translating them would change the sampled field, and they
 // don't wander far enough to wrap anyway.
-const NO_OFFSET = new Set(['crystallize', 'wind']);
+const NO_OFFSET = new Set(['crystallize', 'wind', 'warp']);
 
 /** Centre a scenario in positive space (a transparent translation — every conformance
  *  check is relative, so a uniform offset of body + particles changes nothing). */

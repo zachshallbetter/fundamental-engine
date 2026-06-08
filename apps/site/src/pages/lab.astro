@@ -263,7 +263,7 @@ const FIELD_FILTERS = [
     // selected force's scenario body. `angle` is shown in degrees and converted to radians
     // in buildScenario. Which knobs appear is driven by the catalog `attrs` (so each force
     // shows only the knobs that matter), plus box/absorbR auto-added when the body has them,
-    // plus the injected particle's vx/vy/count. This covers all 34 forces with no per-force
+    // plus the injected particle's vx/vy/count. This covers all 35 forces with no per-force
     // table to drift.
     const ATTR: Any = {
       strength: (b: Any) => { const v = b.strength ?? 1, mx = Math.max(0.5, v * 3); return { key: 'strength', label: 'strength', sym: 'S', val: v, def: v, min: 0, max: mx, step: mx / 100 }; },

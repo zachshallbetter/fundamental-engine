@@ -75,14 +75,15 @@ export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
   updateBody: { field: 'field:update-body', forces: 'forces:update-body' },
   lit: { field: 'field:lit', forces: 'forces:lit', metric: 'density' },
   dim: { field: 'field:dim', forces: 'forces:dim', metric: 'density' },
-  // --- names reserved; NOT yet dispatched by the engine (planned). `captured`/`saturated` exist as
-  //     `data-on` *triggers*, but no canonical `field:captured`/`field:saturated` is fired on its own.
+  // capture/release (§22.3): a sink fires field:captured on the rising edge of accreting and
+  // field:released on supernova; docked elements fire them too. Edge-debounced (see field.ts).
+  captured: { field: 'field:captured', forces: 'forces:captured' },
+  released: { field: 'field:released', forces: 'forces:released' },
+  // --- names reserved; NOT yet dispatched by the engine (planned agent-threshold events).
   //     See docs/canonical/field-ui-agent-consumption-model.md (Events). ---
   entered: { field: 'field:entered', forces: 'forces:entered', metric: 'density' },
   exited: { field: 'field:exited', forces: 'forces:exited', metric: 'density' },
   saturated: { field: 'field:saturated', forces: 'forces:saturated', metric: 'accreted' },
-  captured: { field: 'field:captured', forces: 'forces:captured' },
-  released: { field: 'field:released', forces: 'forces:released' },
   attentionShifted: { field: 'field:attention-shifted', forces: 'forces:attention-shifted', metric: 'attention' },
   relationshipStrengthened: { field: 'field:relationship-strengthened', forces: 'forces:relationship-strengthened', metric: 'strength' },
   memoryThreshold: { field: 'field:memory-threshold', forces: 'forces:memory-threshold', metric: 'memory' },
