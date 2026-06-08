@@ -451,15 +451,15 @@ that the classification is *data*, validated against code, not prose.
 
 ### 6.4 The catalog, in brief
 
-The 34 forces fall into three families:
+The 35 forces fall into three families:
 
 - **Canonical (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`,
   `sink` — designed interface verbs with bounded, legible falloff.
 - **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`,
   `memory` — real field laws (softened inverse-square, Coulomb, Lorentz, Langevin agitation,
   elastic collision, diffusion, the wave equation, and a decaying occupancy grid).
-- **Designed-extended (~17):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`,
-  `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, `pigment`, `fieldflow`, and the
+- **Designed-extended (~18):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`,
+  `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, `pigment`, `fieldflow`, `warp`, and the
   `resonate` / `spotlight` modifiers.
 
 Eight **presets** (`blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`,
@@ -693,7 +693,7 @@ aspirational behavior and then state the model's deliberate limitations.
 **Shipped** (verifiable in the registry, the manual config, the render-mode catalog, the tests, and
 the package exports): the five packages; the `FrameScheduler` and all six registries plus
 `lintPlatform()`; the platform runtime as the default for `<field-root>` (Phase D) with the
-guarded renderer-agnostic core; all 34 forces and all 16+ render/diagnostic modes (including
+guarded renderer-agnostic core; all 35 forces and all 16+ render/diagnostic modes (including
 `topology`, `inspector`, `causality`, `prediction`); the `field.flowTo()`/`clearFlow()` controlled
 flow API; the Reading Field demo, accessibility preview, narrative reveal, and PNG/SVG diagnostic
 export; the native-HTML / web-component / React authoring surfaces; and the Natural Field Translation
