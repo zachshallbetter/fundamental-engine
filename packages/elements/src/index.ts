@@ -1,4 +1,4 @@
-import { PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions } from 'field-ui';
+import { PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayMode } from 'field-ui';
 import { createBrowserField, type FieldPlatform } from '@field-ui/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -27,6 +27,7 @@ export class FieldField extends HTMLElementBase {
     'density',
     'waves',
     'render',
+    'overlay',
     'palette',
     'mass',
     'attention',
@@ -35,6 +36,8 @@ export class FieldField extends HTMLElementBase {
 
   private readonly canvas: HTMLCanvasElement;
   private field?: FieldHandle;
+  /** Field Surfaces: the optional front overlay surface (light-DOM, above content). */
+  private overlayCanvas?: HTMLCanvasElement;
   /** experimental platform runtime (Phase D); present only when the flag is on. */
   platformRuntime?: PlatformRuntime;
 
@@ -79,6 +82,12 @@ export class FieldField extends HTMLElementBase {
   get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' {
     const v = this.getAttribute('render');
     return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' ? v : 'dots';
+  }
+
+  /** Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`. */
+  get overlay(): OverlayMode {
+    const v = this.getAttribute('overlay');
+    return v === 'streamlines' || v === 'force-vectors' || v === 'field-lines' ? v : 'off';
   }
 
   /** colour template name for the travelling accent (§9), or undefined for `ours`. */
@@ -134,9 +143,13 @@ export class FieldField extends HTMLElementBase {
   setHeatmap(on: boolean): void {
     this.field?.setHeatmap(on);
   }
-  /** switch the render mode (§20.6) live. */
+  /** switch the underlay render mode (§20.6) live. */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void {
     this.field?.setRender(mode);
+  }
+  /** render a field-structure visualization on the overlay surface (Field Surfaces — in front of content). */
+  setOverlay(mode: OverlayMode): void {
+    this.field?.setOverlay(mode);
   }
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void {
@@ -164,6 +177,9 @@ export class FieldField extends HTMLElementBase {
   disconnectedCallback(): void {
     this.field?.destroy();
     this.field = undefined;
+    // Field Surfaces: remove the light-DOM overlay surface this element owns.
+    this.overlayCanvas?.remove();
+    this.overlayCanvas = undefined;
     this.platformRuntime?.destroy();
     this.platformRuntime = undefined;
   }
@@ -185,6 +201,9 @@ export class FieldField extends HTMLElementBase {
         break;
       case 'render':
         this.field.setRender(this.renderMode);
+        break;
+      case 'overlay':
+        this.field.setOverlay(this.overlay);
         break;
       case 'attention':
         this.field.setAttention(this.attention);
@@ -212,12 +231,25 @@ export class FieldField extends HTMLElementBase {
       this.platformRuntime = startPlatformRuntime(scanRoot);
       feedbackSink = makeFeedbackSink(this.platformRuntime.platform);
     }
+    // Field Surfaces: ensure the front overlay surface exists (light DOM — the shadow host is
+    // z-index:0, behind content). A fixed, full-viewport, click-through canvas above content; core
+    // sizes its backing store and draws the overlay mode onto it. Created once, reused across rebuilds.
+    if (!this.overlayCanvas && typeof document !== 'undefined') {
+      const oc = document.createElement('canvas');
+      oc.setAttribute('aria-hidden', 'true');
+      oc.style.cssText =
+        'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
+      document.body.appendChild(oc);
+      this.overlayCanvas = oc;
+    }
     this.field = createBrowserField(this.canvas, {
       // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
       accent: this.getAttribute('accent') ?? undefined,
       density: this.density,
       waves: this.waves,
       render: this.renderMode,
+      overlayCanvas: this.overlayCanvas,
+      overlay: this.overlay,
       palette: this.palette,
       mass: this.mass,
       attention: this.attention,
