@@ -69,11 +69,15 @@ export interface FieldEventName {
  * are dispatched today; the rest are the agreed names for agent/threshold events as they wire up.
  */
 export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
+  // --- dispatched today (shipped) ---
   registerBody: { field: 'field:register-body', forces: 'forces:register-body' },
   unregisterBody: { field: 'field:unregister-body', forces: 'forces:unregister-body' },
   updateBody: { field: 'field:update-body', forces: 'forces:update-body' },
   lit: { field: 'field:lit', forces: 'forces:lit', metric: 'density' },
   dim: { field: 'field:dim', forces: 'forces:dim', metric: 'density' },
+  // --- names reserved; NOT yet dispatched by the engine (planned). `captured`/`saturated` exist as
+  //     `data-on` *triggers*, but no canonical `field:captured`/`field:saturated` is fired on its own.
+  //     See docs/canonical/field-ui-agent-consumption-model.md (Events). ---
   entered: { field: 'field:entered', forces: 'forces:entered', metric: 'density' },
   exited: { field: 'field:exited', forces: 'forces:exited', metric: 'density' },
   saturated: { field: 'field:saturated', forces: 'forces:saturated', metric: 'accreted' },
