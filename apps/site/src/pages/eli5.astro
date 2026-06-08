@@ -1,0 +1,729 @@
+---
+import Base from "../layouts/Base.astro";
+import SiteNav from "../components/SiteNav.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import "../styles/manual.css";
+import "../styles/force-glyphs.css";
+
+// A second, playful homepage — "field-ui, explained like you're 5". Same engine and the same
+// home structure (the shared <field-root>, the chapter/stage layout, and the HomeRuntime +
+// StageFieldOverlay wiring at the bottom), but a story-first narrative instead of the manual.
+//
+// Every stage here is a REAL body in the shared field — the demos use the same data-* contract
+// as the main home page (data-body / data-drag / data-feedback / data-threads / data-preset), so
+// nothing is faked: the dots actually swim, and the field-line overlay traces the true paths.
+// The runtime only activates on pages with `.manual-shell`, which this page provides.
+---
+
+<Base
+  title="field-ui — explained like you're 5"
+  description="A webpage you can play with, that plays back. field-ui sprinkles invisible magnets onto a page: a word can call the dots in, a button can push them away, and when matter piles up the word notices and grows. Things bend the field; the field bends them back — and the dots are just the easiest thing to see."
+>
+  <SiteNav />
+  <div class="manual-shell">
+    <header class="manual-hero" id="top">
+      <div class="wrap">
+        <p class="kicker">field-ui · explained like you're 5</p>
+        <h1>A webpage you can <span class="accent">play with</span> — that plays
+          back.</h1>
+        <p class="standfirst">
+          You know how a magnet can push and pull without touching anything?
+          field-ui sprinkles invisible magnets onto a webpage. A word can say
+          “come here!” and the little floating dots all swim toward it. A button
+          can say “stay back!” and they scoot away. Some things spin the dots in
+          circles; some gobble them up like a tiny black hole.
+        </p>
+        <p class="thesis">
+          <strong>And the magic part — it goes both ways.</strong> Pile enough dots
+          on a word and the word notices: it grows bigger, bolder, glowier. Things
+          bend the invisible field, and the field bends them back.
+        </p>
+        <div class="hero-cta">
+          <a class="btn primary" href="/docs">Read the docs →</a>
+          <a class="btn" href="/lab">Open the Lab →</a>
+          <a class="btn" href="/">See the grown-up version →</a>
+        </div>
+        <div class="hero-flow">
+          <button
+            id="flowToggle"
+            class="flow-toggle"
+            type="button"
+            aria-pressed="false"
+          >
+            <span class="ft-dot" aria-hidden="true"></span>Make the dots follow you
+          </button>
+          <span class="flow-hint"
+            >move your cursor — the whole field leans toward it</span
+          >
+        </div>
+      </div>
+    </header>
+
+    <nav class="chapter-rail" aria-label="Chapters">
+      <a href="#ch-magnets" data-ch="ch-magnets"
+        ><span class="cr-no">1</span><span class="cr-label">Magnets</span></a
+      >
+      <a href="#ch-things" data-ch="ch-things"
+        ><span class="cr-no">2</span><span class="cr-label">Not just dots</span
+        ></a
+      >
+      <a href="#ch-toybox" data-ch="ch-toybox"
+        ><span class="cr-no">3</span><span class="cr-label">Toy box</span></a
+      >
+    </nav>
+
+    <!-- 1 · The invisible magnets -->
+    <div class="chapter" id="ch-magnets">
+      <div class="wrap">
+        <span class="chapter-no">1</span>
+        <h2 class="chapter-title">The invisible magnets</h2>
+        <p class="chapter-sub">
+          Drop a magnet on the page and watch the little dots react. Drag any of
+          them around — the pull or push follows the word, not your cursor.
+        </p>
+      </div>
+    </div>
+
+    <section class="concept reverse" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"
+            ><i class="fg fg-attract" style="--fc:#4da3ff"></i>Come here!</span
+          >
+          <h2>A word can call the dots in.</h2>
+          <p>
+            An <strong>attractor</strong> says “come here!” and the floating dots
+            all swim toward it. The pull is tied to the word — drag it across the
+            field and the dots chase it.
+          </p>
+          <p class="note">Give it a poke and watch the dots rush back in.</p>
+          <button class="agitate" data-agitate="#m-attract">↯ Poke the field</button
+          >
+        </div>
+        <div class="stage">
+          <span class="stage-label">come here — drag me</span>
+          <span
+            class="body-chip"
+            id="m-attract"
+            data-drag
+            data-body="attract"
+            data-strength="1"
+            data-range="300"
+            style="--cc:#4da3ff; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-attract"></i>come here</span
+          >
+          <span class="hintline">the dots swim toward it</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept" data-form="scatter">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"
+            ><i class="fg fg-repel" style="--fc:#ff9d5c"></i>Stay back!</span
+          >
+          <h2>Or push them all away.</h2>
+          <p>
+            A <strong>repeller</strong> says “stay back!” — it carves out a clean
+            space and the dots flow around it instead of through it.
+          </p>
+          <p class="note">Drag it into the crowd and watch a clearing open.</p>
+          <button class="agitate" data-agitate="#m-repel">↯ Poke the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">stay back — drag me</span>
+          <span
+            class="body-chip"
+            id="m-repel"
+            data-drag
+            data-body="repel"
+            data-strength="1.1"
+            data-range="300"
+            style="--cc:#ff9d5c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-repel"></i>stay back</span
+          >
+          <span class="hintline">a clearing opens around it</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"
+            ><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>Spin them</span
+          >
+          <h2>Some things spin the dots in circles.</h2>
+          <p>
+            A <strong>swirl</strong> sends the dots wheeling around it like water
+            going down a drain — but gently, so they orbit instead of falling in.
+          </p>
+          <p class="note">Drag it through the swarm and stir.</p>
+          <button class="agitate" data-agitate="#m-swirl">↯ Poke the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">spin — drag me</span>
+          <span
+            class="body-chip"
+            id="m-swirl"
+            data-drag
+            data-body="swirl"
+            data-spin="1"
+            data-strength="1"
+            data-range="320"
+            style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-swirl"></i>spin</span
+          >
+          <span class="hintline">the dots wheel around, never collapse</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept" data-form="accretion">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"
+            ><i class="fg fg-sink" style="--fc:#ff6e9c"></i>Gobble them</span
+          >
+          <h2>Some gobble them up like a tiny black hole.</h2>
+          <p>
+            A <strong>sink</strong> swallows the dots that wander too close —
+            holding them at its core, not deleting them. Nothing is conjured from
+            nothing; matter just changes hands.
+          </p>
+          <p class="note">Poke the field and feed it.</p>
+          <button class="agitate" data-agitate="#m-sink">↯ Feed it</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">gobble — drag me</span>
+          <span
+            class="body-chip"
+            id="m-sink"
+            data-drag
+            data-body="sink attract"
+            data-absorb="64"
+            data-max="14"
+            data-strength="0.9"
+            data-range="240"
+            style="--cc:#ff6e9c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-sink"></i>gobble</span
+          >
+          <span class="hintline">dots get held at the core</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">✨ Both ways</span>
+          <h2>And here’s the magic — it goes both ways.</h2>
+          <p>
+            The word pulls the dots in… and when lots of dots pile up, the word
+            <strong>notices</strong>. It gets heavier, bolder, and glowier. The
+            dots push the word, the word pushes back — they play together,
+            forever. That’s the whole idea.
+          </p>
+          <p class="note">Hover the word — pull the dots in and watch it grow.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">pile up → it grows</span>
+          <span
+            class="live-demo"
+            data-hot
+            data-color="#a78bfa"
+            data-feedback
+            data-body="attract"
+            data-strength="1"
+            data-range="300"
+            style="--cat:#a78bfa;">notice me</span
+          >
+          <span class="hintline">gathered dots make the word heavier</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · When it's not just dots -->
+    <div class="chapter" id="ch-things">
+      <div class="wrap">
+        <span class="chapter-no">2</span>
+        <h2 class="chapter-title">When it’s not just dots</h2>
+        <p class="chapter-sub">
+          Here’s the secret: the dots were never the point. The field doesn’t care
+          what you drop into it — the real words, the lines between them, even
+          where you’re looking can all play.
+        </p>
+      </div>
+    </div>
+
+    <section class="concept" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">🟦 Words &amp; boxes</span>
+          <h2>The headline itself becomes a magnet.</h2>
+          <p>
+            Drop in the actual words on the page and the headline gets heavy,
+            glows, and the paragraph next to it leans away to make room. The page
+            isn’t <em>decorated</em> by the field — the page <strong>lives
+            inside</strong> it.
+          </p>
+          <p class="note">Hover the word to give it weight.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">a word with weight</span>
+          <span
+            class="live-demo"
+            data-hot
+            data-color="#7dd3fc"
+            data-feedback
+            data-body="attract"
+            data-strength="1.1"
+            data-range="300"
+            style="--cat:#7dd3fc;">headline</span
+          >
+          <span class="hintline">heavy, glowing, alive</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">🔗 Lines between things</span>
+          <h2>Related things tie themselves together.</h2>
+          <p>
+            A footnote and the sentence it belongs to are joined by an invisible
+            rubber band — tug one and the other tugs back. Related things pull
+            together; things that argue push apart. The connections become real,
+            physical, grabbable.
+          </p>
+          <p class="note">Hover any word to light up its set.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">a connected set</span>
+          <div class="thread-set" data-index data-threads>
+            <span
+              class="ti"
+              data-hot
+              data-color="#4da3ff"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#4da3ff;">claim</span
+            >
+            <span
+              class="ti"
+              data-hot
+              data-color="#2dd4bf"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#2dd4bf;">proof</span
+            >
+            <span
+              class="ti"
+              data-hot
+              data-color="#a78bfa"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#a78bfa;">source</span
+            >
+            <span
+              class="ti"
+              data-hot
+              data-color="#ff9d5c"
+              data-body="attract"
+              data-strength="0.5"
+              data-range="220"
+              style="--cat:#ff9d5c;">footnote</span
+            >
+          </div>
+          <span class="hintline">threads connect what belongs together</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept" data-attention-demo>
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">👀 Where you’re looking</span>
+          <h2>The page knows you’re here.</h2>
+          <p>
+            As you scroll, the part you’re reading lights up like a flashlight
+            beam — and the page remembers where you’ve already been, so those
+            spots stay a little warm, like footprints in sand. A long article
+            suddenly knows “you are here, you’ve read this.”
+          </p>
+          <p class="note">
+            There’s only one spotlight of focus — hover one word and the others
+            politely dim. Nothing screams for attention all at once.
+          </p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">one spotlight, shared</span>
+          <div class="attn-set">
+            <span
+              class="attn-word"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.5"
+              data-range="240"
+              data-color="#4da3ff"
+              style="--cat:#4da3ff;">here</span
+            >
+            <span
+              class="attn-word"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.5"
+              data-range="240"
+              data-color="#2dd4bf"
+              style="--cat:#2dd4bf;">now</span
+            >
+            <span
+              class="attn-word"
+              data-hot
+              data-feedback
+              data-body="attract"
+              data-strength="1.5"
+              data-range="240"
+              data-color="#ff9d5c"
+              style="--cat:#ff9d5c;">read</span
+            >
+          </div>
+          <span class="hintline">engage one — the others give up their glow</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">📊 Data you can trust</span>
+          <h2>Feel which answer to trust.</h2>
+          <p>
+            Drop in a pile of search results or a to-do list and each one becomes
+            its own magnet. The important ones sink into a deep well and pull your
+            eye; the shaky, unsure ones wobble; the ones with proof behind them
+            sit solid and calm. You can feel which answer to trust before you even
+            read it.
+          </p>
+          <p class="note">Poke it — the solid one barely flinches.</p>
+          <button class="agitate" data-agitate="#m-trust">↯ Poke the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">important → deep well</span>
+          <span
+            class="body-chip"
+            id="m-trust"
+            data-drag
+            data-body="attract"
+            data-strength="1.4"
+            data-range="300"
+            style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-attract"></i>trusted</span
+          >
+          <span class="hintline">proof sits solid; doubt drifts</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept big-idea">
+      <div class="wrap">
+        <p class="bigidea-kicker">The big idea</p>
+        <h2>
+          Dots show you the field is there. <span class="accent"
+            >Everything else is what the field is for.</span
+          >
+        </h2>
+        <p>
+          It’s not “a webpage with floating dots.” It’s a webpage where meaning has
+          weight — where being important, being related, being trusted, or being
+          already-read are things you can <strong>see and feel</strong>, not just
+          words someone typed.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3 · The toy box -->
+    <div class="chapter" id="ch-toybox">
+      <div class="wrap">
+        <span class="chapter-no">3</span>
+        <h2 class="chapter-title">The toy box</h2>
+        <p class="chapter-sub">
+          Different games you can play with the same invisible field. They’re all
+          the same magnets underneath — a new idea is just a new way to mix them.
+        </p>
+      </div>
+    </div>
+
+    <section class="concept">
+      <div class="wrap">
+        <ul class="toybox-grid">
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">✍️</span>
+            <h3>Make words feel alive</h3>
+            <p>One headline gets heavier, wider, warmer and glowier as it matters
+              — and melts back to calm when it doesn’t. The type breathes.</p>
+          </li>
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">🎯</span>
+            <h3>Share one bucket of attention</h3>
+            <p>One spotlight of focus for the whole page. Shine it here and the
+              rest politely dim. Calm on purpose.</p>
+          </li>
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">🧠</span>
+            <h3>Give the page a memory</h3>
+            <p>Where you’ve been stays warm. Spots you return to wear a path, like
+              a trail through grass. The page learns your shape.</p>
+          </li>
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">🤝</span>
+            <h3>Help you trust answers</h3>
+            <p>A claim with proof sits solid; a made-up one wobbles and drifts; two
+              facts that argue push apart. Great for AI.</p>
+          </li>
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">🌦️</span>
+            <h3>Show a system’s “weather”</h3>
+            <p>A dashboard of alerts can feel like a storm or a calm blue sky — “all
+              fine” or “uh oh” in one glance, not 50 little red dots.</p>
+          </li>
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">🧲</span>
+            <h3>Let things arrange themselves</h3>
+            <p>Boxes find their own comfy spots — pulled by what they belong to,
+              pushed apart so they don’t crowd — and re-settle when the window
+              changes.</p>
+          </li>
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">🔍</span>
+            <h3>Ask “why?”</h3>
+            <p>Click anything and the page shows its work: “I moved because of THIS
+              pull; I glow because of THESE friends nearby.” No mystery box.</p>
+          </li>
+          <li class="toy-card">
+            <span class="toy-emoji" aria-hidden="true">♿</span>
+            <h3>Works with the wiggle off</h3>
+            <p>If motion makes someone dizzy, everything freezes but still means
+              the same thing — the glow, the weight, the trail all stay.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="concept reverse">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"
+            ><i class="fgp fgp-blackhole"></i>🌌 Or just make something beautiful</span
+          >
+          <h2>Type <code>blackhole</code> and watch a universe form.</h2>
+          <p>
+            The same little pieces swirl into whole tiny universes — try
+            <code>blackhole</code>, <code>galaxy</code>, <code>tornado</code>,
+            <code>fountain</code>. A preset is just a bundle of magnets given a
+            name.
+          </p>
+          <p class="note">Drag it around and let it pull the field into shape.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">blackhole — drag me</span>
+          <span
+            class="body-chip"
+            data-drag
+            data-preset="blackhole"
+            style="--cc:#fbbf24; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fgp fgp-blackhole"></i>blackhole</span
+          >
+          <span class="hintline">a whole little universe from a few magnets</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="manual-foot">
+      <div class="wrap">
+        <h2>New idea = mix the magnets a new way.</h2>
+        <p class="foot-sub">
+          A story, a dashboard, a game — they’re all the same field underneath.
+          What do you want to make?
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="/lab">Open the Lab →</a>
+          <a class="btn" href="/docs">Read the docs →</a>
+          <a class="btn" href="/">See the grown-up version →</a>
+        </div>
+      </div>
+    </section>
+  </div>
+  <SiteFooter />
+</Base>
+
+<!-- Page orchestrator — reuses the home interaction runtime + field-line overlay (both scan the
+     document for .stage / [data-body] / [data-drag] / [data-threads] / [data-attention-demo] etc.,
+     so this page behaves exactly like the main home). Tears down on navigation so nothing leaks. -->
+<script>
+  import { initHomeRuntime } from "../components/home/HomeRuntime.ts";
+  import { initStageFieldOverlay } from "../components/home/StageFieldOverlay.ts";
+
+  let teardownRuntime: (() => void) | undefined;
+  let teardownOverlay: (() => void) | undefined;
+
+  function teardown() {
+    teardownRuntime?.();
+    teardownOverlay?.();
+    teardownRuntime = undefined;
+    teardownOverlay = undefined;
+  }
+
+  function init() {
+    teardown(); // idempotent: drop any prior run before re-wiring
+    if (!document.querySelector(".manual-shell")) return;
+    teardownRuntime = initHomeRuntime();
+    teardownOverlay = initStageFieldOverlay();
+  }
+
+  if (document.readyState !== "loading") init();
+  else document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("astro:page-load", init);
+  document.addEventListener("astro:before-swap", teardown);
+</script>
+
+<style is:global>
+  .stage {
+    position: relative;
+  }
+  .stage-field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+  .stage-field ~ * {
+    position: relative;
+    z-index: 1;
+  }
+  html.hide-field-lines .stage-field {
+    opacity: 0;
+  }
+
+  /* hero flow toggle — drives field.flowTo() */
+  .hero-flow {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .flow-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    cursor: pointer;
+    color: inherit;
+    border: 1px solid var(--line, #2a2a35);
+    background: transparent;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
+  }
+  .flow-toggle .ft-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #4da3ff;
+    opacity: 0.5;
+    transition:
+      opacity 0.2s,
+      box-shadow 0.2s;
+  }
+  .flow-toggle.on {
+    border-color: #4da3ff;
+    background: color-mix(in srgb, #4da3ff 16%, transparent);
+  }
+  .flow-toggle.on .ft-dot {
+    opacity: 1;
+    box-shadow: 0 0 10px 2px color-mix(in srgb, #4da3ff 70%, transparent);
+  }
+  .flow-hint {
+    font-size: 0.78rem;
+    color: var(--muted, #9aa);
+  }
+  .flow-hint code {
+    font-size: 0.92em;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flow-toggle .ft-dot {
+      transition: none;
+    }
+  }
+</style>
+
+<style>
+  /* The "big idea" interstitial — a calm, centered beat between the two halves. */
+  .big-idea .wrap {
+    text-align: center;
+    max-width: 46rem;
+  }
+  .bigidea-kicker {
+    font-family: var(--mono, monospace);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted, #9aa);
+    margin: 0 0 0.6rem;
+  }
+  .big-idea h2 {
+    font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+    line-height: 1.12;
+    margin: 0 0 0.8rem;
+  }
+
+  /* The toy box — a compact card grid, lighter than the full demo stages. */
+  .toybox-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  .toy-card {
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 14px;
+    padding: 1.1rem 1.2rem;
+    background: color-mix(in srgb, var(--text, #fff) 3%, transparent);
+  }
+  .toy-emoji {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .toy-card h3 {
+    font-size: 1.02rem;
+    margin: 0.5rem 0 0.35rem;
+  }
+  .toy-card p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--muted, #9aa);
+    margin: 0;
+  }
+  .foot-sub {
+    color: var(--muted, #9aa);
+    max-width: 34rem;
+    margin: 0.4rem auto 1.4rem;
+  }
+</style>
