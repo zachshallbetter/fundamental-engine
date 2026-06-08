@@ -102,6 +102,53 @@ through `setRender()` / the core.
 | `causality` | particles + force vectors + contribution colors |
 | `prediction` | actual trails + ghost trails + divergence error |
 
+## Surfaces & Placement
+
+The methods above answer *what* to draw. **Placement** answers *where* it composites relative to page
+content — an axis orthogonal to every visualization method. The visible particle canvas is one
+**surface**; field-ui defines two:
+
+| Surface | Placement | Drawn on | Status |
+|---|---|---|---|
+| **Underlay** | behind content (`z-index:0`) | the `<field-root>` canvas | shipped (the default) |
+| **Overlay** | in front of content (`pointer-events:none`, screen-blend, above content / below the nav) | a second light-DOM canvas the element owns | shipped |
+
+- **Immersive** = the same field drawn on *both* surfaces, so content sits **inside** the field. It is
+  a composition, not a new primitive: set the underlay (`render`) and the overlay (`overlay`) together.
+- **Overlay-suitable methods** are the structure/vector visualizations that reveal field *shape*
+  without occluding text: `streamlines`, `force-vectors`, `field-lines` (and, planned, the scalar
+  overlays `contours` / `potential`). Particle/matter methods (`dots`, `trails`, `metaballs`,
+  `voronoi`) stay on the **underlay** by design — drawn over text they would obscure it.
+- The overlay renders the **live** field (the engine's `forceAt` / `netField` samplers over the
+  current bodies), not a static trace — so it tracks the page as bodies move, scroll, and engage.
+
+### Surfaces API
+
+| Surface | Set live | Declarative (`<field-root>`) | createField option |
+|---|---|---|---|
+| Underlay | `setRender(mode)` | `render="…"` | `render` |
+| Overlay | `setOverlay(mode)` | `overlay="…"` | `overlay` (+ `overlayCanvas` for raw `createField`) |
+
+```html
+<!-- immersive: dots behind content, the live force field washing over it -->
+<field-root render="dots" overlay="streamlines"></field-root>
+```
+
+```ts
+field.setRender('dots');         // underlay (behind content)
+field.setOverlay('field-lines'); // overlay (in front of content); 'off' clears the surface
+```
+
+**Placement is orthogonal to mode** — any overlay-suitable method renders on either surface.
+`<field-root>` owns the overlay canvas (created in the light DOM, since the shadow host is `z-index:0`);
+`createField` callers pass their own `overlayCanvas`. Core stays renderer-agnostic: it only draws to
+the canvases it is handed.
+
+> **Planned (named, not built):** per-element / `inline` placement (a surface scoped to one box),
+> `framed` placement (within a stage), and overlay support for the scalar (`contours` / `potential`)
+> and graph (`topology` / `causality` / `prediction`) methods. The `OverlayMode` union is additive, so
+> these land without a breaking change.
+
 ## 1. Particles
 
 Particles are visible matter.
