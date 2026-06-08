@@ -22,12 +22,12 @@ renderer other than the DOM canvas.
 
 ## What's inside
 
-- **34 forces** in three families: **9 canonical** verbs (`attract`, `repel`, `swirl`, `stream`,
+- **35 forces** in three families: **9 canonical** verbs (`attract`, `repel`, `swirl`, `stream`,
   `viscosity`, `jet`, `tether`, `wall`, `sink`), **8 natural** primitives (`gravity`, `charge`,
-  `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`), and **17 designed-extended**
+  `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`), and **18 designed-extended**
   forces (`lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`,
-  `link`, `morph`, `hunt`, `spawn`, `resonate`, `spotlight`, `pigment`, and field-line transport
-  `fieldflow`).
+  `link`, `morph`, `hunt`, `spawn`, `resonate`, `spotlight`, `pigment`, field-line transport
+  `fieldflow`, and wormhole relocate `warp`).
 - **8 presets** compose those primitives into cosmology with no new engine code (`blackhole`, `star`,
   `galaxy`, `tornado`, …), plus **5 formations** that bias the whole field and **6 condition** gates.
 - **16 render modes**: matter/structure (`dots`, `trails`, `links`, `streamlines`, `metaballs`,

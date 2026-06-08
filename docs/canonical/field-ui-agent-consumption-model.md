@@ -54,18 +54,18 @@ concerns, and the distinction matters:
 
 ## Influence kinds → how each agent consumes them
 
-Every force emits one of a few **influence kinds**. The matrix is the spec — but each cell carries its
+Every force emits one of a few **influence kinds**. The matrix is the spec, and each cell carries its
 own status. *This corrects the older unannotated matrix in
-[forces-system §22.3](../engine-reference/forces-system.md), which presented planned cells as if equal
-to shipped ones.*
+[forces-system §22.3](../engine-reference/forces-system.md), which once presented unbuilt cells as if
+equal to shipped ones.*
 
 | Influence (from force) | Particle | Element | Event sink |
 |---|---|---|---|
 | **impulse** `Δv` (attract, repel, wind, stream…) | `v += F/m` — **shipped** | `o_v += F/m_el` → `translate(o)` via `data-move` — **shipped** | — |
 | **constraint** (tether, wall, gate) | clamp pos/vel — **shipped** | anchor tether + offset clamp (`maxOffset`) — **shipped** | — |
-| **capture** (sink) | `p.cap = b`, held then released — **shipped** | dock / collapse the element — **planned** | fire `field:captured` — **planned** |
-| **relocate** (warp) | move position — **planned** (`warp` spec-only) | reorder / teleport in the DOM — **planned** | — |
-| **emit** (spawn) | new particle — **shipped** | clone / insert a DOM node — **planned** | — |
+| **capture** (sink) | `p.cap = b`, held then released — **shipped** | dock / collapse the element via `data-dock` — **shipped** | fire `field:captured` / `field:released` — **shipped** |
+| **relocate** (warp) | `warp` throat → paired body, conserved — **shipped** | teleport offset to the pair via `data-warp` — **shipped** | — |
+| **emit** (spawn) | new particle — **shipped** | clone a decorative template via `data-emit` — **shipped** | — |
 | **trigger** (threshold) | sets heat / state — **shipped** | toggle a class — **planned** (no built-in; do it in a `data-on` handler) | dispatch a `CustomEvent` via `data-on` — **shipped** |
 | **feedback** (gathered field → output) | `--d` / density — **shipped** | `--field-*` vars + `data-field-*` bands — **shipped** | — |
 
@@ -73,10 +73,13 @@ to shipped ones.*
 **transform** (with element mass `m_el`) instead of raw velocity. "Apply a force to an event" = the
 influence, on crossing a threshold, becomes a **signal**.
 
-**The honest summary:** impulse, constraint, feedback are wired for both particles and elements;
-capture and emit are wired for **particles** (sink, spawn); element-level capture/relocate/emit and
-the `warp` relocate atom are **planned**. Do not describe arbitrary DOM elements as docked, cloned,
-reordered, or teleported by the field — that is not yet in code.
+**The honest summary:** every influence kind is now wired for particles, and elements consume impulse,
+constraint, feedback, capture (`data-dock`), relocate (`data-warp`), and emit (`data-emit`). The
+element consumers are **opt-in by attribute**, so they never surprise existing `data-move` content, and
+they stay accessible — docked elements are restored on release, emitted clones are `aria-hidden`. The
+one still-planned cell is the element `trigger` *class toggle* (do it in a `data-on` handler today).
+Element relocate is a **transform teleport**, not a DOM-tree reorder: reordering nodes would disrupt
+focus and reading order, so it is intentionally avoided.
 
 ## Body roles
 
@@ -117,9 +120,16 @@ token.** `absorb` is **not** a token — only the `data-absorb` *attribute* exis
 concept/legacy language. `--load` is canonical; `--mass` is the alias.
 
 **Test coverage:** capture-within-radius and saturation-triggers-supernova are unit-tested
-(`forces.test.ts`); the full hold → release cycle (held particles stay in the pool, then the *same*
-particles are released) is **not yet** covered by an integration test. That is the one known gap in
-this submodel.
+(`forces.test.ts`), and the full hold → release cycle — captured matter stays in the pool, drifts to
+the core, then the *same* particles are released (conserved, count unchanged) — is covered end-to-end
+through the real integrator in `accretion.test.ts`. The release core is the pure, DOM-free
+`releaseCaptured` (`accretion.ts`), shared by `field.ts` and the test.
+
+**Element capture (dock).** A `[data-move][data-dock]` element that drifts into a sink's `absorbR`
+docks: it collapses toward the core (translate + scale → 0) and is held until the sink releases
+(supernova), which restores it. Docked elements become `aria-hidden` while collapsed and are restored
+on release and on teardown — element capture is conserved like particle capture. The collapse math is
+the pure `dock.ts` (`withinCapture` / `stepDock` / `dockTransform`), tested in `dock.test.ts`.
 
 ## Events
 
@@ -131,17 +141,20 @@ alias window (`FeedbackRegistry`, `shadow.ts`).
 
 - `field:lit` / `field:dim` — density crosses the lit threshold (`field.ts`; also `FeedbackRegistry`).
 - `field:register-body` / `field:unregister-body` / `field:update-body` — body lifecycle (`shadow.ts`).
+- `field:captured` / `field:released` — a sink begins accreting (rising edge of `accreted > 0`) and
+  releases on supernova (falling edge); also fired on a docked element when it docks / is restored.
+- `field:relocated` — a `[data-warp]` element teleports through a warp throat to its pair.
 - **any event name you bind via `data-on`** — e.g. `data-on="captured:field:dock, dense:field:lit"`.
 
-**Names reserved, not yet dispatched (planned):** `field:captured`, `field:released`,
-`field:saturated`, `field:entered`, `field:exited`, `field:attention-shifted`,
-`field:relationship-strengthened`, `field:memory-threshold`, `field:entropy-warning`. The catalog
-itself documents this ("the rest are the agreed names … as they wire up").
+Every `field:*` here mirrors to its `forces:*` twin during the alias window.
 
-**Important nuance.** `captured` is a shipped *trigger* (`accreted > 0`): `data-on="captured:…"` fires
-when a sink starts accreting. But the engine does **not** dispatch a canonical `field:captured` /
-`field:released` on its own. So: the *trigger* ships; the *named events* do not. Do not claim
-`field:captured` / `field:released` are shipped.
+**Names reserved, not yet dispatched (planned):** `field:saturated`, `field:entered`, `field:exited`,
+`field:attention-shifted`, `field:relationship-strengthened`, `field:memory-threshold`,
+`field:entropy-warning` — the agent-threshold events, still wiring up.
+
+**Edge nuance.** `field:captured`/`released` are edge-debounced on `accreted > 0`. Release is fired
+directly from `supernova` so a same-frame fill-and-release never drops it; the rising-edge capture is
+sampled after the force pass (the same model as the `captured` `data-on` trigger).
 
 ## Text and the visual layer
 
@@ -178,9 +191,9 @@ SVG is a bound representation, not the meaning. Particles and contours are **exp
 Field Agent Consumption Model
   Agent types:        particle · element · relationship · user · layout · data · event   (all shipped)
   Influence kinds:    impulse · constraint · capture · relocate · emit · trigger · feedback
-                      (status is per agent — see the matrix; element capture/relocate/emit are planned)
+                      (per-agent status in the matrix; only the element trigger class-toggle is planned)
   Body roles:         source · density receiver · force target · event host              (all shipped)
   Submodel — Body Matter Interaction:
     source · attract/repel/shape · capture (sink) · hold · release · expose feedback     (shipped)
-    dock/collapse an element · clone/emit a node · relocate/teleport                      (planned)
+    dock an element (data-dock) · emit a node (data-emit) · relocate/teleport (data-warp) (shipped)
 ```

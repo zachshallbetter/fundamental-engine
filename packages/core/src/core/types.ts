@@ -96,8 +96,21 @@ export interface Body {
   fmin: number;
   fmax: number;
   opsz: string;
+  /** `data-pair` — selector for the body this one is wormhole-paired to (`warp`, §22.3 relocate). */
+  pair?: string;
+  /** `data-twist` — rotation (radians) applied to matter relocated through a `warp` throat. */
+  twist?: number;
+  /** `data-scale` — scale applied to the relocated local offset through a `warp` throat (default 1). */
+  warpScale?: number;
 
   // ── runtime state ────────────────────────────────────────────────────────
+  /** the resolved paired body for `warp` (set each scan from `pair`); undefined if unpaired. */
+  pairBody?: Body;
+  /** the paired throat's live centre, refreshed each frame from `pairBody` (the relocate target). */
+  warpX?: number;
+  warpY?: number;
+  /** whether a relocate target is currently resolved (the `warp` force no-ops without one). */
+  warpHas?: boolean;
   /** source mass M for `gravity`/`charge` (§20.10/§21). */
   M: number;
   cx: number;

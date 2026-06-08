@@ -136,7 +136,7 @@ calls into these as needed via the `FrameScheduler`. The parsing/geometry below 
 | Module | Key symbols | Purpose |
 |---|---|---|
 | `config/forces.config.ts` | `FORCES`, `FORCE_BY`, `FORMATIONS`, `CONDITIONS`, `PALETTE`, `ACCENT_JOURNEY` | Canonical catalog — the designed nine + the five formations + six conditions, with identity colours. |
-| `config/manual.ts` | `MANUAL_FORCES`, `MANUAL_PRESETS`, `MANUAL_CONDITIONS`, `FORCE_COLORS`/`SYMBOLS`/`SUMMARIES`/`EFFECTS`/`EXAMPLES` | The **Field Manual** — the complete public definition of all 34 forces (formula, attrs, copy, colour, symbol). A test pins it to the registry so it can't drift. |
+| `config/manual.ts` | `MANUAL_FORCES`, `MANUAL_PRESETS`, `MANUAL_CONDITIONS`, `FORCE_COLORS`/`SYMBOLS`/`SUMMARIES`/`EFFECTS`/`EXAMPLES` | The **Field Manual** — the complete public definition of all 35 forces (formula, attrs, copy, colour, symbol). A test pins it to the registry so it can't drift. |
 | `config/presets.ts` | `PRESETS`, `PresetEntry` | The eight cosmology presets (§20.9) as named arrangements of co-located virtual bodies. |
 | `config/palettes.ts` | `PALETTES`, `resolvePalette` | Accent/particle colour ramps (`ours`, `heatmap`, `infrared`, `spectrum`, …) for the scroll journey (§9). |
 | `config/tokens.ts` | `cssTokens` | Design tokens (§25.2) — the force palette + coherence + ease as injectable CSS custom properties. |
