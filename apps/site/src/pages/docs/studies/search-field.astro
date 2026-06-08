@@ -62,7 +62,7 @@ const LIVE = ['trust-gradient'];
     const mapper = (r: Result) => ({
       id: r.id,
       body: { tokens: ['charge', 'link'], strength: 0.4 + r.confidence, range: 280, feedback: true, spin: r.polarity === 'contradict' ? -1 : 1 },
-      metrics: { confidence: r.confidence, recency: r.recency },
+      metrics: { confidence: r.confidence }, // trust-gradient tracks confidence; recency is not a recipe metric
       label: r.title,
     });
     const content = (r: Result) =>
