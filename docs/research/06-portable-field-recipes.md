@@ -193,8 +193,7 @@ A `FieldRecipe` carries:
 - **`budget`** (optional, `Partial<PerformanceBudget>`) and **`expected`** (optional
   `ExpectedMetrics` — `particleCount`, `entropyRange`, `energyDriftMax`): the performance envelope and
   the conformance fingerprint a running instance should match.
-- **`tier`**, **`status`** — the catalog placement (`core` / `workflow` / `professional` /
-  `enterprise`) and implementation status (`shipped` / `experimental` / `planned` / `conceptual`),
+- **`tier`**, **`status`** — the catalog placement (`core` / `applied` / `systems` / `operational`) and implementation status (`shipped` / `experimental` / `planned` / `conceptual`),
   injected during catalog assembly (§5).
 - **`notes`** — free expressive prose.
 
@@ -392,9 +391,9 @@ recipes each:
 ```ts
 export const RECIPE_TIERS: readonly RecipeTierGroup[] = [
   { key: 'core',         label: 'Core interface & accessibility',        recipes: decorate(TIER_CORE, 'core') },
-  { key: 'workflow',     label: 'Product, workflow & collaboration',     recipes: decorate(TIER_PRODUCT, 'workflow') },
-  { key: 'professional', label: 'Professional systems & governance',     recipes: decorate(TIER_SYSTEMS, 'professional') },
-  { key: 'enterprise',   label: 'Enterprise, adaptive & operational',    recipes: decorate(TIER_ENTERPRISE, 'enterprise') },
+  { key: 'applied', label: 'Applied — product, workflow & collaboration', recipes: decorate(TIER_PRODUCT, 'applied') },
+  { key: 'systems', label: 'Systems — safety, provenance & governance', recipes: decorate(TIER_SYSTEMS, 'systems') },
+  { key: 'operational', label: 'Operational — multi-actor, adaptive & live', recipes: decorate(TIER_ENTERPRISE, 'operational') },
 ];
 
 export const FIELD_RECIPES: readonly FieldRecipe[] = RECIPE_TIERS.flatMap((t) => t.recipes);
@@ -416,8 +415,7 @@ and that all eight resolve.) The catalog spans gravity-family priority recipes (
 `Evidence Field`, `Guided Flow`), strong-interaction binding recipes (`Relationship Bond`,
 `Concept Cluster`, `Coherence Field`), weak-interaction transformation recipes (`Decay Notice`,
 `Phase Shift`), the `Reading Field` and `Memory Trace`, the platform-layer `Diagnostic Lens`, and the
-contract recipe `Accessibility Equivalence`, before broadening through product, professional, and
-enterprise patterns.
+contract recipe `Accessibility Equivalence`, before broadening through applied, systems, and operational patterns.
 
 ### 5.2 Every record is a gate-checked fixture
 

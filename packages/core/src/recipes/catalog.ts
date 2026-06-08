@@ -379,7 +379,7 @@ const TIER_CORE: readonly FieldRecipe[] = [
 ];
 
 /**
- * Tier 2 — product, workflow, trust, collaboration (recipes 17-32). Applied product patterns built
+ * Tier 2 (applied) — product, workflow, trust, collaboration (recipes 17-32). Applied product patterns built
  * from the same primitives as the core tier.
  */
 const TIER_PRODUCT: readonly FieldRecipe[] = [
@@ -718,7 +718,7 @@ const TIER_PRODUCT: readonly FieldRecipe[] = [
 ];
 
 /**
- * Tier 3 — professional systems: safety, provenance, governance (recipes 33-48). Advanced semantic,
+ * Tier 3 (systems) — safety, provenance, governance (recipes 33-48). Advanced semantic,
  * safety, and inspection patterns.
  */
 const TIER_SYSTEMS: readonly FieldRecipe[] = [
@@ -1058,7 +1058,7 @@ const TIER_SYSTEMS: readonly FieldRecipe[] = [
 ];
 
 /**
- * Tier 4 — enterprise, collaborative, adaptive, operational (recipes 49-64). Multi-actor and
+ * Tier 4 (operational) — multi-actor, collaborative, adaptive (recipes 49-64). Multi-actor and
  * live-system patterns.
  */
 const TIER_ENTERPRISE: readonly FieldRecipe[] = [
@@ -1516,10 +1516,10 @@ export interface RecipeTierGroup {
 
 /** The four catalog tiers, in order — the navigable structure over {@link FIELD_RECIPES}. */
 export const RECIPE_TIERS: readonly RecipeTierGroup[] = [
-  { key: 'core', label: 'Core interface & accessibility', recipes: decorate(TIER_CORE, 'core') },
-  { key: 'workflow', label: 'Product, workflow & collaboration', recipes: decorate(TIER_PRODUCT, 'workflow') },
-  { key: 'professional', label: 'Professional systems & governance', recipes: decorate(TIER_SYSTEMS, 'professional') },
-  { key: 'enterprise', label: 'Enterprise, adaptive & operational', recipes: decorate(TIER_ENTERPRISE, 'enterprise') },
+  { key: 'core', label: 'Core — interface & accessibility', recipes: decorate(TIER_CORE, 'core') },
+  { key: 'applied', label: 'Applied — product, workflow & collaboration', recipes: decorate(TIER_PRODUCT, 'applied') },
+  { key: 'systems', label: 'Systems — safety, provenance & governance', recipes: decorate(TIER_SYSTEMS, 'systems') },
+  { key: 'operational', label: 'Operational — multi-actor, adaptive & live', recipes: decorate(TIER_ENTERPRISE, 'operational') },
 ];
 
 /** The full field-recipe catalog (authoring §7) — 64 recipes across four tiers, in catalog order. */
