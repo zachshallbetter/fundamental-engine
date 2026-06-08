@@ -276,6 +276,16 @@ export type ForceRegistry = Record<Token, Force>;
 export type ConditionRegistry = Record<string, Condition>;
 
 /** Options for `createField` (§2.5 config). */
+/**
+ * Field Surfaces — *where* a field visualization composites relative to page content:
+ *   · the UNDERLAY (behind content) is the default `<field-root>` canvas, driven by `render`/setRender;
+ *   · the OVERLAY (in front of content) is an optional second surface driven by `overlay`/setOverlay.
+ * Setting both (immersive) lets content sit *inside* the field. Overlay modes are the structure/vector
+ * visualizations that reveal field shape without occluding text; `'off'` clears the overlay surface.
+ * (Scalar overlays — `contours`/`potential` — are a planned addition; the union is additive.)
+ */
+export type OverlayMode = 'off' | 'streamlines' | 'force-vectors' | 'field-lines';
+
 export interface FieldOptions {
   /** travelling accent colour (§9). */
   accent?: string;
@@ -303,6 +313,16 @@ export interface FieldOptions {
   /** density heatmap (field-systems H1): a scalar buffer of where matter pools, drawn as a
    *  glow underlay and sampled to bodies as `--forces-heatmap-density`. Default false. */
   heatmap?: boolean;
+  /**
+   * Field Surfaces (overlay placement): a caller-provided canvas for the OVERLAY surface, drawn in
+   * front of page content. Core sizes its backing store (matching the main canvas dpr) and draws the
+   * `overlay` mode onto it each frame; the caller owns the element and its CSS placement (fixed,
+   * full-viewport, `pointer-events:none`, above content / below nav). Keeps core DOM-free — the host
+   * provides the canvas, core only draws. Default unset → no overlay surface.
+   */
+  overlayCanvas?: HTMLCanvasElement;
+  /** initial overlay visualization mode (Field Surfaces); default `'off'`. */
+  overlay?: OverlayMode;
   /**
    * Feedback seam (Phase D3): when set, the engine routes its per-body feedback channels to this
    * sink each frame *instead of* writing CSS variables / dispatching events directly — so the
@@ -353,8 +373,14 @@ export interface FieldHandle {
   setCausality(on: boolean): void;
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void;
-  /** switch the render mode (§20.6) live. */
+  /** switch the underlay render mode (§20.6) live — the surface behind content. */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void;
+  /**
+   * Render a field-structure visualization on the OVERLAY surface — in front of page content (Field
+   * Surfaces). Pairs with `setRender` (the underlay); set both for an immersive look. No-op unless the
+   * field was created with an `overlayCanvas`. `'off'` clears the overlay surface.
+   */
+  setOverlay(mode: OverlayMode): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */
