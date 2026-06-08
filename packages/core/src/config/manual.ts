@@ -94,6 +94,7 @@ export const FORCE_COLORS: Record<string, string> = {
   spotlight: '#facc15',
   pigment: '#d6529e', // ink — conserved colour transport
   fieldflow: '#22d3ee', // plasma — matter streaming along the field lines
+  warp: '#a78bfa', // wormhole — relocated, conserved matter
 };
 
 /**
@@ -139,6 +140,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   spotlight: 'Pair with stream: a directed beam confined to a cone.',
   pigment: 'A section that stains passing matter its own colour, carried away.',
   fieldflow: 'A magnet or charge whose field lines the swarm threads, like plasma along a solar prominence.',
+  warp: 'A pair of portals: matter that enters one throat emerges from its partner, conserved.',
 };
 
 /**
@@ -158,7 +160,7 @@ export const FORCE_SYMBOLS: Record<string, string> = {
   lens: 'Le', gate: 'Ga', buoyancy: 'By', shear: 'Sh', crystallize: 'Cz',
   align: 'Al', wind: 'Wd', cohesion: 'Cn', pressure: 'Pr', hunt: 'Hu',
   spawn: 'Sp', link: 'Lk', morph: 'Mo', resonate: 'Rs', spotlight: 'Sl',
-  pigment: 'Pm', fieldflow: 'Ff',
+  pigment: 'Pm', fieldflow: 'Ff', warp: 'Wp',
 };
 
 /**
@@ -205,6 +207,7 @@ export const FORCE_SUMMARIES: Record<string, string> = {
   spotlight: 'A modifier cone — confines its sibling forces to a directed beam.',
   pigment: 'Carries colour through the medium — a dye that mixes.',
   fieldflow: 'Follows the field lines — matter streams along the field a body radiates.',
+  warp: 'Relocates matter to a paired throat — a conserved wormhole, not a source or sink.',
 };
 
 /** The functional one-liner for every force — what it does, plainly (the Lab's EFFECT line). */
@@ -246,6 +249,7 @@ export const FORCE_EFFECTS: Record<string, string> = {
   spotlight: 'Beams a sibling force into a cone.',
   pigment: 'Tints particles as they pass.',
   fieldflow: 'Streams matter along the field lines.',
+  warp: 'Teleports matter from one throat to its pair.',
 };
 
 /** Every force, in catalog order. The UI groups these by `family`. */
@@ -529,6 +533,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     attrs: ['strength', 'range'],
     desc: 'follow the field lines — steer onto and stream down the net field a body radiates',
   },
+  {
+    family: 'extended',
+    token: 'warp',
+    label: 'Warp',
+    formula: 'within absorbR: p ← pairCentre + R(twist)·û·(absorbR·scale + 6);  v ← R(twist)·v',
+    attrs: ['absorb', 'pair'],
+    desc: 'a wormhole throat — relocates matter (conserved) to its data-pair body, twisted/scaled',
+  },
 ];
 
 /** Every force with its colour, symbol, copy, and calibration state merged in. Grouped by `family`. */
@@ -607,7 +619,7 @@ export const FORCE_KIND: Record<string, ForceKind> = {
   thermal: 'derived', collide: 'derived', diffuse: 'derived', memory: 'metric',
   // designed-extended verbs
   lens: 'designed', gate: 'designed', buoyancy: 'designed', shear: 'designed', wind: 'designed',
-  hunt: 'designed', spawn: 'designed', resonate: 'designed', spotlight: 'designed',
+  hunt: 'designed', spawn: 'designed', resonate: 'designed', spotlight: 'designed', warp: 'designed',
   // strong/weak material analogues
   crystallize: 'analogue', align: 'analogue', cohesion: 'analogue', pressure: 'analogue', link: 'analogue',
   morph: 'analogue',

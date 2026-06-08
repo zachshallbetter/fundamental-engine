@@ -1587,10 +1587,11 @@ section is the single source of truth for what "mass" means.
 ## 22. Force targets — particles, elements & events
 
 A core promise of the system is that forces act on **everything the page is made
-of**, not just the particle field. The four body roles (§22.1) and the
-particle/element impulse, constraint, feedback, sink-capture, and spawn paths are
-wired; element-level capture/relocate/emit and the `warp` relocate atom are
-**planned**. The canonical, status-annotated account is
+of**, not just the particle field. The four body roles (§22.1) are wired, and every
+influence kind is now realized for particles and (opt-in by attribute) for elements:
+impulse/constraint/feedback, plus capture (`data-dock`), relocate (`data-warp`, the
+`warp` atom), and emit (`data-emit`). The one still-planned cell is the element
+`trigger` class-toggle. The canonical, status-annotated account is
 [field-ui-agent-consumption-model.md](../canonical/field-ui-agent-consumption-model.md);
 this section is the engine-level record.
 
@@ -1632,9 +1633,9 @@ carries its own status (✅ shipped · 🔭 planned). Verify against
 |---|---|---|---|
 | **impulse** `Δv` (attract, repel, wind, stream…) | ✅ `v += F/m` | ✅ `o_v += F/m_el` → `translate(o)` (`data-move`) | — |
 | **constraint** (tether, wall, gate) | ✅ clamp pos/vel | ✅ anchor tether + offset clamp (`maxOffset`) | — |
-| **capture** (sink) | ✅ `cap = b` (held, then released) | 🔭 dock/collapse the element | 🔭 fire `field:captured` |
-| **relocate** (warp) | 🔭 move position (`warp` spec-only) | 🔭 reorder/teleport in the DOM | — |
-| **emit** (spawn) | ✅ new particle | 🔭 clone/insert a DOM node | — |
+| **capture** (sink) | ✅ `cap = b` (held, then released) | ✅ dock/collapse the element (`data-dock`) | ✅ fire `field:captured` / `field:released` |
+| **relocate** (warp) | ✅ `warp` throat → paired body (conserved) | ✅ teleport offset to the pair (`data-warp`) | — |
+| **emit** (spawn) | ✅ new particle | ✅ clone a decorative template (`data-emit`) | — |
 | **trigger** (threshold) | ✅ (sets heat) | 🔭 toggle a class (no built-in; use a `data-on` handler) | ✅ **dispatch a `CustomEvent`** (`data-on`) |
 
 "Apply a force to a DOM element" = it consumes the *same* impulse a particle would,
