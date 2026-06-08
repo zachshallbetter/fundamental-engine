@@ -72,11 +72,14 @@ import "../styles/force-glyphs.css";
       <a href="#ch-recipes" data-ch="ch-recipes"
         ><span class="cr-no">4</span><span class="cr-label">Recipes</span></a
       >
+      <a href="#ch-together" data-ch="ch-together"
+        ><span class="cr-no">5</span><span class="cr-label">Together</span></a
+      >
       <a href="#ch-toybox" data-ch="ch-toybox"
-        ><span class="cr-no">5</span><span class="cr-label">Toy box</span></a
+        ><span class="cr-no">6</span><span class="cr-label">Toy box</span></a
       >
       <a href="#ch-honest" data-ch="ch-honest"
-        ><span class="cr-no">6</span><span class="cr-label">Honest truth</span></a
+        ><span class="cr-no">7</span><span class="cr-label">Honest truth</span></a
       >
     </nav>
 
@@ -268,29 +271,36 @@ import "../styles/force-glyphs.css";
     <section class="concept" data-form="wells">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">🟦 Words &amp; boxes</span>
-          <h2>The headline itself becomes a magnet.</h2>
+          <span class="concept-no">🅰️ Living type</span>
+          <h2>The word itself gains weight — literally.</h2>
           <p>
-            Drop in the actual words on the page and the headline gets heavy,
-            glows, and the paragraph next to it leans away to make room. The page
-            isn’t <em>decorated</em> by the field — the page <strong>lives
-            inside</strong> it.
+            This is the “mass” from the title, made real. The word is a magnet: it
+            pulls the dots in, they pool beneath it, and that pile drives its
+            <em>whole look at once</em> — <strong>weight, size, spacing, glow, even
+            colour</strong>. One number does all of it. Scatter the pile and the
+            type goes light and pale, then thickens back as the field re-gathers
+            under its own pull. Type as a <strong>material</strong>, not a style.
           </p>
-          <p class="note">Hover the word to give it weight.</p>
+          <p class="note">
+            Hit the button — scatter the pile, watch the letters thin out and pale,
+            then fatten back up.
+          </p>
+          <button class="agitate" data-agitate="#mat-word">↯ Disturb the type</button>
         </div>
         <div class="stage">
-          <span class="stage-label">a word with weight</span>
+          <span class="stage-label">one number → every type axis</span>
           <span
-            class="live-demo"
+            class="material-word"
+            id="mat-word"
             data-hot
-            data-color="#7dd3fc"
             data-feedback
             data-body="attract"
-            data-strength="1.1"
+            data-strength="1.2"
             data-range="300"
-            style="--cat:#7dd3fc;">headline</span
+            data-color="#f0abfc"
+            style="--cc:#f0abfc; --cat:#f0abfc;">mass</span
           >
-          <span class="hintline">heavy, glowing, alive</span>
+          <span class="hintline">weight, size, spacing, glow and colour are one density</span>
         </div>
       </div>
     </section>
@@ -408,34 +418,33 @@ import "../styles/force-glyphs.css";
       </div>
     </section>
 
-    <section class="concept reverse" data-form="wells">
+    <section class="concept reverse" data-causality-demo>
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">📊 Data you can trust</span>
-          <h2>Feel which answer to trust.</h2>
+          <span class="concept-no">💡 It spills over</span>
+          <h2>Light up one — its neighbours catch.</h2>
           <p>
-            Drop in a pile of search results or a to-do list and each one becomes
-            its own magnet. The important ones sink into a deep well and pull your
-            eye; the shaky, unsure ones wobble; the ones with proof behind them
-            sit solid and calm. You can feel which answer to trust before you even
-            read it.
+            When one thing gets crowded with dots, the extra <strong>spills to
+            whoever’s nearby</strong> — more to the close ones, less to the far
+            ones, and never more than there was to begin with. So lighting up one
+            tile lights its neighbours <em>on their own</em>. The glow flows between
+            things because the matter actually does.
           </p>
-          <p class="note">Poke it — the solid one barely flinches.</p>
-          <button class="agitate" data-agitate="#m-trust">↯ Poke the field</button>
+          <p class="note">
+            Hover the middle tile — the ones beside it catch, and the far ones
+            flicker faintly.
+          </p>
         </div>
         <div class="stage">
-          <span class="stage-label">important → deep well</span>
-          <span
-            class="body-chip"
-            id="m-trust"
-            data-drag
-            data-body="attract"
-            data-strength="1.4"
-            data-range="300"
-            style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
-            ><i class="fg fg-attract"></i>trusted</span
-          >
-          <span class="hintline">proof sits solid; doubt drifts</span>
+          <span class="stage-label">spill → neighbours light</span>
+          <div class="causal-set">
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#a78bfa" style="--cat:#a78bfa;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#7dd3fc" style="--cat:#7dd3fc;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#4da3ff" style="--cat:#4da3ff;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#2dd4bf" style="--cat:#2dd4bf;"></span>
+            <span class="causal-node" data-hot data-feedback data-body="attract" data-strength="1.4" data-range="200" data-color="#86e57f" style="--cat:#86e57f;"></span>
+          </div>
+          <span class="hintline">engage one — the extra spills to whoever’s near</span>
         </div>
       </div>
     </section>
@@ -661,10 +670,85 @@ import "../styles/force-glyphs.css";
       </div>
     </section>
 
-    <!-- 5 · The toy box -->
-    <div class="chapter" id="ch-toybox">
+    <!-- 5 · When the parts play together -->
+    <div class="chapter" id="ch-together">
       <div class="wrap">
         <span class="chapter-no">5</span>
+        <h2 class="chapter-title">When the parts play together</h2>
+        <p class="chapter-sub">
+          Drop a few of these into one pond and brand-new behaviour shows up that
+          nobody coded directly. This is the fun part.
+        </p>
+      </div>
+    </div>
+
+    <section class="concept" data-form="scatter">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">🔥 Picky magnets</span>
+          <h2>A magnet that only grabs the excited dots.</h2>
+          <p>
+            A magnet can be <strong>choosy</strong>. This one ignores the calm dots
+            and only grips the ones running <strong>hot</strong> — so heat the field
+            up and the excited matter gets caught while the cool stuff drifts right
+            past, untouched.
+          </p>
+          <p class="note">
+            Heat the field — watch it snatch the hot dots and let the calm ones
+            through.
+          </p>
+          <button class="agitate" data-agitate="#m-cond">↯ Heat the field</button>
+        </div>
+        <div class="stage">
+          <span class="stage-label">catches heat only — drag me</span>
+          <span
+            class="body-chip"
+            id="m-cond"
+            data-drag
+            data-body="attract"
+            data-when="hot"
+            data-strength="1.2"
+            data-range="320"
+            style="--cc:#ff6e9c; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-attract"></i>when&nbsp;hot</span
+          >
+          <span class="hintline">grips excited matter, ignores the calm</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse" id="eli5-formations">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">🌬️ The whole pond shifts</span>
+          <h2>Change the weather for every dot at once.</h2>
+          <p>
+            A single magnet tugs the dots near it. A <strong>formation</strong> is a
+            mood for the <em>entire</em> field — every dot at the same time. Calm
+            drifting, or pulled into wells, or marched into lanes, or scattered
+            apart. Tap a button and watch the whole background re-think itself.
+          </p>
+          <p class="note" id="form-desc">Calm — gentle drifting, the resting state.</p>
+          <div class="form-pills" id="formPills">
+            <button class="form-pill on" data-form="ambient">Calm</button>
+            <button class="form-pill" data-form="wells">Wells</button>
+            <button class="form-pill" data-form="lanes">Lanes</button>
+            <button class="form-pill" data-form="scatter">Scatter</button>
+            <button class="form-pill" data-form="accretion">Gather</button>
+          </div>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <span class="stage-label">formation — tap to reshape</span>
+          <div class="form-readout"><span id="form-name">calm</span></div>
+          <span class="hintline">a single mood applied to every dot at once</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · The toy box -->
+    <div class="chapter" id="ch-toybox">
+      <div class="wrap">
+        <span class="chapter-no">6</span>
         <h2 class="chapter-title">The toy box</h2>
         <p class="chapter-sub">
           Different games you can play with the same invisible field. They’re all
@@ -758,10 +842,10 @@ import "../styles/force-glyphs.css";
       </div>
     </section>
 
-    <!-- 6 · The honest truth -->
+    <!-- 7 · The honest truth -->
     <div class="chapter" id="ch-honest">
       <div class="wrap">
-        <span class="chapter-no">6</span>
+        <span class="chapter-no">7</span>
         <h2 class="chapter-title">The honest truth</h2>
         <p class="chapter-sub">
           Being honest is kind of the whole point — so here’s the part most “magic”
