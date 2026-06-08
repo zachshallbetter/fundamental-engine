@@ -5,13 +5,21 @@
 >
 > Use this document to plan future work, sequence frontier investments, and preserve the product thesis without confusing proposed work for shipped behavior.
 >
-> **Shipped since this roadmap was drafted.** Stage E and most of Stage F have landed:
-> **R1 Runtime platform unification** (Phase D — the platform runtime is the `<field-root>` default),
-> **R2 Platform Inspector** (`/docs/inspector` reads the live registries, [#198](https://github.com/zachshallbetter/field-ui/pull/198)),
-> **R3 First-class recipe system** ([#197](https://github.com/zachshallbetter/field-ui/pull/197)/[#201](https://github.com/zachshallbetter/field-ui/pull/201) — `FieldRecipe`, the 64-recipe catalog),
-> **R4 Executable Recipe Gallery** ([#199](https://github.com/zachshallbetter/field-ui/pull/199)/[#201](https://github.com/zachshallbetter/field-ui/pull/201)), and a vocabulary-lane taxonomy pass ([#200](https://github.com/zachshallbetter/field-ui/pull/200)–[#204](https://github.com/zachshallbetter/field-ui/pull/204)).
-> The near-term priority below is therefore mostly **done**; the live frontier starts at **R5 (bindData)
-> / R6 (input agents) / R7 (accessibility conformance) / R14 (AI evidence fields)**.
+> **Status update (verified against the code).** Stages E and F have landed, and the frontier has
+> moved well past this roadmap's original framing:
+> **R1** runtime unification (Phase D, the `<field-root>` default), **R2** inspector ([#198](https://github.com/zachshallbetter/field-ui/pull/198)),
+> **R3** recipes / **R4** executable gallery ([#197](https://github.com/zachshallbetter/field-ui/pull/197)/[#199](https://github.com/zachshallbetter/field-ui/pull/199)/[#201](https://github.com/zachshallbetter/field-ui/pull/201)),
+> and the vocabulary-lane taxonomy pass ([#200](https://github.com/zachshallbetter/field-ui/pull/200)–[#204](https://github.com/zachshallbetter/field-ui/pull/204)) are shipped.
+> Since then:
+> - **R5 bindData** — shipped (`packages/platform/src/bind-data.ts`).
+> - **R7 accessibility conformance** — largely shipped: reduced-motion on every recipe, `contracts/guards.ts`, `/docs/accessibility-preview`.
+> - **R9 conformance as a tool** — core exported (`runScenario`, `conformanceTests`, `EXPERIMENTS`); the productized record/replay + fuzzing extras remain.
+> - **R14 AI evidence fields** — mostly shipped: all eight recipes (evidence-field, trust-gradient, conflict-field, source-constellation, provenance-trail, citation-thread, disagreement-charge, risk-horizon) plus the Evidence Field study; only a packaged answer component remains.
+> - **R16 research/release** — mostly shipped: the research-paper family, `PUBLISHING.md`, the in-repo starter app, and the frozen `0.x` API ([#216](https://github.com/zachshallbetter/field-ui/pull/216)); the npm publish stays on a deliberate human gate.
+>
+> The genuinely-open frontier is therefore **R6 (input agents), R8 (natural physics), R10 (render
+> frontiers), R11 (compositor bridge — partial), R12 (GPU compute), R13 (multi-root), and R15 (visual
+> authoring)**, plus the tails of R7/R9/R14. See the Status column below and the revised §4.
 
 ## 0. Purpose
 
@@ -153,18 +161,18 @@ The frontiers are grouped by product maturity, not only technical category.
 | R2 | Platform inspector | Make the runtime inspectable and trustworthy | ✅ shipped (#198) |
 | R3 | Recipe system | Make behavior authorable and reusable | ✅ shipped (#197/#201) |
 | R4 | Recipe gallery | Make the system teach itself | ✅ shipped (#199/#201) |
-| R5 | Data binding | Turn records into field bodies and relationships | planned |
-| R6 | Input agents | Make focus, pointer, keyboard, and selection part of the field | planned |
-| R7 | Accessibility conformance | Make motion alternatives testable | partial (recipes carry reduced-motion) |
+| R5 | Data binding | Turn records into field bodies and relationships | ✅ shipped (`bindData`) |
+| R6 | Input agents | Make focus, pointer, keyboard, and selection part of the field | planned (agent model exists; input suite open) |
+| R7 | Accessibility conformance | Make motion alternatives testable | 🟡 mostly shipped (reduced-motion + guards + preview; lint tail) |
 | R8 | Natural physics completion | Finish warp, transmutation, lifecycle, and conservation frontiers | planned |
-| R9 | Conformance as a tool | Expose tests, replay, fuzzing, and scenario DSL | planned |
+| R9 | Conformance as a tool | Expose tests, replay, fuzzing, and scenario DSL | 🟡 core shipped (`runScenario` exported); replay/fuzz tail |
 | R10 | Render frontiers | Add expressive, inspectable render surfaces | planned |
-| R11 | Compositor-native bridge | Use modern platform features for smoother DOM feedback | planned |
+| R11 | Compositor-native bridge | Use modern platform features for smoother DOM feedback | 🟡 partial (`@property` registered; scroll/view-timeline/anchor open) |
 | R12 | Compute backend | Add opt-in GPU scale while preserving CPU semantics | planned |
-| R13 | Multi-root and cross-document fields | Support scopes, portals, and continuity | planned |
-| R14 | AI evidence fields | Make trust, uncertainty, contradiction, and provenance inspectable | planned |
+| R13 | Multi-root and cross-document fields | Support scopes, portals, and continuity | planned (`<field-cell>` local cells only) |
+| R14 | AI evidence fields | Make trust, uncertainty, contradiction, and provenance inspectable | 🟡 mostly shipped (8 recipes + Evidence study; packaged component tail) |
 | R15 | Visual authoring tools | Let designers compose recipes without writing force code | planned |
-| R16 | Research and release package | Convert the system into a publishable/releasable artifact | planned |
+| R16 | Research and release package | Convert the system into a publishable/releasable artifact | 🟡 mostly shipped (papers, PUBLISHING, starter, frozen 0.x); publish human-gated |
 
 ## R1. Runtime platform unification
 
@@ -1084,6 +1092,10 @@ Medium.
 
 ## 3. Recommended sequencing
 
+> **Progress:** Stage E and Stage F have shipped (R1–R5, R7). Stage G is partly done (R9 core, R14
+> recipes + Evidence study). The open stages are the tails of G plus Stages H–J. See §4 for the
+> current wave order.
+
 ### Stage E: Runtime coherence
 
 ```txt
@@ -1172,16 +1184,26 @@ The system becomes explainable, publishable, and adoptable.
 
 ## 4. Near-term priority
 
-Do not start with GPU or new visual effects.
+Do not start with GPU (R12) or new render effects (R10).
 
-The next highest-leverage work is:
+The original items 1–5 (runtime unification, inspector, recipe system, gallery, accessibility
+conformance) have shipped or mostly shipped. The next highest-leverage work is:
 
 ```txt
-1. Runtime platform unification
-2. Platform Inspector
-3. First-class Recipe System
-4. Executable Recipe Gallery
-5. Accessibility Conformance
+Wave 1 — finish what is ~80% there:
+  R14 tail   package the AI evidence surface over the existing eight recipes
+  R7 tail    accessibility lint rules (visual-without-source, overlay-without-equivalent)
+  R9 tail    document the Scenario/Expectation DSL + add record/replay and fuzzing
+
+Wave 2 — new relational capability:
+  R6   input agents (focus, pointer, keyboard, selection, dwell, scroll) — opt-in, inspectable
+  R13  multi-root / cross-document fields (scopes, portals, continuity)
+
+Wave 3 — platform polish + authoring:
+  R11  compositor bridge (scroll-driven, view-timeline, anchor positioning)
+  R15  visual authoring (recipe editor over the existing schema + lint + gallery)
+
+Deferred (spectacle / scale): R10 render frontiers, R8 natural physics, R12 GPU compute.
 ```
 
 Reason:
@@ -1225,7 +1247,3 @@ If it only adds an effect, defer it.
 
 If it makes the system more relational, explainable, accessible, portable, or authorable, prioritize it.
 ```
-
-:::
-
-I would replace the current roadmap-frontiers.md with this structure, then move any old F1-F7 details into the matching R-sections as implementation notes. The old roadmap was still useful, but it was organized around the earlier engine frontier. This version is organized around the current product architecture.
