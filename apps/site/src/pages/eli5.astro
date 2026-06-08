@@ -24,14 +24,13 @@ import "../styles/force-glyphs.css";
     <header class="manual-hero" id="top">
       <div class="wrap">
         <p class="kicker">field-ui · explained like you're 5</p>
-        <h1>A webpage you can <span class="accent">play with</span> — that plays
-          back.</h1>
+        <h1>Web elements have <span class="accent">mass</span>.</h1>
         <p class="standfirst">
-          You know how a magnet can push and pull without touching anything?
-          field-ui sprinkles invisible magnets onto a webpage. A word can say
-          “come here!” and the little floating dots all swim toward it. A button
-          can say “stay back!” and they scoot away. Some things spin the dots in
-          circles; some gobble them up like a tiny black hole.
+          Not literally — but it sure starts to feel that way. field-ui sprinkles
+          invisible magnets onto a webpage: a word can say “come here!” and the
+          little floating dots all swim toward it. A button can say “stay back!”
+          and they scoot away. Some things spin the dots in circles; some gobble
+          them up like a tiny black hole.
         </p>
         <p class="thesis">
           <strong>And the magic part — it goes both ways.</strong> Pile enough dots
@@ -67,8 +66,17 @@ import "../styles/force-glyphs.css";
         ><span class="cr-no">2</span><span class="cr-label">Not just dots</span
         ></a
       >
+      <a href="#ch-physics" data-ch="ch-physics"
+        ><span class="cr-no">3</span><span class="cr-label">Real physics</span></a
+      >
+      <a href="#ch-recipes" data-ch="ch-recipes"
+        ><span class="cr-no">4</span><span class="cr-label">Recipes</span></a
+      >
       <a href="#ch-toybox" data-ch="ch-toybox"
-        ><span class="cr-no">3</span><span class="cr-label">Toy box</span></a
+        ><span class="cr-no">5</span><span class="cr-label">Toy box</span></a
+      >
+      <a href="#ch-honest" data-ch="ch-honest"
+        ><span class="cr-no">6</span><span class="cr-label">Honest truth</span></a
       >
     </nav>
 
@@ -449,10 +457,214 @@ import "../styles/force-glyphs.css";
       </div>
     </section>
 
-    <!-- 3 · The toy box -->
-    <div class="chapter" id="ch-toybox">
+    <!-- 3 · It's borrowing real physics -->
+    <div class="chapter" id="ch-physics">
       <div class="wrap">
         <span class="chapter-no">3</span>
+        <h2 class="chapter-title">It’s borrowing real physics</h2>
+        <p class="chapter-sub">
+          Some of these magnets aren’t pretend at all — they run the actual laws of
+          the universe. And the team is careful to always say which is which.
+        </p>
+      </div>
+    </div>
+
+    <section class="concept reverse" data-form="wells">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no"
+            ><i class="fg fg-attract" style="--fc:#86e57f"></i>Real gravity</span
+          >
+          <h2>Closer means a <em>lot</em> stronger.</h2>
+          <p>
+            This one isn’t a tuned-up UI effect — it’s real <strong>gravity</strong>,
+            the same softened inverse-square law the planets use. Drag it near the
+            swarm and the pull ramps up fast; back it away and it fades to almost
+            nothing.
+          </p>
+          <p class="note">Drag it close, then far — feel the falloff change.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">real gravity — drag me</span>
+          <span
+            class="body-chip"
+            id="m-gravity"
+            data-drag
+            data-body="gravity"
+            data-strength="1"
+            data-range="340"
+            style="--cc:#86e57f; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-attract"></i>gravity</span
+          >
+          <span class="hintline">close = a hard pull; far = barely a whisper</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept">
+      <div class="wrap">
+        <span class="concept-no">🌍 Four forces, four feelings</span>
+        <h2>
+          The universe has four big forces. field-ui borrows all four — as
+          <span class="accent">feelings</span>.
+        </h2>
+        <ul class="fourfields">
+          <li>
+            <span class="ff-real">Gravity</span><span class="ff-arrow">→</span>
+            <strong>importance</strong>
+            <span class="ff-say">things gather around what matters</span>
+          </li>
+          <li>
+            <span class="ff-real">Electricity</span><span class="ff-arrow">→</span>
+            <strong>agree or argue</strong>
+            <span class="ff-say">opposites attract, sames push apart</span>
+          </li>
+          <li>
+            <span class="ff-real">The glue force</span><span class="ff-arrow">→</span>
+            <strong>belonging</strong>
+            <span class="ff-say">things that go together stick together</span>
+          </li>
+          <li>
+            <span class="ff-real">The decay force</span><span class="ff-arrow">→</span>
+            <strong>fading</strong>
+            <span class="ff-say">old things let go and drift away</span>
+          </li>
+        </ul>
+        <p>
+          So when something feels <em>important</em>, it’s literally using gravity.
+          When two facts <em>disagree</em>, that’s electricity pushing them apart.
+        </p>
+      </div>
+    </section>
+
+    <section class="concept reverse">
+      <div class="wrap">
+        <span class="concept-no">🧪 Real, tuned, or pretend?</span>
+        <h2>And it always tells you which is which.</h2>
+        <div class="buckets">
+          <div class="bucket">
+            <span class="bk-emoji" aria-hidden="true">🧪</span>
+            <h3>Real physics</h3>
+            <p>
+              The genuine laws — <code>gravity</code>, <code>charge</code>,
+              <code>magnetism</code>, heat, waves, bouncing.
+            </p>
+          </div>
+          <div class="bucket">
+            <span class="bk-emoji" aria-hidden="true">🎨</span>
+            <h3>Tuned to feel nice</h3>
+            <p>
+              The everyday <code>attract</code>, <code>repel</code>,
+              <code>swirl</code> — softened so a page stays calm and readable.
+            </p>
+          </div>
+          <div class="bucket">
+            <span class="bk-emoji" aria-hidden="true">🌌</span>
+            <h3>Pure pretend</h3>
+            <p>
+              Real pieces stacked into make-believe — <code>blackhole</code>,
+              <code>galaxy</code>, <code>tornado</code>.
+            </p>
+          </div>
+        </div>
+        <p class="note">
+          The trap they warn about: <code>attract</code> is <strong>not</strong>
+          gravity. One is the universe’s rule; the other just borrows its costume.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4 · The cookbook -->
+    <div class="chapter" id="ch-recipes">
+      <div class="wrap">
+        <span class="chapter-no">4</span>
+        <h2 class="chapter-title">The cookbook</h2>
+        <p class="chapter-sub">
+          You rarely build with raw magnets. You build with <strong>recipes</strong>
+          — little cards, exactly like a recipe for cookies, except it’s magnets +
+          how it looks + what it means.
+        </p>
+      </div>
+    </div>
+
+    <section class="concept">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">📇 A recipe is a card</span>
+          <h2>Magnets, a look, and a meaning — on one card.</h2>
+          <p>
+            Every card keeps its boxes separate: <em>idea words</em> describe,
+            <strong>magnet names</strong> do the work, <em>measurements</em> just
+            count. You can be poetic in the idea box, but the magnet box has to name
+            a <strong>real</strong> magnet — and a checker bounces any card that
+            fibs. There are already 64 of them.
+          </p>
+          <p class="note">A new idea is usually just a new card — no new physics.</p>
+        </div>
+        <div class="recipe-col">
+          <div class="recipe-card">
+            <span class="rc-name">Evidence Field</span>
+            <span class="rc-for">for showing whether you can trust an answer</span>
+            <dl>
+              <dt>Magnets</dt>
+              <dd><code>charge</code> <code>link</code> <code>repel</code> <code>memory</code></dd>
+              <dt>Wire</dt>
+              <dd>each claim → its sources</dd>
+              <dt>Draw</dt>
+              <dd>dots · threads · a soft glow</dd>
+              <dt>Motion off</dt>
+              <dd>a plain list with ✓ and ✗</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="concept reverse" data-form="ambient">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">🌊 One pond</span>
+          <h2>Drop in two recipes and they share the same water.</h2>
+          <p>
+            Here’s the secret: there’s only <strong>one pond</strong>. Every magnet
+            on the page tugs the <em>same</em> dots, so the pulls just add up — like
+            two kids pulling one wagon. A page isn’t a <em>list</em> of separate
+            effects; it’s a <strong>soup</strong>, where everything ripples through
+            everything else.
+          </p>
+          <p class="note">Drag both — watch them fight over the same dots.</p>
+        </div>
+        <div class="stage">
+          <span class="stage-label">two magnets, one pond — drag both</span>
+          <span
+            class="body-chip"
+            id="m-pond-a"
+            data-drag
+            data-body="attract"
+            data-strength="1"
+            data-range="240"
+            style="--cc:#4da3ff; position:absolute; left:34%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-attract"></i>pull</span
+          >
+          <span
+            class="body-chip"
+            id="m-pond-b"
+            data-drag
+            data-body="repel"
+            data-strength="1.1"
+            data-range="240"
+            style="--cc:#ff9d5c; position:absolute; left:66%; top:50%; transform:translate(-50%,-50%);"
+            ><i class="fg fg-repel"></i>push</span
+          >
+          <span class="hintline">the dots get torn between them</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · The toy box -->
+    <div class="chapter" id="ch-toybox">
+      <div class="wrap">
+        <span class="chapter-no">5</span>
         <h2 class="chapter-title">The toy box</h2>
         <p class="chapter-sub">
           Different games you can play with the same invisible field. They’re all
@@ -543,6 +755,70 @@ import "../styles/force-glyphs.css";
           >
           <span class="hintline">a whole little universe from a few magnets</span>
         </div>
+      </div>
+    </section>
+
+    <!-- 6 · The honest truth -->
+    <div class="chapter" id="ch-honest">
+      <div class="wrap">
+        <span class="chapter-no">6</span>
+        <h2 class="chapter-title">The honest truth</h2>
+        <p class="chapter-sub">
+          Being honest is kind of the whole point — so here’s the part most “magic”
+          websites skip.
+        </p>
+      </div>
+    </div>
+
+    <section class="concept">
+      <div class="wrap">
+        <span class="concept-no">🤔 When would you actually use it?</span>
+        <h2>Often, you wouldn’t — and that’s okay.</h2>
+        <p>
+          For a plain landing page or a login, normal web tools are perfect and this
+          would be overkill. What field-ui does that <em>nothing else</em> does is
+          treat “this is important,” “these relate,” “you already read this,” and
+          “this answer is shaky” as <strong>real forces in one shared field</strong>
+          — instead of things you hand-paint, differently, in a dozen places.
+        </p>
+        <p>
+          So it earns its place when your stuff already has hidden
+          <em>relationships</em>: long articles, AI answers and evidence, dashboards,
+          maps of how things connect. That’s where “meaning you can feel” beats a
+          flat page.
+        </p>
+      </div>
+    </section>
+
+    <section class="concept reverse">
+      <div class="wrap">
+        <span class="concept-no">📋 The fine print</span>
+        <h2>What it can’t (yet) do — said plainly.</h2>
+        <ul class="fineprint">
+          <li>
+            <strong>“Heavier swings wider” is mostly pretend</strong> by default —
+            real weight is opt-in.
+          </li>
+          <li>
+            <strong>Energy isn’t saved</strong>, on purpose — there’s a gentle brake
+            so the page stays calm instead of bouncing forever.
+          </li>
+          <li>
+            <strong>It costs something</strong> — lots of dots is real work for the
+            browser, so there are budgets and caps.
+          </li>
+          <li>
+            <strong>Nobody’s tested it on real people yet.</strong> The research
+            papers <em>design</em> the experiments and make predictions — but the
+            “does this actually help you read or trust better?” part is still a
+            promise, not a proof. And the papers say so.
+          </li>
+        </ul>
+        <p class="note">
+          Want the grown-up version of all this? The
+          <a href="/writings/field-ui-explained-simply">field guide</a> and the
+          <a href="/writings">research papers</a> pick up right where this leaves off.
+        </p>
       </div>
     </section>
 
@@ -725,5 +1001,144 @@ import "../styles/force-glyphs.css";
     color: var(--muted, #9aa);
     max-width: 34rem;
     margin: 0.4rem auto 1.4rem;
+  }
+
+  /* Four fundamental forces → four interface feelings. */
+  .fourfields {
+    list-style: none;
+    margin: 1.2rem 0 1.4rem;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+    max-width: 42rem;
+  }
+  .fourfields li {
+    display: grid;
+    grid-template-columns: 9.5rem 1.4rem auto;
+    align-items: baseline;
+    gap: 0.5rem 0.7rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--text, #fff) 3%, transparent);
+  }
+  .fourfields .ff-real {
+    font-weight: 600;
+    color: #86e57f;
+  }
+  .fourfields .ff-arrow {
+    color: var(--muted, #9aa);
+    text-align: center;
+  }
+  .fourfields strong {
+    font-size: 1.02rem;
+  }
+  .fourfields .ff-say {
+    grid-column: 3;
+    color: var(--muted, #9aa);
+    font-size: 0.86rem;
+  }
+
+  /* Real / tuned / pretend — three honest buckets. */
+  .buckets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.9rem;
+    margin: 1.1rem 0 1rem;
+  }
+  .bucket {
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    background: color-mix(in srgb, var(--text, #fff) 3%, transparent);
+  }
+  .bucket .bk-emoji {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  .bucket h3 {
+    font-size: 1rem;
+    margin: 0.5rem 0 0.3rem;
+  }
+  .bucket p {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--muted, #9aa);
+    margin: 0;
+  }
+  .bucket code {
+    font-size: 0.92em;
+  }
+
+  /* A recipe shown as a literal card. */
+  .recipe-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .recipe-card {
+    width: min(100%, 22rem);
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 16px;
+    padding: 1.1rem 1.2rem;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, #4da3ff 8%, transparent), transparent),
+      color-mix(in srgb, var(--text, #fff) 4%, transparent);
+  }
+  .recipe-card .rc-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .recipe-card .rc-for {
+    display: block;
+    color: var(--muted, #9aa);
+    font-size: 0.84rem;
+    margin: 0.15rem 0 0.8rem;
+  }
+  .recipe-card dl {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.45rem 0.8rem;
+    margin: 0;
+  }
+  .recipe-card dt {
+    font-family: var(--mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted, #9aa);
+    padding-top: 0.1rem;
+  }
+  .recipe-card dd {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .recipe-card dd code {
+    font-size: 0.86em;
+    margin-right: 0.15rem;
+  }
+
+  /* The honest fine print. */
+  .fineprint {
+    list-style: none;
+    margin: 1rem 0 1.2rem;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    max-width: 44rem;
+  }
+  .fineprint li {
+    position: relative;
+    padding-left: 1.4rem;
+    line-height: 1.55;
+  }
+  .fineprint li::before {
+    content: "•";
+    position: absolute;
+    left: 0.3rem;
+    color: #ff9d5c;
+  }
+  .fineprint strong {
+    color: #fff;
   }
 </style>
