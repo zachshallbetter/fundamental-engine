@@ -62,26 +62,30 @@ DOM state shows reciprocity.
 
 ## Render Modes Catalog
 
+The engine ships **16** render modes (`RENDER_MODES` in `packages/core/src/visual/visualization.ts`),
+split into matter/structure modes and diagnostic modes. All are shipped; set one with
+`field.setRender(mode)` (or the `render` option). The `<field-root>` `render` *attribute* exposes a
+subset (`dots` / `trails` / `links` / `streamlines` / `metaballs` / `voronoi`); the rest are reached
+through `setRender()` / the core.
+
 | Render mode | Type | Shows |
 |---|---|---|
-| `particles` | matter | particle positions and heat |
+| `dots` | matter | particle positions and heat |
 | `trails` | motion | path history |
-| `field-lines` | structure | `field()` geometry |
+| `links` | structure | proximity links between near bodies |
 | `streamlines` | structure | continuous field paths |
-| `force-vectors` | debug | actual cause from `apply()` |
-| `velocity-vectors` | debug | actual motion |
+| `metaballs` | matter | merged density blobs |
+| `voronoi` | structure | region cells around bodies |
+| `field-lines` | structure | `field()` geometry |
 | `heatmap` | scalar | density, heat, force, entropy |
-| `contours` | scalar | equal-value isolines |
-| `potential` | scalar/vector | wells and gradients |
-| `energy` | scalar | kinetic, potential, thermal |
-| `boundaries` | geometry | gates, reflectors, screens |
-| `topology` | graph | threads, flux links, relationships |
-| `phase` | material | gas, liquid, solid, plasma |
-| `dom-state` | feedback | CSS variables and DOM metrics |
-| `inspector` | debug | bodies, agents, metrics, contracts |
-| `poster` | static | frozen export |
-| `causality` | debug | contribution sources |
-| `prediction` | debug/teaching | ghost trajectory |
+| `force-vectors` | diagnostic | actual cause from `apply()` |
+| `contours` | diagnostic | equal-value isolines |
+| `potential` | diagnostic | wells and gradients |
+| `energy` | diagnostic | kinetic, potential, thermal |
+| `topology` | diagnostic | threads, flux links, relationships |
+| `inspector` | diagnostic | bodies, agents, metrics, contracts |
+| `causality` | diagnostic | contribution sources |
+| `prediction` | diagnostic | ghost trajectory |
 
 ## Visualization Presets
 
