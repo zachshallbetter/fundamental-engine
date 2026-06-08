@@ -76,9 +76,13 @@ export class FieldField implements FieldHandle {
   setHeatmap(on: boolean): void {
     this.field.setHeatmap(on);
   }
-  /** switch the render mode (§20.6) live. */
+  /** switch the underlay render mode (§20.6) live. */
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);
+  }
+  /** render a field-structure visualization on the overlay surface (in front of content). */
+  setOverlay(mode: Parameters<FieldHandle['setOverlay']>[0]): void {
+    this.field.setOverlay(mode);
   }
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void {

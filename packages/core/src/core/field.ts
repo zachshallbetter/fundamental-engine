@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { Body, Env, FieldHandle, FieldOptions, Formation, Particle } from './types.ts';
+import type { Body, Env, FieldHandle, FieldOptions, Formation, OverlayMode, Particle } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -56,7 +56,7 @@ import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
-import { forceAt } from './streamlines.ts';
+import { forceAt, netField } from './streamlines.ts';
 import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
 
@@ -66,6 +66,12 @@ const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('field-ui: 2D canvas context unavailable');
+
+  // Field Surfaces: the optional OVERLAY surface, drawn in front of page content. Core only draws to
+  // it (the caller owns the element + its fixed/pointer-events placement); its backing store is sized
+  // in resize() to match the main canvas dpr. Keeps core DOM-free — the canvas is handed in.
+  const overlayCanvas = opts.overlayCanvas ?? null;
+  const overlayCtx = overlayCanvas?.getContext('2d') ?? null;
 
   const store = new FieldStore();
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
@@ -95,6 +101,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
+    overlay: opts.overlay ?? 'off', // Field Surfaces: overlay-surface visualization mode, opt-in
     feedbackSink: opts.feedbackSink, // Phase D3: route feedback writes to the platform, opt-in
   };
   let heatmap: Heatmap | null = null; // lazily built once the viewport size is known
@@ -612,6 +619,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // size the overlay surface's backing store to match (same dpr transform → same CSS coords).
+    if (overlayCanvas && overlayCtx) {
+      overlayCanvas.width = Math.floor(W * dpr);
+      overlayCanvas.height = Math.floor(H * dpr);
+      overlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
     env.W = W;
     env.H = H;
     maxScroll = host.scrollHeight() - H || 1;
@@ -1078,6 +1091,64 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
   }
 
+  // Field Surfaces — draw a structure/vector visualization of the LIVE field onto the overlay surface
+  // (in front of content). Reuses the underlay's samplers: forceAt (the net force field) for
+  // `streamlines`/`force-vectors`, netField (structure-only — dipoles/monopoles) for `field-lines`.
+  // Tinted with the travelling accent, so setAccent recolours the overlay too.
+  function renderOverlay(octx: CanvasRenderingContext2D, mode: OverlayMode): void {
+    octx.clearRect(0, 0, W, H);
+    if (mode === 'off' || W === 0 || H === 0) return;
+    const GRID = 44;
+    const acc = hexToRgb(cfg.accent);
+    octx.lineWidth = 1.2;
+    octx.lineCap = 'round';
+    const structure = mode === 'field-lines'; // sample field() geometry instead of the apply-probe
+    const absolute = mode === 'force-vectors'; // scale arrows by raw magnitude, not normalized flow
+    const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
+    let maxMag = 0;
+    for (let gx = GRID / 2; gx < W; gx += GRID) {
+      for (let gy = GRID / 2; gy < H; gy += GRID) {
+        let fx: number;
+        let fy: number;
+        if (structure) {
+          const v = netField(bodies, reg.forces, gx, gy);
+          fx = v.x;
+          fy = v.y;
+        } else {
+          const v = forceAt(bodies, reg.forces, env, gx, gy);
+          fx = v.fx;
+          fy = v.fy;
+        }
+        if (flow) {
+          const b = flowBias(gx, gy, flow, 0.04);
+          fx += b.x;
+          fy += b.y;
+        }
+        const mag = Math.hypot(fx, fy);
+        if (!(mag > 1e-9)) continue; // skip dead zones / NaN
+        samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
+        if (mag > maxMag) maxMag = mag;
+      }
+    }
+    if (maxMag <= 0) return;
+    for (const s of samples) {
+      const rel = absolute ? clamp(s.mag / maxMag, 0, 1) : Math.sqrt(s.mag / maxMag);
+      const len = GRID * 0.5 * (0.25 + 0.75 * rel);
+      const ex = s.gx + s.ux * len;
+      const ey = s.gy + s.uy * len;
+      octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.12 + rel * 0.55, 0, 0.8)})`;
+      octx.beginPath();
+      octx.moveTo(s.gx, s.gy);
+      octx.lineTo(ex, ey);
+      const ah = 3.6;
+      octx.moveTo(ex, ey);
+      octx.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
+      octx.moveTo(ex, ey);
+      octx.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
+      octx.stroke();
+    }
+  }
+
   function frame(now: number): void {
     frameN++;
     env.t = (now - t0) / 1000;
@@ -1153,6 +1224,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     updateEvents();
     updateCaptureEvents();
     render();
+    if (overlayCtx && cfg.overlay !== 'off') renderOverlay(overlayCtx, cfg.overlay);
     raf = host.raf(frame);
   }
 
@@ -1250,6 +1322,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     setRender: (mode) => {
       cfg.render = mode;
+    },
+    setOverlay: (mode) => {
+      cfg.overlay = mode;
+      if (mode === 'off' && overlayCtx) overlayCtx.clearRect(0, 0, W, H); // clear the front surface
     },
     setHeatmap: (on) => {
       cfg.heatmap = on;

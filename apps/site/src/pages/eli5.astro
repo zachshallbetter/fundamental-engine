@@ -198,7 +198,7 @@ import "../styles/force-glyphs.css";
           <ul class="force-list" role="group" aria-label="Pick a force to play it across the whole field">
             <li>
               <button type="button" class="force-card" aria-pressed="true"
-                data-token="gravity" data-strength="1" data-range="1300" data-trace="gravity" data-color="#6366f1"
+                data-token="gravity" data-strength="1" data-range="1300" data-overlay="streamlines" data-color="#6366f1"
                 style="--fc:#6366f1;">
                 <span class="fc-head"><i class="fg fg-gravity" aria-hidden="true"></i><span class="fc-real">Gravity</span></span>
                 <span class="fc-feel">importance</span>
@@ -207,7 +207,7 @@ import "../styles/force-glyphs.css";
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="repel" data-strength="0.9" data-range="1300" data-trace="charge" data-color="#60a5fa"
+                data-token="repel" data-strength="0.9" data-range="1300" data-overlay="force-vectors" data-color="#60a5fa"
                 style="--fc:#60a5fa;">
                 <span class="fc-head"><i class="fg fg-charge" aria-hidden="true"></i><span class="fc-real">Electricity</span></span>
                 <span class="fc-feel">agree or argue</span>
@@ -216,7 +216,7 @@ import "../styles/force-glyphs.css";
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="cohesion" data-strength="1.5" data-range="760" data-trace="cohesion" data-color="#34d399"
+                data-token="cohesion" data-strength="1.5" data-range="760" data-overlay="field-lines" data-color="#34d399"
                 style="--fc:#34d399;">
                 <span class="fc-head"><i class="fg fg-cohesion" aria-hidden="true"></i><span class="fc-real">The glue force</span></span>
                 <span class="fc-feel">belonging</span>
@@ -225,7 +225,7 @@ import "../styles/force-glyphs.css";
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="thermal" data-strength="2" data-range="1300" data-trace="thermal" data-color="#e879f9"
+                data-token="thermal" data-strength="2" data-range="1300" data-overlay="streamlines" data-color="#e879f9"
                 style="--fc:#e879f9;">
                 <span class="fc-head"><i class="fg fg-morph" aria-hidden="true"></i><span class="fc-real">The decay force</span></span>
                 <span class="fc-feel">fading</span>
@@ -765,78 +765,23 @@ import "../styles/force-glyphs.css";
 <script>
   import { initHomeRuntime } from "../components/home/HomeRuntime.ts";
   import { initStageFieldOverlay } from "../components/home/StageFieldOverlay.ts";
-  import { traceField, traceDipole } from "../lib/field-probe.ts";
 
   let teardownRuntime: (() => void) | undefined;
   let teardownOverlay: (() => void) | undefined;
   let teardownForces: (() => void) | undefined;
 
-  // Ch. II force picker — selecting a force plays it OVER and UNDER the page (immersive):
-  //   · UNDER — the persisted <field-root> reads a viewport-centred [data-body] source with
-  //     whole-screen range, so the existing dots stream / clump / scatter per the force, behind
-  //     content. The dot render is left untouched (the force just moves them).
-  //   · OVER  — a full-page canvas in FRONT of content (pointer-events:none, low opacity, screen
-  //     blend) draws the force's real field-lines / trajectories with the engine probe
-  //     (traceField / traceDipole) — the same probe the home stage overlays use.
-  // Both fade in only while the section is in view. rescan() runs on select/enter/leave only.
-  type FieldEl = HTMLElement & { rescan?: () => void };
-  const hexToRgb = (hex?: string): [number, number, number] => {
-    const h = (hex || "#6366f1").replace("#", "");
-    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  // Ch. II force picker — selecting a force plays it OVER and UNDER the page (immersive), via the
+  // Field Surfaces API on the shared <field-root>:
+  //   · UNDER — a viewport-centred [data-body] source with whole-screen range; the existing dots
+  //     stream / clump / scatter per the force, behind content (the dot render is left untouched).
+  //   · OVER  — field.setOverlay(mode) draws the LIVE field structure on the element's overlay
+  //     surface, in front of content; setAccent tints it to the force colour.
+  // Active only while the section is in view. rescan() runs on select/enter/leave only.
+  type FieldEl = HTMLElement & {
+    rescan?: () => void;
+    setOverlay?: (m: string) => void;
+    setAccent?: (hex: string) => void;
   };
-  // Draw a probe trace (dipole field-lines + trajectories + rings) centred at (cx,cy), a
-  // normalized extent of 1 → R px. Adapted from StageFieldOverlay for a full-viewport canvas.
-  function drawProbe(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, rgb: [number, number, number], trace: any, dipole: any): void {
-    const [r, g, b] = rgb;
-    if (dipole) {
-      ctx.lineWidth = 1.1;
-      ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
-      for (const path of dipole.paths) {
-        if (path.length < 2) continue;
-        ctx.beginPath();
-        for (let i = 0; i < path.length; i++) {
-          const px = cx + path[i].x * R, py = cy + path[i].y * R;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-      }
-    }
-    if (!trace) return;
-    ctx.setLineDash([3, 5]);
-    ctx.lineWidth = 1.2;
-    for (const ring of trace.rings || []) {
-      ctx.strokeStyle = `rgba(${r},${g},${b},0.4)`;
-      ctx.beginPath();
-      ctx.arc(cx, cy, ring.r * R, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    for (const path of trace.paths || []) {
-      const n = path.length;
-      if (n < 2) continue;
-      ctx.lineWidth = 1.2;
-      for (let i = 1; i < n; i++) {
-        ctx.strokeStyle = `rgba(${r},${g},${b},${0.08 + 0.5 * (i / n)})`;
-        ctx.beginPath();
-        ctx.moveTo(cx + path[i - 1].x * R, cy + path[i - 1].y * R);
-        ctx.lineTo(cx + path[i].x * R, cy + path[i].y * R);
-        ctx.stroke();
-      }
-      const head = path[n - 1], tail = path[Math.max(0, n - 4)];
-      const dx = head.x - tail.x, dy = head.y - tail.y, d = Math.hypot(dx, dy);
-      if (d > 1e-4) {
-        const ux = dx / d, uy = dy / d, sz = 7, hx = cx + head.x * R, hy = cy + head.y * R;
-        ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`;
-        ctx.lineWidth = 1.3;
-        ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(hx - ux * sz - uy * sz * 0.5, hy - uy * sz + ux * sz * 0.5);
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(hx - ux * sz + uy * sz * 0.5, hy - uy * sz - ux * sz * 0.5);
-        ctx.stroke();
-      }
-    }
-  }
   function initForcePicker(): () => void {
     const root = document.querySelector<HTMLElement>("[data-forcepick]");
     const source = document.querySelector<HTMLElement>("[data-forcesource]");
@@ -848,42 +793,11 @@ import "../styles/force-glyphs.css";
     const home = source.parentElement;
     const anchor = source.nextSibling;
     document.body.appendChild(source);
-    // the OVER layer: a full-page field-line canvas in front of content.
-    const over = document.createElement("canvas");
-    over.className = "force-overlay";
-    over.setAttribute("aria-hidden", "true");
-    document.body.appendChild(over);
-    const octx = over.getContext("2d");
 
     const ac = new AbortController();
     let current: HTMLButtonElement | undefined = cards[0];
     let inView = false;
     const rescan = () => field && field.rescan && field.rescan();
-
-    const drawOver = () => {
-      if (!octx || !current) return;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      const w = window.innerWidth || 1280, h = window.innerHeight || 800;
-      over.width = Math.round(w * dpr);
-      over.height = Math.round(h * dpr);
-      over.style.width = w + "px";
-      over.style.height = h + "px";
-      octx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      octx.clearRect(0, 0, w, h);
-      const c = current.dataset;
-      const token = c.trace || c.token || "gravity";
-      let trace: any = null, dipole: any = null;
-      try {
-        // a GRID of probes → dense field-lines that fill the viewport (not the sparse default ring).
-        trace = traceField(token, { seed: "grid" });
-        dipole = traceDipole(token, {});
-      } catch {
-        return;
-      }
-      if (!trace && !dipole) return;
-      const shown = dipole ? { paths: [], rings: trace ? trace.rings : [] } : trace;
-      drawProbe(octx, w / 2, h / 2, Math.min(w, h) * 0.72, hexToRgb(c.color), shown, dipole);
-    };
 
     const apply = () => {
       if (inView && current) {
@@ -894,13 +808,12 @@ import "../styles/force-glyphs.css";
         source.setAttribute("data-color", c.color || "#6366f1");
         source.style.setProperty("--fc", c.color || "#6366f1");
         source.classList.add("on");
-        over.style.setProperty("--fc", c.color || "#6366f1");
-        over.classList.add("on");
-        drawOver();
+        field?.setAccent?.(c.color || "#6366f1"); // tint both surfaces to the force colour
+        field?.setOverlay?.(c.overlay || "streamlines"); // OVER: live field structure, in front of content
       } else {
         source.removeAttribute("data-body");
         source.classList.remove("on");
-        over.classList.remove("on");
+        field?.setOverlay?.("off");
       }
       rescan();
     };
@@ -930,15 +843,14 @@ import "../styles/force-glyphs.css";
       { threshold: 0.4 },
     );
     io.observe(root);
-    window.addEventListener("resize", () => { if (inView) drawOver(); }, { signal: ac.signal });
 
     return () => {
       ac.abort();
       io.disconnect();
       source.removeAttribute("data-body");
       source.classList.remove("on");
+      field?.setOverlay?.("off");
       rescan();
-      over.remove();
       if (home) home.insertBefore(source, anchor); // restore for a same-page re-init
     };
   }
@@ -1174,26 +1086,8 @@ import "../styles/force-glyphs.css";
   .force-source.on {
     opacity: 0.85;
   }
-  /* The OVER layer — the force's field-lines drawn in front of all content (under the nav).
-     pointer-events:none so it never blocks; screen blend so the lines glow over text instead of
-     dimming it; fades in only while a force is active. */
-  .force-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
-    opacity: 0;
-    mix-blend-mode: screen;
-    transition: opacity 0.5s ease;
-  }
-  .force-overlay.on {
-    opacity: 0.85;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .force-overlay {
-      transition: none;
-    }
-  }
+  /* The OVER layer is now the <field-root>'s own overlay surface (Field Surfaces API): the page just
+     calls field.setOverlay(mode). No page-owned canvas here. */
   .force-caption {
     margin: 0.2rem 0 0;
     color: var(--muted, #9aa);
