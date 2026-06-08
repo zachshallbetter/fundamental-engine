@@ -18,6 +18,7 @@ import {
   spotlight,
   pigment,
   fieldflow,
+  warp,
   curlNoise,
   extendedForces,
 } from './extended.ts';
@@ -107,8 +108,39 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'spotlight',
       'pigment',
       'fieldflow',
+      'warp',
     ],
   );
+});
+
+test('warp relocates matter inside its throat to the paired body, conserved (§22.3)', () => {
+  // pair target resolved by the engine into warpX/warpY; particle 10px inside the throat.
+  const b = body({ tokens: ['warp'], cx: 0, cy: 0, absorbR: 64, warpHas: true, warpX: 1000, warpY: 0, twist: 0, warpScale: 1 });
+  const p = part({ x: -10, y: 0 }); // dx = 10 toward the body → inside absorbR
+  warp.apply(b, p, env({ dx: 10, dy: 0, dist: 10 }));
+  // emerges just outside the paired throat (absorbR·scale + 6 = 70) on the entry side
+  assert.ok(Math.abs(p.x - (1000 - 70)) < 1e-6, 'relocated next to the pair, not the entry throat');
+  assert.equal(p.y, 0);
+  const fromPair = Math.hypot(p.x - 1000, p.y);
+  assert.ok(fromPair > 64 && fromPair < 76, 'lands just outside the pair throat (no immediate re-entry)');
+});
+
+test('warp no-ops outside the throat, and with no resolved pair', () => {
+  const far = part({ x: -200, y: 0 });
+  warp.apply(body({ tokens: ['warp'], warpHas: true, warpX: 1000, warpY: 0 }), far, env({ dx: 200, dy: 0, dist: 200 }));
+  assert.deepEqual({ x: far.x, y: far.y }, { x: -200, y: 0 }, 'beyond absorbR → untouched');
+
+  const unpaired = part({ x: -10, y: 0 });
+  warp.apply(body({ tokens: ['warp'], warpHas: false }), unpaired, env({ dx: 10, dy: 0, dist: 10 }));
+  assert.deepEqual({ x: unpaired.x, y: unpaired.y }, { x: -10, y: 0 }, 'no resolved pair → no relocation');
+});
+
+test('warp twists the carried velocity by data-twist (speed preserved)', () => {
+  const b = body({ tokens: ['warp'], cx: 0, cy: 0, absorbR: 64, warpHas: true, warpX: 500, warpY: 0, twist: Math.PI / 2, warpScale: 1 });
+  const p = part({ x: -10, y: 0, vx: 3, vy: 0 });
+  warp.apply(b, p, env({ dx: 10, dy: 0, dist: 10 }));
+  // a +90° twist rotates v=(3,0) → ~(0,3): speed preserved, direction rotated
+  assert.ok(Math.abs(p.vx) < 1e-6 && Math.abs(p.vy - 3) < 1e-6, 'velocity rotated by the twist');
 });
 
 test('resonate is a pure modifier: S(t) = 1 + sin(ω·t), spin tunes the rate (§20.3)', () => {
