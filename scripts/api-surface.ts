@@ -12,7 +12,7 @@
  * verbatimModuleSyntax, so these imports also lock each symbol's KIND, not just its presence.
  */
 import { createField as coreCreateField, compileRecipe } from 'field-ui';
-import type { FieldRecipe, FieldHost } from 'field-ui';
+import type { FieldRecipe, FieldHost, FieldHandle, OverlayMode } from 'field-ui';
 import { browserHost, createFieldPlatform, applyRecipe, bindData } from '@field-ui/platform';
 import type { FieldPlatform } from '@field-ui/platform';
 import { createField as vanillaCreateField, browserHost as vanillaBrowserHost } from '@field-ui/vanilla';
@@ -32,3 +32,7 @@ void FROZEN_VALUES;
 
 // Reference every frozen TYPE so its removal/rename is a compile error here.
 export type __FrozenTypes = [FieldRecipe, FieldHost, FieldPlatform];
+
+// Field Surfaces (additive): lock the overlay-surface API onto the handle, so removing/renaming
+// `setOverlay` or `OverlayMode` becomes a compile error here too. See field-ui-api-stability.md.
+export type __OverlayApi = [FieldHandle['setOverlay'], OverlayMode];

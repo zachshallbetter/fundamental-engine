@@ -178,6 +178,16 @@ test('setRender() accepts all six render modes', () => {
   field.destroy();
 });
 
+test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)', () => {
+  installDOM();
+  const field = new ForcesField();
+  const modes = ['streamlines', 'force-vectors', 'field-lines', 'off'] as const;
+  for (const mode of modes) {
+    assert.doesNotThrow(() => field.setOverlay(mode), `setOverlay('${mode}')`);
+  }
+  field.destroy();
+});
+
 test('threads() accepts a ThreadLink array and null', () => {
   installDOM();
   const field = new ForcesField();
