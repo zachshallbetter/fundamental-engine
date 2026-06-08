@@ -1587,8 +1587,12 @@ section is the single source of truth for what "mass" means.
 ## 22. Force targets — particles, elements & events
 
 A core promise of the system is that forces act on **everything the page is made
-of**, not just the particle field. That promise is currently only *half* wired.
-This section audits it and defines the unified model.
+of**, not just the particle field. The four body roles (§22.1) and the
+particle/element impulse, constraint, feedback, sink-capture, and spawn paths are
+wired; element-level capture/relocate/emit and the `warp` relocate atom are
+**planned**. The canonical, status-annotated account is
+[field-ui-agent-consumption-model.md](../canonical/field-ui-agent-consumption-model.md);
+this section is the engine-level record.
 
 ### 22.1 What's maintained (and what isn't)
 | A DOM element can be a… | Status | Where |
@@ -1620,16 +1624,18 @@ with a DOM consumer; an event sink is a *write-only* agent. One DOM body can be 
 three at once — sourcing force, being pushed by neighbors, and firing events.
 
 ### 22.3 Influence kinds → how each agent consumes them
-Every force emits one of a few influence kinds. The matrix is the whole spec:
+Every force emits one of a few influence kinds. The matrix is the spec; each cell
+carries its own status (✅ shipped · 🔭 planned). Verify against
+[field-ui-agent-consumption-model.md](../canonical/field-ui-agent-consumption-model.md).
 
 | Influence (from force) | Particle | Element | Event sink |
 |---|---|---|---|
-| **impulse** `Δv` (attract, repel, wind, stream…) | `v += F/m` | `o_v += F/m_el` → `translate(o)` | — |
-| **constraint** (tether, wall, gate) | clamp pos/vel | clamp the transform offset | — |
-| **capture** (sink) | `cap = b` | dock/collapse the element | fire `field:captured` |
-| **relocate** (warp) | move position | reorder/teleport in the DOM | — |
-| **emit** (spawn) | new particle | clone/insert a DOM node | — |
-| **trigger** (threshold) | (sets heat) | toggle a class | **dispatch a `CustomEvent`** |
+| **impulse** `Δv` (attract, repel, wind, stream…) | ✅ `v += F/m` | ✅ `o_v += F/m_el` → `translate(o)` (`data-move`) | — |
+| **constraint** (tether, wall, gate) | ✅ clamp pos/vel | ✅ anchor tether + offset clamp (`maxOffset`) | — |
+| **capture** (sink) | ✅ `cap = b` (held, then released) | 🔭 dock/collapse the element | 🔭 fire `field:captured` |
+| **relocate** (warp) | 🔭 move position (`warp` spec-only) | 🔭 reorder/teleport in the DOM | — |
+| **emit** (spawn) | ✅ new particle | 🔭 clone/insert a DOM node | — |
+| **trigger** (threshold) | ✅ (sets heat) | 🔭 toggle a class (no built-in; use a `data-on` handler) | ✅ **dispatch a `CustomEvent`** (`data-on`) |
 
 "Apply a force to a DOM element" = it consumes the *same* impulse a particle would,
 but as a **transform** (with element mass `m_el`) instead of raw velocity. "Apply a
