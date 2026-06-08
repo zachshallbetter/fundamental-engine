@@ -194,53 +194,53 @@ import "../styles/force-glyphs.css";
         <span class="concept-no">04 — The translation</span>
         <h2>Every page already has these four. It just makes them physical.</h2>
         <p class="forces-lead">Pick one — and watch the field behind this page actually do it.</p>
-        <div class="forces" data-forcepick>
-          <ul class="force-list" role="group" aria-label="Pick a force to play it on the field">
+        <div class="forces" data-forcepick data-render="streamlines">
+          <ul class="force-list" role="group" aria-label="Pick a force to play it across the whole field">
             <li>
               <button type="button" class="force-card" aria-pressed="true"
-                data-token="gravity" data-strength="1.5" data-range="460" data-color="#6366f1"
+                data-token="gravity" data-strength="1" data-range="1300" data-render="streamlines" data-color="#6366f1"
                 style="--fc:#6366f1;">
                 <span class="fc-head"><i class="fg fg-gravity" aria-hidden="true"></i><span class="fc-real">Gravity</span></span>
                 <span class="fc-feel">importance</span>
-                <span class="fc-say">things gather around what matters</span>
+                <span class="fc-say">the whole field streams toward what matters</span>
               </button>
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="repel" data-strength="1.4" data-range="440" data-color="#60a5fa"
+                data-token="repel" data-strength="0.9" data-range="1300" data-render="streamlines" data-color="#60a5fa"
                 style="--fc:#60a5fa;">
                 <span class="fc-head"><i class="fg fg-charge" aria-hidden="true"></i><span class="fc-real">Electricity</span></span>
                 <span class="fc-feel">agree or argue</span>
-                <span class="fc-say">opposites attract, sames push apart</span>
+                <span class="fc-say">it pushes the whole field apart</span>
               </button>
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="cohesion" data-strength="1.6" data-range="340" data-color="#34d399"
+                data-token="cohesion" data-strength="1.5" data-range="760" data-render="metaballs" data-color="#34d399"
                 style="--fc:#34d399;">
                 <span class="fc-head"><i class="fg fg-cohesion" aria-hidden="true"></i><span class="fc-real">The glue force</span></span>
                 <span class="fc-feel">belonging</span>
-                <span class="fc-say">things that go together stick together</span>
+                <span class="fc-say">the field clumps into things that belong together</span>
               </button>
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="thermal" data-strength="2.2" data-range="480" data-color="#e879f9"
+                data-token="thermal" data-strength="2" data-range="1300" data-render="trails" data-color="#e879f9"
                 style="--fc:#e879f9;">
                 <span class="fc-head"><i class="fg fg-morph" aria-hidden="true"></i><span class="fc-real">The decay force</span></span>
                 <span class="fc-feel">fading</span>
-                <span class="fc-say">old things let go and drift away</span>
+                <span class="fc-say">the whole field shivers loose and drifts away</span>
               </button>
             </li>
           </ul>
-          <div class="force-stage">
-            <span class="force-core" data-forcesource aria-hidden="true"></span>
-            <span class="force-ring" aria-hidden="true"></span>
-          </div>
         </div>
         <p class="force-caption" data-forcecaption aria-live="polite">
-          <b style="color:#6366f1">Gravity</b> — real gravity, doing an interface job: things gather around what matters.
+          <b style="color:#6366f1">Gravity</b> — real gravity, doing an interface job: the whole field streams toward what matters.
         </p>
+        <!-- The chosen force plays across the entire persisted <field-root>: a viewport-centred,
+             whole-screen-range source the engine reads. aria-hidden — it is the field's expression,
+             not content. Active only while this section is in view (see the orchestrator script). -->
+        <span class="force-source" data-forcesource aria-hidden="true"></span>
       </div>
     </section>
 
@@ -770,11 +770,15 @@ import "../styles/force-glyphs.css";
   let teardownOverlay: (() => void) | undefined;
   let teardownForces: (() => void) | undefined;
 
-  // Ch. II force picker — selecting a force drops a transient [data-body] into the page so the
-  // shared <field-root> plays that force in the open stage. Active only while the section is in
-  // view (clears the body otherwise, so the rest of the manual is unaffected). rescan() runs on
+  // Ch. II force picker — selecting a force plays it across the ENTIRE persisted <field-root>:
+  // a viewport-centred [data-body] source with whole-screen range, plus a global flow render
+  // (streamlines), exactly like the nav field toggles. Active only while the section is in view;
+  // on leave it clears the body and restores the field's previous render. rescan() runs on
   // select/enter/leave only — never per frame.
-  type FieldEl = HTMLElement & { rescan?: () => void };
+  type FieldEl = HTMLElement & {
+    rescan?: () => void;
+    setRender?: (m: string) => void;
+  };
   function initForcePicker(): () => void {
     const root = document.querySelector<HTMLElement>("[data-forcepick]");
     const source = document.querySelector<HTMLElement>("[data-forcesource]");
@@ -782,22 +786,38 @@ import "../styles/force-glyphs.css";
     if (!root || !source) return () => {};
     const field = document.querySelector("field-root") as FieldEl | null;
     const cards = [...root.querySelectorAll<HTMLButtonElement>(".force-card")];
+    const renderMode = root.dataset.render || "streamlines";
+    // re-parent the source to <body> so its position:fixed is viewport-true regardless of any
+    // transformed ancestor in the chapter layout.
+    const home = source.parentElement;
+    const anchor = source.nextSibling;
+    document.body.appendChild(source);
     const ac = new AbortController();
     let current: HTMLButtonElement | undefined = cards[0];
     let inView = false;
+    let savedRender: string | null = null; // the field's render before this section took it over
     const rescan = () => field && field.rescan && field.rescan();
 
     const apply = () => {
       if (inView && current) {
         const c = current.dataset;
         source.setAttribute("data-body", c.token || "gravity");
-        source.setAttribute("data-strength", c.strength || "1.3");
-        source.setAttribute("data-range", c.range || "420");
+        source.setAttribute("data-strength", c.strength || "1");
+        source.setAttribute("data-range", c.range || "1300");
         source.setAttribute("data-color", c.color || "#6366f1");
         source.style.setProperty("--fc", c.color || "#6366f1");
-        root.style.setProperty("--fc", c.color || "#6366f1");
+        source.classList.add("on");
+        if (field && field.setRender) {
+          if (savedRender === null) savedRender = field.dataset.navRender || "dots";
+          field.setRender(c.render || renderMode);
+        }
       } else {
         source.removeAttribute("data-body");
+        source.classList.remove("on");
+        if (field && field.setRender && savedRender !== null) {
+          field.setRender(savedRender);
+          savedRender = null;
+        }
       }
       rescan();
     };
@@ -832,7 +852,14 @@ import "../styles/force-glyphs.css";
       ac.abort();
       io.disconnect();
       source.removeAttribute("data-body");
+      source.classList.remove("on");
+      if (field && field.setRender && savedRender !== null) {
+        field.setRender(savedRender);
+        savedRender = null;
+      }
       rescan();
+      // put the source back where it was so a re-init on the same page still finds it
+      if (home) home.insertBefore(source, anchor);
     };
   }
 
@@ -973,19 +1000,15 @@ import "../styles/force-glyphs.css";
     margin: 0.4rem 0 1rem;
   }
   .forces {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 1.4rem;
-    align-items: stretch;
-    margin: 0 0 1rem;
+    margin: 0 0 0.9rem;
   }
   .force-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.5rem;
-    align-content: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
   }
   .force-card {
     --fc: #6366f1;
@@ -1048,43 +1071,28 @@ import "../styles/force-glyphs.css";
     align-self: start;
   }
 
-  /* The live field window: an open region where the main <field-root> plays the chosen force. */
-  .force-stage {
-    position: relative;
-    min-height: 16rem;
-    border: 1px solid var(--line, #2a2a35);
-    border-radius: 14px;
-    background: radial-gradient(
-      120% 120% at 50% 50%,
-      color-mix(in srgb, var(--text, #fff) 2%, transparent),
-      transparent 70%
-    );
-    overflow: hidden;
-  }
-  .force-core {
-    position: absolute;
+  /* The whole-field source: a viewport-centred point the persisted <field-root> reads as the force
+     origin while this section is in view. It carries a soft, --fc-tinted halo so the screen has a
+     focal "eye" the field streams around; the real show is the field motion + streamlines behind the
+     whole page. The orchestrator re-parents it to <body> so position:fixed is viewport-true. */
+  .force-source {
+    position: fixed;
     left: 50%;
     top: 50%;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    background: var(--fc, #6366f1);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--fc, #6366f1) 25%, transparent),
-      0 0 22px 6px color-mix(in srgb, var(--fc, #6366f1) 45%, transparent);
-    transition: background 0.25s, box-shadow 0.25s;
-  }
-  .force-ring {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 84px;
-    height: 84px;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    border: 1px dashed color-mix(in srgb, var(--fc, #6366f1) 35%, transparent);
-    transition: border-color 0.25s;
     pointer-events: none;
+    z-index: 0;
+    background: var(--fc, #6366f1);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--fc, #6366f1) 18%, transparent),
+      0 0 40px 12px color-mix(in srgb, var(--fc, #6366f1) 30%, transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease, background 0.3s, box-shadow 0.3s;
+  }
+  .force-source.on {
+    opacity: 0.85;
   }
   .force-caption {
     margin: 0.2rem 0 0;
@@ -1095,15 +1103,13 @@ import "../styles/force-glyphs.css";
     font-weight: 700;
   }
   @media (max-width: 760px) {
-    .forces {
+    .force-list {
       grid-template-columns: 1fr;
-    }
-    .force-stage {
-      min-height: 12rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .force-card {
+    .force-card,
+    .force-source {
       transition: none;
     }
   }
