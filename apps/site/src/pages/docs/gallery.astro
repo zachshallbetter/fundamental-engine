@@ -195,7 +195,7 @@ const filters = [
   const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip'));
   const cards = Array.from(document.querySelectorAll<HTMLElement>('.recipe-card'));
   const empty = document.querySelector<HTMLElement>('.empty');
-  const TIERS = new Set(['core', 'workflow', 'professional', 'enterprise']);
+  const TIERS = new Set(['core', 'applied', 'systems', 'operational']);
   function apply(key: string) {
     let shown = 0;
     for (const card of cards) {
