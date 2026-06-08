@@ -842,7 +842,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 
 > The reconciliation pass is **done**. The as-built registry lives in
 > `packages/core/src/config/manual.ts` (and is cross-checked against the live force
-> registry by a completeness test, so it can't drift). Every one of the **34 registered
+> registry by a completeness test, so it can't drift). Every one of the **35 registered
 > forces** carries a canonical colour; the `mass`→`accreted` split (§21.2) shipped. The
 > table below is the design source for this — read it with three deltas:
 >
