@@ -47,6 +47,8 @@ import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { attentionMuls } from './attention.ts';
 import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
+import { releaseCaptured, sinkLoad, captureEdge } from './accretion.ts';
+import { withinCapture, stepDock, dockTransform, type DockState } from './dock.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
@@ -125,7 +127,24 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let curAccent: RGB = hexToRgb(cfg.accent);
   let hoverAccent: string | null = null;
   let threadLinks: { a: Element; b: Element; c: RGB; seed: number }[] = [];
-  let movers: { el: HTMLElement; o: ElementOffset; mEl: number; layout: boolean }[] = [];
+  let movers: {
+    el: HTMLElement;
+    o: ElementOffset;
+    mEl: number;
+    layout: boolean;
+    /** opted into element capture via `data-dock` (§22.3). */
+    dockable: boolean;
+    /** collapse progress while docking/released. */
+    dock: DockState;
+    /** the sink body currently holding this element, or null. */
+    docked: Body | null;
+    /** opted into element relocate via `data-warp` (§22.3): teleport on entering a warp throat. */
+    warpable: boolean;
+    /** frames until this element may relocate again (anti-thrash cooldown). */
+    warpCool: number;
+  }[] = [];
+  // element emit (§22.3): bodies that clone a decorative template into the DOM, budgeted by data-max.
+  let emitters: { el: HTMLElement; tmpl: HTMLElement | null; cap: number; emitted: HTMLElement[] }[] = [];
   let sparks: { x: number; y: number; vx: number; vy: number; life: number; c: RGB }[] = [];
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
@@ -185,32 +204,32 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     scrollV: 0,
     spark: (x, y, power, color) => spawnSpark(x, y, power, color),
     supernova: (b) => {
-      // release exactly what was captured — radial, from the core (§6.9).
+      // release exactly what was captured — radial, from the core (§6.9, accretion.ts). Held matter
+      // is conserved: released particles stay in the pool. `releaseCaptured` resets b.accreted to 0.
+      const released = releaseCaptured(store.particles, b);
+      const justReleased = new Set(released);
+      // the blast shoves nearby *free* matter outward (but not the matter it just released).
       for (const q of store.particles) {
-        if (q.cap === b) {
-          const ang = Math.random() * Math.PI * 2;
-          const spd = 4 + Math.random() * 3;
-          q.cap = null;
-          q.x = b.cx;
-          q.y = b.cy;
-          q.vx = Math.cos(ang) * spd;
-          q.vy = Math.sin(ang) * spd;
-          q.heat = 1;
-        } else {
-          const dx = q.x - b.cx;
-          const dy = q.y - b.cy;
-          const d = Math.hypot(dx, dy) || 1;
-          if (d < 320) {
-            const f = (1 - d / 320) * 4;
-            q.vx += (dx / d) * f;
-            q.vy += (dy / d) * f;
-            q.heat = Math.max(q.heat, 0.8);
-          }
+        if (justReleased.has(q)) continue;
+        const dx = q.x - b.cx;
+        const dy = q.y - b.cy;
+        const d = Math.hypot(dx, dy) || 1;
+        if (d < 320) {
+          const f = (1 - d / 320) * 4;
+          q.vx += (dx / d) * f;
+          q.vy += (dy / d) * f;
+          q.heat = Math.max(q.heat, 0.8);
         }
       }
       // the blast also tears nearby bound matter off the Currents (§6.9, §2.4).
       tearBoundNear(bound, waves, b.cx, b.cy, 320, W, H, env.t, (p) => void store.add(newParticle(p)));
-      b.accreted = 0;
+      // release docks any DOM elements this sink had captured (§22.3, element capture).
+      undockFrom(b);
+      // and fires field:released on the falling edge of accreting (capture/release events, §22.5).
+      if (b.el.dataset.fxCap === '1') {
+        b.el.dataset.fxCap = '0';
+        fireCaptureEvent(b.el, 'released', { accreted: 0, load: 0 });
+      }
     },
     // class-[S] sources emit through here, capped by a hard pool ceiling (the
     // conservation backstop, §20.1): even a source with no lifespan can't grow the
@@ -295,7 +314,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // `data-move="layout"` opts into the self-laying-out forces (Concept 3): mutual
       // repulsion + density pressure. Plain `data-move` just drifts with the field.
       const layout = (el.dataset.move ?? '').trim() === 'layout';
-      return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl, layout };
+      // `data-dock` opts into element capture (§22.3): the element docks when it falls into a sink.
+      const dockable = el.hasAttribute('data-dock');
+      // `data-warp` opts into element relocate (§22.3): teleport on entering a warp throat.
+      const warpable = el.hasAttribute('data-warp');
+      return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl, layout, dockable, dock: { dock: 0 }, docked: null, warpable, warpCool: 0 };
     });
     eventEls = [...host.root.querySelectorAll('[data-on]')].map((node) => {
       const el = node as HTMLElement;
@@ -305,6 +328,59 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         bindings: parseEventBindings(el.dataset.on ?? ''),
       };
     });
+    // resolve `warp` pairings (§22.3 relocate): a body's data-pair selector → the paired body, whose
+    // live centre becomes the relocate target each frame (updateWarpTargets).
+    for (const b of bodies) {
+      if (!b.pair) continue;
+      let target: Element | null = null;
+      try {
+        target = host.root.querySelector(b.pair);
+      } catch {
+        target = null; // invalid selector → unpaired, the force no-ops
+      }
+      b.pairBody = target ? bodies.find((o) => o.el === target) : undefined;
+    }
+    // element emit (§22.3): bodies with data-emit clone a referenced template, capped by data-max.
+    emitters = [...host.root.querySelectorAll('[data-emit]')].map((node) => {
+      const el = node as HTMLElement;
+      const sel = el.dataset.emit ?? '';
+      let tmpl: HTMLElement | null = null;
+      try {
+        tmpl = sel ? (host.root.querySelector(sel) as HTMLElement | null) : null;
+      } catch {
+        tmpl = null;
+      }
+      const cap = Math.max(0, Math.round(Number.parseFloat(el.dataset.max ?? '') || 8));
+      return { el, tmpl, cap, emitted: [] as HTMLElement[] };
+    });
+  }
+
+  // refresh each warp body's relocate target from its paired body's live centre (§22.3 relocate).
+  function updateWarpTargets(): void {
+    for (const b of bodies) {
+      if (b.pairBody && b.pairBody.vis) {
+        b.warpX = b.pairBody.cx;
+        b.warpY = b.pairBody.cy;
+        b.warpHas = true;
+      } else if (b.pair) {
+        b.warpHas = false;
+      }
+    }
+  }
+
+  // element emit (§22.3): clone the decorative template into the emit element, budgeted by cap. Clones
+  // are aria-hidden (expression, not meaning) and id-stripped (no duplicate ids); removed on destroy.
+  function updateEmitters(): void {
+    if (emitters.length === 0 || env.frameN % 30 !== 0) return;
+    for (const em of emitters) {
+      if (!em.tmpl || em.emitted.length >= em.cap) continue;
+      const clone = em.tmpl.cloneNode(true) as HTMLElement;
+      clone.removeAttribute('id');
+      clone.setAttribute('aria-hidden', 'true');
+      clone.dataset.fieldEmitted = '';
+      em.el.appendChild(clone);
+      em.emitted.push(clone);
+    }
   }
 
   function updateEvents(): void {
@@ -330,6 +406,43 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
   }
 
+  // dispatch a discrete field event on an element, with the forces:* alias (migration window).
+  function fireCaptureEvent(el: HTMLElement, name: 'captured' | 'released' | 'relocated', detail: Record<string, unknown>): void {
+    el.dispatchEvent(new CustomEvent('field:' + name, { bubbles: true, composed: true, detail }));
+    el.dispatchEvent(new CustomEvent('forces:' + name, { bubbles: true, composed: true, detail }));
+  }
+
+  // capture/release events for sink BODIES (particle accretion): fire field:captured on the rising
+  // edge of accreting and field:released on the falling edge (§22.5). Release is also fired directly
+  // from supernova so a same-frame fill+release never drops it.
+  function updateCaptureEvents(): void {
+    for (const b of bodies) {
+      if (!b.vis || b.tokens.indexOf('sink') < 0) continue;
+      const armed = b.el.dataset.fxCap === '1';
+      const edge = captureEdge(armed, b.accreted > 0);
+      if (edge.fire === 'captured') {
+        b.el.dataset.fxCap = '1';
+        fireCaptureEvent(b.el, 'captured', { accreted: b.accreted, load: sinkLoad(b) });
+      } else if (edge.fire === 'released') {
+        b.el.dataset.fxCap = '0';
+        fireCaptureEvent(b.el, 'released', { accreted: 0, load: 0 });
+      }
+    }
+  }
+
+  // release any DOM elements a sink had docked (§22.3) — restore their transform + a11y, fire
+  // field:released. Called from supernova so element capture is conserved like particle capture.
+  function undockFrom(b: Body): void {
+    for (const mv of movers) {
+      if (mv.docked !== b) continue;
+      mv.docked = null;
+      mv.dock.dock = 0;
+      if (mv.el.getAttribute('aria-hidden') === 'true') mv.el.removeAttribute('aria-hidden');
+      mv.el.style.opacity = '';
+      fireCaptureEvent(mv.el, 'released', {});
+    }
+  }
+
   function updateMovers(): void {
     if (movers.length === 0) return;
     // current screen centres (the rect already reflects each element's transform), so the
@@ -342,6 +455,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const mv = movers[i]!;
       const cx = centers[i]!.x;
       const cy = centers[i]!.y;
+      // docked: collapse toward the sink core and hold there, skipping force integration (§22.3).
+      if (mv.docked) {
+        const home = { x: cx - mv.o.x, y: cy - mv.o.y };
+        mv.dock.dock = stepDock(mv.dock.dock, 1);
+        const tf = dockTransform(home, mv.o, { x: mv.docked.cx, y: mv.docked.cy }, mv.dock.dock);
+        mv.el.style.transform = `translate(${tf.tx.toFixed(2)}px, ${tf.ty.toFixed(2)}px) scale(${tf.scale.toFixed(3)})`;
+        mv.el.style.opacity = tf.opacity.toFixed(3);
+        if (mv.dock.dock >= 1 && mv.el.getAttribute('aria-hidden') !== 'true') mv.el.setAttribute('aria-hidden', 'true');
+        continue;
+      }
       probe.x = cx;
       probe.y = cy;
       probe.vx = 0;
@@ -372,8 +495,41 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         fx += rep.x + press.x;
         fy += rep.y + press.y;
       }
+      // the layout-slot centre (home), captured before integration mutates the offset.
+      const home = { x: cx - mv.o.x, y: cy - mv.o.y };
       integrateOffset(mv.o, fx, fy, mv.mEl, 0.9);
       mv.el.style.transform = `translate(${mv.o.x.toFixed(2)}px, ${mv.o.y.toFixed(2)}px)`;
+      // element capture (§22.3): a [data-dock] mover that lands inside a sink's radius docks. Test
+      // against the post-integration centre (home + new offset); never let a body dock into itself.
+      if (mv.dockable) {
+        const here = { x: home.x + mv.o.x, y: home.y + mv.o.y };
+        const sink = bodies.find(
+          (b) => b.vis && b.el !== mv.el && b.tokens.indexOf('sink') >= 0 && withinCapture(here, b)
+        );
+        if (sink) {
+          mv.docked = sink;
+          fireCaptureEvent(mv.el, 'captured', { sink: sink.el });
+        }
+      }
+      // element relocate (§22.3): a [data-warp] mover entering a warp throat teleports its offset so
+      // its screen position jumps to the throat's pair. A cooldown prevents immediate re-triggering.
+      if (mv.warpCool > 0) mv.warpCool -= 1;
+      if (mv.warpable && mv.warpCool === 0) {
+        const here = { x: home.x + mv.o.x, y: home.y + mv.o.y };
+        const throat = bodies.find(
+          (b) => b.vis && b.el !== mv.el && b.warpHas && b.tokens.indexOf('warp') >= 0 && withinCapture(here, b)
+        );
+        if (throat) {
+          // place the element's centre at the paired throat: offset = pairCentre − home.
+          mv.o.x = throat.warpX! - home.x;
+          mv.o.y = throat.warpY! - home.y;
+          mv.o.vx = 0;
+          mv.o.vy = 0;
+          mv.el.style.transform = `translate(${mv.o.x.toFixed(2)}px, ${mv.o.y.toFixed(2)}px)`;
+          mv.warpCool = 45;
+          fireCaptureEvent(mv.el, 'relocated', { from: throat.el });
+        }
+      }
     }
   }
 
@@ -607,7 +763,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // the heatmap's local density at the body (distinct from `--d`, the body's own gathered
       // density); the accretion load is the sink fill fraction ∈ [0,1].
       const heatmapDensity = heatmap ? heatmap.norm(b.cx, b.cy) : undefined;
-      const load = b.capacity > 0 && b.tokens.indexOf('sink') >= 0 ? clamp(b.accreted / b.capacity, 0, 1) : undefined;
+      const load = b.tokens.indexOf('sink') >= 0 && b.capacity > 0 ? sinkLoad(b) : undefined;
 
       if (cfg.feedbackSink) {
         // D3: hand the CSS-var channels to the platform's FeedbackRegistry instead of writing here.
@@ -982,6 +1138,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         p.vy += b.y;
       }
     }
+    updateWarpTargets(); // refresh warp relocate targets from paired bodies (§22.3) before the step
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
@@ -989,10 +1146,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
       tearBoundByForces(bound, waves, bodies, reg.forces, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
+      updateEmitters(); // element emit (§22.3): clone decorative templates, budgeted by data-max
     }
     writeFeedback();
     applyCausality();
     updateEvents();
+    updateCaptureEvents();
     render();
     raf = host.raf(frame);
   }
@@ -1143,6 +1302,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         delete e.el.dataset.fxEngaged;
       }
       engaged = [];
+      // restore any docked elements so teardown never leaves content collapsed / aria-hidden.
+      for (const mv of movers) {
+        if (mv.docked || mv.dock.dock > 0) {
+          mv.docked = null;
+          mv.dock.dock = 0;
+          mv.el.style.opacity = '';
+          if (mv.el.getAttribute('aria-hidden') === 'true') mv.el.removeAttribute('aria-hidden');
+        }
+      }
+      // remove any DOM nodes emitted by element-emit bodies (§22.3), so teardown leaves no clones.
+      for (const em of emitters) for (const clone of em.emitted) clone.remove();
+      emitters = [];
       store.clear();
     },
   };

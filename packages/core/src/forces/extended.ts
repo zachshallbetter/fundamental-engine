@@ -533,6 +533,44 @@ export const fieldflow: Force = {
 };
 
 /** The designed extended forces, in spec order (§20.3). */
+/**
+ * §22.3 — `warp`: a wormhole throat. Matter that enters the throat (within `absorbR`) is
+ * *relocated* — conserved, not created or destroyed — to the paired body's throat, emerging just
+ * outside it moving outward, with its local offset and velocity rotated by `data-twist` and scaled by
+ * `data-scale`. The pairing (`data-pair="#other"`) and the live target centre are resolved by the
+ * engine into `b.warpHas` / `b.warpX` / `b.warpY`; the force no-ops with no resolved target. Marked
+ * `kinematic` so it sets position/velocity outright (a teleport), unscaled by inertia.
+ */
+export const warp: Force = {
+  token: 'warp',
+  label: 'Warp',
+  kinematic: true,
+  apply(b, p, e) {
+    if (!b.warpHas || p.cap) return;
+    const throat = b.absorbR;
+    if (e.dist >= throat) return;
+    const cs = Math.cos(b.twist ?? 0);
+    const sn = Math.sin(b.twist ?? 0);
+    const k = b.warpScale ?? 1;
+    // entry direction (unit local offset from this throat, e.dx/e.dy point *toward* the body), twisted
+    const ux = -e.dx / e.dist;
+    const uy = -e.dy / e.dist;
+    const rux = ux * cs - uy * sn;
+    const ruy = ux * sn + uy * cs;
+    // emerge just outside the paired throat so it does not immediately re-enter (no ping-pong)
+    const outR = throat * k + 6;
+    p.x = b.warpX! + rux * outR;
+    p.y = b.warpY! + ruy * outR;
+    // carry momentum through, rotated by the same twist (speed conserved)
+    const vx = p.vx;
+    const vy = p.vy;
+    p.vx = vx * cs - vy * sn;
+    p.vy = vx * sn + vy * cs;
+    p.heat = Math.max(p.heat, 0.6);
+  },
+  meta: { desc: 'a wormhole throat — relocates matter to its paired body, conserved' },
+};
+
 export const extendedForces: readonly Force[] = [
   lens,
   gate,
@@ -551,6 +589,7 @@ export const extendedForces: readonly Force[] = [
   spotlight,
   pigment,
   fieldflow,
+  warp,
 ];
 
 /** Register the designed extended forces on a registry (§4) — opt-in, alongside the nine. */
