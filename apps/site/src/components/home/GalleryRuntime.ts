@@ -5,11 +5,63 @@
 //   · --field-density — the metric the platform writes back onto a [data-feedback] body (feedback.ts).
 //   · field.setRender(mode) — the Field Surfaces underlay switch on <field-root>.
 
+import { bindData } from "@field-ui/platform";
+
 type FieldEl = HTMLElement & {
   setRender?: (m: string) => void;
   setFormation?: (name: string) => void;
   rescan?: () => void;
 };
+
+interface SearchRec {
+  id: string;
+  title: string;
+  relevance: number;
+}
+
+/** #8 — Data as field participants: records become bodies via bindData + a recipe; re-rank live. */
+function initBindData(): () => void {
+  const list = document.querySelector<HTMLElement>("[data-bd-list]");
+  if (!list) return () => {};
+  const btn = document.querySelector<HTMLButtonElement>("[data-bd-rerank]");
+  let records: SearchRec[] = [
+    { id: "bd-engine", title: "the engine computes the field", relevance: 0.95 },
+    { id: "bd-platform", title: "the platform binds it to the DOM", relevance: 0.78 },
+    { id: "bd-recipes", title: "recipes compose behaviours", relevance: 0.61 },
+    { id: "bd-forces", title: "forces are the vocabulary", relevance: 0.43 },
+    { id: "bd-eli5", title: "explained like you're five", relevance: 0.27 },
+  ];
+  const mapper = (rec: SearchRec) => ({
+    id: rec.id,
+    label: rec.title,
+    body: { tokens: ["attract"], strength: 0.4 + rec.relevance * 1.5, feedback: true },
+    metrics: { relevance: rec.relevance },
+  });
+  const content = (rec: SearchRec) =>
+    `<span class="bd-title">${rec.title}</span>` +
+    `<span class="bd-bar"><i style="width:${Math.round(rec.relevance * 100)}%"></i></span>` +
+    `<span class="bd-score">${rec.relevance.toFixed(2)}</span>`;
+  const binding = bindData<SearchRec>(list, records, mapper, {
+    recipe: "search-relevance-field",
+    className: "bd-row",
+    content,
+  });
+  const ac = new AbortController();
+  btn?.addEventListener(
+    "click",
+    () => {
+      records = records
+        .map((r) => ({ ...r, relevance: Math.round((0.15 + Math.random() * 0.85) * 100) / 100 }))
+        .sort((a, b) => b.relevance - a.relevance);
+      binding.update(records);
+    },
+    { signal: ac.signal },
+  );
+  return () => {
+    ac.abort();
+    binding.destroy();
+  };
+}
 
 /** Shared "pick a mode, apply it to the page field while in view" wiring for the pill demos. */
 function initPillTour(
@@ -131,6 +183,12 @@ function initFormationTour(): () => void {
 }
 
 export function initGallery(): () => void {
-  const teardowns = [initLifecycle(), initReadout(), initRenderTour(), initFormationTour()];
+  const teardowns = [
+    initLifecycle(),
+    initReadout(),
+    initRenderTour(),
+    initFormationTour(),
+    initBindData(),
+  ];
   return () => teardowns.forEach((t) => t());
 }

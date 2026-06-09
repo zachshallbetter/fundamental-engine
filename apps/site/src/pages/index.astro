@@ -1032,7 +1032,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     >
 
     <Concept data-form="accretion">
-      <span class="concept-no">Gallery · capture → hold → release</span>
+      <span class="concept-no">Gallery · capture → hold → release <em class="truth truth-physical">physical</em></span>
       <h2>A body takes matter in — and gives it back.</h2>
       <p>
         Drag the vessel through the swarm: it <strong>captures</strong> nearby particles,
@@ -1067,7 +1067,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     </Concept>
 
     <Concept reverse>
-      <span class="concept-no">Gallery · the contract, live</span>
+      <span class="concept-no">Gallery · the contract, live <em class="truth truth-hybrid">hybrid</em></span>
       <h2>data-* in, --field-* out — the actual number.</h2>
       <p>
         This word is a body — <code>data-body="attract"</code> with <code>data-feedback</code> on.
@@ -1097,7 +1097,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     </Concept>
 
     <Concept>
-      <span class="concept-no">Gallery · Field Surfaces</span>
+      <span class="concept-no">Gallery · Field Surfaces <em class="truth truth-diagnostic">diagnostic</em></span>
       <h2>One field, five readings.</h2>
       <p>
         The same particles, drawn through different render modes — <code>field.setRender(mode)</code>,
@@ -1122,7 +1122,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     </Concept>
 
     <Concept>
-      <span class="concept-no">Gallery · the force vocabulary</span>
+      <span class="concept-no">Gallery · the force vocabulary <em class="truth truth-designed">designed</em></span>
       <h2>Seven forces, side by side.</h2>
       <p>
         Each frame is its own little field — a live <code>&lt;field-cell&gt;</code> rendering a
@@ -1135,7 +1135,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     </Concept>
 
     <Concept>
-      <span class="concept-no">Gallery · formations</span>
+      <span class="concept-no">Gallery · formations <em class="truth truth-designed">designed</em></span>
       <h2>The whole field can change its mind.</h2>
       <p>
         A <strong>formation</strong> is a global arrangement the matter falls into —
@@ -1154,6 +1154,44 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             <button type="button" data-formation="accretion" aria-pressed="false">accretion</button>
           </div>
           <span class="hintline">the matter re-arranges across the whole page</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · data as participants <em class="truth truth-semantic">semantic</em></span>
+      <h2>Records become bodies; relevance becomes gravity.</h2>
+      <p>
+        These rows aren’t markup — they’re <strong>data</strong>, bound to the field with
+        <code>bindData(records, mapper, &#123; recipe: "search-relevance-field" &#125;)</code>. Each
+        record becomes a body whose pull scales with its relevance; the field (behind the list) reads
+        the data and the rows organize around it. Re-rank, and the bodies re-settle.
+      </p>
+      <p class="note">The same call powers a real search surface — data drives the field, the field renders the data.</p>
+      <div class="binddata">
+        <div class="bd-list" data-bd-list aria-label="Bound records"></div>
+        <button class="agitate" type="button" data-bd-rerank>↯ re-rank</button>
+      </div>
+    </Concept>
+
+    <Concept reverse>
+      <span class="concept-no">Gallery · applied — navigation has gravity <em class="truth truth-designed">designed</em></span>
+      <h2>The active item pulls focus.</h2>
+      <p>
+        A plain nav, but every item is a body. The current one runs hot — it gathers matter, so its
+        <code>--field-density</code> stays high and it reads heaviest. Hover another and it pulls the
+        weight over. Emphasis isn’t a class you toggle; it’s where the field is densest.
+      </p>
+      <p class="note">An ordinary pattern, made reciprocal — the same trick behind priority, search, and reading surfaces.</p>
+      <Fragment slot="stage">
+        <div class="navfield">
+          <nav class="navrow" aria-label="Demo navigation">
+            <a class="navitem" data-hot data-feedback data-body="attract" data-strength="1.6" data-range="200" style="--cat:#4da3ff;">Home</a>
+            <a class="navitem" data-hot data-feedback data-body="attract" data-strength="1" data-range="200" style="--cat:#4da3ff;">Docs</a>
+            <a class="navitem" data-hot data-feedback data-body="attract" data-strength="1" data-range="200" style="--cat:#4da3ff;">Lab</a>
+            <a class="navitem" data-hot data-feedback data-body="attract" data-strength="1" data-range="200" style="--cat:#4da3ff;">Writings</a>
+          </nav>
+          <span class="hintline">hover an item — the weight follows the matter</span>
         </div>
       </Fragment>
     </Concept>

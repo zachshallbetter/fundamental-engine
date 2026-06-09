@@ -1141,3 +1141,116 @@ html.hide-field-lines .stage-field {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* #8 bindData — a results surface bound from data, with the live field behind the rows. */
+.binddata {
+  position: relative;
+}
+.bd-list {
+  position: relative;
+  min-height: 250px;
+  padding: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.bd-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 7rem 2.6rem;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  font-size: 0.95rem;
+  transition: background 0.3s;
+}
+.bd-row .bd-title {
+  font-weight: 500;
+}
+.bd-row .bd-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.bd-row .bd-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.5s ease;
+}
+.bd-row .bd-score {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-3);
+  text-align: right;
+}
+.binddata .agitate {
+  margin-top: 0.8rem;
+}
+
+/* Applied — navigation has gravity: weight from the engine-written --field-density (alias --d). */
+.navfield {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.navrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.7rem, 2.4vw, 1.8rem);
+  align-items: baseline;
+  justify-content: center;
+  padding: 0 1rem;
+}
+.navitem {
+  --cat: var(--accent);
+  --d: 0;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: clamp(1.1rem, 2.8vw, 1.9rem);
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--cat) calc(32% + var(--d) * 60%), var(--text-3));
+  font-variation-settings: 'wght' calc(380 + var(--d) * 380);
+  text-shadow: 0 0 calc(var(--d) * 30px) color-mix(in srgb, var(--cat) calc(var(--d) * 70%), transparent);
+}
+
+/* Gallery truth-mode badges — label each demo's epistemic mode (the six truth modes). */
+.concept-no .truth {
+  font-style: normal;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.46rem;
+  margin-left: 0.55rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.8;
+  vertical-align: middle;
+}
+.truth-physical {
+  color: #4da3ff;
+}
+.truth-designed {
+  color: #2dd4bf;
+}
+.truth-hybrid {
+  color: #a78bfa;
+}
+.truth-diagnostic {
+  color: #ff9d5c;
+}
+.truth-poetic {
+  color: #f0abfc;
+}
+.truth-semantic {
+  color: #86e57f;
+}
