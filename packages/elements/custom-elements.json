@@ -1182,6 +1182,26 @@
             },
             {
               "kind": "method",
+              "name": "particleCount",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "description": "live particle-pool size — `store.size` forwarded through the public handle."
+            },
+            {
+              "kind": "method",
+              "name": "energy",
+              "return": {
+                "type": {
+                  "text": "{ kinetic: number; thermal: number; total: number; count: number }"
+                }
+              },
+              "description": "kinetic/thermal/total energy snapshot for the current frame."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -1965,6 +1985,34 @@
             },
             {
               "kind": "method",
+              "name": "particleCount",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "description": "live particle-pool size — `store.size` forwarded through the public handle.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "energy",
+              "return": {
+                "type": {
+                  "text": "{ kinetic: number; thermal: number; total: number; count: number }"
+                }
+              },
+              "description": "kinetic/thermal/total energy snapshot for the current frame.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -2678,6 +2726,34 @@
                 }
               },
               "description": "release the focused particle.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "particleCount",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "description": "live particle-pool size — `store.size` forwarded through the public handle.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "energy",
+              "return": {
+                "type": {
+                  "text": "{ kinetic: number; thermal: number; total: number; count: number }"
+                }
+              },
+              "description": "kinetic/thermal/total energy snapshot for the current frame.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

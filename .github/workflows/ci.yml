@@ -39,10 +39,18 @@ jobs:
       - name: Test
         run: pnpm test
 
-      # Verify each publishable package's entry points resolve to built files and import
-      # cleanly — catches exports-map / `files` mistakes before they reach npm.
+      # Entry-point file existence + live import for every published package (including the
+      # deprecated @forces-ui/* compat shims). Catches build-output / exports-map / `files`
+      # mistakes that the type system can't see.
       - name: Smoke-check dist
         run: pnpm check:dist
+
+      # publint (exports-map / types conditions) + attw (TypeScript resolution under all
+      # module/bundler conditions). Distinct from the smoke check above: check:dist verifies
+      # the files are present and importable; check:packaging verifies the packaging metadata
+      # declares them correctly and types resolve under every resolution algorithm.
+      - name: Check packaging (publint + attw)
+        run: pnpm check:packaging
 
       # Lock the frozen 0.x public API surface: every stable value/type still exported with the
       # right kind (typechecked) and every stable element/attribute contract intact. A break here

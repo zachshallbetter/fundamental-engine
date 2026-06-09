@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 /**
- * Pre-publish dist smoke check. For each published package, verify that:
- *   1. every declared entry point (`main` / `module` / `types` and the `exports` map) resolves
+ * Dist smoke check. For each published package, verify that:
+ *   1. every declared entry point (`main` / `types` and the `exports` map) resolves
  *      to a real built file,
  *   2. every `files` entry exists, and
  *   3. the built entry actually imports — resolving its own deps and workspace deps.
  *
- * This catches the exports-map / `files` / build-output mistakes that typecheck and unit tests
- * can't see: the class of bug that only surfaces on the first `npm publish`. Run after a build
- * (`pnpm -r build`). Used by CI and the publish checklist (PUBLISHING.md).
+ * This catches build-output / exports-map / `files` mistakes that typecheck and unit tests
+ * can't see. Run after `pnpm build`. Used by CI and the publish checklist (PUBLISHING.md).
+ *
+ * Covers both the primary @field-ui/* packages and the @forces-ui/* source-compat shims
+ * (not published to npm; validated here to keep the migration-path code honest). For deeper exports-map
+ * and TypeScript-resolution checks, see scripts/check-packaging.mjs (publint + attw).
  */
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -16,12 +19,17 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const PACKAGES = ['core', 'platform', 'vanilla', 'elements', 'react'];
+const PACKAGES = [
+  // primary @field-ui/* (published via CI)
+  'core', 'platform', 'vanilla', 'elements', 'react',
+  // source-compat shims for the forces-ui → field-ui migration (not published to npm)
+  'compat-core', 'compat-vanilla', 'compat-elements', 'compat-react',
+];
 
 /** Collect every relative file path the package.json points at as an entry point. */
 function entryRefs(pkg) {
   const refs = new Set();
-  for (const k of ['main', 'module', 'types']) if (typeof pkg[k] === 'string') refs.add(pkg[k]);
+  for (const k of ['main', 'types']) if (typeof pkg[k] === 'string') refs.add(pkg[k]);
   const walk = (v) => {
     if (typeof v === 'string') refs.add(v);
     else if (v && typeof v === 'object') for (const x of Object.values(v)) walk(x);

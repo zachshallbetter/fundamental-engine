@@ -566,19 +566,71 @@ and `ds-interactions.js`):
 
 ---
 
-## 13. Public field API (`window.__field`)
+## 13. Public field API (`FieldHandle`)
 
-```
-setAccent(hex)          recolor accent (also driven by scroll)
-setFormation(name)      'ambient' | 'wells' | 'lanes' | 'scatter' | 'accretion'
-threads(list | null)    [{ a: Element, b: Element, color }] — wire a set, or clear
-ripple(x, y, hex)       (no-op — disabled)
-burst(x, y[, hex])      shove + heat nearby matter (no ring)
-rescan()                re-read DOM bodies after a layout change
-```
+> **As-built note.** The prototype exposed a `window.__field` global; the shipped API is the
+> `FieldHandle` returned by `createField()` (or `createBrowserField()` in `@field-ui/vanilla`),
+> and proxied onto `<field-root>` as instance methods. All interaction with the running engine
+> goes through this handle; the internal `store`, `env`, and particle array are not accessible
+> from outside.
 
-Plus config fields from §2.5 and internal hooks (`__fieldSync('colors'|'density')`
-to rebuild after a config change).
+### 13.1 Configuration
+
+| Method | Description |
+|---|---|
+| `setAccent(hex)` | Recolour the travelling accent (§9). |
+| `setPalette(name \| stops[])` | Swap the accent's colour template live — built-in name or custom hex stops. |
+| `setFormation(name)` | Switch the global formation: `ambient` · `wells` · `lanes` · `scatter` · `accretion` (§7). |
+| `setAttention(on)` | Toggle conserved attention (§2.4) — one finite strength budget. |
+| `setCausality(on)` | Toggle cross-boundary causality (Concept 4) — density spills to neighbours. |
+| `setHeatmap(on)` | Toggle the density heatmap layer (H1). |
+| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines`. |
+| `setOverlay(mode)` | Render a field-structure visualization on the overlay surface: `off` · `streamlines` · `force-vectors` · `field-lines`. |
+
+### 13.2 DOM synchronization
+
+| Method | Description |
+|---|---|
+| `scan()` / `rescan()` | Re-read `[data-body]` elements after a layout change. |
+
+### 13.3 Discrete actions
+
+| Method | Description |
+|---|---|
+| `burst(x, y[, hex])` | Shove + heat matter near `(x, y)`, optionally tinting it (§11). |
+| `threads(list \| null)` | Wire glowing connector lines between a set — `[{ a, b, color }]` — or clear with `null` (§10). |
+| `flowTo(x, y[, opts])` | Place or move a dynamic flow focus the field bends toward. Call repeatedly to retarget; clear with `clearFlow()`. |
+| `clearFlow()` | Remove the flow focus; the field relaxes back to its bodies-only shape. |
+
+### 13.4 Data binding (`seed` / atoms)
+
+| Method | Description |
+|---|---|
+| `seed(atoms)` | Bind a data record to each base particle, round-robin. Each record's `weight ∈ [0,1]` scales that particle's mass + size. |
+| `atomAt(x, y)` | Return the seeded record on the nearest particle to `(x, y)` within ~24 px, or `null`. |
+| `focusAt(x, y)` | Hold + highlight the nearest seeded particle; return its record (the dwell affordance before a click). |
+| `clearFocus()` | Release the focused particle; it resumes drifting. |
+
+### 13.5 Diagnostics
+
+These accessors exist to give external tools — debug overlays, the DataConsole, Inspector panels —
+read-only access to engine state that would otherwise require a reference to internal structures
+(`store.particles`, `store.size`) that are intentionally not part of the public handle contract.
+
+| Method | Returns | Description |
+|---|---|---|
+| `particleCount()` | `number` | Live size of the particle pool (`store.size`). Use for budget monitors that need the count without walking the array. |
+| `energy()` | `{ kinetic, thermal, total, count }` | Per-frame energy snapshot. Forwards to `energyReport(store.particles)` from `@field-ui/core/diagnostics/energy`. |
+
+> **Encapsulation note.** `store.particles` (the internal `Particle[]`) is not exposed — only
+> computed summaries are. External tools must not hold a reference to the particle array between
+> frames; the pool is rebuilt on resize and density changes.
+
+### 13.6 Lifecycle
+
+| Method | Description |
+|---|---|
+| `destroy()` | Stop the loop and release all listeners. |
 
 ---
 
@@ -731,15 +783,50 @@ pattern for embedding the (cost-heavy) field inside a denser documentation UI.
 
 ## 18. Accessibility, reduced motion, performance
 
-- **Reduced motion** (`prefers-reduced-motion: reduce`): glyph assembly is skipped
-  (name shown immediately), `boot` jumps to 1, the integration step `dt` is 0
-  (waves/particles render static), sparks are suppressed.
-- **Engageable elements** (`[data-hot]`) respond to `focus`/`blur` as well as
-  pointer, and touch devices use tap-toggle so the effect persists. The field is a
-  background layer (`z-index: 0`) behind the content shell.
-- **Cost controls:** DPR capped at 2; bodies measured every 6 frames; off-screen
-  sections exert no force; spark cap 260; glyph point cap 560; canvas uses
-  `alpha:false`.
+### 18.1 Accessibility
+
+- **Reduced motion** (`prefers-reduced-motion: reduce`): the integration step `dt` is set to `0`
+  — waves and particles render static, no motion occurs. Sparks are suppressed. This is the only
+  built-in quality lever; it is binary (full physics or full freeze).
+- **Engageable elements** (`[data-hot]`) respond to `focus`/`blur` as well as pointer; touch
+  devices use tap-toggle so the effect persists without hover.
+- The field canvas is `aria-hidden="true"` and sits at `z-index: 0` behind content. It is
+  decorative ambiance, never an interactive element.
+
+### 18.2 Performance budget
+
+The engine defines a `PerformanceBudget` with defaults enforced by `inspectBudget()` from
+`@field-ui/core`:
+
+| Dimension | Default limit | Notes |
+|---|---|---|
+| `particles` | 600 | Pool grows on demand; no built-in shrink path. |
+| `bodies` | 80 | `[data-body]` / `[data-preset]` elements the engine tracks. |
+| `localCells` | 3 | Active `<field-cell>` scoped regions. |
+| `fieldLines` | 256 | Field-line overlay count cap. |
+| `heatmapResolution` | 6 px | Cell size of the density heatmap grid (4–8 px range). |
+| `dprCap` | 2 | Device pixel ratio ceiling for the canvas backing store. |
+
+```ts
+import { inspectBudget, DEFAULT_BUDGET } from '@field-ui/core';
+
+const findings = inspectBudget({ bodies: n, particles: handle.particleCount() });
+// → BudgetFinding[] — each over-limit dimension with { field, value, limit, over }
+```
+
+`withinBudget(counts)` returns a boolean shorthand. Both are pure — they read the counts you
+supply; they do not sample the engine.
+
+### 18.3 Cost controls (as-built)
+
+- DPR capped at 2 (the `dprCap` budget default above).
+- Bodies measured every 6 frames; off-screen elements exert no force.
+- Spark cap 260; canvas uses `alpha: false`.
+- `store.reindex()` rebuilds the spatial hash every frame from scratch — no amortization.
+- There is **no automatic quality throttle**. The only quality reduction path is
+  `prefers-reduced-motion` (which freezes physics entirely). If the engine falls behind its
+  frame budget, nothing adjusts. See `docs/engine-reference/observable-surface.md` for the
+  identified gaps and the `FieldPerf` design direction.
 
 ---
 

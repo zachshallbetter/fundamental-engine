@@ -1,0 +1,985 @@
+---
+// Real-time data console. Trigger lives in the chapter-rail column (same
+// left: clamp value). Panel slides up from the bottom of the viewport.
+// Reads: rAF deltas · LoAF · platform registries · heap · navigation timing · build.
+---
+
+<!-- Trigger: fixed, aligned with .chapter-rail column -->
+<button
+  id="dc-trigger"
+  class="dc-trigger"
+  aria-label="Open data console"
+  aria-expanded="false"
+  aria-controls="dc-panel"
+  transition:persist
+>
+  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16">
+    <rect x="1.5" y="3.5" width="17" height="13" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+    <path d="M3 10h2.5l1.5-3 2 6 2-6 1.5 3H17" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span class="dc-dot" aria-hidden="true"></span>
+</button>
+
+<!-- Panel: slides up from bottom -->
+<aside
+  id="dc-panel"
+  class="dc-panel"
+  aria-label="Data console"
+  aria-hidden="true"
+  transition:persist
+>
+  <!-- Drag-to-resize handle -->
+  <div id="dc-resize" class="dc-resize" title="Drag to resize" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="dc-hd">
+    <span class="dc-hd-left">
+      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" width="10" height="10">
+        <path d="M1 6h1.5l1-2.5L5 9l1.5-5L8 9l1-2.5H11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="dc-hd-title">DATA CONSOLE</span>
+    </span>
+    <div class="dc-hd-right">
+      <span class="dc-status-badge" id="dc-status">live</span>
+      <button class="dc-hdbtn" id="dc-pause" aria-label="Pause" aria-pressed="false" title="Pause (P)">
+        <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="11" height="11">
+          <rect x="2.5" y="2" width="2.5" height="10" rx="1" fill="currentColor"/>
+          <rect x="9" y="2" width="2.5" height="10" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="dc-hdbtn" id="dc-close" aria-label="Close" title="Close (Esc)">
+        <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="11" height="11">
+          <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Body -->
+  <div class="dc-body">
+
+    <!-- ── Loop ─────────────────────────────────────────────────────── -->
+    <section class="dc-loop">
+      <div class="dc-loop-row">
+        <div class="dc-met dc-met--fps">
+          <span id="dc-fps" class="dc-v dc-v--big">—</span>
+          <span class="dc-lbl">fps</span>
+        </div>
+        <div class="dc-sep" aria-hidden="true"></div>
+        <div class="dc-met">
+          <span id="dc-budget" class="dc-v">—</span>
+          <span class="dc-lbl">budget</span>
+        </div>
+        <div class="dc-met">
+          <span id="dc-median" class="dc-v">—</span>
+          <span class="dc-lbl">median δ</span>
+        </div>
+        <div class="dc-met">
+          <span id="dc-p95" class="dc-v">—</span>
+          <span class="dc-lbl">p95 δ</span>
+        </div>
+        <div class="dc-met">
+          <span id="dc-p99" class="dc-v">—</span>
+          <span class="dc-lbl">p99 δ</span>
+        </div>
+        <div class="dc-sep" aria-hidden="true"></div>
+        <div class="dc-met">
+          <span id="dc-dropped" class="dc-v">0</span>
+          <span class="dc-lbl">dropped</span>
+        </div>
+        <div class="dc-met">
+          <span id="dc-loaf" class="dc-v">0</span>
+          <span class="dc-lbl">long frames</span>
+        </div>
+        <div class="dc-met">
+          <span id="dc-tbt" class="dc-v">0 ms</span>
+          <span class="dc-lbl">TBT</span>
+        </div>
+        <div class="dc-sep" aria-hidden="true"></div>
+        <div class="dc-met">
+          <span id="dc-nframes" class="dc-v dc-v--dim">0</span>
+          <span class="dc-lbl">frames</span>
+        </div>
+        <div class="dc-met">
+          <span id="dc-detected" class="dc-v dc-v--dim">—</span>
+          <span class="dc-lbl">Hz detected</span>
+        </div>
+      </div>
+      <canvas id="dc-spark" class="dc-spark" role="img" aria-label="Frame delta over time"></canvas>
+    </section>
+
+    <!-- ── Data grid ─────────────────────────────────────────────────── -->
+    <div class="dc-grid">
+
+      <!-- Field -->
+      <section class="dc-sect">
+        <h3 class="dc-st">Field</h3>
+        <dl class="dc-dl">
+          <div><dt>bodies</dt>        <dd id="dc-bodies">—</dd></div>
+          <div><dt>field-root</dt>    <dd id="dc-roots">—</dd></div>
+          <div><dt>field-cell</dt>    <dd id="dc-cells">—</dd></div>
+          <div><dt>render</dt>        <dd id="dc-render">—</dd></div>
+          <div><dt>overlay</dt>       <dd id="dc-overlay">—</dd></div>
+          <div><dt>density</dt>       <dd id="dc-density">—</dd></div>
+          <div><dt>DPR</dt>           <dd id="dc-dpr">—</dd></div>
+          <div><dt>tab</dt>           <dd id="dc-tab">—</dd></div>
+          <div><dt>reduced-motion</dt><dd id="dc-rm">—</dd></div>
+        </dl>
+        <h3 class="dc-st dc-st--gap">Budget</h3>
+        <dl class="dc-dl">
+          <div><dt>bodies / 80</dt>   <dd id="dc-b-bodies">—</dd></div>
+          <div><dt>cells / 3</dt>     <dd id="dc-b-cells">—</dd></div>
+          <div><dt>DPR / 2</dt>       <dd id="dc-b-dpr">—</dd></div>
+          <div><dt>particles / 600</dt><dd id="dc-b-parts">—</dd></div>
+        </dl>
+        <h3 class="dc-st dc-st--gap">Engine</h3>
+        <dl class="dc-dl">
+          <div><dt>particles</dt>   <dd id="dc-e-parts">—</dd></div>
+          <div><dt>kinetic E</dt>   <dd id="dc-e-ke">—</dd></div>
+          <div><dt>thermal E</dt>   <dd id="dc-e-te">—</dd></div>
+          <div><dt>total E</dt>     <dd id="dc-e-tot">—</dd></div>
+        </dl>
+        <h3 class="dc-st dc-st--gap">Events</h3>
+        <dl class="dc-dl">
+          <div><dt>lit</dt>       <dd id="dc-ev-lit">0</dd></div>
+          <div><dt>captured</dt>  <dd id="dc-ev-cap">0</dd></div>
+          <div><dt>released</dt>  <dd id="dc-ev-rel">0</dd></div>
+          <div><dt>relocated</dt> <dd id="dc-ev-loc">0</dd></div>
+        </dl>
+      </section>
+
+      <!-- Platform -->
+      <section class="dc-sect">
+        <h3 class="dc-st">Platform</h3>
+        <dl class="dc-dl">
+          <div><dt>frame</dt>         <dd id="dc-pf">—</dd></div>
+          <div><dt>measurements</dt>  <dd id="dc-pm">—</dd></div>
+          <div><dt>state</dt>         <dd id="dc-ps">—</dd></div>
+          <div><dt>feedback vars</dt> <dd id="dc-pfb">—</dd></div>
+          <div><dt>relationships</dt> <dd id="dc-pr">—</dd></div>
+          <div><dt>unresolved</dt>    <dd id="dc-pu">—</dd></div>
+          <div><dt>visuals</dt>       <dd id="dc-pv">—</dd></div>
+          <div><dt>overlays</dt>      <dd id="dc-po">—</dd></div>
+          <div><dt>lint</dt>          <dd id="dc-pl">—</dd></div>
+        </dl>
+      </section>
+
+      <!-- Memory + Navigation -->
+      <section class="dc-sect">
+        <h3 class="dc-st">Memory</h3>
+        <dl class="dc-dl">
+          <div><dt>heap used</dt>    <dd id="dc-hu">—</dd></div>
+          <div><dt>heap total</dt>   <dd id="dc-ht">—</dd></div>
+          <div><dt>heap limit</dt>   <dd id="dc-hl">—</dd></div>
+          <div><dt>Δ since open</dt> <dd id="dc-hd">—</dd></div>
+        </dl>
+        <h3 class="dc-st dc-st--gap">Navigation</h3>
+        <dl class="dc-dl">
+          <div><dt>TTFB</dt>        <dd id="dc-ttfb">—</dd></div>
+          <div><dt>first paint</dt> <dd id="dc-fp">—</dd></div>
+          <div><dt>FCP</dt>         <dd id="dc-fcp">—</dd></div>
+          <div><dt>load</dt>        <dd id="dc-load">—</dd></div>
+        </dl>
+      </section>
+
+      <!-- Build + Resources -->
+      <section class="dc-sect">
+        <h3 class="dc-st">Build</h3>
+        <dl class="dc-dl">
+          <div><dt>forces</dt>      <dd id="dc-bf">—</dd></div>
+          <div><dt>passports</dt>   <dd id="dc-bp">—</dd></div>
+          <div><dt>contracts</dt>   <dd id="dc-bc">—</dd></div>
+          <div><dt>recipes</dt>     <dd id="dc-br">—</dd></div>
+          <div><dt>agent types</dt> <dd id="dc-ba">—</dd></div>
+          <div><dt>conformance</dt> <dd id="dc-bx">—</dd></div>
+          <div><dt>gaps</dt>        <dd id="dc-bg">—</dd></div>
+        </dl>
+        <h3 class="dc-st dc-st--gap">Resources</h3>
+        <dl class="dc-dl">
+          <div><dt>entries</dt>  <dd id="dc-rn">—</dd></div>
+          <div><dt>transfer</dt> <dd id="dc-rk">—</dd></div>
+        </dl>
+      </section>
+
+    </div>
+  </div>
+</aside>
+
+<style>
+/* ── Trigger ─────────────────────────────────────────────────────────── */
+.dc-trigger {
+  position: fixed;
+  left: clamp(0.7rem, 1.8vw, 1.5rem);
+  bottom: 1.5rem;
+  z-index: 910;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  color: var(--ink-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.dc-trigger:hover {
+  color: var(--ink-700);
+  border-color: var(--line-2);
+  background: var(--bg-subtle);
+}
+.dc-trigger.is-open {
+  color: var(--accent);
+  border-color: rgba(77, 163, 255, 0.4);
+  background: var(--accent-soft);
+}
+/* Pulsing live dot */
+.dc-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ok);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.dc-trigger.is-open .dc-dot {
+  opacity: 1;
+  animation: dc-pulse 2.5s ease-in-out infinite;
+}
+@keyframes dc-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+/* ── Panel ─────────────────────────────────────────────────────────── */
+.dc-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  height: var(--dc-h, 286px);
+  background: var(--bg-canvas);
+  border-top: 1px solid var(--line-2);
+  box-shadow: 0 -28px 80px -20px rgba(0, 0, 0, 0.85);
+  font-family: var(--mono);
+  display: flex;
+  flex-direction: column;
+  /* Closed state */
+  transform: translateY(100%);
+  visibility: hidden;
+  transition:
+    transform 0.3s var(--ease),
+    visibility 0s linear 0.3s;
+}
+.dc-panel.is-open {
+  transform: translateY(0);
+  visibility: visible;
+  transition:
+    transform 0.3s var(--ease),
+    visibility 0s linear 0s;
+}
+
+/* Resize handle */
+.dc-resize {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  z-index: 10;
+}
+.dc-resize::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--line-2);
+  transition: background 0.15s;
+}
+.dc-resize:hover::after { background: var(--line-3); }
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.dc-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-subtle);
+  flex-shrink: 0;
+}
+.dc-hd-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-500);
+}
+.dc-hd-title {
+  font-size: 9.5px;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+.dc-hd-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dc-status-badge {
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ok);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(95, 208, 168, 0.25);
+  background: rgba(95, 208, 168, 0.07);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.dc-status-badge.paused {
+  color: var(--warn);
+  border-color: rgba(255, 206, 107, 0.25);
+  background: rgba(255, 206, 107, 0.07);
+}
+.dc-hdbtn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 3px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ink-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.dc-hdbtn:hover {
+  color: var(--ink-700);
+  border-color: var(--line);
+  background: var(--bg-card);
+}
+.dc-hdbtn[aria-pressed="true"] {
+  color: var(--warn);
+  border-color: rgba(255, 206, 107, 0.3);
+  background: rgba(255, 206, 107, 0.07);
+}
+
+/* ── Body ─────────────────────────────────────────────────────────── */
+.dc-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Loop section ─────────────────────────────────────────────────── */
+.dc-loop {
+  padding: 7px 12px 5px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.dc-loop-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  margin-bottom: 5px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dc-loop-row::-webkit-scrollbar { display: none; }
+.dc-met {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+.dc-met:first-child { padding-left: 0; }
+.dc-met--fps { padding-right: 14px; }
+/* Vertical separator */
+.dc-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--line);
+  flex-shrink: 0;
+  margin: 0 2px;
+  align-self: center;
+}
+/* Values */
+.dc-v {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-800);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  transition: color 0.35s;
+  white-space: nowrap;
+}
+.dc-v--big {
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+.dc-v--dim { color: var(--ink-400); }
+.dc-v--ok  { color: var(--ok); }
+.dc-v--warn { color: var(--warn); }
+.dc-v--err  { color: var(--err); }
+/* Labels */
+.dc-lbl {
+  font-size: 8.5px;
+  color: var(--ink-300);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Sparkline canvas */
+.dc-spark {
+  display: block;
+  width: 100%;
+  height: 36px;
+  border-radius: 3px;
+}
+
+/* ── Data grid ────────────────────────────────────────────────────── */
+.dc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.dc-sect {
+  padding: 7px 10px 6px;
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.dc-sect:last-child { border-right: none; }
+/* Section headings */
+.dc-st {
+  font-size: 8.5px;
+  font-family: var(--mono);
+  font-weight: 400;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--ink-400);
+  margin: 0 0 5px;
+}
+.dc-st--gap { margin-top: 9px; }
+/* Data list */
+.dc-dl {
+  margin: 0;
+  padding: 0;
+}
+.dc-dl > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 1.5px 0;
+}
+.dc-dl dt {
+  font-size: 9.5px;
+  color: var(--ink-400);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.dc-dl dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-800);
+  text-align: right;
+  letter-spacing: -0.02em;
+  transition: color 0.3s;
+  white-space: nowrap;
+}
+.dc-dl dd.ok   { color: var(--ok); }
+.dc-dl dd.warn { color: var(--warn); }
+.dc-dl dd.err  { color: var(--err); }
+.dc-dl dd.dim  { color: var(--ink-400); }
+
+/* Hide on small screens — this is a dev tool */
+@media (max-width: 600px) {
+  .dc-grid { grid-template-columns: repeat(2, 1fr); }
+  .dc-trigger { display: none; }
+}
+</style>
+
+<script>
+import { systemReport, inspectBudget, DEFAULT_BUDGET } from '@field-ui/core';
+import { lintPlatform, type FieldPlatform } from '@field-ui/platform';
+
+// ── Elements ──────────────────────────────────────────────────────────
+const trigger     = document.getElementById('dc-trigger')!;
+const panel       = document.getElementById('dc-panel')!;
+const pauseBtn    = document.getElementById('dc-pause')!;
+const closeBtn    = document.getElementById('dc-close')!;
+const statusBadge = document.getElementById('dc-status')!;
+const resizeHandle = document.getElementById('dc-resize')!;
+const sparkEl     = document.getElementById('dc-spark') as HTMLCanvasElement;
+const ctx         = sparkEl.getContext('2d')!;
+
+// ── State ─────────────────────────────────────────────────────────────
+let isOpen   = false;
+let paused   = false;
+let raf      = 0;
+let lastTs: number | null = null;
+let deltas:  number[] = [];     // rolling 180-frame window
+let dropped  = 0;
+let nFrames  = 0;
+let loafBuf: PerformanceEntry[] = [];
+let heapBase: number | null = null;
+let budget: number | null = null;   // auto-detected refresh interval
+let budgetSeed: number[] = [];
+
+// ── Field event counters (reset on open) ─────────────────────────────
+const evCounts = { lit: 0, captured: 0, released: 0, relocated: 0 };
+type EvKey = keyof typeof evCounts;
+const EV_MAP: Record<string, EvKey> = {
+  'field:lit': 'lit', 'forces:lit': 'lit',
+  'field:captured': 'captured', 'forces:captured': 'captured',
+  'field:released': 'released', 'forces:released': 'released',
+  'field:relocated': 'relocated', 'forces:relocated': 'relocated',
+};
+
+function onFieldEvent(e: Event) {
+  const k = EV_MAP[e.type];
+  if (k) evCounts[k]++;
+}
+
+function attachFieldEvents() {
+  const fr = document.querySelector('field-root');
+  if (!fr) return;
+  for (const type of Object.keys(EV_MAP)) {
+    fr.removeEventListener(type, onFieldEvent);
+    fr.addEventListener(type, onFieldEvent);
+  }
+}
+function detachFieldEvents() {
+  const fr = document.querySelector('field-root');
+  if (!fr) return;
+  for (const type of Object.keys(EV_MAP)) fr.removeEventListener(type, onFieldEvent);
+}
+
+// ── LoAF observer (start immediately — buffered catches past entries) ──
+const loafObs = (() => {
+  try {
+    const obs = new PerformanceObserver(list => {
+      loafBuf.push(...list.getEntries().filter(e => e.duration >= 50));
+      if (loafBuf.length > 400) loafBuf = loafBuf.slice(-400);
+    });
+    obs.observe({ type: 'long-animation-frame', buffered: true });
+    return obs;
+  } catch { return null; }
+})();
+
+// ── System report (loaded once) ───────────────────────────────────────
+let sysReport: ReturnType<typeof systemReport> | null = null;
+function ensureSysReport() {
+  if (sysReport) return;
+  try {
+    sysReport = systemReport();
+    if (!sysReport) return;
+    dd('dc-bf', String(sysReport.forces));
+    dd('dc-bp', String(sysReport.passports));
+    dd('dc-bc', String(sysReport.contracts));
+    dd('dc-br', String(sysReport.recipes));
+    dd('dc-ba', String(sysReport.agentTypes));
+    dd('dc-bx', String(sysReport.conformanceExperiments));
+    const gaps = sysReport.forcesMissingPassport.length + sysReport.forcesMissingConformance.length;
+    dd('dc-bg', gaps === 0 ? '✓ none' : String(gaps), gaps > 0 ? 'warn' : 'ok');
+  } catch { /* build may differ */ }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+function pct(arr: number[], p: number): number | null {
+  if (!arr.length) return null;
+  const s = [...arr].sort((a, b) => a - b);
+  return s[Math.floor((p / 100) * (s.length - 1))];
+}
+function ms(v: number | null | undefined): string {
+  if (v == null) return '—';
+  return `${v.toFixed(1)} ms`;
+}
+function mb(bytes: number): string {
+  return `${(bytes / 1_048_576).toFixed(1)} MB`;
+}
+function kb(bytes: number): string {
+  return bytes > 1_048_576 ? mb(bytes) : `${(bytes / 1_024).toFixed(0)} KB`;
+}
+
+// Set a .dc-v span (loop metrics row)
+function dv(id: string, text: string, cls: 'ok' | 'warn' | 'err' | 'dim' | '' = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  const base = el.classList.contains('dc-v--big') ? 'dc-v dc-v--big' : 'dc-v';
+  el.className = cls ? `${base} dc-v--${cls}` : base;
+}
+
+// Set a dd element (data grid)
+function dd(id: string, text: string, cls: 'ok' | 'warn' | 'err' | 'dim' | '' = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = cls;
+}
+
+// Classify frame delta against detected budget
+function clf(val: number | null, b: number): 'ok' | 'warn' | 'err' | '' {
+  if (val == null) return '';
+  if (val <= b * 1.05) return 'ok';
+  if (val <= b * 1.4)  return 'warn';
+  return 'err';
+}
+
+// ── Sparkline ─────────────────────────────────────────────────────────
+function drawSpark() {
+  const W = sparkEl.clientWidth;
+  const H = sparkEl.clientHeight;
+  if (!W || !H) return;
+  const dpr = window.devicePixelRatio || 1;
+  sparkEl.width  = W * dpr;
+  sparkEl.height = H * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  if (deltas.length < 2) return;
+
+  const b    = budget ?? 16.67;
+  const yMax = b * 4;
+
+  // Grid lines at budget and 2× budget
+  ctx.setLineDash([2, 4]);
+  ctx.lineWidth = 1;
+  for (const [y, color] of [[b, 'rgba(255,255,255,0.12)'], [b * 2, 'rgba(255,255,255,0.06)']] as [number, string][]) {
+    const yp = H - (y / yMax) * H;
+    ctx.strokeStyle = color;
+    ctx.beginPath(); ctx.moveTo(0, yp); ctx.lineTo(W, yp); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Line path
+  const step = W / (deltas.length - 1);
+  ctx.beginPath();
+  deltas.forEach((d, i) => {
+    const x = i * step;
+    const y = H - Math.min(d / yMax, 1) * H;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = 'rgba(77, 163, 255, 0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Gradient fill
+  ctx.lineTo((deltas.length - 1) * step, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(77, 163, 255, 0.14)');
+  grad.addColorStop(1, 'rgba(77, 163, 255, 0.02)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+// ── Platform read ──────────────────────────────────────────────────────
+function readPlatform() {
+  const fr = document.querySelector('field-root') as (HTMLElement & { platform?: FieldPlatform }) | null;
+  const p = fr?.platform;
+  if (!p) return;
+
+  dd('dc-pf',  String(p.scheduler.frame));
+  dd('dc-pm',  String(p.measure.size));
+  dd('dc-ps',  String(p.state.elements().length));
+  dd('dc-pfb', String(p.feedback.boundVars().length));
+
+  const rels = p.relationships.all();
+  dd('dc-pr', String(rels.length));
+
+  try {
+    const unres = (p.relationships as any).unresolvedAll?.() ?? [];
+    dd('dc-pu', String(unres.length), unres.length > 0 ? 'warn' : 'ok');
+  } catch { dd('dc-pu', '—'); }
+
+  dd('dc-pv', String(p.visuals.all().length));
+  dd('dc-po', String(p.overlays.all().length));
+
+  try {
+    const warns = lintPlatform(p);
+    dd('dc-pl', warns.length ? String(warns.length) : '✓', warns.length > 0 ? 'warn' : 'ok');
+  } catch { dd('dc-pl', '—'); }
+}
+
+// ── Main update ────────────────────────────────────────────────────────
+function tick(now: number) {
+  if (!isOpen || paused) return;
+
+  if (lastTs !== null) {
+    const d = now - lastTs;
+    deltas.push(d);
+    if (deltas.length > 180) deltas.shift();
+    nFrames++;
+
+    // Detect budget from first 30 clean frames
+    if (!budget && budgetSeed.length < 30) {
+      budgetSeed.push(d);
+      if (budgetSeed.length === 30) budget = pct(budgetSeed, 50);
+    }
+
+    if (budget && d > budget * 1.5) dropped++;
+  }
+  lastTs = now;
+
+  update();
+  raf = requestAnimationFrame(tick);
+}
+
+function update() {
+  const b      = budget ?? 16.67;
+  const med    = pct(deltas, 50);
+  const p95val = pct(deltas, 95);
+  const p99val = pct(deltas, 99);
+  const fps    = med ? Math.round(1000 / med) : null;
+  const native = Math.round(1000 / b);
+
+  dv('dc-fps', fps != null ? String(fps) : '—',
+    fps == null ? '' :
+    fps >= native * 0.9 ? 'ok' :
+    fps >= native * 0.5 ? 'warn' : 'err'
+  );
+  dv('dc-budget', med ? `${Math.round((med / b) * 100)}%` : '—', clf(med, b));
+  dv('dc-median', ms(med),    clf(med, b));
+  dv('dc-p95',    ms(p95val), clf(p95val, b));
+  dv('dc-p99',    ms(p99val), clf(p99val, b));
+  dv('dc-dropped', String(dropped), dropped > 0 ? 'warn' : 'ok');
+  dv('dc-nframes', String(nFrames));
+  dv('dc-detected', budget ? `${native} Hz` : '…');
+
+  const loafN = loafBuf.length;
+  const tbt   = loafBuf.reduce((s, e) => s + Math.max(0, e.duration - 50), 0);
+  dv('dc-loaf', String(loafN), loafN > 0 ? 'err' : 'ok');
+  dv('dc-tbt',  loafN > 0 ? ms(tbt) : '0 ms', tbt > 0 ? 'err' : 'ok');
+
+  drawSpark();
+
+  // Field DOM state
+  const bodyCount = document.querySelectorAll('[data-body]').length;
+  const cellCount = document.querySelectorAll('field-cell').length;
+  dd('dc-bodies', String(bodyCount));
+  dd('dc-roots',  String(document.querySelectorAll('field-root').length));
+  dd('dc-cells',  String(cellCount));
+
+  // Field element config
+  const fr = document.querySelector('field-root') as (HTMLElement & {
+    renderMode?: string; overlay?: string; density?: number;
+    waves?: boolean; attention?: boolean; causality?: boolean;
+  }) | null;
+  if (fr) {
+    dd('dc-render',  fr.renderMode  ?? '—');
+    dd('dc-overlay', fr.overlay     ?? '—');
+    dd('dc-density', fr.density != null ? String(fr.density) : '—');
+  }
+  const dpr = window.devicePixelRatio;
+  const dprCapped = dpr > DEFAULT_BUDGET.dprCap;
+  dd('dc-dpr', `${dpr.toFixed(1)}${dprCapped ? ` (cap ${DEFAULT_BUDGET.dprCap})` : ''}`,
+    dprCapped ? 'warn' : '');
+
+  const vis = document.visibilityState;
+  dd('dc-tab', vis, vis === 'visible' ? 'ok' : 'warn');
+  const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  dd('dc-rm', rm ? 'yes' : 'no', rm ? 'warn' : '');
+
+  // Engine — particle count + energy (now accessible via FieldHandle)
+  const fieldEl = fr as (HTMLElement & {
+    particleCount?: () => number;
+    energy?: () => { kinetic: number; thermal: number; total: number; count: number };
+  }) | null;
+  const partCount = fieldEl?.particleCount?.() ?? null;
+  if (partCount != null) dd('dc-e-parts', String(partCount));
+  const eng = fieldEl?.energy?.();
+  if (eng) {
+    dd('dc-e-ke',  eng.kinetic.toFixed(1));
+    dd('dc-e-te',  eng.thermal.toFixed(1));
+    dd('dc-e-tot', eng.total.toFixed(1));
+  }
+
+  // Budget compliance — bodies + cells from DOM, particles from handle
+  const findings = inspectBudget({
+    bodies: bodyCount,
+    localCells: cellCount,
+    ...(partCount != null ? { particles: partCount } : {}),
+  });
+  const findingMap = Object.fromEntries(findings.map(f => [f.field, f]));
+  const bFindBodies = findingMap['bodies'];
+  const bFindCells  = findingMap['localCells'];
+  const bFindParts  = findingMap['particles'];
+  dd('dc-b-bodies', `${bodyCount} / ${DEFAULT_BUDGET.bodies}`,
+    bFindBodies ? 'err' : bodyCount > DEFAULT_BUDGET.bodies * 0.8 ? 'warn' : 'ok');
+  dd('dc-b-cells', `${cellCount} / ${DEFAULT_BUDGET.localCells}`,
+    bFindCells ? 'err' : cellCount > DEFAULT_BUDGET.localCells * 0.8 ? 'warn' : 'ok');
+  dd('dc-b-dpr', `${dpr.toFixed(1)} / ${DEFAULT_BUDGET.dprCap}`, dprCapped ? 'warn' : 'ok');
+  if (partCount != null) {
+    dd('dc-b-parts', `${partCount} / ${DEFAULT_BUDGET.particles}`,
+      bFindParts ? 'err' : partCount > DEFAULT_BUDGET.particles * 0.8 ? 'warn' : 'ok');
+  }
+
+  // Field event counters
+  dd('dc-ev-lit', String(evCounts.lit));
+  dd('dc-ev-cap', String(evCounts.captured));
+  dd('dc-ev-rel', String(evCounts.released));
+  dd('dc-ev-loc', String(evCounts.relocated));
+
+  readPlatform();
+
+  // Memory
+  const mem = (performance as any).memory;
+  if (mem) {
+    if (heapBase == null) heapBase = mem.usedJSHeapSize;
+    const used  = mem.usedJSHeapSize;
+    const usedF = used / mem.jsHeapSizeLimit;
+    dd('dc-hu', mb(used),  usedF > 0.8 ? 'err' : usedF > 0.5 ? 'warn' : '');
+    dd('dc-ht', mb(mem.totalJSHeapSize));
+    dd('dc-hl', mb(mem.jsHeapSizeLimit));
+    const delta = used - heapBase!;
+    dd('dc-hd', `${delta >= 0 ? '+' : '−'}${mb(Math.abs(delta))}`,
+      Math.abs(delta) > 30_000_000 ? 'err' :
+      Math.abs(delta) > 10_000_000 ? 'warn' : '');
+  } else {
+    for (const id of ['dc-hu','dc-ht','dc-hl','dc-hd']) dd(id, 'n/a', 'dim');
+  }
+
+  // Resources
+  const res = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+  const xfr = res.reduce((s, r) => s + (r.transferSize || 0), 0);
+  dd('dc-rn', String(res.length));
+  dd('dc-rk', xfr > 0 ? kb(xfr) : '—');
+}
+
+// ── Navigation timing (read once, re-read on Astro swap) ──────────────
+function readNavTiming() {
+  const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+  const paints = performance.getEntriesByType('paint');
+  const fp  = paints.find(e => e.name === 'first-paint');
+  const fcp = paints.find(e => e.name === 'first-contentful-paint');
+  if (nav) {
+    dd('dc-ttfb', ms(nav.responseStart - nav.requestStart));
+    dd('dc-load', ms(nav.loadEventEnd - nav.startTime));
+  }
+  dd('dc-fp',  fp  ? ms(fp.startTime)  : '—');
+  dd('dc-fcp', fcp ? ms(fcp.startTime) : '—');
+}
+
+// ── Open / Close ───────────────────────────────────────────────────────
+function openConsole() {
+  isOpen = true;
+  panel.classList.add('is-open');
+  panel.setAttribute('aria-hidden', 'false');
+  trigger.classList.add('is-open');
+  trigger.setAttribute('aria-expanded', 'true');
+
+  // Reset per-session counters
+  heapBase = null;
+  dropped  = 0;
+  nFrames  = 0;
+  lastTs   = null;
+  deltas   = [];
+  budgetSeed = [];
+  evCounts.lit = evCounts.captured = evCounts.released = evCounts.relocated = 0;
+  // Preserve detected budget across open/close
+
+  readNavTiming();
+  ensureSysReport();
+  attachFieldEvents();
+
+  raf = requestAnimationFrame(tick);
+}
+
+function closeConsole() {
+  isOpen = false;
+  panel.classList.remove('is-open');
+  panel.setAttribute('aria-hidden', 'true');
+  trigger.classList.remove('is-open');
+  trigger.setAttribute('aria-expanded', 'false');
+  cancelAnimationFrame(raf);
+  detachFieldEvents();
+  lastTs = null;
+}
+
+// ── Controls ──────────────────────────────────────────────────────────
+trigger.addEventListener('click', () => isOpen ? closeConsole() : openConsole());
+closeBtn.addEventListener('click', closeConsole);
+
+pauseBtn.addEventListener('click', () => {
+  paused = !paused;
+  pauseBtn.setAttribute('aria-pressed', String(paused));
+  statusBadge.textContent = paused ? 'paused' : 'live';
+  statusBadge.classList.toggle('paused', paused);
+  if (!paused && isOpen) { lastTs = null; raf = requestAnimationFrame(tick); }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && isOpen) closeConsole();
+  if (e.key === 'p' && isOpen && !(e.target instanceof HTMLInputElement)) pauseBtn.click();
+});
+
+// ── Astro view-transition hooks ────────────────────────────────────────
+// Stop rAF during swap, then resume and refresh one-shot timing data.
+document.addEventListener('astro:before-swap', () => cancelAnimationFrame(raf));
+document.addEventListener('astro:after-swap',  () => {
+  if (isOpen) { readNavTiming(); attachFieldEvents(); raf = requestAnimationFrame(tick); }
+});
+
+// ── Drag-to-resize ────────────────────────────────────────────────────
+{
+  let dragStartY = 0;
+  let dragStartH = 286;
+
+  const onMove = (e: MouseEvent | TouchEvent) => {
+    const y = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+    const newH = Math.max(180, Math.min(window.innerHeight * 0.75, dragStartH + (dragStartY - y)));
+    panel.style.setProperty('--dc-h', `${newH}px`);
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup',   onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend',  onUp);
+  };
+  resizeHandle.addEventListener('mousedown', e => {
+    dragStartY = e.clientY;
+    dragStartH = panel.offsetHeight;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  });
+  resizeHandle.addEventListener('touchstart', e => {
+    dragStartY = e.touches[0].clientY;
+    dragStartH = panel.offsetHeight;
+    document.addEventListener('touchmove', onMove);
+    document.addEventListener('touchend',  onUp);
+  }, { passive: true });
+}
+
+// ── Canvas resize observer ─────────────────────────────────────────────
+new ResizeObserver(() => { if (isOpen) drawSpark(); }).observe(sparkEl);
+</script>

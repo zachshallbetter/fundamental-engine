@@ -51,6 +51,8 @@ jobs:
         run: pnpm test
       - name: Smoke-check dist
         run: pnpm check:dist
+      - name: Check packaging (publint + attw)
+        run: pnpm check:packaging
       - name: Check API surface
         run: pnpm check:api
       - name: Check READMEs
