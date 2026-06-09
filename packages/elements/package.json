@@ -1,6 +1,6 @@
 {
   "name": "@field-ui/elements",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Web-component keystone for field-ui — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
@@ -55,7 +55,7 @@
   "dependencies": {
     "@field-ui/platform": "workspace:*",
     "@field-ui/vanilla": "workspace:*",
-    "field-ui": "workspace:*"
+    "@field-ui/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

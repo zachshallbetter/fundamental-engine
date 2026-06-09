@@ -8,9 +8,9 @@ plain HTML, unchanged.
 
 ## Install
 
-> **Pre-release: not yet on npm.** Consume from this repository for now (see
-> [`RELEASING.md`](../../RELEASING.md) and [`PUBLISHING.md`](../../PUBLISHING.md)). `npm add @field-ui/elements`
-> lands with the first published release.
+```sh
+npm i @field-ui/elements
+```
 
 ## Use
 

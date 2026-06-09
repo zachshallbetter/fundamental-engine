@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from 'field-ui';
+import { type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@field-ui/core';
 import { createBrowserField } from '@field-ui/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 

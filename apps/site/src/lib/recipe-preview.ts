@@ -8,7 +8,7 @@
 //
 // Reused: `recipeById` (field-ui) + `applyRecipe` (@field-ui/platform). Returns a teardown for the
 // Astro `before-swap` lifecycle.
-import { recipeById } from "field-ui";
+import { recipeById } from "@field-ui/core";
 import { applyRecipe, type AppliedRecipe } from "@field-ui/platform";
 
 interface PreviewOptions {

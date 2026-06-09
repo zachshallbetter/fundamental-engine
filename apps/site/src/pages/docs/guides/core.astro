@@ -5,7 +5,7 @@ import CodeTabs from '../../../components/CodeTabs.astro';
 const create = `// field-ui is renderer-agnostic — createField requires an explicit host.
 // In the browser, browserHost() (from @field-ui/platform) is the host. Pass a custom
 // host to drive a headless or alternative renderer.
-import { createField } from 'field-ui';
+import { createField } from '@field-ui/core';
 import { browserHost } from '@field-ui/platform';
 
 const canvas = document.querySelector('canvas');
@@ -26,7 +26,7 @@ const field = createField(canvas, {
 // after you add or remove bodies, rescan:
 field.scan();`;
 
-const custom = `import type { Force } from 'field-ui';
+const custom = `import type { Force } from '@field-ui/core';
 
 // Every force is one object: a token + an apply(body, particle, env).
 // This is the exact contract all 34 built-ins implement.
@@ -65,7 +65,7 @@ const lift: Force = {
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">
-      <code class="install" data-copy="npm i field-ui">npm i field-ui</code>
+      <code class="install" data-copy="npm i @field-ui/core">npm i @field-ui/core</code>
       <span>the engine itself — when you own the canvas</span>
     </div>
   </section>

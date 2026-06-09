@@ -5,7 +5,7 @@ entire `field-ui` core so existing imports keep working during the migration:
 
 ```ts
 import { createField } from 'forces-ui'; // still works
-import { createField } from 'field-ui';  // preferred
+import { createField } from '@field-ui/core';  // preferred
 ```
 
 Install `field-ui` for new code. This alias keeps working behavior-identically through `0.x` and is

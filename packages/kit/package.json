@@ -1,0 +1,40 @@
+{
+  "name": "@field-ui/kit",
+  "version": "0.2.1",
+  "description": "The whole field-ui suite in one install — the engine (@field-ui/core), the DOM platform, and the web-component, React, and vanilla adapters. A meta-package: install it, then import from the specific @field-ui/* package you need.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
+  "homepage": "https://field-ui.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachshallbetter/field-ui.git",
+    "directory": "packages/kit"
+  },
+  "bugs": {
+    "url": "https://github.com/zachshallbetter/field-ui/issues"
+  },
+  "keywords": [
+    "field-ui",
+    "bundle",
+    "suite",
+    "meta",
+    "field",
+    "dom",
+    "reciprocal"
+  ],
+  "files": [
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@field-ui/core": "workspace:*",
+    "@field-ui/platform": "workspace:*",
+    "@field-ui/elements": "workspace:*",
+    "@field-ui/react": "workspace:*",
+    "@field-ui/vanilla": "workspace:*"
+  }
+}

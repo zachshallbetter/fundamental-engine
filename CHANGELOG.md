@@ -2,8 +2,8 @@
 
 All notable changes are documented here, following
 [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
-The packages are not yet published to npm; each release is cut as a git tag
-(see [RELEASING.md](RELEASING.md)).
+The packages are published to npm under the `@field-ui` scope; each release is also cut as a
+git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
@@ -162,6 +162,21 @@ Aliases will be removed in a future major once docs, examples, and downstream co
   `supernova` event marked; the budgeted source named `spawn`), the test count (306),
   ROADMAP's force counts (33), the spec's runtime-field list (drops the removed `b.mass`), and
   stopped PUBLISHING / SECURITY / the package READMEs from implying the packages are on npm.
+
+## [0.2.1] — 2026-06-08
+
+First npm release under the `@field-ui` scope.
+
+### Changed
+- **The core package is published as `@field-ui/core`** (was the unscoped `field-ui`). The unscoped
+  name is unavailable on npm — an unrelated, active `fieldui` package trips the registry's
+  name-similarity guard — so the engine ships under the org scope alongside the four adapters. All
+  internal dependencies and `import … from 'field-ui'` specifiers now resolve to `@field-ui/core`;
+  the public API surface is otherwise unchanged (the freeze gate still passes its 14 entries).
+
+### Published
+- `@field-ui/core`, `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, and
+  `@field-ui/vanilla` are live on npm. Install any layer directly (`npm i @field-ui/core`, etc.).
 
 ## [0.2.0] — 2026-06-04
 

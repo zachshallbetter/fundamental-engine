@@ -28,8 +28,8 @@ export type {
   Force,
   Formation,
   Vec2,
-} from 'field-ui';
+} from '@field-ui/core';
 
 // The catalog data a vanilla UI commonly reads — the force list, formations, `data-when`
 // gates, and the palette — so a force picker or legend needs no second install.
-export { FORCES, FORMATIONS, CONDITIONS, PALETTE } from 'field-ui';
+export { FORCES, FORMATIONS, CONDITIONS, PALETTE } from '@field-ui/core';
