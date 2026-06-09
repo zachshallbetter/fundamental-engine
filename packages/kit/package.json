@@ -1,6 +1,6 @@
 {
   "name": "@field-ui/kit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "The whole field-ui suite in one install — the engine (@field-ui/core), the DOM platform, and the web-component, React, and vanilla adapters. A meta-package: install it, then import from the specific @field-ui/* package you need.",
   "type": "module",
   "license": "MIT",

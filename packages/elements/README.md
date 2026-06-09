@@ -1,10 +1,11 @@
 # @field-ui/elements
 
-**The web-component keystone for [field-ui](../core).** "Every element is a body" is a
+**The web-component keystone for [`@field-ui/core`](../core).** "Every element is a body" is a
 web-components-shaped idea: drop one tag, mark up your bodies, and the field runs in any framework or
-plain HTML, unchanged.
+plain HTML, unchanged. Semantic HTML stays the source of meaning; the field is a behavior +
+visualization layer on top.
 
-→ Live at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
 
 ## Install
 
@@ -27,17 +28,34 @@ Import the package once to register the elements, then mark up the field and you
 ```
 
 `<field-root>` mounts a fixed, full-viewport canvas behind your page and runs the engine on it. The
-field reacts to every `[data-body]` element on the page (the field-reacts law). It is decorative, so it
-is marked `aria-hidden` automatically. The deprecated `<forces-field>` tag still works as an alias.
+field reacts to every `[data-body]` element on the page (the *field-reacts* law). It is decorative, so
+it is marked `aria-hidden` automatically. The deprecated `<forces-field>` tag still works as an alias.
 
-### Attributes
+## Marking bodies — the `data-body` vocabulary
+
+Any element becomes a *body* by carrying `data-body`. The common attributes:
+
+| Attribute | Meaning |
+|---|---|
+| `data-body="attract"` | the force token (`attract`, `gravity`, `charge`, `sink`, …) |
+| `data-strength` | how hard it bends the field |
+| `data-range` | radius of influence, in px |
+| `data-feedback` | opt in to receiving `--field-*` variables back on the element |
+| `data-absorb` / `data-max` | for `sink` bodies: accretion load and capacity |
+
+Bodies that opt in with `data-feedback` get `--field-*` CSS custom properties written back onto them
+each frame — style with them (`var(--field-density)`, etc.) to make content react to the field.
+
+## `<field-root>` attributes
 
 `accent` · `density` · `waves` · `render` (`dots` / `trails` / `links` / `streamlines` / `metaballs` /
 `voronoi`) · `palette` (`ours` / `heatmap` / `infrared` / `spectrum`) · `mass` · `attention` ·
 `causality`. The engine ships 16 render modes in all (including `field-lines`, `heatmap`, and the
 diagnostics); the others are reached through `setRender()` / the core, not this attribute.
 
-### Methods (the `FieldHandle`, proxied onto the element)
+## Methods — the `FieldHandle`, proxied onto the element
+
+Every `FieldHandle` method is available directly on the element:
 
 ```js
 const field = document.querySelector('field-root');
@@ -45,14 +63,31 @@ field.scan();                    // after adding [data-body] elements
 field.setFormation('wells');
 field.setAttention(true);
 field.setRender('streamlines');
+field.setOverlay('field-lines'); // a second canvas in front of content
 field.flowTo(x, y);              // a movable flow focus the field bends toward
-field.burst(x, y);
+field.burst(x, y);               // a one-off impulse
+field.destroy();                 // stop the loop, remove the canvas
 ```
+
+| Method | Use |
+|---|---|
+| `scan()` / `rescan()` | re-read `[data-body]` elements after the DOM changes |
+| `setAccent(hex)` · `setPalette(p)` | recolor live |
+| `setFormation(name)` | arrange particles into a named formation |
+| `setRender(mode)` · `setOverlay(mode)` | underlay (behind content) / overlay (in front) |
+| `setAttention(on)` · `setCausality(on)` · `setHeatmap(on)` | toggle diagnostics |
+| `burst(x, y, hex?)` · `flowTo(x, y)` · `clearFlow()` | impulses and a movable focus |
+| `threads(list)` | draw relationship threads between bodies |
 
 ### Imperative mount
 
 For a canvas you do not want declared in markup, `mountField(opts)` creates one, starts the engine, and
 returns the handle (its `destroy()` also removes the canvas).
+
+```js
+import { mountField } from '@field-ui/elements';
+const field = mountField({ render: 'trails', accent: '#2dd4bf' });
+```
 
 ### Local cells
 
@@ -60,7 +95,14 @@ returns the handle (its `destroy()` also removes the canvas).
 formation inside a frame), separate from the page-wide `<field-root>`. It runs a deliberately
 simplified in-frame model, not the canonical engine math. The deprecated `<forces-cell>` is its alias.
 
-## Recipes
+## Framework use
+
+The custom elements work unchanged in React, Vue, Svelte, Solid, Angular, or plain HTML — register once
+(`import '@field-ui/elements'`) and write `<field-root>` in your markup. In React, prefer
+[`@field-ui/react`](../react) for typed props and a `FieldHandle` ref; reach for the element directly
+when you want one field across a whole page regardless of framework.
+
+## Recipes & data binding
 
 To apply a named recipe over your markup (or bind data to it) rather than wire bodies by hand, use
 `applyRecipe()` / `bindData()` from [`@field-ui/platform`](../platform); browse all 64 recipes at
@@ -70,7 +112,7 @@ together.
 
 ## Related
 
-[`field-ui`](../core) · [`@field-ui/platform`](../platform) · [`@field-ui/react`](../react) ·
+[`@field-ui/core`](../core) · [`@field-ui/platform`](../platform) · [`@field-ui/react`](../react) ·
 [`@field-ui/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
 
 ## License
