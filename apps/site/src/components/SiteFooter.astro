@@ -1,6 +1,8 @@
 ---
 // The shared site footer — one consistent close on every public page: the
 // wordmark + thesis line, the destinations, and contact.
+import corePkg from '@field-ui/core/package.json';
+const version = corePkg.version; // single source of truth — never goes stale
 const dest = [
   { href: '/docs', label: 'Docs' },
   { href: '/lab', label: 'Lab' },
@@ -12,7 +14,7 @@ const dest = [
   <div class="sf-inner">
     <div class="sf-brand">
       <span class="sf-name">field<span class="sf-dim">-ui</span></span>
-      <span class="sf-note">A reciprocal DOM-physics field · v0.2 · frozen, additive-only API</span>
+      <span class="sf-note">A reciprocal DOM-physics field · v{version} · frozen, additive-only API</span>
     </div>
     <nav class="sf-links" aria-label="Footer">
       {dest.map((d) => <a href={d.href}>{d.label}</a>)}
