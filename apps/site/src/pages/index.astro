@@ -51,6 +51,7 @@ const chapters = [
   { id: "ch-presets", no: "V", label: "Presets" },
   { id: "ch-conditions", no: "VI", label: "Conditions" },
   { id: "ch-system", no: "VII", label: "System" },
+  { id: "ch-gallery", no: "VIII", label: "Gallery" },
 ];
 ---
 
@@ -1004,6 +1005,101 @@ const chapters = [
           <span class="hintline"
             >anchor + mutual repulsion + density pressure → equilibrium</span
           >
+      </Fragment>
+    </Concept>
+
+    <!-- VIII · Gallery — a working bench exploring more of what the field can do (curate later). -->
+    <ChapterHeader no="VIII" id="ch-gallery" title="Gallery"
+      >Live examples that explore more of what the field can do — a working bench, to curate.</ChapterHeader
+    >
+
+    <Concept data-form="accretion">
+      <span class="concept-no">Gallery · capture → hold → release</span>
+      <h2>A body takes matter in — and gives it back.</h2>
+      <p>
+        Drag the vessel through the swarm: it <strong>captures</strong> nearby particles,
+        <strong>holds</strong> them as it fills, and <strong>releases</strong> the exact count on
+        supernova. These are the real <code>field:captured</code> / <code>field:released</code>
+        events the engine dispatches — counted live, off the running field.
+      </p>
+      <p class="note">Capture, hold, release — nothing conjured, nothing deleted. Matter just changes hands.</p>
+      <Fragment slot="stage">
+        <div class="lifecycle" data-lifecycle>
+          <span class="stage-label">drag the vessel; fill it; pop it</span>
+          <div
+            class="body-core"
+            id="gal-sink"
+            data-drag
+            data-body="sink attract"
+            data-absorb="74"
+            data-max="10"
+            data-strength="0.95"
+            data-range="240"
+            style="--cc:#34d399; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+          >vessel</div>
+          <div class="meter" style="--cc:#34d399;"><i></i></div>
+          <button class="agitate" type="button" data-agitate="#gal-sink">supernova</button>
+          <div class="cap-readout">
+            <span class="cap-stat"><b data-cap-count>0</b> captured</span>
+            <span class="cap-stat"><b data-rel-count>0</b> released</span>
+          </div>
+          <ul class="cap-log" data-cap-log aria-live="polite"></ul>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept reverse>
+      <span class="concept-no">Gallery · the contract, live</span>
+      <h2>data-* in, --field-* out — the actual number.</h2>
+      <p>
+        This word is a body — <code>data-body="attract"</code> with <code>data-feedback</code> on.
+        The engine measures the density of matter gathered on it and writes it back as
+        <code>--field-density</code>, the same variable you'd style with. Drag it into the swarm and
+        watch the value — and its weight — climb.
+      </p>
+      <p class="note"><code>--field-density</code> is read straight off the element's computed style each frame — no tricks.</p>
+      <Fragment slot="stage">
+        <div class="readout-stage">
+          <span class="stage-label">--field-density, off the live element</span>
+          <span
+            class="readout-body"
+            id="gal-readout"
+            data-readout
+            data-drag
+            data-body="attract"
+            data-feedback
+            data-strength="1"
+            data-range="300"
+            style="--cat:#60a5fa; --d:0; position:absolute; left:50%; top:42%; transform:translate(-50%,-50%);"
+          >density</span>
+          <div class="readout-chip"><code>--field-density</code> = <b data-readout-value>0.00</b></div>
+          <span class="hintline">drag it through the dots — the number is the gathered density</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · Field Surfaces</span>
+      <h2>One field, five readings.</h2>
+      <p>
+        The same particles, drawn through different render modes — <code>field.setRender(mode)</code>,
+        the Field Surfaces underlay switch. Pick one and the whole page field re-draws itself; the
+        physics underneath never changes, only the reading.
+      </p>
+      <p class="note">Active only while this panel is in view, then it restores to <code>dots</code>.</p>
+      <Fragment slot="stage">
+        <div class="rendertour" data-rendertour>
+          <span class="stage-label">field.setRender(mode)</span>
+          <div class="rt-modes" role="group" aria-label="Pick a render mode">
+            <button type="button" data-render="dots" aria-pressed="true">dots</button>
+            <button type="button" data-render="links" aria-pressed="false">links</button>
+            <button type="button" data-render="trails" aria-pressed="false">trails</button>
+            <button type="button" data-render="metaballs" aria-pressed="false">metaballs</button>
+            <button type="button" data-render="voronoi" aria-pressed="false">voronoi</button>
+            <button type="button" data-render="streamlines" aria-pressed="false">streamlines</button>
+          </div>
+          <span class="hintline">the change plays across the whole page field behind the content</span>
+        </div>
       </Fragment>
     </Concept>
 
