@@ -192,51 +192,52 @@ import "../styles/force-glyphs.css";
     <section class="concept">
       <div class="wrap">
         <span class="concept-no">04 — The translation</span>
-        <h2>Every page already has these four. It just makes them physical.</h2>
-        <p class="forces-lead">Pick one — and watch the field behind this page actually do it.</p>
+        <h2>Every page already has these four. field-ui gives them behavior.</h2>
+        <p class="forces-lead">Pick one, and watch the same page resolve through a different field.</p>
         <div class="forces" data-forcepick>
-          <ul class="force-list" role="group" aria-label="Pick a force to play it across the whole field">
+          <ul class="force-list" role="group" aria-label="Pick a natural field to read the page through">
             <li>
               <button type="button" class="force-card" aria-pressed="true"
-                data-token="gravity" data-strength="1" data-range="1300" data-overlay="streamlines" data-color="#6366f1"
-                style="--fc:#6366f1;">
+                data-token="gravity" data-strength="1" data-range="1300" data-render="dots" data-overlay="streamlines"
+                data-caption="translates priority into convergence" data-color="#6366f1" style="--fc:#6366f1;">
                 <span class="fc-head"><i class="fg fg-gravity" aria-hidden="true"></i><span class="fc-real">Gravity</span></span>
                 <span class="fc-feel">importance</span>
-                <span class="fc-say">the whole field streams toward what matters</span>
+                <span class="fc-say">what matters bends the field</span>
               </button>
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="repel" data-strength="0.9" data-range="1300" data-overlay="force-vectors" data-color="#60a5fa"
-                style="--fc:#60a5fa;">
-                <span class="fc-head"><i class="fg fg-charge" aria-hidden="true"></i><span class="fc-real">Electricity</span></span>
-                <span class="fc-feel">agree or argue</span>
-                <span class="fc-say">it pushes the whole field apart</span>
+                data-token="repel" data-strength="0.9" data-range="1300" data-render="dots" data-overlay="force-vectors"
+                data-caption="translates polarity into signal" data-color="#60a5fa" style="--fc:#60a5fa;">
+                <span class="fc-head"><i class="fg fg-charge" aria-hidden="true"></i><span class="fc-real">Electromagnetic</span></span>
+                <span class="fc-feel">polarity</span>
+                <span class="fc-say">meaning pushes, pulls, and routes signal</span>
               </button>
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="cohesion" data-strength="1.5" data-range="760" data-overlay="field-lines" data-color="#34d399"
-                style="--fc:#34d399;">
-                <span class="fc-head"><i class="fg fg-cohesion" aria-hidden="true"></i><span class="fc-real">The glue force</span></span>
+                data-token="cohesion" data-strength="1.6" data-range="640" data-render="links" data-overlay="off"
+                data-caption="translates belonging into binding" data-color="#34d399" style="--fc:#34d399;">
+                <span class="fc-head"><i class="fg fg-cohesion" aria-hidden="true"></i><span class="fc-real">Strong</span></span>
                 <span class="fc-feel">belonging</span>
-                <span class="fc-say">the field clumps into things that belong together</span>
+                <span class="fc-say">what belongs together binds</span>
               </button>
             </li>
             <li>
               <button type="button" class="force-card" aria-pressed="false"
-                data-token="thermal" data-strength="2" data-range="1300" data-overlay="streamlines" data-color="#e879f9"
-                style="--fc:#e879f9;">
-                <span class="fc-head"><i class="fg fg-morph" aria-hidden="true"></i><span class="fc-real">The decay force</span></span>
-                <span class="fc-feel">fading</span>
-                <span class="fc-say">the whole field shivers loose and drifts away</span>
+                data-token="thermal" data-strength="2" data-range="1300" data-render="trails" data-overlay="streamlines"
+                data-caption="translates change into release" data-color="#e879f9" style="--fc:#e879f9;">
+                <span class="fc-head"><i class="fg fg-morph" aria-hidden="true"></i><span class="fc-real">Weak</span></span>
+                <span class="fc-feel">release</span>
+                <span class="fc-say">what changes loosens and transforms</span>
               </button>
             </li>
           </ul>
         </div>
         <p class="force-caption" data-forcecaption aria-live="polite">
-          <b style="color:#6366f1">Gravity</b> — real gravity, doing an interface job: the whole field streams toward what matters.
+          <b style="color:#6366f1">Gravity</b> translates priority into convergence.
         </p>
+        <p class="forces-coda">They are not four effects — they are four ways a semantic surface can behave.</p>
         <!-- The chosen force plays across the entire persisted <field-root>: a viewport-centred,
              whole-screen-range source the engine reads. aria-hidden — it is the field's expression,
              not content. Active only while this section is in view (see the orchestrator script). -->
@@ -772,13 +773,16 @@ import "../styles/force-glyphs.css";
 
   // Ch. II force picker — selecting a force plays it OVER and UNDER the page (immersive), via the
   // Field Surfaces API on the shared <field-root>:
-  //   · UNDER — a viewport-centred [data-body] source with whole-screen range; the existing dots
-  //     stream / clump / scatter per the force, behind content (the dot render is left untouched).
-  //   · OVER  — field.setOverlay(mode) draws the LIVE field structure on the element's overlay
-  //     surface, in front of content; setAccent tints it to the force colour.
-  // Active only while the section is in view. rescan() runs on select/enter/leave only.
+  //   · UNDER — a viewport-centred [data-body] source with whole-screen range drives the particles,
+  //     and each field picks its own underlay grammar via setRender: gravity/electromagnetic stay
+  //     dots (motion), strong → links (bonds between clustered particles), weak → trails (fade).
+  //   · OVER  — field.setOverlay(mode) draws the LIVE field structure in front of content
+  //     (streamlines for convergence, force-vectors for polarity; strong needs none — its bonds are
+  //     the underlay). setAccent tints both surfaces to the field's colour.
+  // Active only while the section is in view; restored to dots/off on leave. rescan() on select/enter/leave.
   type FieldEl = HTMLElement & {
     rescan?: () => void;
+    setRender?: (m: string) => void;
     setOverlay?: (m: string) => void;
     setAccent?: (hex: string) => void;
   };
@@ -808,11 +812,13 @@ import "../styles/force-glyphs.css";
         source.setAttribute("data-color", c.color || "#6366f1");
         source.style.setProperty("--fc", c.color || "#6366f1");
         source.classList.add("on");
-        field?.setAccent?.(c.color || "#6366f1"); // tint both surfaces to the force colour
-        field?.setOverlay?.(c.overlay || "streamlines"); // OVER: live field structure, in front of content
+        field?.setAccent?.(c.color || "#6366f1"); // tint both surfaces to the field's colour
+        field?.setRender?.(c.render || "dots"); // UNDER grammar: dots / links (bonds) / trails (fade)
+        field?.setOverlay?.(c.overlay || "off"); // OVER: live field structure, in front of content
       } else {
         source.removeAttribute("data-body");
         source.classList.remove("on");
+        field?.setRender?.("dots");
         field?.setOverlay?.("off");
       }
       rescan();
@@ -823,9 +829,8 @@ import "../styles/force-glyphs.css";
       cards.forEach((c) => c.setAttribute("aria-pressed", String(c === card)));
       if (caption) {
         const real = card.querySelector(".fc-real")?.textContent ?? "";
-        const say = card.querySelector(".fc-say")?.textContent ?? "";
         const color = card.dataset.color || "#6366f1";
-        caption.innerHTML = `<b style="color:${color}">${real}</b> — real physics, doing an interface job: ${say}.`;
+        caption.innerHTML = `<b style="color:${color}">${real}</b> ${card.dataset.caption || ""}.`;
       }
       apply();
     };
@@ -849,6 +854,7 @@ import "../styles/force-glyphs.css";
       io.disconnect();
       source.removeAttribute("data-body");
       source.classList.remove("on");
+      field?.setRender?.("dots");
       field?.setOverlay?.("off");
       rescan();
       if (home) home.insertBefore(source, anchor); // restore for a same-page re-init
@@ -1095,6 +1101,13 @@ import "../styles/force-glyphs.css";
   }
   .force-caption b {
     font-weight: 700;
+  }
+  .forces-coda {
+    margin: 0.6rem 0 0;
+    color: var(--muted, #9aa);
+    font-size: 0.92rem;
+    font-style: italic;
+    max-width: 52ch;
   }
   @media (max-width: 760px) {
     .force-list {
