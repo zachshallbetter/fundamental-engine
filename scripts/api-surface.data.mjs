@@ -44,6 +44,9 @@ export const FROZEN_BODY_ATTR = 'data-body';
 
 /** Experimental surface — explicitly NOT frozen; may change shape or be removed in any release. */
 export const EXPERIMENTAL = [
+  { item: 'FieldHandle — full shape', status: 'partial', note: 'The entry points that return FieldHandle are frozen; the handle shape itself is not. New methods may be added in any patch.' },
+  { item: 'FieldHandle.particleCount() / .energy()', status: 'partial', note: 'Shipped in @field-ui/core and proxied on <field-root>. Safe to use; signatures may refine before 1.0 as FieldPerf is designed.' },
+  { item: 'performance budget (inspectBudget / DEFAULT_BUDGET)', status: 'partial', note: 'inspectBudget(), withinBudget(), BudgetFinding, and DEFAULT_BUDGET ship in @field-ui/core. FieldPerf (frame-duration split, adaptive governor) is designed but not yet implemented.' },
   { item: 'advanced diagnostics', status: 'partial', note: 'DIAGNOSTICS / DIAGNOSTIC_LENS / draw* primitives ship today but are shipped-but-unfrozen until added here.' },
   { item: 'visual recipe editor', status: 'absent', note: 'no editor UI; the authoring toolkit (compileRecipe/recipeAuthoring/validateRecipe) is the substrate to build one on.' },
   { item: 'GPU / WebGPU backend', status: 'planned', note: 'a named direction (VisualBindingRegistry mentions WebGL); the six shipped render modes are CPU/canvas.' },

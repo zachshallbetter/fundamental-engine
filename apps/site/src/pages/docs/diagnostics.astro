@@ -35,6 +35,49 @@ const table = RENDER_MODES;
     <button id="exp-svg" title="The contours mode is the only one with a clean vector form; SVG always exports that potential-field contour set.">Export contours (SVG)</button>
   </div>
 
+  <h2>Runtime observables</h2>
+  <p>
+    Beyond the canvas overlays above, the engine exposes pull-based data surfaces through
+    <code>FieldHandle</code> and <code>@field-ui/core</code>:
+  </p>
+  <table class="vt-table">
+    <thead><tr><th>API</th><th>Returns</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>handle.particleCount()</code></td>
+        <td><code>number</code></td>
+        <td>Live pool size (<code>store.size</code>). No particle-array walk.</td>
+      </tr>
+      <tr>
+        <td><code>handle.energy()</code></td>
+        <td><code>&#123; kinetic, thermal, total, count &#125;</code></td>
+        <td>Per-frame energy snapshot. Forwards to <code>energyReport()</code> from <code>diagnostics/energy</code>.</td>
+      </tr>
+      <tr>
+        <td><code>inspectBudget(counts)</code></td>
+        <td><code>BudgetFinding[]</code></td>
+        <td>Checks supplied counts against <code>DEFAULT_BUDGET</code>. Partial-safe.</td>
+      </tr>
+      <tr>
+        <td><code>systemReport()</code></td>
+        <td><code>SystemReport</code></td>
+        <td>Force/passport/contract/agent counts + missing-passport list. Stable after mount.</td>
+      </tr>
+      <tr>
+        <td><code>causalityAt(x, y)</code></td>
+        <td><code>CausalContribution[]</code></td>
+        <td>Per-force Δv decomposition at a point. Powers the <em>causality</em> overlay above.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    All are pure — they read state, they do not mutate physics. <code>particleCount()</code> and
+    <code>energy()</code> are shipped-but-unfrozen; <code>inspectBudget</code> /
+    <code>systemReport</code> / <code>causalityAt</code> are the same. See the
+    <a href="/docs/performance">performance docs</a> for the full observable surface and the
+    <code>FieldPerf</code> design direction.
+  </p>
+
   <h2>Render-mode status</h2>
   <table class="vt-table">
     <thead><tr><th>Mode</th><th>Type</th><th>Shows</th><th>Status</th></tr></thead>
