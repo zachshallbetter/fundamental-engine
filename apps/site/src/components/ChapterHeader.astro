@@ -1,0 +1,21 @@
+---
+// A chapter divider in the manual: the roman numeral, the title, and a sub-line. The sub is a
+// slot because it sometimes carries inline links. Shared by / and /eli5.
+interface Props {
+  /** roman numeral shown large (e.g. "III"). */
+  no: string;
+  /** section id used as the scroll/anchor target + chapter-rail link. */
+  id: string;
+  /** chapter title. */
+  title: string;
+}
+const { no, id, title } = Astro.props;
+---
+
+<div class="chapter" id={id}>
+  <div class="wrap">
+    <span class="chapter-no">{no}</span>
+    <h2 class="chapter-title">{title}</h2>
+    <p class="chapter-sub"><slot /></p>
+  </div>
+</div>
