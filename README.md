@@ -38,20 +38,27 @@ The geometry is re-read every frame on a six-phase scheduler (`discover → read
 
 ## Quick start
 
-### Web component (any stack, or plain HTML)
+### Vanilla TypeScript — the default door
+
+```ts
+import { FieldField } from '@field-ui/vanilla';
+
+const field = new FieldField({ render: 'dots' });
+field.setFormation('wells');
+field.burst(window.innerWidth / 2, 200);
+// field.scan(); field.destroy();
+```
+
+`@field-ui/vanilla` is the framework-free door and the recommended starting point: a typed `FieldField` class, with `mountField()` and a host-bundled `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
+
+**No build step?** Import straight from a CDN — no install at all:
 
 ```html
 <script type="module">
-  import '@field-ui/elements';
+  import { createField } from 'https://esm.sh/@field-ui/vanilla';
+  createField(document.querySelector('canvas'), { render: 'dots' });
 </script>
-
-<field-root></field-root>
-
-<h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
-<button data-body="repel" data-range="240">Keep clear</button>
 ```
-
-Drop `<field-root>` once (the `<forces-field>` alias still works). It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
 
 ### React
 
@@ -70,18 +77,20 @@ export default function Page() {
 
 Reach for `useFieldField(options)` when you want the field handle instead of the component.
 
-### Vanilla TypeScript
+### Web component (any stack, or plain HTML)
 
-```ts
-import { FieldField } from '@field-ui/vanilla';
+```html
+<script type="module">
+  import '@field-ui/elements';
+</script>
 
-const field = new FieldField({ render: 'dots' });
-field.setFormation('wells');
-field.burst(window.innerWidth / 2, 200);
-// field.scan(); field.destroy();
+<field-root></field-root>
+
+<h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
+<button data-body="repel" data-range="240">Keep clear</button>
 ```
 
-`@field-ui/vanilla` is the framework-free door: a typed `FieldField` class, with `mountField()` and a host-bundled `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
+Drop `<field-root>` once (the `<forces-field>` alias still works). It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
 
 ## Author bodies in markup
 
@@ -177,7 +186,7 @@ adapter lives in `@field-ui/platform`. See [`docs/canonical/field-ui-platform-ar
 
 ## Availability
 
-The packages are published to npm under the `@field-ui` scope, **with provenance** (signed Sigstore/SLSA build attestation). Install what you need — `npm i @field-ui/core`, `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla` — or grab the whole suite in one go with `npm i @field-ui/kit`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
+The packages are published to npm under the `@field-ui` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @field-ui/vanilla`** (the host-bundled default door) or **`@field-ui/react`** for React; `@field-ui/elements` (web component) and `@field-ui/core` (own the canvas) are there when you need them. `@field-ui/kit` is an optional bundle that installs the whole suite at once. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@field-ui/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
 
 ## Documentation
 
