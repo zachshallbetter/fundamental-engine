@@ -1,0 +1,118 @@
+---
+// The interactive natural-field picker + the Body Interaction Model demo, shared by /eli5 and the
+// home (/). Pick a field and the whole persisted <field-root> resolves through it (Field Surfaces:
+// setRender underlay + setOverlay overlay); the body-interaction stage shows the Sink/Accretion
+// case (capture → hold → release). Wired by the page script via initForcePicker() (ForcePicker.ts)
+// and the home runtime's [data-drag] / .meter / [data-agitate] hooks. Styles live in manual.css.
+interface Props {
+  /** Kicker for the picker section (page-relative numbering, e.g. "04 — The translation"). */
+  translationKicker?: string;
+  /** Kicker for the body-interaction section. */
+  bodyKicker?: string;
+}
+const {
+  translationKicker = "04 — The translation",
+  bodyKicker = "05 — Body interaction model",
+} = Astro.props;
+---
+
+<section class="concept">
+  <div class="wrap">
+    <span class="concept-no">{translationKicker}</span>
+    <h2>Every page already has these four. field-ui gives them behavior.</h2>
+    <p class="forces-lead">Pick one, and watch the same page resolve through a different field.</p>
+    <div class="forces" data-forcepick>
+      <ul class="force-list" role="group" aria-label="Pick a natural field to read the page through">
+        <li>
+          <button type="button" class="force-card" aria-pressed="true"
+            data-token="gravity" data-strength="1" data-range="1300" data-render="dots" data-overlay="streamlines"
+            data-caption="translates priority into convergence" data-color="#6366f1" style="--fc:#6366f1;">
+            <span class="fc-head"><i class="fg fg-gravity" aria-hidden="true"></i><span class="fc-real">Gravity</span></span>
+            <span class="fc-feel">importance</span>
+            <span class="fc-say">what matters bends the field</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="force-card" aria-pressed="false"
+            data-token="repel" data-strength="0.9" data-range="1300" data-render="dots" data-overlay="force-vectors"
+            data-caption="translates polarity into signal" data-color="#60a5fa" style="--fc:#60a5fa;">
+            <span class="fc-head"><i class="fg fg-charge" aria-hidden="true"></i><span class="fc-real">Electromagnetic</span></span>
+            <span class="fc-feel">polarity</span>
+            <span class="fc-say">meaning pushes, pulls, and routes signal</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="force-card" aria-pressed="false"
+            data-token="cohesion" data-strength="1.6" data-range="640" data-render="links" data-overlay="off"
+            data-caption="translates belonging into binding" data-color="#34d399" style="--fc:#34d399;">
+            <span class="fc-head"><i class="fg fg-cohesion" aria-hidden="true"></i><span class="fc-real">Strong</span></span>
+            <span class="fc-feel">belonging</span>
+            <span class="fc-say">what belongs together binds</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="force-card" aria-pressed="false"
+            data-token="thermal" data-strength="2" data-range="1300" data-render="trails" data-overlay="streamlines"
+            data-caption="translates change into release" data-color="#e879f9" style="--fc:#e879f9;">
+            <span class="fc-head"><i class="fg fg-morph" aria-hidden="true"></i><span class="fc-real">Weak</span></span>
+            <span class="fc-feel">release</span>
+            <span class="fc-say">what changes loosens and transforms</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+    <p class="force-caption" data-forcecaption aria-live="polite">
+      <b style="color:#6366f1">Gravity</b> translates priority into convergence.
+    </p>
+    <p class="forces-coda">They are not four effects — they are four ways a semantic surface can behave.</p>
+    <!-- The chosen field plays across the entire persisted <field-root>: a viewport-centred,
+         whole-screen-range source the engine reads. aria-hidden — it is the field's expression,
+         not content. Active only while this section is in view (see the orchestrator script). -->
+    <span class="force-source" data-forcesource aria-hidden="true"></span>
+  </div>
+</section>
+
+<!-- Body interaction model — the Body Matter Interaction submodel, shown through its shipped
+     concrete case (Sink / Accretion): a body that captures, holds, and releases matter.
+     Reuses the home runtime's wired hooks: [data-drag] body, .meter (syncs --load), [data-agitate]. -->
+<section class="concept">
+  <div class="wrap concept-grid">
+    <div>
+      <span class="concept-no">{bodyKicker}</span>
+      <h2>A body isn’t only a force. It can be a vessel.</h2>
+      <p>
+        Forces push and pull. But a body can also <strong>take matter in</strong> — it
+        <strong>captures</strong> the dots near it, <strong>holds</strong> them as it fills, and
+        <strong>releases</strong> them all at once when it’s full. Capture, hold, release:
+        nothing conjured, nothing deleted. Matter just changes hands.
+      </p>
+      <p class="note">
+        The shipped case is a <strong>sink</strong>. <code>data-absorb</code> sets how close it
+        grabs from; <code>data-max</code> sets how much it can hold; the engine writes the fill
+        back as <code>--load</code>, so the body can show how full it is. Drag it through the
+        swarm and watch the meter climb — then pop.
+      </p>
+      <div class="formula">
+        <span class="c">capture</span> → <span class="c">hold</span> →
+        <span class="v">release</span> <span class="c">(at data-max)</span>
+      </div>
+    </div>
+    <div class="stage">
+      <span class="stage-label">a vessel — drag it; it fills, then pops</span>
+      <div
+        class="body-core"
+        id="bim-core"
+        data-drag
+        data-body="sink attract"
+        data-absorb="74"
+        data-max="10"
+        data-strength="0.95"
+        data-range="240"
+        style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+      >vessel</div>
+      <div class="meter" style="--cc:#2dd4bf;"><i></i></div>
+      <button class="agitate" type="button" data-agitate="#bim-core">stir the field</button>
+      <span class="hintline">it captures nearby dots, holds them, and releases on supernova</span>
+    </div>
+  </div>
+</section>

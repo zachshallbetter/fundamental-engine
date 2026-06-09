@@ -4,6 +4,7 @@ import SiteNav from "../components/SiteNav.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import HomeHero from "../components/home/HomeHero.astro";
 import ChapterRail from "../components/home/ChapterRail.astro";
+import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS } from "field-ui";
@@ -178,6 +179,13 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
         </div>
       </div>
     </section>
+
+    <!-- Below the substrate: play the four fields live, then meet a body that holds matter.
+         The interactive lead-in to the natural-field translations + the Body Interaction Model. -->
+    <NaturalFieldsSection
+      translationKicker="Live — the four fields"
+      bodyKicker="Live — a body as a vessel"
+    />
 
     <!-- II · Natural-field translations -->
     <div class="chapter" id="ch-natural">
@@ -1110,15 +1118,19 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
 <script>
   import { initHomeRuntime } from "../components/home/HomeRuntime.ts";
   import { initStageFieldOverlay } from "../components/home/StageFieldOverlay.ts";
+  import { initForcePicker } from "../components/home/ForcePicker.ts";
 
   let teardownRuntime: (() => void) | undefined;
   let teardownOverlay: (() => void) | undefined;
+  let teardownForces: (() => void) | undefined;
 
   function teardown() {
     teardownRuntime?.();
     teardownOverlay?.();
+    teardownForces?.();
     teardownRuntime = undefined;
     teardownOverlay = undefined;
+    teardownForces = undefined;
   }
 
   function init() {
@@ -1127,6 +1139,7 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
     if (!document.querySelector(".manual-shell")) return;
     teardownRuntime = initHomeRuntime();
     teardownOverlay = initStageFieldOverlay();
+    teardownForces = initForcePicker(); // NaturalFieldsSection — pick a field, play it on <field-root>
   }
 
   if (document.readyState !== "loading") init();
