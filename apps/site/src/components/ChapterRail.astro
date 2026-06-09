@@ -1,0 +1,28 @@
+---
+// The chapter rail — a sticky table of contents for the manual, shared by / and /eli5. Each page
+// declares its own chapters; active-state is driven by HomeRuntime.ts (the scroll handler toggles
+// `.active` on the matching link).
+interface Chapter {
+  /** target section id, without the leading '#' (e.g. "ch-substrate"). */
+  id: string;
+  /** the roman numeral / index shown in the rail. */
+  no: string;
+  /** the short chapter label. */
+  label: string;
+}
+interface Props {
+  chapters: Chapter[];
+}
+const { chapters } = Astro.props;
+---
+
+<nav class="chapter-rail" aria-label="Chapters">
+  {
+    chapters.map((c) => (
+      <a href={`#${c.id}`} data-ch={c.id}>
+        <span class="cr-no">{c.no}</span>
+        <span class="cr-label">{c.label}</span>
+      </a>
+    ))
+  }
+</nav>

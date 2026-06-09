@@ -1,0 +1,24 @@
+---
+// A design-system button/link. Renders an <a> when `href` is set, otherwise a <button>.
+// Emits the manual.css `.btn` / `.btn.primary` / `.btn.ghost` classes — customize on declaration.
+interface Props {
+  href?: string;
+  variant?: "primary" | "ghost";
+  class?: string;
+  [key: string]: unknown;
+}
+const { href, variant, class: cls, ...rest } = Astro.props;
+const className = ["btn", variant, cls].filter(Boolean).join(" ");
+---
+
+{
+  href ? (
+    <a class={className} href={href} {...rest}>
+      <slot />
+    </a>
+  ) : (
+    <button class={className} type="button" {...rest}>
+      <slot />
+    </button>
+  )
+}

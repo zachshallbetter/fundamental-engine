@@ -1,0 +1,37 @@
+---
+// A concept beat in the manual: a text column and (optionally) a `.stage` demo column. Shared by
+// / and /eli5. The default slot is the prose (kicker / heading / formula / note); the optional
+// `stage` slot is the live demo or SVG diagram. With a stage it lays out as `.concept-grid`;
+// without one it's a single `.wrap` column. Any extra attributes (`data-form`, `data-attention-demo`,
+// `id`, …) and extra classes pass straight through, so the runtime hooks keep working unchanged.
+interface Props {
+  /** mirror layout (image-left). Adds the `.reverse` class. */
+  reverse?: boolean;
+  /** mark the stage `aria-hidden` (decorative diagrams). */
+  stageHidden?: boolean;
+  /** extra classes appended after `concept` (e.g. "big-idea"). */
+  class?: string;
+  [key: string]: unknown;
+}
+const { reverse, stageHidden, class: cls, ...rest } = Astro.props;
+const hasStage = Astro.slots.has("stage");
+---
+
+<section class:list={["concept", { reverse }, cls]} {...rest}>
+  {
+    hasStage ? (
+      <div class="wrap concept-grid">
+        <div>
+          <slot />
+        </div>
+        <div class="stage" aria-hidden={stageHidden ? "true" : undefined}>
+          <slot name="stage" />
+        </div>
+      </div>
+    ) : (
+      <div class="wrap">
+        <slot />
+      </div>
+    )
+  }
+</section>
