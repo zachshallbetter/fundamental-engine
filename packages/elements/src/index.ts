@@ -196,6 +196,14 @@ export class FieldField extends HTMLElementBase {
   clearFocus(): void {
     this.field?.clearFocus();
   }
+  /** live particle-pool size — `store.size` forwarded through the public handle. */
+  particleCount(): number {
+    return this.field?.particleCount() ?? 0;
+  }
+  /** kinetic/thermal/total energy snapshot for the current frame. */
+  energy(): { kinetic: number; thermal: number; total: number; count: number } {
+    return this.field?.energy() ?? { kinetic: 0, thermal: 0, total: 0, count: 0 };
+  }
 
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
