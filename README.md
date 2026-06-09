@@ -167,6 +167,8 @@ Browse and run all 64 at the [recipe gallery](https://field-ui.com/docs/gallery)
 | [`@field-ui/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
 | [`@field-ui/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
 
+Want everything in one install? [`@field-ui/kit`](packages/kit) is a meta-package that depends on all five — `npm i @field-ui/kit`, then import from the specific package you need. (`@field-ui/field-ui` is a thin alias for the kit.)
+
 The four `@forces-ui/*` (and `forces-ui`) packages are thin, removal-gated [compatibility aliases](packages/compat-core).
 
 The dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
