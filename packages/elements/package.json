@@ -28,6 +28,7 @@
   ],
   "files": [
     "dist",
+    "custom-elements.json",
     "README.md",
     "LICENSE"
   ],
@@ -59,5 +60,6 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3"
-  }
+  },
+  "customElements": "custom-elements.json"
 }
