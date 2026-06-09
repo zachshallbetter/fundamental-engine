@@ -10,7 +10,7 @@ export interface OptionRow {
 }
 export const OPTIONS: OptionRow[] = [
   { name: 'host', type: 'FieldHost', def: 'required', desc: 'The environment seam (viewport, scroll, rAF, canvas). createField throws without it — pass browserHost() from @field-ui/platform, or use @field-ui/vanilla / the web component, which wire it for you.' },
-  { name: 'accent', type: 'string', def: "palette's first stop", desc: 'The travelling accent colour (a hex string).' },
+  { name: 'accent', type: 'string', def: "palette's first stop", desc: 'The travelling accent color (a hex string).' },
   { name: 'density', type: 'number', def: '1', desc: 'Particle-count multiplier.' },
   { name: 'waves', type: 'boolean', def: 'true', desc: 'Draw the background Currents (the wave layers).' },
   { name: 'render', type: "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'", def: "'dots'", desc: 'Render mode for the underlay surface (behind content) — the same physics drawn differently.' },
@@ -31,8 +31,8 @@ export interface MethodRow {
 export const HANDLE: MethodRow[] = [
   { sig: 'scan()', desc: 'Re-scan the document for [data-body] bodies after a DOM change.' },
   { sig: 'rescan()', desc: 'Alias of scan().' },
-  { sig: 'setAccent(hex)', desc: 'Recolour the travelling accent.' },
-  { sig: 'setPalette(name | hex[])', desc: 'Swap the accent colour template live.' },
+  { sig: 'setAccent(hex)', desc: 'Recolor the travelling accent.' },
+  { sig: 'setPalette(name | hex[])', desc: 'Swap the accent color template live.' },
   { sig: 'setFormation(name)', desc: 'Switch the global formation.' },
   { sig: 'setAttention(on)', desc: 'Toggle conserved attention live (one finite strength budget).' },
   { sig: 'setCausality(on)', desc: 'Toggle cross-boundary causality live (density spills to neighbours).' },
@@ -58,7 +58,7 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-range', type: 'px', def: '280', desc: 'Influence radius d_max.' },
   { name: 'data-spin', type: 'number', def: '1', desc: 'Sign/strength of rotation — swirl, charge, magnetism, lens.' },
   { name: 'data-angle', type: 'deg', def: '0', desc: 'Heading — stream, jet, gate, shear, align.' },
-  { name: 'data-color', type: 'hex', desc: 'Accent override on engage, and the carried colour for pigment.' },
+  { name: 'data-color', type: 'hex', desc: 'Accent override on engage, and the carried color for pigment.' },
   { name: 'data-when', type: 'condition', def: "''", desc: 'Gate the force on a condition: active, fast, slow, hot, cool, scrolling.' },
   { name: 'data-feedback', type: 'flag', desc: 'Opt into two-way density write-back (the --d custom property).' },
   { name: 'data-shaped', type: 'flag', desc: 'Shaped source — forces reference the nearest point on the element box, so matter shells the shape instead of bunching at its centre.' },

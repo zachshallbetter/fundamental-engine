@@ -5,7 +5,7 @@
    browser, the segmented toggle, the status pill, the readout tabs,
    and the mono measurement readout.
 
-   Tinting hook: `--fc` (the active force colour) falls back to
+   Tinting hook: `--fc` (the active force color) falls back to
    `--accent` (the resting field). Ported from the design bundle's
    ds-components.css + the Lab detector's picker.
    ============================================================ */
@@ -136,7 +136,7 @@
 /* ──────────────────────────────────────────────────────────────────────────
    Instrument controls — the Lab's advanced inputs, drawn properly. Adopted
    from the Forces Design System (ds-inputs / ds-shell). The whole family reads
-   `--cc` (the active force colour) so it re-tints when the force flips.
+   `--cc` (the active force color) so it re-tints when the force flips.
    ────────────────────────────────────────────────────────────────────────── */
 .ds-ctrls { --cc: var(--accent); display: grid; gap: 1.4rem; }
 .ctrl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.7rem; }

@@ -454,7 +454,7 @@
 .code-tabs .ct-body[hidden] {
   display: none;
 }
-/* Shiki sets its own bg + inline span colours; strip the bg so the panel shows
+/* Shiki sets its own bg + inline span colors; strip the bg so the panel shows
    through and the block matches the site's --bg-canvas. */
 .code-tabs pre.astro-code,
 .code-tabs pre.astro-code code {

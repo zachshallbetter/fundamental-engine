@@ -3,7 +3,7 @@
    Mono labels, hairlines, force-tinted glow. The cross-surface
    atoms (force browser, seg-toggle, verdict, tabs, readout) live
    in instrument.css; this file is the Lab's own chrome.
-   Tinting hook: --fc (the active force colour), set on `.lab`.
+   Tinting hook: --fc (the active force color), set on `.lab`.
    ============================================================ */
 .lab { position: relative; z-index: 2; width: 100%; max-width: 1500px; margin: 0 auto; padding: 32px 28px 56px; --fc: var(--accent); }
 body:has(.lab) { align-items: flex-start; }

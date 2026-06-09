@@ -2,7 +2,7 @@
  * Force glyphs. Two icon families:
  *  - .fg  : the 34 forces — line-icons on a 24×24 grid, adopted from the Forces
  *           Design System (lab-icons.js). Each is an SVG painted as a CSS mask;
- *           the force colour fills the strokes via --fc (background-color).
+ *           the force color fills the strokes via --fc (background-color).
  *  - .fgp : the cosmic presets — CSS-shape composites (no bundle icon exists), in
  *           the original idiom.
  *

@@ -437,7 +437,7 @@ body:has(.ev-page) {
   color: var(--text-3);
 }
 
-/* ── Colour lens — a second channel: --cat encodes the chosen aspect (field / recency / trust) ─── */
+/* ── Color lens — a second channel: --cat encodes the chosen aspect (field / recency / trust) ─── */
 .ev-ctl-hint {
   display: flex;
   flex-wrap: wrap;
@@ -454,7 +454,7 @@ body:has(.ev-page) {
   gap: 0.4rem;
   min-width: 0;
 }
-/* the lens marker — a small rounded-square shape coloured by the lens (--cat). */
+/* the lens marker — a small rounded-square shape colored by the lens (--cat). */
 .ev-lens {
   width: 9px;
   height: 9px;
@@ -470,13 +470,13 @@ body:has(.ev-page) {
   white-space: nowrap;
   color: color-mix(in srgb, var(--cat) 50%, var(--text-3));
 }
-/* the discipline name only reads on the field lens; elsewhere the colour speaks for itself. */
+/* the discipline name only reads on the field lens; elsewhere the color speaks for itself. */
 .ev-page:not([data-lens="field"]) .ev-field-name,
 .ev-page:not([data-lens="field"]) .ev-meta-sep {
   display: none;
 }
 
-/* ── Marker SHAPE encodes study type — a third channel, independent of the colour lens ─────────── */
+/* ── Marker SHAPE encodes study type — a third channel, independent of the color lens ─────────── */
 .ev-finding[data-type="article"] .ev-lens {
   border-radius: 50%; /* primary study → ● */
 }
@@ -502,4 +502,85 @@ body:has(.ev-page) {
 .ev-mk-review {
   border-radius: 2px;
   transform: rotate(45deg);
+}
+
+/* ── How it's built ──────────────────────────────────────────────────────── */
+.ev-how {
+  margin: 4rem 0 0;
+  padding: 2.5rem 0 0;
+  border-top: 1px solid var(--line);
+}
+.ev-how h2 {
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.7rem;
+}
+.ev-how-lede {
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--text-2);
+  max-width: 85%;
+  margin: 0 0 2rem;
+}
+.ev-how-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.ev-how-col { display: flex; flex-direction: column; gap: 0.7rem; }
+.ev-how-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4, #6b7280);
+  margin: 0;
+}
+.ev-code {
+  background: color-mix(in srgb, var(--text, #fff) 4%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  margin: 0;
+  color: var(--text-2);
+}
+.ev-how-attrs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--text-3);
+  line-height: 1.45;
+}
+.ev-how-attrs code { color: var(--accent); font-size: 0.78rem; }
+.ev-how-note {
+  font-size: 0.84rem;
+  color: var(--text-3);
+  line-height: 1.5;
+  margin: 0;
+}
+.ev-how-ctas { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.ev-how-link {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  border-radius: 999px;
+  padding: 0.22rem 0.65rem;
+}
+.ev-how-link:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.ev-how-link--dim { color: var(--text-3); border-color: var(--line); }
+.ev-how-link--dim:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text-2); }
+@media (max-width: 840px) {
+  .ev-how-cols { grid-template-columns: 1fr; }
+  .ev-how-lede { max-width: 100%; }
 }

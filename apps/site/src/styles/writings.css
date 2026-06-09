@@ -95,7 +95,7 @@
   border-radius: 6px; padding: 0.08em 0.36em;
 }
 
-/* code blocks — Shiki (one-dark-pro) brings the colours; we frame them */
+/* code blocks — Shiki (one-dark-pro) brings the colors; we frame them */
 .writing-body pre.astro-code,
 .writing-body pre:not(.mermaid) {
   margin: 1.2rem 0; padding: 1rem 1.15rem; border-radius: 12px;
