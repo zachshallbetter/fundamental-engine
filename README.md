@@ -177,7 +177,7 @@ adapter lives in `@field-ui/platform`. See [`docs/canonical/field-ui-platform-ar
 
 ## Availability
 
-The five packages are published to npm under the `@field-ui` scope — install what you need (`npm i @field-ui/core`, `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`). Releases are cut as git tags (see [`RELEASING.md`](RELEASING.md)); the npm publish steps and order are in [`PUBLISHING.md`](PUBLISHING.md). The public surface shown above is frozen for `0.x`.
+The packages are published to npm under the `@field-ui` scope, **with provenance** (signed Sigstore/SLSA build attestation). Install what you need — `npm i @field-ui/core`, `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla` — or grab the whole suite in one go with `npm i @field-ui/kit`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
 
 ## Documentation
 
