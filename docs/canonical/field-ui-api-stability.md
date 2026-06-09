@@ -21,7 +21,9 @@ of the `0.x` line. The freeze is mechanically enforced — `pnpm check:api` fail
 symbol is removed, renamed, moved between packages, or changes kind.
 
 > Package npm names: core is published as **`@field-ui/core`**; the rest are
-> `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`.
+> `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`. The umbrella
+> **`@field-ui/kit`** installs the whole suite in one dependency (`@field-ui/field-ui` is a thin alias
+> for it); these are convenience meta-packages, not part of the frozen API surface.
 
 ## The stable surface (`0.x`)
 

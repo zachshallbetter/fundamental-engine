@@ -35,6 +35,10 @@ field-ui
 @field-ui/vanilla
   the FieldField class for plain TypeScript apps.
 
+@field-ui/kit
+  umbrella meta-package — installs the whole suite (core + platform + the three adapters) in one
+  dependency. No code of its own; import from the specific package. @field-ui/field-ui is a thin alias.
+
 apps/site · lab · docs
   product surfaces, executable documentation, diagnostics, examples, and previews.
 ```
