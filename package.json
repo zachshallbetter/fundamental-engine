@@ -13,9 +13,14 @@
     "check:readme": "node scripts/check-readme.mjs",
     "gen:recipes": "node --experimental-strip-types scripts/export-recipes.mjs",
     "check:recipes": "node --experimental-strip-types scripts/export-recipes.mjs && git diff --exit-code data/recipes.json",
+    "gen:cem": "pnpm --filter @field-ui/elements exec cem analyze",
+    "check:cem": "pnpm gen:cem && git diff --exit-code packages/elements/custom-elements.json",
     "dev": "pnpm --filter @field-ui/site dev",
     "build:site": "pnpm --filter @field-ui/site build",
     "docs:dev": "pnpm --filter @field-ui/docs dev",
     "docs:build": "pnpm --filter @field-ui/docs build"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.11.0"
   }
 }

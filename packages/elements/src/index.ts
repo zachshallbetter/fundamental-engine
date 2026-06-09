@@ -20,6 +20,19 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  *
  * Plain `HTMLElement` (the field is just a canvas — no templating). Lit earns its
  * place when there's UI to template, e.g. the Lab controls (§14).
+ *
+ * @summary The page-singleton reciprocal field — a full-viewport canvas that turns
+ * `[data-body]` / `[data-preset]` elements into bodies. Registered as `<field-root>`
+ * (canonical), `<field-field>`, and `<forces-field>` (deprecated alias).
+ * @attr {string} accent - Accent colour (hex) the field draws particles and overlay in.
+ * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
+ * @attr {number} waves - Intensity of the resting wave currents (the ambient drift).
+ * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`.
+ * @attr {string} overlay - Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.
+ * @attr {string} palette - Named colour palette for the field.
+ * @attr {number} mass - Global mass scaling applied to bodies.
+ * @attr {boolean} attention - Enables the conserved-attention behaviour (one finite budget, redistributed).
+ * @attr {boolean} causality - Enables the causality demo behaviour.
  */
 export class FieldField extends HTMLElementBase {
   static readonly observedAttributes = [
