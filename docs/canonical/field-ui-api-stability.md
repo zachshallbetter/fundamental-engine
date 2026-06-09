@@ -72,7 +72,10 @@ of the contract until they are added to the table above.
 
 | Area | Status | Notes |
 | --- | --- | --- |
+| `FieldHandle` (full surface) | partial | The handle shape is not frozen as a type. Entry points that return it (`createField`, `createBrowserField`) are frozen, but new methods may be added in any patch. |
+| `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@field-ui/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
 | Advanced diagnostics | partial | `DIAGNOSTICS` / `DIAGNOSTIC_LENS` / `draw*` primitives ship but are unfrozen. |
+| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@field-ui/core`; `FieldPerf` (frame-duration split, adaptive governor) is designed but not yet implemented. |
 | Visual recipe editor | absent | No editor UI; the authoring toolkit is the substrate to build one on. |
 | GPU / WebGPU backend | planned | A named direction; the six shipped render modes are CPU/canvas. |
 | Multi-root bridge | absent | No API for coordinating multiple `<field-root>` instances yet. |

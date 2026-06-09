@@ -135,6 +135,30 @@ export function Background() {
   </section>
 
   <section class="docs-sec">
+    <h2>Diagnostics</h2>
+    <p>
+      Two read-only accessors give external tools — debug overlays, the DataConsole, Inspector panels
+      — access to engine state that is otherwise private to the engine:
+    </p>
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>particleCount() → number</code></dt>
+        <dd class="d">Live size of the particle pool (<code>store.size</code> forwarded). Use for budget monitors that need the count without walking the array (which <code>inspectBudget</code> does internally).</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>energy() → &#123; kinetic, thermal, total, count &#125;</code></dt>
+        <dd class="d">Per-frame energy snapshot. Forwards to <code>energyReport(store.particles)</code> — the function exists in <code>@field-ui/core/diagnostics/energy</code>; this accessor exposes it without requiring a reference to the internal particle array.</dd>
+      </div>
+    </dl>
+    <div class="callout callout--warn">
+      <b>Shipped-but-unfrozen.</b> Both accessors ship today and are safe to use. They are not part
+      of the frozen <code>0.x</code> contract — their signatures may refine before 1.0 as the
+      <code>FieldPerf</code> surface is designed. See the <a href="/docs/performance">performance
+      docs</a> for the full observability gap analysis.
+    </div>
+  </section>
+
+  <section class="docs-sec">
     <h2>A worked example</h2>
     <p>
       Drive the field from your own code — recolour it, reshape it, thread engaged elements
