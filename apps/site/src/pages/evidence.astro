@@ -6,20 +6,18 @@ import evidence from "../data/evidence.json";
 import "../styles/evidence.css";
 
 // The Evidence Field — field-ui as an invisible measurement layer over real research data.
-// No particle swarm: the trust shows in the type. Each finding is a real OpenAlex work; its
-// "trust" is a log-normalized citation count (citations are power-law), written into --trust and
-// (live) into --field-* by a scoped, render-without-particles field. referenced_works inside the
-// set is the support graph — the threads.
+// No particle swarm: the trust shows in the type. Each finding is a real OpenAlex work. The
+// controls (Field on/off, Weight by) make the transformation legible — off, the same data is a
+// plain list; change the weighting and the field re-settles. data-* in, --field-* out.
 const slugify = (q: string) => q.replace(/[^a-z0-9]+/gi, "-").toLowerCase().replace(/^-|-$/g, "");
 const topics = evidence.topics.map((t) => {
-  const max = Math.max(...t.works.map((w) => w.citedBy), 1);
-  const lmax = Math.log(max + 1);
+  const lmax = Math.log(Math.max(...t.works.map((w) => w.citedBy), 1) + 1);
   const ids = new Set(t.works.map((w) => w.id));
   const works = t.works
     .map((w) => ({
       ...w,
-      trust: Math.log(w.citedBy + 1) / lmax, // 0..1 consensus proxy
-      supports: w.refs.filter((r) => ids.has(r)), // intra-set citation edges
+      trust: Math.log(w.citedBy + 1) / lmax, // 0..1 consensus proxy (the default signal)
+      supports: w.refs.filter((r) => ids.has(r)), // intra-set citation edges → threads
     }))
     .sort((a, b) => b.trust - a.trust);
   return { ...t, slug: slugify(t.question), works };
@@ -31,21 +29,51 @@ const linkFor = (w: { doi: string | null; id: string }) =>
 
 <Base
   title="field-ui — The Evidence Field"
-  description="An AI-style research answer where you feel which findings the field actually stands on. field-ui runs as an invisible measurement layer over real OpenAlex citation data — no particle swarm; consensus shows up as weight in the type, and the citation graph as threads. data-* in, --field-* out."
+  description="The same research, run as a field. field-ui measures real OpenAlex citation data and writes trust back into the type — heavier, brighter, more anchored — with no particle swarm. Toggle the field off and it collapses to a plain list; that gap is what field-ui adds. data-* in, --field-* out."
 >
   <SiteNav current="evidence" />
-  <main class="ev-page">
+  <main class="ev-page" data-field="on" data-weight="consensus">
     <header class="ev-hero">
       <p class="ev-kicker">field-ui · the evidence field</p>
-      <h1>You can <span class="accent">feel</span> which findings to trust.</h1>
+      <h1>Trust you can <span class="accent">feel</span>, not read.</h1>
       <p class="ev-lede">
-        Real research from <a href="https://openalex.org" rel="noopener">OpenAlex</a> — 250M open
-        works — read as a field. Each finding is a body; how much the literature leans on it
-        (citations) is written back as weight in the type. There is <strong>no particle swarm here</strong>:
-        the field is invisible, and trust is something you read, not a chart.
+        This is not a table sorted by a number. It's real research from
+        <a href="https://openalex.org" rel="noopener">OpenAlex</a> run as a <strong>field</strong>:
+        each finding is a body, and how much the literature leans on it bends the type — heavier,
+        brighter, more anchored. The field is <strong>invisible</strong> (no particle swarm); only
+        its effect shows. <strong>Switch it off</strong> and the same data flattens into a plain
+        list — that gap is exactly what field-ui adds.
       </p>
-      <p class="ev-contract"><code>citations → --field-confidence → weight, ink, anchor</code></p>
     </header>
+
+    <!-- Controls — make the transformation legible. -->
+    <div class="ev-controls" role="group" aria-label="Field controls">
+      <div class="ev-ctl">
+        <span class="ev-ctl-l">Field</span>
+        <button type="button" class="ev-switch" data-ev-field aria-pressed="true">
+          <span class="ev-switch-dot" aria-hidden="true"></span>
+          <span class="ev-switch-txt">on</span>
+        </button>
+      </div>
+      <div class="ev-ctl">
+        <span class="ev-ctl-l">Weight by</span>
+        <div class="ev-seg" role="group" aria-label="Weighting signal">
+          <button type="button" data-ev-weight="consensus" aria-pressed="true">consensus</button>
+          <button type="button" data-ev-weight="recency" aria-pressed="false">recency</button>
+          <button type="button" data-ev-weight="balanced" aria-pressed="false">balanced</button>
+        </div>
+      </div>
+      <p class="ev-ctl-hint" data-ev-hint>
+        weighted by <b>citations</b> — how much the field leans on each work
+      </p>
+    </div>
+
+    <!-- Legend — reading the field. -->
+    <ul class="ev-legend" aria-label="How to read the field">
+      <li><span class="ev-k ev-k-weight">Aa</span> weight &amp; ink = the signal</li>
+      <li><span class="ev-k ev-k-anchor"></span> the left edge = how settled</li>
+      <li><span class="ev-k ev-k-thread"></span> hover → threads to the work it builds on</li>
+    </ul>
 
     <nav class="ev-tabs" data-ev-tabs aria-label="Questions">
       {
@@ -61,9 +89,9 @@ const linkFor = (w: { doi: string | null; id: string }) =>
       topics.map((t, ti) => (
         <section class="ev-topic" data-ev-topic={t.slug} hidden={ti !== 0}>
           <p class="ev-answer">
-            <b>{t.works.length}</b> works address <em>"{t.question}"</em> — sorted by how much the
-            field stands on them. The heaviest are near-consensus; the faint ones are still finding
-            their footing. Hover a finding to light the work it builds on.
+            <b>{t.works.length}</b> works address <em>"{t.question}"</em>. With the field on, the
+            heaviest are near-consensus and the faint ones are still finding their footing; hover one
+            to light the work it builds on. Change the weighting and watch them re-settle.
           </p>
           <ol class="ev-list" data-ev-list>
             {t.works.map((w, i) => (
@@ -72,6 +100,8 @@ const linkFor = (w: { doi: string | null; id: string }) =>
                 id={`${t.slug}--${w.id}`}
                 data-body="attract"
                 data-feedback
+                data-cites={w.citedBy}
+                data-year={w.year}
                 data-strength={(0.4 + w.trust * 1.6).toFixed(2)}
                 data-range="200"
                 data-supports={w.supports.map((s) => `${t.slug}--${s}`).join(" ")}
@@ -83,13 +113,13 @@ const linkFor = (w: { doi: string | null; id: string }) =>
                     {w.title}
                   </a>
                   <span class="ev-meta">
-                    {authorLine(w.authors)} · {w.year}
+                    {authorLine(w.authors)} · <span class="ev-year">{w.year}</span>
                     {w.oa && <span class="ev-oa">open access</span>}
                   </span>
                 </div>
                 <div class="ev-trust" aria-label={`${w.citedBy} citations`}>
                   <span class="ev-cites">{w.citedBy.toLocaleString()}</span>
-                  <span class="ev-cites-l">citations</span>
+                  <span class="ev-cites-l" data-ev-unit>citations</span>
                   <span class="ev-bar"><i style={`width:${Math.round(w.trust * 100)}%`} /></span>
                 </div>
               </li>
@@ -102,8 +132,9 @@ const linkFor = (w: { doi: string | null; id: string }) =>
     <footer class="ev-fineprint">
       <p>
         Trust here is <strong>consensus, not correctness</strong> — citation count says how much the
-        field has engaged a work, not whether it's right. That honesty is the point: the field makes
-        the signal legible without pretending it's a verdict. Data: OpenAlex (CC0), snapshotted.
+        field has engaged a work, not whether it's right. Making that signal legible (without faking a
+        verdict) is the point. Data: <a href="https://openalex.org" rel="noopener">OpenAlex</a> (CC0),
+        snapshotted.
       </p>
       <p class="ev-built">
         Built with field-ui — <code>data-*</code> in, <code>--field-*</code> out — running invisibly
