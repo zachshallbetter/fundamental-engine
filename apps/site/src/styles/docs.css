@@ -245,7 +245,7 @@
 }
 .docs-hero .lede {
   margin: 1.1rem 0 0;
-  max-width: 60ch;
+  max-width: 85%;
   font-size: 1.08rem;
   line-height: 1.6;
   color: var(--text-2);
@@ -275,7 +275,7 @@
   font-size: 1.02rem;
   line-height: 1.65;
   color: var(--text-2);
-  max-width: 64ch;
+  max-width: 85%;
   margin: 0.6rem 0;
 }
 .docs-sec p code,
