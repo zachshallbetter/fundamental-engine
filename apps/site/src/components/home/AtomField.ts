@@ -26,7 +26,8 @@ function renderAtom(a: Atom): string {
     .join("");
   return (
     `<span class="at-head"><span class="at-kind" style="--ac:${a.color ?? "#4da3ff"}">${esc(a.kind)}</span>` +
-    `<span class="at-label">${esc(a.label)}</span></span>${rows}`
+    `<span class="at-label">${esc(a.label)}</span>` +
+    `<button class="at-close" aria-label="Close" type="button">×</button></span>${rows}`
   );
 }
 
@@ -80,10 +81,11 @@ export function initAtomField(): () => void {
     }, 150);
   };
 
-  // click: open the focused dot's card (pinned). A click elsewhere closes it.
+  // click: open the focused dot's card (pinned). A click elsewhere or the × button closes it.
   const onClick = (e: PointerEvent): void => {
     if (open) {
-      if (!card.contains(e.target as Node)) close();
+      const t = e.target as Element;
+      if (t.closest(".at-close") || !card.contains(t)) close();
       return;
     }
     if (!focused) return;
