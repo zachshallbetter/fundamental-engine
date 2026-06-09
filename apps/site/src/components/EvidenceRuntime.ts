@@ -21,8 +21,12 @@ function centerIn(el: HTMLElement, host: HTMLElement) {
   return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height / 2 };
 }
 
-const INITIAL_COUNT = 8;
+// ── reveal pacing ──────────────────────────────────────────────────────────
 const BATCH_SIZE = 4;
+const SCROLL_V_MAX = 2.0; // px/frame — above this the user is scanning, not reading
+const DWELL_MS = 350; // sustained reading-pace time near the sentinel before a batch reveals
+const LOAD_REVEAL = 0.5; // a sink charged past this short-circuits the dwell (field on only)
+const BATCH_COOLDOWN_MS = 600; // floor between batches so successive reveals settle, not dump
 
 function initEvidence(): () => void {
   const page = document.querySelector<HTMLElement>(".ev-page");
@@ -83,6 +87,9 @@ function initEvidence(): () => void {
     );
     const firstTop = new Map(findings.map((f) => [f, f.getBoundingClientRect().top]));
     ordered.forEach((f) => list.appendChild(f));
+    // the sink sentinel stays the list's last child (re-sorting appends findings after it)
+    const sentinel = list.querySelector("[data-ev-sentinel]");
+    if (sentinel) list.appendChild(sentinel);
     ordered.forEach((f, i) => {
       const rank = f.querySelector(".ev-rank");
       if (rank) rank.textContent = String(i + 1).padStart(2, "0");
@@ -131,10 +138,12 @@ function initEvidence(): () => void {
       const base = recipeById("evidence-field");
       if (base) {
         const recipe = { ...base, render: [] as never[] };
-        activeField = applyRecipe(list, recipe, {
-          bodies: [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden),
-          annotateBodies: false,
-        });
+        // the sink sentinel joins the field so particles drifting past the list's end accrete
+        // into it — the engine writes the fill back as --load, which paces the reveal.
+        const sentinel = list.querySelector<HTMLElement>("[data-ev-sentinel]");
+        const bodies = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
+        if (sentinel) bodies.push(sentinel);
+        activeField = applyRecipe(list, recipe, { bodies, annotateBodies: false });
       }
     } catch {
       /* the static --trust layer stands on its own */
@@ -184,13 +193,15 @@ function initEvidence(): () => void {
   };
 
   // ── scroll-gated accretion reveal ───────────────────────────────────────
+  // Owns its own AbortController: revealBatch's cleanup re-wires threads (which churns
+  // topicAc), so the reveal loop must NOT share that lifetime or it dies after one batch.
+  let revealAc: AbortController | null = null;
+
+  const hiddenDeferred = (topic: HTMLElement): HTMLElement[] =>
+    [...topic.querySelectorAll<HTMLElement>("[data-ev-deferred]")].filter((f) => f.hidden);
+
   const revealBatch = (topic: HTMLElement): boolean => {
-    const list = topic.querySelector<HTMLElement>("[data-ev-list]");
-    if (!list) return false;
-    const hidden = [...list.querySelectorAll<HTMLElement>("[data-ev-deferred]")].filter(
-      (f) => f.hidden,
-    );
-    const batch = hidden.slice(0, BATCH_SIZE);
+    const batch = hiddenDeferred(topic).slice(0, BATCH_SIZE);
     if (!batch.length) return false;
     batch.forEach((f) => {
       f.hidden = false;
@@ -198,37 +209,73 @@ function initEvidence(): () => void {
     });
     const cleanup = (): void => {
       batch.forEach((f) => f.removeAttribute("data-ev-new"));
+      reweight(topic); // fold the new items into the current weighting + rank numbers
       wireThreads(topic);
-      if (fieldOn) runField(topic);
+      runField(topic); // rescan: the new bodies join the scoped field (no-op when field is off)
     };
-    if (reduceMotion()) {
-      cleanup();
-    } else {
-      setTimeout(cleanup, 500);
-    }
+    if (reduceMotion()) cleanup();
+    else setTimeout(cleanup, 500);
     return true;
   };
 
+  // IO only marks the sentinel visible/not; a rAF loop does the gating, because IO is
+  // edge-triggered — a "too fast" rejection or a same-position batch would otherwise never
+  // re-fire. The loop reveals when the user has been at reading pace near the sentinel for
+  // DWELL_MS (or the sink's --load is charged — the field's own pacing signal, when it's on),
+  // with a cooldown between batches. Stops itself when nothing is left to reveal.
   const wireScrollReveal = (topic: HTMLElement): void => {
+    revealAc?.abort();
+    revealAc = null;
     const sentinel = topic.querySelector<HTMLElement>("[data-ev-sentinel]");
-    if (!sentinel) return;
+    if (!sentinel || !hiddenDeferred(topic).length) return;
+    const ctl = new AbortController();
+    revealAc = ctl;
+
+    let intersecting = false;
+    let slowSince = 0;
+    let lastReveal = 0;
+    let raf = 0;
+
     const io = new IntersectionObserver(
       (entries) => {
-        if (!entries[0]?.isIntersecting) return;
-        const sv = parseFloat(
-          getComputedStyle(document.documentElement).getPropertyValue("--field-scroll-v") || "0",
-        );
-        if (sv >= 2.0) return;
-        const revealed = revealBatch(topic);
-        const stillDeferred = [...topic.querySelectorAll("[data-ev-deferred]")].some(
-          (f) => (f as HTMLElement).hidden,
-        );
-        if (!stillDeferred || !revealed) io.disconnect();
+        intersecting = entries.some((e) => e.isIntersecting);
+        if (!intersecting) slowSince = 0;
       },
-      { threshold: 0, rootMargin: "0px 0px 120px 0px" },
+      { threshold: 0, rootMargin: "0px 0px 160px 0px" },
     );
     io.observe(sentinel);
-    topicAc!.signal.addEventListener("abort", () => io.disconnect());
+    ctl.signal.addEventListener("abort", () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    });
+
+    const tick = (t: number): void => {
+      if (ctl.signal.aborted) return;
+      if (intersecting) {
+        // both vars are inline styles (written by the platform / engine), so reading
+        // el.style avoids a forced style recalc that getComputedStyle would cost per frame.
+        const sv =
+          parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
+        if (sv < SCROLL_V_MAX) {
+          if (!slowSince) slowSince = t;
+          const load = parseFloat(sentinel.style.getPropertyValue("--load")) || 0;
+          const ready = t - slowSince >= DWELL_MS || load >= LOAD_REVEAL;
+          if (ready && t - lastReveal >= BATCH_COOLDOWN_MS) {
+            lastReveal = t;
+            const revealed = revealBatch(topic);
+            if (!revealed || !hiddenDeferred(topic).length) {
+              ctl.abort();
+              if (revealAc === ctl) revealAc = null;
+              return;
+            }
+          }
+        } else {
+          slowSince = 0;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
   };
 
   const wireTopic = (topic?: HTMLElement): void => {
@@ -306,9 +353,28 @@ function initEvidence(): () => void {
   );
 
   wireTopic(activeTopic());
+
+  // Deep links into the deferred range: the browser's load-time scroll found a hidden target.
+  // Reveal the target's whole topic (no batch animation — the user asked for that spot),
+  // activate its tab if needed, and re-scroll.
+  const hashId = location.hash ? decodeURIComponent(location.hash.slice(1)) : "";
+  const hashTarget = hashId ? document.getElementById(hashId) : null;
+  const hashTopic = hashTarget?.closest<HTMLElement>("[data-ev-topic]");
+  if (hashTarget && hashTopic && hashTarget.hasAttribute("data-ev-deferred")) {
+    hashTopic.querySelectorAll<HTMLElement>("[data-ev-deferred]").forEach((f) => (f.hidden = false));
+    if (hashTopic.hidden) {
+      const slug = hashTopic.dataset.evTopic!;
+      topics.forEach((t) => (t.hidden = t.dataset.evTopic !== slug));
+      tabs.forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.evTab === slug)));
+    }
+    wireTopic(hashTopic);
+    hashTarget.scrollIntoView();
+  }
+
   return () => {
     ac.abort();
     topicAc?.abort();
+    revealAc?.abort();
     activeField?.destroy();
   };
 }

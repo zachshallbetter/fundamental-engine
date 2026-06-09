@@ -111,14 +111,7 @@ const linkFor = (w: { doi: string | null; id: string }) =>
     <nav class="ev-tabs" data-ev-tabs aria-label="Questions">
       {
         topics.map((t, i) => (
-          <button
-            type="button"
-            data-ev-tab={t.slug}
-            aria-pressed={i === 0 ? "true" : "false"}
-            data-body="attract"
-            data-strength="0.15"
-            data-feedback
-          >
+          <button type="button" data-ev-tab={t.slug} aria-pressed={i === 0 ? "true" : "false"}>
             {t.question}
           </button>
         ))
@@ -149,8 +142,8 @@ const linkFor = (w: { doi: string | null; id: string }) =>
                 data-range="200"
                 data-supports={w.supports.map((s) => `${t.slug}--${s}`).join(" ")}
                 style={`--trust:${w.trust.toFixed(3)}; --cat:${w.cat};`}
-                hidden={ti === 0 && i >= 8}
-                data-ev-deferred={ti === 0 && i >= 8 ? "" : undefined}
+                hidden={i >= 8}
+                data-ev-deferred={i >= 8 ? "" : undefined}
               >
                 <span class="ev-rank">{String(i + 1).padStart(2, "0")}</span>
                 <div class="ev-body">
@@ -174,20 +167,29 @@ const linkFor = (w: { doi: string | null; id: string }) =>
                 </div>
               </li>
             ))}
+            {t.works.length > 8 && (
+              <li
+                class="ev-sentinel"
+                data-ev-sentinel
+                data-body="sink"
+                data-absorb
+                data-max="8"
+                data-feedback
+                aria-hidden="true"
+              ></li>
+            )}
           </ol>
-          {ti === 0 && (
-            <div
-              class="ev-sentinel"
-              data-ev-sentinel
-              data-body="sink"
-              data-absorb
-              data-max="8"
-              aria-hidden="true"
-            ></div>
-          )}
         </section>
       ))
     }
+    <!-- without JS the deferred findings can never be revealed — show them all. -->
+    <noscript>
+      <style is:inline>
+        .ev-finding[data-ev-deferred] {
+          display: grid;
+        }
+      </style>
+    </noscript>
 
     <!-- How it's built — the data-* pattern made concrete. -->
     <section class="ev-how" aria-labelledby="ev-how-h">

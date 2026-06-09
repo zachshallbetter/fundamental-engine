@@ -139,6 +139,11 @@ body:has(.ev-page) {
 }
 
 /* a finding: trust (--trust, 0..1) is felt — weight, ink, and a left anchor. */
+/* display:grid below would silently defeat the UA's [hidden]{display:none} (author origin
+   wins), so the deferred-reveal hidden state must be restated explicitly. */
+.ev-finding[hidden] {
+  display: none;
+}
 .ev-finding {
   --w: var(--trust, 0.5);
   position: relative;
@@ -587,12 +592,15 @@ body:has(.ev-page) {
 
 /* ── accretion: scroll-gated progressive reveal ───────────────────────────── */
 
-/* The sentinel sits below the initially-visible findings; IO watches it. */
+/* The sentinel is the list's last item and a real sink body in the scoped field
+   (data-body="sink" data-absorb data-feedback): particles drifting past accrete into
+   it and the engine writes --load back. The runtime reads --load + --field-scroll-v
+   to pace the reveal. visibility:hidden keeps its geometry measurable. */
 .ev-sentinel {
-  height: 1px;
+  list-style: none;
+  height: 1.4rem;
   pointer-events: none;
   visibility: hidden;
-  margin-top: 0.5rem;
 }
 
 /* Entry animation for batch-revealed findings. */
@@ -607,6 +615,8 @@ body:has(.ev-page) {
   }
 }
 
-.ev-finding[data-ev-new] {
-  animation: ev-new-settle 0.38s ease-out both;
+@media (prefers-reduced-motion: no-preference) {
+  .ev-finding[data-ev-new] {
+    animation: ev-new-settle 0.38s ease-out both;
+  }
 }
