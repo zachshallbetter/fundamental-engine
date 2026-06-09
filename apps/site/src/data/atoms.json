@@ -588,11 +588,11 @@
       "data": {
         "token": "pigment",
         "family": "extended",
-        "formula": "on overlap: c_p ← mix(c_p, tint, rate);  the colour advects with matter",
-        "desc": "conserved colour transport — matter takes on and carries a tint",
-        "summary": "Carries colour through the medium — a dye that mixes.",
+        "formula": "on overlap: c_p ← mix(c_p, tint, rate);  the color advects with matter",
+        "desc": "conserved color transport — matter takes on and carries a tint",
+        "summary": "Carries color through the medium — a dye that mixes.",
         "effect": "Tints particles as they pass.",
-        "example": "A section that stains passing matter its own colour, carried away.",
+        "example": "A section that stains passing matter its own color, carried away.",
         "symbol": "Pm"
       }
     },

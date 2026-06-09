@@ -1113,7 +1113,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Field Surfaces — draw a structure/vector visualization of the LIVE field onto the overlay surface
   // (in front of content). Reuses the underlay's samplers: forceAt (the net force field) for
   // `streamlines`/`force-vectors`, netField (structure-only — dipoles/monopoles) for `field-lines`.
-  // Tinted with the travelling accent, so setAccent recolours the overlay too.
+  // Tinted with the travelling accent, so setAccent recolors the overlay too.
   function renderOverlay(octx: CanvasRenderingContext2D, mode: OverlayMode): void {
     octx.clearRect(0, 0, W, H);
     if (mode === 'off' || W === 0 || H === 0) return;

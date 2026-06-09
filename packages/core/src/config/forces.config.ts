@@ -3,7 +3,7 @@
  *
  * Lifted from the prototype's `ds-data.js` (`DS_FORCES` / `DS_FORMATIONS` /
  * `DS_CONDITIONS`), which the design treats as the authority. Force identity
- * **colours are canonical**; disciplines inherit their mapped force's colour.
+ * **colors are canonical**; disciplines inherit their mapped force's color.
  * See `docs/engine-reference/forces-system.md` §6 (forces), §7 (formations), §5 (conditions),
  * §15 (disciplines).
  *
@@ -28,7 +28,7 @@ export type ForceId =
 export interface ForceDef {
   id: ForceId;
   name: string;
-  /** canonical identity colour (the authority). */
+  /** canonical identity color (the authority). */
   color: string;
   /** plain-language gloss. */
   does: string;

@@ -104,7 +104,7 @@ three — they are kept here, marked **Done**, as the record of what shipped:
 - No `screen` modifier.
 - Modifier order relies on token-iteration order, not a formalized contract.
 - No entropy or coherence metrics (the `--coherence` CSS token is a palette
-  colour, unrelated to a measured metric).
+  color, unrelated to a measured metric).
 - No `phase` particle attribute (only "phase change" in the `crystallize` comment).
 - No transformation primitives: `warp`, `wormhole`, `fuse`, `decay`, `fission`.
 

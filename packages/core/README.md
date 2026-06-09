@@ -80,8 +80,8 @@ host throws a clear error pointing you to those doors.
 
 ```ts
 field.scan();                   // re-scan [data-body] after a DOM change
-field.setAccent('#a78bfa');     // recolour the travelling accent
-field.setPalette('heatmap');    // swap the accent colour template
+field.setAccent('#a78bfa');     // recolor the travelling accent
+field.setPalette('heatmap');    // swap the accent color template
 field.setFormation('wells');    // switch the global formation
 field.setAttention(true);       // conserved attention — one finite strength budget
 field.setCausality(true);       // cross-boundary causality — density spills to neighbours

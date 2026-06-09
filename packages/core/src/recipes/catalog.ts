@@ -164,7 +164,7 @@ export const RELATIONSHIP_BOND: FieldRecipe = {
   diagnostics: ['topology', 'links', 'force-vectors'],
   accessibility: {
     reducedMotion: 'a static connector and a paired highlight stand in for the live bond',
-    meaningWithoutMotion: 'related elements share a label/colour and are listed as connected',
+    meaningWithoutMotion: 'related elements share a label/color and are listed as connected',
   },
   notes: 'Related elements hold together through a bond with strength, tension, and memory — the strong force: binding and local structure.',
 };

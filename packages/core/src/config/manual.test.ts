@@ -13,12 +13,12 @@ test('the manual defines exactly the registered forces (no drift)', () => {
   assert.deepEqual(documented, registered);
 });
 
-test('every manual entry is complete (formula + description + colour + example)', () => {
+test('every manual entry is complete (formula + description + color + example)', () => {
   for (const e of MANUAL_FORCES) {
     assert.ok(e.formula.length > 0, `${e.token}: missing formula`);
     assert.ok(e.desc.length > 0, `${e.token}: missing description`);
     assert.ok(e.label.length > 0, `${e.token}: missing label`);
-    assert.match(e.color, /^#[0-9a-f]{6}$/i, `${e.token}: invalid colour ${e.color}`);
+    assert.match(e.color, /^#[0-9a-f]{6}$/i, `${e.token}: invalid color ${e.color}`);
     assert.ok(e.example.length > 0, `${e.token}: missing real-use example`);
     assert.ok(e.summary.length > 0, `${e.token}: missing summary`);
     assert.ok(e.effect.length > 0, `${e.token}: missing effect`);
@@ -40,10 +40,10 @@ test('every preset has a real-use example', () => {
   for (const p of MANUAL_PRESETS) assert.ok(p.example.length > 0, `${p.name}: missing example`);
 });
 
-test('the canonical nine colours mirror forces.config (§20.2 — no drift)', () => {
+test('the canonical nine colors mirror forces.config (§20.2 — no drift)', () => {
   for (const e of MANUAL_FORCES) {
     const canonical = FORCE_BY[e.token];
-    if (canonical) assert.equal(e.color, canonical.color, `${e.token} colour drifted`);
+    if (canonical) assert.equal(e.color, canonical.color, `${e.token} color drifted`);
   }
 });
 

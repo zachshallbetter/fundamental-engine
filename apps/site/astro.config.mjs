@@ -11,7 +11,7 @@ export default defineConfig({
   // The /writings datastore (and the research papers under it) carry rich markdown:
   //  • LaTeX math      → remark-math + rehype-katex (KaTeX stylesheet imported by WritingLayout)
   //  • Mermaid diagrams → remark-mermaid emits <pre class="mermaid">, rendered client-side
-  //  • Code            → Shiki with an editor-grade theme ("intellisense" colour)
+  //  • Code            → Shiki with an editor-grade theme ("intellisense" color)
   markdown: {
     remarkPlugins: [remarkMath, remarkMermaid],
     rehypePlugins: [rehypeKatex],

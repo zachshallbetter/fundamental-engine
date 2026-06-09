@@ -462,10 +462,10 @@ export const spotlight: Force = {
 };
 
 /**
- * §20.8 — `pigment` (class [E], particle attribute `color`): conserved colour
+ * §20.8 — `pigment` (class [E], particle attribute `color`): conserved color
  * transport. A particle that overlaps a pigment body takes on the body's tint
  * (`data-color`) and carries it away — the section *stains* the field, and the
- * colour advects with the matter instead of being re-tinted globally. Opt-in and
+ * color advects with the matter instead of being re-tinted globally. Opt-in and
  * inert without a tint, so a normal field is untouched.
  */
 export const pigment: Force = {
@@ -476,7 +476,7 @@ export const pigment: Force = {
     if (!tint || e.dist >= b.range * 0.6) return; // only stains on overlap
     p.color = p.color ? mixHex(p.color, tint, 0.08) : tint; // adopt, then advect toward
   },
-  meta: { desc: 'conserved colour transport — matter takes on and carries a tint' },
+  meta: { desc: 'conserved color transport — matter takes on and carries a tint' },
 };
 
 /**

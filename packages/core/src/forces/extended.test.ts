@@ -516,7 +516,7 @@ test('pigment stains overlapping matter with the body tint, then advects it', ()
   const fresh = part({});
   pigment.apply(body({ tint: '#ff0000', range: 100 }), fresh, env({ dist: 10 }));
   assert.equal(fresh.color, '#ff0000');
-  // already carrying a colour: advect toward the tint (mix — doesn't snap)
+  // already carrying a color: advect toward the tint (mix — doesn't snap)
   const carrying = part({ color: '#000000' });
   pigment.apply(body({ tint: '#ffffff', range: 100 }), carrying, env({ dist: 10 }));
   assert.notEqual(carrying.color, '#000000'); // it moved

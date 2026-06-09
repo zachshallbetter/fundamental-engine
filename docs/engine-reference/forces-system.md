@@ -521,7 +521,7 @@ content sets; the manual demo and the Lab use it. Pass `null` to clear.
 >
 > To make a **word** feel alive, act on the *type and the field around it*, never by
 > rebuilding it from dots:
-> - **Glow + grow** — drive variable-font weight, `text-shadow` bloom, and colour
+> - **Glow + grow** — drive variable-font weight, `text-shadow` bloom, and color
 >   from the gathered density `--d` (§8); the word thickens and lights as the field
 >   collects on it (the `liveword`).
 > - **Ripple / field-change** — put a force body *on* the word (attract / swirl) so
@@ -843,7 +843,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 > The reconciliation pass is **done**. The as-built registry lives in
 > `packages/core/src/config/manual.ts` (and is cross-checked against the live force
 > registry by a completeness test, so it can't drift). Every one of the **35 registered
-> forces** carries a canonical colour; the `mass`→`accreted` split (§21.2) shipped. The
+> forces** carries a canonical color; the `mass`→`accreted` split (§21.2) shipped. The
 > table below is the design source for this — read it with three deltas:
 >
 > - **`pheromone` shipped as the token `diffuse`** (deposit + steer up a diffusing grid);
@@ -853,7 +853,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 >   conserved sink→release event (`supernova`).
 > - **`spawn` [S] and `fountain`** shipped as written (a budgeted source + its preset).
 >
-> Everything else below is implemented under the listed token and colour.
+> Everything else below is implemented under the listed token and color.
 
 | Force | `token` | Class | Color | Discipline fit | Unique result |
 |---|---|---|---|---|---|
@@ -1879,7 +1879,7 @@ const LANES = [0.28, 0.5, 0.72];
 
 ### 25.2 Design tokens — the palette as a CSS contract
 `ds-tokens.css` is the single CSS source of truth, and pins two things §1–§24 didn't
-name: the canonical **easing** and the **coherence** colour.
+name: the canonical **easing** and the **coherence** color.
 
 ```css
 --f-attract:#4da3ff; --f-jet:#a78bfa; --f-tether:#86e57f;
@@ -1891,7 +1891,7 @@ name: the canonical **easing** and the **coherence** colour.
 ```
 
 These align with the canonical palette (§6/§20.2) and the `accretion` formation
-colour (`#ffce6b`); emit them as CSS variables in `forces.config.ts` consumers.
+color (`#ffce6b`); emit them as CSS variables in `forces.config.ts` consumers.
 
 ### 25.3 Coherence — the resolved / accreted state (§7, §15)
 Beyond the nine forces there is a **resolved state**: what the field settles into,

@@ -343,7 +343,7 @@ export function unaffectedWhenNeutral(): Expectation {
   };
 }
 
-/** The particle adopts and carries the body's tint on overlap (conserved colour). */
+/** The particle adopts and carries the body's tint on overlap (conserved color). */
 export function adoptsTint(): Expectation {
   return {
     label: 'adopts and carries the tint',

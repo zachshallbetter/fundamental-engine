@@ -382,7 +382,7 @@ visual-orphan / -not-hidden  a visual has no semantic source, or a decorative la
 ```
 
 Each rule is a pure function over the registries (testable without a live page), and `lintPlatform()`
-aggregates them; the Inspector renders the live result, severity-coloured. Lint is to the *platform*
+aggregates them; the Inspector renders the live result, severity-colored. Lint is to the *platform*
 what the passport validator is to *forces* and conformance is to *physics*: a continuously checkable
 audit. And like every diagnostic, *lint reads; it never mutates state, physics, or the DOM* (Paper 1,
 §5.3).
