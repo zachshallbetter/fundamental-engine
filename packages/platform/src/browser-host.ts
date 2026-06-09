@@ -5,7 +5,7 @@
  * requires a host; pass `browserHost()` in the browser (or `createBrowserField` for the convenience),
  * or a custom host to drive the same engine from a headless renderer / a different document / a test.
  */
-import type { FieldHost } from 'field-ui';
+import type { FieldHost } from '@field-ui/core';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 

@@ -8,9 +8,9 @@ density reacts back.
 
 ## Install
 
-> **Pre-release: not yet on npm.** Consume from this repository for now (see
-> [`RELEASING.md`](../../RELEASING.md) and [`PUBLISHING.md`](../../PUBLISHING.md)). `npm add @field-ui/react`
-> lands with the first published release.
+```sh
+npm i @field-ui/react
+```
 
 React is a **peer dependency** (the core engine stays zero-dependency).
 

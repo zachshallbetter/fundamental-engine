@@ -1,6 +1,6 @@
 # field-ui
 
-**The renderer-agnostic field engine.** `field-ui` computes the field: forces, particles, metrics,
+**The renderer-agnostic field engine.** `@field-ui/core` computes the field: forces, particles, metrics,
 recipes, diagnostics, and conformance, against plain data, with **zero runtime dependencies** and
 **zero DOM**. Your page's elements become physical bodies in one shared field; they exert force, and
 the field's local density bends them back. The visible canvas is one render surface, not the system.
@@ -14,11 +14,14 @@ renderer other than the DOM canvas.
 
 ## Install
 
-> **Pre-release: not yet on npm.** Releases are cut as git tags for now (see
-> [`RELEASING.md`](../../RELEASING.md) and [`PUBLISHING.md`](../../PUBLISHING.md)). Consume the package
-> from this repository as a workspace dependency or a git install. `npm add field-ui` lands with the
-> first published release. The public surface is frozen for `0.x` (see
-> [API stability](../../docs/canonical/field-ui-api-stability.md)).
+```sh
+npm i @field-ui/core
+```
+
+The browser host lives in [`@field-ui/platform`](../platform); most apps reach for a thin adapter
+([`@field-ui/elements`](../elements), [`@field-ui/react`](../react), [`@field-ui/vanilla`](../vanilla))
+instead of wiring the host themselves. The public surface is frozen for `0.x` (see
+[API stability](../../docs/canonical/field-ui-api-stability.md)).
 
 ## What's inside
 
@@ -44,7 +47,7 @@ renderer other than the DOM canvas.
 and a canvas). In the browser, the host comes from [`@field-ui/platform`](../platform):
 
 ```ts
-import { createField } from 'field-ui';
+import { createField } from '@field-ui/core';
 import { browserHost } from '@field-ui/platform';
 
 const canvas = document.querySelector('canvas')!;
@@ -98,7 +101,7 @@ its lanes stay separate: concepts describe, tokens execute, metrics measure, dia
 conditions activate. `compileRecipe()` turns a `FieldRecipe` into a compiled plan with no DOM:
 
 ```ts
-import { compileRecipe, recipeById } from 'field-ui';
+import { compileRecipe, recipeById } from '@field-ui/core';
 
 const plan = compileRecipe(recipeById('priority-well')!);
 // → bodies, relationships, feedback, diagnostics, metrics, and a reduced-motion output.

@@ -18,7 +18,7 @@ const readPkg = (rel: string): Record<string, unknown> =>
 
 // ── package metadata uses field-ui ──────────────────────────────────────────────────────────
 test('canonical packages are renamed to the field-ui family', () => {
-  assert.equal(readPkg('packages/core').name, 'field-ui');
+  assert.equal(readPkg('packages/core').name, '@field-ui/core');
   assert.equal(readPkg('packages/elements').name, '@field-ui/elements');
   assert.equal(readPkg('packages/react').name, '@field-ui/react');
   assert.equal(readPkg('packages/vanilla').name, '@field-ui/vanilla');
@@ -28,11 +28,11 @@ test('canonical packages are renamed to the field-ui family', () => {
 
 test('internal workspace deps point at the field-ui packages', () => {
   const els = readPkg('packages/elements') as { dependencies: Record<string, string> };
-  assert.ok('field-ui' in els.dependencies, 'elements depends on field-ui');
+  assert.ok('@field-ui/core' in els.dependencies, 'elements depends on @field-ui/core');
   assert.ok('@field-ui/vanilla' in els.dependencies, 'elements depends on @field-ui/vanilla');
   for (const p of ['packages/react', 'packages/vanilla']) {
     const dep = (readPkg(p) as { dependencies: Record<string, string> }).dependencies;
-    assert.ok('field-ui' in dep, `${p} depends on field-ui`);
+    assert.ok('@field-ui/core' in dep, `${p} depends on @field-ui/core`);
     assert.ok(!('forces-ui' in dep), `${p} no longer depends on forces-ui`);
   }
 });
@@ -40,7 +40,7 @@ test('internal workspace deps point at the field-ui packages', () => {
 // ── old public package names still work as aliases ──────────────────────────────────────────
 test('compatibility alias packages keep the old names and forward to field-ui', () => {
   const cases: [string, string, string][] = [
-    ['packages/compat-core', 'forces-ui', 'field-ui'],
+    ['packages/compat-core', 'forces-ui', '@field-ui/core'],
     ['packages/compat-elements', '@forces-ui/elements', '@field-ui/elements'],
     ['packages/compat-react', '@forces-ui/react', '@field-ui/react'],
     ['packages/compat-vanilla', '@forces-ui/vanilla', '@field-ui/vanilla'],

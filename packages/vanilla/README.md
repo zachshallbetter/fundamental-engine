@@ -9,9 +9,9 @@ registration, no framework dependency, no import side effects.
 
 ## Install
 
-> **Pre-release: not yet on npm.** Consume from this repository for now (see
-> [`RELEASING.md`](../../RELEASING.md) and [`PUBLISHING.md`](../../PUBLISHING.md)). `npm add @field-ui/vanilla`
-> lands with the first published release.
+```sh
+npm i @field-ui/vanilla
+```
 
 The only dependency is the zero-dependency core plus [`@field-ui/platform`](../platform) (which supplies
 the browser host). Reach for this from plain TypeScript, or any stack where you want to drive the field

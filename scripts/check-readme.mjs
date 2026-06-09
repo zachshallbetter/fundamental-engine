@@ -5,11 +5,9 @@
  * contradicts. It checks the facts most prone to rot:
  *   1. every package has a README that names its real package (the title/install can't point at the
  *      wrong package),
- *   2. no README — and no doc or package source — calls the core package `@field-ui/core` (it is
- *      published unscoped as `field-ui`); only the api-stability surfaces may name it, to negate it,
- *   3. the root README's catalog counts (forces, presets, formations, render modes, recipes) match the
+ *   2. the root README's catalog counts (forces, presets, formations, render modes, recipes) match the
  *      live catalog,
- *   4. the root README names all five publishable packages.
+ *   3. the root README names all five publishable packages.
  *
  * Run after a build (`pnpm -r build`). Wired into `pnpm check:readme` and CI.
  */
@@ -39,33 +37,11 @@ for (const dir of PKG_DIRS) {
   const readme = await read(`packages/${dir}/README.md`);
   if (!readme) { fail(`packages/${dir}: README.md missing`); continue; }
   if (pkg.name && !readme.includes(pkg.name)) fail(`packages/${dir}/README.md does not name its package "${pkg.name}"`);
-  // 2 · no README may use the wrong core name
-  if (readme.includes('@field-ui/core')) fail(`packages/${dir}/README.md uses "@field-ui/core" — the core package is published as "field-ui"`);
 }
 
 const rootReadme = await read('README.md');
-const docsReadme = await read('docs/README.md');
-if (rootReadme.includes('@field-ui/core')) fail('README.md uses "@field-ui/core" — the core package is published as "field-ui"');
-if (docsReadme.includes('@field-ui/core')) fail('docs/README.md uses "@field-ui/core" — the core package is published as "field-ui"');
 
-// 2b · no doc or source surface may call the core package "@field-ui/core" — it is published as
-// `field-ui`. Only the api-stability surfaces may name it, and only to say it is NOT the package name.
-const CORE_NAME_ALLOW = new Set([
-  'docs/canonical/field-ui-api-stability.md',
-  'apps/site/src/pages/docs/api/stability.astro',
-]);
-const CORE_SCAN_DIRS = ['docs', 'apps/site/src', 'packages/core/src', 'packages/platform/src', 'packages/elements/src', 'packages/react/src', 'packages/vanilla/src'];
-let coreHits = [];
-try {
-  coreHits = execFileSync('grep', ['-rlF', '@field-ui/core', ...CORE_SCAN_DIRS.map((d) => join(root, d))], { encoding: 'utf8' })
-    .trim().split('\n').filter(Boolean);
-} catch { /* grep exits non-zero when there are no matches — fine */ }
-for (const abs of coreHits) {
-  const rel = relative(root, abs);
-  if (!CORE_NAME_ALLOW.has(rel)) fail(`${rel} uses "@field-ui/core" — the core package is published as "field-ui" (only the api-stability negation may name it)`);
-}
-
-// 3 · the root README's catalog counts match the live catalog
+// 2 · the root README's catalog counts match the live catalog
 const core = await import(pathToFileURL(join(root, 'packages/core/dist/index.js')).href).catch((e) => {
   fail(`could not import core dist (run "pnpm -r build"): ${e.message}`);
   return null;
@@ -89,7 +65,7 @@ if (core) {
   }
 }
 
-// 4 · the root README names all five publishable packages
+// 3 · the root README names all five publishable packages
 for (const dir of PUBLISHABLE) {
   const name = JSON.parse(await read(`packages/${dir}/package.json`) || '{}').name;
   if (name && !rootReadme.includes(name)) fail(`README.md does not mention the package "${name}"`);
@@ -101,4 +77,4 @@ if (problems.length) {
   console.error('\nThe READMEs drifted from the code. Update them (and re-run) so they stay living.');
   process.exit(1);
 }
-console.log(`✓ READMEs are living — ${PKG_DIRS.length} package READMEs named correctly, catalog counts match, all five publishable packages referenced, no doc/source surface misnames the core package "@field-ui/core".`);
+console.log(`✓ READMEs are living — ${PKG_DIRS.length} package READMEs named correctly, catalog counts match, all five publishable packages referenced.`);

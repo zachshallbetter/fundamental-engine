@@ -7,7 +7,7 @@
  *
  * Output maps to core's `RelationshipAgent` so the field engine treats relationships as agents.
  */
-import type { RelationshipAgent } from 'field-ui';
+import type { RelationshipAgent } from '@field-ui/core';
 
 export type RelationshipSource = 'html' | 'aria' | 'data' | 'recipe' | 'runtime';
 export type RelationshipDirection = 'from-to' | 'to-from' | 'bidirectional';

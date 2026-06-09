@@ -6,7 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerShadowBody, unregisterShadowBody } from './platform-runtime.ts';
-import type { RegisterBodyDetail } from 'field-ui';
+import type { RegisterBodyDetail } from '@field-ui/core';
 
 function fakeSink() {
   const map = new Map<Element, { role?: string; getRect?: () => DOMRect }>();

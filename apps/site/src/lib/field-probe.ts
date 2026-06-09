@@ -19,7 +19,7 @@ import {
   type Scenario,
   type ScenarioParticle,
   type ScenarioResult,
-} from 'field-ui';
+} from '@field-ui/core';
 
 export interface Pt {
   x: number;

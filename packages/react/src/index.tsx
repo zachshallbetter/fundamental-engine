@@ -15,7 +15,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
-import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from 'field-ui';
+import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from '@field-ui/core';
 import { createBrowserField } from '@field-ui/platform';
 
 export interface FieldFieldProps extends FieldOptions {
