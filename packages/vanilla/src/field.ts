@@ -118,6 +118,9 @@ export class FieldField implements FieldHandle {
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();
   }
+  scrollV(): number {
+    return this.field.scrollV();
+  }
   /** stop the loop, release listeners, and remove the canvas if this instance made it. */
   destroy(): void {
     this.field.destroy();

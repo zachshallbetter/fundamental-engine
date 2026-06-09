@@ -293,6 +293,9 @@ export class FieldField extends HTMLElementBase {
       causality: this.causality,
       feedbackSink,
     });
+    // attach the handle so the platform write phase can read scrollV → --field-scroll-v
+    // and the quality governor can monitor frame duration
+    this.platformRuntime?.attachHandle(this.field);
   }
 }
 

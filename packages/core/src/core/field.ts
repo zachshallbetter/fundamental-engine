@@ -1434,6 +1434,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     particleCount: () => store.size,
     energy: () => energyReport(store.particles),
+    scrollV: () => env.scrollV ?? 0,
     destroy: () => {
       host.cancelRaf(raf);
       clearInterval(idleTimer);

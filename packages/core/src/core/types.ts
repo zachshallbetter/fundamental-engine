@@ -434,6 +434,15 @@ export interface FieldHandle {
    * (DataConsole, Inspector) don't need a reference to the internal particle array.
    */
   energy(): { kinetic: number; thermal: number; total: number; count: number };
+  /**
+   * The engine's eased page-scroll velocity for the current frame — the same EMA value the
+   * `scrolling` condition gate uses: `(prev × 0.7) + (|scrollDelta| × 0.3)` per frame.
+   * Units are pixels per frame at the native rAF cadence (~1 at 60 fps per pixel/s of scroll).
+   * Near 0 = user is reading/stopped; 2+ = slow deliberate scroll; 10+ = fast scan/jump.
+   * Written to `--field-scroll-v` on `:root` by the platform write phase when a platform
+   * runtime is active. Pull-based: read on demand, do not poll in tight loops.
+   */
+  scrollV(): number;
   /** stop the loop and release listeners. */
   destroy(): void;
 }

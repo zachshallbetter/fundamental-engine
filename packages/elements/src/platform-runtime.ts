@@ -10,7 +10,8 @@
  * The legacy engine still owns everything visible in D1; the platform adds nothing observable, which
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
-import { createFieldPlatform, type FieldPlatform } from '@field-ui/platform';
+import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@field-ui/platform';
+import type { FieldHandle } from '@field-ui/core';
 import {
   bodyElements,
   REGISTER_BODY,
@@ -133,6 +134,12 @@ export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
 // ── the runtime ─────────────────────────────────────────────────────────────────────
 export interface PlatformRuntime {
   platform: FieldPlatform;
+  /**
+   * Attach the FieldHandle after it's created (the platform starts before the field handle
+   * exists). Once attached, the write phase writes `--field-scroll-v` to `:root` each frame
+   * and the quality governor monitors frame duration.
+   */
+  attachHandle(handle: FieldHandle): void;
   destroy(): void;
 }
 
@@ -170,20 +177,48 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   };
 
   if (typeof window === 'undefined' || typeof requestAnimationFrame === 'undefined') {
-    return { platform, destroy: unwireShadow };
+    return { platform, attachHandle: () => {}, destroy: unwireShadow };
   }
 
   let raf = 0;
+  let handle: FieldHandle | null = null;
+  let lastTs = 0;
+  const governor = new QualityGovernor();
+
+  // write phase: --field-scroll-v on :root (once handle is attached)
+  platform.on('write', () => {
+    if (!handle) return;
+    const sv = handle.scrollV();
+    (root.ownerDocument ?? document).documentElement.style.setProperty('--field-scroll-v', sv.toFixed(3));
+  });
+
   const loop = (t: number): void => {
+    const duration = lastTs ? t - lastTs : 0;
+    lastTs = t;
     platform.tick(t, { width: window.innerWidth, height: window.innerHeight });
+
+    if (duration > 0 && handle) {
+      const newTier = governor.feed(duration);
+      if (newTier !== undefined) {
+        root.dispatchEvent(new CustomEvent('field:quality-tier', {
+          bubbles: true, composed: true,
+          detail: { tier: newTier, durationMs: Math.round(duration) },
+        }));
+      }
+    }
     raf = requestAnimationFrame(loop);
   };
   raf = requestAnimationFrame(loop);
   return {
     platform,
+    attachHandle(h: FieldHandle): void {
+      handle = h;
+      governor.reset();
+    },
     destroy(): void {
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
+      handle = null;
       unwireShadow();
     },
   };

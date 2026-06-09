@@ -20,11 +20,16 @@ interface ThresholdEntry {
   thresholder: Thresholder;
 }
 
-function writeVar(element: Element, name: string, value: string): void {
+/** Write a CSS custom property and its `--forces-*` mirror. Returns the count of actual DOM mutations. */
+function writeVar(element: Element, name: string, value: string): number {
   const style = (element as HTMLElement).style;
-  if (!style || typeof style.setProperty !== 'function') return;
+  if (!style || typeof style.setProperty !== 'function') return 0;
   style.setProperty(name, value);
-  if (name.startsWith('--field-')) style.setProperty('--forces-' + name.slice('--field-'.length), value);
+  if (name.startsWith('--field-')) {
+    style.setProperty('--forces-' + name.slice('--field-'.length), value);
+    return 2;
+  }
+  return 1;
 }
 
 function removeVar(element: Element, name: string): void {
@@ -55,6 +60,7 @@ export class FeedbackRegistry {
   private readonly bindings = new Map<Element, VarBinding>();
   private readonly direct = new Map<Element, Record<string, string>>();
   private readonly thresholds: ThresholdEntry[] = [];
+  private _cssWritesLastFrame = 0;
 
   /** Declare which state keys map to which CSS vars on an element (e.g. `{ density: '--field-density' }`). */
   bind(element: Element, map: VarBinding): void {
@@ -76,6 +82,16 @@ export class FeedbackRegistry {
   /** The declared bindings (element → the CSS-var names it writes), for lint / inspection. */
   boundVars(): Array<{ element: Element; vars: string[] }> {
     return [...this.bindings].map(([element, map]) => ({ element, vars: Object.values(map) }));
+  }
+
+  /**
+   * Actual `style.setProperty` calls made during the last `flush()` — counting both the primary
+   * `--field-*` write and its `--forces-*` mirror as separate mutations. Use this (not
+   * `boundVars().length`) to measure real per-frame DOM write cost: off-screen elements with
+   * active bindings still generate mutations even though they produce no visible change.
+   */
+  cssWritesLastFrame(): number {
+    return this._cssWritesLastFrame;
   }
 
   /** Queue a direct CSS-var write (applied on the next `flush`). */
@@ -101,15 +117,16 @@ export class FeedbackRegistry {
    * fire edge events. `state` supplies the numeric values for bound vars + thresholds.
    */
   flush(state: StateRegistry, now = 0): void {
+    this._cssWritesLastFrame = 0;
     for (const [el, map] of this.bindings) {
       for (const key of Object.keys(map)) {
         const v = state.get(el, key);
         if (!v) continue;
-        writeVar(el, map[key]!, v.type === 'number' ? v.value.toFixed(3) : String((v as { value?: unknown }).value ?? ''));
+        this._cssWritesLastFrame += writeVar(el, map[key]!, v.type === 'number' ? v.value.toFixed(3) : String((v as { value?: unknown }).value ?? ''));
       }
     }
     for (const [el, vars] of this.direct) {
-      for (const name of Object.keys(vars)) writeVar(el, name, vars[name]!);
+      for (const name of Object.keys(vars)) this._cssWritesLastFrame += writeVar(el, name, vars[name]!);
     }
     this.direct.clear();
     for (const t of this.thresholds) {
