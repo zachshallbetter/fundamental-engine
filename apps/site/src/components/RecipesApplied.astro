@@ -26,7 +26,7 @@ const recipes = ids.map((id) => recipeById(id)).filter((r): r is FieldRecipe => 
       recipes.map((r) => (
         <article class="ra-card">
           <header>
-            <a href={`/docs/gallery#${r.id}`} class="ra-name">{r.name}</a>
+            <a href={`/recipes#${r.id}`} class="ra-name">{r.name}</a>
             {r.naturalField && <VocabBadge kind="field" label={r.naturalField} />}
             {liveSet.has(r.id) && <span class="ra-live">live</span>}
           </header>
