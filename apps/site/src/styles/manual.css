@@ -1254,3 +1254,99 @@ html.hide-field-lines .stage-field {
 .truth-semantic {
   color: #86e57f;
 }
+
+/* ── "The field is the project" — the atom caption + the hover-to-inspect tooltip ───────────────── */
+.atom-note {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1120px;
+  margin: -1.5rem auto 0;
+  padding: 0 clamp(1.2rem, 5vw, 3.5rem);
+}
+.atom-note p {
+  max-width: 58ch;
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+.atom-note strong {
+  color: var(--text);
+  font-weight: 500;
+}
+.atom-note b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* the inspect tooltip — appended to <body>, follows the cursor over the field. */
+.atom-tip {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  max-width: 264px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  padding: 0.6rem 0.72rem;
+  border: 1px solid var(--line-2, #2a2a35);
+  border-radius: 11px;
+  background: rgba(9, 12, 19, 0.93);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+@supports (backdrop-filter: blur(6px)) {
+  .atom-tip {
+    backdrop-filter: blur(6px);
+    background: rgba(9, 12, 19, 0.8);
+  }
+}
+.atom-tip[data-flip-x="true"] {
+  transform: translateX(-100%);
+}
+.atom-tip[data-flip-y="true"] {
+  transform: translateY(-100%);
+}
+.atom-tip[data-flip-x="true"][data-flip-y="true"] {
+  transform: translate(-100%, -100%);
+}
+.atom-tip .at-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.atom-tip .at-kind {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ac, var(--accent));
+  border: 1px solid color-mix(in srgb, var(--ac, var(--accent)) 50%, var(--line));
+  border-radius: 999px;
+  padding: 0.06rem 0.42rem;
+  white-space: nowrap;
+}
+.atom-tip .at-label {
+  font-weight: 600;
+  color: var(--text);
+}
+.atom-tip .at-row {
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+.atom-tip .at-row b {
+  margin-right: 0.32rem;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  color: var(--text-4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

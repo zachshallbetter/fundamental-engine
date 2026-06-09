@@ -1106,6 +1106,48 @@
             },
             {
               "kind": "method",
+              "name": "seed",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "atoms",
+                  "type": {
+                    "text": "readonly AtomPayload[]"
+                  }
+                }
+              ],
+              "description": "bind a data record to each base particle (its `weight` scales mass + size); pick back with `atomAt`."
+            },
+            {
+              "kind": "method",
+              "name": "atomAt",
+              "return": {
+                "type": {
+                  "text": "AtomPayload | null"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -1797,6 +1839,56 @@
             },
             {
               "kind": "method",
+              "name": "seed",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "atoms",
+                  "type": {
+                    "text": "readonly AtomPayload[]"
+                  }
+                }
+              ],
+              "description": "bind a data record to each base particle (its `weight` scales mass + size); pick back with `atomAt`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "atomAt",
+              "return": {
+                "type": {
+                  "text": "AtomPayload | null"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -2418,6 +2510,56 @@
                 }
               },
               "description": "remove the flow focus.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "seed",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "atoms",
+                  "type": {
+                    "text": "readonly AtomPayload[]"
+                  }
+                }
+              ],
+              "description": "bind a data record to each base particle (its `weight` scales mass + size); pick back with `atomAt`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "atomAt",
+              "return": {
+                "type": {
+                  "text": "AtomPayload | null"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
