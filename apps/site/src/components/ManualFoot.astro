@@ -1,0 +1,16 @@
+---
+// The closing call-to-action at the bottom of the manual, shared by / and /eli5. Optional `sub`
+// slot for a sub-line; the `actions` slot carries the buttons.
+interface Props {
+  title?: string;
+}
+const { title = "Now go bend it yourself." } = Astro.props;
+---
+
+<section class="manual-foot">
+  <div class="wrap">
+    <h2>{title}</h2>
+    <slot name="sub" />
+    <div class="actions"><slot name="actions" /></div>
+  </div>
+</section>
