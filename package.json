@@ -9,6 +9,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "check:dist": "node scripts/check-dist.mjs",
+    "check:packaging": "node scripts/check-packaging.mjs",
     "check:api": "tsc -p scripts/tsconfig.api.json --noEmit && node scripts/check-api-surface.mjs",
     "check:readme": "node scripts/check-readme.mjs",
     "gen:recipes": "node --experimental-strip-types scripts/export-recipes.mjs",
@@ -23,6 +24,8 @@
     "docs:build": "pnpm --filter @field-ui/docs build"
   },
   "devDependencies": {
-    "@custom-elements-manifest/analyzer": "^0.11.0"
+    "@arethetypeswrong/cli": "^0.18.0",
+    "@custom-elements-manifest/analyzer": "^0.11.0",
+    "publint": "^0.3.12"
   }
 }
