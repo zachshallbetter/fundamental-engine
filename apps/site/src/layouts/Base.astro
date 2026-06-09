@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 // The design system's tokens are the single, global source of truth — load them
 // on every page (the homepage and Lab included), not just the docs surfaces.
 import '../styles/ds-tokens.css';
+import DataConsole from '../components/DataConsole.astro';
 interface Props {
   title?: string;
   description?: string;
@@ -63,6 +64,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
     <field-root accent="#4da3ff" transition:persist></field-root>
     <div class="scrim" aria-hidden="true" transition:persist></div>
     <slot />
+    <DataConsole />
 
     <script>
       // registers <field-root> (the engine mounts on connect). Bundled by Astro,
