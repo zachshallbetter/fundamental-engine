@@ -188,6 +188,14 @@ export class FieldField extends HTMLElementBase {
   atomAt(x: number, y: number): AtomPayload | null {
     return this.field?.atomAt(x, y) ?? null;
   }
+  /** focus the nearest seeded particle (hold + light it), returning its record — the dwell affordance. */
+  focusAt(x: number, y: number): AtomPayload | null {
+    return this.field?.focusAt(x, y) ?? null;
+  }
+  /** release the focused particle. */
+  clearFocus(): void {
+    this.field?.clearFocus();
+  }
 
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).

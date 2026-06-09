@@ -1148,6 +1148,40 @@
             },
             {
               "kind": "method",
+              "name": "focusAt",
+              "return": {
+                "type": {
+                  "text": "AtomPayload | null"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "focus the nearest seeded particle (hold + light it), returning its record — the dwell affordance."
+            },
+            {
+              "kind": "method",
+              "name": "clearFocus",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "release the focused particle."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -1889,6 +1923,48 @@
             },
             {
               "kind": "method",
+              "name": "focusAt",
+              "return": {
+                "type": {
+                  "text": "AtomPayload | null"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "focus the nearest seeded particle (hold + light it), returning its record — the dwell affordance.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clearFocus",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "release the focused particle.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -2560,6 +2636,48 @@
                 }
               ],
               "description": "the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "focusAt",
+              "return": {
+                "type": {
+                  "text": "AtomPayload | null"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "focus the nearest seeded particle (hold + light it), returning its record — the dwell affordance.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clearFocus",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "release the focused particle.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

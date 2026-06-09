@@ -413,6 +413,14 @@ export interface FieldHandle {
   seed(atoms: readonly AtomPayload[]): void;
   /** The seeded record on the nearest particle to (x, y) within ~24px, or null. For hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null;
+  /**
+   * Focus the nearest seeded particle to (x, y) within ~24px: hold it still and light it up, and
+   * return its record (or null + clear focus if none). The dwell affordance before a click — call
+   * on hover-dwell, then `clearFocus()` when the pointer moves on.
+   */
+  focusAt(x: number, y: number): AtomPayload | null;
+  /** Release the focused particle (it resumes drifting). */
+  clearFocus(): void;
   /** stop the loop and release listeners. */
   destroy(): void;
 }
