@@ -1,0 +1,22 @@
+---
+// The Field Manual hero shell, shared by the home (/) and /eli5. The chrome is fixed; every page
+// customizes the content on declaration via slots: `title` (the <h1>), `standfirst`, `thesis`,
+// `cta` (buttons / install), optional `meta`, and `flow` (a <FlowToggle>). The flow toggle and
+// install-copy are wired by HomeRuntime.ts (looked up by id/selector), so this stays pure markup.
+interface Props {
+  kicker: string;
+}
+const { kicker } = Astro.props;
+---
+
+<header class="manual-hero" id="top">
+  <div class="wrap">
+    <p class="kicker">{kicker}</p>
+    <slot name="title" />
+    <slot name="standfirst" />
+    <slot name="thesis" />
+    <div class="hero-cta"><slot name="cta" /></div>
+    <slot name="meta" />
+    <slot name="flow" />
+  </div>
+</header>

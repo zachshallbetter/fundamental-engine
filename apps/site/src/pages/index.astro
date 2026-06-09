@@ -2,9 +2,14 @@
 import Base from "../layouts/Base.astro";
 import SiteNav from "../components/SiteNav.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import HomeHero from "../components/home/HomeHero.astro";
-import StartHereLede from "../components/home/StartHereLede.astro";
-import ChapterRail from "../components/home/ChapterRail.astro";
+import ManualHero from "../components/ManualHero.astro";
+import ChapterRail from "../components/ChapterRail.astro";
+import ChapterHeader from "../components/ChapterHeader.astro";
+import Concept from "../components/Concept.astro";
+import ManualFoot from "../components/ManualFoot.astro";
+import Button from "../components/ui/Button.astro";
+import FlowToggle from "../components/ui/FlowToggle.astro";
+import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS } from "@field-ui/core";
@@ -12,11 +17,12 @@ import "../styles/manual.css";
 import "../styles/force-glyphs.css";
 
 // The Field Manual — the chapter-based explainer, rebuilt on the typed engine and extended
-// to the full catalog. This page is now a composition file: the hero, lede, chapter rail and
-// catalog rows are components in components/home/; the page-specific behaviour (interaction +
-// field-line overlay) lives in HomeRuntime.ts / StageFieldOverlay.ts, wired by the orchestrator
-// script at the bottom. The bespoke numbered concepts (Substrate, canonical Forces, Conditions,
-// System) stay inline here because each is unique prose, not a repeated row.
+// to the full catalog. This page is a composition file: the shared manual chrome (ManualHero,
+// ChapterRail, ChapterHeader, Concept, ManualFoot) lives in src/components/ and is reused by
+// /eli5; the catalog rows + the natural-field picker live in components/home/; page behaviour
+// (interaction runtime + field-line overlay + picker) is wired by the shared orchestrator
+// src/components/manual-page.ts (imported by the <script> at the bottom). Each numbered concept
+// is unique prose, declared via <Concept> with its stage in the `stage` slot.
 //
 // The demo attributes (DEFAULTS / OVERRIDES / BODY_TOKENS / attrsFor) live in lib/demo-forces.ts —
 // the single source the field-line traces and the accuracy test (field-probe.test.ts) read too,
@@ -36,6 +42,16 @@ const natural = MANUAL_FORCES.filter((f) => f.family === "natural");
 const extended = MANUAL_FORCES.filter((f) => f.family === "extended");
 let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), then every
 // chapter after it increments this in render order (Natural, Forces, Extended, Presets, …).
+
+const chapters = [
+  { id: "ch-substrate", no: "I", label: "Substrate" },
+  { id: "ch-natural", no: "II", label: "Natural" },
+  { id: "ch-forces", no: "III", label: "Forces" },
+  { id: "ch-extended", no: "IV", label: "Extended" },
+  { id: "ch-presets", no: "V", label: "Presets" },
+  { id: "ch-conditions", no: "VI", label: "Conditions" },
+  { id: "ch-system", no: "VII", label: "System" },
+];
 ---
 
 <Base
@@ -44,27 +60,43 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
 >
   <SiteNav current="home" />
   <div class="manual-shell">
-    <HomeHero forcesCount={MANUAL_FORCES.length} />
+    <ManualHero kicker="field-ui · semantic HTML in one shared field">
+      <h1 slot="title">Semantic HTML can <span class="accent">participate.</span></h1>
+      <p slot="standfirst" class="standfirst">
+        Words, links, and cards stay ordinary semantic HTML — but with a single
+        <code>data-*</code> attribute they register as participants in one shared
+        field. The runtime measures each one — its gathered density, and metrics like
+        attention, priority, and memory — then writes them back as <code>--field-*</code>
+        CSS variables you style with. Here’s exactly how it works, live over the real
+        engine behind every example.
+      </p>
+      <p slot="thesis" class="thesis">
+        <strong>You author meaning; the field returns measurement</strong> —
+        <code>data-*</code> in, <code>--field-*</code> out. The physics is how it feels;
+        the contract is how you use it.
+      </p>
+      <Fragment slot="cta">
+        <code class="install" data-copy="npm i @field-ui/vanilla">npm i @field-ui/vanilla</code>
+        <Button href="/docs" variant="primary">Read the docs →</Button>
+        <Button href="/lab">Open the Lab →</Button>
+      </Fragment>
+      <div slot="meta" class="meta">
+        <span><b>Contract</b> &nbsp;data-* in · --field-* out</span>
+        <span><b>Forces</b> &nbsp;{MANUAL_FORCES.length}, composable · gated by conditions</span>
+        <span><b>Platform</b> &nbsp;measurement · state · feedback · relationships · overlays</span>
+        <span><b>Law</b> &nbsp;nothing created from nothing</span>
+      </div>
+      <FlowToggle slot="flow" label="Flow follows pointer">
+        drives <code>field.flowTo(x, y)</code> — the whole field bends to your cursor</FlowToggle>
+    </ManualHero>
 
-    <StartHereLede />
-
-    <ChapterRail />
+    <ChapterRail chapters={chapters} />
 
     <!-- I · Substrate -->
-    <div class="chapter" id="ch-substrate">
-      <div class="wrap">
-        <span class="chapter-no">I</span>
-        <h2 class="chapter-title">Substrate</h2>
-        <p class="chapter-sub">
-          What the field is made of — and how it locks to the page.
-        </p>
-      </div>
-    </div>
+    <ChapterHeader no="I" id="ch-substrate" title="Substrate">What the field is made of — and how it locks to the page.</ChapterHeader>
 
-    <section class="concept">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no">01 — Synchronization</span>
+    <Concept stageHidden>
+      <span class="concept-no">01 — Synchronization</span>
           <h2>The platform maps semantic elements into field coordinates.</h2>
           <p>
             The runtime measures registered bodies through the
@@ -79,9 +111,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             <span class="c">measure:</span> rect(el) <span class="c">→</span>
             <span class="v">field(x, y)</span>
           </div>
-        </div>
-        <div class="stage" aria-hidden="true">
-          <span class="stage-label">DOM → field</span>
+      <Fragment slot="stage">
+        <span class="stage-label">DOM → field</span>
           <svg class="diagram" viewBox="0 0 420 300" fill="none">
             <rect x="60" y="70" width="180" height="90" rx="10" class="dim"
             ></rect>
@@ -97,14 +128,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             <circle cx="340" cy="210" r="4" class="accf"></circle>
             <text x="300" y="240" class="lbl">field (x, y)</text>
           </svg>
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept reverse">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no">02 — Mass &amp; damping</span>
+    <Concept reverse stageHidden>
+      <span class="concept-no">02 — Mass &amp; damping</span>
           <h2>Particles are point-masses in a medium.</h2>
           <p>
             Each particle carries a velocity and a mass proportional to its
@@ -121,9 +149,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             Damping is why the field settles into calm swarms rather than
             scattering.
           </p>
-        </div>
-        <div class="stage" aria-hidden="true">
-          <span class="stage-label">momentum decay</span>
+      <Fragment slot="stage">
+        <span class="stage-label">momentum decay</span>
           <svg class="diagram" viewBox="0 0 420 300" fill="none">
             <circle cx="80" cy="150" r="10" class="accf" opacity="0.9"></circle>
             <line x1="95" y1="150" x2="175" y2="150" class="acc"></line>
@@ -136,14 +163,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
               >velocity bleeds off each frame</text
             >
           </svg>
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no">03 — Currents</span>
+    <Concept stageHidden>
+      <span class="concept-no">03 — Currents</span>
           <h2>The waves are a flow field.</h2>
           <p>
             Near a wave line, particles pick up a drag vector along the slope of
@@ -158,9 +182,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <p class="note">
             It’s why the resting field feels alive without any input.
           </p>
-        </div>
-        <div class="stage" aria-hidden="true">
-          <span class="stage-label">wave slope → drift</span>
+      <Fragment slot="stage">
+        <span class="stage-label">wave slope → drift</span>
           <svg class="diagram" viewBox="0 0 420 300" fill="none">
             <path
               d="M20 170 Q110 90 200 170 T380 170"
@@ -178,27 +201,25 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
               >tangent drift along the curve</text
             >
           </svg>
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
+
+    <!-- Below the substrate: play the four fields live, then meet a body that holds matter.
+         The interactive lead-in to the natural-field translations + the Body Interaction Model. -->
+    <NaturalFieldsSection
+      translationKicker="Live — the four fields"
+      bodyKicker="Live — a body as a vessel"
+    />
 
     <!-- II · Natural-field translations -->
-    <div class="chapter" id="ch-natural">
-      <div class="wrap">
-        <span class="chapter-no">II</span>
-        <h2 class="chapter-title">Natural-field translations</h2>
-        <p class="chapter-sub">
-          Every interface already has priority, polarity, binding, and
+    <ChapterHeader no="II" id="ch-natural" title="Natural-field translations">Every interface already has priority, polarity, binding, and
           transformation. field-ui translates the four fundamental fields into
           those relations — gravity becomes priority, electromagnetism becomes
           polarity and signal, strong becomes binding, weak becomes
           transformation. The runtime tokens below are engine expressions of that
           grammar (true 1/d², Lorentz, Langevin, diffusion, waves) —
           translations, not additional fundamental fields. See the
-          <a href="/docs/natural-fields">Natural Fields</a> model.
-        </p>
-      </div>
-    </div>
+          <a href="/docs/natural-fields">Natural Fields</a> model.</ChapterHeader>
     {
       natural.map((f, i) => {
         n += 1;
@@ -207,22 +228,12 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
     }
 
     <!-- III · Forces (canonical nine) -->
-    <div class="chapter" id="ch-forces">
-      <div class="wrap">
-        <span class="chapter-no">III</span>
-        <h2 class="chapter-title">Forces</h2>
-        <p class="chapter-sub">
-          What a single body can do to the matter around it — designed UI verbs,
+    <ChapterHeader no="III" id="ch-forces" title="Forces">What a single body can do to the matter around it — designed UI verbs,
           stable and bounded. A designed verb is not a natural field: an attractor
-          is not gravity, a repeller is not charge.
-        </p>
-      </div>
-    </div>
+          is not gravity, a repeller is not charge.</ChapterHeader>
 
-    <section class="concept reverse" data-form="wells">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept reverse data-form="wells">
+      <span class="concept-no"
             ><i class="fg fg-attract" style="--fc:#4da3ff"></i>{String((n += 1)).padStart(2, "0")} — Attraction</span
           >
           <h2>A body can pull the field into orbit.</h2>
@@ -243,9 +254,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-attract"
             >↯ Agitate the field</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">attractor — drag me</span>
+      <Fragment slot="stage">
+        <span class="stage-label">attractor — drag me</span>
           <span
             class="body-chip"
             id="c-attract"
@@ -259,14 +269,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >force follows the element across the field</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept" data-form="scatter">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept data-form="scatter">
+      <span class="concept-no"
             ><i class="fg fg-repel" style="--fc:#ff9d5c"></i>{String((n += 1)).padStart(2, "0")} — Repulsion</span
           >
           <h2>A body can push the field away.</h2>
@@ -286,9 +293,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-repel"
             >↯ Agitate the field</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">repeller — drag me</span>
+      <Fragment slot="stage">
+        <span class="stage-label">repeller — drag me</span>
           <span
             class="body-chip"
             id="c-repel"
@@ -302,14 +308,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >force points outward — a void opens in the field</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept reverse">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept reverse>
+      <span class="concept-no"
             ><i class="fg fg-wall" style="--fc:#c4b5fd"></i>{String((n += 1)).padStart(2, "0")} — Reflection</span
           >
           <h2>A body can be a wall.</h2>
@@ -325,9 +328,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <p class="note">
             Drag the wall into the drifting particles to deflect them.
           </p>
-        </div>
-        <div class="stage">
-          <span class="stage-label">wall — drag me</span>
+      <Fragment slot="stage">
+        <span class="stage-label">wall — drag me</span>
           <div
             class="body-wall"
             data-drag
@@ -337,14 +339,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             wall
           </div>
           <span class="hintline">particles bounce off the bounding box</span>
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept" data-form="wells">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept data-form="wells">
+      <span class="concept-no"
             ><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>{String((n += 1)).padStart(2, "0")} — Swirl</span
           >
           <h2>A body can spin the field.</h2>
@@ -370,9 +369,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-swirl"
             >↯ Agitate the field</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">swirl — drag me</span>
+      <Fragment slot="stage">
+        <span class="stage-label">swirl — drag me</span>
           <span
             class="body-chip"
             id="c-swirl"
@@ -387,14 +385,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >tangential force — the field circles, never collapses</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept reverse" data-form="lanes">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept reverse data-form="lanes">
+      <span class="concept-no"
             ><i class="fg fg-stream" style="--fc:#7dd3fc"></i>{String((n += 1)).padStart(2, "0")} — Stream</span
           >
           <h2>A body can blow a current.</h2>
@@ -412,9 +407,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-stream"
             >↯ Agitate the field</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">stream — drag me</span>
+      <Fragment slot="stage">
+        <span class="stage-label">stream — drag me</span>
           <span
             class="body-chip"
             id="c-stream"
@@ -429,14 +423,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >directional current — particles comb downwind</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept" data-form="wells">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept data-form="wells">
+      <span class="concept-no"
             ><i class="fg fg-tether" style="--fc:#86e57f"></i>{String((n += 1)).padStart(2, "0")} — Tether</span
           >
           <h2>A body can tether the field at a fixed distance.</h2>
@@ -456,9 +447,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-tether"
             >↯ Agitate the field</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">tether — drag me</span>
+      <Fragment slot="stage">
+        <span class="stage-label">tether — drag me</span>
           <span
             class="body-chip"
             id="c-tether"
@@ -472,14 +462,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >a tether — matter holds a shell at the rest radius</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept reverse" data-form="lanes">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept reverse data-form="lanes">
+      <span class="concept-no"
             ><i class="fg fg-viscosity" style="--fc:#8da2c0"></i>{String((n += 1)).padStart(2, "0")} — Viscosity</span
           >
           <h2>A body can thicken the medium.</h2>
@@ -498,9 +485,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-drag"
             >↯ Agitate the field</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">viscosity — move me</span>
+      <Fragment slot="stage">
+        <span class="stage-label">viscosity — move me</span>
           <span
             class="body-chip"
             id="c-drag"
@@ -514,14 +500,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >a viscous zone — momentum bleeds off, the swarm settles</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept" data-form="accretion">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept data-form="accretion">
+      <span class="concept-no"
             ><i class="fg fg-sink" style="--fc:#ff6e9c"></i>{String((n += 1)).padStart(2, "0")} — Accretion &amp;
             release</span
           >
@@ -544,9 +527,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             Nothing is conjured from thin air, and nothing vanishes. Matter
             changes hands.
           </p>
-        </div>
-        <div class="stage">
-          <span class="stage-label">sink — fills, then pops</span>
+      <Fragment slot="stage">
+        <span class="stage-label">sink — fills, then pops</span>
           <div
             class="body-core"
             data-drag
@@ -563,14 +545,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >matter accumulates, then releases on supernova</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept reverse" data-form="lanes">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept reverse data-form="lanes">
+      <span class="concept-no"
             ><i class="fg fg-jet" style="--fc:#a78bfa"></i>{String((n += 1)).padStart(2, "0")} — Emission</span
           >
           <h2>A body can be a fountain.</h2>
@@ -592,9 +571,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-jet"
             >↯ Feed the fountain</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">jet — move me · jets →</span>
+      <Fragment slot="stage">
+        <span class="stage-label">jet — move me · jets →</span>
           <span
             class="body-chip"
             id="c-jet"
@@ -609,20 +587,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >a fountain — matter is drawn in and jetted back out</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
     <!-- IV · Designed-extended -->
-    <div class="chapter" id="ch-extended">
-      <div class="wrap">
-        <span class="chapter-no">IV</span>
-        <h2 class="chapter-title">Designed-extended</h2>
-        <p class="chapter-sub">
-          Further designed forces, and the modifiers that wrap a sibling.
-        </p>
-      </div>
-    </div>
+    <ChapterHeader no="IV" id="ch-extended" title="Designed-extended">Further designed forces, and the modifiers that wrap a sibling.</ChapterHeader>
     {
       extended.map((f, i) => {
         n += 1;
@@ -631,15 +600,7 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
     }
 
     <!-- V · Presets -->
-    <div class="chapter" id="ch-presets">
-      <div class="wrap">
-        <span class="chapter-no">V</span>
-        <h2 class="chapter-title">Presets</h2>
-        <p class="chapter-sub">
-          Cosmology as composition — named arrangements of the primitives.
-        </p>
-      </div>
-    </div>
+    <ChapterHeader no="V" id="ch-presets" title="Presets">Cosmology as composition — named arrangements of the primitives.</ChapterHeader>
     {
       MANUAL_PRESETS.map((p, i) => {
         n += 1;
@@ -649,19 +610,9 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
     }
 
     <!-- VI · Conditions -->
-    <div class="chapter" id="ch-conditions">
-      <div class="wrap">
-        <span class="chapter-no">VI</span>
-        <h2 class="chapter-title">Conditions</h2>
-        <p class="chapter-sub">
-          When a force decides to act, and on which matter.
-        </p>
-      </div>
-    </div>
-    <section class="concept" data-form="scatter">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <ChapterHeader no="VI" id="ch-conditions" title="Conditions">When a force decides to act, and on which matter.</ChapterHeader>
+    <Concept data-form="scatter">
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Conditional</span
           >
           <h2>A force can choose what it touches.</h2>
@@ -681,9 +632,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#c-cond"
             >↯ Heat the field</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">conditional — catches heat only</span>
+      <Fragment slot="stage">
+        <span class="stage-label">conditional — catches heat only</span>
           <span
             class="body-chip"
             id="c-cond"
@@ -698,22 +648,13 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >selective attractor — grips excited matter, ignores the calm</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
     <!-- VII · System -->
-    <div class="chapter" id="ch-system">
-      <div class="wrap">
-        <span class="chapter-no">VII</span>
-        <h2 class="chapter-title">System</h2>
-        <p class="chapter-sub">What emerges when the parts interact.</p>
-      </div>
-    </div>
-    <section class="concept reverse">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <ChapterHeader no="VII" id="ch-system" title="System">What emerges when the parts interact.</ChapterHeader>
+    <Concept reverse>
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Reciprocity</span
           >
           <h2>The field changes the element back.</h2>
@@ -733,9 +674,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             compatibility alias of
             <code>--field-density</code>.)
           </p>
-        </div>
-        <div class="stage">
-          <span class="stage-label">density → weight</span>
+      <Fragment slot="stage">
+        <span class="stage-label">density → weight</span>
           <span
             class="live-demo"
             data-hot
@@ -749,13 +689,10 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >gathered particles raise the element’s weight</span
           >
-        </div>
-      </div>
-    </section>
-    <section class="concept reverse" data-attention-demo>
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+      </Fragment>
+    </Concept>
+    <Concept reverse data-attention-demo>
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Conserved attention</span
           >
           <h2>The page can’t emphasize two things at once.</h2>
@@ -772,9 +709,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <p class="note">
             Hover one word — watch the others surrender their weight to it.
           </p>
-        </div>
-        <div class="stage">
-          <span class="stage-label">one budget, redistributed</span>
+      <Fragment slot="stage">
+        <span class="stage-label">one budget, redistributed</span>
           <div class="attn-set">
             <span
               class="attn-word"
@@ -810,13 +746,10 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >one finite budget — engaging one starves the rest</span
           >
-        </div>
-      </div>
-    </section>
-    <section class="concept">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+      </Fragment>
+    </Concept>
+    <Concept>
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Threads</span
           >
           <h2>Engaging one body wires the set.</h2>
@@ -826,9 +759,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             itself as a <strong>connected system</strong>.
           </p>
           <p class="note">Hover any line.</p>
-        </div>
-        <div class="stage">
-          <span class="stage-label">a connected set</span>
+      <Fragment slot="stage">
+        <span class="stage-label">a connected set</span>
           <div class="thread-set" data-index data-threads>
             <span
               class="ti"
@@ -870,13 +802,10 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >threads connect the engaged body to its set</span
           >
-        </div>
-      </div>
-    </section>
-    <section class="concept reverse" data-causality-demo>
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+      </Fragment>
+    </Concept>
+    <Concept reverse data-causality-demo>
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Cross-boundary causality</span
           >
           <h2>Density doesn’t stop at the edge.</h2>
@@ -894,9 +823,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             Hover the middle tile — watch its neighbours catch, the far ones
             faintly.
           </p>
-        </div>
-        <div class="stage">
-          <span class="stage-label">spill → neighbours light</span>
+      <Fragment slot="stage">
+        <span class="stage-label">spill → neighbours light</span>
           <div class="causal-set">
             <span
               class="causal-node"
@@ -947,13 +875,10 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >engage one — the excess spills to whoever’s near</span
           >
-        </div>
-      </div>
-    </section>
-    <section class="concept reverse" id="formations">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+      </Fragment>
+    </Concept>
+    <Concept reverse id="formations" stageHidden>
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Formations</span
           >
           <h2>The whole field can change its mind.</h2>
@@ -972,21 +897,17 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
             <button class="form-pill" data-form="scatter">Scatter</button>
             <button class="form-pill" data-form="accretion">Accretion</button>
           </div>
-        </div>
-        <div class="stage" aria-hidden="true">
-          <span class="stage-label">formation — tap to reconfigure</span>
+      <Fragment slot="stage">
+        <span class="stage-label">formation — tap to reconfigure</span>
           <div class="form-readout"><span id="form-name">ambient</span></div>
           <span class="hintline"
             >a global bias on every particle — watch the field behind everything</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept reverse" data-form="wells">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept reverse data-form="wells">
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Material typography</span
           >
           <h2>Type is a readout of mass.</h2>
@@ -1009,9 +930,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#mat-word"
             >↯ Disturb the type</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">density → every type axis</span>
+      <Fragment slot="stage">
+        <span class="stage-label">density → every type axis</span>
           <span
             class="material-word"
             id="mat-word"
@@ -1026,14 +946,11 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >weight, optical size, tracking, glow and colour are one density</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="concept" data-form="scatter">
-      <div class="wrap concept-grid">
-        <div>
-          <span class="concept-no"
+    <Concept data-form="scatter">
+      <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Self-laying-out</span
           >
           <h2>The page arranges itself.</h2>
@@ -1055,9 +972,8 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <button class="agitate" data-agitate="#layout-seed"
             >↯ Disturb the layout</button
           >
-        </div>
-        <div class="stage">
-          <span class="stage-label">elements find their own positions</span>
+      <Fragment slot="stage">
+        <span class="stage-label">elements find their own positions</span>
           <span
             id="layout-seed"
             data-drag
@@ -1088,19 +1004,15 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
           <span class="hintline"
             >anchor + mutual repulsion + density pressure → equilibrium</span
           >
-        </div>
-      </div>
-    </section>
+      </Fragment>
+    </Concept>
 
-    <section class="manual-foot">
-      <div class="wrap">
-        <h2>Now go bend it yourself.</h2>
-        <div class="actions">
-          <a class="btn primary" href="/lab">Open the Lab →</a>
-          <a class="btn" href="/docs">Read the docs →</a>
-        </div>
-      </div>
-    </section>
+    <ManualFoot>
+      <Fragment slot="actions">
+        <Button href="/lab" variant="primary">Open the Lab →</Button>
+        <Button href="/docs">Read the docs →</Button>
+      </Fragment>
+    </ManualFoot>
   </div>
   <SiteFooter />
 </Base>
@@ -1111,109 +1023,5 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
      listeners, observers and overlay canvases never survive a client-side navigation away).
      init() tears the previous run down first, so it can't double-bind or double-remove. -->
 <script>
-  import { initHomeRuntime } from "../components/home/HomeRuntime.ts";
-  import { initStageFieldOverlay } from "../components/home/StageFieldOverlay.ts";
-
-  let teardownRuntime: (() => void) | undefined;
-  let teardownOverlay: (() => void) | undefined;
-
-  function teardown() {
-    teardownRuntime?.();
-    teardownOverlay?.();
-    teardownRuntime = undefined;
-    teardownOverlay = undefined;
-  }
-
-  function init() {
-    teardown(); // idempotent: drop any prior run before re-wiring
-    // only the home page hosts these — guard so the persisted listeners don't fire elsewhere
-    if (!document.querySelector(".manual-shell")) return;
-    teardownRuntime = initHomeRuntime();
-    teardownOverlay = initStageFieldOverlay();
-  }
-
-  if (document.readyState !== "loading") init();
-  else document.addEventListener("DOMContentLoaded", init);
-  document.addEventListener("astro:page-load", init);
-  document.addEventListener("astro:before-swap", teardown);
+  import "../components/manual-page.ts";
 </script>
-
-<style is:global>
-  .stage {
-    position: relative;
-  }
-
-  .stage-field {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 1;
-    transition: opacity 0.25s ease;
-  }
-  .stage-field ~ * {
-    position: relative;
-    z-index: 1;
-  }
-  /* the nav field-line toggle flips this class on <html> */
-  html.hide-field-lines .stage-field {
-    opacity: 0;
-  }
-
-  /* hero flow toggle — drives field.flowTo() */
-  .hero-flow {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
-  }
-  .flow-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font: inherit;
-    font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 999px;
-    cursor: pointer;
-    color: inherit;
-    border: 1px solid var(--line, #2a2a35);
-    background: transparent;
-    transition:
-      border-color 0.2s,
-      background 0.2s;
-  }
-  .flow-toggle .ft-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: #4da3ff;
-    opacity: 0.5;
-    transition:
-      opacity 0.2s,
-      box-shadow 0.2s;
-  }
-  .flow-toggle.on {
-    border-color: #4da3ff;
-    background: color-mix(in srgb, #4da3ff 16%, transparent);
-  }
-  .flow-toggle.on .ft-dot {
-    opacity: 1;
-    box-shadow: 0 0 10px 2px color-mix(in srgb, #4da3ff 70%, transparent);
-  }
-  .flow-hint {
-    font-size: 0.78rem;
-    color: var(--muted, #9aa);
-  }
-  .flow-hint code {
-    font-size: 0.92em;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .flow-toggle .ft-dot {
-      transition: none;
-    }
-  }
-</style>
