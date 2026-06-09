@@ -106,6 +106,12 @@ export class FieldField implements FieldHandle {
   atomAt(x: number, y: number): AtomPayload | null {
     return this.field.atomAt(x, y);
   }
+  focusAt(x: number, y: number): AtomPayload | null {
+    return this.field.focusAt(x, y);
+  }
+  clearFocus(): void {
+    this.field.clearFocus();
+  }
   /** stop the loop, release listeners, and remove the canvas if this instance made it. */
   destroy(): void {
     this.field.destroy();
