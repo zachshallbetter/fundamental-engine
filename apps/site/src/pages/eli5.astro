@@ -245,9 +245,54 @@ import "../styles/force-glyphs.css";
       </div>
     </section>
 
+    <!-- Body interaction model — the Body Matter Interaction submodel, shown through its shipped
+         concrete case (Sink / Accretion): a body that captures, holds, and releases matter.
+         Reuses the home runtime's wired hooks: [data-drag] body, .meter (syncs --load), [data-agitate]. -->
+    <section class="concept">
+      <div class="wrap concept-grid">
+        <div>
+          <span class="concept-no">05 — Body interaction model</span>
+          <h2>A body isn’t only a force. It can be a vessel.</h2>
+          <p>
+            Forces push and pull. But a body can also <strong>take matter in</strong> — it
+            <strong>captures</strong> the dots near it, <strong>holds</strong> them as it fills, and
+            <strong>releases</strong> them all at once when it’s full. Capture, hold, release:
+            nothing conjured, nothing deleted. Matter just changes hands.
+          </p>
+          <p class="note">
+            The shipped case is a <strong>sink</strong>. <code>data-absorb</code> sets how close it
+            grabs from; <code>data-max</code> sets how much it can hold; the engine writes the fill
+            back as <code>--load</code>, so the body can show how full it is. Drag it through the
+            swarm and watch the meter climb — then pop.
+          </p>
+          <div class="formula">
+            <span class="c">capture</span> → <span class="c">hold</span> →
+            <span class="v">release</span> <span class="c">(at data-max)</span>
+          </div>
+        </div>
+        <div class="stage">
+          <span class="stage-label">a vessel — drag it; it fills, then pops</span>
+          <div
+            class="body-core"
+            id="bim-core"
+            data-drag
+            data-body="sink attract"
+            data-absorb="74"
+            data-max="10"
+            data-strength="0.95"
+            data-range="240"
+            style="--cc:#2dd4bf; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
+          >vessel</div>
+          <div class="meter" style="--cc:#2dd4bf;"><i></i></div>
+          <button class="agitate" type="button" data-agitate="#bim-core">stir the field</button>
+          <span class="hintline">it captures nearby dots, holds them, and releases on supernova</span>
+        </div>
+      </div>
+    </section>
+
     <section class="concept reverse">
       <div class="wrap">
-        <span class="concept-no">05 — Real, tuned, or pretend</span>
+        <span class="concept-no">06 — Real, tuned, or pretend</span>
         <h2>And it always tells you which is which.</h2>
         <div class="buckets">
           <div class="bucket">
@@ -298,7 +343,7 @@ import "../styles/force-glyphs.css";
     <section class="concept">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">06 — Material type</span>
+          <span class="concept-no">07 — Material type</span>
           <h2>A word gains weight — literally.</h2>
           <p>
             This is the “mass” from the title, made real. The word pulls the dots
@@ -334,7 +379,7 @@ import "../styles/force-glyphs.css";
     <section class="concept reverse">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">07 — Threads</span>
+          <span class="concept-no">08 — Threads</span>
           <h2>Related things tie themselves together.</h2>
           <p>
             Touch one thing in a group and the field draws living threads to its
@@ -360,7 +405,7 @@ import "../styles/force-glyphs.css";
     <section class="concept" data-attention-demo>
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">08 — Shared attention</span>
+          <span class="concept-no">09 — Shared attention</span>
           <h2>The page can’t shout about two things at once.</h2>
           <p>
             There’s <strong>one</strong> bucket of focus for the whole page. Engage
@@ -412,7 +457,7 @@ import "../styles/force-glyphs.css";
     <section class="concept">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">09 — Emergence</span>
+          <span class="concept-no">10 — Emergence</span>
           <h2>Three rules, and it flocks.</h2>
           <p>
             Give every dot three tiny rules — <em>face the same way as your
@@ -447,7 +492,7 @@ import "../styles/force-glyphs.css";
     <section class="concept reverse" id="eli5-formations">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">10 — Formations</span>
+          <span class="concept-no">11 — Formations</span>
           <h2>The whole field can change its mind.</h2>
           <p>
             A single magnet tugs the dots near it. A <strong>formation</strong> is a
@@ -475,7 +520,7 @@ import "../styles/force-glyphs.css";
     <section class="concept">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">11 — Memory</span>
+          <span class="concept-no">12 — Memory</span>
           <h2>It remembers where you go.</h2>
           <p>
             Footsteps leave a warm trail that slowly fades. So the spots people keep
@@ -503,7 +548,7 @@ import "../styles/force-glyphs.css";
     <section class="concept reverse">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">12 — Explainable</span>
+          <span class="concept-no">13 — Explainable</span>
           <h2>It can tell you why.</h2>
           <p>
             Click anything and ask <em>why</em>. It shows its work: “I moved 60%
@@ -532,7 +577,7 @@ import "../styles/force-glyphs.css";
     <section class="concept">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">13 — Prediction</span>
+          <span class="concept-no">14 — Prediction</span>
           <h2>It thinks one step ahead.</h2>
           <p>
             It can quietly run the <em>next</em> few moments — without touching the
@@ -559,7 +604,7 @@ import "../styles/force-glyphs.css";
     <section class="concept reverse">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">14 — Trust</span>
+          <span class="concept-no">15 — Trust</span>
           <h2>It tells you what to trust.</h2>
           <p>
             Point it at an AI’s answer: a claim with real sources sits <strong>solid
@@ -604,7 +649,7 @@ import "../styles/force-glyphs.css";
     <section class="concept">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">15 — Recipes</span>
+          <span class="concept-no">16 — Recipes</span>
           <h2>A recipe is a card.</h2>
           <p>
             Magnets, a look, and a meaning, on one card — like a recipe for cookies.
@@ -637,7 +682,7 @@ import "../styles/force-glyphs.css";
     <section class="concept reverse" data-form="ambient">
       <div class="wrap concept-grid">
         <div>
-          <span class="concept-no">16 — One pond</span>
+          <span class="concept-no">17 — One pond</span>
           <h2>Drop two in and they share the same water.</h2>
           <p>
             There’s only <strong>one pond</strong>. Every magnet tugs the
