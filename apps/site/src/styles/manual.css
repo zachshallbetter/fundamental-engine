@@ -70,7 +70,7 @@
 }
 .manual-hero .standfirst {
   margin: clamp(1.6rem, 4vh, 2.4rem) 0 0;
-  max-width: 52ch;
+  max-width: 85%;
   font-size: clamp(1.1rem, 1.7vw, 1.4rem);
   line-height: 1.5;
   color: var(--text-2);
@@ -78,7 +78,7 @@
 }
 .manual-hero .thesis {
   margin: clamp(1.4rem, 3vh, 2rem) 0 0;
-  max-width: 50ch;
+  max-width: 85%;
   font-size: clamp(1rem, 1.5vw, 1.25rem);
   line-height: 1.5;
   color: var(--text-3);
@@ -179,7 +179,7 @@
 }
 .chapter-sub {
   margin: 0.9rem 0 0;
-  max-width: 40ch;
+  max-width: 85%;
   font-size: clamp(1.05rem, 1.6vw, 1.35rem);
   line-height: 1.45;
   color: var(--text-3);
@@ -298,7 +298,7 @@
   font-size: 1.06rem;
   line-height: 1.65;
   color: var(--text-2);
-  max-width: 46ch;
+  max-width: 85%;
 }
 .concept p.note {
   color: var(--text-3);
@@ -932,7 +932,7 @@ a.btn.primary:hover {
   color: var(--muted, #9aa);
   font-size: 0.92rem;
   font-style: italic;
-  max-width: 52ch;
+  max-width: 85%;
 }
 @media (max-width: 760px) {
   .force-list {
@@ -1265,7 +1265,7 @@ html.hide-field-lines .stage-field {
   padding: 0 clamp(1.2rem, 5vw, 3.5rem);
 }
 .atom-note p {
-  max-width: 58ch;
+  max-width: 85%;
   margin: 0;
   padding: 0.9rem 1.1rem;
   border: 1px solid var(--line);

@@ -45,7 +45,7 @@ body:has(.ev-page) {
 }
 .ev-lede {
   margin: 1.3rem 0 0;
-  max-width: 54ch;
+  max-width: 85%;
   font-size: clamp(1.02rem, 1.5vw, 1.2rem);
   line-height: 1.6;
   color: var(--text-2);
@@ -100,7 +100,7 @@ body:has(.ev-page) {
   font-size: 0.98rem;
   line-height: 1.6;
   color: var(--text-3);
-  max-width: 60ch;
+  max-width: 85%;
   margin: 0 0 1.4rem;
 }
 .ev-answer b {
@@ -249,7 +249,7 @@ body:has(.ev-page) {
   font-size: 0.86rem;
   line-height: 1.6;
   color: var(--text-3);
-  max-width: 60ch;
+  max-width: 85%;
 }
 .ev-fineprint strong {
   color: var(--text-2);

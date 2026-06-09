@@ -44,7 +44,7 @@
 .wi-hero .lede {
   font-size: clamp(1.05rem, 1rem + 0.5vw, 1.25rem);
   color: var(--w-dim);
-  max-width: 46rem;
+  max-width: 85%;
 }
 .wi-section { margin-top: 3.25rem; }
 .wi-section-head { display: flex; align-items: baseline; gap: 0.9rem; flex-wrap: wrap; border-bottom: 1px solid var(--w-line); padding-bottom: 0.5rem; }
