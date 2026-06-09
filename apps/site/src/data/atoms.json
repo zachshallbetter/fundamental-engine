@@ -7,7 +7,7 @@
       "id": "force:attract",
       "label": "Attract",
       "color": "#4da3ff",
-      "href": "/docs/forces#attract",
+      "href": "/docs/api/forces#force-attract",
       "weight": 1,
       "data": {
         "token": "attract",
@@ -25,7 +25,7 @@
       "id": "force:repel",
       "label": "Repel",
       "color": "#ff9d5c",
-      "href": "/docs/forces#repel",
+      "href": "/docs/api/forces#force-repel",
       "weight": 1,
       "data": {
         "token": "repel",
@@ -43,7 +43,7 @@
       "id": "force:swirl",
       "label": "Swirl",
       "color": "#2dd4bf",
-      "href": "/docs/forces#swirl",
+      "href": "/docs/api/forces#force-swirl",
       "weight": 1,
       "data": {
         "token": "swirl",
@@ -61,7 +61,7 @@
       "id": "force:stream",
       "label": "Stream",
       "color": "#7dd3fc",
-      "href": "/docs/forces#stream",
+      "href": "/docs/api/forces#force-stream",
       "weight": 1,
       "data": {
         "token": "stream",
@@ -79,7 +79,7 @@
       "id": "force:viscosity",
       "label": "Viscosity",
       "color": "#8da2c0",
-      "href": "/docs/forces#viscosity",
+      "href": "/docs/api/forces#force-viscosity",
       "weight": 1,
       "data": {
         "token": "viscosity",
@@ -97,7 +97,7 @@
       "id": "force:jet",
       "label": "Jet",
       "color": "#a78bfa",
-      "href": "/docs/forces#jet",
+      "href": "/docs/api/forces#force-jet",
       "weight": 1,
       "data": {
         "token": "jet",
@@ -115,7 +115,7 @@
       "id": "force:tether",
       "label": "Tether",
       "color": "#86e57f",
-      "href": "/docs/forces#tether",
+      "href": "/docs/api/forces#force-tether",
       "weight": 1,
       "data": {
         "token": "tether",
@@ -133,7 +133,7 @@
       "id": "force:wall",
       "label": "Wall",
       "color": "#c4b5fd",
-      "href": "/docs/forces#wall",
+      "href": "/docs/api/forces#force-wall",
       "weight": 1,
       "data": {
         "token": "wall",
@@ -151,7 +151,7 @@
       "id": "force:sink",
       "label": "Sink",
       "color": "#ff6e9c",
-      "href": "/docs/forces#sink",
+      "href": "/docs/api/forces#force-sink",
       "weight": 1,
       "data": {
         "token": "sink",
@@ -169,7 +169,7 @@
       "id": "force:gravity",
       "label": "Gravity",
       "color": "#6366f1",
-      "href": "/docs/forces#gravity",
+      "href": "/docs/api/forces#force-gravity",
       "weight": 1,
       "data": {
         "token": "gravity",
@@ -187,7 +187,7 @@
       "id": "force:charge",
       "label": "Charge",
       "color": "#60a5fa",
-      "href": "/docs/forces#charge",
+      "href": "/docs/api/forces#force-charge",
       "weight": 1,
       "data": {
         "token": "charge",
@@ -205,7 +205,7 @@
       "id": "force:magnetism",
       "label": "Magnetism",
       "color": "#c084fc",
-      "href": "/docs/forces#magnetism",
+      "href": "/docs/api/forces#force-magnetism",
       "weight": 1,
       "data": {
         "token": "magnetism",
@@ -223,7 +223,7 @@
       "id": "force:thermal",
       "label": "Thermal",
       "color": "#fb923c",
-      "href": "/docs/forces#thermal",
+      "href": "/docs/api/forces#force-thermal",
       "weight": 1,
       "data": {
         "token": "thermal",
@@ -241,7 +241,7 @@
       "id": "force:collide",
       "label": "Collide",
       "color": "#cbd5e1",
-      "href": "/docs/forces#collide",
+      "href": "/docs/api/forces#force-collide",
       "weight": 1,
       "data": {
         "token": "collide",
@@ -259,7 +259,7 @@
       "id": "force:diffuse",
       "label": "Diffuse",
       "color": "#a3e635",
-      "href": "/docs/forces#diffuse",
+      "href": "/docs/api/forces#force-diffuse",
       "weight": 1,
       "data": {
         "token": "diffuse",
@@ -277,7 +277,7 @@
       "id": "force:propagate",
       "label": "Propagate",
       "color": "#5eead4",
-      "href": "/docs/forces#propagate",
+      "href": "/docs/api/forces#force-propagate",
       "weight": 1,
       "data": {
         "token": "propagate",
@@ -295,7 +295,7 @@
       "id": "force:memory",
       "label": "Memory",
       "color": "#c9a27e",
-      "href": "/docs/forces#memory",
+      "href": "/docs/api/forces#force-memory",
       "weight": 1,
       "data": {
         "token": "memory",
@@ -313,7 +313,7 @@
       "id": "force:lens",
       "label": "Lens",
       "color": "#67e8f9",
-      "href": "/docs/forces#lens",
+      "href": "/docs/api/forces#force-lens",
       "weight": 1,
       "data": {
         "token": "lens",
@@ -331,7 +331,7 @@
       "id": "force:gate",
       "label": "Gate",
       "color": "#fb7185",
-      "href": "/docs/forces#gate",
+      "href": "/docs/api/forces#force-gate",
       "weight": 1,
       "data": {
         "token": "gate",
@@ -349,7 +349,7 @@
       "id": "force:buoyancy",
       "label": "Buoyancy",
       "color": "#fcd34d",
-      "href": "/docs/forces#buoyancy",
+      "href": "/docs/api/forces#force-buoyancy",
       "weight": 1,
       "data": {
         "token": "buoyancy",
@@ -367,7 +367,7 @@
       "id": "force:shear",
       "label": "Shear",
       "color": "#818cf8",
-      "href": "/docs/forces#shear",
+      "href": "/docs/api/forces#force-shear",
       "weight": 1,
       "data": {
         "token": "shear",
@@ -385,7 +385,7 @@
       "id": "force:crystallize",
       "label": "Crystallize",
       "color": "#93c5fd",
-      "href": "/docs/forces#crystallize",
+      "href": "/docs/api/forces#force-crystallize",
       "weight": 1,
       "data": {
         "token": "crystallize",
@@ -403,7 +403,7 @@
       "id": "force:align",
       "label": "Align",
       "color": "#fbbf24",
-      "href": "/docs/forces#align",
+      "href": "/docs/api/forces#force-align",
       "weight": 1,
       "data": {
         "token": "align",
@@ -421,7 +421,7 @@
       "id": "force:wind",
       "label": "Wind",
       "color": "#38bdf8",
-      "href": "/docs/forces#wind",
+      "href": "/docs/api/forces#force-wind",
       "weight": 1,
       "data": {
         "token": "wind",
@@ -439,7 +439,7 @@
       "id": "force:cohesion",
       "label": "Cohesion",
       "color": "#34d399",
-      "href": "/docs/forces#cohesion",
+      "href": "/docs/api/forces#force-cohesion",
       "weight": 1,
       "data": {
         "token": "cohesion",
@@ -457,7 +457,7 @@
       "id": "force:pressure",
       "label": "Pressure",
       "color": "#5eead4",
-      "href": "/docs/forces#pressure",
+      "href": "/docs/api/forces#force-pressure",
       "weight": 1,
       "data": {
         "token": "pressure",
@@ -475,7 +475,7 @@
       "id": "force:hunt",
       "label": "Hunt",
       "color": "#ef4444",
-      "href": "/docs/forces#hunt",
+      "href": "/docs/api/forces#force-hunt",
       "weight": 1,
       "data": {
         "token": "hunt",
@@ -493,7 +493,7 @@
       "id": "force:spawn",
       "label": "Spawn",
       "color": "#fb923c",
-      "href": "/docs/forces#spawn",
+      "href": "/docs/api/forces#force-spawn",
       "weight": 1,
       "data": {
         "token": "spawn",
@@ -511,7 +511,7 @@
       "id": "force:link",
       "label": "Link",
       "color": "#94a3b8",
-      "href": "/docs/forces#link",
+      "href": "/docs/api/forces#force-link",
       "weight": 1,
       "data": {
         "token": "link",
@@ -529,7 +529,7 @@
       "id": "force:morph",
       "label": "Morph",
       "color": "#e879f9",
-      "href": "/docs/forces#morph",
+      "href": "/docs/api/forces#force-morph",
       "weight": 1,
       "data": {
         "token": "morph",
@@ -547,7 +547,7 @@
       "id": "force:resonate",
       "label": "Resonate",
       "color": "#f0abfc",
-      "href": "/docs/forces#resonate",
+      "href": "/docs/api/forces#force-resonate",
       "weight": 1,
       "data": {
         "token": "resonate",
@@ -565,7 +565,7 @@
       "id": "force:spotlight",
       "label": "Spotlight",
       "color": "#facc15",
-      "href": "/docs/forces#spotlight",
+      "href": "/docs/api/forces#force-spotlight",
       "weight": 1,
       "data": {
         "token": "spotlight",
@@ -583,7 +583,7 @@
       "id": "force:pigment",
       "label": "Pigment",
       "color": "#d6529e",
-      "href": "/docs/forces#pigment",
+      "href": "/docs/api/forces#force-pigment",
       "weight": 1,
       "data": {
         "token": "pigment",
@@ -601,7 +601,7 @@
       "id": "force:fieldflow",
       "label": "Field Flow",
       "color": "#22d3ee",
-      "href": "/docs/forces#fieldflow",
+      "href": "/docs/api/forces#force-fieldflow",
       "weight": 1,
       "data": {
         "token": "fieldflow",
@@ -619,7 +619,7 @@
       "id": "force:warp",
       "label": "Warp",
       "color": "#a78bfa",
-      "href": "/docs/forces#warp",
+      "href": "/docs/api/forces#force-warp",
       "weight": 1,
       "data": {
         "token": "warp",
@@ -1842,7 +1842,7 @@
       "id": "preset:blackhole",
       "label": "blackhole",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-blackhole",
       "weight": 0.25,
       "data": {
         "name": "blackhole",
@@ -1854,7 +1854,7 @@
       "id": "preset:whitehole",
       "label": "whitehole",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-whitehole",
       "weight": 0.25,
       "data": {
         "name": "whitehole",
@@ -1866,7 +1866,7 @@
       "id": "preset:star",
       "label": "star",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-star",
       "weight": 0.25,
       "data": {
         "name": "star",
@@ -1878,7 +1878,7 @@
       "id": "preset:quasar",
       "label": "quasar",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-quasar",
       "weight": 0.25,
       "data": {
         "name": "quasar",
@@ -1890,7 +1890,7 @@
       "id": "preset:galaxy",
       "label": "galaxy",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-galaxy",
       "weight": 0.25,
       "data": {
         "name": "galaxy",
@@ -1902,7 +1902,7 @@
       "id": "preset:nebula",
       "label": "nebula",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-nebula",
       "weight": 0.25,
       "data": {
         "name": "nebula",
@@ -1914,7 +1914,7 @@
       "id": "preset:tornado",
       "label": "tornado",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-tornado",
       "weight": 0.25,
       "data": {
         "name": "tornado",
@@ -1926,7 +1926,7 @@
       "id": "preset:fountain",
       "label": "fountain",
       "color": "#fbbf24",
-      "href": "/docs/presets",
+      "href": "/docs/api/presets#preset-fountain",
       "weight": 0.25,
       "data": {
         "name": "fountain",

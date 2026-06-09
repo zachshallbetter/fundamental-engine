@@ -102,7 +102,7 @@ const DIAG = [
   <h2>The four fields</h2>
   <div class="nf-grid">
     {NATURAL_FIELDS.map((f) => (
-      <article class="nf-card" style={`--fc:${FIELD_COLOR[f.field]}`}>
+      <article class="nf-card" id={f.field} style={`--fc:${FIELD_COLOR[f.field]}`}>
         <h3>{f.title}</h3>
         <p class="nf-translation">{f.translation}</p>
         <p class="nf-summary">{f.summary}</p>
