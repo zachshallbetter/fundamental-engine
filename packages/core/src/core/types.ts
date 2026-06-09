@@ -421,6 +421,19 @@ export interface FieldHandle {
   focusAt(x: number, y: number): AtomPayload | null;
   /** Release the focused particle (it resumes drifting). */
   clearFocus(): void;
+  /**
+   * Live particle count — the current size of the particle pool. Equivalent to `store.size`
+   * inside the engine. Use for external budget monitors and debug overlays that need the count
+   * without walking the particle array (which `inspectBudget` does internally).
+   */
+  particleCount(): number;
+  /**
+   * Snapshot of kinetic, thermal, and total energy for the current frame. Thin forward to
+   * `energyReport(store.particles)` from `@field-ui/core/diagnostics/energy` — the function
+   * already exists; this accessor exposes it through the public handle so external tools
+   * (DataConsole, Inspector) don't need a reference to the internal particle array.
+   */
+  energy(): { kinetic: number; thermal: number; total: number; count: number };
   /** stop the loop and release listeners. */
   destroy(): void;
 }

@@ -112,6 +112,12 @@ export class FieldField implements FieldHandle {
   clearFocus(): void {
     this.field.clearFocus();
   }
+  particleCount(): number {
+    return this.field.particleCount();
+  }
+  energy(): { kinetic: number; thermal: number; total: number; count: number } {
+    return this.field.energy();
+  }
   /** stop the loop, release listeners, and remove the canvas if this instance made it. */
   destroy(): void {
     this.field.destroy();
