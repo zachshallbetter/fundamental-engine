@@ -1,6 +1,6 @@
 {
   "name": "@field-ui/vanilla",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Framework-free TypeScript wrapper for field-ui — the reciprocal DOM-physics field as a typed FieldField class + mountField(), with no custom-element registration and no framework dependency.",
   "type": "module",
   "license": "MIT",
