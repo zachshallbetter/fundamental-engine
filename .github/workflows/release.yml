@@ -1,0 +1,69 @@
+name: Release
+
+# Publishes the @field-ui/* packages to npm WITH provenance — a signed attestation
+# (Sigstore) that ties each tarball to this repo, the exact commit, and this workflow
+# run. Provenance can only be produced from CI (it needs the OIDC id-token below); a
+# manual `npm publish` from a laptop cannot generate it.
+#
+# Trigger: push a version tag, e.g.
+#   pnpm -r exec npm version 0.2.3 --no-git-tag-version   # bump the packages
+#   git commit -am "release: 0.2.3" && git tag v0.2.3 && git push --tags
+#
+# Prerequisite (one-time): add a repository secret `NPM_TOKEN` — a granular npm access
+# token with read+write to the @field-ui packages, created so it bypasses 2FA for
+# automation (CI cannot answer an interactive OTP prompt).
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance (OIDC)
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: build · verify · publish (provenance)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # The full pre-publish gate — never publish a tree that fails CI.
+      - name: Build (typechecks all packages)
+        run: pnpm build
+      - name: Test
+        run: pnpm test
+      - name: Smoke-check dist
+        run: pnpm check:dist
+      - name: Check API surface
+        run: pnpm check:api
+      - name: Check READMEs
+        run: pnpm check:readme
+      - name: Check recipes datafile
+        run: pnpm check:recipes
+
+      # pnpm rewrites workspace:* deps to real versions and skips any package whose
+      # version is already on the registry, so re-running a tag is safe. Only the seven
+      # public @field-ui/* packages are targeted (apps are private; @forces-ui/* aliases
+      # are intentionally excluded).
+      - name: Publish with provenance
+        run: pnpm --filter "@field-ui/*" publish --access public --no-git-checks --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

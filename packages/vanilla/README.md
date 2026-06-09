@@ -1,11 +1,11 @@
 # @field-ui/vanilla
 
-**The framework-free door to [field-ui](../core)** — a reciprocal DOM-physics field as a typed
+**The framework-free door to [`@field-ui/core`](../core)** — a reciprocal DOM-physics field as a typed
 `FieldField` class and the imperative `mountField()`. Elements you mark with `data-body` become forces;
 the single background field reacts to them, and its density reacts back. No custom-element
 registration, no framework dependency, no import side effects.
 
-→ Live at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
 
 ## Install
 
@@ -30,9 +30,35 @@ field.burst(window.innerWidth / 2, 200);
 ```
 
 `new FieldField()` builds a fixed, full-viewport canvas behind your page and starts the engine on it.
-It takes every `FieldOptions` value (`accent`, `density`, `waves`, `render`, `palette`, `mass`,
-`attention`, `causality`), implements the full `FieldHandle` surface, and exposes the `canvas` it runs
-on. The same engine the `<field-root>` custom element and the React `<FieldField>` wrap.
+It takes every `FieldOptions` value, implements the full `FieldHandle` surface, and exposes the
+`canvas` it runs on — the same engine the `<field-root>` custom element and the React `<FieldField>`
+wrap.
+
+### Options (`FieldOptions`)
+
+| Option | Type | Effect |
+|---|---|---|
+| `accent` | `string` | base hue (any CSS color) |
+| `density` | `number` | particle density multiplier |
+| `render` | `'dots' \| 'trails' \| 'links' \| 'metaballs' \| 'voronoi' \| 'streamlines'` | underlay render method |
+| `palette` | `string \| string[]` | named palette (`ours` / `heatmap` / `infrared` / `spectrum`) or colors |
+| `waves` | `boolean` | wave propagation |
+| `mass` | `boolean` | first-class mass in the integrator |
+| `attention` · `causality` · `heatmap` | `boolean` | diagnostics |
+| `canvas` | `HTMLCanvasElement` | drive a canvas you own (the field won't create/remove one) |
+
+### Methods (`FieldHandle`)
+
+| Method | Use |
+|---|---|
+| `scan()` / `rescan()` | re-read `[data-body]` elements after the DOM changes |
+| `setAccent(hex)` · `setPalette(p)` | recolor live |
+| `setFormation(name)` | arrange particles into a named formation |
+| `setRender(mode)` · `setOverlay(mode)` | underlay (behind content) / overlay (in front) |
+| `setAttention(on)` · `setCausality(on)` · `setHeatmap(on)` | toggle diagnostics |
+| `burst(x, y, hex?)` · `flowTo(x, y)` · `clearFlow()` | impulses and a movable focus |
+| `threads(list)` | draw relationship threads between bodies |
+| `destroy()` | stop the engine (and remove the managed canvas, if it created one) |
 
 > **Client only.** The field is a browser effect: `new FieldField()` (and `mountField()`) touch
 > `document` right away and throw a clear error during server-side rendering. In Next.js, Astro,
@@ -66,12 +92,28 @@ import { createField } from '@field-ui/vanilla';
 const field = createField(document.querySelector('canvas')!, { accent: '#2dd4bf' });
 ```
 
+## Marking bodies — the `data-body` vocabulary
+
+| Attribute | Meaning |
+|---|---|
+| `data-body="attract"` | the force token (`attract`, `gravity`, `charge`, `sink`, …) |
+| `data-strength` | how hard it bends the field |
+| `data-range` | radius of influence, in px |
+| `data-feedback` | opt in to receiving `--field-*` variables back |
+| `data-absorb` / `data-max` | for `sink` bodies: accretion load and capacity |
+
+Call `field.scan()` after adding new `[data-body]` elements so the engine picks them up.
+
 ## Catalog
 
 For building UI around the field (a force picker, a legend), the catalog data is re-exported so you
 need no second install: `FORCES`, `FORMATIONS`, `CONDITIONS`, `PALETTE`.
 
-## Recipes
+```ts
+import { FORCES, FORMATIONS } from '@field-ui/vanilla';
+```
+
+## Recipes & data binding
 
 To apply a named recipe over your markup or bind data to the field, use `applyRecipe()` / `bindData()`
 from [`@field-ui/platform`](../platform); browse all 64 recipes at
@@ -79,8 +121,8 @@ from [`@field-ui/platform`](../platform); browse all 64 recipes at
 
 ## Related
 
-[`field-ui`](../core) · [`@field-ui/platform`](../platform) · [`@field-ui/elements`](../elements) ·
-[`@field-ui/react`](../react) · the [documentation map](../../docs/README.md).
+[`@field-ui/core`](../core) · [`@field-ui/platform`](../platform) · [`@field-ui/elements`](../elements)
+· [`@field-ui/react`](../react) · the [documentation map](../../docs/README.md).
 
 ## License
 

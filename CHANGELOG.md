@@ -163,6 +163,19 @@ Aliases will be removed in a future major once docs, examples, and downstream co
   ROADMAP's force counts (33), the spec's runtime-field list (drops the removed `b.mass`), and
   stopped PUBLISHING / SECURITY / the package READMEs from implying the packages are on npm.
 
+## [0.2.2] — 2026-06-09
+
+Documentation and release-tooling pass — no engine code changed.
+
+### Added
+- **Provenance release workflow** (`.github/workflows/release.yml`): a tag-triggered CI publish that
+  signs each package with npm provenance (a Sigstore build attestation) via GitHub OIDC. Provenance
+  can only be produced from CI, so this becomes the path for all future releases.
+
+### Changed
+- Expanded the `@field-ui/react`, `@field-ui/elements`, and `@field-ui/vanilla` READMEs with full
+  options/methods tables, the `data-body` attribute vocabulary, and framework/SSR notes.
+
 ## [0.2.1] — 2026-06-08
 
 First npm release under the `@field-ui` scope.
@@ -177,6 +190,8 @@ First npm release under the `@field-ui` scope.
 ### Published
 - `@field-ui/core`, `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, and
   `@field-ui/vanilla` are live on npm. Install any layer directly (`npm i @field-ui/core`, etc.).
+- `@field-ui/kit` (a meta-package that installs the whole suite) and `@field-ui/field-ui` (a thin
+  alias for the kit) also published, for one-install consumption.
 
 ## [0.2.0] — 2026-06-04
 
