@@ -1365,6 +1365,35 @@ html.hide-field-lines .stage-field {
 .atom-card .at-go:hover {
   background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
+.atom-card .at-close {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-4, #6b7280);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.atom-card .at-close:hover {
+  color: var(--text, #e8e8ef);
+  background: rgba(255, 255, 255, 0.07);
+}
+/* entry animation */
+@keyframes atom-card-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.atom-card:not([hidden]) {
+  animation: atom-card-in 0.14s ease-out both;
+}
 /* when a dot is focused (held + lit by the engine), the pointer signals it's clickable. */
 html.atom-armed {
   cursor: pointer;

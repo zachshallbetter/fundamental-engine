@@ -1,0 +1,237 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+import { FIELD_OUTPUT_VARS } from '@field-ui/core';
+
+// Per-metric documentation: what each --field-* variable measures, its range, and when to use it.
+const METRIC_DOCS: Record<string, { range: string; written: string; summary: string; use: string }> = {
+  '--field-density': {
+    range: '0–1',
+    written: 'every frame',
+    summary: 'Eased fraction of nearby matter gathered at this body. The primary field intensity signal — high density means the body is a convergence point.',
+    use: 'Drive visual weight, font size, bloom, or z-elevation. The most reliable general-purpose readback.',
+  },
+  '--field-attention': {
+    range: '0–1',
+    written: 'every frame',
+    summary: 'Accumulated interaction-weighted attention at this body — a composite of recency, dwell, and interaction events.',
+    use: 'Distinguish hot items (read, clicked, hovered) from cold ones without a separate state tracker.',
+  },
+  '--field-heat': {
+    range: '0–1',
+    written: 'every frame',
+    summary: 'Thermal intensity at the body — rises with interaction events and decays over time. Distinct from density: heat is event-driven, density is proximity-driven.',
+    use: 'Highlight recently-interacted elements. Pairs with the `thermal` force for visible heat traces.',
+  },
+  '--field-pressure': {
+    range: '0–∞ (typically 0–5)',
+    written: 'every frame',
+    summary: 'Local force pressure — the net magnitude of forces acting on this body. High pressure signals contested or highly attracted positions.',
+    use: 'Surface overloaded zones in dashboards. Flag items under competing forces.',
+  },
+  '--field-entropy': {
+    range: '0–1',
+    written: 'every frame',
+    summary: 'Disorder of the local field — high entropy means inconsistent or competing forces. Low entropy means stable, predictable behavior.',
+    use: 'Show field stability. Trigger warnings (`--field-entropy-warning: 0.72`) when the layout becomes chaotic.',
+  },
+  '--field-coherence': {
+    range: '0–1',
+    written: 'every frame',
+    summary: 'Inverse of entropy — how aligned the local forces are. A coherent field is one where bodies move in consistent directions.',
+    use: 'Validate that a recipe produces stable behavior. Surface consensus vs. conflict.',
+  },
+  '--field-memory': {
+    range: '0–1',
+    written: 'every frame',
+    summary: 'Decaying trace of past attention — a long-window integral that fades when the body is ignored. Distinct from `--field-attention` (which is current-weighted).',
+    use: 'Show recency or staleness. An item not visited in a while will have high memory decay — use it for "stale" badges or fade-out.',
+  },
+  '--field-related-attention': {
+    range: '0–1',
+    written: 'per agent tick',
+    summary: 'Attention propagated from linked bodies — if a related body is being attended, this rises. Requires a relationship defined via `data-field-relation`.',
+    use: 'Highlight contextually relevant siblings without explicit user interaction on each one.',
+  },
+  '--field-path-use': {
+    range: '0–1',
+    written: 'per agent tick',
+    summary: 'How frequently this body appears on high-traffic paths through the field graph. High path-use bodies are structural connectors.',
+    use: 'Show navigational importance — items used as stepping-stones score high regardless of direct attention.',
+  },
+  '--field-attention-share': {
+    range: '0–1',
+    written: 'per agent tick',
+    summary: 'This body\'s fraction of the total attention budget across the field. A normalised view of competitive attention.',
+    use: 'Compare items on equal footing — useful for analytics-style readouts where you want relative, not absolute, scores.',
+  },
+  '--field-attention-rank': {
+    range: '0–N (integer)',
+    written: 'per agent tick',
+    summary: 'Ordinal rank of this body by attention within the field. 0 = highest-attended.',
+    use: 'Drive visual priority tiers (top-3 highlighted, rest dimmed) without threshold-tuning.',
+  },
+  '--field-pull-x': {
+    range: '-∞–∞ (px/frame)',
+    written: 'every frame',
+    summary: 'Net horizontal force vector acting on this body — the signed sum of all x-axis forces this frame.',
+    use: 'Read raw directional pressure. Rarely needed for styling; more useful for custom overlay renderers.',
+  },
+  '--field-pull-y': {
+    range: '-∞–∞ (px/frame)',
+    written: 'every frame',
+    summary: 'Net vertical force vector acting on this body.',
+    use: 'Pair with `--field-pull-x` for directional indicators or custom arrow overlays.',
+  },
+  '--field-user-wake': {
+    range: '0–1',
+    written: 'on interaction events',
+    summary: 'Rises to 1 on any user interaction near this body and decays quickly. A pure recency-of-touch signal.',
+    use: 'Trigger micro-animations or feedback only on recent touch — distinct from `--field-heat` which accumulates.',
+  },
+  '--field-layout-shift': {
+    range: '0–1',
+    written: 'on position change',
+    summary: 'Normalised magnitude of the most recent position displacement. Non-zero during and briefly after a FLIP-style reposition.',
+    use: 'Coordinate CSS transitions with field-driven layout changes. Lets the stylesheet know "a shift just happened here".',
+  },
+};
+
+// Group: primary (written every frame by core), secondary (written by agent layer)
+const PRIMARY = [
+  '--field-density', '--field-attention', '--field-heat',
+  '--field-pressure', '--field-entropy', '--field-coherence', '--field-memory',
+];
+const SECONDARY = FIELD_OUTPUT_VARS.filter((v) => !PRIMARY.includes(v) && METRIC_DOCS[v]);
+const ALL = [...PRIMARY, ...SECONDARY];
+---
+
+<DocsLayout
+  title="field-ui — CSS metrics reference"
+  description="Every --field-* CSS custom property the field writes back: density, attention, heat, pressure, entropy, coherence, memory, and the agent-layer sub-variables. Ranges, write cadence, and when to use each."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1><span class="accent">--field-*</span> metrics</h1>
+    <p class="lede">
+      The field writes measured state back to each body as CSS custom properties. Style with them directly
+      — no JavaScript readback needed. The primary seven are updated every frame by the core loop; the
+      sub-variables are written by the agent layer on interaction ticks.
+    </p>
+  </header>
+
+  <section class="docs-sec">
+    <h2>How readback works</h2>
+    <p>
+      When the field runs, each registered body receives its own set of <code>--field-*</code> properties
+      on its <code>style</code> attribute. Because they are scoped to the element, you can read them in CSS
+      with <code>var(--field-density)</code> — no need to query the handle or listen for events.
+    </p>
+    <pre class="code-block"><code>/* density drives visual weight — no JS needed */
+.card &#123;
+  scale: calc(1 + var(--field-density, 0) * 0.08);
+  box-shadow: 0 0 calc(var(--field-heat, 0) * 24px) rgba(77,163,255,0.35);
+&#125;</code></pre>
+    <p>
+      You can also read a metric from JavaScript via <code>getComputedStyle(el).getPropertyValue('--field-density')</code>,
+      or use it as a <code>data-feedback</code> target to write it back as a discrete state attribute.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Primary metrics</h2>
+    <p class="sec-note">Written every frame by the core loop. Available immediately when a body is registered.</p>
+    <dl class="metrics-list">
+      {PRIMARY.map((v) => {
+        const m = METRIC_DOCS[v];
+        return m ? (
+          <div class="metric-row" id={v.slice(2)}>
+            <dt>
+              <code class="var-name">{v}</code>
+              <span class="m-meta"><span class="m-range">{m.range}</span><span class="m-cadence">{m.written}</span></span>
+            </dt>
+            <dd>
+              <p class="m-summary">{m.summary}</p>
+              <p class="m-use"><b>Use for</b> {m.use}</p>
+            </dd>
+          </div>
+        ) : null;
+      })}
+    </dl>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Agent-layer sub-variables</h2>
+    <p class="sec-note">Written by the agent layer on interaction ticks — not every frame. May be absent until the first tick.</p>
+    <dl class="metrics-list">
+      {SECONDARY.map((v) => {
+        const m = METRIC_DOCS[v];
+        return m ? (
+          <div class="metric-row" id={v.slice(2)}>
+            <dt>
+              <code class="var-name">{v}</code>
+              <span class="m-meta"><span class="m-range">{m.range}</span><span class="m-cadence">{m.written}</span></span>
+            </dt>
+            <dd>
+              <p class="m-summary">{m.summary}</p>
+              <p class="m-use"><b>Use for</b> {m.use}</p>
+            </dd>
+          </div>
+        ) : null;
+      })}
+    </dl>
+  </section>
+
+  <SeeAlso links={[
+    { href: '/docs/api/attributes', label: 'data-* attributes' },
+    { href: '/docs/api/forces', label: 'Forces reference' },
+    { href: '/docs/api/handle', label: 'FieldHandle API' },
+    { href: '/docs/natural-fields', label: 'Natural fields model' },
+  ]} />
+</DocsLayout>
+
+<style>
+  .sec-note { color: var(--muted, #9aa); font-size: 0.88rem; margin-top: -0.5rem; }
+  .code-block {
+    background: color-mix(in srgb, var(--text, #fff) 4%, transparent);
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    font-size: 0.82rem;
+    overflow: auto;
+    margin: 0.8rem 0;
+  }
+  .metrics-list { display: grid; gap: 0; margin: 0; }
+  .metric-row {
+    display: grid;
+    grid-template-columns: 18rem 1fr;
+    gap: 0.5rem 1.2rem;
+    align-items: start;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--line, #2a2a35);
+    scroll-margin-top: 5rem;
+  }
+  .metric-row dt { display: flex; flex-direction: column; gap: 0.35rem; }
+  .var-name {
+    font-size: 0.82rem;
+    color: var(--accent, #4da3ff);
+    word-break: break-all;
+  }
+  .m-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .m-range, .m-cadence {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-4, #6b7280);
+    background: color-mix(in srgb, var(--text, #fff) 5%, transparent);
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 999px;
+    padding: 0.06rem 0.45rem;
+  }
+  .metric-row dd { margin: 0; }
+  .m-summary { color: var(--text-2, #c3c9d4); margin: 0 0 0.3rem; font-size: 0.9rem; }
+  .m-use { margin: 0; font-size: 0.84rem; color: var(--muted, #9aa); }
+  .m-use b { color: var(--text-3, #9aa); margin-right: 0.3rem; }
+  @media (max-width: 700px) {
+    .metric-row { grid-template-columns: 1fr; }
+  }
+</style>
