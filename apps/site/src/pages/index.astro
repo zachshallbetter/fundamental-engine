@@ -3,7 +3,6 @@ import Base from "../layouts/Base.astro";
 import SiteNav from "../components/SiteNav.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import HomeHero from "../components/home/HomeHero.astro";
-import StartHereLede from "../components/home/StartHereLede.astro";
 import ChapterRail from "../components/home/ChapterRail.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
@@ -45,8 +44,6 @@ let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), th
   <SiteNav current="home" />
   <div class="manual-shell">
     <HomeHero forcesCount={MANUAL_FORCES.length} />
-
-    <StartHereLede />
 
     <ChapterRail />
 
