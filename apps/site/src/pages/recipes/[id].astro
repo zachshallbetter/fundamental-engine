@@ -1,0 +1,180 @@
+---
+import Base from '../../layouts/Base.astro';
+import SiteNav from '../../components/SiteNav.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import VocabBadge from '../../components/VocabBadge.astro';
+import {
+  FIELD_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe,
+} from 'field-ui';
+
+// One page per recipe (getStaticPaths over the 64 FIELD_RECIPES): a large live preview, the full
+// five-lane breakdown + render + a11y + notes + plain-language explanation, copyable HTML / web
+// component / React / JSON (recipeAuthoring), and "see also" siblings (same field/tier).
+export function getStaticPaths() {
+  return FIELD_RECIPES.map((r) => ({ params: { id: r.id }, props: { recipe: r } }));
+}
+interface Props { recipe: FieldRecipe }
+const { recipe: r } = Astro.props;
+
+const FIELD_COLOR: Record<string, string> = {
+  gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c', diagnostic: '#9aa7b4', platform: '#9aa7b4',
+};
+const fieldKey = r.naturalField ?? 'other';
+const color = FIELD_COLOR[fieldKey] ?? '#9aa7b4';
+const fieldLabel = r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Diagnostic / platform';
+const isFirst = new Set(FIRST_RELEASE_RECIPE_IDS).has(r.id);
+const auth = recipeAuthoring(r);
+const exports = { html: auth.html, wc: auth.webComponent, react: auth.react, json: serializeRecipe(r) };
+const seeAlso = FIELD_RECIPES.filter((x) => x.id !== r.id && (x.naturalField === r.naturalField || x.tier === r.tier)).slice(0, 6);
+---
+
+<Base title={`field-ui — ${r.name}`} description={`${r.name}: ${r.intent}. A live, validated field-ui recipe — runs in your browser, with the runtime tokens, metrics, diagnostics, accessibility equivalent, and copyable HTML / web component / React / JSON.`}>
+  <SiteNav />
+  <main class="rp-shell" style={`--rc: ${color}`}>
+    <p class="rp-back"><a href="/recipes">← all recipes</a></p>
+    <header class="rp-hero">
+      <div class="rc-tags">
+        <span class="rc-field">{fieldLabel}</span>
+        <span class="rc-tier">{r.tier}</span>
+        {isFirst && <span class="rc-first">First release</span>}
+        {r.status && r.status !== 'shipped' && <span class="rc-status">{r.status}</span>}
+      </div>
+      <h1>{r.name}</h1>
+      <p class="intent">{r.intent}</p>
+      {r.translation && <p class="translation">{r.translation}</p>}
+    </header>
+
+    <section class="rp-stage" aria-label="Live preview">
+      <div class="rp-preview" data-recipe-preview={r.id} aria-hidden="true"></div>
+      <div class="rp-readout" data-readout>
+        <span>frame <b data-ro="frame">—</b></span>
+        <span>bodies <b data-ro="measurements">0</b></span>
+        <span>relationships <b data-ro="relationships">0</b></span>
+        <span class="rp-metrics" data-ro-metrics></span>
+      </div>
+      <p class="rp-note">Running the actual recipe live via <code>applyRecipe()</code> — not a mock.</p>
+    </section>
+
+    <p class="explain">{explainScene(r)}</p>
+    {r.notes && <p class="notes">{r.notes}</p>}
+
+    <dl class="rp-meta">
+      <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
+      {r.concepts && r.concepts.length > 0 && <div><dt>Concepts</dt><dd>{r.concepts.map((c) => <VocabBadge kind="concept" label={c} />)}</dd></div>}
+      <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd></div>
+      <div><dt>Diagnostics</dt><dd>{r.diagnostics.map((d) => <VocabBadge kind="diagnostic" label={d} />)}</dd></div>
+      {r.conditions && r.conditions.length > 0 && <div><dt>Conditions</dt><dd>{r.conditions.map((c) => <VocabBadge kind="condition" label={c} />)}</dd></div>}
+      <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
+      <div><dt>Reduced motion</dt><dd class="a11y">{r.accessibility.reducedMotion}</dd></div>
+      <div><dt>Without motion</dt><dd class="a11y">{r.accessibility.meaningWithoutMotion}</dd></div>
+    </dl>
+
+    <section class="rp-export" data-ex>
+      <h2>Copy this recipe</h2>
+      <div class="ex-tabs" role="tablist">
+        <button type="button" class="on" data-ex-tab="html">HTML</button>
+        <button type="button" data-ex-tab="wc">Web component</button>
+        <button type="button" data-ex-tab="react">React</button>
+        <button type="button" data-ex-tab="json">JSON</button>
+        <button type="button" class="ex-copy" data-ex-copy>Copy</button>
+      </div>
+      <pre class="ex-pre"><code>{exports.html}</code></pre>
+      <script type="application/json" data-ex-data set:html={JSON.stringify(exports).split('</').join('<\\/')}></script>
+    </section>
+
+    {seeAlso.length > 0 && (
+      <section class="rp-seealso">
+        <h2>See also</h2>
+        <ul>{seeAlso.map((x) => <li><a href={`/recipes/${x.id}`}>{x.name}</a> <span>{x.intent}</span></li>)}</ul>
+      </section>
+    )}
+  </main>
+  <SiteFooter />
+</Base>
+
+<script>
+  import { initRecipePreviews } from '../../lib/recipe-preview.ts';
+
+  let teardown: (() => void) | undefined;
+  function init() {
+    const ro = (k: string, v: string) => { const e = document.querySelector(`[data-ro="${k}"]`); if (e) e.textContent = v; };
+    const metricsEl = document.querySelector<HTMLElement>('[data-ro-metrics]');
+    teardown?.();
+    teardown = initRecipePreviews({
+      max: 1,
+      onInspect: (_el, applied) => {
+        const ins = applied.inspect();
+        ro('frame', String(ins.frame));
+        ro('measurements', String(ins.measurements));
+        ro('relationships', String(ins.relationships));
+        if (metricsEl) {
+          const first = Object.values(ins.metrics)[0] ?? {};
+          metricsEl.innerHTML = Object.entries(first).map(([m, v]) => `<span>${m} <b>${(v as number).toFixed(2)}</b></span>`).join('');
+        }
+      },
+    });
+
+    // copy-this-recipe tabs
+    const ex = document.querySelector<HTMLElement>('[data-ex]');
+    if (ex) {
+      let data: Record<string, string> = {};
+      try { data = JSON.parse(ex.querySelector('[data-ex-data]')?.textContent ?? '{}'); } catch { data = {}; }
+      const pre = ex.querySelector<HTMLElement>('.ex-pre code');
+      const tabs = Array.from(ex.querySelectorAll<HTMLButtonElement>('[data-ex-tab]'));
+      const copyBtn = ex.querySelector<HTMLButtonElement>('[data-ex-copy]');
+      let current = 'html';
+      for (const t of tabs) t.addEventListener('click', () => {
+        current = t.dataset.exTab ?? 'html';
+        tabs.forEach((x) => x.classList.toggle('on', x === t));
+        if (pre) pre.textContent = data[current] ?? '';
+      });
+      copyBtn?.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(data[current] ?? ''); copyBtn.textContent = 'Copied'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200); }
+        catch { copyBtn.textContent = 'Copy failed'; }
+      });
+    }
+  }
+  if (document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+</script>
+
+<style>
+  .rp-shell { position: relative; z-index: 2; width: 100%; max-width: 56rem; margin: 0 auto; padding: 5.5rem 1.5rem 4rem; }
+  .rp-back { margin: 0 0 1rem; }
+  .rp-back a, .rp-build a { color: #4da3ff; text-decoration: none; font-size: 0.88rem; }
+  .rc-tags { display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap; font-size: 0.74rem; }
+  .rc-field { color: var(--rc, #4da3ff); font-weight: 600; }
+  .rc-tier { color: var(--muted, #9aa); text-transform: capitalize; }
+  .rc-first { color: #ffd479; border: 1px solid color-mix(in srgb, #ffd479 40%, transparent); border-radius: 999px; padding: 0 0.4rem; }
+  .rc-status { color: #ff9d5c; text-transform: capitalize; }
+  .rp-hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0.5rem 0 0.4rem; line-height: 1.05; }
+  .intent { color: var(--muted, #c3c9d4); font-size: 1.05rem; margin: 0 0 0.3rem; }
+  .translation { color: var(--muted, #9aa); font-style: italic; margin: 0; }
+  .rp-stage { margin: 1.6rem 0; border: 1px solid var(--line, #2a2a35); border-radius: 14px; overflow: hidden; background: radial-gradient(120% 120% at 50% 30%, color-mix(in srgb, var(--rc) 9%, transparent), transparent 70%); }
+  .rp-preview { position: relative; min-height: 240px; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: center; padding: 1.2rem; }
+  .rp-readout { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0.6rem 1rem; border-top: 1px solid var(--line, #2a2a35); font: 0.8rem ui-monospace, monospace; color: var(--muted, #9aa); }
+  .rp-readout b { color: var(--text, #e8e8ef); }
+  .rp-metrics { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+  .rp-note { font-size: 0.8rem; color: var(--muted, #9aa); padding: 0 1rem 0.7rem; margin: 0; }
+  .explain { font-size: 1.02rem; line-height: 1.6; }
+  .notes { color: var(--muted, #c3c9d4); font-size: 0.92rem; border-left: 2px solid var(--rc, #4da3ff); padding-left: 0.9rem; }
+  .rp-meta { display: grid; gap: 0.5rem; margin: 1.6rem 0; }
+  .rp-meta > div { display: grid; grid-template-columns: 10rem 1fr; gap: 0.7rem; align-items: baseline; }
+  .rp-meta dt { color: var(--muted, #9aa); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
+  .rp-meta dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .rp-meta dd.a11y { display: block; color: var(--muted, #c3c9d4); font-size: 0.9rem; }
+  .rc-render { font-family: ui-monospace, monospace; font-size: 0.82rem; color: var(--muted, #c3c9d4); }
+  .rp-export { margin: 1.8rem 0; }
+  .ex-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .ex-tabs button { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--muted, #9aa); border-radius: 8px 8px 0 0; padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; }
+  .ex-tabs button.on { color: var(--text, #e8e8ef); border-bottom-color: transparent; background: color-mix(in srgb, var(--text, #fff) 4%, transparent); }
+  .ex-copy { margin-left: auto; }
+  .ex-pre { margin: 0; border: 1px solid var(--line, #2a2a35); border-radius: 0 10px 10px 10px; padding: 0.9rem 1rem; overflow: auto; background: color-mix(in srgb, var(--text, #fff) 3%, transparent); font-size: 0.8rem; }
+  .rp-seealso { margin-top: 2rem; border-top: 1px solid var(--line, #2a2a35); padding-top: 1.2rem; }
+  .rp-seealso ul { list-style: none; padding: 0; display: grid; gap: 0.45rem; }
+  .rp-seealso a { color: var(--rc, #4da3ff); text-decoration: none; }
+  .rp-seealso span { color: var(--muted, #9aa); font-size: 0.85rem; }
+  @media (max-width: 560px) { .rp-meta > div { grid-template-columns: 1fr; } }
+</style>
