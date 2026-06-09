@@ -8,6 +8,14 @@
  *   2 = minimal          — caller should switch render to 'dots', cut particle cap in half
  *   3 = paused           — caller should suspend the field loop entirely
  *
+ * Shipped consumer: the `<field-root>` platform runtime throttles its own tick cadence (the
+ * measurement/feedback DOM work) to every 2nd frame at tier 2 and every 4th at tier 3, and
+ * emits `field:quality-tier` so embedders can wire engine-side responses (render simplification,
+ * particle caps) — those are NOT automatic yet.
+ *
+ * Feed it rAF-to-rAF spacing (or better, measured work time). Callers should skip discontinuity
+ * frames (tab switches, system sleep) and reset() on visibilitychange — the elements runtime does.
+ *
  * Recovery is asymmetric: a tier escalation fires after N consecutive overrun frames;
  * recovery requires a longer run of clean frames to avoid thrashing at the boundary.
  */

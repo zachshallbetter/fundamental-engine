@@ -439,6 +439,9 @@ export interface FieldHandle {
    * `scrolling` condition gate uses: `(prev × 0.7) + (|scrollDelta| × 0.3)` per frame.
    * Units are pixels per frame at the native rAF cadence (~1 at 60 fps per pixel/s of scroll).
    * Near 0 = user is reading/stopped; 2+ = slow deliberate scroll; 10+ = fast scan/jump.
+   * CAVEAT: px/frame is refresh-rate dependent — the same physical scroll reads roughly half
+   * this value on a 120 Hz display. A px/ms normalization may replace this unit before 1.0
+   * (the surface is experimental); thresholds tuned on 60 Hz should treat the value as coarse.
    * Written to `--field-scroll-v` on `:root` by the platform write phase when a platform
    * runtime is active. Pull-based: read on demand, do not poll in tight loops.
    */

@@ -183,21 +183,48 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   let raf = 0;
   let handle: FieldHandle | null = null;
   let lastTs = 0;
+  let frame = 0;
   const governor = new QualityGovernor();
 
-  // write phase: --field-scroll-v on :root (once handle is attached)
+  // A frame gap this large is a discontinuity (background tab, system sleep, a debugger pause),
+  // not a budget overrun — feeding it would spike the governor for free.
+  const DISCONTINUITY_MS = 500;
+
+  // write phase: --field-scroll-v on :root (once handle is attached). Written directly rather
+  // than through FeedbackRegistry — it's a page-global, not a per-body channel — so it does NOT
+  // count toward feedback.cssWritesLastFrame(). The unchanged-value guard keeps idle frames
+  // (scrollV pinned at 0.000) mutation-free.
+  let lastScrollV = '';
   platform.on('write', () => {
     if (!handle) return;
-    const sv = handle.scrollV();
-    (root.ownerDocument ?? document).documentElement.style.setProperty('--field-scroll-v', sv.toFixed(3));
+    const sv = handle.scrollV().toFixed(3);
+    if (sv === lastScrollV) return;
+    lastScrollV = sv;
+    (root.ownerDocument ?? document).documentElement.style.setProperty('--field-scroll-v', sv);
   });
+
+  // rAF stops while a tab is backgrounded; the first frame back would otherwise read as a huge
+  // overrun. Reset the timing baseline and re-detect from full quality.
+  const onVisibility = (): void => {
+    lastTs = 0;
+    governor.reset();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
 
   const loop = (t: number): void => {
     const duration = lastTs ? t - lastTs : 0;
     lastTs = t;
-    platform.tick(t, { width: window.innerWidth, height: window.innerHeight });
+    frame++;
 
-    if (duration > 0 && handle) {
+    // Tier 2/3 degradation (the governor's built-in consumer): throttle the platform's own tick
+    // — measurement, feedback writes, relationship discovery — to every 2nd / 4th frame. The
+    // engine keeps simulating at full rate; only the platform's DOM read/write cadence drops.
+    // Engine-side responses (render simplification, particle caps) are the embedder's to wire
+    // via the field:quality-tier event.
+    const stride = governor.tier >= 3 ? 4 : governor.tier === 2 ? 2 : 1;
+    if (frame % stride === 0) platform.tick(t, { width: window.innerWidth, height: window.innerHeight });
+
+    if (duration > 0 && duration < DISCONTINUITY_MS && handle) {
       const newTier = governor.feed(duration);
       if (newTier !== undefined) {
         root.dispatchEvent(new CustomEvent('field:quality-tier', {
@@ -219,6 +246,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       handle = null;
+      document.removeEventListener('visibilitychange', onVisibility);
       unwireShadow();
     },
   };
