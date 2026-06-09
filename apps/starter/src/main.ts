@@ -11,7 +11,7 @@
  * loop reads each handle's inspect() so you can watch the field's own accounting.
  */
 import '@field-ui/elements'; // side effect: registers <field-root>, <field-cell>, <field-field>
-import { recipeById, compileRecipe } from 'field-ui';
+import { recipeById, compileRecipe } from '@field-ui/core';
 import { applyRecipe, bindData } from '@field-ui/platform';
 
 const RECIPE_ID = 'priority-well';

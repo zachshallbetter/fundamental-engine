@@ -10,10 +10,12 @@ the runtime that runs recipes and binds data.
 
 ## Install
 
-> **Pre-release: not yet on npm.** Consume from this repository for now (see
-> [`RELEASING.md`](../../RELEASING.md) and [`PUBLISHING.md`](../../PUBLISHING.md)). `npm add @field-ui/platform`
-> lands with the first published release. The public surface is frozen for `0.x` (see
-> [API stability](../../docs/canonical/field-ui-api-stability.md)).
+```sh
+npm i @field-ui/platform
+```
+
+The public surface is frozen for `0.x` (see
+[API stability](../../docs/canonical/field-ui-api-stability.md)).
 
 ## The browser host
 
@@ -21,7 +23,7 @@ The core's `createField` is renderer-agnostic and requires a `FieldHost`. `brows
 canonical DOM implementation, and `createBrowserField()` is the host-bundled shortcut:
 
 ```ts
-import { createField } from 'field-ui';
+import { createField } from '@field-ui/core';
 import { browserHost, createBrowserField } from '@field-ui/platform';
 
 const canvas = document.querySelector('canvas')!;
@@ -64,7 +66,7 @@ compiler) lives in [the core](../core); application lives here:
 
 ```ts
 import { applyRecipe, bindData } from '@field-ui/platform';
-import { recipeById } from 'field-ui';
+import { recipeById } from '@field-ui/core';
 
 // Run a recipe over a region; inspect the live run; tear it down.
 const applied = applyRecipe(root, recipeById('reading-field')!);

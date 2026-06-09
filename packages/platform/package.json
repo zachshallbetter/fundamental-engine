@@ -1,6 +1,6 @@
 {
   "name": "@field-ui/platform",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The platform-adjacent layer for field-ui — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives field-ui wishes existed, built on the ones it has.",
   "type": "module",
   "license": "MIT",
@@ -27,7 +27,8 @@
   "sideEffects": false,
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -51,7 +52,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "field-ui": "workspace:*"
+    "@field-ui/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

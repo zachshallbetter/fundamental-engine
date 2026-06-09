@@ -1,4 +1,4 @@
-import { PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayMode } from 'field-ui';
+import { PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayMode } from '@field-ui/core';
 import { createBrowserField, type FieldPlatform } from '@field-ui/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -302,5 +302,5 @@ export {
   FIELD_REGISTER_BODY,
   FIELD_UNREGISTER_BODY,
   FIELD_UPDATE_BODY,
-} from 'field-ui';
-export type { RegisterBodyDetail } from 'field-ui';
+} from '@field-ui/core';
+export type { RegisterBodyDetail } from '@field-ui/core';

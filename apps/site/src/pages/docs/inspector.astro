@@ -9,7 +9,7 @@ import {
   RECIPE_CONTRACTS,
   SEMANTIC_CONTRACTS,
   FIELD_RECIPES,
-} from 'field-ui';
+} from '@field-ui/core';
 import { PHASES } from '@field-ui/platform';
 
 // The Inspector reads the system's own self-description: the system report, every contract, and the
@@ -302,7 +302,7 @@ const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
 <script>
   // Recipe inspector: compile a chosen recipe (compileRecipe) + run it (applyRecipe), exposing the
   // plan and live metrics — "why is this moving" made answerable from the recipe object.
-  import { compileRecipe, recipeById } from 'field-ui';
+  import { compileRecipe, recipeById } from '@field-ui/core';
   import { applyRecipe, type AppliedRecipe } from '@field-ui/platform';
 
   const pick = document.querySelector<HTMLSelectElement>('[data-ri-pick]');

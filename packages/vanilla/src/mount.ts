@@ -10,7 +10,7 @@
  * For object-oriented ergonomics (and driving a canvas you own), see the `ForcesField` class.
  */
 
-import { FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from 'field-ui';
+import { FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from '@field-ui/core';
 import { createBrowserField } from '@field-ui/platform';
 
 export interface MountOptions extends FieldOptions {

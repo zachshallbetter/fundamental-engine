@@ -10,7 +10,7 @@
  * default FieldHost), `createBrowserField()` (createField + browserHost), and the DOM download
  * helpers — so core can import zero DOM.
  */
-import { createField, type FieldHandle, type FieldOptions } from 'field-ui';
+import { createField, type FieldHandle, type FieldOptions } from '@field-ui/core';
 import { browserHost } from './browser-host.ts';
 
 export * from './types.ts';
