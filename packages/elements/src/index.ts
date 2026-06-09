@@ -51,6 +51,9 @@ export class FieldField extends HTMLElementBase {
   private field?: FieldHandle;
   /** Field Surfaces: the optional front overlay surface (light-DOM, above content). */
   private overlayCanvas?: HTMLCanvasElement;
+  /** element-level visibility: pages can hide the field (display:none) — skip draw work then. */
+  private visibilityObserver?: IntersectionObserver;
+  private fieldVisible = true;
   /** experimental platform runtime (Phase D); present only when the flag is on. */
   platformRuntime?: PlatformRuntime;
 
@@ -209,9 +212,22 @@ export class FieldField extends HTMLElementBase {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
     if (!this.hasAttribute('aria-hidden')) this.setAttribute('aria-hidden', 'true');
     this.start();
+    // Pages can hide the singleton field with CSS (display:none) — e.g. surfaces that want the
+    // engine's signals but no particle swarm. The host is position:fixed inset:0, so IO reports
+    // not-intersecting exactly when it's hidden or zero-sized; the engine then skips all draw
+    // work while the simulation (scrollV, feedback vars, events) keeps running.
+    if (typeof IntersectionObserver !== 'undefined' && !this.visibilityObserver) {
+      this.visibilityObserver = new IntersectionObserver((entries) => {
+        this.fieldVisible = entries.some((e) => e.isIntersecting);
+        this.field?.setVisible(this.fieldVisible);
+      });
+      this.visibilityObserver.observe(this);
+    }
   }
 
   disconnectedCallback(): void {
+    this.visibilityObserver?.disconnect();
+    this.visibilityObserver = undefined;
     this.field?.destroy();
     this.field = undefined;
     // Field Surfaces: remove the light-DOM overlay surface this element owns.
@@ -296,6 +312,9 @@ export class FieldField extends HTMLElementBase {
     // attach the handle so the platform write phase can read scrollV → --field-scroll-v
     // and the quality governor can monitor frame duration
     this.platformRuntime?.attachHandle(this.field);
+    // a rebuild (density/waves/mass change) starts a fresh engine that defaults to visible —
+    // re-apply the last observed element visibility so a hidden field stays draw-skipped.
+    if (!this.fieldVisible) this.field.setVisible(false);
   }
 }
 

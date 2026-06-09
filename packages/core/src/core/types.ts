@@ -446,6 +446,15 @@ export interface FieldHandle {
    * runtime is active. Pull-based: read on demand, do not poll in tight loops.
    */
   scrollV(): number;
+  /**
+   * Element-level visibility hint. `setVisible(false)` while the canvas is hidden or offscreen
+   * (`display:none`, scrolled out) skips ALL draw work — usually the dominant frame cost — while
+   * the simulation and its signals stay live: `scrollV()`, feedback vars (`--d`, `--load`),
+   * capture events keep flowing. Distinct from the tab-level pause (the engine already stops
+   * fully on the host's visibilitychange). `<field-root>` wires this automatically from an
+   * IntersectionObserver on the host element; call it yourself for custom embeddings.
+   */
+  setVisible(on: boolean): void;
   /** stop the loop and release listeners. */
   destroy(): void;
 }

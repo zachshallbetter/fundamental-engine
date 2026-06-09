@@ -121,6 +121,9 @@ export class FieldField implements FieldHandle {
   scrollV(): number {
     return this.field.scrollV();
   }
+  setVisible(on: boolean): void {
+    this.field.setVisible(on);
+  }
   /** stop the loop, release listeners, and remove the canvas if this instance made it. */
   destroy(): void {
     this.field.destroy();
