@@ -21,6 +21,9 @@ function centerIn(el: HTMLElement, host: HTMLElement) {
   return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height / 2 };
 }
 
+const INITIAL_COUNT = 8;
+const BATCH_SIZE = 4;
+
 function initEvidence(): () => void {
   const page = document.querySelector<HTMLElement>(".ev-page");
   if (!page) return () => {};
@@ -57,7 +60,7 @@ function initEvidence(): () => void {
   const reweight = (topic: HTMLElement): void => {
     const list = topic.querySelector<HTMLElement>("[data-ev-list]");
     if (!list) return;
-    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")];
+    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
     const cites = findings.map((f) => Number(f.dataset.cites) || 0);
     const years = findings.map((f) => Number(f.dataset.year) || 0).filter(Boolean);
     const st = {
@@ -98,7 +101,7 @@ function initEvidence(): () => void {
 
   // ── color lens — a second, orthogonal channel: size stays trust, color shows another aspect.
   const applyLens = (topic: HTMLElement): void => {
-    const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")];
+    const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
     if (lens === "field") {
       // color by research subfield — the engine binding works to a discipline (server-assigned).
       findings.forEach((f) => f.style.setProperty("--cat", f.dataset.fieldColor || "#60a5fa"));
@@ -129,7 +132,7 @@ function initEvidence(): () => void {
       if (base) {
         const recipe = { ...base, render: [] as never[] };
         activeField = applyRecipe(list, recipe, {
-          bodies: [...list.querySelectorAll<HTMLElement>(".ev-finding")],
+          bodies: [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden),
           annotateBodies: false,
         });
       }
@@ -151,7 +154,7 @@ function initEvidence(): () => void {
       svg.setAttribute("aria-hidden", "true");
       list.prepend(svg);
     }
-    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")];
+    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
     const clear = (): void => {
       svg!.innerHTML = "";
       findings.forEach((f) => f.classList.remove("lit", "cited"));
@@ -180,12 +183,61 @@ function initEvidence(): () => void {
     });
   };
 
+  // ── scroll-gated accretion reveal ───────────────────────────────────────
+  const revealBatch = (topic: HTMLElement): boolean => {
+    const list = topic.querySelector<HTMLElement>("[data-ev-list]");
+    if (!list) return false;
+    const hidden = [...list.querySelectorAll<HTMLElement>("[data-ev-deferred]")].filter(
+      (f) => f.hidden,
+    );
+    const batch = hidden.slice(0, BATCH_SIZE);
+    if (!batch.length) return false;
+    batch.forEach((f) => {
+      f.hidden = false;
+      f.setAttribute("data-ev-new", "");
+    });
+    const cleanup = (): void => {
+      batch.forEach((f) => f.removeAttribute("data-ev-new"));
+      wireThreads(topic);
+      if (fieldOn) runField(topic);
+    };
+    if (reduceMotion()) {
+      cleanup();
+    } else {
+      setTimeout(cleanup, 500);
+    }
+    return true;
+  };
+
+  const wireScrollReveal = (topic: HTMLElement): void => {
+    const sentinel = topic.querySelector<HTMLElement>("[data-ev-sentinel]");
+    if (!sentinel) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        const sv = parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue("--field-scroll-v") || "0",
+        );
+        if (sv >= 2.0) return;
+        const revealed = revealBatch(topic);
+        const stillDeferred = [...topic.querySelectorAll("[data-ev-deferred]")].some(
+          (f) => (f as HTMLElement).hidden,
+        );
+        if (!stillDeferred || !revealed) io.disconnect();
+      },
+      { threshold: 0, rootMargin: "0px 0px 120px 0px" },
+    );
+    io.observe(sentinel);
+    topicAc!.signal.addEventListener("abort", () => io.disconnect());
+  };
+
   const wireTopic = (topic?: HTMLElement): void => {
     if (!topic) return;
     reweight(topic);
     applyLens(topic);
     wireThreads(topic);
     runField(topic);
+    wireScrollReveal(topic);
   };
 
   // ── controls ─────────────────────────────────────────────────────────────

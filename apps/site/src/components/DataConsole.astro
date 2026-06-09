@@ -155,7 +155,7 @@
           <div><dt>frame</dt>         <dd id="dc-pf">—</dd></div>
           <div><dt>measurements</dt>  <dd id="dc-pm">—</dd></div>
           <div><dt>state</dt>         <dd id="dc-ps">—</dd></div>
-          <div><dt>feedback vars</dt> <dd id="dc-pfb">—</dd></div>
+          <div><dt>css writes/frame</dt> <dd id="dc-pfb">—</dd></div>
           <div><dt>relationships</dt> <dd id="dc-pr">—</dd></div>
           <div><dt>unresolved</dt>    <dd id="dc-pu">—</dd></div>
           <div><dt>visuals</dt>       <dd id="dc-pv">—</dd></div>
@@ -712,7 +712,7 @@ function readPlatform() {
   dd('dc-pf',  String(p.scheduler.frame));
   dd('dc-pm',  String(p.measure.size));
   dd('dc-ps',  String(p.state.elements().length));
-  dd('dc-pfb', String(p.feedback.boundVars().length));
+  dd('dc-pfb', String(p.feedback.cssWritesLastFrame()));
 
   const rels = p.relationships.all();
   dd('dc-pr', String(rels.length));
