@@ -16,7 +16,7 @@ conditions, presets, recipes) it ships.
 Two packages do the engine work (three thin authoring surfaces — `@field-ui/{elements,react,vanilla}`
 — wrap them; `@forces-ui/*` are deprecated aliases):
 
-- **`field-ui` (core)** — `packages/core/src/`. The renderer + force math + the conserved
+- **`@field-ui/core`** — `packages/core/src/`. The renderer + force math + the conserved
   simulation, plus the contracts, diagnostics, recipes, semantic/visual layers, and inspection.
   **Zero runtime dependencies** and renderer-agnostic: the `core/dom-boundary.test.ts` guard keeps an
   **empty allowlist** — no file in core may reference a DOM global. `field.ts` reaches the page only
@@ -326,5 +326,5 @@ Shared per-frame environment (`core/types.ts`), filled by the engine: `dx/dy/dis
 - **Drift guards**: `config/manual.ts` is pinned to the registered force arrays; `forces-tests.md`
   must backtick every registered force; `core/dom-boundary.test.ts` keeps core renderer-agnostic;
   every force is checked to be both **passported** and **conformance-covered** (`inspect/report.ts`).
-- Run `pnpm --filter field-ui test` (Node's built-in `node:test`, zero framework). Full write-up:
+- Run `pnpm --filter @field-ui/core test` (Node's built-in `node:test`, zero framework). Full write-up:
   [forces-tests.md](forces-tests.md) and [../canonical/field-ui-testing-and-conformance.md](../canonical/field-ui-testing-and-conformance.md).
