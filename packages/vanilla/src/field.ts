@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@field-ui/core';
+import { type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@field-ui/core';
 import { createBrowserField } from '@field-ui/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
@@ -99,6 +99,12 @@ export class FieldField implements FieldHandle {
   /** remove the flow focus. */
   clearFlow(): void {
     this.field.clearFlow();
+  }
+  seed(atoms: readonly AtomPayload[]): void {
+    this.field.seed(atoms);
+  }
+  atomAt(x: number, y: number): AtomPayload | null {
+    return this.field.atomAt(x, y);
   }
   /** stop the loop, release listeners, and remove the canvas if this instance made it. */
   destroy(): void {

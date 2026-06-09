@@ -15,6 +15,8 @@
     "check:recipes": "node --experimental-strip-types scripts/export-recipes.mjs && git diff --exit-code data/recipes.json",
     "gen:cem": "pnpm --filter @field-ui/elements exec cem analyze",
     "check:cem": "pnpm gen:cem && git diff --exit-code packages/elements/custom-elements.json",
+    "gen:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json",
+    "check:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json && git diff --exit-code apps/site/src/data/atoms.json",
     "dev": "pnpm --filter @field-ui/site dev",
     "build:site": "pnpm --filter @field-ui/site build",
     "docs:dev": "pnpm --filter @field-ui/docs dev",
