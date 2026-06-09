@@ -93,6 +93,12 @@ const linkFor = (w: { doi: string | null; id: string }) =>
     <ul class="ev-legend" aria-label="How to read the field">
       <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal</li>
       <li><span class="ev-k ev-k-anchor"></span> <b>colour</b> = the lens (a second dimension)</li>
+      <li>
+        <span class="ev-k ev-k-shape">
+          <span class="ev-mk ev-mk-article"></span><span class="ev-mk ev-mk-review"></span>
+        </span>
+        <b>shape</b> = study type (● primary · ◆ review)
+      </li>
       <li><span class="ev-k ev-k-thread"></span> hover → threads to the work it builds on</li>
     </ul>
 
@@ -124,6 +130,7 @@ const linkFor = (w: { doi: string | null; id: string }) =>
                 data-cites={w.citedBy}
                 data-year={w.year}
                 data-topic={w.topic ?? ""}
+                data-type={w.type}
                 data-field-color={w.cat}
                 data-strength={(0.4 + w.trust * 1.6).toFixed(2)}
                 data-range="200"

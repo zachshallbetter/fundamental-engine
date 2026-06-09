@@ -475,3 +475,31 @@ body:has(.ev-page) {
 .ev-page:not([data-lens="field"]) .ev-meta-sep {
   display: none;
 }
+
+/* ── Marker SHAPE encodes study type — a third channel, independent of the colour lens ─────────── */
+.ev-finding[data-type="article"] .ev-lens {
+  border-radius: 50%; /* primary study → ● */
+}
+.ev-finding[data-type="review"] .ev-lens {
+  border-radius: 2px;
+  transform: rotate(45deg); /* review / meta-analysis → ◆ */
+}
+/* other types (book, dataset, editorial) keep the default rounded square. */
+
+/* legend shape key — a circle + a diamond */
+.ev-k-shape {
+  gap: 0.3rem;
+}
+.ev-mk {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  background: var(--text-3);
+}
+.ev-mk-article {
+  border-radius: 50%;
+}
+.ev-mk-review {
+  border-radius: 2px;
+  transform: rotate(45deg);
+}

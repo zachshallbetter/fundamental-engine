@@ -19,6 +19,7 @@
           "doi": "https://doi.org/10.1016/s2215-0366(20)30168-1",
           "oa": true,
           "topic": "COVID-19 and Mental Health",
+          "type": "review",
           "refs": [
             "W97817233",
             "W116688021",
@@ -177,6 +178,7 @@
           "doi": "https://doi.org/10.1016/s0140-6736(18)31612-x",
           "oa": true,
           "topic": "Mental Health Treatment and Access",
+          "type": "review",
           "refs": [
             "W4780062",
             "W117673146",
@@ -431,6 +433,7 @@
           "doi": "https://doi.org/10.1192/bjp.177.5.396",
           "oa": true,
           "topic": "Mental Health Treatment and Access",
+          "type": "review",
           "refs": [
             "W102180568",
             "W112021690",
@@ -515,6 +518,7 @@
           "doi": "https://doi.org/10.13016/jela-ckxw",
           "oa": true,
           "topic": "Global Health Workforce Issues",
+          "type": "book",
           "refs": [
             "W105318348",
             "W1574539889",
@@ -539,6 +543,7 @@
           "doi": "https://doi.org/10.1136/bjsports-2011-090185",
           "oa": true,
           "topic": "Physical Activity and Health",
+          "type": "review",
           "refs": [
             "W65005542",
             "W169073378",
@@ -603,6 +608,7 @@
           "doi": "https://doi.org/10.1136/bjsports-2020-102955",
           "oa": true,
           "topic": "Physical Activity and Health",
+          "type": "article",
           "refs": [
             "W863306342",
             "W1498816769",
@@ -645,6 +651,7 @@
           "doi": "https://doi.org/10.1017/s0033291714000129",
           "oa": true,
           "topic": "Mental Health Treatment and Access",
+          "type": "review",
           "refs": [
             "W75637554",
             "W145325731",
@@ -779,6 +786,7 @@
           "doi": "https://doi.org/10.1037/e319432004-001",
           "oa": true,
           "topic": "Global Health Care Issues",
+          "type": "dataset",
           "refs": []
         },
         {
@@ -794,6 +802,7 @@
           "doi": "https://doi.org/10.2196/21279",
           "oa": true,
           "topic": "COVID-19 and Mental Health",
+          "type": "article",
           "refs": [
             "W81685006",
             "W272948522",
@@ -856,6 +865,7 @@
           "doi": "https://doi.org/10.1590/1516-4446-2020-0008",
           "oa": true,
           "topic": "COVID-19 and Mental Health",
+          "type": "editorial",
           "refs": [
             "W1994427132",
             "W2012831684",
@@ -894,6 +904,7 @@
           "doi": "https://doi.org/10.1002/j.2051-5545.2011.tb00014.x",
           "oa": true,
           "topic": "Schizophrenia research and treatment",
+          "type": "article",
           "refs": [
             "W3911347",
             "W12226706",
@@ -1524,6 +1535,7 @@
           "doi": "https://doi.org/10.1093/eurheartj/eht151",
           "oa": true,
           "topic": "Blood Pressure and Hypertension Studies",
+          "type": "article",
           "refs": [
             "W7687383",
             "W8133324",
@@ -2575,6 +2587,7 @@
           "doi": "https://doi.org/10.1016/s2468-2667(17)30118-4",
           "oa": true,
           "topic": "Child Abuse and Trauma",
+          "type": "review",
           "refs": [
             "W140219456",
             "W1485702413",
@@ -2661,6 +2674,7 @@
           "doi": "https://doi.org/10.1542/peds.2016-1642",
           "oa": true,
           "topic": "Physical Activity and Health",
+          "type": "review",
           "refs": [
             "W279891419",
             "W1515410464",
@@ -2767,6 +2781,7 @@
           "doi": "https://doi.org/10.1177/014616702237649",
           "oa": false,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "article",
           "refs": [
             "W254606256",
             "W650733053",
@@ -2813,6 +2828,7 @@
           "doi": "https://doi.org/10.1177/0146167213520459",
           "oa": false,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "review",
           "refs": [
             "W71228264",
             "W590228970",
@@ -2963,6 +2979,7 @@
           "doi": "https://doi.org/10.1038/s41380-018-0031-7",
           "oa": true,
           "topic": "Impact of Technology on Adolescents",
+          "type": "article",
           "refs": [
             "W85091029",
             "W1107268083",
@@ -3044,6 +3061,7 @@
           "doi": "https://doi.org/10.1002/ab.20290",
           "oa": true,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "article",
           "refs": [
             "W57493176",
             "W87305640",
@@ -3109,6 +3127,7 @@
           "doi": "https://doi.org/10.1037/0012-1649.43.4.1038",
           "oa": true,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "article",
           "refs": [
             "W79841258",
             "W154311742",
@@ -3193,6 +3212,7 @@
           "doi": "https://doi.org/10.1016/j.chb.2017.11.022",
           "oa": true,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "article",
           "refs": [
             "W798079786",
             "W1553665662",
@@ -3241,6 +3261,7 @@
           "doi": "https://doi.org/10.1001/archpedi.160.4.348",
           "oa": true,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "review",
           "refs": [
             "W137721275",
             "W163264740",
@@ -3302,6 +3323,7 @@
           "doi": "https://doi.org/10.1016/j.avb.2007.01.001",
           "oa": false,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "review",
           "refs": [
             "W574573500",
             "W658923278",
@@ -3367,6 +3389,7 @@
           "doi": "https://doi.org/10.1073/pnas.1611617114",
           "oa": true,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "review",
           "refs": [
             "W1944620058",
             "W1964030045",
@@ -3429,6 +3452,7 @@
           "doi": "https://doi.org/10.1177/1745691615592234",
           "oa": false,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "review",
           "refs": [
             "W167919535",
             "W194755902",
@@ -3630,6 +3654,7 @@
           "doi": "https://doi.org/10.1111/j.1460-2466.2009.01459.x",
           "oa": true,
           "topic": "Media Influence and Health",
+          "type": "article",
           "refs": [
             "W114679546",
             "W125102662",
@@ -3745,6 +3770,7 @@
           "doi": "https://doi.org/10.1007/s10964-010-9558-x",
           "oa": true,
           "topic": "Impact of Technology on Adolescents",
+          "type": "article",
           "refs": [
             "W19806390",
             "W48871959",
@@ -3824,6 +3850,7 @@
           "doi": "https://doi.org/10.1016/j.chb.2019.05.002",
           "oa": true,
           "topic": "Bullying, Victimization, and Aggression",
+          "type": "article",
           "refs": [
             "W110349805",
             "W608804295",
@@ -3897,6 +3924,7 @@
           "doi": "https://doi.org/10.1177/1948550610379506",
           "oa": false,
           "topic": "Digital Games and Media",
+          "type": "article",
           "refs": [
             "W1981458319",
             "W2046077367",
