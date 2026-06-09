@@ -5,7 +5,8 @@ const QUESTIONS = [
   "do violent video games increase aggression",
 ];
 const MAILTO = "hi@zachshallbetter.com";
-const SEL = "id,title,publication_year,cited_by_count,authorships,doi,open_access,referenced_works,primary_topic";
+const SEL =
+  "id,title,publication_year,cited_by_count,authorships,doi,open_access,referenced_works,primary_topic,type";
 
 const clean = (w) => ({
   id: w.id.replace("https://openalex.org/", ""),
@@ -16,6 +17,7 @@ const clean = (w) => ({
   doi: w.doi || null,
   oa: w.open_access?.is_oa ?? false,
   topic: w.primary_topic?.display_name || null,
+  type: w.type || "article", // OpenAlex work type → marker shape (review/article/book-chapter/…)
   refs: (w.referenced_works || []).map((r) => r.replace("https://openalex.org/", "")),
 });
 

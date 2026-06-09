@@ -12,6 +12,7 @@ import { applyRecipe } from "@field-ui/platform";
 
 const NS = "http://www.w3.org/2000/svg";
 type Signal = "consensus" | "recency" | "balanced";
+type Lens = "field" | "recency" | "trust";
 const reduceMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -30,8 +31,11 @@ function initEvidence(): () => void {
   const fieldBtn = page.querySelector<HTMLButtonElement>("[data-ev-field]");
   const weightBtns = [...page.querySelectorAll<HTMLButtonElement>("[data-ev-weight]")];
   const hint = page.querySelector<HTMLElement>("[data-ev-hint]");
+  const lensBtns = [...page.querySelectorAll<HTMLButtonElement>("[data-ev-lens]")];
+  const lensHint = page.querySelector<HTMLElement>("[data-ev-lens-hint]");
 
   let signal: Signal = "consensus";
+  let lens: Lens = (page.dataset.lens as Lens) || "field";
   let fieldOn = true;
   let activeField: { destroy(): void } | null = null;
   let topicAc: AbortController | null = null;
@@ -93,6 +97,27 @@ function initEvidence(): () => void {
     });
   };
 
+  // ── colour lens — a second, orthogonal channel: size stays trust, colour shows another aspect.
+  const applyLens = (topic: HTMLElement): void => {
+    const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")];
+    if (lens === "field") {
+      // colour by research subfield — the engine binding works to a discipline (server-assigned).
+      findings.forEach((f) => f.style.setProperty("--cat", f.dataset.fieldColor || "#60a5fa"));
+    } else if (lens === "trust") {
+      // colour off — size carries the whole signal.
+      findings.forEach((f) => f.style.setProperty("--cat", "#60a5fa"));
+    } else {
+      // recency — a temporal hue ramp: cool (older) → warm (newer).
+      const years = findings.map((f) => Number(f.dataset.year) || 0).filter(Boolean);
+      const ymin = Math.min(...years);
+      const yspan = Math.max(...years) - ymin || 1;
+      findings.forEach((f) => {
+        const n = ((Number(f.dataset.year) || ymin) - ymin) / yspan;
+        f.style.setProperty("--cat", `hsl(${Math.round(205 + n * 125)} 74% 64%)`);
+      });
+    }
+  };
+
   // ── the invisible scoped field (render: []) ──────────────────────────────
   const runField = (topic?: HTMLElement): void => {
     activeField?.destroy();
@@ -136,6 +161,7 @@ function initEvidence(): () => void {
       if (!fieldOn) return;
       const box = list.getBoundingClientRect();
       svg!.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+      svg!.style.setProperty("--thread", getComputedStyle(from).getPropertyValue("--cat").trim());
       const a = centerIn(from, list);
       from.classList.add("lit");
       let d = "";
@@ -158,6 +184,7 @@ function initEvidence(): () => void {
   const wireTopic = (topic?: HTMLElement): void => {
     if (!topic) return;
     reweight(topic);
+    applyLens(topic);
     wireThreads(topic);
     runField(topic);
   };
@@ -178,6 +205,26 @@ function initEvidence(): () => void {
         if (hint) hint.innerHTML = HINTS[signal];
         const t = activeTopic();
         if (t) reweight(t);
+      },
+      { signal: ac.signal },
+    ),
+  );
+
+  const LENS_HINTS: Record<Lens, string> = {
+    field: "<b>colour</b> = research subfield — the discipline each work binds to",
+    recency: "<b>colour</b> = year — cool (older) fades to warm (newer)",
+    trust: "<b>colour</b> = off — size carries the whole signal",
+  };
+  lensBtns.forEach((b) =>
+    b.addEventListener(
+      "click",
+      () => {
+        lens = (b.dataset.evLens as Lens) || "field";
+        page.dataset.lens = lens;
+        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
+        const t = activeTopic();
+        if (t) applyLens(t);
       },
       { signal: ac.signal },
     ),
