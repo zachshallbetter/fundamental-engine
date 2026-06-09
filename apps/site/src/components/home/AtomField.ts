@@ -2,17 +2,13 @@
 // base particle carries a real piece of field-ui, and its weight scales the dot's mass + size), then
 // wire hover-to-inspect: the nearest particle's atom shows in a tooltip that follows the cursor.
 // Uses the new FieldHandle seam — field.seed(atoms) + field.atomAt(x, y).
-import atomsData from "../../data/atoms.json";
+//
+// The atoms file is imported as a fingerprinted URL (it stays out of the JS bundle) and resolved
+// cache-first via atomCache — IndexedDB, then localStorage, then network — so repeat visits skip
+// both the download and the parse. The field renders immediately; the seed lands once atoms resolve.
+import atomsUrl from "../../data/atoms.json?url";
+import { getAtoms, type Atom } from "./atomCache.ts";
 
-interface Atom {
-  kind: string;
-  id: string;
-  label: string;
-  color?: string;
-  href?: string;
-  weight?: number;
-  data?: Record<string, unknown>;
-}
 type FieldEl = HTMLElement & {
   seed?: (atoms: readonly Atom[]) => void;
   atomAt?: (x: number, y: number) => Atom | null;
@@ -36,7 +32,11 @@ function renderAtom(a: Atom): string {
 export function initAtomField(): () => void {
   const field = document.querySelector<FieldEl>("field-root");
   if (typeof field?.seed !== "function") return () => {};
-  field.seed(atomsData.atoms as Atom[]);
+  let disposed = false;
+  // resolve the atoms cache-first (IndexedDB → localStorage → network), then seed the live field.
+  void getAtoms(atomsUrl).then((atoms) => {
+    if (!disposed && atoms.length) field.seed?.(atoms);
+  });
 
   const tip = document.createElement("div");
   tip.className = "atom-tip";
@@ -68,6 +68,7 @@ export function initAtomField(): () => void {
   window.addEventListener("pointerleave", () => (tip.hidden = true), { signal: ac.signal });
 
   return () => {
+    disposed = true;
     ac.abort();
     cancelAnimationFrame(raf);
     tip.remove();
