@@ -20,7 +20,7 @@ import {
 } from './api-surface.data.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DIR = { 'field-ui': 'core', '@field-ui/platform': 'platform', '@field-ui/elements': 'elements', '@field-ui/react': 'react', '@field-ui/vanilla': 'vanilla' };
+const DIR = { '@field-ui/core': 'core', '@field-ui/platform': 'platform', '@field-ui/elements': 'elements', '@field-ui/react': 'react', '@field-ui/vanilla': 'vanilla' };
 const distOf = (pkg) => join(root, 'packages', DIR[pkg], 'dist', 'index.js');
 const srcOf = (pkg) => join(root, 'packages', DIR[pkg], 'src');
 
@@ -67,7 +67,7 @@ for (const { pkg, tag } of FROZEN_ELEMENTS) {
 }
 
 // 4 · the body attribute contract
-const core = await moduleFor('field-ui');
+const core = await moduleFor('@field-ui/core');
 if (typeof core.BODY_SELECTOR !== 'string' || !core.BODY_SELECTOR.includes(`[${FROZEN_BODY_ATTR}]`)) {
   fail(`body contract broken: core BODY_SELECTOR no longer matches [${FROZEN_BODY_ATTR}] (got: ${JSON.stringify(core.BODY_SELECTOR)})`);
 }

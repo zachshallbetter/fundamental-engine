@@ -1,4 +1,4 @@
-# field-ui
+# Field UI
 
 **A platform-native relational field runtime for the DOM.** Semantic HTML, DOM elements, particles,
 relationships, measurements, and feedback all participate in one shared field context. Elements bend
@@ -14,7 +14,7 @@ whole system.
 
 Mark any element as a body with one attribute and it starts to pull, push, swirl, or hold the matter
 around it. Where the field gathers, it writes that density back into the element as weight, glow, and
-motion. A renderer-agnostic core (`field-ui`) computes the field; a platform layer
+motion. A renderer-agnostic core (`@field-ui/core`) computes the field; a platform layer
 (`@field-ui/platform`) binds it to the DOM through measurement, state, feedback, relationships, visual
 bindings, overlays, and a frame scheduler. The interface lives inside one medium instead of sitting on
 top of an effect.
@@ -25,7 +25,7 @@ are adapters, not requirements.
 
 > **See it live.** The whole system runs over the engine at **[field-ui.com](https://field-ui.com)**, with a physics [Lab](https://field-ui.com/lab) where you fire particles into a force and watch the math hold.
 
-> **Renamed to `field-ui`.** This project was `forces-ui`; it is now **field-ui**, putting the field (the invisible structure) first. Every old public name still works as a compatibility alias during the transition: the `forces-ui` / `@forces-ui/*` packages, the `forces:*` events, the `--forces-*` CSS variables, and the `<forces-field>` / `<forces-cell>` elements all keep working alongside their `field-ui` / `field:*` / `--field-*` / `<field-root>` equivalents. The alias window is documented and removal-gated in [API stability](docs/canonical/field-ui-api-stability.md).
+> **Renamed to `@field-ui/core`.** This project was `forces-ui`; it is now **field-ui**, putting the field (the invisible structure) first. Every old public name still works as a compatibility alias during the transition: the `forces-ui` / `@forces-ui/*` packages, the `forces:*` events, the `--forces-*` CSS variables, and the `<forces-field>` / `<forces-cell>` elements all keep working alongside their `@field-ui/core` / `field:*` / `--field-*` / `<field-root>` equivalents. The alias window is documented and removal-gated in [API stability](docs/canonical/field-ui-api-stability.md).
 
 ## The idea
 
@@ -134,7 +134,7 @@ A **recipe** is a portable field program: it names an intent and composes existi
 **64 recipes across 4 tiers** (core / workflow / professional / enterprise) ship in the catalog. The runtime is three calls:
 
 ```ts
-import { recipeById, compileRecipe } from 'field-ui';            // pure: recipe → plan (no DOM)
+import { recipeById, compileRecipe } from '@field-ui/core';            // pure: recipe → plan (no DOM)
 import { applyRecipe, bindData } from '@field-ui/platform';      // DOM: run it / bind data to it
 
 const applied = applyRecipe(root, recipeById('reading-field')!); // run a recipe over a region
@@ -161,21 +161,23 @@ Browse and run all 64 at the [recipe gallery](https://field-ui.com/docs/gallery)
 
 | Package | What it is |
 |---|---|
-| [`field-ui`](packages/core) | the renderer-agnostic engine: catalog, contracts, `FieldStore`, integrator, the force set, recipes (`compileRecipe`), diagnostics, conformance |
+| [`@field-ui/core`](packages/core) | the renderer-agnostic engine: catalog, contracts, `FieldStore`, integrator, the force set, recipes (`compileRecipe`), diagnostics, conformance |
 | [`@field-ui/platform`](packages/platform) | DOM participation: `browserHost()`, the FrameScheduler, the six registries (measurement, state, feedback, relationships, visual bindings, overlays), `applyRecipe()` / `bindData()`, and `lintPlatform()` |
 | [`@field-ui/vanilla`](packages/vanilla) | the framework-free door: the `FieldField` class, `mountField()`, and a host-bundled `createField()`, no custom element |
 | [`@field-ui/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
 | [`@field-ui/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
 
+Want everything in one install? [`@field-ui/kit`](packages/kit) is a meta-package that depends on all five — `npm i @field-ui/kit`, then import from the specific package you need. (`@field-ui/field-ui` is a thin alias for the kit.)
+
 The four `@forces-ui/*` (and `forces-ui`) packages are thin, removal-gated [compatibility aliases](packages/compat-core).
 
 The dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
-`vanilla → platform → core`. `field-ui` (core) imports zero DOM (renderer-agnostic); the browser host
+`vanilla → platform → core`. `@field-ui/core` imports zero DOM (renderer-agnostic); the browser host
 adapter lives in `@field-ui/platform`. See [`docs/canonical/field-ui-platform-architecture.md`](docs/canonical/field-ui-platform-architecture.md).
 
 ## Availability
 
-The packages are pre-release and not yet published to npm. Releases are cut as git tags (see [`RELEASING.md`](RELEASING.md)); the npm publish steps and order are in [`PUBLISHING.md`](PUBLISHING.md). To use field-ui today, consume it from this repository as a workspace dependency, a git install, or a local link. The public surface shown above is frozen for `0.x`; the `npm install` path arrives with the first published release.
+The five packages are published to npm under the `@field-ui` scope — install what you need (`npm i @field-ui/core`, `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`). Releases are cut as git tags (see [`RELEASING.md`](RELEASING.md)); the npm publish steps and order are in [`PUBLISHING.md`](PUBLISHING.md). The public surface shown above is frozen for `0.x`.
 
 ## Documentation
 
@@ -210,7 +212,7 @@ The build is `tsc`. There is no bundler; the library ships unbundled ESM. The si
 - **Nothing is created from nothing.** The default field conserves particle count. Sources and sinks break conservation only when they are explicitly budgeted.
 - **Designed and natural, side by side.** Canonical forces stay bounded and legible for interface work. Natural primitives carry real laws for cosmology and material systems. A composite picks the register it needs.
 - **Native-platform-first, dependency-light.** The core recreates what it needs on the platform and ships with zero runtime dependencies; the only development dependency is TypeScript. Framework integrations are adapters, not requirements. Any new dependency has to justify itself as a real exception.
-- **Core stays renderer-agnostic.** `field-ui` (core) computes field behavior against plain data and touches no DOM globals (guarded by a boundary test); `@field-ui/platform` owns DOM participation. Canvas is one render surface, not the whole system.
+- **Core stays renderer-agnostic.** `@field-ui/core` (core) computes field behavior against plain data and touches no DOM globals (guarded by a boundary test); `@field-ui/platform` owns DOM participation. Canvas is one render surface, not the whole system.
 - **Lanes stay separate.** Concepts describe, tokens execute, metrics measure, diagnostics explain, conditions activate, recipes compose. A word lives in exactly one lane, and recipes never invent engine behavior.
 - **Framework-agnostic.** The custom element makes "every element is a body" a portable primitive that behaves the same in React, Svelte, Astro, Vue, or plain HTML.
 

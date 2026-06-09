@@ -5,7 +5,7 @@ import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 
 // lowest-level: field-ui is renderer-agnostic, so createField requires an explicit host.
-const sig = `import { createField } from 'field-ui';
+const sig = `import { createField } from '@field-ui/core';
 import { browserHost } from '@field-ui/platform';
 
 const field = createField(canvas, { host: browserHost(), ...options });   // → FieldHandle

@@ -6,4 +6,4 @@
  * unchanged. Reach for `field-ui` in new code; this alias is slated for removal in a future
  * major (see `docs/planning-archive/field-ui-migration-plan.md` §15, Alias Implementation Contract).
  */
-export * from 'field-ui';
+export * from '@field-ui/core';

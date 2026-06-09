@@ -13,7 +13,7 @@
   "dependencies": {
     "@field-ui/elements": "workspace:*",
     "@field-ui/platform": "workspace:*",
-    "field-ui": "workspace:*"
+    "@field-ui/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

@@ -5,7 +5,7 @@
  * (`field-probe.test.ts`) read these, so the traced path is provably the same force the
  * on-screen particles feel. Change a demo's strength/range here and both move together.
  */
-import { MANUAL_FORCES } from 'field-ui';
+import { MANUAL_FORCES } from '@field-ui/core';
 import type { ProbeOverride } from './field-probe.ts';
 
 /** Base attributes every natural/extended demo body carries unless overridden. */

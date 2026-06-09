@@ -20,7 +20,7 @@ same package, with the same kind (value / type / element), and its shape does no
 of the `0.x` line. The freeze is mechanically enforced — `pnpm check:api` fails the build if a frozen
 symbol is removed, renamed, moved between packages, or changes kind.
 
-> Package npm names: core is published as **`field-ui`** (not `@field-ui/core`); the rest are
+> Package npm names: core is published as **`@field-ui/core`**; the rest are
 > `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`.
 
 ## The stable surface (`0.x`)
@@ -29,14 +29,14 @@ symbol is removed, renamed, moved between packages, or changes kind.
 
 | Symbol | Package | Kind | What it is |
 | --- | --- | --- | --- |
-| `createField` | `field-ui` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
+| `createField` | `@field-ui/core` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
 | `createField` | `@field-ui/vanilla` | value | The host-bundled convenience door (= `createBrowserField`); auto-supplies `browserHost()`. |
 | `browserHost` | `@field-ui/platform` | value | The canonical DOM `FieldHost` for `createField`. |
 | `browserHost` | `@field-ui/vanilla` | value | Re-export of the platform host for the no-framework path. |
 | `createFieldPlatform` | `@field-ui/platform` | value | Wires the six native-first registries on a root. |
 | `applyRecipe` | `@field-ui/platform` | value | Applies a recipe to a live platform. |
 | `bindData` | `@field-ui/platform` | value | Binds records → bodies; data drives the field. |
-| `compileRecipe` | `field-ui` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
+| `compileRecipe` | `@field-ui/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
 
 `createField` has **two doors on purpose**: the core primitive is renderer-agnostic and host-required;
 `@field-ui/vanilla` re-exports the host-bundled convenience so the no-framework path stays one call.
@@ -46,8 +46,8 @@ Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 
 | Type | Package | What it is |
 | --- | --- | --- |
-| `FieldRecipe` | `field-ui` | The recipe schema. |
-| `FieldHost` | `field-ui` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
+| `FieldRecipe` | `@field-ui/core` | The recipe schema. |
+| `FieldHost` | `@field-ui/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
 | `FieldPlatform` | `@field-ui/platform` | The surface `createFieldPlatform` returns. |
 
 ### Elements and the body contract
@@ -119,6 +119,6 @@ migration note and a `0.MINOR` bump.
 
 ## Status
 
-The packages are **not yet published** (a deliberate human gate). Until first publish, this freeze
-defines the *intended* `0.x` contract; the publish steps and order are in
-[`PUBLISHING.md`](../../PUBLISHING.md).
+The packages are **published to npm** under the `@field-ui` scope (`@field-ui/core` and the four
+adapters). This freeze defines the `0.x` contract consumers build against; the publish steps and
+order are in [`PUBLISHING.md`](../../PUBLISHING.md).
