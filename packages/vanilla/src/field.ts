@@ -52,11 +52,11 @@ export class FieldField implements FieldHandle {
   rescan(): void {
     this.field.rescan();
   }
-  /** recolour the travelling accent (§9). */
+  /** recolor the travelling accent (§9). */
   setAccent(hex: string): void {
     this.field.setAccent(hex);
   }
-  /** swap the accent's colour template live: a built-in name or custom hex stops (§9). */
+  /** swap the accent's color template live: a built-in name or custom hex stops (§9). */
   setPalette(palette: string | readonly string[]): void {
     this.field.setPalette(palette);
   }

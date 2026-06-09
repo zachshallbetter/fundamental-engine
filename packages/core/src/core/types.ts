@@ -40,7 +40,7 @@ export interface Particle {
   vy: number;
   /** inertial mass — 1 = nominal (§21). */
   m: number;
-  /** ∈ [0,1]; drives colour (toward accent), size, and glow (§2.2). */
+  /** ∈ [0,1]; drives color (toward accent), size, and glow (§2.2). */
   heat: number;
   /** render-radius basis. */
   size: number;
@@ -57,7 +57,7 @@ export interface Particle {
   charge?: number;
   /** species tag, for `hunt` (§20.3). */
   species?: number;
-  /** carried pigment, conserved colour transport (§20.8). */
+  /** carried pigment, conserved color transport (§20.8). */
   color?: string;
   /** an opaque data record bound to this particle by `FieldHandle.seed` (e.g. a "project atom"). */
   atom?: AtomPayload;
@@ -99,7 +99,7 @@ export interface Body {
   when: string;
   /** opt into two-way density write-back (§8). */
   feedback: boolean;
-  /** the body's tint from `data-color`, for `pigment` colour transport (§20.8). */
+  /** the body's tint from `data-color`, for `pigment` color transport (§20.8). */
   tint?: string;
   /** shaped source (`data-shaped`): forces reference the nearest point on the element's
    *  box, not its centre, so matter gathers in a shell around the shape (field-systems
@@ -299,7 +299,7 @@ export type ConditionRegistry = Record<string, Condition>;
 export type OverlayMode = 'off' | 'streamlines' | 'force-vectors' | 'field-lines';
 
 export interface FieldOptions {
-  /** travelling accent colour (§9). */
+  /** travelling accent color (§9). */
   accent?: string;
   /** particle-count multiplier (§2.5). */
   density?: number;
@@ -313,7 +313,7 @@ export interface FieldOptions {
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
    *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
   mass?: boolean;
-  /** colour template for the travelling accent (§9): a built-in name
+  /** color template for the travelling accent (§9): a built-in name
    *  (`'ours'` · `'heatmap'` · `'infrared'` · `'spectrum'`) or custom hex stops. */
   palette?: string | readonly string[];
   /** conserved attention (§2.4): one finite strength budget — engaging a body
@@ -373,9 +373,9 @@ export interface FieldHandle {
   scan(): void;
   /** alias of `scan`. */
   rescan(): void;
-  /** recolour the travelling accent (§9). */
+  /** recolor the travelling accent (§9). */
   setAccent(hex: string): void;
-  /** swap the accent's colour template live: a built-in name or custom hex stops (§9). */
+  /** swap the accent's color template live: a built-in name or custom hex stops (§9). */
   setPalette(palette: string | readonly string[]): void;
   /** switch the global formation (§7). */
   setFormation(name: string): void;

@@ -208,7 +208,7 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `spawn` | an engaged source, empty field | the pool grows as matter is emitted along the heading; mortal matter despawns | S | `source()` emits `round(S·2)`/frame, `age`-budgeted |
 | `resonate` | modifier on `attract` | scales the sibling's strength as `1 + sin(ωt)` (ω=3) | modifier | `modify → {strength}` |
 | `spotlight` | modifier on `stream` | gates the sibling outside a ~60° heading cone, lets it act inside | modifier | `modify → {gate}` when `û·heading < 0.5` |
-| `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved colour) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
+| `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved color) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
 | `fieldflow` | neutral p in a charge's field | streams OUT along the field line; ends farther from the body; inert past range | A | steer `v += (n̂·\|v\| − v)·k` + stream `v += n̂·gain·a`, `n̂ = net field()/\|field\|` |
 | `warp` | p inside a paired throat | relocated to the `data-pair` body's throat (conserved — count unchanged), emerging just outside it; velocity rotated by `data-twist` | A | `p ← pairCentre + R(twist)·û·(absorbR·scale + 6)`, `v ← R(twist)·v` (kinematic teleport) |
 

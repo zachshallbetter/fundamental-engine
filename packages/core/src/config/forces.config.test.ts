@@ -11,7 +11,7 @@ test('five formations and seven conditions', () => {
   assert.equal(CONDITIONS.length, 7);
 });
 
-test('the palette mirrors the force colours, in order', () => {
+test('the palette mirrors the force colors, in order', () => {
   assert.equal(PALETTE.length, FORCES.length);
   assert.deepEqual(
     PALETTE,

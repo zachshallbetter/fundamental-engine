@@ -32,7 +32,7 @@ are adapters, not requirements.
 Most particle backgrounds are one-way: the canvas reacts to the cursor. field-ui is two-way, and it is bound to your layout. It is a **DOM ⇄ field runtime** loop, not DOM ⇄ canvas.
 
 1. **Elements to field.** The platform's MeasurementRegistry reads each body's `getBoundingClientRect()` once per frame (the read phase). The body exerts force on the matter near it.
-2. **Field to elements.** The field samples density around each body; the FeedbackRegistry writes it back as CSS variables (`--field-density`, with the compact `--d` and `--forces-density` as legacy aliases) and thresholded events. Your CSS reads them to drive weight, size, colour, or position.
+2. **Field to elements.** The field samples density around each body; the FeedbackRegistry writes it back as CSS variables (`--field-density`, with the compact `--d` and `--forces-density` as legacy aliases) and thresholded events. Your CSS reads them to drive weight, size, color, or position.
 
 The geometry is re-read every frame on a six-phase scheduler (`discover → read → compute → state → write → render`), so the invisible forces stay locked to the visible boxes through scroll, resize, and reflow, and reads never thrash against writes. Animating the DOM animates the simulation for free.
 
@@ -105,7 +105,7 @@ A body is any element with a `data-body` attribute. The value is one or more for
 | `data-angle` | heading in degrees (`stream`, `jet`) |
 | `data-when` | act only on a condition: `active`, `fast`, `slow`, `hot`, `cool`, `scrolling` |
 | `data-feedback` | opt into the two-way write-back (sets `--field-density` on the element) |
-| `data-color` | accent colour when the body is engaged |
+| `data-color` | accent color when the body is engaged |
 | `data-absorb` / `data-max` | capture radius and capacity for `sink` |
 | `data-preset` | expand a named composite (`blackhole`, `galaxy`, …) |
 
@@ -117,7 +117,7 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 
 - **Canonical (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`, `sink`. Designed interface verbs with bounded, legible falloff.
 - **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`. Real field laws: softened inverse-square, Lorentz, Langevin, diffusion, travelling waves.
-- **Designed-extended (17):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, the `resonate` and `spotlight` modifiers, `pigment` colour transport, and field-line transport `fieldflow`.
+- **Designed-extended (17):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, the `resonate` and `spotlight` modifiers, `pigment` color transport, and field-line transport `fieldflow`.
 
 Forces also carry a four-field classification (gravity / electromagnetic / strong / weak), so the catalog reads as a translation of the four fundamental fields into interface behavior. See [`/docs/natural-fields`](https://field-ui.com/docs/natural-fields).
 
@@ -133,7 +133,7 @@ Forces also carry a four-field classification (gravity / electromagnetic / stron
 
 - **Conserved attention.** One finite force budget across the page. Engaging a word pulls force off the others.
 - **Cross-boundary causality.** A saturated body spills density to its neighbours, weighted by nearness.
-- **Material typography.** One density value drives weight, optical size, tracking, glow, and colour at once.
+- **Material typography.** One density value drives weight, optical size, tracking, glow, and color at once.
 - **Self-laying-out layout.** Nodes find equilibrium positions from anchor, mutual repulsion, and density pressure, then re-settle on resize.
 
 ## Recipes and data

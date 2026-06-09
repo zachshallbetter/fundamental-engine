@@ -24,12 +24,12 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @summary The page-singleton reciprocal field — a full-viewport canvas that turns
  * `[data-body]` / `[data-preset]` elements into bodies. Registered as `<field-root>`
  * (canonical), `<field-field>`, and `<forces-field>` (deprecated alias).
- * @attr {string} accent - Accent colour (hex) the field draws particles and overlay in.
+ * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {number} waves - Intensity of the resting wave currents (the ambient drift).
  * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`.
  * @attr {string} overlay - Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.
- * @attr {string} palette - Named colour palette for the field.
+ * @attr {string} palette - Named color palette for the field.
  * @attr {number} mass - Global mass scaling applied to bodies.
  * @attr {boolean} attention - Enables the conserved-attention behaviour (one finite budget, redistributed).
  * @attr {boolean} causality - Enables the causality demo behaviour.
@@ -75,7 +75,7 @@ export class FieldField extends HTMLElementBase {
     root.append(style, this.canvas);
   }
 
-  /** the travelling accent (§9); defaults to the first palette colour. */
+  /** the travelling accent (§9); defaults to the first palette color. */
   get accent(): string {
     return this.getAttribute('accent') ?? PALETTE[0] ?? '#4da3ff';
   }
@@ -103,7 +103,7 @@ export class FieldField extends HTMLElementBase {
     return v === 'streamlines' || v === 'force-vectors' || v === 'field-lines' ? v : 'off';
   }
 
-  /** colour template name for the travelling accent (§9), or undefined for `ours`. */
+  /** color template name for the travelling accent (§9), or undefined for `ours`. */
   get palette(): string | undefined {
     return this.getAttribute('palette') ?? undefined;
   }
@@ -132,11 +132,11 @@ export class FieldField extends HTMLElementBase {
   rescan(): void {
     this.field?.scan();
   }
-  /** recolour the travelling accent (§9). */
+  /** recolor the travelling accent (§9). */
   setAccent(hex: string): void {
     this.field?.setAccent(hex);
   }
-  /** swap the accent colour template live (§9). */
+  /** swap the accent color template live (§9). */
   setPalette(palette: string | readonly string[]): void {
     this.field?.setPalette(palette);
   }
@@ -214,7 +214,7 @@ export class FieldField extends HTMLElementBase {
   }
 
   /**
-   * React to live attribute changes after mount (§13). The colour / render / toggle attributes
+   * React to live attribute changes after mount (§13). The color / render / toggle attributes
    * apply through the field's setters; the construction-time ones (`density`, `waves`, `mass`)
    * rebuild the field. Fires before `connectedCallback` for the initial attributes too, which the
    * `this.field` guard skips — the first mount reads every attribute itself.

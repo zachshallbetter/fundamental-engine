@@ -42,7 +42,7 @@ export interface BoundParticle {
 const LAYERS = 5;
 const BASE = [0.24, 0.4, 0.55, 0.7, 0.85] as const;
 
-/** Build the five wave layers, colouring them from the palette (§24.4). */
+/** Build the five wave layers, coloring them from the palette (§24.4). */
 export function buildWaves(palette: readonly RGB[]): Wave[] {
   const waves: Wave[] = [];
   for (let i = 0; i < LAYERS; i++) {

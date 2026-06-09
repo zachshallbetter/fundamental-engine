@@ -28,7 +28,7 @@ const clamp = (v: number, lo: number, hi: number): number =>
  * particle pool, in-view-gated. Registered as `<field-cell>` (canonical) and
  * `<forces-cell>` (deprecated alias).
  * @attr {string} force - The single force token rendered: `attract` | `repel` | `swirl` | `gravity` | `stream` | `buoyancy` | `tether`.
- * @attr {string} color - Accent colour (hex) for the cell's particles.
+ * @attr {string} color - Accent color (hex) for the cell's particles.
  * @attr {number} count - Number of particles in the cell's pool.
  */
 export class FieldCell extends HTMLElementBase {
@@ -84,7 +84,7 @@ export class FieldCell extends HTMLElementBase {
     return this.getAttribute('force') ?? 'attract';
   }
 
-  /** dot colour. */
+  /** dot color. */
   get color(): string {
     return this.getAttribute('color') ?? '#4da3ff';
   }

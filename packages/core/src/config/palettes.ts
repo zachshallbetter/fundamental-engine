@@ -1,5 +1,5 @@
 /**
- * Colour templates for the field's travelling accent (§9) and particle tint. The
+ * Color templates for the field's travelling accent (§9) and particle tint. The
  * accent journeys through these stops as you scroll; `setPalette` / the `palette`
  * option swap the whole set live.
  *
@@ -25,7 +25,7 @@ export const PALETTES: Record<string, readonly string[]> = {
 export const PALETTE_NAMES = ['ours', 'heatmap', 'infrared', 'spectrum'] as const;
 
 /**
- * Resolve a palette option to its colour stops: a name looks up `PALETTES`, an array
+ * Resolve a palette option to its color stops: a name looks up `PALETTES`, an array
  * is used as-is, anything unknown or empty falls back to the canonical journey.
  */
 export function resolvePalette(p?: string | readonly string[]): readonly string[] {

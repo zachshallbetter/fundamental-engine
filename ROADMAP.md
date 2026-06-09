@@ -77,7 +77,7 @@ Carried over from the Phase 1 conformance audit:
 - [x] **The "spine"** — waves bend toward the engaged element (`waveYat` pull);
       hover/focus a `[data-hot]` element to engage it (`b.on` → on-state forces).
 - [x] **Accent journey** (§9): scroll travels the palette (`sampleStops`), a
-      hovered `[data-color]` element overrides; the field recolours with it.
+      hovered `[data-color]` element overrides; the field recolors with it.
 
 ## Phase 4 — Agents & reciprocity (§22) + word effects ✅
 
@@ -88,7 +88,7 @@ Ordered for overnight (highest visible value first):
       for absorbers; optionally drive variable-font weight via `data-fmin/fmax/opsz`.
 - [x] **4w — Word effects (the punctuation rule, §11 note).** Wire the site hero
       word(s) with `data-feedback` + CSS so `--d` drives weight + `text-shadow` glow
-      + colour (glow/grow). **No particle-into-letterform assembly.** Optional one-shot
+      + color (glow/grow). **No particle-into-letterform assembly.** Optional one-shot
       ripple/spark on engage.
 - [x] **4b — Threads (§10).** `__field.threads(list)` — glowing connector lines with
       travelling pulses between an engaged `[data-index][data-threads]` set.
@@ -237,14 +237,14 @@ Ordered for overnight (highest visible value first):
       CSS animation off), focus engagement (`[data-hot]` on focus), `z-index:0` background
       layer, and the decorative canvases (`<forces-field>`, `<forces-cell>`, `mountField`)
       now marked `aria-hidden` so assistive tech skips them.
-- [x] **Colour templates** — `config/palettes.ts`: four accent palettes (`ours`, `heatmap`,
+- [x] **Color templates** — `config/palettes.ts`: four accent palettes (`ours`, `heatmap`,
       `infrared`, `spectrum`) selectable via the `palette` FieldOption / `<forces-field palette>`
       attribute, and swappable live with `field.setPalette(name | hex[])`; a switcher in the Lab.
       Golden-tested.
-- [x] **Naming/colour reconciliation** (§20.2) — every one of the 33 registered forces now
-      carries a canonical colour (`FORCE_COLORS` in the manual catalog): the nine mirror
+- [x] **Naming/color reconciliation** (§20.2) — every one of the 33 registered forces now
+      carries a canonical color (`FORCE_COLORS` in the manual catalog): the nine mirror
       `forces.config` (pinned by a no-drift test), the designed-extended forces take the §20.2
-      registry colours, and the §20.10 naturals get principled clash-free accents. Surfaced as
+      registry colors, and the §20.10 naturals get principled clash-free accents. Surfaced as
       per-force tinted token chips on `/reference`. Tokens are final (names settled).
 - [x] Emit the design tokens (`--f-*`, `--coherence`, `--ease`) from `forces.config.ts` (§25.2).
 - [x] Public-facing explainer: Element→Field / Field→Element, anatomy of a body,
@@ -273,7 +273,7 @@ separate, swappable choice and shares no code with the engine.
 - **First-class mass** — shipped as the split: unit-mass on the UI field by default,
   first-class `a = F/m` opt-in via `FieldOptions.mass` (§21.3).
 - **Palette/registry reconciliation (§20.2)** — done: every one of the 33 registered
-  forces carries a canonical colour, cross-checked by a completeness test.
+  forces carries a canonical color, cross-checked by a completeness test.
 - **Site shell** — Astro, chosen and built (static; it shares no code with the engine, so
   it stays cheap to revisit).
 - **Package names** — `field-ui` (core), `@field-ui/elements`, `@field-ui/react`.

@@ -219,7 +219,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "dot colour.",
+              "description": "dot color.",
               "readonly": true
             },
             {
@@ -312,7 +312,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Accent colour (hex) for the cell's particles."
+              "description": "Accent color (hex) for the cell's particles."
             },
             {
               "name": "count",
@@ -357,7 +357,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Accent colour (hex) for the cell's particles.",
+              "description": "Accent color (hex) for the cell's particles.",
               "inheritedFrom": {
                 "name": "FieldCell",
                 "module": "src/forces-cell.ts"
@@ -564,7 +564,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "dot colour.",
+              "description": "dot color.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldCell",
@@ -775,7 +775,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "the travelling accent (§9); defaults to the first palette colour.",
+              "description": "the travelling accent (§9); defaults to the first palette color.",
               "readonly": true
             },
             {
@@ -820,7 +820,7 @@
               "type": {
                 "text": "string | undefined"
               },
-              "description": "colour template name for the travelling accent (§9), or undefined for `ours`.",
+              "description": "color template name for the travelling accent (§9), or undefined for `ours`.",
               "readonly": true
             },
             {
@@ -886,7 +886,7 @@
                   }
                 }
               ],
-              "description": "recolour the travelling accent (§9)."
+              "description": "recolor the travelling accent (§9)."
             },
             {
               "kind": "method",
@@ -904,7 +904,7 @@
                   }
                 }
               ],
-              "description": "swap the accent colour template live (§9)."
+              "description": "swap the accent color template live (§9)."
             },
             {
               "kind": "method",
@@ -1202,7 +1202,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Accent colour (hex) the field draws particles and overlay in."
+              "description": "Accent color (hex) the field draws particles and overlay in."
             },
             {
               "name": "density",
@@ -1237,7 +1237,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Named colour palette for the field."
+              "description": "Named color palette for the field."
             },
             {
               "name": "mass",
@@ -1285,7 +1285,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Accent colour (hex) the field draws particles and overlay in.",
+              "description": "Accent color (hex) the field draws particles and overlay in.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1340,7 +1340,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Named colour palette for the field.",
+              "description": "Named color palette for the field.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1450,7 +1450,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "the travelling accent (§9); defaults to the first palette colour.",
+              "description": "the travelling accent (§9); defaults to the first palette color.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1515,7 +1515,7 @@
               "type": {
                 "text": "string | undefined"
               },
-              "description": "colour template name for the travelling accent (§9), or undefined for `ours`.",
+              "description": "color template name for the travelling accent (§9), or undefined for `ours`.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1605,7 +1605,7 @@
                   }
                 }
               ],
-              "description": "recolour the travelling accent (§9).",
+              "description": "recolor the travelling accent (§9).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1627,7 +1627,7 @@
                   }
                 }
               ],
-              "description": "swap the accent colour template live (§9).",
+              "description": "swap the accent color template live (§9).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2005,7 +2005,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Accent colour (hex) the field draws particles and overlay in.",
+              "description": "Accent color (hex) the field draws particles and overlay in.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2060,7 +2060,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Named colour palette for the field.",
+              "description": "Named color palette for the field.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2170,7 +2170,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "the travelling accent (§9); defaults to the first palette colour.",
+              "description": "the travelling accent (§9); defaults to the first palette color.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2235,7 +2235,7 @@
               "type": {
                 "text": "string | undefined"
               },
-              "description": "colour template name for the travelling accent (§9), or undefined for `ours`.",
+              "description": "color template name for the travelling accent (§9), or undefined for `ours`.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2325,7 +2325,7 @@
                   }
                 }
               ],
-              "description": "recolour the travelling accent (§9).",
+              "description": "recolor the travelling accent (§9).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2347,7 +2347,7 @@
                   }
                 }
               ],
-              "description": "swap the accent colour template live (§9).",
+              "description": "swap the accent color template live (§9).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

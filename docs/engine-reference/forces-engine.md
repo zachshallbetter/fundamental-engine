@@ -73,7 +73,7 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 | `core/registry.ts` | `Registry`, `createRegistry` | Force + condition registry; seeds built-in conditions. |
 | `contracts/passport.ts` | `ForcePassport`, passports | Every force declares what it mutates, whether it does work / needs charge or velocity / touches neutral matter, and how it visualizes (system-contracts §3). |
 | `contracts/guards.ts` | contract guards | Dev-mode runtime assertions: sources must be budgeted, visualizations must not mutate physics, particles stay finite (§17/§18). |
-| `core/math.ts` | `clamp`, `lerp`, `hexToRgb`, `RGB` | Dependency-free math/colour helpers. |
+| `core/math.ts` | `clamp`, `lerp`, `hexToRgb`, `RGB` | Dependency-free math/color helpers. |
 
 ### Simulation core (all pure)
 
@@ -173,10 +173,10 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 
 | Module | Purpose |
 |---|---|
-| `config/manual.ts` | The **Field Manual** — complete public definition of all **35** forces (formula, attrs, copy, colour, symbol). A test pins it to the registry. |
-| `config/forces.config.ts` | Canonical nine + five formations + six conditions + identity colours. |
+| `config/manual.ts` | The **Field Manual** — complete public definition of all **35** forces (formula, attrs, copy, color, symbol). A test pins it to the registry. |
+| `config/forces.config.ts` | Canonical nine + five formations + six conditions + identity colors. |
 | `config/presets.ts` | The eight cosmology presets as co-located virtual bodies. |
-| `config/palettes.ts` / `tokens.ts` | Accent/particle colour ramps; design tokens as injectable CSS vars. |
+| `config/palettes.ts` / `tokens.ts` | Accent/particle color ramps; design tokens as injectable CSS vars. |
 | `conformance/{types,run,expectations,experiments}.ts` | Headless real-engine scenarios + named expectations; **35 `EXPERIMENTS` (one per force) + 3 `COMPOSITE_EXPERIMENTS`**. Source of truth shared by the tests and the Lab. |
 
 ---
@@ -244,7 +244,7 @@ Attrs are `data-*` (prefix dropped).
 | `spawn` | S | source — emits budgeted matter along a heading |
 | `resonate` | A (mod) | pulses sibling forces `1 + sin(ωt)` |
 | `spotlight` | A (mod) | gates sibling forces to an angular cone |
-| `pigment` | E | conserved colour transport — a dye that mixes |
+| `pigment` | E | conserved color transport — a dye that mixes |
 | `fieldflow` | A | follow the field lines — steer onto + stream down the net `field()` (range 0 ⇒ global field-follow) |
 | `warp` | A | relocates matter through a paired warp target (a portal): twist + scale, skips captured matter. Powers the `data-warp` element-relocate consumer. |
 

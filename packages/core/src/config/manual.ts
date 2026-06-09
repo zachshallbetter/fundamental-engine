@@ -32,7 +32,7 @@ export interface ManualEntry {
   summary: string;
   /** the functional one-liner — what the force does, plainly. */
   effect: string;
-  /** the force's canonical accent colour (§20.2 reconciliation). */
+  /** the force's canonical accent color (§20.2 reconciliation). */
   color: string;
   /** a one-line real-world use — what you'd reach for this force to do in a UI. */
   example: string;
@@ -51,9 +51,9 @@ export interface ManualEntry {
 }
 
 /**
- * The canonical colour for every registered force (§20.2 reconciliation). The nine
+ * The canonical color for every registered force (§20.2 reconciliation). The nine
  * mirror `forces.config.ts`; the designed-extended forces take the §20.2 registry
- * colours; the §20.10 natural primitives (added after that table) get principled,
+ * colors; the §20.10 natural primitives (added after that table) get principled,
  * clash-free accents. A test pins the nine to `FORCE_BY` so they can't drift.
  */
 export const FORCE_COLORS: Record<string, string> = {
@@ -76,7 +76,7 @@ export const FORCE_COLORS: Record<string, string> = {
   diffuse: '#a3e635', // the pheromone field (§20.2 'pheromone')
   propagate: '#5eead4',
   memory: '#c9a27e', // worn paths — a faded sepia
-  // designed-extended forces (§20.2 registry colours)
+  // designed-extended forces (§20.2 registry colors)
   lens: '#67e8f9',
   gate: '#fb7185',
   buoyancy: '#fcd34d',
@@ -92,7 +92,7 @@ export const FORCE_COLORS: Record<string, string> = {
   spawn: '#fb923c',
   resonate: '#f0abfc',
   spotlight: '#facc15',
-  pigment: '#d6529e', // ink — conserved colour transport
+  pigment: '#d6529e', // ink — conserved color transport
   fieldflow: '#22d3ee', // plasma — matter streaming along the field lines
   warp: '#a78bfa', // wormhole — relocated, conserved matter
 };
@@ -138,7 +138,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   spawn: 'A nozzle that jets matter into the field — a literal fountain or a star seeding the void.',
   resonate: 'Pair with attract: a well that breathes (pulsing strength).',
   spotlight: 'Pair with stream: a directed beam confined to a cone.',
-  pigment: 'A section that stains passing matter its own colour, carried away.',
+  pigment: 'A section that stains passing matter its own color, carried away.',
   fieldflow: 'A magnet or charge whose field lines the swarm threads, like plasma along a solar prominence.',
   warp: 'A pair of portals: matter that enters one throat emerges from its partner, conserved.',
 };
@@ -205,7 +205,7 @@ export const FORCE_SUMMARIES: Record<string, string> = {
   morph: 'Matter assembles into a mark — a logo or chart grown from drifting particles, never words.',
   resonate: 'A modifier that breathes — scales its sibling forces with a pulsing strength.',
   spotlight: 'A modifier cone — confines its sibling forces to a directed beam.',
-  pigment: 'Carries colour through the medium — a dye that mixes.',
+  pigment: 'Carries color through the medium — a dye that mixes.',
   fieldflow: 'Follows the field lines — matter streams along the field a body radiates.',
   warp: 'Relocates matter to a paired throat — a conserved wormhole, not a source or sink.',
 };
@@ -521,9 +521,9 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
     family: 'extended',
     token: 'pigment',
     label: 'Pigment',
-    formula: 'on overlap: c_p ← mix(c_p, tint, rate);  the colour advects with matter',
+    formula: 'on overlap: c_p ← mix(c_p, tint, rate);  the color advects with matter',
     attrs: ['range', 'color'],
-    desc: 'conserved colour transport — matter takes on and carries a tint',
+    desc: 'conserved color transport — matter takes on and carries a tint',
   },
   {
     family: 'extended',
@@ -543,7 +543,7 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
   },
 ];
 
-/** Every force with its colour, symbol, copy, and calibration state merged in. Grouped by `family`. */
+/** Every force with its color, symbol, copy, and calibration state merged in. Grouped by `family`. */
 export const MANUAL_FORCES: readonly ManualEntry[] = FORCES_RAW.map((e) => ({
   ...e,
   symbol: FORCE_SYMBOLS[e.token] ?? e.label.slice(0, 2),

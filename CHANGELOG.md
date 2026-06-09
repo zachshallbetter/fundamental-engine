@@ -211,7 +211,7 @@ First npm release under the `@field-ui` scope.
   `bindData()`, finishing the cosmology, and render frontiers) and `BACKLOG.md` (the
   granular queue). All 33 forces re-verified via the Lab — every one reaches MATCH.
 - **Seven more forces (33 total), spanning every input class.** `memory` (a worn-path
-  occupancy field, [C]) and `pigment` (conserved colour transport, [E]); `pressure`
+  occupancy field, [C]) and `pigment` (conserved color transport, [E]); `pressure`
   (SPH density relaxation — incompressible even-fill, [B]); `link` (a Verlet distance
   constraint — ropes, cloth, soft structures, [B]); `hunt` (two-species predator/prey
   pursuit, [B]); `morph` (matter assembles into a mark/chart/logo — never words, §11; the
@@ -226,7 +226,7 @@ First npm release under the `@field-ui` scope.
   marching squares) and `voronoi` (shattered-glass nearest-neighbour cells), alongside
   `dots` · `trails` · `links` · `streamlines`.
 - **Closed-loop concepts on the Field Manual** — **material typography** (one density,
-  `--d`, drives every type axis at once: weight, optical size, tracking, bloom, colour)
+  `--d`, drives every type axis at once: weight, optical size, tracking, bloom, color)
   and a **self-laying-out page** (`data-move="layout"` elements find equilibrium positions
   via anchor + mutual repulsion + density pressure, and re-settle on resize).
 - **Conserved attention** (§2.4) — one finite strength budget across the page; engaging a
@@ -307,8 +307,8 @@ self-documenting site, and adapters for any stack. Every ROADMAP item is checked
   `nebula`, `tornado`, guarded by a registry cross-check.
 - **Full `FieldHandle` API** — `scan`/`setAccent`/`setFormation`/`threads`/`burst`/
   `setPalette`/`destroy`, proxied onto `<forces-field>`.
-- **Colour templates** — `ours`, `heatmap`, `infrared`, `spectrum`.
-- **§20.2 reconciliation** — a canonical colour for every registered force.
+- **Color templates** — `ours`, `heatmap`, `infrared`, `spectrum`.
+- **§20.2 reconciliation** — a canonical color for every registered force.
 
 ### Site (field-ui.com)
 

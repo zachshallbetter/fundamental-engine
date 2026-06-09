@@ -63,7 +63,7 @@ export interface ForcePassport {
   ownsField: boolean;
   /** reads `env.fieldAt()` to follow field geometry (transport). */
   usesFieldAt: boolean;
-  /** moves particles (a non-no-op `apply`). False for pure modifiers and colour-only forces. */
+  /** moves particles (a non-no-op `apply`). False for pure modifiers and color-only forces. */
   movesParticles: boolean;
   /** changes a particle's kinetic energy. */
   doesWork: boolean;
@@ -178,7 +178,7 @@ const ROWS: Row[] = [
   { token: 'morph', label: 'Morph', family: E, klass: 'D', truthMode: 'designed', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: true, conservesSpeed: false, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'assemble matter into a mark/shape (never words, §11)', physicsNote: 'springs matter to body.targets marks' },
   { token: 'resonate', label: 'Resonate', family: E, klass: 'modifier', truthMode: 'designed', ownsField: false, usesFieldAt: false, movesParticles: false, doesWork: false, conservesSpeed: true, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: false, designUse: 'amplify sibling forces rhythmically', physicsNote: 'no-op apply; modify() scales sibling strength per frame' },
   { token: 'spotlight', label: 'Spotlight', family: E, klass: 'modifier', truthMode: 'designed', ownsField: false, usesFieldAt: false, movesParticles: false, doesWork: false, conservesSpeed: true, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: false, designUse: 'gate sibling forces by region/condition', physicsNote: 'no-op apply; modify() gates siblings' },
-  { token: 'pigment', label: 'Pigment', family: E, klass: 'A', truthMode: 'designed', ownsField: false, usesFieldAt: false, movesParticles: false, doesWork: false, conservesSpeed: true, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'transport colour through matter', physicsNote: 'tints particle colour; does not change motion' },
+  { token: 'pigment', label: 'Pigment', family: E, klass: 'A', truthMode: 'designed', ownsField: false, usesFieldAt: false, movesParticles: false, doesWork: false, conservesSpeed: true, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'transport color through matter', physicsNote: 'tints particle color; does not change motion' },
   { token: 'warp', label: 'Warp', family: E, klass: 'A', truthMode: 'designed', ownsField: false, usesFieldAt: false, movesParticles: true, doesWork: false, conservesSpeed: true, requiresCharge: false, requiresVelocity: false, affectsNeutralMatter: true, designUse: 'relocate matter to a paired throat (a wormhole)', physicsNote: 'velocity-replacing teleport (kinematic): repositions to the data-pair body and rotates velocity by data-twist; speed preserved, count conserved' },
 ];
 

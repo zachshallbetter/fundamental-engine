@@ -8,7 +8,7 @@ test('the built-in palettes are ours/heatmap/infrared/spectrum', () => {
   for (const n of PALETTE_NAMES) assert.ok((PALETTES[n]?.length ?? 0) >= 2, n);
 });
 
-test('every palette stop is a valid hex colour', () => {
+test('every palette stop is a valid hex color', () => {
   for (const stops of Object.values(PALETTES)) {
     for (const c of stops) assert.match(c, /^#[0-9a-f]{6}$/i);
   }
