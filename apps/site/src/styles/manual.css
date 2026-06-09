@@ -1286,6 +1286,7 @@ html.hide-field-lines .stage-field {
 }
 
 /* the inspect tooltip — appended to <body>, follows the cursor over the field. */
+.atom-card[hidden] { display: none; }
 .atom-card {
   position: fixed;
   z-index: 60;
