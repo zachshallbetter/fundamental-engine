@@ -1,14 +1,19 @@
-// Evidence Field runtime. field-ui as an INVISIBLE measurement layer over the findings:
-//   · the scoped field runs with render: [] — the particles compute (so the metrics flow) but are
-//     never drawn. Each finding's citation-trust drives its pull, and the field writes --field-*
-//     back onto it, on top of the static --trust floor.
-//   · the citation support graph (referenced_works within the set) is drawn as SVG threads on hover —
-//     field-ui's relationship model, with real edges.
+// Evidence Field runtime. field-ui as an INVISIBLE measurement layer over real OpenAlex findings,
+// with controls that make the transformation legible:
+//   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]); the scoped
+//     field is destroyed and threads are cleared. On, the field runs and trust shows in the type.
+//   · Weight by consensus / recency / balanced — recompute each finding's trust from the chosen
+//     signal, then re-sort with a FLIP reflow so you watch the field re-settle.
+//   · hover a finding → SVG threads to the works it builds on (referenced_works within the set).
 //   · question tabs swap which topic is live.
+// The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 
 const NS = "http://www.w3.org/2000/svg";
+type Signal = "consensus" | "recency" | "balanced";
+const reduceMotion = () =>
+  typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function centerIn(el: HTMLElement, host: HTMLElement) {
   const r = el.getBoundingClientRect();
@@ -22,21 +27,99 @@ function initEvidence(): () => void {
   const ac = new AbortController();
   const tabs = [...page.querySelectorAll<HTMLButtonElement>("[data-ev-tab]")];
   const topics = [...page.querySelectorAll<HTMLElement>("[data-ev-topic]")];
+  const fieldBtn = page.querySelector<HTMLButtonElement>("[data-ev-field]");
+  const weightBtns = [...page.querySelectorAll<HTMLButtonElement>("[data-ev-weight]")];
+  const hint = page.querySelector<HTMLElement>("[data-ev-hint]");
 
+  let signal: Signal = "consensus";
+  let fieldOn = true;
   let activeField: { destroy(): void } | null = null;
   let topicAc: AbortController | null = null;
 
-  const wireTopic = (topic?: HTMLElement): void => {
-    activeField?.destroy();
-    activeField = null;
-    topicAc?.abort();
-    if (!topic) return;
+  const activeTopic = (): HTMLElement | undefined => topics.find((t) => !t.hidden) ?? topics[0];
+
+  // ── weighting ────────────────────────────────────────────────────────────
+  const trustOf = (
+    f: HTMLElement,
+    s: Signal,
+    st: { lmax: number; ymin: number; yspan: number },
+  ): number => {
+    const cites = Number(f.dataset.cites) || 0;
+    const year = Number(f.dataset.year) || st.ymin;
+    const consensus = Math.log(cites + 1) / st.lmax;
+    const recency = st.yspan > 0 ? (year - st.ymin) / st.yspan : 0.5;
+    return s === "consensus" ? consensus : s === "recency" ? recency : (consensus + recency) / 2;
+  };
+
+  const reweight = (topic: HTMLElement): void => {
     const list = topic.querySelector<HTMLElement>("[data-ev-list]");
     if (!list) return;
     const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")];
-    topicAc = new AbortController();
+    const cites = findings.map((f) => Number(f.dataset.cites) || 0);
+    const years = findings.map((f) => Number(f.dataset.year) || 0).filter(Boolean);
+    const st = {
+      lmax: Math.log(Math.max(...cites, 1) + 1),
+      ymin: Math.min(...years),
+      yspan: Math.max(...years) - Math.min(...years),
+    };
+    // 1) set the new trust on every finding (drives --trust + the bar + the scoped field's pull)
+    for (const f of findings) {
+      const t = trustOf(f, signal, st);
+      f.style.setProperty("--trust", t.toFixed(3));
+      f.dataset.strength = (0.4 + t * 1.6).toFixed(2);
+      const bar = f.querySelector<HTMLElement>(".ev-bar i");
+      if (bar) bar.style.width = `${Math.round(t * 100)}%`;
+    }
+    // 2) re-sort by trust, FLIP-animating the reflow
+    const ordered = [...findings].sort(
+      (a, b) =>
+        Number(b.style.getPropertyValue("--trust")) - Number(a.style.getPropertyValue("--trust")),
+    );
+    const firstTop = new Map(findings.map((f) => [f, f.getBoundingClientRect().top]));
+    ordered.forEach((f) => list.appendChild(f));
+    ordered.forEach((f, i) => {
+      const rank = f.querySelector(".ev-rank");
+      if (rank) rank.textContent = String(i + 1).padStart(2, "0");
+      if (reduceMotion()) return;
+      const dy = (firstTop.get(f) ?? 0) - f.getBoundingClientRect().top;
+      if (!dy) return;
+      f.style.transform = `translateY(${dy}px)`;
+      f.style.transition = "none";
+      requestAnimationFrame(() => {
+        f.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
+        f.style.transform = "";
+        f.addEventListener("transitionend", () => (f.style.transition = ""), { once: true });
+      });
+    });
+  };
 
-    // SVG overlay for the support-graph threads.
+  // ── the invisible scoped field (render: []) ──────────────────────────────
+  const runField = (topic?: HTMLElement): void => {
+    activeField?.destroy();
+    activeField = null;
+    if (!fieldOn || !topic) return;
+    const list = topic.querySelector<HTMLElement>("[data-ev-list]");
+    if (!list) return;
+    try {
+      const base = recipeById("evidence-field");
+      if (base) {
+        const recipe = { ...base, render: [] as never[] };
+        activeField = applyRecipe(list, recipe, {
+          bodies: [...list.querySelectorAll<HTMLElement>(".ev-finding")],
+          annotateBodies: false,
+        });
+      }
+    } catch {
+      /* the static --trust layer stands on its own */
+    }
+  };
+
+  // ── support-graph threads (hover) ────────────────────────────────────────
+  const wireThreads = (topic: HTMLElement): void => {
+    topicAc?.abort();
+    topicAc = new AbortController();
+    const list = topic.querySelector<HTMLElement>("[data-ev-list]");
+    if (!list) return;
     let svg = list.querySelector<SVGSVGElement>("svg.ev-threads");
     if (!svg) {
       svg = document.createElementNS(NS, "svg") as SVGSVGElement;
@@ -44,18 +127,19 @@ function initEvidence(): () => void {
       svg.setAttribute("aria-hidden", "true");
       list.prepend(svg);
     }
+    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")];
     const clear = (): void => {
       svg!.innerHTML = "";
       findings.forEach((f) => f.classList.remove("lit", "cited"));
     };
     const draw = (from: HTMLElement): void => {
-      const ids = (from.dataset.supports || "").split(" ").filter(Boolean);
-      const a = centerIn(from, list);
+      if (!fieldOn) return;
       const box = list.getBoundingClientRect();
       svg!.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
-      let d = "";
+      const a = centerIn(from, list);
       from.classList.add("lit");
-      for (const id of ids) {
+      let d = "";
+      for (const id of (from.dataset.supports || "").split(" ").filter(Boolean)) {
         const t = list.querySelector<HTMLElement>(`#${CSS.escape(id)}`);
         if (!t) continue;
         t.classList.add("cited");
@@ -69,19 +153,56 @@ function initEvidence(): () => void {
       f.addEventListener("pointerenter", () => draw(f), { signal: topicAc!.signal });
       f.addEventListener("pointerleave", clear, { signal: topicAc!.signal });
     });
-
-    // The invisible scoped field — render NOTHING (particles compute, never drawn); guarded so the
-    // static --trust layer always stands even if the engine path changes.
-    try {
-      const base = recipeById("evidence-field");
-      if (base) {
-        const recipe = { ...base, render: [] as never[] };
-        activeField = applyRecipe(list, recipe, { bodies: findings, annotateBodies: false });
-      }
-    } catch {
-      /* no-op: the page reads correctly from --trust alone */
-    }
   };
+
+  const wireTopic = (topic?: HTMLElement): void => {
+    if (!topic) return;
+    reweight(topic);
+    wireThreads(topic);
+    runField(topic);
+  };
+
+  // ── controls ─────────────────────────────────────────────────────────────
+  const HINTS: Record<Signal, string> = {
+    consensus: "weighted by <b>citations</b> — how much the field leans on each work",
+    recency: "weighted by <b>year</b> — newest work rises, regardless of citations",
+    balanced: "a <b>blend</b> of citations and recency",
+  };
+  weightBtns.forEach((b) =>
+    b.addEventListener(
+      "click",
+      () => {
+        signal = (b.dataset.evWeight as Signal) || "consensus";
+        page.dataset.weight = signal;
+        weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        if (hint) hint.innerHTML = HINTS[signal];
+        const t = activeTopic();
+        if (t) reweight(t);
+      },
+      { signal: ac.signal },
+    ),
+  );
+
+  fieldBtn?.addEventListener(
+    "click",
+    () => {
+      fieldOn = !fieldOn;
+      page.dataset.field = fieldOn ? "on" : "off";
+      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
+      const txt = fieldBtn.querySelector(".ev-switch-txt");
+      if (txt) txt.textContent = fieldOn ? "on" : "off";
+      const t = activeTopic();
+      if (fieldOn) {
+        runField(t);
+      } else {
+        activeField?.destroy();
+        activeField = null;
+        t?.querySelector(".ev-threads")?.replaceChildren();
+        t?.querySelectorAll(".ev-finding").forEach((f) => f.classList.remove("lit", "cited"));
+      }
+    },
+    { signal: ac.signal },
+  );
 
   tabs.forEach((b) =>
     b.addEventListener(
@@ -96,7 +217,7 @@ function initEvidence(): () => void {
     ),
   );
 
-  wireTopic(topics.find((t) => !t.hidden) ?? topics[0]);
+  wireTopic(activeTopic());
   return () => {
     ac.abort();
     topicAc?.abort();

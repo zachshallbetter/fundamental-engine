@@ -276,3 +276,163 @@ body:has(.ev-page) {
     transition: none;
   }
 }
+
+/* ── Controls — make the transformation legible ─────────────────────────────────────────────── */
+.ev-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.8rem;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+.ev-ctl {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.ev-ctl-l {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.ev-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+.ev-switch[aria-pressed="false"] {
+  border-color: var(--line);
+  color: var(--text-3);
+  background: transparent;
+}
+.ev-switch-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+.ev-switch[aria-pressed="false"] .ev-switch-dot {
+  box-shadow: none;
+  opacity: 0.5;
+}
+.ev-seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  transition: opacity 0.2s;
+}
+.ev-seg button {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-3);
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+.ev-seg button:last-child {
+  border-right: 0;
+}
+.ev-seg button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+.ev-ctl-hint {
+  flex-basis: 100%;
+  margin: 0.1rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-3);
+}
+.ev-ctl-hint b {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+/* ── Legend — reading the field ─────────────────────────────────────────────────────────────── */
+.ev-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.6rem;
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+.ev-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ev-k {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.ev-k-weight {
+  font-size: 0.98rem;
+  color: var(--text);
+  font-variation-settings: 'wght' 720;
+}
+.ev-k-anchor {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.ev-k-thread {
+  width: 18px;
+  height: 9px;
+  border-bottom: 1.5px solid var(--accent);
+  border-radius: 0 0 9px 9px;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 55%, transparent));
+}
+
+/* ── Field OFF — the same data, flattened to a plain list (the contrast that names the value) ─── */
+.ev-page[data-field="off"] .ev-finding {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+}
+.ev-page[data-field="off"] .ev-bar {
+  opacity: 0.4;
+}
+.ev-page[data-field="off"] .ev-threads {
+  display: none;
+}
+.ev-page[data-field="off"] .ev-finding.lit,
+.ev-page[data-field="off"] .ev-finding.cited {
+  transform: none;
+}
+.ev-page[data-field="off"] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.ev-page[data-field="off"] .ev-answer em {
+  color: var(--text-3);
+}
