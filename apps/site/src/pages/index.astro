@@ -12,6 +12,7 @@ import FlowToggle from "../components/ui/FlowToggle.astro";
 import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
+import CellGallery from "../components/CellGallery.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@field-ui/core";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
@@ -53,6 +54,23 @@ const chapters = [
   { id: "ch-system", no: "VII", label: "System" },
   { id: "ch-gallery", no: "VIII", label: "Gallery" },
 ];
+
+// The seven forces the in-frame <field-cell> poster engine can render (cell-force.ts).
+const CELL_CAPTIONS: Record<string, string> = {
+  attract: "pulls matter in",
+  repel: "pushes it away",
+  swirl: "orbits it around",
+  gravity: "a true 1/d² fall-in",
+  stream: "a uniform current",
+  buoyancy: "a steady lift",
+  tether: "a spring to a rest shell",
+};
+const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy", "tether"].map(
+  (t) => {
+    const f = MANUAL_FORCES.find((x) => x.token === t);
+    return { force: t, label: f?.label ?? t, color: f?.color, caption: CELL_CAPTIONS[t] };
+  },
+);
 ---
 
 <Base
@@ -1099,6 +1117,43 @@ const chapters = [
             <button type="button" data-render="streamlines" aria-pressed="false">streamlines</button>
           </div>
           <span class="hintline">the change plays across the whole page field behind the content</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · the force vocabulary</span>
+      <h2>Seven forces, side by side.</h2>
+      <p>
+        Each frame is its own little field — a live <code>&lt;field-cell&gt;</code> rendering a
+        single force over its own particle pool, paused when off-screen. Move your cursor through one
+        to push the matter. This is a slice of the catalog’s {MANUAL_FORCES.length} forces; the rest
+        compose on the page field above. Designed verbs, each bounded and legible — an attractor is
+        not gravity; a repeller is not charge.
+      </p>
+      <CellGallery cells={CELL_FORCES} height={120} />
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · formations</span>
+      <h2>The whole field can change its mind.</h2>
+      <p>
+        A <strong>formation</strong> is a global arrangement the matter falls into —
+        <code>field.setFormation(name)</code>. Pick one and the entire page field re-organizes:
+        resting drift, gravity wells, directional lanes, scattered energy, or everything gathering in.
+      </p>
+      <p class="note">Active only while this panel is in view, then it restores to <code>ambient</code>.</p>
+      <Fragment slot="stage">
+        <div class="rendertour" data-formationtour>
+          <span class="stage-label">field.setFormation(name)</span>
+          <div class="rt-modes" role="group" aria-label="Pick a formation">
+            <button type="button" data-formation="ambient" aria-pressed="true">ambient</button>
+            <button type="button" data-formation="wells" aria-pressed="false">wells</button>
+            <button type="button" data-formation="lanes" aria-pressed="false">lanes</button>
+            <button type="button" data-formation="scatter" aria-pressed="false">scatter</button>
+            <button type="button" data-formation="accretion" aria-pressed="false">accretion</button>
+          </div>
+          <span class="hintline">the matter re-arranges across the whole page</span>
         </div>
       </Fragment>
     </Concept>

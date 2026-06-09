@@ -5,7 +5,50 @@
 //   · --field-density — the metric the platform writes back onto a [data-feedback] body (feedback.ts).
 //   · field.setRender(mode) — the Field Surfaces underlay switch on <field-root>.
 
-type FieldEl = HTMLElement & { setRender?: (m: string) => void; rescan?: () => void };
+type FieldEl = HTMLElement & {
+  setRender?: (m: string) => void;
+  setFormation?: (name: string) => void;
+  rescan?: () => void;
+};
+
+/** Shared "pick a mode, apply it to the page field while in view" wiring for the pill demos. */
+function initPillTour(
+  rootSel: string,
+  buttonAttr: string,
+  fallback: string,
+  apply: (field: FieldEl | null, value: string) => void,
+): () => void {
+  const root = document.querySelector<HTMLElement>(rootSel);
+  if (!root) return () => {};
+  const field = document.querySelector("field-root") as FieldEl | null;
+  const buttons = [...root.querySelectorAll<HTMLButtonElement>(`button[${buttonAttr}]`)];
+  if (!buttons.length) return () => {};
+  const ac = new AbortController();
+  let inView = false;
+  let current = buttons[0];
+  const run = () => apply(field, inView && current ? current.dataset[buttonAttr.replace("data-", "")] || fallback : fallback);
+  const select = (b: HTMLButtonElement) => {
+    current = b;
+    buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    run();
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => select(b), { signal: ac.signal }));
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        inView = e.isIntersecting;
+        run();
+      }
+    },
+    { threshold: 0.4 },
+  );
+  io.observe(root);
+  return () => {
+    ac.abort();
+    io.disconnect();
+    apply(field, fallback);
+  };
+}
 
 /** #4 — Capture · hold · release: count the sink's real field:captured / field:released events. */
 function initLifecycle(): () => void {
@@ -79,45 +122,15 @@ function initReadout(): () => void {
 
 /** #3 — See the field five ways: switch the <field-root> underlay render mode, only while in view. */
 function initRenderTour(): () => void {
-  const root = document.querySelector<HTMLElement>("[data-rendertour]");
-  if (!root) return () => {};
-  const field = document.querySelector("field-root") as FieldEl | null;
-  const buttons = [...root.querySelectorAll<HTMLButtonElement>("button[data-render]")];
-  const ac = new AbortController();
-  let inView = false;
-  let current = buttons[0];
+  return initPillTour("[data-rendertour]", "data-render", "dots", (f, v) => f?.setRender?.(v));
+}
 
-  const apply = () => {
-    if (inView && current) field?.setRender?.(current.dataset.render || "dots");
-    else field?.setRender?.("dots");
-  };
-  const select = (b: HTMLButtonElement) => {
-    current = b;
-    buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    apply();
-  };
-  buttons.forEach((b) =>
-    b.addEventListener("click", () => select(b), { signal: ac.signal }),
-  );
-  const io = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        inView = e.isIntersecting;
-        apply();
-      }
-    },
-    { threshold: 0.4 },
-  );
-  io.observe(root);
-
-  return () => {
-    ac.abort();
-    io.disconnect();
-    field?.setRender?.("dots");
-  };
+/** #6 — Formations: re-arrange the whole page field — ambient / wells / lanes / scatter / accretion. */
+function initFormationTour(): () => void {
+  return initPillTour("[data-formationtour]", "data-formation", "ambient", (f, v) => f?.setFormation?.(v));
 }
 
 export function initGallery(): () => void {
-  const teardowns = [initLifecycle(), initReadout(), initRenderTour()];
+  const teardowns = [initLifecycle(), initReadout(), initRenderTour(), initFormationTour()];
   return () => teardowns.forEach((t) => t());
 }
