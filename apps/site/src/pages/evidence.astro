@@ -4,6 +4,7 @@ import SiteNav from "../components/SiteNav.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import evidence from "../data/evidence.json";
 import "../styles/evidence.css";
+import { EVIDENCE } from "../lib/copy.ts";
 
 // The Evidence Field — field-ui as an invisible measurement layer over real research data.
 // No particle swarm: the trust shows in the type. Each finding is a real OpenAlex work. The
@@ -89,9 +90,9 @@ const linkFor = (w: { doi: string | null; id: string }) =>
         </div>
       </div>
       <p class="ev-ctl-hint">
-        <span data-ev-hint><b>size</b> = citations — how much the field leans on each work</span>
+        <span data-ev-hint set:html={EVIDENCE.hints.consensus} />
         <span class="ev-hint-sep">·</span>
-        <span data-ev-lens-hint><b>color</b> = research subfield (the discipline it binds to)</span>
+        <span data-ev-lens-hint set:html={EVIDENCE.lensHints.field} />
       </p>
     </div>
 

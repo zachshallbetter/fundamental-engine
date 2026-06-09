@@ -9,10 +9,9 @@
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
 
 const NS = "http://www.w3.org/2000/svg";
-type Signal = "consensus" | "recency" | "balanced";
-type Lens = "field" | "recency" | "trust";
 const reduceMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -190,11 +189,6 @@ function initEvidence(): () => void {
   };
 
   // ── controls ─────────────────────────────────────────────────────────────
-  const HINTS: Record<Signal, string> = {
-    consensus: "weighted by <b>citations</b> — how much the field leans on each work",
-    recency: "weighted by <b>year</b> — newest work rises, regardless of citations",
-    balanced: "a <b>blend</b> of citations and recency",
-  };
   weightBtns.forEach((b) =>
     b.addEventListener(
       "click",
@@ -202,7 +196,7 @@ function initEvidence(): () => void {
         signal = (b.dataset.evWeight as Signal) || "consensus";
         page.dataset.weight = signal;
         weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[signal];
+        if (hint) hint.innerHTML = EVIDENCE.hints[signal];
         const t = activeTopic();
         if (t) reweight(t);
       },
@@ -210,11 +204,6 @@ function initEvidence(): () => void {
     ),
   );
 
-  const LENS_HINTS: Record<Lens, string> = {
-    field: "<b>color</b> = research subfield — the discipline each work binds to",
-    recency: "<b>color</b> = year — cool (older) fades to warm (newer)",
-    trust: "<b>color</b> = off — size carries the whole signal",
-  };
   lensBtns.forEach((b) =>
     b.addEventListener(
       "click",
@@ -222,7 +211,7 @@ function initEvidence(): () => void {
         lens = (b.dataset.evLens as Lens) || "field";
         page.dataset.lens = lens;
         lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
+        if (lensHint) lensHint.innerHTML = EVIDENCE.lensHints[lens];
         const t = activeTopic();
         if (t) applyLens(t);
       },
