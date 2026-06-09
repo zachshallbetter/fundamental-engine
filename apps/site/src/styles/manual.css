@@ -1020,3 +1020,237 @@ html.hide-field-lines .stage-field {
     transition: none;
   }
 }
+
+/* ── Gallery chapter (home) — the "what it can do" exploration bench ─────────────────────────────
+   Each stage fills its .stage so the absolutely-centred bodies position within it. */
+
+/* #4 capture → hold → release: live counters + event log over the vessel. */
+.lifecycle {
+  position: absolute;
+  inset: 0;
+}
+.cap-readout {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  display: flex;
+  gap: 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+.cap-stat b {
+  color: var(--text);
+  font-size: 1.15rem;
+}
+.cap-log {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 11rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-align: right;
+}
+.cap-line {
+  opacity: 0.9;
+}
+.cap-in {
+  color: #34d399;
+}
+.cap-out {
+  color: #f0abfc;
+}
+
+/* #1 the contract, live: weight from the engine-written --field-density (mirrored to --d). */
+.readout-stage {
+  position: absolute;
+  inset: 0;
+}
+.readout-body {
+  --cat: #60a5fa;
+  --d: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--cat) calc(34% + var(--d) * 60%), var(--text-4));
+  font-variation-settings: 'wght' calc(360 + var(--d) * 460);
+  text-shadow: 0 0 calc(var(--d) * 44px) color-mix(in srgb, var(--cat) calc(var(--d) * 85%), transparent);
+}
+.readout-chip {
+  position: absolute;
+  left: 50%;
+  bottom: 1.4rem;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.readout-chip b {
+  color: #60a5fa;
+  font-size: 1.05rem;
+}
+
+/* #3 render-mode tour: the field.setRender() switch. */
+.rendertour {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.rt-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  max-width: 84%;
+}
+.rt-modes button {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--text-2);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+  transition:
+    border-color 0.18s,
+    background 0.18s,
+    color 0.18s;
+}
+.rt-modes button:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+}
+.rt-modes button[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.rt-modes button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* #8 bindData — a results surface bound from data, with the live field behind the rows. */
+.binddata {
+  position: relative;
+}
+.bd-list {
+  position: relative;
+  min-height: 250px;
+  padding: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.bd-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 7rem 2.6rem;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  font-size: 0.95rem;
+  transition: background 0.3s;
+}
+.bd-row .bd-title {
+  font-weight: 500;
+}
+.bd-row .bd-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.bd-row .bd-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.5s ease;
+}
+.bd-row .bd-score {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-3);
+  text-align: right;
+}
+.binddata .agitate {
+  margin-top: 0.8rem;
+}
+
+/* Applied — navigation has gravity: weight from the engine-written --field-density (alias --d). */
+.navfield {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.navrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.7rem, 2.4vw, 1.8rem);
+  align-items: baseline;
+  justify-content: center;
+  padding: 0 1rem;
+}
+.navitem {
+  --cat: var(--accent);
+  --d: 0;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: clamp(1.1rem, 2.8vw, 1.9rem);
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--cat) calc(32% + var(--d) * 60%), var(--text-3));
+  font-variation-settings: 'wght' calc(380 + var(--d) * 380);
+  text-shadow: 0 0 calc(var(--d) * 30px) color-mix(in srgb, var(--cat) calc(var(--d) * 70%), transparent);
+}
+
+/* Gallery truth-mode badges — label each demo's epistemic mode (the six truth modes). */
+.concept-no .truth {
+  font-style: normal;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.46rem;
+  margin-left: 0.55rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.8;
+  vertical-align: middle;
+}
+.truth-physical {
+  color: #4da3ff;
+}
+.truth-designed {
+  color: #2dd4bf;
+}
+.truth-hybrid {
+  color: #a78bfa;
+}
+.truth-diagnostic {
+  color: #ff9d5c;
+}
+.truth-poetic {
+  color: #f0abfc;
+}
+.truth-semantic {
+  color: #86e57f;
+}
