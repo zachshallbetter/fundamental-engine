@@ -1,0 +1,2921 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/base.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "HTMLElementBase",
+          "type": {
+            "text": "typeof HTMLElement"
+          },
+          "description": "SSR-safe `HTMLElement` base. In the browser it is the real `HTMLElement`; under Node — an SSR\npass, a build step, or the dist smoke check — it is an inert stand-in, so merely *importing*\nthe package never throws `HTMLElement is not defined`. The elements only do anything once a\nbrowser upgrades them (every `customElements.define` is guarded too), so the stand-in is never\nconstructed."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "HTMLElementBase",
+          "declaration": {
+            "name": "HTMLElementBase",
+            "module": "src/base.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/cell-force.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "cellForce",
+          "return": {
+            "type": {
+              "text": "{ ax: number; ay: number }"
+            }
+          },
+          "parameters": [
+            {
+              "name": "force",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "dx",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "dy",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "reach",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "The Field Cell's in-frame force math (§25.1) — a deliberately simplified,\ncentre-of-frame model for demos. NOT the canonical force math (§6); the cell is\na poster engine. `dx,dy` point from the particle TO the frame centre."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "cellForce",
+          "declaration": {
+            "name": "cellForce",
+            "module": "src/cell-force.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/forces-cell.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "`<forces-cell force=\"swirl\" color=\"#2dd4bf\">` — an in-frame field surface (§25.1).\n\nA standalone field sized to its container that renders *one* force, with its own\nlightweight particle pool, its own pointer interaction, and a lifecycle that pauses\nwhen off-screen. It is **not** the §-engine: it's a lighter \"demo/poster\" engine,\ncompletely separate from the page `<forces-field>` and the core field loop.\n\n- `ResizeObserver` re-fits the canvas (DPR-aware) and rebuilds the pool.\n- `IntersectionObserver` gates the rAF loop — paused when off-screen.\n- Honours `prefers-reduced-motion`: renders one static frame, no animation.",
+          "name": "FieldCell",
+          "members": [
+            {
+              "kind": "field",
+              "name": "canvas",
+              "type": {
+                "text": "HTMLCanvasElement"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "ctx",
+              "type": {
+                "text": "CanvasRenderingContext2D | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "particles",
+              "type": {
+                "text": "CellParticle[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "raf",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "resizeObserver",
+              "type": {
+                "text": "ResizeObserver | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "intersectionObserver",
+              "type": {
+                "text": "IntersectionObserver | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "boxW",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0",
+              "description": "frame box in CSS pixels (post-DPR transform space)."
+            },
+            {
+              "kind": "field",
+              "name": "boxH",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0"
+            },
+            {
+              "kind": "field",
+              "name": "cursorX",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "description": "cursor in frame-local CSS px, or null when absent."
+            },
+            {
+              "kind": "field",
+              "name": "cursorY",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "onPointerMove",
+              "type": {
+                "text": "(e: PointerEvent) => void"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "onPointerLeave",
+              "type": {
+                "text": "() => void"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "tick",
+              "type": {
+                "text": "() => void"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "force",
+              "type": {
+                "text": "string"
+              },
+              "description": "the force this cell demonstrates (§25.1).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "description": "dot colour.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "count",
+              "type": {
+                "text": "number"
+              },
+              "description": "particle count; `0` (default) means auto-size to the frame area.",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "isPrefersReducedMotion",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "fit",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Fit the canvas to the element box (DPR-aware) and rebuild the pool."
+            },
+            {
+              "kind": "method",
+              "name": "buildPool",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Build the particle pool sized to the frame area."
+            },
+            {
+              "kind": "method",
+              "name": "start",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "stop",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "step",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Advance + render one frame."
+            },
+            {
+              "kind": "field",
+              "name": "textContent"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "force",
+              "type": {
+                "text": "string"
+              },
+              "description": "The single force token rendered: `attract` | `repel` | `swirl` | `gravity` | `stream` | `buoyancy` | `tether`."
+            },
+            {
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accent colour (hex) for the cell's particles."
+            },
+            {
+              "name": "count",
+              "type": {
+                "text": "number"
+              },
+              "description": "Number of particles in the cell's pool."
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElementBase",
+            "module": "/src/base.ts"
+          },
+          "summary": "A standalone, in-frame demo field that renders one force with its own\nparticle pool, in-view-gated. Registered as `<field-cell>` (canonical) and\n`<forces-cell>` (deprecated alias).",
+          "tagName": "field-cell",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "`<forces-cell>` — deprecated field-ui-migration alias of `<field-cell>` (a thin subclass, since\nthe registry forbids two tag names per constructor). Identical behaviour; prefer `<field-cell>`\nin new markup. Kept working until the migration removal version.",
+          "name": "ForcesCell",
+          "superclass": {
+            "name": "FieldCell",
+            "module": "src/forces-cell.ts"
+          },
+          "tagName": "forces-cell",
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "force",
+              "type": {
+                "text": "string"
+              },
+              "description": "The single force token rendered: `attract` | `repel` | `swirl` | `gravity` | `stream` | `buoyancy` | `tether`.",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accent colour (hex) for the cell's particles.",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "name": "count",
+              "type": {
+                "text": "number"
+              },
+              "description": "Number of particles in the cell's pool.",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "canvas",
+              "type": {
+                "text": "HTMLCanvasElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ctx",
+              "type": {
+                "text": "CanvasRenderingContext2D | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "particles",
+              "type": {
+                "text": "CellParticle[]"
+              },
+              "privacy": "private",
+              "default": "[]",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "raf",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "resizeObserver",
+              "type": {
+                "text": "ResizeObserver | undefined"
+              },
+              "privacy": "private",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "intersectionObserver",
+              "type": {
+                "text": "IntersectionObserver | undefined"
+              },
+              "privacy": "private",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "boxW",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0",
+              "description": "frame box in CSS pixels (post-DPR transform space).",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "boxH",
+              "type": {
+                "text": "number"
+              },
+              "privacy": "private",
+              "default": "0",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "cursorX",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "description": "cursor in frame-local CSS px, or null when absent.",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "cursorY",
+              "type": {
+                "text": "number | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "onPointerMove",
+              "type": {
+                "text": "(e: PointerEvent) => void"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "onPointerLeave",
+              "type": {
+                "text": "() => void"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "tick",
+              "type": {
+                "text": "() => void"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "force",
+              "type": {
+                "text": "string"
+              },
+              "description": "the force this cell demonstrates (§25.1).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "description": "dot colour.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "count",
+              "type": {
+                "text": "number"
+              },
+              "description": "particle count; `0` (default) means auto-size to the frame area.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "isPrefersReducedMotion",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "fit",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Fit the canvas to the element box (DPR-aware) and rebuild the pool.",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "buildPool",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Build the particle pool sized to the frame area.",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "start",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "stop",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "step",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Advance + render one frame.",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "textContent",
+              "inheritedFrom": {
+                "name": "FieldCell",
+                "module": "src/forces-cell.ts"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FieldCell",
+          "declaration": {
+            "name": "FieldCell",
+            "module": "src/forces-cell.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "field-cell",
+          "declaration": {
+            "name": "FieldCell",
+            "module": "src/forces-cell.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ForcesCell",
+          "declaration": {
+            "name": "ForcesCell",
+            "module": "src/forces-cell.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "forces-cell",
+          "declaration": {
+            "name": "ForcesCell",
+            "module": "src/forces-cell.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/index.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "`<forces-field>` — the reciprocal field as a custom element.\n\nDrop it once on a page; it renders a full-viewport canvas behind the content\nand scans the document for `[data-body]` / `[data-preset]` elements, turning\neach into a body in the field (§2.1).\n\nThe point of shipping a **custom element**: it works in React, Svelte, Astro,\nVue, or plain HTML unchanged — \"every element is a body\" as a native, portable\nprimitive, with no framework lock-in for consumers.\n\nPlain `HTMLElement` (the field is just a canvas — no templating). Lit earns its\nplace when there's UI to template, e.g. the Lab controls (§14).",
+          "name": "FieldField",
+          "members": [
+            {
+              "kind": "field",
+              "name": "canvas",
+              "type": {
+                "text": "HTMLCanvasElement"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "field",
+              "type": {
+                "text": "FieldHandle | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "overlayCanvas",
+              "type": {
+                "text": "HTMLCanvasElement | undefined"
+              },
+              "privacy": "private",
+              "description": "Field Surfaces: the optional front overlay surface (light-DOM, above content)."
+            },
+            {
+              "kind": "field",
+              "name": "platformRuntime",
+              "type": {
+                "text": "PlatformRuntime | undefined"
+              },
+              "description": "experimental platform runtime (Phase D); present only when the flag is on."
+            },
+            {
+              "kind": "field",
+              "name": "platform",
+              "type": {
+                "text": "FieldPlatform | undefined"
+              },
+              "description": "The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "accent",
+              "type": {
+                "text": "string"
+              },
+              "description": "the travelling accent (§9); defaults to the first palette colour.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "density",
+              "type": {
+                "text": "number"
+              },
+              "description": "particle-count multiplier (§2.5).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "waves",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "draw the background Currents (§24).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "renderMode",
+              "type": {
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+              },
+              "description": "render mode (§20.6).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "overlay",
+              "type": {
+                "text": "OverlayMode"
+              },
+              "description": "Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "palette",
+              "type": {
+                "text": "string | undefined"
+              },
+              "description": "colour template name for the travelling accent (§9), or undefined for `ours`.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "attention",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "conserved attention (§2.4): present and not `\"false\"` → one finite strength budget.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "causality",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "cross-boundary causality (Concept 4): present and not `\"false\"` → density spills.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "mass",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "scan",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "re-scan the document for `[data-body]` bodies after a DOM change."
+            },
+            {
+              "kind": "method",
+              "name": "rescan",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "alias of `scan`."
+            },
+            {
+              "kind": "method",
+              "name": "setAccent",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "hex",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "recolour the travelling accent (§9)."
+            },
+            {
+              "kind": "method",
+              "name": "setPalette",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "palette",
+                  "type": {
+                    "text": "string | readonly string[]"
+                  }
+                }
+              ],
+              "description": "swap the accent colour template live (§9)."
+            },
+            {
+              "kind": "method",
+              "name": "setFormation",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "switch the global formation (§7)."
+            },
+            {
+              "kind": "method",
+              "name": "setAttention",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle conserved attention (§2.4) live."
+            },
+            {
+              "kind": "method",
+              "name": "setCausality",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle cross-boundary causality (Concept 4) live."
+            },
+            {
+              "kind": "method",
+              "name": "setHeatmap",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle the density heatmap layer (field-systems H1) live."
+            },
+            {
+              "kind": "method",
+              "name": "setRender",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                  }
+                }
+              ],
+              "description": "switch the underlay render mode (§20.6) live."
+            },
+            {
+              "kind": "method",
+              "name": "setOverlay",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "OverlayMode"
+                  }
+                }
+              ],
+              "description": "render a field-structure visualization on the overlay surface (Field Surfaces — in front of content)."
+            },
+            {
+              "kind": "method",
+              "name": "threads",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "list",
+                  "type": {
+                    "text": "ThreadLink[] | null"
+                  }
+                }
+              ],
+              "description": "wire glowing connector lines between a set, or clear with null (§10)."
+            },
+            {
+              "kind": "method",
+              "name": "burst",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "hex",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11)."
+            },
+            {
+              "kind": "method",
+              "name": "flowTo",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "FlowOptions"
+                  }
+                }
+              ],
+              "description": "place/move a dynamic flow focus the field bends toward — pulls matter, curves the streamlines."
+            },
+            {
+              "kind": "method",
+              "name": "clearFlow",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "remove the flow focus."
+            },
+            {
+              "kind": "method",
+              "name": "start",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "(re)create the engine on the canvas, reading the current attributes."
+            },
+            {
+              "kind": "field",
+              "name": "textContent"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "accent",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accent colour (hex) the field draws particles and overlay in."
+            },
+            {
+              "name": "density",
+              "type": {
+                "text": "number"
+              },
+              "description": "Particle-density multiplier (default `1`; `0.5` halves the count)."
+            },
+            {
+              "name": "waves",
+              "type": {
+                "text": "number"
+              },
+              "description": "Intensity of the resting wave currents (the ambient drift)."
+            },
+            {
+              "name": "render",
+              "type": {
+                "text": "string"
+              },
+              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`."
+            },
+            {
+              "name": "overlay",
+              "type": {
+                "text": "string"
+              },
+              "description": "Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`."
+            },
+            {
+              "name": "palette",
+              "type": {
+                "text": "string"
+              },
+              "description": "Named colour palette for the field."
+            },
+            {
+              "name": "mass",
+              "type": {
+                "text": "number"
+              },
+              "description": "Global mass scaling applied to bodies."
+            },
+            {
+              "name": "attention",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables the conserved-attention behaviour (one finite budget, redistributed)."
+            },
+            {
+              "name": "causality",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables the causality demo behaviour."
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElementBase",
+            "module": "/src/base.ts"
+          },
+          "summary": "The page-singleton reciprocal field — a full-viewport canvas that turns\n`[data-body]` / `[data-preset]` elements into bodies. Registered as `<field-root>`\n(canonical), `<field-field>`, and `<forces-field>` (deprecated alias).",
+          "tagName": "field-field",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "Tag aliases of the canonical FieldField element. The registry rejects registering one\nconstructor under two tag names, so each alias is a thin subclass with identical behaviour,\nattributes, and body contract. `<field-root>` is the recommended tag for the singleton field;\n`<forces-field>` is the deprecated field-ui-migration alias kept until the removal version\n(docs/planning-archive/field-ui-migration-plan.md §3).",
+          "name": "FieldRoot",
+          "superclass": {
+            "name": "FieldField",
+            "module": "src/index.ts"
+          },
+          "tagName": "field-root",
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "accent",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accent colour (hex) the field draws particles and overlay in.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "density",
+              "type": {
+                "text": "number"
+              },
+              "description": "Particle-density multiplier (default `1`; `0.5` halves the count).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "waves",
+              "type": {
+                "text": "number"
+              },
+              "description": "Intensity of the resting wave currents (the ambient drift).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "render",
+              "type": {
+                "text": "string"
+              },
+              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "overlay",
+              "type": {
+                "text": "string"
+              },
+              "description": "Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "palette",
+              "type": {
+                "text": "string"
+              },
+              "description": "Named colour palette for the field.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "mass",
+              "type": {
+                "text": "number"
+              },
+              "description": "Global mass scaling applied to bodies.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "attention",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables the conserved-attention behaviour (one finite budget, redistributed).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "causality",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables the causality demo behaviour.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "canvas",
+              "type": {
+                "text": "HTMLCanvasElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "field",
+              "type": {
+                "text": "FieldHandle | undefined"
+              },
+              "privacy": "private",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlayCanvas",
+              "type": {
+                "text": "HTMLCanvasElement | undefined"
+              },
+              "privacy": "private",
+              "description": "Field Surfaces: the optional front overlay surface (light-DOM, above content).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "platformRuntime",
+              "type": {
+                "text": "PlatformRuntime | undefined"
+              },
+              "description": "experimental platform runtime (Phase D); present only when the flag is on.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "platform",
+              "type": {
+                "text": "FieldPlatform | undefined"
+              },
+              "description": "The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "accent",
+              "type": {
+                "text": "string"
+              },
+              "description": "the travelling accent (§9); defaults to the first palette colour.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "density",
+              "type": {
+                "text": "number"
+              },
+              "description": "particle-count multiplier (§2.5).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "waves",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "draw the background Currents (§24).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "renderMode",
+              "type": {
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+              },
+              "description": "render mode (§20.6).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlay",
+              "type": {
+                "text": "OverlayMode"
+              },
+              "description": "Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "palette",
+              "type": {
+                "text": "string | undefined"
+              },
+              "description": "colour template name for the travelling accent (§9), or undefined for `ours`.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "attention",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "conserved attention (§2.4): present and not `\"false\"` → one finite strength budget.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "causality",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "cross-boundary causality (Concept 4): present and not `\"false\"` → density spills.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "mass",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "scan",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "re-scan the document for `[data-body]` bodies after a DOM change.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "rescan",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "alias of `scan`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setAccent",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "hex",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "recolour the travelling accent (§9).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setPalette",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "palette",
+                  "type": {
+                    "text": "string | readonly string[]"
+                  }
+                }
+              ],
+              "description": "swap the accent colour template live (§9).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setFormation",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "switch the global formation (§7).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setAttention",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle conserved attention (§2.4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setCausality",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle cross-boundary causality (Concept 4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setHeatmap",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle the density heatmap layer (field-systems H1) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setRender",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                  }
+                }
+              ],
+              "description": "switch the underlay render mode (§20.6) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setOverlay",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "OverlayMode"
+                  }
+                }
+              ],
+              "description": "render a field-structure visualization on the overlay surface (Field Surfaces — in front of content).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "threads",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "list",
+                  "type": {
+                    "text": "ThreadLink[] | null"
+                  }
+                }
+              ],
+              "description": "wire glowing connector lines between a set, or clear with null (§10).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "burst",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "hex",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "flowTo",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "FlowOptions"
+                  }
+                }
+              ],
+              "description": "place/move a dynamic flow focus the field bends toward — pulls matter, curves the streamlines.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clearFlow",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "remove the flow focus.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "start",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "(re)create the engine on the canvas, reading the current attributes.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "textContent",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "ForcesField",
+          "superclass": {
+            "name": "FieldField",
+            "module": "src/index.ts"
+          },
+          "deprecated": "use `<field-root>` / `FieldField`.",
+          "tagName": "forces-field",
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "accent",
+              "type": {
+                "text": "string"
+              },
+              "description": "Accent colour (hex) the field draws particles and overlay in.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "density",
+              "type": {
+                "text": "number"
+              },
+              "description": "Particle-density multiplier (default `1`; `0.5` halves the count).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "waves",
+              "type": {
+                "text": "number"
+              },
+              "description": "Intensity of the resting wave currents (the ambient drift).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "render",
+              "type": {
+                "text": "string"
+              },
+              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "overlay",
+              "type": {
+                "text": "string"
+              },
+              "description": "Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "palette",
+              "type": {
+                "text": "string"
+              },
+              "description": "Named colour palette for the field.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "mass",
+              "type": {
+                "text": "number"
+              },
+              "description": "Global mass scaling applied to bodies.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "attention",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables the conserved-attention behaviour (one finite budget, redistributed).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "causality",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Enables the causality demo behaviour.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "canvas",
+              "type": {
+                "text": "HTMLCanvasElement"
+              },
+              "privacy": "private",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "field",
+              "type": {
+                "text": "FieldHandle | undefined"
+              },
+              "privacy": "private",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlayCanvas",
+              "type": {
+                "text": "HTMLCanvasElement | undefined"
+              },
+              "privacy": "private",
+              "description": "Field Surfaces: the optional front overlay surface (light-DOM, above content).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "platformRuntime",
+              "type": {
+                "text": "PlatformRuntime | undefined"
+              },
+              "description": "experimental platform runtime (Phase D); present only when the flag is on.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "platform",
+              "type": {
+                "text": "FieldPlatform | undefined"
+              },
+              "description": "The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "accent",
+              "type": {
+                "text": "string"
+              },
+              "description": "the travelling accent (§9); defaults to the first palette colour.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "density",
+              "type": {
+                "text": "number"
+              },
+              "description": "particle-count multiplier (§2.5).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "waves",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "draw the background Currents (§24).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "renderMode",
+              "type": {
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+              },
+              "description": "render mode (§20.6).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "overlay",
+              "type": {
+                "text": "OverlayMode"
+              },
+              "description": "Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "palette",
+              "type": {
+                "text": "string | undefined"
+              },
+              "description": "colour template name for the travelling accent (§9), or undefined for `ours`.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "attention",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "conserved attention (§2.4): present and not `\"false\"` → one finite strength budget.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "causality",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "cross-boundary causality (Concept 4): present and not `\"false\"` → density spills.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "mass",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "scan",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "re-scan the document for `[data-body]` bodies after a DOM change.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "rescan",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "alias of `scan`.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setAccent",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "hex",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "recolour the travelling accent (§9).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setPalette",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "palette",
+                  "type": {
+                    "text": "string | readonly string[]"
+                  }
+                }
+              ],
+              "description": "swap the accent colour template live (§9).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setFormation",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "switch the global formation (§7).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setAttention",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle conserved attention (§2.4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setCausality",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle cross-boundary causality (Concept 4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setHeatmap",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "toggle the density heatmap layer (field-systems H1) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setRender",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                  }
+                }
+              ],
+              "description": "switch the underlay render mode (§20.6) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setOverlay",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "OverlayMode"
+                  }
+                }
+              ],
+              "description": "render a field-structure visualization on the overlay surface (Field Surfaces — in front of content).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "threads",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "list",
+                  "type": {
+                    "text": "ThreadLink[] | null"
+                  }
+                }
+              ],
+              "description": "wire glowing connector lines between a set, or clear with null (§10).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "burst",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "hex",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "flowTo",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "FlowOptions"
+                  }
+                }
+              ],
+              "description": "place/move a dynamic flow focus the field bends toward — pulls matter, curves the streamlines.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clearFlow",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "remove the flow focus.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "start",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "(re)create the engine on the canvas, reading the current attributes.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "textContent",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "usePlatformRuntime",
+          "declaration": {
+            "name": "usePlatformRuntime",
+            "module": "./platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isPlatformRuntimeDefault",
+          "declaration": {
+            "name": "isPlatformRuntimeDefault",
+            "module": "./platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "shouldUsePlatformRuntime",
+          "declaration": {
+            "name": "shouldUsePlatformRuntime",
+            "module": "./platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "startPlatformRuntime",
+          "declaration": {
+            "name": "startPlatformRuntime",
+            "module": "./platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "PlatformRuntime",
+          "declaration": {
+            "name": "PlatformRuntime",
+            "module": "./platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FieldField",
+          "declaration": {
+            "name": "FieldField",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "field-field",
+          "declaration": {
+            "name": "FieldField",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FieldRoot",
+          "declaration": {
+            "name": "FieldRoot",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ForcesField",
+          "declaration": {
+            "name": "ForcesField",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "field-root",
+          "declaration": {
+            "name": "FieldRoot",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "forces-field",
+          "declaration": {
+            "name": "ForcesField",
+            "module": "src/index.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/forces-cell.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/cell-force.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/mount.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FieldController",
+          "declaration": {
+            "name": "FieldController",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "ForcesController",
+          "declaration": {
+            "name": "ForcesController",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "REGISTER_BODY",
+          "declaration": {
+            "name": "REGISTER_BODY",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "UNREGISTER_BODY",
+          "declaration": {
+            "name": "UNREGISTER_BODY",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "UPDATE_BODY",
+          "declaration": {
+            "name": "UPDATE_BODY",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FIELD_REGISTER_BODY",
+          "declaration": {
+            "name": "FIELD_REGISTER_BODY",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FIELD_UNREGISTER_BODY",
+          "declaration": {
+            "name": "FIELD_UNREGISTER_BODY",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FIELD_UPDATE_BODY",
+          "declaration": {
+            "name": "FIELD_UPDATE_BODY",
+            "package": "@field-ui/core"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "RegisterBodyDetail",
+          "declaration": {
+            "name": "RegisterBodyDetail",
+            "package": "@field-ui/core"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/mount.ts",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "mountField",
+          "declaration": {
+            "name": "mountField",
+            "package": "@field-ui/vanilla"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "MountOptions",
+          "declaration": {
+            "name": "MountOptions",
+            "package": "@field-ui/vanilla"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/platform-runtime.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "syncBodies",
+          "return": {
+            "type": {
+              "text": "number"
+            }
+          },
+          "parameters": [
+            {
+              "name": "sink",
+              "type": {
+                "text": "MeasureSink"
+              }
+            },
+            {
+              "name": "root",
+              "type": {
+                "text": "ParentNode"
+              }
+            }
+          ],
+          "description": "Sync the scan root's body elements into the MeasurementRegistry (D2). New `[data-body]` /\n`[data-preset]` / `[data-intent]` / `[data-field-role]` elements are registered for measurement;\ndisconnected ones are pruned by the read phase. Returns how many were newly registered. Pure given\nthe sink + root — the selector is core's `bodyElements`, so the platform never drifts from the\nlegacy scanner. Note (D2): an element that loses its body attribute while staying connected is not\nyet unregistered — a later refinement; today the legacy engine remains the source of truth for\nrendering, so this is measurement-only and has no observable effect."
+        },
+        {
+          "kind": "function",
+          "name": "registerShadowBody",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "parameters": [
+            {
+              "name": "sink",
+              "type": {
+                "text": "MeasureSink"
+              }
+            },
+            {
+              "name": "detail",
+              "type": {
+                "text": "RegisterBodyDetail | undefined"
+              }
+            }
+          ],
+          "description": "Register a shadow-DOM host for measurement from a `register-body` event detail (D4). The host's\ncustom `getRect` (for closed roots / inner cores) flows straight into MeasurementRegistry's rect\noverride. Pure given the sink + detail. `syncBodies`' `if (!has)` guard means it won't clobber a\nhost registered here, so the two discovery paths coexist (the legacy engine still drives the\nbody's simulation; the platform owns its geometry)."
+        },
+        {
+          "kind": "function",
+          "name": "unregisterShadowBody",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "parameters": [
+            {
+              "name": "sink",
+              "type": {
+                "text": "MeasureSink"
+              }
+            },
+            {
+              "name": "detail",
+              "type": {
+                "text": "RegisterBodyDetail | undefined"
+              }
+            }
+          ],
+          "description": "Unregister a shadow-DOM host from measurement on its `unregister-body` event (D4). Pure."
+        },
+        {
+          "kind": "function",
+          "name": "shouldDiscoverRelationships",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          },
+          "parameters": [
+            {
+              "name": "frame",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "every",
+              "default": "30"
+            }
+          ],
+          "description": "Relationship discovery is heavier than body syncing (it builds graph edges from every native\nlink), so the runtime re-discovers on a throttle rather than every frame (D5). Pure."
+        },
+        {
+          "kind": "function",
+          "name": "usePlatformRuntime",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "parameters": [
+            {
+              "name": "on",
+              "default": "true"
+            }
+          ],
+          "description": "Enable (or disable) the platform runtime for every `<field-root>` by default (D6: default on)."
+        },
+        {
+          "kind": "function",
+          "name": "isPlatformRuntimeDefault",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          },
+          "description": "Whether the platform runtime is the current default."
+        },
+        {
+          "kind": "function",
+          "name": "shouldUsePlatformRuntime",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          },
+          "parameters": [
+            {
+              "name": "el",
+              "type": {
+                "text": "{ getAttribute(name: string): string | null; hasAttribute(name: string): boolean }"
+              }
+            },
+            {
+              "name": "def",
+              "default": "runtimeDefault"
+            }
+          ],
+          "description": "Decide whether an element should use the platform runtime: an explicit `experimental-platform`\nattribute opts a single element in/out (`=\"off\"` forces the legacy path), otherwise the global\ndefault applies (on since D6). Pure — the element's only branch point."
+        },
+        {
+          "kind": "function",
+          "name": "makeFeedbackSink",
+          "return": {
+            "type": {
+              "text": "FeedbackSink"
+            }
+          },
+          "parameters": [
+            {
+              "name": "platform",
+              "type": {
+                "text": "FieldPlatform"
+              }
+            }
+          ],
+          "description": "Build a feedback sink (D3) that routes the engine's per-body channels through the platform's\nFeedbackRegistry instead of letting the engine write the DOM. The eased density value is the\nengine's own — only the *write* moves — so the signal is preserved exactly. FeedbackRegistry\nmirrors `--field-*` → `--forces-*` and `field:*` → `forces:*`, so both alias families stay live.\nWrites apply on the platform's write phase (its scheduler tick)."
+        },
+        {
+          "kind": "function",
+          "name": "startPlatformRuntime",
+          "return": {
+            "type": {
+              "text": "PlatformRuntime"
+            }
+          },
+          "parameters": [
+            {
+              "name": "root",
+              "type": {
+                "text": "Element"
+              }
+            }
+          ],
+          "description": "Start the platform runtime over a scan root. Thin DOM glue (rAF + viewport size); SSR-safe — with\nno `window` it returns a created-but-idle platform. D2+ register bodies/feedback/relationships\nhere; D1 measures only the root."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "syncBodies",
+          "declaration": {
+            "name": "syncBodies",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "registerShadowBody",
+          "declaration": {
+            "name": "registerShadowBody",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "unregisterShadowBody",
+          "declaration": {
+            "name": "unregisterShadowBody",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "shouldDiscoverRelationships",
+          "declaration": {
+            "name": "shouldDiscoverRelationships",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "usePlatformRuntime",
+          "declaration": {
+            "name": "usePlatformRuntime",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isPlatformRuntimeDefault",
+          "declaration": {
+            "name": "isPlatformRuntimeDefault",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "shouldUsePlatformRuntime",
+          "declaration": {
+            "name": "shouldUsePlatformRuntime",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "makeFeedbackSink",
+          "declaration": {
+            "name": "makeFeedbackSink",
+            "module": "src/platform-runtime.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "startPlatformRuntime",
+          "declaration": {
+            "name": "startPlatformRuntime",
+            "module": "src/platform-runtime.ts"
+          }
+        }
+      ]
+    }
+  ]
+}
