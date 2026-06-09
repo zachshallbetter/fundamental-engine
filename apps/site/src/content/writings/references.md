@@ -85,15 +85,15 @@ best-known details and a `[verify]` flag.
 - `[preregistration]` pre-registration / Registered Reports practice. **[TODO: locate]**
 
 ### Web platform & rendering substrate (Paper 1, Paper 5)
-- `[csshoudini]` CSS Properties & Values API / `CSS.registerProperty` (Houdini). **[TODO: locate spec ref]**
-- `[scrollanim]` Scroll-driven Animations; View Transitions API. **[TODO: locate spec refs]**
-- `[webcomponents]` Custom Elements / Shadow DOM specifications. **[TODO: locate]**
-- `[prefers-reduced-motion]` the `prefers-reduced-motion` media query (CSS Media Queries Level 5). **[TODO: locate spec ref]**
+- `[csshoudini]` W3C, "CSS Properties and Values API Level 1" (`CSS.registerProperty`; Houdini), Working Draft. <https://www.w3.org/TR/css-properties-values-api-1/>
+- `[scrollanim]` W3C, "Scroll-driven Animations" (<https://www.w3.org/TR/scroll-animations-1/>) and "CSS View Transitions Module Level 1" (<https://www.w3.org/TR/css-view-transitions-1/>), Working Drafts.
+- `[webcomponents]` WHATWG, "HTML Standard" §4.13 Custom elements (<https://html.spec.whatwg.org/multipage/custom-elements.html>); WHATWG, "DOM Standard" §Shadow trees (<https://dom.spec.whatwg.org/#shadow-trees>). Living Standards.
+- `[prefers-reduced-motion]` W3C, "Media Queries Level 5," the `prefers-reduced-motion` feature, Working Draft. <https://www.w3.org/TR/mediaqueries-5/#prefers-reduced-motion>
 
 ### Accessibility & reduced motion (Paper 4)
-- `[wcag-motion]` WCAG 2.x motion / animation-from-interaction success criteria (disabling non-essential motion). **[TODO: locate]**
+- `[wcag-motion]` W3C, "Web Content Accessibility Guidelines (WCAG) 2.1," Success Criterion 2.3.3 Animation from Interactions. <https://www.w3.org/TR/WCAG21/#animation-from-interactions>
 - `[vestibular-accessibility]` vestibular-disorder accessibility — motion as a barrier (nausea, dizziness, disorientation from large / parallax / unexpected motion). **[TODO: locate]**
-- `[use-of-color]` "color is not the only means of conveying information" / redundant coding (the WCAG use-of-color principle this paper generalizes from color to motion). **[TODO: locate]**
+- `[use-of-color]` W3C, "Web Content Accessibility Guidelines (WCAG) 2.1," Success Criterion 1.4.1 Use of Color — "color is not the only visual means of conveying information" (the principle this paper generalizes from color to motion). <https://www.w3.org/TR/WCAG21/#use-of-color>
 - `[functional-vs-decorative-motion]` functional vs. decorative animation — motion that conveys causality / continuity / hierarchy vs. motion that does not. **[TODO: locate]**
 - `[degraded-fallback-antipattern]` the degraded-fallback / dual-codebase-drift antipattern (separate, under-tested accessible paths diverging from the primary surface). **[TODO: locate]**
 - `[non-inferiority]` non-inferiority trial design and margin selection (Papers 2–4 study designs). **[TODO: locate]**
