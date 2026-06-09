@@ -1,0 +1,15 @@
+---
+// The hero's "flow follows pointer" control. Wired by HomeRuntime.ts (looked up by #flowToggle),
+// so this is pure markup. The label is a prop; the hint is a slot (it sometimes carries a <code>).
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
+---
+
+<div class="hero-flow">
+  <button id="flowToggle" class="flow-toggle" type="button" aria-pressed="false">
+    <span class="ft-dot" aria-hidden="true"></span>{label}
+  </button>
+  <span class="flow-hint"><slot /></span>
+</div>
