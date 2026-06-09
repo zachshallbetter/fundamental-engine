@@ -12,7 +12,7 @@ import FlowToggle from "../components/ui/FlowToggle.astro";
 import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
-import { MANUAL_FORCES, MANUAL_PRESETS } from "@field-ui/core";
+import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@field-ui/core";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
 
@@ -76,7 +76,7 @@ const chapters = [
         the contract is how you use it.
       </p>
       <Fragment slot="cta">
-        <code class="install" data-copy="npm i @field-ui/elements">npm i @field-ui/elements</code>
+        <code class="install" data-copy="npm i @field-ui/kit">npm i @field-ui/kit</code>
         <Button href="/docs" variant="primary">Read the docs →</Button>
         <Button href="/lab">Open the Lab →</Button>
       </Fragment>
@@ -221,7 +221,7 @@ const chapters = [
           translations, not additional fundamental fields. See the
           <a href="/docs/natural-fields">Natural Fields</a> model.</ChapterHeader>
     {
-      natural.map((f, i) => {
+      natural.map((f: ManualEntry, i) => {
         n += 1;
         return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
       })
@@ -593,7 +593,7 @@ const chapters = [
     <!-- IV · Designed-extended -->
     <ChapterHeader no="IV" id="ch-extended" title="Designed-extended">Further designed forces, and the modifiers that wrap a sibling.</ChapterHeader>
     {
-      extended.map((f, i) => {
+      extended.map((f: ManualEntry, i) => {
         n += 1;
         return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
       })
@@ -602,7 +602,7 @@ const chapters = [
     <!-- V · Presets -->
     <ChapterHeader no="V" id="ch-presets" title="Presets">Cosmology as composition — named arrangements of the primitives.</ChapterHeader>
     {
-      MANUAL_PRESETS.map((p, i) => {
+      MANUAL_PRESETS.map((p: ManualPreset, i) => {
         n += 1;
         const color = PRESET_COLORS[p.name] ?? "#4da3ff";
         return <PresetRow p={p} num={n} color={color} reverse={i % 2 === 1} />;
