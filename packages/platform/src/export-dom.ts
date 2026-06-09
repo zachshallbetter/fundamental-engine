@@ -4,7 +4,7 @@
  * core: `segmentsToSvg` (vector) and `canvasToPng` (a canvas's own `toDataURL`). Pair them here to
  * actually save a file.
  */
-import { canvasToPng } from 'field-ui';
+import { canvasToPng } from '@field-ui/core';
 
 /** Trigger a browser download of a data/blob URL. */
 export function downloadUrl(url: string, filename: string): void {

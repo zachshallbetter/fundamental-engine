@@ -19,7 +19,7 @@ import {
   FIELD_UNREGISTER_BODY,
   type FeedbackSink,
   type RegisterBodyDetail,
-} from 'field-ui';
+} from '@field-ui/core';
 
 /** A minimal view of MeasurementRegistry — what body syncing + shadow registration need. */
 interface MeasureSink {

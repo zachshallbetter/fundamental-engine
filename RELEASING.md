@@ -20,10 +20,10 @@ The engine's public surface is: the `field-ui` exports (`createField`, `FieldOpt
 `mountField`, and the React adapter's props. The internal integrator, render code, and the
 site are not part of the public contract.
 
-> **The packages are not yet published to npm.** Releases are cut as **git tags**
-> (e.g. `v0.2.0`) to checkpoint the engine; the `npm publish` step (below) is
-> deferred and runs later against an already-tagged release. Between tags, changes
-> accumulate under `## [Unreleased]` in the [CHANGELOG](CHANGELOG.md).
+> **The packages are published to npm under the `@field-ui` scope** (`@field-ui/core`,
+> `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`).
+> Each release is also cut as a **git tag** (e.g. `v0.2.1`) to checkpoint the engine.
+> Between tags, changes accumulate under `## [Unreleased]` in the [CHANGELOG](CHANGELOG.md).
 
 ## Cutting a release
 
@@ -48,7 +48,7 @@ site are not part of the public contract.
    vanilla) and `@field-ui/react`. `pnpm` rewrites `workspace:*` to the real version
    automatically, so each dependency must already be published when its dependents go out.
 6. **Create the GitHub release** for the tag, pasting the CHANGELOG section.
-7. **Smoke-test** a clean install (`npm i field-ui` in a fresh directory) and confirm the
+7. **Smoke-test** a clean install (`npm i @field-ui/core` in a fresh directory) and confirm the
    scoped adapters resolve the core dependency.
 
 ## What CI does (and does not) do

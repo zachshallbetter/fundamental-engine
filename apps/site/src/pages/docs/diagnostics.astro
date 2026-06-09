@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import { RENDER_MODES } from 'field-ui';
+import { RENDER_MODES } from '@field-ui/core';
 
 // Live diagnostic overlays: the C1 renderers draw the diagnostics data onto a canvas. The status
 // table below is rendered from the engine catalog so the "shipped vs planned" status stays honest.
@@ -71,7 +71,7 @@ const table = RENDER_MODES;
     drawCausality,
     ghostTrajectory,
     drawPrediction,
-  } from 'field-ui';
+  } from '@field-ui/core';
   import { downloadCanvasPng, downloadText } from '@field-ui/platform';
 
   const canvas = document.getElementById('diag-canvas') as HTMLCanvasElement | null;

@@ -12,8 +12,8 @@
 
 /** Frozen value exports — functions/consts that must remain importable, with their owning package. */
 export const FROZEN_VALUES = [
-  { pkg: 'field-ui', name: 'createField', note: 'host-required primitive — throws without opts.host (the renderer-agnostic door).' },
-  { pkg: 'field-ui', name: 'compileRecipe', note: 'pure FieldRecipe → compiled plan (no DOM).' },
+  { pkg: '@field-ui/core', name: 'createField', note: 'host-required primitive — throws without opts.host (the renderer-agnostic door).' },
+  { pkg: '@field-ui/core', name: 'compileRecipe', note: 'pure FieldRecipe → compiled plan (no DOM).' },
   { pkg: '@field-ui/platform', name: 'browserHost', note: 'the canonical DOM FieldHost for core.createField.' },
   { pkg: '@field-ui/platform', name: 'createFieldPlatform', note: 'wires the six native-first registries on a root.' },
   { pkg: '@field-ui/platform', name: 'applyRecipe', note: 'applies a recipe to a live platform (compileRecipe lives in core).' },
@@ -24,8 +24,8 @@ export const FROZEN_VALUES = [
 
 /** Frozen type exports — interfaces that must remain exported, with their owning package. */
 export const FROZEN_TYPES = [
-  { pkg: 'field-ui', name: 'FieldRecipe', note: 'the recipe schema (recipes/schema.ts).' },
-  { pkg: 'field-ui', name: 'FieldHost', note: 'the renderer-agnostic host contract createField requires; browserHost implements it.' },
+  { pkg: '@field-ui/core', name: 'FieldRecipe', note: 'the recipe schema (recipes/schema.ts).' },
+  { pkg: '@field-ui/core', name: 'FieldHost', note: 'the renderer-agnostic host contract createField requires; browserHost implements it.' },
   { pkg: '@field-ui/platform', name: 'FieldPlatform', note: 'the surface createFieldPlatform returns.' },
 ];
 

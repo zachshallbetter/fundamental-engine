@@ -10,7 +10,7 @@ pnpm --filter @field-ui/starter build    # bundles the workspace packages
 ```
 
 > In this monorepo the dependencies are `workspace:*`. Outside the repo they are ordinary installs:
-> `npm install field-ui @field-ui/elements @field-ui/platform`.
+> `npm install @field-ui/core @field-ui/elements @field-ui/platform`.
 
 ## What it shows
 
@@ -28,7 +28,7 @@ One recipe — [`priority-well`](https://field-ui.com/docs/gallery#priority-well
    it tracks and writes them back as `--field-*` custom properties your CSS reads.
 
    ```ts
-   import { recipeById } from 'field-ui';
+   import { recipeById } from '@field-ui/core';
    import { applyRecipe } from '@field-ui/platform';
    const applied = applyRecipe(root, recipeById('priority-well')!, { bodies });
    applied.inspect(); // { frame, measurements, relationships, lint }
