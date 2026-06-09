@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { Body, Env, FieldHandle, FieldOptions, Formation, OverlayMode, Particle } from './types.ts';
+import type { AtomPayload, Body, Env, FieldHandle, FieldOptions, Formation, OverlayMode, Particle } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -290,10 +290,26 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     };
   }
 
+  // optional per-particle data records (FieldHandle.seed) — round-robined onto the base pool, with
+  // each record's weight scaling that particle's mass + size. Re-applied on every build (resize/density).
+  let seeded: readonly AtomPayload[] = [];
+  function applySeed(): void {
+    if (!seeded.length) return;
+    const ps = store.particles;
+    for (let i = 0; i < ps.length; i++) {
+      const a = seeded[i % seeded.length]!;
+      ps[i]!.atom = a;
+      const w = typeof a.weight === 'number' ? Math.max(0, Math.min(1, a.weight)) : 0.5;
+      ps[i]!.size *= 0.6 + w * 0.9; // richer record → bigger dot
+      ps[i]!.m *= 0.6 + w * 1.2; // richer record → heavier (more central)
+    }
+  }
+
   function build(): void {
     store.clear();
     const n = Math.round(130 * cfg.density);
     for (let i = 0; i < n; i++) store.add(newParticle());
+    applySeed();
     // the Currents (§24) are opt-out: with waves off, the field is just the free particles.
     waves = cfg.waves ? buildWaves(WAVE_RGB) : [];
     bound = cfg.waves ? buildBound(waves.length, cfg.density, Math.random) : [];
@@ -1363,6 +1379,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     clearFlow: () => {
       flow = null;
+    },
+    seed: (atoms) => {
+      seeded = atoms;
+      build(); // respawn fresh, then re-bind + re-scale (no compounding)
+    },
+    atomAt: (x, y) => {
+      let best: AtomPayload | null = null;
+      let bd = Infinity;
+      for (const p of store.near(x, y, 24)) {
+        if (p.atom == null) continue;
+        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+        if (d < bd) {
+          bd = d;
+          best = p.atom;
+        }
+      }
+      return best;
     },
     destroy: () => {
       host.cancelRaf(raf);

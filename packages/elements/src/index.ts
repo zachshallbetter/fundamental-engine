@@ -1,4 +1,4 @@
-import { PALETTE, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayMode } from '@field-ui/core';
+import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayMode } from '@field-ui/core';
 import { createBrowserField, type FieldPlatform } from '@field-ui/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -179,6 +179,14 @@ export class FieldField extends HTMLElementBase {
   /** remove the flow focus. */
   clearFlow(): void {
     this.field?.clearFlow();
+  }
+  /** bind a data record to each base particle (its `weight` scales mass + size); pick back with `atomAt`. */
+  seed(atoms: readonly AtomPayload[]): void {
+    this.field?.seed(atoms);
+  }
+  /** the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect. */
+  atomAt(x: number, y: number): AtomPayload | null {
+    return this.field?.atomAt(x, y) ?? null;
   }
 
   connectedCallback(): void {

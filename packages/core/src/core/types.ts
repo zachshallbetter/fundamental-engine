@@ -59,6 +59,18 @@ export interface Particle {
   species?: number;
   /** carried pigment, conserved colour transport (§20.8). */
   color?: string;
+  /** an opaque data record bound to this particle by `FieldHandle.seed` (e.g. a "project atom"). */
+  atom?: AtomPayload;
+}
+
+/**
+ * A data record bindable to a particle (`FieldHandle.seed`). Opaque to the engine except `weight`
+ * (0..1), which scales the particle's mass + size — so richer records read as heavier, more central
+ * matter. Picked back out with `FieldHandle.atomAt(x, y)`.
+ */
+export interface AtomPayload {
+  readonly weight?: number;
+  readonly [key: string]: unknown;
 }
 
 /**
@@ -393,6 +405,14 @@ export interface FieldHandle {
   flowTo(x: number, y: number, opts?: FlowOptions): void;
   /** Remove the flow focus — the field relaxes back to its bodies-only shape. */
   clearFlow(): void;
+  /**
+   * Bind a data record to each base particle, round-robin (so every dot carries a piece of meaning).
+   * Each record's `weight` (0..1) scales that particle's mass + size — richer records read as heavier,
+   * more central matter. Re-applied across resize/density rebuilds. Pick them back with `atomAt`.
+   */
+  seed(atoms: readonly AtomPayload[]): void;
+  /** The seeded record on the nearest particle to (x, y) within ~24px, or null. For hover-to-inspect. */
+  atomAt(x: number, y: number): AtomPayload | null;
   /** stop the loop and release listeners. */
   destroy(): void;
 }
