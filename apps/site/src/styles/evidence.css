@@ -132,10 +132,10 @@ body:has(.ev-page) {
 }
 .ev-threads path {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--thread, var(--accent));
   stroke-width: 1.4;
-  opacity: 0.55;
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 70%, transparent));
+  opacity: 0.6;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--thread, var(--accent)) 70%, transparent));
 }
 
 /* a finding: trust (--trust, 0..1) is felt — weight, ink, and a left anchor. */
@@ -218,7 +218,7 @@ body:has(.ev-page) {
   font-family: var(--mono);
   font-size: 1.05rem;
   font-weight: 600;
-  color: color-mix(in srgb, var(--accent) calc(30% + var(--w) * 70%), var(--text-3));
+  color: color-mix(in srgb, var(--cat) calc(30% + var(--w) * 70%), var(--text-3));
   line-height: 1;
 }
 .ev-cites-l {
@@ -238,7 +238,7 @@ body:has(.ev-page) {
 .ev-bar i {
   display: block;
   height: 100%;
-  background: var(--accent);
+  background: var(--cat, var(--accent));
 }
 
 /* fineprint */
@@ -435,4 +435,43 @@ body:has(.ev-page) {
 }
 .ev-page[data-field="off"] .ev-answer em {
   color: var(--text-3);
+}
+
+/* ── Colour lens — a second channel: --cat encodes the chosen aspect (field / recency / trust) ─── */
+.ev-ctl-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+.ev-hint-sep,
+.ev-meta-sep {
+  color: var(--text-4);
+}
+.ev-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+/* the lens marker — a small rounded-square shape coloured by the lens (--cat). */
+.ev-lens {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 3px;
+  background: var(--cat, #60a5fa);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--cat, #60a5fa) 60%, transparent);
+}
+.ev-field-name {
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--cat) 50%, var(--text-3));
+}
+/* the discipline name only reads on the field lens; elsewhere the colour speaks for itself. */
+.ev-page:not([data-lens="field"]) .ev-field-name,
+.ev-page:not([data-lens="field"]) .ev-meta-sep {
+  display: none;
 }
