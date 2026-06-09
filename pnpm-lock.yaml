@@ -123,6 +123,30 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/field-ui:
+    dependencies:
+      '@field-ui/kit':
+        specifier: workspace:*
+        version: link:../kit
+
+  packages/kit:
+    dependencies:
+      '@field-ui/core':
+        specifier: workspace:*
+        version: link:../core
+      '@field-ui/elements':
+        specifier: workspace:*
+        version: link:../elements
+      '@field-ui/platform':
+        specifier: workspace:*
+        version: link:../platform
+      '@field-ui/react':
+        specifier: workspace:*
+        version: link:../react
+      '@field-ui/vanilla':
+        specifier: workspace:*
+        version: link:../vanilla
+
   packages/platform:
     dependencies:
       '@field-ui/core':
