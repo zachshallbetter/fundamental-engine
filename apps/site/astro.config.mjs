@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkMermaid from './src/lib/remark-mermaid.mjs';
@@ -8,6 +9,16 @@ import remarkMermaid from './src/lib/remark-mermaid.mjs';
 // The live `<field-root>` element (@field-ui/elements) runs the engine.
 export default defineConfig({
   site: 'https://field-ui.com',
+  integrations: [
+    // sitemap-index.xml + per-chunk sitemaps; referenced from public/robots.txt.
+    // The redirect stubs below carry noindex — keep them out of the sitemap too.
+    sitemap({
+      filter: (page) =>
+        !page.includes('/reference/') &&
+        !page.includes('/research/') &&
+        !page.includes('/docs/guides/vanilla/'),
+    }),
+  ],
   // The /writings datastore (and the research papers under it) carry rich markdown:
   //  • LaTeX math      → remark-math + rehype-katex (KaTeX stylesheet imported by WritingLayout)
   //  • Mermaid diagrams → remark-mermaid emits <pre class="mermaid">, rendered client-side

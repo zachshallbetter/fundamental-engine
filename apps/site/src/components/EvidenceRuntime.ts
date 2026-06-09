@@ -236,10 +236,45 @@ function initEvidence(): () => void {
     let lastReveal = 0;
     let raf = 0;
 
+    const tick = (t: number): void => {
+      if (ctl.signal.aborted || !intersecting) {
+        raf = 0;
+        return;
+      }
+      // both vars are inline styles (written by the platform / engine), so reading
+      // el.style avoids a forced style recalc that getComputedStyle would cost per frame.
+      const sv =
+        parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
+      if (sv < SCROLL_V_MAX) {
+        if (!slowSince) slowSince = t;
+        const load = parseFloat(sentinel.style.getPropertyValue("--load")) || 0;
+        const ready = t - slowSince >= DWELL_MS || load >= LOAD_REVEAL;
+        if (ready && t - lastReveal >= BATCH_COOLDOWN_MS) {
+          lastReveal = t;
+          const revealed = revealBatch(topic);
+          if (!revealed || !hiddenDeferred(topic).length) {
+            ctl.abort();
+            if (revealAc === ctl) revealAc = null;
+            return;
+          }
+        }
+      } else {
+        slowSince = 0;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    // IO starts/stops the gating loop, so nothing runs while the sentinel is far offscreen.
     const io = new IntersectionObserver(
       (entries) => {
         intersecting = entries.some((e) => e.isIntersecting);
-        if (!intersecting) slowSince = 0;
+        if (!intersecting) {
+          slowSince = 0;
+          cancelAnimationFrame(raf);
+          raf = 0;
+        } else if (!raf) {
+          raf = requestAnimationFrame(tick);
+        }
       },
       { threshold: 0, rootMargin: "0px 0px 160px 0px" },
     );
@@ -248,34 +283,6 @@ function initEvidence(): () => void {
       io.disconnect();
       cancelAnimationFrame(raf);
     });
-
-    const tick = (t: number): void => {
-      if (ctl.signal.aborted) return;
-      if (intersecting) {
-        // both vars are inline styles (written by the platform / engine), so reading
-        // el.style avoids a forced style recalc that getComputedStyle would cost per frame.
-        const sv =
-          parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
-        if (sv < SCROLL_V_MAX) {
-          if (!slowSince) slowSince = t;
-          const load = parseFloat(sentinel.style.getPropertyValue("--load")) || 0;
-          const ready = t - slowSince >= DWELL_MS || load >= LOAD_REVEAL;
-          if (ready && t - lastReveal >= BATCH_COOLDOWN_MS) {
-            lastReveal = t;
-            const revealed = revealBatch(topic);
-            if (!revealed || !hiddenDeferred(topic).length) {
-              ctl.abort();
-              if (revealAc === ctl) revealAc = null;
-              return;
-            }
-          }
-        } else {
-          slowSince = 0;
-        }
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
   };
 
   const wireTopic = (topic?: HTMLElement): void => {

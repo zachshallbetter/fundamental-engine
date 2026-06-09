@@ -751,11 +751,18 @@ function tick(now: number) {
   }
   lastTs = now;
 
-  update();
+  update(now);
   raf = requestAnimationFrame(tick);
 }
 
-function update() {
+// The frame-timing numbers update every frame (that's the point of them), but the heavy
+// inspections — DOM-wide queries, lintPlatform's graph walk, the O(particles) energy sum,
+// the full resource-timing list — would have the console blow the very frame budget it
+// displays. Those refresh on a throttle instead.
+const HEAVY_EVERY_MS = 400;
+let lastHeavy = -Infinity;
+
+function update(now: number) {
   const b      = budget ?? 16.67;
   const med    = pct(deltas, 50);
   const p95val = pct(deltas, 95);
@@ -782,6 +789,9 @@ function update() {
   dv('dc-tbt',  loafN > 0 ? ms(tbt) : '0 ms', tbt > 0 ? 'err' : 'ok');
 
   drawSpark();
+
+  if (now - lastHeavy < HEAVY_EVERY_MS) return;
+  lastHeavy = now;
 
   // Field DOM state
   const bodyCount = document.querySelectorAll('[data-body]').length;
@@ -903,6 +913,7 @@ function openConsole() {
   dropped  = 0;
   nFrames  = 0;
   lastTs   = null;
+  lastHeavy = -Infinity; // populate the heavy sections on the first open frame
   deltas   = [];
   budgetSeed = [];
   evCounts.lit = evCounts.captured = evCounts.released = evCounts.relocated = 0;
