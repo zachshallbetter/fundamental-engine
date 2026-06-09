@@ -1286,11 +1286,11 @@ html.hide-field-lines .stage-field {
 }
 
 /* the inspect tooltip — appended to <body>, follows the cursor over the field. */
-.atom-tip {
+.atom-card {
   position: fixed;
   z-index: 60;
-  pointer-events: none;
-  max-width: 264px;
+  pointer-events: auto; /* a pinned card — clickable (the link, click-outside-to-close) */
+  max-width: 272px;
   display: flex;
   flex-direction: column;
   gap: 0.28rem;
@@ -1303,26 +1303,26 @@ html.hide-field-lines .stage-field {
   line-height: 1.4;
 }
 @supports (backdrop-filter: blur(6px)) {
-  .atom-tip {
+  .atom-card {
     backdrop-filter: blur(6px);
     background: rgba(9, 12, 19, 0.8);
   }
 }
-.atom-tip[data-flip-x="true"] {
+.atom-card[data-flip-x="true"] {
   transform: translateX(-100%);
 }
-.atom-tip[data-flip-y="true"] {
+.atom-card[data-flip-y="true"] {
   transform: translateY(-100%);
 }
-.atom-tip[data-flip-x="true"][data-flip-y="true"] {
+.atom-card[data-flip-x="true"][data-flip-y="true"] {
   transform: translate(-100%, -100%);
 }
-.atom-tip .at-head {
+.atom-card .at-head {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
 }
-.atom-tip .at-kind {
+.atom-card .at-kind {
   font-family: var(--mono);
   font-size: 0.56rem;
   letter-spacing: 0.08em;
@@ -1333,15 +1333,15 @@ html.hide-field-lines .stage-field {
   padding: 0.06rem 0.42rem;
   white-space: nowrap;
 }
-.atom-tip .at-label {
+.atom-card .at-label {
   font-weight: 600;
   color: var(--text);
 }
-.atom-tip .at-row {
+.atom-card .at-row {
   font-size: 0.72rem;
   color: var(--text-3);
 }
-.atom-tip .at-row b {
+.atom-card .at-row b {
   margin-right: 0.32rem;
   font-family: var(--mono);
   font-size: 0.64rem;
@@ -1349,4 +1349,23 @@ html.hide-field-lines .stage-field {
   color: var(--text-4);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+.atom-card .at-go {
+  margin-top: 0.3rem;
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+}
+.atom-card .at-go:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+/* when a dot is focused (held + lit by the engine), the pointer signals it's clickable. */
+html.atom-armed {
+  cursor: pointer;
 }

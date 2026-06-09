@@ -1,7 +1,7 @@
 // "The field is the project." Seed the persisted <field-root> with the 132 project atoms (so every
-// base particle carries a real piece of field-ui, and its weight scales the dot's mass + size), then
-// wire hover-to-inspect: the nearest particle's atom shows in a tooltip that follows the cursor.
-// Uses the new FieldHandle seam — field.seed(atoms) + field.atomAt(x, y).
+// base particle carries a real piece of field-ui), then a two-stage inspect that stays out of the
+// way: hover and *settle* near a dot → the engine holds it still and lights it up (field.focusAt) →
+// *click* opens a pinned card with its record. No cursor-following tooltip.
 //
 // The atoms file is imported as a fingerprinted URL (it stays out of the JS bundle) and resolved
 // cache-first via atomCache — IndexedDB, then localStorage, then network — so repeat visits skip
@@ -11,7 +11,8 @@ import { getAtoms, type Atom } from "./atomCache.ts";
 
 type FieldEl = HTMLElement & {
   seed?: (atoms: readonly Atom[]) => void;
-  atomAt?: (x: number, y: number) => Atom | null;
+  focusAt?: (x: number, y: number) => Atom | null;
+  clearFocus?: () => void;
 };
 
 const esc = (s: string) =>
@@ -38,39 +39,83 @@ export function initAtomField(): () => void {
     if (!disposed && atoms.length) field.seed?.(atoms);
   });
 
-  const tip = document.createElement("div");
-  tip.className = "atom-tip";
-  tip.hidden = true;
-  document.body.appendChild(tip);
+  // a pinned inspector card — opens on click (after a dwell focuses a dot), never on plain hover.
+  const card = document.createElement("div");
+  card.className = "atom-card";
+  card.hidden = true;
+  document.body.appendChild(card);
 
   const ac = new AbortController();
-  let raf = 0;
-  const onMove = (e: PointerEvent): void => {
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      const a = field.atomAt?.(e.clientX, e.clientY) ?? null;
-      if (!a) {
-        tip.hidden = true;
-        return;
-      }
-      tip.innerHTML = renderAtom(a);
-      // keep the tip on-screen (flip near the right/bottom edges)
-      const nearRight = e.clientX > window.innerWidth - 280;
-      const nearBottom = e.clientY > window.innerHeight - 160;
-      tip.style.left = `${e.clientX + (nearRight ? -16 : 16)}px`;
-      tip.style.top = `${e.clientY + (nearBottom ? -16 : 18)}px`;
-      tip.dataset.flipX = String(nearRight);
-      tip.dataset.flipY = String(nearBottom);
-      tip.hidden = false;
-    });
+  const root = document.documentElement;
+  let focused: Atom | null = null;
+  let dwell = 0;
+  let open = false;
+
+  const release = (): void => {
+    if (!focused) return;
+    field.clearFocus?.();
+    focused = null;
+    root.classList.remove("atom-armed");
   };
+  const close = (): void => {
+    open = false;
+    card.hidden = true;
+    release();
+  };
+
+  // hover + settle: only when the pointer pauses near a dot does the engine hold + light it (the
+  // affordance). Plain movement does nothing — no tooltip in the way.
+  const onMove = (e: PointerEvent): void => {
+    if (open) return; // a card is up — don't re-engage underneath it
+    clearTimeout(dwell);
+    release();
+    const x = e.clientX;
+    const y = e.clientY;
+    dwell = window.setTimeout(() => {
+      const a = field.focusAt?.(x, y) ?? null;
+      if (a) {
+        focused = a;
+        root.classList.add("atom-armed"); // cursor → pointer: the dot is now clickable
+      }
+    }, 150);
+  };
+
+  // click: open the focused dot's card (pinned). A click elsewhere closes it.
+  const onClick = (e: PointerEvent): void => {
+    if (open) {
+      if (!card.contains(e.target as Node)) close();
+      return;
+    }
+    if (!focused) return;
+    card.innerHTML =
+      renderAtom(focused) +
+      (focused.href ? `<a class="at-go" href="${esc(focused.href)}">open →</a>` : "");
+    const nearRight = e.clientX > window.innerWidth - 300;
+    const nearBottom = e.clientY > window.innerHeight - 220;
+    card.style.left = `${e.clientX + (nearRight ? -18 : 18)}px`;
+    card.style.top = `${e.clientY + (nearBottom ? -18 : 18)}px`;
+    card.dataset.flipX = String(nearRight);
+    card.dataset.flipY = String(nearBottom);
+    card.hidden = false;
+    open = true; // hold the dot frozen + lit while its card is up
+  };
+
   window.addEventListener("pointermove", onMove, { signal: ac.signal, passive: true });
-  window.addEventListener("pointerleave", () => (tip.hidden = true), { signal: ac.signal });
+  window.addEventListener("click", onClick, { signal: ac.signal });
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key === "Escape") close();
+    },
+    { signal: ac.signal },
+  );
 
   return () => {
     disposed = true;
     ac.abort();
-    cancelAnimationFrame(raf);
-    tip.remove();
+    clearTimeout(dwell);
+    field.clearFocus?.();
+    root.classList.remove("atom-armed");
+    card.remove();
   };
 }

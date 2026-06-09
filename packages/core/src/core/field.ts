@@ -130,6 +130,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
   const pull: WavePull = { x: 0, y: 0, k: 0 }; // the "spine" — waves bend to the engaged body
   let flow: FlowFocus | null = null; // a movable flow focus the field bends toward (field.flowTo)
+  let focusP: Particle | null = null; // the hover-focused particle (field.focusAt): held still + lit
+  let focusX = 0;
+  let focusY = 0;
   let JOURNEY: RGB[] = resolvePalette(opts.palette).map(hexToRgb); // the accent journey (§9)
   let curAccent: RGB = hexToRgb(cfg.accent);
   let hoverAccent: string | null = null;
@@ -1227,6 +1230,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     updateWarpTargets(); // refresh warp relocate targets from paired bodies (§22.3) before the step
     step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
+    // hover-focus (field.focusAt): hold the focused particle still and light it up — the dwell
+    // affordance ("it stops and does something") before a click opens its record.
+    if (focusP) {
+      focusP.x = focusX;
+      focusP.y = focusY;
+      focusP.vx = 0;
+      focusP.vy = 0;
+      focusP.heat = Math.min(1, focusP.heat + 0.2);
+    }
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
       if (heatmap) heatmap.update(store.particles); // density heatmap buffer (H1)
@@ -1396,6 +1408,28 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
       return best;
+    },
+    focusAt: (x, y) => {
+      let best: Particle | null = null;
+      let bd = Infinity;
+      for (const p of store.near(x, y, 24)) {
+        if (p.atom == null) continue;
+        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+        if (d < bd) {
+          bd = d;
+          best = p;
+        }
+      }
+      focusP = best;
+      if (best) {
+        focusX = best.x;
+        focusY = best.y;
+        return best.atom ?? null;
+      }
+      return null;
+    },
+    clearFocus: () => {
+      focusP = null;
     },
     destroy: () => {
       host.cancelRaf(raf);
