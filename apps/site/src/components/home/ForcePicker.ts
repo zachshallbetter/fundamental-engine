@@ -5,7 +5,7 @@
 //     dots (motion), strong → links (bonds between clustered particles), weak → trails (fade).
 //   · OVER  — field.setOverlay(mode) draws the LIVE field structure in front of content
 //     (streamlines for convergence, force-vectors for polarity; strong needs none — its bonds are
-//     the underlay). setAccent tints both surfaces to the field's colour.
+//     the underlay). setAccent tints both surfaces to the field's color.
 // Active only while the [data-forcepick] section is in view; restored to dots/off on leave.
 // rescan() on select/enter/leave. Shared by /eli5 and the home (/) — both render <NaturalFieldsSection>.
 type FieldEl = HTMLElement & {
@@ -41,7 +41,7 @@ export function initForcePicker(): () => void {
       source.setAttribute("data-color", c.color || "#6366f1");
       source.style.setProperty("--fc", c.color || "#6366f1");
       source.classList.add("on");
-      field?.setAccent?.(c.color || "#6366f1"); // tint both surfaces to the field's colour
+      field?.setAccent?.(c.color || "#6366f1"); // tint both surfaces to the field's color
       field?.setRender?.(c.render || "dots"); // UNDER grammar: dots / links (bonds) / trails (fade)
       field?.setOverlay?.(c.overlay || "off"); // OVER: live field structure, in front of content
     } else {

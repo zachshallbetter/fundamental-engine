@@ -560,7 +560,7 @@
 }
 
 /* material typography (Concept 1) — one density (--d) drives every type axis at once:
-   weight, optical size, tracking, bloom, colour and a slight grow. Disturb it and the
+   weight, optical size, tracking, bloom, color and a slight grow. Disturb it and the
    readout falls, then recovers as the field resettles. Type as a material. */
 .material-word {
   --d: 0;

@@ -97,14 +97,14 @@ function initEvidence(): () => void {
     });
   };
 
-  // ── colour lens — a second, orthogonal channel: size stays trust, colour shows another aspect.
+  // ── color lens — a second, orthogonal channel: size stays trust, color shows another aspect.
   const applyLens = (topic: HTMLElement): void => {
     const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")];
     if (lens === "field") {
-      // colour by research subfield — the engine binding works to a discipline (server-assigned).
+      // color by research subfield — the engine binding works to a discipline (server-assigned).
       findings.forEach((f) => f.style.setProperty("--cat", f.dataset.fieldColor || "#60a5fa"));
     } else if (lens === "trust") {
-      // colour off — size carries the whole signal.
+      // color off — size carries the whole signal.
       findings.forEach((f) => f.style.setProperty("--cat", "#60a5fa"));
     } else {
       // recency — a temporal hue ramp: cool (older) → warm (newer).
@@ -211,9 +211,9 @@ function initEvidence(): () => void {
   );
 
   const LENS_HINTS: Record<Lens, string> = {
-    field: "<b>colour</b> = research subfield — the discipline each work binds to",
-    recency: "<b>colour</b> = year — cool (older) fades to warm (newer)",
-    trust: "<b>colour</b> = off — size carries the whole signal",
+    field: "<b>color</b> = research subfield — the discipline each work binds to",
+    recency: "<b>color</b> = year — cool (older) fades to warm (newer)",
+    trust: "<b>color</b> = off — size carries the whole signal",
   };
   lensBtns.forEach((b) =>
     b.addEventListener(
