@@ -43,6 +43,12 @@ export const HANDLE: MethodRow[] = [
   { sig: 'burst(x, y, hex?)', desc: 'A one-shot shove + heat near a point, optionally tinting the matter.' },
   { sig: 'flowTo(x, y, opts?)', desc: 'Place/move a dynamic flow focus the field bends toward — pulls matter in and curves the streamlines. Retarget it each frame to follow the pointer, an element, or a path. opts: { strength?, radius? }.' },
   { sig: 'clearFlow()', desc: 'Remove the flow focus — the field relaxes back to its bodies-only shape.' },
+  { sig: 'seed(atoms)', desc: "Bind a data record to each base particle, round-robin. Each record's weight ∈ [0,1] scales that particle's mass + size. Re-applied across resize/density rebuilds." },
+  { sig: 'atomAt(x, y)', desc: 'The seeded record on the nearest particle to (x, y) within ~24 px, or null. For hover-to-inspect.' },
+  { sig: 'focusAt(x, y)', desc: 'Hold + highlight the nearest seeded particle; return its record — the dwell affordance before a click. Returns null if no particle is in range.' },
+  { sig: 'clearFocus()', desc: 'Release the focused particle; it resumes drifting.' },
+  { sig: 'particleCount()', desc: 'Live size of the particle pool. Use for external budget monitors or debug overlays without walking the particle array. Shipped-but-unfrozen.' },
+  { sig: 'energy()', desc: 'Per-frame energy snapshot: { kinetic, thermal, total, count }. Forwards to energyReport() without requiring a reference to the internal particle array. Shipped-but-unfrozen.' },
   { sig: 'destroy()', desc: 'Stop the loop and release listeners.' },
 ];
 

@@ -59,6 +59,7 @@ import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from
 import { forceAt, netField } from './streamlines.ts';
 import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
+import { energyReport } from '../diagnostics/energy.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
@@ -1431,6 +1432,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     clearFocus: () => {
       focusP = null;
     },
+    particleCount: () => store.size,
+    energy: () => energyReport(store.particles),
     destroy: () => {
       host.cancelRaf(raf);
       clearInterval(idleTimer);
