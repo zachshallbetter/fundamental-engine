@@ -819,3 +819,129 @@ a.btn.primary:hover {
     animation: none !important;
   }
 }
+
+/* ── Natural-field picker (shared by /eli5 and the home via NaturalFieldsSection) ───────────────
+   Pick a field; the persisted <field-root> resolves through it (Field Surfaces). The .force-source
+   is re-parented to <body> (position:fixed) so it reads as a viewport-centred whole-field origin. */
+.forces-lead {
+  color: var(--muted, #9aa);
+  margin: 0.4rem 0 1rem;
+}
+.forces {
+  margin: 0 0 0.9rem;
+}
+.force-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.force-card {
+  --fc: #6366f1;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "head feel" "head say";
+  align-items: center;
+  gap: 0.1rem 0.9rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line, #2a2a35);
+  border-left: 3px solid color-mix(in srgb, var(--fc) 45%, var(--line, #2a2a35));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text, #fff) 3%, transparent);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+.force-card:hover {
+  background: color-mix(in srgb, var(--fc) 9%, transparent);
+}
+.force-card[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--fc) 70%, transparent);
+  border-left-color: var(--fc);
+  background: color-mix(in srgb, var(--fc) 14%, transparent);
+}
+.force-card:focus-visible {
+  outline: 2px solid var(--fc);
+  outline-offset: 2px;
+}
+.fc-head {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 9.2rem;
+}
+.fc-head .fg {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--fc);
+  flex: none;
+}
+.fc-real {
+  font-weight: 600;
+  color: var(--fc);
+}
+.fc-feel {
+  grid-area: feel;
+  font-size: 1.05rem;
+  font-weight: 600;
+  align-self: end;
+}
+.fc-say {
+  grid-area: say;
+  color: var(--muted, #9aa);
+  font-size: 0.84rem;
+  align-self: start;
+}
+/* The whole-field source: a viewport-centred point the persisted <field-root> reads as the force
+   origin while the picker is in view; a soft --fc-tinted halo gives the screen a focal "eye". */
+.force-source {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--fc, #6366f1);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--fc, #6366f1) 18%, transparent),
+    0 0 40px 12px color-mix(in srgb, var(--fc, #6366f1) 30%, transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease, background 0.3s, box-shadow 0.3s;
+}
+.force-source.on {
+  opacity: 0.85;
+}
+.force-caption {
+  margin: 0.2rem 0 0;
+  color: var(--muted, #9aa);
+  font-size: 0.95rem;
+}
+.force-caption b {
+  font-weight: 700;
+}
+.forces-coda {
+  margin: 0.6rem 0 0;
+  color: var(--muted, #9aa);
+  font-size: 0.92rem;
+  font-style: italic;
+  max-width: 52ch;
+}
+@media (max-width: 760px) {
+  .force-list {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .force-card,
+  .force-source {
+    transition: none;
+  }
+}
