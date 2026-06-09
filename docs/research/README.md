@@ -64,11 +64,13 @@ If only three are written, write **1, 2, 3**: paper 1 names the paradigm, paper 
 and least speculative empirical case study, and paper 3 connects the system to the most urgent
 current interface problem.
 
-**Status (2026-06-07): all eight papers are drafted in full** (this branch / draft PR #231). Papers
-1–3 have been through adversarial peer review (verified against code) and revised; the empirical
-papers (2, 3) carry full, pre-registerable study designs but **no results have been collected**
-(caveat canon item 6). Remaining work is review of Papers 4–8, filling `references.md`, and the
-markdown→LaTeX conversion — not first drafts.
+**Status: all eight papers are drafted in full.** Drafted is not evaluated: every empirical paper
+(Reading Field, Evidence Field, Motion Equivalence, Data as Field Participants) ships as a
+**pre-registerable study design with no results collected** (caveat canon item 6), never as findings.
+Papers 1–3 have been through an **internal review pass — verification against the code, by the author
+and review agents, not external peer review** — and revised. Remaining work is the same internal
+review of Papers 4–8, resolving the `references.md` citation backlog, and the markdown→LaTeX
+conversion — not first drafts.
 
 ## Development order (differs from publication order)
 
@@ -139,12 +141,14 @@ about them. Each paper that touches the physics restates the relevant ones rathe
 6. **No user-study results exist yet.** Empirical claims in the family are framed as *designs* and
    *hypotheses* (Papers 2–3 and others), never as measured outcomes, until a study is actually run.
 
-## Peer review
+## Internal review
 
-Once a paper (or the active best-first-three set) is drafted, it is sent to an adversarial
-peer-review pass before it is considered ready: independent reviewers check the central claim,
-the soundness of the study design, the honesty of the limitations, the accuracy of every
-code-grounded assertion, and family coherence (no claim double-counted across papers). Reviewer
+These papers have **not** been through external peer review, and nothing here should be read as if
+they had. Once a paper (or the active best-first-three set) is drafted, it goes through an
+**internal review pass — adversarial verification against the code, by the author and review
+agents** — before it is considered ready: reviewers check the central claim, the soundness of the
+study design, the honesty of the limitations, the accuracy of every code-grounded assertion, and
+family coherence (no claim double-counted across papers). Reviewer
 findings are folded back into the drafts before submission.
 
 ## Building a paper for submission
