@@ -1,0 +1,362 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
+import market from "../../data/examples/market.json";
+import "../../styles/docs.css";
+import "../../styles/examples/market.css";
+
+// The Market Field — field-ui as an invisible measurement layer over a real CoinGecko snapshot.
+// Market cap is gravitational mass (heavier assets anchor the page); the day's move polarizes —
+// direction is color, magnitude is intensity. No particle swarm: the field shows in the type.
+
+// weight: log-normalized market cap (the evidence trust math, retargeted at a balance sheet)
+const caps = market.assets.map((a) => a.cap);
+const lmin = Math.log(Math.min(...caps) + 1);
+const lmax = Math.log(Math.max(...caps) + 1);
+const wOf = (v: number): number => (lmax > lmin ? (Math.log(v + 1) - lmin) / (lmax - lmin) : 1);
+
+// polarity: direction is hue (teal-green up, red-pink down), magnitude is intensity.
+// the runtime re-runs this same ramp when the move window (24h / 7d) changes.
+const catFor = (chg: number): string => {
+  const t = Math.min(1, Math.abs(chg) / 10);
+  return chg >= 0
+    ? `hsl(${Math.round(168 - t * 18)} ${Math.round(34 + t * 46)}% ${Math.round(52 + t * 14)}%)`
+    : `hsl(${Math.round(354 - t * 14)} ${Math.round(38 + t * 47)}% ${Math.round(56 + t * 12)}%)`;
+};
+
+// one <path> per asset: the row's own min/max sets the vertical scale.
+const sparkPath = (s: number[]): string => {
+  if (!s.length) return "";
+  const min = Math.min(...s);
+  const span = Math.max(...s) - min || 1;
+  return s
+    .map((v, i) => {
+      const x = (i / Math.max(s.length - 1, 1)) * 120;
+      const y = 25 - ((v - min) / span) * 22;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+};
+
+const fmtPrice = (p: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: p >= 1 ? 2 : 6,
+  }).format(p);
+const fmtCompact = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+const badge = (chg: number): string => `${chg >= 0 ? "▲" : "▼"} ${Math.abs(chg).toFixed(2)}%`;
+const snapDate = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(new Date(market.snapshotAt));
+
+const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
+
+// tier: the tile's footprint in the mosaic — mass is area. Must match tierOf() in the runtime.
+const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3 : 4);
+
+// How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
+const snippetBody = `<li id="mk-bitcoin"
+  data-body="attract"
+  data-strength="1.87"
+  data-feedback
+  data-hot
+  data-cap="1235425696510"
+  data-price="61517"
+  data-c24="-1.70" data-c7="-7.76"
+  style="--w: 0.92; --cat: hsl(350 70% 64%);"
+>
+  <!-- name · price · badge -->
+  <svg aria-hidden="true"
+    data-field-visual-for="#mk-bitcoin"
+    data-field-visual-role="measurement">
+    <path d="…" pathLength="100" />
+  </svg>
+</li>`;
+
+const snippetCss = `/* tier classes set the tile's footprint */
+.mk-t1 { grid-column: span 3; grid-row: span 2; }
+.mk-t2 { grid-column: span 2; grid-row: span 2; }
+
+.mk-tile {
+  /* --w = log-normalized cap (0..1).
+     --d = the engine's LIVE local density —
+     data-hot gathers it toward 1 on hold. */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--live) * 50%), transparent);
+}
+/* the sparkline breathes with the tile */
+.mk-spark path {
+  stroke-width: calc(1.5 + var(--live) * 0.9);
+  filter: drop-shadow(0 0
+    calc(var(--live) * 6px) var(--cat));
+}
+/* entry draw-in — a keyframe, not a dash
+   steady state: paths carry
+   pathLength="100", the BASE rule sets no
+   stroke-dasharray, and the dash lives
+   only inside the animation — a drawn
+   line computes stroke-dasharray: none */
+@keyframes mk-spark-draw {
+  from { stroke-dasharray: 100;
+         stroke-dashoffset: 100;
+         opacity: 1; }
+  to   { stroke-dasharray: 100;
+         stroke-dashoffset: 0; }
+}`;
+
+const snippetFlip = `// recompute --w from cap or volume,
+// swap the tier class, re-sort, then
+// FLIP tiles whose size did not change:
+const first = new Map(tiles.map(
+  (t) => [t, t.getBoundingClientRect()]));
+ordered.forEach((t) => list.appendChild(t));
+ordered.forEach((t) => {
+  const a = first.get(t);
+  const b = t.getBoundingClientRect();
+  t.style.transform = \`translate(
+    \${a.left - b.left}px,
+    \${a.top - b.top}px)\`;
+  requestAnimationFrame(() =>
+    (t.style.transform = ""));
+});
+// re-tiered tiles settle with a fade
+// instead — translate cannot honestly
+// animate a size change.`;
+
+const snippetLive = `// once a minute (skipped while the tab
+// is hidden) — the same CoinGecko
+// endpoint the snapshot script uses:
+const data = await (
+  await fetch(GECKO_URL)).json();
+for (const c of data) {
+  const tile = byId.get(c.id);
+  if (!tile) continue; // unknown ids:
+    // not bodies on this page
+  tile.dataset.cap = String(c.market_cap);
+  price.textContent =
+    fmtPrice(c.current_price);
+  flash(price);  // ▲ teal / ▼ red tick
+  spark.setAttribute("d",
+    sparkPath(c.sparkline_in_7d.price));
+}
+applyLens();        // --cat through the
+                    // ACTIVE lens
+recomputeWeights(); // --w — the scoped
+                    // field re-measures
+// a poll NEVER re-sorts or re-tiers —
+// hostile under the cursor. Tiers
+// re-settle on the next lens change.`;
+---
+
+<ExampleShell
+  title="field-ui — Market"
+  description="A real CoinGecko snapshot run as a field. Market cap is gravitational mass — heavier assets anchor the page — and the day's move polarizes: direction is color, magnitude is intensity. No particle swarm; the field shows in the type."
+  current="market"
+  mainClass="ex-market"
+  mainAttrs={{ "data-field": "on", "data-lens": "24h", "data-weight": "cap" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · market</p>
+    <h1>The tape, <span class="accent">felt</span>.</h1>
+    <p class="ev-lede">
+      A market table treats a $1.2T asset and a $4B asset as the same row height, the same ink. The
+      only signal left is the sort order. This is the same snapshot from
+      <a href="https://www.coingecko.com" rel="noopener">CoinGecko</a> run as a
+      <strong>field</strong>: market cap becomes gravitational mass, and mass is <strong>area</strong> —
+      heavier assets take more of the page, with bigger tiles, darker ink, heavier type.
+    </p>
+    <p class="ev-lede">
+      The day's move <strong>polarizes</strong> each body: direction is color (teal-green up,
+      red-pink down), magnitude is intensity — a −0.1% drift barely registers, a −17% slide burns.
+      Switch the window to <strong>7d</strong> and the same tiles repolarize; reweight by
+      <strong>volume</strong> and the mosaic re-tiers and re-settles around where the trading
+      actually happened. <strong>Toggle the field off</strong> and it collapses back to an even
+      grid — every asset the same size, the same ink, the live glow gone dark.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-mk-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Weight by</span>
+      <div class="ev-seg" role="group" aria-label="Weighting signal">
+        <button type="button" data-mk-weight="cap" aria-pressed="true">cap</button>
+        <button type="button" data-mk-weight="volume" aria-pressed="false">volume</button>
+      </div>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Move window</span>
+      <div class="ev-seg" role="group" aria-label="Polarity window">
+        <button type="button" data-mk-lens="24h" aria-pressed="true">24h</button>
+        <button type="button" data-mk-lens="7d" aria-pressed="false">7d</button>
+      </div>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="mk-status" data-mk-status>
+        <span class="mk-status-dot" aria-hidden="true"></span>
+        <span data-mk-status-txt>snapshot · {snapDate}</span>
+      </span>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-mk-hint><b>area</b> = market cap — the heavier the asset, the more page it takes</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-mk-lens-hint><b>color</b> = the 24-hour move — direction is hue, magnitude is intensity</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>tile area</b> = the weighting signal (cap or volume)</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the move — direction is hue, magnitude is intensity</li>
+    <li><span class="ev-k mk-k-spark" aria-hidden="true"></span> sparkline = the week's price path (tile-local scale, big tiles only)</li>
+    <li><span class="ev-k ev-k-live"></span> <b>glow</b> = the engine's live density (<code>--d</code>) — hold a tile and the field gathers</li>
+  </ul>
+
+  <ol class="mk-mosaic" data-mk-list>
+    {
+      assets.map((a, i) => {
+        const w = wOf(a.cap);
+        return (
+          <li
+            class={`mk-tile mk-t${tierOf(w)}`}
+            id={`mk-${a.id}`}
+            data-body="attract"
+            data-feedback
+            data-hot
+            data-range="200"
+            data-strength={(0.4 + w * 1.6).toFixed(2)}
+            data-cap={a.cap}
+            data-volume={a.volume}
+            data-price={a.price}
+            data-c24={a.change24h}
+            data-c7={a.change7d}
+            style={`--w:${w.toFixed(3)}; --cat:${catFor(a.change24h)};`}
+          >
+            <span class="mk-rank">{String(i + 1).padStart(2, "0")}</span>
+            <div class="mk-id">
+              <span class="mk-name">{a.name}</span>
+              <span class="mk-sym">{a.symbol}</span>
+            </div>
+            <div class="mk-quote">
+              <span class="mk-price">{fmtPrice(a.price)}</span>
+              <span class="mk-cap">{fmtCompact.format(a.cap)} cap</span>
+            </div>
+            <span class="mk-chg" data-win="24h" data-dir={a.change24h >= 0 ? "up" : "down"}>
+              {badge(a.change24h)}
+            </span>
+            <span class="mk-chg" data-win="7d" data-dir={a.change7d >= 0 ? "up" : "down"}>
+              {badge(a.change7d)}
+            </span>
+            <svg
+              class="mk-spark"
+              viewBox="0 0 120 28"
+              aria-hidden="true"
+              preserveAspectRatio="none"
+              data-field-visual-for={`#mk-${a.id}`}
+              data-field-visual-role="measurement"
+            >
+              <path d={sparkPath(a.spark)} stroke="var(--cat)" pathLength="100" />
+            </svg>
+          </li>
+        );
+      })
+    }
+  </ol>
+
+  <section class="ev-how" aria-labelledby="mk-how-h">
+    <h2 id="mk-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every asset is an ordinary <code>&lt;li&gt;</code> with a few data attributes. field-ui reads
+      them, runs an invisible field over the mosaic, and the tiles carry the measurement — cap as
+      area and ink, the move as color. No canvas, no chart library beyond one inline
+      <code>&lt;path&gt;</code> per tile. Four channels do the work: <code>--w</code> is the
+      server-computed weight, <code>--cat</code> the lens color, <code>--d</code> the engine's
+      live local density (hold a tile and the field gathers), and
+      <code>--field-attention</code> the recipe's eased attention metric. Each sparkline also
+      declares its provenance with <code>data-field-visual-for</code>, so the binding between
+      chart and record is inspectable.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — each asset is a field body</p>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: snippetBody }]} />
+        <ul class="ev-how-attrs">
+          <li><code>data-strength</code> — gravitational mass from log-normalized cap</li>
+          <li><code>data-c24</code> / <code>data-c7</code> — the raw moves the lens reads</li>
+          <li><code>--cat</code> — the polarity color the CSS mixes in</li>
+          <li><code>data-hot</code> — the engine's live density (<code>--d</code>) gathers toward 1 while held</li>
+          <li><code>data-field-visual-for</code> — binds the sparkline to its record as a measurement</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — mass is area; polarity is CSS</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: snippetCss }]} />
+        <p class="ev-how-note">
+          The runtime sets <code>--cat</code> from the chosen window — hue is direction, intensity
+          is magnitude — and one <code>color-mix()</code> tints the tile against the hairline.
+          <code>--d</code> is live: hold a tile and the halo and sparkline thicken as the field
+          gathers, then ease back.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — re-tier on lens change; live updates in place</p>
+        <CodeTabs
+          variants={[
+            { label: "FLIP", lang: "ts", code: snippetFlip },
+            { label: "Live", lang: "ts", code: snippetLive },
+          ]}
+        />
+        <p class="ev-how-note">
+          When the CoinGecko API is reachable, the runtime re-polls it once a minute and updates
+          the snapshot's 24 tiles in place — prices, badges, colors, weights, sparklines. A poll
+          never re-sorts or re-tiers the mosaic (that would be hostile under the cursor); tiers
+          re-settle the next time you change the lens. Ids the snapshot does not know are ignored.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      The baseline is a <strong>committed snapshot</strong> — prices, caps, and moves frozen at
+      {snapDate} (UTC), and that is what ships in the HTML. In the browser the page
+      <strong>upgrades itself to live CoinGecko data</strong> when the API is reachable: it
+      re-polls once a minute and updates the tiles in place, falling back to the snapshot if a
+      poll fails. Data: <a href="https://www.coingecko.com" rel="noopener">CoinGecko API</a>
+      (free API terms, attribution). Nothing here is investment advice; the point is the rendering,
+      not the portfolio.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">← Back to the Evidence field</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/market-runtime.ts";
+</script>

@@ -1,0 +1,1040 @@
+/* ============================================================
+   THE CALENDAR FIELD — imminence is mass; the field's input is time itself.
+   Mission-control layout: a featured "next up" card (the countdown is the
+   centerpiece), then a vertical timeline rail with day markers and node dots;
+   passed / TBD launches collect in a dimmed unscheduled cluster at the end.
+   Reuses the ev-* design system from evidence.css; everything new is
+   scoped under .ex-calendar. Tokens come from ds-tokens.css (via Base).
+   ============================================================ */
+
+.ex-calendar .cal-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+}
+
+/* ── the featured "next up" card — the soonest launch is the biggest thing on the wall ── */
+.ex-calendar .cal-hero {
+  /* the living ink: --d is the engine's live local density (0..1, written back every
+     frame; data-hot gathers it on hover/focus), --field-attention the recipe's eased
+     attention lane. Both touch only ink — the 1 Hz imminence ramp (--w) is untouched. */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.5rem 1.7rem 1.4rem;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 28%, var(--line));
+  border-left: 4px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 16px;
+  background: color-mix(
+    in srgb,
+    var(--text) calc(2% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--w) * 34px + var(--live) * 16px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 16% + var(--live) * 30%), transparent);
+  transition:
+    border-color 0.3s,
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ex-calendar .cal-hero-k {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.ex-calendar .cal-hero-name {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.4rem, 3.4vw, 2.2rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: color-mix(in srgb, var(--text) calc(60% + var(--w) * 40%), var(--text-4));
+  font-variation-settings: 'wght' calc(520 + var(--w) * 240);
+}
+.ex-calendar .cal-hero-meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.92rem;
+  color: var(--text-2);
+}
+.ex-calendar .cal-hero-pad {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-4);
+}
+.ex-calendar .cal-hero-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.1rem;
+  margin-top: 0.7rem;
+}
+/* the centerpiece: the live T-minus, large, mono, tabular. Hold the hero (data-hot)
+   and the digits burn brighter — the glow reads the engine's gathered density. */
+.ex-calendar .cal-hero-count {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.9rem, 5.5vw, 3.3rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--text) calc(55% + var(--w) * 45%), var(--text-4));
+  text-shadow: 0 0 calc(var(--live, 0) * 18px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live, 0) * 65%), transparent);
+  transition: text-shadow 0.3s;
+}
+/* nothing left on the clock — every window in the snapshot passed or sits at TBD */
+.ex-calendar .cal-hero[data-state='empty'] {
+  opacity: 0.7;
+  box-shadow: none;
+  border-left-color: var(--line);
+}
+.ex-calendar .cal-hero[data-state='empty'] .cal-hero-count {
+  color: var(--text-4);
+}
+
+/* ── the timeline rail — a left axis line; day markers and node dots sit on it ── */
+.ex-calendar .cal-rail {
+  --axis: 0.45rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.9rem;
+  padding-left: 2.1rem;
+}
+.ex-calendar .cal-rail::before {
+  content: '';
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  left: var(--axis);
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--accent) 45%, var(--line)),
+    var(--line) 55%,
+    color-mix(in srgb, var(--line) 55%, transparent)
+  );
+}
+
+/* day headings — small-caps markers (shared by the rail fallback and the day view's
+   unscheduled cluster) */
+.ex-calendar .cal-day-h {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+}
+/* the day marker dot, centered on the axis line — rail geometry only */
+.ex-calendar .cal-rail .cal-day-h::before {
+  content: '';
+  position: absolute;
+  top: 0.12rem;
+  left: calc(-1.65rem - 3.5px);
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--bg, #04050a);
+  border: 2px solid var(--text-3);
+}
+.ex-calendar .cal-day-tz {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--text-4);
+}
+
+.ex-calendar .cal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* a launch card attached to the rail: imminence (--w, 0..1, re-ticked every second)
+   is felt — type weight, ink, the left anchor, and the node dot's charge. */
+.ex-calendar .cal-row {
+  /* the living ink — same channels as the hero: --d (engine density) + eased attention */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.4rem);
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+/* the node dot on the axis — heavier launches glow harder; the dot also charges
+   subtly with the card's live density (hold the card, the node swells). Rail only —
+   the day / week / month geometries carry their own anchors. */
+.ex-calendar .cal-rail .cal-row::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(-1.65rem - 2.5px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translateY(-50%) scale(calc(1 + var(--live) * 0.35));
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 80%), var(--line));
+  box-shadow: 0 0 calc(var(--w) * 8px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 60%), transparent);
+  transition: transform 0.25s;
+}
+/* the card currently held by the "next up" board — any geometry */
+.ex-calendar .cal-row[data-next]::after,
+.ex-calendar .cal-wcard[data-next]::after {
+  content: 'next';
+  position: absolute;
+  top: -0.52rem;
+  right: 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.42rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line));
+  color: var(--accent);
+  background: var(--bg, #04050a);
+}
+.ex-calendar .cal-body {
+  min-width: 0;
+  display: grid;
+  gap: 0.22rem;
+}
+.ex-calendar .cal-name {
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.98rem, 1.4vw, 1.12rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-calendar .cal-meta {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+.ex-calendar .cal-meta-dim {
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+
+/* the right column: the live countdown over the status / orbit chips */
+.ex-calendar .cal-side {
+  display: grid;
+  justify-items: end;
+  gap: 0.4rem;
+}
+.ex-calendar .cal-count {
+  font-family: var(--mono);
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+}
+.ex-calendar .cal-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.ex-calendar .cal-status,
+.ex-calendar .cal-orbit {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-4);
+  white-space: nowrap;
+}
+.ex-calendar .cal-status[data-status='Go'] {
+  border-color: color-mix(in srgb, #2dd4bf 50%, var(--line));
+  color: #2dd4bf;
+}
+.ex-calendar .cal-status[data-status='TBC'] {
+  border-color: color-mix(in srgb, #fbbf24 50%, var(--line));
+  color: #fbbf24;
+}
+/* TBD (and already-flown) stay dim — undetermined is rendered as quiet, not loud */
+
+/* ── the unscheduled cluster at the rail's end — passed windows and TBD dates ── */
+.ex-calendar .cal-day--unscheduled {
+  opacity: 0.75;
+}
+.ex-calendar .cal-day--unscheduled:not(:has(.cal-row)) {
+  display: none;
+}
+.ex-calendar .cal-day--unscheduled .cal-day-h::before {
+  border-color: var(--line);
+}
+.ex-calendar .cal-day--unscheduled .cal-row::before {
+  background: var(--line);
+  box-shadow: none;
+}
+
+/* hidden day sections (the runtime empties a day when its last window passes) */
+.ex-calendar .cal-day[hidden] {
+  display: none;
+}
+
+/* ============================================================
+   THE THREE GEOMETRIES — day / week / month. The runtime re-renders
+   [data-cal-views] per view and re-applies the scoped field over the
+   new bodies; the field measures whatever geometry is mounted.
+   ============================================================ */
+
+/* shared: the "today · snapshot" tag (the schedule is a frozen moment — say so) */
+.ex-calendar .cal-today-tag {
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.42rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ── DAY — the agenda: one selected day, an hour gutter, ‹ › within the data ── */
+.ex-calendar .cal-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.ex-calendar .cal-agenda-h {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--line);
+}
+.ex-calendar .cal-agenda-date {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.ex-calendar .cal-nav {
+  appearance: none;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.ex-calendar .cal-nav:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+}
+.ex-calendar .cal-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.ex-calendar .cal-agenda-list {
+  gap: 0.55rem;
+}
+/* the hour gutter: the launch's UTC time, large, anchoring the card to the clock */
+.ex-calendar .cal-slot {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: center;
+}
+.ex-calendar .cal-hour {
+  display: grid;
+  gap: 0.12rem;
+  justify-items: end;
+  font-family: var(--mono);
+  font-size: 1.08rem;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+.ex-calendar .cal-hour small {
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  color: var(--text-4);
+}
+/* honest emptiness: some days in the range schedule nothing */
+.ex-calendar .cal-empty {
+  margin: 0.4rem 0;
+  padding: 1.2rem 1.1rem;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  font-size: 0.84rem;
+  color: var(--text-4);
+}
+.ex-calendar .cal-agenda-foot {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+.ex-calendar .cal-agenda-un {
+  opacity: 0.75;
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.4rem;
+}
+.ex-calendar .cal-agenda-un .cal-day-h {
+  margin: 0;
+}
+
+/* ── WEEK — 7 columns from the snapshot's today + a narrow "later +" column ── */
+.ex-calendar .cal-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) minmax(0, 0.85fr);
+  gap: 0.55rem;
+  align-items: stretch;
+}
+.ex-calendar .cal-wcol {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.6rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 1.2%, transparent);
+}
+.ex-calendar .cal-wcol[data-today] {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.ex-calendar .cal-wcol-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.ex-calendar .cal-wd {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-calendar .cal-wcol-h b {
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--text-2);
+}
+.ex-calendar .cal-wcol[data-today] .cal-wcol-h b {
+  color: var(--accent);
+}
+.ex-calendar .cal-wlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+/* the compact week card — the same body contract, smaller skin. Vertical position
+   does NOT encode the hour (the data is sparse — honest stacking, not a fake grid). */
+.ex-calendar .cal-wcard {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  position: relative;
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 14px) -5px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.ex-calendar .cal-wtime {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+.ex-calendar .cal-wname {
+  font-size: 0.76rem;
+  line-height: 1.28;
+  letter-spacing: -0.005em;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-variation-settings: 'wght' calc(400 + var(--w) * 320);
+  overflow-wrap: anywhere;
+}
+.ex-calendar .cal-wmeta {
+  font-size: 0.6rem;
+  color: var(--text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ex-calendar .cal-wfoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-top: 0.12rem;
+}
+.ex-calendar .cal-count-c {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+}
+.ex-calendar .cal-wempty {
+  margin: 0.2rem 0 0;
+  font-size: 0.62rem;
+  color: var(--text-4);
+  text-align: center;
+}
+/* the 8th column: what lies beyond the seven days + the unscheduled count */
+.ex-calendar .cal-wcol--later {
+  border-style: dashed;
+  background: transparent;
+}
+.ex-calendar .cal-wlater {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.66rem;
+  color: var(--text-3);
+}
+.ex-calendar .cal-wlater p {
+  margin: 0;
+}
+.ex-calendar .cal-wlater b {
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--text-2);
+}
+.ex-calendar .cal-wlater-dim {
+  font-size: 0.58rem;
+  color: var(--text-4);
+}
+
+/* ── MONTH — a real Sun–Sat grid; the chips are the field bodies here ────────── */
+.ex-calendar .cal-month {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.ex-calendar .cal-month-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+}
+.ex-calendar .cal-month-h h2 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.ex-calendar .cal-month-note {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-calendar .cal-mgrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ex-calendar .cal-mwd {
+  padding: 0.4rem 0.45rem;
+  background: color-mix(in srgb, var(--text) 3%, var(--bg, #04050a));
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-calendar .cal-mcell {
+  min-width: 0;
+  min-height: 96px;
+  padding: 0.4rem 0.45rem 0.5rem;
+  background: var(--bg, #04050a);
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+/* days outside the data's range — the snapshot has nothing to say there */
+.ex-calendar .cal-mcell[data-out] {
+  opacity: 0.4;
+}
+.ex-calendar .cal-mdate {
+  width: 1.45rem;
+  height: 1.45rem;
+  display: inline-grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+  border: 1px solid transparent;
+  border-radius: 50%;
+}
+.ex-calendar .cal-mcell[data-today] .cal-mdate {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ex-calendar .cal-mchips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.26rem;
+}
+/* the compact chip — status dot + truncated name + compact countdown; a full field
+   body (data-body / --w / --cat / data-hot) at the smallest skin on the page */
+.ex-calendar .cal-chip {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) calc(12% + var(--w) * 42%), var(--line));
+  border-radius: 6px;
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 3%),
+    transparent
+  );
+  font-size: 0.6rem;
+  opacity: calc(0.55 + var(--w) * 0.45);
+  box-shadow: 0 0 calc(var(--live) * 10px) -3px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.ex-calendar .cal-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 75%), var(--line));
+  box-shadow: 0 0 calc(var(--w) * 6px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 60%), transparent);
+  transform: scale(calc(1 + var(--live) * 0.4));
+  transition: transform 0.25s;
+}
+.ex-calendar .cal-chip-n {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--text) calc(42% + var(--w) * 58%), var(--text-4));
+  font-variation-settings: 'wght' calc(400 + var(--w) * 280);
+}
+.ex-calendar .cal-chip-c {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+/* passed windows dim in place in month — the day happened; the chip stays honest */
+.ex-calendar .cal-chip[data-passed] {
+  opacity: 0.38;
+}
+.ex-calendar .cal-chip[data-next] {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+.ex-calendar .cal-more {
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+}
+/* the unscheduled strip under the grid — date-TBD launches have no cell to live in */
+.ex-calendar .cal-mun {
+  display: grid;
+  gap: 0.5rem;
+  opacity: 0.8;
+}
+.ex-calendar .cal-mun-h {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.ex-calendar .cal-mun-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.ex-calendar .cal-mun-list .cal-chip {
+  flex: 0 1 auto;
+  max-width: 16rem;
+}
+
+/* legend key: the countdown glyph */
+.ex-calendar .cal-k-clock {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.ex-calendar .cal-k-live {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* ── Field OFF — the same wall, flattened; the countdowns keep ticking.
+   The live channels are silenced with the field: no density, no attention, no glow. ── */
+.ex-calendar[data-field='off'] .cal-row {
+  --w: 0.55;
+  --live: 0;
+  --att: 0;
+  opacity: 1;
+  border-left-color: var(--line);
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+  box-shadow: none;
+}
+.ex-calendar[data-field='off'] .cal-row::before {
+  background: var(--line);
+  box-shadow: none;
+}
+.ex-calendar[data-field='off'] .cal-name {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 500;
+}
+.ex-calendar[data-field='off'] .cal-count {
+  color: var(--text-2);
+}
+.ex-calendar[data-field='off'] .cal-hero {
+  --w: 0.55;
+  --live: 0;
+  --att: 0;
+  box-shadow: none;
+  border-color: var(--line);
+  border-left-color: var(--line);
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+.ex-calendar[data-field='off'] .cal-hero-count {
+  text-shadow: none;
+}
+.ex-calendar[data-field='off'] .cal-hero-name {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 560;
+}
+.ex-calendar[data-field='off'] .cal-hero-count {
+  color: var(--text-2);
+}
+.ex-calendar[data-field='off'] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+/* the layout toggle is geometry, not field — it stays live with the field off */
+.ex-calendar[data-field='off'] .ev-seg--views {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* the week cards and month chips flatten the same way the rail cards do */
+.ex-calendar[data-field='off'] .cal-wcard,
+.ex-calendar[data-field='off'] .cal-chip {
+  --w: 0.55;
+  --live: 0;
+  --att: 0;
+  opacity: 1;
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+  box-shadow: none;
+}
+.ex-calendar[data-field='off'] .cal-wcard {
+  border-left-color: var(--line);
+}
+.ex-calendar[data-field='off'] .cal-chip[data-passed] {
+  opacity: 0.6;
+}
+.ex-calendar[data-field='off'] .cal-wname,
+.ex-calendar[data-field='off'] .cal-chip-n {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 500;
+}
+.ex-calendar[data-field='off'] .cal-count-c {
+  color: var(--text-2);
+}
+.ex-calendar[data-field='off'] .cal-dot {
+  background: var(--line);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ── responsive: the rail collapses to a thin left border; the hero stays;
+   day stacks naturally, week becomes a scroll-snap strip, month compresses ── */
+@media (max-width: 840px) {
+  .ex-calendar .cal-rail {
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--line);
+  }
+  .ex-calendar .cal-rail::before,
+  .ex-calendar .cal-rail .cal-day-h::before,
+  .ex-calendar .cal-rail .cal-row::before {
+    display: none;
+  }
+  /* week: horizontally scrollable columns with scroll snap */
+  .ex-calendar .cal-week {
+    grid-template-columns: repeat(7, min(74vw, 250px)) min(60vw, 200px);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5rem;
+  }
+  .ex-calendar .cal-wcol {
+    scroll-snap-align: start;
+  }
+  /* month: smaller cells and chips, never wider than the viewport */
+  .ex-calendar .cal-mcell {
+    min-height: 72px;
+    padding: 0.3rem 0.32rem 0.4rem;
+  }
+  .ex-calendar .cal-chip-c {
+    display: none;
+  }
+  .ex-calendar .cal-mun-list .cal-chip .cal-chip-c {
+    display: inline;
+  }
+}
+@media (max-width: 620px) {
+  .ex-calendar .cal-row {
+    grid-template-columns: 1fr;
+  }
+  .ex-calendar .cal-side {
+    justify-items: start;
+  }
+  .ex-calendar .cal-hero {
+    padding: 1.1rem 1.2rem 1.1rem;
+  }
+  .ex-calendar .cal-slot {
+    grid-template-columns: 3.3rem minmax(0, 1fr);
+    gap: 0.55rem;
+  }
+  .ex-calendar .cal-hour {
+    font-size: 0.86rem;
+  }
+  .ex-calendar .cal-mcell {
+    min-height: 58px;
+  }
+  .ex-calendar .cal-chip {
+    padding: 0.14rem 0.26rem;
+    font-size: 0.54rem;
+  }
+  .ex-calendar .cal-mdate {
+    width: 1.2rem;
+    height: 1.2rem;
+    font-size: 0.6rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-calendar .cal-row,
+  .ex-calendar .cal-hero,
+  .ex-calendar .cal-rail .cal-row::before,
+  .ex-calendar .cal-hero-count,
+  .ex-calendar .cal-wcard,
+  .ex-calendar .cal-chip,
+  .ex-calendar .cal-dot,
+  .ex-calendar .cal-nav {
+    transition: none;
+  }
+}
+
+/* ── CodeTabs (how-built) — the docs' highlighted code block, scoped locally because
+   this page does not load docs.css ──────────────────────────────────────────────── */
+.ex-calendar .code-tabs {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-canvas, #07090e);
+  overflow: hidden;
+}
+.ex-calendar .code-tabs .ct-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ex-calendar .code-tabs .ct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ex-calendar .code-tabs .ct-tab,
+.ex-calendar .code-tabs .ct-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-calendar .code-tabs .ct-tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-calendar .code-tabs .ct-tab:hover {
+  color: var(--text-2);
+}
+.ex-calendar .code-tabs .ct-tab[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ex-calendar .code-tabs .ct-copy {
+  appearance: none;
+  align-self: center;
+  margin: 0 0.5rem 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-2, var(--line));
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: copy;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.ex-calendar .code-tabs .ct-copy:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.ex-calendar .code-tabs .ct-copy.copied {
+  color: var(--ok, #5fd0a8);
+  border-color: var(--ok, #5fd0a8);
+}
+.ex-calendar .code-tabs .ct-body[hidden] {
+  display: none;
+}
+.ex-calendar .code-tabs pre.astro-code,
+.ex-calendar .code-tabs pre.astro-code code {
+  margin: 0;
+  background: transparent !important;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.ex-calendar .code-tabs pre.astro-code {
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+}

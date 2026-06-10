@@ -1,0 +1,455 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
+import calendar from "../../data/examples/calendar.json";
+import "../../styles/examples/calendar.css";
+
+// The Calendar Field — field-ui as an invisible measurement layer over a real launch schedule.
+// Imminence is gravitational mass: the closer a launch sits to T−0, the harder it pulls. The
+// runtime recomputes every weight once a second, so this is the one page where the field's
+// input is time itself. No particle swarm: the pull shows in the type.
+
+// imminence math — must match calendar-runtime.ts. A 30-day horizon flattens to the floor;
+// launches whose NET already passed (the snapshot ages) or whose date is TBD sit at the floor.
+const HORIZON = Math.log(24 * 30 + 1);
+const W_FLOOR = 0.08;
+const snap = Date.parse(calendar.snapshotAt);
+const wOf = (net: string, status: string): number => {
+  if (status === "TBD") return W_FLOOR;
+  const hours = (Date.parse(net) - snap) / 36e5;
+  if (!(hours > 0)) return W_FLOOR;
+  return Math.max(W_FLOOR, Math.min(1, 1 - Math.log(hours + 1) / HORIZON));
+};
+
+// status → anchor color: Go teal (confirmed), TBC amber (awaiting confirmation), everything
+// else dim — must match calendar-runtime.ts.
+const STATUS_CAT: Record<string, string> = { Go: "#2dd4bf", TBC: "#fbbf24" };
+const catFor = (status: string): string => STATUS_CAT[status] ?? "#8a93a6";
+
+// the initial countdown is rendered from the snapshot instant; the runtime re-renders it
+// from the real clock every second.
+const countdown = (net: string, status: string): string => {
+  if (status === "TBD") return "TBD";
+  const ms = Date.parse(net) - snap;
+  if (ms <= 0) return "window passed · snapshot";
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const hh = String(Math.floor((s % 86400) / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return d > 0 ? `T− ${d}d ${hh}:${mm}:${ss}` : `T− ${hh}:${mm}:${ss}`;
+};
+
+// the mission-control wall: the first upcoming launch with a valid future NET takes the
+// featured "next up" card; the rest hang on a vertical timeline rail grouped by UTC day.
+// Launches whose window already passed (the snapshot ages) or whose date is TBD collect
+// in a dimmed "unscheduled" cluster at the rail's end. The runtime re-derives the same
+// classification — and the next-up pick — from the real clock every second.
+const dayFmt = new Intl.DateTimeFormat("en-US", {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+interface Group {
+  key: string;
+  label: string;
+  launches: typeof calendar.launches;
+}
+const dated = calendar.launches
+  .filter((l) => l.status !== "TBD")
+  .sort((a, b) => Date.parse(a.net) - Date.parse(b.net));
+const future = dated.filter((l) => Date.parse(l.net) > snap);
+const passed = dated.filter((l) => Date.parse(l.net) <= snap);
+const hero = future[0];
+const groups: Group[] = [];
+for (const l of future) {
+  const key = l.net.slice(0, 10);
+  let g = groups.find((x) => x.key === key);
+  if (!g) {
+    g = { key, label: dayFmt.format(new Date(l.net)), launches: [] };
+    groups.push(g);
+  }
+  g.launches.push(l);
+}
+const tbd = calendar.launches.filter((l) => l.status === "TBD");
+const unscheduled = [...passed, ...tbd];
+
+const snapDate = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(new Date(calendar.snapshotAt));
+
+// How-built snippets (CodeTabs renders them with build-time Shiki highlighting).
+const SNIPPET_HTML = `<!-- each launch is a body. data-feedback: the engine writes
+     --d (live local density) back every frame. data-hot:
+     hover/focus a card and the field gathers toward it —
+     hold the hero and its countdown burns brighter. -->
+<li
+  data-body="attract"
+  data-strength="1.43"
+  data-feedback
+  data-hot
+  data-net="2026-06-11T04:00:00Z"
+  data-status="Go"
+  style="--w: 0.646; --cat: #2dd4bf;"
+>
+  <!-- name · provider · countdown -->
+</li>`;
+
+const SNIPPET_TS = `// every second, for every launch:
+const hours =
+  (Date.parse(row.dataset.net)
+    - Date.now()) / 36e5;
+
+// imminence: log-ramped against
+// a 30-day horizon, floored at 0.08
+const w = hours > 0
+  ? Math.max(0.08, Math.min(1,
+      1 - Math.log(hours + 1)
+        / Math.log(24 * 30 + 1)))
+  : 0.08; // window passed · snapshot
+
+row.style.setProperty("--w", w);
+row.dataset.strength =
+  (0.4 + w * 1.6).toFixed(2);
+
+// the scoped field runs invisible (render: [])
+// and asks for the attention metric lane:
+const recipe = {
+  ...base,
+  render: [],
+  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+};
+// the pipeline writes --field-attention per card (eased 0..1)`;
+
+const SNIPPET_VIEWS = `// three geometries, one contract — every
+// view renders the same 30 launches
+// as the same bodies:
+const render =
+  { day, week, month }[view];
+
+viewAc?.abort(); // the old view's
+viewAc =         // listeners die with it
+  new AbortController();
+zone.innerHTML = render(records, now);
+
+// the bodies changed — destroy the
+// scoped field and re-apply the recipe
+// over the new geometry:
+field?.destroy();
+const bodies = [
+  ...zone.querySelectorAll("[data-body]"),
+  hero,
+];
+field = applyRecipe(zone, recipe,
+  { bodies, annotateBodies: false });
+
+// the field doesn't care about the
+// layout — it measures whatever
+// geometry you give it.`;
+
+const SNIPPET_CSS = `.cal-row {
+  /* --w = imminence (1 Hz clock) · --d = live engine
+     density, data-hot gathers it · --field-attention =
+     the recipe's eased attention */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 55%), transparent);
+}
+/* the rail dot charges with the density */
+.cal-row::before {
+  transform: translateY(-50%)
+    scale(calc(1 + var(--live) * 0.35));
+}
+/* hold the hero — the T-minus digits burn brighter */
+.cal-hero-count {
+  text-shadow: 0 0 calc(var(--live) * 18px)
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 65%), transparent);
+}`;
+---
+
+<ExampleShell
+  title="field-ui — Calendar"
+  description="A real launch schedule run as a field. Imminence is gravitational mass — weight ramps as T−0 approaches, recomputed live every second — so the next launch pulls hardest. No particle swarm; the pull shows in the type."
+  current="calendar"
+  mainClass="ex-calendar"
+  mainAttrs={{ "data-field": "on", "data-lens": "status" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · calendar</p>
+    <h1>The next launch pulls <span class="accent">hardest</span>.</h1>
+    <p class="ev-lede">
+      A launch schedule lists every mission at the same weight: a rocket lifting off in nineteen
+      hours sits in the same row style as one penciled in for the end of the month. This is the
+      same schedule from
+      <a href="https://thespacedevs.com" rel="noopener">Launch Library 2</a> run as a
+      <strong>field</strong>: imminence is gravitational mass, and the weight ramps as T−0
+      approaches — heavier type, darker ink, a stronger left anchor.
+    </p>
+    <p class="ev-lede">
+      This is the one page where the field's input is <strong>time itself</strong>. The soonest
+      launch is the biggest thing on the wall — a featured "next up" card with the countdown as
+      its centerpiece — and the rest lay out as a <strong>day</strong> agenda, a seven-column
+      <strong>week</strong>, or a <strong>month</strong> grid: three calendar geometries over
+      the same thirty launches. A 1-second clock recomputes every weight and re-picks the
+      featured launch in whichever view is mounted, so when a window passes the wall advances
+      on its own; passed and undated launches drift to a dimmed "unscheduled" cluster.
+      <strong>Toggle the field off</strong> and the wall flattens — but the countdowns keep
+      ticking, because they're data, not field.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-cal-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Layout</span>
+      <div class="ev-seg ev-seg--views" role="group" aria-label="Calendar layout">
+        <button type="button" data-cal-view="day" aria-pressed="false">day</button>
+        <button type="button" data-cal-view="week" aria-pressed="true">week</button>
+        <button type="button" data-cal-view="month" aria-pressed="false">month</button>
+      </div>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Color by</span>
+      <div class="ev-seg" role="group" aria-label="Color lens">
+        <button type="button" data-cal-lens="status" aria-pressed="true">status</button>
+        <button type="button" data-cal-lens="off" aria-pressed="false">off</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-cal-hint><b>size</b> = imminence — weight ramps as T−0 approaches, recomputed every second</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-cal-lens-hint><b>color</b> = launch status — Go is confirmed, TBC awaits confirmation</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = imminence — the next launch is the biggest thing on the wall</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = status (Go teal · TBC amber · TBD dim)</li>
+    <li><span class="ev-k cal-k-clock">T−</span> the countdown is live — when a window passes, the wall re-picks "next up"</li>
+    <li>
+      <span class="ev-k cal-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
+      <b>--w</b> is the clock's imminence and <b>--cat</b> the status lens; <b>--d</b> is the
+      engine's local density (hold a card and the field gathers — the hero's countdown burns
+      brighter) and <b>--field-attention</b> the recipe's eased attention as you scroll.
+    </li>
+  </ul>
+
+  <div class="cal-zone" data-cal-zone>
+    {
+      hero && (
+        <section
+          class="cal-hero"
+          data-cal-hero
+          data-id={hero.id}
+          data-body="attract"
+          data-feedback
+          data-hot
+          data-range="260"
+          data-strength={(0.4 + wOf(hero.net, hero.status) * 1.6).toFixed(2)}
+          data-net={hero.net}
+          data-status={hero.status}
+          style={`--w:${wOf(hero.net, hero.status).toFixed(3)}; --cat:${catFor(hero.status)};`}
+          aria-labelledby="cal-hero-name"
+        >
+          <p class="cal-hero-k">Next up</p>
+          <h2 class="cal-hero-name" id="cal-hero-name" data-cal-hero-name>{hero.name}</h2>
+          <p class="cal-hero-meta" data-cal-hero-meta>{hero.provider} · {hero.vehicle}</p>
+          <p class="cal-hero-pad" data-cal-hero-pad>{hero.pad} · {hero.location}</p>
+          <div class="cal-hero-foot">
+            <span class="cal-hero-count" data-cal-count>{countdown(hero.net, hero.status)}</span>
+            <span
+              class="cal-status"
+              data-cal-hero-status
+              data-status={hero.status}
+              title={hero.statusName}
+            >
+              {hero.status}
+            </span>
+          </div>
+        </section>
+      )
+    }
+
+    {/* the records zone — the runtime re-renders this container per view (day / week /
+        month) and re-applies the scoped field over the new bodies. The server-rendered
+        timeline rail below is the no-JS fallback and the first paint. */}
+    <div class="cal-views" data-cal-views>
+      <div class="cal-rail">
+        {
+        groups.map((g) => (
+          <section class="cal-day">
+            <h2 class="cal-day-h">{g.label}<span class="cal-day-tz">UTC</span></h2>
+            <ol class="cal-list">
+              {g.launches.map((l) => {
+                const w = wOf(l.net, l.status);
+                return (
+                  <li
+                    class="cal-row"
+                    data-body="attract"
+                    data-feedback
+                    data-hot
+                    data-range="200"
+                    data-strength={(0.4 + w * 1.6).toFixed(2)}
+                    data-id={l.id}
+                    data-net={l.net}
+                    data-status={l.status}
+                    data-name={l.name}
+                    data-pv={`${l.provider} · ${l.vehicle}`}
+                    data-padloc={`${l.pad} · ${l.location}`}
+                    data-status-name={l.statusName}
+                    data-next={hero && l.id === hero.id ? "" : undefined}
+                    style={`--w:${w.toFixed(3)}; --cat:${catFor(l.status)};`}
+                  >
+                    <div class="cal-body">
+                      <span class="cal-name">{l.name}</span>
+                      <span class="cal-meta">{l.provider} · {l.vehicle}</span>
+                      <span class="cal-meta cal-meta-dim">{l.pad} · {l.location}</span>
+                    </div>
+                    <div class="cal-side">
+                      <span class="cal-count" data-cal-count>{countdown(l.net, l.status)}</span>
+                      <span class="cal-chips">
+                        <span class="cal-status" data-status={l.status} title={l.statusName}>
+                          {l.status}
+                        </span>
+                        {l.orbit && l.orbit !== "N/A" && <span class="cal-orbit">{l.orbit}</span>}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        ))
+      }
+
+      <section class="cal-day cal-day--unscheduled">
+        <h2 class="cal-day-h">Unscheduled<span class="cal-day-tz">window passed · date TBD</span></h2>
+        <ol class="cal-list">
+          {
+            unscheduled.map((l) => {
+              const w = wOf(l.net, l.status);
+              return (
+                <li
+                  class="cal-row"
+                  data-body="attract"
+                  data-feedback
+                  data-hot
+                  data-range="200"
+                  data-strength={(0.4 + w * 1.6).toFixed(2)}
+                  data-id={l.id}
+                  data-net={l.net}
+                  data-status={l.status}
+                  data-name={l.name}
+                  data-pv={`${l.provider} · ${l.vehicle}`}
+                  data-padloc={`${l.pad} · ${l.location}`}
+                  data-status-name={l.statusName}
+                  style={`--w:${w.toFixed(3)}; --cat:${catFor(l.status)};`}
+                >
+                  <div class="cal-body">
+                    <span class="cal-name">{l.name}</span>
+                    <span class="cal-meta">{l.provider} · {l.vehicle}</span>
+                    <span class="cal-meta cal-meta-dim">{l.pad} · {l.location}</span>
+                  </div>
+                  <div class="cal-side">
+                    <span class="cal-count" data-cal-count>{countdown(l.net, l.status)}</span>
+                    <span class="cal-chips">
+                      <span class="cal-status" data-status={l.status} title={l.statusName}>
+                        {l.status}
+                      </span>
+                      {l.orbit && l.orbit !== "N/A" && <span class="cal-orbit">{l.orbit}</span>}
+                    </span>
+                  </div>
+                </li>
+              );
+            })
+          }
+        </ol>
+      </section>
+      </div>
+    </div>
+  </div>
+
+  <section class="ev-how" aria-labelledby="cal-how-h">
+    <h2 id="cal-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every launch is an ordinary <code>&lt;li&gt;</code> with its NET timestamp in a data
+      attribute. A 1-second clock turns distance-to-T−0 into a weight, writes it back as a CSS
+      custom property, and the type carries the measurement. No canvas, no chart library — the
+      only moving part is time. On top of the clock sit two live channels the engine writes back
+      every frame — <code>--d</code> (local density, gathered by <code>data-hot</code> on hover)
+      and <code>--field-attention</code> (the recipe's eased attention) — which touch only ink;
+      the 1 Hz weight ramp is untouched. The day / week / month toggle re-renders the records
+      zone from the same launch list and re-applies the scoped field over the new bodies — full
+      cards in day, compact cards in week, chips in month — and every channel keeps working.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — each launch is a field body</p>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIPPET_HTML }]} />
+        <ul class="ev-how-attrs">
+          <li><code>data-net</code> — the no-earlier-than instant the clock measures against</li>
+          <li><code>data-strength</code> — gravitational mass, re-set every second</li>
+          <li><code>--cat</code> — the status color the CSS mixes in</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
+          <li><code>data-hot</code> — hover/focus gathers the field toward this card</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — one clock, three geometries</p>
+        <CodeTabs
+          variants={[
+            { label: "1 Hz clock", lang: "ts", code: SNIPPET_TS },
+            { label: "Views", lang: "ts", code: SNIPPET_VIEWS },
+          ]}
+        />
+        <p class="ev-how-note">
+          The soonest launch is the heaviest; as its T−0 approaches the ramp steepens, so the
+          page's center of gravity slides toward the pad. The day / week / month toggle swaps
+          the entire geometry under the same bodies — the field doesn't care about the layout;
+          it measures whatever geometry you give it. That's the lesson of this page.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the field's output</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIPPET_CSS }]} />
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      This schedule is a <strong>moment in time</strong> — frozen at {snapDate} (UTC) from
+      <a href="https://thespacedevs.com" rel="noopener">Launch Library 2</a> (free API,
+      attribution). Launch schedules shift constantly: windows slip, dates firm up, missions
+      scrub. Rows whose window has already passed say <em>window passed · snapshot</em> rather
+      than pretending — the countdowns are real time, but the schedule is not a feed.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">← Back to the Evidence field</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/calendar-runtime.ts";
+</script>

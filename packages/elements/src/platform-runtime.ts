@@ -10,7 +10,8 @@
  * The legacy engine still owns everything visible in D1; the platform adds nothing observable, which
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
-import { createFieldPlatform, type FieldPlatform } from '@field-ui/platform';
+import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@field-ui/platform';
+import type { FieldHandle } from '@field-ui/core';
 import {
   bodyElements,
   REGISTER_BODY,
@@ -133,6 +134,12 @@ export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
 // ── the runtime ─────────────────────────────────────────────────────────────────────
 export interface PlatformRuntime {
   platform: FieldPlatform;
+  /**
+   * Attach the FieldHandle after it's created (the platform starts before the field handle
+   * exists). Once attached, the write phase writes `--field-scroll-v` to `:root` each frame
+   * and the quality governor monitors frame duration.
+   */
+  attachHandle(handle: FieldHandle): void;
   destroy(): void;
 }
 
@@ -170,20 +177,76 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   };
 
   if (typeof window === 'undefined' || typeof requestAnimationFrame === 'undefined') {
-    return { platform, destroy: unwireShadow };
+    return { platform, attachHandle: () => {}, destroy: unwireShadow };
   }
 
   let raf = 0;
+  let handle: FieldHandle | null = null;
+  let lastTs = 0;
+  let frame = 0;
+  const governor = new QualityGovernor();
+
+  // A frame gap this large is a discontinuity (background tab, system sleep, a debugger pause),
+  // not a budget overrun — feeding it would spike the governor for free.
+  const DISCONTINUITY_MS = 500;
+
+  // write phase: --field-scroll-v on :root (once handle is attached). Written directly rather
+  // than through FeedbackRegistry — it's a page-global, not a per-body channel — so it does NOT
+  // count toward feedback.cssWritesLastFrame(). The unchanged-value guard keeps idle frames
+  // (scrollV pinned at 0.000) mutation-free.
+  let lastScrollV = '';
+  platform.on('write', () => {
+    if (!handle) return;
+    const sv = handle.scrollV().toFixed(3);
+    if (sv === lastScrollV) return;
+    lastScrollV = sv;
+    (root.ownerDocument ?? document).documentElement.style.setProperty('--field-scroll-v', sv);
+  });
+
+  // rAF stops while a tab is backgrounded; the first frame back would otherwise read as a huge
+  // overrun. Reset the timing baseline and re-detect from full quality.
+  const onVisibility = (): void => {
+    lastTs = 0;
+    governor.reset();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+
   const loop = (t: number): void => {
-    platform.tick(t, { width: window.innerWidth, height: window.innerHeight });
+    const duration = lastTs ? t - lastTs : 0;
+    lastTs = t;
+    frame++;
+
+    // Tier 2/3 degradation (the governor's built-in consumer): throttle the platform's own tick
+    // — measurement, feedback writes, relationship discovery — to every 2nd / 4th frame. The
+    // engine keeps simulating at full rate; only the platform's DOM read/write cadence drops.
+    // Engine-side responses (render simplification, particle caps) are the embedder's to wire
+    // via the field:quality-tier event.
+    const stride = governor.tier >= 3 ? 4 : governor.tier === 2 ? 2 : 1;
+    if (frame % stride === 0) platform.tick(t, { width: window.innerWidth, height: window.innerHeight });
+
+    if (duration > 0 && duration < DISCONTINUITY_MS && handle) {
+      const newTier = governor.feed(duration);
+      if (newTier !== undefined) {
+        root.dispatchEvent(new CustomEvent('field:quality-tier', {
+          bubbles: true, composed: true,
+          detail: { tier: newTier, durationMs: Math.round(duration) },
+        }));
+      }
+    }
     raf = requestAnimationFrame(loop);
   };
   raf = requestAnimationFrame(loop);
   return {
     platform,
+    attachHandle(h: FieldHandle): void {
+      handle = h;
+      governor.reset();
+    },
     destroy(): void {
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
+      handle = null;
+      document.removeEventListener('visibilitychange', onVisibility);
       unwireShadow();
     },
   };

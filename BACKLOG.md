@@ -74,6 +74,36 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 - [ ] **`bindData()`** — map records → bodies with id-diffed add/remove/reorder (matter
       flows via the conserved lifecycle); a `useForcesData` React hook.
 
+## Site — invisible-field examples
+
+The Evidence example's siblings: each takes a real dataset, makes its records bodies, and lets
+the field's measurements come back as type and ink — no particle swarm. The roster lives in
+`apps/site/src/lib/invisible-fields.ts` (the `/evidence` sidebar); snapshots regenerate with
+`apps/site/scripts/snapshot-examples.mjs`; pages live at `/evidence/<slug>`.
+
+- [x] **Evidence** — OpenAlex citations → gravitational mass; trust in the type. (`/evidence`)
+- [x] **Inbox** — Stack Overflow's unanswered queue; urgency is mass; attention is one finite,
+      conserved budget — pinning one ask literally dims the rest.
+- [x] **Market** — CoinGecko top assets; market cap is mass; the day's move polarizes (charge);
+      sparklines carry the lens color.
+- [~] **Backlog** — this repo's own work items; activity is mass; refs bind; the shipping cycle
+      is a sink with capacity (`data-max` → `--load`).
+- [~] **Calendar** — Launch Library upcoming launches; imminence is gravity, recomputed live —
+      the next launch pulls hardest.
+- [~] **Threads** — a real HN discussion; replies are mass; tempo is heat; hover lights the
+      binding chain.
+- [~] **Dependencies** — the monorepo's real npm deps; downloads are mass; staleness decays;
+      an advisory charges the graph (causality spill).
+- [~] **Fleet** — GitHub's status page; involvement is mass; impact is heat; an incident
+      accretes its updates (sink capture/release).
+- [~] **Catalog** — Open Library sci-fi shelf; the Evidence trust math retargeted; shared
+      subjects are the affinity.
+- [~] **Library** — ListenBrainz top recordings; listens are mass; the queue is a real sink
+      that accretes and releases.
+- [~] **Memory** — Google-corpus word frequencies; the forgetting curve is decay; frequency
+      anchors; review re-binds.
+- [~] **Newsroom** — Wikipedia's most-read; pageviews are mass; the cycle's rise/fall polarizes.
+
 ## Render modes
 
 - [ ] **`knockout`** — field visible only inside glyphs (§11-safe).

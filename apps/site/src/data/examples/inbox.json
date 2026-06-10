@@ -1,0 +1,658 @@
+{
+  "source": "Stack Exchange API (stackoverflow.com) — unanswered [javascript] questions",
+  "license": "CC BY-SA 4.0",
+  "snapshotAt": "2026-06-10T00:38:15.076Z",
+  "items": [
+    {
+      "id": 79954208,
+      "title": "Disable NetSuite Sublist FIeld Via SuiteScript",
+      "tags": [
+        "javascript",
+        "netsuite",
+        "suitescript2.0"
+      ],
+      "score": 0,
+      "views": 33,
+      "askedAt": 1780953384,
+      "author": "Michael McCauley",
+      "reputation": 959,
+      "link": "https://stackoverflow.com/questions/79954208/disable-netsuite-sublist-field-via-suitescript"
+    },
+    {
+      "id": 79952049,
+      "title": "How do I trigger payment failures/errors from Cybersource Universal Checkout checkout.mount()",
+      "tags": [
+        "javascript",
+        "cybersource"
+      ],
+      "score": -1,
+      "views": 58,
+      "askedAt": 1780691382,
+      "author": "weissj",
+      "reputation": 133,
+      "link": "https://stackoverflow.com/questions/79952049/how-do-i-trigger-payment-failures-errors-from-cybersource-universal-checkout-che"
+    },
+    {
+      "id": 79951547,
+      "title": "Remove YouTube pause button",
+      "tags": [
+        "javascript",
+        "youtube-api"
+      ],
+      "score": -1,
+      "views": 160,
+      "askedAt": 1780598185,
+      "author": "Jordan Carter",
+      "reputation": 1348,
+      "link": "https://stackoverflow.com/questions/79951547/remove-youtube-pause-button"
+    },
+    {
+      "id": 79951423,
+      "title": "Can I add JSDoc to nx packages without creating a circular dependency?",
+      "tags": [
+        "javascript",
+        "typescript",
+        "npm"
+      ],
+      "score": 0,
+      "views": 49,
+      "askedAt": 1780581451,
+      "author": "corvid",
+      "reputation": 11317,
+      "link": "https://stackoverflow.com/questions/79951423/can-i-add-jsdoc-to-nx-packages-without-creating-a-circular-dependency"
+    },
+    {
+      "id": 79951266,
+      "title": "Defining and using custom elements from an ISOLATED content script of a browser extension",
+      "tags": [
+        "javascript",
+        "web-component",
+        "custom-element",
+        "content-script"
+      ],
+      "score": 2,
+      "views": 92,
+      "askedAt": 1780562288,
+      "author": "ack_inc",
+      "reputation": 1130,
+      "link": "https://stackoverflow.com/questions/79951266/defining-and-using-custom-elements-from-an-isolated-content-script-of-a-browser"
+    },
+    {
+      "id": 79950005,
+      "title": "Custom protocol URL (its:?) blocked after async API call in React - &quot;user gesture is required&quot;",
+      "tags": [
+        "javascript",
+        "url",
+        "browser",
+        "protocols"
+      ],
+      "score": 0,
+      "views": 81,
+      "askedAt": 1780372776,
+      "author": "Maulik Jamod",
+      "reputation": 59,
+      "link": "https://stackoverflow.com/questions/79950005/custom-protocol-url-its-blocked-after-async-api-call-in-react-user-gestur"
+    },
+    {
+      "id": 79949811,
+      "title": "What is the best strategy for managing permissions and role-based access control (RBAC) in a large React application?",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "rbac"
+      ],
+      "score": 0,
+      "views": 57,
+      "askedAt": 1780334187,
+      "author": "Asad Saeed",
+      "reputation": 7,
+      "link": "https://stackoverflow.com/questions/79949811/what-is-the-best-strategy-for-managing-permissions-and-role-based-access-control"
+    },
+    {
+      "id": 79949069,
+      "title": "highlighting text in abc when clicking on rendered music",
+      "tags": [
+        "javascript",
+        "abcjs"
+      ],
+      "score": 0,
+      "views": 113,
+      "askedAt": 1780183150,
+      "author": "jjon",
+      "reputation": 700,
+      "link": "https://stackoverflow.com/questions/79949069/highlighting-text-in-abc-when-clicking-on-rendered-music"
+    },
+    {
+      "id": 79947387,
+      "title": "After changing from CSR to SSR with Ionic Angular app, styles do not apply to components any more",
+      "tags": [
+        "javascript",
+        "angular",
+        "ionic-framework",
+        "server-side-rendering"
+      ],
+      "score": 0,
+      "views": 109,
+      "askedAt": 1779888222,
+      "author": "Felix Olszewski",
+      "reputation": 915,
+      "link": "https://stackoverflow.com/questions/79947387/after-changing-from-csr-to-ssr-with-ionic-angular-app-styles-do-not-apply-to-co"
+    },
+    {
+      "id": 79946355,
+      "title": "Handling &#39;clientError&#39; events in http.Server, Node.js",
+      "tags": [
+        "javascript",
+        "node.js",
+        "http",
+        "sockets"
+      ],
+      "score": 0,
+      "views": 87,
+      "askedAt": 1779722445,
+      "author": "Timur",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79946355/handling-clienterror-events-in-http-server-node-js"
+    },
+    {
+      "id": 79946203,
+      "title": "Is there a way to associate a commit to the branch it was created on?",
+      "tags": [
+        "javascript",
+        "git",
+        "electron",
+        "simple-git"
+      ],
+      "score": -1,
+      "views": 116,
+      "askedAt": 1779699665,
+      "author": "HiHavafa",
+      "reputation": 7,
+      "link": "https://stackoverflow.com/questions/79946203/is-there-a-way-to-associate-a-commit-to-the-branch-it-was-created-on"
+    },
+    {
+      "id": 79944125,
+      "title": "How to retrieve or generate QuickBooks deep links without qzurl after modern reports update in June 2026",
+      "tags": [
+        "javascript",
+        "quickbooks",
+        "intuit-partner-platform",
+        "quickbooks-online"
+      ],
+      "score": 1,
+      "views": 60,
+      "askedAt": 1779288226,
+      "author": "Jess",
+      "reputation": 13,
+      "link": "https://stackoverflow.com/questions/79944125/how-to-retrieve-or-generate-quickbooks-deep-links-without-qzurl-after-modern-rep"
+    },
+    {
+      "id": 79944109,
+      "title": "Mobile Chrome crash when taking a photo with HTML5 input inside a Vue.js dialog",
+      "tags": [
+        "javascript",
+        "vue.js",
+        "google-chrome",
+        "input"
+      ],
+      "score": -2,
+      "views": 80,
+      "askedAt": 1779286263,
+      "author": "user2837684",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79944109/mobile-chrome-crash-when-taking-a-photo-with-html5-input-inside-a-vue-js-dialog"
+    },
+    {
+      "id": 79943938,
+      "title": "Vite app returns index page content from fetch request when dynamic import fails",
+      "tags": [
+        "javascript",
+        "html",
+        "vite"
+      ],
+      "score": -1,
+      "views": 122,
+      "askedAt": 1779269850,
+      "author": "lharby",
+      "reputation": 3345,
+      "link": "https://stackoverflow.com/questions/79943938/vite-app-returns-index-page-content-from-fetch-request-when-dynamic-import-fails"
+    },
+    {
+      "id": 79943843,
+      "title": "Lighthouse CI failing when running 2nd test due to Eperm issues",
+      "tags": [
+        "javascript",
+        "node.js",
+        "google-chrome",
+        "lighthouse-ci"
+      ],
+      "score": 0,
+      "views": 58,
+      "askedAt": 1779258347,
+      "author": "MeltingDog",
+      "reputation": 15804,
+      "link": "https://stackoverflow.com/questions/79943843/lighthouse-ci-failing-when-running-2nd-test-due-to-eperm-issues"
+    },
+    {
+      "id": 79943361,
+      "title": "Prevent the VirtualKeyboard from popping up on mobile devices when pressing a button",
+      "tags": [
+        "javascript",
+        "html",
+        "css",
+        "mobile"
+      ],
+      "score": 3,
+      "views": 134,
+      "askedAt": 1779183119,
+      "author": "Paul Kendal",
+      "reputation": 637,
+      "link": "https://stackoverflow.com/questions/79943361/prevent-the-virtualkeyboard-from-popping-up-on-mobile-devices-when-pressing-a-bu"
+    },
+    {
+      "id": 79941097,
+      "title": "How to use Tern plugins and type definitions on some files only?",
+      "tags": [
+        "javascript",
+        "emacs",
+        "tern"
+      ],
+      "score": 1,
+      "views": 46,
+      "askedAt": 1778763802,
+      "author": "Amessihel",
+      "reputation": 6656,
+      "link": "https://stackoverflow.com/questions/79941097/how-to-use-tern-plugins-and-type-definitions-on-some-files-only"
+    },
+    {
+      "id": 79941001,
+      "title": "Vite build HTML file snippet with script tag inside, can the JS be transpiled?",
+      "tags": [
+        "javascript",
+        "html",
+        "vite"
+      ],
+      "score": 1,
+      "views": 169,
+      "askedAt": 1778754687,
+      "author": "lharby",
+      "reputation": 3345,
+      "link": "https://stackoverflow.com/questions/79941001/vite-build-html-file-snippet-with-script-tag-inside-can-the-js-be-transpiled"
+    },
+    {
+      "id": 79940359,
+      "title": "Clerk &lt;PricingTable /&gt; fails to render",
+      "tags": [
+        "javascript",
+        "clerk"
+      ],
+      "score": -2,
+      "views": 112,
+      "askedAt": 1778657779,
+      "author": "Clancy Hood",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79940359/clerk-pricingtable-fails-to-render"
+    },
+    {
+      "id": 79939947,
+      "title": "Why does resolve(Promise) lag behind interleaved promise chains before catching up?",
+      "tags": [
+        "javascript",
+        "node.js",
+        "promise",
+        "es6-promise"
+      ],
+      "score": -3,
+      "views": 173,
+      "askedAt": 1778588842,
+      "author": "amt",
+      "reputation": 17,
+      "link": "https://stackoverflow.com/questions/79939947/why-does-resolvepromise-lag-behind-interleaved-promise-chains-before-catching"
+    },
+    {
+      "id": 79939908,
+      "title": "Trouble calculating HTML line wrapping positions at different zoom levels",
+      "tags": [
+        "javascript",
+        "html",
+        "css",
+        "zooming"
+      ],
+      "score": 7,
+      "views": 301,
+      "askedAt": 1778585006,
+      "author": "Remco Haszing",
+      "reputation": 8062,
+      "link": "https://stackoverflow.com/questions/79939908/trouble-calculating-html-line-wrapping-positions-at-different-zoom-levels"
+    },
+    {
+      "id": 79937906,
+      "title": "Supabase magic-link auth setSession hangs silently in Expo dev client (implicit flow) — no observable error or completion",
+      "tags": [
+        "javascript",
+        "react-native",
+        "supabase-js"
+      ],
+      "score": 0,
+      "views": 79,
+      "askedAt": 1778217847,
+      "author": "Ana Smith",
+      "reputation": 1,
+      "link": "https://stackoverflow.com/questions/79937906/supabase-magic-link-auth-setsession-hangs-silently-in-expo-dev-client-implicit"
+    },
+    {
+      "id": 79937559,
+      "title": "Why Websocket not working production (Siteground)",
+      "tags": [
+        "javascript",
+        "node.js",
+        "sockets",
+        "websocket"
+      ],
+      "score": 0,
+      "views": 100,
+      "askedAt": 1778155789,
+      "author": "Mujahid Ali",
+      "reputation": 23,
+      "link": "https://stackoverflow.com/questions/79937559/why-websocket-not-working-production-siteground"
+    },
+    {
+      "id": 79936448,
+      "title": "How can I make YouTube IFrame API seekTo() calls silent without setting controls: 0?",
+      "tags": [
+        "javascript",
+        "iframe",
+        "youtube",
+        "youtube-api"
+      ],
+      "score": 2,
+      "views": 221,
+      "askedAt": 1777985720,
+      "author": "Kane Marais",
+      "reputation": 19,
+      "link": "https://stackoverflow.com/questions/79936448/how-can-i-make-youtube-iframe-api-seekto-calls-silent-without-setting-controls"
+    },
+    {
+      "id": 79934757,
+      "title": "executeScript: Error: Cannot access contents of url &quot;chrome-extension://.../main.html&quot;.Extension manifest must request permission to access this host",
+      "tags": [
+        "javascript",
+        "firefox-addon-webextensions",
+        "chrome-extension-manifest-v3",
+        "web-extension"
+      ],
+      "score": 1,
+      "views": 139,
+      "askedAt": 1777654819,
+      "author": "bliako",
+      "reputation": 1309,
+      "link": "https://stackoverflow.com/questions/79934757/executescript-error-cannot-access-contents-of-url-chrome-extension-main"
+    },
+    {
+      "id": 79933815,
+      "title": "Implement JavaScript file code for modal popup partial view in NET Core Web App MVC",
+      "tags": [
+        "javascript",
+        "asp.net-core-mvc",
+        "asp.net-mvc-partialview"
+      ],
+      "score": 1,
+      "views": 89,
+      "askedAt": 1777485038,
+      "author": "DigAtRandom",
+      "reputation": 67,
+      "link": "https://stackoverflow.com/questions/79933815/implement-javascript-file-code-for-modal-popup-partial-view-in-net-core-web-app"
+    },
+    {
+      "id": 79931992,
+      "title": "My firefox extension does NOT automatically start when I start my browser, don&#39;t know why",
+      "tags": [
+        "javascript",
+        "firefox",
+        "firefox-addon"
+      ],
+      "score": 0,
+      "views": 132,
+      "askedAt": 1777193401,
+      "author": "I like computers ",
+      "reputation": 9,
+      "link": "https://stackoverflow.com/questions/79931992/my-firefox-extension-does-not-automatically-start-when-i-start-my-browser-dont"
+    },
+    {
+      "id": 79929057,
+      "title": "Tizen - Javascript embedded video failing",
+      "tags": [
+        "javascript",
+        "html5-video",
+        "tizen",
+        "tizen-web-app"
+      ],
+      "score": 1,
+      "views": 92,
+      "askedAt": 1776719453,
+      "author": "Caesar",
+      "reputation": 129,
+      "link": "https://stackoverflow.com/questions/79929057/tizen-javascript-embedded-video-failing"
+    },
+    {
+      "id": 37244903,
+      "title": "Error: &lt;g&gt; attribute transform: Trailing garbage, &quot;translate(0,NaN)&quot; on dc.js brushing",
+      "tags": [
+        "javascript",
+        "d3.js",
+        "dc.js"
+      ],
+      "score": 21,
+      "views": 15231,
+      "askedAt": 1463356316,
+      "author": "user3050590",
+      "reputation": 1716,
+      "link": "https://stackoverflow.com/questions/37244903/error-g-attribute-transform-trailing-garbage-translate0-nan-on-dc-js-br"
+    },
+    {
+      "id": 23329442,
+      "title": "Use Eclipse as GNOME Extension IDE",
+      "tags": [
+        "javascript",
+        "eclipse",
+        "gnome",
+        "gjs"
+      ],
+      "score": 17,
+      "views": 1105,
+      "askedAt": 1398635237,
+      "author": "Zic0",
+      "reputation": 181,
+      "link": "https://stackoverflow.com/questions/23329442/use-eclipse-as-gnome-extension-ide"
+    },
+    {
+      "id": 58562408,
+      "title": "GraphQL String interpolation is not allowed in graphql tag",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "ecmascript-6",
+        "graphql"
+      ],
+      "score": 16,
+      "views": 3584,
+      "askedAt": 1572020999,
+      "author": "Link",
+      "reputation": 381,
+      "link": "https://stackoverflow.com/questions/58562408/graphql-string-interpolation-is-not-allowed-in-graphql-tag"
+    },
+    {
+      "id": 45724275,
+      "title": "visual studio code - mongoose (custom) schema methods are not recognized after importing the model into another file",
+      "tags": [
+        "javascript",
+        "node.js",
+        "mongoose",
+        "visual-studio-code"
+      ],
+      "score": 16,
+      "views": 3383,
+      "askedAt": 1502924957,
+      "author": "vampiire",
+      "reputation": 1230,
+      "link": "https://stackoverflow.com/questions/45724275/visual-studio-code-mongoose-custom-schema-methods-are-not-recognized-after-i"
+    },
+    {
+      "id": 35849902,
+      "title": "pageshow event on iphone fires only once",
+      "tags": [
+        "javascript",
+        "ios",
+        "iphone",
+        "mobile-safari"
+      ],
+      "score": 16,
+      "views": 2427,
+      "askedAt": 1457371028,
+      "author": "Bodzio",
+      "reputation": 2520,
+      "link": "https://stackoverflow.com/questions/35849902/pageshow-event-on-iphone-fires-only-once"
+    },
+    {
+      "id": 32477585,
+      "title": "Web Worker effect on max http connections on per browser per domain",
+      "tags": [
+        "javascript",
+        "web-worker",
+        "httpconnection"
+      ],
+      "score": 16,
+      "views": 834,
+      "askedAt": 1441795984,
+      "author": "asolvent",
+      "reputation": 891,
+      "link": "https://stackoverflow.com/questions/32477585/web-worker-effect-on-max-http-connections-on-per-browser-per-domain"
+    },
+    {
+      "id": 70095517,
+      "title": "&quot;ERR_BLOCKED_BY_CLIENT&quot; error on XHR request (sentry.io, maps.googleapis.com) by uBlock Origin like ad-blockers",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "google-maps",
+        "sentry"
+      ],
+      "score": 15,
+      "views": 13085,
+      "askedAt": 1637754321,
+      "author": "Sakshi Mahajan",
+      "reputation": 651,
+      "link": "https://stackoverflow.com/questions/70095517/err-blocked-by-client-error-on-xhr-request-sentry-io-maps-googleapis-com-by"
+    },
+    {
+      "id": 60542549,
+      "title": "UnhandledPromiseRejectionWarning: TypeError: Caught error after test environment was torn down",
+      "tags": [
+        "javascript",
+        "reactjs",
+        "react-testing-library",
+        "jest-mock-axios"
+      ],
+      "score": 15,
+      "views": 14561,
+      "askedAt": 1583402187,
+      "author": "MaiOsman",
+      "reputation": 151,
+      "link": "https://stackoverflow.com/questions/60542549/unhandledpromiserejectionwarning-typeerror-caught-error-after-test-environment"
+    },
+    {
+      "id": 47820169,
+      "title": "Android WebView run Javascript in all frames (including iframes)",
+      "tags": [
+        "javascript",
+        "android",
+        "iframe"
+      ],
+      "score": 15,
+      "views": 1480,
+      "askedAt": 1513277140,
+      "author": "user2875404",
+      "reputation": 3308,
+      "link": "https://stackoverflow.com/questions/47820169/android-webview-run-javascript-in-all-frames-including-iframes"
+    },
+    {
+      "id": 35944067,
+      "title": "How to access modules bundled from webpack outside bundles/chunks",
+      "tags": [
+        "javascript",
+        "module",
+        "requirejs",
+        "dependencies"
+      ],
+      "score": 15,
+      "views": 2961,
+      "askedAt": 1457710194,
+      "author": "pjdicke",
+      "reputation": 329,
+      "link": "https://stackoverflow.com/questions/35944067/how-to-access-modules-bundled-from-webpack-outside-bundles-chunks"
+    },
+    {
+      "id": 74964220,
+      "title": "npm workspaces - skip `src` folder when importing source files from symlinked shared package",
+      "tags": [
+        "javascript",
+        "typescript",
+        "npm",
+        "node-modules"
+      ],
+      "score": 14,
+      "views": 986,
+      "askedAt": 1672421283,
+      "author": "DaaWaan",
+      "reputation": 641,
+      "link": "https://stackoverflow.com/questions/74964220/npm-workspaces-skip-src-folder-when-importing-source-files-from-symlinked-sh"
+    },
+    {
+      "id": 70923435,
+      "title": "Inspect all resize observers",
+      "tags": [
+        "javascript",
+        "google-chrome",
+        "dom",
+        "firefox"
+      ],
+      "score": 14,
+      "views": 623,
+      "askedAt": 1643619937,
+      "author": "LosYear",
+      "reputation": 533,
+      "link": "https://stackoverflow.com/questions/70923435/inspect-all-resize-observers"
+    },
+    {
+      "id": 65178568,
+      "title": "How to disable protocol checking with gtag.js for new GA4 properties?",
+      "tags": [
+        "javascript",
+        "google-analytics",
+        "google-analytics-api",
+        "gtag.js"
+      ],
+      "score": 14,
+      "views": 2412,
+      "askedAt": 1607331084,
+      "author": "mikep",
+      "reputation": 7596,
+      "link": "https://stackoverflow.com/questions/65178568/how-to-disable-protocol-checking-with-gtag-js-for-new-ga4-properties"
+    },
+    {
+      "id": 62304247,
+      "title": "Jest module mock - doMock doesn&#39;t work as intended",
+      "tags": [
+        "javascript",
+        "mocking",
+        "jestjs"
+      ],
+      "score": 14,
+      "views": 8593,
+      "askedAt": 1591794081,
+      "author": "gomes",
+      "reputation": 731,
+      "link": "https://stackoverflow.com/questions/62304247/jest-module-mock-domock-doesnt-work-as-intended"
+    }
+  ]
+}

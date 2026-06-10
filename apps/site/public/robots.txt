@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://field-ui.com/sitemap-index.xml

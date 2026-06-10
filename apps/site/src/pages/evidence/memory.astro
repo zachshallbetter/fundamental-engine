@@ -1,0 +1,269 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
+import memory from "../../data/examples/memory.json";
+import "../../styles/examples/memory.css";
+
+// The Memory Field — the forgetting curve run over real word frequencies. Each card is a
+// body; how often the world uses a word is its anchor strength, and retention decays
+// Ebbinghaus-style from there: w = a · exp(−days / tau), with tau growing with the anchor.
+// Drag the slider and the grid fades in real time; click a card to review it and it springs
+// back. No particle swarm — retention shows only in type weight, ink, and anchor.
+const DAYS0 = 7; // the slider's default — server render must match the runtime's first state
+
+const zs = memory.cards.map((c) => c.zipf);
+const zmin = Math.min(...zs);
+const zspan = Math.max(...zs) - zmin || 1;
+
+const cards = memory.cards.map((c) => {
+  const a = 0.15 + 0.85 * ((c.zipf - zmin) / zspan); // anchor strength, 0.15..1
+  const tau = 4 + a * 56; // deep anchors decay slower
+  const w = a * Math.exp(-DAYS0 / tau); // retention at the default day count
+  return { ...c, a, w };
+});
+const snapshotDay = memory.snapshotAt.slice(0, 10);
+
+// How-built snippets (CodeTabs renders them with build-time Shiki highlighting).
+const SNIPPET_HTML = `<!-- each word is a body. data-feedback: the engine writes
+     --d (live local density) back every frame. data-hot:
+     hover/focus a card and the field gathers toward it. -->
+<button
+  data-body="attract"
+  data-strength="1.62"
+  data-feedback
+  data-hot
+  data-anchor="0.91"
+  style="--w: 0.76; --cat: #4da3ff;"
+>
+  republic
+</button>`;
+
+const SNIPPET_TS = `// a = zipf, normalized 0.15..1
+//     (real Trillion Word Corpus counts)
+tau = 4 + a × 56     // deep anchors
+                     // decay slower
+w   = a × exp(−days / tau)
+
+// review: per-card timestamp
+days_eff = max(0, slider − reviewedAt)
+
+// slider input → every card's --w
+// and data-strength update live
+
+// the scoped field runs invisible (render: [])
+// and asks for the attention metric lane:
+const recipe = {
+  ...base,
+  render: [],
+  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+};
+// the pipeline writes --field-attention per card (eased 0..1)`;
+
+const SNIPPET_PERSIST = `// reviews persist on this device — localStorage,
+// not an account:
+"fui:memory-reviews" → { word: reviewedAtDay }
+"fui:memory-day"     → the slider's day
+
+// restore on load: only words present on the
+// page; the slider + decay render from the
+// stored day. "reset reviews" clears both keys.
+// Storage reads/writes never throw — a private
+// window simply doesn't remember.`;
+
+const SNIPPET_CSS = `.mx-card {
+  /* --w = retention (pure data math — the curve)
+     --d = live engine density, data-hot gathers it
+     --field-attention = the recipe's eased attention */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 55%), transparent);
+}
+.mx-word {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+/* a reviewed card's ring breathes with the density */
+.mx-card[data-reviewed] {
+  outline: 2px solid color-mix(in srgb,
+    var(--cat) calc(55% + var(--live) * 35%),
+    transparent);
+}`;
+---
+
+<ExampleShell
+  title="field-ui — Memory"
+  description="The forgetting curve run as a field over real word frequencies. Each word's corpus frequency is its anchor strength; retention decays Ebbinghaus-style from there, and a days-since-review slider fades the whole grid in real time — deep anchors hold, rare words slip. Click a card to review it and it springs back. data-* in, --field-* out."
+  current="memory"
+  mainClass="ex-memory"
+  mainAttrs={{ "data-field": "on" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · memory</p>
+    <h1>Knowledge <span class="accent">decays</span>. Anchors hold.</h1>
+    <p class="ev-lede">
+      Every fact you learn starts fading the moment you look away — but how fast depends on how
+      deeply it's anchored. These {cards.length} words carry real frequencies from the
+      <a href="https://norvig.com/ngrams/" rel="noopener">Google Web Trillion Word Corpus</a>, and
+      frequency is the anchor here: a word the world uses fifty million times is held by
+      everything around it; a rarer one slips first.
+    </p>
+    <p class="ev-lede">
+      Drag <strong>days since review</strong> and the whole grid decays along an
+      Ebbinghaus-shaped curve — each card's retention is its anchor strength times an
+      exponential whose half-life <em>grows</em> with that strength, so the strongest words
+      visibly hold longest. <strong>Click a card to review it</strong>: it springs back to full
+      at the current day and re-decays as you push the slider further. The field is invisible —
+      retention shows only in type weight, ink, and anchor.
+    </p>
+  </header>
+
+  <!-- Controls — the curve made legible. -->
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-mx-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl mx-days-ctl">
+      <label class="ev-ctl-l" for="mx-days">Days since review</label>
+      <input
+        type="range"
+        id="mx-days"
+        class="mx-days"
+        data-mx-days-input
+        min="0"
+        max="60"
+        step="1"
+        value={String(DAYS0)}
+      />
+      <output class="mx-days-out" data-mx-days-out for="mx-days">{DAYS0}d</output>
+      <span class="mx-persist">reviews persist on this device</span>
+    </div>
+    <div class="ev-ctl">
+      <button type="button" class="mx-reset" data-mx-reset>reset reviews</button>
+    </div>
+    <p class="ev-ctl-hint">
+      <b>size</b> = retention — what's still held at the current day
+      <span class="ev-hint-sep">·</span>
+      <b>anchor</b> = corpus frequency — common words decay slower
+    </p>
+  </div>
+
+  <!-- Legend — reading the field. -->
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = retention at the current day</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>anchor</b> = frequency (deeper = slower decay)</li>
+    <li><span class="ev-k mx-k-ring"></span> click a card to <b>review</b> — it springs back, then re-decays</li>
+    <li>
+      <span class="ev-k mx-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
+      <b>--w</b> is the retention math and <b>--cat</b> the accent; <b>--d</b> is the engine's
+      local density (hold a card and the field gathers) and <b>--field-attention</b> the recipe's
+      eased attention as you scroll. The live channels touch only ink — retention stays pure data.
+    </li>
+  </ul>
+
+  <ul class="mx-grid" data-mx-grid>
+    {
+      cards.map((c) => (
+        <li class="mx-cell">
+          <button
+            type="button"
+            class="mx-card"
+            data-body="attract"
+            data-feedback
+            data-hot
+            data-range="200"
+            data-strength={(0.4 + c.w * 1.6).toFixed(2)}
+            data-anchor={c.a.toFixed(3)}
+            style={`--w:${c.w.toFixed(3)}; --cat:#4da3ff;`}
+            aria-label={`Review "${c.word}" (rank ${c.rank})`}
+          >
+            <span class="mx-word">{c.word}</span>
+            <span class="mx-sub">
+              <span class="mx-rank">#{c.rank}</span>
+              <span class="mx-zipf">zipf {c.zipf.toFixed(2)}</span>
+            </span>
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  <!-- How it's built — the curve made concrete. -->
+  <section class="ev-how" aria-labelledby="mx-how-h">
+    <h2 id="mx-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every card is a <code>&lt;button&gt;</code> carrying its anchor strength as a data
+      attribute. The slider drives one Ebbinghaus-shaped formula across all {cards.length} cards;
+      each result is written to <code>--w</code> and <code>data-strength</code>, and CSS turns it
+      into type heft and ink. Reviews are a per-card timestamp — nothing more. Alongside the
+      curve sit two live channels the engine writes back every frame — <code>--d</code> (local
+      density, gathered by <code>data-hot</code> on hover) and <code>--field-attention</code>
+      (the recipe's eased attention) — which touch only ink; retention stays pure data math.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — mark each word as a field body</p>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIPPET_HTML }]} />
+        <ul class="ev-how-attrs">
+          <li><code>data-body="attract"</code> — registers as a field participant</li>
+          <li><code>data-anchor</code> — normalized corpus frequency (the anchor)</li>
+          <li><code>data-strength</code> — mass, recomputed from retention</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
+          <li><code>data-hot</code> — hover/focus gathers the field toward this card</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — the forgetting curve, and where reviews live</p>
+        <CodeTabs
+          variants={[
+            { label: "curve", lang: "ts", code: SNIPPET_TS },
+            { label: "persist", lang: "ts", code: SNIPPET_PERSIST },
+          ]}
+        />
+        <p class="ev-how-note">
+          The shape is Ebbinghaus's: exponential decay with a stability term. The frequencies
+          are real; the curve's constants are tuned for legibility, not fitted to recall data.
+          Reviews and the slider's day persist in this device's localStorage — close the tab,
+          come back, and the field remembers what you reviewed.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the retention + the live channels</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIPPET_CSS }]} />
+        <p class="ev-how-note">
+          One variable in, the whole presentation out — and with
+          <code>prefers-reduced-motion</code> set, the cards skip transitions entirely.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Retention here is <strong>a model, not a measurement</strong> — the decay curve is
+      Ebbinghaus-shaped and the anchor strengths are real word frequencies, but no one tested
+      your recall. Data:
+      <a href="https://norvig.com/ngrams/" rel="noopener">Google Web Trillion Word Corpus</a>
+      frequencies (Norvig/Google research data), snapshotted {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/memory-runtime.ts";
+</script>

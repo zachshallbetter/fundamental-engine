@@ -6,10 +6,15 @@
 //     signal, then re-sort with a FLIP reflow so you watch the field re-settle.
 //   · hover a finding → SVG threads to the works it builds on (referenced_works within the set).
 //   · question tabs swap which topic is live.
+//   · LIVE — once per visit (~4s in) the page asks OpenAlex for every work's CURRENT citation
+//     count (one batched request per topic) and updates each finding in place; the existing
+//     reweight path then re-settles trust in front of the reader. Once, not a poll: citations
+//     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
+import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
 
 const NS = "http://www.w3.org/2000/svg";
 const reduceMotion = () =>
@@ -20,6 +25,13 @@ function centerIn(el: HTMLElement, host: HTMLElement) {
   const h = host.getBoundingClientRect();
   return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height / 2 };
 }
+
+// ── reveal pacing ──────────────────────────────────────────────────────────
+const BATCH_SIZE = 4;
+const SCROLL_V_MAX = 2.0; // px/frame — above this the user is scanning, not reading
+const DWELL_MS = 350; // sustained reading-pace time near the sentinel before a batch reveals
+const LOAD_REVEAL = 0.5; // a sink charged past this short-circuits the dwell (field on only)
+const BATCH_COOLDOWN_MS = 600; // floor between batches so successive reveals settle, not dump
 
 function initEvidence(): () => void {
   const page = document.querySelector<HTMLElement>(".ev-page");
@@ -57,7 +69,7 @@ function initEvidence(): () => void {
   const reweight = (topic: HTMLElement): void => {
     const list = topic.querySelector<HTMLElement>("[data-ev-list]");
     if (!list) return;
-    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")];
+    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
     const cites = findings.map((f) => Number(f.dataset.cites) || 0);
     const years = findings.map((f) => Number(f.dataset.year) || 0).filter(Boolean);
     const st = {
@@ -80,6 +92,9 @@ function initEvidence(): () => void {
     );
     const firstTop = new Map(findings.map((f) => [f, f.getBoundingClientRect().top]));
     ordered.forEach((f) => list.appendChild(f));
+    // the sink sentinel stays the list's last child (re-sorting appends findings after it)
+    const sentinel = list.querySelector("[data-ev-sentinel]");
+    if (sentinel) list.appendChild(sentinel);
     ordered.forEach((f, i) => {
       const rank = f.querySelector(".ev-rank");
       if (rank) rank.textContent = String(i + 1).padStart(2, "0");
@@ -98,7 +113,7 @@ function initEvidence(): () => void {
 
   // ── color lens — a second, orthogonal channel: size stays trust, color shows another aspect.
   const applyLens = (topic: HTMLElement): void => {
-    const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")];
+    const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
     if (lens === "field") {
       // color by research subfield — the engine binding works to a discipline (server-assigned).
       findings.forEach((f) => f.style.setProperty("--cat", f.dataset.fieldColor || "#60a5fa"));
@@ -127,11 +142,20 @@ function initEvidence(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
-        activeField = applyRecipe(list, recipe, {
-          bodies: [...list.querySelectorAll<HTMLElement>(".ev-finding")],
-          annotateBodies: false,
-        });
+        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
+        // --field-attention (an eased 0..1 blend of engagement, center proximity, visibility)
+        // back to every finding each frame.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        };
+        // the sink sentinel joins the field so particles drifting past the list's end accrete
+        // into it — the engine writes the fill back as --load, which paces the reveal.
+        const sentinel = list.querySelector<HTMLElement>("[data-ev-sentinel]");
+        const bodies = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
+        if (sentinel) bodies.push(sentinel);
+        activeField = applyRecipe(list, recipe, { bodies, annotateBodies: false });
       }
     } catch {
       /* the static --trust layer stands on its own */
@@ -151,7 +175,7 @@ function initEvidence(): () => void {
       svg.setAttribute("aria-hidden", "true");
       list.prepend(svg);
     }
-    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")];
+    const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
     const clear = (): void => {
       svg!.innerHTML = "";
       findings.forEach((f) => f.classList.remove("lit", "cited"));
@@ -180,12 +204,106 @@ function initEvidence(): () => void {
     });
   };
 
+  // ── scroll-gated accretion reveal ───────────────────────────────────────
+  // Owns its own AbortController: revealBatch's cleanup re-wires threads (which churns
+  // topicAc), so the reveal loop must NOT share that lifetime or it dies after one batch.
+  let revealAc: AbortController | null = null;
+
+  const hiddenDeferred = (topic: HTMLElement): HTMLElement[] =>
+    [...topic.querySelectorAll<HTMLElement>("[data-ev-deferred]")].filter((f) => f.hidden);
+
+  const revealBatch = (topic: HTMLElement): boolean => {
+    const batch = hiddenDeferred(topic).slice(0, BATCH_SIZE);
+    if (!batch.length) return false;
+    batch.forEach((f) => {
+      f.hidden = false;
+      f.setAttribute("data-ev-new", "");
+    });
+    const cleanup = (): void => {
+      batch.forEach((f) => f.removeAttribute("data-ev-new"));
+      reweight(topic); // fold the new items into the current weighting + rank numbers
+      wireThreads(topic);
+      runField(topic); // rescan: the new bodies join the scoped field (no-op when field is off)
+    };
+    if (reduceMotion()) cleanup();
+    else setTimeout(cleanup, 500);
+    return true;
+  };
+
+  // IO only marks the sentinel visible/not; a rAF loop does the gating, because IO is
+  // edge-triggered — a "too fast" rejection or a same-position batch would otherwise never
+  // re-fire. The loop reveals when the user has been at reading pace near the sentinel for
+  // DWELL_MS (or the sink's --load is charged — the field's own pacing signal, when it's on),
+  // with a cooldown between batches. Stops itself when nothing is left to reveal.
+  const wireScrollReveal = (topic: HTMLElement): void => {
+    revealAc?.abort();
+    revealAc = null;
+    const sentinel = topic.querySelector<HTMLElement>("[data-ev-sentinel]");
+    if (!sentinel || !hiddenDeferred(topic).length) return;
+    const ctl = new AbortController();
+    revealAc = ctl;
+
+    let intersecting = false;
+    let slowSince = 0;
+    let lastReveal = 0;
+    let raf = 0;
+
+    const tick = (t: number): void => {
+      if (ctl.signal.aborted || !intersecting) {
+        raf = 0;
+        return;
+      }
+      // both vars are inline styles (written by the platform / engine), so reading
+      // el.style avoids a forced style recalc that getComputedStyle would cost per frame.
+      const sv =
+        parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
+      if (sv < SCROLL_V_MAX) {
+        if (!slowSince) slowSince = t;
+        const load = parseFloat(sentinel.style.getPropertyValue("--load")) || 0;
+        const ready = t - slowSince >= DWELL_MS || load >= LOAD_REVEAL;
+        if (ready && t - lastReveal >= BATCH_COOLDOWN_MS) {
+          lastReveal = t;
+          const revealed = revealBatch(topic);
+          if (!revealed || !hiddenDeferred(topic).length) {
+            ctl.abort();
+            if (revealAc === ctl) revealAc = null;
+            return;
+          }
+        }
+      } else {
+        slowSince = 0;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    // IO starts/stops the gating loop, so nothing runs while the sentinel is far offscreen.
+    const io = new IntersectionObserver(
+      (entries) => {
+        intersecting = entries.some((e) => e.isIntersecting);
+        if (!intersecting) {
+          slowSince = 0;
+          cancelAnimationFrame(raf);
+          raf = 0;
+        } else if (!raf) {
+          raf = requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0, rootMargin: "0px 0px 160px 0px" },
+    );
+    io.observe(sentinel);
+    ctl.signal.addEventListener("abort", () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    });
+  };
+
   const wireTopic = (topic?: HTMLElement): void => {
     if (!topic) return;
     reweight(topic);
     applyLens(topic);
     wireThreads(topic);
     runField(topic);
+    wireScrollReveal(topic);
   };
 
   // ── controls ─────────────────────────────────────────────────────────────
@@ -248,15 +366,120 @@ function initEvidence(): () => void {
         topics.forEach((t) => (t.hidden = t.dataset.evTopic !== slug));
         tabs.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
         wireTopic(topics.find((t) => t.dataset.evTopic === slug));
+        // topic state is shareable: reflect the active tab in the URL (no history entry)
+        history.replaceState(history.state, "", `#${slug}`);
       },
       { signal: ac.signal },
     ),
   );
 
   wireTopic(activeTopic());
+
+  // Deep links: the hash can name a topic (#do-violent-video-games…, written by the tab
+  // handler above) or a finding id (#slug--W123…, possibly in the deferred range where the
+  // browser's load-time scroll found a hidden target). Activate the right tab, reveal the
+  // deferred range when the target sits inside it (no batch animation — the user asked for
+  // that spot), and re-scroll.
+  const hashId = location.hash ? decodeURIComponent(location.hash.slice(1)) : "";
+  const hashTarget = hashId ? document.getElementById(hashId) : null;
+  const hashTopic =
+    topics.find((t) => t.dataset.evTopic === hashId) ??
+    hashTarget?.closest<HTMLElement>("[data-ev-topic]") ??
+    null;
+  if (hashTopic) {
+    let rewire = false;
+    if (hashTarget?.hasAttribute("data-ev-deferred")) {
+      hashTopic
+        .querySelectorAll<HTMLElement>("[data-ev-deferred]")
+        .forEach((f) => (f.hidden = false));
+      rewire = true;
+    }
+    if (hashTopic.hidden) {
+      const slug = hashTopic.dataset.evTopic!;
+      topics.forEach((t) => (t.hidden = t.dataset.evTopic !== slug));
+      tabs.forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.evTab === slug)));
+      rewire = true;
+    }
+    if (rewire) wireTopic(hashTopic);
+    if (hashTarget && hashTarget !== hashTopic) hashTarget.scrollIntoView();
+  }
+
+  // ── live citations — trust itself updates, ONCE per visit ─────────────────
+  // ~4s after the initial wiring (politeLoop skips hidden tabs), fetch CURRENT
+  // cited_by_count for every work on the page — one batched OpenAlex request per
+  // topic, work ids pipe-joined from the findings' element ids (slug--W123…).
+  // Every finding updates IN PLACE, deferred (still-hidden) ones included, so
+  // batches the accretion reveal surfaces later already carry refreshed counts:
+  //   · data-cites + the formatted figure (+ the trust block's aria-label),
+  //   · a quiet "±N since snapshot" line, only where the count actually moved,
+  // then the EXISTING reweight path re-runs for the active topic — --trust,
+  // data-strength, the bar width, and the FLIP re-sort all flow through the
+  // same code the weight buttons use, so trust literally re-settles in front of
+  // the reader. The other topic folds in via wireTopic on its next tab switch.
+  // The run only fails when EVERY batch failed; works missing from a response
+  // keep their snapshot values. No repeat (everyMs: null): citations move
+  // slowly — polling would be theater.
+  const chip = wireLiveChip(page.querySelector<HTMLElement>("[data-ev-live]"), "OpenAlex");
+  const refreshCitations = async (): Promise<void> => {
+    const results = await Promise.allSettled(
+      topics.map(async (topic) => {
+        const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")];
+        const ids = findings.map((f) => f.id.split("--").pop() ?? "").filter(Boolean);
+        if (!ids.length) return;
+        const url =
+          "https://api.openalex.org/works" +
+          `?filter=ids.openalex:${ids.join("|")}&per-page=50&select=id,cited_by_count`;
+        const res = await fetch(url, { signal: ac.signal });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as {
+          results?: { id?: string; cited_by_count?: number }[];
+        };
+        const counts = new Map<string, number>();
+        for (const w of data.results ?? []) {
+          const wid = (w.id ?? "").split("/").pop();
+          if (wid && typeof w.cited_by_count === "number") counts.set(wid, w.cited_by_count);
+        }
+        for (const f of findings) {
+          const next = counts.get(f.id.split("--").pop() ?? "");
+          if (next === undefined) continue; // missing from the response — keep the snapshot
+          const prev = Number(f.dataset.cites) || 0;
+          f.dataset.cites = String(next);
+          const fig = f.querySelector<HTMLElement>(".ev-cites");
+          if (fig) fig.textContent = next.toLocaleString();
+          const trust = f.querySelector<HTMLElement>(".ev-trust");
+          trust?.setAttribute("aria-label", `${next} citations`);
+          const delta = next - prev;
+          if (delta !== 0 && trust) {
+            let note = trust.querySelector<HTMLElement>(".ev-cites-delta");
+            if (!note) {
+              note = document.createElement("span");
+              note.className = "ev-cites-delta";
+              trust.insertBefore(note, trust.querySelector(".ev-bar"));
+            }
+            note.textContent = `${delta > 0 ? "+" : "−"}${Math.abs(delta).toLocaleString()} since snapshot`;
+            note.dataset.dir = delta > 0 ? "up" : "down";
+          }
+        }
+      }),
+    );
+    if (!results.some((r) => r.status === "fulfilled")) throw new Error("openalex unreachable");
+    const t = activeTopic();
+    if (t) reweight(t); // the existing path — trust re-settles where the reader is looking
+  };
+  politeLoop({
+    run: refreshCitations,
+    firstDelayMs: 4000,
+    everyMs: null, // once per visit — see above
+    signal: ac.signal,
+    onSuccess: () => chip.ok(),
+    onFailure: () => chip.fail(),
+  });
+
   return () => {
     ac.abort();
     topicAc?.abort();
+    revealAc?.abort();
+    chip.destroy();
     activeField?.destroy();
   };
 }

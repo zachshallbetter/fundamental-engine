@@ -452,25 +452,13 @@ const GROUPS = [
     };
     ensureScan();
 
-    // CodeTabs tab-switch + copy, [data-copy] chips, and [data-field-burst] stages.
-    // The docs layout used to provide these; this page is standalone now, so wire them here.
+    // CodeTabs copy, [data-copy] chips, and [data-field-burst] stages. Tab-switching
+    // moved into CodeTabs.astro's own module script (instance sync + ?code= persistence).
     document.addEventListener(
       'click',
       (e) => {
         const t = e.target;
         if (!t || !t.closest) return;
-        const tab = t.closest('.ct-tab');
-        if (tab) {
-          const wrap = tab.closest('.code-tabs');
-          const i = tab.dataset.i;
-          wrap.querySelectorAll('.ct-tab').forEach((x) =>
-            x.setAttribute('aria-selected', x === tab ? 'true' : 'false'),
-          );
-          wrap.querySelectorAll('.ct-body').forEach((b) => {
-            b.hidden = b.dataset.i !== i;
-          });
-          return;
-        }
         const burst = t.closest('[data-field-burst]');
         if (burst) {
           const f = getField();
@@ -478,25 +466,7 @@ const GROUPS = [
           if (f && f.burst) f.burst(e.clientX, e.clientY, color);
           return;
         }
-        const ctCopy = t.closest('.ct-copy');
-        if (ctCopy) {
-          const wrap = ctCopy.closest('.code-tabs');
-          const body = wrap.querySelector('.ct-body:not([hidden])');
-          const text = body ? body.innerText : '';
-          if (navigator.clipboard && text) {
-            navigator.clipboard.writeText(text).then(() => {
-              ctCopy.classList.add('copied');
-              const lbl = ctCopy.querySelector('.ct-copy-label');
-              const prev = lbl && lbl.textContent;
-              if (lbl) lbl.textContent = 'Copied';
-              setTimeout(() => {
-                ctCopy.classList.remove('copied');
-                if (lbl) lbl.textContent = prev;
-              }, 1100);
-            });
-          }
-          return;
-        }
+        // CodeTabs copy moved into CodeTabs.astro's own module script.
         const copy = t.closest('[data-copy]');
         if (copy) {
           const text = copy.getAttribute('data-copy') || copy.textContent || '';

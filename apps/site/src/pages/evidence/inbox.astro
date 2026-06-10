@@ -1,0 +1,426 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
+import inbox from "../../data/examples/inbox.json";
+import "../../styles/examples/inbox.css";
+
+// The Inbox Field — attention as a CONSERVED budget over real unanswered Stack Overflow
+// questions. Each ask is a body; its urgency (a blend of recency, votes, and views) becomes
+// mass — but the page holds a fixed attention total, so brightening one ask literally dims
+// the rest. Pin an ask and the remaining budget redistributes. No particle swarm.
+const snapshot = Date.parse(inbox.snapshotAt) / 1000;
+const BUDGET_PER_ITEM = 0.42;
+
+const hoursOf = (askedAt: number) => Math.max(0.5, (snapshot - askedAt) / 3600);
+const items0 = inbox.items.map((it) => ({ ...it, hours: hoursOf(it.askedAt) }));
+
+// normalize each raw signal to 0..1 once, server-side; the runtime re-blends them per lens.
+const lh = items0.map((it) => Math.log(it.hours + 1));
+const lhMin = Math.min(...lh);
+const lhSpan = Math.max(...lh) - lhMin || 1;
+const sMin = Math.min(...items0.map((it) => it.score));
+const sSpan = Math.max(...items0.map((it) => it.score)) - sMin || 1;
+const lv = items0.map((it) => Math.log(it.views + 1));
+const lvMin = Math.min(...lv);
+const lvSpan = Math.max(...lv) - lvMin || 1;
+
+const items1 = items0.map((it, i) => ({
+  ...it,
+  rec: 1 - (lh[i]! - lhMin) / lhSpan, // fresher = closer to 1 (log-scaled age)
+  vot: (it.score - sMin) / sSpan,
+  vie: (lv[i]! - lvMin) / lvSpan,
+}));
+
+// the "fresh" lens blend (the default) — the runtime mirrors these weights exactly.
+const urgency = (it: { rec: number; vot: number; vie: number }) =>
+  0.6 * it.rec + 0.25 * it.vot + 0.15 * it.vie;
+
+// conserved allocation: Σw is pinned to the budget; per-item w caps at 1, with capped
+// excess re-flowing to the rest (water-filling). The runtime uses the same routine.
+function allocate(us: number[], budget: number): number[] {
+  const w = us.map(() => 0);
+  let free = us.map((_, i) => i);
+  let rem = budget;
+  for (let pass = 0; pass < 10 && free.length && rem > 0; pass++) {
+    const sum = free.reduce((s, i) => s + us[i]!, 0) || 1;
+    const k = rem / sum;
+    const still: number[] = [];
+    let capped = 0;
+    for (const i of free) {
+      if (us[i]! * k >= 1) {
+        w[i] = 1;
+        capped++;
+      } else still.push(i);
+    }
+    if (!capped) {
+      for (const i of still) w[i] = us[i]! * k;
+      break;
+    }
+    rem -= capped;
+    free = still;
+    if (!capped || rem <= 0) for (const i of still) w[i] = 0;
+  }
+  return w;
+}
+
+const budget = items1.length * BUDGET_PER_ITEM;
+const ws = allocate(items1.map(urgency), budget);
+const items = items1
+  .map((it, i) => ({
+    ...it,
+    w: ws[i]!,
+    // color = recency, cool (old) → warm (fresh); the lens segments re-blend SIZE, not color.
+    cat: `hsl(${Math.round(205 + it.rec * 125)} 74% 64%)`,
+  }))
+  .sort((a, b) => b.w - a.w);
+
+// the normalization constants, handed to the runtime so live arrivals are scored on the
+// SAME scale as the snapshot (rec/vot/vie in 0..1, clamped for out-of-range live values).
+const norm = { lhMin, lhSpan, sMin, sSpan, lvMin, lvSpan };
+
+const fmtAge = (h: number) =>
+  h < 48
+    ? `${Math.round(h)}h ago`
+    : h < 24 * 60
+      ? `${Math.round(h / 24)}d ago`
+      : h < 24 * 730
+        ? `${Math.round(h / (24 * 30.4))}mo ago`
+        : `${Math.round(h / 8760)}y ago`;
+const fmtViews = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v));
+const snapshotDay = inbox.snapshotAt.slice(0, 10);
+
+// How-built snippets (CodeTabs renders them with build-time Shiki highlighting).
+const SNIPPET_HTML = `<!-- the stream list holds a stable id; each ask is a body.
+     data-feedback: the engine writes --d (live local density) back every frame.
+     data-hot: hover/focus an ask and the field gathers toward it. -->
+<ol id="ix-stream">
+  <li
+    data-body="attract"
+    data-strength="1.21"
+    data-feedback
+    data-hot
+    data-rec="0.91" data-vot="0.25" data-vie="0.14"
+    style="--w: 0.51; --cat: hsl(318 74% 64%);"
+  >
+    <!-- your ordinary HTML here -->
+  </li>
+</ol>
+
+<!-- the attention meter declares its provenance: a
+     measurement visual OF the stream list -->
+<span class="ix-meter" aria-hidden="true"
+  data-field-visual-for="#ix-stream"
+  data-field-visual-role="measurement"
+><i></i></span>`;
+
+const SNIPPET_TS = `// fresh lens — the blends differ per lens
+u[i] = 0.60·recency + 0.25·votes + 0.15·views
+
+// the fixed total: N items × 0.42
+budget = N × 0.42
+
+// scale so the weights SUM to the budget,
+// cap each at 1, re-flow capped excess
+k    = budget / Σ u
+w[i] = min(1, u[i] × k)   // repeat on the rest
+
+// pins: w = 1, then reallocate
+// (budget − pins) over the unpinned
+Σ w[i] = budget — always.
+
+// the scoped field runs invisible (render: [])
+// and asks for the attention metric lane:
+const recipe = {
+  ...base,
+  render: [],
+  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+};
+// the pipeline writes --field-attention per ask (eased 0..1)`;
+
+const SNIPPET_LIVE = `// every 5 min (politely: hidden tabs skip the
+// attempt, 3 misses retire the loop, and the
+// API's backoff field is honored) — fetch the
+// same unanswered-[javascript] feed:
+const fresh = items.filter(
+  (q) => !onPage.has(q.question_id), // dedupe
+);
+
+// new asks ENTER THE FIELD as full bodies —
+// the exact card contract, marked data-live-item
+// (age reads "new": honest, not snapshot-relative)
+stream.prepend(...cards);
+
+// N grew, so the budget grows with it —
+// conservation stays exact:
+budget = N × 0.42;  reallocate();  // Σ w = budget
+
+// the scoped field re-binds to the new bodies
+field.destroy(); field = applyRecipe(…);
+
+// past 60 unpinned, the oldest decay
+// off the bottom — then renormalize again`;
+
+const SNIPPET_CSS = `.ix-item {
+  /* --w  = the server-allocated share (conserved)
+     --d  = live engine density — data-hot gathers it
+     --field-attention = the recipe's eased attention */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 55%), transparent);
+  background: color-mix(in srgb, var(--text)
+    calc(1.5% + var(--w) * 4% + var(--live) * 4%
+      + var(--field-attention, 0) * 4%),
+    transparent);
+}
+/* the kit touches only ink — never --w;
+   Σ--w stays pinned to the budget */`;
+---
+
+<ExampleShell
+  title="field-ui — Inbox"
+  description="An inbox run as a field with a conserved attention budget. Real unanswered Stack Overflow questions become bodies; urgency is mass, but the page holds a fixed attention total — brightening one ask literally dims the rest. Pin an ask and the budget redistributes. data-* in, --field-* out."
+  current="inbox"
+  mainClass="ex-inbox"
+  mainAttrs={{ "data-field": "on", "data-lens": "fresh" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · inbox</p>
+    <h1>Attention is a <span class="accent">budget</span>.</h1>
+    <p class="ev-lede">
+      An inbox is a queue of asks competing for one finite resource: yours. Most inboxes pretend
+      otherwise — every row arrives at full volume, so the real triage happens in your head.
+      These are {items.length} real unanswered
+      <a href="https://stackoverflow.com/questions/tagged/javascript?tab=Unanswered" rel="noopener"
+        >[javascript] questions from Stack Overflow</a
+      >, and here the attention is <strong>conserved</strong>: the page holds a fixed total, split
+      across every ask by urgency — a blend of recency, votes, and views.
+    </p>
+    <p class="ev-lede">
+      Because the total is fixed, <strong>brightening one ask literally dims the rest</strong>.
+      Attention also has a place: pin an ask and its card moves into the <strong>focus
+      pane</strong>, holding a full unit; the remaining budget redistributes across the stream,
+      and you watch the others fade by exactly that much. Unpin it and it returns to its place
+      in the stream. Switch the lens and the same budget re-settles along a different signal.
+      The field is invisible — its only output is type weight, ink, and a left anchor.
+    </p>
+  </header>
+
+  <!-- Controls — the budget made legible. -->
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-ix-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Urgency lens</span>
+      <div class="ev-seg" role="group" aria-label="Urgency blend">
+        <button type="button" data-ix-lens="fresh" aria-pressed="true">fresh</button>
+        <button type="button" data-ix-lens="voted" aria-pressed="false">voted</button>
+        <button type="button" data-ix-lens="seen" aria-pressed="false">seen</button>
+      </div>
+    </div>
+    <div class="ev-ctl ix-meter-ctl">
+      <span class="ev-ctl-l">Attention</span>
+      <!-- the meter is a measurement visual OF the stream — declared provenance (canon) -->
+      <span
+        class="ix-meter"
+        aria-hidden="true"
+        data-field-visual-for="#ix-stream"
+        data-field-visual-role="measurement"><i></i></span>
+      <span class="ix-meter-txt" data-ix-meter aria-live="polite"
+        >100% allocated · pinned 0 · free {budget.toFixed(1)}</span
+      >
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="ix-live" data-ix-live data-snapshot={snapshotDay} data-live="off"
+        >snapshot · {snapshotDay}</span
+      >
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-ix-hint
+        ><b>size</b> = urgency, recency-leaning — fresh asks pull hardest before they go cold</span
+      >
+      <span class="ev-hint-sep">·</span>
+      <span><b>color</b> = age — cool has waited years, warm arrived this week</span>
+    </p>
+  </div>
+
+  <!-- Legend — reading the field. -->
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = this ask's share of the budget</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = recency (cool old → warm fresh)</li>
+    <li><span class="ev-k ix-k-pin"></span> click an ask to <b>pin</b> it — it moves to the focus pane with a full unit; the rest split what's left</li>
+    <li>
+      <span class="ev-k ix-k-meter"><i></i></span> the meter always reads <b>100%</b> — attention
+      is conserved, never created
+    </li>
+    <li>
+      <span class="ev-k ix-k-new" aria-hidden="true">new</span> the stream is <b>live</b> — new
+      unanswered asks arrive at the top and the budget renormalizes over the larger field; past
+      60 unpinned, <b>old asks decay off the bottom</b> — the inbox story, literally
+    </li>
+    <li>
+      <span class="ev-k ix-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
+      <b>--w</b> is the server-allocated share and <b>--cat</b> the lens color; <b>--d</b> is the
+      engine's local density (hold an ask and the field gathers) and <b>--field-attention</b> the
+      recipe's eased attention as you scroll. The live channels touch only ink, never the budget.
+    </li>
+  </ul>
+
+  <div class="ix-split" data-ix-split>
+    <ol
+      class="ix-list"
+      id="ix-stream"
+      data-ix-list
+      data-ix-norm={JSON.stringify(norm)}
+      aria-label="The stream — every ask, competing"
+    >
+      {
+        items.map((it) => (
+          <li
+            class="ix-item"
+            id={`q-${it.id}`}
+            data-body="attract"
+            data-feedback
+            data-hot
+            data-range="200"
+            data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+            data-rec={it.rec.toFixed(4)}
+            data-vot={it.vot.toFixed(4)}
+            data-vie={it.vie.toFixed(4)}
+            data-asked={it.askedAt}
+            style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
+          >
+            <div class="ix-body">
+              <a class="ix-title" href={it.link} target="_blank" rel="noopener">
+                {it.title}
+              </a>
+              <span class="ix-meta">
+                <span class="ix-tags">
+                  {it.tags.map((tag) => (
+                    <span class="ix-tag">{tag}</span>
+                  ))}
+                </span>
+                <span class="ix-meta-rest">
+                  {fmtAge(it.hours)} · {it.author}
+                </span>
+              </span>
+            </div>
+            <div class="ix-stats">
+              <span class="ix-stat">
+                <b>{it.score}</b>
+                <span class="ix-stat-l">votes</span>
+              </span>
+              <span class="ix-stat">
+                <b>{fmtViews(it.views)}</b>
+                <span class="ix-stat-l">views</span>
+              </span>
+              <span class="ix-share" aria-hidden="true">
+                <i style={`width:${Math.round(it.w * 100)}%`} />
+              </span>
+            </div>
+            <button class="ix-pin" type="button" aria-pressed="false" aria-label={`Pin "${it.title}"`}>
+              pin
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+
+    <!-- the focus pane — attention has a place. Pinning an ask moves its card here
+         (it holds a full unit of the budget); unpinning sends it back to the stream. -->
+    <aside class="ix-focus" data-ix-focus aria-label="Focus — pinned asks hold a full unit each">
+      <h2 class="ix-focus-h">Focus <span class="ix-focus-n" data-ix-focus-n>0 pinned</span></h2>
+      <ol class="ix-focus-list" data-ix-focus-list></ol>
+      <p class="ix-focus-hint" data-ix-focus-hint>pin an ask to hold it</p>
+    </aside>
+  </div>
+
+  <!-- How it's built — the conserved budget made concrete. -->
+  <section class="ev-how" aria-labelledby="ix-how-h">
+    <h2 id="ix-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every ask is ordinary semantic HTML — an <code>&lt;li&gt;</code> carrying its normalized
+      signals as data attributes. The page blends them into an urgency score per the active lens,
+      then <strong>renormalizes</strong> so the weights always sum to one fixed budget. CSS turns
+      each weight into type heft, ink, and anchor. The field never invents attention; it only
+      moves it. On top of that sit two live channels the engine writes back every frame —
+      <code>--d</code> (local density, gathered by <code>data-hot</code> on hover) and
+      <code>--field-attention</code> (the recipe's eased attention) — which touch only ink, never
+      the budget.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — mark each ask as a field body</p>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIPPET_HTML }]} />
+        <ul class="ev-how-attrs">
+          <li><code>data-body="attract"</code> — registers as a field participant</li>
+          <li><code>data-strength</code> — mass, derived from the allocated weight</li>
+          <li><code>data-rec/vot/vie</code> — the normalized signals the lenses re-blend</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
+          <li><code>data-hot</code> — hover/focus gathers the field toward this ask</li>
+          <li><code>data-field-visual-for</code> — the meter's declared provenance</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — the conserved renormalization, live arrivals included</p>
+        <CodeTabs
+          variants={[
+            { label: "budget", lang: "ts", code: SNIPPET_TS },
+            { label: "arrivals", lang: "ts", code: SNIPPET_LIVE },
+          ]}
+        />
+        <p class="ev-how-note">
+          That invariant is the mechanic: the meter reads 100% no matter what you do, because
+          pinning, re-blending, arriving, or decaying can only move attention, not mint it.
+          Arrivals are the same flow end to end: fetch → dedupe → enter the field → renormalize.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the weight + the live channels</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIPPET_CSS }]} />
+        <p class="ev-how-note">
+          This is the engine's attention-budget idea applied to a page: bodies compete for a
+          finite influence pool, and the layout reports each body's share — the same conservation
+          the field runtime applies to particle attention, here written into the type.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Urgency here is <strong>competition, not importance</strong> — a fixed budget split by
+      recency, votes, and views says which asks are winning your attention right now, not which
+      deserve it. Ages are measured against the snapshot, so the page is stable; live arrivals
+      are marked <em>new</em> instead of carrying a snapshot-relative age. The baseline is a
+      <strong>committed snapshot</strong>, and that is what ships in the HTML. In the browser
+      the stream <strong>upgrades itself to live arrivals</strong> when the API is reachable: it
+      re-polls the same unanswered-[javascript] feed every five minutes, new asks enter at the
+      top, the budget renormalizes over the larger field, and past 60 unpinned the oldest asks
+      decay off the bottom — falling back to the snapshot if a poll fails. Data: the
+      <a href="https://api.stackexchange.com" rel="noopener">Stack Exchange API</a> (stackoverflow.com,
+      unanswered [javascript] questions), CC BY-SA 4.0, snapshotted {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/inbox-runtime.ts";
+</script>

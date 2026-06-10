@@ -10,6 +10,18 @@ body:has(.ev-page) {
   align-items: flex-start;
 }
 
+/* shell: the invisible-fields sidebar + the example itself */
+.ev-shell {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 88rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  align-items: start;
+}
+
 .ev-page {
   position: relative;
   z-index: 2;
@@ -17,6 +29,147 @@ body:has(.ev-page) {
   max-width: 62rem;
   margin: 0 auto;
   padding: 6.5rem clamp(1.2rem, 5vw, 3rem) 5rem;
+}
+
+/* the sidebar — this example's siblings (one live, the rest planned) */
+.ev-side {
+  position: sticky;
+  top: 0;
+  max-height: 100svh;
+  overflow-y: auto;
+  padding: 7.2rem 0 2.5rem clamp(1.2rem, 2vw, 2rem);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.ev-side::-webkit-scrollbar {
+  width: 6px;
+}
+.ev-side::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+.ev-side::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ev-side-title {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0;
+}
+.ev-side-note {
+  margin: 0.7rem 0 1.2rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-3);
+  font-weight: 300;
+}
+.ev-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.ev-side-item {
+  display: block;
+  position: relative;
+  padding: 0.55rem 0.7rem 0.6rem;
+  border: 1px solid transparent;
+  border-left: 2px solid var(--line);
+  border-radius: 0 8px 8px 0;
+  text-decoration: none;
+}
+.ev-side-item b {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+}
+.ev-side-item span {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-4, #6b7280);
+  font-weight: 300;
+}
+.ev-side-item.is-live b {
+  color: var(--text);
+}
+.ev-side-item.is-live[aria-current="page"] {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+a.ev-side-item.is-live:hover {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+.ev-side-item.is-soon {
+  opacity: 0.62;
+}
+.ev-soon {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.6rem;
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-4, #6b7280);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.08rem 0.4rem;
+}
+
+/* narrow: the rail becomes a horizontal strip above the example */
+@media (max-width: 1080px) {
+  .ev-shell {
+    display: block;
+  }
+  .ev-side {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 6.5rem clamp(1.2rem, 5vw, 3rem) 0;
+  }
+  .ev-side-list {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding-bottom: 0.6rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .ev-side-list::-webkit-scrollbar {
+    height: 6px;
+  }
+  .ev-side-list::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 999px;
+  }
+  .ev-side-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .ev-side-item {
+    flex: 0 0 auto;
+    max-width: 15rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .ev-side-item.is-live[aria-current="page"] {
+    border-color: var(--accent);
+  }
+  .ev-soon {
+    position: static;
+    display: inline-block;
+    margin-top: 0.3rem;
+  }
+  .ev-page {
+    padding-top: 1.6rem;
+  }
 }
 
 /* hero */
@@ -139,6 +292,11 @@ body:has(.ev-page) {
 }
 
 /* a finding: trust (--trust, 0..1) is felt — weight, ink, and a left anchor. */
+/* display:grid below would silently defeat the UA's [hidden]{display:none} (author origin
+   wins), so the deferred-reveal hidden state must be restated explicitly. */
+.ev-finding[hidden] {
+  display: none;
+}
 .ev-finding {
   --w: var(--trust, 0.5);
   position: relative;
@@ -529,7 +687,8 @@ body:has(.ev-page) {
   gap: 1.5rem;
   align-items: start;
 }
-.ev-how-col { display: flex; flex-direction: column; gap: 0.7rem; }
+/* min-width:0 lets the code <pre> scroll inside its grid track instead of widening it */
+.ev-how-col { display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
 .ev-how-label {
   font-family: var(--mono);
   font-size: 0.72rem;
@@ -583,4 +742,130 @@ body:has(.ev-page) {
 @media (max-width: 840px) {
   .ev-how-cols { grid-template-columns: 1fr; }
   .ev-how-lede { max-width: 100%; }
+}
+
+/* ── accretion: scroll-gated progressive reveal ───────────────────────────── */
+
+/* The sentinel is the list's last item and a real sink body in the scoped field
+   (data-body="sink" data-absorb data-feedback): particles drifting past accrete into
+   it and the engine writes --load back. The runtime reads --load + --field-scroll-v
+   to pace the reveal. visibility:hidden keeps its geometry measurable. */
+.ev-sentinel {
+  list-style: none;
+  height: 1.4rem;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Entry animation for batch-revealed findings. */
+@keyframes ev-new-settle {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ev-finding[data-ev-new] {
+    animation: ev-new-settle 0.38s ease-out both;
+  }
+}
+
+/* ── living ink — the engine's LIVE channels (evidence page) ──────────────────
+   --d   : the page engine's local particle density (0..1), written back every
+           frame; data-hot makes it gather toward 1 on hover/focus and ease back.
+   --field-attention : the scoped recipe's eased attention metric (engagement +
+           viewport-center proximity + visibility — it moves as you scroll).
+   Felt, not loud: a soft halo and a faint background lift. */
+.ev-finding {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 3% + var(--att) * 3%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.2s,
+    box-shadow 0.3s;
+}
+
+/* legend key for the live glow */
+.ev-k-live {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+
+/* field off: the live channels go dark with the rest of the field */
+.ev-page[data-field="off"] .ev-finding {
+  --live: 0;
+  --att: 0;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-finding {
+    transition: none;
+  }
+}
+
+/* ── live status chip — "snapshot · <label>" / "live · checked Ns ago" ────────
+   wireLiveChip (lib/live-data.ts) owns the text + data-live; pages place the
+   chip in the controls row. The snapshot stays the SSR baseline and the no-JS
+   truth — the dot only warms once a refresh has actually landed. */
+.ev-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.ev-live::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ev-live[data-live='on'] {
+  border-color: color-mix(in srgb, #2dd4bf 35%, var(--line));
+}
+.ev-live[data-live='on']::before {
+  background: #2dd4bf;
+  box-shadow: 0 0 6px color-mix(in srgb, #2dd4bf 70%, transparent);
+}
+
+/* ── the refresh delta — "+N since snapshot" under the citations figure ───────
+   only inserted when a count actually moved; quiet by design. */
+.ev-cites-delta {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: color-mix(in srgb, #2dd4bf 55%, var(--text-4));
+}
+.ev-cites-delta[data-dir='down'] {
+  color: color-mix(in srgb, #ff6b6b 55%, var(--text-4));
 }

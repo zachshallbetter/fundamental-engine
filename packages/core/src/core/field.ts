@@ -119,6 +119,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const lastWeight = new WeakMap<HTMLElement, number>();
   let raf = 0;
   let frameN = 0;
+  // element-level visibility (FieldHandle.setVisible): false skips draw work each frame while
+  // the simulation + feedback signals stay live. Tab-level visibility is handled separately
+  // (onVisibility stops the loop entirely).
+  let canvasVisible = true;
   let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
@@ -1252,8 +1256,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     applyCausality();
     updateEvents();
     updateCaptureEvents();
-    render();
-    if (overlayCtx && cfg.overlay !== 'off') renderOverlay(overlayCtx, cfg.overlay);
+    // Draw only when the canvas can be seen. Under reduced motion the scene is static
+    // (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
+    if (canvasVisible && (!reduceMotion || frameN % 4 === 0)) {
+      render();
+      if (overlayCtx && cfg.overlay !== 'off') renderOverlay(overlayCtx, cfg.overlay);
+    }
     raf = host.raf(frame);
   }
 
@@ -1434,6 +1442,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     particleCount: () => store.size,
     energy: () => energyReport(store.particles),
+    scrollV: () => env.scrollV ?? 0,
+    setVisible: (on) => {
+      canvasVisible = on;
+    },
     destroy: () => {
       host.cancelRaf(raf);
       clearInterval(idleTimer);
