@@ -316,9 +316,9 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
       <span class="concept-no">02 — Mass &amp; damping</span>
           <h2>Particles are point-masses in a medium.</h2>
           <p>
-            Each particle carries a velocity and a mass proportional to its
-            size. Every frame its velocity is multiplied by a friction factor —
-            momentum bleeds off instead of accumulating.
+            Each particle carries a velocity and a nominal mass — m = 1 by
+            default. Every frame its velocity is multiplied by a friction
+            factor — momentum bleeds off instead of accumulating.
           </p>
           <div class="formula">
             <span class="v">v</span><span class="c">ₜ₊₁</span> = <span class="v"
@@ -328,7 +328,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
           </div>
           <p class="note">
             Damping is why the field settles into calm swarms rather than
-            scattering.
+            scattering. The formula shows the opt-in mode — <span class="c">mass: true</span>
+            — where m scales with size; default particles run at nominal mass m = 1.
           </p>
       <Fragment slot="stage">
         <span class="stage-label">momentum decay</span>
