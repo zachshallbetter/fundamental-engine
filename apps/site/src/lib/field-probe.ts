@@ -65,11 +65,17 @@ const SEED_R = RANGE * 0.85; // default seed ring radius
 const FRAMES = 80;
 
 // Position-dependent forces the conformance runner leaves un-translated (their field is
-// sampled in absolute space). Their body would otherwise sit at the origin — right on the
-// toroidal seam — so any −x/−y motion wraps to the far corner. Seed them in safe positive
-// space instead; the curl/lattice phase just shifts, which is invisible.
-const NO_OFFSET = new Set(['wind', 'crystallize']);
+// sampled in absolute space; warp's pair target is a world point). Their body would
+// otherwise sit at the origin — right on the toroidal seam — so any −x/−y motion wraps to
+// the far corner. Seed them in safe positive space instead; the curl/lattice phase just
+// shifts, which is invisible.
+const NO_OFFSET = new Set(['wind', 'crystallize', 'warp']);
 const SAFE_ORIGIN = { x: 3000, y: 2000 };
+
+// warp's demo geometry: the throat radius, and how far down the heading the paired throat
+// sits. Exported so the per-force accuracy test measures arrival at the same pair point.
+export const WARP_THROAT = 48;
+export const WARP_PAIR_D = 190;
 
 // Per-force probe recipe. Chosen so the real trajectories read clearly in one frame.
 const CFG: Record<string, ProbeCfg> = {
@@ -136,6 +142,18 @@ const CFG: Record<string, ProbeCfg> = {
   resonate: { strength: 1.4, tokens: ['resonate', 'attract'], spin: 2, seed: 'ring', vel: 'orbit', v0: 2.2, n: 12 },
   spotlight: { strength: 2, tokens: ['spotlight', 'stream'], angle: -90, seed: 'grid', vel: 'none' },
   pigment: { strength: 0, seed: 'ring', vel: 'none', special: 'pigment' },
+  // fieldflow has no field of its own — it advects matter along the NET field other tokens
+  // radiate (env.fieldAt), so pair it with magnetism (the live chip does too, via BODY_TOKENS):
+  // probes released at rest steer onto and stream along the dipole loops, so the traced paths
+  // ARE the field lines, developed by the real transport rather than plotted.
+  fieldflow: { strength: 1.5, range: 280, tokens: ['fieldflow', 'magnetism'], seed: 'ring', vel: 'none', n: 16, frames: 110 },
+  // warp exerts no force — it RELOCATES matter entering the throat (absorbR) to its paired
+  // throat, conserved. Headless there is no DOM pairing, so traceRaw wires the pair target
+  // directly (warpHas/warpX/warpY, as the conformance experiment does), one WARP_PAIR_D down
+  // the heading. A close ring driven hard inward reaches the throat before friction stalls it
+  // (warp has no pull of its own); the jump to the emergence ring at the pair is the
+  // relocation read. The dashed ring marks the throat.
+  warp: { strength: 1, seed: 'ring', vel: 'in', v0: 4, n: 16, seedR: 90, frames: 60, rings: () => [WARP_THROAT] },
 };
 
 /** Build seed particles per the recipe. Positions are in engine units about (0,0).
@@ -282,6 +300,18 @@ export function traceRaw(token: string, override: ProbeOverride = {}): RawTrace 
     hw: cfg.bw ?? 26, hh: cfg.bh ?? 14,
     on: true, // enables propagate emission, spawn source, thermal heat — never disables a force
     ...(token === 'morph' ? { targets: morphTargets().map((t) => ({ x: t.x + org.x, y: t.y + org.y })) } : {}),
+    // warp's pairing is resolved from the DOM live (data-pair → b.warpHas/warpX/warpY);
+    // headless, wire the resolved target directly — a paired throat down the heading.
+    ...(token === 'warp'
+      ? {
+          absorbR: WARP_THROAT,
+          warpHas: true,
+          twist: 0,
+          warpScale: 1,
+          warpX: org.x + Math.cos((angleDeg * Math.PI) / 180) * WARP_PAIR_D,
+          warpY: org.y + Math.sin((angleDeg * Math.PI) / 180) * WARP_PAIR_D,
+        }
+      : {}),
   };
   const scenario: Scenario = {
     force: token,

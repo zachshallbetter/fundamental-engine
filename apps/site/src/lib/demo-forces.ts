@@ -24,12 +24,15 @@ export const OVERRIDES: Record<string, Record<string, number>> = {
 
 /** Forces that need sibling tokens beyond their own name for a legible demo. Modifiers
  *  (resonate, spotlight) genuinely require a sibling — they have no force of their own and
- *  exist to modify one. A real force like magnetism does NOT: its dipole field-line render
- *  plus the field's charge induction make it legible on its own, so pairing it with attract
- *  would just make the demo do two things at once. */
+ *  exist to modify one. So does fieldflow: it advects matter along the NET field other
+ *  forces radiate (their `field()` hooks), so without a field-radiating sibling there are
+ *  no lines to follow and the body is a no-op. A real force like magnetism does NOT: its
+ *  dipole field-line render plus the field's charge induction make it legible on its own,
+ *  so pairing it with attract would just make the demo do two things at once. */
 export const BODY_TOKENS: Record<string, string> = {
   resonate: 'resonate attract', // modifier — pulses a sibling; pair with attract
   spotlight: 'spotlight stream', // modifier — gates a sibling to a cone; pair with stream
+  fieldflow: 'fieldflow magnetism', // transport — needs a radiated field; thread a magnet's dipole loops
 };
 
 /** The natural/extended demo attrs: DEFAULTS, with any OVERRIDES and sibling tokens merged. */

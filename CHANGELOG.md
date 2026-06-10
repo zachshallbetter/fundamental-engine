@@ -15,6 +15,17 @@ inverse-square gravity/charge, `b.accreted`, and class-[S] source/sink budgeting
 ship, so the work is the mode system, medium formalization, safety layer, `screen`,
 metrics, and the transformation primitives, not re-building what exists.)
 
+### Fixed
+
+- The home manual's last two untraced stages now trace real engine runs: **`fieldflow`**
+  pairs with a magnet on the live chip (it advects matter along the *net* field other
+  forces radiate, so alone it had no lines to follow — the demo itself was a silent
+  kinematic no-op, not just untraced) and **`warp`** wires its pair target headlessly the
+  way the conformance experiment does, showing the conserved relocation from throat to
+  pair. Both gained per-force demo-accuracy tests, and the e2e boot test dropped its
+  `UNTRACEABLE` exception list — every chip-bearing stage must hold exactly one traced
+  canvas.
+
 ## [0.2.3] — 2026-06-10
 
 The cycle that built the **invisible-fields family** — twelve real-data example pages whose

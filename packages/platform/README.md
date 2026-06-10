@@ -86,9 +86,10 @@ binding.update(nextTasks);
 
 ## Lint
 
-`lintPlatform(platform)` runs pure rules over the live registries (missing relationship targets,
-unregistered state, overlays without links, off-phase measurement, orphan visuals, …) and returns
-structured diagnostics. The inspector reads it each frame.
+`lintPlatform(platform)` runs pure rules over the live registries and the markup (missing
+relationship targets, sinks that capture without `data-feedback`, styles reading feedback
+variables no body writes, unregistered state, overlays without links, off-phase measurement,
+orphan visuals, …) and returns structured diagnostics. The inspector reads it each frame.
 
 ## Dependency direction
 

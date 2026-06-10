@@ -922,8 +922,9 @@ engine and the caps matrix against it.
 ## 20. Extended force set — **implemented**
 
 > This section is the **formal spec** (token, class, formula, defaults) for the extended
-> vocabulary, and the **forces** are now **built**: every force below ships in the engine
-> except the relocation atom `warp` and the `wormhole` preset it composes (still spec-only);
+> vocabulary, and the **forces** are now **built**: every force below ships in the engine —
+> the relocation atom `warp` included ([A · paired], conformance-tested, traced on the home
+> manual) — except the `wormhole` preset that composes it (still spec-only);
 > a few forward items in §20.6 (render modes) and §20.10 (transmutation atoms) are spec-only
 > too and are marked inline. Rationale, "unique result," and
 > sequencing live in `docs/forces-possibilities.md`. The foundational pass the classes
@@ -991,9 +992,11 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 >
 > - **`pheromone` shipped as the token `diffuse`** (deposit + steer up a diffusing grid);
 >   its wave sibling is **`propagate`** (`∂²φ/∂t² = c²∇²φ`). Both are class [C].
-> - **`warp` and `wormhole` are not built.** They remain spec-only atoms/presets; the rest
->   of the cosmology set is composed from existing tokens (`blackhole`, `whitehole`) or the
->   conserved sink→release event (`supernova`).
+> - **`warp` shipped; `wormhole` did not.** The relocation atom is built
+>   (`packages/core/src/forces/extended.ts`, [A · paired], conformance-tested, traced on
+>   the home manual); the `wormhole` preset that composes it remains spec-only, and the
+>   rest of the cosmology set is composed from existing tokens (`blackhole`, `whitehole`)
+>   or the conserved sink→release event (`supernova`).
 > - **`spawn` [S] and `fountain`** shipped as written (a budgeted source + its preset).
 >
 > Everything else below is implemented under the listed token and color.

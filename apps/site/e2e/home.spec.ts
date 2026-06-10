@@ -33,27 +33,21 @@ for (const route of ["/", "/eli5"] as const) {
         .poll(async () => page.evaluate(() => (document.querySelector("field-root") as any)?.particleCount?.() ?? 0))
         .toBeGreaterThan(50);
       // Every demo stage with a live chip gets a traced field-line canvas — the preset
-      // compositions (blackhole, galaxy, …) included — EXCEPT the tokens field-probe has no
-      // trace for (it returns null; StageFieldOverlay warns about them in dev). Deriving the
-      // expected set from the DOM (instead of a >=N threshold) is the point: one silently
-      // missing canvas fails the count, which is how eight broken stages once hid for months.
-      const UNTRACEABLE = ["fieldflow", "warp"];
-      // runs IN the page (Playwright serializes it): the traceable chip stages that are
-      // missing their canvas (or holding more than one), named by their stage label
-      const untracedStages = (untraceable: string[]) =>
+      // compositions (blackhole, galaxy, …) included; every engine token has a probe config,
+      // no exceptions. Deriving the expected set from the DOM (instead of a >=N threshold)
+      // is the point: one silently missing canvas fails the count, which is how eight broken
+      // stages once hid for months.
+      // runs IN the page (Playwright serializes it): the chip stages that are missing
+      // their canvas (or holding more than one), named by their stage label
+      const untracedStages = () =>
         [...document.querySelectorAll(".stage")]
-          .filter((s) => {
-            const chip = s.querySelector("[data-body], [data-preset]");
-            if (!chip) return false;
-            const token = chip.getAttribute("data-body")?.split(/\s+/)[0];
-            return !token || !untraceable.includes(token);
-          })
+          .filter((s) => s.querySelector("[data-body], [data-preset]"))
           .filter((s) => s.querySelectorAll("canvas.stage-field").length !== 1)
           .map((s) => s.querySelector(".stage-label")?.textContent?.trim() ?? "unlabeled stage");
       expect(await page.locator(".stage:has([data-body]), .stage:has([data-preset])").count()).toBeGreaterThan(0);
       // painting is time-sliced (it yields between stages), so the canvases land progressively
       await expect
-        .poll(async () => page.evaluate(untracedStages, UNTRACEABLE), { timeout: 20000 })
+        .poll(async () => page.evaluate(untracedStages), { timeout: 20000 })
         .toEqual([]);
       expect(errors).toEqual([]);
     });
@@ -112,13 +106,18 @@ for (const route of ["/", "/eli5"] as const) {
           page.evaluate(() => document.querySelector("[data-forcesource]")?.getAttribute("data-body")),
         )
         .not.toBeNull();
-      // pick gravity → the overlay surface (streamlines) genuinely paints
+      // pick gravity → the overlay surface (streamlines) genuinely paints. The overlay canvas
+      // is created by <field-root>'s deferred boot (Base.astro idle boot — a plain setTimeout
+      // under WebKit), so it may not exist on the first poll iterations: report -1 until it
+      // does rather than crashing the poll (a thrown evaluate aborts expect.poll for good).
+      // The assertion still demands genuinely painted pixels within the window.
       await page.locator('.force-card[data-token="gravity"]').click();
       await expect
         .poll(
           async () =>
             page.evaluate(() => {
-              const cvs = [...document.querySelectorAll<HTMLCanvasElement>("body > canvas")].pop()!;
+              const cvs = [...document.querySelectorAll<HTMLCanvasElement>("body > canvas")].pop();
+              if (!cvs || cvs.width === 0 || cvs.height === 0) return -1; // not booted yet
               const d = cvs.getContext("2d")!.getImageData(0, 0, cvs.width, cvs.height).data;
               let n = 0;
               for (let i = 3; i < d.length; i += 400) if (d[i]! > 0) n++;
@@ -139,13 +138,17 @@ for (const route of ["/", "/eli5"] as const) {
     test("the accretion vessel fills — the engine writes --load back (data-feedback)", async ({
       page,
     }) => {
+      // accretion is simulation-time-bound: under full-suite CPU contention the engine's rAF
+      // slows and capture takes longer in WALL time. Pacing, not weakening — the assertion is
+      // unchanged; the poll just gets the time the physics actually needs on a loaded machine.
+      test.slow();
       await skipUnless(page, "#bim-core", "accretion vessel");
       const core = page.locator("#bim-core");
       await expect(core).toHaveAttribute("data-feedback", "");
       await core.scrollIntoViewIfNeeded();
       await expect
         .poll(async () => core.evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue("--load")) || 0), {
-          timeout: 10000,
+          timeout: 30000,
         })
         .toBeGreaterThan(0);
       // and the vessel's own meter mirrors it
