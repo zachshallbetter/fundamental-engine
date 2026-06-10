@@ -354,6 +354,8 @@ function initEvidence(): () => void {
         topics.forEach((t) => (t.hidden = t.dataset.evTopic !== slug));
         tabs.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
         wireTopic(topics.find((t) => t.dataset.evTopic === slug));
+        // topic state is shareable: reflect the active tab in the URL (no history entry)
+        history.replaceState(history.state, "", `#${slug}`);
       },
       { signal: ac.signal },
     ),
@@ -361,21 +363,33 @@ function initEvidence(): () => void {
 
   wireTopic(activeTopic());
 
-  // Deep links into the deferred range: the browser's load-time scroll found a hidden target.
-  // Reveal the target's whole topic (no batch animation — the user asked for that spot),
-  // activate its tab if needed, and re-scroll.
+  // Deep links: the hash can name a topic (#do-violent-video-games…, written by the tab
+  // handler above) or a finding id (#slug--W123…, possibly in the deferred range where the
+  // browser's load-time scroll found a hidden target). Activate the right tab, reveal the
+  // deferred range when the target sits inside it (no batch animation — the user asked for
+  // that spot), and re-scroll.
   const hashId = location.hash ? decodeURIComponent(location.hash.slice(1)) : "";
   const hashTarget = hashId ? document.getElementById(hashId) : null;
-  const hashTopic = hashTarget?.closest<HTMLElement>("[data-ev-topic]");
-  if (hashTarget && hashTopic && hashTarget.hasAttribute("data-ev-deferred")) {
-    hashTopic.querySelectorAll<HTMLElement>("[data-ev-deferred]").forEach((f) => (f.hidden = false));
+  const hashTopic =
+    topics.find((t) => t.dataset.evTopic === hashId) ??
+    hashTarget?.closest<HTMLElement>("[data-ev-topic]") ??
+    null;
+  if (hashTopic) {
+    let rewire = false;
+    if (hashTarget?.hasAttribute("data-ev-deferred")) {
+      hashTopic
+        .querySelectorAll<HTMLElement>("[data-ev-deferred]")
+        .forEach((f) => (f.hidden = false));
+      rewire = true;
+    }
     if (hashTopic.hidden) {
       const slug = hashTopic.dataset.evTopic!;
       topics.forEach((t) => (t.hidden = t.dataset.evTopic !== slug));
       tabs.forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.evTab === slug)));
+      rewire = true;
     }
-    wireTopic(hashTopic);
-    hashTarget.scrollIntoView();
+    if (rewire) wireTopic(hashTopic);
+    if (hashTarget && hashTarget !== hashTopic) hashTarget.scrollIntoView();
   }
 
   return () => {

@@ -452,25 +452,13 @@ const GROUPS = [
     };
     ensureScan();
 
-    // CodeTabs tab-switch + copy, [data-copy] chips, and [data-field-burst] stages.
-    // The docs layout used to provide these; this page is standalone now, so wire them here.
+    // CodeTabs copy, [data-copy] chips, and [data-field-burst] stages. Tab-switching
+    // moved into CodeTabs.astro's own module script (instance sync + ?code= persistence).
     document.addEventListener(
       'click',
       (e) => {
         const t = e.target;
         if (!t || !t.closest) return;
-        const tab = t.closest('.ct-tab');
-        if (tab) {
-          const wrap = tab.closest('.code-tabs');
-          const i = tab.dataset.i;
-          wrap.querySelectorAll('.ct-tab').forEach((x) =>
-            x.setAttribute('aria-selected', x === tab ? 'true' : 'false'),
-          );
-          wrap.querySelectorAll('.ct-body').forEach((b) => {
-            b.hidden = b.dataset.i !== i;
-          });
-          return;
-        }
         const burst = t.closest('[data-field-burst]');
         if (burst) {
           const f = getField();

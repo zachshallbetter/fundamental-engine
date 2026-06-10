@@ -59,3 +59,29 @@ const multi = variants.length > 1;
   </div>
   {caption && <figcaption class="ct-caption" set:html={caption} />}
 </figure>
+
+<script>
+  // Tab behavior lives with the component (module script — runs once, deduped across
+  // instances and pages). Picking a framework tab switches every CodeTabs on the page
+  // with that label, persists the choice, and reflects it as ?code=<slug> in the URL,
+  // so docs links can deep-link a framework. Restored on every page-load. The copy
+  // button stays in the page layouts' delegated handlers.
+  import {
+    slugifyLabel,
+    applyCodeTab,
+    rememberCodeTab,
+    restoreCodeTab,
+  } from "../lib/codetabs-state.ts";
+
+  document.addEventListener("click", (e) => {
+    const tab = (e.target as HTMLElement | null)?.closest?.(".ct-tab") as HTMLElement | null;
+    if (!tab) return;
+    const slug = slugifyLabel(tab.textContent || "");
+    applyCodeTab(slug); // switches the clicked instance + every label-matched sibling
+    rememberCodeTab(slug); // framework tabs only — language tabs stay per-page
+  });
+
+  document.addEventListener("astro:page-load", restoreCodeTab);
+  if (document.readyState !== "loading") restoreCodeTab();
+  else document.addEventListener("DOMContentLoaded", restoreCodeTab);
+</script>
