@@ -16,8 +16,6 @@ coverage
 .env.*
 !.env.example
 
-AGENTS.md
-.cursor/
 .cursorrules
 .aider*
 .github/copilot-instructions.md
