@@ -4,14 +4,14 @@ import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
 import {
-  FIELD_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe,
+  FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe,
 } from '@field-ui/core';
 
-// One page per recipe (getStaticPaths over the 64 FIELD_RECIPES): a large live preview, the full
-// five-lane breakdown + render + a11y + notes + plain-language explanation, copyable HTML / web
-// component / React / JSON (recipeAuthoring), and "see also" siblings (same field/tier).
+// One page per recipe (getStaticPaths over the 64 FIELD_RECIPES + the experimental set): a large live
+// preview, the full five-lane breakdown + render + a11y + notes + plain-language explanation, copyable
+// HTML / web component / React / JSON (recipeAuthoring), and "see also" siblings (same field/tier).
 export function getStaticPaths() {
-  return FIELD_RECIPES.map((r) => ({ params: { id: r.id }, props: { recipe: r } }));
+  return [...FIELD_RECIPES, ...EXPERIMENTAL_RECIPES].map((r) => ({ params: { id: r.id }, props: { recipe: r } }));
 }
 interface Props { recipe: FieldRecipe }
 const { recipe: r } = Astro.props;
@@ -35,7 +35,7 @@ const seeAlso = FIELD_RECIPES.filter((x) => x.id !== r.id && (x.naturalField ===
     <header class="rp-hero">
       <div class="rc-tags">
         <span class="rc-field">{fieldLabel}</span>
-        <span class="rc-tier">{r.tier}</span>
+        {r.tier && <span class="rc-tier">{r.tier}</span>}
         {isFirst && <span class="rc-first">First release</span>}
         {r.status && r.status !== 'shipped' && <span class="rc-status">{r.status}</span>}
       </div>

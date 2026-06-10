@@ -15,6 +15,9 @@
 // (threads) stay imperative — their window is user-interaction-gated, so the element will
 // always be upgraded by the time they fire.
 
+import { recipeById } from "@field-ui/core";
+import { applyRecipe } from "@field-ui/platform";
+
 type FieldEl = HTMLElement & {
   rescan?: () => void;
   flowTo?: (x: number, y: number, opts?: unknown) => void;
@@ -275,19 +278,50 @@ export function initHomeRuntime(): () => void {
     obs.push(causalObs);
   }
 
-  // chapter rail active state
+  // chapter rail active state + the Wayfinding Current field (recipe `wayfinding-current`,
+  // experimental — the invisible-fields family applied to the chapter rail, answering "where have I
+  // been"). Signals-only: the in-view chapter's rail link is marked engaged (data-field-attention),
+  // so the metric pipeline ACCRETES --field-memory on the chapters you dwell on and decays it slowly
+  // as you move on — the engine computing the wake (Sink/Accretion), not us hand-painting it. The CSS
+  // in ChapterRail.astro draws a left-edge tick from --field-memory. Reduced motion / engine off →
+  // the var stays unset → the plain .active rail.
   const chapters = [...document.querySelectorAll<HTMLElement>(".chapter")];
   const links = [...document.querySelectorAll<HTMLElement>(".chapter-rail a")];
+  const rail = document.querySelector<HTMLElement>(".chapter-rail");
   const onScroll = () => {
     let active = chapters[0] && chapters[0].id;
     for (const ch of chapters)
       if (ch.getBoundingClientRect().top < innerHeight * 0.35) active = ch.id;
-    links.forEach((a) =>
-      a.classList.toggle("active", (a as HTMLElement).dataset.ch === active),
-    );
+    links.forEach((a) => {
+      const on = (a as HTMLElement).dataset.ch === active;
+      a.classList.toggle("active", on);
+      // ground the field's "current" signal: the active link is engaged, so the pipeline accretes
+      // its memory while it's in view (supplied attention wins over the measured value).
+      if (on) a.setAttribute("data-field-attention", "1");
+      else a.removeAttribute("data-field-attention");
+    });
   };
   window.addEventListener("scroll", onScroll, { passive: true, signal: sig });
   onScroll();
+
+  // the signals-only Wayfinding Current binding over the rail links (render: [] — nothing drawn)
+  const railReduceMotion =
+    typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (rail && links.length && !railReduceMotion) {
+    try {
+      const base = recipeById("wayfinding-current");
+      if (base) {
+        const railField = applyRecipe(
+          rail,
+          { ...base, render: [] as never[] },
+          { bodies: links, annotateBodies: false },
+        );
+        obs.push({ disconnect: () => railField.destroy() });
+      }
+    } catch {
+      /* the plain .active rail stands on its own */
+    }
+  }
 
   // threads between a hovered item and its set. threads() has no attribute equivalent and is
   // hover-gated — by the time a pointer can enter an item, the 300ms boot has elapsed and
