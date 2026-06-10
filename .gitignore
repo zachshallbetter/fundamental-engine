@@ -16,11 +16,6 @@ coverage
 .env.*
 !.env.example
 
-# AI assistant tooling — never committed to this repo
-.claude/
-CLAUDE.md
-AGENTS.md
-.cursor/
 .cursorrules
 .aider*
 .github/copilot-instructions.md

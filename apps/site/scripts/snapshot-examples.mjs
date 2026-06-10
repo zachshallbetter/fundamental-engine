@@ -286,6 +286,9 @@ const SOURCES = {
       get('https://www.githubstatus.com/api/v2/components.json'),
       get('https://www.githubstatus.com/api/v2/incidents.json'),
     ]);
+    // Editorial exclusions by id: incidents about partner/upstream providers rather than
+    // GitHub's own infrastructure — off-topic for the fleet example.
+    const EXCLUDED_INCIDENT_IDS = new Set(['71hv2q6tk693']);
     write('fleet', {
       source: 'GitHub status page API (githubstatus.com)',
       license: 'public status data',
@@ -293,20 +296,23 @@ const SOURCES = {
       components: components.components
         .filter((c) => !c.group)
         .map((c) => ({ id: c.id, name: c.name, status: c.status, description: c.description ?? '' })),
-      incidents: incidents.incidents.slice(0, 30).map((i) => ({
-        id: i.id,
-        name: i.name,
-        impact: i.impact,
-        status: i.status,
-        createdAt: i.created_at,
-        resolvedAt: i.resolved_at,
-        updates: i.incident_updates.map((u) => ({
-          status: u.status,
-          at: u.created_at,
-          body: u.body.replace(/\s+/g, ' ').slice(0, 280),
+      incidents: incidents.incidents
+        .filter((i) => !EXCLUDED_INCIDENT_IDS.has(i.id))
+        .slice(0, 30)
+        .map((i) => ({
+          id: i.id,
+          name: i.name,
+          impact: i.impact,
+          status: i.status,
+          createdAt: i.created_at,
+          resolvedAt: i.resolved_at,
+          updates: i.incident_updates.map((u) => ({
+            status: u.status,
+            at: u.created_at,
+            body: u.body.replace(/\s+/g, ' ').slice(0, 280),
+          })),
+          components: i.components.map((c) => c.name),
         })),
-        components: i.components.map((c) => c.name),
-      })),
     });
   },
 

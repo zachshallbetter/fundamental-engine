@@ -94,39 +94,6 @@
       "components": []
     },
     {
-      "id": "71hv2q6tk693",
-      "name": "Disruption with Claude Opus 4.7",
-      "impact": "minor",
-      "status": "resolved",
-      "createdAt": "2026-06-08T09:05:44.338Z",
-      "resolvedAt": "2026-06-08T10:03:32.680Z",
-      "updates": [
-        {
-          "status": "resolved",
-          "at": "2026-06-08T10:03:32.680Z",
-          "body": "This incident has been resolved. Thank you for your patience and understanding as we addressed this issue. A detailed root cause analysis will be shared as soon as it is available."
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-08T09:49:32.476Z",
-          "body": "We are experiencing degraded availability for the Claude Opus 4.7 model in Copilot Chat, VS Code and other Copilot products. This is due to an issue with an upstream model provider. We are working with them to resolve the issue, and starting to see recovery.<br />"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-08T09:08:58.648Z",
-          "body": "We are experiencing degraded availability for the Claude Opus 4.7 model in Copilot products and IDE surfaces. This is due to an issue with an upstream model provider. While we work with them to resolve the issue, we recommend choosing another model or selecting 'Auto' to continue"
-        },
-        {
-          "status": "investigating",
-          "at": "2026-06-08T09:05:44.475Z",
-          "body": "We are investigating reports of degraded performance for Copilot AI Model Providers"
-        }
-      ],
-      "components": [
-        "Copilot AI Model Providers"
-      ]
-    },
-    {
       "id": "m7n7sm0sr1pz",
       "name": "Pull Requests and Issues unavailable for signed-out users",
       "impact": "critical",
