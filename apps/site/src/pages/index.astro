@@ -8,7 +8,6 @@ import ChapterHeader from "../components/ChapterHeader.astro";
 import Concept from "../components/Concept.astro";
 import ManualFoot from "../components/ManualFoot.astro";
 import Button from "../components/ui/Button.astro";
-import FlowToggle from "../components/ui/FlowToggle.astro";
 import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro";
 import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
@@ -17,6 +16,7 @@ import CellGallery from "../components/CellGallery.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@field-ui/core";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
+import "../styles/landing.css";
 
 // The Field Manual — the chapter-based explainer, rebuilt on the typed engine and extended
 // to the full catalog. This page is a composition file: the shared manual chrome (ManualHero,
@@ -75,40 +75,191 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
 ---
 
 <Base
-  title="field-ui — a platform-native relational field runtime for the DOM"
-  description="Semantic HTML becomes a participant in one shared field: add a data-* attribute and the runtime measures the element, computes metrics (density, priority, memory) and writes them back as --field-* CSS variables you style with. A renderer-agnostic core with a platform layer for DOM participation (measurement, state, feedback, relationships, overlays); framework-agnostic (vanilla · web component · React), dependency-light. The complete, executable manual, live over the running engine."
+  title="field-ui — a relational field runtime for the DOM"
+  description="Most UI frameworks let you declare importance; field-ui is the first that enforces it — physically. Add a data-* attribute and the runtime measures the element and writes importance, attention, and relationships back as --field-* CSS variables you style with — so your interface shows what matters, what's connected, and where focus is going, without hand-coding badges, spinners, or one-off animation. Framework-agnostic (vanilla · web component · React); the core engine has zero runtime dependencies. 0.x preview."
 >
   <SiteNav current="home" />
   <div class="manual-shell">
-    <ManualHero kicker="field-ui · semantic HTML in one shared field">
-      <h1 slot="title">Semantic HTML can <span class="accent">participate.</span></h1>
+    <ManualHero kicker="field-ui · a relational field runtime for the DOM">
+      <h1 slot="title">Elements have <span
+          class="hero-mass"
+          data-hot
+          data-feedback
+          data-body="attract"
+          data-strength="1.2"
+          data-range="300"
+          data-color="#4da3ff"
+          style="--cat:#4da3ff;">mass</span>.</h1>
       <p slot="standfirst" class="standfirst">
-        Words, links, and cards stay ordinary semantic HTML — but with a single
-        <code>data-*</code> attribute they register as participants in one shared
-        field. The runtime measures each one — its gathered density, and metrics like
-        attention, priority, and memory — then writes them back as <code>--field-*</code>
-        CSS variables you style with. Here’s exactly how it works, live over the real
-        engine behind every example.
+        Relationships have force. Attention has a budget. field-ui turns importance,
+        attention, and relationships into live <code>--field-*</code> CSS variables you
+        style with — so your interface can show what matters, what’s connected, and
+        where focus is going, without hand-coding badges, spinners, or one-off animation
+        logic.
       </p>
       <p slot="thesis" class="thesis">
-        <strong>You author meaning; the field returns measurement</strong> —
-        <code>data-*</code> in, <code>--field-*</code> out. The physics is how it feels;
-        the contract is how you use it.
+        <strong>Most UI frameworks let you declare importance. field-ui is the first
+        that enforces it — physically.</strong> You can’t style everything as urgent.
       </p>
       <Fragment slot="cta">
-        <code class="install" data-copy={"import { createField } from 'https://esm.sh/@field-ui/vanilla'"}>{"import { createField } from 'https://esm.sh/@field-ui/vanilla'"}</code>
-        <Button href="/docs" variant="primary">Read the docs →</Button>
-        <Button href="/lab">Open the Lab →</Button>
+        <Button href="#engine" variant="primary">See it work →</Button>
+        <Button href="#install">Install →</Button>
       </Fragment>
       <div slot="meta" class="meta">
-        <span><b>Contract</b> &nbsp;data-* in · --field-* out</span>
-        <span><b>Forces</b> &nbsp;{MANUAL_FORCES.length}, composable · gated by conditions</span>
-        <span><b>Platform</b> &nbsp;measurement · state · feedback · relationships · overlays</span>
-        <span><b>Law</b> &nbsp;nothing created from nothing</span>
+        <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>
+        <span><b>For</b> &nbsp;design engineers · AI-product builders · component-library authors</span>
+        <span><b>Maturity</b> &nbsp;0.x preview — a substrate to build on, no external users yet</span>
       </div>
-      <FlowToggle slot="flow" label="Flow follows pointer">
-        drives <code>field.flowTo(x, y)</code> — the whole field bends to your cursor</FlowToggle>
     </ManualHero>
+
+    <!-- ============================================================
+         ORIENTATION BLOCK — property → install → real interface →
+         why-different → AI wedge → the engine. Reuses the existing
+         manual demos by anchor-link; the 55-section manual below is
+         intact and unduplicated. Copy is the reorg canon. -->
+
+    <!-- Install — one scroll below the hero; mirrors /docs exactly. -->
+    <section class="lp lp-install" id="install">
+      <div class="wrap">
+        <span class="concept-no">Install</span>
+        <h2>Add it to the stack you already have.</h2>
+        <p class="lp-lede">
+          Most projects want <code>@field-ui/vanilla</code> — framework-free and
+          host-bundled, so <code>createField</code> works with no wiring. React users
+          want <code>@field-ui/react</code>. The core engine has zero runtime dependencies.
+        </p>
+        <div class="lp-pkgs">
+          <div class="lp-pkg">
+            <code class="install" data-copy="npm i @field-ui/vanilla">npm i @field-ui/vanilla</code>
+            <span><b>Recommended</b> — framework-free, host-bundled (<code>createField</code> works with no wiring).</span>
+          </div>
+          <div class="lp-pkg">
+            <code class="install" data-copy="npm i @field-ui/react">npm i @field-ui/react</code>
+            <span>The <code>&lt;FieldField&gt;</code> React component + <code>useFieldField</code> hook.</span>
+          </div>
+        </div>
+        <p class="lp-note">
+          No build step? Import from a CDN (playground / prototyping only):
+          <code>import {'{'} createField {'}'} from 'https://esm.sh/@field-ui/vanilla'</code>
+        </p>
+        <p class="lp-note">
+          The full package map and an install-to-reacting-headline walkthrough live in the
+          <a href="/docs">docs</a>.
+        </p>
+      </div>
+    </section>
+
+    <!-- §2 · Apply — a real interface you'd build, surfaced with a preview + live link
+         to /evidence/inbox (a no-swarm, real-data field). -->
+    <section class="lp lp-apply">
+      <div class="wrap">
+        <span class="concept-no">A real interface</span>
+        <h2>A real interface you’d actually build.</h2>
+        <p class="lp-lede">
+          An inbox of real unanswered questions, ranked by urgency — recency, votes, and
+          views become mass. But the page holds one fixed attention budget, so brightening
+          one ask dims the rest. No particle swarm; the measurement comes back as type and
+          ink.
+        </p>
+        <div class="lp-inbox" aria-hidden="true">
+          <div class="lp-inbox-head"><span>Inbox · attention is conserved</span><span>urgency → mass</span></div>
+          <div class="lp-ask" style="--u:1;"><span class="lp-bar"></span><span class="lp-title">Production outage — auth tokens expiring early</span><span class="lp-meta">2h · 48▲</span></div>
+          <div class="lp-ask" style="--u:0.72;"><span class="lp-bar"></span><span class="lp-title">Why does my migration deadlock under load?</span><span class="lp-meta">9h · 21▲</span></div>
+          <div class="lp-ask" style="--u:0.46;"><span class="lp-bar"></span><span class="lp-title">Best way to debounce a resize observer?</span><span class="lp-meta">1d · 7▲</span></div>
+          <div class="lp-ask" style="--u:0.24;"><span class="lp-bar"></span><span class="lp-title">Preferred naming for boolean props?</span><span class="lp-meta">4d · 2▲</span></div>
+        </div>
+        <Button href="/evidence/inbox" variant="primary">Open this example →</Button>
+      </div>
+    </section>
+
+    <!-- §3 · Differentiate — the spine, the mental model, the eliminated-work band
+         (SHIP claims only), and the calibration band. Demos referenced by anchor. -->
+    <section class="lp lp-diff">
+      <div class="wrap">
+        <span class="concept-no">Why it’s different</span>
+        <h2>Most frameworks let you <em>declare</em> importance. field-ui <em>enforces</em> it.</h2>
+        <p class="lp-lede">
+          You can’t style everything as urgent — the attention budget is conserved.
+          Express “these are related,” “the user has dwelled here,” or “this is unstable”
+          as first-class runtime state, instead of hand-rolling badges, spinners, and
+          bespoke animation for each. <a href="#concept-conserved">See conserved attention →</a>
+        </p>
+
+        <figure class="lp-model">
+          <div class="lp-flow">
+            <span class="lp-step"><code>data-*</code><span>you author</span></span>
+            <span class="lp-arrow">→</span>
+            <span class="lp-step"><code>measure</code><span>runtime</span></span>
+            <span class="lp-arrow">→</span>
+            <span class="lp-step"><code>--field-*</code><span>runtime writes back</span></span>
+            <span class="lp-arrow">→</span>
+            <span class="lp-step"><code>you style</code><span>CSS</span></span>
+          </div>
+          <figcaption>You author meaning; the field returns measurement.</figcaption>
+        </figure>
+
+        <div class="lp-elim">
+          <h3>Stop building the systems that exist because the DOM is blind.</h3>
+          <p>
+            The DOM can’t see what matters, what’s related, or what’s gone stale — so
+            teams build that sight by hand, again and again. field-ui gives the DOM a
+            continuous answer, and a whole category of code stops being yours to write
+            and maintain.
+          </p>
+          <ul>
+            <li><b>Priority you don’t store or sort.</b> Importance is a measurement the field reads each frame (<code>--field-density</code>), not state you keep in a store and re-sort on every change. <a href="#concept-material">See it work →</a></li>
+            <li><b>“Everything is P1,” solved by a law.</b> Attention is one conserved budget — emphasize one thing and the rest necessarily yield. The normalization pass teams enforce with scoring schemes and meetings becomes something the runtime cannot violate. <a href="#concept-conserved">See it work →</a></li>
+            <li><b>Relationships you don’t model.</b> Connection emerges from proximity and conservation — threads, cross-boundary spill — instead of adjacency lists and graph traversal you maintain. <a href="#concept-threads">See it work →</a></li>
+            <li><b>Staleness without timers.</b> Recency and decay are a force in the runtime, continuous, not a cron job or a computed column you babysit. <a href="/evidence/memory">See it work →</a></li>
+            <li><b>One model, always current.</b> The field re-resolves every frame, so a priority shift doesn’t fire a sort-and-re-render pass — the readout is simply already current. <a href="#concept-layout">See it work →</a></li>
+          </ul>
+          <p class="lp-elim-close">
+            field-ui doesn’t hand you a better abstraction over these jobs. It makes the
+            question each one answered — what matters, what’s related, what’s stale —
+            answerable by the field, so the job itself goes away.
+          </p>
+        </div>
+
+        <ul class="lp-calib">
+          <li><b>Zero runtime dependencies.</b> The core engine ships with none.</li>
+          <li><b>Costs almost nothing to run.</b> Not main-thread-bound; sub-millisecond at real-page scale (~130 particles, 0.25 ms/frame). The live homepage runs 42 field instances at 120 fps with no long tasks on desktop. <a href="/docs/performance">The measurements →</a></li>
+          <li><b>Accessible by construction.</b> Semantic HTML stays the source of truth; reduced-motion equivalents are enforced and linted.</li>
+          <li><b>Auditable.</b> Code-verified docs, conformance tests, a frozen 0.x API.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- §4 · Wedge — trust UI for AI output, pointing at the Evidence + Search studies. -->
+    <section class="lp lp-ai">
+      <div class="wrap">
+        <span class="concept-no">The wedge</span>
+        <h2>Trust UI for AI output.</h2>
+        <p class="lp-lede">
+          Show support, contradiction, confidence, and provenance for model output as an
+          inspectable field — the same deterministic field math behind the Evidence and
+          Search studies, aimed at where it’s most urgent.
+        </p>
+        <div class="lp-cta-row">
+          <Button href="/evidence" variant="primary">See the AI trust example →</Button>
+          <Button href="/evidence">Explore the studies →</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- The gate into the deep dive — the 55-section manual, intact, below. -->
+    <section class="lp lp-engine-gate" id="engine">
+      <div class="wrap">
+        <span class="concept-no">The full engine, end to end</span>
+        <h2>Now — how it works, live over the running engine.</h2>
+        <p class="lp-lede">
+          Everything above is built from one contract: <code>data-*</code> in,
+          <code>--field-*</code> out. Below is the complete, executable manual —
+          {MANUAL_FORCES.length} forces, the presets, and the system behaviour, each demo
+          running on the real engine.
+        </p>
+        <Button href="/lab" variant="primary">Open the Lab →</Button>
+      </div>
+    </section>
 
     <ChapterRail chapters={chapters} />
 
@@ -721,7 +872,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
           >
       </Fragment>
     </Concept>
-    <Concept reverse data-attention-demo>
+    <Concept reverse data-attention-demo id="concept-conserved">
       <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Conserved attention</span
           >
@@ -778,7 +929,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
           >
       </Fragment>
     </Concept>
-    <Concept>
+    <Concept id="concept-threads">
       <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Threads</span
           >
@@ -936,7 +1087,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
       </Fragment>
     </Concept>
 
-    <Concept reverse data-form="wells">
+    <Concept reverse data-form="wells" id="concept-material">
       <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Material typography</span
           >
@@ -979,7 +1130,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
       </Fragment>
     </Concept>
 
-    <Concept data-form="scatter">
+    <Concept data-form="scatter" id="concept-layout">
       <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Self-laying-out</span
           >

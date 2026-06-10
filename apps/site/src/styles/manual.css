@@ -241,10 +241,11 @@
 .chapter-rail a.active {
   color: var(--accent);
 }
-.chapter-rail a.active .cr-no,
-.chapter-rail a.active .cr-label {
+/* the active chapter reads as its accent numeral; labels stay a hover
+   affordance, so the always-on active label never overlaps the hero H1 or
+   the left edge of the manual prose at viewport centre. */
+.chapter-rail a.active .cr-no {
   opacity: 1;
-  transform: none;
 }
 @media (max-width: 1180px) {
   .chapter-rail {
