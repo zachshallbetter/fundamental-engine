@@ -103,3 +103,16 @@ export const RENDER_MODES: { name: string; desc: string }[] = [
   { name: 'voronoi', desc: 'Shattered glass — each particle owns a cell; the walls are the boundaries between nearest-neighbour regions.' },
   { name: 'streamlines', desc: 'Draws the force field itself — a grid of arrows along the net push. A diagnostic view.' },
 ];
+
+/** Field Surfaces — the overlay READINGS (`field.setOverlay`). Line/text diagnostics drawn in front of
+ *  content; additive — pass one, or a stack (array / space-separated attribute) and they compose. */
+export const OVERLAY_MODES: { name: string; desc: string }[] = [
+  { name: 'streamlines', desc: 'Arrows along the net push a still probe would feel — vector flow, felt.' },
+  { name: 'force-vectors', desc: 'The same arrows scaled by raw magnitude — strong forces read strong, weak stay faint.' },
+  { name: 'field-lines', desc: 'Arrows along the structure-only field (dipoles / monopoles) — the geometry, not the felt push.' },
+  { name: 'grid', desc: 'A reference lattice displaced by the local field — space itself made visible, bending where the field is strong.' },
+  { name: 'temperature', desc: 'Iso-contour rings of accumulated particle heat — the thermal field, drawn as lines so it never paints over content.' },
+  { name: 'energy', desc: 'Iso-contour rings of kinetic energy (½m·|v|²) — where the motion is.' },
+  { name: 'path', desc: 'Streamline curves traced from seeded probes — where the field would carry a particle over distance.' },
+  { name: 'data', desc: 'A numeric density readout beside each measuring body — the --d measurement made legible.' },
+];
