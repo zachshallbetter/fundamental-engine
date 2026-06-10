@@ -45,6 +45,32 @@ The rules:
 - Page-local CSS custom properties must not collide with the engine's channels (`--d`,
   `--load`, `--lit`, `--field-*`). Prefix page locals (`--cc`, `--depth`, `--bar`).
 
+**Sub-variant: the custom-element upgrade race.** Imperative method calls on a
+`<field-root>` (or any custom element with a deferred boot) made before `customElements.define`
+runs land on a bare `HTMLElement` and are silently dropped. `Base.astro` defers
+`import('@field-ui/elements')` to `requestIdleCallback` — but Safari has no
+`requestIdleCallback`, so the upgrade fires on a plain `setTimeout(300)` there. Any call that
+races this window sets durable wrong state in WebKit and is invisible in Chromium (which wins
+the race almost always). Observed in `ForcePicker.ts`: `setOverlay('streamlines')` called at
+IO-entry produced a permanently dark overlay in ~50 % of WebKit runs
+(`home.spec.ts:103` data-forcepick test).
+
+The fix: **drive long-lived field state through attributes, not methods.** Attributes set
+pre-upgrade become the engine's construction-time config; set post-upgrade they forward through
+`attributeChangedCallback` to the same setters — the race window is closed.
+
+```ts
+// ❌ method call — drops silently if element not yet upgraded (Safari)
+field?.setOverlay?.('streamlines');
+
+// ✓ attribute write — works pre- and post-upgrade
+field?.setAttribute('overlay', 'streamlines');
+```
+
+One-shots (burst, flowTo) may stay imperative — they have no meaningful pre-upgrade behavior.
+IO-driven toggles (attention, causality) and any mode that must survive a boot restart should
+use attributes.
+
 ## 3. Verify in the browser; treat probes as suspects
 
 Reading a diff catches structure; only running the page catches behavior. But the second
