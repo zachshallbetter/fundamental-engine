@@ -15,6 +15,53 @@ inverse-square gravity/charge, `b.accreted`, and class-[S] source/sink budgeting
 ship, so the work is the mode system, medium formalization, safety layer, `screen`,
 metrics, and the transformation primitives, not re-building what exists.)
 
+## [0.2.3] — 2026-06-10
+
+The cycle that built the **invisible-fields family** — twelve real-data example pages whose
+render surface is the page's own type — and shipped the engine/platform capabilities the
+family proved out. The pattern is canonical in
+[`docs/canonical/field-ui-invisible-fields.md`](docs/canonical/field-ui-invisible-fields.md).
+
+### Added
+
+- **`FieldHandle.scrollV()`** — the engine's eased page-scroll velocity (the `scrolling`
+  condition gate's EMA), mirrored to **`--field-scroll-v`** on `:root` by the platform write
+  phase (deduped when unchanged). Experimental surface; px/frame, refresh-rate dependent.
+- **`FieldHandle.setVisible(on)`** — element-level visibility hint: `false` skips all draw
+  work while the simulation and feedback signals stay live. `<field-root>` wires it
+  automatically from an IntersectionObserver. Under reduced motion the static scene redraws
+  at quarter rate.
+- **`render: 'none'`** — the signals-only engine mode (#297): created with `'none'`, a field
+  never acquires a canvas context, never sizes a backing store, never allocates render
+  scratch — it exists purely as signals (`--d`, `--load`, `--lit`, events, `scrollV`).
+  `setRender` out of `'none'` acquires the context lazily.
+- **`QualityGovernor`** + the **`field:quality-tier`** event — adaptive frame-budget tier
+  detection (0–3, asymmetric escalation/recovery); the `<field-root>` runtime feeds it,
+  skips discontinuity frames, resets on `visibilitychange`, and throttles its own platform
+  tick at tiers 2–3 as the built-in consumer.
+- **`FeedbackRegistry.cssWritesLastFrame()`** — the actual per-frame DOM write count
+  (mirrored `--field-*`/`--forces-*` pairs count as 2), distinct from `boundVars().length`.
+- **`PlatformRuntime.attachHandle(handle)`** — post-hoc wiring of the engine handle into the
+  platform runtime (scroll-v writes + governor monitoring).
+- **`withFlip()`** in `@field-ui/platform` (#295) — the FLIP reflow helper extracted from the
+  example runtimes (1D/2D, exclude hook, reduced-motion guard).
+- **`allocateAttention()`** in `@field-ui/core` (#296) — conserved water-filling allocation
+  (Σw = budget exact, pins take the cap, capped excess re-flows), unit-tested for exactness.
+- **The invisible-fields example family** at `/evidence/<slug>` — twelve pages over committed
+  real-data snapshots (refreshed weekly by CI) with live in-browser upgrades, provenance
+  chips, and per-page signature mechanics; pinned by a 62-test Playwright matrix
+  (chromium · webkit · Pixel-7 touch).
+
+### Fixed
+
+- `[hidden]` on styled grid/flex elements is restated in author CSS (the UA default loses).
+- Sparkline draw-ins use `pathLength="100"` keyframes ending dash-free (WebKit dash-precision
+  artifacts at `pathLength="1"`).
+- Touch drag on the backlog board arms by long-press (touch-action latches at gesture start).
+- The dependencies snapshot reads publish dates from the full packument (`/latest` omits
+  `time`).
+- `threads`' depth variable renamed `--depth` (it collided with the engine's `--d` channel).
+
 ### Expanded the field-ui model (migration plan Phases 4–8)
 
 On top of the migrated, stabilized base, the field-first model was built out — all engine-side,

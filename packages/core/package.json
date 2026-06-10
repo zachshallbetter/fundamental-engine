@@ -1,6 +1,6 @@
 {
   "name": "@field-ui/core",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A reciprocal DOM-physics field — elements bend the field; the field's density bends them back.",
   "type": "module",
   "license": "MIT",

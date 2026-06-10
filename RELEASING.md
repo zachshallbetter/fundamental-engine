@@ -9,11 +9,15 @@ The seven published packages — `@field-ui/core`, `@field-ui/platform`, `@field
 `@field-ui/react`, `@field-ui/vanilla`, and the meta-packages `@field-ui/kit` / `@field-ui/field-ui` —
 are versioned **together** and follow [Semantic Versioning](https://semver.org):
 
-- **patch** (`0.2.x`) — bug fixes, internal changes, no API change.
-- **minor** (`0.x.0`) — additive, backward-compatible features (a new force, a new `FieldOption`, a new
-  `FieldHandle` method).
-- **major** — a breaking change to the public API. **Pre-1.0**, breaking changes may land in a **minor**
-  bump, but the CHANGELOG must call them out under a **Breaking** heading.
+- **patch** (`0.2.x`) — bug fixes, internal changes, **and additive backward-compatible features**
+  (a new force, a new `FieldOption`, a new `FieldHandle` method). Pre-1.0, additions land in a patch —
+  this matches the canonical freeze contract
+  ([API stability](docs/canonical/field-ui-api-stability.md): the stable surface is additive-only
+  within a 0.MINOR line).
+- **minor** (`0.x.0`) — **the breaking position pre-1.0**: renaming, removing, or changing the
+  signature/shape of a frozen symbol bumps `0.MINOR`, called out in the CHANGELOG under a
+  **Breaking** heading with a migration note. Consumers should pin to `~0.MINOR`.
+- **major** (`1.0.0`) — the stability promise itself; from 1.0 on, standard SemVer applies.
 
 The engine's public surface is: the `@field-ui/core` exports (`createField`, `FieldOptions`,
 `FieldHandle`, the catalog, the conformance API), the `data-*` attribute vocabulary, the `<field-root>`
