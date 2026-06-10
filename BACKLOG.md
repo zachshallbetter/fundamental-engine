@@ -74,6 +74,34 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 - [ ] **`bindData()`** — map records → bodies with id-diffed add/remove/reorder (matter
       flows via the conserved lifecycle); a `useForcesData` React hook.
 
+## Site — invisible-field examples
+
+The Evidence Field's siblings: each takes a real dataset, makes its records bodies, and lets
+the field's measurements come back as type and ink — no particle swarm. The roster lives in
+the `/evidence` sidebar; each ships as its own page when built.
+
+- [x] **The Evidence Field** — OpenAlex citations → gravitational mass; trust in the type. (`/evidence`)
+- [ ] **The Inbox Field** — urgency is mass; attention is one finite budget (conserved attention);
+      old mail decays toward quiet (weak/transformation).
+- [ ] **The Market Field** — market cap is mass; volatility polarizes (charge); correlated
+      tickers thread (relationships).
+- [ ] **The Backlog Field** — priority is mass; blockers bind (strong); the sprint is a sink
+      with capacity (`data-max` → `--load` = commitment).
+- [ ] **The Calendar Field** — imminence pulls (gravity ramps as events approach); conflicts
+      repel; a day fills like a sink.
+- [ ] **The Thread Field** — votes are mass; controversy is charge; reply chains bind and heat.
+- [ ] **The Dependency Field** — criticality is mass; staleness decays; one CVE charges the
+      whole graph (causality spill).
+- [ ] **The Fleet Field** — traffic is mass; errors are heat; an incident accretes its alerts
+      (sink capture/release).
+- [ ] **The Catalog Field** — review consensus is mass (the Evidence trust math, retargeted);
+      stock is load; bought-together threads.
+- [ ] **The Library Field** — play count is mass; recency is the color lens; the queue accretes
+      and releases.
+- [ ] **The Memory Field** — the forgetting curve is decay (weak/transformation); mastery
+      anchors; due cards accrete until review releases them.
+- [ ] **The Newsroom Field** — source trust is mass; the news cycle decays; topic clusters bind.
+
 ## Render modes
 
 - [ ] **`knockout`** — field visible only inside glyphs (§11-safe).

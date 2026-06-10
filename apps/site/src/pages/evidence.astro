@@ -36,6 +36,28 @@ const topics = evidence.topics.map((t) => {
 const authorLine = (a: string[]) => (a.length > 2 ? `${a[0]} et al.` : a.join(" & ")) || "—";
 const linkFor = (w: { doi: string | null; id: string }) =>
   w.doi ? w.doi : `https://openalex.org/${w.id}`;
+
+// The invisible-field roster — this page's siblings. Each takes a real dataset, makes its
+// records bodies, and lets the field's measurements come back as type and ink — no particle
+// swarm. Shipped examples get an href; the rest are planned (tracked in BACKLOG.md).
+const SIBLINGS: { name: string; hook: string; href?: string }[] = [
+  {
+    name: "The Evidence Field",
+    hook: "citations are mass — trust you can feel in the type",
+    href: "/evidence",
+  },
+  { name: "The Inbox Field", hook: "urgency is mass; attention is one finite budget; old mail decays toward quiet" },
+  { name: "The Market Field", hook: "market cap is mass; volatility polarizes; correlated tickers thread" },
+  { name: "The Backlog Field", hook: "priority is mass; blockers bind; the sprint is a sink with capacity" },
+  { name: "The Calendar Field", hook: "the next hour pulls hardest; conflicts repel; a day fills like a sink" },
+  { name: "The Thread Field", hook: "votes are mass; controversy is charge; reply chains bind and heat" },
+  { name: "The Dependency Field", hook: "criticality is mass; staleness decays; one CVE charges the whole graph" },
+  { name: "The Fleet Field", hook: "traffic is mass; errors are heat; an incident accretes its alerts" },
+  { name: "The Catalog Field", hook: "review consensus is mass; stock is load; bought-together threads" },
+  { name: "The Library Field", hook: "play count is mass; recency colors; the queue accretes and releases" },
+  { name: "The Memory Field", hook: "the forgetting curve is decay; mastery anchors; due cards accrete until review" },
+  { name: "The Newsroom Field", hook: "source trust is mass; the cycle decays; topic clusters bind" },
+];
 ---
 
 <Base
@@ -43,6 +65,36 @@ const linkFor = (w: { doi: string | null; id: string }) =>
   description="The same research, run as a field. field-ui measures real OpenAlex citation data and writes trust back into the type — heavier, brighter, more anchored — with no particle swarm. Toggle the field off and it collapses to a plain list; that gap is what field-ui adds. data-* in, --field-* out."
 >
   <SiteNav current="evidence" />
+  <div class="ev-shell">
+    <aside class="ev-side" aria-label="Invisible-field examples">
+      <p class="ev-side-title">Invisible fields</p>
+      <p class="ev-side-note">
+        Real data becomes bodies; the field's measurements come back as type, ink, and anchor —
+        no particle swarm.
+      </p>
+      <nav class="ev-side-list">
+        {
+          SIBLINGS.map((s) =>
+            s.href ? (
+              <a
+                class="ev-side-item is-live"
+                href={s.href}
+                aria-current={s.href === "/evidence" ? "page" : undefined}
+              >
+                <b>{s.name}</b>
+                <span>{s.hook}</span>
+              </a>
+            ) : (
+              <span class="ev-side-item is-soon">
+                <b>{s.name}</b>
+                <span>{s.hook}</span>
+                <i class="ev-soon" aria-label="coming soon">soon</i>
+              </span>
+            ),
+          )
+        }
+      </nav>
+    </aside>
   <main class="ev-page" data-field="on" data-weight="consensus" data-lens="field">
     <header class="ev-hero">
       <p class="ev-kicker">field-ui · the evidence field</p>
@@ -275,6 +327,7 @@ import &#123; createField &#125; from '@field-ui/vanilla';
       </p>
     </footer>
   </main>
+  </div>
   <SiteFooter />
 </Base>
 

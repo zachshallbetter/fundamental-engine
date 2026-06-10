@@ -10,6 +10,18 @@ body:has(.ev-page) {
   align-items: flex-start;
 }
 
+/* shell: the invisible-fields sidebar + the example itself */
+.ev-shell {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 88rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  align-items: start;
+}
+
 .ev-page {
   position: relative;
   z-index: 2;
@@ -17,6 +29,147 @@ body:has(.ev-page) {
   max-width: 62rem;
   margin: 0 auto;
   padding: 6.5rem clamp(1.2rem, 5vw, 3rem) 5rem;
+}
+
+/* the sidebar — this example's siblings (one live, the rest planned) */
+.ev-side {
+  position: sticky;
+  top: 0;
+  max-height: 100svh;
+  overflow-y: auto;
+  padding: 7.2rem 0 2.5rem clamp(1.2rem, 2vw, 2rem);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.ev-side::-webkit-scrollbar {
+  width: 6px;
+}
+.ev-side::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+.ev-side::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ev-side-title {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0;
+}
+.ev-side-note {
+  margin: 0.7rem 0 1.2rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-3);
+  font-weight: 300;
+}
+.ev-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.ev-side-item {
+  display: block;
+  position: relative;
+  padding: 0.55rem 0.7rem 0.6rem;
+  border: 1px solid transparent;
+  border-left: 2px solid var(--line);
+  border-radius: 0 8px 8px 0;
+  text-decoration: none;
+}
+.ev-side-item b {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+}
+.ev-side-item span {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-4, #6b7280);
+  font-weight: 300;
+}
+.ev-side-item.is-live b {
+  color: var(--text);
+}
+.ev-side-item.is-live[aria-current="page"] {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+a.ev-side-item.is-live:hover {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+.ev-side-item.is-soon {
+  opacity: 0.62;
+}
+.ev-soon {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.6rem;
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-4, #6b7280);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.08rem 0.4rem;
+}
+
+/* narrow: the rail becomes a horizontal strip above the example */
+@media (max-width: 1080px) {
+  .ev-shell {
+    display: block;
+  }
+  .ev-side {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 6.5rem clamp(1.2rem, 5vw, 3rem) 0;
+  }
+  .ev-side-list {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding-bottom: 0.6rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .ev-side-list::-webkit-scrollbar {
+    height: 6px;
+  }
+  .ev-side-list::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 999px;
+  }
+  .ev-side-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .ev-side-item {
+    flex: 0 0 auto;
+    max-width: 15rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .ev-side-item.is-live[aria-current="page"] {
+    border-color: var(--accent);
+  }
+  .ev-soon {
+    position: static;
+    display: inline-block;
+    margin-top: 0.3rem;
+  }
+  .ev-page {
+    padding-top: 1.6rem;
+  }
 }
 
 /* hero */
@@ -534,7 +687,8 @@ body:has(.ev-page) {
   gap: 1.5rem;
   align-items: start;
 }
-.ev-how-col { display: flex; flex-direction: column; gap: 0.7rem; }
+/* min-width:0 lets the code <pre> scroll inside its grid track instead of widening it */
+.ev-how-col { display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
 .ev-how-label {
   font-family: var(--mono);
   font-size: 0.72rem;
