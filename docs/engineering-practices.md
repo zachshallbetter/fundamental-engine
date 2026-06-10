@@ -24,6 +24,12 @@ the #228 write-path migration shipped with **zero observable change** because th
 was tested against was built from real bugs first. Protect this ratchet — it is worth more
 than any individual fix.
 
+A corollary: **an exception list in a test is tracked debt, not resolution.** Each entry
+names a silent gap the suite is agreeing not to see. Burn-downs replace the entry with a
+positive check — `home.spec.ts`'s `UNTRACEABLE = ["fieldflow", "warp"]` became two probe
+recipes plus per-force demo-accuracy tests, and the boot test now asserts every
+chip-bearing stage holds exactly one traced canvas, no carve-outs.
+
 ## 2. The house bug class: silent contract gaps
 
 field-ui's authoring model is declarative attribute pairs, and their failure mode is never
@@ -35,6 +41,7 @@ an error — it is a page that quietly shows nothing. We have shipped this class
 | Threads' depth variable | a page-local `--d` silently shadowed the engine's density channel |
 | The accretion vessel (and two more homepage sinks) | `data-absorb` without `data-feedback` — captured for months, displayed nothing |
 | Eight stage canvases missing | a tracer's `return null` for unknown tokens read as a design choice |
+| The fieldflow demo chip | a transport force with no field-radiating sibling is a kinematic no-op — the stage looked plausibly alive (ambient drift) for months |
 
 The rules:
 
