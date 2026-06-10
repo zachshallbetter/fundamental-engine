@@ -27,6 +27,8 @@ const REGISTRIES = [
 
 const LINT = [
   ['relation-target-missing', '[data-field-relation] with a missing or unresolvable target'],
+  ['sink-without-feedback', 'a sink body carries data-absorb/data-max but no data-feedback — it captures matter yet never writes --load back, so anything reading the meter stays empty'],
+  ['feedback-vars-unwritten', 'an inline style reads var(--d…), var(--load…) or var(--field-…) on a body that never opted into data-feedback — that channel is never written for it'],
   ['state-unregistered', 'an element holds field state but was never registered for measurement'],
   ['overlay-without-links', 'a relationship overlay with no relationships behind it'],
   ['feedback-non-css-var', 'a binding that writes ARIA/attributes instead of a --field-* variable'],
