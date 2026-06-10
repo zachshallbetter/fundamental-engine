@@ -49,6 +49,8 @@ export const HANDLE: MethodRow[] = [
   { sig: 'clearFocus()', desc: 'Release the focused particle; it resumes drifting.' },
   { sig: 'particleCount()', desc: 'Live size of the particle pool. Use for external budget monitors or debug overlays without walking the particle array. Shipped-but-unfrozen.' },
   { sig: 'energy()', desc: 'Per-frame energy snapshot: { kinetic, thermal, total, count }. Forwards to energyReport() without requiring a reference to the internal particle array. Shipped-but-unfrozen.' },
+  { sig: 'scrollV()', desc: "The engine's eased page-scroll velocity — the same EMA the scrolling condition gate reads: (prev × 0.7) + (|Δscroll| × 0.3) per frame. Units are px/frame at the display refresh rate (refresh-rate dependent — roughly half on 120 Hz; may normalize to px/ms before 1.0). Mirrored to --field-scroll-v on :root by the platform runtime. Pull-based: read on demand, don't poll in tight loops. Shipped-but-unfrozen." },
+  { sig: 'setVisible(on)', desc: 'Element-level visibility hint: setVisible(false) skips all draw work (render + overlay) each frame while the simulation and its feedback signals stay live — scrollV(), --d, --load, capture events keep flowing. Distinct from the tab-level pause (visibilitychange already stops the loop entirely). <field-root> wires it automatically from an IntersectionObserver on the host. Shipped-but-unfrozen.' },
   { sig: 'destroy()', desc: 'Stop the loop and release listeners.' },
 ];
 

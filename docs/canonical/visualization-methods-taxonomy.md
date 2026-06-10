@@ -106,15 +106,21 @@ through `setRender()` / the core.
 
 The methods above answer *what* to draw. **Placement** answers *where* it composites relative to page
 content — an axis orthogonal to every visualization method. The visible particle canvas is one
-**surface**; field-ui defines two:
+**surface**; field-ui defines three:
 
 | Surface | Placement | Drawn on | Status |
 |---|---|---|---|
 | **Underlay** | behind content (`z-index:0`) | the `<field-root>` canvas | shipped (the default) |
 | **Overlay** | in front of content (`pointer-events:none`, screen-blend, above content / below the nav) | a second light-DOM canvas the element owns | shipped |
+| **Typographic (invisible)** | in the content itself | nothing — the field's feedback variables (`--d`, `--load`, `--field-*`) styled by author CSS into type, ink, and anchor | shipped — see [field-ui-invisible-fields.md](field-ui-invisible-fields.md) |
 
 - **Immersive** = the same field drawn on *both* surfaces, so content sits **inside** the field. It is
   a composition, not a new primitive: set the underlay (`render`) and the overlay (`overlay`) together.
+- **Typographic (invisible)** = no surface at all: the engine runs draw-skipped
+  (`FieldHandle.setVisible(false)`) and/or a recipe runs render-less (`render: []`), and the page's
+  own type *is* the render surface. The full pattern — two-field architecture, live channels,
+  engagement contracts, data provenance — is canonical in
+  [field-ui-invisible-fields.md](field-ui-invisible-fields.md).
 - **Overlay-suitable methods** are the structure/vector visualizations that reveal field *shape*
   without occluding text: `streamlines`, `force-vectors`, `field-lines` (and, planned, the scalar
   overlays `contours` / `potential`). Particle/matter methods (`dots`, `trails`, `metaballs`,
