@@ -1,0 +1,178 @@
+/* ============================================================
+   THE MARKET FIELD — market cap is mass; the day's move polarizes.
+   Reuses the ev-* design system from evidence.css; everything new is
+   scoped under .ex-market. Tokens come from ds-tokens.css (via Base).
+   ============================================================ */
+
+.ex-market .mk-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* a row: the asset's weight (--w, 0..1 log-normalized cap or volume) is felt —
+   type weight, ink, and a left anchor whose color is the move's polarity (--cat). */
+.ex-market .mk-row {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto auto 5.4rem;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.4rem);
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.2s;
+}
+.ex-market .mk-rank {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-4);
+  text-align: right;
+}
+.ex-market .mk-id {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+.ex-market .mk-name {
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.98rem, 1.4vw, 1.12rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ex-market .mk-sym {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  flex: none;
+}
+
+/* the week's price path — one <path>, scaled to the row's own min/max */
+.ex-market .mk-spark {
+  width: clamp(4.4rem, 9vw, 7.5rem);
+  height: 28px;
+  flex: none;
+  overflow: visible;
+  transition: opacity 0.3s;
+}
+.ex-market .mk-spark path {
+  fill: none;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  opacity: calc(0.45 + var(--w) * 0.55);
+}
+
+.ex-market .mk-quote {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+  min-width: 6.5rem;
+}
+.ex-market .mk-price {
+  font-family: var(--mono);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1;
+  color: color-mix(in srgb, var(--text) calc(55% + var(--w) * 45%), var(--text-4));
+}
+.ex-market .mk-cap {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+/* the change badge — direction is the glyph, polarity color comes from --cat */
+.ex-market .mk-chg {
+  justify-self: end;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  white-space: nowrap;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 40%), var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(45% + var(--w) * 55%), var(--text-3));
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(4% + var(--w) * 6%), transparent);
+}
+/* only the badge matching the active move window shows */
+.ex-market[data-lens="24h"] .mk-chg[data-win="7d"],
+.ex-market[data-lens="7d"] .mk-chg[data-win="24h"] {
+  display: none;
+}
+
+/* legend key: a tiny sparkline glyph */
+.ex-market .mk-k-spark {
+  width: 20px;
+  height: 10px;
+  border-bottom: 1.5px solid var(--accent);
+  border-radius: 0 0 4px 8px;
+  transform: skewY(-8deg);
+}
+
+/* ── Field OFF — the same snapshot, flattened back to a plain table ───────── */
+.ex-market[data-field="off"] .mk-row {
+  opacity: 1;
+  border-left-color: var(--line);
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+.ex-market[data-field="off"] .mk-name {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 500;
+}
+.ex-market[data-field="off"] .mk-price {
+  color: var(--text-2);
+}
+.ex-market[data-field="off"] .mk-spark {
+  opacity: 0.45;
+}
+.ex-market[data-field="off"] .mk-chg {
+  border-color: var(--line);
+  color: var(--text-3);
+  background: transparent;
+}
+
+@media (max-width: 720px) {
+  .ex-market .mk-row {
+    grid-template-columns: 1.8rem minmax(0, 1fr) auto;
+    row-gap: 0.5rem;
+  }
+  .ex-market .mk-spark {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .ex-market .mk-quote {
+    grid-column: 3;
+    grid-row: 1;
+    justify-items: end;
+  }
+  .ex-market .mk-chg {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-market .mk-row {
+    transition: none;
+  }
+}

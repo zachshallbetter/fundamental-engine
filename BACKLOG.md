@@ -76,31 +76,33 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 
 ## Site — invisible-field examples
 
-The Evidence Field's siblings: each takes a real dataset, makes its records bodies, and lets
+The Evidence example's siblings: each takes a real dataset, makes its records bodies, and lets
 the field's measurements come back as type and ink — no particle swarm. The roster lives in
-the `/evidence` sidebar; each ships as its own page when built.
+`apps/site/src/lib/invisible-fields.ts` (the `/evidence` sidebar); snapshots regenerate with
+`apps/site/scripts/snapshot-examples.mjs`; pages live at `/evidence/<slug>`.
 
-- [x] **The Evidence Field** — OpenAlex citations → gravitational mass; trust in the type. (`/evidence`)
-- [ ] **The Inbox Field** — urgency is mass; attention is one finite budget (conserved attention);
-      old mail decays toward quiet (weak/transformation).
-- [ ] **The Market Field** — market cap is mass; volatility polarizes (charge); correlated
-      tickers thread (relationships).
-- [ ] **The Backlog Field** — priority is mass; blockers bind (strong); the sprint is a sink
-      with capacity (`data-max` → `--load` = commitment).
-- [ ] **The Calendar Field** — imminence pulls (gravity ramps as events approach); conflicts
-      repel; a day fills like a sink.
-- [ ] **The Thread Field** — votes are mass; controversy is charge; reply chains bind and heat.
-- [ ] **The Dependency Field** — criticality is mass; staleness decays; one CVE charges the
-      whole graph (causality spill).
-- [ ] **The Fleet Field** — traffic is mass; errors are heat; an incident accretes its alerts
-      (sink capture/release).
-- [ ] **The Catalog Field** — review consensus is mass (the Evidence trust math, retargeted);
-      stock is load; bought-together threads.
-- [ ] **The Library Field** — play count is mass; recency is the color lens; the queue accretes
-      and releases.
-- [ ] **The Memory Field** — the forgetting curve is decay (weak/transformation); mastery
-      anchors; due cards accrete until review releases them.
-- [ ] **The Newsroom Field** — source trust is mass; the news cycle decays; topic clusters bind.
+- [x] **Evidence** — OpenAlex citations → gravitational mass; trust in the type. (`/evidence`)
+- [x] **Inbox** — Stack Overflow's unanswered queue; urgency is mass; attention is one finite,
+      conserved budget — pinning one ask literally dims the rest.
+- [x] **Market** — CoinGecko top assets; market cap is mass; the day's move polarizes (charge);
+      sparklines carry the lens color.
+- [~] **Backlog** — this repo's own work items; activity is mass; refs bind; the shipping cycle
+      is a sink with capacity (`data-max` → `--load`).
+- [~] **Calendar** — Launch Library upcoming launches; imminence is gravity, recomputed live —
+      the next launch pulls hardest.
+- [~] **Threads** — a real HN discussion; replies are mass; tempo is heat; hover lights the
+      binding chain.
+- [~] **Dependencies** — the monorepo's real npm deps; downloads are mass; staleness decays;
+      an advisory charges the graph (causality spill).
+- [~] **Fleet** — GitHub's status page; involvement is mass; impact is heat; an incident
+      accretes its updates (sink capture/release).
+- [~] **Catalog** — Open Library sci-fi shelf; the Evidence trust math retargeted; shared
+      subjects are the affinity.
+- [~] **Library** — ListenBrainz top recordings; listens are mass; the queue is a real sink
+      that accretes and releases.
+- [~] **Memory** — Google-corpus word frequencies; the forgetting curve is decay; frequency
+      anchors; review re-binds.
+- [~] **Newsroom** — Wikipedia's most-read; pageviews are mass; the cycle's rise/fall polarizes.
 
 ## Render modes
 

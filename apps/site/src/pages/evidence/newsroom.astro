@@ -1,0 +1,225 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import newsroom from "../../data/examples/newsroom.json";
+import "../../styles/examples/newsroom.css";
+
+// The Newsroom Field — field-ui as an invisible measurement layer over one day of Wikipedia's
+// most-read articles. Pageviews are gravitational mass (what the world actually read anchors
+// the page); the day-over-day change polarizes — rising warms, falling cools, new entries stay
+// neutral. No particle swarm: the attention shows in the type.
+
+// weight: log-normalized pageviews (the evidence trust math, retargeted at attention)
+const views = newsroom.articles.map((a) => a.views);
+const lmin = Math.log(Math.min(...views) + 1);
+const lmax = Math.log(Math.max(...views) + 1);
+const wOf = (v: number): number => (lmax > lmin ? (Math.log(v + 1) - lmin) / (lmax - lmin) : 1);
+
+// polarity: the day-over-day move. Direction is hue (warm rising, cool falling), magnitude is
+// intensity; articles with no prior-day count are new — neutral gray-blue, no fake direction.
+// the runtime re-runs this same ramp when the lens changes.
+const pctOf = (a: { views: number; priorViews: number | null }): number | null =>
+  a.priorViews ? ((a.views - a.priorViews) / a.priorViews) * 100 : null;
+const catFor = (pct: number | null): string => {
+  if (pct === null) return "#8a93a6";
+  const t = Math.min(1, Math.abs(pct) / 60);
+  return pct >= 0
+    ? `hsl(${Math.round(32 - t * 10)} ${Math.round(42 + t * 46)}% ${Math.round(56 + t * 8)}%)`
+    : `hsl(${Math.round(208 + t * 12)} ${Math.round(34 + t * 46)}% ${Math.round(58 + t * 8)}%)`;
+};
+
+const fmtViews = new Intl.NumberFormat("en-US");
+const badge = (pct: number | null): string =>
+  pct === null ? "new" : `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct).toFixed(1)}%`;
+
+const dayLabel = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(new Date(`${newsroom.day.replaceAll("/", "-")}T00:00:00Z`));
+const snapDate = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(new Date(newsroom.snapshotAt));
+
+const articles = [...newsroom.articles].sort((a, b) => a.rank - b.rank);
+---
+
+<ExampleShell
+  title="field-ui — Newsroom"
+  description="One day of Wikipedia's most-read articles run as a field. Pageviews are gravitational mass — what the world actually read anchors the page — and the day-over-day change polarizes: rising warms, falling cools. No particle swarm; the attention shows in the type."
+  current="newsroom"
+  mainClass="ex-newsroom"
+  mainAttrs={{ "data-field": "on", "data-lens": "trend" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · newsroom</p>
+    <h1>Attention, <span class="accent">measured</span> — not claimed.</h1>
+    <p class="ev-lede">
+      A trending list asserts importance; a pageview count records it. These are the articles
+      English Wikipedia readers <strong>actually read</strong> on {dayLabel} — the
+      <a href="https://wikimedia.org/api/rest_v1/" rel="noopener">Wikimedia pageviews API</a>'s
+      most-read ranking, run as a <strong>field</strong>. Pageviews become gravitational mass:
+      the most-read articles anchor the page with heavier type, darker ink, a stronger left
+      anchor.
+    </p>
+    <p class="ev-lede">
+      The day-over-day change <strong>polarizes</strong> each body: rising attention warms,
+      falling attention cools, and the magnitude sets the intensity — a 3% drift barely
+      registers, a 200% surge burns. Articles that weren't in the prior day's list at all read
+      as <strong>new</strong>, in neutral gray — no fake direction. <strong>Toggle the field
+      off</strong> and the ranking collapses to a flat list.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-nw-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Color by</span>
+      <div class="ev-seg" role="group" aria-label="Color lens">
+        <button type="button" data-nw-lens="trend" aria-pressed="true">trend</button>
+        <button type="button" data-nw-lens="off" aria-pressed="false">off</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-nw-hint><b>size</b> = pageviews — what the world actually read that day</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-nw-lens-hint><b>color</b> = the day-over-day move — warm rising, cool falling, gray new</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = pageviews (log-normalized)</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the cycle's direction — warm rising · cool falling</li>
+    <li><span class="ev-k nw-k-new">new</span> = absent from the prior day's list</li>
+  </ul>
+
+  <ol class="nw-list" data-nw-list>
+    {
+      articles.map((a) => {
+        const w = wOf(a.views);
+        const pct = pctOf(a);
+        return (
+          <li
+            class="nw-row"
+            data-body="attract"
+            data-feedback
+            data-range="200"
+            data-strength={(0.4 + w * 1.6).toFixed(2)}
+            data-views={a.views}
+            data-prior={a.priorViews ?? ""}
+            style={`--w:${w.toFixed(3)}; --cat:${catFor(pct)};`}
+          >
+            <span class="nw-rank">{String(a.rank).padStart(2, "0")}</span>
+            <a class="nw-title" href={a.url} target="_blank" rel="noopener">
+              {a.title}
+            </a>
+            <span class="nw-chg" data-dir={pct === null ? "new" : pct >= 0 ? "up" : "down"}>
+              {badge(pct)}
+            </span>
+            <div class="nw-views" aria-label={`${a.views.toLocaleString("en-US")} pageviews`}>
+              <span class="nw-count">{fmtViews.format(a.views)}</span>
+              <span class="nw-count-l">views</span>
+              <span class="ev-bar"><i style={`width:${Math.round(w * 100)}%`} /></span>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ol>
+
+  <section class="ev-how" aria-labelledby="nw-how-h">
+    <h2 id="nw-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every article is an ordinary <code>&lt;li&gt;</code> with its raw counts in data
+      attributes. field-ui reads them, runs an invisible field over the list, and the type
+      carries the measurement — pageviews as weight, the day's swing as color. No canvas, no
+      chart library.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — each article is a field body</p>
+        <pre class="ev-code"><code>&lt;li
+  data-body="attract"
+  data-strength="1.87"
+  data-feedback
+  data-views="291972"
+  data-prior="303010"
+  style="--w: 0.920; --cat: hsl(212 38% 59%);"
+&gt;
+  &lt;!-- rank · title · views --&gt;
+&lt;/li&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-strength</code> — gravitational mass from log-normalized pageviews</li>
+          <li><code>data-views</code> / <code>data-prior</code> — the raw counts the lens reads</li>
+          <li><code>--cat</code> — the polarity color the CSS mixes in</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — CSS reads the field's output</p>
+        <pre class="ev-code"><code>{`.nw-row {
+  /* --w = log-normalized views (0..1) */
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}
+.nw-title {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}`}</code></pre>
+        <p class="ev-how-note">
+          Weight, ink, font heft, and border intensity all read from one normalized attention
+          score — the field drives the measurement; CSS drives the presentation.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — the polarity ramp</p>
+        <pre class="ev-code"><code>{`// day-over-day move → --cat:
+// direction is hue, magnitude is
+// intensity; no prior count = new.
+const pct = prior
+  ? ((views - prior) / prior) * 100
+  : null;
+if (pct === null) return "#8a93a6";
+const t = Math.min(1, Math.abs(pct) / 60);
+return pct >= 0
+  ? \`hsl(\${32 - t * 10} …)\`  // warm
+  : \`hsl(\${208 + t * 12} …)\`; // cool`}</code></pre>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Pageviews are <strong>attention, not importance</strong> — they say what the world read,
+      not what mattered. The counts are English Wikipedia's most-read articles for {dayLabel},
+      with the trend computed against the prior day; the snapshot was taken {snapDate} (UTC).
+      Data: <a href="https://wikimedia.org/api/rest_v1/" rel="noopener">Wikimedia pageviews
+      API</a> (CC0).
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">← Back to the Evidence field</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/newsroom-runtime.ts";
+</script>

@@ -1,0 +1,323 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import backlog from "../../data/examples/backlog.json";
+import "../../styles/examples/backlog.css";
+
+// The Backlog Field — field-ui's own work stream run as a field. Each issue and pull request
+// is a body; activity (discussion) and freshness (recency of touch) blend into mass; refs[]
+// thread each item to the work it builds on; and the shipping cycle is a sink with a stated
+// capacity. No particle swarm: the field shows in the type.
+
+const snapshot = Date.parse(backlog.snapshotAt);
+const present = new Set(backlog.items.map((it) => it.number));
+
+// normalized signals, computed once over the whole set (both sections share one scale);
+// the runtime re-blends them per lens — activity-leaning by default.
+const cmax = Math.log(Math.max(...backlog.items.map((it) => it.comments), 1) + 1);
+const ageH = backlog.items.map((it) =>
+  Math.max(1, (snapshot - Date.parse(it.updatedAt)) / 36e5),
+);
+const la = ageH.map((h) => Math.log(h + 1));
+const laMin = Math.min(...la);
+const laSpan = Math.max(...la) - laMin || 1;
+
+// color = kind: pull requests teal, issues blue.
+const KIND_COLOR: Record<string, string> = { pr: "#2dd4bf", issue: "#4da3ff" };
+
+const items = backlog.items.map((it, i) => {
+  const act = Math.log(it.comments + 1) / cmax;
+  const rec = 1 - (la[i]! - laMin) / laSpan;
+  return {
+    ...it,
+    act,
+    rec,
+    // the default "activity" blend — the runtime mirrors these weights exactly.
+    w: 0.65 * act + 0.35 * rec,
+    cat: KIND_COLOR[it.kind] ?? "#4da3ff",
+    refsHere: it.refs.filter((r) => present.has(r) && r !== it.number),
+  };
+});
+
+const inFlight = items.filter((it) => it.state === "open").sort((a, b) => b.w - a.w);
+const shipped = items.filter((it) => it.state !== "open").sort((a, b) => b.w - a.w);
+
+// the cycle sink: items closed or merged in the 14 days before the snapshot, against a
+// stated capacity. The bar's FILL is this arithmetic; the GLOW is the live field's --load.
+const CYCLE_DAYS = 14;
+const CAPACITY = 20;
+const cycleCount = items.filter(
+  (it) => it.closedAt && snapshot - Date.parse(it.closedAt) <= CYCLE_DAYS * 864e5,
+).length;
+const cyclePct = Math.min(100, Math.round((cycleCount / CAPACITY) * 100));
+const cycleRatio = (cycleCount / CAPACITY).toFixed(1);
+
+const fmtAge = (iso: string): string => {
+  const h = Math.max(0, (snapshot - Date.parse(iso)) / 36e5);
+  if (h < 1) return "within the hour";
+  if (h < 48) return `${Math.round(h)}h ago`;
+  if (h < 24 * 60) return `${Math.round(h / 24)}d ago`;
+  return `${Math.round(h / (24 * 30.4))}mo ago`;
+};
+const snapshotDay = backlog.snapshotAt.slice(0, 10);
+---
+
+<ExampleShell
+  title="field-ui — Backlog"
+  description="field-ui's own issues and pull requests run as a field. Activity is mass — discussion pulls — references thread each item to the work it builds on, and the shipping cycle is a sink with visible capacity. No particle swarm; the field shows in the type."
+  current="backlog"
+  mainClass="ex-backlog"
+  mainAttrs={{ "data-field": "on", "data-weight": "activity" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · backlog</p>
+    <h1>Work has <span class="accent">weight</span>.</h1>
+    <p class="ev-lede">
+      This one is the repo measuring itself: the {items.length} most recent work items from
+      <a href="https://github.com/zachshallbetter/field-ui" rel="noopener">field-ui's own
+      repository</a> — the issues and pull requests that built the engine rendering this page.
+      A tracker flattens them into identical rows; here each item is a <strong>body</strong>,
+      and its mass is a blend of activity (discussion) and freshness (how recently it was
+      touched). Heavier items read darker, heavier, more anchored.
+    </p>
+    <p class="ev-lede">
+      Work also <strong>binds</strong>: when an item references another, hovering it threads
+      back to what it builds on. And the shipping cycle has visible capacity — everything
+      closed or merged in the {CYCLE_DAYS} days before the snapshot accretes into one bar
+      above the Shipped section. Switch the weighting and watch each section re-settle;
+      <strong>toggle the field off</strong> and it collapses to a plain tracker.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-wl-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Weight by</span>
+      <div class="ev-seg" role="group" aria-label="Weighting signal">
+        <button type="button" data-wl-weight="activity" aria-pressed="true">activity</button>
+        <button type="button" data-wl-weight="freshness" aria-pressed="false">freshness</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-wl-hint
+        ><b>size</b> = activity, comment-leaning — the items people argue about carry the mass</span
+      >
+      <span class="ev-hint-sep">·</span>
+      <span><b>color</b> = kind — teal pull requests, blue issues</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal</li>
+    <li>
+      <span class="ev-k wl-k-kinds"><i class="wl-k-pr"></i><i class="wl-k-issue"></i></span>
+      <b>color</b> = kind (teal PR · blue issue)
+    </li>
+    <li><span class="ev-k ev-k-thread"></span> hover → threads to the items it references</li>
+    <li><span class="ev-k wl-k-sink"><i></i></span> the cycle bar is a <b>sink</b> — shipped work accretes into it</li>
+  </ul>
+
+  <div class="wl-zone" data-wl-zone>
+    <section class="wl-section" aria-labelledby="wl-open-h">
+      <h2 class="wl-h" id="wl-open-h">In flight <span class="wl-h-n">{inFlight.length}</span></h2>
+      <ol class="wl-list" data-wl-list>
+        {
+          inFlight.map((it) => (
+            <li
+              class="wl-item"
+              id={`wi-${it.number}`}
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+              data-act={it.act.toFixed(4)}
+              data-rec={it.rec.toFixed(4)}
+              data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
+              style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
+            >
+              <span class="wl-num">#{it.number}</span>
+              <span class="wl-kind" data-kind={it.kind}>{it.kind === "pr" ? "PR" : "issue"}</span>
+              <div class="wl-body">
+                <a class="wl-title" href={it.url} target="_blank" rel="noopener">
+                  {it.title}
+                </a>
+                <span class="wl-meta">
+                  {it.author} · updated {fmtAge(it.updatedAt)}
+                </span>
+              </div>
+              <span class="wl-comments">
+                <b>{it.comments}</b>
+                <span class="wl-comments-l">comments</span>
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="wl-section" aria-labelledby="wl-shipped-h">
+      <h2 class="wl-h" id="wl-shipped-h">Shipped <span class="wl-h-n">{shipped.length}</span></h2>
+
+      <!-- the cycle sink: a real sink body in the scoped field. The bar's fill is data
+           arithmetic (shipped / capacity); the glow reads the engine's live --load. -->
+      <div
+        class="wl-cycle"
+        data-wl-cycle
+        data-body="sink"
+        data-absorb
+        data-max="8"
+        data-feedback
+        data-over={cycleCount > CAPACITY ? "" : undefined}
+      >
+        <span class="wl-cycle-label">
+          this cycle: <b>{cycleCount}/{CAPACITY}</b> shipped
+        </span>
+        <span class="wl-cycle-bar" aria-hidden="true"><i style={`width:${cyclePct}%`}></i></span>
+        <span class="wl-cycle-note">
+          {
+            cycleCount > CAPACITY
+              ? `the ${CYCLE_DAYS} days before the snapshot ran ${cycleRatio}× the stated capacity`
+              : `${CAPACITY - cycleCount} of capacity left in the window`
+          }
+        </span>
+      </div>
+
+      <ol class="wl-list wl-list--shipped" data-wl-list>
+        {
+          shipped.map((it) => (
+            <li
+              class="wl-item wl-item--shipped"
+              id={`wi-${it.number}`}
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+              data-act={it.act.toFixed(4)}
+              data-rec={it.rec.toFixed(4)}
+              data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
+              style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
+            >
+              <span class="wl-num">#{it.number}</span>
+              <span class="wl-kind" data-kind={it.kind}>{it.kind === "pr" ? "PR" : "issue"}</span>
+              <div class="wl-body">
+                <a class="wl-title" href={it.url} target="_blank" rel="noopener">
+                  {it.title}
+                </a>
+                <span class="wl-meta">
+                  {it.author} · {it.state} · updated {fmtAge(it.updatedAt)}
+                </span>
+              </div>
+              <span class="wl-comments">
+                <b>{it.comments}</b>
+                <span class="wl-comments-l">comments</span>
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </div>
+
+  <section class="ev-how" aria-labelledby="wl-how-h">
+    <h2 id="wl-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every work item is an ordinary <code>&lt;li&gt;</code> with a few data attributes — the
+      GitHub API response, flattened into markup. field-ui runs an invisible field over the
+      list and the type carries the measurement: activity as weight, kind as color, references
+      as hover threads. No canvas, no chart library.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — each work item is a field body</p>
+        <pre class="ev-code"><code>&lt;li
+  id="wi-294"
+  data-body="attract"
+  data-strength="1.42"
+  data-feedback
+  data-act="0.91" data-rec="0.99"
+  data-refs="wi-282 wi-269"
+  style="--w: 0.94; --cat: #2dd4bf;"
+&gt;
+  &lt;!-- #number · kind · title · author --&gt;
+&lt;/li&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-act</code> / <code>data-rec</code> — the normalized signals the lenses re-blend</li>
+          <li><code>data-refs</code> — the items this one references (the hover threads)</li>
+          <li><code>data-strength</code> — gravitational mass from the blended weight</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — the cycle bar's two honest channels</p>
+        <pre class="ev-code"><code>{`<div data-body="sink" data-absorb
+     data-max="8" data-feedback>
+
+/* channel 1 — data arithmetic:
+   the FILL is shipped ÷ capacity,
+   computed from closedAt timestamps. */
+width: 100%;  /* ${cycleCount}/${CAPACITY} this cycle */
+
+/* channel 2 — the live field:
+   the engine writes --load (0..1) as
+   particles accrete into the sink. */
+box-shadow: 0 0
+  calc(var(--load, 0) * 22px)
+  color-mix(in srgb, var(--accent)
+    calc(var(--load, 0) * 40%),
+    transparent);`}</code></pre>
+        <p class="ev-how-note">
+          Two channels, kept honest: the fill is static math over the snapshot's
+          <code>closedAt</code> dates; only the glow is the live engine — a real
+          <code>sink</code> body charging as the scoped field runs.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the blended weight</p>
+        <pre class="ev-code"><code>{`.wl-title {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.wl-item {
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}`}</code></pre>
+        <p class="ev-how-note">
+          Switching the lens re-blends <code>--w</code> from <code>data-act</code> and
+          <code>data-rec</code>, then FLIP re-sorts each section so the reflow is felt, not cut.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Activity here is <strong>discussion, not importance</strong> — comment count says where the
+      conversation happened, not what mattered most. Ages are measured against the snapshot, so
+      the page is stable. Data: the
+      <a href="https://docs.github.com/en/rest" rel="noopener">GitHub API</a>
+      (zachshallbetter/field-ui issues and pull requests), public repository data, snapshotted
+      {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/backlog-runtime.ts";
+</script>

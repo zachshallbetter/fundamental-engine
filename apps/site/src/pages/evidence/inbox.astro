@@ -1,0 +1,304 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import inbox from "../../data/examples/inbox.json";
+import "../../styles/examples/inbox.css";
+
+// The Inbox Field — attention as a CONSERVED budget over real unanswered Stack Overflow
+// questions. Each ask is a body; its urgency (a blend of recency, votes, and views) becomes
+// mass — but the page holds a fixed attention total, so brightening one ask literally dims
+// the rest. Pin an ask and the remaining budget redistributes. No particle swarm.
+const snapshot = Date.parse(inbox.snapshotAt) / 1000;
+const BUDGET_PER_ITEM = 0.42;
+
+const hoursOf = (askedAt: number) => Math.max(0.5, (snapshot - askedAt) / 3600);
+const items0 = inbox.items.map((it) => ({ ...it, hours: hoursOf(it.askedAt) }));
+
+// normalize each raw signal to 0..1 once, server-side; the runtime re-blends them per lens.
+const lh = items0.map((it) => Math.log(it.hours + 1));
+const lhMin = Math.min(...lh);
+const lhSpan = Math.max(...lh) - lhMin || 1;
+const sMin = Math.min(...items0.map((it) => it.score));
+const sSpan = Math.max(...items0.map((it) => it.score)) - sMin || 1;
+const lv = items0.map((it) => Math.log(it.views + 1));
+const lvMin = Math.min(...lv);
+const lvSpan = Math.max(...lv) - lvMin || 1;
+
+const items1 = items0.map((it, i) => ({
+  ...it,
+  rec: 1 - (lh[i]! - lhMin) / lhSpan, // fresher = closer to 1 (log-scaled age)
+  vot: (it.score - sMin) / sSpan,
+  vie: (lv[i]! - lvMin) / lvSpan,
+}));
+
+// the "fresh" lens blend (the default) — the runtime mirrors these weights exactly.
+const urgency = (it: { rec: number; vot: number; vie: number }) =>
+  0.6 * it.rec + 0.25 * it.vot + 0.15 * it.vie;
+
+// conserved allocation: Σw is pinned to the budget; per-item w caps at 1, with capped
+// excess re-flowing to the rest (water-filling). The runtime uses the same routine.
+function allocate(us: number[], budget: number): number[] {
+  const w = us.map(() => 0);
+  let free = us.map((_, i) => i);
+  let rem = budget;
+  for (let pass = 0; pass < 10 && free.length && rem > 0; pass++) {
+    const sum = free.reduce((s, i) => s + us[i]!, 0) || 1;
+    const k = rem / sum;
+    const still: number[] = [];
+    let capped = 0;
+    for (const i of free) {
+      if (us[i]! * k >= 1) {
+        w[i] = 1;
+        capped++;
+      } else still.push(i);
+    }
+    if (!capped) {
+      for (const i of still) w[i] = us[i]! * k;
+      break;
+    }
+    rem -= capped;
+    free = still;
+    if (!capped || rem <= 0) for (const i of still) w[i] = 0;
+  }
+  return w;
+}
+
+const budget = items1.length * BUDGET_PER_ITEM;
+const ws = allocate(items1.map(urgency), budget);
+const items = items1
+  .map((it, i) => ({
+    ...it,
+    w: ws[i]!,
+    // color = recency, cool (old) → warm (fresh); the lens segments re-blend SIZE, not color.
+    cat: `hsl(${Math.round(205 + it.rec * 125)} 74% 64%)`,
+  }))
+  .sort((a, b) => b.w - a.w);
+
+const fmtAge = (h: number) =>
+  h < 48
+    ? `${Math.round(h)}h ago`
+    : h < 24 * 60
+      ? `${Math.round(h / 24)}d ago`
+      : h < 24 * 730
+        ? `${Math.round(h / (24 * 30.4))}mo ago`
+        : `${Math.round(h / 8760)}y ago`;
+const fmtViews = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v));
+const snapshotDay = inbox.snapshotAt.slice(0, 10);
+---
+
+<ExampleShell
+  title="field-ui — Inbox"
+  description="An inbox run as a field with a conserved attention budget. Real unanswered Stack Overflow questions become bodies; urgency is mass, but the page holds a fixed attention total — brightening one ask literally dims the rest. Pin an ask and the budget redistributes. data-* in, --field-* out."
+  current="inbox"
+  mainClass="ex-inbox"
+  mainAttrs={{ "data-field": "on", "data-lens": "fresh" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · inbox</p>
+    <h1>Attention is a <span class="accent">budget</span>.</h1>
+    <p class="ev-lede">
+      An inbox is a queue of asks competing for one finite resource: yours. Most inboxes pretend
+      otherwise — every row arrives at full volume, so the real triage happens in your head.
+      These are {items.length} real unanswered
+      <a href="https://stackoverflow.com/questions/tagged/javascript?tab=Unanswered" rel="noopener"
+        >[javascript] questions from Stack Overflow</a
+      >, and here the attention is <strong>conserved</strong>: the page holds a fixed total, split
+      across every ask by urgency — a blend of recency, votes, and views.
+    </p>
+    <p class="ev-lede">
+      Because the total is fixed, <strong>brightening one ask literally dims the rest</strong>.
+      Pin an ask and it takes a full unit of attention; the remaining budget redistributes across
+      everything unpinned, and you watch the others fade by exactly that much. Switch the lens
+      and the same budget re-settles along a different signal. The field is invisible — its only
+      output is type weight, ink, and a left anchor.
+    </p>
+  </header>
+
+  <!-- Controls — the budget made legible. -->
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-ix-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Urgency lens</span>
+      <div class="ev-seg" role="group" aria-label="Urgency blend">
+        <button type="button" data-ix-lens="fresh" aria-pressed="true">fresh</button>
+        <button type="button" data-ix-lens="voted" aria-pressed="false">voted</button>
+        <button type="button" data-ix-lens="seen" aria-pressed="false">seen</button>
+      </div>
+    </div>
+    <div class="ev-ctl ix-meter-ctl">
+      <span class="ev-ctl-l">Attention</span>
+      <span class="ix-meter" aria-hidden="true"><i></i></span>
+      <span class="ix-meter-txt" data-ix-meter aria-live="polite"
+        >100% allocated · pinned 0 · free {budget.toFixed(1)}</span
+      >
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-ix-hint
+        ><b>size</b> = urgency, recency-leaning — fresh asks pull hardest before they go cold</span
+      >
+      <span class="ev-hint-sep">·</span>
+      <span><b>color</b> = age — cool has waited years, warm arrived this week</span>
+    </p>
+  </div>
+
+  <!-- Legend — reading the field. -->
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = this ask's share of the budget</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = recency (cool old → warm fresh)</li>
+    <li><span class="ev-k ix-k-pin"></span> click an ask to <b>pin</b> it — it takes a full unit; the rest split what's left</li>
+    <li>
+      <span class="ev-k ix-k-meter"><i></i></span> the meter always reads <b>100%</b> — attention
+      is conserved, never created
+    </li>
+  </ul>
+
+  <ol class="ix-list" data-ix-list>
+    {
+      items.map((it) => (
+        <li
+          class="ix-item"
+          id={`q-${it.id}`}
+          data-body="attract"
+          data-feedback
+          data-range="200"
+          data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+          data-rec={it.rec.toFixed(4)}
+          data-vot={it.vot.toFixed(4)}
+          data-vie={it.vie.toFixed(4)}
+          style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
+        >
+          <div class="ix-body">
+            <a class="ix-title" href={it.link} target="_blank" rel="noopener">
+              {it.title}
+            </a>
+            <span class="ix-meta">
+              {it.tags.slice(0, 4).map((tag) => (
+                <span class="ix-tag">{tag}</span>
+              ))}
+              <span class="ix-meta-rest">
+                {fmtAge(it.hours)} · {it.author}
+              </span>
+            </span>
+          </div>
+          <div class="ix-stats">
+            <span class="ix-stat">
+              <b>{it.score}</b>
+              <span class="ix-stat-l">votes</span>
+            </span>
+            <span class="ix-stat">
+              <b>{fmtViews(it.views)}</b>
+              <span class="ix-stat-l">views</span>
+            </span>
+            <span class="ix-share" aria-hidden="true">
+              <i style={`width:${Math.round(it.w * 100)}%`} />
+            </span>
+          </div>
+          <button class="ix-pin" type="button" aria-pressed="false" aria-label={`Pin "${it.title}"`}>
+            pin
+          </button>
+        </li>
+      ))
+    }
+  </ol>
+
+  <!-- How it's built — the conserved budget made concrete. -->
+  <section class="ev-how" aria-labelledby="ix-how-h">
+    <h2 id="ix-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every ask is ordinary semantic HTML — an <code>&lt;li&gt;</code> carrying its normalized
+      signals as data attributes. The page blends them into an urgency score per the active lens,
+      then <strong>renormalizes</strong> so the weights always sum to one fixed budget. CSS turns
+      each weight into type heft, ink, and anchor. The field never invents attention; it only
+      moves it.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — mark each ask as a field body</p>
+        <pre class="ev-code"><code>&lt;li
+  data-body="attract"
+  data-strength="1.21"
+  data-feedback
+  data-rec="0.91" data-vot="0.25" data-vie="0.14"
+  style="--w: 0.51; --cat: hsl(318 74% 64%);"
+&gt;
+  &lt;!-- your ordinary HTML here --&gt;
+&lt;/li&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-body="attract"</code> — registers as a field participant</li>
+          <li><code>data-strength</code> — mass, derived from the allocated weight</li>
+          <li><code>data-rec/vot/vie</code> — the normalized signals the lenses re-blend</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — the conserved renormalization</p>
+        <pre class="ev-code"><code>{`// fresh lens — the blends differ per lens
+u[i] = 0.60·recency + 0.25·votes + 0.15·views
+
+// the fixed total: N items × 0.42
+budget = N × 0.42
+
+// scale so the weights SUM to the budget,
+// cap each at 1, re-flow capped excess
+k    = budget / Σ u
+w[i] = min(1, u[i] × k)   // repeat on the rest
+
+// pins: w = 1, then reallocate
+// (budget − pins) over the unpinned
+Σ w[i] = budget — always.`}</code></pre>
+        <p class="ev-how-note">
+          That invariant is the mechanic: the meter reads 100% no matter what you do, because
+          pinning or re-blending can only move attention, not mint it.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the weight</p>
+        <pre class="ev-code"><code>{`.ix-title {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.ix-item {
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}`}</code></pre>
+        <p class="ev-how-note">
+          This is the engine's attention-budget idea applied to a page: bodies compete for a
+          finite influence pool, and the layout reports each body's share — the same conservation
+          the field runtime applies to particle attention, here written into the type.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Urgency here is <strong>competition, not importance</strong> — a fixed budget split by
+      recency, votes, and views says which asks are winning your attention right now, not which
+      deserve it. Ages are measured against the snapshot, so the page is stable. Data: the
+      <a href="https://api.stackexchange.com" rel="noopener">Stack Exchange API</a> (stackoverflow.com,
+      unanswered [javascript] questions), CC BY-SA 4.0, snapshotted {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/inbox-runtime.ts";
+</script>

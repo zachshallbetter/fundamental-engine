@@ -1,0 +1,334 @@
+/* ============================================================
+   THE FLEET FIELD — services carry their incident history; incidents accrete
+   updates until resolution releases them; impact is the heat. Builds on the
+   ev-* design system (evidence.css, imported by ExampleShell); everything here
+   is scoped under .ex-fleet: the services grid, the incident timeline, and the
+   cross-highlight states.
+   ============================================================ */
+
+.ex-fleet .fl-zone {
+  position: relative;
+}
+
+.ex-fleet .fl-h {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-2);
+}
+.ex-fleet .fl-h-n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+
+/* ── Zone 1: the services grid — involvement (--w) is mass ─────────────────── */
+.ex-fleet .fl-services {
+  margin-bottom: 2.2rem;
+}
+.ex-fleet .fl-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.6rem;
+}
+.ex-fleet .fl-comp {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.2s;
+}
+.ex-fleet .fl-comp.lit,
+.ex-fleet .fl-comp.cited {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
+  background: color-mix(in srgb, var(--cat, var(--accent)) 8%, transparent);
+}
+.ex-fleet .fl-comp-name {
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: 0.92rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-fleet .fl-pill {
+  justify-self: start;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 50%, var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) 80%, var(--text-3));
+}
+.ex-fleet .fl-comp-inv {
+  font-size: 0.68rem;
+  color: var(--text-4);
+}
+.ex-fleet .fl-comp-inv b {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--text) calc(40% + var(--w) * 60%), var(--text-4));
+}
+
+/* ── Zone 2: the incident timeline — impact heat (--cat) anchors each row ──── */
+.ex-fleet .fl-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ex-fleet .fl-inc {
+  position: relative;
+  z-index: 2;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s;
+}
+.ex-fleet .fl-inc.lit,
+.ex-fleet .fl-inc.cited {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
+  background: color-mix(in srgb, var(--cat, var(--accent)) 7%, transparent);
+}
+.ex-fleet .fl-inc-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.2rem);
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.ex-fleet .fl-impact {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 50%, var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) 85%, var(--text-3));
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(4% + var(--w) * 8%), transparent);
+  white-space: nowrap;
+}
+.ex-fleet .fl-inc-body {
+  min-width: 0;
+}
+.ex-fleet .fl-inc-name {
+  display: block;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-fleet .fl-inc-head:hover .fl-inc-name {
+  color: var(--accent);
+}
+.ex-fleet .fl-inc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.3rem;
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+.ex-fleet .fl-inc-comps {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.ex-fleet .fl-chip {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+/* the accretion load: updates this incident held, vs the window's max */
+.ex-fleet .fl-updates {
+  display: grid;
+  justify-items: end;
+  gap: 0.18rem;
+  min-width: 4.6rem;
+  line-height: 1;
+}
+.ex-fleet .fl-updates b {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 60%), var(--text-3));
+}
+.ex-fleet .fl-updates-l {
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-fleet .fl-load {
+  width: 4.6rem;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-fleet .fl-load i {
+  display: block;
+  height: 100%;
+  background: var(--cat, var(--accent));
+}
+
+/* the released updates — chronological, opened by the head button */
+.ex-fleet .fl-ulist {
+  list-style: none;
+  margin: 0;
+  padding: 0.2rem 1.1rem 0.95rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  border-top: 1px solid var(--line);
+}
+.ex-fleet .fl-update {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.7rem;
+  padding-top: 0.65rem;
+}
+.ex-fleet .fl-u-status {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cat, var(--accent)) 70%, var(--text-3));
+}
+.ex-fleet .fl-u-time {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--text-4);
+  white-space: nowrap;
+}
+.ex-fleet .fl-u-body {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* legend keys */
+.ex-fleet .fl-k-heat {
+  gap: 0.2rem;
+}
+.ex-fleet .fl-k-heat i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.ex-fleet .fl-k-load {
+  width: 20px;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-fleet .fl-k-load i {
+  display: block;
+  width: 60%;
+  height: 100%;
+  background: #ff9d5c;
+}
+.ex-fleet .fl-k-link {
+  width: 18px;
+  height: 9px;
+  border-bottom: 1.5px solid var(--accent);
+  border-radius: 0 0 9px 9px;
+}
+
+/* ── Field OFF — the checklist again: green dots, identical rows ───────────── */
+.ex-fleet[data-field='off'] .fl-comp,
+.ex-fleet[data-field='off'] .fl-inc {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+}
+.ex-fleet[data-field='off'] .fl-comp.lit,
+.ex-fleet[data-field='off'] .fl-comp.cited,
+.ex-fleet[data-field='off'] .fl-inc.lit,
+.ex-fleet[data-field='off'] .fl-inc.cited {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text) 3.7%, transparent);
+}
+.ex-fleet[data-field='off'] .fl-impact {
+  border-color: var(--line);
+  color: var(--text-3);
+  background: transparent;
+}
+.ex-fleet[data-field='off'] .fl-load {
+  opacity: 0.4;
+}
+.ex-fleet[data-field='off'] .fl-updates b {
+  color: var(--text-2);
+}
+
+@media (max-width: 640px) {
+  .ex-fleet .fl-inc-head {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 0.5rem;
+  }
+  .ex-fleet .fl-updates {
+    grid-column: 2;
+    justify-items: start;
+  }
+  .ex-fleet .fl-update {
+    grid-template-columns: auto auto;
+  }
+  .ex-fleet .fl-u-body {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-fleet .fl-comp,
+  .ex-fleet .fl-inc {
+    transition: none;
+  }
+}

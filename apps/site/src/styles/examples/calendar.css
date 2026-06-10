@@ -1,0 +1,168 @@
+/* ============================================================
+   THE CALENDAR FIELD — imminence is mass; the field's input is time itself.
+   Reuses the ev-* design system from evidence.css; everything new is
+   scoped under .ex-calendar. Tokens come from ds-tokens.css (via Base).
+   ============================================================ */
+
+.ex-calendar .cal-days {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* day headings — quiet structural furniture; the weight lives in the rows */
+.ex-calendar .cal-day-h {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+}
+.ex-calendar .cal-day-tz {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--text-4);
+}
+
+.ex-calendar .cal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* a launch: imminence (--w, 0..1, re-ticked every second) is felt — type weight,
+   ink, and a left anchor whose color is the launch status (--cat). */
+.ex-calendar .cal-row {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.4rem);
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s;
+}
+.ex-calendar .cal-body {
+  min-width: 0;
+  display: grid;
+  gap: 0.22rem;
+}
+.ex-calendar .cal-name {
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.98rem, 1.4vw, 1.12rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-calendar .cal-meta {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+.ex-calendar .cal-meta-dim {
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+
+/* the right column: the live countdown over the status / orbit chips */
+.ex-calendar .cal-side {
+  display: grid;
+  justify-items: end;
+  gap: 0.4rem;
+}
+.ex-calendar .cal-count {
+  font-family: var(--mono);
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+}
+.ex-calendar .cal-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.ex-calendar .cal-status,
+.ex-calendar .cal-orbit {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-4);
+  white-space: nowrap;
+}
+.ex-calendar .cal-status[data-status="Go"] {
+  border-color: color-mix(in srgb, #2dd4bf 50%, var(--line));
+  color: #2dd4bf;
+}
+.ex-calendar .cal-status[data-status="TBC"] {
+  border-color: color-mix(in srgb, #fbbf24 50%, var(--line));
+  color: #fbbf24;
+}
+/* TBD (and already-flown) stay dim — undetermined is rendered as quiet, not loud */
+
+/* legend key: the countdown glyph */
+.ex-calendar .cal-k-clock {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ── Field OFF — the same schedule, flattened; the countdowns keep ticking ── */
+.ex-calendar[data-field="off"] .cal-row {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+.ex-calendar[data-field="off"] .cal-name {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 500;
+}
+.ex-calendar[data-field="off"] .cal-count {
+  color: var(--text-2);
+}
+.ex-calendar[data-field="off"] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@media (max-width: 620px) {
+  .ex-calendar .cal-row {
+    grid-template-columns: 1fr;
+  }
+  .ex-calendar .cal-side {
+    justify-items: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-calendar .cal-row {
+    transition: none;
+  }
+}

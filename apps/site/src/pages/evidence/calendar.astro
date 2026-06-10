@@ -1,0 +1,268 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import calendar from "../../data/examples/calendar.json";
+import "../../styles/examples/calendar.css";
+
+// The Calendar Field — field-ui as an invisible measurement layer over a real launch schedule.
+// Imminence is gravitational mass: the closer a launch sits to T−0, the harder it pulls. The
+// runtime recomputes every weight once a second, so this is the one page where the field's
+// input is time itself. No particle swarm: the pull shows in the type.
+
+// imminence math — must match calendar-runtime.ts. A 30-day horizon flattens to the floor;
+// launches whose NET already passed (the snapshot ages) or whose date is TBD sit at the floor.
+const HORIZON = Math.log(24 * 30 + 1);
+const W_FLOOR = 0.08;
+const snap = Date.parse(calendar.snapshotAt);
+const wOf = (net: string, status: string): number => {
+  if (status === "TBD") return W_FLOOR;
+  const hours = (Date.parse(net) - snap) / 36e5;
+  if (!(hours > 0)) return W_FLOOR;
+  return Math.max(W_FLOOR, Math.min(1, 1 - Math.log(hours + 1) / HORIZON));
+};
+
+// status → anchor color: Go teal (confirmed), TBC amber (awaiting confirmation), everything
+// else dim — must match calendar-runtime.ts.
+const STATUS_CAT: Record<string, string> = { Go: "#2dd4bf", TBC: "#fbbf24" };
+const catFor = (status: string): string => STATUS_CAT[status] ?? "#8a93a6";
+
+// the initial countdown is rendered from the snapshot instant; the runtime re-renders it
+// from the real clock every second.
+const countdown = (net: string, status: string): string => {
+  if (status === "TBD") return "TBD";
+  const ms = Date.parse(net) - snap;
+  if (ms <= 0) return "window passed · snapshot";
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const hh = String(Math.floor((s % 86400) / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return d > 0 ? `T− ${d}d ${hh}:${mm}:${ss}` : `T− ${hh}:${mm}:${ss}`;
+};
+
+// group by UTC launch day; TBD-dated launches collect in a "Date TBD" group at the end.
+const dayFmt = new Intl.DateTimeFormat("en-US", {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+interface Group {
+  key: string;
+  label: string;
+  launches: typeof calendar.launches;
+}
+const dated = calendar.launches
+  .filter((l) => l.status !== "TBD")
+  .sort((a, b) => Date.parse(a.net) - Date.parse(b.net));
+const groups: Group[] = [];
+for (const l of dated) {
+  const key = l.net.slice(0, 10);
+  let g = groups.find((x) => x.key === key);
+  if (!g) {
+    g = { key, label: dayFmt.format(new Date(l.net)), launches: [] };
+    groups.push(g);
+  }
+  g.launches.push(l);
+}
+const tbd = calendar.launches.filter((l) => l.status === "TBD");
+if (tbd.length) groups.push({ key: "tbd", label: "Date TBD", launches: tbd });
+
+const snapDate = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(new Date(calendar.snapshotAt));
+---
+
+<ExampleShell
+  title="field-ui — Calendar"
+  description="A real launch schedule run as a field. Imminence is gravitational mass — weight ramps as T−0 approaches, recomputed live every second — so the next launch pulls hardest. No particle swarm; the pull shows in the type."
+  current="calendar"
+  mainClass="ex-calendar"
+  mainAttrs={{ "data-field": "on", "data-lens": "status" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · calendar</p>
+    <h1>The next launch pulls <span class="accent">hardest</span>.</h1>
+    <p class="ev-lede">
+      A launch schedule lists every mission at the same weight: a rocket lifting off in nineteen
+      hours sits in the same row style as one penciled in for the end of the month. This is the
+      same schedule from
+      <a href="https://thespacedevs.com" rel="noopener">Launch Library 2</a> run as a
+      <strong>field</strong>: imminence is gravitational mass, and the weight ramps as T−0
+      approaches — heavier type, darker ink, a stronger left anchor.
+    </p>
+    <p class="ev-lede">
+      This is the one page where the field's input is <strong>time itself</strong>. A 1-second
+      clock recomputes every launch's weight from its distance to T−0, and the countdowns tick
+      live. Launches whose window has already passed (the snapshot ages) fall to the floor and
+      say so; undated launches sit quietly at the bottom. <strong>Toggle the field off</strong>
+      and the schedule flattens — but the countdowns keep ticking, because they're data, not
+      field.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-cal-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Color by</span>
+      <div class="ev-seg" role="group" aria-label="Color lens">
+        <button type="button" data-cal-lens="status" aria-pressed="true">status</button>
+        <button type="button" data-cal-lens="off" aria-pressed="false">off</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-cal-hint><b>size</b> = imminence — weight ramps as T−0 approaches, recomputed every second</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-cal-lens-hint><b>color</b> = launch status — Go is confirmed, TBC awaits confirmation</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = imminence — the next launch is the heaviest</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = status (Go teal · TBC amber · TBD dim)</li>
+    <li><span class="ev-k cal-k-clock">T−</span> the countdown is live — it ticks even with the field off</li>
+  </ul>
+
+  <div class="cal-days" data-cal-list>
+    {
+      groups.map((g) => (
+        <section class="cal-day">
+          <h2 class="cal-day-h">{g.label}{g.key !== "tbd" && <span class="cal-day-tz">UTC</span>}</h2>
+          <ol class="cal-list">
+            {g.launches.map((l) => {
+              const w = wOf(l.net, l.status);
+              return (
+                <li
+                  class="cal-row"
+                  data-body="attract"
+                  data-feedback
+                  data-range="200"
+                  data-strength={(0.4 + w * 1.6).toFixed(2)}
+                  data-net={l.net}
+                  data-status={l.status}
+                  style={`--w:${w.toFixed(3)}; --cat:${catFor(l.status)};`}
+                >
+                  <div class="cal-body">
+                    <span class="cal-name">{l.name}</span>
+                    <span class="cal-meta">{l.provider} · {l.vehicle}</span>
+                    <span class="cal-meta cal-meta-dim">{l.pad} · {l.location}</span>
+                  </div>
+                  <div class="cal-side">
+                    <span class="cal-count" data-cal-count>{countdown(l.net, l.status)}</span>
+                    <span class="cal-chips">
+                      <span class="cal-status" data-status={l.status} title={l.statusName}>
+                        {l.status}
+                      </span>
+                      {l.orbit && l.orbit !== "N/A" && <span class="cal-orbit">{l.orbit}</span>}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+
+  <section class="ev-how" aria-labelledby="cal-how-h">
+    <h2 id="cal-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every launch is an ordinary <code>&lt;li&gt;</code> with its NET timestamp in a data
+      attribute. A 1-second clock turns distance-to-T−0 into a weight, writes it back as a CSS
+      custom property, and the type carries the measurement. No canvas, no chart library — the
+      only moving part is time.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — each launch is a field body</p>
+        <pre class="ev-code"><code>&lt;li
+  data-body="attract"
+  data-strength="1.43"
+  data-feedback
+  data-net="2026-06-11T04:00:00Z"
+  data-status="Go"
+  style="--w: 0.646; --cat: #2dd4bf;"
+&gt;
+  &lt;!-- name · provider · countdown --&gt;
+&lt;/li&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-net</code> — the no-earlier-than instant the clock measures against</li>
+          <li><code>data-strength</code> — gravitational mass, re-set every second</li>
+          <li><code>--cat</code> — the status color the CSS mixes in</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — a 1 Hz clock drives the weight</p>
+        <pre class="ev-code"><code>{`// every second, for every launch:
+const hours =
+  (Date.parse(row.dataset.net)
+    - Date.now()) / 36e5;
+
+// imminence: log-ramped against
+// a 30-day horizon, floored at 0.08
+const w = hours > 0
+  ? Math.max(0.08, Math.min(1,
+      1 - Math.log(hours + 1)
+        / Math.log(24 * 30 + 1)))
+  : 0.08; // window passed · snapshot
+
+row.style.setProperty("--w", w);
+row.dataset.strength =
+  (0.4 + w * 1.6).toFixed(2);`}</code></pre>
+        <p class="ev-how-note">
+          The soonest launch is the heaviest; as its T−0 approaches the ramp steepens, so the
+          page's center of gravity slides toward the pad — without a single re-render.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the field's output</p>
+        <pre class="ev-code"><code>{`.cal-row {
+  /* --w = imminence (0..1, ticked
+     once a second by the clock) */
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}
+.cal-name {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}`}</code></pre>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      This schedule is a <strong>moment in time</strong> — frozen at {snapDate} (UTC) from
+      <a href="https://thespacedevs.com" rel="noopener">Launch Library 2</a> (free API,
+      attribution). Launch schedules shift constantly: windows slip, dates firm up, missions
+      scrub. Rows whose window has already passed say <em>window passed · snapshot</em> rather
+      than pretending — the countdowns are real time, but the schedule is not a feed.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">← Back to the Evidence field</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/calendar-runtime.ts";
+</script>

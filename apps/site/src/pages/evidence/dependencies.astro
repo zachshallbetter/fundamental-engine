@@ -1,0 +1,311 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import dependencies from "../../data/examples/dependencies.json";
+import "../../styles/examples/dependencies.css";
+
+// The Dependencies Field — this monorepo's real dependency surface run as a field. Weekly
+// downloads are inherited mass; publish age decays; advisories charge. Hovering a dependency
+// spills causality downstream into the workspace packages that inherit it; hovering a
+// workspace package lights its full upstream chain. No particle swarm.
+
+const snapshot = Date.parse(dependencies.snapshotAt);
+
+// the workspace strip in dependency order: core first, the site last.
+const ORDER = ["core", "platform", "vanilla", "elements", "react", "site"];
+const byName = new Map(dependencies.workspace.map((w) => [w.name, w]));
+const upstreamOf = (name: string, seen = new Set<string>()): Set<string> => {
+  for (const d of byName.get(name)?.deps ?? []) {
+    if (!seen.has(d)) {
+      seen.add(d);
+      upstreamOf(d, seen);
+    }
+  }
+  return seen;
+};
+const workspace = ORDER.filter((n) => byName.has(n)).map((n) => ({
+  name: n,
+  deps: byName.get(n)!.deps,
+  chain: [...upstreamOf(n)].map((d) => `ws-${d}`),
+}));
+
+// mass: log-normalized weekly downloads (the evidence trust math, retargeted at the registry)
+const dls = dependencies.deps.map((d) => d.weeklyDownloads);
+const lmin = Math.log(Math.min(...dls) + 1);
+const lmax = Math.log(Math.max(...dls) + 1);
+const wOf = (v: number): number => (lmax > lmin ? (Math.log(v + 1) - lmin) / (lmax - lmin) : 1);
+
+const slug = (n: string): string => n.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+
+const STALE_DAYS = 90;
+const deps = [...dependencies.deps]
+  .sort((a, b) => b.weeklyDownloads - a.weeklyDownloads)
+  .map((d) => {
+    // publishedAt can be unreported in the snapshot — keep it honest, not faked.
+    const pubIso = d.publishedAt as string | null;
+    const pubMs = pubIso ? Date.parse(pubIso) : null;
+    const pubDays = pubMs !== null ? (snapshot - pubMs) / 864e5 : null;
+    return {
+      ...d,
+      slug: slug(d.name),
+      w: wOf(d.weeklyDownloads),
+      // color = advisory state: red carries OSV records, blue is clean.
+      cat: d.advisories > 0 ? "#ff6b6b" : "#4da3ff",
+      pubMs,
+      stale: pubDays !== null && pubDays > STALE_DAYS,
+      pubLabel:
+        pubDays === null
+          ? "publish date unreported"
+          : pubDays < 1
+            ? "published today"
+            : pubDays < 60
+              ? `published ${Math.round(pubDays)}d ago`
+              : `published ${Math.round(pubDays / 30.4)}mo ago`,
+    };
+  });
+
+const fmtDl = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
+const snapshotDay = dependencies.snapshotAt.slice(0, 10);
+---
+
+<ExampleShell
+  title="field-ui — Dependencies"
+  description="This monorepo's real dependency surface run as a field. Weekly downloads are inherited mass, publish age decays, advisories charge — and hovering a dependency spills causality into the workspace packages that inherit it. No particle swarm; the field shows in the type."
+  current="dependencies"
+  mainClass="ex-dependencies"
+  mainAttrs={{ "data-field": "on", "data-weight": "downloads" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · dependencies</p>
+    <h1>Mass you inherit. <span class="accent">Risk</span> that travels.</h1>
+    <p class="ev-lede">
+      <strong>@field-ui/core has zero runtime dependencies — by design.</strong> The engine you
+      ship pulls in nothing. What's below is the <strong>build-time</strong> surface of this
+      monorepo's real <code>package.json</code> files — and even that carries inherited mass: every
+      package arrives with the weight of an ecosystem already moving through it, measured here as
+      weekly downloads.
+    </p>
+    <p class="ev-lede">
+      Risk travels the same edges. An advisory against one external package
+      <strong>spills downstream</strong> into every workspace package that inherits it — hover a
+      dependency and threads run to the packages it touches; hover a workspace package and its
+      full upstream chain lights. <strong>Toggle the field off</strong> and the same data
+      collapses to a flat manifest.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-dp-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Weight by</span>
+      <div class="ev-seg" role="group" aria-label="Weighting signal">
+        <button type="button" data-dp-weight="downloads" aria-pressed="true">downloads</button>
+        <button type="button" data-dp-weight="freshness" aria-pressed="false">freshness</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-dp-hint
+        ><b>size</b> = weekly downloads — the mass the ecosystem already moves through each
+        package</span
+      >
+      <span class="ev-hint-sep">·</span>
+      <span><b>color</b> = advisory state — red carries OSV records, blue is clean</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal</li>
+    <li>
+      <span class="ev-k dp-k-adv"></span> <b>advisory counts are historical</b> — OSV records for
+      the package name, not necessarily the pinned version
+    </li>
+    <li>
+      <span class="ev-k ev-k-thread"></span> hover a dependency → threads to the packages that
+      inherit it; hover a package → its upstream chain lights
+    </li>
+    <li><span class="ev-k dp-k-stale">Aa</span> past {STALE_DAYS} days without a publish, a row <b>decays</b> (dims)</li>
+  </ul>
+
+  <div class="dp-zone" data-dp-zone>
+    <!-- Zone 1 — the workspace strip, in dependency order: core depends on nothing. -->
+    <section class="dp-ws" aria-labelledby="dp-ws-h">
+      <h2 class="dp-h" id="dp-ws-h">The workspace <span class="dp-h-n">core → site</span></h2>
+      <ol class="dp-strip" data-dp-strip>
+        {
+          workspace.map((w) => (
+            <li
+              class="dp-node"
+              id={`ws-${w.name}`}
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength="0.80"
+              data-chain={w.chain.join(" ")}
+            >
+              <span class="dp-node-name">{w.name}</span>
+              <span class="dp-node-deps">
+                {w.deps.length === 0 ? "0 internal deps" : `${w.deps.length} internal dep${w.deps.length > 1 ? "s" : ""}`}
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <!-- Zone 2 — the external (build-time) dependencies. -->
+    <section class="dp-ext" aria-labelledby="dp-ext-h">
+      <h2 class="dp-h" id="dp-ext-h">
+        The build-time surface <span class="dp-h-n">{deps.length} external packages</span>
+      </h2>
+      <ol class="dp-list" data-dp-list>
+        {
+          deps.map((d) => (
+            <li
+              class:list={["dp-row", d.stale && "stale"]}
+              id={`dep-${d.slug}`}
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength={(0.4 + d.w * 1.6).toFixed(2)}
+              data-dl={d.weeklyDownloads}
+              data-pub={d.pubMs ?? ""}
+              data-adv={d.advisories}
+              data-uses={d.usedBy.map((u) => `ws-${u}`).join(" ")}
+              style={`--w:${d.w.toFixed(3)}; --cat:${d.cat};`}
+            >
+              <div class="dp-id">
+                <span class="dp-name">{d.name}</span>
+                <span class="dp-ver">v{d.version}</span>
+                {d.advisories > 0 && (
+                  <span class="dp-adv" title="Historical OSV advisories for this package name">
+                    {d.advisories} advisories
+                  </span>
+                )}
+              </div>
+              <p class="dp-desc">{d.description}</p>
+              <span class="dp-meta">
+                <span class="dp-pub">{d.pubLabel}</span>
+                <span class="dp-uses">
+                  {d.usedBy.map((u) => (
+                    <span class="dp-chip">{u}</span>
+                  ))}
+                </span>
+              </span>
+              <div class="dp-mass">
+                <b>{fmtDl.format(d.weeklyDownloads)}</b>
+                <span class="dp-mass-l">weekly downloads</span>
+                <span class="ev-bar"><i style={`width:${Math.round(d.w * 100)}%`} /></span>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </div>
+
+  <section class="ev-how" aria-labelledby="dp-how-h">
+    <h2 id="dp-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      The graph is the monorepo's own <code>package.json</code> files, flattened into markup:
+      each workspace package carries its transitive upstream chain, each external dependency
+      carries the packages that inherit it. field-ui runs an invisible field over both zones and
+      the type carries the measurement — downloads as weight, advisories as charge.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — the graph lives in data attributes</p>
+        <pre class="ev-code"><code>&lt;!-- a workspace package: its full
+     upstream chain, precomputed --&gt;
+&lt;li id="ws-site"
+  data-chain="ws-elements ws-core
+    ws-platform ws-vanilla"&gt;
+
+&lt;!-- an external dep: the workspace
+     packages that inherit it --&gt;
+&lt;li id="dep-mermaid"
+  data-body="attract"
+  data-strength="0.72"
+  data-uses="ws-site"
+  style="--w: 0.20; --cat: #ff6b6b;"&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-uses</code> — where this mass lands downstream</li>
+          <li><code>data-chain</code> — everything a package stands on, transitively</li>
+          <li><code>--cat</code> — red when OSV records exist, blue when clean</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — causality spill is hover + geometry</p>
+        <pre class="ev-code"><code>{`// hover a dep → thread to each
+// workspace card it touches
+const a = centerIn(row, zone);
+for (const id of row.dataset.uses.split(" ")) {
+  const node = zone.querySelector("#" + id);
+  node.classList.add("cited");
+  const b = centerIn(node, zone);
+  d += \`M\${a.x} \${a.y} C ...\`;
+}
+// the thread color is the row's --cat:
+// advisory-carrying deps thread red.
+
+// hover a workspace node → no SVG,
+// just light its data-chain upstream.`}</code></pre>
+        <p class="ev-how-note">
+          One SVG overlay spans both zones; the cubic threads are drawn at hover time from
+          live geometry, so reweighting never leaves stale lines.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads mass and decay</p>
+        <pre class="ev-code"><code>{`.dp-name {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.dp-row {
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}
+/* decay: no publish in 90 days */
+.dp-row.stale { opacity: 0.5; }`}</code></pre>
+        <p class="ev-how-note">
+          The freshness lens reweights from publish dates; packages whose dates the registry
+          snapshot didn't report hold a neutral weight rather than faking one.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Downloads are <strong>popularity, not safety</strong> — and the advisory badges are
+      historical OSV records for the package name, not findings against the pinned version.
+      The workspace graph and external list come from this repo's real
+      <code>package.json</code> files; counts and versions are frozen at the snapshot. Data:
+      the <a href="https://registry.npmjs.org" rel="noopener">npm registry</a> +
+      <a href="https://api.npmjs.org" rel="noopener">api.npmjs.org</a> downloads +
+      <a href="https://osv.dev" rel="noopener">OSV.dev</a> advisories, public registry data,
+      snapshotted {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/dependencies-runtime.ts";
+</script>

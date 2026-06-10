@@ -1,0 +1,260 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import library from "../../data/examples/library.json";
+import "../../styles/examples/library.css";
+
+// The Library Field — what the world actually plays. Each recording in ListenBrainz's
+// sitewide monthly top 30 is a body; listens are mass (log-normalized). The queue panel is
+// itself a field body — a sink with data-absorb — so the engine genuinely writes --load
+// back into it as matter accretes; a separate, honestly-labeled UI bar counts queued
+// tracks. At 8/8 the queue releases, mirroring the engine's capture→release cycle.
+// No particle swarm — mass shows only in type weight, ink, and anchor.
+const QUEUE_MAX = 8;
+
+// field-ui's force palette — the artist color lens (hash the artist name → palette index).
+const FIELD_PALETTE = [
+  "#4da3ff", "#2dd4bf", "#ff9d5c", "#a78bfa",
+  "#86e57f", "#fbbf24", "#f0abfc", "#38bdf8",
+];
+const hashOf = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+// mass = log-normalized listens (min..max → 0..1 across the set).
+const ll = library.tracks.map((t) => Math.log(t.listens + 1));
+const lmin = Math.min(...ll);
+const lspan = Math.max(...ll) - lmin || 1;
+const tracks = library.tracks.map((t, i) => ({
+  ...t,
+  w: (ll[i]! - lmin) / lspan,
+  cat: FIELD_PALETTE[hashOf(t.artist) % FIELD_PALETTE.length]!,
+}));
+const linkFor = (t: { mbid: string }) =>
+  t.mbid ? `https://musicbrainz.org/recording/${t.mbid}` : "https://listenbrainz.org/";
+const fmtListens = (n: number) => n.toLocaleString("en-US");
+const snapshotDay = library.snapshotAt.slice(0, 10);
+---
+
+<ExampleShell
+  title="field-ui — Library"
+  description="A music library run as a field over real ListenBrainz data. The month's most-listened recordings become bodies; listens are mass, written into type weight, ink, and anchor. The queue is a genuine field sink — the engine writes --load into it as matter accretes, and at 8/8 it releases. data-* in, --field-* out."
+  current="library"
+  mainClass="ex-library"
+  mainAttrs={{ "data-field": "on", "data-lens": "artist" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · library</p>
+    <h1>What the world actually <span class="accent">plays</span>.</h1>
+    <p class="ev-lede">
+      Not editorial picks, not a mood algorithm — these are the {tracks.length} most-listened
+      recordings across <a href="https://listenbrainz.org" rel="noopener">ListenBrainz</a> this
+      {library.range}, sitewide. Listens are <strong>mass</strong>: each recording's real play
+      count, log-scaled, sets how hard its row pulls — heavier type, fuller ink, a brighter
+      anchor. The lightest row on the page is still a top-30 track; the heaviest is what the
+      world could not stop playing.
+    </p>
+    <p class="ev-lede">
+      The queue below is not a styled div — it is a <strong>field body</strong>: a sink with
+      <code>data-absorb</code>, registered in the same scoped field as the rows. The engine
+      genuinely writes its accreted fill back as <code>--load</code>, and CSS turns that into a
+      glow. Queue eight tracks and the sink <strong>releases</strong> — the engine's
+      capture→release cycle, played out in the page. The field is invisible — no particle
+      swarm; only its measurements show.
+    </p>
+  </header>
+
+  <!-- Controls — the mass made legible. -->
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-lb-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Color by</span>
+      <div class="ev-seg" role="group" aria-label="Color lens">
+        <button type="button" data-lb-lens="artist" aria-pressed="true">artist</button>
+        <button type="button" data-lb-lens="off" aria-pressed="false">off</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span><b>size</b> = listens — the month's actual play counts, log-scaled</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-lb-lens-hint><b>color</b> = artist — one palette hue per act, hashed from the name</span>
+    </p>
+  </div>
+
+  <!-- Legend — reading the field. -->
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = listens (log-scaled mass)</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the lens (artist, or off)</li>
+    <li><span class="ev-k lb-k-sink"></span> the queue is a <b>sink</b> — the engine writes <code>--load</code> into it</li>
+    <li><span class="ev-k lb-k-release"></span> at {QUEUE_MAX}/{QUEUE_MAX} the sink <b>releases</b> — capture, then let go</li>
+  </ul>
+
+  <div class="lb-field" data-lb-scope>
+    <!-- The queue — a real field sink. The engine writes --load; the fill bar is UI data. -->
+    <aside
+      class="lb-queue"
+      data-lb-queue
+      data-body="sink"
+      data-absorb
+      data-max={String(QUEUE_MAX)}
+      data-feedback
+      aria-label="Queue"
+    >
+      <div class="lb-queue-head">
+        <span class="lb-queue-title">Queue</span>
+        <span class="lb-queue-count" data-lb-count aria-live="polite">0 / {QUEUE_MAX}</span>
+        <span class="lb-fill" title="UI fill — queued count, not the field" aria-hidden="true">
+          <i data-lb-fill style="width:0%"></i>
+        </span>
+      </div>
+      <ul class="lb-chips" data-lb-chips></ul>
+      <p class="lb-queue-empty" data-lb-empty>
+        Queue a track — at {QUEUE_MAX} the sink releases.
+      </p>
+      <p class="lb-release" role="status" data-lb-release hidden></p>
+    </aside>
+
+    <ol class="lb-list" data-lb-list>
+      {
+        tracks.map((t) => (
+          <li
+            class="lb-row"
+            id={`r-${t.rank}`}
+            data-body="attract"
+            data-feedback
+            data-range="200"
+            data-strength={(0.4 + t.w * 1.6).toFixed(2)}
+            data-artist-color={t.cat}
+            style={`--w:${t.w.toFixed(3)}; --cat:${t.cat};`}
+          >
+            <span class="lb-rank">{String(t.rank).padStart(2, "0")}</span>
+            <div class="lb-body">
+              <a class="lb-title" href={linkFor(t)} target="_blank" rel="noopener">
+                {t.track}
+              </a>
+              <span class="lb-meta">
+                <span class="lb-artist">{t.artist}</span>
+                <span class="ev-meta-sep">·</span>
+                {t.release}
+              </span>
+            </div>
+            <span class="lb-listens">
+              <b>{fmtListens(t.listens)}</b>
+              <span class="lb-listens-l">listens</span>
+            </span>
+            <button
+              class="lb-add"
+              type="button"
+              data-lb-add
+              aria-label={`Queue "${t.track}" by ${t.artist}`}
+            >
+              + queue
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+
+  <!-- How it's built — the sink's two channels, labeled honestly. -->
+  <section class="ev-how" aria-labelledby="lb-how-h">
+    <h2 id="lb-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every recording is ordinary semantic HTML — an <code>&lt;li&gt;</code> whose
+      log-normalized listens become <code>--w</code> and <code>data-strength</code>. The queue
+      panel is a second kind of body: a <strong>sink</strong>. Both join one scoped field, and
+      the panel's glow and the rows' type heft are driven by two different channels — one the
+      engine writes, one the page counts.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — the queue is a field sink</p>
+        <pre class="ev-code"><code>&lt;aside
+  data-body="sink"
+  data-absorb
+  data-max="8"
+  data-feedback
+&gt;
+  &lt;!-- the queue panel --&gt;
+&lt;/aside&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-body="sink"</code> — registers as an absorbing body</li>
+          <li><code>data-absorb</code> — opt in to holding matter</li>
+          <li><code>data-max="8"</code> — capacity before the sink saturates</li>
+          <li><code>data-feedback</code> — receive <code>--load</code> writebacks</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — two channels, labeled honestly</p>
+        <pre class="ev-code"><code>{`/* channel 1 — the ENGINE. Matter accretes
+   into the sink; the field writes --load
+   (0..1 fill) back each frame. */
+.lb-queue {
+  box-shadow: 0 0
+    calc(4px + var(--load, 0) * 28px)
+    color-mix(in srgb, var(--accent)
+      calc(var(--load, 0) * 45%),
+      transparent);
+}
+
+/* channel 2 — the UI. A plain counter:
+   queued / 8. Data, not the field. */
+fill.style.width = \`\${n / 8 * 100}%\`;`}</code></pre>
+        <p class="ev-how-note">
+          The glow is the field's own measurement of accretion; the fill bar is bookkeeping.
+          Keeping the two apart is the point — at 8/8 the page clears the queue the way the
+          engine's sink releases captured matter.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the mass</p>
+        <pre class="ev-code"><code>{`.lb-title {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.lb-row {
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}`}</code></pre>
+        <p class="ev-how-note">
+          <code>--w</code> is the log-normalized listen count — real plays in, type weight,
+          ink, and anchor out. The rest is CSS.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Listens are <strong>plays, not endorsements</strong> — a sitewide top-30 says what people
+      actually queued this {library.range}, not what anyone thinks they should have. Counts are
+      frozen at the snapshot, so the page is stable. Data:
+      <a href="https://listenbrainz.org" rel="noopener">ListenBrainz</a> sitewide top
+      recordings ({library.range} window), CC0 / open data, snapshotted {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/library-runtime.ts";
+</script>

@@ -1,0 +1,250 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import market from "../../data/examples/market.json";
+import "../../styles/examples/market.css";
+
+// The Market Field — field-ui as an invisible measurement layer over a real CoinGecko snapshot.
+// Market cap is gravitational mass (heavier assets anchor the page); the day's move polarizes —
+// direction is color, magnitude is intensity. No particle swarm: the field shows in the type.
+
+// weight: log-normalized market cap (the evidence trust math, retargeted at a balance sheet)
+const caps = market.assets.map((a) => a.cap);
+const lmin = Math.log(Math.min(...caps) + 1);
+const lmax = Math.log(Math.max(...caps) + 1);
+const wOf = (v: number): number => (lmax > lmin ? (Math.log(v + 1) - lmin) / (lmax - lmin) : 1);
+
+// polarity: direction is hue (teal-green up, red-pink down), magnitude is intensity.
+// the runtime re-runs this same ramp when the move window (24h / 7d) changes.
+const catFor = (chg: number): string => {
+  const t = Math.min(1, Math.abs(chg) / 10);
+  return chg >= 0
+    ? `hsl(${Math.round(168 - t * 18)} ${Math.round(34 + t * 46)}% ${Math.round(52 + t * 14)}%)`
+    : `hsl(${Math.round(354 - t * 14)} ${Math.round(38 + t * 47)}% ${Math.round(56 + t * 12)}%)`;
+};
+
+// one <path> per asset: the row's own min/max sets the vertical scale.
+const sparkPath = (s: number[]): string => {
+  if (!s.length) return "";
+  const min = Math.min(...s);
+  const span = Math.max(...s) - min || 1;
+  return s
+    .map((v, i) => {
+      const x = (i / Math.max(s.length - 1, 1)) * 120;
+      const y = 25 - ((v - min) / span) * 22;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+};
+
+const fmtPrice = (p: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: p >= 1 ? 2 : 6,
+  }).format(p);
+const fmtCompact = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+const badge = (chg: number): string => `${chg >= 0 ? "▲" : "▼"} ${Math.abs(chg).toFixed(2)}%`;
+const snapDate = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(new Date(market.snapshotAt));
+
+const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
+---
+
+<ExampleShell
+  title="field-ui — Market"
+  description="A real CoinGecko snapshot run as a field. Market cap is gravitational mass — heavier assets anchor the page — and the day's move polarizes: direction is color, magnitude is intensity. No particle swarm; the field shows in the type."
+  current="market"
+  mainClass="ex-market"
+  mainAttrs={{ "data-field": "on", "data-lens": "24h", "data-weight": "cap" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · market</p>
+    <h1>The tape, <span class="accent">felt</span>.</h1>
+    <p class="ev-lede">
+      A market table treats a $1.2T asset and a $4B asset as the same row height, the same ink. The
+      only signal left is the sort order. This is the same snapshot from
+      <a href="https://www.coingecko.com" rel="noopener">CoinGecko</a> run as a
+      <strong>field</strong>: market cap becomes gravitational mass, so heavier assets anchor the
+      page — darker ink, heavier type, a stronger left anchor.
+    </p>
+    <p class="ev-lede">
+      The day's move <strong>polarizes</strong> each body: direction is color (teal-green up,
+      red-pink down), magnitude is intensity — a −0.1% drift barely registers, a −17% slide burns.
+      Switch the window to <strong>7d</strong> and the same rows repolarize; reweight by
+      <strong>volume</strong> and the field re-settles around where the trading actually happened.
+      <strong>Toggle the field off</strong> and it collapses back to the flat table.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-mk-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Weight by</span>
+      <div class="ev-seg" role="group" aria-label="Weighting signal">
+        <button type="button" data-mk-weight="cap" aria-pressed="true">cap</button>
+        <button type="button" data-mk-weight="volume" aria-pressed="false">volume</button>
+      </div>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Move window</span>
+      <div class="ev-seg" role="group" aria-label="Polarity window">
+        <button type="button" data-mk-lens="24h" aria-pressed="true">24h</button>
+        <button type="button" data-mk-lens="7d" aria-pressed="false">7d</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-mk-hint><b>size</b> = market cap — the heavier the asset, the harder it anchors</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-mk-lens-hint><b>color</b> = the 24-hour move — direction is hue, magnitude is intensity</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal (cap or volume)</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the move — direction is hue, magnitude is intensity</li>
+    <li><span class="ev-k mk-k-spark" aria-hidden="true"></span> sparkline = the week's price path (row-local scale)</li>
+  </ul>
+
+  <ol class="mk-list" data-mk-list>
+    {
+      assets.map((a, i) => {
+        const w = wOf(a.cap);
+        return (
+          <li
+            class="mk-row"
+            data-body="attract"
+            data-feedback
+            data-range="200"
+            data-strength={(0.4 + w * 1.6).toFixed(2)}
+            data-cap={a.cap}
+            data-volume={a.volume}
+            data-c24={a.change24h}
+            data-c7={a.change7d}
+            style={`--w:${w.toFixed(3)}; --cat:${catFor(a.change24h)};`}
+          >
+            <span class="mk-rank">{String(i + 1).padStart(2, "0")}</span>
+            <div class="mk-id">
+              <span class="mk-name">{a.name}</span>
+              <span class="mk-sym">{a.symbol}</span>
+            </div>
+            <svg class="mk-spark" viewBox="0 0 120 28" aria-hidden="true" preserveAspectRatio="none">
+              <path d={sparkPath(a.spark)} stroke="var(--cat)" />
+            </svg>
+            <div class="mk-quote">
+              <span class="mk-price">{fmtPrice(a.price)}</span>
+              <span class="mk-cap">{fmtCompact.format(a.cap)} cap</span>
+            </div>
+            <span class="mk-chg" data-win="24h" data-dir={a.change24h >= 0 ? "up" : "down"}>
+              {badge(a.change24h)}
+            </span>
+            <span class="mk-chg" data-win="7d" data-dir={a.change7d >= 0 ? "up" : "down"}>
+              {badge(a.change7d)}
+            </span>
+          </li>
+        );
+      })
+    }
+  </ol>
+
+  <section class="ev-how" aria-labelledby="mk-how-h">
+    <h2 id="mk-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every asset is an ordinary <code>&lt;li&gt;</code> with a few data attributes. field-ui reads
+      them, runs an invisible field over the list, and the type carries the measurement — cap as
+      weight, the move as color. No canvas, no chart library beyond one inline
+      <code>&lt;path&gt;</code> per row.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — each asset is a field body</p>
+        <pre class="ev-code"><code>&lt;li
+  data-body="attract"
+  data-strength="1.87"
+  data-feedback
+  data-cap="1235425696510"
+  data-c24="-1.70" data-c7="-7.76"
+  style="--w: 0.92; --cat: hsl(350 70% 64%);"
+&gt;
+  &lt;!-- name · sparkline · price --&gt;
+&lt;/li&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-strength</code> — gravitational mass from log-normalized cap</li>
+          <li><code>data-c24</code> / <code>data-c7</code> — the raw moves the lens reads</li>
+          <li><code>--cat</code> — the polarity color the CSS mixes in</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — polarity is CSS reading the field</p>
+        <pre class="ev-code"><code>{`.mk-row {
+  /* --w = log-normalized cap (0..1) */
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}
+.mk-name {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}`}</code></pre>
+        <p class="ev-how-note">
+          The runtime sets <code>--cat</code> from the chosen window — hue is direction, intensity
+          is magnitude — and one <code>color-mix()</code> blends it against the hairline.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — reweighting is a FLIP reflow</p>
+        <pre class="ev-code"><code>{`// recompute --w from cap or volume,
+// then re-sort with FLIP:
+const firstTop = new Map(rows.map(
+  (r) => [r, r.getBoundingClientRect().top]));
+ordered.forEach((r) => list.appendChild(r));
+ordered.forEach((r) => {
+  const dy = firstTop.get(r)
+    - r.getBoundingClientRect().top;
+  r.style.transform = \`translateY(\${dy}px)\`;
+  requestAnimationFrame(() =>
+    (r.style.transform = ""));
+});`}</code></pre>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      This is a <strong>snapshot, not a feed</strong> — prices, caps, and moves are frozen at
+      {snapDate} (UTC). Data: <a href="https://www.coingecko.com" rel="noopener">CoinGecko API</a>
+      (free API terms, attribution). Nothing here is investment advice; the point is the rendering,
+      not the portfolio.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">← Back to the Evidence field</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/market-runtime.ts";
+</script>

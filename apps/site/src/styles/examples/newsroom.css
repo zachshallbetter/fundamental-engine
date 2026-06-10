@@ -1,0 +1,153 @@
+/* ============================================================
+   THE NEWSROOM FIELD — pageviews are mass; the cycle's direction polarizes.
+   Reuses the ev-* design system from evidence.css; everything new is
+   scoped under .ex-newsroom. Tokens come from ds-tokens.css (via Base).
+   ============================================================ */
+
+.ex-newsroom .nw-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* a row: the article's weight (--w, 0..1 log-normalized pageviews) is felt —
+   type weight, ink, and a left anchor whose color is the trend's polarity (--cat). */
+.ex-newsroom .nw-row {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.4rem);
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s;
+}
+.ex-newsroom .nw-rank {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-4);
+  text-align: right;
+}
+.ex-newsroom .nw-title {
+  display: block;
+  min-width: 0;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.98rem, 1.4vw, 1.12rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-newsroom .nw-title:hover {
+  color: var(--accent);
+}
+
+/* the trend badge — direction is the glyph, polarity color comes from --cat */
+.ex-newsroom .nw-chg {
+  justify-self: end;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  white-space: nowrap;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 40%), var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(45% + var(--w) * 55%), var(--text-3));
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(4% + var(--w) * 6%), transparent);
+}
+.ex-newsroom .nw-chg[data-dir="new"] {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+}
+
+.ex-newsroom .nw-views {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+  min-width: 6.5rem;
+}
+.ex-newsroom .nw-count {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--text) calc(55% + var(--w) * 45%), var(--text-4));
+}
+.ex-newsroom .nw-count-l {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+/* legend key: the "new" chip */
+.ex-newsroom .nw-k-new {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+}
+
+/* ── Field OFF — the same ranking, flattened back to a plain list ─────────── */
+.ex-newsroom[data-field="off"] .nw-row {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+.ex-newsroom[data-field="off"] .nw-title {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 500;
+}
+.ex-newsroom[data-field="off"] .nw-count {
+  color: var(--text-2);
+}
+.ex-newsroom[data-field="off"] .nw-chg {
+  border-color: var(--line);
+  color: var(--text-3);
+  background: transparent;
+}
+.ex-newsroom[data-field="off"] .ev-bar {
+  opacity: 0.4;
+}
+.ex-newsroom[data-field="off"] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@media (max-width: 620px) {
+  .ex-newsroom .nw-row {
+    grid-template-columns: 1.8rem minmax(0, 1fr) auto;
+    row-gap: 0.5rem;
+  }
+  .ex-newsroom .nw-views {
+    grid-column: 2;
+    justify-items: start;
+  }
+  .ex-newsroom .nw-chg {
+    grid-column: 3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-newsroom .nw-row {
+    transition: none;
+  }
+}

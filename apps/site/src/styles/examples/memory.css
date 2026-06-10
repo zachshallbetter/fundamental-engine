@@ -1,0 +1,200 @@
+/* ============================================================
+   THE MEMORY FIELD — the forgetting curve as decay.
+   Reuses the ev-* design system from evidence.css; everything new is
+   scoped under .ex-memory. Tokens come from ds-tokens.css (via Base).
+   ============================================================ */
+
+.ex-memory .mx-grid {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.6rem;
+}
+
+.ex-memory .mx-cell {
+  display: flex;
+}
+
+.ex-memory .mx-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 5.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    outline 0.2s,
+    outline-offset 0.2s;
+}
+
+.ex-memory .mx-card:hover {
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 40%, var(--line));
+}
+
+/* reviewed cards get a ring outline */
+.ex-memory .mx-card[data-reviewed] {
+  outline: 2px solid color-mix(in srgb, var(--cat, var(--accent)) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.ex-memory .mx-word {
+  display: block;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+  word-break: break-all;
+}
+
+.ex-memory .mx-sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.ex-memory .mx-rank {
+  font-family: var(--mono);
+  color: var(--text-4);
+}
+
+.ex-memory .mx-zipf {
+  font-family: var(--mono);
+  color: var(--text-4);
+}
+
+/* reset button styling */
+.ex-memory .mx-reset {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.ex-memory .mx-reset:hover {
+  color: var(--text-2);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+/* days since review slider styling */
+.ex-memory .mx-days-ctl {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ex-memory .mx-days {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(8rem, 15vw, 14rem);
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  outline: none;
+  cursor: pointer;
+}
+
+.ex-memory .mx-days::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent);
+  transition:
+    transform 0.1s,
+    background-color 0.1s;
+}
+
+.ex-memory .mx-days::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.ex-memory .mx-days-out {
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 2.5ch;
+}
+
+/* legend key ring */
+.ex-memory .mx-k-ring {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ── Field OFF — the forgetting curve stops; every card defaults to plain styling ── */
+.ex-memory[data-field="off"] .mx-card {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+  cursor: default;
+}
+
+.ex-memory[data-field="off"] .mx-card[data-reviewed] {
+  outline: none;
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+
+.ex-memory[data-field="off"] .mx-word {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 500;
+}
+
+.ex-memory[data-field="off"] .mx-days,
+.ex-memory[data-field="off"] .mx-days-out,
+.ex-memory[data-field="off"] .mx-reset {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .ex-memory .mx-grid {
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-memory .mx-card {
+    transition: none;
+  }
+}

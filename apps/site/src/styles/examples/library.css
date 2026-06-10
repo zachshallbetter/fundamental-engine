@@ -1,0 +1,298 @@
+/* ============================================================
+   THE LIBRARY FIELD — what the world actually plays; the queue is a sink.
+   Builds on the ev-* design system (evidence.css, imported by ExampleShell); everything
+   here is scoped under .ex-library and only adds what this example needs: the track
+   list, the queue panel (a real field sink — the engine writes --load into it), the
+   chips, and the UI fill bar.
+   ============================================================ */
+
+/* legend keys */
+.ex-library .lb-k-sink {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--line));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.ex-library .lb-k-release {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+
+/* the field scope — the sink and the rows share one scoped field */
+.ex-library .lb-field {
+  position: relative;
+}
+
+/* ── the queue — a genuine sink body. The glow reads the ENGINE's --load writeback;
+      the fill bar reads the page's queued count. Two channels, kept apart. ── */
+.ex-library .lb-queue {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 5;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) calc(12% + var(--load, 0) * 50%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) calc(var(--load, 0) * 7%), var(--bg-2));
+  box-shadow: 0 0 calc(4px + var(--load, 0) * 28px)
+    color-mix(in srgb, var(--accent) calc(var(--load, 0) * 45%), transparent);
+  transition:
+    box-shadow 0.35s,
+    background 0.35s,
+    border-color 0.35s;
+}
+.ex-library .lb-queue-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.ex-library .lb-queue-title {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.ex-library .lb-queue-count {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+/* the UI fill bar — queued/8, a counter, deliberately NOT the field's channel */
+.ex-library .lb-fill {
+  width: 5.5rem;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-library .lb-fill i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ex-library .lb-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ex-library .lb-chips:not(:empty) {
+  margin-top: 0.6rem;
+}
+.ex-library .lb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 16rem;
+  padding: 0.22rem 0.3rem 0.22rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
+  background: color-mix(in srgb, var(--cat, var(--accent)) 9%, transparent);
+  font-size: 0.72rem;
+  color: var(--text-2);
+  transition:
+    opacity 0.45s,
+    transform 0.45s;
+}
+.ex-library .lb-chip-t {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ex-library .lb-chip-x {
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text-3);
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.ex-library .lb-chip-x:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+}
+.ex-library .lb-queue-empty {
+  margin: 0.45rem 0 0;
+  font-size: 0.74rem;
+  color: var(--text-4);
+}
+.ex-library .lb-release {
+  margin: 0.45rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--accent);
+}
+/* the release — chips settle out, the panel flashes once, then lets go */
+.ex-library .lb-queue[data-releasing] {
+  border-color: var(--accent);
+}
+.ex-library .lb-queue[data-releasing] .lb-chip {
+  opacity: 0;
+  transform: scale(0.82) translateY(0.3rem);
+}
+
+/* ── the tracks — mass shows as weight, ink, and anchor ── */
+.ex-library .lb-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ex-library .lb-row {
+  --w: 0.5;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.3rem);
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    border-color 0.3s,
+    background 0.3s;
+}
+.ex-library .lb-row:hover {
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 40%, var(--line));
+}
+.ex-library .lb-rank {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 55%), var(--text-4));
+}
+.ex-library .lb-body {
+  min-width: 0;
+}
+.ex-library .lb-title {
+  display: block;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-library .lb-title:hover {
+  color: var(--accent);
+}
+.ex-library .lb-meta {
+  display: block;
+  margin-top: 0.3rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.76rem;
+  color: var(--text-3);
+}
+.ex-library .lb-artist {
+  color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--text-3));
+}
+.ex-library .lb-listens {
+  display: grid;
+  justify-items: end;
+  line-height: 1;
+}
+.ex-library .lb-listens b {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 60%), var(--text-3));
+}
+.ex-library .lb-listens-l {
+  margin-top: 0.18rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-library .lb-add {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-4);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+.ex-library .lb-row:hover .lb-add:not(:disabled) {
+  color: var(--text-2);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+.ex-library .lb-add:disabled {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  cursor: default;
+  opacity: 0.8;
+}
+
+/* ── Field OFF — mass stops mattering; the engine channel (the glow) goes dark.
+      The queue keeps counting: that is the UI channel, and it is honest about it. ── */
+.ex-library[data-field='off'] .lb-row {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+}
+.ex-library[data-field='off'] .lb-queue {
+  border-color: var(--line);
+  background: var(--bg-2);
+  box-shadow: none;
+}
+.ex-library[data-field='off'] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .ex-library .lb-row {
+    grid-template-columns: auto 1fr auto;
+  }
+  .ex-library .lb-listens {
+    grid-column: 2;
+    grid-row: 2;
+    justify-items: start;
+    margin-top: 0.4rem;
+  }
+  .ex-library .lb-add {
+    align-self: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-library .lb-queue,
+  .ex-library .lb-fill i,
+  .ex-library .lb-chip,
+  .ex-library .lb-row,
+  .ex-library .lb-add {
+    transition: none;
+  }
+}

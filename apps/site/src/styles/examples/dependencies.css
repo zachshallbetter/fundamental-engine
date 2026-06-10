@@ -1,0 +1,284 @@
+/* ============================================================
+   THE DEPENDENCIES FIELD — downloads are inherited mass; staleness decays;
+   an advisory charges the graph and spills downstream. Builds on the ev-*
+   design system (evidence.css, imported by ExampleShell); everything here is
+   scoped under .ex-dependencies: the workspace strip, the external-dep rows,
+   and the causality-spill highlight states.
+   ============================================================ */
+
+/* the zone wraps both sections so hover threads can cross them */
+.ex-dependencies .dp-zone {
+  position: relative;
+}
+
+.ex-dependencies .dp-h {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-2);
+}
+.ex-dependencies .dp-h-n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+
+/* ── Zone 1: the workspace strip — six nodes joined by a thin rule ─────────── */
+.ex-dependencies .dp-ws {
+  margin-bottom: 2.2rem;
+}
+.ex-dependencies .dp-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1.1rem;
+}
+.ex-dependencies .dp-node {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+/* the connecting rule — dependency order flows left to right */
+.ex-dependencies .dp-node + .dp-node::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 1.1rem;
+  height: 1px;
+  background: var(--line);
+}
+.ex-dependencies .dp-node-name {
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.ex-dependencies .dp-node-deps {
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--text-4);
+}
+/* spill states: .lit = the hovered thing, .cited = what it reaches */
+.ex-dependencies .dp-node.lit,
+.ex-dependencies .dp-node.cited {
+  border-color: color-mix(in srgb, var(--thread, var(--accent)) 55%, var(--line));
+  background: color-mix(in srgb, var(--thread, var(--accent)) 9%, transparent);
+}
+.ex-dependencies .dp-node.lit .dp-node-name,
+.ex-dependencies .dp-node.cited .dp-node-name {
+  color: var(--text);
+}
+
+/* ── Zone 2: the external deps — mass (--w) is felt; advisories charge (--cat) ── */
+.ex-dependencies .dp-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ex-dependencies .dp-row {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'id mass'
+    'desc mass'
+    'meta mass';
+  align-items: center;
+  column-gap: clamp(0.7rem, 2vw, 1.4rem);
+  row-gap: 0.3rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.2s;
+}
+/* decay: no publish inside the stale window — the row dims regardless of mass */
+.ex-dependencies .dp-row.stale {
+  opacity: calc(0.5 * (0.58 + var(--w) * 0.42) + 0.2);
+}
+.ex-dependencies .dp-row.lit {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
+  transform: translateX(2px);
+}
+.ex-dependencies .dp-id {
+  grid-area: id;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.ex-dependencies .dp-name {
+  font-family: var(--mono);
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.3;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-dependencies .dp-ver {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-4);
+}
+.ex-dependencies .dp-adv {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #ff6b6b 55%, var(--line));
+  color: #ff6b6b;
+  background: color-mix(in srgb, #ff6b6b 8%, transparent);
+}
+.ex-dependencies .dp-desc {
+  grid-area: desc;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-3);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.ex-dependencies .dp-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+.ex-dependencies .dp-uses {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.ex-dependencies .dp-chip {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+.ex-dependencies .dp-mass {
+  grid-area: mass;
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+  min-width: 7rem;
+}
+.ex-dependencies .dp-mass b {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(30% + var(--w) * 70%), var(--text-3));
+}
+.ex-dependencies .dp-mass-l {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+/* legend keys */
+.ex-dependencies .dp-k-adv {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: #ff6b6b;
+  box-shadow: 0 0 7px color-mix(in srgb, #ff6b6b 60%, transparent);
+}
+.ex-dependencies .dp-k-stale {
+  font-size: 0.95rem;
+  color: var(--text-4);
+  opacity: 0.55;
+}
+
+/* ── Field OFF — the same manifest, flattened ─────────────────────────────── */
+.ex-dependencies[data-field='off'] .dp-row {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+}
+.ex-dependencies[data-field='off'] .dp-row.stale {
+  opacity: 1;
+}
+.ex-dependencies[data-field='off'] .dp-row.lit {
+  transform: none;
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text) 3.7%, transparent);
+}
+.ex-dependencies[data-field='off'] .dp-node.lit,
+.ex-dependencies[data-field='off'] .dp-node.cited {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+.ex-dependencies[data-field='off'] .dp-mass b {
+  color: var(--text-2);
+}
+.ex-dependencies[data-field='off'] .ev-bar {
+  opacity: 0.4;
+}
+
+@media (max-width: 640px) {
+  .ex-dependencies .dp-row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'id'
+      'desc'
+      'meta'
+      'mass';
+  }
+  .ex-dependencies .dp-mass {
+    justify-items: start;
+  }
+  .ex-dependencies .dp-strip {
+    gap: 0.7rem;
+  }
+  .ex-dependencies .dp-node + .dp-node::before {
+    width: 0.7rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-dependencies .dp-row,
+  .ex-dependencies .dp-node {
+    transition: none;
+  }
+}

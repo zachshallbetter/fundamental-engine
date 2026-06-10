@@ -1,0 +1,272 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import threads from "../../data/examples/threads.json";
+import "../../styles/examples/threads.css";
+
+// The Threads Field — a comment thread as a BINDING structure over one real Hacker News
+// discussion. Each comment is a body; the subtree it spawned becomes mass, the reply chain
+// is the geometry, and reply tempo is heat. Hover or focus a comment and its full ancestor
+// chain plus its direct replies light — the argument's skeleton, before you read a word.
+const story = threads.story;
+const snapshotDay = threads.snapshotAt.slice(0, 10);
+
+// HN's Algolia API ships comment text HTML-entity-encoded; decode it once, server-side.
+// (&amp; goes last so it can't re-introduce entities.)
+const decode = (s: string) =>
+  s
+    .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(Number(d)))
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+
+const byId = new Map(threads.comments.map((c) => [c.id, c]));
+
+// mass = the subtree a comment spawned: w = log(replies + 1) / log(maxReplies + 1) —
+// the same log-normalization the Evidence example applies to citations. Most comments
+// spawn nothing and sit at the floor; that IS the real shape of a discussion.
+const lmax = Math.log(Math.max(...threads.comments.map((c) => c.replies), 1) + 1);
+
+// tempo = how fast a comment landed after its parent (the story, for top-level), as a
+// log-scaled 0..1 — 1 is the fastest reply in the thread, 0 the slowest.
+const deltas = threads.comments.map((c) =>
+  Math.max(60, c.createdAt - (byId.get(c.parent)?.createdAt ?? story.createdAt)),
+);
+const ld = deltas.map((d) => Math.log(d / 60 + 1));
+const ldMin = Math.min(...ld);
+const ldSpan = Math.max(...ld) - ldMin || 1;
+
+const tempoColor = (t: number) => `hsl(${Math.round(205 - t * 180)} 74% 64%)`;
+
+const comments = threads.comments.map((c, i) => ({
+  ...c,
+  text: decode(c.text),
+  w: Math.log(c.replies + 1) / lmax,
+  tempo: 1 - (ld[i]! - ldMin) / ldSpan,
+  into: c.createdAt - story.createdAt,
+}));
+
+const fmtInto = (s: number) => {
+  const m = Math.round(s / 60);
+  if (m < 90) return `${m}m into the thread`;
+  const h = Math.round(s / 3600);
+  if (h < 48) return `${h}h into the thread`;
+  return `${Math.round(s / 86400)}d into the thread`;
+};
+---
+
+<ExampleShell
+  title="field-ui — Threads"
+  description="One real Hacker News discussion run as a field. Each comment is a body; the subtree it spawned is mass, reply tempo is heat, and hovering a comment lights its full ancestor chain plus its direct replies. The field is invisible — its output is type weight, ink, and anchor. data-* in, --field-* out."
+  current="threads"
+  mainClass="ex-threads"
+  mainAttrs={{ "data-field": "on", "data-lens": "tempo" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · threads</p>
+    <h1>Arguments have <span class="accent">structure</span>.</h1>
+    <p class="ev-lede">
+      A comment thread is a binding structure: every reply binds to the comment it answers, and
+      busy subtrees heat up while dead ends go quiet. Most thread UIs flatten that into uniform
+      rows, so you reconstruct the argument by reading all of it. These are the first
+      {comments.length} comments of a real Hacker News discussion —
+      <a href={story.hn} rel="noopener">the CrowdStrike boot-loop thread</a> — run as a
+      <strong>field</strong>.
+    </p>
+    <p class="ev-lede">
+      Each comment is a body whose mass is the <strong>subtree it spawned</strong> — a comment
+      that started an argument is heavy; a reply nobody answered sits at the floor. Reply tempo
+      shows as heat: warm comments landed minutes after their parent, cool ones took hours.
+      <strong>Hover or focus any comment</strong> and its full ancestor chain plus its direct
+      replies light up — the discussion's real shape, readable before you read a word. The field
+      is invisible: no particle swarm, only type weight, ink, and anchor.
+    </p>
+  </header>
+
+  <!-- Controls — make the transformation legible. -->
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-th-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Heat lens</span>
+      <div class="ev-seg" role="group" aria-label="Heat lens">
+        <button type="button" data-th-lens="tempo" aria-pressed="true">tempo</button>
+        <button type="button" data-th-lens="off" aria-pressed="false">off</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span><b>size</b> = subtree — the replies a comment spawned</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-th-hint
+        ><b>color</b> = tempo — warm replies landed within minutes of their parent, cool ones took
+        hours</span
+      >
+    </p>
+  </div>
+
+  <!-- Legend — reading the field. -->
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li>
+      <span class="ev-k ev-k-weight">Aa</span> <b>size</b> = replies spawned — most comments spawn
+      none and sit at the floor; that is the real shape of a discussion
+    </li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the heat lens (reply tempo)</li>
+    <li>
+      <span class="ev-k th-k-chain" aria-hidden="true"><i></i><i></i><i></i></span>
+      hover or focus → the full <b>ancestor chain</b> + direct replies light
+    </li>
+    <li>
+      <span class="ev-k th-k-depth" aria-hidden="true"></span> indent = depth, capped at 6 —
+      deeper replies hold the cap
+    </li>
+  </ul>
+
+  <!-- The story being discussed. -->
+  <article class="th-story">
+    <a class="th-story-title" href={story.url ?? story.hn} target="_blank" rel="noopener">
+      {story.title}
+    </a>
+    <p class="th-story-meta">
+      <b>{story.points.toLocaleString()}</b> points · posted by
+      <span class="th-author">{story.author}</span> ·
+      <b>{story.comments.toLocaleString()}</b> comments ·
+      <a href={story.hn} target="_blank" rel="noopener">discuss on HN</a>
+    </p>
+  </article>
+
+  <ol class="th-list" data-th-list>
+    {
+      comments.map((c) => (
+        <li
+          class="th-c"
+          id={`c-${c.id}`}
+          data-body="attract"
+          data-feedback
+          data-range="200"
+          data-strength={(0.4 + c.w * 1.6).toFixed(2)}
+          data-id={String(c.id)}
+          data-parent={String(c.parent)}
+          data-tempo={c.tempo.toFixed(4)}
+          tabindex="0"
+          aria-expanded="false"
+          style={`--w:${c.w.toFixed(3)}; --cat:${tempoColor(c.tempo)}; --d:${Math.min(c.depth, 6)};`}
+        >
+          <div class="th-row">
+            <p class="th-meta">
+              <span class="th-author">{c.author}</span>
+              <span class="th-into">{fmtInto(c.into)}</span>
+              {c.replies > 0 && (
+                <span class="th-replies">
+                  {c.replies} {c.replies === 1 ? "reply" : "replies"}
+                </span>
+              )}
+            </p>
+            <p class="th-text">{c.text}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+
+  <!-- How it's built — the binding chain made concrete. -->
+  <section class="ev-how" aria-labelledby="th-how-h">
+    <h2 id="th-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every comment is ordinary semantic HTML — an <code>&lt;li&gt;</code> carrying its id, its
+      parent's id, and its tempo as data attributes. Mass is the log-normalized count of replies
+      it spawned; CSS turns that one number into type heft, ink, and anchor. The binding chain is
+      a parent-id walk — no SVG, no canvas, no per-element listeners beyond hover and focus.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — mark each comment as a field body</p>
+        <pre class="ev-code"><code>&lt;li
+  data-body="attract"
+  data-strength="1.36"
+  data-feedback
+  data-id="41002198" data-parent="41002195"
+  data-tempo="0.91"
+  style="--w: 0.60; --cat: hsl(31 74% 64%); --d: 0;"
+&gt;
+  &lt;!-- your ordinary HTML here --&gt;
+&lt;/li&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-body="attract"</code> — registers as a field participant</li>
+          <li><code>data-strength</code> — mass, from the subtree the comment spawned</li>
+          <li><code>data-parent</code> — the binding: which comment this one answers</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — CSS reads the weight + depth</p>
+        <pre class="ev-code"><code>{`.th-c {
+  /* --d = min(depth, 6) — the indent,
+     and one guide line per level */
+  padding-left: calc(var(--d) * var(--ind));
+}
+.th-row {
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}
+.th-text {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}`}</code></pre>
+        <p class="ev-how-note">
+          One log-normalized subtree count drives weight, ink, and anchor; the indentation
+          supplies the tree geometry for free.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — the binding chain is a parent walk</p>
+        <pre class="ev-code"><code>{`// hover or focus a comment:
+row.classList.add("lit");
+
+// walk the ancestor ids up to the story
+let p = byId.get(row.dataset.parent);
+while (p) {
+  p.classList.add("cited");
+  p = byId.get(p.dataset.parent);
+}
+
+// and light the direct replies
+for (const kid of kids.get(row.dataset.id))
+  kid.classList.add("cited");`}</code></pre>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Mass here is <strong>engagement, not merit</strong> — a heavy comment spawned a big subtree,
+      which says people answered it, not that it was right. This page holds the first
+      {comments.length} comments of a thread that grew to {story.comments.toLocaleString()};
+      ages are measured from the story's posting, so the page is stable. Data:
+      <a href="https://hn.algolia.com" rel="noopener">Hacker News via the Algolia API</a>
+      (Y Combinator HN API terms), snapshotted {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/threads-runtime.ts";
+</script>

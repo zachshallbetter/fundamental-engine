@@ -1,0 +1,265 @@
+/* ============================================================
+   THE BACKLOG FIELD — work has weight; references bind; the cycle is a sink.
+   Builds on the ev-* design system (evidence.css, imported by ExampleShell);
+   everything here is scoped under .ex-backlog and only adds what this example
+   needs: the two sections, the work-item rows, and the cycle sink bar.
+   ============================================================ */
+
+/* the zone wraps both sections so hover threads can cross them */
+.ex-backlog .wl-zone {
+  position: relative;
+}
+
+.ex-backlog .wl-section {
+  margin-bottom: 2.2rem;
+}
+.ex-backlog .wl-h {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-2);
+}
+.ex-backlog .wl-h-n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+
+.ex-backlog .wl-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* a work item: the blended weight (--w, 0..1) is felt — type heft, ink, and a
+   left anchor whose color is the kind (--cat: teal PR, blue issue). */
+.ex-backlog .wl-item {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 3.2rem auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.2rem);
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.2s;
+}
+/* shipped items have left the field's present — slightly dimmed */
+.ex-backlog .wl-item--shipped {
+  opacity: calc(0.46 + var(--w) * 0.38);
+}
+.ex-backlog .wl-item.lit {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
+  transform: translateX(2px);
+}
+.ex-backlog .wl-item.cited {
+  opacity: 1;
+  border-left-color: var(--cat, var(--accent));
+  background: color-mix(in srgb, var(--cat, var(--accent)) 8%, transparent);
+}
+
+.ex-backlog .wl-num {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--text-4);
+  text-align: right;
+}
+.ex-backlog .wl-kind {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) 75%, var(--text-3));
+}
+.ex-backlog .wl-body {
+  min-width: 0;
+}
+.ex-backlog .wl-title {
+  display: block;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-backlog .wl-title:hover {
+  color: var(--accent);
+}
+.ex-backlog .wl-meta {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.76rem;
+  color: var(--text-3);
+}
+.ex-backlog .wl-comments {
+  display: grid;
+  justify-items: end;
+  line-height: 1;
+}
+.ex-backlog .wl-comments b {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 60%), var(--text-3));
+}
+.ex-backlog .wl-comments-l {
+  margin-top: 0.18rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+/* ── the cycle sink — shipped work accretes into a bar with stated capacity ── */
+.ex-backlog .wl-cycle {
+  display: grid;
+  grid-template-columns: auto minmax(6rem, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 0.9rem;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+  /* channel 2 — the live field: the engine writes --load (0..1) into this sink
+     body as particles accrete; the glow is that measurement, nothing else. */
+  box-shadow: 0 0 calc(var(--load, 0) * 22px) calc(var(--load, 0) * 2px)
+    color-mix(in srgb, var(--accent) calc(var(--load, 0) * 40%), transparent);
+  transition: box-shadow 0.4s;
+}
+.ex-backlog .wl-cycle-label {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.ex-backlog .wl-cycle-label b {
+  color: var(--text);
+  font-weight: 600;
+}
+/* channel 1 — data arithmetic: the fill is shipped ÷ capacity from the snapshot */
+.ex-backlog .wl-cycle-bar {
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-backlog .wl-cycle-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+/* the window outran the stated capacity — the full bar runs hot */
+.ex-backlog .wl-cycle[data-over] .wl-cycle-bar i {
+  background: linear-gradient(90deg, var(--accent), #ff9d5c);
+}
+.ex-backlog .wl-cycle-note {
+  font-size: 0.72rem;
+  color: var(--text-4);
+  white-space: nowrap;
+}
+
+/* legend keys */
+.ex-backlog .wl-k-kinds {
+  gap: 0.25rem;
+}
+.ex-backlog .wl-k-kinds i {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+.ex-backlog .wl-k-pr {
+  background: #2dd4bf;
+}
+.ex-backlog .wl-k-issue {
+  background: #4da3ff;
+}
+.ex-backlog .wl-k-sink {
+  width: 20px;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-backlog .wl-k-sink i {
+  display: block;
+  width: 70%;
+  height: 100%;
+  background: var(--accent);
+}
+
+/* ── Field OFF — the same tracker, flattened back to identical rows ────────── */
+.ex-backlog[data-field='off'] .wl-item {
+  --w: 0.55;
+  opacity: 1;
+  border-left-color: var(--line);
+}
+.ex-backlog[data-field='off'] .wl-item.lit,
+.ex-backlog[data-field='off'] .wl-item.cited {
+  transform: none;
+  background: color-mix(in srgb, var(--text) 3.7%, transparent);
+  border-color: var(--line);
+}
+.ex-backlog[data-field='off'] .wl-kind {
+  border-color: var(--line);
+  color: var(--text-3);
+}
+.ex-backlog[data-field='off'] .wl-cycle {
+  box-shadow: none;
+}
+.ex-backlog[data-field='off'] .wl-cycle-bar {
+  opacity: 0.4;
+}
+
+@media (max-width: 640px) {
+  .ex-backlog .wl-item {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 0.5rem;
+  }
+  .ex-backlog .wl-num {
+    text-align: left;
+  }
+  .ex-backlog .wl-body {
+    grid-column: 1 / -1;
+  }
+  .ex-backlog .wl-comments {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .ex-backlog .wl-cycle {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+  .ex-backlog .wl-cycle-note {
+    white-space: normal;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-backlog .wl-item,
+  .ex-backlog .wl-cycle {
+    transition: none;
+  }
+}

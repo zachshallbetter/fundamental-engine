@@ -207,10 +207,17 @@ const SOURCES = {
     const deps = [];
     for (const [name, consumers] of usedBy) {
       try {
-        const [dl, meta] = await Promise.all([
+        // the full packument is needed for `time` (the /latest endpoint omits it)
+        const [dl, doc] = await Promise.all([
           get(`https://api.npmjs.org/downloads/point/last-week/${encodeURIComponent(name)}`),
-          get(`https://registry.npmjs.org/${encodeURIComponent(name)}/latest`),
+          get(`https://registry.npmjs.org/${encodeURIComponent(name)}`),
         ]);
+        const latest = doc['dist-tags']?.latest;
+        const meta = {
+          version: latest,
+          description: doc.description ?? doc.versions?.[latest]?.description ?? '',
+          time: { modified: doc.time?.[latest] ?? doc.time?.modified ?? null },
+        };
         let advisories = 0;
         try {
           const osv = await fetch('https://api.osv.dev/v1/query', {

@@ -1,0 +1,369 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import fleet from "../../data/examples/fleet.json";
+import "../../styles/examples/fleet.css";
+
+// The Fleet Field — GitHub's real status page run as a field. Each service carries the
+// weight of its incident history (involvement is mass); each incident is a sink that
+// accreted updates until resolution released it — impact is the heat. No particle swarm.
+
+const snapshot = Date.parse(fleet.snapshotAt);
+
+// the status page ships one informational pseudo-component ("Visit www.githubstatus.com…");
+// it is not a service, so it is omitted from the grid.
+const components0 = fleet.components.filter((c) => !c.name.startsWith("Visit www.githubstatus"));
+
+const slug = (n: string): string => n.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+
+// involvement: how many of the snapshot's incidents name each service.
+const involvement = new Map<string, number>();
+const lastHit = new Map<string, number>();
+for (const inc of fleet.incidents) {
+  const t = Date.parse(inc.createdAt);
+  for (const name of inc.components) {
+    involvement.set(name, (involvement.get(name) ?? 0) + 1);
+    lastHit.set(name, Math.max(lastHit.get(name) ?? 0, t));
+  }
+}
+const maxInv = Math.max(...components0.map((c) => involvement.get(c.name) ?? 0), 1);
+
+// status pill colors: operational teal / degraded amber / partial orange / major red.
+const STATUS_COLOR: Record<string, string> = {
+  operational: "#2dd4bf",
+  degraded_performance: "#fbbf24",
+  partial_outage: "#ff9d5c",
+  major_outage: "#f87171",
+};
+
+const components = components0
+  .map((c) => {
+    const inv = involvement.get(c.name) ?? 0;
+    return {
+      ...c,
+      slug: slug(c.name),
+      inv,
+      last: lastHit.get(c.name) ?? 0,
+      w: Math.log(inv + 1) / Math.log(maxInv + 1),
+      statusColor: STATUS_COLOR[c.status] ?? "#2dd4bf",
+      statusLabel: c.status.replace(/_/g, " "),
+    };
+  })
+  .sort((a, b) => b.inv - a.inv);
+
+// impact is the heat: that color is --cat. Mass blends declared severity with how long
+// the incident accreted updates before resolution released it.
+const IMPACT: Record<string, { color: string; rank: number }> = {
+  none: { color: "#8b95a3", rank: 0.15 },
+  minor: { color: "#fbbf24", rank: 0.45 },
+  major: { color: "#ff9d5c", rank: 0.72 },
+  critical: { color: "#f87171", rank: 1 },
+};
+const maxUpdates = Math.max(...fleet.incidents.map((i) => i.updates.length), 1);
+
+const fmtDay = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
+const fmtStamp = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "UTC",
+});
+const fmtDur = (a: string, b: string | null): string => {
+  if (!b) return "unresolved at snapshot";
+  const m = Math.round((Date.parse(b) - Date.parse(a)) / 60000);
+  if (m < 1) return "<1m";
+  const d = Math.floor(m / 1440);
+  const h = Math.floor((m % 1440) / 60);
+  const mm = m % 60;
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${mm}m`;
+  return `${mm}m`;
+};
+
+const incidents = [...fleet.incidents]
+  .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+  .map((inc) => {
+    const impact = IMPACT[inc.impact] ?? IMPACT.none!;
+    const fill = inc.updates.length / maxUpdates;
+    return {
+      ...inc,
+      updates: [...inc.updates].sort((a, b) => Date.parse(a.at) - Date.parse(b.at)),
+      w: 0.55 * impact.rank + 0.45 * fill,
+      cat: impact.color,
+      fill,
+      compSlugs: inc.components.map(slug),
+      created: fmtDay.format(new Date(inc.createdAt)),
+      duration: fmtDur(inc.createdAt, inc.resolvedAt),
+    };
+  });
+
+const snapshotDay = fleet.snapshotAt.slice(0, 10);
+---
+
+<ExampleShell
+  title="field-ui — Fleet"
+  description="GitHub's real status page run as a field. Services carry the weight of their incident history — involvement is mass — and each incident is a sink that accreted updates until resolution released it; impact is the heat. No particle swarm; the field shows in the type."
+  current="fleet"
+  mainClass="ex-fleet"
+  mainAttrs={{ "data-field": "on", "data-weight": "involvement" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · fleet</p>
+    <h1>Incidents <span class="accent">accrete</span>.</h1>
+    <p class="ev-lede">
+      A status page is a fleet pretending to be a checklist: every service gets the same green
+      dot, and yesterday's outage evaporates at midnight. This is
+      <a href="https://www.githubstatus.com" rel="noopener">GitHub's real status page</a> run as
+      a <strong>field</strong>: each service carries the weight of its incident history —
+      the more of the window's {incidents.length} incidents name it, the heavier it reads —
+      and each incident is a <strong>sink</strong> that accreted updates, one report at a time,
+      until resolution released it.
+    </p>
+    <p class="ev-lede">
+      Impact is the heat: a dim gray blip barely registers, a <strong>critical</strong> burns
+      red — and that color anchors the whole row. Hover an incident and the services it hit
+      light up in the grid; hover a service and its incidents light in the timeline. Click an
+      incident to open the updates it accreted. <strong>Toggle the field off</strong> and the
+      page collapses back to the checklist.
+    </p>
+  </header>
+
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-fl-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Weight services by</span>
+      <div class="ev-seg" role="group" aria-label="Service weighting signal">
+        <button type="button" data-fl-weight="involvement" aria-pressed="true">involvement</button>
+        <button type="button" data-fl-weight="recency" aria-pressed="false">recency</button>
+      </div>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-fl-hint
+        ><b>size</b> = involvement — how many of the {incidents.length} incidents named each
+        service</span
+      >
+      <span class="ev-hint-sep">·</span>
+      <span><b>color</b> = impact — the incident's declared severity, dim none → red critical</span>
+    </p>
+  </div>
+
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal</li>
+    <li>
+      <span class="ev-k fl-k-heat"
+        ><i style="background:#8b95a3"></i><i style="background:#fbbf24"></i><i
+          style="background:#ff9d5c"></i><i style="background:#f87171"></i></span
+      >
+      <b>color</b> = impact heat (none · minor · major · critical)
+    </li>
+    <li><span class="ev-k fl-k-load"><i></i></span> the fill bar = accreted updates (vs. the window's max)</li>
+    <li><span class="ev-k fl-k-link"></span> hover an incident ↔ the services it hit light up</li>
+  </ul>
+
+  <div class="fl-zone" data-fl-zone>
+    <!-- Zone 1 — the services grid: involvement is mass. -->
+    <section class="fl-services" aria-labelledby="fl-svc-h">
+      <h2 class="fl-h" id="fl-svc-h">
+        The fleet <span class="fl-h-n">{components.length} services</span>
+      </h2>
+      <ul class="fl-grid" data-fl-grid>
+        {
+          components.map((c) => (
+            <li
+              class="fl-comp"
+              id={`comp-${c.slug}`}
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength={(0.4 + c.w * 1.6).toFixed(2)}
+              data-name={c.slug}
+              data-inv={c.inv}
+              data-last={c.last}
+              style={`--w:${c.w.toFixed(3)}; --cat:${c.statusColor};`}
+            >
+              <span class="fl-comp-name">{c.name}</span>
+              <span class="fl-pill" data-status={c.status}>{c.statusLabel}</span>
+              <span class="fl-comp-inv">
+                <b>{c.inv}</b> incident{c.inv === 1 ? "" : "s"} in this window
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- Zone 2 — the incident timeline, newest first. Each incident accreted updates
+         until resolution released it; the fill bar is that accretion load. -->
+    <section class="fl-incidents" aria-labelledby="fl-inc-h">
+      <h2 class="fl-h" id="fl-inc-h">
+        The timeline <span class="fl-h-n">{incidents.length} incidents, newest first</span>
+      </h2>
+      <ol class="fl-list" data-fl-list>
+        {
+          incidents.map((inc) => (
+            <li
+              class="fl-inc"
+              id={`inc-${inc.id}`}
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength={(0.4 + inc.w * 1.6).toFixed(2)}
+              data-comps={inc.compSlugs.join(" ")}
+              data-impact={inc.impact}
+              style={`--w:${inc.w.toFixed(3)}; --cat:${inc.cat};`}
+            >
+              <button
+                type="button"
+                class="fl-inc-head"
+                aria-expanded="false"
+                aria-controls={`inc-u-${inc.id}`}
+              >
+                <span class="fl-impact">{inc.impact}</span>
+                <span class="fl-inc-body">
+                  <span class="fl-inc-name">{inc.name}</span>
+                  <span class="fl-inc-meta">
+                    {inc.created} · {inc.duration}
+                    {inc.compSlugs.length > 0 && (
+                      <span class="fl-inc-comps">
+                        {inc.components.map((n) => (
+                          <span class="fl-chip">{n}</span>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                </span>
+                <span class="fl-updates">
+                  <b>{inc.updates.length}</b>
+                  <span class="fl-updates-l">updates</span>
+                  <span class="fl-load" aria-hidden="true">
+                    <i style={`width:${Math.round(inc.fill * 100)}%`} />
+                  </span>
+                </span>
+              </button>
+              <ol class="fl-ulist" id={`inc-u-${inc.id}`} hidden>
+                {inc.updates.map((u) => (
+                  <li class="fl-update">
+                    <span class="fl-u-status" data-status={u.status}>{u.status}</span>
+                    <time class="fl-u-time" datetime={u.at}>{fmtStamp.format(new Date(u.at))}</time>
+                    <p class="fl-u-body">{u.body}</p>
+                  </li>
+                ))}
+              </ol>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </div>
+
+  <section class="ev-how" aria-labelledby="fl-how-h">
+    <h2 id="fl-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Both zones are ordinary semantic HTML — a <code>&lt;ul&gt;</code> of services, an
+      <code>&lt;ol&gt;</code> of incidents — carrying the status API's numbers as data
+      attributes. field-ui runs an invisible field over the page and the type carries the
+      measurement: involvement as weight, impact as heat, accretion as a fill bar.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — services and incidents are bodies</p>
+        <pre class="ev-code"><code>&lt;!-- a service: involvement is mass --&gt;
+&lt;li id="comp-actions"
+  data-body="attract"
+  data-strength="1.99"
+  data-inv="6" data-last="1780..."
+  style="--w: 1.0; --cat: #2dd4bf;"&gt;
+
+&lt;!-- an incident: impact is the heat --&gt;
+&lt;li id="inc-h2vk60..."
+  data-body="attract"
+  data-comps="issues pull-requests actions"
+  style="--w: 0.74; --cat: #f87171;"&gt;</code></pre>
+        <ul class="ev-how-attrs">
+          <li><code>data-inv</code> / <code>data-last</code> — the signals the lens re-weights</li>
+          <li><code>data-comps</code> — the cross-highlight edges, by service name</li>
+          <li><code>--cat</code> — the impact heat the CSS mixes into the anchor</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — accretion is the updates an incident held</p>
+        <pre class="ev-code"><code>{`/* the fill bar: this incident's update
+   count over the window's max (10) —
+   static math over the snapshot. */
+.fl-load i { width: calc(...%); }
+
+/* click to release what it accreted */
+head.setAttribute("aria-expanded", open);
+updatesList.hidden = !open;
+
+/* heat anchors the row */
+.fl-inc {
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}`}</code></pre>
+        <p class="ev-how-note">
+          Kept honest: the fill bar is arithmetic over the snapshot's
+          <code>updates[]</code> — the sink/accretion concept rendered from recorded history,
+          not a live engine write.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — the cross-highlight is name matching</p>
+        <pre class="ev-code"><code>{`// hover an incident → light the
+// services it names
+for (const s of inc.dataset.comps.split(" "))
+  grid.querySelector("#comp-" + s)
+    ?.classList.add("cited");
+
+// hover a service → light its incidents
+incidents.filter((i) =>
+  i.dataset.comps.split(" ").includes(name)
+).forEach((i) => i.classList.add("cited"));
+
+// class highlights only — no SVG here.`}</code></pre>
+        <p class="ev-how-note">
+          The service lens re-weights the grid (involvement or most-recently-hit) and FLIP
+          re-sorts it in two dimensions — grid moves are x and y.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Involvement is <strong>exposure, not blame</strong> — a service named by many incidents
+      sits where the failures surfaced, not necessarily where they began. All {incidents.length}
+      incidents in this window resolved; durations and dates are frozen at the snapshot. The
+      status page's informational pseudo-component is omitted from the grid. Data: the
+      <a href="https://www.githubstatus.com/api" rel="noopener">GitHub Status API</a>
+      (githubstatus.com), public status data, snapshotted {snapshotDay}.
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/fleet-runtime.ts";
+</script>
