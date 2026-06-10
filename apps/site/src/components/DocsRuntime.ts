@@ -23,29 +23,7 @@ import { applyRecipe } from "@field-ui/platform";
 import { DOCS_NAV, ROUTE_FAMILIES, groupColorFor } from "../lib/docs-nav.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";
 import { persisted } from "../lib/persisted.ts";
-
-// ── visited routes — the search "seen" memory ("where have I been") ──────────
-const normRoute = (href: string): string =>
-  (href.split("#")[0]!.split("?")[0] || "/").replace(/\/$/, "") || "/";
-const VISITED_KEY = "fui:docs-visited";
-function loadVisited(): Set<string> {
-  try {
-    const raw = localStorage.getItem(VISITED_KEY);
-    const arr = raw ? (JSON.parse(raw) as unknown) : [];
-    return new Set(Array.isArray(arr) ? (arr as string[]) : []);
-  } catch {
-    return new Set();
-  }
-}
-function recordVisit(route: string): void {
-  try {
-    const v = loadVisited();
-    v.add(route);
-    localStorage.setItem(VISITED_KEY, JSON.stringify([...v].slice(-200)));
-  } catch {
-    /* storage unavailable — search just won't show 'seen' marks */
-  }
-}
+import { normRoute, loadVisited, recordVisit, applyNavField } from "../lib/nav-field.ts";
 
 const LEGACY_FIELD_KEY = "fieldui-docs-field";
 const fieldPref = persisted<boolean>("docs-field", true, { legacyKeys: [LEGACY_FIELD_KEY] });
@@ -144,12 +122,20 @@ function startField(main: HTMLElement, toc: HTMLElement | null): FieldBits | nul
 
   // the sidebar hierarchy as a Priority Well — runs under the same toggle as this field
   const sidebar = startSidebarField();
+  // breadcrumbs + the prev/next pager as a Navigation Current — visited ancestors / the route
+  // you came from pick up a faint memory tint (navigation-current writes --field-memory back).
+  const bc = document.querySelector<HTMLElement>("[data-breadcrumbs]");
+  const breadcrumbField = bc ? applyNavField(bc, "navigation-current", { markVisited: true }) : null;
+  const pager = main.querySelector<HTMLElement>(".docs-prevnext");
+  const pagerField = pager ? applyNavField(pager, "navigation-current", { markVisited: true }) : null;
 
   return {
     destroy() {
       cancelAnimationFrame(raf);
       applied?.destroy();
       sidebar?.destroy();
+      breadcrumbField?.destroy();
+      pagerField?.destroy();
       for (const h of heads) {
         for (const k of Object.keys(BODY_ATTRS)) h.removeAttribute(k);
       }

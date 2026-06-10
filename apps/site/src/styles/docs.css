@@ -319,12 +319,25 @@
 
 /* prev / next */
 .docs-prevnext {
+  position: relative;
   margin-top: 3rem;
   padding-top: 1.6rem;
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+}
+/* progress through the linear reading order — "N of M" centered between prev/next */
+.docs-prevnext .pn-progress {
+  position: absolute;
+  left: 50%;
+  top: calc(1.6rem + 50%);
+  transform: translate(-50%, -50%);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+  pointer-events: none;
 }
 .docs-prevnext .pn {
   display: flex;
@@ -340,9 +353,20 @@
 .docs-prevnext .pn.next {
   text-align: right;
   margin-left: auto;
+  /* the "likely next" path reads a touch forward (navigation-current) */
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
 }
 .docs-prevnext .pn:hover {
   border-color: var(--accent);
+}
+/* the route you came from (visited) carries a faint memory tint on its label */
+.docs-prevnext .pn.nav-visited span {
+  color: color-mix(in srgb, var(--accent) calc(35% + var(--field-memory, 0) * 65%), var(--text-4));
+}
+@media (max-width: 560px) {
+  .docs-prevnext .pn-progress {
+    display: none;
+  }
 }
 .docs-prevnext .pn span {
   font-family: var(--mono);

@@ -2,6 +2,7 @@
 import Base from './Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import Breadcrumbs, { type Crumb } from '../components/Breadcrumbs.astro';
 import { DOCS_NAV, DOCS_FLAT } from '../lib/docs-nav.ts';
 import '../styles/ds-tokens.css';
 import '../styles/docs.css';
@@ -20,6 +21,22 @@ const groups = DOCS_NAV.map((g) => ({ ...g, items: g.items.filter((i) => i.ready
 const idx = DOCS_FLAT.findIndex((i) => i.href === path);
 const prev = idx > 0 ? DOCS_FLAT[idx - 1] : null;
 const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
+
+// breadcrumb trail: Home › Docs › <Group> › <Page> (Docs alone is the Overview page itself)
+const crumbs: Crumb[] = [{ label: 'Home', href: '/' }];
+if (path === '/docs') {
+  crumbs.push({ label: 'Docs' });
+} else {
+  crumbs.push({ label: 'Docs', href: '/docs' });
+  for (const g of DOCS_NAV) {
+    const item = g.items.find((i) => (i.href.replace(/\/$/, '') || '/') === path);
+    if (item) {
+      crumbs.push({ label: g.title, color: g.color });
+      crumbs.push({ label: item.label, color: g.color });
+      break;
+    }
+  }
+}
 ---
 
 <Base title={title} description={description}>
@@ -85,6 +102,7 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
     </aside>
 
     <main class="docs-content" data-pagefind-body>
+      <Breadcrumbs crumbs={crumbs} />
       <slot />
       <nav class="docs-prevnext" aria-label="Pagination" data-pagefind-ignore>
         {
@@ -97,6 +115,11 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
             <span />
           )
         }
+        {idx >= 0 && (
+          <span class="pn-progress" aria-hidden="true">
+            {idx + 1} / {DOCS_FLAT.length}
+          </span>
+        )}
         {
           next && (
             <a class="pn next" href={next.href}>
