@@ -1,5 +1,7 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import ApiStamp from '../../components/ApiStamp.astro';
+import SeeItLive from '../../components/SeeItLive.astro';
 import { PHASES } from '@field-ui/platform';
 
 // The platform layer as a public page — data-driven from @field-ui/platform (PHASES) so the loop can't
@@ -75,8 +77,11 @@ const LINT = [
     </ol>
     <p class="note">
       An off-phase layout read is caught by the scheduler's guard. <code>createFieldPlatform(root)</code>
+      <ApiStamp name="createFieldPlatform" />
       wires <code>measure → read</code> and <code>flush → write</code> by default and exposes
-      <code>.on(phase, fn)</code> for the rest.
+      <code>.on(phase, fn)</code> for the rest. The platform also exports <code>browserHost()</code>
+      <ApiStamp name="browserHost" pkg="@field-ui/platform" /> — the canonical DOM host the
+      renderer-agnostic core requires.
     </p>
   </section>
 
@@ -101,6 +106,11 @@ const LINT = [
       </tbody>
     </table>
   </section>
+
+  <SeeItLive
+    slug="backlog"
+    why="the registries under load: data-active engagement marks a drag in flight, the cycle is a sink with real capacity, and reads never thrash against writes"
+  />
 
   <div class="callout">
     <b>See it whole.</b> The <a href="/docs/reading-field">Reading Field</a> demo exercises all six

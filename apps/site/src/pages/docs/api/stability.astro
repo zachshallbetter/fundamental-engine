@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
+import ApiStamp from '../../../components/ApiStamp.astro';
 import {
   FROZEN_VALUES, FROZEN_TYPES, FROZEN_ELEMENTS, FROZEN_BODY_ATTR, EXPERIMENTAL, COMPAT_RULES,
 } from '../../../../../../scripts/api-surface.data.mjs';
@@ -36,7 +37,7 @@ const frozenCount = FROZEN_VALUES.length + FROZEN_TYPES.length + FROZEN_ELEMENTS
       <tbody>
         {FROZEN_VALUES.map((v: any) => (
           <tr>
-            <td><code>{v.name}</code> <span class="tag tag-value">value</span></td>
+            <td><code>{v.name}</code> <span class="tag tag-value">value</span> <ApiStamp name={v.name} pkg={v.pkg} /></td>
             <td><code>{v.pkg}</code></td>
             <td>{v.note}</td>
           </tr>
@@ -56,7 +57,7 @@ const frozenCount = FROZEN_VALUES.length + FROZEN_TYPES.length + FROZEN_ELEMENTS
       <thead><tr><th>Type</th><th>Package</th><th>What it is</th></tr></thead>
       <tbody>
         {FROZEN_TYPES.map((t: any) => (
-          <tr><td><code>{t.name}</code> <span class="tag tag-type">type</span></td><td><code>{t.pkg}</code></td><td>{t.note}</td></tr>
+          <tr><td><code>{t.name}</code> <span class="tag tag-type">type</span> <ApiStamp name={t.name} pkg={t.pkg} /></td><td><code>{t.pkg}</code></td><td>{t.note}</td></tr>
         ))}
       </tbody>
     </table>
@@ -68,10 +69,10 @@ const frozenCount = FROZEN_VALUES.length + FROZEN_TYPES.length + FROZEN_ELEMENTS
       <thead><tr><th>Surface</th><th>Package</th><th>What it is</th></tr></thead>
       <tbody>
         {FROZEN_ELEMENTS.map((e: any) => (
-          <tr><td><code>&lt;{e.tag}&gt;</code> <span class="tag tag-el">element</span></td><td><code>{e.pkg}</code></td><td>{e.note}</td></tr>
+          <tr><td><code>&lt;{e.tag}&gt;</code> <span class="tag tag-el">element</span> <ApiStamp name={e.tag} pkg={e.pkg} /></td><td><code>{e.pkg}</code></td><td>{e.note}</td></tr>
         ))}
         <tr>
-          <td><code>{FROZEN_BODY_ATTR}</code> <span class="tag tag-attr">attribute</span></td>
+          <td><code>{FROZEN_BODY_ATTR}</code> <span class="tag tag-attr">attribute</span> <ApiStamp name={FROZEN_BODY_ATTR} /></td>
           <td>core <code>BODY_SELECTOR</code></td>
           <td>The body contract. "Every element is a body" via the <code>{FROZEN_BODY_ATTR}</code> attribute on ordinary elements.</td>
         </tr>

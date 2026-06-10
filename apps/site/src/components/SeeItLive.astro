@@ -1,0 +1,82 @@
+---
+// "See it live" — a small box that gives a concept page a live destination in the
+// invisible-fields example family. Reads the roster (lib/invisible-fields.ts) so the
+// name, hook, and href can't drift from the family's own sidebar. The box is itself a
+// body: the page's persistent field gathers on it, and its ink answers (--d).
+import { INVISIBLE_FIELDS } from '../lib/invisible-fields.ts';
+
+interface Props {
+  /** roster slug — evidence, inbox, market, backlog, calendar, … */
+  slug: string;
+  /** optional page-specific line explaining WHY this example fits; defaults to the roster hook */
+  why?: string;
+}
+const { slug, why } = Astro.props;
+const ex = INVISIBLE_FIELDS.find((f) => f.slug === slug);
+if (!ex) throw new Error(`[SeeItLive] unknown example slug "${slug}" — not in lib/invisible-fields.ts`);
+---
+
+<aside class="see-it-live" data-body="attract" data-strength="0.45" data-range="240" data-feedback data-hot>
+  <a href={ex.href}>
+    <span class="sil-kicker">See it live</span>
+    <b class="sil-name">{ex.name} →</b>
+    <span class="sil-hook">{why ?? ex.hook}</span>
+  </a>
+</aside>
+
+<style>
+  .see-it-live {
+    margin: 1.4rem 0;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-left: 3px solid var(--accent, #4da3ff);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent, #4da3ff) 4%, transparent);
+    /* living ink: the field's gathered density (--d) returns as glow */
+    box-shadow: 0 0 calc(var(--d, 0) * 26px) rgba(77, 163, 255, calc(var(--d, 0) * 0.22));
+    transition: border-color 0.3s ease;
+  }
+  .see-it-live:hover {
+    border-left-color: color-mix(in srgb, var(--accent, #4da3ff) 80%, white);
+  }
+  .see-it-live a {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.7rem;
+    row-gap: 0.1rem;
+    align-items: baseline;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+  }
+  .sil-kicker {
+    grid-column: 1;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-4, #8a8fa0);
+  }
+  .sil-name {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 0.95rem;
+    color: color-mix(in srgb, var(--accent, #4da3ff) calc(40% + var(--d, 0) * 60%), var(--text-2, #cfd3df));
+  }
+  .sil-hook {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--text-3, #9aa0ad);
+  }
+  @media (max-width: 560px) {
+    .see-it-live a {
+      grid-template-columns: 1fr;
+    }
+    .sil-name,
+    .sil-hook {
+      grid-column: 1;
+      grid-row: auto;
+    }
+  }
+</style>

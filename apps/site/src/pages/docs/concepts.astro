@@ -3,6 +3,8 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import ForceCell from '../../components/ForceCell.astro';
 import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
+import ApiStamp from '../../components/ApiStamp.astro';
+import SeeItLive from '../../components/SeeItLive.astro';
 import { MANUAL_FORCES } from '@field-ui/core';
 
 const bodySnippet = `<a
@@ -75,7 +77,8 @@ const DEMOS = [
     <div class="callout">
       <b>Data attributes are the contract.</b> You make semantic HTML participate in the field by adding
       attributes to it — there is no special body element. <code>&lt;field-root&gt;</code> only hosts the
-      field; <code>applyRecipe()</code> and <code>bindData()</code> adapt it to recipes and data; and the
+      field; <code>applyRecipe()</code> <ApiStamp name="applyRecipe" /> and <code>bindData()</code>
+      <ApiStamp name="bindData" /> adapt it to recipes and data; and the
       <code>&lt;field-cell&gt;</code> frames lower down are just isolated single-force microscopes. The
       system is the markup, not the components.
     </div>
@@ -148,6 +151,10 @@ const DEMOS = [
       (The engine never assembles particles into letterforms; words glow and grow, they are not
       drawn from dots.)
     </p>
+    <SeeItLive
+      slug="evidence"
+      why="citations are mass — reciprocity over real data: trust you can feel in the type, no particle swarm"
+    />
   </section>
 
   <section class="docs-sec">

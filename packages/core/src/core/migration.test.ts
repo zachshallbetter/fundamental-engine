@@ -54,12 +54,15 @@ test('compatibility alias packages keep the old names and forward to field-ui', 
 
 // ── CSS variable write-both contract (source-level) ─────────────────────────────────────────
 test('density write-back emits both --forces-* and --field-* variables', () => {
-  const src = readFileSync(resolve(ROOT, 'packages/core/src/core/field.ts'), 'utf8');
+  // the engine's one write path is the sink contract (#228): the internal default sink
+  // (feedback-sink.ts) performs the direct writes when no platform sink is configured.
+  const src = readFileSync(resolve(ROOT, 'packages/core/src/core/feedback-sink.ts'), 'utf8');
   for (const v of ['--forces-density', '--field-density', '--forces-heatmap-density', '--field-heatmap-density']) {
-    assert.ok(src.includes(`setProperty('${v}'`), `field.ts writes ${v}`);
+    assert.ok(src.includes(`setProperty('${v}'`), `feedback-sink.ts writes ${v}`);
   }
   // cleanup must drop the field alias too, so removing a body clears both
-  assert.ok(src.includes('--field-density'), 'clearWriteback covers --field-density');
+  const fieldSrc = readFileSync(resolve(ROOT, 'packages/core/src/core/field.ts'), 'utf8');
+  assert.ok(fieldSrc.includes('--field-density'), 'clearWriteback covers --field-density');
 });
 
 // ── alias packages re-export the real surface (guarded on a prior build) ─────────────────────

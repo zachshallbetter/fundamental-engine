@@ -23,7 +23,9 @@ export type LintCode =
   | 'state-unregistered'
   | 'overlay-without-links'
   | 'feedback-non-css-var'
-  | 'measurement-off-phase';
+  | 'measurement-off-phase'
+  | 'sink-without-feedback'
+  | 'feedback-vars-unwritten';
 
 export interface PlatformLintWarning {
   code: LintCode;
@@ -45,6 +47,53 @@ export function lintRelationTargets(root: ParentNode, resolve: Resolver): Platfo
     const id = target.startsWith('#') ? target.slice(1) : target;
     if (!resolve(id))
       out.push({ code: 'relation-target-missing', severity: 'warning', element: el, message: `data-field-target "${target}" resolves to no element` });
+  });
+  return out;
+}
+
+/**
+ * A sink that captures but never reports: `data-absorb`/`data-max` on a `sink` body with no
+ * `data-feedback` — the engine takes matter in but never writes `--load` back, so the body fills
+ * invisibly. This exact gap shipped (a vessel that captured for months while its meter sat empty),
+ * which is why it lints. Pure.
+ */
+export function lintSinkFeedback(root: ParentNode): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  root.querySelectorAll('[data-absorb], [data-max]').forEach((el) => {
+    const tokens = (el.getAttribute('data-body') ?? '').split(/\s+/).filter(Boolean);
+    if (!tokens.includes('sink')) return;
+    if (el.hasAttribute('data-feedback')) return;
+    out.push({
+      code: 'sink-without-feedback',
+      severity: 'warning',
+      element: el,
+      message: `a sink body carries ${el.hasAttribute('data-absorb') ? 'data-absorb' : 'data-max'} but no data-feedback — the engine will capture matter but never write --load back`,
+    });
+  });
+  return out;
+}
+
+/** The inline-style substrings that mean "this element reads an engine-written channel". */
+const FEEDBACK_VAR_READS = ['var(--d', 'var(--load', 'var(--field-'] as const;
+
+/**
+ * An element whose inline style *reads* a feedback channel (`var(--d…)`, `var(--load…)`,
+ * `var(--field-…)`) while its body never opted into writes (`data-body` without `data-feedback`)
+ * styles itself from variables that will never be set for it. Pure.
+ */
+export function lintFeedbackVarReads(root: ParentNode): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  root.querySelectorAll('[data-body]').forEach((el) => {
+    if (el.hasAttribute('data-feedback')) return;
+    const style = el.getAttribute('style') ?? '';
+    const read = FEEDBACK_VAR_READS.find((v) => style.includes(v));
+    if (read)
+      out.push({
+        code: 'feedback-vars-unwritten',
+        severity: 'warning',
+        element: el,
+        message: `inline style reads ${read}…) but the body carries no data-feedback — that channel is never written for it`,
+      });
   });
   return out;
 }
@@ -122,6 +171,8 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
   const resolve: Resolver = opts.resolve ?? ((id) => (typeof document !== 'undefined' ? document.getElementById(id) : null));
   return [
     ...lintRelationTargets(root, resolve),
+    ...lintSinkFeedback(root),
+    ...lintFeedbackVarReads(root),
     ...lintStateRegistration(platform.state, platform.measure),
     ...lintOverlayLinks(platform.overlays, platform.relationships),
     ...lintFeedbackVars(platform.feedback),
