@@ -27,6 +27,7 @@ export * from './core/currents.ts';
 export * from './core/reservoir.ts';
 export * from './core/spatial-hash.ts';
 export * from './core/temporal.ts';
+export * from './core/weights.ts';
 export * from './core/thermo.ts';
 export * from './core/field-store.ts';
 export * from './core/conditions.ts';

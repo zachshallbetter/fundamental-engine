@@ -22,9 +22,13 @@
 //     dimmed and labeled — no row removal mid-visit; new entrants are NOT added (the
 //     snapshot's 30 are the page's bodies). Any failure keeps the snapshot.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { recipeById } from "@field-ui/core";
+import { logNormalizeBetween, recipeById, weightToStrength } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
+import { pageRuntime } from "../../lib/page-runtime.ts";
+import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
+import { fmtInt } from "../../lib/fmt.ts";
+import { armEntryAtPace } from "../../lib/reading-pace.ts";
 
 type LbLens = "artist" | "off";
 
@@ -42,8 +46,6 @@ interface LbRecording {
   recording_mbid?: string | null;
 }
 
-const fmtListens = (n: number): string => n.toLocaleString("en-US");
-
 const HINTS: Record<LbLens, string> = {
   artist: "<b>color</b> = artist — one palette hue per act, hashed from the name",
   off: "<b>color</b> = off — a single hue; mass carries the whole signal",
@@ -52,9 +54,7 @@ const HINTS: Record<LbLens, string> = {
 const reduceMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function initLibrary(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-library");
-  if (!page) return () => {};
+function initLibrary(page: HTMLElement): () => void {
   const ac = new AbortController();
   const scope = page.querySelector<HTMLElement>("[data-lb-scope]");
   const list = page.querySelector<HTMLElement>("[data-lb-list]");
@@ -97,16 +97,16 @@ function initLibrary(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
-        // --field-attention (eased engagement + center proximity + visibility) per row.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        };
+        // renderless — invisible; the extra "attention" metric asks the platform pipeline to
+        // write --field-attention (eased engagement + center proximity + visibility) per row.
         const bodies = rowsOf();
         bodies.push(queue);
-        activeField = applyRecipe(scope, recipe, { bodies, annotateBodies: false });
+        activeField = applyRecipe(scope, base, {
+          bodies,
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -191,30 +191,12 @@ function initLibrary(): () => void {
   };
 
   // ── bar entry sweep — gated at reading pace ───────────────────────────────
-  // Rows entering the viewport get .lb-in (the bar sweeps out to its length);
-  // while the engine's live scroll velocity (--field-scroll-v, px/frame) says
-  // the user is scanning (>= 2), .lb-in-instant is added too — no animation.
-  const SCROLL_V_MAX = 2.0;
+  // Rows entering the viewport get .lb-in (the bar sweeps out to its length); while the
+  // engine's live scroll velocity says the user is scanning (or motion is reduced),
+  // .lb-in-instant is added too — no animation. The gate is the shared armEntryAtPace.
   const wireBarSweep = (): void => {
     list.setAttribute("data-lb-anim", "");
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          const row = e.target as HTMLElement;
-          // --field-scroll-v is an inline style on <html> (written by the engine), so
-          // reading el.style avoids a forced style recalc.
-          const sv =
-            parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
-          if (sv >= SCROLL_V_MAX || reduceMotion()) row.classList.add("lb-in", "lb-in-instant");
-          else row.classList.add("lb-in");
-          io.unobserve(row);
-        }
-      },
-      { threshold: 0.1 },
-    );
-    rowsOf().forEach((r) => io.observe(r));
-    ac.signal.addEventListener("abort", () => io.disconnect());
+    armEntryAtPace(rowsOf(), "lb-in", "lb-in-instant", ac.signal, { threshold: 0.1 });
   };
 
   // ── live counts — ONCE per visit, the snapshot upgrades itself in place ────
@@ -268,7 +250,7 @@ function initLibrary(): () => void {
       if (typeof rec.listen_count === "number") {
         row.dataset.listens = String(rec.listen_count);
         const b = row.querySelector<HTMLElement>(".lb-listens b");
-        if (b) b.textContent = fmtListens(rec.listen_count);
+        if (b) b.textContent = fmtInt(rec.listen_count);
       }
     }
     // rows that fell out of the live top 30 STAY — dimmed, honestly labeled
@@ -284,14 +266,14 @@ function initLibrary(): () => void {
     // recompute --bar (linear vs the new max) and --w (log mass) IN PLACE
     const counts = all.map((r) => Number(r.dataset.listens) || 0);
     const max = Math.max(...counts, 1);
-    const lmin = Math.log(Math.min(...counts) + 1);
-    const lmax = Math.log(Math.max(...counts) + 1);
+    const cMin = Math.min(...counts);
+    const cMax = Math.max(...counts);
     for (const r of all) {
       const n = Number(r.dataset.listens) || 0;
-      const w = lmax > lmin ? (Math.log(n + 1) - lmin) / (lmax - lmin) : 1;
+      const w = logNormalizeBetween(n, cMin, cMax);
       r.style.setProperty("--bar", (n / max).toFixed(3));
       r.style.setProperty("--w", w.toFixed(3));
-      r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      r.dataset.strength = weightToStrength(w).toFixed(2);
     }
     // re-sort only if the ranking actually changed
     const ordered = [...all].sort(
@@ -331,28 +313,23 @@ function initLibrary(): () => void {
   );
 
   // ── controls ─────────────────────────────────────────────────────────────
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.lbLens as LbLens) || "artist";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (lensHint) lensHint.innerHTML = HINTS[lens];
-        applyLens();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    lensBtns,
+    "lbLens",
+    (v) => {
+      lens = (v as LbLens) || "artist";
+      page.dataset.lens = lens;
+      if (lensHint) lensHint.innerHTML = HINTS[lens];
+      applyLens();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -361,7 +338,7 @@ function initLibrary(): () => void {
         queue.style.removeProperty("--load");
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   applyLens();
@@ -376,15 +353,4 @@ function initLibrary(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-library") ? initLibrary() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-library", initLibrary);

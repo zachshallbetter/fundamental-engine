@@ -1,4 +1,5 @@
 ---
+import { logNormalizeBetween, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import market from "../../data/examples/market.json";
@@ -11,9 +12,9 @@ import "../../styles/examples/market.css";
 
 // weight: log-normalized market cap (the evidence trust math, retargeted at a balance sheet)
 const caps = market.assets.map((a) => a.cap);
-const lmin = Math.log(Math.min(...caps) + 1);
-const lmax = Math.log(Math.max(...caps) + 1);
-const wOf = (v: number): number => (lmax > lmin ? (Math.log(v + 1) - lmin) / (lmax - lmin) : 1);
+const capMin = Math.min(...caps);
+const capMax = Math.max(...caps);
+const wOf = (v: number): number => logNormalizeBetween(v, capMin, capMax);
 
 // polarity: direction is hue (teal-green up, red-pink down), magnitude is intensity.
 // the runtime re-runs this same ramp when the move window (24h / 7d) changes.
@@ -242,7 +243,7 @@ recomputeWeights(); // --w — the scoped
             data-feedback
             data-hot
             data-range="200"
-            data-strength={(0.4 + w * 1.6).toFixed(2)}
+            data-strength={weightToStrength(w).toFixed(2)}
             data-cap={a.cap}
             data-volume={a.volume}
             data-price={a.price}

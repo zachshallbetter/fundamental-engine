@@ -1,5 +1,5 @@
 ---
-import { freshness } from "@field-ui/core";
+import { freshness, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import inbox from "../../data/examples/inbox.json";
@@ -148,13 +148,12 @@ w[i] = min(1, u[i] × k)   // repeat on the rest
 // (budget − pins) over the unpinned
 Σ w[i] = budget — always.
 
-// the scoped field runs invisible (render: [])
+// the scoped field runs invisible (renderless)
 // and asks for the attention metric lane:
-const recipe = {
-  ...base,
-  render: [],
-  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-};
+applyRecipe(split, base, {
+  renderless: true,
+  extraMetrics: ["attention"],
+});
 // the pipeline writes --field-attention per ask (eased 0..1)`;
 
 const SNIPPET_LIVE = `// every 5 min (politely: hidden tabs skip the
@@ -310,7 +309,7 @@ const SNIPPET_CSS = `.ix-item {
             data-feedback
             data-hot
             data-range="200"
-            data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+            data-strength={weightToStrength(it.w).toFixed(2)}
             data-rec={it.rec.toFixed(4)}
             data-vot={it.vot.toFixed(4)}
             data-vie={it.vie.toFixed(4)}

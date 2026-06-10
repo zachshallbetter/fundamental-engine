@@ -31,6 +31,21 @@ export interface ApplyRecipeOptions {
   drive?: boolean;
   /** text for created demo bodies (default: the body's tokens). */
   label?: (recipe: FieldRecipe, index: number) => string;
+  /**
+   * Apply the recipe with its render stack stripped (`render: []`) — the scoped invisible-field
+   * idiom the example family runs: the field exists purely as metrics/feedback signals on real
+   * content, with no drawn layers. The caller's recipe object is NEVER mutated (it may be the
+   * shared catalog object); `applyRecipe` derives an effective copy, which is what the returned
+   * handle's `recipe`/`compiled` reflect.
+   */
+  renderless?: boolean;
+  /**
+   * Extra metric lanes appended to the recipe's `metrics` (deduped, original order preserved) —
+   * e.g. `['attention', 'recency']`. Each appended metric gains the standard feedback binding
+   * (`attention` → `--field-attention`) and flows through the per-frame metric pipeline exactly
+   * like a recipe-declared one. Same no-mutation guarantee as `renderless`.
+   */
+  extraMetrics?: string[];
 }
 
 export interface AppliedRecipeInspection {
@@ -77,6 +92,18 @@ const elementKey = (el: Element, i: number): string => el.id || `${el.tagName.to
  * relationships, installs the reduced-motion output, and returns a destroyable, inspectable handle.
  */
 export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRecipeOptions = {}): AppliedRecipe {
+  // Derive the effective recipe from the scoped-field options — a copy, so a shared catalog
+  // recipe object is never mutated by an applied run (`renderless` strips the render stack;
+  // `extraMetrics` appends + dedupes metric lanes). No options → the input recipe, untouched.
+  const extra = options.extraMetrics ?? [];
+  if (options.renderless || extra.length) {
+    recipe = {
+      ...recipe,
+      ...(options.renderless ? { render: [] } : {}),
+      ...(extra.length ? { metrics: [...new Set([...(recipe.metrics ?? []), ...extra])] } : {}),
+    };
+  }
+
   const problems = validateRecipe(recipe);
   if (problems.length) throw new Error(`applyRecipe: invalid recipe "${recipe.id}": ${problems.map((p) => `${p.path} (${p.issue})`).join('; ')}`);
 
@@ -272,7 +299,9 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     // clear the feedback variables this recipe wrote, so a torn-down recipe leaves the DOM plain
-    for (const el of elements) if (el instanceof HTMLElement) for (const f of compiled.feedback) el.style.removeProperty(f.var);
+    // (typeof-guarded like every other global here, so destroy() is safe off-DOM too)
+    if (typeof HTMLElement !== 'undefined')
+      for (const el of elements) if (el instanceof HTMLElement) for (const f of compiled.feedback) el.style.removeProperty(f.var);
     for (const el of created) el.remove();
     for (const { el, attrs } of restore) for (const [k, v] of Object.entries(attrs)) v == null ? el.removeAttribute(k) : el.setAttribute(k, v);
     staticNode?.remove();

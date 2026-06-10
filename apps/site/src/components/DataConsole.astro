@@ -529,7 +529,7 @@
 
 <script>
 import { systemReport, inspectBudget, DEFAULT_BUDGET } from '@field-ui/core';
-import { lintPlatform, type FieldPlatform } from '@field-ui/platform';
+import { createFieldPerf, lintPlatform, type FieldPlatform } from '@field-ui/platform';
 
 // ── Elements ──────────────────────────────────────────────────────────
 const trigger     = document.getElementById('dc-trigger')!;
@@ -542,17 +542,25 @@ const sparkEl     = document.getElementById('dc-spark') as HTMLCanvasElement;
 const ctx         = sparkEl.getContext('2d')!;
 
 // ── State ─────────────────────────────────────────────────────────────
+// The frame-timing math (window, percentiles, budget detection, dropped count) is the
+// platform's FieldPerf — these exact rules were lifted from this console. ONE instance
+// for the whole visit, never reset, so the detected budget persists across open/close
+// (the console's existing behavior); the per-open dropped/frames counters come from
+// subtracting the snapshot taken at open. The open/close (and tab-switch) gap is a
+// > 500 ms discontinuity, which FieldPerf skips rather than measures.
+const perf = createFieldPerf(); // window 180, budgetSeed 30 — the console's constants
+let perfBase = { dropped: 0, frames: 0 };
+
 let isOpen   = false;
 let paused   = false;
 let raf      = 0;
-let lastTs: number | null = null;
-let deltas:  number[] = [];     // rolling 180-frame window
-let dropped  = 0;
-let nFrames  = 0;
+// the sparkline's delta buffer — page-side drawing state, mirroring FieldPerf's window
+// rules (180 frames, > 500 ms gaps skipped) so the picture matches the numbers beside it.
+let sparkLast: number | null = null;
+let sparkDeltas: number[] = [];
+let lastBudget: number | null = null; // cached for drawSpark's grid lines
 let loafBuf: PerformanceEntry[] = [];
 let heapBase: number | null = null;
-let budget: number | null = null;   // auto-detected refresh interval
-let budgetSeed: number[] = [];
 
 // ── Field event counters (reset on open) ─────────────────────────────
 const evCounts = { lit: 0, captured: 0, released: 0, relocated: 0 };
@@ -614,11 +622,6 @@ function ensureSysReport() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
-function pct(arr: number[], p: number): number | null {
-  if (!arr.length) return null;
-  const s = [...arr].sort((a, b) => a - b);
-  return s[Math.floor((p / 100) * (s.length - 1))];
-}
 function ms(v: number | null | undefined): string {
   if (v == null) return '—';
   return `${v.toFixed(1)} ms`;
@@ -665,9 +668,9 @@ function drawSpark() {
   sparkEl.height = H * dpr;
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
-  if (deltas.length < 2) return;
+  if (sparkDeltas.length < 2) return;
 
-  const b    = budget ?? 16.67;
+  const b    = lastBudget ?? 16.67;
   const yMax = b * 4;
 
   // Grid lines at budget and 2× budget
@@ -681,9 +684,9 @@ function drawSpark() {
   ctx.setLineDash([]);
 
   // Line path
-  const step = W / (deltas.length - 1);
+  const step = W / (sparkDeltas.length - 1);
   ctx.beginPath();
-  deltas.forEach((d, i) => {
+  sparkDeltas.forEach((d, i) => {
     const x = i * step;
     const y = H - Math.min(d / yMax, 1) * H;
     i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
@@ -693,7 +696,7 @@ function drawSpark() {
   ctx.stroke();
 
   // Gradient fill
-  ctx.lineTo((deltas.length - 1) * step, H);
+  ctx.lineTo((sparkDeltas.length - 1) * step, H);
   ctx.lineTo(0, H);
   ctx.closePath();
   const grad = ctx.createLinearGradient(0, 0, 0, H);
@@ -735,21 +738,17 @@ function readPlatform() {
 function tick(now: number) {
   if (!isOpen || paused) return;
 
-  if (lastTs !== null) {
-    const d = now - lastTs;
-    deltas.push(d);
-    if (deltas.length > 180) deltas.shift();
-    nFrames++;
+  perf.feed(now); // window, percentiles, budget detection, dropped — FieldPerf's rules
 
-    // Detect budget from first 30 clean frames
-    if (!budget && budgetSeed.length < 30) {
-      budgetSeed.push(d);
-      if (budgetSeed.length === 30) budget = pct(budgetSeed, 50);
+  // the sparkline buffer, under the same window/discontinuity rules
+  if (sparkLast !== null) {
+    const d = now - sparkLast;
+    if (d <= 500) {
+      sparkDeltas.push(d);
+      if (sparkDeltas.length > 180) sparkDeltas.shift();
     }
-
-    if (budget && d > budget * 1.5) dropped++;
   }
-  lastTs = now;
+  sparkLast = now;
 
   update(now);
   raf = requestAnimationFrame(tick);
@@ -763,12 +762,18 @@ const HEAVY_EVERY_MS = 400;
 let lastHeavy = -Infinity;
 
 function update(now: number) {
+  const snap   = perf.snapshot();
+  const budget = snap.budgetMs;
+  lastBudget   = budget;
   const b      = budget ?? 16.67;
-  const med    = pct(deltas, 50);
-  const p95val = pct(deltas, 95);
-  const p99val = pct(deltas, 99);
-  const fps    = med ? Math.round(1000 / med) : null;
+  const med    = snap.medianMs;
+  const p95val = snap.p95Ms;
+  const p99val = snap.p99Ms;
+  const fps    = snap.fps;
   const native = Math.round(1000 / b);
+  // per-open counters: the cumulative meter minus the baseline captured at open
+  const dropped = snap.dropped - perfBase.dropped;
+  const nFrames = snap.frames - perfBase.frames;
 
   dv('dc-fps', fps != null ? String(fps) : '—',
     fps == null ? '' :
@@ -910,14 +915,13 @@ function openConsole() {
 
   // Reset per-session counters
   heapBase = null;
-  dropped  = 0;
-  nFrames  = 0;
-  lastTs   = null;
+  sparkLast = null;
+  sparkDeltas = [];
   lastHeavy = -Infinity; // populate the heavy sections on the first open frame
-  deltas   = [];
-  budgetSeed = [];
   evCounts.lit = evCounts.captured = evCounts.released = evCounts.relocated = 0;
-  // Preserve detected budget across open/close
+  // Preserve detected budget across open/close: the FieldPerf instance is never reset —
+  // dropped/frames re-zero by re-baselining against its cumulative counters instead.
+  perfBase = perf.snapshot();
 
   readNavTiming();
   ensureSysReport();
@@ -934,7 +938,7 @@ function closeConsole() {
   trigger.setAttribute('aria-expanded', 'false');
   cancelAnimationFrame(raf);
   detachFieldEvents();
-  lastTs = null;
+  sparkLast = null;
 }
 
 // ── Controls ──────────────────────────────────────────────────────────
@@ -946,7 +950,7 @@ pauseBtn.addEventListener('click', () => {
   pauseBtn.setAttribute('aria-pressed', String(paused));
   statusBadge.textContent = paused ? 'paused' : 'live';
   statusBadge.classList.toggle('paused', paused);
-  if (!paused && isOpen) { lastTs = null; raf = requestAnimationFrame(tick); }
+  if (!paused && isOpen) { sparkLast = null; raf = requestAnimationFrame(tick); }
 });
 
 document.addEventListener('keydown', e => {

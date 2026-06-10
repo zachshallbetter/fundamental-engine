@@ -1,7 +1,9 @@
 ---
+import { logNormalizeBetween, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import newsroom from "../../data/examples/newsroom.json";
+import { fmtInt } from "../../lib/fmt.ts";
 import "../../styles/docs.css";
 import "../../styles/examples/newsroom.css";
 
@@ -12,9 +14,9 @@ import "../../styles/examples/newsroom.css";
 
 // weight: log-normalized pageviews (the evidence trust math, retargeted at attention)
 const views = newsroom.articles.map((a) => a.views);
-const lmin = Math.log(Math.min(...views) + 1);
-const lmax = Math.log(Math.max(...views) + 1);
-const wOf = (v: number): number => (lmax > lmin ? (Math.log(v + 1) - lmin) / (lmax - lmin) : 1);
+const viewsMin = Math.min(...views);
+const viewsMax = Math.max(...views);
+const wOf = (v: number): number => logNormalizeBetween(v, viewsMin, viewsMax);
 
 // polarity: the day-over-day move. Direction is hue (warm rising, cool falling), magnitude is
 // intensity; articles with no prior-day count are new — neutral gray-blue, no fake direction.
@@ -29,7 +31,6 @@ const catFor = (pct: number | null): string => {
     : `hsl(${Math.round(208 + t * 12)} ${Math.round(34 + t * 46)}% ${Math.round(58 + t * 8)}%)`;
 };
 
-const fmtViews = new Intl.NumberFormat("en-US");
 const badge = (pct: number | null): string =>
   pct === null ? "new" : `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct).toFixed(1)}%`;
 
@@ -175,7 +176,7 @@ return pct >= 0
       data-feedback
       data-hot
       data-range="200"
-      data-strength={(0.4 + leadW * 1.6).toFixed(2)}
+      data-strength={weightToStrength(leadW).toFixed(2)}
       data-views={lead.views}
       data-prior={lead.priorViews ?? ""}
       style={`--w:${leadW.toFixed(3)}; --cat:${catFor(leadPct)};`}
@@ -185,7 +186,7 @@ return pct >= 0
         {lead.title}
       </a>
       <p class="nw-lead-meta">
-        <span class="nw-count">{fmtViews.format(lead.views)}</span>
+        <span class="nw-count">{fmtInt(lead.views)}</span>
         <span class="nw-count-l">views</span>
         <span class="nw-chg" data-dir={leadPct === null ? "new" : leadPct >= 0 ? "up" : "down"}>
           {badge(leadPct)}
@@ -205,7 +206,7 @@ return pct >= 0
               data-feedback
               data-hot
               data-range="200"
-              data-strength={(0.4 + w * 1.6).toFixed(2)}
+              data-strength={weightToStrength(w).toFixed(2)}
               data-views={a.views}
               data-prior={a.priorViews ?? ""}
               style={`--w:${w.toFixed(3)}; --cat:${catFor(pct)};`}
@@ -215,7 +216,7 @@ return pct >= 0
                 {a.title}
               </a>
               <span class="nw-meta-line">
-                <span class="nw-count">{fmtViews.format(a.views)}</span>
+                <span class="nw-count">{fmtInt(a.views)}</span>
                 <span class="nw-count-l">views</span>
                 <span class="nw-chg" data-dir={pct === null ? "new" : pct >= 0 ? "up" : "down"}>
                   {badge(pct)}
@@ -239,7 +240,7 @@ return pct >= 0
               data-feedback
               data-hot
               data-range="200"
-              data-strength={(0.4 + w * 1.6).toFixed(2)}
+              data-strength={weightToStrength(w).toFixed(2)}
               data-views={a.views}
               data-prior={a.priorViews ?? ""}
               style={`--w:${w.toFixed(3)}; --cat:${catFor(pct)};`}
@@ -249,7 +250,7 @@ return pct >= 0
                 {a.title}
               </a>
               <span class="nw-meta-line">
-                <span class="nw-count">{fmtViews.format(a.views)}</span>
+                <span class="nw-count">{fmtInt(a.views)}</span>
                 <span class="nw-count-l">views</span>
                 <span class="nw-chg" data-dir={pct === null ? "new" : pct >= 0 ? "up" : "down"}>
                   {badge(pct)}

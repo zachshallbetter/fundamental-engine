@@ -1,4 +1,5 @@
 ---
+import { logNormalize, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import fleet from "../../data/examples/fleet.json";
@@ -27,7 +28,7 @@ for (const inc of fleet.incidents) {
     lastHit.set(name, Math.max(lastHit.get(name) ?? 0, t));
   }
 }
-const maxInv = Math.max(...components0.map((c) => involvement.get(c.name) ?? 0), 1);
+const maxInv = Math.max(...components0.map((c) => involvement.get(c.name) ?? 0));
 
 // status pill colors: operational teal / degraded amber / partial orange / major red.
 // (the runtime mirrors this map — the live poll recolors with the same palette.)
@@ -47,7 +48,8 @@ const components = components0
       slug: slug(c.name),
       inv,
       last: lastHit.get(c.name) ?? 0,
-      w: Math.log(inv + 1) / Math.log(maxInv + 1),
+      // the family's consensus shape — ln(x+1)/ln(max+1), the core weight primitive
+      w: logNormalize(inv, maxInv),
       statusColor: STATUS_COLOR[c.status] ?? "#2dd4bf",
       statusLabel: c.status.replace(/_/g, " "),
     };
@@ -297,7 +299,7 @@ for (const c of (await res.json()).components) {
               data-feedback
               data-hot
               data-range="200"
-              data-strength={(0.4 + c.w * 1.6).toFixed(2)}
+              data-strength={weightToStrength(c.w).toFixed(2)}
               data-name={c.slug}
               data-comp-id={c.id}
               data-inv={c.inv}
@@ -331,7 +333,7 @@ for (const c of (await res.json()).components) {
               data-feedback
               data-hot
               data-range="200"
-              data-strength={(0.4 + inc.w * 1.6).toFixed(2)}
+              data-strength={weightToStrength(inc.w).toFixed(2)}
               data-comps={inc.compSlugs.join(" ")}
               data-impact={inc.impact}
               style={`--w:${inc.w.toFixed(3)}; --cat:${inc.cat};`}
