@@ -42,6 +42,17 @@ const FIELD_FILTERS = [
   { f: 'kind:derived', label: 'Derived' },
   { f: 'kind:transport', label: 'Transport' },
 ] as const;
+// per-filter wayfinding color — the natural fields share the site-wide palette; the kinds get
+// their own. Carried as a leading dot so a filter's identity reads at a glance.
+const FILTER_COLOR: Record<string, string> = {
+  'field:gravity': '#4da3ff',
+  'field:electromagnetic': '#2dd4bf',
+  'field:strong': '#a78bfa',
+  'field:weak': '#ff9d5c',
+  'kind:designed': '#f472b6',
+  'kind:derived': '#7dd3fc',
+  'kind:transport': '#fbbf24',
+};
 ---
 
 <Base
@@ -66,7 +77,12 @@ const FIELD_FILTERS = [
           </div>
           <div class="fb-fields" role="group" aria-label="Filter by natural field" data-field-filter>
             {FIELD_FILTERS.map((ff) => (
-              <button type="button" class={`fbf ${ff.f === '' ? 'on' : ''}`} data-filter={ff.f}>{ff.label}</button>
+              <button
+                type="button"
+                class:list={['fbf', { on: ff.f === '', 'fbf-color': !!FILTER_COLOR[ff.f] }]}
+                data-filter={ff.f}
+                style={FILTER_COLOR[ff.f] ? `--chip-color: ${FILTER_COLOR[ff.f]}` : undefined}
+              >{ff.label}</button>
             ))}
           </div>
           {families.map((fam) => (
@@ -1066,7 +1082,10 @@ const FIELD_FILTERS = [
     transition: color 0.15s, border-color 0.15s, background 0.15s;
   }
   .fbf:hover { color: var(--text); }
-  .fbf.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .fbf.on { color: var(--chip-color, var(--accent)); border-color: color-mix(in srgb, var(--chip-color, var(--accent)) 55%, var(--line)); background: color-mix(in srgb, var(--chip-color, var(--accent)) 12%, transparent); }
+  /* a colored field/kind dot — the filter's identity at a glance */
+  .fbf-color { display: inline-flex; align-items: center; gap: 0.32rem; }
+  .fbf-color::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--chip-color, var(--accent)); flex: none; }
   .fb-hidden { display: none !important; }
 
   /* natural-field marker on a force tile + the picker legend */
