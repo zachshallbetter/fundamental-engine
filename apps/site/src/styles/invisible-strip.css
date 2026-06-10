@@ -1,0 +1,77 @@
+/* ============================================================
+   INVISIBLE FIELDS STRIP — the homepage feature strip for the
+   /evidence example family (components/home/InvisibleFieldsStrip.astro).
+   Global, like manual.css, so it composes with the manual rhythm
+   (.concept / .wrap come from there); tokens from ds-tokens.css.
+   ============================================================ */
+
+.ifs-lede {
+  max-width: 62ch;
+}
+
+.ifs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-top: 2rem;
+}
+
+.ifs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+.ifs-item:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: var(--accent-soft);
+}
+
+.ifs-name {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.ifs-item:hover .ifs-name {
+  color: var(--accent);
+}
+
+.ifs-hook {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+
+.ifs-more {
+  margin-top: 1.6rem;
+}
+.ifs-more a {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  text-decoration: none;
+}
+.ifs-more a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .ifs-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .ifs-grid {
+    grid-template-columns: 1fr;
+  }
+}

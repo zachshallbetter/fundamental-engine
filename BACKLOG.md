@@ -74,6 +74,21 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 - [ ] **`bindData()`** — map records → bodies with id-diffed add/remove/reorder (matter
       flows via the conserved lifecycle); a `useForcesData` React hook.
 
+## Platform — extractions the examples earned
+
+The invisible-fields family hand-rolled these; the usage is the spec (filed + on the RC1 board):
+
+- [ ] **Platform FLIP helper** — twelve runtimes implement the same reflow; extract
+      `withFlip()` (1D/2D, reduced-motion, settle cleanup). (#295)
+- [ ] **`allocateAttention()`** — the inbox's exact conserved water-filling allocation
+      belongs to the engine's attention concept, not site JS. (#296)
+- [ ] **Signals-only field mode** — name what `setVisible(false)` does: sim + feedback
+      with no render state allocated at all. (#297)
+- [ ] **Canon docs: `data-active` engagement + data-provenance chips** — two proven
+      patterns living only in how-built sections. (#298)
+- [ ] **Mobile/touch QA pass** for the family (drag on touch, scroll-snap week view,
+      mosaic at 3 columns). (#299)
+
 ## Site — invisible-field examples
 
 The Evidence example's siblings: each takes a real dataset, makes its records bodies, and lets

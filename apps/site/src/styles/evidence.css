@@ -330,8 +330,18 @@ a.ev-side-item.is-live:hover {
 .ev-rank {
   font-family: var(--mono);
   font-size: 0.78rem;
-  color: var(--text-4);
+  /* --field-coherence is the recipe pipeline's relationship-resolution metric: a finding
+     whose declared citation edges (data-field-relation spans) all resolve on-page reads 1,
+     one with no edges reads 0 — so the rank ink quietly says "this one is connected". */
+  color: color-mix(
+    in srgb,
+    var(--accent) calc(var(--field-coherence, 0) * 50%),
+    var(--text-4)
+  );
   text-align: right;
+}
+.ev-page[data-field="off"] .ev-rank {
+  color: var(--text-4);
 }
 .ev-body {
   min-width: 0;

@@ -10,6 +10,7 @@ import ManualFoot from "../components/ManualFoot.astro";
 import Button from "../components/ui/Button.astro";
 import FlowToggle from "../components/ui/FlowToggle.astro";
 import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro";
+import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
 import CellGallery from "../components/CellGallery.astro";
@@ -1204,6 +1205,10 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         </div>
       </Fragment>
     </Concept>
+
+    <!-- The invisible-fields family — twelve real-data examples where the field never shows
+         a particle. One bounded strip; the roster lives in lib/invisible-fields.ts. -->
+    <InvisibleFieldsStrip />
 
     <ManualFoot>
       <Fragment slot="actions">

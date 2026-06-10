@@ -45,6 +45,14 @@ const snippetBody = `<li id="finding-W2042"
   data-hot
   style="--trust: 0.87; --cat: #4da3ff;"
 >
+  <!-- a citation edge as a REAL platform
+       relationship: the registry discovers it,
+       and --field-coherence reads how much of
+       this finding's graph resolves on-page -->
+  <span hidden
+    data-field-relation="supports"
+    data-field-target="#finding-W1480"></span>
+
   <!-- your ordinary HTML here -->
   <span class="ev-bar" aria-hidden="true"
     data-field-visual-for="#finding-W2042"
@@ -209,6 +217,17 @@ fetch('https://api.openalex.org/works'
                 hidden={i >= 8}
                 data-ev-deferred={i >= 8 ? "" : undefined}
               >
+                {/* the citation edges as REAL platform relationships: the registry discovers
+                    these (data-field-relation + data-field-target), the recipe pipeline counts
+                    them per finding, and --field-coherence stops reading zero — the same edges
+                    the hover threads draw. */}
+                {w.supports.map((s) => (
+                  <span
+                    hidden
+                    data-field-relation="supports"
+                    data-field-target={`#${t.slug}--${s}`}
+                  ></span>
+                ))}
                 <span class="ev-rank">{String(i + 1).padStart(2, "0")}</span>
                 <div class="ev-body">
                   <a class="ev-title" href={linkFor(w)} target="_blank" rel="noopener">

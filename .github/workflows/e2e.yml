@@ -1,0 +1,50 @@
+name: E2E
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ["apps/site/**", "packages/**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: playwright · invisible fields
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browser
+        run: pnpm --filter @field-ui/site exec playwright install --with-deps chromium
+
+      # `pnpm -r build` builds the packages in topological order (the site's workspace deps
+      # resolve from their dist) and then the Astro site itself — the e2e suite runs against
+      # the built dist via `astro preview` (see apps/site/playwright.config.ts).
+      - name: Build (packages + site)
+        run: pnpm build
+
+      - name: E2E
+        run: pnpm --filter @field-ui/site test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/site/playwright-report
+          retention-days: 7
