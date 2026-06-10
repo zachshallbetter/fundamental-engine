@@ -818,9 +818,9 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
               },
-              "description": "render mode (§20.6).",
+              "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
               "readonly": true
             },
             {
@@ -1008,11 +1008,11 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
                   }
                 }
               ],
-              "description": "switch the underlay render mode (§20.6) live."
+              "description": "switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297)."
             },
             {
               "kind": "method",
@@ -1261,7 +1261,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`."
+              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn."
             },
             {
               "name": "overlay",
@@ -1356,7 +1356,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`.",
+              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1551,9 +1551,9 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
               },
-              "description": "render mode (§20.6).",
+              "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1797,11 +1797,11 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
                   }
                 }
               ],
-              "description": "switch the underlay render mode (§20.6) live.",
+              "description": "switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2130,7 +2130,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`.",
+              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2325,9 +2325,9 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
               },
-              "description": "render mode (§20.6).",
+              "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2571,11 +2571,11 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'"
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
                   }
                 }
               ],
-              "description": "switch the underlay render mode (§20.6) live.",
+              "description": "switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

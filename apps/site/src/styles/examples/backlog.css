@@ -215,6 +215,18 @@
    placeholder holds its slot; a slim indicator marks the drop slot. */
 .ex-backlog .wl-item {
   cursor: grab;
+  /* touch: the long-press LIFTS the card — it must not also open the press-and-hold
+     callout/save sheet (the title link keeps its own native behavior; drags never
+     start on links) */
+  -webkit-touch-callout: none;
+}
+@media (pointer: coarse) {
+  /* on touch devices a long-press would otherwise start text selection before the
+     drag arms; card text is not selectable there (the titles stay links) */
+  .ex-backlog .wl-item {
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }
 .ex-backlog .wl-item:focus-visible {
   outline: 2px solid var(--accent);

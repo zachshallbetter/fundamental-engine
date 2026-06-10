@@ -33,6 +33,29 @@ const downsample = (arr, n) => {
 };
 
 const SOURCES = {
+  // ── Evidence — refresh the flagship's own baseline (src/data/evidence.json) ─────────
+  // Keeps the same topics/works and refreshes each work's citation count from OpenAlex
+  // (batched, one request per topic), stamping snapshotAt so the page's provenance chip
+  // can show a real date. The works themselves are curated — this never adds or removes.
+  async evidence() {
+    const path = resolve(ROOT, 'src/data/evidence.json');
+    const data = JSON.parse(readFileSync(path, 'utf8'));
+    for (const topic of data.topics) {
+      const ids = topic.works.map((w) => w.id).join('|');
+      const res = await get(
+        `https://api.openalex.org/works?filter=ids.openalex:${ids}&per-page=50&select=id,cited_by_count`,
+      );
+      const counts = new Map(res.results.map((w) => [w.id.split('/').pop(), w.cited_by_count]));
+      for (const w of topic.works) {
+        const fresh = counts.get(w.id);
+        if (typeof fresh === 'number') w.citedBy = fresh;
+      }
+    }
+    data.snapshotAt = new Date().toISOString();
+    writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+    console.log('✓ evidence.json (citation counts refreshed in place)');
+  },
+
   // ── Inbox — Stack Overflow's unanswered-question stream ─────────────────────────────
   async inbox() {
     const base =

@@ -584,7 +584,7 @@ and `ds-interactions.js`):
 | `setAttention(on)` | Toggle conserved attention (§2.4) — one finite strength budget. |
 | `setCausality(on)` | Toggle cross-boundary causality (Concept 4) — density spills to neighbours. |
 | `setHeatmap(on)` | Toggle the density heatmap layer (H1). |
-| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines`. |
+| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines` · `none` (the signals-only mode — never draws; see §13.7). |
 | `setOverlay(mode)` | Render a field-structure visualization on the overlay surface: `off` · `streamlines` · `force-vectors` · `field-lines`. |
 
 ### 13.2 DOM synchronization
@@ -633,11 +633,12 @@ read-only access to engine state that would otherwise require a reference to int
 |---|---|
 | `destroy()` | Stop the loop and release all listeners. |
 
-### 13.7 Element visibility — `setVisible(on)` (experimental)
+### 13.7 Element visibility — `setVisible(on)` — and the signals-only render mode `'none'` (experimental)
 
 | Method | Description |
 |---|---|
 | `setVisible(on)` | Element-level visibility hint. `setVisible(false)` skips **all** draw work each frame — the underlay render and the overlay surface, usually the dominant frame cost — while the simulation and its feedback signals stay live: `scrollV()`, `--d`, `--load`, and capture events keep flowing. |
+| `render: 'none'` / `setRender('none')` | The same skip, made **structural**: a named render mode in which the engine never draws at all. The simulation, feedback writes, events, sinks, and engagement are unchanged and live — the field exists purely as signals. |
 
 Distinct from the **tab-level** pause: the host's `visibilitychange` already stops the loop
 entirely when the tab is backgrounded; `setVisible` is for a canvas that is hidden or offscreen
@@ -648,10 +649,44 @@ inset:0`, so not-intersecting means hidden or zero-sized), and an engine rebuild
 cost control: under `prefers-reduced-motion` the scene is static (`dt = 0`), so a visible canvas
 redraws at quarter rate — visually identical at a quarter of the cost.
 
+**Render mode `'none'` — the signals-only engine ([#297](https://github.com/zachshallbetter/field-ui/issues/297)).**
+Where `setVisible(false)` is a *dynamic* hint (the field may become visible again any frame, so
+the drawing machinery stays ready), `render: 'none'` is the *structural* contract behind the
+typographic (invisible) placement. A field **created** with `createField(canvas, { render:
+'none' })` guarantees, from construction:
+
+- **No canvas context.** `getContext('2d')` is never called — on the main canvas or the overlay
+  canvas. (Consequently the mode never throws the "2D canvas context unavailable" error.)
+- **No backing store.** `resize()` never assigns `canvas.width`/`canvas.height`; the backing
+  store stays 0×0 — no pixel-buffer allocation. The simulation's `W`/`H` still track the
+  viewport exactly as in every other mode, so the physics space is unchanged.
+- **No render scratch.** The per-mode scratch buffers (the metaball density grid, the voronoi
+  owner grid, the heatmap's offscreen raster canvas) are allocated inside the render paths, so
+  they are never allocated. (The `Heatmap` *simulation* buffer is the exception: it feeds the
+  `--field-heatmap-density` feedback channel, so `heatmap: true` still allocates it — that is a
+  signal, not a drawing.)
+- **Signals stay live.** `--d`, `--load`, `--lit`, `field:captured`/`field:released`,
+  `field:lit`/`field:dim`, `data-on` event bindings, `scrollV()`, engagement (`data-hot`),
+  element movers/docking — the full pipeline runs every frame. Neither the underlay `render()`
+  nor the overlay `renderOverlay()` is ever invoked (`setOverlay` is accepted but draws nothing
+  while the mode is `'none'`).
+
+Runtime transitions via `setRender`:
+
+- **From `'none'` to a drawing mode** — the context is acquired *lazily* at that moment and the
+  backing store is sized once (the deferred resize). If acquisition fails (a lost GPU process,
+  context exhaustion), the engine warns and stays signals-only rather than crash the live
+  simulation.
+- **To `'none'` from a drawing mode** — drawing stops from the next frame, but an
+  already-acquired context and its backing store are **kept** (and the last drawn frame stays on
+  the canvas — hide or clear it with CSS if it is on screen, exactly as with
+  `setVisible(false)`). The no-allocation guarantee is **creation-time only**: it belongs to
+  fields created with `render: 'none'`, not to fields switched into it.
+
 A simulation that runs with no drawn surface at all — feedback variables styled by author CSS as
-the only output — is the **invisible-fields** pattern; see
-`docs/canonical/field-ui-invisible-fields.md` for the placement taxonomy and the two-field page
-architecture this enables.
+the only output — is the **invisible-fields** pattern; `render: 'none'` is its engine-level
+contract. See `docs/canonical/field-ui-invisible-fields.md` for the placement taxonomy
+(underlay / overlay / typographic) and the two-field page architecture this enables.
 
 ---
 

@@ -11,7 +11,12 @@
 //     into the glow. The bar's fill stays data arithmetic (shipped / capacity), recomputed
 //     from the CURRENT lanes and marked "(local)" when triage diverges from the snapshot.
 //   · DRAG — hand-rolled pointer drag, no library, no HTML5 DnD. pointerdown on a card
-//     (not its link) arms after 6px; the ORIGINAL card lifts to position:fixed while a
+//     (not its link) arms after 6px of mouse/pen travel; on TOUCH a long-press (~280ms,
+//     held still) arms instead — a moved touch is a scroll, never a drag, so the page
+//     pans normally at rest. While a touch drag is in flight the runtime consumes
+//     touchmove (non-passive) — touch-action is latched at gesture start, so the
+//     mid-gesture .wl-drag { touch-action: none } alone could not stop the pan.
+//     The ORIGINAL card lifts to position:fixed while a
 //     placeholder holds its slot; a slim indicator marks the drop slot; the page edge-
 //     scrolls; pointerup commits with a FLIP settle; Esc/pointercancel aborts to origin.
 //     While a card is in flight it carries data-active, so the platform's attention metric
@@ -21,16 +26,18 @@
 //     GitHub is never written.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { applyRecipe, withFlip as flipReflow } from "@field-ui/platform";
 
 type BacklogWeight = "activity" | "freshness";
 type LaneId = "open" | "shipped";
 
 const NS = "http://www.w3.org/2000/svg";
 const STORE_KEY = "field-ui:backlog:board:v1";
-const DRAG_THRESHOLD = 6; // px of travel before a pointerdown becomes a drag
+const DRAG_THRESHOLD = 6; // px of travel before a mouse/pen pointerdown becomes a drag
 const EDGE = 60; // px from the viewport edge where auto-scroll engages
 const EDGE_SPEED = 16; // max px/frame of auto-scroll
+const TOUCH_HOLD = 280; // ms a touch must hold still before the drag arms (long-press)
+const TOUCH_SLOP = 8; // px of touch travel that turns a pending press into a SCROLL
 
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -201,31 +208,8 @@ function initBacklog(): () => void {
   };
 
   // ── FLIP helper — capture rects, mutate, animate the deltas away ───────────
-  const withFlip = (els: HTMLElement[], mutate: () => void, ms = 400): void => {
-    if (reduceMotion()) {
-      mutate();
-      return;
-    }
-    const first = new Map(els.map((el) => [el, el.getBoundingClientRect()] as const));
-    mutate();
-    for (const el of els) {
-      const f = first.get(el);
-      if (!f) continue;
-      const b = el.getBoundingClientRect();
-      const dx = f.left - b.left;
-      const dy = f.top - b.top;
-      if (!dx && !dy) continue;
-      el.style.transform = `translate(${dx}px, ${dy}px)`;
-      el.style.transition = "none";
-      requestAnimationFrame(() => {
-        el.style.transition = `transform ${ms}ms cubic-bezier(.2, .7, .2, 1)`;
-        el.style.transform = "";
-        el.addEventListener("transitionend", () => el.style.removeProperty("transition"), {
-          once: true,
-        });
-      });
-    }
-  };
+  const withFlip = (els: HTMLElement[], mutate: () => void, ms = 400): void =>
+    flipReflow(() => els, mutate, { duration: ms });
 
   // ── weighting — re-blend --w + data-strength, then FLIP re-sort per lane ──
   // The FLIP is 2D (top AND left): cards live in a board, so a re-sort can move
@@ -341,6 +325,10 @@ function initBacklog(): () => void {
     lastX: number;
     lastY: number;
     active: boolean;
+    /** true for pointerType "touch" — arms by long-press, not by travel */
+    touch: boolean;
+    /** the pending long-press timer (touch only) */
+    hold: number;
     placeholder: HTMLElement | null;
     indicator: HTMLElement | null;
     originList: HTMLElement;
@@ -439,6 +427,7 @@ function initBacklog(): () => void {
     if (!drag) return;
     const d = drag;
     drag = null;
+    clearTimeout(d.hold);
     cancelAnimationFrame(d.raf);
     clearLaneTargets();
     page.classList.remove("wl-grabbing");
@@ -521,12 +510,24 @@ function initBacklog(): () => void {
       lastX: e.clientX,
       lastY: e.clientY,
       active: false,
+      touch: e.pointerType === "touch",
+      hold: 0,
       placeholder: null,
       indicator: null,
       originList: card.parentElement as HTMLElement,
       originNext: card.nextElementSibling,
       raf: 0,
     };
+    if (drag.touch) {
+      // TOUCH arms by LONG-PRESS: travel before the hold elapses means scroll (the
+      // pending press is abandoned and the browser pans as usual). The 6px move-arm
+      // can never win on touch — the browser claims the pan and fires pointercancel
+      // first, because touch-action is latched before .wl-drag could change it.
+      const d = drag;
+      d.hold = window.setTimeout(() => {
+        if (drag === d && !d.active) armDrag();
+      }, TOUCH_HOLD);
+    }
   };
 
   window.addEventListener(
@@ -536,14 +537,41 @@ function initBacklog(): () => void {
       drag.lastX = e.clientX;
       drag.lastY = e.clientY;
       if (!drag.active) {
-        if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < DRAG_THRESHOLD)
+        const travel = Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY);
+        if (drag.touch) {
+          // a touch that travels before the long-press fires is a SCROLL — abandon
+          // the pending press and let the browser pan
+          if (travel > TOUCH_SLOP) {
+            clearTimeout(drag.hold);
+            drag = null;
+          }
           return;
+        }
+        if (travel < DRAG_THRESHOLD) return;
         armDrag();
       }
       const dx = e.clientX - drag.startX;
       const dy = e.clientY - drag.startY;
       // reduced motion: the card still follows, it just doesn't scale up
       drag.card.style.transform = `translate(${dx}px, ${dy}px)${reduceMotion() ? "" : " scale(1.03)"}`;
+    },
+    { signal: ac.signal },
+  );
+  // while a touch drag is in flight the page must not pan under it: touch-action was
+  // latched at gesture start (before .wl-drag applied), so the pan is refused HERE, by
+  // consuming touchmove. At rest this listener never preventDefaults — scroll is normal.
+  window.addEventListener(
+    "touchmove",
+    (e) => {
+      if (drag?.touch && drag.active) e.preventDefault();
+    },
+    { passive: false, signal: ac.signal },
+  );
+  // the long-press that lifts a card must not also summon the context menu
+  window.addEventListener(
+    "contextmenu",
+    (e) => {
+      if (drag?.touch) e.preventDefault();
     },
     { signal: ac.signal },
   );
@@ -744,7 +772,10 @@ function initBacklog(): () => void {
   return () => {
     ac.abort();
     cancelAnimationFrame(liveRaf);
-    if (drag) cancelAnimationFrame(drag.raf);
+    if (drag) {
+      clearTimeout(drag.hold);
+      cancelAnimationFrame(drag.raf);
+    }
     drag = null;
     activeField?.destroy();
   };
