@@ -3,15 +3,20 @@ import Base from '../../layouts/Base.astro';
 import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { writingCat } from '../../lib/writings-meta.ts';
 import '../../styles/ds-tokens.css';
 import '../../styles/writings.css';
 
-const CATS = [
-  { key: 'research', label: 'Research', blurb: 'Longer-form papers on the ideas behind field-ui.' },
-  { key: 'release', label: 'Releases', blurb: 'What shipped, and what it means.' },
-  { key: 'feature', label: 'Features', blurb: 'New capabilities, explained.' },
-  { key: 'note', label: 'Notes', blurb: 'Shorter thoughts and updates.' },
-];
+const BLURBS: Record<string, string> = {
+  research: 'Longer-form papers on the ideas behind field-ui.',
+  release: 'What shipped, and what it means.',
+  feature: 'New capabilities, explained.',
+  note: 'Shorter thoughts and updates.',
+};
+const CATS = ['research', 'release', 'feature', 'note'].map((key) => ({
+  ...writingCat(key)!,
+  blurb: BLURBS[key],
+}));
 const sortEntries = (a: CollectionEntry<'writings'>, b: CollectionEntry<'writings'>) => {
   if (a.data.order != null && b.data.order != null) return a.data.order - b.data.order;
   return +b.data.date - +a.data.date;
@@ -40,9 +45,12 @@ const num = (e: CollectionEntry<'writings'>) =>
 
     {
       CATS.filter((c) => byCat(c.key).length > 0).map((c) => (
-        <section class="wi-section" aria-labelledby={`wi-${c.key}`}>
+        <section class="wi-section" aria-labelledby={`wi-${c.key}`} style={`--cat-color: ${c.color}`}>
           <div class="wi-section-head">
-            <h2 id={`wi-${c.key}`}>{c.label}</h2>
+            <h2 id={`wi-${c.key}`}>
+              <span class="wi-glyph" aria-hidden="true">{c.glyph}</span>
+              {c.label}
+            </h2>
             <p class="wi-blurb">{c.blurb}</p>
           </div>
           <ul class="wi-cards">
@@ -63,3 +71,22 @@ const num = (e: CollectionEntry<'writings'>) =>
   </main>
   <SiteFooter />
 </Base>
+
+<style>
+  /* per-category wayfinding color — the section heading carries its category's color + glyph */
+  .wi-section-head h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .wi-section-head .wi-glyph {
+    color: var(--cat-color, var(--accent));
+    font-size: 0.9em;
+    line-height: 1;
+  }
+  .wi-section {
+    border-left: 2px solid color-mix(in srgb, var(--cat-color, var(--accent)) 45%, transparent);
+    padding-left: clamp(0.8rem, 2vw, 1.4rem);
+    margin-left: calc(-1 * clamp(0.8rem, 2vw, 1.4rem));
+  }
+</style>
