@@ -135,7 +135,13 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 - **D2** — body discovery/measurement routed through MeasurementRegistry (`bodyElements` is the one
   selector source of truth shared with the legacy scanner).
 - **D3** — CSS-variable + event feedback routed through FeedbackRegistry via a `feedbackSink` seam in
-  `createField`; the eased density signal is unchanged, only the write target moves.
+  `createField`; the eased density signal is unchanged, only the write target moves. Since #228 the
+  sink contract is the engine's **only** feedback write path: when no platform sink is configured
+  (raw `createField`, `@field-ui/vanilla`, recipe-scoped engines), the engine installs an internal
+  default sink (`core/feedback-sink.ts`) whose direct writes are byte-identical to the historical
+  behavior — same variables (`--d`/`--forces-density`/`--field-density`, the heatmap mirror pair,
+  `--load`/`--mass`, `--lit`), same three-decimal formatting, same `field:lit`/`field:dim`
+  hysteresis. There is no direct-write branch left in the engine loop.
 - **D4** — Shadow-DOM host registration handled by the platform (the host's `getRect` flows into
   MeasurementRegistry).
 - **D5** — the relationship graph discovered and maintained in the running field-root.

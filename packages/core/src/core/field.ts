@@ -44,6 +44,7 @@ import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config
 import { resolvePalette } from '../config/palettes.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
+import { defaultFeedbackSink } from './feedback-sink.ts';
 import { attentionMuls } from './attention.ts';
 import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
@@ -113,7 +114,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
     overlay: opts.overlay ?? 'off', // Field Surfaces: overlay-surface visualization mode, opt-in
-    feedbackSink: opts.feedbackSink, // Phase D3: route feedback writes to the platform, opt-in
+    // ONE write path (#228, Phase 5): every feedback write goes through a sink. The platform
+    // supplies one (D3, FeedbackRegistry via <field-root>); without it the engine installs the
+    // internal default sink, whose writes are byte-identical to the historical direct writes.
+    feedbackSink: opts.feedbackSink ?? defaultFeedbackSink,
   };
   let heatmap: Heatmap | null = null; // lazily built once the viewport size is known
 
@@ -782,20 +786,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   function writeLit(b: Body, lit: number): void {
-    if (cfg.feedbackSink) {
-      // D3: route the lit channel to the platform; it writes --lit + fires field:lit/dim with hysteresis.
-      cfg.feedbackSink(b.el, { lit });
-      return;
-    }
-    b.el.style.setProperty('--lit', lit.toFixed(3));
-    const armed = b.el.dataset.fxLit === '1';
-    if (lit > 0.5 && !armed) {
-      b.el.dataset.fxLit = '1';
-      b.el.dispatchEvent(new CustomEvent('field:lit', { detail: { value: lit } }));
-    } else if (lit < 0.4 && armed) {
-      b.el.dataset.fxLit = '0';
-      b.el.dispatchEvent(new CustomEvent('field:dim', { detail: { value: lit } }));
-    }
+    // the lit channel goes through the sink (#228): the platform's writes --lit + fires
+    // field:lit/dim with hysteresis via FeedbackRegistry (D3); the internal default sink writes
+    // --lit and fires the same hysteretic events directly (byte-identical to the legacy path).
+    cfg.feedbackSink(b.el, { lit });
   }
 
   function writeFeedback(): void {
@@ -821,30 +815,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const heatmapDensity = heatmap ? heatmap.norm(b.cx, b.cy) : undefined;
       const load = b.tokens.indexOf('sink') >= 0 && b.capacity > 0 ? sinkLoad(b) : undefined;
 
-      if (cfg.feedbackSink) {
-        // D3: hand the CSS-var channels to the platform's FeedbackRegistry instead of writing here.
-        cfg.feedbackSink(writeEl, { density: b.d, heatmapDensity, load });
-        continue;
-      }
-
-      // `--d` is the established var; `--forces-density` is its explicit alias (shadow CSS contract),
-      // and `--field-density` is the field-ui-migration alias written alongside it (same value).
-      const dStr = b.d.toFixed(3);
-      writeEl.style.setProperty('--d', dStr);
-      writeEl.style.setProperty('--forces-density', dStr);
-      writeEl.style.setProperty('--field-density', dStr);
-      // `--field-heatmap-density` mirrors `--forces-heatmap-density` for the migration.
-      if (heatmapDensity !== undefined) {
-        const hStr = heatmapDensity.toFixed(3);
-        writeEl.style.setProperty('--forces-heatmap-density', hStr);
-        writeEl.style.setProperty('--field-heatmap-density', hStr);
-      }
-      if (load !== undefined) {
-        // the canonical author-facing var is `--load`; `--mass` is kept as a back-compat alias (§21.2).
-        const loadStr = load.toFixed(3);
-        writeEl.style.setProperty('--load', loadStr);
-        writeEl.style.setProperty('--mass', loadStr);
-      }
+      // ONE write path (#228): the CSS-var channels always go to the sink — the platform's
+      // FeedbackRegistry route (D3) when configured, otherwise the internal default sink
+      // (feedback-sink.ts), which performs the same direct writes the engine always made:
+      // `--d`/`--forces-density`/`--field-density`, the heatmap mirror pair, `--load`/`--mass`.
+      cfg.feedbackSink(writeEl, { density: b.d, heatmapDensity, load });
     }
   }
 
