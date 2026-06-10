@@ -126,3 +126,4 @@ canvas, a headless harness, or any renderer you implement. `browserHost()` (in
 ## License
 
 MIT © Zach Shallbetter
+
