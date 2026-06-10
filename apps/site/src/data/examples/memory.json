@@ -1,0 +1,583 @@
+{
+  "source": "Google Web Trillion Word Corpus frequencies (norvig.com/ngrams)",
+  "license": "research data (Norvig/Google)",
+  "snapshotAt": "2026-06-10T00:38:25.923Z",
+  "cards": [
+    {
+      "word": "republic",
+      "rank": 1501,
+      "count": 55051644,
+      "zipf": 7.74
+    },
+    {
+      "word": "completed",
+      "rank": 1508,
+      "count": 54810628,
+      "zipf": 7.74
+    },
+    {
+      "word": "organizations",
+      "rank": 1522,
+      "count": 54146984,
+      "zipf": 7.73
+    },
+    {
+      "word": "match",
+      "rank": 1536,
+      "count": 53532481,
+      "zipf": 7.73
+    },
+    {
+      "word": "deep",
+      "rank": 1543,
+      "count": 53447410,
+      "zipf": 7.73
+    },
+    {
+      "word": "reported",
+      "rank": 1550,
+      "count": 53189294,
+      "zipf": 7.73
+    },
+    {
+      "word": "partner",
+      "rank": 1557,
+      "count": 52979810,
+      "zipf": 7.72
+    },
+    {
+      "word": "membership",
+      "rank": 1564,
+      "count": 52738089,
+      "zipf": 7.72
+    },
+    {
+      "word": "released",
+      "rank": 1571,
+      "count": 52546300,
+      "zipf": 7.72
+    },
+    {
+      "word": "richard",
+      "rank": 1578,
+      "count": 52423381,
+      "zipf": 7.72
+    },
+    {
+      "word": "except",
+      "rank": 1585,
+      "count": 52183597,
+      "zipf": 7.72
+    },
+    {
+      "word": "phentermine",
+      "rank": 1599,
+      "count": 51577196,
+      "zipf": 7.71
+    },
+    {
+      "word": "battery",
+      "rank": 1606,
+      "count": 51449559,
+      "zipf": 7.71
+    },
+    {
+      "word": "keywords",
+      "rank": 1613,
+      "count": 51331999,
+      "zipf": 7.71
+    },
+    {
+      "word": "throughout",
+      "rank": 1620,
+      "count": 51160616,
+      "zipf": 7.71
+    },
+    {
+      "word": "papers",
+      "rank": 1627,
+      "count": 51024682,
+      "zipf": 7.71
+    },
+    {
+      "word": "device",
+      "rank": 1634,
+      "count": 50819909,
+      "zipf": 7.71
+    },
+    {
+      "word": "programming",
+      "rank": 1641,
+      "count": 50630393,
+      "zipf": 7.7
+    },
+    {
+      "word": "offered",
+      "rank": 1648,
+      "count": 50347350,
+      "zipf": 7.7
+    },
+    {
+      "word": "visual",
+      "rank": 1655,
+      "count": 49969150,
+      "zipf": 7.7
+    },
+    {
+      "word": "block",
+      "rank": 1662,
+      "count": 49694725,
+      "zipf": 7.7
+    },
+    {
+      "word": "steel",
+      "rank": 1669,
+      "count": 49452604,
+      "zipf": 7.69
+    },
+    {
+      "word": "associates",
+      "rank": 1676,
+      "count": 49020998,
+      "zipf": 7.69
+    },
+    {
+      "word": "ohio",
+      "rank": 1683,
+      "count": 48812305,
+      "zipf": 7.69
+    },
+    {
+      "word": "officer",
+      "rank": 1697,
+      "count": 48483165,
+      "zipf": 7.69
+    },
+    {
+      "word": "restaurant",
+      "rank": 1704,
+      "count": 48255033,
+      "zipf": 7.68
+    },
+    {
+      "word": "poor",
+      "rank": 1711,
+      "count": 48053008,
+      "zipf": 7.68
+    },
+    {
+      "word": "fucking",
+      "rank": 1718,
+      "count": 47911964,
+      "zipf": 7.68
+    },
+    {
+      "word": "creative",
+      "rank": 1725,
+      "count": 47737474,
+      "zipf": 7.68
+    },
+    {
+      "word": "grant",
+      "rank": 1732,
+      "count": 47609624,
+      "zipf": 7.68
+    },
+    {
+      "word": "careers",
+      "rank": 1739,
+      "count": 47344388,
+      "zipf": 7.68
+    },
+    {
+      "word": "former",
+      "rank": 1753,
+      "count": 46917563,
+      "zipf": 7.67
+    },
+    {
+      "word": "flow",
+      "rank": 1767,
+      "count": 46684251,
+      "zipf": 7.67
+    },
+    {
+      "word": "columbia",
+      "rank": 1774,
+      "count": 46367780,
+      "zipf": 7.67
+    },
+    {
+      "word": "helpful",
+      "rank": 1781,
+      "count": 46208737,
+      "zipf": 7.66
+    },
+    {
+      "word": "angeles",
+      "rank": 1788,
+      "count": 45983826,
+      "zipf": 7.66
+    },
+    {
+      "word": "changed",
+      "rank": 1802,
+      "count": 45453557,
+      "zipf": 7.66
+    },
+    {
+      "word": "clean",
+      "rank": 1809,
+      "count": 45381752,
+      "zipf": 7.66
+    },
+    {
+      "word": "relevant",
+      "rank": 1816,
+      "count": 45242119,
+      "zipf": 7.66
+    },
+    {
+      "word": "basket",
+      "rank": 1823,
+      "count": 45023597,
+      "zipf": 7.65
+    },
+    {
+      "word": "advance",
+      "rank": 1837,
+      "count": 44738913,
+      "zipf": 7.65
+    },
+    {
+      "word": "lots",
+      "rank": 1851,
+      "count": 44361090,
+      "zipf": 7.65
+    },
+    {
+      "word": "regulations",
+      "rank": 1858,
+      "count": 44201358,
+      "zipf": 7.65
+    },
+    {
+      "word": "facility",
+      "rank": 1865,
+      "count": 44049643,
+      "zipf": 7.64
+    },
+    {
+      "word": "looks",
+      "rank": 1872,
+      "count": 43897035,
+      "zipf": 7.64
+    },
+    {
+      "word": "forest",
+      "rank": 1879,
+      "count": 43667070,
+      "zipf": 7.64
+    },
+    {
+      "word": "vision",
+      "rank": 1886,
+      "count": 43425570,
+      "zipf": 7.64
+    },
+    {
+      "word": "accept",
+      "rank": 1893,
+      "count": 43171429,
+      "zipf": 7.64
+    },
+    {
+      "word": "communities",
+      "rank": 1900,
+      "count": 42969195,
+      "zipf": 7.63
+    },
+    {
+      "word": "publishing",
+      "rank": 1907,
+      "count": 42809196,
+      "zipf": 7.63
+    },
+    {
+      "word": "determine",
+      "rank": 1914,
+      "count": 42707469,
+      "zipf": 7.63
+    },
+    {
+      "word": "historical",
+      "rank": 1921,
+      "count": 42501329,
+      "zipf": 7.63
+    },
+    {
+      "word": "difficult",
+      "rank": 1928,
+      "count": 42436311,
+      "zipf": 7.63
+    },
+    {
+      "word": "amateur",
+      "rank": 1935,
+      "count": 42265916,
+      "zipf": 7.63
+    },
+    {
+      "word": "coffee",
+      "rank": 1942,
+      "count": 42086828,
+      "zipf": 7.62
+    },
+    {
+      "word": "easily",
+      "rank": 1949,
+      "count": 41949287,
+      "zipf": 7.62
+    },
+    {
+      "word": "balance",
+      "rank": 1963,
+      "count": 41651718,
+      "zipf": 7.62
+    },
+    {
+      "word": "initial",
+      "rank": 1970,
+      "count": 41372877,
+      "zipf": 7.62
+    },
+    {
+      "word": "canon",
+      "rank": 1977,
+      "count": 41144763,
+      "zipf": 7.61
+    },
+    {
+      "word": "optional",
+      "rank": 1984,
+      "count": 40839022,
+      "zipf": 7.61
+    },
+    {
+      "word": "fishing",
+      "rank": 1991,
+      "count": 40730311,
+      "zipf": 7.61
+    },
+    {
+      "word": "letters",
+      "rank": 1998,
+      "count": 40638766,
+      "zipf": 7.61
+    },
+    {
+      "word": "apparel",
+      "rank": 2005,
+      "count": 40498015,
+      "zipf": 7.61
+    },
+    {
+      "word": "breast",
+      "rank": 2012,
+      "count": 40334099,
+      "zipf": 7.61
+    },
+    {
+      "word": "dollars",
+      "rank": 2019,
+      "count": 40136550,
+      "zipf": 7.6
+    },
+    {
+      "word": "patch",
+      "rank": 2026,
+      "count": 39999745,
+      "zipf": 7.6
+    },
+    {
+      "word": "chemical",
+      "rank": 2033,
+      "count": 39891285,
+      "zipf": 7.6
+    },
+    {
+      "word": "component",
+      "rank": 2040,
+      "count": 39752354,
+      "zipf": 7.6
+    },
+    {
+      "word": "leader",
+      "rank": 2047,
+      "count": 39591949,
+      "zipf": 7.6
+    },
+    {
+      "word": "alone",
+      "rank": 2054,
+      "count": 39326417,
+      "zipf": 7.59
+    },
+    {
+      "word": "flight",
+      "rank": 2061,
+      "count": 39229938,
+      "zipf": 7.59
+    },
+    {
+      "word": "italian",
+      "rank": 2068,
+      "count": 39017017,
+      "zipf": 7.59
+    },
+    {
+      "word": "rose",
+      "rank": 2075,
+      "count": 38911531,
+      "zipf": 7.59
+    },
+    {
+      "word": "joint",
+      "rank": 2082,
+      "count": 38827057,
+      "zipf": 7.59
+    },
+    {
+      "word": "pick",
+      "rank": 2096,
+      "count": 38542153,
+      "zipf": 7.59
+    },
+    {
+      "word": "generated",
+      "rank": 2103,
+      "count": 38437769,
+      "zipf": 7.58
+    },
+    {
+      "word": "limit",
+      "rank": 2110,
+      "count": 38290292,
+      "zipf": 7.58
+    },
+    {
+      "word": "essential",
+      "rank": 2131,
+      "count": 37987474,
+      "zipf": 7.58
+    },
+    {
+      "word": "immediately",
+      "rank": 2138,
+      "count": 37857880,
+      "zipf": 7.58
+    },
+    {
+      "word": "heavy",
+      "rank": 2145,
+      "count": 37668153,
+      "zipf": 7.58
+    },
+    {
+      "word": "cock",
+      "rank": 2152,
+      "count": 37573028,
+      "zipf": 7.57
+    },
+    {
+      "word": "solid",
+      "rank": 2159,
+      "count": 37426444,
+      "zipf": 7.57
+    },
+    {
+      "word": "vehicles",
+      "rank": 2166,
+      "count": 37254344,
+      "zipf": 7.57
+    },
+    {
+      "word": "improvement",
+      "rank": 2173,
+      "count": 37133738,
+      "zipf": 7.57
+    },
+    {
+      "word": "saying",
+      "rank": 2180,
+      "count": 36981573,
+      "zipf": 7.57
+    },
+    {
+      "word": "acceptance",
+      "rank": 2187,
+      "count": 36864919,
+      "zipf": 7.57
+    },
+    {
+      "word": "towards",
+      "rank": 2194,
+      "count": 36798662,
+      "zipf": 7.57
+    },
+    {
+      "word": "charges",
+      "rank": 2201,
+      "count": 36710704,
+      "zipf": 7.56
+    },
+    {
+      "word": "talking",
+      "rank": 2208,
+      "count": 36617848,
+      "zipf": 7.56
+    },
+    {
+      "word": "avoid",
+      "rank": 2215,
+      "count": 36508203,
+      "zipf": 7.56
+    },
+    {
+      "word": "element",
+      "rank": 2222,
+      "count": 36306394,
+      "zipf": 7.56
+    },
+    {
+      "word": "quarter",
+      "rank": 2229,
+      "count": 36134893,
+      "zipf": 7.56
+    },
+    {
+      "word": "facts",
+      "rank": 2236,
+      "count": 36041603,
+      "zipf": 7.56
+    },
+    {
+      "word": "developer",
+      "rank": 2243,
+      "count": 35890230,
+      "zipf": 7.55
+    },
+    {
+      "word": "sitemap",
+      "rank": 2250,
+      "count": 35722454,
+      "zipf": 7.55
+    },
+    {
+      "word": "viewed",
+      "rank": 2257,
+      "count": 35666896,
+      "zipf": 7.55
+    }
+  ]
+}

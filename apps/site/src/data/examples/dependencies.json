@@ -1,0 +1,152 @@
+{
+  "source": "npm registry + api.npmjs.org downloads + OSV.dev advisories, over this monorepo’s real package.json files",
+  "license": "public registry data",
+  "snapshotAt": "2026-06-10T00:38:23.260Z",
+  "workspace": [
+    {
+      "name": "core",
+      "deps": []
+    },
+    {
+      "name": "platform",
+      "deps": [
+        "core"
+      ]
+    },
+    {
+      "name": "elements",
+      "deps": [
+        "platform",
+        "vanilla",
+        "core"
+      ]
+    },
+    {
+      "name": "vanilla",
+      "deps": [
+        "platform",
+        "core"
+      ]
+    },
+    {
+      "name": "react",
+      "deps": [
+        "vanilla",
+        "core"
+      ]
+    },
+    {
+      "name": "site",
+      "deps": [
+        "elements",
+        "core",
+        "platform"
+      ]
+    }
+  ],
+  "deps": [
+    {
+      "name": "typescript",
+      "weeklyDownloads": 205759155,
+      "version": "6.0.3",
+      "publishedAt": null,
+      "description": "TypeScript is a language for application scale JavaScript development",
+      "advisories": 0,
+      "usedBy": [
+        "core",
+        "platform",
+        "elements",
+        "vanilla",
+        "react"
+      ]
+    },
+    {
+      "name": "react",
+      "weeklyDownloads": 134410428,
+      "version": "19.2.7",
+      "publishedAt": null,
+      "description": "React is a JavaScript library for building user interfaces.",
+      "advisories": 2,
+      "usedBy": [
+        "react"
+      ]
+    },
+    {
+      "name": "@types/react",
+      "weeklyDownloads": 121081029,
+      "version": "19.2.17",
+      "publishedAt": null,
+      "description": "TypeScript definitions for react",
+      "advisories": 0,
+      "usedBy": [
+        "react"
+      ]
+    },
+    {
+      "name": "katex",
+      "weeklyDownloads": 14021083,
+      "version": "0.17.0",
+      "publishedAt": null,
+      "description": "Fast math typesetting for the web.",
+      "advisories": 5,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "mermaid",
+      "weeklyDownloads": 8533164,
+      "version": "11.15.0",
+      "publishedAt": null,
+      "description": "Markdown-ish syntax for generating flowcharts, mindmaps, sequence diagrams, class diagrams, gantt charts, git graphs and",
+      "advisories": 11,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "remark-math",
+      "weeklyDownloads": 5103647,
+      "version": "6.0.0",
+      "publishedAt": null,
+      "description": "remark plugin to parse and stringify math",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "rehype-katex",
+      "weeklyDownloads": 4876877,
+      "version": "7.0.1",
+      "publishedAt": null,
+      "description": "rehype plugin to transform inline and block math with KaTeX",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "astro",
+      "weeklyDownloads": 3100154,
+      "version": "6.4.5",
+      "publishedAt": null,
+      "description": "Astro is a modern site builder with web best practices, performance, and DX front-of-mind.",
+      "advisories": 17,
+      "usedBy": [
+        "site"
+      ]
+    },
+    {
+      "name": "@astrojs/sitemap",
+      "weeklyDownloads": 1461261,
+      "version": "3.7.3",
+      "publishedAt": null,
+      "description": "Generate a sitemap for your Astro site",
+      "advisories": 0,
+      "usedBy": [
+        "site"
+      ]
+    }
+  ]
+}

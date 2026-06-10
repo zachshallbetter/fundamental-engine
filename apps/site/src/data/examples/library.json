@@ -1,0 +1,248 @@
+{
+  "source": "ListenBrainz sitewide statistics (listenbrainz.org)",
+  "license": "CC0 / open data",
+  "snapshotAt": "2026-06-10T00:38:24.751Z",
+  "range": "month",
+  "tracks": [
+    {
+      "rank": 1,
+      "track": "Dracula",
+      "artist": "Tame Impala",
+      "release": "Deadbeat",
+      "listens": 6139,
+      "mbid": "5b1c893a-16da-4e3d-b9b7-6cc57afc360c"
+    },
+    {
+      "rank": 2,
+      "track": "SWIM",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 4444,
+      "mbid": "6f33dc05-cdc0-4a2f-8039-e8fed082eec6"
+    },
+    {
+      "rank": 3,
+      "track": "LEMONADE",
+      "artist": "aespa",
+      "release": "LEMONADE",
+      "listens": 4139,
+      "mbid": "2ee72e0f-6126-4218-b0f3-a3cc765fc998"
+    },
+    {
+      "rank": 4,
+      "track": "Heavy Serenade",
+      "artist": "NMIXX",
+      "release": "Heavy Serenade",
+      "listens": 4051,
+      "mbid": "d9e4000e-d7f1-4a55-8f7a-a1a38eb282b2"
+    },
+    {
+      "rank": 5,
+      "track": "the cure",
+      "artist": "Olivia Rodrigo",
+      "release": "the cure",
+      "listens": 3525,
+      "mbid": "68b25a6f-4f9b-4faf-99a9-7437ba590c7e"
+    },
+    {
+      "rank": 6,
+      "track": "Prophecy at 1420 MHz",
+      "artist": "Boards of Canada",
+      "release": "Inferno",
+      "listens": 3517,
+      "mbid": "5ce7e73e-07e8-43c2-b26b-f8cd4a02b135"
+    },
+    {
+      "rank": 7,
+      "track": "Billie Jean",
+      "artist": "Michael Jackson",
+      "release": "Thriller",
+      "listens": 3497,
+      "mbid": "f980fc14-e29b-481d-ad3a-5ed9b4ab6340"
+    },
+    {
+      "rank": 8,
+      "track": "Body to Body",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 3021,
+      "mbid": "6dfdfc61-89ff-451a-a5e9-5319065beae7"
+    },
+    {
+      "rank": 9,
+      "track": "In the End",
+      "artist": "Linkin Park",
+      "release": "Hybrid Theory",
+      "listens": 2971,
+      "mbid": "9d70086c-5d7a-4e7f-b1ed-c53c4b11310f"
+    },
+    {
+      "rank": 10,
+      "track": "BOOMPALA",
+      "artist": "LE SSERAFIM",
+      "release": "‘PUREFLOW’ pt.1",
+      "listens": 2933,
+      "mbid": "b5021cff-5a02-47b8-9564-277a2f94d74a"
+    },
+    {
+      "rank": 11,
+      "track": "The Emptiness Machine",
+      "artist": "Linkin Park",
+      "release": "From Zero",
+      "listens": 2927,
+      "mbid": "0815f294-becd-4544-bad0-5d43b7426cce"
+    },
+    {
+      "rank": 12,
+      "track": "2.0",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2890,
+      "mbid": "1d6222e0-77eb-4047-b4fb-045a0c5636d3"
+    },
+    {
+      "rank": 13,
+      "track": "Introit",
+      "artist": "Boards of Canada",
+      "release": "Inferno",
+      "listens": 2879,
+      "mbid": "bf9120ad-3bad-45a3-acc7-7f8ff4ce9466"
+    },
+    {
+      "rank": 14,
+      "track": "No. 29",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2878,
+      "mbid": "7cac948e-4228-4799-9c8b-e9df276639f1"
+    },
+    {
+      "rank": 15,
+      "track": "Girl Like Me",
+      "artist": "PinkPantheress",
+      "release": "Fancy That",
+      "listens": 2853,
+      "mbid": "7958233b-e043-4c42-8379-416d450cc24f"
+    },
+    {
+      "rank": 16,
+      "track": "Hooligan",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2823,
+      "mbid": "a045f252-ea1a-42c3-b7a5-f69979e39394"
+    },
+    {
+      "rank": 17,
+      "track": "Beat It",
+      "artist": "Michael Jackson",
+      "release": "Thriller",
+      "listens": 2776,
+      "mbid": "de798de6-70fc-49f6-b580-339cd2e62052"
+    },
+    {
+      "rank": 18,
+      "track": "IT'S ME",
+      "artist": "ILLIT",
+      "release": "MAMIHLAPINATAPAI",
+      "listens": 2770,
+      "mbid": null
+    },
+    {
+      "rank": 19,
+      "track": "Numb",
+      "artist": "Linkin Park",
+      "release": "Meteora",
+      "listens": 2768,
+      "mbid": "352dd518-23cd-4c5a-9551-ba02097b177b"
+    },
+    {
+      "rank": 20,
+      "track": "Creep",
+      "artist": "Radiohead",
+      "release": "Pablo Honey",
+      "listens": 2750,
+      "mbid": "70595637-9310-45f2-a266-58f8de4874a7"
+    },
+    {
+      "rank": 21,
+      "track": "FYA",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2717,
+      "mbid": "802e86e2-5da4-40c5-a265-933eb64d864b"
+    },
+    {
+      "rank": 22,
+      "track": "Mr. Brightside",
+      "artist": "The Killers",
+      "release": "Hot Fuss",
+      "listens": 2708,
+      "mbid": "560062d0-e122-46be-9d89-0f3b44077fdf"
+    },
+    {
+      "rank": 23,
+      "track": "drop dead",
+      "artist": "Olivia Rodrigo",
+      "release": "drop dead",
+      "listens": 2707,
+      "mbid": "dae76a66-5ea8-43c2-856d-cce2aa7fbe49"
+    },
+    {
+      "rank": 24,
+      "track": "The Less I Know the Better",
+      "artist": "Tame Impala",
+      "release": "Currents",
+      "listens": 2683,
+      "mbid": "78be434c-0908-458f-9693-f16cdebb68ef"
+    },
+    {
+      "rank": 25,
+      "track": "they don’t know ’bout us",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2666,
+      "mbid": "7bdd2fd6-e7ea-4926-8af9-6ebfcca06adc"
+    },
+    {
+      "rank": 26,
+      "track": "Crescendo",
+      "artist": "NMIXX",
+      "release": "Heavy Serenade",
+      "listens": 2646,
+      "mbid": "bd827dba-4d68-401e-94be-4c96fdad7818"
+    },
+    {
+      "rank": 27,
+      "track": "Aliens",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2638,
+      "mbid": "370cb956-910e-4fde-87b4-fdce053168e9"
+    },
+    {
+      "rank": 28,
+      "track": "One More Night",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2629,
+      "mbid": "b4ae8f7c-14ea-4882-81e2-6e35fd6de44f"
+    },
+    {
+      "rank": 29,
+      "track": "Merry Go Round",
+      "artist": "BTS",
+      "release": "ARIRANG",
+      "listens": 2621,
+      "mbid": "b9462ebb-1d6d-4477-a12b-402c0b65b206"
+    },
+    {
+      "rank": 30,
+      "track": "Faint",
+      "artist": "Linkin Park",
+      "release": "Meteora",
+      "listens": 2618,
+      "mbid": "54a3c21c-5395-44a2-b90b-b7fab8095c20"
+    }
+  ]
+}
