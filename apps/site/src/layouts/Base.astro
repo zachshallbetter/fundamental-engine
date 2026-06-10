@@ -90,11 +90,19 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
     <DataConsole />
 
     <script>
-      // registers <field-root> (the engine mounts on connect). Bundled by Astro,
-      // so this runs once — the perfect place to wire the persisted field into the
-      // navigation lifecycle. After each content swap, re-scan so the continuous
-      // field reacts to the new page's [data-body] bodies (scan re-binds engagement).
-      import '@field-ui/elements';
+      // Idle-until-urgent engine boot. The field is ambiance — a slightly late start is
+      // invisible — so the '@field-ui/elements' module (which registers <field-root>; the
+      // engine mounts on connect) loads OFF the critical path via a deferred dynamic
+      // import. Until it runs, <field-root> is an unknown element: inert, invisible, zero
+      // layout (the canvas is position:fixed/z-index:0 inside its shadow root), so the
+      // page renders and paints fine without it and no layout shift happens when the
+      // engine arrives. Bundled by Astro, so this runs once — the perfect place to wire
+      // the persisted field into the navigation lifecycle.
+
+      // The navigation wiring registers up front (it must exist before the first
+      // client-side swap, booted or not). After each content swap, re-scan so the
+      // continuous field reacts to the new page's [data-body] bodies (scan re-binds
+      // engagement). Optional chaining keeps it a no-op until the element upgrades.
       document.addEventListener('astro:after-swap', () => {
         const field = document.querySelector('field-root') as
           | (HTMLElement & { rescan?: () => void; setFormation?: (n: string) => void })
@@ -102,6 +110,16 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
         field?.rescan?.();
         field?.setFormation?.('ambient'); // settle to the resting state on arrival
       });
+
+      // Boot when the main thread first goes idle, or after ~1.5s — whichever comes
+      // first. Safari has no requestIdleCallback; a short fixed delay clears the
+      // critical path there the same way.
+      const boot = () => void import('@field-ui/elements');
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(boot, { timeout: 1500 });
+      } else {
+        setTimeout(boot, 300);
+      }
     </script>
 
     <style is:global>

@@ -33,12 +33,16 @@ function renderAtom(a: Atom): string {
 
 export function initAtomField(): () => void {
   const field = document.querySelector<FieldEl>("field-root");
-  if (typeof field?.seed !== "function") return () => {};
+  if (!field) return () => {};
   let disposed = false;
-  // resolve the atoms cache-first (IndexedDB → localStorage → network), then seed the live field.
-  void getAtoms(atomsUrl).then((atoms) => {
-    if (!disposed && atoms.length) field.seed?.(atoms);
-  });
+  // The engine boots idle-until-urgent (Base.astro defers the module import), so the
+  // element may not be upgraded yet when the page wires up. Wait for the definition,
+  // resolve the atoms cache-first (IndexedDB → localStorage → network), then seed.
+  void Promise.all([customElements.whenDefined("field-root"), getAtoms(atomsUrl)]).then(
+    ([, atoms]) => {
+      if (!disposed && atoms.length) field.seed?.(atoms);
+    },
+  );
 
   // a pinned inspector card — opens on click (after a dwell focuses a dot), never on plain hover.
   const card = document.createElement("div");

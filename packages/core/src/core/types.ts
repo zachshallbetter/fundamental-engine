@@ -343,8 +343,11 @@ export interface FieldOptions {
    * Feedback seam (Phase D3): when set, the engine routes its per-body feedback channels to this
    * sink each frame *instead of* writing CSS variables / dispatching events directly — so the
    * platform's FeedbackRegistry can own the write phase. The simulation (the eased density value) is
-   * unchanged; only the write target moves. Default unset → the engine writes directly (unchanged).
-   * Font-variation weight is a typographic render effect and stays in the engine.
+   * unchanged; only the write target moves. Default unset → the engine installs an internal default
+   * sink (#228) whose direct writes are identical to the historical behavior (same variables, same
+   * three-decimal formatting, same `field:lit`/`field:dim` hysteresis) — the sink contract is the
+   * one write path either way. Font-variation weight is a typographic render effect and stays in
+   * the engine.
    */
   feedbackSink?: FeedbackSink;
   /**

@@ -1,6 +1,8 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
+import ApiStamp from '../../components/ApiStamp.astro';
+import SeeItLive from '../../components/SeeItLive.astro';
 
 // Authoring across surfaces — the three-surfaces-one-contract standard. Native HTML, the web
 // component, and the React adapter all funnel into the same authoring contract the scanner reads
@@ -77,7 +79,9 @@ const CONTRACT = [
   <p class="lede">
     Three surfaces, one contract. A body authored in plain HTML, as a web component, or in React is
     the <em>same</em> body in the field — each is just a different way to write the
-    <code>[data-body]</code> contract the scanner reads. Pick the surface your stack already uses;
+    <code>[data-body]</code> <ApiStamp name="data-body" /> contract the scanner reads. The HTML path
+    mounts with <code>createField</code> <ApiStamp name="createField" pkg="@field-ui/vanilla" /> from
+    <code>@field-ui/vanilla</code>. Pick the surface your stack already uses;
     field-ui does not ask you to adopt a framework.
   </p>
 
@@ -109,6 +113,11 @@ const CONTRACT = [
     </article>
   </div>
 
+  <SeeItLive
+    slug="calendar"
+    why="the contract's payoff: the same bodies authored once, rendered as day, week, and month — three geometries, one [data-body] contract"
+  />
+
   <h2>The shared contract</h2>
   <p>Every surface writes the same <code>data-*</code> attributes. This is the contract:</p>
   <table class="au-table">
@@ -124,6 +133,7 @@ const CONTRACT = [
   <p>
     The surfaces above author <em>bodies</em>. When you need the page itself to participate — to
     measure elements, hold state, and write feedback on a disciplined loop — reach for
+    <code>createFieldPlatform()</code> <ApiStamp name="createFieldPlatform" /> from
     <code>@field-ui/platform</code> directly. It is framework-agnostic; the same code runs under any
     surface.
   </p>

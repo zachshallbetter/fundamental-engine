@@ -1,0 +1,111 @@
+---
+// API provenance stamp — a tiny inline chip stating an API's contract status, derived at
+// BUILD TIME from the same data file that gates CI (scripts/api-surface.data.mjs, enforced
+// by `pnpm check:api`). A docs page that stamps a symbol therefore cannot drift from the
+// freeze: if the data file says frozen, the chip says frozen; if a name matches nothing,
+// the chip renders nothing and warns in the build log so typos surface in CI output.
+//
+//   <ApiStamp name="createField" />                → frozen · @field-ui/core
+//   <ApiStamp name="createField" pkg="@field-ui/vanilla" />  (disambiguate the two doors)
+//   <ApiStamp item="FieldHandle.scrollV()" />      → experimental
+import {
+  FROZEN_VALUES,
+  FROZEN_TYPES,
+  FROZEN_ELEMENTS,
+  FROZEN_BODY_ATTR,
+  EXPERIMENTAL,
+} from '../../../../scripts/api-surface.data.mjs';
+
+interface Props {
+  /** a frozen symbol — a value, type, element tag, or the body attribute. Falls through
+   *  to the experimental list (substring match) before reporting unknown. */
+  name?: string;
+  /** an experimental entry, matched by item substring (e.g. "FieldHandle.scrollV()"). */
+  item?: string;
+  /** disambiguates symbols frozen in two packages (createField: core AND vanilla). */
+  pkg?: string;
+}
+const { name, item, pkg } = Astro.props;
+
+interface Stamp {
+  status: 'frozen' | 'experimental';
+  label: string;
+  title: string;
+}
+let stamp: Stamp | null = null;
+
+if (name) {
+  const byPkg = <T extends { pkg: string }>(rows: T[]) =>
+    pkg ? rows.filter((r) => r.pkg === pkg) : rows;
+  const hit =
+    byPkg(FROZEN_VALUES).find((v: { name: string }) => v.name === name) ??
+    byPkg(FROZEN_TYPES).find((t: { name: string }) => t.name === name) ??
+    byPkg(FROZEN_ELEMENTS).find((e: { tag: string }) => e.tag === name);
+  if (hit) {
+    stamp = { status: 'frozen', label: `frozen · ${hit.pkg}`, title: hit.note };
+  } else if (name === FROZEN_BODY_ATTR) {
+    stamp = {
+      status: 'frozen',
+      label: 'frozen · attribute contract',
+      title:
+        'The body contract: [data-body] on ordinary elements (core BODY_SELECTOR). An attribute, not a tag — there is no <field-body> element.',
+    };
+  }
+}
+
+// experimental: explicit `item`, or a `name` that matched no frozen entry
+const probe = item ?? (stamp ? undefined : name);
+if (!stamp && probe) {
+  const hit = EXPERIMENTAL.find((x: { item: string }) => x.item.includes(probe));
+  if (hit) {
+    stamp = {
+      status: 'experimental',
+      label: 'experimental',
+      title: `${hit.item} (${hit.status}) — ${hit.note}`,
+    };
+  }
+}
+
+if (!stamp) {
+  // build-time: surfaces unknown names in CI logs instead of shipping a silent wrong chip
+  console.warn(
+    `[ApiStamp] unknown API surface "${item ?? name ?? '(no name)'}" — not in scripts/api-surface.data.mjs; rendering nothing.`,
+  );
+}
+---
+
+{
+  stamp && (
+    <span class="api-stamp" data-status={stamp.status} title={stamp.title}>
+      {stamp.label}
+    </span>
+  )
+}
+
+<style>
+  .api-stamp {
+    display: inline-block;
+    vertical-align: 0.14em;
+    margin-left: 0.35rem;
+    padding: 0.05rem 0.42rem;
+    border-radius: 999px;
+    border: 1px solid;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    line-height: 1.5;
+    white-space: nowrap;
+    cursor: help;
+  }
+  .api-stamp[data-status='frozen'] {
+    color: #2dd4bf;
+    border-color: color-mix(in srgb, #2dd4bf 55%, transparent);
+    background: color-mix(in srgb, #2dd4bf 9%, transparent);
+  }
+  .api-stamp[data-status='experimental'] {
+    color: #f5b554;
+    border-color: color-mix(in srgb, #f5b554 55%, transparent);
+    background: color-mix(in srgb, #f5b554 9%, transparent);
+  }
+</style>

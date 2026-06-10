@@ -2,7 +2,18 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
+import ApiStamp from '../../../components/ApiStamp.astro';
 import { HANDLE } from '../../../lib/docs-api.ts';
+import { EXPERIMENTAL } from '../../../../../../scripts/api-surface.data.mjs';
+
+// Provenance: a method gets an "experimental" stamp when (and only when) the freeze data
+// file lists it — the same file `pnpm check:api` gates. Methods covered by the frozen
+// entry points carry no per-method chip (the handle's full shape is itself unfrozen; see
+// the EXPERIMENTAL "FieldHandle — full shape" entry rendered on /docs/api/stability).
+const expItem = (sig: string): string | undefined => {
+  const fn = `${sig.split('(')[0]}()`;
+  return EXPERIMENTAL.find((x: { item: string }) => x.item.includes(fn))?.item;
+};
 
 const getWc = `import '@field-ui/elements';
 
@@ -91,7 +102,7 @@ export function Background() {
     <p class="kicker">API reference</p>
     <h1>The <span class="accent">FieldHandle</span></h1>
     <p class="lede">
-      Every entry point — <code>createField</code>, <code>mountField</code>, the
+      Every entry point — <code>createField</code> <ApiStamp name="createField" pkg="@field-ui/core" />, <code>mountField</code>, the
       <code>FieldField</code> class, the <code>&lt;field-root&gt;</code> element (proxied), and
       the React <code>onReady</code> — hands you a <code>FieldHandle</code>. Use it to drive the
       field after it mounts.
@@ -122,6 +133,7 @@ export function Background() {
           <div class="api-row">
             <dt class="k">
               <code>{m.sig}</code>
+              {expItem(m.sig) && <ApiStamp item={expItem(m.sig)} />}
             </dt>
             <dd class="d">{m.desc}</dd>
           </div>
@@ -142,11 +154,11 @@ export function Background() {
     </p>
     <dl class="api-table">
       <div class="api-row">
-        <dt class="k"><code>particleCount() → number</code></dt>
+        <dt class="k"><code>particleCount() → number</code> <ApiStamp item="FieldHandle.particleCount() / .energy()" /></dt>
         <dd class="d">Live size of the particle pool (<code>store.size</code> forwarded). Use for budget monitors that need the count without walking the array (which <code>inspectBudget</code> does internally).</dd>
       </div>
       <div class="api-row">
-        <dt class="k"><code>energy() → &#123; kinetic, thermal, total, count &#125;</code></dt>
+        <dt class="k"><code>energy() → &#123; kinetic, thermal, total, count &#125;</code> <ApiStamp item="FieldHandle.particleCount() / .energy()" /></dt>
         <dd class="d">Per-frame energy snapshot. Forwards to <code>energyReport(store.particles)</code> — the function exists in <code>@field-ui/core/diagnostics/energy</code>; this accessor exposes it without requiring a reference to the internal particle array.</dd>
       </div>
     </dl>

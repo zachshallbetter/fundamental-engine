@@ -103,10 +103,16 @@ export function shouldUsePlatformRuntime(el: { getAttribute(name: string): strin
 
 /**
  * Build a feedback sink (D3) that routes the engine's per-body channels through the platform's
- * FeedbackRegistry instead of letting the engine write the DOM. The eased density value is the
- * engine's own — only the *write* moves — so the signal is preserved exactly. FeedbackRegistry
- * mirrors `--field-*` → `--forces-*` and `field:*` → `forces:*`, so both alias families stay live.
- * Writes apply on the platform's write phase (its scheduler tick).
+ * FeedbackRegistry. The eased density value is the engine's own — only the *write* moves — so the
+ * signal is preserved exactly. FeedbackRegistry mirrors `--field-*` → `--forces-*` and `field:*` →
+ * `forces:*`, so both alias families stay live. Writes apply on the platform's write phase (its
+ * scheduler tick).
+ *
+ * Since #228 the sink contract is the engine's ONLY write path: with no sink configured,
+ * `createField` installs an internal default sink (`core/feedback-sink.ts`) whose direct writes are
+ * byte-identical to the engine's historical behavior. This platform sink replaces that default when
+ * the runtime is on, moving the same channels onto FeedbackRegistry (write-phase batching,
+ * `cssWritesLastFrame()` accounting, governor throttling).
  */
 export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
   const litArmed = new WeakSet<Element>();
