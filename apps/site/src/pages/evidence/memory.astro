@@ -1,5 +1,5 @@
 ---
-import { DAY_MS, retention } from "@field-ui/core";
+import { DAY_MS, retention, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import memory from "../../data/examples/memory.json";
@@ -56,14 +56,16 @@ days_eff = max(0, slider − reviewedAt)
 // slider input → every card's --w
 // and data-strength update live
 
-// the scoped field runs invisible (render: [])
-// and asks for the attention metric lane:
-const recipe = {
-  ...base,
-  render: [],
-  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-};
-// the pipeline writes --field-attention per card (eased 0..1)`;
+// the scoped field runs invisible (renderless)
+// and asks for the attention metric lane —
+// the pipeline writes --field-attention per
+// card (eased 0..1):
+field = applyRecipe(grid, base, {
+  bodies: cards,
+  annotateBodies: false,
+  renderless: true,
+  extraMetrics: ["attention"],
+});`;
 
 const SNIPPET_PERSIST = `// reviews persist on this device — localStorage,
 // not an account:
@@ -183,7 +185,7 @@ const SNIPPET_CSS = `.mx-card {
             data-feedback
             data-hot
             data-range="200"
-            data-strength={(0.4 + c.w * 1.6).toFixed(2)}
+            data-strength={weightToStrength(c.w).toFixed(2)}
             data-anchor={c.a.toFixed(3)}
             style={`--w:${c.w.toFixed(3)}; --cat:#4da3ff;`}
             aria-label={`Review "${c.word}" (rank ${c.rank})`}

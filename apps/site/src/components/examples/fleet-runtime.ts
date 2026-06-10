@@ -12,19 +12,17 @@
 //     A changed card pulses once and holds data-active ~3s, so the attention metric reads
 //     the change as engagement — the field notices. Three consecutive failures and the loop
 //     retires itself; the chip falls back to the snapshot date. Never throws.
-// The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { recipeById } from "@field-ui/core";
+// The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
+import { logNormalize, recipeById, weightToStrength } from "@field-ui/core";
 import { applyRecipe, withFlip } from "@field-ui/platform";
+import { wireFieldToggle, wireSegments } from "../../lib/controls";
+import { pageRuntime } from "../../lib/page-runtime";
+import { atReadingPace } from "../../lib/reading-pace";
 
 type FleetWeight = "involvement" | "recency";
 
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-// the reading-pace gate: the engine writes its live scroll velocity (px/frame) to
-// --field-scroll-v on <html>; under 2 px/frame the user is reading, not skimming.
-// Same gate the evidence reveal uses.
-const SCROLL_V_MAX = 2;
 
 const HINTS: Record<FleetWeight, string> = {
   involvement: "<b>size</b> = involvement — how many of the window's incidents named each service",
@@ -45,9 +43,7 @@ const STATUS_COLOR: Record<string, string> = {
   under_maintenance: "#60a5fa",
 };
 
-function initFleet(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-fleet");
-  if (!page) return () => {};
+function initFleet(page: HTMLElement): () => void {
   const ac = new AbortController();
   const zone = page.querySelector<HTMLElement>("[data-fl-zone]");
   const grid = page.querySelector<HTMLElement>("[data-fl-grid]");
@@ -68,8 +64,9 @@ function initFleet(): () => void {
     let wFor: (c: HTMLElement) => number;
     let order: (a: HTMLElement, b: HTMLElement) => number;
     if (weight === "involvement") {
-      const maxInv = Math.max(...all.map((c) => Number(c.dataset.inv) || 0), 1);
-      wFor = (c) => Math.log((Number(c.dataset.inv) || 0) + 1) / Math.log(maxInv + 1);
+      // the family's consensus shape — ln(x+1)/ln(max+1), the core weight primitive
+      const maxInv = Math.max(...all.map((c) => Number(c.dataset.inv) || 0));
+      wFor = (c) => logNormalize(Number(c.dataset.inv) || 0, maxInv);
       order = (a, b) => (Number(b.dataset.inv) || 0) - (Number(a.dataset.inv) || 0);
     } else {
       // recency: most recently hit. Services never named in the window stay at zero.
@@ -86,7 +83,7 @@ function initFleet(): () => void {
     for (const c of all) {
       const w = wFor(c);
       c.style.setProperty("--w", w.toFixed(3));
-      c.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      c.dataset.strength = weightToStrength(w).toFixed(2);
     }
     const ordered = [...all].sort(order);
     withFlip(
@@ -151,9 +148,11 @@ function initFleet(): () => void {
 
   // ── entry sweep — load bars fill 0 → recorded width at reading pace ────────
   // IO marks which incidents are on screen; a rAF loop sweeps them only while the
-  // engine's --field-scroll-v reads under SCROLL_V_MAX (an inline style on <html> —
-  // cheap to read). Each bar sweeps once; the loop retires itself. Reduced motion
-  // never arms the sweep, so the bars render at full width immediately.
+  // reader is at reading pace (lib/reading-pace.ts — the engine's --field-scroll-v
+  // under 2 px/frame). Unlike armEntryAtPace, the sweep WAITS for calm rather than
+  // falling back to an instant reveal, so the gate is read directly. Each bar sweeps
+  // once; the loop retires itself. Reduced motion never arms the sweep, so the bars
+  // render at full width immediately.
   const wireSweep = (): void => {
     if (reduceMotion()) return;
     const list = page.querySelector<HTMLElement>("[data-fl-list]");
@@ -165,9 +164,7 @@ function initFleet(): () => void {
     const tick = (): void => {
       raf = 0;
       if (ac.signal.aborted || !pending.size) return;
-      const sv =
-        parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
-      if (sv < SCROLL_V_MAX) {
+      if (atReadingPace()) {
         for (const el of visible) {
           el.dataset.swept = "";
           pending.delete(el);
@@ -309,7 +306,7 @@ function initFleet(): () => void {
     });
   };
 
-  // ── the invisible scoped field (render: []) ────────────────────────────────
+  // ── the invisible scoped field (renderless) ────────────────────────────────
   const runField = (): void => {
     activeField?.destroy();
     activeField = null;
@@ -317,17 +314,14 @@ function initFleet(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain the attention lane, so the platform
+        // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center
         // proximity + visibility) back to every card.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        } as typeof base;
-        activeField = applyRecipe(zone, recipe, {
+        activeField = applyRecipe(zone, base, {
           bodies: [...comps(), ...incidents],
           annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
         });
       }
     } catch {
@@ -336,28 +330,23 @@ function initFleet(): () => void {
   };
 
   // ── controls ────────────────────────────────────────────────────────────────
-  weightBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        weight = (b.dataset.flWeight as FleetWeight) || "involvement";
-        page.dataset.weight = weight;
-        weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[weight];
-        reweight();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    weightBtns,
+    "flWeight",
+    (value) => {
+      weight = (value as FleetWeight) || "involvement";
+      page.dataset.weight = weight;
+      if (hint) hint.innerHTML = HINTS[weight];
+      reweight();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -366,7 +355,7 @@ function initFleet(): () => void {
         clearHighlights();
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   wireHighlights();
@@ -381,15 +370,4 @@ function initFleet(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-fleet") ? initFleet() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-fleet", initFleet);

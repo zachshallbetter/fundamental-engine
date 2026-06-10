@@ -1,5 +1,5 @@
 ---
-import { freshness } from "@field-ui/core";
+import { freshness, logNormalize, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import backlog from "../../data/examples/backlog.json";
@@ -20,13 +20,14 @@ const present = new Set(backlog.items.map((it) => it.number));
 // same updatedAt rides each card as data-field-at, so the platform pipeline's recency
 // lane is GROUNDED in the declared world timestamp too (--field-recency, live).
 const REC_HALF_LIFE_MS = 24 * 36e5; // a day — this board's churn timescale
-const cmax = Math.log(Math.max(...backlog.items.map((it) => it.comments), 1) + 1);
+const maxComments = Math.max(...backlog.items.map((it) => it.comments));
 
 // color = kind: pull requests teal, issues blue.
 const KIND_COLOR: Record<string, string> = { pr: "#2dd4bf", issue: "#4da3ff" };
 
 const items = backlog.items.map((it) => {
-  const act = Math.log(it.comments + 1) / cmax;
+  // the family's consensus shape — ln(x+1)/ln(max+1), the core weight primitive
+  const act = logNormalize(it.comments, maxComments);
   const rec = freshness(Date.parse(it.updatedAt), snapshot, REC_HALF_LIFE_MS);
   return {
     ...it,
@@ -258,7 +259,7 @@ function drop() { // pointerup — Esc/pointercancel aborts
               data-feedback
               data-hot
               data-range="200"
-              data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+              data-strength={weightToStrength(it.w).toFixed(2)}
               data-act={it.act.toFixed(4)}
               data-rec={it.rec.toFixed(4)}
               data-field-at={it.updatedAt}
@@ -335,7 +336,7 @@ function drop() { // pointerup — Esc/pointercancel aborts
               data-feedback
               data-hot
               data-range="200"
-              data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+              data-strength={weightToStrength(it.w).toFixed(2)}
               data-act={it.act.toFixed(4)}
               data-rec={it.rec.toFixed(4)}
               data-field-at={it.updatedAt}

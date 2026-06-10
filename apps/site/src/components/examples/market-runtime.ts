@@ -13,8 +13,11 @@
 //     sparkline path). A poll never re-sorts or re-tiers — hostile under the cursor. Any fetch
 //     error reverts silently to snapshot mode; 3 consecutive failures stop the polling.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { recipeById } from "@field-ui/core";
+import { logNormalizeBetween, recipeById, weightToStrength } from "@field-ui/core";
 import { applyRecipe, withFlip } from "@field-ui/platform";
+import { pageRuntime } from "../../lib/page-runtime.ts";
+import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
+import { armEntryAtPace } from "../../lib/reading-pace.ts";
 
 type MarketWeight = "cap" | "volume";
 type MarketLens = "24h" | "7d";
@@ -95,9 +98,7 @@ const LENS_HINTS: Record<MarketLens, string> = {
   "7d": "<b>color</b> = the 7-day move — the week's drift, not the day's noise",
 };
 
-function initMarket(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-market");
-  if (!page) return () => {};
+function initMarket(page: HTMLElement): () => void {
   const ac = new AbortController();
   const list = page.querySelector<HTMLElement>("[data-mk-list]");
   const rows = (): HTMLElement[] => [...page.querySelectorAll<HTMLElement>(".mk-tile")];
@@ -129,14 +130,15 @@ function initMarket(): () => void {
   // the live poll calls this alone; reweight() layers re-tier + re-sort on top.
   const recomputeWeights = (): Map<HTMLElement, number> => {
     const all = rows();
-    const lmin = Math.log(Math.min(...all.map(valOf)) + 1);
-    const lmax = Math.log(Math.max(...all.map(valOf)) + 1);
+    const vals = all.map(valOf);
+    const vMin = Math.min(...vals);
+    const vMax = Math.max(...vals);
     const ws = new Map<HTMLElement, number>();
     for (const r of all) {
-      const w = lmax > lmin ? (Math.log(valOf(r) + 1) - lmin) / (lmax - lmin) : 1;
+      const w = logNormalizeBetween(valOf(r), vMin, vMax);
       ws.set(r, w);
       r.style.setProperty("--w", w.toFixed(3));
-      r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      r.dataset.strength = weightToStrength(w).toFixed(2);
     }
     return ws;
   };
@@ -197,14 +199,14 @@ function initMarket(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
-        // --field-attention (eased engagement + center proximity + visibility) per tile.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        };
-        activeField = applyRecipe(list, recipe, { bodies: rows(), annotateBodies: false });
+        // renderless — invisible; the extra "attention" metric asks the platform pipeline to
+        // write --field-attention (eased engagement + center proximity + visibility) per tile.
+        activeField = applyRecipe(list, base, {
+          bodies: rows(),
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -212,31 +214,13 @@ function initMarket(): () => void {
   };
 
   // ── sparkline entry draw-in — gated at reading pace ───────────────────────
-  // Tiles entering the viewport get .mk-in; while the engine's live scroll
-  // velocity (--field-scroll-v, px/frame) says the user is scanning (>= 2),
-  // .mk-in-instant is added too, so the path is simply there instead of drawing.
-  const SCROLL_V_MAX = 2.0;
+  // Tiles entering the viewport get .mk-in; while the engine's live scroll velocity says
+  // the user is scanning (or motion is reduced), .mk-in-instant is added too, so the path
+  // is simply there instead of drawing. The gate is the shared armEntryAtPace primitive.
   const wireSparkDraw = (): void => {
     if (!list) return;
     list.setAttribute("data-mk-anim", "");
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          const tile = e.target as HTMLElement;
-          // --field-scroll-v is an inline style on <html> (written by the engine), so
-          // reading el.style avoids a forced style recalc.
-          const sv =
-            parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
-          if (sv >= SCROLL_V_MAX || reduceMotion()) tile.classList.add("mk-in", "mk-in-instant");
-          else tile.classList.add("mk-in");
-          io.unobserve(tile);
-        }
-      },
-      { threshold: 0.15 },
-    );
-    rows().forEach((t) => io.observe(t));
-    ac.signal.addEventListener("abort", () => io.disconnect());
+    armEntryAtPace(rows(), "mk-in", "mk-in-instant", ac.signal, { threshold: 0.15 });
   };
 
   // ── live data — the snapshot upgrades itself to a feed ─────────────────────
@@ -353,42 +337,35 @@ function initMarket(): () => void {
   };
 
   // ── controls ───────────────────────────────────────────────────────────────
-  weightBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        weight = (b.dataset.mkWeight as MarketWeight) || "cap";
-        page.dataset.weight = weight;
-        weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[weight];
-        reweight();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    weightBtns,
+    "mkWeight",
+    (v) => {
+      weight = (v as MarketWeight) || "cap";
+      page.dataset.weight = weight;
+      if (hint) hint.innerHTML = HINTS[weight];
+      reweight();
+    },
+    ac.signal,
   );
 
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.mkLens as MarketLens) || "24h";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
-        applyLens();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    lensBtns,
+    "mkLens",
+    (v) => {
+      lens = (v as MarketLens) || "24h";
+      page.dataset.lens = lens;
+      if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
+      applyLens();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -396,7 +373,7 @@ function initMarket(): () => void {
         activeField = null;
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   applyLens();
@@ -413,15 +390,4 @@ function initMarket(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-market") ? initMarket() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-market", initMarket);

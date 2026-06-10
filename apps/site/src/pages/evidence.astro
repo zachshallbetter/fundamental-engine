@@ -1,7 +1,10 @@
 ---
+import { logNormalize, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../components/examples/ExampleShell.astro";
 import CodeTabs from "../components/CodeTabs.astro";
 import evidence from "../data/evidence.json";
+import { categoryColors } from "../lib/palette.ts";
+import { fmtDate, fmtInt } from "../lib/fmt.ts";
 import "../styles/docs.css";
 
 // The Evidence Field — field-ui as an invisible measurement layer over real research data.
@@ -9,23 +12,17 @@ import "../styles/docs.css";
 // controls (Field on/off, Weight by) make the transformation legible — off, the same data is a
 // plain list; change the weighting and the field re-settles. data-* in, --field-* out.
 const slugify = (q: string) => q.replace(/[^a-z0-9]+/gi, "-").toLowerCase().replace(/^-|-$/g, "");
-// field-ui's force palette — used for the "field" (discipline) color lens.
-const FIELD_PALETTE = [
-  "#4da3ff", "#2dd4bf", "#ff9d5c", "#a78bfa",
-  "#86e57f", "#fbbf24", "#f0abfc", "#38bdf8",
-];
 const topics = evidence.topics.map((t) => {
-  const lmax = Math.log(Math.max(...t.works.map((w) => w.citedBy), 1) + 1);
+  const cmax = Math.max(...t.works.map((w) => w.citedBy));
   const ids = new Set(t.works.map((w) => w.id));
   // map each distinct research subfield to a palette color (the discipline lens).
-  const fieldColor = new Map<string, string>();
-  [...new Set(t.works.map((w) => w.topic).filter(Boolean))].forEach((tp, i) =>
-    fieldColor.set(tp!, FIELD_PALETTE[i % FIELD_PALETTE.length]!),
+  const fieldColor = categoryColors(
+    t.works.map((w) => w.topic).filter((tp): tp is string => Boolean(tp)),
   );
   const works = t.works
     .map((w) => ({
       ...w,
-      trust: Math.log(w.citedBy + 1) / lmax, // 0..1 consensus proxy (the default size signal)
+      trust: logNormalize(w.citedBy, cmax), // 0..1 consensus proxy (the default size signal)
       supports: w.refs.filter((r) => ids.has(r)), // intra-set citation edges → threads
       cat: (w.topic && fieldColor.get(w.topic)) || "#60a5fa", // default color lens = field/discipline
     }))
@@ -38,9 +35,7 @@ const linkFor = (w: { doi: string | null; id: string }) =>
 // the provenance chip's baseline: the snapshot date when the data carries one
 // (snapshot-examples.mjs stamps snapshotAt on refresh), the source name otherwise.
 const snapshotLabel = (evidence as { snapshotAt?: string }).snapshotAt
-  ? new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
-      new Date((evidence as { snapshotAt?: string }).snapshotAt!),
-    )
+  ? fmtDate((evidence as { snapshotAt?: string }).snapshotAt!)
   : "OpenAlex";
 
 // How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
@@ -219,7 +214,7 @@ fetch('https://api.openalex.org/works'
                 data-topic={w.topic ?? ""}
                 data-type={w.type}
                 data-field-color={w.cat}
-                data-strength={(0.4 + w.trust * 1.6).toFixed(2)}
+                data-strength={weightToStrength(w.trust).toFixed(2)}
                 data-range="200"
                 data-supports={w.supports.map((s) => `${t.slug}--${s}`).join(" ")}
                 style={`--trust:${w.trust.toFixed(3)}; --cat:${w.cat};`}
@@ -253,7 +248,7 @@ fetch('https://api.openalex.org/works'
                   </span>
                 </div>
                 <div class="ev-trust" aria-label={`${w.citedBy} citations`}>
-                  <span class="ev-cites">{w.citedBy.toLocaleString()}</span>
+                  <span class="ev-cites">{fmtInt(w.citedBy)}</span>
                   <span class="ev-cites-l" data-ev-unit>citations</span>
                   <span
                     class="ev-bar"

@@ -12,20 +12,14 @@
 //     count from api.npmjs.org and re-settles through the EXISTING reweight path. Once, not a
 //     poll: the figure is a weekly aggregate, so re-polling it would be theater. Failed rows
 //     keep their snapshot values; advisories and publish dates stay snapshot by design.
-// The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { recipeById } from "@field-ui/core";
-import { applyRecipe, withFlip } from "@field-ui/platform";
+// The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
+import { logNormalizeBetween, recipeById, weightToStrength } from "@field-ui/core";
+import { applyRecipe, threadOverlay, withFlip } from "@field-ui/platform";
+import { wireFieldToggle, wireSegments } from "../../lib/controls.ts";
 import { wireLiveChip, politeLoop } from "../../lib/live-data.ts";
+import { pageRuntime } from "../../lib/page-runtime.ts";
 
 type DepWeight = "downloads" | "freshness";
-
-const NS = "http://www.w3.org/2000/svg";
-
-function centerIn(el: HTMLElement, host: HTMLElement): { x: number; y: number } {
-  const r = el.getBoundingClientRect();
-  const h = host.getBoundingClientRect();
-  return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height / 2 };
-}
 
 const HINTS: Record<DepWeight, string> = {
   downloads:
@@ -34,9 +28,7 @@ const HINTS: Record<DepWeight, string> = {
     "<b>size</b> = publish recency — recently shipped packages pull; unreported dates hold a neutral weight",
 };
 
-function initDependencies(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-dependencies");
-  if (!page) return () => {};
+function initDependencies(page: HTMLElement): () => void {
   const ac = new AbortController();
   const zone = page.querySelector<HTMLElement>("[data-dp-zone]");
   const list = page.querySelector<HTMLElement>("[data-dp-list]");
@@ -57,10 +49,9 @@ function initDependencies(): () => void {
     let wFor: (r: HTMLElement) => number;
     if (weight === "downloads") {
       const dls = all.map((r) => Number(r.dataset.dl) || 0);
-      const lmin = Math.log(Math.min(...dls) + 1);
-      const lmax = Math.log(Math.max(...dls) + 1);
-      wFor = (r) =>
-        lmax > lmin ? (Math.log((Number(r.dataset.dl) || 0) + 1) - lmin) / (lmax - lmin) : 1;
+      const dlMin = Math.min(...dls);
+      const dlMax = Math.max(...dls);
+      wFor = (r) => logNormalizeBetween(Number(r.dataset.dl) || 0, dlMin, dlMax);
     } else {
       // freshness: linear over the reported publish dates; missing dates sit neutral at 0.5.
       const pubs = all.map((r) => (r.dataset.pub ? Number(r.dataset.pub) : null));
@@ -76,7 +67,7 @@ function initDependencies(): () => void {
     for (const r of all) {
       const w = wFor(r);
       r.style.setProperty("--w", w.toFixed(3));
-      r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      r.dataset.strength = weightToStrength(w).toFixed(2);
       const bar = r.querySelector<HTMLElement>(".ev-bar i");
       if (bar) bar.style.width = `${Math.round(w * 100)}%`;
     }
@@ -91,44 +82,36 @@ function initDependencies(): () => void {
   };
 
   // ── causality spill (hover) — one SVG overlay spans both zones ─────────────
+  // The SVG lifecycle, the bezier geometry, and the lit/cited marks are the platform's
+  // threadOverlay. The spill SEMANTICS stay here: --thread is set on the ZONE (the
+  // .dp-node lit/cited styles read it by inheritance, not just the paths), and the
+  // upstream-chain hover lights classes without drawing at all.
+  const threads = zone ? threadOverlay(zone, { className: "ev-threads" }) : null;
   const clearSpill = (): void => {
-    zone?.querySelector("svg.ev-threads")?.replaceChildren();
+    threads?.clear();
     zone?.style.removeProperty("--thread");
     rows().forEach((r) => r.classList.remove("lit"));
     nodes.forEach((n) => n.classList.remove("lit", "cited"));
   };
   const wireSpill = (): void => {
-    if (!zone) return;
-    let svg = zone.querySelector<SVGSVGElement>("svg.ev-threads");
-    if (!svg) {
-      svg = document.createElementNS(NS, "svg") as SVGSVGElement;
-      svg.setAttribute("class", "ev-threads");
-      svg.setAttribute("aria-hidden", "true");
-      zone.prepend(svg);
-    }
+    if (!zone || !threads) return;
     // hover a dep row → light it and thread to every workspace package it lands in.
     const spillDown = (from: HTMLElement): void => {
       if (!fieldOn) return;
-      const box = zone.getBoundingClientRect();
-      svg!.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
       // advisory-carrying deps thread red; clean ones in their --cat (same property —
-      // the page sets --cat red exactly when advisories exist).
+      // the page sets --cat red exactly when advisories exist). The variable lives on
+      // the zone so the cited NODES inherit it too; the overlay's paths fall through
+      // to it (no per-draw color is passed).
       zone.style.setProperty(
         "--thread",
         getComputedStyle(from).getPropertyValue("--cat").trim() || "var(--accent)",
       );
-      const a = centerIn(from, zone);
-      from.classList.add("lit");
-      let d = "";
-      for (const id of (from.dataset.uses || "").split(" ").filter(Boolean)) {
-        const t = zone.querySelector<HTMLElement>(`#${CSS.escape(id)}`);
-        if (!t) continue;
-        t.classList.add("cited");
-        const b = centerIn(t, zone);
-        const my = (a.y + b.y) / 2;
-        d += `<path d="M${a.x} ${a.y} C ${a.x} ${my}, ${b.x} ${my}, ${b.x} ${b.y}"/>`;
-      }
-      svg!.innerHTML = d;
+      const targets = (from.dataset.uses || "")
+        .split(" ")
+        .filter(Boolean)
+        .map((id) => zone.querySelector<HTMLElement>(`#${CSS.escape(id)}`))
+        .filter((t): t is HTMLElement => t !== null);
+      threads.draw(from, targets);
     };
     // hover a workspace node → light its full upstream chain (class highlights only).
     const spillUp = (from: HTMLElement): void => {
@@ -149,7 +132,7 @@ function initDependencies(): () => void {
     });
   };
 
-  // ── the invisible scoped field (render: []) ────────────────────────────────
+  // ── the invisible scoped field (renderless) ────────────────────────────────
   const runField = (): void => {
     activeField?.destroy();
     activeField = null;
@@ -157,17 +140,14 @@ function initDependencies(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain the attention lane, so the platform
+        // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center
         // proximity + visibility) back to every row and node.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        } as typeof base;
-        activeField = applyRecipe(zone, recipe, {
+        activeField = applyRecipe(zone, base, {
           bodies: [...rows(), ...nodes],
           annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
         });
       }
     } catch {
@@ -176,28 +156,23 @@ function initDependencies(): () => void {
   };
 
   // ── controls ────────────────────────────────────────────────────────────────
-  weightBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        weight = (b.dataset.dpWeight as DepWeight) || "downloads";
-        page.dataset.weight = weight;
-        weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[weight];
-        reweight();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    weightBtns,
+    "dpWeight",
+    (value) => {
+      weight = (value as DepWeight) || "downloads";
+      page.dataset.weight = weight;
+      if (hint) hint.innerHTML = HINTS[weight];
+      reweight();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -206,7 +181,7 @@ function initDependencies(): () => void {
         clearSpill();
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   // ── live downloads — the snapshot upgrades itself ONCE per visit ───────────
@@ -260,15 +235,4 @@ function initDependencies(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-dependencies") ? initDependencies() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-dependencies", initDependencies);

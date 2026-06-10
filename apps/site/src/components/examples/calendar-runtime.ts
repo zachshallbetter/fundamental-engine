@@ -17,9 +17,12 @@
 //     scoped field is destroyed. The countdowns keep ticking — they're data, not field.
 //   · Color by status / off — --cat encodes launch status, or steps aside entirely.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { imminence, recipeById } from "@field-ui/core";
+import { imminence, recipeById, weightToStrength } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 import calendar from "../../data/examples/calendar.json";
+import { pageRuntime } from "../../lib/page-runtime.ts";
+import { persisted } from "../../lib/persisted.ts";
+import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
 
 type CalendarView = "day" | "week" | "month";
 type CalendarLens = "status" | "off";
@@ -54,9 +57,21 @@ const LENS_HINTS: Record<CalendarLens, string> = {
   off: "<b>color</b> = off — imminence carries the whole signal",
 };
 
-const VIEW_KEY = "fui:cal-view";
 const VIEWS: readonly CalendarView[] = ["day", "week", "month"];
 const isView = (v: unknown): v is CalendarView => VIEWS.includes(v as CalendarView);
+
+// the view choice's storage slot — fui:cal-view, same key the page has always used. The
+// pre-persisted() format stored the bare view string ("week"), which isn't valid JSON; the
+// one-time shim below re-encodes it in place so existing visitors keep their choice.
+const viewStore = persisted<CalendarView>("cal-view", "week");
+const migrateBareViewValue = (): void => {
+  try {
+    const raw = localStorage.getItem("fui:cal-view");
+    if (raw != null && isView(raw)) localStorage.setItem("fui:cal-view", JSON.stringify(raw));
+  } catch {
+    /* storage unavailable — week stands */
+  }
+};
 
 const pad2 = (n: number): string => String(n).padStart(2, "0");
 const esc = (s: string): string =>
@@ -149,9 +164,7 @@ const compactLabel = (r: Rec, now: number): string => {
   return `T−${pad2(m)}m ${pad2(s % 60)}s`;
 };
 
-function initCalendar(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-calendar");
-  if (!page) return () => {};
+function initCalendar(page: HTMLElement): () => void {
   const ac = new AbortController();
   const zone = page.querySelector<HTMLElement>("[data-cal-zone]");
   const viewsRoot = page.querySelector<HTMLElement>("[data-cal-views]");
@@ -178,12 +191,9 @@ function initCalendar(): () => void {
   const urlView = new URLSearchParams(location.search).get("view");
   if (isView(urlView)) view = urlView;
   else {
-    try {
-      const stored = localStorage.getItem(VIEW_KEY);
-      if (isView(stored)) view = stored;
-    } catch {
-      /* private mode etc. — week stands */
-    }
+    migrateBareViewValue();
+    const stored = viewStore.get();
+    if (isView(stored)) view = stored;
   }
 
   // day view selection: default = the day of the next upcoming launch (else the last day).
@@ -202,7 +212,7 @@ function initCalendar(): () => void {
     const w = weightOf(r, now);
     return (
       `data-body="attract" data-feedback data-hot data-range="${range}"` +
-      ` data-strength="${(0.4 + w * 1.6).toFixed(2)}" data-id="${esc(r.id)}"` +
+      ` data-strength="${weightToStrength(w).toFixed(2)}" data-id="${esc(r.id)}"` +
       ` data-net="${esc(r.net)}" data-status="${esc(r.status)}"` +
       (isPassed(r, now) ? " data-passed" : "") +
       (heroId && r.id === heroId ? " data-next" : "") +
@@ -405,11 +415,7 @@ function initCalendar(): () => void {
     if (v === view) return;
     view = v;
     viewBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.calView === v)));
-    try {
-      localStorage.setItem(VIEW_KEY, v);
-    } catch {
-      /* storage may be unavailable — the URL still carries the choice */
-    }
+    viewStore.set(v); // storage may be unavailable — the URL still carries the choice
     const url = new URL(location.href);
     url.searchParams.set("view", v);
     history.replaceState(history.state, "", url);
@@ -433,7 +439,7 @@ function initCalendar(): () => void {
         if (heroCount) heroCount.textContent = "T− ——:——:——";
       }
       hero.style.setProperty("--w", W_FLOOR.toFixed(3));
-      hero.dataset.strength = (0.4 + W_FLOOR * 1.6).toFixed(2);
+      hero.dataset.strength = weightToStrength(W_FLOOR).toFixed(2);
       return;
     }
     heroId = pick.id;
@@ -457,7 +463,7 @@ function initCalendar(): () => void {
     // weight + the centerpiece countdown, every second.
     const w = weightOf(pick, now);
     hero.style.setProperty("--w", w.toFixed(3));
-    hero.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+    hero.dataset.strength = weightToStrength(w).toFixed(2);
     if (heroCount) {
       const label = fullLabel(pick, now);
       if (heroCount.textContent !== label) heroCount.textContent = label;
@@ -480,7 +486,7 @@ function initCalendar(): () => void {
       if (!r) continue;
       const w = weightOf(r, now);
       el.style.setProperty("--w", w.toFixed(3));
-      el.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      el.dataset.strength = weightToStrength(w).toFixed(2);
       el.toggleAttribute("data-next", r.id === heroId);
       el.toggleAttribute("data-passed", isPassed(r, now));
       const c = el.querySelector<HTMLElement>("[data-cal-count]");
@@ -512,19 +518,19 @@ function initCalendar(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] keeps the field invisible; the extra "attention" metric asks the
+        // renderless keeps the field invisible; the extra "attention" metric asks the
         // platform pipeline to write --field-attention per card (an eased 0..1 blend of
         // engagement, viewport-center proximity, and visibility) — read by the ink CSS.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        } as typeof base;
         const bodies = viewsRoot
           ? [...viewsRoot.querySelectorAll<HTMLElement>("[data-body]")]
           : [];
         if (hero) bodies.push(hero);
-        activeField = applyRecipe(zone, recipe, { bodies, annotateBodies: false });
+        activeField = applyRecipe(zone, base, {
+          bodies,
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -532,40 +538,33 @@ function initCalendar(): () => void {
   };
 
   // ── controls ───────────────────────────────────────────────────────────────
-  viewBtns.forEach((b) => {
-    b.setAttribute("aria-pressed", String(b.dataset.calView === view));
-    b.addEventListener(
-      "click",
-      () => {
-        const v = b.dataset.calView;
-        if (isView(v)) setView(v);
-      },
-      { signal: ac.signal },
-    );
-  });
-
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.calLens as CalendarLens) || "status";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
-        applyLens();
-      },
-      { signal: ac.signal },
-    ),
+  viewBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.calView === view)));
+  wireSegments(
+    viewBtns,
+    "calView",
+    (v) => {
+      if (isView(v)) setView(v);
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireSegments(
+    lensBtns,
+    "calLens",
+    (v) => {
+      lens = (v as CalendarLens) || "status";
+      page.dataset.lens = lens;
+      if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
+      applyLens();
+    },
+    ac.signal,
+  );
+
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -573,7 +572,7 @@ function initCalendar(): () => void {
         activeField = null;
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   passedSig = records.reduce((n, r) => n + (isPassed(r, Date.now()) ? 1 : 0), 0);
@@ -590,15 +589,4 @@ function initCalendar(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-calendar") ? initCalendar() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-calendar", initCalendar);

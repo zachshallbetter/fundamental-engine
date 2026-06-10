@@ -11,10 +11,13 @@
 //     the fresh counts back through the ACTIVE weight lens and FLIP re-sorts (the existing
 //     reweight path, verbatim). Books missing from the fresh result keep their snapshot
 //     values, silently. Any failure keeps the snapshot.
-// The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { recipeById } from "@field-ui/core";
+// The scoped field runs render-less (applyRecipe renderless) — bodies compute (metrics flow) but nothing is drawn.
+import { logNormalize, recipeById, weightToStrength } from "@field-ui/core";
 import { applyRecipe, withFlip } from "@field-ui/platform";
+import { wireFieldToggle, wireSegments } from "../../lib/controls";
+import { fmtInt } from "../../lib/fmt";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
+import { pageRuntime } from "../../lib/page-runtime";
 
 type Signal = "consensus" | "anticipation" | "longevity";
 type Lens = "subject" | "off";
@@ -32,8 +35,6 @@ interface OlDoc {
   edition_count?: number;
 }
 
-const fmtCount = (n: number): string => n.toLocaleString("en-US");
-
 const HINTS: Record<Signal, string> = {
   consensus: "<b>size</b> = ratings — the evidence trust math, retargeted at the shelf",
   anticipation: "<b>size</b> = want-to-read — forward demand on the shelf",
@@ -44,9 +45,7 @@ const LENS_HINTS: Record<Lens, string> = {
   off: "<b>color</b> = off — size carries the whole signal",
 };
 
-function initCatalog(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-catalog");
-  if (!page) return () => {};
+function initCatalog(page: HTMLElement): () => void {
   const ac = new AbortController();
   const grid = page.querySelector<HTMLElement>("[data-cat-grid]");
   const fieldBtn = page.querySelector<HTMLButtonElement>("[data-cat-field]");
@@ -72,7 +71,7 @@ function initCatalog(): () => void {
     cards.map((c) => [c, new Set((subjectsOf.get(c) || []).map(norm))]),
   );
 
-  // ── weighting — the evidence formula, retargeted ─────────────────────────
+  // ── weighting — the evidence formula (core's logNormalize), retargeted ────
   const weightOf = (
     card: HTMLElement,
     s: Signal,
@@ -81,22 +80,22 @@ function initCatalog(): () => void {
     const ratings = Number(card.dataset.ratings) || 0;
     const want = Number(card.dataset.want) || 0;
     const editions = Number(card.dataset.editions) || 0;
-    if (s === "consensus") return Math.log(ratings + 1) / st.rmax; // IDENTICAL to /evidence
-    if (s === "anticipation") return Math.log(want + 1) / st.wmax;
-    return Math.log(editions + 1) / st.emax;
+    if (s === "consensus") return logNormalize(ratings, st.rmax); // IDENTICAL to /evidence
+    if (s === "anticipation") return logNormalize(want, st.wmax);
+    return logNormalize(editions, st.emax);
   };
 
   const reweight = (): void => {
     const st = {
-      rmax: Math.log(Math.max(...cards.map((c) => Number(c.dataset.ratings) || 0), 1) + 1),
-      wmax: Math.log(Math.max(...cards.map((c) => Number(c.dataset.want) || 0), 1) + 1),
-      emax: Math.log(Math.max(...cards.map((c) => Number(c.dataset.editions) || 0), 1) + 1),
+      rmax: Math.max(...cards.map((c) => Number(c.dataset.ratings) || 0)),
+      wmax: Math.max(...cards.map((c) => Number(c.dataset.want) || 0)),
+      emax: Math.max(...cards.map((c) => Number(c.dataset.editions) || 0)),
     };
     // 1) set the new weight on every book (drives --w + the scoped field's pull)
     for (const card of cards) {
       const w = weightOf(card, signal, st);
       card.style.setProperty("--w", w.toFixed(3));
-      card.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      card.dataset.strength = weightToStrength(w).toFixed(2);
     }
     // 2) re-sort the grid cells by weight, FLIP-animating the reflow (both axes)
     const wOf = (cell: HTMLElement): number =>
@@ -123,7 +122,7 @@ function initCatalog(): () => void {
     }
   };
 
-  // ── the invisible scoped field (render: []) ──────────────────────────────
+  // ── the invisible scoped field (renderless) ──────────────────────────────
   const runField = (): void => {
     activeField?.destroy();
     activeField = null;
@@ -131,15 +130,15 @@ function initCatalog(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain the attention lane, so the platform
+        // renderless — invisible; metrics gain the attention lane, so the platform
         // pipeline writes an eased --field-attention (hover/focus + viewport-center
         // proximity + visibility) back to every card.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        } as typeof base;
-        activeField = applyRecipe(grid, recipe, { bodies: cards, annotateBodies: false });
+        activeField = applyRecipe(grid, base, {
+          bodies: cards,
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -230,12 +229,12 @@ function initCatalog(): () => void {
       if (typeof d.ratings_count === "number") {
         card.dataset.ratings = String(d.ratings_count);
         const ratings = card.querySelector<HTMLElement>(".cat-ratings");
-        if (ratings) ratings.textContent = `${fmtCount(d.ratings_count)} ratings`;
+        if (ratings) ratings.textContent = `${fmtInt(d.ratings_count)} ratings`;
         const label = card.getAttribute("aria-label");
         if (label)
           card.setAttribute(
             "aria-label",
-            label.replace(/[\d,]+ ratings\./, `${fmtCount(d.ratings_count)} ratings.`),
+            label.replace(/[\d,]+ ratings\./, `${fmtInt(d.ratings_count)} ratings.`),
           );
       }
       if (typeof d.ratings_average === "number") {
@@ -248,7 +247,7 @@ function initCatalog(): () => void {
       if (typeof d.want_to_read_count === "number") {
         card.dataset.want = String(d.want_to_read_count);
         const want = card.querySelector<HTMLElement>(".cat-want");
-        if (want) want.textContent = `${fmtCount(d.want_to_read_count)} want to read`;
+        if (want) want.textContent = `${fmtInt(d.want_to_read_count)} want to read`;
       }
       if (typeof d.edition_count === "number") {
         card.dataset.editions = String(d.edition_count);
@@ -281,43 +280,36 @@ function initCatalog(): () => void {
   });
 
   // ── controls ─────────────────────────────────────────────────────────────
-  weightBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        signal = (b.dataset.catWeight as Signal) || "consensus";
-        page.dataset.weight = signal;
-        weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[signal];
-        clearAffinity();
-        reweight();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    weightBtns,
+    "catWeight",
+    (value) => {
+      signal = (value as Signal) || "consensus";
+      page.dataset.weight = signal;
+      if (hint) hint.innerHTML = HINTS[signal];
+      clearAffinity();
+      reweight();
+    },
+    ac.signal,
   );
 
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.catLens as Lens) || "subject";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
-        applyLens();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    lensBtns,
+    "catLens",
+    (value) => {
+      lens = (value as Lens) || "subject";
+      page.dataset.lens = lens;
+      if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
+      applyLens();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -326,7 +318,7 @@ function initCatalog(): () => void {
         clearAffinity();
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   reweight();
@@ -341,15 +333,4 @@ function initCatalog(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-catalog") ? initCatalog() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-catalog", initCatalog);

@@ -3,7 +3,23 @@
 // CodeTabs instance on the page, persists across pages (localStorage), and reflects
 // into the URL (?code=react) so the choice is shareable / deep-linkable.
 
-const KEY = "fieldui-code-tab";
+import { persisted } from "./persisted";
+
+const LEGACY_KEY = "fieldui-code-tab";
+const tabPref = persisted<string | null>("code-tab", null, { legacyKeys: [LEGACY_KEY] });
+// The legacy slot stored a RAW slug string (pre-JSON helper), which the helper's JSON-based
+// legacy migration can't parse — migrate it by hand, once, so returning visitors keep their
+// framework choice. Idempotent: the legacy key is removed either way.
+function migrateLegacyTab(): void {
+  try {
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy === null) return;
+    if (localStorage.getItem("fui:code-tab") === null && isFrameworkTab(legacy)) tabPref.set(legacy);
+    localStorage.removeItem(LEGACY_KEY);
+  } catch {
+    /* storage unavailable — the in-page sync still works */
+  }
+}
 
 /** Only the framework choice is sticky/shareable — language tabs (ts/html/css) stay per-page. */
 const FRAMEWORKS = new Set(["vanilla", "web-component", "react"]);
@@ -36,11 +52,8 @@ export function applyCodeTab(slug: string): number {
 /** Persist a chosen framework tab and reflect it into the URL without a history entry. */
 export function rememberCodeTab(slug: string): void {
   if (!isFrameworkTab(slug)) return;
-  try {
-    localStorage.setItem(KEY, slug);
-  } catch {
-    /* private mode — the in-page sync still works */
-  }
+  migrateLegacyTab();
+  tabPref.set(slug);
   const url = new URL(location.href);
   url.searchParams.set("code", slug);
   history.replaceState(history.state, "", url);
@@ -48,14 +61,8 @@ export function rememberCodeTab(slug: string): void {
 
 /** On page load: restore from ?code= (shareable link wins) or the persisted choice. */
 export function restoreCodeTab(): void {
-  let slug = new URL(location.href).searchParams.get("code");
-  if (!slug) {
-    try {
-      slug = localStorage.getItem(KEY);
-    } catch {
-      /* ignore */
-    }
-  }
+  migrateLegacyTab();
+  const slug = new URL(location.href).searchParams.get("code") ?? tabPref.get();
   if (!slug) return;
   const s = slugifyLabel(slug);
   if (isFrameworkTab(s)) applyCodeTab(s);
