@@ -83,7 +83,11 @@ report of the phases that ran and any violations.
 3. **FeedbackRegistry** — the write phase. Turns held state into CSS custom properties (continuous)
    and thresholded, debounced events (discrete, with hysteresis). Mirrors `--field-*` → `--forces-*`
    and `field:*` → `forces:*` during the alias window. Do not let other modules write CSS variables
-   directly.
+   directly. `cssWritesLastFrame()` reports the actual `style.setProperty` calls made during the
+   last `flush()` — a mirrored `--field-*`/`--forces-*` pair counts as 2 — which is the real
+   per-frame DOM write cost (off-screen elements with active bindings still generate mutations).
+   It is distinct from `boundVars().length`, which counts registrations, not writes; the
+   DataConsole's write-cost metric reads it.
 4. **RelationshipRegistry** — the DOM is a tree, but interfaces are graphs. Normalizes the
    relationships HTML/ARIA already express (`a[href#id]`, `label[for]`, `aria-controls` /
    `-describedby` / `-labelledby` / `-flowto`, `data-field-relation` / `-target`) into one typed
@@ -146,6 +150,47 @@ scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM 
 to `@field-ui/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
 source file in `field-ui` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
+
+## Attaching the engine handle
+
+The platform runtime starts before the engine handle exists: `startPlatformRuntime(root)` begins
+scheduling as soon as `<field-root>` connects, while `createField()` runs later in the element's
+start path. `PlatformRuntime.attachHandle(handle)` (`packages/elements/src/platform-runtime.ts`)
+wires the two post-hoc. Once a handle is attached:
+
+- The **write phase** writes `--field-scroll-v` — the handle's eased scroll velocity,
+  `scrollV()`, formatted to three decimals — to `:root` each frame, deduped when the value is
+  unchanged so idle frames stay mutation-free. It is written directly, **not** through
+  FeedbackRegistry: it is a page-global, not a per-body channel, so it does not count toward
+  `cssWritesLastFrame()`.
+- The **QualityGovernor** begins monitoring frame spacing (the governor is reset on attach, so
+  detection starts from full quality).
+
+## The QualityGovernor
+
+`QualityGovernor` (`packages/platform/src/governor.ts`) detects sustained frame-budget overruns
+and emits a coarse tier signal. The split is deliberate: the governor detects, the caller
+responds.
+
+| Tier | Meaning | Escalates after |
+|---|---|---|
+| 0 | full quality (default) | — |
+| 1 | effects reduced | 10 consecutive frames > 20 ms |
+| 2 | minimal | 5 consecutive frames > 33 ms |
+| 3 | paused | 3 consecutive frames > 50 ms |
+
+Recovery is asymmetric to avoid thrashing at the boundary: dropping back down requires **30
+consecutive clean frames per tier step**. `reset()` returns to tier 0 and clears both streaks.
+
+The `<field-root>` runtime feeds the governor rAF-to-rAF spacing, skips discontinuity frames
+(gaps > 500 ms — background tabs, system sleep, debugger pauses — are timing artifacts, not
+budget overruns), resets it on `visibilitychange`, and dispatches a `field:quality-tier`
+CustomEvent (bubbles, composed, `detail: { tier, durationMs }`) from the scan root whenever the
+tier changes. One consumer is built in: at tier 2 the platform tick — measurement, feedback
+writes, relationship discovery — runs every 2nd frame, at tier 3 every 4th. The engine keeps
+simulating at full rate; only the platform's DOM read/write cadence drops. Engine-side responses
+(render simplification, particle caps) are the embedder's to wire via the event — that surface is
+unfrozen/experimental.
 
 ## Reading Field
 

@@ -621,6 +621,7 @@ read-only access to engine state that would otherwise require a reference to int
 |---|---|---|
 | `particleCount()` | `number` | Live size of the particle pool (`store.size`). Use for budget monitors that need the count without walking the array. |
 | `energy()` | `{ kinetic, thermal, total, count }` | Per-frame energy snapshot. Forwards to `energyReport(store.particles)` from `@field-ui/core/diagnostics/energy`. |
+| `scrollV()` | `number` | The engine's eased page-scroll velocity — the same EMA the `scrolling` condition gate (§5) reads: `(prev × 0.7) + (\|Δscroll\| × 0.3)` per frame. Units are **px/frame at the display refresh rate** — refresh-rate dependent (roughly half on a 120 Hz display; a px/ms normalization may replace the unit before 1.0 — the surface is experimental). The platform runtime mirrors it to `--field-scroll-v` on `:root` each frame. Pull-based: read on demand, do not poll in tight loops. |
 
 > **Encapsulation note.** `store.particles` (the internal `Particle[]`) is not exposed — only
 > computed summaries are. External tools must not hold a reference to the particle array between
@@ -631,6 +632,26 @@ read-only access to engine state that would otherwise require a reference to int
 | Method | Description |
 |---|---|
 | `destroy()` | Stop the loop and release all listeners. |
+
+### 13.7 Element visibility — `setVisible(on)` (experimental)
+
+| Method | Description |
+|---|---|
+| `setVisible(on)` | Element-level visibility hint. `setVisible(false)` skips **all** draw work each frame — the underlay render and the overlay surface, usually the dominant frame cost — while the simulation and its feedback signals stay live: `scrollV()`, `--d`, `--load`, and capture events keep flowing. |
+
+Distinct from the **tab-level** pause: the host's `visibilitychange` already stops the loop
+entirely when the tab is backgrounded; `setVisible` is for a canvas that is hidden or offscreen
+(`display: none`, scrolled out) while the page stays active. `<field-root>` wires it
+automatically from an IntersectionObserver on the host element (the host is `position:fixed
+inset:0`, so not-intersecting means hidden or zero-sized), and an engine rebuild (density / waves
+/ mass change) re-applies the last observed state so a hidden field stays draw-skipped. Related
+cost control: under `prefers-reduced-motion` the scene is static (`dt = 0`), so a visible canvas
+redraws at quarter rate — visually identical at a quarter of the cost.
+
+A simulation that runs with no drawn surface at all — feedback variables styled by author CSS as
+the only output — is the **invisible-fields** pattern; see
+`docs/canonical/field-ui-invisible-fields.md` for the placement taxonomy and the two-field page
+architecture this enables.
 
 ---
 

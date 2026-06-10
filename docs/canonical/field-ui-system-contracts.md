@@ -236,6 +236,19 @@ Suggested CSS variables (canonical `--field-*`; the `--forces-*` names are legac
 --field-pull-y
 ```
 
+Two shipped per-body variables sit outside this metric list: `--load` (sink accretion fill, with
+`--mass` as the back-compat alias) and `--lit` (continuous engagement, paired with the
+`field:lit`/`field:dim` thresholded events). One shipped **page-global** variable lives on
+`:root`, not on bodies: `--field-scroll-v`, the engine's eased scroll velocity (px/frame),
+written by the platform write phase and deduped when unchanged.
+
+**Engagement inputs** are part of this contract. The engine wires hover/focus engagement on
+`[data-hot]` elements at scan time (engaging one activates its body and gathers density — its
+`--d` rises). The platform metric pipeline reads `engaged` as
+`:hover | :focus | :focus-within | [data-active]` — setting `data-active` programmatically is
+the sanctioned way to mark an element "in hand" (a dragged card, a just-changed status). See
+[field-ui-invisible-fields.md](field-ui-invisible-fields.md) §3.
+
 ElementAgents should not directly mutate particle state unless they are also registered bodies.
 
 ## 7. RelationshipAgent Contract
