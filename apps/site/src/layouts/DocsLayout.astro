@@ -25,10 +25,21 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
 <Base title={title} description={description}>
   <SiteNav current="docs" />
   <div class="docs-shell">
-    <aside class="docs-sidebar" aria-label="Docs navigation">
-      <button class="docs-side-toggle" aria-expanded="false" aria-controls="docsSide">
-        Menu
-      </button>
+    <aside class="docs-sidebar" aria-label="Docs navigation" data-pagefind-ignore>
+      <div class="docs-side-head">
+        <button class="docs-side-toggle" aria-expanded="false" aria-controls="docsSide">
+          Menu
+        </button>
+        <button
+          class="docs-search-btn"
+          type="button"
+          data-docs-search-open
+          aria-keyshortcuts="Meta+K Control+K /"
+        >
+          <span>Search</span>
+          <kbd aria-hidden="true">⌘K</kbd>
+        </button>
+      </div>
       <nav id="docsSide">
         {
           groups.map((g) => (
@@ -37,8 +48,13 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
               <ul>
                 {g.items.map((i) => (
                   <li>
-                    <a href={i.href} aria-current={i.href === path ? 'page' : undefined}>
+                    <a
+                      href={i.href}
+                      class={i.external ? 'ext' : undefined}
+                      aria-current={i.href === path ? 'page' : undefined}
+                    >
                       {i.label}
+                      {i.external && <span class="ext-mark" aria-hidden="true">↗</span>}
                     </a>
                   </li>
                 ))}
@@ -47,11 +63,25 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
           ))
         }
       </nav>
+      <div class="docs-side-foot">
+        <!-- the docs-field toggle — the runtime restores the persisted choice, wires the
+             click, and keeps main[data-field-docs] honest (off under reduced motion). -->
+        <button
+          class="docs-field-toggle"
+          type="button"
+          role="switch"
+          aria-checked="true"
+          data-docs-field-toggle
+        >
+          <span class="dft-label">docs field</span>
+          <span class="dft-state" data-docs-field-state>on</span>
+        </button>
+      </div>
     </aside>
 
-    <main class="docs-content">
+    <main class="docs-content" data-pagefind-body>
       <slot />
-      <nav class="docs-prevnext" aria-label="Pagination">
+      <nav class="docs-prevnext" aria-label="Pagination" data-pagefind-ignore>
         {
           prev ? (
             <a class="pn prev" href={prev.href}>
@@ -73,12 +103,54 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
       </nav>
     </main>
 
-    <aside class="docs-toc" aria-label="On this page">
+    <aside class="docs-toc" aria-label="On this page" data-pagefind-ignore>
       <span class="docs-toc-title">On this page</span>
       <nav id="docsToc"></nav>
+      <div class="docs-toc-foot">
+        <!-- reference integrity, self-measured (DocsRuntime): the page's own internal
+             anchors, verified at init — the honest-data chip pattern from the examples. -->
+        <span class="docs-integrity" data-docs-integrity role="status" hidden></span>
+      </div>
     </aside>
   </div>
   <SiteFooter />
+
+  <!-- search — Pagefind over the docs content (data-pagefind-body above), custom UI on
+       ds-tokens. The runtime imports /pagefind/pagefind.js lazily on first open; in dev
+       (no built index) the dialog says so instead of pretending. -->
+  <dialog class="docs-search" aria-label="Search documentation" data-docs-search>
+    <div class="ds-head">
+      <input
+        type="search"
+        placeholder="Search the docs…"
+        aria-label="Search the docs"
+        autocomplete="off"
+        spellcheck="false"
+        role="combobox"
+        aria-expanded="true"
+        aria-controls="dsResults"
+        data-docs-search-input
+      />
+      <button type="button" class="ds-close" data-docs-search-close aria-label="Close search">
+        esc
+      </button>
+    </div>
+    <div class="ds-status" data-docs-search-status aria-live="polite"></div>
+    <div
+      class="ds-results"
+      id="dsResults"
+      role="listbox"
+      aria-label="Search results"
+      data-docs-search-results
+    >
+    </div>
+  </dialog>
+
+  <script>
+    // the docs shell runtime: invisible page field over the headings, the attention TOC,
+    // reference integrity, search, and the persisted docs-field toggle.
+    import '../components/DocsRuntime.ts';
+  </script>
 
   <script is:inline data-astro-rerun>
     (() => {
@@ -145,7 +217,7 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
           links.push({ a, h });
         }
         if (links.length < 2) toc.closest('.docs-toc').style.visibility = 'hidden';
-        // scroll-spy
+        // scroll-spy — the discrete signal; the live --att (DocsRuntime) is the continuous one
         const spy = () => {
           let cur = links[0];
           for (const l of links) {
@@ -170,13 +242,14 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
       // The docs' own chrome participates in the field (the field-reacts law).
       // Curated: prominent buttons become `wall` bodies (the field bounces off
       // their box); prominent text becomes `shear` bodies (currents flow along
-      // their edges). Tag, then rescan so the persisted field picks them up.
+      // their edges). The content headings are NOT tagged here — DocsRuntime owns
+      // them (attract bodies + the scoped attention pipeline, gated by the toggle).
       const tagBodies = (sel, force) =>
         document.querySelectorAll(sel).forEach((el) => {
           if (!el.hasAttribute('data-body')) el.setAttribute('data-body', force);
         });
       tagBodies('.next-card, .install, .see-also a, .docs-prevnext .pn', 'wall');
-      tagBodies('.docs-hero .lede, .docs-content h2', 'shear');
+      tagBodies('.docs-hero .lede', 'shear');
       const taggedField = document.querySelector('field-root');
       if (taggedField && taggedField.rescan) taggedField.rescan();
     })();

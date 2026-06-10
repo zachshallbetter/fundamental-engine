@@ -1,0 +1,101 @@
+# field-ui
+
+> field-ui is a platform-native relational field runtime for the DOM. The core (`@field-ui/core`)
+> computes renderer-agnostic field behavior; `@field-ui/platform` binds field behavior to the DOM
+> through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
+> scheduling; `@field-ui/elements` exposes native HTML and web-component authoring; `@field-ui/react`
+> adapts the same contracts for React. Canvas is one render surface, not the whole system.
+
+Every element can become a body in an invisible physics field via the `data-body` attribute:
+bodies bend the field, and the field's local density bends them back (reciprocity, returned as
+CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
+additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
+render from the same file. Generated 2026-06-10 by apps/site/scripts/gen-llms.mjs.
+
+## Docs
+
+- [Start here — Overview](https://field-ui.com/docs): the documentation map — install, the IA, the examples, and the agent endpoints
+- [Start here — Your first field](https://field-ui.com/docs/tutorial): step-by-step: npm install to a glowing, reacting headline
+- [Start here — Web component](https://field-ui.com/docs/guides/web-component): the <field-root> element in any framework or plain HTML
+- [Start here — TypeScript](https://field-ui.com/docs/guides/typescript): the typed FieldField class from @field-ui/vanilla — no framework, no custom-element registration
+- [Start here — React](https://field-ui.com/docs/guides/react): the <FieldField> component and the useFieldField hook
+- [Start here — Core engine](https://field-ui.com/docs/guides/core): createField on a canvas you own, with an injected host
+- [Concepts — Concepts](https://field-ui.com/docs/concepts): the mental model — bodies, the shared field context, reciprocity, the vocabulary lanes
+- [Concepts — Natural fields](https://field-ui.com/docs/natural-fields): the Natural Field Translation System: gravity → priority, EM → polarity/signal, strong → binding, weak → transformation
+- [Concepts — Narrative walkthrough](https://field-ui.com/docs/narrative): one ordinary element revealed as a field participant, layer by layer
+- [Concepts — Reading Field](https://field-ui.com/docs/reading-field): the flagship platform demo — a content page that measures attention and remembers it
+- [Build — Authoring across surfaces](https://field-ui.com/docs/authoring): three authoring surfaces, one [data-body] contract
+- [Build — Recipe model](https://field-ui.com/docs/recipes): the FieldRecipe model — tokens, concepts, metrics, diagnostics, and conditions in separate lanes
+- [Build — Platform layer](https://field-ui.com/docs/platform): the DOM participation layer — six registries on the six-phase frame scheduler, plus lintPlatform()
+- [Build — Performance](https://field-ui.com/docs/performance): the scheduler, the integrator hot path, density, and backgrounded-tab behavior
+- [Build — Accessibility](https://field-ui.com/docs/accessibility): decorative-by-default render layers, reduced motion without loss of meaning
+- [Build — Troubleshooting](https://field-ui.com/docs/troubleshooting): common gotchas — rescan, reduced motion, canvas clicks, --d not updating
+- [Reference — Overview](https://field-ui.com/docs/api): the complete API surface, generated from the engine catalog
+- [Reference — createField](https://field-ui.com/docs/api/options): createField(canvas, opts) and every FieldOptions field with types and defaults
+- [Reference — FieldHandle](https://field-ui.com/docs/api/handle): the FieldHandle every entry point returns — all runtime methods
+- [Reference — Attributes](https://field-ui.com/docs/api/attributes): every data-* attribute a body reads, plus the CSS variables the field writes back
+- [Reference — Metrics](https://field-ui.com/docs/api/metrics): every --field-* custom property the field writes back — ranges, cadence, and when to use each
+- [Reference — Types](https://field-ui.com/docs/api/types): the exported TypeScript contracts, core and platform
+- [Reference — API stability](https://field-ui.com/docs/api/stability): the frozen 0.x surface and compatibility rules — rendered from the same data CI enforces
+- [Reference — Forces](https://field-ui.com/docs/api/forces): all 35 forces: per-frame law, attributes read, and an example each
+- [Reference — Presets](https://field-ui.com/docs/api/presets): composites (blackhole, galaxy, tornado, …) that expand to primitive bodies
+- [Reference — Conditions & formations](https://field-ui.com/docs/api/catalog): conditions, formations, render modes, and palettes — the orthogonal axes
+- [Field studies — Reading Field Study](https://field-ui.com/docs/studies/reading-field): a long-form article reinterpreted as a field (attention + memory + citations)
+- [Field studies — Review Field Study](https://field-ui.com/docs/studies/review-field): a pull request as a field — file heat, reviewer constellation, comment binding
+- [Field studies — Search Field Study](https://field-ui.com/docs/studies/search-field): search results as a trust gradient with contradiction polarity
+- [Field studies — System Weather Study](https://field-ui.com/docs/studies/system-weather): a metrics dashboard as weather — heat, pressure, anomalies
+- [Field studies — Evidence Field Study](https://field-ui.com/docs/studies/evidence-field): claims, sources, and contradiction edges as a deterministic field
+- [Field studies — Visual Binding Study](https://field-ui.com/docs/studies/visual-binding): an expressive SVG bound to its semantic source via data-field-visual-for
+- [Field studies — Showcase](https://field-ui.com/docs/showcase): live examples driven by the real field, paired with copy-paste source
+- [Field studies — Diagnostic overlays](https://field-ui.com/docs/diagnostics): the diagnostic render overlays: contours, potential, topology, causality, prediction
+- [Field studies — Inspector](https://field-ui.com/docs/inspector): the live system report and --field-density readback panel
+- [Field studies — Snapshot viewer](https://field-ui.com/docs/snapshots): deterministic per-force fingerprints — the physics-drift regression baseline
+- [Field studies — Accessibility preview](https://field-ui.com/docs/accessibility-preview): the animated field and its static fallback, side by side
+
+## Canon
+
+The canonical documents are the project's authority on concepts, terminology, and contracts.
+They live in the repository, not on the site:
+
+- [Canonical documentation map](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/README.md): The documentation map for docs/canonical/ — one line per document and its role.
+- [Field Agent Consumption Model](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-agent-consumption-model.md): The Field Agent Consumption Model: the unified account of what a force acts on and how each target consumes the influence.
+- [field-ui API stability](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-api-stability.md): This document defines the frozen public API surface for field-ui 0.x and the compatibility rules that govern it: what is stable, what is experimental, how versions move, and how the alias window works.
+- [field-ui Authoring and Recipes](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-authoring-and-recipes.md): Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules.
+- [field-ui Definition Document](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-definition-document.md): The canonical concept and operating model.
+- [field-ui documentation standards](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-documentation-standards.md): This document governs how field-ui is described across the docs, the site, and the Lab: the canonical architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the "verify against…
+- [field-ui Interaction and Relationship Model](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
+- [field-ui Invisible Fields](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-invisible-fields.md): The invisible-fields pattern: running the field with no drawn surface at all, so its measurements come back as typography, ink, and anchor.
+- [Natural Fields](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-natural-fields.md): This document defines the Natural Field Translation System — how field-ui translates the four fundamental fields into interface behavior.
+- [field-ui platform architecture](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-platform-architecture.md): This document defines the current @field-ui/platform architecture as of the runtime-platform unification phase (Phase D): the FrameScheduler, the six registries, lintPlatform(), the live <field-root> runtime, and the…
+- [field-ui System Contracts](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-system-contracts.md): Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform.
+- [field-ui Testing and Conformance](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-testing-and-conformance.md): The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage.
+- [field-ui Visual Language and Geometry System](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-visual-language-and-geometry.md): Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics.
+- [Fundamental Field Behavior Table for field-ui](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
+- [Visualization Methods Taxonomy for field-ui](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/visualization-methods-taxonomy.md): Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction.
+
+## Examples
+
+The invisible-field example family — twelve ordinary page types running as fields over real
+data, with no particle swarm; each ships a committed data snapshot and upgrades itself to live
+counts when its source is reachable:
+
+- [Evidence](https://field-ui.com/evidence): citations are mass — trust you can feel in the type
+- [Inbox](https://field-ui.com/evidence/inbox): urgency is mass; attention is one finite budget; old asks decay toward quiet
+- [Market](https://field-ui.com/evidence/market): market cap is mass; the day's move polarizes; correlated assets thread
+- [Backlog](https://field-ui.com/evidence/backlog): priority is mass; references bind; the cycle is a sink with capacity
+- [Calendar](https://field-ui.com/evidence/calendar): the next launch pulls hardest; imminence ramps the weight in real time
+- [Threads](https://field-ui.com/evidence/threads): votes are mass; controversy is charge; reply chains bind and heat
+- [Dependencies](https://field-ui.com/evidence/dependencies): downloads are mass; staleness decays; one advisory charges the graph
+- [Fleet](https://field-ui.com/evidence/fleet): services carry traffic; incidents accrete their updates; impact is heat
+- [Catalog](https://field-ui.com/evidence/catalog): review consensus is mass — the evidence trust math, retargeted at a shelf
+- [Library](https://field-ui.com/evidence/library): listens are mass; the queue accretes and releases
+- [Memory](https://field-ui.com/evidence/memory): the forgetting curve is decay; frequency anchors; review re-binds
+- [Newsroom](https://field-ui.com/evidence/newsroom): pageviews are mass; the cycle's rise and fall polarizes
+
+## Optional
+
+- [llms-full.txt](https://field-ui.com/llms-full.txt): every canonical document, concatenated into one file
+- [GitHub repository](https://github.com/zachshallbetter/field-ui): the monorepo — core, platform, elements, react, vanilla, and this site
+- [Writings](https://field-ui.com/writings): the eight-paper research family on the field model
+- [The Lab](https://field-ui.com/lab): a physics detector — fire a particle into any force and verify its law
+- [Design system](https://field-ui.com/design): tokens, the force palette, type, and glyphs

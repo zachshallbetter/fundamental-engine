@@ -3,6 +3,7 @@ import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { OPTIONS } from '../../../lib/docs-api.ts';
 import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
+import ApiStamp from '../../../components/ApiStamp.astro';
 
 // lowest-level: field-ui is renderer-agnostic, so createField requires an explicit host.
 const sig = `import { createField } from '@field-ui/core';
@@ -37,7 +38,7 @@ createField(canvas, { mass: true });`;
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
-    <h1><span class="accent">createField</span> &amp; options</h1>
+    <h1><span class="accent">createField</span> &amp; options <ApiStamp name="createField" pkg="@field-ui/core" /></h1>
     <p class="lede">
       The lowest-level entry point. <code>createField(canvas, &#123; host, ...options &#125;)</code>
       starts the engine on a canvas you provide and returns the
@@ -53,8 +54,10 @@ createField(canvas, { mass: true });`;
     <div class="callout">
       <b>A host is required.</b> <code>field-ui</code> is renderer-agnostic, so
       <code>createField</code> takes a <code>host</code>. In the browser, use <code>createField</code>
-      from <a href="/docs/guides/typescript"><code>@field-ui/vanilla</code></a> (it wires
-      <code>browserHost()</code> for you) or pass <code>host: browserHost()</code> from
+      from <a href="/docs/guides/typescript"><code>@field-ui/vanilla</code></a>
+      <ApiStamp name="createField" pkg="@field-ui/vanilla" /> (it wires
+      <code>browserHost()</code> <ApiStamp name="browserHost" pkg="@field-ui/platform" /> for you)
+      or pass <code>host: browserHost()</code> from
       <a href="/docs/platform"><code>@field-ui/platform</code></a>. The snippets below omit it for brevity.
     </div>
   </section>
@@ -68,6 +71,7 @@ createField(canvas, { mass: true });`;
           <div class="api-row">
             <dt class="k">
               <code>{o.name}</code>
+              {o.type === 'FieldHost' && <ApiStamp name="FieldHost" />}
               <span class="ty">
                 {o.type} · <b>default {o.def}</b>
               </span>

@@ -1,58 +1,78 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import CodeTabs from '../../components/CodeTabs.astro';
-import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
-import { MANUAL_FORCES } from '@field-ui/core';
+import { DOCS_NAV } from '../../lib/docs-nav.ts';
+import { INVISIBLE_FIELDS } from '../../lib/invisible-fields.ts';
 
-// Getting started — install + a 60-second quickstart for every entry point + the
-// mental model. Snippets live as consts so Astro renders angle-brackets and braces
-// as literal escaped text.
+// The docs index as a living map. The body of this page renders FROM the same sources the
+// rest of the site reads — DOCS_NAV (the sidebar tree) and INVISIBLE_FIELDS (the example
+// roster) — so the map cannot drift from the navigation or the family. The cards are
+// bodies (data-body + data-feedback + data-hot): the index itself demonstrates the system
+// it indexes — engage a card and the page field gathers on it; its ink answers via --d.
 
-const htmlSnippet = `<!-- 1. register the element -->
-<` + `script type="module">
-  import '@field-ui/elements';
-</` + `script>
+// One-line hooks per route. Keyed by href so a nav reorganization can't mispair them;
+// a page the map doesn't know yet simply renders without a hook (no drift, no lies).
+const HOOKS: Record<string, string> = {
+  '/docs': 'this page — the map',
+  '/docs/tutorial': 'npm install to a glowing, reacting headline, step by step',
+  '/docs/concepts': 'bodies, the shared field context, reciprocity — the mental model',
+  '/docs/natural-fields': 'gravity → priority, EM → polarity, strong → binding, weak → transformation',
+  '/docs/platform': 'six registries on a six-phase scheduler — the DOM participation layer',
+  '/docs/narrative': 'one ordinary element, revealed as a field participant layer by layer',
+  '/docs/reading-field': 'the flagship platform demo — a content page that measures your attention',
+  '/docs/guides/web-component': '<field-root> in any framework or plain HTML',
+  '/docs/guides/typescript': 'the typed FieldField class — no custom elements, no framework',
+  '/docs/guides/react': 'the <FieldField> component and the useFieldField hook',
+  '/docs/guides/core': 'createField on a canvas you own, host injected',
+  '/docs/api': 'the whole surface, generated from the engine catalog',
+  '/docs/api/options': 'createField(canvas, opts) and every FieldOptions field',
+  '/docs/api/handle': 'the FieldHandle every entry point returns',
+  '/docs/api/attributes': 'the data-* contract bodies are written in',
+  '/docs/api/metrics': 'every --field-* variable the field writes back, with ranges and cadence',
+  '/docs/api/types': 'the exported TypeScript contracts, core and platform',
+  '/docs/api/stability': 'the frozen 0.x surface — the same data CI enforces',
+  '/docs/api/forces': 'all 35 forces: law, attributes, example — from the catalog',
+  '/docs/api/presets': 'blackhole, galaxy, tornado — composites, not new engine code',
+  '/docs/api/catalog': 'conditions, formations, render modes, palettes',
+  '/docs/studies/reading-field': 'a long-form article reinterpreted as a field',
+  '/docs/studies/review-field': 'a pull request as heat, tension, and a reviewer constellation',
+  '/docs/studies/search-field': 'search results as a trust gradient with polarity',
+  '/docs/studies/system-weather': 'a dashboard as weather — heat, pressure, anomalies',
+  '/docs/studies/evidence-field': 'claims, sources, and contradiction as a deterministic field',
+  '/docs/studies/visual-binding': 'an SVG bound to its semantic source, linted and inspected',
+  '/docs/recipes': 'the FieldRecipe model — lanes composed, never blurred',
+  '/docs/authoring': 'three surfaces, one [data-body] contract',
+  '/docs/showcase': 'live examples driven by the real field, with copy-paste source',
+  '/recipes': 'the recipe gallery, applied live',
+  '/docs/inspector': 'the live system report and a --field-density readback panel',
+  '/docs/snapshots': 'deterministic fingerprints per force — the physics-drift baseline',
+  '/docs/diagnostics': 'potential, topology, causality — explanation as a render mode',
+  '/docs/troubleshooting': 'the quiet failures and their fixes',
+  '/docs/performance': 'the scheduler, the hot path, and the cost of beauty',
+  '/docs/accessibility': 'reduced motion loses no meaning; meaning lives in semantic DOM',
+  '/docs/accessibility-preview': 'the animated field and its static fallback, side by side',
+};
 
-<!-- 2. drop the field + mark any element as a body -->
-<field-root accent="#4da3ff"></field-root>
+// render only what the sidebar renders — ready pages, non-empty groups
+const groups = DOCS_NAV.map((g) => ({ ...g, items: g.items.filter((i) => i.ready) })).filter(
+  (g) => g.items.length > 0,
+);
 
-<a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
-  pull me
-</a>`;
-
-const reactSnippet = `import { FieldField } from '@field-ui/react';
-
-export function App() {
-  return (
-    <>
-      <FieldField accent="#4da3ff" onReady={(field) => field.scan()} />
-      <a data-body="attract" data-strength="0.9" data-range="320" data-feedback>
-        pull me
-      </a>
-    </>
-  );
-}`;
-
-const coreSnippet = `import { FieldField } from '@field-ui/vanilla';
-
-// builds + manages a fixed full-viewport canvas, starts the engine
-const field = new FieldField({ accent: '#4da3ff' });
-
-// any [data-body] element on the page becomes a force the field reacts to.
-// after adding bodies to the DOM, rescan:
-field.scan();`;
+// an external deep-link into the example family borrows its hook from the roster
+const hookFor = (href: string): string | undefined =>
+  HOOKS[href] ?? INVISIBLE_FIELDS.find((f) => f.href === href)?.hook;
 ---
 
 <DocsLayout
   title="field-ui — Developer docs"
-  description="Install field-ui and get a reciprocal field reacting to your elements in under a minute — for plain HTML, React, or your own canvas. A renderer-agnostic core (zero runtime deps) with a platform layer for DOM participation."
+  description="The map of the field-ui documentation: getting started, concepts, guides, the API reference, concept studies, and the twelve invisible-field examples — plus llms.txt for agents. A renderer-agnostic core (zero runtime deps) with a platform layer for DOM participation."
 >
   <header class="docs-hero">
-    <p class="kicker">Getting started</p>
+    <p class="kicker">Documentation</p>
     <h1>Build with <span class="accent">field-ui</span>.</h1>
     <p class="lede">
       A platform-native relational field runtime for the DOM — framework-agnostic, with a
-      renderer-agnostic core. Get a field reacting to your elements in under a minute.
+      renderer-agnostic core. This page is the map; every card below is drawn from the same
+      source as the sidebar, and every card is a body in this page's field. Engage one.
     </p>
   </header>
 
@@ -86,98 +106,188 @@ field.scan();`;
       <code>import {'{'} createField {'}'} from 'https://esm.sh/@field-ui/vanilla'</code>.
       Want everything in one install? <code>npm i @field-ui/kit</code> is an optional convenience
       bundle that pulls the whole suite (you still import from the specific package).
+      In a hurry? <a href="/docs/tutorial">Your first field</a> goes from install to a reacting
+      headline in eight steps.
     </p>
   </section>
 
-  <section class="docs-sec">
-    <h2>Quick start</h2>
+  <section class="docs-sec" data-map>
+    <h2>The map</h2>
     <p>
-      The same field, three ways — pick the tab that matches your stack. Each snippet is the
-      whole setup: register the field, then mark an element as a body. Hit <b>Copy</b> and paste.
+      The documentation, whole. These groups mirror the sidebar exactly — both render from one
+      navigation tree, so this map cannot drift from it.
     </p>
-    <CodeTabs
-      variants={[
-        { label: 'Web component', lang: 'html', code: htmlSnippet },
-        { label: 'React', lang: 'tsx', code: reactSnippet },
-        { label: 'Vanilla', lang: 'ts', code: coreSnippet },
-      ]}
-    />
-
-    <div class="callout">
-      <b>The field reacts to the page.</b> A field root creates a shared field context: the platform
-      layer discovers and measures every <code>[data-body]</code> element each frame, the core
-      computes the field, and feedback returns density to the DOM as CSS variables and events. A
-      canvas renders the visible field behind your content — so any layout change <em>is</em> a change
-      to the force geometry. After you add or remove bodies, call <code>field.scan()</code>.
-    </div>
-
-    <p class="see-it">
-      See it before you build it. These are semantic elements with <code>data-body</code> and a supplied
-      metric; <code>applyRecipe()</code> writes that metric back as <code>--field-*</code>, and the CSS
-      reads it. No canvas widget — the data-attribute contract, running.
-    </p>
-    <FieldLoopDemo
-      token="attract"
-      recipe="priority-well"
-      metric="priority"
-      items={[
-        { text: 'Ship the runtime', value: 0.9 },
-        { text: 'Write the guide', value: 0.5 },
-        { text: 'Tidy the changelog', value: 0.2 },
-      ]}
-    />
-  </section>
-
-  <section class="docs-sec">
-    <h2>The mental model</h2>
-    <ul class="model">
-      <li>
-        <b>Bodies.</b> Any element with <code>data-body="&lt;force&gt; &lt;force&gt;…"</code>
-        becomes a force (forces compose). Tune it with <code>data-strength</code>,
-        <code>data-range</code>, <code>data-color</code>, and a condition gate
-        <code>data-when</code>.
-      </li>
-      <li>
-        <b>Platform.</b> <code>@field-ui/platform</code> binds bodies to the DOM — measurement,
-        state, feedback, relationships, visual bindings, and overlays, on a six-phase scheduler
-        (<code>discover → read → compute → state → write → render</code>).
-      </li>
-      <li>
-        <b>Core &amp; render surfaces.</b> <code>field-ui</code> (the core) computes the field
-        (renderer-agnostic) over one shared, conserved context. Canvas, SVG overlays, and DOM
-        feedback are render surfaces that reveal it — nothing is created from nothing.
-      </li>
-      <li>
-        <b>Reciprocity.</b> Add <code>data-feedback</code> and the field writes the gathered density
-        back into your element as <code>--field-density</code> (compact <code>--d</code> /
-        <code>--forces-density</code> aliases too) — drive weight, glow, and scale from it.
-      </li>
-    </ul>
-  </section>
-
-  <section class="docs-sec next">
-    <h2>Where to go next</h2>
-    <div class="next-grid">
-      <a class="next-card" href="/docs/concepts">
-        <b>Concepts</b>
-        <span>The model in depth — bodies, the shared field context, the platform layer, reciprocity.</span>
-      </a>
-      <a class="next-card" href="/docs/api/forces">
-        <b>The {MANUAL_FORCES.length} forces</b>
-        <span>The full API reference — law, attributes, and an example per force.</span>
-      </a>
-      <a class="next-card" href="/docs/guides/web-component">
-        <b>Framework guides</b>
-        <span>Web component, TypeScript, React, and the core engine — pick your entry point.</span>
-      </a>
-      <a class="next-card" href="/lab">
-        <b>The Lab</b>
-        <span>A physics detector — fire a particle into any force and verify its behavior.</span>
-      </a>
-      <a class="next-card" href="/design">
-        <b>Design system</b>
-        <span>The visual language behind the field — tokens, the force palette, type, and glyphs.</span>
-      </a>
+    <div class="map-grid">
+      {
+        groups.map((g) => (
+          <article class="map-card" data-body="attract" data-strength="0.4" data-range="240" data-feedback data-hot>
+            <h3 class="map-title">{g.title}</h3>
+            <ul class="map-list">
+              {g.items.map((i) => (
+                <li>
+                  <a href={i.href}>{i.label}{i.external && <span class="map-ext" aria-hidden="true"> ↗</span>}</a>
+                  {hookFor(i.href) && <span class="map-hook">{hookFor(i.href)}</span>}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
     </div>
   </section>
+
+  <section class="docs-sec" data-examples id="the-examples">
+    <h2>The examples</h2>
+    <p>
+      The applied tier. Twelve ordinary page types — an inbox, a market, a backlog, a front page —
+      run as fields over <strong>real data</strong>, with no particle swarm: the field's
+      measurements come back as type, ink, and anchor. Each ships a committed data snapshot,
+      upgrades itself to live counts when its source is reachable, and says which mode it is in.
+    </p>
+    <div class="ex-grid">
+      {
+        INVISIBLE_FIELDS.map((f) => (
+          <a class="ex-item" href={f.href} data-body="attract" data-strength="0.4" data-range="220" data-feedback data-hot>
+            <b class="ex-name">{f.name}</b>
+            <span class="ex-hook">{f.hook}</span>
+          </a>
+        ))
+      }
+    </div>
+    <p class="ex-more"><a href="/evidence">Start with Evidence — the family's front door →</a></p>
+  </section>
+
+  <footer class="for-agents" data-for-agents>
+    <span class="fa-label">For agents</span>
+    <p>
+      The docs ship as plain text too — <a href="/llms.txt">/llms.txt</a> is this map in the
+      llms.txt format, and <a href="/llms-full.txt">/llms-full.txt</a> is the full canonical
+      documentation concatenated; the field's agent consumption model, applied to its own docs.
+    </p>
+  </footer>
 </DocsLayout>
+
+<style>
+  /* the map — group cards drawn from DOCS_NAV */
+  .map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.9rem;
+    margin-top: 0.8rem;
+  }
+  .map-card {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.015);
+    /* living ink: the field's gathered density returns as a quiet glow */
+    box-shadow: 0 0 calc(var(--d, 0) * 24px) rgba(77, 163, 255, calc(var(--d, 0) * 0.18));
+    transition: border-color 0.3s ease;
+  }
+  .map-card:hover {
+    border-color: color-mix(in srgb, var(--accent, #4da3ff) 35%, var(--line, rgba(255, 255, 255, 0.08)));
+  }
+  .map-title {
+    margin: 0 0 0.55rem;
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent, #4da3ff) calc(35% + var(--d, 0) * 65%), var(--text-3, #9aa0ad));
+  }
+  .map-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .map-list a {
+    font-size: 0.9rem;
+    font-weight: 550;
+    text-decoration: none;
+  }
+  .map-list a:hover {
+    text-decoration: underline;
+  }
+  .map-hook {
+    display: block;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--text-4, #8a8fa0);
+  }
+  .map-ext {
+    font-size: 0.75em;
+    color: var(--text-4, #8a8fa0);
+  }
+
+  /* the examples — the roster, in the family's sidebar voice */
+  .ex-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.7rem;
+    margin-top: 0.8rem;
+  }
+  .ex-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.015);
+    text-decoration: none;
+    box-shadow: 0 0 calc(var(--d, 0) * 22px) rgba(77, 163, 255, calc(var(--d, 0) * 0.18));
+    transition: border-color 0.3s ease;
+  }
+  .ex-item:hover {
+    border-color: color-mix(in srgb, var(--accent, #4da3ff) 40%, var(--line, rgba(255, 255, 255, 0.08)));
+  }
+  .ex-name {
+    font-size: 0.9rem;
+    color: color-mix(in srgb, var(--accent, #4da3ff) calc(35% + var(--d, 0) * 65%), var(--text-2, #cfd3df));
+  }
+  .ex-hook {
+    font-size: 0.76rem;
+    line-height: 1.45;
+    color: var(--text-4, #8a8fa0);
+  }
+  .ex-more {
+    margin-top: 0.9rem;
+    font-size: 0.88rem;
+  }
+
+  /* for agents */
+  .for-agents {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.9rem;
+    align-items: baseline;
+    margin: 2.2rem 0 0.6rem;
+    padding: 0.8rem 1rem;
+    border: 1px dashed var(--line-2, rgba(255, 255, 255, 0.16));
+    border-radius: 10px;
+  }
+  .fa-label {
+    font-family: var(--mono, ui-monospace, monospace);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-4, #8a8fa0);
+    white-space: nowrap;
+  }
+  .for-agents p {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    color: var(--text-3, #9aa0ad);
+  }
+  @media (max-width: 560px) {
+    .for-agents {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
+    }
+  }
+</style>

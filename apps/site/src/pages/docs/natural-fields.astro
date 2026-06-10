@@ -4,6 +4,8 @@ import VocabBadge from '../../components/VocabBadge.astro';
 import VocabLegend from '../../components/VocabLegend.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
 import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
+import ApiStamp from '../../components/ApiStamp.astro';
+import SeeItLive from '../../components/SeeItLive.astro';
 import { NATURAL_FIELDS, MANUAL_FORCES, FORCE_KIND, FORCE_FIELD } from '@field-ui/core';
 
 // The data-attribute pattern per field — honest runtime tokens only. A token's field is its
@@ -140,9 +142,9 @@ const DIAG = [
     ]}
   />
   <p>
-    Live — gravity bodies carrying a supplied <code>priority</code>; <code>applyRecipe()</code> writes
-    it back as <code>--field-priority</code> and the CSS reads it (gravity's interface translation,
-    running):
+    Live — gravity bodies carrying a supplied <code>priority</code>; <code>applyRecipe()</code>
+    <ApiStamp name="applyRecipe" /> writes it back as <code>--field-priority</code> and the CSS reads
+    it (gravity's interface translation, running):
   </p>
   <FieldLoopDemo
     token="gravity"
@@ -153,6 +155,11 @@ const DIAG = [
       { text: 'Supporting detail', value: 0.45, role: 'priority' },
       { text: 'Fine print', value: 0.15, role: 'priority' },
     ]}
+  />
+
+  <SeeItLive
+    slug="market"
+    why="three translations on one page of real data: market cap is mass (gravity), the day's move polarizes (EM), correlated assets thread (strong)"
   />
 
   <h2>Fields vs primitives vs forces</h2>
