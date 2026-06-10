@@ -1,7 +1,8 @@
 // Newsroom Field runtime. field-ui as an INVISIBLE measurement layer over one day of
-// Wikipedia's most-read articles:
-//   · Field on/off — off, the ranking collapses to a flat list (CSS via [data-field]); the
-//     scoped field is destroyed. On, the field runs and attention shows in the type.
+// Wikipedia's most-read articles, laid out as a newspaper front page (lead / deck / index —
+// placement is server-rendered from the ranking; the runtime never moves stories):
+//   · Field on/off — off, the ink flattens (CSS via [data-field]) while the placement stays;
+//     the scoped field is destroyed. On, the field runs and attention shows in the type.
 //   · Color by trend / off — --cat encodes the day-over-day move (warm rising, cool falling,
 //     neutral gray for entries with no prior-day count), or steps aside entirely.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
@@ -23,7 +24,7 @@ const catFor = (pct: number | null): string => {
 
 const LENS_HINTS: Record<NewsroomLens, string> = {
   trend: "<b>color</b> = the day-over-day move — warm rising, cool falling, gray new",
-  off: "<b>color</b> = off — pageviews carry the whole signal",
+  off: "<b>color</b> = off — size and placement carry the whole signal",
 };
 
 function initNewsroom(): () => void {

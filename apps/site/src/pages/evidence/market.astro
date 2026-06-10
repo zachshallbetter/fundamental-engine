@@ -57,6 +57,9 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
 }).format(new Date(market.snapshotAt));
 
 const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
+
+// tier: the tile's footprint in the mosaic — mass is area. Must match tierOf() in the runtime.
+const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3 : 4);
 ---
 
 <ExampleShell
@@ -73,15 +76,16 @@ const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
       A market table treats a $1.2T asset and a $4B asset as the same row height, the same ink. The
       only signal left is the sort order. This is the same snapshot from
       <a href="https://www.coingecko.com" rel="noopener">CoinGecko</a> run as a
-      <strong>field</strong>: market cap becomes gravitational mass, so heavier assets anchor the
-      page — darker ink, heavier type, a stronger left anchor.
+      <strong>field</strong>: market cap becomes gravitational mass, and mass is <strong>area</strong> —
+      heavier assets take more of the page, with bigger tiles, darker ink, heavier type.
     </p>
     <p class="ev-lede">
       The day's move <strong>polarizes</strong> each body: direction is color (teal-green up,
       red-pink down), magnitude is intensity — a −0.1% drift barely registers, a −17% slide burns.
-      Switch the window to <strong>7d</strong> and the same rows repolarize; reweight by
-      <strong>volume</strong> and the field re-settles around where the trading actually happened.
-      <strong>Toggle the field off</strong> and it collapses back to the flat table.
+      Switch the window to <strong>7d</strong> and the same tiles repolarize; reweight by
+      <strong>volume</strong> and the mosaic re-tiers and re-settles around where the trading
+      actually happened. <strong>Toggle the field off</strong> and it collapses back to an even
+      grid — every asset the same size, the same ink.
     </p>
   </header>
 
@@ -108,25 +112,25 @@ const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
       </div>
     </div>
     <p class="ev-ctl-hint">
-      <span data-mk-hint><b>size</b> = market cap — the heavier the asset, the harder it anchors</span>
+      <span data-mk-hint><b>area</b> = market cap — the heavier the asset, the more page it takes</span>
       <span class="ev-hint-sep">·</span>
       <span data-mk-lens-hint><b>color</b> = the 24-hour move — direction is hue, magnitude is intensity</span>
     </p>
   </div>
 
   <ul class="ev-legend" aria-label="How to read the field">
-    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal (cap or volume)</li>
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>tile area</b> = the weighting signal (cap or volume)</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the move — direction is hue, magnitude is intensity</li>
-    <li><span class="ev-k mk-k-spark" aria-hidden="true"></span> sparkline = the week's price path (row-local scale)</li>
+    <li><span class="ev-k mk-k-spark" aria-hidden="true"></span> sparkline = the week's price path (tile-local scale, big tiles only)</li>
   </ul>
 
-  <ol class="mk-list" data-mk-list>
+  <ol class="mk-mosaic" data-mk-list>
     {
       assets.map((a, i) => {
         const w = wOf(a.cap);
         return (
           <li
-            class="mk-row"
+            class={`mk-tile mk-t${tierOf(w)}`}
             data-body="attract"
             data-feedback
             data-range="200"
@@ -142,9 +146,6 @@ const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
               <span class="mk-name">{a.name}</span>
               <span class="mk-sym">{a.symbol}</span>
             </div>
-            <svg class="mk-spark" viewBox="0 0 120 28" aria-hidden="true" preserveAspectRatio="none">
-              <path d={sparkPath(a.spark)} stroke="var(--cat)" />
-            </svg>
             <div class="mk-quote">
               <span class="mk-price">{fmtPrice(a.price)}</span>
               <span class="mk-cap">{fmtCompact.format(a.cap)} cap</span>
@@ -155,6 +156,9 @@ const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
             <span class="mk-chg" data-win="7d" data-dir={a.change7d >= 0 ? "up" : "down"}>
               {badge(a.change7d)}
             </span>
+            <svg class="mk-spark" viewBox="0 0 120 28" aria-hidden="true" preserveAspectRatio="none">
+              <path d={sparkPath(a.spark)} stroke="var(--cat)" />
+            </svg>
           </li>
         );
       })
@@ -165,9 +169,9 @@ const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
     <h2 id="mk-how-h">How it's built</h2>
     <p class="ev-how-lede">
       Every asset is an ordinary <code>&lt;li&gt;</code> with a few data attributes. field-ui reads
-      them, runs an invisible field over the list, and the type carries the measurement — cap as
-      weight, the move as color. No canvas, no chart library beyond one inline
-      <code>&lt;path&gt;</code> per row.
+      them, runs an invisible field over the mosaic, and the tiles carry the measurement — cap as
+      area and ink, the move as color. No canvas, no chart library beyond one inline
+      <code>&lt;path&gt;</code> per tile.
     </p>
 
     <div class="ev-how-cols">
@@ -191,39 +195,45 @@ const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">2 — polarity is CSS reading the field</p>
-        <pre class="ev-code"><code>{`.mk-row {
+        <p class="ev-how-label">2 — mass is area; polarity is CSS</p>
+        <pre class="ev-code"><code>{`/* tier classes set the tile's footprint */
+.mk-t1 { grid-column: span 3; grid-row: span 2; }
+.mk-t2 { grid-column: span 2; grid-row: span 2; }
+.mk-t3 { grid-column: span 2; grid-row: span 1; }
+
+.mk-tile {
   /* --w = log-normalized cap (0..1) */
   opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}
-.mk-name {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
+  background: color-mix(in srgb,
+    var(--cat) calc(6% + var(--w) * 4%),
+    transparent);
 }`}</code></pre>
         <p class="ev-how-note">
           The runtime sets <code>--cat</code> from the chosen window — hue is direction, intensity
-          is magnitude — and one <code>color-mix()</code> blends it against the hairline.
+          is magnitude — and one <code>color-mix()</code> tints the tile against the hairline.
         </p>
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — reweighting is a FLIP reflow</p>
+        <p class="ev-how-label">3 — reweighting re-tiers, then FLIPs in 2D</p>
         <pre class="ev-code"><code>{`// recompute --w from cap or volume,
-// then re-sort with FLIP:
-const firstTop = new Map(rows.map(
-  (r) => [r, r.getBoundingClientRect().top]));
-ordered.forEach((r) => list.appendChild(r));
-ordered.forEach((r) => {
-  const dy = firstTop.get(r)
-    - r.getBoundingClientRect().top;
-  r.style.transform = \`translateY(\${dy}px)\`;
+// swap the tier class, re-sort, then
+// FLIP tiles whose size did not change:
+const first = new Map(tiles.map(
+  (t) => [t, t.getBoundingClientRect()]));
+ordered.forEach((t) => list.appendChild(t));
+ordered.forEach((t) => {
+  const a = first.get(t);
+  const b = t.getBoundingClientRect();
+  t.style.transform = \`translate(
+    \${a.left - b.left}px,
+    \${a.top - b.top}px)\`;
   requestAnimationFrame(() =>
-    (r.style.transform = ""));
-});`}</code></pre>
+    (t.style.transform = ""));
+});
+// re-tiered tiles settle with a fade
+// instead — translate cannot honestly
+// animate a size change.`}</code></pre>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>

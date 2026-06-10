@@ -4,7 +4,7 @@
 //     scoped field is destroyed and threads are cleared. On, the field runs and activity
 //     shows in the type.
 //   · Weight by activity / freshness — re-blend each item's --w from its normalized signals
-//     (data-act, data-rec), then re-sort within each section with a FLIP reflow.
+//     (data-act, data-rec), then re-sort within each lane with a 2D FLIP reflow.
 //   · hover an item → SVG threads to the items it references (refs[] present on the page).
 //   · the cycle bar is a real sink body: the engine writes --load back, and CSS turns it
 //     into the glow. The bar's fill stays data arithmetic (shipped / capacity).
@@ -51,7 +51,9 @@ function initBacklog(): () => void {
   let fieldOn = true;
   let activeField: { destroy(): void } | null = null;
 
-  // ── weighting — re-blend --w + data-strength, then FLIP re-sort per section ──
+  // ── weighting — re-blend --w + data-strength, then FLIP re-sort per lane ──
+  // The FLIP is 2D (top AND left): cards live in a board, so a re-sort can move
+  // a card in both axes.
   const reweight = (): void => {
     const blend = BLENDS[weight];
     for (const r of rows()) {
@@ -66,13 +68,22 @@ function initBacklog(): () => void {
         (a, b) =>
           Number(b.style.getPropertyValue("--w")) - Number(a.style.getPropertyValue("--w")),
       );
-      const firstTop = new Map(items.map((r) => [r, r.getBoundingClientRect().top]));
+      const first = new Map(
+        items.map((r) => {
+          const b = r.getBoundingClientRect();
+          return [r, { top: b.top, left: b.left }] as const;
+        }),
+      );
       ordered.forEach((r) => list.appendChild(r));
       ordered.forEach((r) => {
         if (reduceMotion()) return;
-        const dy = (firstTop.get(r) ?? 0) - r.getBoundingClientRect().top;
-        if (!dy) return;
-        r.style.transform = `translateY(${dy}px)`;
+        const f = first.get(r);
+        if (!f) return;
+        const b = r.getBoundingClientRect();
+        const dx = f.left - b.left;
+        const dy = f.top - b.top;
+        if (!dx && !dy) return;
+        r.style.transform = `translate(${dx}px, ${dy}px)`;
         r.style.transition = "none";
         requestAnimationFrame(() => {
           r.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
@@ -83,7 +94,7 @@ function initBacklog(): () => void {
     }
   };
 
-  // ── reference threads (hover) — the SVG spans the zone so threads cross sections ──
+  // ── reference threads (hover) — the SVG overlays the whole board so threads cross lanes ──
   const clearThreads = (): void => {
     zone?.querySelector("svg.ev-threads")?.replaceChildren();
     rows().forEach((r) => r.classList.remove("lit", "cited"));

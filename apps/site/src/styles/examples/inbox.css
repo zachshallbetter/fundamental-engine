@@ -1,8 +1,9 @@
 /* ============================================================
    THE INBOX FIELD — attention as a conserved budget over real unanswered questions.
-   Builds on the ev-* design system (evidence.css, imported by ExampleShell); everything
-   here is scoped under .ex-inbox and only adds what this example needs: the asks list,
-   the share bar, the pin affordance, and the always-100% attention meter.
+   Focus-split layout: the STREAM on the left (compact rows), a narrow FOCUS pane
+   on the right where pinned asks physically move — attention has a place. Builds
+   on the ev-* design system (evidence.css, imported by ExampleShell); everything
+   here is scoped under .ex-inbox.
    ============================================================ */
 
 /* the attention meter — always full, by construction */
@@ -49,7 +50,16 @@
   background: var(--accent);
 }
 
-/* the asks — each row's share of the budget shows as weight, ink, and anchor */
+/* ── the focus split: stream left, focus pane right (~38%) ─────────────────── */
+.ex-inbox .ix-split {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 38%);
+  gap: 1.2rem;
+  align-items: start;
+}
+
+/* the stream — each row's share of the budget shows as weight, ink, and anchor */
 .ex-inbox .ix-list {
   position: relative;
   list-style: none;
@@ -58,6 +68,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
 }
 .ex-inbox .ix-item {
   --w: 0.42;
@@ -114,6 +125,13 @@
   font-size: 0.76rem;
   color: var(--text-3);
 }
+.ex-inbox .ix-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
 .ex-inbox .ix-tag {
   font-family: var(--mono);
   font-size: 0.62rem;
@@ -123,6 +141,10 @@
   border: 1px solid var(--line);
   color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--text-3));
   background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+/* stream rows stay compact — clamp the tag set to the first three */
+.ex-inbox .ix-list .ix-tags .ix-tag:nth-child(n + 4) {
+  display: none;
 }
 .ex-inbox .ix-meta-rest {
   margin-left: 0.25rem;
@@ -195,6 +217,93 @@
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
+/* ── the focus pane — where held attention lives ───────────────────────────── */
+.ex-inbox .ix-focus {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 3%, transparent);
+}
+.ex-inbox .ix-focus-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-2);
+}
+.ex-inbox .ix-focus-n {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-inbox .ix-focus-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.ex-inbox .ix-focus-list:empty {
+  display: none;
+}
+/* the quiet hint when nothing is held */
+.ex-inbox .ix-focus-hint {
+  margin: 0;
+  padding: 0.9rem 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--text-4);
+}
+.ex-inbox .ix-focus[data-has-pins] .ix-focus-hint {
+  display: none;
+}
+
+/* focus cards: slightly larger, stacked for the narrow pane, full tag set */
+.ex-inbox .ix-focus .ix-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 1rem;
+  gap: 0.6rem 0.8rem;
+}
+.ex-inbox .ix-focus .ix-body {
+  grid-column: 1;
+  grid-row: 1;
+}
+.ex-inbox .ix-focus .ix-pin {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+.ex-inbox .ix-focus .ix-title {
+  font-size: clamp(1.02rem, 1.6vw, 1.16rem);
+}
+.ex-inbox .ix-focus .ix-stats {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: auto auto 1fr;
+  justify-items: start;
+}
+.ex-inbox .ix-focus .ix-share {
+  grid-column: 3;
+  align-self: center;
+  min-width: 3rem;
+}
+
 /* ── Field OFF — the budget stops mattering; every ask reads at the same volume ── */
 .ex-inbox[data-field='off'] .ix-item {
   --w: 0.55;
@@ -221,23 +330,56 @@
 .ex-inbox[data-field='off'] .ix-meter-txt {
   opacity: 0.4;
 }
+.ex-inbox[data-field='off'] .ix-focus {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text) 1.5%, transparent);
+}
 
+/* ── responsive: the focus pane becomes a sticky strip above the stream ────── */
+@media (max-width: 840px) {
+  .ex-inbox .ix-split {
+    display: flex;
+    flex-direction: column;
+  }
+  .ex-inbox .ix-focus {
+    order: -1;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg, #04050a);
+  }
+  /* pinned cards line up horizontally; scroll if several are held */
+  .ex-inbox .ix-focus-list {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .ex-inbox .ix-focus .ix-item {
+    flex: 0 0 auto;
+    width: min(78vw, 20rem);
+  }
+  .ex-inbox .ix-focus-hint {
+    padding: 0.4rem 0;
+  }
+}
 @media (max-width: 640px) {
-  .ex-inbox .ix-item {
+  .ex-inbox .ix-list .ix-item {
     grid-template-columns: 1fr auto;
   }
-  .ex-inbox .ix-stats {
+  .ex-inbox .ix-list .ix-stats {
     grid-column: 1;
     grid-row: 2;
     justify-items: start;
     grid-template-columns: auto auto 1fr;
   }
-  .ex-inbox .ix-share {
+  .ex-inbox .ix-list .ix-share {
     grid-column: 3;
     align-self: center;
     min-width: 4rem;
   }
-  .ex-inbox .ix-pin {
+  .ex-inbox .ix-list .ix-pin {
     align-self: start;
   }
 }

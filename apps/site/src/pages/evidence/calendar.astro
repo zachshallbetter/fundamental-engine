@@ -39,7 +39,11 @@ const countdown = (net: string, status: string): string => {
   return d > 0 ? `T− ${d}d ${hh}:${mm}:${ss}` : `T− ${hh}:${mm}:${ss}`;
 };
 
-// group by UTC launch day; TBD-dated launches collect in a "Date TBD" group at the end.
+// the mission-control wall: the first upcoming launch with a valid future NET takes the
+// featured "next up" card; the rest hang on a vertical timeline rail grouped by UTC day.
+// Launches whose window already passed (the snapshot ages) or whose date is TBD collect
+// in a dimmed "unscheduled" cluster at the rail's end. The runtime re-derives the same
+// classification — and the next-up pick — from the real clock every second.
 const dayFmt = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
   month: "long",
@@ -54,8 +58,11 @@ interface Group {
 const dated = calendar.launches
   .filter((l) => l.status !== "TBD")
   .sort((a, b) => Date.parse(a.net) - Date.parse(b.net));
+const future = dated.filter((l) => Date.parse(l.net) > snap);
+const passed = dated.filter((l) => Date.parse(l.net) <= snap);
+const hero = future[0];
 const groups: Group[] = [];
-for (const l of dated) {
+for (const l of future) {
   const key = l.net.slice(0, 10);
   let g = groups.find((x) => x.key === key);
   if (!g) {
@@ -65,7 +72,7 @@ for (const l of dated) {
   g.launches.push(l);
 }
 const tbd = calendar.launches.filter((l) => l.status === "TBD");
-if (tbd.length) groups.push({ key: "tbd", label: "Date TBD", launches: tbd });
+const unscheduled = [...passed, ...tbd];
 
 const snapDate = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -94,12 +101,13 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
       approaches — heavier type, darker ink, a stronger left anchor.
     </p>
     <p class="ev-lede">
-      This is the one page where the field's input is <strong>time itself</strong>. A 1-second
-      clock recomputes every launch's weight from its distance to T−0, and the countdowns tick
-      live. Launches whose window has already passed (the snapshot ages) fall to the floor and
-      say so; undated launches sit quietly at the bottom. <strong>Toggle the field off</strong>
-      and the schedule flattens — but the countdowns keep ticking, because they're data, not
-      field.
+      This is the one page where the field's input is <strong>time itself</strong>. The soonest
+      launch is the biggest thing on the wall — a featured "next up" card with the countdown as
+      its centerpiece — and the rest hang on a timeline rail below. A 1-second clock recomputes
+      every weight and re-picks the featured launch, so when a window passes the wall advances
+      on its own; passed and undated launches drift to a dimmed cluster at the rail's end.
+      <strong>Toggle the field off</strong> and the wall flattens — but the countdowns keep
+      ticking, because they're data, not field.
     </p>
   </header>
 
@@ -126,18 +134,98 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
   </div>
 
   <ul class="ev-legend" aria-label="How to read the field">
-    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = imminence — the next launch is the heaviest</li>
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = imminence — the next launch is the biggest thing on the wall</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = status (Go teal · TBC amber · TBD dim)</li>
-    <li><span class="ev-k cal-k-clock">T−</span> the countdown is live — it ticks even with the field off</li>
+    <li><span class="ev-k cal-k-clock">T−</span> the countdown is live — when a window passes, the wall re-picks "next up"</li>
   </ul>
 
-  <div class="cal-days" data-cal-list>
+  <div class="cal-zone" data-cal-zone>
     {
-      groups.map((g) => (
-        <section class="cal-day">
-          <h2 class="cal-day-h">{g.label}{g.key !== "tbd" && <span class="cal-day-tz">UTC</span>}</h2>
-          <ol class="cal-list">
-            {g.launches.map((l) => {
+      hero && (
+        <section
+          class="cal-hero"
+          data-cal-hero
+          data-id={hero.id}
+          data-body="attract"
+          data-feedback
+          data-range="260"
+          data-strength={(0.4 + wOf(hero.net, hero.status) * 1.6).toFixed(2)}
+          data-net={hero.net}
+          data-status={hero.status}
+          style={`--w:${wOf(hero.net, hero.status).toFixed(3)}; --cat:${catFor(hero.status)};`}
+          aria-labelledby="cal-hero-name"
+        >
+          <p class="cal-hero-k">Next up</p>
+          <h2 class="cal-hero-name" id="cal-hero-name" data-cal-hero-name>{hero.name}</h2>
+          <p class="cal-hero-meta" data-cal-hero-meta>{hero.provider} · {hero.vehicle}</p>
+          <p class="cal-hero-pad" data-cal-hero-pad>{hero.pad} · {hero.location}</p>
+          <div class="cal-hero-foot">
+            <span class="cal-hero-count" data-cal-count>{countdown(hero.net, hero.status)}</span>
+            <span
+              class="cal-status"
+              data-cal-hero-status
+              data-status={hero.status}
+              title={hero.statusName}
+            >
+              {hero.status}
+            </span>
+          </div>
+        </section>
+      )
+    }
+
+    <div class="cal-rail" data-cal-rail>
+      {
+        groups.map((g) => (
+          <section class="cal-day">
+            <h2 class="cal-day-h">{g.label}<span class="cal-day-tz">UTC</span></h2>
+            <ol class="cal-list">
+              {g.launches.map((l) => {
+                const w = wOf(l.net, l.status);
+                return (
+                  <li
+                    class="cal-row"
+                    data-body="attract"
+                    data-feedback
+                    data-range="200"
+                    data-strength={(0.4 + w * 1.6).toFixed(2)}
+                    data-id={l.id}
+                    data-net={l.net}
+                    data-status={l.status}
+                    data-name={l.name}
+                    data-pv={`${l.provider} · ${l.vehicle}`}
+                    data-padloc={`${l.pad} · ${l.location}`}
+                    data-status-name={l.statusName}
+                    data-next={hero && l.id === hero.id ? "" : undefined}
+                    style={`--w:${w.toFixed(3)}; --cat:${catFor(l.status)};`}
+                  >
+                    <div class="cal-body">
+                      <span class="cal-name">{l.name}</span>
+                      <span class="cal-meta">{l.provider} · {l.vehicle}</span>
+                      <span class="cal-meta cal-meta-dim">{l.pad} · {l.location}</span>
+                    </div>
+                    <div class="cal-side">
+                      <span class="cal-count" data-cal-count>{countdown(l.net, l.status)}</span>
+                      <span class="cal-chips">
+                        <span class="cal-status" data-status={l.status} title={l.statusName}>
+                          {l.status}
+                        </span>
+                        {l.orbit && l.orbit !== "N/A" && <span class="cal-orbit">{l.orbit}</span>}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        ))
+      }
+
+      <section class="cal-day cal-day--unscheduled" data-cal-cluster>
+        <h2 class="cal-day-h">Unscheduled<span class="cal-day-tz">window passed · date TBD</span></h2>
+        <ol class="cal-list" data-cal-cluster-list>
+          {
+            unscheduled.map((l) => {
               const w = wOf(l.net, l.status);
               return (
                 <li
@@ -146,8 +234,13 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
                   data-feedback
                   data-range="200"
                   data-strength={(0.4 + w * 1.6).toFixed(2)}
+                  data-id={l.id}
                   data-net={l.net}
                   data-status={l.status}
+                  data-name={l.name}
+                  data-pv={`${l.provider} · ${l.vehicle}`}
+                  data-padloc={`${l.pad} · ${l.location}`}
+                  data-status-name={l.statusName}
                   style={`--w:${w.toFixed(3)}; --cat:${catFor(l.status)};`}
                 >
                   <div class="cal-body">
@@ -166,11 +259,11 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
                   </div>
                 </li>
               );
-            })}
-          </ol>
-        </section>
-      ))
-    }
+            })
+          }
+        </ol>
+      </section>
+    </div>
   </div>
 
   <section class="ev-how" aria-labelledby="cal-how-h">

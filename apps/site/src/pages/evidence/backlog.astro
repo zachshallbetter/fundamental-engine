@@ -81,9 +81,10 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
     </p>
     <p class="ev-lede">
       Work also <strong>binds</strong>: when an item references another, hovering it threads
-      back to what it builds on. And the shipping cycle has visible capacity — everything
-      closed or merged in the {CYCLE_DAYS} days before the snapshot accretes into one bar
-      above the Shipped section. Switch the weighting and watch each section re-settle;
+      back to what it builds on — across lanes. The board has two: <strong>In flight</strong>
+      and <strong>Shipped</strong>, and the shipping cycle has visible capacity — everything
+      closed or merged in the {CYCLE_DAYS} days before the snapshot accretes into the bar that
+      heads the Shipped lane. Switch the weighting and watch each lane re-settle;
       <strong>toggle the field off</strong> and it collapses to a plain tracker.
     </p>
   </header>
@@ -122,8 +123,8 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
     <li><span class="ev-k wl-k-sink"><i></i></span> the cycle bar is a <b>sink</b> — shipped work accretes into it</li>
   </ul>
 
-  <div class="wl-zone" data-wl-zone>
-    <section class="wl-section" aria-labelledby="wl-open-h">
+  <div class="wl-board" data-wl-zone>
+    <section class="wl-lane" aria-labelledby="wl-open-h">
       <h2 class="wl-h" id="wl-open-h">In flight <span class="wl-h-n">{inFlight.length}</span></h2>
       <ol class="wl-list" data-wl-list>
         {
@@ -140,19 +141,16 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
               data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
               style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
             >
-              <span class="wl-num">#{it.number}</span>
-              <span class="wl-kind" data-kind={it.kind}>{it.kind === "pr" ? "PR" : "issue"}</span>
-              <div class="wl-body">
-                <a class="wl-title" href={it.url} target="_blank" rel="noopener">
-                  {it.title}
-                </a>
-                <span class="wl-meta">
-                  {it.author} · updated {fmtAge(it.updatedAt)}
-                </span>
-              </div>
-              <span class="wl-comments">
-                <b>{it.comments}</b>
-                <span class="wl-comments-l">comments</span>
+              <span class="wl-top">
+                <span class="wl-num">#{it.number}</span>
+                <span class="wl-kind" data-kind={it.kind}>{it.kind === "pr" ? "PR" : "issue"}</span>
+              </span>
+              <a class="wl-title" href={it.url} target="_blank" rel="noopener">
+                {it.title}
+              </a>
+              <span class="wl-meta">
+                <b class="wl-comments-n">{it.comments}</b> comments · {it.author} ·
+                {fmtAge(it.updatedAt)}
               </span>
             </li>
           ))
@@ -160,11 +158,12 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
       </ol>
     </section>
 
-    <section class="wl-section" aria-labelledby="wl-shipped-h">
+    <section class="wl-lane wl-lane--shipped" aria-labelledby="wl-shipped-h">
       <h2 class="wl-h" id="wl-shipped-h">Shipped <span class="wl-h-n">{shipped.length}</span></h2>
 
-      <!-- the cycle sink: a real sink body in the scoped field. The bar's fill is data
-           arithmetic (shipped / capacity); the glow reads the engine's live --load. -->
+      <!-- the lane's header is the cycle sink: a real sink body in the scoped field. The
+           bar's fill is data arithmetic (shipped / capacity); the glow reads the engine's
+           live --load. -->
       <div
         class="wl-cycle"
         data-wl-cycle
@@ -202,19 +201,17 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
               data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
               style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
             >
-              <span class="wl-num">#{it.number}</span>
-              <span class="wl-kind" data-kind={it.kind}>{it.kind === "pr" ? "PR" : "issue"}</span>
-              <div class="wl-body">
-                <a class="wl-title" href={it.url} target="_blank" rel="noopener">
-                  {it.title}
-                </a>
-                <span class="wl-meta">
-                  {it.author} · {it.state} · updated {fmtAge(it.updatedAt)}
-                </span>
-              </div>
-              <span class="wl-comments">
-                <b>{it.comments}</b>
-                <span class="wl-comments-l">comments</span>
+              <span class="wl-top">
+                <span class="wl-num">#{it.number}</span>
+                <span class="wl-kind" data-kind={it.kind}>{it.kind === "pr" ? "PR" : "issue"}</span>
+                <span class="wl-state">{it.state}</span>
+              </span>
+              <a class="wl-title" href={it.url} target="_blank" rel="noopener">
+                {it.title}
+              </a>
+              <span class="wl-meta">
+                <b class="wl-comments-n">{it.comments}</b> comments · {it.author} ·
+                {fmtAge(it.updatedAt)}
               </span>
             </li>
           ))
@@ -293,7 +290,7 @@ box-shadow: 0 0
 }`}</code></pre>
         <p class="ev-how-note">
           Switching the lens re-blends <code>--w</code> from <code>data-act</code> and
-          <code>data-rec</code>, then FLIP re-sorts each section so the reflow is felt, not cut.
+          <code>data-rec</code>, then FLIP re-sorts each lane so the reflow is felt, not cut.
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>

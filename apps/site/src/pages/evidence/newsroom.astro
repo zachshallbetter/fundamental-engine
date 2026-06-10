@@ -45,6 +45,14 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
 }).format(new Date(newsroom.snapshotAt));
 
 const articles = [...newsroom.articles].sort((a, b) => a.rank - b.rank);
+
+// the front page: a lead (rank 1), a two-column deck (ranks 2–7), and a dense
+// three-column index for the rest — placement is part of the encoding.
+const lead = articles[0]!;
+const deck = articles.slice(1, 7);
+const index = articles.slice(7);
+const leadW = wOf(lead.views);
+const leadPct = pctOf(lead);
 ---
 
 <ExampleShell
@@ -61,16 +69,18 @@ const articles = [...newsroom.articles].sort((a, b) => a.rank - b.rank);
       A trending list asserts importance; a pageview count records it. These are the articles
       English Wikipedia readers <strong>actually read</strong> on {dayLabel} — the
       <a href="https://wikimedia.org/api/rest_v1/" rel="noopener">Wikimedia pageviews API</a>'s
-      most-read ranking, run as a <strong>field</strong>. Pageviews become gravitational mass:
-      the most-read articles anchor the page with heavier type, darker ink, a stronger left
-      anchor.
+      most-read ranking, run as a <strong>field</strong> and laid out like a front page.
+      Pageviews become gravitational mass, and mass buys column inches: the most-read article
+      takes the lead slot, the next six fill the deck, the rest settle into the index — with
+      heavier type, darker ink, a stronger left rule the more the world read.
     </p>
     <p class="ev-lede">
       The day-over-day change <strong>polarizes</strong> each body: rising attention warms,
       falling attention cools, and the magnitude sets the intensity — a 3% drift barely
       registers, a 200% surge burns. Articles that weren't in the prior day's list at all read
       as <strong>new</strong>, in neutral gray — no fake direction. <strong>Toggle the field
-      off</strong> and the ranking collapses to a flat list.
+      off</strong> and the ink flattens: the placement stays (it is the day's ranking), but the
+      field's weighting lets go.
     </p>
   </header>
 
@@ -90,59 +100,116 @@ const articles = [...newsroom.articles].sort((a, b) => a.rank - b.rank);
       </div>
     </div>
     <p class="ev-ctl-hint">
-      <span data-nw-hint><b>size</b> = pageviews — what the world actually read that day</span>
+      <span data-nw-hint><b>size & placement</b> = pageviews — the most-read story leads the page</span>
       <span class="ev-hint-sep">·</span>
       <span data-nw-lens-hint><b>color</b> = the day-over-day move — warm rising, cool falling, gray new</span>
     </p>
   </div>
 
   <ul class="ev-legend" aria-label="How to read the field">
-    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = pageviews (log-normalized)</li>
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size & placement</b> = pageviews — lead, deck, then the index</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the cycle's direction — warm rising · cool falling</li>
     <li><span class="ev-k nw-k-new">new</span> = absent from the prior day's list</li>
   </ul>
 
-  <ol class="nw-list" data-nw-list>
-    {
-      articles.map((a) => {
-        const w = wOf(a.views);
-        const pct = pctOf(a);
-        return (
-          <li
-            class="nw-row"
-            data-body="attract"
-            data-feedback
-            data-range="200"
-            data-strength={(0.4 + w * 1.6).toFixed(2)}
-            data-views={a.views}
-            data-prior={a.priorViews ?? ""}
-            style={`--w:${w.toFixed(3)}; --cat:${catFor(pct)};`}
-          >
-            <span class="nw-rank">{String(a.rank).padStart(2, "0")}</span>
-            <a class="nw-title" href={a.url} target="_blank" rel="noopener">
-              {a.title}
-            </a>
-            <span class="nw-chg" data-dir={pct === null ? "new" : pct >= 0 ? "up" : "down"}>
-              {badge(pct)}
-            </span>
-            <div class="nw-views" aria-label={`${a.views.toLocaleString("en-US")} pageviews`}>
-              <span class="nw-count">{fmtViews.format(a.views)}</span>
-              <span class="nw-count-l">views</span>
-              <span class="ev-bar"><i style={`width:${Math.round(w * 100)}%`} /></span>
-            </div>
-          </li>
-        );
-      })
-    }
-  </ol>
+  <div class="nw-front" data-nw-list>
+    <article
+      class="nw-row nw-lead"
+      data-body="attract"
+      data-feedback
+      data-range="200"
+      data-strength={(0.4 + leadW * 1.6).toFixed(2)}
+      data-views={lead.views}
+      data-prior={lead.priorViews ?? ""}
+      style={`--w:${leadW.toFixed(3)}; --cat:${catFor(leadPct)};`}
+    >
+      <p class="nw-zone-l">The lead · rank 01</p>
+      <a class="nw-title" href={lead.url} target="_blank" rel="noopener">
+        {lead.title}
+      </a>
+      <p class="nw-lead-meta">
+        <span class="nw-count">{fmtViews.format(lead.views)}</span>
+        <span class="nw-count-l">views</span>
+        <span class="nw-chg" data-dir={leadPct === null ? "new" : leadPct >= 0 ? "up" : "down"}>
+          {badge(leadPct)}
+        </span>
+      </p>
+    </article>
+
+    <ol class="nw-deck" aria-label="Ranks 2 through 7">
+      {
+        deck.map((a) => {
+          const w = wOf(a.views);
+          const pct = pctOf(a);
+          return (
+            <li
+              class="nw-row nw-deck-item"
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength={(0.4 + w * 1.6).toFixed(2)}
+              data-views={a.views}
+              data-prior={a.priorViews ?? ""}
+              style={`--w:${w.toFixed(3)}; --cat:${catFor(pct)};`}
+            >
+              <span class="nw-rank">{String(a.rank).padStart(2, "0")}</span>
+              <a class="nw-title" href={a.url} target="_blank" rel="noopener">
+                {a.title}
+              </a>
+              <span class="nw-meta-line">
+                <span class="nw-count">{fmtViews.format(a.views)}</span>
+                <span class="nw-count-l">views</span>
+                <span class="nw-chg" data-dir={pct === null ? "new" : pct >= 0 ? "up" : "down"}>
+                  {badge(pct)}
+                </span>
+              </span>
+            </li>
+          );
+        })
+      }
+    </ol>
+
+    <ol class="nw-index" aria-label="Ranks 8 and below">
+      {
+        index.map((a) => {
+          const w = wOf(a.views);
+          const pct = pctOf(a);
+          return (
+            <li
+              class="nw-row nw-index-item"
+              data-body="attract"
+              data-feedback
+              data-range="200"
+              data-strength={(0.4 + w * 1.6).toFixed(2)}
+              data-views={a.views}
+              data-prior={a.priorViews ?? ""}
+              style={`--w:${w.toFixed(3)}; --cat:${catFor(pct)};`}
+            >
+              <span class="nw-rank">{String(a.rank).padStart(2, "0")}</span>
+              <a class="nw-title" href={a.url} target="_blank" rel="noopener">
+                {a.title}
+              </a>
+              <span class="nw-meta-line">
+                <span class="nw-count">{fmtViews.format(a.views)}</span>
+                <span class="nw-count-l">views</span>
+                <span class="nw-chg" data-dir={pct === null ? "new" : pct >= 0 ? "up" : "down"}>
+                  {badge(pct)}
+                </span>
+              </span>
+            </li>
+          );
+        })
+      }
+    </ol>
+  </div>
 
   <section class="ev-how" aria-labelledby="nw-how-h">
     <h2 id="nw-how-h">How it's built</h2>
     <p class="ev-how-lede">
       Every article is an ordinary <code>&lt;li&gt;</code> with its raw counts in data
-      attributes. field-ui reads them, runs an invisible field over the list, and the type
-      carries the measurement — pageviews as weight, the day's swing as color. No canvas, no
-      chart library.
+      attributes. field-ui reads them, runs an invisible field over the front page, and the type
+      carries the measurement — pageviews as weight and placement, the day's swing as color. No
+      canvas, no chart library.
     </p>
 
     <div class="ev-how-cols">

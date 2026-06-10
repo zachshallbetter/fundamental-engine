@@ -106,10 +106,11 @@ const snapshotDay = inbox.snapshotAt.slice(0, 10);
     </p>
     <p class="ev-lede">
       Because the total is fixed, <strong>brightening one ask literally dims the rest</strong>.
-      Pin an ask and it takes a full unit of attention; the remaining budget redistributes across
-      everything unpinned, and you watch the others fade by exactly that much. Switch the lens
-      and the same budget re-settles along a different signal. The field is invisible — its only
-      output is type weight, ink, and a left anchor.
+      Attention also has a place: pin an ask and its card moves into the <strong>focus
+      pane</strong>, holding a full unit; the remaining budget redistributes across the stream,
+      and you watch the others fade by exactly that much. Unpin it and it returns to its place
+      in the stream. Switch the lens and the same budget re-settles along a different signal.
+      The field is invisible — its only output is type weight, ink, and a left anchor.
     </p>
   </header>
 
@@ -150,61 +151,73 @@ const snapshotDay = inbox.snapshotAt.slice(0, 10);
   <ul class="ev-legend" aria-label="How to read the field">
     <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = this ask's share of the budget</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = recency (cool old → warm fresh)</li>
-    <li><span class="ev-k ix-k-pin"></span> click an ask to <b>pin</b> it — it takes a full unit; the rest split what's left</li>
+    <li><span class="ev-k ix-k-pin"></span> click an ask to <b>pin</b> it — it moves to the focus pane with a full unit; the rest split what's left</li>
     <li>
       <span class="ev-k ix-k-meter"><i></i></span> the meter always reads <b>100%</b> — attention
       is conserved, never created
     </li>
   </ul>
 
-  <ol class="ix-list" data-ix-list>
-    {
-      items.map((it) => (
-        <li
-          class="ix-item"
-          id={`q-${it.id}`}
-          data-body="attract"
-          data-feedback
-          data-range="200"
-          data-strength={(0.4 + it.w * 1.6).toFixed(2)}
-          data-rec={it.rec.toFixed(4)}
-          data-vot={it.vot.toFixed(4)}
-          data-vie={it.vie.toFixed(4)}
-          style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
-        >
-          <div class="ix-body">
-            <a class="ix-title" href={it.link} target="_blank" rel="noopener">
-              {it.title}
-            </a>
-            <span class="ix-meta">
-              {it.tags.slice(0, 4).map((tag) => (
-                <span class="ix-tag">{tag}</span>
-              ))}
-              <span class="ix-meta-rest">
-                {fmtAge(it.hours)} · {it.author}
+  <div class="ix-split" data-ix-split>
+    <ol class="ix-list" data-ix-list aria-label="The stream — every ask, competing">
+      {
+        items.map((it) => (
+          <li
+            class="ix-item"
+            id={`q-${it.id}`}
+            data-body="attract"
+            data-feedback
+            data-range="200"
+            data-strength={(0.4 + it.w * 1.6).toFixed(2)}
+            data-rec={it.rec.toFixed(4)}
+            data-vot={it.vot.toFixed(4)}
+            data-vie={it.vie.toFixed(4)}
+            style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
+          >
+            <div class="ix-body">
+              <a class="ix-title" href={it.link} target="_blank" rel="noopener">
+                {it.title}
+              </a>
+              <span class="ix-meta">
+                <span class="ix-tags">
+                  {it.tags.map((tag) => (
+                    <span class="ix-tag">{tag}</span>
+                  ))}
+                </span>
+                <span class="ix-meta-rest">
+                  {fmtAge(it.hours)} · {it.author}
+                </span>
               </span>
-            </span>
-          </div>
-          <div class="ix-stats">
-            <span class="ix-stat">
-              <b>{it.score}</b>
-              <span class="ix-stat-l">votes</span>
-            </span>
-            <span class="ix-stat">
-              <b>{fmtViews(it.views)}</b>
-              <span class="ix-stat-l">views</span>
-            </span>
-            <span class="ix-share" aria-hidden="true">
-              <i style={`width:${Math.round(it.w * 100)}%`} />
-            </span>
-          </div>
-          <button class="ix-pin" type="button" aria-pressed="false" aria-label={`Pin "${it.title}"`}>
-            pin
-          </button>
-        </li>
-      ))
-    }
-  </ol>
+            </div>
+            <div class="ix-stats">
+              <span class="ix-stat">
+                <b>{it.score}</b>
+                <span class="ix-stat-l">votes</span>
+              </span>
+              <span class="ix-stat">
+                <b>{fmtViews(it.views)}</b>
+                <span class="ix-stat-l">views</span>
+              </span>
+              <span class="ix-share" aria-hidden="true">
+                <i style={`width:${Math.round(it.w * 100)}%`} />
+              </span>
+            </div>
+            <button class="ix-pin" type="button" aria-pressed="false" aria-label={`Pin "${it.title}"`}>
+              pin
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+
+    <!-- the focus pane — attention has a place. Pinning an ask moves its card here
+         (it holds a full unit of the budget); unpinning sends it back to the stream. -->
+    <aside class="ix-focus" data-ix-focus aria-label="Focus — pinned asks hold a full unit each">
+      <h2 class="ix-focus-h">Focus <span class="ix-focus-n" data-ix-focus-n>0 pinned</span></h2>
+      <ol class="ix-focus-list" data-ix-focus-list></ol>
+      <p class="ix-focus-hint" data-ix-focus-hint>pin an ask to hold it</p>
+    </aside>
+  </div>
 
   <!-- How it's built — the conserved budget made concrete. -->
   <section class="ev-how" aria-labelledby="ix-how-h">

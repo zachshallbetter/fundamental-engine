@@ -1,6 +1,9 @@
 // Library Field runtime. field-ui as an INVISIBLE measurement layer over the month's
-// most-listened ListenBrainz recordings, with the queue as a genuine field SINK:
+// most-listened ListenBrainz recordings, laid out as a ranked bar ladder, with the queue
+// as a genuine field SINK:
 //   · each row's mass --w is its log-normalized listen count (server-computed, static);
+//     --bar (also server-computed) is the linear listens/max share that sets the row's
+//     background bar length — the runtime never touches it;
 //   · the queue panel carries data-body="sink" data-absorb data-max="8" and is registered
 //     in the same scoped field as the rows — the ENGINE writes --load back into it as
 //     matter accretes (CSS turns that into a glow). Separately, an honestly-labeled UI

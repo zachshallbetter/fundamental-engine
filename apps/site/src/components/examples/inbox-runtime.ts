@@ -1,11 +1,14 @@
 // Inbox Field runtime. field-ui as an INVISIBLE measurement layer over real unanswered
-// Stack Overflow questions, with attention as a CONSERVED budget:
+// Stack Overflow questions, with attention as a CONSERVED budget — and a PLACE:
 //   · every ask's urgency u = a lens-weighted blend of its normalized recency / votes / views
 //     (server-computed, carried as data-rec / data-vot / data-vie);
 //   · weights are renormalized so Σw is pinned to a fixed budget (N × 0.42), capped at 1 with
-//     water-filling — the attention meter always reads 100% allocated, by construction;
-//   · click an ask to PIN it (w = 1); the remaining budget redistributes over the unpinned;
-//   · lens segments (fresh / voted / seen) re-blend the urgency and FLIP re-sort the list;
+//     water-filling — the attention meter always reads 100% allocated, by construction. The
+//     sum runs over EVERY ask, stream and focus pane alike;
+//   · click an ask to PIN it: its card travels into the focus pane (a 2D FLIP move) and holds
+//     w = 1; the remaining budget redistributes over the unpinned stream. Unpin it and the
+//     card returns to its place in the stream's current sort order;
+//   · lens segments (fresh / voted / seen) re-blend the urgency and FLIP re-sort the stream;
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
@@ -62,19 +65,25 @@ function initInbox(): () => void {
   const page = document.querySelector<HTMLElement>(".ex-inbox");
   if (!page) return () => {};
   const ac = new AbortController();
+  const split = page.querySelector<HTMLElement>("[data-ix-split]");
   const list = page.querySelector<HTMLElement>("[data-ix-list]");
+  const focusPane = page.querySelector<HTMLElement>("[data-ix-focus]");
+  const focusList = page.querySelector<HTMLElement>("[data-ix-focus-list]");
+  const focusN = page.querySelector<HTMLElement>("[data-ix-focus-n]");
   const fieldBtn = page.querySelector<HTMLButtonElement>("[data-ix-field]");
   const lensBtns = [...page.querySelectorAll<HTMLButtonElement>("[data-ix-lens]")];
   const meter = page.querySelector<HTMLElement>("[data-ix-meter]");
   const hint = page.querySelector<HTMLElement>("[data-ix-hint]");
-  if (!list) return () => {};
+  if (!split || !list || !focusList) return () => {};
 
   let lens: IxLens = (page.dataset.lens as IxLens) || "fresh";
   let fieldOn = true;
   let activeField: { destroy(): void } | null = null;
   const pinned = new Set<HTMLElement>();
 
-  const itemsOf = () => [...list.querySelectorAll<HTMLElement>(".ix-item")];
+  // EVERY ask, both panes — the conserved sum runs over all of them.
+  const itemsOf = () => [...split.querySelectorAll<HTMLElement>(".ix-item")];
+  const streamItems = () => [...list.querySelectorAll<HTMLElement>(".ix-item")];
 
   const urgencyOf = (it: HTMLElement): number => {
     const b = BLENDS[lens];
@@ -85,15 +94,44 @@ function initInbox(): () => void {
     );
   };
 
-  // ── the conserved budget: pins take w=1; the rest split what remains ──────
+  // ── 2D FLIP — measure every card (both panes), mutate the DOM, then play the
+  // inverted transforms so moves between stream and focus visibly travel. ──────
+  const flip = (mutate: () => void): void => {
+    if (reduceMotion()) {
+      mutate();
+      return;
+    }
+    const first = new Map(
+      itemsOf().map((it) => {
+        const b = it.getBoundingClientRect();
+        return [it, { top: b.top, left: b.left }] as const;
+      }),
+    );
+    mutate();
+    for (const it of itemsOf()) {
+      const f = first.get(it);
+      if (!f) continue;
+      const b = it.getBoundingClientRect();
+      const dx = f.left - b.left;
+      const dy = f.top - b.top;
+      if (!dx && !dy) continue;
+      it.style.transform = `translate(${dx}px, ${dy}px)`;
+      it.style.transition = "none";
+      requestAnimationFrame(() => {
+        it.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
+        it.style.transform = "";
+        it.addEventListener("transitionend", () => (it.style.transition = ""), { once: true });
+      });
+    }
+  };
+
+  // ── the conserved budget: pins hold w=1 in the focus pane; the rest split what
+  // remains. Σ--w across BOTH panes stays at the budget, always. ───────────────
   const reallocate = (): void => {
     const items = itemsOf();
     const budget = items.length * BUDGET_PER_ITEM;
     const unpinned = items.filter((it) => !pinned.has(it));
-    const ws = allocate(
-      unpinned.map(urgencyOf),
-      Math.max(0, budget - pinned.size),
-    );
+    const ws = allocate(unpinned.map(urgencyOf), Math.max(0, budget - pinned.size));
     const wOf = new Map<HTMLElement, number>(unpinned.map((it, i) => [it, ws[i] ?? 0]));
     for (const it of items) {
       const w = pinned.has(it) ? 1 : (wOf.get(it) ?? 0);
@@ -109,29 +147,21 @@ function initInbox(): () => void {
       ).toFixed(1)}`;
   };
 
-  // ── lens change: re-blend, then FLIP re-sort so the field visibly re-settles ──
-  const resort = (): void => {
-    const items = itemsOf();
-    const ordered = [...items].sort(
-      (a, b) => Number(b.style.getPropertyValue("--w")) - Number(a.style.getPropertyValue("--w")),
-    );
-    const firstTop = new Map(items.map((it) => [it, it.getBoundingClientRect().top]));
-    ordered.forEach((it) => list.appendChild(it));
-    if (reduceMotion()) return;
-    ordered.forEach((it) => {
-      const dy = (firstTop.get(it) ?? 0) - it.getBoundingClientRect().top;
-      if (!dy) return;
-      it.style.transform = `translateY(${dy}px)`;
-      it.style.transition = "none";
-      requestAnimationFrame(() => {
-        it.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
-        it.style.transform = "";
-        it.addEventListener("transitionend", () => (it.style.transition = ""), { once: true });
-      });
-    });
+  // the focus pane's header count + empty-state hint
+  const syncFocus = (): void => {
+    focusPane?.toggleAttribute("data-has-pins", pinned.size > 0);
+    if (focusN) focusN.textContent = `${pinned.size} pinned`;
   };
 
-  // ── the invisible scoped field (render: []) ──────────────────────────────
+  // ── lens change: re-blend, then FLIP re-sort the stream so it visibly re-settles ──
+  const resort = (): void => {
+    const ordered = [...streamItems()].sort(
+      (a, b) => Number(b.style.getPropertyValue("--w")) - Number(a.style.getPropertyValue("--w")),
+    );
+    flip(() => ordered.forEach((it) => list.appendChild(it)));
+  };
+
+  // ── the invisible scoped field (render: []) — scoped to the split so both panes count ──
   const runField = (): void => {
     activeField?.destroy();
     activeField = null;
@@ -140,32 +170,46 @@ function initInbox(): () => void {
       const base = recipeById("evidence-field");
       if (base) {
         const recipe = { ...base, render: [] as never[] };
-        activeField = applyRecipe(list, recipe, { bodies: itemsOf(), annotateBodies: false });
+        activeField = applyRecipe(split, recipe, { bodies: itemsOf(), annotateBodies: false });
       }
     } catch {
       /* the static --w layer stands on its own */
     }
   };
 
-  // ── pinning — click anywhere on an ask (links keep navigating) ───────────
-  list.addEventListener(
+  // ── pinning — click anywhere on an ask, in either pane (links keep navigating).
+  // Pin: the card travels to the focus pane. Unpin: it returns to its place in the
+  // stream's current sort order. ───────────────────────────────────────────────
+  split.addEventListener(
     "click",
     (e) => {
       if (!fieldOn) return;
       const t = e.target as HTMLElement;
       if (t.closest("a")) return;
       const item = t.closest<HTMLElement>(".ix-item");
-      if (!item || !list.contains(item)) return;
+      if (!item || !split.contains(item)) return;
       if (pinned.has(item)) {
         pinned.delete(item);
         item.removeAttribute("data-pinned");
+        // recompute first so the returning card carries its competitive weight…
+        reallocate();
+        // …then slot it back by the stream's current descending --w order.
+        flip(() => {
+          const w = Number(item.style.getPropertyValue("--w")) || 0;
+          const next = streamItems().find(
+            (s) => (Number(s.style.getPropertyValue("--w")) || 0) < w,
+          );
+          list.insertBefore(item, next ?? null);
+        });
       } else {
         pinned.add(item);
         item.setAttribute("data-pinned", "");
+        flip(() => focusList.appendChild(item));
+        reallocate();
       }
       const btn = item.querySelector<HTMLButtonElement>(".ix-pin");
       btn?.setAttribute("aria-pressed", String(pinned.has(item)));
-      reallocate();
+      syncFocus();
     },
     { signal: ac.signal },
   );
@@ -205,6 +249,7 @@ function initInbox(): () => void {
   );
 
   reallocate();
+  syncFocus();
   runField();
 
   return () => {

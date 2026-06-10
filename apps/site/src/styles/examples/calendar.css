@@ -1,18 +1,120 @@
 /* ============================================================
    THE CALENDAR FIELD — imminence is mass; the field's input is time itself.
+   Mission-control layout: a featured "next up" card (the countdown is the
+   centerpiece), then a vertical timeline rail with day markers and node dots;
+   passed / TBD launches collect in a dimmed unscheduled cluster at the end.
    Reuses the ev-* design system from evidence.css; everything new is
    scoped under .ex-calendar. Tokens come from ds-tokens.css (via Base).
    ============================================================ */
 
-.ex-calendar .cal-days {
+.ex-calendar .cal-zone {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.2rem;
 }
 
-/* day headings — quiet structural furniture; the weight lives in the rows */
+/* ── the featured "next up" card — the soonest launch is the biggest thing on the wall ── */
+.ex-calendar .cal-hero {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.5rem 1.7rem 1.4rem;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 28%, var(--line));
+  border-left: 4px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--text) calc(2% + var(--w) * 4%), transparent);
+  box-shadow: 0 0 calc(var(--w) * 34px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 16%), transparent);
+  transition:
+    border-color 0.3s,
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ex-calendar .cal-hero-k {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.ex-calendar .cal-hero-name {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.4rem, 3.4vw, 2.2rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: color-mix(in srgb, var(--text) calc(60% + var(--w) * 40%), var(--text-4));
+  font-variation-settings: 'wght' calc(520 + var(--w) * 240);
+}
+.ex-calendar .cal-hero-meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.92rem;
+  color: var(--text-2);
+}
+.ex-calendar .cal-hero-pad {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-4);
+}
+.ex-calendar .cal-hero-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.1rem;
+  margin-top: 0.7rem;
+}
+/* the centerpiece: the live T-minus, large, mono, tabular */
+.ex-calendar .cal-hero-count {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.9rem, 5.5vw, 3.3rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--text) calc(55% + var(--w) * 45%), var(--text-4));
+}
+/* nothing left on the clock — every window in the snapshot passed or sits at TBD */
+.ex-calendar .cal-hero[data-state='empty'] {
+  opacity: 0.7;
+  box-shadow: none;
+  border-left-color: var(--line);
+}
+.ex-calendar .cal-hero[data-state='empty'] .cal-hero-count {
+  color: var(--text-4);
+}
+
+/* ── the timeline rail — a left axis line; day markers and node dots sit on it ── */
+.ex-calendar .cal-rail {
+  --axis: 0.45rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.9rem;
+  padding-left: 2.1rem;
+}
+.ex-calendar .cal-rail::before {
+  content: '';
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  left: var(--axis);
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--accent) 45%, var(--line)),
+    var(--line) 55%,
+    color-mix(in srgb, var(--line) 55%, transparent)
+  );
+}
+
+/* day headings — small-caps markers on the rail */
 .ex-calendar .cal-day-h {
+  position: relative;
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
@@ -25,6 +127,19 @@
   color: var(--text-3);
   border-bottom: 1px solid var(--line);
   padding-bottom: 0.5rem;
+}
+/* the day marker dot, centered on the axis line */
+.ex-calendar .cal-day-h::before {
+  content: '';
+  position: absolute;
+  top: 0.12rem;
+  left: calc(-1.65rem - 3.5px);
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--bg, #04050a);
+  border: 2px solid var(--text-3);
 }
 .ex-calendar .cal-day-tz {
   font-size: 0.58rem;
@@ -41,8 +156,8 @@
   gap: 0.5rem;
 }
 
-/* a launch: imminence (--w, 0..1, re-ticked every second) is felt — type weight,
-   ink, and a left anchor whose color is the launch status (--cat). */
+/* a launch card attached to the rail: imminence (--w, 0..1, re-ticked every second)
+   is felt — type weight, ink, the left anchor, and the node dot's charge. */
 .ex-calendar .cal-row {
   position: relative;
   z-index: 2;
@@ -61,6 +176,36 @@
     opacity 0.3s,
     background 0.3s,
     border-color 0.3s;
+}
+/* the node dot on the axis — heavier launches glow harder */
+.ex-calendar .cal-row::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(-1.65rem - 2.5px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 80%), var(--line));
+  box-shadow: 0 0 calc(var(--w) * 8px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 60%), transparent);
+}
+/* the rail card currently held by the "next up" board */
+.ex-calendar .cal-row[data-next]::after {
+  content: 'next';
+  position: absolute;
+  top: -0.52rem;
+  right: 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.42rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line));
+  color: var(--accent);
+  background: var(--bg, #04050a);
 }
 .ex-calendar .cal-body {
   min-width: 0;
@@ -116,15 +261,35 @@
   color: var(--text-4);
   white-space: nowrap;
 }
-.ex-calendar .cal-status[data-status="Go"] {
+.ex-calendar .cal-status[data-status='Go'] {
   border-color: color-mix(in srgb, #2dd4bf 50%, var(--line));
   color: #2dd4bf;
 }
-.ex-calendar .cal-status[data-status="TBC"] {
+.ex-calendar .cal-status[data-status='TBC'] {
   border-color: color-mix(in srgb, #fbbf24 50%, var(--line));
   color: #fbbf24;
 }
 /* TBD (and already-flown) stay dim — undetermined is rendered as quiet, not loud */
+
+/* ── the unscheduled cluster at the rail's end — passed windows and TBD dates ── */
+.ex-calendar .cal-day--unscheduled {
+  opacity: 0.75;
+}
+.ex-calendar .cal-day--unscheduled:not(:has(.cal-row)) {
+  display: none;
+}
+.ex-calendar .cal-day--unscheduled .cal-day-h::before {
+  border-color: var(--line);
+}
+.ex-calendar .cal-day--unscheduled .cal-row::before {
+  background: var(--line);
+  box-shadow: none;
+}
+
+/* hidden day sections (the runtime empties a day when its last window passes) */
+.ex-calendar .cal-day[hidden] {
+  display: none;
+}
 
 /* legend key: the countdown glyph */
 .ex-calendar .cal-k-clock {
@@ -134,25 +299,55 @@
   color: var(--accent);
 }
 
-/* ── Field OFF — the same schedule, flattened; the countdowns keep ticking ── */
-.ex-calendar[data-field="off"] .cal-row {
+/* ── Field OFF — the same wall, flattened; the countdowns keep ticking ── */
+.ex-calendar[data-field='off'] .cal-row {
   --w: 0.55;
   opacity: 1;
   border-left-color: var(--line);
   background: color-mix(in srgb, var(--text) 2.5%, transparent);
 }
-.ex-calendar[data-field="off"] .cal-name {
+.ex-calendar[data-field='off'] .cal-row::before {
+  background: var(--line);
+  box-shadow: none;
+}
+.ex-calendar[data-field='off'] .cal-name {
   color: var(--text-2);
   font-variation-settings: 'wght' 500;
 }
-.ex-calendar[data-field="off"] .cal-count {
+.ex-calendar[data-field='off'] .cal-count {
   color: var(--text-2);
 }
-.ex-calendar[data-field="off"] .ev-seg {
+.ex-calendar[data-field='off'] .cal-hero {
+  --w: 0.55;
+  box-shadow: none;
+  border-color: var(--line);
+  border-left-color: var(--line);
+  background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+.ex-calendar[data-field='off'] .cal-hero-name {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 560;
+}
+.ex-calendar[data-field='off'] .cal-hero-count {
+  color: var(--text-2);
+}
+.ex-calendar[data-field='off'] .ev-seg {
   opacity: 0.4;
   pointer-events: none;
 }
 
+/* ── responsive: the rail collapses to a thin left border; the hero stays ── */
+@media (max-width: 840px) {
+  .ex-calendar .cal-rail {
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--line);
+  }
+  .ex-calendar .cal-rail::before,
+  .ex-calendar .cal-day-h::before,
+  .ex-calendar .cal-row::before {
+    display: none;
+  }
+}
 @media (max-width: 620px) {
   .ex-calendar .cal-row {
     grid-template-columns: 1fr;
@@ -160,9 +355,13 @@
   .ex-calendar .cal-side {
     justify-items: start;
   }
+  .ex-calendar .cal-hero {
+    padding: 1.1rem 1.2rem 1.1rem;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ex-calendar .cal-row {
+  .ex-calendar .cal-row,
+  .ex-calendar .cal-hero {
     transition: none;
   }
 }

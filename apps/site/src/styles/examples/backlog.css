@@ -1,24 +1,40 @@
 /* ============================================================
    THE BACKLOG FIELD — work has weight; references bind; the cycle is a sink.
-   Builds on the ev-* design system (evidence.css, imported by ExampleShell);
-   everything here is scoped under .ex-backlog and only adds what this example
-   needs: the two sections, the work-item rows, and the cycle sink bar.
+   Board layout: two lanes side by side (In flight · Shipped), each a column
+   of compact cards; the cycle sink heads the Shipped lane. The hover-thread
+   SVG overlays the whole board so references cross lanes. Builds on the ev-*
+   design system (evidence.css, imported by ExampleShell); everything here is
+   scoped under .ex-backlog.
    ============================================================ */
 
-/* the zone wraps both sections so hover threads can cross them */
-.ex-backlog .wl-zone {
+/* the board wraps both lanes; the thread SVG (.ev-threads, absolute inset:0)
+   is prepended here so bezier threads can span lane to lane */
+.ex-backlog .wl-board {
   position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem;
+  align-items: start;
 }
 
-.ex-backlog .wl-section {
-  margin-bottom: 2.2rem;
+/* a lane — a quiet column the cards live in */
+.ex-backlog .wl-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--text) 1.5%, transparent);
 }
 .ex-backlog .wl-h {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
-  margin: 0 0 0.9rem;
-  font-size: 1.05rem;
+  margin: 0;
+  padding: 0 0.2rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-2);
@@ -36,19 +52,18 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
-/* a work item: the blended weight (--w, 0..1) is felt — type heft, ink, and a
+/* a work item card: the blended weight (--w, 0..1) is felt — type heft, ink, and a
    left anchor whose color is the kind (--cat: teal PR, blue issue). */
 .ex-backlog .wl-item {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: 3.2rem auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: clamp(0.7rem, 2vw, 1.2rem);
-  padding: 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.75rem 0.9rem;
   border: 1px solid var(--line);
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
@@ -76,70 +91,66 @@
   background: color-mix(in srgb, var(--cat, var(--accent)) 8%, transparent);
 }
 
+/* card top line: #number mono + kind chip (+ state on shipped cards) */
+.ex-backlog .wl-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 .ex-backlog .wl-num {
   font-family: var(--mono);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--text-4);
-  text-align: right;
 }
 .ex-backlog .wl-kind {
   font-family: var(--mono);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 0.12rem 0.45rem;
+  padding: 0.1rem 0.42rem;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
   color: color-mix(in srgb, var(--cat, var(--accent)) 75%, var(--text-3));
 }
-.ex-backlog .wl-body {
-  min-width: 0;
+.ex-backlog .wl-state {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-4);
 }
 .ex-backlog .wl-title {
   display: block;
+  min-width: 0;
   text-decoration: none;
   color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
-  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
-  line-height: 1.3;
+  font-size: clamp(0.9rem, 1.3vw, 1rem);
+  line-height: 1.35;
   letter-spacing: -0.01em;
   font-variation-settings: 'wght' calc(380 + var(--w) * 360);
 }
 .ex-backlog .wl-title:hover {
   color: var(--accent);
 }
+/* card bottom line: comments · author · age */
 .ex-backlog .wl-meta {
   display: block;
-  margin-top: 0.3rem;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   color: var(--text-3);
 }
-.ex-backlog .wl-comments {
-  display: grid;
-  justify-items: end;
-  line-height: 1;
-}
-.ex-backlog .wl-comments b {
+.ex-backlog .wl-comments-n {
   font-family: var(--mono);
-  font-size: 0.95rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 60%), var(--text-3));
 }
-.ex-backlog .wl-comments-l {
-  margin-top: 0.18rem;
-  font-size: 0.58rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-4);
-}
 
-/* ── the cycle sink — shipped work accretes into a bar with stated capacity ── */
+/* ── the cycle sink — the Shipped lane's header; shipped work accretes into it ── */
 .ex-backlog .wl-cycle {
   display: grid;
-  grid-template-columns: auto minmax(6rem, 1fr) auto;
-  align-items: center;
-  gap: 1rem;
-  margin: 0 0 0.9rem;
-  padding: 0.7rem 1.1rem;
+  gap: 0.45rem;
+  padding: 0.7rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: color-mix(in srgb, var(--text) 2.5%, transparent);
@@ -178,7 +189,6 @@
 .ex-backlog .wl-cycle-note {
   font-size: 0.72rem;
   color: var(--text-4);
-  white-space: nowrap;
 }
 
 /* legend keys */
@@ -210,7 +220,7 @@
   background: var(--accent);
 }
 
-/* ── Field OFF — the same tracker, flattened back to identical rows ────────── */
+/* ── Field OFF — the same tracker, flattened back to identical cards ────────── */
 .ex-backlog[data-field='off'] .wl-item {
   --w: 0.55;
   opacity: 1;
@@ -233,28 +243,10 @@
   opacity: 0.4;
 }
 
-@media (max-width: 640px) {
-  .ex-backlog .wl-item {
-    grid-template-columns: auto minmax(0, 1fr);
-    row-gap: 0.5rem;
-  }
-  .ex-backlog .wl-num {
-    text-align: left;
-  }
-  .ex-backlog .wl-body {
-    grid-column: 1 / -1;
-  }
-  .ex-backlog .wl-comments {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-  .ex-backlog .wl-cycle {
+/* ── responsive: the lanes stack ────────────────────────────────────────────── */
+@media (max-width: 840px) {
+  .ex-backlog .wl-board {
     grid-template-columns: 1fr;
-    gap: 0.45rem;
-  }
-  .ex-backlog .wl-cycle-note {
-    white-space: normal;
   }
 }
 @media (prefers-reduced-motion: reduce) {

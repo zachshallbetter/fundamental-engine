@@ -1,67 +1,59 @@
 /* ============================================================
-   THE NEWSROOM FIELD — pageviews are mass; the cycle's direction polarizes.
+   THE NEWSROOM FIELD — pageviews are mass, and mass buys column inches:
+   the ranking is laid out as a newspaper front page. A full-width LEAD
+   (rank 1), a two-column DECK (ranks 2–7), and a dense three-column INDEX
+   for the rest. The cycle's direction polarizes the left rule + badge.
    Reuses the ev-* design system from evidence.css; everything new is
    scoped under .ex-newsroom. Tokens come from ds-tokens.css (via Base).
    ============================================================ */
 
-.ex-newsroom .nw-list {
+.ex-newsroom .nw-front {
   position: relative;
+}
+.ex-newsroom .nw-front ol {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
 }
 
-/* a row: the article's weight (--w, 0..1 log-normalized pageviews) is felt —
-   type weight, ink, and a left anchor whose color is the trend's polarity (--cat). */
+/* a story: the article's weight (--w, 0..1 log-normalized pageviews) is felt —
+   type weight and ink — while the trend's polarity (--cat) holds the left rule. */
 .ex-newsroom .nw-row {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: 2.4rem minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: clamp(0.7rem, 2vw, 1.4rem);
-  padding: 0.85rem 1.1rem;
-  border: 1px solid var(--line);
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  padding-left: 0.85rem;
   opacity: calc(0.58 + var(--w) * 0.42);
   transition:
     opacity 0.3s,
-    background 0.3s,
     border-color 0.3s;
-}
-.ex-newsroom .nw-rank {
-  font-family: var(--mono);
-  font-size: 0.78rem;
-  color: var(--text-4);
-  text-align: right;
 }
 .ex-newsroom .nw-title {
   display: block;
   min-width: 0;
   text-decoration: none;
   color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
-  font-size: clamp(0.98rem, 1.4vw, 1.12rem);
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
   font-variation-settings: 'wght' calc(380 + var(--w) * 360);
 }
 .ex-newsroom .nw-title:hover {
   color: var(--accent);
 }
+.ex-newsroom .nw-rank {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+}
 
 /* the trend badge — direction is the glyph, polarity color comes from --cat */
 .ex-newsroom .nw-chg {
-  justify-self: end;
   font-family: var(--mono);
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   white-space: nowrap;
-  padding: 0.18rem 0.5rem;
+  padding: 0.14rem 0.45rem;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 40%), var(--line));
   color: color-mix(in srgb, var(--cat, var(--accent)) calc(45% + var(--w) * 55%), var(--text-3));
@@ -70,28 +62,111 @@
 .ex-newsroom .nw-chg[data-dir="new"] {
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
 }
 
-.ex-newsroom .nw-views {
-  display: grid;
-  justify-items: end;
-  gap: 0.15rem;
-  min-width: 6.5rem;
-}
 .ex-newsroom .nw-count {
   font-family: var(--mono);
-  font-size: 1.05rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  line-height: 1;
   font-variant-numeric: tabular-nums;
   color: color-mix(in srgb, var(--text) calc(55% + var(--w) * 45%), var(--text-4));
 }
 .ex-newsroom .nw-count-l {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-4);
+}
+.ex-newsroom .nw-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+/* ── the LEAD — rank 1, full width, the masthead story ────────────────────── */
+.ex-newsroom .nw-lead {
+  padding: 0.4rem 0 1.6rem 1rem;
+  border-left-width: 4px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.5rem;
+}
+.ex-newsroom .nw-zone-l {
+  margin: 0 0 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-newsroom .nw-lead .nw-title {
+  font-size: clamp(1.9rem, 5vw, 3.1rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-variation-settings:
+    'opsz' 96,
+    'wght' calc(520 + var(--w) * 280);
+}
+.ex-newsroom .nw-lead-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0;
+}
+.ex-newsroom .nw-lead .nw-count {
+  font-size: 1.05rem;
+}
+
+/* ── the DECK — ranks 2–7, two columns with a vertical hairline ───────────── */
+.ex-newsroom .nw-deck {
+  columns: 2;
+  column-gap: 2.2rem;
+  column-rule: 1px solid var(--line);
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.5rem;
+}
+.ex-newsroom .nw-deck-item {
+  break-inside: avoid;
+  margin-bottom: 1.15rem;
+}
+.ex-newsroom .nw-deck-item .nw-title {
+  margin-top: 0.2rem;
+  font-size: clamp(1.1rem, 2vw, 1.32rem);
+  font-variation-settings:
+    'opsz' 48,
+    'wght' calc(420 + var(--w) * 320);
+}
+
+/* ── the INDEX — the rest, three dense newspaper columns ──────────────────── */
+.ex-newsroom .nw-index {
+  columns: 3;
+  column-gap: 1.8rem;
+  column-rule: 1px solid var(--line);
+}
+.ex-newsroom .nw-index-item {
+  break-inside: avoid;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+}
+.ex-newsroom .nw-index-item .nw-title {
+  display: inline;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+.ex-newsroom .nw-index-item .nw-rank {
+  margin-right: 0.35rem;
+}
+.ex-newsroom .nw-index-item .nw-meta-line {
+  margin-top: 0.25rem;
+}
+.ex-newsroom .nw-index-item .nw-count {
+  font-size: 0.72rem;
+}
+.ex-newsroom .nw-index-item .nw-chg {
+  font-size: 0.6rem;
+  padding: 0.08rem 0.35rem;
 }
 
 /* legend key: the "new" chip */
@@ -106,16 +181,20 @@
   color: var(--text-3);
 }
 
-/* ── Field OFF — the same ranking, flattened back to a plain list ─────────── */
+/* ── Field OFF — the ink flattens; placement stays (it is the day's ranking) ── */
 .ex-newsroom[data-field="off"] .nw-row {
   --w: 0.55;
   opacity: 1;
   border-left-color: var(--line);
-  background: color-mix(in srgb, var(--text) 2.5%, transparent);
 }
 .ex-newsroom[data-field="off"] .nw-title {
   color: var(--text-2);
   font-variation-settings: 'wght' 500;
+}
+.ex-newsroom[data-field="off"] .nw-lead .nw-title {
+  font-variation-settings:
+    'opsz' 96,
+    'wght' 560;
 }
 .ex-newsroom[data-field="off"] .nw-count {
   color: var(--text-2);
@@ -125,25 +204,20 @@
   color: var(--text-3);
   background: transparent;
 }
-.ex-newsroom[data-field="off"] .ev-bar {
-  opacity: 0.4;
-}
 .ex-newsroom[data-field="off"] .ev-seg {
   opacity: 0.4;
   pointer-events: none;
 }
 
-@media (max-width: 620px) {
-  .ex-newsroom .nw-row {
-    grid-template-columns: 1.8rem minmax(0, 1fr) auto;
-    row-gap: 0.5rem;
+/* ── narrow: the lead, then one column ────────────────────────────────────── */
+@media (max-width: 840px) {
+  .ex-newsroom .nw-deck,
+  .ex-newsroom .nw-index {
+    columns: 1;
+    column-rule: none;
   }
-  .ex-newsroom .nw-views {
-    grid-column: 2;
-    justify-items: start;
-  }
-  .ex-newsroom .nw-chg {
-    grid-column: 3;
+  .ex-newsroom .nw-lead {
+    padding-left: 0.85rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {

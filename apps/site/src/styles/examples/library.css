@@ -7,6 +7,13 @@
    ============================================================ */
 
 /* legend keys */
+.ex-library .lb-k-bar {
+  width: 22px;
+  height: 9px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  border-right: 2px solid var(--accent);
+}
 .ex-library .lb-k-sink {
   width: 14px;
   height: 14px;
@@ -146,7 +153,10 @@
   transform: scale(0.82) translateY(0.3rem);
 }
 
-/* ── the tracks — mass shows as weight, ink, and anchor ── */
+/* ── the tracks — a ranked bar ladder: listens are LENGTH. Each row's background
+      bar runs calc(var(--bar) * 100%) — the raw play count as a linear share of the
+      chart max, set server-side. --w (log-scaled mass) keeps driving type and ink;
+      the color lens (--cat) tints the bar. ── */
 .ex-library .lb-list {
   position: relative;
   list-style: none;
@@ -154,40 +164,65 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 .ex-library .lb-row {
   --w: 0.5;
+  --bar: 0.5;
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: 2.8rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: clamp(0.7rem, 2vw, 1.3rem);
-  padding: 0.8rem 1rem;
-  border: 1px solid var(--line);
-  border-left: 3px solid
-    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  gap: clamp(0.5rem, 1.5vw, 0.9rem);
+  padding: 0.15rem 0;
   opacity: calc(0.58 + var(--w) * 0.42);
-  transition:
-    opacity 0.3s,
-    border-color 0.3s,
-    background 0.3s;
+  transition: opacity 0.3s;
 }
-.ex-library .lb-row:hover {
-  border-color: color-mix(in srgb, var(--cat, var(--accent)) 40%, var(--line));
-}
+/* the rank — large in the left gutter */
 .ex-library .lb-rank {
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  font-weight: 600;
+  text-align: right;
+  line-height: 1;
   color: color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 55%), var(--text-4));
 }
-.ex-library .lb-body {
+/* the bar zone — the ::before IS the chart */
+.ex-library .lb-bararea {
+  position: relative;
   min-width: 0;
+  min-height: 3.1rem;
+  display: flex;
+  align-items: center;
+}
+.ex-library .lb-bararea::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--bar) * 100%);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(10% + var(--w) * 12%), transparent);
+  border-right: 2px solid color-mix(in srgb, var(--cat, var(--accent)) 60%, var(--line));
+  transition:
+    background 0.3s,
+    border-color 0.3s;
+}
+.ex-library .lb-row:hover .lb-bararea::before {
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(15% + var(--w) * 12%), transparent);
+}
+/* the title sits ON the bar — padded in from the bar's left edge */
+.ex-library .lb-body {
+  position: relative;
+  min-width: 0;
+  /* stay on the bar and clear of the count, whichever bites first */
+  max-width: min(calc(var(--bar) * 100% - 0.4rem), calc(100% - 6.6rem));
+  padding: 0.4rem 0.75rem;
 }
 .ex-library .lb-title {
   display: block;
   text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
   font-size: clamp(0.95rem, 1.4vw, 1.08rem);
   line-height: 1.3;
@@ -199,30 +234,38 @@
 }
 .ex-library .lb-meta {
   display: block;
-  margin-top: 0.3rem;
+  margin-top: 0.22rem;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--text-3);
 }
 .ex-library .lb-artist {
   color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--text-3));
 }
+/* the count — right at the bar's end (clamped inside the row for the longest bars) */
 .ex-library .lb-listens {
+  position: absolute;
+  top: 50%;
+  left: min(calc(var(--bar) * 100% + 0.65rem), calc(100% - 5.9rem));
+  transform: translateY(-50%);
   display: grid;
-  justify-items: end;
+  justify-items: start;
   line-height: 1;
+  white-space: nowrap;
+  transition: left 0.3s;
 }
 .ex-library .lb-listens b {
   font-family: var(--mono);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 60%), var(--text-3));
 }
 .ex-library .lb-listens-l {
   margin-top: 0.18rem;
-  font-size: 0.58rem;
+  font-size: 0.56rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-4);
@@ -257,11 +300,22 @@
 }
 
 /* ── Field OFF — mass stops mattering; the engine channel (the glow) goes dark.
-      The queue keeps counting: that is the UI channel, and it is honest about it. ── */
+      The bars stay (they are the data, like the rank) but lose the lens tint;
+      the queue keeps counting: that is the UI channel, and it is honest about it. ── */
 .ex-library[data-field='off'] .lb-row {
   --w: 0.55;
   opacity: 1;
-  border-left-color: var(--line);
+}
+.ex-library[data-field='off'] .lb-bararea::before {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border-right-color: var(--line);
+}
+.ex-library[data-field='off'] .lb-rank,
+.ex-library[data-field='off'] .lb-listens b {
+  color: var(--text-3);
+}
+.ex-library[data-field='off'] .lb-artist {
+  color: var(--text-3);
 }
 .ex-library[data-field='off'] .lb-queue {
   border-color: var(--line);
@@ -273,18 +327,27 @@
   pointer-events: none;
 }
 
-@media (max-width: 640px) {
+/* ── narrow: the bars stay; the gutter shrinks and the count tucks in beside
+      the title instead of floating at the bar's end ── */
+@media (max-width: 840px) {
   .ex-library .lb-row {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 1.7rem minmax(0, 1fr) auto;
+    gap: 0.45rem;
+  }
+  .ex-library .lb-rank {
+    font-size: 0.85rem;
+  }
+  .ex-library .lb-body {
+    flex: 1;
+    max-width: none;
+    padding: 0.4rem 0.55rem;
   }
   .ex-library .lb-listens {
-    grid-column: 2;
-    grid-row: 2;
-    justify-items: start;
-    margin-top: 0.4rem;
-  }
-  .ex-library .lb-add {
-    align-self: start;
+    position: static;
+    transform: none;
+    flex: none;
+    justify-items: end;
+    padding-right: 0.3rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -292,6 +355,8 @@
   .ex-library .lb-fill i,
   .ex-library .lb-chip,
   .ex-library .lb-row,
+  .ex-library .lb-bararea::before,
+  .ex-library .lb-listens,
   .ex-library .lb-add {
     transition: none;
   }

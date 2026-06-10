@@ -1,34 +1,60 @@
 /* ============================================================
-   THE MARKET FIELD — market cap is mass; the day's move polarizes.
+   THE MARKET FIELD — market cap is mass, and mass is AREA: the list is a
+   cap-weighted mosaic. Tier classes (mk-t1..mk-t4, swapped by the runtime
+   when the weighting signal changes) set each tile's grid footprint; the
+   day's move polarizes the tile's tint and badge.
    Reuses the ev-* design system from evidence.css; everything new is
    scoped under .ex-market. Tokens come from ds-tokens.css (via Base).
    ============================================================ */
 
-.ex-market .mk-list {
+.ex-market .mk-mosaic {
   position: relative;
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: 5.2rem;
+  grid-auto-flow: dense;
   gap: 0.5rem;
 }
 
-/* a row: the asset's weight (--w, 0..1 log-normalized cap or volume) is felt —
-   type weight, ink, and a left anchor whose color is the move's polarity (--cat). */
-.ex-market .mk-row {
+/* tiers — the tile's footprint is the asset's weight (--w):
+   t1 (w > 0.8) 3x2 · t2 (w > 0.55) 2x2 · t3 (w > 0.35) 2x1 · t4 1x1 */
+.ex-market .mk-t1 {
+  grid-column: span 3;
+  grid-row: span 2;
+}
+.ex-market .mk-t2 {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.ex-market .mk-t3 {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+.ex-market .mk-t4 {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* a tile: weight (--w, 0..1 log-normalized cap or volume) is felt — area (via the
+   tier class), type weight, ink, and a subtle polarity tint (--cat) over the card. */
+.ex-market .mk-tile {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: 2.4rem minmax(0, 1fr) auto auto 5.4rem;
-  align-items: center;
-  gap: clamp(0.7rem, 2vw, 1.4rem);
-  padding: 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.65rem 0.8rem;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(6% + var(--w) * 4%), transparent);
   opacity: calc(0.58 + var(--w) * 0.42);
   transition:
     opacity 0.3s,
@@ -37,21 +63,25 @@
     transform 0.2s;
 }
 .ex-market .mk-rank {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.65rem;
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: 0.62rem;
   color: var(--text-4);
-  text-align: right;
 }
 .ex-market .mk-id {
   min-width: 0;
+  max-width: 100%;
   display: flex;
   align-items: baseline;
-  gap: 0.55rem;
+  gap: 0.45rem;
+  padding-right: 1.6rem; /* clear the rank corner */
 }
 .ex-market .mk-name {
   color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
-  font-size: clamp(0.98rem, 1.4vw, 1.12rem);
-  line-height: 1.3;
+  font-size: clamp(0.92rem, 0.85rem + var(--w) * 0.55rem, 1.45rem);
+  line-height: 1.2;
   letter-spacing: -0.01em;
   font-variation-settings: 'wght' calc(380 + var(--w) * 360);
   white-space: nowrap;
@@ -60,56 +90,43 @@
 }
 .ex-market .mk-sym {
   font-family: var(--mono);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-4);
   flex: none;
 }
 
-/* the week's price path — one <path>, scaled to the row's own min/max */
-.ex-market .mk-spark {
-  width: clamp(4.4rem, 9vw, 7.5rem);
-  height: 28px;
-  flex: none;
-  overflow: visible;
-  transition: opacity 0.3s;
-}
-.ex-market .mk-spark path {
-  fill: none;
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-  opacity: calc(0.45 + var(--w) * 0.55);
-}
-
 .ex-market .mk-quote {
-  display: grid;
-  justify-items: end;
-  gap: 0.15rem;
-  min-width: 6.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
 }
 .ex-market .mk-price {
   font-family: var(--mono);
-  font-size: 0.98rem;
+  font-size: clamp(0.82rem, 0.78rem + var(--w) * 0.3rem, 1.1rem);
   font-weight: 600;
   line-height: 1;
+  white-space: nowrap;
   color: color-mix(in srgb, var(--text) calc(55% + var(--w) * 45%), var(--text-4));
 }
 .ex-market .mk-cap {
   font-family: var(--mono);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--text-4);
 }
 
 /* the change badge — direction is the glyph, polarity color comes from --cat */
 .ex-market .mk-chg {
-  justify-self: end;
   font-family: var(--mono);
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   white-space: nowrap;
-  padding: 0.18rem 0.5rem;
+  padding: 0.16rem 0.45rem;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 40%), var(--line));
   color: color-mix(in srgb, var(--cat, var(--accent)) calc(45% + var(--w) * 55%), var(--text-3));
@@ -121,6 +138,84 @@
   display: none;
 }
 
+/* the week's price path — big tiles only; it fills the tile bottom */
+.ex-market .mk-spark {
+  display: none;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.ex-market .mk-spark path {
+  fill: none;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  opacity: calc(0.45 + var(--w) * 0.55);
+}
+
+/* ── tier content: what fits, shows ─────────────────────────────────────────
+   t1/t2 (big): name · symbol · price · badge · sparkline along the bottom */
+.ex-market .mk-t1,
+.ex-market .mk-t2 {
+  padding-bottom: 3.4rem; /* room for the sparkline strip */
+}
+.ex-market .mk-t1 .mk-quote,
+.ex-market .mk-t2 .mk-quote {
+  margin-top: auto;
+}
+.ex-market .mk-t1 .mk-spark,
+.ex-market .mk-t2 .mk-spark {
+  display: block;
+  position: absolute;
+  left: 0.2rem;
+  right: 0.2rem;
+  bottom: 0;
+  width: calc(100% - 0.4rem);
+  height: 3rem;
+}
+
+/* t3 (mid): name · symbol · price · badge, one compact card */
+.ex-market .mk-t3 {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  align-content: space-between;
+  gap: 0.2rem 0.5rem;
+}
+.ex-market .mk-t3 .mk-id {
+  flex-basis: 100%; /* name on its own line; price + badge share the second */
+}
+.ex-market .mk-t3 .mk-quote {
+  margin-right: auto;
+}
+.ex-market .mk-t3 .mk-cap {
+  display: none;
+}
+.ex-market .mk-t3 .mk-chg {
+  align-self: center;
+}
+
+/* t4 (small): just the symbol and the move */
+.ex-market .mk-t4 {
+  justify-content: space-between;
+}
+.ex-market .mk-t4 .mk-rank,
+.ex-market .mk-t4 .mk-name,
+.ex-market .mk-t4 .mk-quote {
+  display: none;
+}
+.ex-market .mk-t4 .mk-id {
+  padding-right: 0;
+}
+.ex-market .mk-t4 .mk-sym {
+  font-size: 0.74rem;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+}
+.ex-market .mk-t4 .mk-chg {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
 /* legend key: a tiny sparkline glyph */
 .ex-market .mk-k-spark {
   width: 20px;
@@ -130,49 +225,108 @@
   transform: skewY(-8deg);
 }
 
-/* ── Field OFF — the same snapshot, flattened back to a plain table ───────── */
-.ex-market[data-field="off"] .mk-row {
+/* re-tiered tiles cannot FLIP a size change — they settle with a fade instead */
+@keyframes mk-retier-settle {
+  from {
+    opacity: 0.15;
+  }
+  to {
+    opacity: calc(0.58 + var(--w) * 0.42);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ex-market .mk-tile[data-mk-retiered] {
+    animation: mk-retier-settle 0.4s ease-out both;
+  }
+}
+
+/* ── Field OFF — mass stops mattering: an even grid, even ink ─────────────── */
+.ex-market[data-field="off"] .mk-tile {
+  grid-column: span 2;
+  grid-row: span 1;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  align-content: space-between;
+  gap: 0.2rem 0.5rem;
+  padding-bottom: 0.65rem;
   opacity: 1;
   border-left-color: var(--line);
   background: color-mix(in srgb, var(--text) 2.5%, transparent);
 }
+.ex-market[data-field="off"] .mk-id {
+  flex-basis: 100%;
+}
+.ex-market[data-field="off"] .mk-quote {
+  display: flex;
+}
+.ex-market[data-field="off"] .mk-rank {
+  display: block;
+}
 .ex-market[data-field="off"] .mk-name {
+  display: block;
   color: var(--text-2);
+  font-size: 0.95rem;
   font-variation-settings: 'wght' 500;
+}
+.ex-market[data-field="off"] .mk-sym {
+  color: var(--text-4);
+  font-size: 0.66rem;
+}
+.ex-market[data-field="off"] .mk-quote {
+  margin: 0 auto 0 0;
 }
 .ex-market[data-field="off"] .mk-price {
   color: var(--text-2);
+  font-size: 0.85rem;
+}
+.ex-market[data-field="off"] .mk-cap {
+  display: none;
 }
 .ex-market[data-field="off"] .mk-spark {
-  opacity: 0.45;
+  display: none;
 }
 .ex-market[data-field="off"] .mk-chg {
-  border-color: var(--line);
+  align-self: center;
+  border: 1px solid var(--line);
+  padding: 0.16rem 0.45rem;
+  border-radius: 999px;
   color: var(--text-3);
   background: transparent;
 }
 
-@media (max-width: 720px) {
-  .ex-market .mk-row {
-    grid-template-columns: 1.8rem minmax(0, 1fr) auto;
-    row-gap: 0.5rem;
+/* ── narrow: 3 columns, tiers capped at 2-wide ────────────────────────────── */
+@media (max-width: 840px) {
+  .ex-market .mk-mosaic {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 4.8rem;
+    gap: 0.4rem;
   }
-  .ex-market .mk-spark {
-    grid-column: 2;
-    justify-self: start;
+  .ex-market .mk-t1,
+  .ex-market .mk-t2 {
+    grid-column: span 2;
+    grid-row: span 2;
+    padding-bottom: 2.8rem;
   }
-  .ex-market .mk-quote {
-    grid-column: 3;
-    grid-row: 1;
-    justify-items: end;
+  .ex-market .mk-t1 .mk-spark,
+  .ex-market .mk-t2 .mk-spark {
+    height: 2.4rem;
   }
-  .ex-market .mk-chg {
-    grid-column: 3;
-    grid-row: 2;
+  .ex-market .mk-t3 {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+  .ex-market .mk-t4 {
+    grid-column: span 1;
+  }
+  .ex-market[data-field="off"] .mk-tile {
+    grid-column: span 3;
+    grid-row: span 1;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .ex-market .mk-row {
+  .ex-market .mk-tile {
     transition: none;
   }
 }

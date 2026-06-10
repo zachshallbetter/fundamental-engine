@@ -1,8 +1,11 @@
-// Market Field runtime. field-ui as an INVISIBLE measurement layer over a CoinGecko snapshot:
-//   · Field on/off — off, the page collapses to a plain table (CSS via [data-field]); the scoped
-//     field is destroyed. On, the field runs and cap shows in the type.
-//   · Weight by cap / volume — recompute each row's --w from the chosen signal, then re-sort
-//     with a FLIP reflow so you watch the field re-settle.
+// Market Field runtime. field-ui as an INVISIBLE measurement layer over a CoinGecko snapshot,
+// laid out as a cap-weighted mosaic — mass is AREA:
+//   · Field on/off — off, the mosaic collapses to an even grid (CSS via [data-field]); the scoped
+//     field is destroyed. On, the field runs and cap shows in tile area and type.
+//   · Weight by cap / volume — recompute each tile's --w from the chosen signal, RE-TIER (swap
+//     the mk-t1..mk-t4 span class), then re-sort. Tiles whose footprint is unchanged FLIP in 2D
+//     (translate(dx, dy)); re-tiered tiles settle with a fade — translate cannot honestly animate
+//     a size change, and scaling tiles of live text looks worse than a settle.
 //   · Move window 24h / 7d — repolarize: --cat encodes direction (hue) and magnitude (intensity).
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
@@ -24,9 +27,13 @@ const catFor = (chg: number): string => {
 };
 
 const HINTS: Record<MarketWeight, string> = {
-  cap: "<b>size</b> = market cap — the heavier the asset, the harder it anchors",
-  volume: "<b>size</b> = 24h volume — where the trading actually happened",
+  cap: "<b>area</b> = market cap — the heavier the asset, the more page it takes",
+  volume: "<b>area</b> = 24h volume — where the trading actually happened",
 };
+
+// tier: the tile's grid footprint — must match tierOf() in market.astro.
+const TIERS = ["mk-t1", "mk-t2", "mk-t3", "mk-t4"] as const;
+const tierOf = (w: number): string => (w > 0.8 ? "mk-t1" : w > 0.55 ? "mk-t2" : w > 0.35 ? "mk-t3" : "mk-t4");
 const LENS_HINTS: Record<MarketLens, string> = {
   "24h": "<b>color</b> = the 24-hour move — direction is hue, magnitude is intensity",
   "7d": "<b>color</b> = the 7-day move — the week's drift, not the day's noise",
@@ -37,7 +44,7 @@ function initMarket(): () => void {
   if (!page) return () => {};
   const ac = new AbortController();
   const list = page.querySelector<HTMLElement>("[data-mk-list]");
-  const rows = (): HTMLElement[] => [...page.querySelectorAll<HTMLElement>(".mk-row")];
+  const rows = (): HTMLElement[] => [...page.querySelectorAll<HTMLElement>(".mk-tile")];
   const fieldBtn = page.querySelector<HTMLButtonElement>("[data-mk-field]");
   const weightBtns = [...page.querySelectorAll<HTMLButtonElement>("[data-mk-weight]")];
   const lensBtns = [...page.querySelectorAll<HTMLButtonElement>("[data-mk-lens]")];
@@ -57,7 +64,10 @@ function initMarket(): () => void {
     }
   };
 
-  // ── weighting — recompute --w + data-strength, then FLIP re-sort ──────────
+  // ── weighting — recompute --w + data-strength, RE-TIER, then FLIP re-sort ──
+  // Tiles that keep their footprint FLIP in 2D (the mosaic moves them on both
+  // axes); tiles whose tier changed settle with a fade — a translate cannot
+  // honestly animate a size change.
   const reweight = (): void => {
     if (!list) return;
     const all = rows();
@@ -65,23 +75,46 @@ function initMarket(): () => void {
       Number(weight === "cap" ? r.dataset.cap : r.dataset.volume) || 0;
     const lmin = Math.log(Math.min(...all.map(valOf)) + 1);
     const lmax = Math.log(Math.max(...all.map(valOf)) + 1);
-    // 1) set the new weight on every row (drives the type + the scoped field's pull)
+    // 0) first: where every tile sits now (top AND left — the mosaic is 2D)
+    const first = new Map(all.map((r) => [r, r.getBoundingClientRect()]));
+    // 1) set the new weight on every tile (drives the type + the scoped field's
+    //    pull) and swap the tier class — mass is area, so reweighting resizes
+    const retiered = new Set<HTMLElement>();
     for (const r of all) {
       const w = lmax > lmin ? (Math.log(valOf(r) + 1) - lmin) / (lmax - lmin) : 1;
       r.style.setProperty("--w", w.toFixed(3));
       r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      const next = tierOf(w);
+      if (!r.classList.contains(next)) {
+        r.classList.remove(...TIERS);
+        r.classList.add(next);
+        retiered.add(r);
+      }
     }
-    // 2) re-sort by the signal, FLIP-animating the reflow
+    // 2) re-sort by the signal, then animate the reflow
     const ordered = [...all].sort((a, b) => valOf(b) - valOf(a));
-    const firstTop = new Map(all.map((r) => [r, r.getBoundingClientRect().top]));
     ordered.forEach((r) => list.appendChild(r));
     ordered.forEach((r, i) => {
       const rank = r.querySelector(".mk-rank");
       if (rank) rank.textContent = String(i + 1).padStart(2, "0");
+      r.removeAttribute("data-mk-retiered");
       if (reduceMotion()) return;
-      const dy = (firstTop.get(r) ?? 0) - r.getBoundingClientRect().top;
-      if (!dy) return;
-      r.style.transform = `translateY(${dy}px)`;
+      if (retiered.has(r)) {
+        // restart the fade-settle (the attribute hooks the CSS animation)
+        void r.offsetWidth;
+        r.setAttribute("data-mk-retiered", "");
+        r.addEventListener("animationend", () => r.removeAttribute("data-mk-retiered"), {
+          once: true,
+        });
+        return;
+      }
+      const was = first.get(r);
+      if (!was) return;
+      const now = r.getBoundingClientRect();
+      const dx = was.left - now.left;
+      const dy = was.top - now.top;
+      if (!dx && !dy) return;
+      r.style.transform = `translate(${dx}px, ${dy}px)`;
       r.style.transition = "none";
       requestAnimationFrame(() => {
         r.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
