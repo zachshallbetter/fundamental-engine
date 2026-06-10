@@ -1,0 +1,98 @@
+name: API surface
+
+# Visibility, not a blocker: when a PR touches the packages or the frozen-surface data,
+# diff the declared public API surface (scripts/api-surface.data.mjs) between the merge
+# base and the PR head and post the delta as a PR comment — so an addition vs. a
+# removal/rename is reviewed as the exact contract change it is, not just a red/green
+# light. The *blocker* for breakage stays `pnpm check:api` in ci.yml.
+#
+# The surface data file is a plain importable module, so no build is needed on either
+# side. Untrusted PR fields are never interpolated into run: steps — the diff is
+# computed and posted entirely inside github-script.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/**"
+      - "scripts/api-surface*"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: "api-surface-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
+
+jobs:
+  diff:
+    name: frozen-surface diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Extract base surface
+        run: |
+          # HEAD is the PR merge commit; HEAD^1 is the base tip.
+          git show HEAD^1:scripts/api-surface.data.mjs > /tmp/api-surface-base.mjs
+
+      - name: Diff and comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { pathToFileURL } = require('node:url');
+            const surfaceLines = async (path) => {
+              const mod = await import(pathToFileURL(path).href);
+              const lines = [];
+              for (const [exportName, value] of Object.entries(mod)) {
+                if (!Array.isArray(value)) continue;
+                for (const entry of value) {
+                  if (typeof entry !== 'object' || entry === null) continue;
+                  const id = entry.name ?? entry.tag ?? entry.attr ?? entry.item ?? JSON.stringify(entry);
+                  lines.push(`${exportName} · ${entry.pkg ?? ''} · ${id}`);
+                }
+              }
+              return new Set(lines);
+            };
+
+            const base = await surfaceLines('/tmp/api-surface-base.mjs');
+            const head = await surfaceLines(`${process.env.GITHUB_WORKSPACE}/scripts/api-surface.data.mjs`);
+            const added = [...head].filter((l) => !base.has(l)).sort();
+            const removed = [...base].filter((l) => !head.has(l)).sort();
+
+            const marker = '<!-- api-surface-diff -->';
+            let body;
+            if (!added.length && !removed.length) {
+              body = `${marker}\n**API surface:** no change to the frozen public surface.`;
+            } else {
+              const fmt = (lines) => lines.map((l) => `- \`${l}\``).join('\n');
+              body = [
+                marker,
+                '**API surface delta** (frozen public contract — see `docs/canonical/field-ui-api-stability.md`):',
+                added.length ? `\n**Added** (allowed in a patch):\n${fmt(added)}` : '',
+                removed.length
+                  ? `\n**Removed / renamed** (BREAKING — needs a 0.MINOR bump + CHANGELOG migration note):\n${fmt(removed)}`
+                  : '',
+              ].filter(Boolean).join('\n');
+            }
+
+            // Upsert one comment per PR; only create it when there is a real delta.
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
+            const existing = comments.data.find((c) => c.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else if (added.length || removed.length) {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            } else {
+              core.info('no surface delta — no comment');
+            }

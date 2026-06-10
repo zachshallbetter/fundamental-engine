@@ -1,5 +1,11 @@
 name: CI
 
+# The always-on gate: every push to main and every PR runs the full verification gate
+# plus the e2e matrix, and a mandatory `conclusion` job asserts every dependency
+# SUCCEEDED — a skipped or cancelled job can never count as green. `conclusion` is the
+# required status check on main's branch protection; the same gate re-runs in
+# release.yml before any publish (see RELEASING.md).
+
 on:
   push:
     branches: [main]
@@ -10,21 +16,26 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: "ci-${{ github.event.pull_request.number || github.ref }}"
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: 22
+
 jobs:
-  verify:
+  gate:
     name: typecheck · test · build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false # never expose the token to later steps
 
       - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - name: Install
@@ -71,3 +82,61 @@ jobs:
       # fail if the committed manifest drifted from the annotated <field-root>/<field-cell> classes.
       - name: Check custom-elements manifest
         run: pnpm check:cem
+
+  e2e:
+    name: "e2e · ${{ matrix.project }}"
+    runs-on: ubuntu-latest
+    needs: gate
+    strategy:
+      fail-fast: false # report every browser's failure, not just the first
+      matrix:
+        project: [chromium, webkit, mobile]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # the `mobile` project is Pixel 7 emulation — it runs on the chromium engine.
+      - name: Install Playwright browser
+        run: pnpm --filter @field-ui/site exec playwright install --with-deps ${{ matrix.project == 'webkit' && 'webkit' || 'chromium' }}
+
+      # `pnpm build` builds the packages in topological order (the site's workspace deps
+      # resolve from their dist) and then the Astro site itself — the e2e suite runs against
+      # the built dist via `astro preview` (see apps/site/playwright.config.ts).
+      - name: Build (packages + site)
+        run: pnpm build
+
+      - name: E2E
+        run: pnpm --filter @field-ui/site test:e2e --project=${{ matrix.project }}
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: apps/site/playwright-report
+          retention-days: 7
+
+  # The required status check. Runs even when a dependency fails (never when the whole run
+  # is cancelled), and passes only if EVERY dependency result is "success" — GitHub would
+  # otherwise count a skipped job as a satisfied requirement.
+  conclusion:
+    name: conclusion
+    needs: [gate, e2e]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs succeeded
+        run: |
+          jq -C <<< '${{ toJson(needs) }}'
+          jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
