@@ -358,24 +358,88 @@
   filter: drop-shadow(0 0 calc(var(--live) * 6px) var(--cat, var(--accent)));
 }
 
-/* ── entry draw-in — paths carry pathLength="1", so dasharray math is trivial.
+/* ── entry draw-in — paths carry pathLength="100". Pre-entry hiding is by
+      OPACITY only; the draw is a one-shot KEYFRAME animation, and the dash
+      values live exclusively inside its keyframes. The base rule sets NO
+      stroke-dasharray, so once the animation completes (no fill mode) a drawn
+      line's steady state computes stroke-dasharray: none — a clean stroke,
+      no dash precision artifacts.
       The runtime marks the mosaic [data-mk-anim] and adds .mk-in when a tile
       enters the viewport at reading pace (--field-scroll-v < 2); when the user
       is scanning fast it adds .mk-in-instant too, so the line is simply there.
       No JS / reduced motion: the path stays fully drawn. ── */
 @media (prefers-reduced-motion: no-preference) {
   .ex-market .mk-mosaic[data-mk-anim] .mk-tile:not(.mk-in) .mk-spark path {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
+    opacity: 0;
   }
   .ex-market .mk-mosaic[data-mk-anim] .mk-tile.mk-in .mk-spark path {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 0;
-    transition: stroke-dashoffset 0.8s ease-out;
+    animation: mk-spark-draw 0.8s ease-out;
   }
   .ex-market .mk-mosaic[data-mk-anim] .mk-tile.mk-in.mk-in-instant .mk-spark path {
-    transition: none;
+    animation: none;
   }
+}
+@keyframes mk-spark-draw {
+  from {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+  to {
+    /* dasharray repeated here so it never interpolates against `none`
+       (a discrete flip would pop the line in at the midpoint) */
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── live price tick — a one-shot flash on the price when a poll moves it:
+      teal when it ticked up, red when down. The runtime adds the class and
+      removes it on animationend (and skips it under reduced motion). ── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes mk-tick-up {
+    from {
+      color: hsl(163 78% 56%);
+    }
+  }
+  @keyframes mk-tick-down {
+    from {
+      color: hsl(348 82% 64%);
+    }
+  }
+  .ex-market .mk-price.mk-tick-up {
+    animation: mk-tick-up 0.9s ease-out;
+  }
+  .ex-market .mk-price.mk-tick-down {
+    animation: mk-tick-down 0.9s ease-out;
+  }
+}
+
+/* ── live status chip — "live · updated Ns ago" / "snapshot · <date>" ────── */
+.ex-market .mk-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.ex-market .mk-status-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.ex-market .mk-status[data-live="on"] .mk-status-dot {
+  background: hsl(163 72% 50%);
+  box-shadow: 0 0 6px hsl(163 72% 50% / 0.55);
 }
 
 /* field off: the live channels go dark with the rest of the field */

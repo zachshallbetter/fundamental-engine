@@ -116,6 +116,34 @@ const SNIP_CSS = `.wl-title {
       + var(--field-attention, 0) * 4%),
     transparent);
 }`;
+
+const SNIP_DRAG = `// hand-rolled pointer drag — no library, no HTML5 DnD.
+card.addEventListener("pointerdown", (e) => {
+  if (e.target.closest("a")) return; // links still click
+  pend(e); // arms only after 6px of travel
+});
+function lift(card, e) { // past the threshold
+  card.setPointerCapture(e.pointerId);
+  placeholderFor(card); // a gap holds the origin slot
+  card.classList.add("wl-drag"); // fixed, grabbing,
+                                 // touch-action: none
+  // pick a card up and the field re-measures it in
+  // flight: data-active marks the body engaged, so the
+  // attention metric writes a rising --field-attention.
+  card.setAttribute("data-active", "");
+}
+function track(e) { // every pointermove
+  card.style.transform = \`translate(\${e.clientX - x0}px,
+    \${e.clientY - y0}px) scale(1.03)\`;
+  placeSlotIndicator(e); // the slim line between cards
+  edgeScroll(e.clientY); // ±60px, proportional speed
+}
+function drop() { // pointerup — Esc/pointercancel aborts
+  insertAtSlot(card); // displaced cards FLIP-settle
+  card.removeAttribute("data-active");
+  recountLanes(); // counts + cycle bar go "(local)"
+  save(); // localStorage only — GitHub is never written
+}`;
 ---
 
 <ExampleShell
@@ -142,7 +170,9 @@ const SNIP_CSS = `.wl-title {
       and <strong>Shipped</strong>, and the shipping cycle has visible capacity — everything
       closed or merged in the {CYCLE_DAYS} days before the snapshot accretes into the bar that
       heads the Shipped lane. Switch the weighting and watch each lane re-settle;
-      <strong>toggle the field off</strong> and it collapses to a plain tracker.
+      <strong>toggle the field off</strong> and it collapses to a plain tracker. And the cards
+      <strong>drag</strong> — pick one up and triage the board by hand. It's a local sandbox:
+      the arrangement saves in your browser, and GitHub is never written.
     </p>
   </header>
 
@@ -185,15 +215,37 @@ const SNIP_CSS = `.wl-title {
     </li>
   </ul>
 
-  <div class="wl-board" data-wl-zone>
-    <section class="wl-lane" aria-labelledby="wl-open-h">
-      <h2 class="wl-h" id="wl-open-h">In flight <span class="wl-h-n">{inFlight.length}</span></h2>
-      <ol class="wl-list" data-wl-list>
+  <!-- honesty: the drag is a LOCAL triage sandbox — nothing here writes back to GitHub. -->
+  <div class="wl-triage">
+    <p class="wl-triage-note">drag to triage — <strong>local only, GitHub unchanged</strong></p>
+    <button type="button" class="wl-reset" data-wl-reset disabled>reset board</button>
+  </div>
+  <p class="wl-sr" id="wl-dnd-help">
+    Draggable work item. Press Space or Enter to lift the card, then arrow keys to move it: up
+    and down within the lane, left and right across lanes. Press Space or Enter again to drop,
+    or Escape to cancel. Rearranging is a local triage sandbox — GitHub is not modified.
+  </p>
+  <p class="wl-sr" role="status" aria-live="polite" data-wl-announce></p>
+
+  <div
+    class="wl-board"
+    data-wl-zone
+    data-wl-snapshot={snapshot}
+    data-wl-capacity={CAPACITY}
+    data-wl-days={CYCLE_DAYS}
+  >
+    <section class="wl-lane" aria-labelledby="wl-open-h" data-wl-lane="open">
+      <h2 class="wl-h" id="wl-open-h">
+        In flight <span class="wl-h-n" data-wl-count>{inFlight.length}</span>
+      </h2>
+      <ol class="wl-list" data-wl-list="open">
         {
           inFlight.map((it) => (
             <li
               class="wl-item"
               id={`wi-${it.number}`}
+              tabindex="0"
+              aria-describedby="wl-dnd-help"
               data-body="attract"
               data-feedback
               data-hot
@@ -201,6 +253,7 @@ const SNIP_CSS = `.wl-title {
               data-strength={(0.4 + it.w * 1.6).toFixed(2)}
               data-act={it.act.toFixed(4)}
               data-rec={it.rec.toFixed(4)}
+              data-closed={it.closedAt || undefined}
               data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
               style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
             >
@@ -221,8 +274,10 @@ const SNIP_CSS = `.wl-title {
       </ol>
     </section>
 
-    <section class="wl-lane wl-lane--shipped" aria-labelledby="wl-shipped-h">
-      <h2 class="wl-h" id="wl-shipped-h">Shipped <span class="wl-h-n">{shipped.length}</span></h2>
+    <section class="wl-lane wl-lane--shipped" aria-labelledby="wl-shipped-h" data-wl-lane="shipped">
+      <h2 class="wl-h" id="wl-shipped-h">
+        Shipped <span class="wl-h-n" data-wl-count>{shipped.length}</span>
+      </h2>
 
       <!-- the lane's header is the cycle sink: a real sink body in the scoped field. The
            bar's fill is data arithmetic (shipped / capacity); the glow reads the engine's
@@ -241,10 +296,15 @@ const SNIP_CSS = `.wl-title {
         data-over={cycleCount > CAPACITY ? "" : undefined}
       >
         <span class="wl-cycle-label">
-          this cycle: <b>{cycleCount}/{CAPACITY}</b> shipped
+          this cycle: <b data-wl-cycle-count>{cycleCount}/{CAPACITY}</b> shipped<span
+            class="wl-cycle-local"
+            data-wl-local
+            hidden> (local)</span>
         </span>
-        <span class="wl-cycle-bar" aria-hidden="true"><i style={`width:${cyclePct}%`}></i></span>
-        <span class="wl-cycle-note">
+        <span class="wl-cycle-bar" aria-hidden="true"
+          ><i data-wl-cycle-fill style={`width:${cyclePct}%`}></i></span
+        >
+        <span class="wl-cycle-note" data-wl-cycle-note>
           {
             cycleCount > CAPACITY
               ? `the ${CYCLE_DAYS} days before the snapshot ran ${cycleRatio}× the stated capacity`
@@ -253,12 +313,14 @@ const SNIP_CSS = `.wl-title {
         </span>
       </div>
 
-      <ol class="wl-list wl-list--shipped" data-wl-list>
+      <ol class="wl-list wl-list--shipped" data-wl-list="shipped">
         {
           shipped.map((it) => (
             <li
               class="wl-item wl-item--shipped"
               id={`wi-${it.number}`}
+              tabindex="0"
+              aria-describedby="wl-dnd-help"
               data-body="attract"
               data-feedback
               data-hot
@@ -266,6 +328,7 @@ const SNIP_CSS = `.wl-title {
               data-strength={(0.4 + it.w * 1.6).toFixed(2)}
               data-act={it.act.toFixed(4)}
               data-rec={it.rec.toFixed(4)}
+              data-closed={it.closedAt || undefined}
               data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
               style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
             >
@@ -298,7 +361,9 @@ const SNIP_CSS = `.wl-title {
       hidden engine writes <code>--d</code> (local particle density) to every
       <code>data-hot</code> card each frame, and the scoped recipe's attention lane writes an
       eased <code>--field-attention</code> — CSS turns both into a felt glow and lift, and both
-      go quiet when the field is off.
+      go quiet when the field is off. The drag is hand-rolled pointer events — no library, no
+      HTML5 drag-and-drop — and it's a local triage sandbox: the arrangement persists to
+      <code>localStorage</code>, and GitHub is never written.
     </p>
 
     <div class="ev-how-cols">
@@ -330,9 +395,23 @@ const SNIP_CSS = `.wl-title {
         <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIP_CSS }]} />
         <p class="ev-how-note">
           Switching the lens re-blends <code>--w</code> from <code>data-act</code> and
-          <code>data-rec</code>, then FLIP re-sorts each lane so the reflow is felt, not cut.
-          The glow and lift read <code>--d</code> and <code>--field-attention</code> — both
-          written by the running field, both zeroed when it's off.
+          <code>data-rec</code>, then FLIP re-sorts each lane so the reflow is felt, not cut —
+          on the <em>current</em> arrangement, so re-sorting a hand-triaged lane re-orders it;
+          the lens always wins the order. The glow and lift read <code>--d</code> and
+          <code>--field-attention</code> — both written by the running field, both zeroed when
+          it's off.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">4 — the drag is pointer events, by hand</p>
+        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIP_DRAG }]} />
+        <p class="ev-how-note">
+          Pick a card up and the field re-measures it in flight: <code>data-active</code> marks
+          the dragged body as engaged, so the attention lane's <code>--field-attention</code>
+          rises while you hold it. Drops FLIP-settle the displaced cards, recount both lanes,
+          and re-run the cycle arithmetic — marked <b>(local)</b> when it diverges from the
+          snapshot. Keyboard works too: Space lifts, arrows move, Escape cancels.
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>

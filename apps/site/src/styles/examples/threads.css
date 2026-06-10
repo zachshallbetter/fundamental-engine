@@ -40,6 +40,46 @@
   background: color-mix(in srgb, var(--accent) 45%, transparent);
   box-shadow: 0 0 8px var(--accent);
 }
+.ex-threads .th-k-caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--text-3);
+}
+
+/* bulk collapse — text buttons; with 160 comments this is the reading workflow */
+.ex-threads .th-bulk {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.7rem;
+}
+.ex-threads .th-bulk-btn {
+  appearance: none;
+  border: 0;
+  padding: 0.1rem 0.2rem;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color 0.18s;
+}
+.ex-threads .th-bulk-btn:hover {
+  color: var(--accent);
+}
+.ex-threads .th-bulk-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.ex-threads .th-bulk-sep {
+  color: var(--text-4);
+  font-size: 0.68rem;
+}
 
 /* the story being discussed */
 .ex-threads .th-story {
@@ -199,6 +239,65 @@
   border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
   color: color-mix(in srgb, var(--cat, var(--accent)) 70%, var(--text-2));
 }
+
+/* the subtree caret — a real button in the comment's gutter line; the triangle
+   rotates closed when its subtree is collapsed */
+.ex-threads .th-caret {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text-3);
+  cursor: pointer;
+  flex: none;
+  align-self: center;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-threads .th-caret::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.18s;
+}
+.ex-threads .th-caret[aria-expanded='false']::before {
+  transform: rotate(-90deg);
+}
+.ex-threads .th-caret:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+}
+.ex-threads .th-caret:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 1px;
+}
+
+/* the placeholder chip while a subtree is hidden */
+.ex-threads .th-hidden-n {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) 75%, var(--text-2));
+}
+/* a collapsed comment keeps its place but reads "folded" — the anchor goes dashed */
+.ex-threads .th-c[data-collapsed] > .th-row {
+  border-left-style: dashed;
+}
 .ex-threads .th-text {
   margin: 0.35rem 0 0;
   font-size: 0.88rem;
@@ -257,6 +356,9 @@
   }
   .ex-threads .th-c.lit .th-row {
     transform: none;
+  }
+  .ex-threads .th-caret::before {
+    transition: none;
   }
 }
 

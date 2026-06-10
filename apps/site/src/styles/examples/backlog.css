@@ -208,6 +208,146 @@
   color: var(--text-4);
 }
 
+/* ── drag — triage by hand (a LOCAL sandbox; GitHub is never written) ─────────
+   The drag is hand-rolled pointer events. At rest the cards keep the default
+   touch-action so the page scrolls normally; .wl-drag (drag only) sets
+   touch-action: none. The ORIGINAL card lifts to position:fixed while a
+   placeholder holds its slot; a slim indicator marks the drop slot. */
+.ex-backlog .wl-item {
+  cursor: grab;
+}
+.ex-backlog .wl-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ex-backlog .wl-item .wl-title {
+  cursor: pointer; /* the link stays a link — pointerdown on it never arms a drag */
+}
+.ex-backlog.wl-grabbing,
+.ex-backlog.wl-grabbing * {
+  cursor: grabbing;
+}
+.ex-backlog.wl-grabbing {
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* the card in flight: data-active is set, so the attention metric reads it as
+   engaged and --field-attention rises — the field re-measures the drag itself */
+.ex-backlog .wl-item.wl-drag {
+  position: fixed;
+  z-index: 60;
+  margin: 0;
+  touch-action: none;
+  opacity: 1;
+  transition: none;
+  background: color-mix(in srgb, var(--text) 7%, var(--bg));
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
+  box-shadow:
+    0 22px 48px -12px rgb(0 0 0 / 0.6),
+    0 0 0 1px color-mix(in srgb, var(--cat, var(--accent)) 35%, transparent),
+    0 0 calc((var(--live) + var(--field-attention, 0)) * 14px) -4px
+      color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+}
+/* the gap the card left behind */
+.ex-backlog .wl-placeholder {
+  list-style: none;
+  border: 1px dashed color-mix(in srgb, var(--text) 22%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 1.2%, transparent);
+}
+/* the slim insertion indicator — negative block margins cancel its height + the
+   flex gap exactly, so it sits centered in the existing gap without shifting cards */
+.ex-backlog .wl-indicator {
+  list-style: none;
+  position: relative;
+  z-index: 6;
+  height: 3px;
+  margin-block: calc((0.55rem + 3px) / -2);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent);
+  pointer-events: none;
+}
+/* the lane under the pointer */
+.ex-backlog .wl-lane[data-wl-drop] {
+  outline: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  outline-offset: 2px;
+}
+/* keyboard lift — Space/Enter; arrows move; Esc cancels */
+.ex-backlog .wl-item.wl-kb {
+  z-index: 10;
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow:
+    0 12px 32px -10px rgb(0 0 0 / 0.5),
+    0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ex-backlog .wl-item.wl-kb {
+    transform: scale(1.02);
+  }
+}
+
+/* ── the honesty bar — drag is local triage, GitHub unchanged ── */
+.ex-backlog .wl-triage {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 0 0 0.8rem;
+}
+.ex-backlog .wl-triage-note {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+.ex-backlog .wl-triage-note strong {
+  color: var(--text-3);
+  font-weight: 600;
+}
+.ex-backlog .wl-reset {
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-3);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ex-backlog .wl-reset:hover {
+  color: var(--accent);
+}
+.ex-backlog .wl-reset:disabled {
+  opacity: 0.35;
+  text-decoration: none;
+  cursor: default;
+}
+/* the cycle label's "(local)" marker — the arrangement diverged from the server */
+.ex-backlog .wl-cycle-local {
+  color: var(--accent);
+  font-weight: 600;
+}
+/* visually hidden (keyboard instructions + the aria-live announcer) */
+.ex-backlog .wl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* four how-built columns on this page → a 2×2 grid */
+.ex-backlog .ev-how-cols {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 /* legend keys */
 .ex-backlog .wl-k-kinds {
   gap: 0.25rem;
@@ -282,6 +422,10 @@
 /* ── responsive: the lanes stack ────────────────────────────────────────────── */
 @media (max-width: 840px) {
   .ex-backlog .wl-board {
+    grid-template-columns: 1fr;
+  }
+  /* restate the shared stack — the 2×2 how-built override above out-specifies it */
+  .ex-backlog .ev-how-cols {
     grid-template-columns: 1fr;
   }
 }

@@ -125,6 +125,32 @@ const recipe = {
 };
 // the pipeline writes --field-attention per card (eased 0..1)`;
 
+const SNIPPET_VIEWS = `// three geometries, one contract — every
+// view renders the same 30 launches
+// as the same bodies:
+const render =
+  { day, week, month }[view];
+
+viewAc?.abort(); // the old view's
+viewAc =         // listeners die with it
+  new AbortController();
+zone.innerHTML = render(records, now);
+
+// the bodies changed — destroy the
+// scoped field and re-apply the recipe
+// over the new geometry:
+field?.destroy();
+const bodies = [
+  ...zone.querySelectorAll("[data-body]"),
+  hero,
+];
+field = applyRecipe(zone, recipe,
+  { bodies, annotateBodies: false });
+
+// the field doesn't care about the
+// layout — it measures whatever
+// geometry you give it.`;
+
 const SNIPPET_CSS = `.cal-row {
   /* --w = imminence (1 Hz clock) · --d = live engine
      density, data-hot gathers it · --field-attention =
@@ -169,9 +195,11 @@ const SNIPPET_CSS = `.cal-row {
     <p class="ev-lede">
       This is the one page where the field's input is <strong>time itself</strong>. The soonest
       launch is the biggest thing on the wall — a featured "next up" card with the countdown as
-      its centerpiece — and the rest hang on a timeline rail below. A 1-second clock recomputes
-      every weight and re-picks the featured launch, so when a window passes the wall advances
-      on its own; passed and undated launches drift to a dimmed cluster at the rail's end.
+      its centerpiece — and the rest lay out as a <strong>day</strong> agenda, a seven-column
+      <strong>week</strong>, or a <strong>month</strong> grid: three calendar geometries over
+      the same thirty launches. A 1-second clock recomputes every weight and re-picks the
+      featured launch in whichever view is mounted, so when a window passes the wall advances
+      on its own; passed and undated launches drift to a dimmed "unscheduled" cluster.
       <strong>Toggle the field off</strong> and the wall flattens — but the countdowns keep
       ticking, because they're data, not field.
     </p>
@@ -184,6 +212,14 @@ const SNIPPET_CSS = `.cal-row {
         <span class="ev-switch-dot" aria-hidden="true"></span>
         <span class="ev-switch-txt">on</span>
       </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Layout</span>
+      <div class="ev-seg ev-seg--views" role="group" aria-label="Calendar layout">
+        <button type="button" data-cal-view="day" aria-pressed="false">day</button>
+        <button type="button" data-cal-view="week" aria-pressed="true">week</button>
+        <button type="button" data-cal-view="month" aria-pressed="false">month</button>
+      </div>
     </div>
     <div class="ev-ctl">
       <span class="ev-ctl-l">Color by</span>
@@ -247,8 +283,12 @@ const SNIPPET_CSS = `.cal-row {
       )
     }
 
-    <div class="cal-rail" data-cal-rail>
-      {
+    {/* the records zone — the runtime re-renders this container per view (day / week /
+        month) and re-applies the scoped field over the new bodies. The server-rendered
+        timeline rail below is the no-JS fallback and the first paint. */}
+    <div class="cal-views" data-cal-views>
+      <div class="cal-rail">
+        {
         groups.map((g) => (
           <section class="cal-day">
             <h2 class="cal-day-h">{g.label}<span class="cal-day-tz">UTC</span></h2>
@@ -295,9 +335,9 @@ const SNIPPET_CSS = `.cal-row {
         ))
       }
 
-      <section class="cal-day cal-day--unscheduled" data-cal-cluster>
+      <section class="cal-day cal-day--unscheduled">
         <h2 class="cal-day-h">Unscheduled<span class="cal-day-tz">window passed · date TBD</span></h2>
-        <ol class="cal-list" data-cal-cluster-list>
+        <ol class="cal-list">
           {
             unscheduled.map((l) => {
               const w = wOf(l.net, l.status);
@@ -338,6 +378,7 @@ const SNIPPET_CSS = `.cal-row {
           }
         </ol>
       </section>
+      </div>
     </div>
   </div>
 
@@ -350,7 +391,9 @@ const SNIPPET_CSS = `.cal-row {
       only moving part is time. On top of the clock sit two live channels the engine writes back
       every frame — <code>--d</code> (local density, gathered by <code>data-hot</code> on hover)
       and <code>--field-attention</code> (the recipe's eased attention) — which touch only ink;
-      the 1 Hz weight ramp is untouched.
+      the 1 Hz weight ramp is untouched. The day / week / month toggle re-renders the records
+      zone from the same launch list and re-applies the scoped field over the new bodies — full
+      cards in day, compact cards in week, chips in month — and every channel keeps working.
     </p>
 
     <div class="ev-how-cols">
@@ -367,11 +410,18 @@ const SNIPPET_CSS = `.cal-row {
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">2 — a 1 Hz clock drives the weight</p>
-        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
+        <p class="ev-how-label">2 — one clock, three geometries</p>
+        <CodeTabs
+          variants={[
+            { label: "1 Hz clock", lang: "ts", code: SNIPPET_TS },
+            { label: "Views", lang: "ts", code: SNIPPET_VIEWS },
+          ]}
+        />
         <p class="ev-how-note">
           The soonest launch is the heaviest; as its T−0 approaches the ramp steepens, so the
-          page's center of gravity slides toward the pad — without a single re-render.
+          page's center of gravity slides toward the pad. The day / week / month toggle swaps
+          the entire geometry under the same bodies — the field doesn't care about the layout;
+          it measures whatever geometry you give it. That's the lesson of this page.
         </p>
       </div>
 

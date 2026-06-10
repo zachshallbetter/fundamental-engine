@@ -40,12 +40,31 @@ const ldSpan = Math.max(...ld) - ldMin || 1;
 
 const tempoColor = (t: number) => `hsl(${Math.round(205 - t * 180)} 74% 64%)`;
 
+// subtree = how many of THIS PAGE's comments descend from each comment (the API's
+// `replies` counts direct replies in the full thread; the collapse chip must count
+// what actually hides). Computed once here, carried as data-subtree.
+const childIds = new Map<number, number[]>();
+for (const c of threads.comments) {
+  if (!childIds.has(c.parent)) childIds.set(c.parent, []);
+  childIds.get(c.parent)!.push(c.id);
+}
+const subtreeMemo = new Map<number, number>();
+const subtreeOf = (id: number): number => {
+  const hit = subtreeMemo.get(id);
+  if (hit !== undefined) return hit;
+  let n = 0;
+  for (const k of childIds.get(id) ?? []) n += 1 + subtreeOf(k);
+  subtreeMemo.set(id, n);
+  return n;
+};
+
 const comments = threads.comments.map((c, i) => ({
   ...c,
   text: decode(c.text),
   w: Math.log(c.replies + 1) / lmax,
   tempo: 1 - (ld[i]! - ldMin) / ldSpan,
   into: c.createdAt - story.createdAt,
+  subtree: subtreeOf(c.id),
 }));
 
 const fmtInto = (s: number) => {
@@ -128,6 +147,29 @@ const recipe = {
   render: [],
   metrics: [...new Set([...(base.metrics ?? []), "attention"])],
 };`;
+
+const SNIPPET_COLLAPSE = `// collapse = hide the subtree, then RE-BIND
+caret.addEventListener("click", () => {
+  row.toggleAttribute("data-collapsed");
+
+  // a comment hides iff ANY ancestor is collapsed
+  // (the same parent-id walk the chain uses)
+  for (const r of rows) {
+    let p = byId.get(r.dataset.parent), hide = false;
+    while (p && !(hide = p.hasAttribute("data-collapsed")))
+      p = byId.get(p.dataset.parent);
+    r.hidden = hide;
+  }
+
+  // and the field re-runs over the VISIBLE bodies —
+  // collapsed comments leave the field, not just
+  // the page (destroy + apply, like field on/off)
+  field?.destroy();
+  field = applyRecipe(list, recipe, {
+    bodies: rows.filter((r) => !r.hidden),
+    annotateBodies: false,
+  });
+});`;
 ---
 
 <ExampleShell
@@ -153,7 +195,9 @@ const recipe = {
       that started an argument is heavy; a reply nobody answered sits at the floor. Reply tempo
       shows as heat: warm comments landed minutes after their parent, cool ones took hours.
       <strong>Hover or focus any comment</strong> and its full ancestor chain plus its direct
-      replies light up — the discussion's real shape, readable before you read a word. The field
+      replies light up — the discussion's real shape, readable before you read a word.
+      <strong>Collapse any subtree</strong> with its caret — the hidden comments leave the
+      field, not just the page — and expand it back when you want the argument. The field
       is invisible: no particle swarm, only type weight, ink, and anchor.
     </p>
   </header>
@@ -200,6 +244,11 @@ const recipe = {
       deeper replies hold the cap
     </li>
     <li>
+      <span class="ev-k th-k-caret" aria-hidden="true"></span> the caret collapses a comment's
+      <b>whole subtree</b> — a "+N replies hidden" chip holds its place, and the field re-runs
+      over what's still visible
+    </li>
+    <li>
       <span class="ev-k th-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
       <b>--w</b> is the subtree's weight and <b>--cat</b> the tempo lens; <b>--d</b> is the
       engine's local density (hold a comment and the field gathers — its binding chain charges
@@ -220,6 +269,13 @@ const recipe = {
     </p>
   </article>
 
+  <!-- Bulk collapse — with 160 comments, skimming top-level first IS the reading workflow. -->
+  <div class="th-bulk" role="group" aria-label="Collapse controls">
+    <button type="button" class="th-bulk-btn" data-th-all="collapse">collapse all</button>
+    <span class="th-bulk-sep" aria-hidden="true">·</span>
+    <button type="button" class="th-bulk-btn" data-th-all="expand">expand all</button>
+  </div>
+
   <ol class="th-list" data-th-list>
     {
       comments.map((c) => (
@@ -235,17 +291,31 @@ const recipe = {
           data-id={String(c.id)}
           data-parent={String(c.parent)}
           data-tempo={c.tempo.toFixed(4)}
+          data-subtree={String(c.subtree)}
           tabindex="0"
           aria-expanded="false"
           style={`--w:${c.w.toFixed(3)}; --cat:${tempoColor(c.tempo)}; --depth:${Math.min(c.depth, 6)};`}
         >
           <div class="th-row">
             <p class="th-meta">
+              {c.subtree > 0 && (
+                <button
+                  type="button"
+                  class="th-caret"
+                  aria-expanded="true"
+                  aria-label={`Collapse ${c.subtree} ${c.subtree === 1 ? "reply" : "replies"}`}
+                />
+              )}
               <span class="th-author">{c.author}</span>
               <span class="th-into">{fmtInto(c.into)}</span>
               {c.replies > 0 && (
                 <span class="th-replies">
                   {c.replies} {c.replies === 1 ? "reply" : "replies"}
+                </span>
+              )}
+              {c.subtree > 0 && (
+                <span class="th-hidden-n" hidden>
+                  +{c.subtree} {c.subtree === 1 ? "reply" : "replies"} hidden
                 </span>
               )}
             </p>
@@ -267,7 +337,10 @@ const recipe = {
       live channels sit on top, engine-written every frame: <code>--d</code> (local density,
       gathered by <code>data-hot</code> on hover — the hovered comment's density also charges its
       chain's connector ink) and <code>--field-attention</code> (the recipe's eased attention).
-      They touch only ink; the tree's mass is fixed history.
+      They touch only ink; the tree's mass is fixed history. Collapse is the same walk run the
+      other way: a caret hides a comment's whole subtree (every descendant whose parent chain
+      crosses it), and the scoped field is destroyed and re-applied over the bodies still
+      visible — collapsed comments stop participating instead of lingering as zero-size ghosts.
     </p>
 
     <div class="ev-how-cols">
@@ -294,8 +367,13 @@ const recipe = {
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — the binding chain is a parent walk</p>
-        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
+        <p class="ev-how-label">3 — the chain and the collapse are the same walk</p>
+        <CodeTabs
+          variants={[
+            { label: "Chain", lang: "ts", code: SNIPPET_TS },
+            { label: "Collapse", lang: "ts", code: SNIPPET_COLLAPSE },
+          ]}
+        />
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>

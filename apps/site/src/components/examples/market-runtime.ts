@@ -7,12 +7,35 @@
 //     (translate(dx, dy)); re-tiered tiles settle with a fade — translate cannot honestly animate
 //     a size change, and scaling tiles of live text looks worse than a settle.
 //   · Move window 24h / 7d — repolarize: --cat encodes direction (hue) and magnitude (intensity).
+//   · LIVE — the page upgrades itself from the committed snapshot to live CoinGecko data: it
+//     re-polls the same endpoint the snapshot script uses once a minute and updates the tiles
+//     IN PLACE (price + tick flash, badges, --cat through the active lens, --w/data-strength,
+//     sparkline path). A poll never re-sorts or re-tiers — hostile under the cursor. Any fetch
+//     error reverts silently to snapshot mode; 3 consecutive failures stop the polling.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 
 type MarketWeight = "cap" | "volume";
 type MarketLens = "24h" | "7d";
+
+// the CoinGecko /coins/markets row shape (the fields this page reads)
+interface GeckoRow {
+  id?: string;
+  current_price?: number | null;
+  market_cap?: number | null;
+  total_volume?: number | null;
+  price_change_percentage_24h_in_currency?: number | null;
+  price_change_percentage_7d_in_currency?: number | null;
+  sparkline_in_7d?: { price?: number[] } | null;
+}
+
+// same endpoint apps/site/scripts/snapshot-examples.mjs hits (CORS-enabled, free tier)
+const LIVE_URL =
+  "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=24&sparkline=true&price_change_percentage=24h,7d";
+const POLL_MS = 60_000;
+const FIRST_POLL_MS = 3_000;
+const MAX_FAILURES = 3; // rate-limit courtesy: 3 consecutive misses → stop asking
 
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -24,6 +47,39 @@ const catFor = (chg: number): string => {
   return chg >= 0
     ? `hsl(${Math.round(168 - t * 18)} ${Math.round(34 + t * 46)}% ${Math.round(52 + t * 14)}%)`
     : `hsl(${Math.round(354 - t * 14)} ${Math.round(38 + t * 47)}% ${Math.round(56 + t * 12)}%)`;
+};
+
+// formatters + sparkline generator — must match the server-side render in market.astro
+const fmtPrice = (p: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: p >= 1 ? 2 : 6,
+  }).format(p);
+const fmtCompact = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+const badgeTxt = (chg: number): string => `${chg >= 0 ? "▲" : "▼"} ${Math.abs(chg).toFixed(2)}%`;
+const downsample = (arr: number[] | undefined | null, n: number): number[] => {
+  if (!arr || arr.length <= n) return arr ?? [];
+  const out: number[] = [];
+  for (let i = 0; i < n; i++) out.push(arr[Math.round((i * (arr.length - 1)) / (n - 1))]);
+  return out;
+};
+const sparkPath = (s: number[]): string => {
+  if (!s.length) return "";
+  const min = Math.min(...s);
+  const span = Math.max(...s) - min || 1;
+  return s
+    .map((v, i) => {
+      const x = (i / Math.max(s.length - 1, 1)) * 120;
+      const y = 25 - ((v - min) / span) * 22;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
 };
 
 const HINTS: Record<MarketWeight, string> = {
@@ -64,6 +120,27 @@ function initMarket(): () => void {
     }
   };
 
+  // the active weighting signal, read off a tile
+  const valOf = (r: HTMLElement): number =>
+    Number(weight === "cap" ? r.dataset.cap : r.dataset.volume) || 0;
+
+  // recompute --w + data-strength from the active signal on every tile (the
+  // scoped field re-measures naturally) WITHOUT touching tiers or order —
+  // the live poll calls this alone; reweight() layers re-tier + re-sort on top.
+  const recomputeWeights = (): Map<HTMLElement, number> => {
+    const all = rows();
+    const lmin = Math.log(Math.min(...all.map(valOf)) + 1);
+    const lmax = Math.log(Math.max(...all.map(valOf)) + 1);
+    const ws = new Map<HTMLElement, number>();
+    for (const r of all) {
+      const w = lmax > lmin ? (Math.log(valOf(r) + 1) - lmin) / (lmax - lmin) : 1;
+      ws.set(r, w);
+      r.style.setProperty("--w", w.toFixed(3));
+      r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+    }
+    return ws;
+  };
+
   // ── weighting — recompute --w + data-strength, RE-TIER, then FLIP re-sort ──
   // Tiles that keep their footprint FLIP in 2D (the mosaic moves them on both
   // axes); tiles whose tier changed settle with a fade — a translate cannot
@@ -71,20 +148,14 @@ function initMarket(): () => void {
   const reweight = (): void => {
     if (!list) return;
     const all = rows();
-    const valOf = (r: HTMLElement): number =>
-      Number(weight === "cap" ? r.dataset.cap : r.dataset.volume) || 0;
-    const lmin = Math.log(Math.min(...all.map(valOf)) + 1);
-    const lmax = Math.log(Math.max(...all.map(valOf)) + 1);
     // 0) first: where every tile sits now (top AND left — the mosaic is 2D)
     const first = new Map(all.map((r) => [r, r.getBoundingClientRect()]));
     // 1) set the new weight on every tile (drives the type + the scoped field's
     //    pull) and swap the tier class — mass is area, so reweighting resizes
+    const ws = recomputeWeights();
     const retiered = new Set<HTMLElement>();
     for (const r of all) {
-      const w = lmax > lmin ? (Math.log(valOf(r) + 1) - lmin) / (lmax - lmin) : 1;
-      r.style.setProperty("--w", w.toFixed(3));
-      r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
-      const next = tierOf(w);
+      const next = tierOf(ws.get(r) ?? 0);
       if (!r.classList.contains(next)) {
         r.classList.remove(...TIERS);
         r.classList.add(next);
@@ -174,6 +245,119 @@ function initMarket(): () => void {
     ac.signal.addEventListener("abort", () => io.disconnect());
   };
 
+  // ── live data — the snapshot upgrades itself to a feed ─────────────────────
+  // Once a minute (first poll ~3s in, skipped while the tab is hidden) re-fetch
+  // the same CoinGecko endpoint the snapshot script uses and update tiles IN
+  // PLACE. Assets match by id; ids the snapshot doesn't know are ignored — the
+  // committed 24 are the page's bodies. Never throws: any fetch error reverts
+  // silently to snapshot mode, and 3 consecutive failures stop the polling.
+  const statusEl = page.querySelector<HTMLElement>("[data-mk-status]");
+  const statusTxt = page.querySelector<HTMLElement>("[data-mk-status-txt]");
+  const snapLabel = statusTxt?.textContent ?? "";
+  let lastLiveAt = 0; // 0 = snapshot mode
+  let failures = 0;
+  let firstTimer: ReturnType<typeof setTimeout> | undefined;
+  let pollTimer: ReturnType<typeof setInterval> | undefined;
+  let tickTimer: ReturnType<typeof setInterval> | undefined;
+
+  const setStatus = (): void => {
+    if (!statusEl || !statusTxt) return;
+    let next = snapLabel;
+    if (lastLiveAt) {
+      const s = Math.max(0, Math.round((Date.now() - lastLiveAt) / 1000));
+      next = `live · updated ${s}s ago`;
+      statusEl.dataset.live = "on";
+    } else {
+      delete statusEl.dataset.live;
+    }
+    if (statusTxt.textContent !== next) statusTxt.textContent = next;
+  };
+
+  // one-shot price flash — teal up, red down; the class leaves on animationend
+  const flashPrice = (el: HTMLElement, up: boolean): void => {
+    if (reduceMotion()) return;
+    el.classList.remove("mk-tick-up", "mk-tick-down");
+    void el.offsetWidth; // restart the animation if a tick is still running
+    const cls = up ? "mk-tick-up" : "mk-tick-down";
+    el.classList.add(cls);
+    el.addEventListener("animationend", () => el.classList.remove(cls), { once: true });
+  };
+
+  const applyLive = (data: GeckoRow[]): void => {
+    const byId = new Map(rows().map((r) => [r.id.replace(/^mk-/, ""), r]));
+    for (const c of data) {
+      const tile = c.id ? byId.get(c.id) : undefined;
+      if (!tile) continue; // unknown/new id — not a body on this page
+      // raw signals — the lens and the weighting read these
+      if (c.market_cap != null) tile.dataset.cap = String(c.market_cap);
+      if (c.total_volume != null) tile.dataset.volume = String(c.total_volume);
+      if (c.price_change_percentage_24h_in_currency != null)
+        tile.dataset.c24 = String(c.price_change_percentage_24h_in_currency);
+      if (c.price_change_percentage_7d_in_currency != null)
+        tile.dataset.c7 = String(c.price_change_percentage_7d_in_currency);
+      // price text + one-shot tick flash on change
+      const priceEl = tile.querySelector<HTMLElement>(".mk-price");
+      if (priceEl && c.current_price != null) {
+        const prev = Number(tile.dataset.price);
+        tile.dataset.price = String(c.current_price);
+        priceEl.textContent = fmtPrice(c.current_price);
+        if (Number.isFinite(prev) && c.current_price !== prev)
+          flashPrice(priceEl, c.current_price > prev);
+      }
+      const capEl = tile.querySelector<HTMLElement>(".mk-cap");
+      if (capEl && c.market_cap != null) capEl.textContent = `${fmtCompact.format(c.market_cap)} cap`;
+      // change badges — value + direction glyph, both windows
+      for (const [win, chg] of [
+        ["24h", Number(tile.dataset.c24) || 0],
+        ["7d", Number(tile.dataset.c7) || 0],
+      ] as const) {
+        const el = tile.querySelector<HTMLElement>(`.mk-chg[data-win="${win}"]`);
+        if (!el) continue;
+        el.textContent = badgeTxt(chg);
+        el.dataset.dir = chg >= 0 ? "up" : "down";
+      }
+      // sparkline — swap d with the same generator; no entry animation on an
+      // update, and the path keeps pathLength="100"
+      const sp = downsample(c.sparkline_in_7d?.price, 32);
+      if (sp.length) tile.querySelector(".mk-spark path")?.setAttribute("d", sparkPath(sp));
+    }
+    applyLens(); // --cat through the ACTIVE lens (24h or 7d)
+    recomputeWeights(); // --w + data-strength — the scoped field re-measures
+    // deliberately NO re-tier / re-sort here — hostile under the cursor;
+    // tiers re-settle on the next lens change.
+  };
+
+  const stopPolling = (): void => {
+    if (firstTimer !== undefined) clearTimeout(firstTimer);
+    if (pollTimer !== undefined) clearInterval(pollTimer);
+    firstTimer = pollTimer = undefined;
+  };
+
+  const poll = async (): Promise<void> => {
+    if (ac.signal.aborted || document.hidden) return;
+    try {
+      const res = await fetch(LIVE_URL, { signal: ac.signal });
+      if (!res.ok) throw new Error(String(res.status));
+      const data: unknown = await res.json();
+      if (!Array.isArray(data)) throw new Error("unexpected shape");
+      applyLive(data as GeckoRow[]);
+      failures = 0;
+      lastLiveAt = Date.now();
+    } catch {
+      if (ac.signal.aborted) return;
+      failures += 1;
+      lastLiveAt = 0; // revert silently to snapshot mode
+      if (failures >= MAX_FAILURES) stopPolling();
+    }
+    setStatus();
+  };
+
+  const wireLive = (): void => {
+    firstTimer = setTimeout(() => void poll(), FIRST_POLL_MS);
+    pollTimer = setInterval(() => void poll(), POLL_MS);
+    tickTimer = setInterval(setStatus, 1000); // the "Ns ago" tick
+  };
+
   // ── controls ───────────────────────────────────────────────────────────────
   weightBtns.forEach((b) =>
     b.addEventListener(
@@ -224,9 +408,13 @@ function initMarket(): () => void {
   applyLens();
   runField();
   wireSparkDraw();
+  wireLive();
 
   return () => {
     ac.abort();
+    stopPolling();
+    if (tickTimer !== undefined) clearInterval(tickTimer);
+    tickTimer = undefined;
     activeField?.destroy();
   };
 }

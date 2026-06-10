@@ -7,6 +7,11 @@
 //   · hover an incident → the services it hit light in the grid; hover a service → its
 //     incidents light in the timeline. Class highlights only — no SVG on this page.
 //   · click an incident → it releases the updates it accreted (aria-expanded toggle).
+//   · LIVE status — the grid re-polls githubstatus.com's components feed every 60s (CORS-
+//     enabled; skipped while the tab is hidden) and diffs each card's status pill in place.
+//     A changed card pulses once and holds data-active ~3s, so the attention metric reads
+//     the change as engagement — the field notices. Three consecutive failures and the loop
+//     retires itself; the chip falls back to the snapshot date. Never throws.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
@@ -24,6 +29,20 @@ const SCROLL_V_MAX = 2;
 const HINTS: Record<FleetWeight, string> = {
   involvement: "<b>size</b> = involvement — how many of the window's incidents named each service",
   recency: "<b>size</b> = recency — the services hit most recently carry the weight",
+};
+
+// ── the live components feed (mirrors the page's server-side palette) ────────
+const POLL_URL = "https://www.githubstatus.com/api/v2/components.json";
+const POLL_MS = 60_000;
+const POLL_FIRST_MS = 3_000;
+const POLL_MAX_FAILS = 3;
+const ACTIVE_MS = 3_000;
+const STATUS_COLOR: Record<string, string> = {
+  operational: "#2dd4bf",
+  degraded_performance: "#fbbf24",
+  partial_outage: "#ff9d5c",
+  major_outage: "#f87171",
+  under_maintenance: "#60a5fa",
 };
 
 function initFleet(): () => void {
@@ -198,6 +217,116 @@ function initFleet(): () => void {
     });
   };
 
+  // ── live status — poll-and-diff over the components feed ───────────────────
+  // Every POLL_MS (first poll ~3s in, skipped while the tab is hidden) fetch the live
+  // components.json and update each card's status pill IN PLACE, matched by component id
+  // (name as a fallback). Only a CHANGED status touches the DOM: the pill re-labels, the
+  // card's --cat recolors, a one-shot pulse fires (class cleared on animationend), and the
+  // card holds data-active for ~ACTIVE_MS — the scoped recipe's attention metric counts
+  // data-active as engagement, so the field registers the change. --w is never touched:
+  // status is live; the involvement weight is the snapshot's incident history.
+  // Never throws; POLL_MAX_FAILS consecutive failures retire the loop and the chip falls
+  // back to the committed snapshot date.
+  const wireLive = (): void => {
+    const chip = page.querySelector<HTMLElement>("[data-fl-live]");
+    if (!chip || typeof fetch !== "function") return;
+    const all = comps();
+    const byId = new Map(all.map((c) => [c.dataset.compId ?? "", c]));
+    const byName = new Map(
+      all.map((c) => [(c.querySelector(".fl-comp-name")?.textContent ?? "").trim(), c]),
+    );
+    const snapshotLabel = `snapshot · ${chip.dataset.snapshot ?? ""}`;
+    const activeTimers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
+    let lastOk = 0;
+    let fails = 0;
+    let stopped = false;
+    let loop: ReturnType<typeof setInterval> | undefined;
+    let tick: ReturnType<typeof setInterval> | undefined;
+
+    const syncChip = (): void => {
+      if (stopped || !lastOk) {
+        chip.dataset.live = "snapshot";
+        chip.textContent = snapshotLabel;
+        return;
+      }
+      chip.dataset.live = "on";
+      chip.textContent = `live · checked ${Math.max(0, Math.round((Date.now() - lastOk) / 1000))}s ago`;
+    };
+
+    const markChanged = (card: HTMLElement): void => {
+      if (!reduceMotion()) {
+        // one-shot pulse: re-arm cleanly even if a previous pulse is mid-flight.
+        card.classList.remove("fl-changed");
+        void card.offsetWidth;
+        card.classList.add("fl-changed");
+        card.addEventListener("animationend", () => card.classList.remove("fl-changed"), {
+          once: true,
+        });
+      }
+      // ~3s of data-active: the metric pipeline reads it as engagement (the field notices).
+      card.setAttribute("data-active", "");
+      clearTimeout(activeTimers.get(card));
+      activeTimers.set(
+        card,
+        setTimeout(() => card.removeAttribute("data-active"), ACTIVE_MS),
+      );
+    };
+
+    const apply = (data: unknown): void => {
+      const list = (data as { components?: unknown })?.components;
+      if (!Array.isArray(list)) return;
+      for (const raw of list) {
+        const c = raw as { id?: string; name?: string; status?: string };
+        if (!c || typeof c.status !== "string") continue;
+        const card =
+          (c.id ? byId.get(c.id) : undefined) ??
+          (c.name ? byName.get(c.name.trim()) : undefined);
+        const pill = card?.querySelector<HTMLElement>(".fl-pill");
+        if (!card || !pill || pill.dataset.status === c.status) continue;
+        pill.dataset.status = c.status;
+        pill.textContent = c.status.replace(/_/g, " ");
+        card.style.setProperty("--cat", STATUS_COLOR[c.status] ?? "#2dd4bf");
+        markChanged(card);
+      }
+    };
+
+    const poll = async (): Promise<void> => {
+      if (stopped || ac.signal.aborted || document.hidden) return;
+      try {
+        const res = await fetch(POLL_URL, { signal: ac.signal });
+        if (!res.ok) throw new Error(String(res.status));
+        apply(await res.json());
+        fails = 0;
+        lastOk = Date.now();
+        syncChip();
+      } catch {
+        if (ac.signal.aborted) return;
+        fails += 1;
+        if (fails >= POLL_MAX_FAILS) {
+          // retire the loop entirely; the chip falls back to the committed snapshot.
+          stopped = true;
+          lastOk = 0;
+          clearInterval(loop);
+          clearInterval(tick);
+          syncChip();
+        }
+      }
+    };
+
+    const first = setTimeout(() => void poll(), POLL_FIRST_MS);
+    loop = setInterval(() => void poll(), POLL_MS);
+    tick = setInterval(() => {
+      if (lastOk && !stopped) syncChip();
+    }, 1000);
+    ac.signal.addEventListener("abort", () => {
+      clearTimeout(first);
+      clearInterval(loop);
+      clearInterval(tick);
+      activeTimers.forEach((t) => clearTimeout(t));
+      activeTimers.clear();
+    });
+  };
+
   // ── the invisible scoped field (render: []) ────────────────────────────────
   const runField = (): void => {
     activeField?.destroy();
@@ -261,6 +390,7 @@ function initFleet(): () => void {
   wireHighlights();
   wireExpand();
   wireSweep();
+  wireLive();
   runField();
 
   return () => {

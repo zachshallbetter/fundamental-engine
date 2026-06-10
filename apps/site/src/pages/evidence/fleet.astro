@@ -30,11 +30,13 @@ for (const inc of fleet.incidents) {
 const maxInv = Math.max(...components0.map((c) => involvement.get(c.name) ?? 0), 1);
 
 // status pill colors: operational teal / degraded amber / partial orange / major red.
+// (the runtime mirrors this map — the live poll recolors with the same palette.)
 const STATUS_COLOR: Record<string, string> = {
   operational: "#2dd4bf",
   degraded_performance: "#fbbf24",
   partial_outage: "#ff9d5c",
   major_outage: "#f87171",
+  under_maintenance: "#60a5fa",
 };
 
 const components = components0
@@ -171,6 +173,33 @@ incidents.filter((i) =>
 // class highlights only — no SVG here.
 // the glow channel rides along for free:
 // hovering is what makes --d gather.`;
+
+const SNIP_LIVE = `// every 60s (skipped while the tab is
+// hidden), poll the live components feed:
+const res = await fetch(
+  "https://www.githubstatus.com" +
+  "/api/v2/components.json");
+
+// diff each card IN PLACE, by component id
+for (const c of (await res.json()).components) {
+  const card = byId.get(c.id) ?? byName.get(c.name);
+  const pill = card?.querySelector(".fl-pill");
+  if (!pill || pill.dataset.status === c.status)
+    continue; // unchanged — leave it alone
+  pill.dataset.status = c.status;
+  pill.textContent = c.status.replace(/_/g, " ");
+  card.style.setProperty("--cat", COLOR[c.status]);
+  card.classList.add("fl-changed"); // one pulse
+
+  // the field notices: ~3s of data-active reads
+  // as engagement in the attention metric — the
+  // card literally warms when its status flips
+  card.setAttribute("data-active", "");
+  setTimeout(() =>
+    card.removeAttribute("data-active"), 3000);
+}
+// --w is untouched: status is live, but the
+// involvement weight is the incident history.`;
 ---
 
 <ExampleShell
@@ -242,6 +271,11 @@ incidents.filter((i) =>
       engine writes <code>--d</code> to every card each frame; it gathers under your cursor
       and the impact chip runs hotter with it
     </li>
+    <li>
+      <span class="ev-k fl-k-pill"></span> the status pill is <b>live</b> — re-polled from the
+      Status API every minute in your browser; <b>size</b> stays the {incidents.length}-incident
+      history (a status poll reports the present, it can't rewrite the window)
+    </li>
   </ul>
 
   <div class="fl-zone" data-fl-zone>
@@ -249,6 +283,9 @@ incidents.filter((i) =>
     <section class="fl-services" aria-labelledby="fl-svc-h">
       <h2 class="fl-h" id="fl-svc-h">
         The fleet <span class="fl-h-n">{components.length} services</span>
+        <span class="fl-live" data-fl-live data-live="snapshot" data-snapshot={snapshotDay}
+          >snapshot · {snapshotDay}</span
+        >
       </h2>
       <ul class="fl-grid" data-fl-grid>
         {
@@ -262,6 +299,7 @@ incidents.filter((i) =>
               data-range="200"
               data-strength={(0.4 + c.w * 1.6).toFixed(2)}
               data-name={c.slug}
+              data-comp-id={c.id}
               data-inv={c.inv}
               data-last={c.last}
               style={`--w:${c.w.toFixed(3)}; --cat:${c.statusColor};`}
@@ -358,7 +396,10 @@ incidents.filter((i) =>
       density) to every <code>data-hot</code> card each frame, and the scoped recipe's
       attention lane writes an eased <code>--field-attention</code> — CSS turns both into a
       felt glow and lift. The load bars also sweep in only at reading pace, gated by the
-      engine's live <code>--field-scroll-v</code>.
+      engine's live <code>--field-scroll-v</code>. And the grid is live: the runtime re-polls
+      the components feed every minute and diffs each card's status pill in place — a changed
+      card pulses once and holds <code>data-active</code> for ~3 seconds, which the attention
+      metric reads as engagement. The field literally notices the change.
     </p>
 
     <div class="ev-how-cols">
@@ -386,11 +427,18 @@ incidents.filter((i) =>
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — the cross-highlight is name matching</p>
-        <CodeTabs variants={[{ label: "TypeScript", lang: "ts", code: SNIP_XLIGHT }]} />
+        <p class="ev-how-label">3 — cross-lighting, and the live poll</p>
+        <CodeTabs
+          variants={[
+            { label: "Cross-light", lang: "ts", code: SNIP_XLIGHT },
+            { label: "Live poll", lang: "ts", code: SNIP_LIVE },
+          ]}
+        />
         <p class="ev-how-note">
           The service lens re-weights the grid (involvement or most-recently-hit) and FLIP
-          re-sorts it in two dimensions — grid moves are x and y.
+          re-sorts it in two dimensions — grid moves are x and y. The poll loop never throws:
+          three consecutive failures and the chip falls back to the snapshot date and the
+          interval retires itself.
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
@@ -405,7 +453,10 @@ incidents.filter((i) =>
       Involvement is <strong>exposure, not blame</strong> — a service named by many incidents
       sits where the failures surfaced, not necessarily where they began. All {incidents.length}
       incidents in this window resolved; durations and dates are frozen at the snapshot. The
-      status page's informational pseudo-component is omitted from the grid. Data: the
+      status page's informational pseudo-component is omitted from the grid. In the browser,
+      each service's <strong>status pill upgrades to live data</strong> — polled from the
+      Status API every minute when it's reachable; the incident timeline and the involvement
+      weights remain the committed snapshot. Data: the
       <a href="https://www.githubstatus.com/api" rel="noopener">GitHub Status API</a>
       (githubstatus.com), public status data, snapshotted {snapshotDay}.
     </p>

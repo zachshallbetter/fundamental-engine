@@ -70,6 +70,7 @@ const snippetBody = `<li id="mk-bitcoin"
   data-feedback
   data-hot
   data-cap="1235425696510"
+  data-price="61517"
   data-c24="-1.70" data-c7="-7.76"
   style="--w: 0.92; --cat: hsl(350 70% 64%);"
 >
@@ -77,7 +78,7 @@ const snippetBody = `<li id="mk-bitcoin"
   <svg aria-hidden="true"
     data-field-visual-for="#mk-bitcoin"
     data-field-visual-role="measurement">
-    <path d="…" pathLength="1" />
+    <path d="…" pathLength="100" />
   </svg>
 </li>`;
 
@@ -100,6 +101,19 @@ const snippetCss = `/* tier classes set the tile's footprint */
   stroke-width: calc(1.5 + var(--live) * 0.9);
   filter: drop-shadow(0 0
     calc(var(--live) * 6px) var(--cat));
+}
+/* entry draw-in — a keyframe, not a dash
+   steady state: paths carry
+   pathLength="100", the BASE rule sets no
+   stroke-dasharray, and the dash lives
+   only inside the animation — a drawn
+   line computes stroke-dasharray: none */
+@keyframes mk-spark-draw {
+  from { stroke-dasharray: 100;
+         stroke-dashoffset: 100;
+         opacity: 1; }
+  to   { stroke-dasharray: 100;
+         stroke-dashoffset: 0; }
 }`;
 
 const snippetFlip = `// recompute --w from cap or volume,
@@ -120,6 +134,30 @@ ordered.forEach((t) => {
 // re-tiered tiles settle with a fade
 // instead — translate cannot honestly
 // animate a size change.`;
+
+const snippetLive = `// once a minute (skipped while the tab
+// is hidden) — the same CoinGecko
+// endpoint the snapshot script uses:
+const data = await (
+  await fetch(GECKO_URL)).json();
+for (const c of data) {
+  const tile = byId.get(c.id);
+  if (!tile) continue; // unknown ids:
+    // not bodies on this page
+  tile.dataset.cap = String(c.market_cap);
+  price.textContent =
+    fmtPrice(c.current_price);
+  flash(price);  // ▲ teal / ▼ red tick
+  spark.setAttribute("d",
+    sparkPath(c.sparkline_in_7d.price));
+}
+applyLens();        // --cat through the
+                    // ACTIVE lens
+recomputeWeights(); // --w — the scoped
+                    // field re-measures
+// a poll NEVER re-sorts or re-tiers —
+// hostile under the cursor. Tiers
+// re-settle on the next lens change.`;
 ---
 
 <ExampleShell
@@ -171,6 +209,13 @@ ordered.forEach((t) => {
         <button type="button" data-mk-lens="7d" aria-pressed="false">7d</button>
       </div>
     </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="mk-status" data-mk-status>
+        <span class="mk-status-dot" aria-hidden="true"></span>
+        <span data-mk-status-txt>snapshot · {snapDate}</span>
+      </span>
+    </div>
     <p class="ev-ctl-hint">
       <span data-mk-hint><b>area</b> = market cap — the heavier the asset, the more page it takes</span>
       <span class="ev-hint-sep">·</span>
@@ -200,6 +245,7 @@ ordered.forEach((t) => {
             data-strength={(0.4 + w * 1.6).toFixed(2)}
             data-cap={a.cap}
             data-volume={a.volume}
+            data-price={a.price}
             data-c24={a.change24h}
             data-c7={a.change7d}
             style={`--w:${w.toFixed(3)}; --cat:${catFor(a.change24h)};`}
@@ -227,7 +273,7 @@ ordered.forEach((t) => {
               data-field-visual-for={`#mk-${a.id}`}
               data-field-visual-role="measurement"
             >
-              <path d={sparkPath(a.spark)} stroke="var(--cat)" pathLength="1" />
+              <path d={sparkPath(a.spark)} stroke="var(--cat)" pathLength="100" />
             </svg>
           </li>
         );
@@ -274,8 +320,19 @@ ordered.forEach((t) => {
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — reweighting re-tiers, then FLIPs in 2D</p>
-        <CodeTabs variants={[{ label: "TS", lang: "ts", code: snippetFlip }]} />
+        <p class="ev-how-label">3 — re-tier on lens change; live updates in place</p>
+        <CodeTabs
+          variants={[
+            { label: "FLIP", lang: "ts", code: snippetFlip },
+            { label: "Live", lang: "ts", code: snippetLive },
+          ]}
+        />
+        <p class="ev-how-note">
+          When the CoinGecko API is reachable, the runtime re-polls it once a minute and updates
+          the snapshot's 24 tiles in place — prices, badges, colors, weights, sparklines. A poll
+          never re-sorts or re-tiers the mosaic (that would be hostile under the cursor); tiers
+          re-settle the next time you change the lens. Ids the snapshot does not know are ignored.
+        </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
@@ -286,8 +343,11 @@ ordered.forEach((t) => {
 
   <footer class="ev-fineprint">
     <p>
-      This is a <strong>snapshot, not a feed</strong> — prices, caps, and moves are frozen at
-      {snapDate} (UTC). Data: <a href="https://www.coingecko.com" rel="noopener">CoinGecko API</a>
+      The baseline is a <strong>committed snapshot</strong> — prices, caps, and moves frozen at
+      {snapDate} (UTC), and that is what ships in the HTML. In the browser the page
+      <strong>upgrades itself to live CoinGecko data</strong> when the API is reachable: it
+      re-polls once a minute and updates the tiles in place, falling back to the snapshot if a
+      poll fails. Data: <a href="https://www.coingecko.com" rel="noopener">CoinGecko API</a>
       (free API terms, attribution). Nothing here is investment advice; the point is the rendering,
       not the portfolio.
     </p>
