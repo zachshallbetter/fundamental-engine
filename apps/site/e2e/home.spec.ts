@@ -112,13 +112,18 @@ for (const route of ["/", "/eli5"] as const) {
           page.evaluate(() => document.querySelector("[data-forcesource]")?.getAttribute("data-body")),
         )
         .not.toBeNull();
-      // pick gravity → the overlay surface (streamlines) genuinely paints
+      // pick gravity → the overlay surface (streamlines) genuinely paints. The overlay canvas
+      // is created by <field-root>'s deferred boot (Base.astro idle boot — a plain setTimeout
+      // under WebKit), so it may not exist on the first poll iterations: report -1 until it
+      // does rather than crashing the poll (a thrown evaluate aborts expect.poll for good).
+      // The assertion still demands genuinely painted pixels within the window.
       await page.locator('.force-card[data-token="gravity"]').click();
       await expect
         .poll(
           async () =>
             page.evaluate(() => {
-              const cvs = [...document.querySelectorAll<HTMLCanvasElement>("body > canvas")].pop()!;
+              const cvs = [...document.querySelectorAll<HTMLCanvasElement>("body > canvas")].pop();
+              if (!cvs || cvs.width === 0 || cvs.height === 0) return -1; // not booted yet
               const d = cvs.getContext("2d")!.getImageData(0, 0, cvs.width, cvs.height).data;
               let n = 0;
               for (let i = 3; i < d.length; i += 400) if (d[i]! > 0) n++;
