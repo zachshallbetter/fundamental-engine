@@ -1,5 +1,6 @@
 // Memory Field runtime. field-ui as an INVISIBLE measurement layer over Google ngrams word frequencies:
-//   · elapsed days slider decays retention w = a · exp(-days_eff / tau), updating styles in real time;
+//   · elapsed days slider decays retention w = retention(a, days_eff) — the core temporal
+//     kernel: a · exp(−since/τ(a)), τ = 4 + a·56 days — updating styles in real time;
 //   · click a card to REVIEW it (w springs back to anchor a, and decays relative to review time);
 //   · reviews PERSIST on this device: the word → reviewedAtDay map mirrors to localStorage
 //     ("fui:memory-reviews") on every review and restores on init (only for words present on
@@ -11,7 +12,7 @@
 //   · Field on/off — off, the page collapses to a plain grid and the scoped field is destroyed.
 // The scoped field runs with render: [] plus the "attention" metric, so the platform pipeline
 // writes --field-attention per card — the ink CSS reads it alongside the engine's live --d.
-import { recipeById } from "@field-ui/core";
+import { DAY_MS, recipeById, retention } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 
 const SCROLL_V_MAX = 2; // px/frame — same reading-pace gate EvidenceRuntime's reveal uses
@@ -99,10 +100,11 @@ function initMemory(): () => void {
     for (const card of cards) {
       const word = card.querySelector(".mx-word")?.textContent || "";
       const a = Number(card.dataset.anchor) || 0.5;
-      const tau = 4 + a * 56;
       const reviewedAt = reviews.get(word) ?? -1;
       const daysEff = reviewedAt >= 0 ? Math.max(0, sliderValue - reviewedAt) : sliderValue;
-      const w = a * Math.exp(-daysEff / tau);
+      // the core temporal kernel: w = a·exp(−since/τ(a)), τ = 4 + a·56 days — Ebbinghaus
+      // with a stability term, so deep anchors decay slower. Must match memory.astro.
+      const w = retention(a, daysEff * DAY_MS);
 
       card.style.setProperty("--w", w.toFixed(3));
       card.dataset.strength = (0.4 + w * 1.6).toFixed(2);

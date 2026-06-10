@@ -52,6 +52,13 @@ export interface Scenario {
   frames: number;
   /** seed for RNG forces (thermal, jet) so the run is reproducible. */
   seed?: number;
+  /**
+   * Additional bodies simulated alongside `body`, each with its own tokens and attrs —
+   * for cross-body behavior (e.g. a `screen` quiet zone attenuating another body's force,
+   * workover v0.3). Centred with the scenario; frame-0 `applyDelta` still measures the
+   * main `body` only.
+   */
+  extraBodies?: { tokens: string[]; attrs: Partial<Body> }[];
 }
 
 /** One particle's state at one captured frame. */

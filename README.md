@@ -113,11 +113,11 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 
 ## What's in the box
 
-**35 forces**, in three families.
+**36 forces**, in three families.
 
 - **Canonical (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`, `sink`. Designed interface verbs with bounded, legible falloff.
 - **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`. Real field laws: softened inverse-square, Lorentz, Langevin, diffusion, travelling waves.
-- **Designed-extended (17):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, the `resonate` and `spotlight` modifiers, `pigment` color transport, and field-line transport `fieldflow`.
+- **Designed-extended (19):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, the `resonate`, `spotlight`, and `screen` modifiers, `pigment` color transport, field-line transport `fieldflow`, and wormhole relocate `warp`.
 
 Forces also carry a four-field classification (gravity / electromagnetic / strong / weak), so the catalog reads as a translation of the four fundamental fields into interface behavior. See [`/docs/natural-fields`](https://field-ui.com/docs/natural-fields).
 

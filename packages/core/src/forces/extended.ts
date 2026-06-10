@@ -402,7 +402,7 @@ export const morph: Force = {
  * absorb→release event is the everyday path — reach for [S] only when creation is the
  * point). A pure source: `apply` is a no-op, the work is in `source()`.
  */
-const SPAWN_LIFE = 90; // frames a spawned particle lives before the [S] sink reclaims it
+export const SPAWN_LIFE = 90; // default lifespan (frames) when the body declares no data-life
 export const spawn: Force = {
   token: 'spawn',
   label: 'Spawn',
@@ -410,8 +410,19 @@ export const spawn: Force = {
   source(b, e) {
     // emit continuously (a fountain flows while on-screen); the integrator's source pass
     // already skips non-visible bodies, so an off-screen source is silent.
-    const rate = Math.max(1, Math.round(b.strength * 2)); // particles per frame
-    for (let i = 0; i < rate; i++) {
+    //
+    // The source budget (workover v0.3 §"Source and sink rules"): each emission carries the
+    // body's `data-life` (default 90 frames), and `data-cap` clamps the emission rate to
+    // `cap / life` per frame — so the body's live spawned population is bounded at ~cap,
+    // independent of the engine's pool ceiling. A fractional rate accumulates on the body
+    // (b.emitAcc) so sub-1/frame budgets still flow.
+    const life = b.life ?? SPAWN_LIFE;
+    let rate = Math.max(1, Math.round(b.strength * 2)); // particles per frame
+    if (b.cap != null && b.cap > 0 && life > 0) rate = Math.min(rate, b.cap / life);
+    b.emitAcc = (b.emitAcc ?? 0) + rate;
+    let n = Math.floor(b.emitAcc);
+    b.emitAcc -= n;
+    for (; n > 0; n--) {
       // rotate the heading by a small random angle → a soft emission cone
       const j = (Math.random() - 0.5) * 0.6;
       const c = Math.cos(j);
@@ -419,7 +430,7 @@ export const spawn: Force = {
       const hx = b.ux * c - b.uy * s;
       const hy = b.ux * s + b.uy * c;
       const speed = 2 + Math.random() * 2;
-      e.spawn({ x: b.cx, y: b.cy, vx: hx * speed, vy: hy * speed, age: SPAWN_LIFE, heat: 0.6 });
+      e.spawn({ x: b.cx, y: b.cy, vx: hx * speed, vy: hy * speed, age: life, heat: 0.6 });
     }
   },
   meta: { desc: 'a source — emits matter along the heading, budgeted by a lifespan' },
@@ -459,6 +470,26 @@ export const spotlight: Force = {
     return { gate: dirx * b.ux + diry * b.uy < SPOTLIGHT_COS };
   },
   meta: { desc: 'gates sibling forces to an angular cone of the heading' },
+};
+
+/**
+ * Workover v0.3 — `screen`: a quiet zone / shield (truth mode: designed). A body carrying
+ * `screen` damps the magnitude of OTHER bodies' forces on matter inside its `data-range`,
+ * by `screenFactor` (`core/math.ts`) — text shielded from a noisy field, a calm pocket in a
+ * busy page.
+ * Cross-body by definition, so the work happens in the integrator's force pass (the only
+ * place per-particle, per-body forces compose); this module is the registered token, the
+ * passported identity, and the pure math. `apply` is a no-op — like `spotlight`/`resonate`
+ * it is a modifier, but one that modifies its *neighbors*, not its own siblings. Initial
+ * mode is `local` (the only shipped mode; `data-screen-mode` inside/outside/behind are
+ * future work). Probe-style diagnostic samplers (`forceAt`, the Lab's frame-0 delta) read
+ * raw forces and do not apply screen attenuation — the integrator is the contract.
+ */
+export const screen: Force = {
+  token: 'screen',
+  label: 'Screen',
+  apply() {}, // a cross-body modifier — the attenuation lives in the integrator's force pass
+  meta: { desc: "a quiet zone — attenuates other bodies' forces on matter inside its radius" },
 };
 
 /**
@@ -587,6 +618,7 @@ export const extendedForces: readonly Force[] = [
   spawn,
   resonate,
   spotlight,
+  screen,
   pigment,
   fieldflow,
   warp,

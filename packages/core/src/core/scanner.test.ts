@@ -137,3 +137,109 @@ test('expandPreset: galaxy/nebula/tornado compose implemented atoms', () => {
     ['swirl', 'stream', 'viscosity'],
   );
 });
+
+// ── the modifier contract + the source-budget guard (workover v0.3) ─────────────────────
+
+test('the parser classifies tokens into {modifiers, forces, sources} on the body', () => {
+  const b = parseBodyParams(attrs({ body: 'resonate attract spawn screen' }));
+  assert.deepEqual(b.classified?.modifiers, ['screen', 'resonate']); // contract order, not authored
+  assert.deepEqual(b.classified?.forces, ['attract']);
+  assert.deepEqual(b.classified?.sources, ['spawn']);
+});
+
+test('parses the source budget: data-life / data-cap numbers, budgeted from any of the four attrs', () => {
+  const b = parseBodyParams(attrs({ body: 'spawn', life: '120', cap: '40' }));
+  assert.equal(b.life, 120);
+  assert.equal(b.cap, 40);
+  assert.equal(b.budgeted, true);
+  // each of the four attrs alone satisfies the contract
+  for (const k of ['life', 'cap', 'budget', 'sink']) {
+    assert.equal(parseBodyParams(attrs({ body: 'spawn', [k]: '60' })).budgeted, true, `data-${k}`);
+  }
+  assert.equal(parseBodyParams(attrs({ body: 'spawn' })).budgeted, false);
+  // garbage numbers don't become budgets (presence still satisfies the contract)
+  const junk = parseBodyParams(attrs({ body: 'spawn', life: 'soon' }));
+  assert.equal(junk.life, undefined);
+  assert.equal(junk.budgeted, true);
+});
+
+test('parses data-screen-min for screen quiet zones (default 0)', () => {
+  assert.equal(parseBodyParams(attrs({ body: 'screen' })).screenMin, 0);
+  assert.equal(parseBodyParams(attrs({ body: 'screen', 'screen-min': '0.3' })).screenMin, 0.3);
+});
+
+test('guardSourceBudget: an unbudgeted [S] body warns (dev) and gets the safe defaults', async () => {
+  const { guardSourceBudget } = await import('./scanner.ts');
+  const { SOURCE_DEFAULT_LIFE, SOURCE_DEFAULT_CAP } = await import('../config/forces.config.ts');
+  const { setContractChecks, contractChecksEnabled } = await import('../contracts/guards.ts');
+
+  const sb = parseBodyParams(attrs({ body: 'spawn' }));
+  const warnings: string[] = [];
+  const origWarn = console.warn;
+  console.warn = (msg: string) => void warnings.push(String(msg));
+  const origChecks = contractChecksEnabled();
+  try {
+    setContractChecks(true);
+    guardSourceBudget(sb, '<div#fountain>');
+  } finally {
+    console.warn = origWarn;
+    setContractChecks(origChecks);
+  }
+  assert.equal(sb.life, SOURCE_DEFAULT_LIFE);
+  assert.equal(sb.cap, SOURCE_DEFAULT_CAP);
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0]!, /UNBUDGETED_SOURCE/);
+  assert.match(warnings[0]!, /<div#fountain>/); // names the element
+  assert.match(warnings[0]!, /data-life \/ data-cap \/ data-budget \/ data-sink/); // names the contract
+});
+
+test('guardSourceBudget: budgeted sources and non-sources are untouched and silent', async () => {
+  const { guardSourceBudget } = await import('./scanner.ts');
+  const { setContractChecks, contractChecksEnabled } = await import('../contracts/guards.ts');
+  const warnings: string[] = [];
+  const origWarn = console.warn;
+  console.warn = (msg: string) => void warnings.push(String(msg));
+  const origChecks = contractChecksEnabled();
+  try {
+    setContractChecks(true);
+    const budgeted = parseBodyParams(attrs({ body: 'spawn', life: '90' }));
+    guardSourceBudget(budgeted, '<div>');
+    assert.equal(budgeted.life, 90); // authored budget kept, no default override
+    assert.equal(budgeted.cap, undefined);
+    const plain = parseBodyParams(attrs({ body: 'attract' }));
+    guardSourceBudget(plain, '<div>');
+    assert.equal(plain.life, undefined);
+  } finally {
+    console.warn = origWarn;
+    setContractChecks(origChecks);
+  }
+  assert.equal(warnings.length, 0);
+});
+
+test('guardSourceBudget: still applies the safe cap with checks off (prod) — silently', async () => {
+  const { guardSourceBudget } = await import('./scanner.ts');
+  const { SOURCE_DEFAULT_LIFE } = await import('../config/forces.config.ts');
+  const { setContractChecks, contractChecksEnabled } = await import('../contracts/guards.ts');
+  const sb = parseBodyParams(attrs({ body: 'spawn' }));
+  const warnings: string[] = [];
+  const origWarn = console.warn;
+  console.warn = (msg: string) => void warnings.push(String(msg));
+  const origChecks = contractChecksEnabled();
+  try {
+    setContractChecks(false);
+    guardSourceBudget(sb, '<div>');
+  } finally {
+    console.warn = origWarn;
+    setContractChecks(origChecks);
+  }
+  assert.equal(sb.life, SOURCE_DEFAULT_LIFE); // the safety net is not dev-only
+  assert.equal(warnings.length, 0); // …but the noise is
+});
+
+test('the fountain preset declares its source budget explicitly (life 90 — the historical look)', () => {
+  const vb = expandPreset('fountain');
+  const spawnBody = vb.find((b) => b.tokens.includes('spawn'));
+  assert.ok(spawnBody, 'fountain has a spawn entry');
+  assert.equal(spawnBody!.life, 90);
+  assert.equal(spawnBody!.budgeted, true);
+});

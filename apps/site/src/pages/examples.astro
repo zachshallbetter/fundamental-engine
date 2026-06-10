@@ -150,6 +150,19 @@ function reflow(items, mutate) {
   });
 }`;
 
+const textBoundarySrc = `import { textBodies } from '@field-ui/platform';
+
+const sentence = document.querySelector('#headline');
+const field = document.querySelector('field-root');
+
+// sample the rendered word boxes (Range geometry) into shear boundary spans
+const dispose = textBodies(sentence, { granularity: 'word', body: 'shear' }).annotate();
+field.rescan();   // the scanner registers the spans as bodies
+
+// later: remove the boundary set and rescan
+dispose();
+field.rescan();`;
+
 // The demos, grouped by concept — drives the sidebar, the in-content dividers, and scroll-spy.
 const GROUPS = [
   {
@@ -175,6 +188,7 @@ const GROUPS = [
     title: 'Field control',
     items: [
       { id: 'flow-field', label: 'Controlled flow field' },
+      { id: 'text-boundary', label: 'Text as boundary' },
       { id: 'click-burst', label: 'Click to burst' },
     ],
   },
@@ -398,6 +412,26 @@ const GROUPS = [
     />
   </section>
 
+  <section class="docs-sec" id="text-boundary">
+    <h2>Text as boundary</h2>
+    <p>
+      <code>textBodies()</code> samples a sentence's <em>rendered</em> word boxes — Range geometry,
+      one box per word — into invisible <a href="/docs/api/forces"><code>shear</code></a> boundary
+      spans bound back to the text via <code>data-field-visual-for</code>. Toggle it and the field
+      flows <em>along the words</em> while the sentence stays real, selectable HTML. Matter never
+      forms the words; the words bend the flow. Box geometry today — glyph contours are the planned
+      next slice.
+    </p>
+    <div class="sc-stage sc-textb" role="presentation">
+      <div class="sc-flow-controls">
+        <button type="button" class="sc-flow-btn" data-textb-toggle aria-pressed="false">Words as boundaries</button>
+      </div>
+      <p class="sc-textb-line" data-textb-line>matter flows along these words</p>
+      <span class="sc-flow-hint">toggle, then watch the flow bend at each word</span>
+    </div>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: textBoundarySrc }]} />
+  </section>
+
   <section class="docs-sec" id="click-burst">
     <h2>Click to burst</h2>
     <p>
@@ -420,6 +454,64 @@ const GROUPS = [
   </div>
   <SiteFooter />
 </Base>
+
+<script>
+  // Text-as-boundary demo: textBodies (the #257 Range-geometry slice) samples the sentence's
+  // rendered word boxes into shear boundary spans; field-root.rescan() registers/drops them.
+  // One handle per visit — handle.annotate() is idempotent, so resize just re-annotates.
+  import { textBodies } from '@field-ui/platform';
+
+  const rescan = () => {
+    const f = document.querySelector('field-root') as (Element & { rescan?: () => void }) | null;
+    f?.rescan?.();
+  };
+
+  const init = () => {
+    const btn = document.querySelector('[data-textb-toggle]') as HTMLButtonElement | null;
+    const line = document.querySelector('[data-textb-line]') as HTMLElement | null;
+    if (!btn || !line || btn.dataset.bound) return;
+    btn.dataset.bound = '1'; // init runs on load AND astro:page-load — bind once per visit
+    const handle = textBodies(line, { granularity: 'word', body: 'shear', strength: 1.4 });
+    let dispose: (() => void) | null = null;
+
+    btn.addEventListener('click', () => {
+      const on = !dispose;
+      btn.setAttribute('aria-pressed', String(on));
+      btn.classList.toggle('on', on);
+      if (on) dispose = handle.annotate();
+      else {
+        dispose?.();
+        dispose = null;
+      }
+      rescan();
+    });
+
+    // the documented caller contract: re-annotate on resize (the spans are a layout snapshot)
+    const onResize = () => {
+      if (!dispose) return;
+      dispose = handle.annotate();
+      rescan();
+    };
+    window.addEventListener('resize', onResize);
+
+    // client-side navigation away: drop the spans + listener so nothing leaks across pages
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        window.removeEventListener('resize', onResize);
+        if (dispose) {
+          dispose();
+          dispose = null;
+          rescan();
+        }
+      },
+      { once: true }
+    );
+  };
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
 
 <script is:inline data-astro-rerun>
   (() => {
@@ -1111,6 +1203,23 @@ const GROUPS = [
     color: var(--accent);
     border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
     background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  /* Text-as-boundary demo (textBodies, #257) */
+  .sc-textb {
+    position: relative;
+    min-height: 280px;
+    overflow: hidden;
+  }
+  .sc-textb-line {
+    font-family: var(--display);
+    font-size: clamp(1.7rem, 5.5vw, 3.1rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    text-align: center;
+    max-width: 13ch;
+    margin: 0;
+    color: var(--text);
   }
   .sc-flow-hint {
     position: absolute;

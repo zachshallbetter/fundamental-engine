@@ -13,6 +13,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EXPERIMENTS, COMPOSITE_EXPERIMENTS } from './experiments.ts';
 import { allForces, runScenario } from './run.ts';
+import { parseBodyParams, guardSourceBudget, type BodyAttrs } from '../core/scanner.ts';
+import { SOURCE_DEFAULT_CAP, SOURCE_DEFAULT_LIFE } from '../config/forces.config.ts';
 import type { Particle } from '../core/types.ts';
 
 // ── snap() round-trip: every meaningful Particle field must survive serialization ──
@@ -105,3 +107,51 @@ for (const exp of [...EXPERIMENTS, ...COMPOSITE_EXPERIMENTS]) {
     }
   });
 }
+
+// ── the source-budget guard (workover v0.3 §"Source and sink rules") ──────────────────
+// An [S] body authored with NONE of data-life / data-cap / data-budget / data-sink gets the
+// safe default budget from the scanner guard (data-life="300", data-cap="120"); under that
+// cap, the live count a single source sustains must stay bounded at ~cap — independent of
+// the engine pool ceiling (which the conformance env deliberately does not have).
+test('source-budget guard: an unbudgeted [S] source stays bounded at the safe cap', () => {
+  const attrs: BodyAttrs = { get: (n) => (n === 'body' ? 'spawn' : null), has: () => false };
+  const sb = parseBodyParams(attrs);
+  assert.deepEqual(sb.classified?.sources, ['spawn']);
+  assert.equal(sb.budgeted, false);
+  // the guard warns in dev — silence the console for the assertion, then check the defaults.
+  const origWarn = console.warn;
+  console.warn = () => {};
+  try {
+    guardSourceBudget(sb, '<div>');
+  } finally {
+    console.warn = origWarn;
+  }
+  assert.equal(sb.life, SOURCE_DEFAULT_LIFE);
+  assert.equal(sb.cap, SOURCE_DEFAULT_CAP);
+
+  // run the budgeted source well past one full lifespan: the live population must plateau
+  // at ~cap (emission rate is clamped to cap/life), never grow unbounded.
+  const r = runScenario(
+    {
+      force: 'spawn',
+      label: 'an unbudgeted source under the guard-applied safe cap',
+      family: 'extended',
+      klass: 'S',
+      body: { cx: 0, cy: 0, range: 300, strength: 1, on: true, angle: 0, life: sb.life, cap: sb.cap },
+      particles: [],
+      frames: 700, // > 2× the lifespan — steady state is fully established
+      seed: 11,
+    },
+    registry,
+  );
+  const counts = r.trajectory.map((fr) => fr.length);
+  const peak = Math.max(...counts);
+  assert.ok(
+    peak <= SOURCE_DEFAULT_CAP + 1,
+    `live spawned count must stay ≤ the safe cap (${SOURCE_DEFAULT_CAP}); peaked at ${peak}`,
+  );
+  assert.ok(
+    counts[counts.length - 1]! >= SOURCE_DEFAULT_CAP * 0.8,
+    `the source must still flow at steady state (ended at ${counts[counts.length - 1]})`,
+  );
+});

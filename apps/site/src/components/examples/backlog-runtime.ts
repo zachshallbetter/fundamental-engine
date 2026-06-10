@@ -297,14 +297,17 @@ function initBacklog(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain the attention lane, so the platform
-        // pipeline writes an eased --field-attention (hover/focus + viewport-center
-        // proximity + visibility) back to every card. A dragged card carries
-        // data-active, which the pipeline reads as engaged — attention rises in flight.
+        // render: [] — invisible; metrics gain the attention + recency lanes. Attention:
+        // the pipeline writes an eased --field-attention (hover/focus + viewport-center
+        // proximity + visibility) back to every card; a dragged card carries data-active,
+        // which the pipeline reads as engaged — attention rises in flight. Recency: every
+        // card declares data-field-at (its updatedAt), so the pipeline's recency lane is
+        // GROUNDED in that world timestamp — --field-recency is freshness(updatedAt, now),
+        // not an interaction guess.
         const recipe = {
           ...base,
           render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+          metrics: [...new Set([...(base.metrics ?? []), "attention", "recency"])],
         } as typeof base;
         // the cycle bar joins as a sink — the engine writes its fill back as --load.
         const bodies = rows();

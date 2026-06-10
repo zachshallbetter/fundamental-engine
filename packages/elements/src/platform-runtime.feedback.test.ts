@@ -52,6 +52,24 @@ test('lit writes --lit, sets state, and registers the threshold exactly once per
   assert.ok(sets.every((s) => '--lit' in s.vars));
 });
 
+test('measured thermodynamics mirror the engine sink: bare --entropy / --coherence / --temperature (workover v0.3)', () => {
+  const { platform, sets } = fakePlatform();
+  const sink = makeFeedbackSink(platform);
+  const el = {} as HTMLElement;
+  sink(el, { entropy: 0.25, coherence: 0.75, temperature: 0.123456 });
+  const flat = Object.assign({}, ...sets.map((s) => s.vars));
+  assert.deepEqual(flat, {
+    '--entropy': '0.250',
+    '--coherence': '0.750',
+    '--temperature': '0.123',
+  });
+  // bare names only — the platform's --field-entropy/--field-coherence lanes are a different,
+  // inferred signal and must NOT be written from the engine's measured channels.
+  for (const s of sets) {
+    assert.ok(!('--field-entropy' in s.vars) && !('--field-coherence' in s.vars));
+  }
+});
+
 test('a channel-less call writes nothing', () => {
   const { platform, sets, states, thresholds } = fakePlatform();
   makeFeedbackSink(platform)({} as HTMLElement, {});

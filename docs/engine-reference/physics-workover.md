@@ -3,12 +3,14 @@
 
 # Physics Workover
 
-Status: a multi-version physics roadmap (v0.3 through v0.6), partly shipped. Phase 1 (v0.3)
-reconciliation has shipped — swirl `0.12`, the
-sink `--load` export, the global velocity cap, and the conformance safety sweep; the
-mode system, medium, metrics, and transformation primitives remain. This is the authority
-for the multi-version physics effort (v0.3 through v0.6). It sits under the spec
-([`forces-system.md`](forces-system.md)); where this doc and the spec disagree,
+Status: a multi-version physics roadmap (v0.3 through v0.6), partly shipped. The v0.3
+queue has shipped — swirl `0.12`, the sink `--load` export, the global velocity cap, the
+conformance safety sweep, the source-budget guard, the modifier contract + classified
+parser, the `screen` modifier, the measured entropy/coherence/temperature metrics, and
+the boundary-type table ([`forces-system.md`](forces-system.md) §20.11); the mode
+system, medium, real `dt`, and transformation primitives remain (v0.4+). This is the
+authority for the multi-version physics effort (v0.3 through v0.6). It sits under the
+spec ([`forces-system.md`](forces-system.md)); where this doc and the spec disagree,
 the spec wins and this doc is corrected.
 
 ## Thesis
@@ -87,8 +89,8 @@ substrate already ships. Do not re-implement these:
 - **`env.neighbors`** (spatial hash) and **`env.grid`** (scalar grid: diffuse plus
   leapfrog wave) are both implemented services, not stubs.
 
-Real gaps (the actual work of this workover). Phase 1 (v0.3) has since closed the first
-three — they are kept here, marked **Done**, as the record of what shipped:
+Real gaps (the actual work of this workover). The v0.3 queue has since closed the
+first seven — they are kept here, marked **Done**, as the record of what shipped:
 
 - **Done (#113).** Swirl inward bias reconciled `0.6` → `0.12` in code, the formulas
   reference, and the conformance check (now tangential dominance, not an exact inward spiral).
@@ -97,16 +99,28 @@ three — they are kept here, marked **Done**, as the record of what shipped:
   experiment.
 - **Done (#115).** The sink exports `--load` (`accreted / capacity`), with `--mass`
   kept as a back-compat alias.
+- **Done (v0.3 queue).** The source-budget guard: an [S] body with none of `data-life` /
+  `data-cap` / `data-budget` / `data-sink` gets a dev-mode `console.warn` naming the
+  element (the scanner's `guardSourceBudget`) and the safe default budget
+  (`data-life="300"`, `data-cap="120"`); `spawn` clamps its rate to `cap / life`, so the
+  body's live emission is bounded at ~cap. The `fountain` preset declares `life: 90`
+  explicitly (its historical look, now an explicit budget). Conformance pins the bound.
+- **Done (v0.3 queue).** The `screen` modifier — see §"`screen` modifier" below.
+- **Done (v0.3 queue).** The modifier contract: tokens classify into
+  `{modifiers, forces, sources}` (`classifyBodyTokens` in `config/forces.config.ts`,
+  filled onto `Body.classified` by the parser) and modifiers evaluate in the formalized
+  order `spotlight → screen → resonate` regardless of authoring or registration order.
+- **Done (v0.3 queue).** Measured entropy / coherence / temperature — see §"Metrics"
+  below for the as-built formulas. (The pre-existing `--coherence` CSS token from
+  `cssTokens()` is a palette *color* on `:root`; the measured metric is a per-body
+  number — see the naming note in §"Metrics".)
 - `FRICTION = 0.95` is an unnamed global damping constant, not a medium mode.
 - `dt` is frame-based (`0` or `1`), not seconds; no fixed-step accumulator.
 - `viscosity` is linear only; no quadratic or mixed.
 - No `PhysicsMode`, `IntegratorMode`, or `MediumMode` type system.
-- No `screen` modifier.
-- Modifier order relies on token-iteration order, not a formalized contract.
-- No entropy or coherence metrics (the `--coherence` CSS token is a palette
-  color, unrelated to a measured metric).
 - No `phase` particle attribute (only "phase change" in the `crystallize` comment).
-- No transformation primitives: `warp`, `wormhole`, `fuse`, `decay`, `fission`.
+- No transformation primitives: `wormhole` (as a preset), `fuse`, `decay`, `fission`
+  (`warp` itself shipped: conserved paired relocation, §22.3 of the spec).
 
 ## Phase 1 reconciliations
 
@@ -240,21 +254,48 @@ has no budget. Hard invariant: particle count may drift only while a registered,
 budgeted [S] force is active. The source pass and age sink already exist; this
 formalizes the guard and the defaults.
 
-## `screen` modifier (new)
+**As built (v0.3):** the guard is `guardSourceBudget` in `core/scanner.ts`, run for
+every parsed body (light-DOM scan, presets, shadow registration). The warn is gated by
+the same dev flag as the contract guards (`contractChecksEnabled()`); the safe cap is
+applied in production too — the safety net is not dev-only, only the noise is.
+`data-life` flows onto each emission as its mortal `age`; `data-cap` clamps the
+emission rate to `cap / life` per frame (a fractional accumulator carries sub-1/frame
+budgets), so a body's live spawned population is bounded at ~cap independent of the
+engine pool ceiling. An *authored* budget is never overridden — a body with only
+`data-life` keeps its lifespan and an unclamped rate. `data-budget`/`data-sink`
+presence satisfies the contract (their richer semantics — total-energy budgets, a named
+reclaiming sink — are future work). The unbudgeted-source default changes behavior
+deliberately: a bare `data-body="spawn"` now sustains ~120 longer-lived particles
+instead of ~180 short-lived ones, and says so in the console.
+
+## `screen` modifier (shipped, v0.3)
 
 A boundary that creates quiet zones, shields text from noisy fields, and
-attenuates sibling forces.
+attenuates the forces other bodies exert inside its radius.
 
 ```
 falloff     = max(0, 1 - d / range)^2
 screenFactor = clamp(1 - S * falloff, min, 1)
-siblingForce *= screenFactor
+otherBodiesForce *= screenFactor
 ```
 
 Attributes: `data-strength`, `data-range`, `data-screen-min`, `data-screen-mode`
 (initial mode `local`; future `inside`/`outside`/`behind`).
 
-## Modifier contract
+**As built (v0.3):** truth mode designed; registered as the token `screen`
+(`forces/extended.ts`, passported `klass: modifier`), with the pure math
+(`screenFactor`) in `core/math.ts` and the attenuation applied in the integrator's
+force pass — the only place per-particle, per-body forces compose. It is *cross-body*:
+a screen damps OTHER bodies' forces on matter inside `data-range` and never its own
+sibling tokens (the brief's "sibling forces" reads as *sibling bodies'* forces — the
+shield semantics). `data-range="0"` is inert (screens are local, never global; also the
+no-NaN-at-zero-range guarantee). Only `local` mode shipped; `data-screen-mode` parsing
+is deferred with the other modes. Probe samplers (`forceAt`, the Lab frame-0 delta) read
+raw forces — the integrator is the contract. Conformance: a two-attractor scenario
+(`extraBodies`) pins attenuation inside vs. byte-exact non-effect outside; unit tests
+pin the falloff curve, the min clamp, edge smoothness, and self-exclusion.
+
+## Modifier contract (shipped, v0.3)
 
 Formalized execution, independent of registration order:
 
@@ -269,22 +310,69 @@ Formalized execution, independent of registration order:
 The parser classifies tokens into `{ modifiers, forces, sources }` rather than
 relying on iteration order.
 
-## Metrics: entropy and coherence (new)
+**As built (v0.3):** the classification is data exported from config
+(`MODIFIER_ORDER`, `SOURCE_TOKENS`, `classifyBodyToken(s)` in
+`config/forces.config.ts` — renderable by the Lab/docs, cross-checked against the
+passports by a test). The parser fills `Body.classified` at parse time; bodies built
+elsewhere (conformance, tests) are memoized lazily in the integrator. The integrator
+evaluates a body's own modifiers in the contract order, then discovers custom
+`modify()` hooks on its remaining tokens in authored order (so registry-extended
+forces behave exactly as before); the cross-body `screen` factor composes between the
+spotlight gate and the application multiplier. Unknown tokens classify as plain forces
+— unchanged behavior. Today's modifiers compose commutatively (gates OR, strength
+factors multiply), so formalizing the order changed **zero** behavior for existing
+pages (the e2e suite is the harness); the order is pinned for future modifiers where
+it will matter, and a determinism test asserts authored order cannot change outcomes.
 
-Measured, never applied as forces.
+## Metrics: entropy and coherence (shipped, v0.3)
+
+Measured, never applied as forces (taxonomy layer 8).
+
+The brief sketched a four-term field blend
+(`0.35·velocityVariance + 0.25·heatVariance + 0.25·densityVariance +
+0.15·spatialDispersion`, `coherence = 1 − normalizedEntropy`) but left every term's
+scale open. The shipped definitions are the cheap, honest **local** versions —
+measured per `data-feedback` body over the same `range/2` sample window that already
+feeds the density count (no new O(particles × bodies) pass; the integrator accumulates
+the sums in `Body.thermo` during the existing pass). The math is pure
+(`core/thermo.ts`), unit-tested without an engine:
 
 ```
-entropy = 0.35 * velocityVariance + 0.25 * heatVariance
-        + 0.25 * densityVariance + 0.15 * spatialDispersion
-coherence = 1 - normalizedEntropy
+R           = |Σv| / Σ|v|                 // velocity alignment (mean resultant length)
+entropy     = (1 − R) · min(1, s̄ / 1.5)   // direction dispersion, gated by agitation
+coherence   = 1 − entropy                 // the brief's complement relation, exactly
+temperature = ½·h̄ + ½·min(1, s̄² / 9)      // mean heat + normalized kinetic agitation
 ```
 
-Exposed as `--entropy`, `--coherence`, `--temperature`, `--density`. Used in Lab
-diagnostics, debug overlays, render states, reduced-motion behaviour, and
+(`s̄` mean speed, `s̄²` mean squared speed, `h̄` mean heat; empty sample ⇒ entropy 0,
+coherence 1, temperature 0 — a quiet region is cold and ordered.) The agitation gate
+is what makes the expected directions honest: thermal randomizes directions at speed →
+entropy up; drag stills the sample → entropy down (pure direction dispersion alone
+would read damped chaos as disorder forever); align/cohesion raise R → coherence up.
+Values are eased (the same 0.08 ease as `--d`) and exported through the ONE feedback
+sink (#228) on both routes (the engine default sink and the platform's
+`makeFeedbackSink`).
+
+**Naming (read carefully — three near-collisions, all deliberate):**
+
+- These engine-MEASURED thermodynamics write the **bare names** `--entropy`,
+  `--coherence`, `--temperature` (with `--d`/`--field-density` as the density export),
+  per this doc and the backlog.
+- The platform's `--field-entropy` / `--field-coherence` (system-contracts §6 metric
+  list) are **platform-inferred interaction metrics** — a different signal computed
+  from interaction telemetry, not from particle state. The two families must not be
+  cross-written.
+- The `--coherence` set on `:root` by `cssTokens()` is a palette **color**
+  (`#ffce6b`), unrelated to the metric. The measured value is element-scoped on
+  `data-feedback` bodies, so it shadows the color only within those subtrees; no
+  shipped CSS consumes `var(--coherence)` as a color today.
+
+Used in Lab diagnostics, debug overlays, render states, reduced-motion behaviour, and
 unstable-sim detection. Expected directions: thermal and burst raise entropy;
-supernova spikes it; drag lowers velocity entropy; diffuse lowers density
-variance; align and cohesion raise coherence; crystallize and pressure lower
-spatial entropy.
+supernova spikes it; drag lowers velocity entropy; align and cohesion raise
+coherence. (The brief's density-variance and spatial-dispersion terms — diffuse,
+crystallize, pressure — belong to a future field-level entropy if a consumer earns
+it; the shipped metric is deliberately local and velocity/heat-based.)
 
 ## Transformation layer (new)
 
@@ -302,7 +390,10 @@ Specific tokens, never a generic transform.
 
 ## Boundaries and interfaces
 
-Boundary is a concept category, not a single force.
+Boundary is a concept category, not a single force. The full boundary-type table —
+each mechanism's behavior, truth mode, and verified shipped status — is canon in
+[`forces-system.md`](forces-system.md) **§20.11** (shipped with the v0.3 queue); this
+is the summary index:
 
 | Boundary | Mechanism |
 | --- | --- |
@@ -313,6 +404,7 @@ Boundary is a concept category, not a single force.
 | Shear layer | shear |
 | Event horizon | sink, blackhole |
 | Shield | screen |
+| Portal | warp (+ data-pair) |
 | World edge | toroidal wrap |
 | Content | DOM rect |
 | Shape | morph target geometry |
@@ -376,6 +468,8 @@ viscosity/jet/swirl conformance fixes). The brief's batches shift up by one:
 - **v0.3.0** — reconciliation, safety, boundary, metrics: swirl to 0.12, the
   `--load` export, velocity cap, source-budget guard, modifier contract,
   `screen`, entropy and coherence, boundary docs, safety conformance.
+  **Shipped in full** — the queue items each carry conformance/unit tests; the
+  as-built notes live inline in the sections above.
 - **v0.4.0** — physical substrate: the mode type system, `dt` in seconds,
   semi-implicit Euler with `dt`, medium modes, linear and quadratic drag, the
   epsilon softening rules, frame-rate independence. (gravity and charge are

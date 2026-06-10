@@ -985,7 +985,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 
 > The reconciliation pass is **done**. The as-built registry lives in
 > `packages/core/src/config/manual.ts` (and is cross-checked against the live force
-> registry by a completeness test, so it can't drift). Every one of the **35 registered
+> registry by a completeness test, so it can't drift). Every one of the **36 registered
 > forces** carries a canonical color; the `mass`→`accreted` split (§21.2) shipped. The
 > table below is the design source for this — read it with three deltas:
 >
@@ -1007,6 +1007,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 | Resonate | `resonate` | A | `#f0abfc` | Motion | driven oscillation — standing waves, beats |
 | Gate | `gate` | A | `#fb7185` | Software architecture | one-way membrane — matter rectifies / accumulates |
 | Spotlight | `spotlight` | A | `#facc15` | AI systems | a directional perception/attention cone |
+| Screen | `screen` | modifier | `#a8b8d8` | Experience design | a quiet zone — damps OTHER bodies' forces inside its radius (workover v0.3) |
 | Wind | `wind` | A | `#38bdf8` | Motion | curl-noise turbulence — natural, non-repeating eddies |
 | Shear | `shear` | A | `#818cf8` | Creative technology | laminar shear flow — turbulence at boundaries |
 | Buoyancy | `buoyancy` | A+E | `#fcd34d` | Commerce / Physical | sedimentation — hot/light rises, heavy sinks |
@@ -1073,6 +1074,23 @@ Attrs: `data-angle`(=n heading). Sized by the element box (like `wall`).
 act only if  acos( û_{b→p} · heading ) < φ                 // else skip
 ```
 Attrs: `data-angle`(heading), `data-fov`(=φ°), plus the core force in `data-body`.
+
+**Screen — `screen` [modifier · cross-body] (workover v0.3).** A quiet zone / shield:
+damps the magnitude of **other** bodies' forces on matter inside its radius — text
+shielded from a noisy field, a calm pocket in a busy page. Unlike `spotlight`/`resonate`
+(which modify their *own* siblings via `modify()`), `screen` is cross-body: the
+attenuation is applied in the integrator's force pass, where per-particle, per-body
+forces compose. A screen never attenuates its own sibling tokens. Truth mode: designed.
+```
+falloff      = max(0, 1 − d/range)²                        // smooth at the edge, no cliff
+screenFactor = clamp(1 − S·falloff, min, 1)                // min from data-screen-min (default 0)
+otherForce  *= screenFactor                                // per particle inside the radius
+```
+Attrs: `data-strength`(=S), `data-range` (0 ⇒ inert — screens are always local, never
+global), `data-screen-min`(=min). The initial mode is `local`; `data-screen-mode`
+(`inside`/`outside`/`behind`) is future work. Diagnostic probe samplers (`forceAt`, the
+Lab's frame-0 delta) read raw forces and do not apply screen attenuation — the
+integrator pass is the contract.
 
 **Wind — `wind` [A].** Curl of a noise field → divergence-free turbulence.
 ```
@@ -1659,6 +1677,33 @@ With these the registry is a genuine **physical basis**: every named force and
 composite (designed or cosmological) reduces to it, faithfully.
 
 ---
+
+### 20.11 Boundaries — the boundary-type table (workover v0.3)
+
+Boundary is a **concept category, not a single force** (physics-workover §"Boundaries
+and interfaces"). Several distinct mechanisms shape edges, membranes, cones, horizons,
+and shields; this table is the authority for what each one is, its truth mode, and its
+honest shipped status (verified against the code, not the plan).
+
+| Boundary type | Mechanism | Behavior | Truth mode | Status |
+|---|---|---|---|---|
+| **Wall** | `wall` (§6.4) | elastic bounce off the element box; sparks on hard impact | designed | ✅ shipped (canonical) |
+| **Membrane** | `gate` (§20.3) | one-way: passes matter along its heading, reflects the reverse crosser | designed | ✅ shipped (extended) |
+| **Cone** | `spotlight` (§20.3) | gates its sibling forces to an angular cone of the heading | designed | ✅ shipped (modifier) |
+| **Optical** | `lens` (§20.3) | rotates velocity, preserving speed — bends paths without adding energy | designed | ✅ shipped (extended) |
+| **Shear layer** | `shear` (§20.3) | laminar velocity gradient — laminae slide past each other at the edge | designed | ✅ shipped (extended) |
+| **Event horizon** | `sink` (§6.9) · `blackhole` preset (§20.9) | capture within `data-absorb`; held (conserved) until the supernova release | designed (sink) · poetic (preset) | ✅ shipped |
+| **Shield** | `screen` (§20.3, workover v0.3) | damps OTHER bodies' forces inside its radius — quiet zones, text shielding | designed | ✅ shipped (this workover); `data-screen-mode` inside/outside/behind is planned |
+| **Portal** | `warp` (§22.3) + `data-pair` | conserved relocation between paired throats (matter and `data-warp` elements) | designed | ✅ shipped; the `wormhole` preset composes it |
+| **World edge** | toroidal wrap (integrator §2.2) | matter leaving one edge re-enters the opposite one; count conserved | designed (substrate) | ✅ shipped |
+| **Content** | the DOM rect (`measureBodies`, `data-shaped`) | the element box itself is the boundary: walls/gates size to it; shaped sources shell it | designed (substrate) | ✅ shipped |
+| **Shape** | `morph` target geometry (§20.3 [D]) | matter assembles onto a sampled mark/chart/logo — never words (§11) | designed | ✅ shipped |
+| **View** | off-screen visibility (`b.vis`, §2.1) | an off-screen body exerts no force — the viewport is a soft boundary of influence | designed (substrate) | ✅ shipped |
+
+Nothing in this table is a new engine: every boundary is either one of the registered
+tokens above or an engine substrate rule. The honest gaps: `screen` ships only its
+`local` mode; a *reflective* world edge (walls at the viewport instead of the wrap) and
+a membrane with per-species selectivity are unbuilt ideas, not shipped behavior.
 
 ## 21. Mass & momentum — audit and first-class proposal
 

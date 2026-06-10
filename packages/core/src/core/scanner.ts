@@ -6,6 +6,12 @@
 
 import type { Body } from './types.ts';
 import { PRESETS, type PresetEntry } from '../config/presets.ts';
+import {
+  classifyBodyTokens,
+  SOURCE_DEFAULT_CAP,
+  SOURCE_DEFAULT_LIFE,
+} from '../config/forces.config.ts';
+import { contractChecksEnabled } from '../contracts/guards.ts';
 import { compileIntent } from '../recipes/intent.ts';
 
 /** A minimal attribute accessor — `name` is the suffix after `data-`. */
@@ -35,6 +41,11 @@ export type StaticBody = Pick<
   | 'pair'
   | 'twist'
   | 'warpScale'
+  | 'life'
+  | 'cap'
+  | 'budgeted'
+  | 'screenMin'
+  | 'classified'
   | 'M'
 >;
 
@@ -49,8 +60,24 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
   const spinRaw = a.get('spin');
   const spin =
     spinRaw == null ? 1 : Number.isFinite(Number.parseFloat(spinRaw)) ? Number.parseFloat(spinRaw) : 0;
+  const tokens = (a.get('body') ?? '').split(/\s+/).filter(Boolean);
+  // the modifier contract (workover v0.3): classify tokens into {modifiers, forces, sources}
+  // at parse time, so the integrator consumes the classified sets in the documented order.
+  const classified = classifyBodyTokens(tokens);
+  // the source budget contract: an [S] body declares at least one of
+  // data-life / data-cap / data-budget / data-sink (guarded in makeBody/guardSourceBudget).
+  const lifeRaw = a.get('life');
+  const capRaw = a.get('cap');
+  const life = Number.parseFloat(lifeRaw ?? '');
+  const cap = Number.parseFloat(capRaw ?? '');
+  const budgeted =
+    lifeRaw != null || capRaw != null || a.has('budget') || a.has('sink');
   return {
-    tokens: (a.get('body') ?? '').split(/\s+/).filter(Boolean),
+    tokens,
+    classified,
+    ...(Number.isFinite(life) && life > 0 ? { life } : {}),
+    ...(Number.isFinite(cap) && cap > 0 ? { cap } : {}),
+    budgeted,
     strength,
     range: num('range', 280),
     absorbR: num('absorb', 64),
@@ -70,6 +97,8 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
     pair: a.get('pair') || undefined,
     twist: (num('twist', 0) * Math.PI) / 180,
     warpScale: num('scale', 1),
+    // `screen` quiet zones (workover v0.3): the attenuation floor (0 = full cancellation allowed).
+    screenMin: num('screen-min', 0),
     // source mass M = strength · k_g (k_g = 1 for now, §20.10).
     M: strength,
   };
@@ -86,6 +115,8 @@ function entryAttrs(e: PresetEntry): BodyAttrs {
   if (e.angle != null) map.angle = String(e.angle);
   if (e.absorb != null) map.absorb = String(e.absorb);
   if (e.max != null) map.max = String(e.max);
+  if (e.life != null) map.life = String(e.life);
+  if (e.cap != null) map.cap = String(e.cap);
   return {
     get: (name) => map[name] ?? null,
     has: (name) => name in map,
@@ -99,8 +130,40 @@ export function expandPreset(name: string): StaticBody[] {
   return entries ? entries.map((e) => parseBodyParams(entryAttrs(e))) : [];
 }
 
+/** A compact element description for guard messages: `tag#id.class` (best effort). */
+function describeEl(el: HTMLElement): string {
+  const tag = (el.tagName ?? 'element').toLowerCase();
+  const id = el.id ? `#${el.id}` : '';
+  const cls = typeof el.className === 'string' && el.className ? `.${el.className.split(/\s+/)[0]}` : '';
+  return `<${tag}${id}${cls}>`;
+}
+
+/**
+ * The source-budget guard (workover v0.3, §"Source and sink rules"): a class-[S] source body
+ * (`spawn` — see `SOURCE_TOKENS`) must declare at least one of `data-life` / `data-cap` /
+ * `data-budget` / `data-sink`. An unbudgeted source gets the safe default budget
+ * (`data-life="300"`, `data-cap="120"`) so its live emission is bounded at ~cap regardless of
+ * the pool ceiling — and, in dev (the same flag that gates the contract guards), a LOUD
+ * `console.warn` naming the element and the missing attributes. Mutates `sb` in place; pure
+ * over its inputs otherwise (no DOM reads).
+ */
+export function guardSourceBudget(sb: StaticBody, name = '<body>'): void {
+  if (!sb.classified || sb.classified.sources.length === 0 || sb.budgeted) return;
+  sb.life = SOURCE_DEFAULT_LIFE;
+  sb.cap = SOURCE_DEFAULT_CAP;
+  if (contractChecksEnabled()) {
+    console.warn(
+      `[field-ui:UNBUDGETED_SOURCE] ${name} runs the source force "${sb.classified.sources.join(' ')}" ` +
+        `with none of data-life / data-cap / data-budget / data-sink. Applying the safe default budget ` +
+        `(data-life="${SOURCE_DEFAULT_LIFE}", data-cap="${SOURCE_DEFAULT_CAP}") — declare one to make ` +
+        `the source's budget explicit (workover v0.3 source rules).`,
+    );
+  }
+}
+
 /** A fresh Body from static params, all runtime fields zeroed — shared by both paths. */
 function makeBody(el: HTMLElement, sb: StaticBody): Body {
+  guardSourceBudget(sb, describeEl(el));
   return {
     el,
     ...sb,

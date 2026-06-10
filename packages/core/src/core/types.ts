@@ -11,6 +11,7 @@
  */
 import type { FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
+import type { ClassifiedTokens } from '../config/forces.config.ts';
 
 export interface Vec2 {
   x: number;
@@ -81,6 +82,11 @@ export interface Body {
   el: HTMLElement;
   /** space-joined force ids from `data-body` (they compose, §4). */
   tokens: Token[];
+  /** `tokens` split into `{ modifiers, forces, sources }` per the modifier contract
+   *  (workover v0.3). The scanner fills it at parse time; the integrator memoizes it
+   *  lazily for bodies built elsewhere (conformance, tests). Modifiers carry the
+   *  formalized order `spotlight → screen → resonate`. */
+  classified?: ClassifiedTokens;
   /** force magnitude S. */
   strength: number;
   /** influence radius d_max, px. */
@@ -114,6 +120,19 @@ export interface Body {
   twist?: number;
   /** `data-scale` — scale applied to the relocated local offset through a `warp` throat (default 1). */
   warpScale?: number;
+  /** `data-life` — frames each particle this body's [S] source emits lives (the mortal `age`).
+   *  Undefined ⇒ the source's own default lifespan. Part of the source budget contract. */
+  life?: number;
+  /** `data-cap` — the most live particles this body's [S] source may sustain; the emission
+   *  rate is clamped to `cap / life` per frame. Undefined ⇒ rate-limited by lifespan only. */
+  cap?: number;
+  /** the [S] budget contract is satisfied — the author declared at least one of
+   *  `data-life` / `data-cap` / `data-budget` / `data-sink` (workover §"Source and sink rules").
+   *  False on a source body ⇒ the scanner's dev guard warns and applies the safe defaults. */
+  budgeted?: boolean;
+  /** `data-screen-min` — the floor of the `screen` modifier's attenuation factor (default 0:
+   *  full cancellation at the core is allowed). Only read on bodies carrying `screen`. */
+  screenMin?: number;
 
   // ── runtime state ────────────────────────────────────────────────────────
   /** the resolved paired body for `warp` (set each scan from `pair`); undefined if unpaired. */
@@ -140,6 +159,16 @@ export interface Body {
   d: number;
   /** conserved-attention effective-strength multiplier (§2.4); 1 = neutral. */
   attn?: number;
+  /** fractional-emission accumulator for a budgeted [S] source (`spawn`) — carries the
+   *  sub-1/frame remainder when the rate is clamped to `cap / life`. Runtime state. */
+  emitAcc?: number;
+  /** per-frame local thermodynamic accumulators (workover §"Metrics") — sums over the same
+   *  `range/2` sample window as `count`, reset each step, only on `data-feedback` bodies:
+   *  n samples, Σvx, Σvy, Σ|v|, Σ|v|², Σheat. Allocated lazily on first sample. */
+  thermo?: { n: number; sx: number; sy: number; ss: number; ss2: number; sh: number };
+  /** the eased measured metrics (workover §"Metrics"): entropy / coherence / temperature
+   *  ∈ [0,1], exported as `--entropy` / `--coherence` / `--temperature`. Lazily allocated. */
+  metrics?: { entropy: number; coherence: number; temperature: number };
   /** target points for `morph` (§20.3 [D]) — a sampled mark / logo / chart / shape the
    *  matter assembles into. NEVER words or letterforms (§11); words glow/grow via `--d`. */
   targets?: readonly { x: number; y: number }[];
@@ -369,6 +398,15 @@ export interface FeedbackChannels {
   load?: number;
   /** cross-boundary lit signal ∈ [0,1] → `--lit` + thresholded `field:lit` / `field:dim`. */
   lit?: number;
+  /** measured local disorder ∈ [0,1] (workover §"Metrics") → `--entropy`. Engine-measured
+   *  thermodynamics — distinct from the platform's inferred `--field-entropy` pipeline lane. */
+  entropy?: number;
+  /** measured local order ∈ [0,1] (= 1 − entropy) → `--coherence`. Engine-measured;
+   *  distinct from the platform's `--field-coherence` lane AND from the `--coherence`
+   *  palette *color* token `cssTokens()` sets on `:root`. */
+  coherence?: number;
+  /** measured local agitation ∈ [0,1] (heat + kinetic) → `--temperature`. */
+  temperature?: number;
 }
 
 /** Receives a body's feedback channels in place of direct DOM writes (Phase D3). */

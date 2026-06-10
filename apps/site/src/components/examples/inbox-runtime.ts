@@ -1,7 +1,9 @@
 // Inbox Field runtime. field-ui as an INVISIBLE measurement layer over real unanswered
 // Stack Overflow questions, with attention as a CONSERVED budget — and a PLACE:
-//   · every ask's urgency u = a lens-weighted blend of its normalized recency / votes / views
-//     (server-computed, carried as data-rec / data-vot / data-vie);
+//   · every ask's urgency u = a lens-weighted blend of its recency / votes / views
+//     (server-computed, carried as data-rec / data-vot / data-vie; recency is the core
+//     freshness kernel over askedAt — also declared as data-field-at, which grounds the
+//     platform pipeline's --field-recency lane in world time);
 //   · weights are renormalized so Σw is pinned to a fixed budget (N × 0.42), capped at 1 with
 //     water-filling — the attention meter always reads 100% allocated, by construction. The
 //     sum runs over EVERY ask, stream and focus pane alike;
@@ -20,7 +22,7 @@
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { allocateAttention, recipeById } from "@field-ui/core";
+import { allocateAttention, freshness, recipeById } from "@field-ui/core";
 import { applyRecipe, withFlip } from "@field-ui/platform";
 import { politeLoop, wireLiveChip } from "../../lib/live-data";
 
@@ -28,6 +30,10 @@ type IxLens = "fresh" | "voted" | "seen";
 
 const BUDGET_PER_ITEM = 0.42;
 const STREAM_CAP = 60; // unpinned items the stream holds before the oldest decay off
+// recency's half-life — must match the server-side render in inbox.astro (the platform
+// default: 7 days). Live arrivals are scored with the same kernel, so they land on the
+// same absolute scale as the snapshot — no normalization constants needed for recency.
+const REC_HALF_LIFE_MS = 7 * 86_400_000;
 
 // the same feed apps/site/scripts/snapshot-examples.mjs snapshots (CORS-enabled, no key;
 // the anonymous quota is ~300/day, so the cadence stays a courteous 5 minutes)
@@ -50,10 +56,9 @@ interface SeQuestion {
 }
 
 // the normalization constants the server rendered with — live arrivals are scored on the
-// same scale (clamped: a brand-new ask can sit past the snapshot's freshest edge)
+// same scale (vot/vie clamped: a hot new ask can sit past the snapshot's edge; rec is the
+// freshness kernel — absolute, so it needs no constants at all)
 interface IxNorm {
-  lhMin: number;
-  lhSpan: number;
   sMin: number;
   sSpan: number;
   lvMin: number;
@@ -167,13 +172,14 @@ function initInbox(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] keeps the field invisible; the extra "attention" metric asks the
-        // platform pipeline to write --field-attention per ask (an eased 0..1 blend of
-        // engagement, viewport-center proximity, and visibility) — read by the ink CSS.
+        // render: [] keeps the field invisible; the extra metric lanes ask the platform
+        // pipeline to write --field-attention per ask (an eased 0..1 blend of engagement,
+        // viewport-center proximity, and visibility) and --field-recency — GROUNDED in each
+        // ask's declared data-field-at (askedAt), so it decays on the world clock.
         const recipe = {
           ...base,
           render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+          metrics: [...new Set([...(base.metrics ?? []), "attention", "recency"])],
         } as typeof base;
         activeField = applyRecipe(split, recipe, { bodies: itemsOf(), annotateBodies: false });
       }
@@ -193,8 +199,9 @@ function initInbox(): () => void {
   // "new" tick where snapshot cards carry a snapshot-relative age.
   const buildCard = (q: SeQuestion, n: IxNorm, now: number): HTMLElement => {
     const title = decodeEntities(q.title ?? "");
-    const hours = Math.max(0.5, (now - (q.creation_date ?? now)) / 3600);
-    const rec = clamp01(1 - (Math.log(hours + 1) - n.lhMin) / n.lhSpan);
+    const askedMs = (q.creation_date ?? now) * 1000;
+    // the core temporal kernel — same shape, same half-life as the server's data-rec
+    const rec = freshness(askedMs, now * 1000, REC_HALF_LIFE_MS);
     const vot = clamp01(((q.score ?? 0) - n.sMin) / n.sSpan);
     const vie = clamp01((Math.log((q.view_count ?? 0) + 1) - n.lvMin) / n.lvSpan);
 
@@ -210,6 +217,8 @@ function initInbox(): () => void {
     li.dataset.vot = vot.toFixed(4);
     li.dataset.vie = vie.toFixed(4);
     li.dataset.asked = String(q.creation_date ?? Math.round(now));
+    // the declared world timestamp — grounds the platform's recency lane (--field-recency)
+    li.setAttribute("data-field-at", String(Math.round(askedMs)));
     li.setAttribute("data-live-item", "");
     li.style.setProperty("--w", "0.000");
     li.style.setProperty("--cat", `hsl(${Math.round(205 + rec * 125)} 74% 64%)`);

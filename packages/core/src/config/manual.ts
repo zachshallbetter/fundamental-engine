@@ -92,6 +92,7 @@ export const FORCE_COLORS: Record<string, string> = {
   spawn: '#fb923c',
   resonate: '#f0abfc',
   spotlight: '#facc15',
+  screen: '#a8b8d8', // a quiet zone — muted slate, the hush in the palette
   pigment: '#d6529e', // ink — conserved color transport
   fieldflow: '#22d3ee', // plasma — matter streaming along the field lines
   warp: '#a78bfa', // wormhole — relocated, conserved matter
@@ -138,6 +139,7 @@ export const FORCE_EXAMPLES: Record<string, string> = {
   spawn: 'A nozzle that jets matter into the field — a literal fountain or a star seeding the void.',
   resonate: 'Pair with attract: a well that breathes (pulsing strength).',
   spotlight: 'Pair with stream: a directed beam confined to a cone.',
+  screen: 'A reading column the field quiets down around — text shielded from a noisy page.',
   pigment: 'A section that stains passing matter its own color, carried away.',
   fieldflow: 'A magnet or charge whose field lines the swarm threads, like plasma along a solar prominence.',
   warp: 'A pair of portals: matter that enters one throat emerges from its partner, conserved.',
@@ -160,7 +162,7 @@ export const FORCE_SYMBOLS: Record<string, string> = {
   lens: 'Le', gate: 'Ga', buoyancy: 'By', shear: 'Sh', crystallize: 'Cz',
   align: 'Al', wind: 'Wd', cohesion: 'Cn', pressure: 'Pr', hunt: 'Hu',
   spawn: 'Sp', link: 'Lk', morph: 'Mo', resonate: 'Rs', spotlight: 'Sl',
-  pigment: 'Pm', fieldflow: 'Ff', warp: 'Wp',
+  pigment: 'Pm', fieldflow: 'Ff', warp: 'Wp', screen: 'Sc',
 };
 
 /**
@@ -205,6 +207,7 @@ export const FORCE_SUMMARIES: Record<string, string> = {
   morph: 'Matter assembles into a mark — a logo or chart grown from drifting particles, never words.',
   resonate: 'A modifier that breathes — scales its sibling forces with a pulsing strength.',
   spotlight: 'A modifier cone — confines its sibling forces to a directed beam.',
+  screen: "A quiet zone — other bodies' forces fade inside its radius, a shield of calm.",
   pigment: 'Carries color through the medium — a dye that mixes.',
   fieldflow: 'Follows the field lines — matter streams along the field a body radiates.',
   warp: 'Relocates matter to a paired throat — a conserved wormhole, not a source or sink.',
@@ -247,6 +250,7 @@ export const FORCE_EFFECTS: Record<string, string> = {
   morph: 'Gathers particles into a shape.',
   resonate: 'Pulses a sibling force.',
   spotlight: 'Beams a sibling force into a cone.',
+  screen: "Damps neighbors' forces inside its radius.",
   pigment: 'Tints particles as they pass.',
   fieldflow: 'Streams matter along the field lines.',
   warp: 'Teleports matter from one throat to its pair.',
@@ -519,6 +523,14 @@ const FORCES_RAW: readonly Omit<ManualEntry, 'color' | 'example' | 'symbol' | 's
   },
   {
     family: 'extended',
+    token: 'screen',
+    label: 'Screen',
+    formula: 'modifier: other bodies\' force on matter inside r is scaled by clamp(1 − S·(1 − d/r)², min, 1)',
+    attrs: ['strength', 'range', 'screen-min'],
+    desc: "a quiet zone — attenuates other bodies' forces inside its radius (shield, never global)",
+  },
+  {
+    family: 'extended',
     token: 'pigment',
     label: 'Pigment',
     formula: 'on overlap: c_p ← mix(c_p, tint, rate);  the color advects with matter',
@@ -620,6 +632,7 @@ export const FORCE_KIND: Record<string, ForceKind> = {
   // designed-extended verbs
   lens: 'designed', gate: 'designed', buoyancy: 'designed', shear: 'designed', wind: 'designed',
   hunt: 'designed', spawn: 'designed', resonate: 'designed', spotlight: 'designed', warp: 'designed',
+  screen: 'designed',
   // strong/weak material analogues
   crystallize: 'analogue', align: 'analogue', cohesion: 'analogue', pressure: 'analogue', link: 'analogue',
   morph: 'analogue',
