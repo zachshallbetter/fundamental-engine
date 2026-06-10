@@ -1,5 +1,6 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import memory from "../../data/examples/memory.json";
 import "../../styles/examples/memory.css";
 
@@ -21,6 +22,63 @@ const cards = memory.cards.map((c) => {
   return { ...c, a, w };
 });
 const snapshotDay = memory.snapshotAt.slice(0, 10);
+
+// How-built snippets (CodeTabs renders them with build-time Shiki highlighting).
+const SNIPPET_HTML = `<!-- each word is a body. data-feedback: the engine writes
+     --d (live local density) back every frame. data-hot:
+     hover/focus a card and the field gathers toward it. -->
+<button
+  data-body="attract"
+  data-strength="1.62"
+  data-feedback
+  data-hot
+  data-anchor="0.91"
+  style="--w: 0.76; --cat: #4da3ff;"
+>
+  republic
+</button>`;
+
+const SNIPPET_TS = `// a = zipf, normalized 0.15..1
+//     (real Trillion Word Corpus counts)
+tau = 4 + a × 56     // deep anchors
+                     // decay slower
+w   = a × exp(−days / tau)
+
+// review: per-card timestamp
+days_eff = max(0, slider − reviewedAt)
+
+// slider input → every card's --w
+// and data-strength update live
+
+// the scoped field runs invisible (render: [])
+// and asks for the attention metric lane:
+const recipe = {
+  ...base,
+  render: [],
+  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+};
+// the pipeline writes --field-attention per card (eased 0..1)`;
+
+const SNIPPET_CSS = `.mx-card {
+  /* --w = retention (pure data math — the curve)
+     --d = live engine density, data-hot gathers it
+     --field-attention = the recipe's eased attention */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 55%), transparent);
+}
+.mx-word {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+/* a reviewed card's ring breathes with the density */
+.mx-card[data-reviewed] {
+  outline: 2px solid color-mix(in srgb,
+    var(--cat) calc(55% + var(--live) * 35%),
+    transparent);
+}`;
 ---
 
 <ExampleShell
@@ -88,6 +146,12 @@ const snapshotDay = memory.snapshotAt.slice(0, 10);
     <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = retention at the current day</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>anchor</b> = frequency (deeper = slower decay)</li>
     <li><span class="ev-k mx-k-ring"></span> click a card to <b>review</b> — it springs back, then re-decays</li>
+    <li>
+      <span class="ev-k mx-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
+      <b>--w</b> is the retention math and <b>--cat</b> the accent; <b>--d</b> is the engine's
+      local density (hold a card and the field gathers) and <b>--field-attention</b> the recipe's
+      eased attention as you scroll. The live channels touch only ink — retention stays pure data.
+    </li>
   </ul>
 
   <ul class="mx-grid" data-mx-grid>
@@ -99,6 +163,7 @@ const snapshotDay = memory.snapshotAt.slice(0, 10);
             class="mx-card"
             data-body="attract"
             data-feedback
+            data-hot
             data-range="200"
             data-strength={(0.4 + c.w * 1.6).toFixed(2)}
             data-anchor={c.a.toFixed(3)}
@@ -123,42 +188,28 @@ const snapshotDay = memory.snapshotAt.slice(0, 10);
       Every card is a <code>&lt;button&gt;</code> carrying its anchor strength as a data
       attribute. The slider drives one Ebbinghaus-shaped formula across all {cards.length} cards;
       each result is written to <code>--w</code> and <code>data-strength</code>, and CSS turns it
-      into type heft and ink. Reviews are a per-card timestamp — nothing more.
+      into type heft and ink. Reviews are a per-card timestamp — nothing more. Alongside the
+      curve sit two live channels the engine writes back every frame — <code>--d</code> (local
+      density, gathered by <code>data-hot</code> on hover) and <code>--field-attention</code>
+      (the recipe's eased attention) — which touch only ink; retention stays pure data math.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — mark each word as a field body</p>
-        <pre class="ev-code"><code>&lt;button
-  data-body="attract"
-  data-strength="1.62"
-  data-feedback
-  data-anchor="0.91"
-  style="--w: 0.76; --cat: #4da3ff;"
-&gt;
-  republic
-&lt;/button&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIPPET_HTML }]} />
         <ul class="ev-how-attrs">
           <li><code>data-body="attract"</code> — registers as a field participant</li>
           <li><code>data-anchor</code> — normalized corpus frequency (the anchor)</li>
           <li><code>data-strength</code> — mass, recomputed from retention</li>
-          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
+          <li><code>data-hot</code> — hover/focus gathers the field toward this card</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — the forgetting curve</p>
-        <pre class="ev-code"><code>{`// a = zipf, normalized 0.15..1
-//     (real Trillion Word Corpus counts)
-tau = 4 + a × 56     // deep anchors
-                     // decay slower
-w   = a × exp(−days / tau)
-
-// review: per-card timestamp
-days_eff = max(0, slider − reviewedAt)
-
-// slider input → every card's --w
-// and data-strength update live`}</code></pre>
+        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
         <p class="ev-how-note">
           The shape is Ebbinghaus's: exponential decay with a stability term. The frequencies
           are real; the curve's constants are tuned for legibility, not fitted to recall data.
@@ -166,18 +217,8 @@ days_eff = max(0, slider − reviewedAt)
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — CSS reads the retention</p>
-        <pre class="ev-code"><code>{`.mx-word {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}
-.mx-card {
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}`}</code></pre>
+        <p class="ev-how-label">3 — CSS reads the retention + the live channels</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIPPET_CSS }]} />
         <p class="ev-how-note">
           One variable in, the whole presentation out — and with
           <code>prefers-reduced-motion</code> set, the cards skip transitions entirely.

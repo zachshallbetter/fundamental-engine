@@ -466,25 +466,7 @@ const GROUPS = [
           if (f && f.burst) f.burst(e.clientX, e.clientY, color);
           return;
         }
-        const ctCopy = t.closest('.ct-copy');
-        if (ctCopy) {
-          const wrap = ctCopy.closest('.code-tabs');
-          const body = wrap.querySelector('.ct-body:not([hidden])');
-          const text = body ? body.innerText : '';
-          if (navigator.clipboard && text) {
-            navigator.clipboard.writeText(text).then(() => {
-              ctCopy.classList.add('copied');
-              const lbl = ctCopy.querySelector('.ct-copy-label');
-              const prev = lbl && lbl.textContent;
-              if (lbl) lbl.textContent = 'Copied';
-              setTimeout(() => {
-                ctCopy.classList.remove('copied');
-                if (lbl) lbl.textContent = prev;
-              }, 1100);
-            });
-          }
-          return;
-        }
+        // CodeTabs copy moved into CodeTabs.astro's own module script.
         const copy = t.closest('[data-copy]');
         if (copy) {
           const text = copy.getAttribute('data-copy') || copy.textContent || '';

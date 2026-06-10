@@ -1,5 +1,6 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import inbox from "../../data/examples/inbox.json";
 import "../../styles/examples/inbox.css";
 
@@ -83,6 +84,71 @@ const fmtAge = (h: number) =>
         : `${Math.round(h / 8760)}y ago`;
 const fmtViews = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v));
 const snapshotDay = inbox.snapshotAt.slice(0, 10);
+
+// How-built snippets (CodeTabs renders them with build-time Shiki highlighting).
+const SNIPPET_HTML = `<!-- the stream list holds a stable id; each ask is a body.
+     data-feedback: the engine writes --d (live local density) back every frame.
+     data-hot: hover/focus an ask and the field gathers toward it. -->
+<ol id="ix-stream">
+  <li
+    data-body="attract"
+    data-strength="1.21"
+    data-feedback
+    data-hot
+    data-rec="0.91" data-vot="0.25" data-vie="0.14"
+    style="--w: 0.51; --cat: hsl(318 74% 64%);"
+  >
+    <!-- your ordinary HTML here -->
+  </li>
+</ol>
+
+<!-- the attention meter declares its provenance: a
+     measurement visual OF the stream list -->
+<span class="ix-meter" aria-hidden="true"
+  data-field-visual-for="#ix-stream"
+  data-field-visual-role="measurement"
+><i></i></span>`;
+
+const SNIPPET_TS = `// fresh lens — the blends differ per lens
+u[i] = 0.60·recency + 0.25·votes + 0.15·views
+
+// the fixed total: N items × 0.42
+budget = N × 0.42
+
+// scale so the weights SUM to the budget,
+// cap each at 1, re-flow capped excess
+k    = budget / Σ u
+w[i] = min(1, u[i] × k)   // repeat on the rest
+
+// pins: w = 1, then reallocate
+// (budget − pins) over the unpinned
+Σ w[i] = budget — always.
+
+// the scoped field runs invisible (render: [])
+// and asks for the attention metric lane:
+const recipe = {
+  ...base,
+  render: [],
+  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+};
+// the pipeline writes --field-attention per ask (eased 0..1)`;
+
+const SNIPPET_CSS = `.ix-item {
+  /* --w  = the server-allocated share (conserved)
+     --d  = live engine density — data-hot gathers it
+     --field-attention = the recipe's eased attention */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 55%), transparent);
+  background: color-mix(in srgb, var(--text)
+    calc(1.5% + var(--w) * 4% + var(--live) * 4%
+      + var(--field-attention, 0) * 4%),
+    transparent);
+}
+/* the kit touches only ink — never --w;
+   Σ--w stays pinned to the budget */`;
 ---
 
 <ExampleShell
@@ -133,7 +199,12 @@ const snapshotDay = inbox.snapshotAt.slice(0, 10);
     </div>
     <div class="ev-ctl ix-meter-ctl">
       <span class="ev-ctl-l">Attention</span>
-      <span class="ix-meter" aria-hidden="true"><i></i></span>
+      <!-- the meter is a measurement visual OF the stream — declared provenance (canon) -->
+      <span
+        class="ix-meter"
+        aria-hidden="true"
+        data-field-visual-for="#ix-stream"
+        data-field-visual-role="measurement"><i></i></span>
       <span class="ix-meter-txt" data-ix-meter aria-live="polite"
         >100% allocated · pinned 0 · free {budget.toFixed(1)}</span
       >
@@ -156,10 +227,16 @@ const snapshotDay = inbox.snapshotAt.slice(0, 10);
       <span class="ev-k ix-k-meter"><i></i></span> the meter always reads <b>100%</b> — attention
       is conserved, never created
     </li>
+    <li>
+      <span class="ev-k ix-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
+      <b>--w</b> is the server-allocated share and <b>--cat</b> the lens color; <b>--d</b> is the
+      engine's local density (hold an ask and the field gathers) and <b>--field-attention</b> the
+      recipe's eased attention as you scroll. The live channels touch only ink, never the budget.
+    </li>
   </ul>
 
   <div class="ix-split" data-ix-split>
-    <ol class="ix-list" data-ix-list aria-label="The stream — every ask, competing">
+    <ol class="ix-list" id="ix-stream" data-ix-list aria-label="The stream — every ask, competing">
       {
         items.map((it) => (
           <li
@@ -167,6 +244,7 @@ const snapshotDay = inbox.snapshotAt.slice(0, 10);
             id={`q-${it.id}`}
             data-body="attract"
             data-feedback
+            data-hot
             data-range="200"
             data-strength={(0.4 + it.w * 1.6).toFixed(2)}
             data-rec={it.rec.toFixed(4)}
@@ -227,45 +305,29 @@ const snapshotDay = inbox.snapshotAt.slice(0, 10);
       signals as data attributes. The page blends them into an urgency score per the active lens,
       then <strong>renormalizes</strong> so the weights always sum to one fixed budget. CSS turns
       each weight into type heft, ink, and anchor. The field never invents attention; it only
-      moves it.
+      moves it. On top of that sit two live channels the engine writes back every frame —
+      <code>--d</code> (local density, gathered by <code>data-hot</code> on hover) and
+      <code>--field-attention</code> (the recipe's eased attention) — which touch only ink, never
+      the budget.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — mark each ask as a field body</p>
-        <pre class="ev-code"><code>&lt;li
-  data-body="attract"
-  data-strength="1.21"
-  data-feedback
-  data-rec="0.91" data-vot="0.25" data-vie="0.14"
-  style="--w: 0.51; --cat: hsl(318 74% 64%);"
-&gt;
-  &lt;!-- your ordinary HTML here --&gt;
-&lt;/li&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIPPET_HTML }]} />
         <ul class="ev-how-attrs">
           <li><code>data-body="attract"</code> — registers as a field participant</li>
           <li><code>data-strength</code> — mass, derived from the allocated weight</li>
           <li><code>data-rec/vot/vie</code> — the normalized signals the lenses re-blend</li>
-          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
+          <li><code>data-hot</code> — hover/focus gathers the field toward this ask</li>
+          <li><code>data-field-visual-for</code> — the meter's declared provenance</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — the conserved renormalization</p>
-        <pre class="ev-code"><code>{`// fresh lens — the blends differ per lens
-u[i] = 0.60·recency + 0.25·votes + 0.15·views
-
-// the fixed total: N items × 0.42
-budget = N × 0.42
-
-// scale so the weights SUM to the budget,
-// cap each at 1, re-flow capped excess
-k    = budget / Σ u
-w[i] = min(1, u[i] × k)   // repeat on the rest
-
-// pins: w = 1, then reallocate
-// (budget − pins) over the unpinned
-Σ w[i] = budget — always.`}</code></pre>
+        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
         <p class="ev-how-note">
           That invariant is the mechanic: the meter reads 100% no matter what you do, because
           pinning or re-blending can only move attention, not mint it.
@@ -273,18 +335,8 @@ w[i] = min(1, u[i] × k)   // repeat on the rest
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — CSS reads the weight</p>
-        <pre class="ev-code"><code>{`.ix-title {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}
-.ix-item {
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}`}</code></pre>
+        <p class="ev-how-label">3 — CSS reads the weight + the live channels</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIPPET_CSS }]} />
         <p class="ev-how-note">
           This is the engine's attention-budget idea applied to a page: bodies compete for a
           finite influence pool, and the layout reports each body's share — the same conservation

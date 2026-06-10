@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import backlog from "../../data/examples/backlog.json";
+import "../../styles/docs.css"; /* .code-tabs styles for CodeTabs */
 import "../../styles/examples/backlog.css";
 
 // The Backlog Field — field-ui's own work stream run as a field. Each issue and pull request
@@ -59,6 +61,61 @@ const fmtAge = (iso: string): string => {
   return `${Math.round(h / (24 * 30.4))}mo ago`;
 };
 const snapshotDay = backlog.snapshotAt.slice(0, 10);
+
+// ── how-built snippets (CodeTabs) ──────────────────────────────────────────
+const SNIP_BODY = `<li
+  id="wi-294"
+  data-body="attract"
+  data-strength="1.42"
+  data-feedback
+  data-hot
+  data-act="0.91" data-rec="0.99"
+  data-refs="wi-282 wi-269"
+  style="--w: 0.94; --cat: #2dd4bf;"
+>
+  <!-- #number · kind · title · author -->
+</li>`;
+
+const SNIP_SINK = `/* the cycle bar is a real sink body that also
+   declares itself as its own measurement:
+   <div id="wl-cycle" data-body="sink" data-absorb
+        data-max="8" data-feedback data-hot
+        data-field-visual-for="#wl-cycle"
+        data-field-visual-role="measurement">
+
+   channel 1 — data arithmetic: the FILL is
+   shipped ÷ capacity from closedAt dates. */
+width: 100%;  /* ${cycleCount}/${CAPACITY} this cycle */
+
+/* channel 2 — the live engine: --load (0..1) as
+   particles accrete into the sink, blended with
+   --live (the engine's local density, --d). */
+box-shadow: 0 0
+  calc((var(--load, 0) + var(--live) * 0.5) * 22px)
+  color-mix(in srgb, var(--accent)
+    calc(var(--load, 0) * 40% + var(--live) * 20%),
+    transparent);`;
+
+const SNIP_CSS = `.wl-title {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.wl-item {
+  /* --d: the engine's live local density,
+     written every frame; it gathers toward 1
+     when a data-hot card is hovered/focused.
+     --field-attention: the scoped recipe's
+     eased attention lane (hover/focus +
+     viewport-center proximity + visibility). */
+  --live: var(--d, 0);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--live) * 55%), transparent);
+  background: color-mix(in srgb, var(--text)
+    calc(1.5% + var(--w) * 4% + var(--live) * 4%
+      + var(--field-attention, 0) * 4%),
+    transparent);
+}`;
 ---
 
 <ExampleShell
@@ -121,6 +178,11 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
     </li>
     <li><span class="ev-k ev-k-thread"></span> hover → threads to the items it references</li>
     <li><span class="ev-k wl-k-sink"><i></i></span> the cycle bar is a <b>sink</b> — shipped work accretes into it</li>
+    <li>
+      <span class="ev-k wl-k-live"></span> the soft glow = <b>live density</b> — the hidden
+      engine writes <code>--d</code> to every card each frame; it gathers under your cursor and
+      ebbs back
+    </li>
   </ul>
 
   <div class="wl-board" data-wl-zone>
@@ -134,6 +196,7 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
               id={`wi-${it.number}`}
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength={(0.4 + it.w * 1.6).toFixed(2)}
               data-act={it.act.toFixed(4)}
@@ -166,11 +229,15 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
            live --load. -->
       <div
         class="wl-cycle"
+        id="wl-cycle"
         data-wl-cycle
         data-body="sink"
         data-absorb
         data-max="8"
         data-feedback
+        data-hot
+        data-field-visual-for="#wl-cycle"
+        data-field-visual-role="measurement"
         data-over={cycleCount > CAPACITY ? "" : undefined}
       >
         <span class="wl-cycle-label">
@@ -194,6 +261,7 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
               id={`wi-${it.number}`}
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength={(0.4 + it.w * 1.6).toFixed(2)}
               data-act={it.act.toFixed(4)}
@@ -226,71 +294,45 @@ const snapshotDay = backlog.snapshotAt.slice(0, 10);
       Every work item is an ordinary <code>&lt;li&gt;</code> with a few data attributes — the
       GitHub API response, flattened into markup. field-ui runs an invisible field over the
       list and the type carries the measurement: activity as weight, kind as color, references
-      as hover threads. No canvas, no chart library.
+      as hover threads. No canvas, no chart library. Two live channels ride on top: the page's
+      hidden engine writes <code>--d</code> (local particle density) to every
+      <code>data-hot</code> card each frame, and the scoped recipe's attention lane writes an
+      eased <code>--field-attention</code> — CSS turns both into a felt glow and lift, and both
+      go quiet when the field is off.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — each work item is a field body</p>
-        <pre class="ev-code"><code>&lt;li
-  id="wi-294"
-  data-body="attract"
-  data-strength="1.42"
-  data-feedback
-  data-act="0.91" data-rec="0.99"
-  data-refs="wi-282 wi-269"
-  style="--w: 0.94; --cat: #2dd4bf;"
-&gt;
-  &lt;!-- #number · kind · title · author --&gt;
-&lt;/li&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIP_BODY }]} />
         <ul class="ev-how-attrs">
           <li><code>data-act</code> / <code>data-rec</code> — the normalized signals the lenses re-blend</li>
           <li><code>data-refs</code> — the items this one references (the hover threads)</li>
           <li><code>data-strength</code> — gravitational mass from the blended weight</li>
+          <li><code>data-hot</code> — opts into the live density gather: hover and <code>--d</code> climbs toward 1</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — the cycle bar's two honest channels</p>
-        <pre class="ev-code"><code>{`<div data-body="sink" data-absorb
-     data-max="8" data-feedback>
-
-/* channel 1 — data arithmetic:
-   the FILL is shipped ÷ capacity,
-   computed from closedAt timestamps. */
-width: 100%;  /* ${cycleCount}/${CAPACITY} this cycle */
-
-/* channel 2 — the live field:
-   the engine writes --load (0..1) as
-   particles accrete into the sink. */
-box-shadow: 0 0
-  calc(var(--load, 0) * 22px)
-  color-mix(in srgb, var(--accent)
-    calc(var(--load, 0) * 40%),
-    transparent);`}</code></pre>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIP_SINK }]} />
         <p class="ev-how-note">
           Two channels, kept honest: the fill is static math over the snapshot's
-          <code>closedAt</code> dates; only the glow is the live engine — a real
-          <code>sink</code> body charging as the scoped field runs.
+          <code>closedAt</code> dates; the glow is the live engine — <code>--load</code> from a
+          real <code>sink</code> body, blended with the local density <code>--d</code>. The bar
+          also names itself as a <code>measurement</code> visual
+          (<code>data-field-visual-for</code>), so its provenance is declared, not implied.
         </p>
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — CSS reads the blended weight</p>
-        <pre class="ev-code"><code>{`.wl-title {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}
-.wl-item {
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}`}</code></pre>
+        <p class="ev-how-label">3 — CSS reads the weight and the live channels</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIP_CSS }]} />
         <p class="ev-how-note">
           Switching the lens re-blends <code>--w</code> from <code>data-act</code> and
           <code>data-rec</code>, then FLIP re-sorts each lane so the reflow is felt, not cut.
+          The glow and lift read <code>--d</code> and <code>--field-attention</code> — both
+          written by the running field, both zeroed when it's off.
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>

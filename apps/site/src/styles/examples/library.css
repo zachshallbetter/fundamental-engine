@@ -361,3 +361,84 @@
     transition: none;
   }
 }
+
+/* ── living ink — the engine's LIVE channels ────────────────────────────────
+   --d   : the page engine's local particle density (0..1), written back every
+           frame; data-hot makes it gather toward 1 on hover/focus.
+   --field-attention : the scoped recipe's eased attention metric.
+   Rows get a soft halo + tint; the bar's end-glow rides the density; the queue
+   blends the sink's --load with --d. Felt, not loud. */
+.ex-library .lb-row {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--cat, var(--accent)) calc(var(--live) * 3% + var(--att) * 3%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 45%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ex-library .lb-bararea::before {
+  box-shadow: calc(var(--live) * 4px) 0 calc(var(--live) * 14px) -4px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 70%), transparent);
+}
+/* the queue glow blends the sink's accreted --load with the engine's live --d */
+.ex-library .lb-queue {
+  --live: var(--d, 0);
+  box-shadow: 0 0 calc(4px + (var(--load, 0) + var(--live) * 0.5) * 28px)
+    color-mix(
+      in srgb,
+      var(--accent) calc(var(--load, 0) * 45% + var(--live) * 18%),
+      transparent
+    );
+}
+
+/* ── bar entry sweep — gated at reading pace. The runtime marks the field scope
+      [data-lb-anim] and adds .lb-in when a row enters the viewport while the
+      engine's --field-scroll-v says reading pace (< 2 px/frame); when the user
+      is scanning fast it adds .lb-in-instant too, so the bar is simply there.
+      No JS / reduced motion: bars are fully drawn. ── */
+@media (prefers-reduced-motion: no-preference) {
+  .ex-library [data-lb-anim] .lb-row:not(.lb-in) .lb-bararea::before {
+    width: 0;
+    border-right-color: transparent;
+  }
+  .ex-library [data-lb-anim] .lb-row.lb-in .lb-bararea::before {
+    transition:
+      background 0.3s,
+      border-color 0.3s,
+      width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .ex-library [data-lb-anim] .lb-row.lb-in.lb-in-instant .lb-bararea::before {
+    transition:
+      background 0.3s,
+      border-color 0.3s;
+  }
+}
+
+/* field off: the live channels go dark (the queue's off state already kills its glow) */
+.ex-library[data-field='off'] .lb-row,
+.ex-library[data-field='off'] .lb-queue {
+  --live: 0;
+  --att: 0;
+}
+.ex-library[data-field='off'] .lb-row {
+  background: transparent;
+  box-shadow: none;
+}
+.ex-library[data-field='off'] .lb-bararea::before {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-library .lb-row,
+  .ex-library .lb-bararea::before {
+    transition: none;
+  }
+}

@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import dependencies from "../../data/examples/dependencies.json";
+import "../../styles/docs.css"; /* .code-tabs styles for CodeTabs */
 import "../../styles/examples/dependencies.css";
 
 // The Dependencies Field — this monorepo's real dependency surface run as a field. Weekly
@@ -65,6 +67,73 @@ const deps = [...dependencies.deps]
 
 const fmtDl = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
 const snapshotDay = dependencies.snapshotAt.slice(0, 10);
+
+// ── how-built snippets (CodeTabs) ──────────────────────────────────────────
+const SNIP_GRAPH = `<!-- a workspace package: its full
+     upstream chain, precomputed -->
+<li id="ws-site" data-hot
+  data-chain="ws-elements ws-core
+    ws-platform ws-vanilla">
+
+<!-- an external dep: the workspace
+     packages that inherit it. The
+     downloads figure declares its
+     provenance as a measurement. -->
+<li id="dep-mermaid"
+  data-body="attract"
+  data-strength="0.72"
+  data-feedback data-hot
+  data-uses="ws-site"
+  style="--w: 0.20; --cat: #ff6b6b;">
+  ...
+  <span data-field-visual-for="#dep-mermaid"
+        data-field-visual-role="measurement">
+    <b>2.1M</b> <!-- weekly downloads -->
+  </span>
+</li>`;
+
+const SNIP_SPILL = `// hover a dep → thread to each
+// workspace card it touches
+const a = centerIn(row, zone);
+for (const id of row.dataset.uses.split(" ")) {
+  const node = zone.querySelector("#" + id);
+  node.classList.add("cited");
+  const b = centerIn(node, zone);
+  d += \`M\${a.x} \${a.y} C ...\`;
+}
+// the thread color is the row's --cat:
+// advisory-carrying deps thread red.
+
+// hover a workspace node → no SVG,
+// just light its data-chain upstream —
+// while the engine's --d gathers under
+// the cursor (data-hot), so the glow
+// and the chain light together.`;
+
+const SNIP_CSS = `.dp-name {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.dp-row {
+  /* --d: live local density, written by the
+     hidden engine each frame; gathers on
+     data-hot hover. --field-attention: the
+     recipe's eased attention lane. */
+  --live: var(--d, 0);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--live) * 55%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+}
+/* an advisory badge runs hotter as the
+   field gathers on its row */
+.dp-adv {
+  box-shadow: 0 0 calc(var(--live) * 10px)
+    color-mix(in srgb, #ff6b6b
+      calc(var(--live) * 45%), transparent);
+}
+/* decay: no publish in 90 days */
+.dp-row.stale { opacity: 0.5; }`;
 ---
 
 <ExampleShell
@@ -129,6 +198,11 @@ const snapshotDay = dependencies.snapshotAt.slice(0, 10);
       inherit it; hover a package → its upstream chain lights
     </li>
     <li><span class="ev-k dp-k-stale">Aa</span> past {STALE_DAYS} days without a publish, a row <b>decays</b> (dims)</li>
+    <li>
+      <span class="ev-k dp-k-live"></span> the soft glow = <b>live density</b> — the hidden
+      engine writes <code>--d</code> to every row and node each frame; hover and it gathers,
+      so the glow and the upstream chain light together
+    </li>
   </ul>
 
   <div class="dp-zone" data-dp-zone>
@@ -143,6 +217,7 @@ const snapshotDay = dependencies.snapshotAt.slice(0, 10);
               id={`ws-${w.name}`}
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength="0.80"
               data-chain={w.chain.join(" ")}
@@ -170,6 +245,7 @@ const snapshotDay = dependencies.snapshotAt.slice(0, 10);
               id={`dep-${d.slug}`}
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength={(0.4 + d.w * 1.6).toFixed(2)}
               data-dl={d.weeklyDownloads}
@@ -197,7 +273,13 @@ const snapshotDay = dependencies.snapshotAt.slice(0, 10);
                 </span>
               </span>
               <div class="dp-mass">
-                <b>{fmtDl.format(d.weeklyDownloads)}</b>
+                <span
+                  class="dp-dl"
+                  data-field-visual-for={`#dep-${d.slug}`}
+                  data-field-visual-role="measurement"
+                >
+                  <b>{fmtDl.format(d.weeklyDownloads)}</b>
+                </span>
                 <span class="dp-mass-l">weekly downloads</span>
                 <span class="ev-bar"><i style={`width:${Math.round(d.w * 100)}%`} /></span>
               </div>
@@ -214,48 +296,29 @@ const snapshotDay = dependencies.snapshotAt.slice(0, 10);
       The graph is the monorepo's own <code>package.json</code> files, flattened into markup:
       each workspace package carries its transitive upstream chain, each external dependency
       carries the packages that inherit it. field-ui runs an invisible field over both zones and
-      the type carries the measurement — downloads as weight, advisories as charge.
+      the type carries the measurement — downloads as weight, advisories as charge. Two live
+      channels ride on top: the page's hidden engine writes <code>--d</code> (local particle
+      density) to every <code>data-hot</code> row and node each frame, and the scoped recipe's
+      attention lane writes an eased <code>--field-attention</code> — CSS turns both into a felt
+      glow and lift, and both go quiet when the field is off.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — the graph lives in data attributes</p>
-        <pre class="ev-code"><code>&lt;!-- a workspace package: its full
-     upstream chain, precomputed --&gt;
-&lt;li id="ws-site"
-  data-chain="ws-elements ws-core
-    ws-platform ws-vanilla"&gt;
-
-&lt;!-- an external dep: the workspace
-     packages that inherit it --&gt;
-&lt;li id="dep-mermaid"
-  data-body="attract"
-  data-strength="0.72"
-  data-uses="ws-site"
-  style="--w: 0.20; --cat: #ff6b6b;"&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIP_GRAPH }]} />
         <ul class="ev-how-attrs">
           <li><code>data-uses</code> — where this mass lands downstream</li>
           <li><code>data-chain</code> — everything a package stands on, transitively</li>
           <li><code>--cat</code> — red when OSV records exist, blue when clean</li>
+          <li><code>data-hot</code> — opts into the live density gather: hover and <code>--d</code> climbs toward 1</li>
+          <li><code>data-field-visual-for</code> — names the downloads figure a <code>measurement</code> of its row</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — causality spill is hover + geometry</p>
-        <pre class="ev-code"><code>{`// hover a dep → thread to each
-// workspace card it touches
-const a = centerIn(row, zone);
-for (const id of row.dataset.uses.split(" ")) {
-  const node = zone.querySelector("#" + id);
-  node.classList.add("cited");
-  const b = centerIn(node, zone);
-  d += \`M\${a.x} \${a.y} C ...\`;
-}
-// the thread color is the row's --cat:
-// advisory-carrying deps thread red.
-
-// hover a workspace node → no SVG,
-// just light its data-chain upstream.`}</code></pre>
+        <CodeTabs variants={[{ label: "TypeScript", lang: "ts", code: SNIP_SPILL }]} />
         <p class="ev-how-note">
           One SVG overlay spans both zones; the cubic threads are drawn at hover time from
           live geometry, so reweighting never leaves stale lines.
@@ -263,23 +326,13 @@ for (const id of row.dataset.uses.split(" ")) {
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">3 — CSS reads mass and decay</p>
-        <pre class="ev-code"><code>{`.dp-name {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}
-.dp-row {
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}
-/* decay: no publish in 90 days */
-.dp-row.stale { opacity: 0.5; }`}</code></pre>
+        <p class="ev-how-label">3 — CSS reads mass, decay, and the live channels</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIP_CSS }]} />
         <p class="ev-how-note">
           The freshness lens reweights from publish dates; packages whose dates the registry
-          snapshot didn't report hold a neutral weight rather than faking one.
+          snapshot didn't report hold a neutral weight rather than faking one. The glow reads
+          <code>--d</code> and <code>--field-attention</code> — live writes, zeroed when the
+          field is off.
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>

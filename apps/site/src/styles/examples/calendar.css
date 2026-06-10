@@ -16,6 +16,11 @@
 
 /* ── the featured "next up" card — the soonest launch is the biggest thing on the wall ── */
 .ex-calendar .cal-hero {
+  /* the living ink: --d is the engine's live local density (0..1, written back every
+     frame; data-hot gathers it on hover/focus), --field-attention the recipe's eased
+     attention lane. Both touch only ink — the 1 Hz imminence ramp (--w) is untouched. */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
   position: relative;
   z-index: 2;
   display: grid;
@@ -25,9 +30,13 @@
   border-left: 4px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 16px;
-  background: color-mix(in srgb, var(--text) calc(2% + var(--w) * 4%), transparent);
-  box-shadow: 0 0 calc(var(--w) * 34px)
-    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 16%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(2% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--w) * 34px + var(--live) * 16px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 16% + var(--live) * 30%), transparent);
   transition:
     border-color 0.3s,
     background 0.3s,
@@ -66,7 +75,8 @@
   gap: 0.6rem 1.1rem;
   margin-top: 0.7rem;
 }
-/* the centerpiece: the live T-minus, large, mono, tabular */
+/* the centerpiece: the live T-minus, large, mono, tabular. Hold the hero (data-hot)
+   and the digits burn brighter — the glow reads the engine's gathered density. */
 .ex-calendar .cal-hero-count {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
@@ -76,6 +86,9 @@
   line-height: 1;
   white-space: nowrap;
   color: color-mix(in srgb, var(--text) calc(55% + var(--w) * 45%), var(--text-4));
+  text-shadow: 0 0 calc(var(--live, 0) * 18px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live, 0) * 65%), transparent);
+  transition: text-shadow 0.3s;
 }
 /* nothing left on the clock — every window in the snapshot passed or sits at TBD */
 .ex-calendar .cal-hero[data-state='empty'] {
@@ -159,6 +172,9 @@
 /* a launch card attached to the rail: imminence (--w, 0..1, re-ticked every second)
    is felt — type weight, ink, the left anchor, and the node dot's charge. */
 .ex-calendar .cal-row {
+  /* the living ink — same channels as the hero: --d (engine density) + eased attention */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
   position: relative;
   z-index: 2;
   display: grid;
@@ -170,14 +186,22 @@
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
   opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
   transition:
     opacity 0.3s,
     background 0.3s,
-    border-color 0.3s;
+    border-color 0.3s,
+    box-shadow 0.3s;
 }
-/* the node dot on the axis — heavier launches glow harder */
+/* the node dot on the axis — heavier launches glow harder; the dot also charges
+   subtly with the card's live density (hold the card, the node swells) */
 .ex-calendar .cal-row::before {
   content: '';
   position: absolute;
@@ -186,10 +210,11 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) scale(calc(1 + var(--live) * 0.35));
   background: color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 80%), var(--line));
   box-shadow: 0 0 calc(var(--w) * 8px)
     color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 60%), transparent);
+  transition: transform 0.25s;
 }
 /* the rail card currently held by the "next up" board */
 .ex-calendar .cal-row[data-next]::after {
@@ -298,13 +323,24 @@
   font-weight: 600;
   color: var(--accent);
 }
+.ex-calendar .cal-k-live {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 0 8px var(--accent);
+}
 
-/* ── Field OFF — the same wall, flattened; the countdowns keep ticking ── */
+/* ── Field OFF — the same wall, flattened; the countdowns keep ticking.
+   The live channels are silenced with the field: no density, no attention, no glow. ── */
 .ex-calendar[data-field='off'] .cal-row {
   --w: 0.55;
+  --live: 0;
+  --att: 0;
   opacity: 1;
   border-left-color: var(--line);
   background: color-mix(in srgb, var(--text) 2.5%, transparent);
+  box-shadow: none;
 }
 .ex-calendar[data-field='off'] .cal-row::before {
   background: var(--line);
@@ -319,10 +355,15 @@
 }
 .ex-calendar[data-field='off'] .cal-hero {
   --w: 0.55;
+  --live: 0;
+  --att: 0;
   box-shadow: none;
   border-color: var(--line);
   border-left-color: var(--line);
   background: color-mix(in srgb, var(--text) 2.5%, transparent);
+}
+.ex-calendar[data-field='off'] .cal-hero-count {
+  text-shadow: none;
 }
 .ex-calendar[data-field='off'] .cal-hero-name {
   color: var(--text-2);
@@ -361,7 +402,104 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .ex-calendar .cal-row,
-  .ex-calendar .cal-hero {
+  .ex-calendar .cal-hero,
+  .ex-calendar .cal-row::before,
+  .ex-calendar .cal-hero-count {
     transition: none;
   }
+}
+
+/* ── CodeTabs (how-built) — the docs' highlighted code block, scoped locally because
+   this page does not load docs.css ──────────────────────────────────────────────── */
+.ex-calendar .code-tabs {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-canvas, #07090e);
+  overflow: hidden;
+}
+.ex-calendar .code-tabs .ct-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ex-calendar .code-tabs .ct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ex-calendar .code-tabs .ct-tab,
+.ex-calendar .code-tabs .ct-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-calendar .code-tabs .ct-tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-calendar .code-tabs .ct-tab:hover {
+  color: var(--text-2);
+}
+.ex-calendar .code-tabs .ct-tab[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ex-calendar .code-tabs .ct-copy {
+  appearance: none;
+  align-self: center;
+  margin: 0 0.5rem 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-2, var(--line));
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: copy;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.ex-calendar .code-tabs .ct-copy:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.ex-calendar .code-tabs .ct-copy.copied {
+  color: var(--ok, #5fd0a8);
+  border-color: var(--ok, #5fd0a8);
+}
+.ex-calendar .code-tabs .ct-body[hidden] {
+  display: none;
+}
+.ex-calendar .code-tabs pre.astro-code,
+.ex-calendar .code-tabs pre.astro-code code {
+  margin: 0;
+  background: transparent !important;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.ex-calendar .code-tabs pre.astro-code {
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
 }

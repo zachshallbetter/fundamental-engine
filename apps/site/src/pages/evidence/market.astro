@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import market from "../../data/examples/market.json";
+import "../../styles/docs.css";
 import "../../styles/examples/market.css";
 
 // The Market Field — field-ui as an invisible measurement layer over a real CoinGecko snapshot.
@@ -60,6 +62,64 @@ const assets = [...market.assets].sort((a, b) => b.cap - a.cap);
 
 // tier: the tile's footprint in the mosaic — mass is area. Must match tierOf() in the runtime.
 const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3 : 4);
+
+// How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
+const snippetBody = `<li id="mk-bitcoin"
+  data-body="attract"
+  data-strength="1.87"
+  data-feedback
+  data-hot
+  data-cap="1235425696510"
+  data-c24="-1.70" data-c7="-7.76"
+  style="--w: 0.92; --cat: hsl(350 70% 64%);"
+>
+  <!-- name · price · badge -->
+  <svg aria-hidden="true"
+    data-field-visual-for="#mk-bitcoin"
+    data-field-visual-role="measurement">
+    <path d="…" pathLength="1" />
+  </svg>
+</li>`;
+
+const snippetCss = `/* tier classes set the tile's footprint */
+.mk-t1 { grid-column: span 3; grid-row: span 2; }
+.mk-t2 { grid-column: span 2; grid-row: span 2; }
+
+.mk-tile {
+  /* --w = log-normalized cap (0..1).
+     --d = the engine's LIVE local density —
+     data-hot gathers it toward 1 on hold. */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--live) * 50%), transparent);
+}
+/* the sparkline breathes with the tile */
+.mk-spark path {
+  stroke-width: calc(1.5 + var(--live) * 0.9);
+  filter: drop-shadow(0 0
+    calc(var(--live) * 6px) var(--cat));
+}`;
+
+const snippetFlip = `// recompute --w from cap or volume,
+// swap the tier class, re-sort, then
+// FLIP tiles whose size did not change:
+const first = new Map(tiles.map(
+  (t) => [t, t.getBoundingClientRect()]));
+ordered.forEach((t) => list.appendChild(t));
+ordered.forEach((t) => {
+  const a = first.get(t);
+  const b = t.getBoundingClientRect();
+  t.style.transform = \`translate(
+    \${a.left - b.left}px,
+    \${a.top - b.top}px)\`;
+  requestAnimationFrame(() =>
+    (t.style.transform = ""));
+});
+// re-tiered tiles settle with a fade
+// instead — translate cannot honestly
+// animate a size change.`;
 ---
 
 <ExampleShell
@@ -85,7 +145,7 @@ const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3
       Switch the window to <strong>7d</strong> and the same tiles repolarize; reweight by
       <strong>volume</strong> and the mosaic re-tiers and re-settles around where the trading
       actually happened. <strong>Toggle the field off</strong> and it collapses back to an even
-      grid — every asset the same size, the same ink.
+      grid — every asset the same size, the same ink, the live glow gone dark.
     </p>
   </header>
 
@@ -122,6 +182,7 @@ const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3
     <li><span class="ev-k ev-k-weight">Aa</span> <b>tile area</b> = the weighting signal (cap or volume)</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the move — direction is hue, magnitude is intensity</li>
     <li><span class="ev-k mk-k-spark" aria-hidden="true"></span> sparkline = the week's price path (tile-local scale, big tiles only)</li>
+    <li><span class="ev-k ev-k-live"></span> <b>glow</b> = the engine's live density (<code>--d</code>) — hold a tile and the field gathers</li>
   </ul>
 
   <ol class="mk-mosaic" data-mk-list>
@@ -131,8 +192,10 @@ const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3
         return (
           <li
             class={`mk-tile mk-t${tierOf(w)}`}
+            id={`mk-${a.id}`}
             data-body="attract"
             data-feedback
+            data-hot
             data-range="200"
             data-strength={(0.4 + w * 1.6).toFixed(2)}
             data-cap={a.cap}
@@ -156,8 +219,15 @@ const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3
             <span class="mk-chg" data-win="7d" data-dir={a.change7d >= 0 ? "up" : "down"}>
               {badge(a.change7d)}
             </span>
-            <svg class="mk-spark" viewBox="0 0 120 28" aria-hidden="true" preserveAspectRatio="none">
-              <path d={sparkPath(a.spark)} stroke="var(--cat)" />
+            <svg
+              class="mk-spark"
+              viewBox="0 0 120 28"
+              aria-hidden="true"
+              preserveAspectRatio="none"
+              data-field-visual-for={`#mk-${a.id}`}
+              data-field-visual-role="measurement"
+            >
+              <path d={sparkPath(a.spark)} stroke="var(--cat)" pathLength="1" />
             </svg>
           </li>
         );
@@ -171,69 +241,41 @@ const tierOf = (w: number): number => (w > 0.8 ? 1 : w > 0.55 ? 2 : w > 0.35 ? 3
       Every asset is an ordinary <code>&lt;li&gt;</code> with a few data attributes. field-ui reads
       them, runs an invisible field over the mosaic, and the tiles carry the measurement — cap as
       area and ink, the move as color. No canvas, no chart library beyond one inline
-      <code>&lt;path&gt;</code> per tile.
+      <code>&lt;path&gt;</code> per tile. Four channels do the work: <code>--w</code> is the
+      server-computed weight, <code>--cat</code> the lens color, <code>--d</code> the engine's
+      live local density (hold a tile and the field gathers), and
+      <code>--field-attention</code> the recipe's eased attention metric. Each sparkline also
+      declares its provenance with <code>data-field-visual-for</code>, so the binding between
+      chart and record is inspectable.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — each asset is a field body</p>
-        <pre class="ev-code"><code>&lt;li
-  data-body="attract"
-  data-strength="1.87"
-  data-feedback
-  data-cap="1235425696510"
-  data-c24="-1.70" data-c7="-7.76"
-  style="--w: 0.92; --cat: hsl(350 70% 64%);"
-&gt;
-  &lt;!-- name · sparkline · price --&gt;
-&lt;/li&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: snippetBody }]} />
         <ul class="ev-how-attrs">
           <li><code>data-strength</code> — gravitational mass from log-normalized cap</li>
           <li><code>data-c24</code> / <code>data-c7</code> — the raw moves the lens reads</li>
           <li><code>--cat</code> — the polarity color the CSS mixes in</li>
+          <li><code>data-hot</code> — the engine's live density (<code>--d</code>) gathers toward 1 while held</li>
+          <li><code>data-field-visual-for</code> — binds the sparkline to its record as a measurement</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — mass is area; polarity is CSS</p>
-        <pre class="ev-code"><code>{`/* tier classes set the tile's footprint */
-.mk-t1 { grid-column: span 3; grid-row: span 2; }
-.mk-t2 { grid-column: span 2; grid-row: span 2; }
-.mk-t3 { grid-column: span 2; grid-row: span 1; }
-
-.mk-tile {
-  /* --w = log-normalized cap (0..1) */
-  opacity: calc(0.58 + var(--w) * 0.42);
-  background: color-mix(in srgb,
-    var(--cat) calc(6% + var(--w) * 4%),
-    transparent);
-}`}</code></pre>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: snippetCss }]} />
         <p class="ev-how-note">
           The runtime sets <code>--cat</code> from the chosen window — hue is direction, intensity
           is magnitude — and one <code>color-mix()</code> tints the tile against the hairline.
+          <code>--d</code> is live: hold a tile and the halo and sparkline thicken as the field
+          gathers, then ease back.
         </p>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">3 — reweighting re-tiers, then FLIPs in 2D</p>
-        <pre class="ev-code"><code>{`// recompute --w from cap or volume,
-// swap the tier class, re-sort, then
-// FLIP tiles whose size did not change:
-const first = new Map(tiles.map(
-  (t) => [t, t.getBoundingClientRect()]));
-ordered.forEach((t) => list.appendChild(t));
-ordered.forEach((t) => {
-  const a = first.get(t);
-  const b = t.getBoundingClientRect();
-  t.style.transform = \`translate(
-    \${a.left - b.left}px,
-    \${a.top - b.top}px)\`;
-  requestAnimationFrame(() =>
-    (t.style.transform = ""));
-});
-// re-tiered tiles settle with a fade
-// instead — translate cannot honestly
-// animate a size change.`}</code></pre>
+        <CodeTabs variants={[{ label: "TS", lang: "ts", code: snippetFlip }]} />
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>

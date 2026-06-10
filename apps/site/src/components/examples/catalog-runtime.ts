@@ -122,7 +122,14 @@ function initCatalog(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain the attention lane, so the platform
+        // pipeline writes an eased --field-attention (hover/focus + viewport-center
+        // proximity + visibility) back to every card.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         activeField = applyRecipe(grid, recipe, { bodies: cards, annotateBodies: false });
       }
     } catch {
@@ -132,8 +139,11 @@ function initCatalog(): () => void {
 
   // ── shared-shelf affinity (hover + focus) ────────────────────────────────
   let chip: HTMLElement | null = null;
+  let chipRaf = 0;
 
   const clearAffinity = (): void => {
+    cancelAnimationFrame(chipRaf);
+    chipRaf = 0;
     cards.forEach((c) => c.classList.remove("lit", "cited"));
     chip?.remove();
     chip = null;
@@ -175,6 +185,14 @@ function initCatalog(): () => void {
     const cell = card.closest<HTMLElement>(".cat-cell") || card;
     chip.style.left = `${cell.offsetLeft + 8}px`;
     chip.style.top = `${cell.offsetTop - 6}px`;
+    // the chip floats outside the card, so it can't inherit the card's live density:
+    // mirror the hovered card's --d (an inline style the engine writes every frame)
+    // onto the chip as --live while the hover holds — the border charges with it.
+    const followLive = (): void => {
+      chip?.style.setProperty("--live", card.style.getPropertyValue("--d") || "0");
+      chipRaf = requestAnimationFrame(followLive);
+    };
+    followLive();
   };
 
   cards.forEach((c) => {

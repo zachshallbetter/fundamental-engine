@@ -95,8 +95,16 @@ function initBacklog(): () => void {
   };
 
   // ── reference threads (hover) — the SVG overlays the whole board so threads cross lanes ──
+  // While a hover holds, the hovered card's live density (--d, written by the page's hidden
+  // engine every frame) is mirrored onto the SVG as --thread-live, so the threads charge as
+  // the field gathers under the cursor.
+  let liveRaf = 0;
   const clearThreads = (): void => {
-    zone?.querySelector("svg.ev-threads")?.replaceChildren();
+    cancelAnimationFrame(liveRaf);
+    liveRaf = 0;
+    const svg = zone?.querySelector<SVGSVGElement>("svg.ev-threads");
+    svg?.replaceChildren();
+    svg?.style.removeProperty("--thread-live");
     rows().forEach((r) => r.classList.remove("lit", "cited"));
   };
   const wireThreads = (): void => {
@@ -113,6 +121,13 @@ function initBacklog(): () => void {
       const box = zone.getBoundingClientRect();
       svg!.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
       svg!.style.setProperty("--thread", getComputedStyle(from).getPropertyValue("--cat").trim());
+      // follow the hovered card's --d (an inline style the engine writes — cheap to read)
+      cancelAnimationFrame(liveRaf);
+      const followLive = (): void => {
+        svg!.style.setProperty("--thread-live", from.style.getPropertyValue("--d") || "0");
+        liveRaf = requestAnimationFrame(followLive);
+      };
+      followLive();
       const a = centerIn(from, zone);
       from.classList.add("lit");
       let d = "";
@@ -140,7 +155,14 @@ function initBacklog(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain the attention lane, so the platform
+        // pipeline writes an eased --field-attention (hover/focus + viewport-center
+        // proximity + visibility) back to every card.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         // the cycle bar joins as a sink — the engine writes its fill back as --load.
         const bodies = rows();
         if (sink) bodies.push(sink);
@@ -191,6 +213,7 @@ function initBacklog(): () => void {
 
   return () => {
     ac.abort();
+    cancelAnimationFrame(liveRaf);
     activeField?.destroy();
   };
 }

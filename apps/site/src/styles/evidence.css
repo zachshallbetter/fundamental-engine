@@ -774,3 +774,49 @@ a.ev-side-item.is-live:hover {
     animation: ev-new-settle 0.38s ease-out both;
   }
 }
+
+/* ── living ink — the engine's LIVE channels (evidence page) ──────────────────
+   --d   : the page engine's local particle density (0..1), written back every
+           frame; data-hot makes it gather toward 1 on hover/focus and ease back.
+   --field-attention : the scoped recipe's eased attention metric (engagement +
+           viewport-center proximity + visibility — it moves as you scroll).
+   Felt, not loud: a soft halo and a faint background lift. */
+.ev-finding {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 3% + var(--att) * 3%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.2s,
+    box-shadow 0.3s;
+}
+
+/* legend key for the live glow */
+.ev-k-live {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+
+/* field off: the live channels go dark with the rest of the field */
+.ev-page[data-field="off"] .ev-finding {
+  --live: 0;
+  --att: 0;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-finding {
+    transition: none;
+  }
+}

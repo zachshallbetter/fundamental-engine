@@ -18,7 +18,11 @@
   display: flex;
 }
 
+/* the living-ink channel: --live is the engine's --d (live local particle density,
+   written every frame; gathers toward 1 on data-hot hover/focus); the background
+   also lifts with the scoped recipe's eased --field-attention. Felt, not loud. */
 .ex-catalog .cat-card {
+  --live: var(--d, 0);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -29,11 +33,18 @@
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--field-attention, 0) * 4%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
   opacity: calc(0.58 + var(--w) * 0.42);
   transition:
     opacity 0.3s,
     background 0.3s,
+    box-shadow 0.3s,
     border-color 0.3s;
 }
 
@@ -105,6 +116,14 @@
   color: var(--text-3);
 }
 
+/* the ratings line is the card's declared measurement (data-field-visual-for);
+   it sits inside the card, so the live vars (--d, --field-attention) inherit */
+.ex-catalog .cat-stats-live {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
 .ex-catalog .cat-stars {
   font-family: var(--mono);
   font-weight: 600;
@@ -144,7 +163,9 @@
   white-space: nowrap;
 }
 
-/* ── the floating affinity chip — "also: time travel ×4" ── */
+/* ── the floating affinity chip — "also: time travel ×4". Its border charges with
+      the hovered card's live density: the runtime mirrors the card's --d onto the
+      chip as --live while the hover holds. ── */
 .ex-catalog .cat-chip {
   position: absolute;
   z-index: 2;
@@ -156,10 +177,14 @@
   white-space: nowrap;
   padding: 0.22rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border: 1px solid
+    color-mix(in srgb, var(--accent) calc(45% + var(--live, 0) * 45%), var(--line));
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, Canvas);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 0.35);
+  box-shadow:
+    0 2px 10px rgb(0 0 0 / 0.35),
+    0 0 calc(var(--live, 0) * 12px)
+      color-mix(in srgb, var(--accent) calc(var(--live, 0) * 50%), transparent);
 }
 
 /* legend key — the shelf-mate glow */
@@ -172,10 +197,20 @@
   border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--line));
   background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
+.ex-catalog .cat-k-live {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
 
-/* ── Field OFF — the measurements stop; every card defaults to plain styling ── */
+/* ── Field OFF — the measurements stop; every card defaults to plain styling.
+      The live channels go quiet too: --live is forced to 0 (the page engine keeps
+      writing --d, but off means off). ── */
 .ex-catalog[data-field="off"] .cat-card {
   --w: 0.55;
+  --live: 0;
   opacity: 1;
   border-left-color: var(--line);
   background: transparent;

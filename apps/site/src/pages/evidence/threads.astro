@@ -1,5 +1,6 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import threads from "../../data/examples/threads.json";
 import "../../styles/examples/threads.css";
 
@@ -54,6 +55,79 @@ const fmtInto = (s: number) => {
   if (h < 48) return `${h}h into the thread`;
   return `${Math.round(s / 86400)}d into the thread`;
 };
+
+// How-built snippets (CodeTabs renders them with build-time Shiki highlighting).
+// Note --depth (the indent) is a separate lane from --d: the engine OWNS --d — it
+// writes live local density back to every data-feedback body each frame.
+const SNIPPET_HTML = `<!-- each comment is a body. data-feedback: the engine writes
+     --d (live local density) back every frame. data-hot:
+     hover/focus a comment and the field gathers toward it.
+     data-top marks a top-level comment (the glow channel). -->
+<li
+  data-body="attract"
+  data-strength="1.36"
+  data-feedback
+  data-hot
+  data-top
+  data-id="41002198" data-parent="41002195"
+  data-tempo="0.91"
+  style="--w: 0.60; --cat: hsl(31 74% 64%); --depth: 0;"
+>
+  <!-- your ordinary HTML here -->
+</li>`;
+
+const SNIPPET_CSS = `.th-c {
+  /* --depth = min(depth, 6) — the indent; --d is the
+     ENGINE's lane: live density, data-hot gathers it */
+  --live: var(--d, 0);
+  padding-left: calc(var(--depth) * var(--ind));
+}
+.th-row {
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 50%), transparent);
+  background: color-mix(in srgb, var(--text)
+    calc(1.5% + var(--w) * 4% + var(--live) * 4%
+      + var(--field-attention, 0) * 4%),
+    transparent);
+}
+/* top-level comments with big subtrees burn steadier */
+.th-c[data-top] .th-row {
+  box-shadow: 0 0
+    calc(var(--w) * 8px + var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--w) * 30% + var(--live) * 50%),
+      transparent);
+}`;
+
+const SNIPPET_TS = `// hover or focus a comment:
+row.classList.add("lit");
+
+// walk the ancestor ids up to the story
+let p = byId.get(row.dataset.parent);
+while (p) {
+  p.classList.add("cited");
+  p = byId.get(p.dataset.parent);
+}
+
+// and light the direct replies
+for (const kid of kids.get(row.dataset.id))
+  kid.classList.add("cited");
+
+// the chain CHARGES: while a comment is lit, mirror its
+// live --d (engine-written) onto the list as --chain —
+// the connector ink reads it
+list.style.setProperty("--chain",
+  row.style.getPropertyValue("--d") || "0");
+
+// the scoped field runs invisible (render: []) and asks
+// for the attention metric lane (--field-attention):
+const recipe = {
+  ...base,
+  render: [],
+  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+};`;
 ---
 
 <ExampleShell
@@ -125,6 +199,12 @@ const fmtInto = (s: number) => {
       <span class="ev-k th-k-depth" aria-hidden="true"></span> indent = depth, capped at 6 —
       deeper replies hold the cap
     </li>
+    <li>
+      <span class="ev-k th-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
+      <b>--w</b> is the subtree's weight and <b>--cat</b> the tempo lens; <b>--d</b> is the
+      engine's local density (hold a comment and the field gathers — its binding chain charges
+      with it) and <b>--field-attention</b> the recipe's eased attention as you scroll.
+    </li>
   </ul>
 
   <!-- The story being discussed. -->
@@ -148,6 +228,8 @@ const fmtInto = (s: number) => {
           id={`c-${c.id}`}
           data-body="attract"
           data-feedback
+          data-hot
+          data-top={c.depth === 0 ? "" : undefined}
           data-range="200"
           data-strength={(0.4 + c.w * 1.6).toFixed(2)}
           data-id={String(c.id)}
@@ -155,7 +237,7 @@ const fmtInto = (s: number) => {
           data-tempo={c.tempo.toFixed(4)}
           tabindex="0"
           aria-expanded="false"
-          style={`--w:${c.w.toFixed(3)}; --cat:${tempoColor(c.tempo)}; --d:${Math.min(c.depth, 6)};`}
+          style={`--w:${c.w.toFixed(3)}; --cat:${tempoColor(c.tempo)}; --depth:${Math.min(c.depth, 6)};`}
         >
           <div class="th-row">
             <p class="th-meta">
@@ -181,69 +263,39 @@ const fmtInto = (s: number) => {
       Every comment is ordinary semantic HTML — an <code>&lt;li&gt;</code> carrying its id, its
       parent's id, and its tempo as data attributes. Mass is the log-normalized count of replies
       it spawned; CSS turns that one number into type heft, ink, and anchor. The binding chain is
-      a parent-id walk — no SVG, no canvas, no per-element listeners beyond hover and focus.
+      a parent-id walk — no SVG, no canvas, no per-element listeners beyond hover and focus. Two
+      live channels sit on top, engine-written every frame: <code>--d</code> (local density,
+      gathered by <code>data-hot</code> on hover — the hovered comment's density also charges its
+      chain's connector ink) and <code>--field-attention</code> (the recipe's eased attention).
+      They touch only ink; the tree's mass is fixed history.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — mark each comment as a field body</p>
-        <pre class="ev-code"><code>&lt;li
-  data-body="attract"
-  data-strength="1.36"
-  data-feedback
-  data-id="41002198" data-parent="41002195"
-  data-tempo="0.91"
-  style="--w: 0.60; --cat: hsl(31 74% 64%); --d: 0;"
-&gt;
-  &lt;!-- your ordinary HTML here --&gt;
-&lt;/li&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIPPET_HTML }]} />
         <ul class="ev-how-attrs">
           <li><code>data-body="attract"</code> — registers as a field participant</li>
           <li><code>data-strength</code> — mass, from the subtree the comment spawned</li>
           <li><code>data-parent</code> — the binding: which comment this one answers</li>
-          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
+          <li><code>data-hot</code> — hover/focus gathers the field toward this comment</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">2 — CSS reads the weight + depth</p>
-        <pre class="ev-code"><code>{`.th-c {
-  /* --d = min(depth, 6) — the indent,
-     and one guide line per level */
-  padding-left: calc(var(--d) * var(--ind));
-}
-.th-row {
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}
-.th-text {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}`}</code></pre>
+        <p class="ev-how-label">2 — CSS reads weight, depth + the live channels</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIPPET_CSS }]} />
         <p class="ev-how-note">
           One log-normalized subtree count drives weight, ink, and anchor; the indentation
-          supplies the tree geometry for free.
+          (<code>--depth</code>) supplies the tree geometry for free. <code>--d</code> belongs to
+          the engine — live local density, written back every frame.
         </p>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">3 — the binding chain is a parent walk</p>
-        <pre class="ev-code"><code>{`// hover or focus a comment:
-row.classList.add("lit");
-
-// walk the ancestor ids up to the story
-let p = byId.get(row.dataset.parent);
-while (p) {
-  p.classList.add("cited");
-  p = byId.get(p.dataset.parent);
-}
-
-// and light the direct replies
-for (const kid of kids.get(row.dataset.id))
-  kid.classList.add("cited");`}</code></pre>
+        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>

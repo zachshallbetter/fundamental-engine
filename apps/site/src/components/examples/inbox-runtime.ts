@@ -169,7 +169,14 @@ function initInbox(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] keeps the field invisible; the extra "attention" metric asks the
+        // platform pipeline to write --field-attention per ask (an eased 0..1 blend of
+        // engagement, viewport-center proximity, and visibility) — read by the ink CSS.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         activeField = applyRecipe(split, recipe, { bodies: itemsOf(), annotateBodies: false });
       }
     } catch {

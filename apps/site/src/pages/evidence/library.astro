@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import library from "../../data/examples/library.json";
+import "../../styles/docs.css";
 import "../../styles/examples/library.css";
 
 // The Library Field — what the world actually plays. Each recording in ListenBrainz's
@@ -40,6 +42,61 @@ const linkFor = (t: { mbid: string }) =>
   t.mbid ? `https://musicbrainz.org/recording/${t.mbid}` : "https://listenbrainz.org/";
 const fmtListens = (n: number) => n.toLocaleString("en-US");
 const snapshotDay = library.snapshotAt.slice(0, 10);
+
+// How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
+const snippetSink = `<aside id="queue"
+  data-body="sink"
+  data-absorb
+  data-max="8"
+  data-feedback
+  data-hot
+>
+  <!-- the queue panel -->
+  <i aria-hidden="true"
+    data-field-visual-for="#queue"
+    data-field-visual-role="measurement"></i>
+</aside>`;
+
+const snippetEngine = `/* channel 1 — the ENGINE. Matter accretes
+   into the sink and the field writes --load
+   (0..1 fill) back each frame; the page
+   engine also writes --d, its LIVE local
+   density (data-hot gathers it on hold).
+   The glow blends both. */
+.lb-queue {
+  --live: var(--d, 0);
+  box-shadow: 0 0
+    calc(4px + (var(--load, 0)
+      + var(--live) * 0.5) * 28px)
+    color-mix(in srgb, var(--accent)
+      calc(var(--load, 0) * 45%
+        + var(--live) * 18%),
+      transparent);
+}`;
+
+const snippetUi = `// channel 2 — the UI. A plain counter:
+// queued / 8. Data, not the field.
+fill.style.width = \`\${n / 8 * 100}%\`;`;
+
+const snippetCss = `.lb-title {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+/* the ladder: --bar = listens / max
+   (linear), set server-side */
+.lb-bararea::before {
+  width: calc(var(--bar) * 100%);
+  background: color-mix(in srgb,
+    var(--cat) calc(10% + var(--w) * 12%),
+    transparent);
+}
+/* the rows also receive the engine's
+   live density (--d) and the recipe's
+   eased attention (--field-attention) */
+.lb-row {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+}`;
 ---
 
 <ExampleShell
@@ -66,7 +123,9 @@ const snapshotDay = library.snapshotAt.slice(0, 10);
       genuinely writes its accreted fill back as <code>--load</code>, and CSS turns that into a
       glow. Queue eight tracks and the sink <strong>releases</strong> — the engine's
       capture→release cycle, played out in the page. The field is invisible — no particle
-      swarm; only its measurements show.
+      swarm; only its measurements show. <strong>Toggle the field off</strong> and the live
+      channels go dark — the ladder flattens, the glow dies — while the queue keeps counting:
+      that channel is data, and it is honest about it.
     </p>
   </header>
 
@@ -100,23 +159,32 @@ const snapshotDay = library.snapshotAt.slice(0, 10);
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the lens (artist, or off) — it tints the bar</li>
     <li><span class="ev-k lb-k-sink"></span> the queue is a <b>sink</b> — the engine writes <code>--load</code> into it</li>
     <li><span class="ev-k lb-k-release"></span> at {QUEUE_MAX}/{QUEUE_MAX} the sink <b>releases</b> — capture, then let go</li>
+    <li><span class="ev-k ev-k-live"></span> <b>glow</b> = the engine's live density (<code>--d</code>) — hold a row and the field gathers</li>
   </ul>
 
   <div class="lb-field" data-lb-scope>
     <!-- The queue — a real field sink. The engine writes --load; the fill bar is UI data. -->
     <aside
       class="lb-queue"
+      id="lb-queue"
       data-lb-queue
       data-body="sink"
       data-absorb
       data-max={String(QUEUE_MAX)}
       data-feedback
+      data-hot
       aria-label="Queue"
     >
       <div class="lb-queue-head">
         <span class="lb-queue-title">Queue</span>
         <span class="lb-queue-count" data-lb-count aria-live="polite">0 / {QUEUE_MAX}</span>
-        <span class="lb-fill" title="UI fill — queued count, not the field" aria-hidden="true">
+        <span
+          class="lb-fill"
+          title="UI fill — queued count, not the field"
+          aria-hidden="true"
+          data-field-visual-for="#lb-queue"
+          data-field-visual-role="measurement"
+        >
           <i data-lb-fill style="width:0%"></i>
         </span>
       </div>
@@ -135,13 +203,18 @@ const snapshotDay = library.snapshotAt.slice(0, 10);
             id={`r-${t.rank}`}
             data-body="attract"
             data-feedback
+            data-hot
             data-range="200"
             data-strength={(0.4 + t.w * 1.6).toFixed(2)}
             data-artist-color={t.cat}
             style={`--w:${t.w.toFixed(3)}; --cat:${t.cat}; --bar:${t.bar.toFixed(3)};`}
           >
             <span class="lb-rank">{String(t.rank).padStart(2, "0")}</span>
-            <div class="lb-bararea">
+            <div
+              class="lb-bararea"
+              data-field-visual-for={`#r-${t.rank}`}
+              data-field-visual-role="measurement"
+            >
               <div class="lb-body">
                 <a class="lb-title" href={linkFor(t)} target="_blank" rel="noopener">
                   {t.track}
@@ -179,44 +252,35 @@ const snapshotDay = library.snapshotAt.slice(0, 10);
       log-normalized listens become <code>--w</code> and <code>data-strength</code>. The queue
       panel is a second kind of body: a <strong>sink</strong>. Both join one scoped field, and
       the panel's glow and the rows' type heft are driven by two different channels — one the
-      engine writes, one the page counts.
+      engine writes, one the page counts. Live on top of those: <code>--w</code> is the
+      server-computed weight, <code>--cat</code> the lens color, <code>--d</code> the engine's
+      live local density (hold a row and the field gathers), and <code>--field-attention</code>
+      the recipe's eased attention metric. The bars and the fill declare their provenance with
+      <code>data-field-visual-for</code>, so each measurement is bound to its record.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — the queue is a field sink</p>
-        <pre class="ev-code"><code>&lt;aside
-  data-body="sink"
-  data-absorb
-  data-max="8"
-  data-feedback
-&gt;
-  &lt;!-- the queue panel --&gt;
-&lt;/aside&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: snippetSink }]} />
         <ul class="ev-how-attrs">
           <li><code>data-body="sink"</code> — registers as an absorbing body</li>
           <li><code>data-absorb</code> — opt in to holding matter</li>
           <li><code>data-max="8"</code> — capacity before the sink saturates</li>
           <li><code>data-feedback</code> — receive <code>--load</code> writebacks</li>
+          <li><code>data-hot</code> — the engine's live density (<code>--d</code>) gathers toward 1 while held</li>
+          <li><code>data-field-visual-for</code> — binds the fill bar to the panel it measures</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — two channels, labeled honestly</p>
-        <pre class="ev-code"><code>{`/* channel 1 — the ENGINE. Matter accretes
-   into the sink; the field writes --load
-   (0..1 fill) back each frame. */
-.lb-queue {
-  box-shadow: 0 0
-    calc(4px + var(--load, 0) * 28px)
-    color-mix(in srgb, var(--accent)
-      calc(var(--load, 0) * 45%),
-      transparent);
-}
-
-/* channel 2 — the UI. A plain counter:
-   queued / 8. Data, not the field. */
-fill.style.width = \`\${n / 8 * 100}%\`;`}</code></pre>
+        <CodeTabs
+          variants={[
+            { label: "engine (CSS)", lang: "css", code: snippetEngine },
+            { label: "UI (TS)", lang: "ts", code: snippetUi },
+          ]}
+        />
         <p class="ev-how-note">
           The glow is the field's own measurement of accretion; the fill bar is bookkeeping.
           Keeping the two apart is the point — at 8/8 the page clears the queue the way the
@@ -226,18 +290,7 @@ fill.style.width = \`\${n / 8 * 100}%\`;`}</code></pre>
 
       <div class="ev-how-col">
         <p class="ev-how-label">3 — CSS reads the mass; the bar reads the count</p>
-        <pre class="ev-code"><code>{`.lb-title {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}
-/* the ladder: --bar = listens / max
-   (linear), set server-side */
-.lb-bararea::before {
-  width: calc(var(--bar) * 100%);
-  background: color-mix(in srgb,
-    var(--cat) calc(10% + var(--w) * 12%),
-    transparent);
-}`}</code></pre>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: snippetCss }]} />
         <p class="ev-how-note">
           <code>--w</code> is the log-normalized listen count — real plays in, type weight and
           ink out. <code>--bar</code> is the same count kept linear, so the bar lengths stay an

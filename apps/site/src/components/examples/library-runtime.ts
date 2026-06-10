@@ -76,7 +76,13 @@ function initLibrary(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
+        // --field-attention (eased engagement + center proximity + visibility) per row.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        };
         const bodies = rowsOf();
         bodies.push(queue);
         activeField = applyRecipe(scope, recipe, { bodies, annotateBodies: false });
@@ -163,6 +169,33 @@ function initLibrary(): () => void {
     }
   };
 
+  // ── bar entry sweep — gated at reading pace ───────────────────────────────
+  // Rows entering the viewport get .lb-in (the bar sweeps out to its length);
+  // while the engine's live scroll velocity (--field-scroll-v, px/frame) says
+  // the user is scanning (>= 2), .lb-in-instant is added too — no animation.
+  const SCROLL_V_MAX = 2.0;
+  const wireBarSweep = (): void => {
+    list.setAttribute("data-lb-anim", "");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const row = e.target as HTMLElement;
+          // --field-scroll-v is an inline style on <html> (written by the engine), so
+          // reading el.style avoids a forced style recalc.
+          const sv =
+            parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
+          if (sv >= SCROLL_V_MAX || reduceMotion()) row.classList.add("lb-in", "lb-in-instant");
+          else row.classList.add("lb-in");
+          io.unobserve(row);
+        }
+      },
+      { threshold: 0.1 },
+    );
+    rowsOf().forEach((r) => io.observe(r));
+    ac.signal.addEventListener("abort", () => io.disconnect());
+  };
+
   // ── queueing — delegated from the list ────────────────────────────────────
   list.addEventListener(
     "click",
@@ -212,6 +245,7 @@ function initLibrary(): () => void {
   applyLens();
   syncQueue();
   runField();
+  wireBarSweep();
 
   return () => {
     ac.abort();

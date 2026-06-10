@@ -330,3 +330,63 @@
     transition: none;
   }
 }
+
+/* ── living ink — the engine's LIVE channels ────────────────────────────────
+   --d   : the page engine's local particle density (0..1), written back every
+           frame; data-hot makes it gather toward 1 on hover/focus.
+   --field-attention : the scoped recipe's eased attention metric.
+   The tile carries a soft halo; its sparkline thickens and glows with it. */
+.ex-market .mk-tile {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  background: color-mix(
+    in srgb,
+    var(--cat, var(--accent)) calc(6% + var(--w) * 4% + var(--live) * 4% + var(--att) * 3%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 50%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.2s,
+    box-shadow 0.3s;
+}
+.ex-market .mk-spark path {
+  stroke-width: calc(1.5 + var(--live) * 0.9);
+  filter: drop-shadow(0 0 calc(var(--live) * 6px) var(--cat, var(--accent)));
+}
+
+/* ── entry draw-in — paths carry pathLength="1", so dasharray math is trivial.
+      The runtime marks the mosaic [data-mk-anim] and adds .mk-in when a tile
+      enters the viewport at reading pace (--field-scroll-v < 2); when the user
+      is scanning fast it adds .mk-in-instant too, so the line is simply there.
+      No JS / reduced motion: the path stays fully drawn. ── */
+@media (prefers-reduced-motion: no-preference) {
+  .ex-market .mk-mosaic[data-mk-anim] .mk-tile:not(.mk-in) .mk-spark path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .ex-market .mk-mosaic[data-mk-anim] .mk-tile.mk-in .mk-spark path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.8s ease-out;
+  }
+  .ex-market .mk-mosaic[data-mk-anim] .mk-tile.mk-in.mk-in-instant .mk-spark path {
+    transition: none;
+  }
+}
+
+/* field off: the live channels go dark with the rest of the field */
+.ex-market[data-field="off"] .mk-tile {
+  --live: 0;
+  --att: 0;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-market .mk-tile {
+    transition: none;
+  }
+}

@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import newsroom from "../../data/examples/newsroom.json";
+import "../../styles/docs.css";
 import "../../styles/examples/newsroom.css";
 
 // The Newsroom Field — field-ui as an invisible measurement layer over one day of Wikipedia's
@@ -53,6 +55,50 @@ const deck = articles.slice(1, 7);
 const index = articles.slice(7);
 const leadW = wOf(lead.views);
 const leadPct = pctOf(lead);
+
+// How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
+const snippetBody = `<li
+  data-body="attract"
+  data-strength="1.87"
+  data-feedback
+  data-hot
+  data-views="291972"
+  data-prior="303010"
+  style="--w: 0.920; --cat: hsl(212 38% 59%);"
+>
+  <!-- rank · title · views -->
+</li>`;
+
+const snippetCss = `.nw-row {
+  /* --w = log-normalized views (0..1).
+     --d = the engine's LIVE local density —
+     data-hot gathers it toward 1 on hold. */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+}
+/* the index item nearest the viewport
+   center sharpens — the recipe's eased
+   attention metric, written per record */
+.nw-index-item .nw-title {
+  letter-spacing: calc(-0.01em
+    + var(--field-attention, 0) * 0.01em);
+}`;
+
+const snippetRamp = `// day-over-day move → --cat:
+// direction is hue, magnitude is
+// intensity; no prior count = new.
+const pct = prior
+  ? ((views - prior) / prior) * 100
+  : null;
+if (pct === null) return "#8a93a6";
+const t = Math.min(1, Math.abs(pct) / 60);
+return pct >= 0
+  ? \`hsl(\${32 - t * 10} …)\`  // warm
+  : \`hsl(\${208 + t * 12} …)\`; // cool`;
 ---
 
 <ExampleShell
@@ -78,9 +124,12 @@ const leadPct = pctOf(lead);
       The day-over-day change <strong>polarizes</strong> each body: rising attention warms,
       falling attention cools, and the magnitude sets the intensity — a 3% drift barely
       registers, a 200% surge burns. Articles that weren't in the prior day's list at all read
-      as <strong>new</strong>, in neutral gray — no fake direction. <strong>Toggle the field
-      off</strong> and the ink flattens: the placement stays (it is the day's ranking), but the
-      field's weighting lets go.
+      as <strong>new</strong>, in neutral gray — no fake direction. The placement is fixed —
+      a front page is set in type — but the <strong>ink is alive</strong>: the engine writes
+      its live local density back as <code>--d</code>, so holding a story makes the field
+      gather around it, and the index item nearest the center of your view sharpens as you
+      scroll. <strong>Toggle the field off</strong> and the ink flattens and the live channels
+      go dark: the placement stays (it is the day's ranking), but the field's weighting lets go.
     </p>
   </header>
 
@@ -110,6 +159,7 @@ const leadPct = pctOf(lead);
     <li><span class="ev-k ev-k-weight">Aa</span> <b>size & placement</b> = pageviews — lead, deck, then the index</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the cycle's direction — warm rising · cool falling</li>
     <li><span class="ev-k nw-k-new">new</span> = absent from the prior day's list</li>
+    <li><span class="ev-k ev-k-live"></span> <b>ink</b> = alive — hold a story and the field gathers (<code>--d</code>); placement never moves</li>
   </ul>
 
   <div class="nw-front" data-nw-list>
@@ -117,6 +167,7 @@ const leadPct = pctOf(lead);
       class="nw-row nw-lead"
       data-body="attract"
       data-feedback
+      data-hot
       data-range="200"
       data-strength={(0.4 + leadW * 1.6).toFixed(2)}
       data-views={lead.views}
@@ -146,6 +197,7 @@ const leadPct = pctOf(lead);
               class="nw-row nw-deck-item"
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength={(0.4 + w * 1.6).toFixed(2)}
               data-views={a.views}
@@ -179,6 +231,7 @@ const leadPct = pctOf(lead);
               class="nw-row nw-index-item"
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength={(0.4 + w * 1.6).toFixed(2)}
               data-views={a.views}
@@ -209,62 +262,38 @@ const leadPct = pctOf(lead);
       Every article is an ordinary <code>&lt;li&gt;</code> with its raw counts in data
       attributes. field-ui reads them, runs an invisible field over the front page, and the type
       carries the measurement — pageviews as weight and placement, the day's swing as color. No
-      canvas, no chart library.
+      canvas, no chart library. Four channels do the work: <code>--w</code> is the server-computed
+      weight, <code>--cat</code> the lens color, <code>--d</code> the engine's live local density
+      (hold a story and the field gathers), and <code>--field-attention</code> the recipe's eased
+      attention metric, which sharpens the index item nearest the viewport center. Placement is
+      fixed; only the ink is alive.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — each article is a field body</p>
-        <pre class="ev-code"><code>&lt;li
-  data-body="attract"
-  data-strength="1.87"
-  data-feedback
-  data-views="291972"
-  data-prior="303010"
-  style="--w: 0.920; --cat: hsl(212 38% 59%);"
-&gt;
-  &lt;!-- rank · title · views --&gt;
-&lt;/li&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: snippetBody }]} />
         <ul class="ev-how-attrs">
           <li><code>data-strength</code> — gravitational mass from log-normalized pageviews</li>
           <li><code>data-views</code> / <code>data-prior</code> — the raw counts the lens reads</li>
           <li><code>--cat</code> — the polarity color the CSS mixes in</li>
+          <li><code>data-hot</code> — the engine's live density (<code>--d</code>) gathers toward 1 while held</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — CSS reads the field's output</p>
-        <pre class="ev-code"><code>{`.nw-row {
-  /* --w = log-normalized views (0..1) */
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}
-.nw-title {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}`}</code></pre>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: snippetCss }]} />
         <p class="ev-how-note">
           Weight, ink, font heft, and border intensity all read from one normalized attention
-          score — the field drives the measurement; CSS drives the presentation.
+          score; the lead's headline ink and rule breathe with the live <code>--d</code> — the
+          field drives the measurement; CSS drives the presentation.
         </p>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">3 — the polarity ramp</p>
-        <pre class="ev-code"><code>{`// day-over-day move → --cat:
-// direction is hue, magnitude is
-// intensity; no prior count = new.
-const pct = prior
-  ? ((views - prior) / prior) * 100
-  : null;
-if (pct === null) return "#8a93a6";
-const t = Math.min(1, Math.abs(pct) / 60);
-return pct >= 0
-  ? \`hsl(\${32 - t * 10} …)\`  // warm
-  : \`hsl(\${208 + t * 12} …)\`; // cool`}</code></pre>
+        <CodeTabs variants={[{ label: "TS", lang: "ts", code: snippetRamp }]} />
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>

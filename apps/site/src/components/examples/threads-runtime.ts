@@ -3,7 +3,9 @@
 //   · every comment's mass is server-computed (log-normalized subtree size, carried as --w
 //     and data-strength); the runtime never reweights — a thread's shape is fixed history;
 //   · hover or focus a comment → its full ANCESTOR CHAIN (a parent-id walk up to the story)
-//     plus its direct replies light: .lit on self, .cited on the chain;
+//     plus its direct replies light: .lit on self, .cited on the chain. While a comment is
+//     lit, its live --d (the engine's local density, gathered by data-hot) is mirrored onto
+//     the list as --chain — the connectors' ink reads it, so the chain literally charges;
 //   · heat lens (tempo / off) recolors --cat from data-tempo — how fast each comment landed
 //     after its parent;
 //   · click a comment to expand its clamped text (aria-expanded on the row);
@@ -44,12 +46,34 @@ function initThreads(): () => void {
     kids.get(p)!.push(r);
   }
 
+  // ── the chain charge: while a comment is lit, mirror its live --d (engine-written
+  // inline, so reading row.style costs no style recalc) onto the list as --chain. The
+  // connector CSS reads it — the hovered comment's gathered density lights the chain. ──
+  let chainRaf = 0;
+  const dischargeChain = (): void => {
+    cancelAnimationFrame(chainRaf);
+    chainRaf = 0;
+    list.style.removeProperty("--chain");
+  };
+  const chargeChain = (row: HTMLElement): void => {
+    cancelAnimationFrame(chainRaf);
+    const step = (): void => {
+      list.style.setProperty("--chain", row.style.getPropertyValue("--d") || "0");
+      chainRaf = requestAnimationFrame(step);
+    };
+    chainRaf = requestAnimationFrame(step);
+  };
+
   // ── the binding chain: self → .lit; ancestors (up to the story) + direct replies → .cited ──
-  const clearChain = (): void => rows.forEach((r) => r.classList.remove("lit", "cited"));
+  const clearChain = (): void => {
+    rows.forEach((r) => r.classList.remove("lit", "cited"));
+    dischargeChain();
+  };
   const lightChain = (row: HTMLElement): void => {
     if (!fieldOn) return;
     clearChain();
     row.classList.add("lit");
+    chargeChain(row);
     let p = byId.get(row.dataset.parent ?? "");
     while (p) {
       p.classList.add("cited");
@@ -107,7 +131,14 @@ function initThreads(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] keeps the field invisible; the extra "attention" metric asks the
+        // platform pipeline to write --field-attention per comment (an eased 0..1 blend
+        // of engagement, viewport-center proximity, and visibility) — read by the ink CSS.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         activeField = applyRecipe(list, recipe, { bodies: rows, annotateBodies: false });
       }
     } catch {
@@ -154,6 +185,7 @@ function initThreads(): () => void {
 
   return () => {
     ac.abort();
+    dischargeChain();
     activeField?.destroy();
   };
 }

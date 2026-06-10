@@ -33,6 +33,13 @@
   border-left: 1px solid var(--line);
   background: repeating-linear-gradient(to right, transparent 0 5px, var(--line) 5px 6px);
 }
+.ex-threads .th-k-live {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 0 8px var(--accent);
+}
 
 /* the story being discussed */
 .ex-threads .th-story {
@@ -79,8 +86,13 @@
 }
 .ex-threads .th-c {
   --ind: clamp(0.8rem, 2.2vw, 1.3rem);
+  /* --depth is the AUTHORED indent (server-rendered, capped at 6). --d is a different
+     lane: the engine owns it — live local density (0..1) written back to every
+     data-feedback body each frame; data-hot gathers it on hover/focus. */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
   position: relative;
-  padding-left: calc(var(--d, 0) * var(--ind));
+  padding-left: calc(var(--depth, 0) * var(--ind));
 }
 /* one vertical guide per depth level, drawn in the indent gutter */
 .ex-threads .th-c::before {
@@ -89,7 +101,7 @@
   left: 0;
   top: -0.45rem;
   bottom: 0;
-  width: calc(var(--d, 0) * var(--ind));
+  width: calc(var(--depth, 0) * var(--ind));
   background: repeating-linear-gradient(
     to right,
     var(--line) 0 1px,
@@ -102,21 +114,35 @@
   top: 0;
 }
 
-/* a comment: subtree mass (--w, 0..1) is felt — weight, ink, and a left anchor */
+/* a comment: subtree mass (--w, 0..1) is felt — weight, ink, and a left anchor.
+   The living ink folds in --live (engine density) and --att (eased attention). */
 .ex-threads .th-row {
   border: 1px solid var(--line);
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 10px;
   padding: 0.65rem 0.9rem 0.75rem;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
   opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 50%), transparent);
   cursor: pointer;
   transition:
     opacity 0.3s,
     background 0.3s,
     border-color 0.3s,
+    box-shadow 0.3s,
     transform 0.2s;
+}
+/* top-level comments that spawned big subtrees burn steadier — the glow carries a
+   weight-scaled floor with the live density folded on top */
+.ex-threads .th-c[data-top] .th-row {
+  box-shadow: 0 0 calc(var(--w) * 8px + var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 30% + var(--live) * 50%), transparent);
 }
 .ex-threads .th-c:focus-visible {
   outline: none;
@@ -126,7 +152,9 @@
   outline-offset: 2px;
 }
 
-/* the binding chain — self lit, ancestors + direct replies cited */
+/* the binding chain — self lit, ancestors + direct replies cited. The chain CHARGES:
+   while a comment is lit, the runtime mirrors its live --d onto the list as --chain,
+   and the connectors' ink reads it — guides brighten, anchors saturate. */
 .ex-threads .th-c.lit .th-row {
   opacity: 1;
   border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
@@ -135,7 +163,16 @@
 .ex-threads .th-c.cited .th-row {
   opacity: 1;
   border-left-color: var(--cat, var(--accent));
-  background: color-mix(in srgb, var(--cat, var(--accent)) 8%, transparent);
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(8% + var(--chain, 0) * 5%), transparent);
+}
+.ex-threads .th-c.cited::before,
+.ex-threads .th-c.lit::before {
+  background: repeating-linear-gradient(
+    to right,
+    color-mix(in srgb, var(--accent) calc(var(--chain, 0) * 60%), var(--line)) 0 1px,
+    transparent 1px var(--ind)
+  );
+  opacity: calc(0.55 + var(--chain, 0) * 0.45);
 }
 
 .ex-threads .th-meta {
@@ -179,13 +216,17 @@
   overflow: visible;
 }
 
-/* ── Field OFF — the same thread, flattened to a plain tree ───────────────── */
+/* ── Field OFF — the same thread, flattened to a plain tree.
+   The live channels are silenced with the field: no density, no attention, no glow. ── */
 .ex-threads[data-field='off'] .th-c {
   --w: 0.55;
+  --live: 0;
+  --att: 0;
 }
 .ex-threads[data-field='off'] .th-row {
   opacity: 1;
   border-left-color: var(--line);
+  box-shadow: none;
 }
 .ex-threads[data-field='off'] .th-c.lit .th-row,
 .ex-threads[data-field='off'] .th-c.cited .th-row {
@@ -217,4 +258,99 @@
   .ex-threads .th-c.lit .th-row {
     transform: none;
   }
+}
+
+/* ── CodeTabs (how-built) — the docs' highlighted code block, scoped locally because
+   this page does not load docs.css ──────────────────────────────────────────────── */
+.ex-threads .code-tabs {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-canvas, #07090e);
+  overflow: hidden;
+}
+.ex-threads .code-tabs .ct-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ex-threads .code-tabs .ct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ex-threads .code-tabs .ct-tab,
+.ex-threads .code-tabs .ct-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-threads .code-tabs .ct-tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-threads .code-tabs .ct-tab:hover {
+  color: var(--text-2);
+}
+.ex-threads .code-tabs .ct-tab[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ex-threads .code-tabs .ct-copy {
+  appearance: none;
+  align-self: center;
+  margin: 0 0.5rem 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-2, var(--line));
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: copy;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.ex-threads .code-tabs .ct-copy:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.ex-threads .code-tabs .ct-copy.copied {
+  color: var(--ok, #5fd0a8);
+  border-color: var(--ok, #5fd0a8);
+}
+.ex-threads .code-tabs .ct-body[hidden] {
+  display: none;
+}
+.ex-threads .code-tabs pre.astro-code,
+.ex-threads .code-tabs pre.astro-code code {
+  margin: 0;
+  background: transparent !important;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.ex-threads .code-tabs pre.astro-code {
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
 }

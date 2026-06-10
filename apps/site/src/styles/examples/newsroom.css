@@ -225,3 +225,73 @@
     transition: none;
   }
 }
+
+/* ── living ink — placement is fixed; the ink is alive ──────────────────────
+   --d   : the page engine's local particle density (0..1), written back every
+           frame; data-hot makes it gather toward 1 on hover/focus.
+   --field-attention : the scoped recipe's eased attention metric — the index
+           item nearest the viewport center sharpens as you scroll.
+   No entry animation: a front page should feel set in type. */
+.ex-newsroom .nw-row {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+}
+/* the lead breathes: headline ink + rule weight ride the live density (subtle) */
+.ex-newsroom .nw-lead {
+  border-left-color: color-mix(
+    in srgb,
+    var(--cat, var(--accent)) calc(18% + var(--w) * 82% + var(--live) * 14%),
+    var(--line)
+  );
+  box-shadow: inset 3px 0 calc(var(--live) * 16px) -8px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 45%), transparent);
+  transition:
+    opacity 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.ex-newsroom[data-field="on"] .nw-lead .nw-title {
+  color: color-mix(
+    in srgb,
+    var(--text) calc(45% + var(--w) * 55% + var(--live) * 12%),
+    var(--text-4)
+  );
+  transition: color 0.3s;
+}
+/* trend badges: a faint glow scaled by the live density */
+.ex-newsroom .nw-chg {
+  box-shadow: 0 0 calc(var(--live) * 9px)
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 35%), transparent);
+  transition: box-shadow 0.3s;
+}
+/* the index item nearest the viewport center sharpens (eased attention) */
+.ex-newsroom[data-field="on"] .nw-index-item .nw-title {
+  letter-spacing: calc(-0.01em + var(--att) * 0.01em);
+  color: color-mix(
+    in srgb,
+    var(--text) calc(45% + var(--w) * 55% + var(--att) * 14%),
+    var(--text-4)
+  );
+  transition:
+    color 0.3s,
+    letter-spacing 0.3s;
+}
+
+/* field off: the live channels go dark; the type sets back to plain ink */
+.ex-newsroom[data-field="off"] .nw-row {
+  --live: 0;
+  --att: 0;
+}
+.ex-newsroom[data-field="off"] .nw-lead,
+.ex-newsroom[data-field="off"] .nw-chg {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-newsroom .nw-lead,
+  .ex-newsroom .nw-chg,
+  .ex-newsroom[data-field="on"] .nw-lead .nw-title,
+  .ex-newsroom[data-field="on"] .nw-index-item .nw-title {
+    transition: none;
+  }
+}

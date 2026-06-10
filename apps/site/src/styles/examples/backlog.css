@@ -56,8 +56,12 @@
 }
 
 /* a work item card: the blended weight (--w, 0..1) is felt — type heft, ink, and a
-   left anchor whose color is the kind (--cat: teal PR, blue issue). */
+   left anchor whose color is the kind (--cat: teal PR, blue issue).
+   The living-ink channel: --live is the engine's --d (live local particle density,
+   written every frame; gathers toward 1 on data-hot hover/focus), and the background
+   also lifts with the scoped recipe's eased --field-attention. Felt, not loud. */
 .ex-backlog .wl-item {
+  --live: var(--d, 0);
   position: relative;
   z-index: 2;
   display: flex;
@@ -68,11 +72,18 @@
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--field-attention, 0) * 4%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
   opacity: calc(0.58 + var(--w) * 0.42);
   transition:
     opacity 0.3s,
     background 0.3s,
+    box-shadow 0.3s,
     border-color 0.3s,
     transform 0.2s;
 }
@@ -148,6 +159,7 @@
 
 /* ── the cycle sink — the Shipped lane's header; shipped work accretes into it ── */
 .ex-backlog .wl-cycle {
+  --live: var(--d, 0);
   display: grid;
   gap: 0.45rem;
   padding: 0.7rem 0.9rem;
@@ -155,9 +167,14 @@
   border-radius: 12px;
   background: color-mix(in srgb, var(--text) 2.5%, transparent);
   /* channel 2 — the live field: the engine writes --load (0..1) into this sink
-     body as particles accrete; the glow is that measurement, nothing else. */
-  box-shadow: 0 0 calc(var(--load, 0) * 22px) calc(var(--load, 0) * 2px)
-    color-mix(in srgb, var(--accent) calc(var(--load, 0) * 40%), transparent);
+     body as particles accrete, and --d (local density) gathers on data-hot hover;
+     the fill's glow blends both measurements, nothing else. */
+  box-shadow: 0 0 calc((var(--load, 0) + var(--live) * 0.5) * 22px) calc(var(--load, 0) * 2px)
+    color-mix(
+      in srgb,
+      var(--accent) calc(var(--load, 0) * 40% + var(--live) * 20%),
+      transparent
+    );
   transition: box-shadow 0.4s;
 }
 .ex-backlog .wl-cycle-label {
@@ -219,12 +236,31 @@
   height: 100%;
   background: var(--accent);
 }
+.ex-backlog .wl-k-live {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
 
-/* ── Field OFF — the same tracker, flattened back to identical cards ────────── */
+/* cross-lane threads charge with the hovered card's live density: the runtime
+   mirrors the card's --d onto the SVG as --thread-live while a hover holds. */
+.ex-backlog .ev-threads path {
+  opacity: calc(0.45 + var(--thread-live, 0) * 0.45);
+}
+
+/* ── Field OFF — the same tracker, flattened back to identical cards.
+      The live channels go quiet too: --live is forced to 0 (the page engine keeps
+      writing --d, but off means off). ───────────────────────────────────────── */
 .ex-backlog[data-field='off'] .wl-item {
   --w: 0.55;
+  --live: 0;
   opacity: 1;
   border-left-color: var(--line);
+}
+.ex-backlog[data-field='off'] .wl-cycle {
+  --live: 0;
 }
 .ex-backlog[data-field='off'] .wl-item.lit,
 .ex-backlog[data-field='off'] .wl-item.cited {

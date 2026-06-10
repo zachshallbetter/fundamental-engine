@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../components/examples/ExampleShell.astro";
+import CodeTabs from "../components/CodeTabs.astro";
 import evidence from "../data/evidence.json";
+import "../styles/docs.css";
 
 // The Evidence Field — field-ui as an invisible measurement layer over real research data.
 // No particle swarm: the trust shows in the type. Each finding is a real OpenAlex work. The
@@ -33,6 +35,60 @@ const topics = evidence.topics.map((t) => {
 const authorLine = (a: string[]) => (a.length > 2 ? `${a[0]} et al.` : a.join(" & ")) || "—";
 const linkFor = (w: { doi: string | null; id: string }) =>
   w.doi ? w.doi : `https://openalex.org/${w.id}`;
+
+// How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
+const snippetBody = `<li id="finding-W2042"
+  data-body="attract"
+  data-strength="0.87"
+  data-field-color="#4da3ff"
+  data-feedback
+  data-hot
+  style="--trust: 0.87; --cat: #4da3ff;"
+>
+  <!-- your ordinary HTML here -->
+  <span class="ev-bar" aria-hidden="true"
+    data-field-visual-for="#finding-W2042"
+    data-field-visual-role="measurement"></span>
+</li>`;
+
+const snippetCss = `.ev-finding {
+  /* --trust is server-set (0..1 log-normalized
+     citation score). CSS reads it directly. */
+  --w: var(--trust, 0.5);
+
+  /* --d is LIVE — the engine's local particle
+     density, written back every frame. data-hot
+     makes it gather toward 1 while you hold. */
+  --live: var(--d, 0);
+
+  opacity: calc(0.58 + var(--w) * 0.42);
+  border-left: 3px solid
+    color-mix(in srgb,
+      var(--cat) calc(18% + var(--w) * 82%),
+      var(--line));
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 55%),
+      transparent);
+}
+.ev-title {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}`;
+
+const snippetInstall = `// npm
+import { createField } from '@field-ui/vanilla';
+
+// or: the web component, zero config
+<script type="module"
+  src="https://esm.sh/@field-ui/elements">
+</script>
+<field-root></field-root>
+
+// data-* in → --field-* out: the engine
+// writes --d (live density) and the recipe
+// writes --field-attention (eased attention).
+// The rest is CSS.`;
 ---
 
 <ExampleShell
@@ -55,8 +111,8 @@ const linkFor = (w: { doi: string | null; id: string }) =>
         without asserting a verdict. Cross-citations thread each work to what it builds on.
         The field is <strong>invisible</strong> — no particle swarm, no overlay — only its effect
         shows in the type: weight, ink, and a left anchor that intensifies with consensus.
-        <strong>Toggle it off</strong> and the data collapses to a plain list.
-        Change the weighting and watch the field re-settle.
+        <strong>Toggle it off</strong> and the data collapses to a plain list — the live glow
+        goes dark with it. Change the weighting and watch the field re-settle.
       </p>
     </header>
 
@@ -89,6 +145,8 @@ const linkFor = (w: { doi: string | null; id: string }) =>
         <span data-ev-hint><b>size</b> = citations — how much the field leans on each work</span>
         <span class="ev-hint-sep">·</span>
         <span data-ev-lens-hint><b>color</b> = research subfield — the discipline each work binds to</span>
+        <span class="ev-hint-sep">·</span>
+        <span><b>hold</b> a finding — the field gathers</span>
       </p>
     </div>
 
@@ -103,6 +161,7 @@ const linkFor = (w: { doi: string | null; id: string }) =>
         <b>shape</b> = study type (● primary · ◆ review)
       </li>
       <li><span class="ev-k ev-k-thread"></span> hover → threads to the work it builds on</li>
+      <li><span class="ev-k ev-k-live"></span> <b>glow</b> = the engine's live density (<code>--d</code>) — hold a finding and the field gathers</li>
     </ul>
 
     <nav class="ev-tabs" data-ev-tabs aria-label="Questions">
@@ -130,6 +189,7 @@ const linkFor = (w: { doi: string | null; id: string }) =>
                 id={`${t.slug}--${w.id}`}
                 data-body="attract"
                 data-feedback
+                data-hot
                 data-cites={w.citedBy}
                 data-year={w.year}
                 data-topic={w.topic ?? ""}
@@ -160,7 +220,12 @@ const linkFor = (w: { doi: string | null; id: string }) =>
                 <div class="ev-trust" aria-label={`${w.citedBy} citations`}>
                   <span class="ev-cites">{w.citedBy.toLocaleString()}</span>
                   <span class="ev-cites-l" data-ev-unit>citations</span>
-                  <span class="ev-bar"><i style={`width:${Math.round(w.trust * 100)}%`} /></span>
+                  <span
+                    class="ev-bar"
+                    aria-hidden="true"
+                    data-field-visual-for={`#${t.slug}--${w.id}`}
+                    data-field-visual-role="measurement"
+                  ><i style={`width:${Math.round(w.trust * 100)}%`} /></span>
                 </div>
               </li>
             ))}
@@ -192,66 +257,40 @@ const linkFor = (w: { doi: string | null; id: string }) =>
     <section class="ev-how" aria-labelledby="ev-how-h">
       <h2 id="ev-how-h">How it's built</h2>
       <p class="ev-how-lede">
-        Every finding is ordinary semantic HTML — a <code>&lt;li&gt;</code> with three data
+        Every finding is ordinary semantic HTML — a <code>&lt;li&gt;</code> with a few data
         attributes. field-ui reads them, runs a spatial field over the list, and writes measured
         state back as CSS custom properties each frame. No canvas. No particle swarm. No JS event
-        listeners on individual elements.
+        listeners on individual elements. Four channels do the work: <code>--w</code> is the
+        server-computed weight, <code>--cat</code> the lens color, <code>--d</code> the engine's
+        live local density (hold a finding and the field gathers), and
+        <code>--field-attention</code> the recipe's eased attention metric.
       </p>
 
       <div class="ev-how-cols">
         <div class="ev-how-col">
           <p class="ev-how-label">1 — mark each finding as a field body</p>
-          <pre class="ev-code"><code>&lt;li
-  data-body="attract"
-  data-strength="0.87"
-  data-field-color="#4da3ff"
-  data-feedback
-  style="--trust: 0.87; --cat: #4da3ff;"
-&gt;
-  &lt;!-- your ordinary HTML here --&gt;
-&lt;/li&gt;</code></pre>
+          <CodeTabs variants={[{ label: "HTML", lang: "html", code: snippetBody }]} />
           <ul class="ev-how-attrs">
             <li><code>data-body="attract"</code> — registers as a field participant</li>
             <li><code>data-strength</code> — gravitational mass (0 → faint, 2 → heavy anchor)</li>
             <li><code>data-field-color</code> — accent hue for the color lens</li>
             <li><code>data-feedback</code> — opt in to receive <code>--field-*</code> writebacks</li>
+            <li><code>data-hot</code> — the engine's live density (<code>--d</code>) gathers toward 1 while held</li>
+            <li><code>data-field-visual-for</code> — declares the bar as this record's measurement (inspectable, lintable)</li>
           </ul>
         </div>
 
         <div class="ev-how-col">
           <p class="ev-how-label">2 — CSS reads the field's output</p>
-          <pre class="ev-code"><code>{`.ev-finding {
-  /* --trust is server-set (0..1 log-normalised
-     citation score). CSS reads it directly. */
-  --w: var(--trust, 0.5);
-
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}
-.ev-title {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}`}</code></pre>
+          <CodeTabs variants={[{ label: "CSS", lang: "css", code: snippetCss }]} />
           <p class="ev-how-note">Weight, ink, font heft, and border intensity all read from one
-          normalised trust score — the field drives the layout; CSS drives the presentation.</p>
+          normalized trust score; the halo reads the engine's live <code>--d</code> — the field
+          drives the measurement; CSS drives the presentation.</p>
         </div>
 
         <div class="ev-how-col">
           <p class="ev-how-label">3 — add field-ui to any project</p>
-          <pre class="ev-code"><code>// npm
-import &#123; createField &#125; from '@field-ui/vanilla';
-
-// or: the web component, zero config
-&lt;script type="module"
-  src="https://esm.sh/@field-ui/elements"&gt;
-&lt;/script&gt;
-&lt;field-root&gt;&lt;/field-root&gt;
-
-// data-* in → --field-* out.
-// The rest is CSS.</code></pre>
+          <CodeTabs variants={[{ label: "TS", lang: "ts", code: snippetInstall }]} />
           <div class="ev-how-ctas">
             <a href="/docs" class="ev-how-link">Read the docs →</a>
             <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>

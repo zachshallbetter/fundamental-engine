@@ -137,7 +137,14 @@ function initEvidence(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
+        // --field-attention (an eased 0..1 blend of engagement, center proximity, visibility)
+        // back to every finding each frame.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        };
         // the sink sentinel joins the field so particles drifting past the list's end accrete
         // into it — the engine writes the fill back as --load, which paces the reveal.
         const sentinel = list.querySelector<HTMLElement>("[data-ev-sentinel]");

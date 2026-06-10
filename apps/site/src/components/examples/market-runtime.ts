@@ -132,12 +132,46 @@ function initMarket(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
+        // --field-attention (eased engagement + center proximity + visibility) per tile.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        };
         activeField = applyRecipe(list, recipe, { bodies: rows(), annotateBodies: false });
       }
     } catch {
       /* the static --w layer stands on its own */
     }
+  };
+
+  // ── sparkline entry draw-in — gated at reading pace ───────────────────────
+  // Tiles entering the viewport get .mk-in; while the engine's live scroll
+  // velocity (--field-scroll-v, px/frame) says the user is scanning (>= 2),
+  // .mk-in-instant is added too, so the path is simply there instead of drawing.
+  const SCROLL_V_MAX = 2.0;
+  const wireSparkDraw = (): void => {
+    if (!list) return;
+    list.setAttribute("data-mk-anim", "");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const tile = e.target as HTMLElement;
+          // --field-scroll-v is an inline style on <html> (written by the engine), so
+          // reading el.style avoids a forced style recalc.
+          const sv =
+            parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
+          if (sv >= SCROLL_V_MAX || reduceMotion()) tile.classList.add("mk-in", "mk-in-instant");
+          else tile.classList.add("mk-in");
+          io.unobserve(tile);
+        }
+      },
+      { threshold: 0.15 },
+    );
+    rows().forEach((t) => io.observe(t));
+    ac.signal.addEventListener("abort", () => io.disconnect());
   };
 
   // ── controls ───────────────────────────────────────────────────────────────
@@ -189,6 +223,7 @@ function initMarket(): () => void {
 
   applyLens();
   runField();
+  wireSparkDraw();
 
   return () => {
     ac.abort();

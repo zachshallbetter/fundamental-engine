@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import fleet from "../../data/examples/fleet.json";
+import "../../styles/docs.css"; /* .code-tabs styles for CodeTabs */
 import "../../styles/examples/fleet.css";
 
 // The Fleet Field — GitHub's real status page run as a field. Each service carries the
@@ -103,6 +105,72 @@ const incidents = [...fleet.incidents]
   });
 
 const snapshotDay = fleet.snapshotAt.slice(0, 10);
+
+// ── how-built snippets (CodeTabs) ──────────────────────────────────────────
+const SNIP_BODIES = `<!-- a service: involvement is mass -->
+<li id="comp-actions"
+  data-body="attract"
+  data-strength="1.99"
+  data-feedback data-hot
+  data-inv="6" data-last="1780..."
+  style="--w: 1.0; --cat: #2dd4bf;">
+
+<!-- an incident: impact is the heat -->
+<li id="inc-h2vk60..."
+  data-body="attract"
+  data-feedback data-hot
+  data-comps="issues pull-requests actions"
+  style="--w: 0.74; --cat: #f87171;">
+  ...
+  <!-- the load bar declares itself a
+       measurement of its incident -->
+  <span class="fl-load"
+        data-field-visual-for="#inc-h2vk60..."
+        data-field-visual-role="measurement">
+    <i style="--fill: 62%"></i>
+  </span>
+</li>`;
+
+const SNIP_ACCRETE = `/* the fill bar: this incident's update
+   count over the window's max (${maxUpdates}) —
+   static math over the snapshot. */
+.fl-load i { width: var(--fill, 100%); }
+
+/* entry sweep: 0 → recorded fill, but only
+   once the bar is on screen AND the engine's
+   --field-scroll-v reads under 2 px/frame
+   (reading pace). Skipped entirely under
+   prefers-reduced-motion. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-fl-sweep] .fl-inc:not([data-swept])
+    .fl-load i { width: 0; }
+  .fl-load i { transition: width 0.7s; }
+}
+
+/* the live channels: --d (local density,
+   gathers on data-hot hover) glows the card;
+   the impact chip runs hotter with it. */
+.fl-comp {
+  --live: var(--d, 0);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--live) * 55%), transparent);
+}`;
+
+const SNIP_XLIGHT = `// hover an incident → light the
+// services it names
+for (const s of inc.dataset.comps.split(" "))
+  grid.querySelector("#comp-" + s)
+    ?.classList.add("cited");
+
+// hover a service → light its incidents
+incidents.filter((i) =>
+  i.dataset.comps.split(" ").includes(name)
+).forEach((i) => i.classList.add("cited"));
+
+// class highlights only — no SVG here.
+// the glow channel rides along for free:
+// hovering is what makes --d gather.`;
 ---
 
 <ExampleShell
@@ -167,8 +235,13 @@ const snapshotDay = fleet.snapshotAt.slice(0, 10);
       >
       <b>color</b> = impact heat (none · minor · major · critical)
     </li>
-    <li><span class="ev-k fl-k-load"><i></i></span> the fill bar = accreted updates (vs. the window's max)</li>
+    <li><span class="ev-k fl-k-load"><i></i></span> the fill bar = accreted updates (vs. the window's max); it sweeps in once you're reading, not skimming</li>
     <li><span class="ev-k fl-k-link"></span> hover an incident ↔ the services it hit light up</li>
+    <li>
+      <span class="ev-k fl-k-live"></span> the soft glow = <b>live density</b> — the hidden
+      engine writes <code>--d</code> to every card each frame; it gathers under your cursor
+      and the impact chip runs hotter with it
+    </li>
   </ul>
 
   <div class="fl-zone" data-fl-zone>
@@ -185,6 +258,7 @@ const snapshotDay = fleet.snapshotAt.slice(0, 10);
               id={`comp-${c.slug}`}
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength={(0.4 + c.w * 1.6).toFixed(2)}
               data-name={c.slug}
@@ -217,6 +291,7 @@ const snapshotDay = fleet.snapshotAt.slice(0, 10);
               id={`inc-${inc.id}`}
               data-body="attract"
               data-feedback
+              data-hot
               data-range="200"
               data-strength={(0.4 + inc.w * 1.6).toFixed(2)}
               data-comps={inc.compSlugs.join(" ")}
@@ -246,8 +321,13 @@ const snapshotDay = fleet.snapshotAt.slice(0, 10);
                 <span class="fl-updates">
                   <b>{inc.updates.length}</b>
                   <span class="fl-updates-l">updates</span>
-                  <span class="fl-load" aria-hidden="true">
-                    <i style={`width:${Math.round(inc.fill * 100)}%`} />
+                  <span
+                    class="fl-load"
+                    aria-hidden="true"
+                    data-field-visual-for={`#inc-${inc.id}`}
+                    data-field-visual-role="measurement"
+                  >
+                    <i style={`--fill:${Math.round(inc.fill * 100)}%`} />
                   </span>
                 </span>
               </button>
@@ -273,70 +353,41 @@ const snapshotDay = fleet.snapshotAt.slice(0, 10);
       Both zones are ordinary semantic HTML — a <code>&lt;ul&gt;</code> of services, an
       <code>&lt;ol&gt;</code> of incidents — carrying the status API's numbers as data
       attributes. field-ui runs an invisible field over the page and the type carries the
-      measurement: involvement as weight, impact as heat, accretion as a fill bar.
+      measurement: involvement as weight, impact as heat, accretion as a fill bar. Two live
+      channels ride on top: the page's hidden engine writes <code>--d</code> (local particle
+      density) to every <code>data-hot</code> card each frame, and the scoped recipe's
+      attention lane writes an eased <code>--field-attention</code> — CSS turns both into a
+      felt glow and lift. The load bars also sweep in only at reading pace, gated by the
+      engine's live <code>--field-scroll-v</code>.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — services and incidents are bodies</p>
-        <pre class="ev-code"><code>&lt;!-- a service: involvement is mass --&gt;
-&lt;li id="comp-actions"
-  data-body="attract"
-  data-strength="1.99"
-  data-inv="6" data-last="1780..."
-  style="--w: 1.0; --cat: #2dd4bf;"&gt;
-
-&lt;!-- an incident: impact is the heat --&gt;
-&lt;li id="inc-h2vk60..."
-  data-body="attract"
-  data-comps="issues pull-requests actions"
-  style="--w: 0.74; --cat: #f87171;"&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIP_BODIES }]} />
         <ul class="ev-how-attrs">
           <li><code>data-inv</code> / <code>data-last</code> — the signals the lens re-weights</li>
           <li><code>data-comps</code> — the cross-highlight edges, by service name</li>
           <li><code>--cat</code> — the impact heat the CSS mixes into the anchor</li>
+          <li><code>data-hot</code> — opts into the live density gather: hover and <code>--d</code> climbs toward 1</li>
+          <li><code>data-field-visual-for</code> — names the load bar a <code>measurement</code> of its incident</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — accretion is the updates an incident held</p>
-        <pre class="ev-code"><code>{`/* the fill bar: this incident's update
-   count over the window's max (10) —
-   static math over the snapshot. */
-.fl-load i { width: calc(...%); }
-
-/* click to release what it accreted */
-head.setAttribute("aria-expanded", open);
-updatesList.hidden = !open;
-
-/* heat anchors the row */
-.fl-inc {
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}`}</code></pre>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIP_ACCRETE }]} />
         <p class="ev-how-note">
-          Kept honest: the fill bar is arithmetic over the snapshot's
-          <code>updates[]</code> — the sink/accretion concept rendered from recorded history,
-          not a live engine write.
+          Kept honest: the fill width is arithmetic over the snapshot's
+          <code>updates[]</code> — the sink/accretion concept rendered from recorded history.
+          The live writes are separate and named: <code>--field-scroll-v</code> paces the entry
+          sweep, <code>--d</code> and <code>--field-attention</code> drive the glow.
         </p>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">3 — the cross-highlight is name matching</p>
-        <pre class="ev-code"><code>{`// hover an incident → light the
-// services it names
-for (const s of inc.dataset.comps.split(" "))
-  grid.querySelector("#comp-" + s)
-    ?.classList.add("cited");
-
-// hover a service → light its incidents
-incidents.filter((i) =>
-  i.dataset.comps.split(" ").includes(name)
-).forEach((i) => i.classList.add("cited"));
-
-// class highlights only — no SVG here.`}</code></pre>
+        <CodeTabs variants={[{ label: "TypeScript", lang: "ts", code: SNIP_XLIGHT }]} />
         <p class="ev-how-note">
           The service lens re-weights the grid (involvement or most-recently-hit) and FLIP
           re-sorts it in two dimensions — grid moves are x and y.

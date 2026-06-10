@@ -63,7 +63,14 @@ function initNewsroom(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
+        // --field-attention (eased engagement + center proximity + visibility) per story —
+        // the index item nearest the viewport center sharpens. Placement never moves.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        };
         activeField = applyRecipe(list, recipe, { bodies: rows(), annotateBodies: false });
       }
     } catch {

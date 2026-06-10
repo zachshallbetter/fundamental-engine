@@ -19,6 +19,11 @@
 }
 
 .ex-memory .mx-card {
+  /* the living ink: --d is the engine's live local density (0..1, written back every
+     frame; data-hot gathers it on hover/focus), --field-attention the recipe's eased
+     attention lane. Both touch only ink — retention (--w) stays pure data math. */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -30,8 +35,14 @@
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
   opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
   cursor: pointer;
   font: inherit;
   text-align: left;
@@ -39,6 +50,7 @@
     opacity 0.3s,
     background 0.3s,
     border-color 0.3s,
+    box-shadow 0.3s,
     outline 0.2s,
     outline-offset 0.2s;
 }
@@ -47,9 +59,10 @@
   border-color: color-mix(in srgb, var(--cat, var(--accent)) 40%, var(--line));
 }
 
-/* reviewed cards get a ring outline */
+/* reviewed cards get a ring outline — its intensity breathes with the live density */
 .ex-memory .mx-card[data-reviewed] {
-  outline: 2px solid color-mix(in srgb, var(--cat, var(--accent)) 70%, transparent);
+  outline: 2px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(55% + var(--live) * 35%), transparent);
   outline-offset: 2px;
 }
 
@@ -145,6 +158,7 @@
 
 .ex-memory .mx-days-out {
   font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.86rem;
   font-weight: 600;
   color: var(--accent);
@@ -160,10 +174,35 @@
   display: inline-block;
   vertical-align: middle;
 }
+.ex-memory .mx-k-live {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 0 8px var(--accent);
+}
 
-/* ── Field OFF — the forgetting curve stops; every card defaults to plain styling ── */
+/* ── reading-pace-gated entry — the runtime marks the grid (data-mx-entry), then
+   staggers .mem-in across the cards (20ms apart, capped at 400ms) once the grid is
+   in view and --field-scroll-v has settled to reading pace. ──────────────────── */
+.ex-memory .mx-grid[data-mx-entry] .mx-card {
+  opacity: 0;
+  translate: 0 4px;
+}
+.ex-memory .mx-grid[data-mx-entry] .mx-card.mem-in {
+  opacity: calc(0.58 + var(--w) * 0.42);
+  translate: none;
+  transition:
+    opacity 0.4s ease-out,
+    translate 0.4s ease-out;
+}
+
+/* ── Field OFF — the forgetting curve stops; every card defaults to plain styling.
+   The live channels are silenced with the field: no density, no attention, no glow. ── */
 .ex-memory[data-field="off"] .mx-card {
   --w: 0.55;
+  --live: 0;
+  --att: 0;
   opacity: 1;
   border-left-color: var(--line);
   cursor: default;
@@ -197,4 +236,105 @@
   .ex-memory .mx-card {
     transition: none;
   }
+  /* entry stagger: none — the runtime skips it too; this is the belt to its braces */
+  .ex-memory .mx-grid[data-mx-entry] .mx-card {
+    opacity: calc(0.58 + var(--w) * 0.42);
+    translate: none;
+    transition: none;
+  }
+}
+
+/* ── CodeTabs (how-built) — the docs' highlighted code block, scoped locally because
+   this page does not load docs.css ──────────────────────────────────────────────── */
+.ex-memory .code-tabs {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-canvas, #07090e);
+  overflow: hidden;
+}
+.ex-memory .code-tabs .ct-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ex-memory .code-tabs .ct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ex-memory .code-tabs .ct-tab,
+.ex-memory .code-tabs .ct-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-memory .code-tabs .ct-tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-memory .code-tabs .ct-tab:hover {
+  color: var(--text-2);
+}
+.ex-memory .code-tabs .ct-tab[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ex-memory .code-tabs .ct-copy {
+  appearance: none;
+  align-self: center;
+  margin: 0 0.5rem 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-2, var(--line));
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: copy;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.ex-memory .code-tabs .ct-copy:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.ex-memory .code-tabs .ct-copy.copied {
+  color: var(--ok, #5fd0a8);
+  border-color: var(--ok, #5fd0a8);
+}
+.ex-memory .code-tabs .ct-body[hidden] {
+  display: none;
+}
+.ex-memory .code-tabs pre.astro-code,
+.ex-memory .code-tabs pre.astro-code code {
+  margin: 0;
+  background: transparent !important;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.ex-memory .code-tabs pre.astro-code {
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
 }

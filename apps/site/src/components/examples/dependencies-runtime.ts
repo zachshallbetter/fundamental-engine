@@ -163,7 +163,14 @@ function initDependencies(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain the attention lane, so the platform
+        // pipeline writes an eased --field-attention (hover/focus + viewport-center
+        // proximity + visibility) back to every row and node.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         activeField = applyRecipe(zone, recipe, {
           bodies: [...rows(), ...nodes],
           annotateBodies: false,

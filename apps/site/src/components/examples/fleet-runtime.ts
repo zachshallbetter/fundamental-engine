@@ -16,6 +16,11 @@ type FleetWeight = "involvement" | "recency";
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// the reading-pace gate: the engine writes its live scroll velocity (px/frame) to
+// --field-scroll-v on <html>; under 2 px/frame the user is reading, not skimming.
+// Same gate the evidence reveal uses.
+const SCROLL_V_MAX = 2;
+
 const HINTS: Record<FleetWeight, string> = {
   involvement: "<b>size</b> = involvement — how many of the window's incidents named each service",
   recency: "<b>size</b> = recency — the services hit most recently carry the weight",
@@ -143,6 +148,56 @@ function initFleet(): () => void {
     });
   };
 
+  // ── entry sweep — load bars fill 0 → recorded width at reading pace ────────
+  // IO marks which incidents are on screen; a rAF loop sweeps them only while the
+  // engine's --field-scroll-v reads under SCROLL_V_MAX (an inline style on <html> —
+  // cheap to read). Each bar sweeps once; the loop retires itself. Reduced motion
+  // never arms the sweep, so the bars render at full width immediately.
+  const wireSweep = (): void => {
+    if (reduceMotion()) return;
+    const list = page.querySelector<HTMLElement>("[data-fl-list]");
+    if (!list || !incidents.length) return;
+    list.dataset.flSweep = "";
+    const pending = new Set<HTMLElement>(incidents);
+    const visible = new Set<HTMLElement>();
+    let raf = 0;
+    const tick = (): void => {
+      raf = 0;
+      if (ac.signal.aborted || !pending.size) return;
+      const sv =
+        parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
+      if (sv < SCROLL_V_MAX) {
+        for (const el of visible) {
+          el.dataset.swept = "";
+          pending.delete(el);
+          io.unobserve(el);
+        }
+        visible.clear();
+      }
+      if (!pending.size) {
+        io.disconnect();
+        return;
+      }
+      if (visible.size) raf = requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const el = e.target as HTMLElement;
+          if (e.isIntersecting) visible.add(el);
+          else visible.delete(el);
+        }
+        if (visible.size && !raf) raf = requestAnimationFrame(tick);
+      },
+      { threshold: 0.35 },
+    );
+    incidents.forEach((i) => io.observe(i));
+    ac.signal.addEventListener("abort", () => {
+      io.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    });
+  };
+
   // ── the invisible scoped field (render: []) ────────────────────────────────
   const runField = (): void => {
     activeField?.destroy();
@@ -151,7 +206,14 @@ function initFleet(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] — invisible; metrics gain the attention lane, so the platform
+        // pipeline writes an eased --field-attention (hover/focus + viewport-center
+        // proximity + visibility) back to every card.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         activeField = applyRecipe(zone, recipe, {
           bodies: [...comps(), ...incidents],
           annotateBodies: false,
@@ -198,6 +260,7 @@ function initFleet(): () => void {
 
   wireHighlights();
   wireExpand();
+  wireSweep();
   runField();
 
   return () => {

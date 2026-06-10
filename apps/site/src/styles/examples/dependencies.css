@@ -40,7 +40,12 @@
   align-items: stretch;
   gap: 1.1rem;
 }
+/* the living-ink channel: --live is the engine's --d (live local particle density,
+   written every frame; gathers toward 1 on data-hot hover/focus); the background
+   also lifts with the scoped recipe's eased --field-attention. Hover a node and the
+   field gathers (glow) while its upstream chain lights — both channels together. */
 .ex-dependencies .dp-node {
+  --live: var(--d, 0);
   position: relative;
   z-index: 2;
   display: grid;
@@ -48,7 +53,13 @@
   padding: 0.6rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--text) 3%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(3% + var(--live) * 4% + var(--field-attention, 0) * 4%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
   transition:
     border-color 0.2s,
     background 0.2s,
@@ -97,6 +108,7 @@
   gap: 0.5rem;
 }
 .ex-dependencies .dp-row {
+  --live: var(--d, 0);
   position: relative;
   z-index: 2;
   display: grid;
@@ -113,11 +125,18 @@
   border-left: 3px solid
     color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
   border-radius: 12px;
-  background: color-mix(in srgb, var(--text) calc(1.5% + var(--w) * 4%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--field-attention, 0) * 4%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
   opacity: calc(0.58 + var(--w) * 0.42);
   transition:
     opacity 0.3s,
     background 0.3s,
+    box-shadow 0.3s,
     border-color 0.3s,
     transform 0.2s;
 }
@@ -160,6 +179,10 @@
   border: 1px solid color-mix(in srgb, #ff6b6b 55%, var(--line));
   color: #ff6b6b;
   background: color-mix(in srgb, #ff6b6b 8%, transparent);
+  /* the badge runs hotter as the live field gathers on its row (--live inherits) */
+  box-shadow: 0 0 calc(var(--live, 0) * 10px)
+    color-mix(in srgb, #ff6b6b calc(var(--live, 0) * 45%), transparent);
+  transition: box-shadow 0.3s;
 }
 .ex-dependencies .dp-desc {
   grid-area: desc;
@@ -230,8 +253,20 @@
   color: var(--text-4);
   opacity: 0.55;
 }
+.ex-dependencies .dp-k-live {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
 
-/* ── Field OFF — the same manifest, flattened ─────────────────────────────── */
+/* ── Field OFF — the same manifest, flattened. The live channels go quiet too:
+      --live is forced to 0 (the page engine keeps writing --d, but off means off). ── */
+.ex-dependencies[data-field='off'] .dp-row,
+.ex-dependencies[data-field='off'] .dp-node {
+  --live: 0;
+}
 .ex-dependencies[data-field='off'] .dp-row {
   --w: 0.55;
   opacity: 1;

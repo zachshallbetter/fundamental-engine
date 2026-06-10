@@ -172,7 +172,14 @@ function initCalendar(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] keeps the field invisible; the extra "attention" metric asks the
+        // platform pipeline to write --field-attention per card (an eased 0..1 blend of
+        // engagement, viewport-center proximity, and visibility) — read by the ink CSS.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         const bodies = rows();
         if (hero) bodies.push(hero);
         activeField = applyRecipe(zone, recipe, { bodies, annotateBodies: false });

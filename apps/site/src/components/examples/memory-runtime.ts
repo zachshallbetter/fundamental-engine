@@ -1,10 +1,20 @@
 // Memory Field runtime. field-ui as an INVISIBLE measurement layer over Google ngrams word frequencies:
 //   · elapsed days slider decays retention w = a · exp(-days_eff / tau), updating styles in real time;
 //   · click a card to REVIEW it (w springs back to anchor a, and decays relative to review time);
+//   · entry: the cards stagger in (.mem-in, 20ms apart, capped at 400ms) once the grid is in view
+//     AND --field-scroll-v reads reading pace (< 2 px/frame) — skipped under reduced motion;
 //   · Field on/off — off, the page collapses to a plain grid and the scoped field is destroyed.
-// The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
+// The scoped field runs with render: [] plus the "attention" metric, so the platform pipeline
+// writes --field-attention per card — the ink CSS reads it alongside the engine's live --d.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+
+const SCROLL_V_MAX = 2; // px/frame — same reading-pace gate EvidenceRuntime's reveal uses
+const STAGGER_MS = 20;
+const STAGGER_CAP_MS = 400;
+
+const reduceMotion = (): boolean =>
+  typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function initMemory(): () => void {
   const page = document.querySelector<HTMLElement>(".ex-memory");
@@ -49,12 +59,78 @@ function initMemory(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        const recipe = { ...base, render: [] as never[] };
+        // render: [] keeps the field invisible; the extra "attention" metric asks the
+        // platform pipeline to write --field-attention per card (an eased 0..1 blend of
+        // engagement, viewport-center proximity, and visibility) — read by the ink CSS.
+        const recipe = {
+          ...base,
+          render: [] as never[],
+          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+        } as typeof base;
         activeField = applyRecipe(grid, recipe, { bodies: cards, annotateBodies: false });
       }
     } catch {
       /* static --w layer fallback */
     }
+  };
+
+  // ── entry: stagger the cards in once the grid is in view AND the scroll has settled
+  // to reading pace. --field-scroll-v is the engine's live scroll velocity, written to
+  // the <html> inline style — reading el.style avoids a per-frame style recalc. The
+  // pre-state only exists while the grid carries data-mx-entry, so a runtime failure
+  // can never strand the cards invisible. Reduced motion: no stagger at all. ─────────
+  const wireEntry = (): void => {
+    if (reduceMotion()) return;
+    grid.setAttribute("data-mx-entry", "");
+    const timers: number[] = [];
+    let raf = 0;
+    const start = (): void => {
+      cards.forEach((card, i) => {
+        timers.push(
+          window.setTimeout(
+            () => card.classList.add("mem-in"),
+            Math.min(i * STAGGER_MS, STAGGER_CAP_MS),
+          ),
+        );
+      });
+      // once the last card has settled, hand authority back to the base rules.
+      timers.push(
+        window.setTimeout(
+          () => {
+            grid.removeAttribute("data-mx-entry");
+            cards.forEach((card) => card.classList.remove("mem-in"));
+          },
+          Math.min(cards.length * STAGGER_MS, STAGGER_CAP_MS) + 450,
+        ),
+      );
+    };
+    const tick = (): void => {
+      if (ac.signal.aborted) return;
+      const sv =
+        parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
+      if (sv < SCROLL_V_MAX) {
+        start();
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    let seen = false;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (seen || !entries.some((e) => e.isIntersecting)) return;
+        seen = true;
+        io.disconnect();
+        raf = requestAnimationFrame(tick);
+      },
+      { threshold: 0.08 },
+    );
+    io.observe(grid);
+    ac.signal.addEventListener("abort", () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+      timers.forEach((t) => clearTimeout(t));
+      grid.removeAttribute("data-mx-entry");
+    });
   };
 
   // ── review: click card to spring back ──────────────────────────────────────
@@ -111,6 +187,7 @@ function initMemory(): () => void {
 
   updateRetention();
   runField();
+  wireEntry();
 
   return () => {
     ac.abort();

@@ -1,5 +1,6 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import calendar from "../../data/examples/calendar.json";
 import "../../styles/examples/calendar.css";
 
@@ -80,6 +81,71 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
   timeZone: "UTC",
 }).format(new Date(calendar.snapshotAt));
+
+// How-built snippets (CodeTabs renders them with build-time Shiki highlighting).
+const SNIPPET_HTML = `<!-- each launch is a body. data-feedback: the engine writes
+     --d (live local density) back every frame. data-hot:
+     hover/focus a card and the field gathers toward it —
+     hold the hero and its countdown burns brighter. -->
+<li
+  data-body="attract"
+  data-strength="1.43"
+  data-feedback
+  data-hot
+  data-net="2026-06-11T04:00:00Z"
+  data-status="Go"
+  style="--w: 0.646; --cat: #2dd4bf;"
+>
+  <!-- name · provider · countdown -->
+</li>`;
+
+const SNIPPET_TS = `// every second, for every launch:
+const hours =
+  (Date.parse(row.dataset.net)
+    - Date.now()) / 36e5;
+
+// imminence: log-ramped against
+// a 30-day horizon, floored at 0.08
+const w = hours > 0
+  ? Math.max(0.08, Math.min(1,
+      1 - Math.log(hours + 1)
+        / Math.log(24 * 30 + 1)))
+  : 0.08; // window passed · snapshot
+
+row.style.setProperty("--w", w);
+row.dataset.strength =
+  (0.4 + w * 1.6).toFixed(2);
+
+// the scoped field runs invisible (render: [])
+// and asks for the attention metric lane:
+const recipe = {
+  ...base,
+  render: [],
+  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
+};
+// the pipeline writes --field-attention per card (eased 0..1)`;
+
+const SNIPPET_CSS = `.cal-row {
+  /* --w = imminence (1 Hz clock) · --d = live engine
+     density, data-hot gathers it · --field-attention =
+     the recipe's eased attention */
+  --live: var(--d, 0);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 55%), transparent);
+}
+/* the rail dot charges with the density */
+.cal-row::before {
+  transform: translateY(-50%)
+    scale(calc(1 + var(--live) * 0.35));
+}
+/* hold the hero — the T-minus digits burn brighter */
+.cal-hero-count {
+  text-shadow: 0 0 calc(var(--live) * 18px)
+    color-mix(in srgb,
+      var(--cat) calc(var(--live) * 65%), transparent);
+}`;
 ---
 
 <ExampleShell
@@ -137,6 +203,12 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
     <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = imminence — the next launch is the biggest thing on the wall</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = status (Go teal · TBC amber · TBD dim)</li>
     <li><span class="ev-k cal-k-clock">T−</span> the countdown is live — when a window passes, the wall re-picks "next up"</li>
+    <li>
+      <span class="ev-k cal-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
+      <b>--w</b> is the clock's imminence and <b>--cat</b> the status lens; <b>--d</b> is the
+      engine's local density (hold a card and the field gathers — the hero's countdown burns
+      brighter) and <b>--field-attention</b> the recipe's eased attention as you scroll.
+    </li>
   </ul>
 
   <div class="cal-zone" data-cal-zone>
@@ -148,6 +220,7 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
           data-id={hero.id}
           data-body="attract"
           data-feedback
+          data-hot
           data-range="260"
           data-strength={(0.4 + wOf(hero.net, hero.status) * 1.6).toFixed(2)}
           data-net={hero.net}
@@ -187,6 +260,7 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
                     class="cal-row"
                     data-body="attract"
                     data-feedback
+                    data-hot
                     data-range="200"
                     data-strength={(0.4 + w * 1.6).toFixed(2)}
                     data-id={l.id}
@@ -232,6 +306,7 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
                   class="cal-row"
                   data-body="attract"
                   data-feedback
+                  data-hot
                   data-range="200"
                   data-strength={(0.4 + w * 1.6).toFixed(2)}
                   data-id={l.id}
@@ -272,47 +347,28 @@ const snapDate = new Intl.DateTimeFormat("en-US", {
       Every launch is an ordinary <code>&lt;li&gt;</code> with its NET timestamp in a data
       attribute. A 1-second clock turns distance-to-T−0 into a weight, writes it back as a CSS
       custom property, and the type carries the measurement. No canvas, no chart library — the
-      only moving part is time.
+      only moving part is time. On top of the clock sit two live channels the engine writes back
+      every frame — <code>--d</code> (local density, gathered by <code>data-hot</code> on hover)
+      and <code>--field-attention</code> (the recipe's eased attention) — which touch only ink;
+      the 1 Hz weight ramp is untouched.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — each launch is a field body</p>
-        <pre class="ev-code"><code>&lt;li
-  data-body="attract"
-  data-strength="1.43"
-  data-feedback
-  data-net="2026-06-11T04:00:00Z"
-  data-status="Go"
-  style="--w: 0.646; --cat: #2dd4bf;"
-&gt;
-  &lt;!-- name · provider · countdown --&gt;
-&lt;/li&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIPPET_HTML }]} />
         <ul class="ev-how-attrs">
           <li><code>data-net</code> — the no-earlier-than instant the clock measures against</li>
           <li><code>data-strength</code> — gravitational mass, re-set every second</li>
           <li><code>--cat</code> — the status color the CSS mixes in</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
+          <li><code>data-hot</code> — hover/focus gathers the field toward this card</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — a 1 Hz clock drives the weight</p>
-        <pre class="ev-code"><code>{`// every second, for every launch:
-const hours =
-  (Date.parse(row.dataset.net)
-    - Date.now()) / 36e5;
-
-// imminence: log-ramped against
-// a 30-day horizon, floored at 0.08
-const w = hours > 0
-  ? Math.max(0.08, Math.min(1,
-      1 - Math.log(hours + 1)
-        / Math.log(24 * 30 + 1)))
-  : 0.08; // window passed · snapshot
-
-row.style.setProperty("--w", w);
-row.dataset.strength =
-  (0.4 + w * 1.6).toFixed(2);`}</code></pre>
+        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
         <p class="ev-how-note">
           The soonest launch is the heaviest; as its T−0 approaches the ramp steepens, so the
           page's center of gravity slides toward the pad — without a single re-render.
@@ -321,19 +377,7 @@ row.dataset.strength =
 
       <div class="ev-how-col">
         <p class="ev-how-label">3 — CSS reads the field's output</p>
-        <pre class="ev-code"><code>{`.cal-row {
-  /* --w = imminence (0..1, ticked
-     once a second by the clock) */
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}
-.cal-name {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}`}</code></pre>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIPPET_CSS }]} />
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>

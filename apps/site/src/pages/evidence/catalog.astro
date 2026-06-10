@@ -1,6 +1,8 @@
 ---
 import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import catalog from "../../data/examples/catalog.json";
+import "../../styles/docs.css"; /* .code-tabs styles for CodeTabs */
 import "../../styles/examples/catalog.css";
 
 // The Catalog Field — the Evidence trust math retargeted at a real Open Library shelf.
@@ -24,10 +26,68 @@ const books = catalog.books
     ...b,
     trust: Math.log(b.ratings + 1) / lmax, // 0..1 — IDENTICAL to the evidence formula
     cat: (b.subjects[0] && subjectColor.get(b.subjects[0])) || "#4da3ff",
+    // stable card id from the Open Library work key (e.g. bk-OL893415W) — the
+    // anchor the ratings line points its measurement provenance at.
+    wid: b.url.split("/").filter(Boolean).pop(),
   }))
   .sort((a, b) => b.trust - a.trust);
 const snapshotDay = catalog.snapshotAt.slice(0, 10);
 const fmt = (n: number) => n.toLocaleString("en-US");
+
+// ── how-built snippets (CodeTabs) ──────────────────────────────────────────
+const SNIP_BODY = `<article
+  id="bk-OL893415W"
+  data-body="attract"
+  data-strength="1.87"
+  data-feedback
+  data-hot
+  data-subjects="science fiction|time travel"
+  style="--w: 0.92; --cat: #4da3ff;"
+>
+  <!-- title · author -->
+  <!-- the ratings line declares itself a
+       measurement of this card -->
+  <span data-field-visual-for="#bk-OL893415W"
+        data-field-visual-role="measurement">
+    ★ 4.02 · 9,440 ratings
+  </span>
+</article>`;
+
+const SNIP_FORMULA = `// IDENTICAL to /evidence — only the
+// signal changed: citations → ratings
+trust = log(ratings + 1)
+      / log(maxRatings + 1)
+
+// the other lenses re-run the same shape:
+// anticipation → wantToRead counts
+// longevity    → edition counts
+// then a FLIP re-sort settles the shelf`;
+
+const SNIP_CSS = `.cat-title a {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.cat-card {
+  /* --d: the engine's live local density,
+     written every frame; gathers toward 1
+     when a data-hot card is hovered/focused.
+     --field-attention: the scoped recipe's
+     eased attention lane. */
+  --live: var(--d, 0);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--live) * 55%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+}
+/* the floating affinity chip charges with
+   the hovered card's --live (mirrored by
+   the runtime while the hover holds) */
+.cat-chip {
+  border-color: color-mix(in srgb,
+    var(--accent)
+    calc(45% + var(--live, 0) * 45%),
+    var(--line));
+}`;
 ---
 
 <ExampleShell
@@ -95,6 +155,11 @@ const fmt = (n: number) => n.toLocaleString("en-US");
     <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal</li>
     <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the lens (first subject)</li>
     <li><span class="ev-k cat-k-mate"></span> hover or focus → shelf-mates sharing a subject light up</li>
+    <li>
+      <span class="ev-k cat-k-live"></span> the soft glow = <b>live density</b> — the hidden
+      engine writes <code>--d</code> to every card each frame; it gathers under your cursor,
+      and the floating chip's border charges with it
+    </li>
   </ul>
 
   <ul class="cat-grid" data-cat-grid>
@@ -103,8 +168,10 @@ const fmt = (n: number) => n.toLocaleString("en-US");
         <li class="cat-cell">
           <article
             class="cat-card"
+            id={`bk-${b.wid}`}
             data-body="attract"
             data-feedback
+            data-hot
             data-range="200"
             data-strength={(0.4 + b.trust * 1.6).toFixed(2)}
             data-ratings={b.ratings}
@@ -122,8 +189,14 @@ const fmt = (n: number) => n.toLocaleString("en-US");
             </h3>
             <p class="cat-author">{b.author} · <span class="cat-year">{b.year}</span></p>
             <p class="cat-stats">
-              <span class="cat-stars" aria-label={`${b.stars.toFixed(2)} stars`}>★ {b.stars.toFixed(2)}</span>
-              <span class="cat-ratings">{fmt(b.ratings)} ratings</span>
+              <span
+                class="cat-stats-live"
+                data-field-visual-for={`#bk-${b.wid}`}
+                data-field-visual-role="measurement"
+              >
+                <span class="cat-stars" aria-label={`${b.stars.toFixed(2)} stars`}>★ {b.stars.toFixed(2)}</span>
+                <span class="cat-ratings">{fmt(b.ratings)} ratings</span>
+              </span>
             </p>
             <p class="cat-foot">
               <span class="cat-editions">{b.editions} editions</span>
@@ -143,39 +216,29 @@ const fmt = (n: number) => n.toLocaleString("en-US");
       data attributes. field-ui reads them, runs a spatial field over the grid, and the trust
       score is written once as <code>--w</code>; CSS turns it into type heft, ink, and the
       spine. No canvas. No particle swarm. Shelf-mate affinity is class toggles, not SVG.
+      Two live channels ride on top: the page's hidden engine writes <code>--d</code> (local
+      particle density) to every <code>data-hot</code> card each frame, and the scoped recipe's
+      attention lane writes an eased <code>--field-attention</code> — CSS turns both into a
+      felt glow and lift, and both go quiet when the field is off.
     </p>
 
     <div class="ev-how-cols">
       <div class="ev-how-col">
         <p class="ev-how-label">1 — mark each book as a field body</p>
-        <pre class="ev-code"><code>&lt;article
-  data-body="attract"
-  data-strength="1.87"
-  data-feedback
-  data-subjects="science fiction|time travel"
-  style="--w: 0.92; --cat: #4da3ff;"
-&gt;
-  &lt;!-- title · author · ratings --&gt;
-&lt;/article&gt;</code></pre>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIP_BODY }]} />
         <ul class="ev-how-attrs">
           <li><code>data-body="attract"</code> — registers as a field participant</li>
           <li><code>data-strength</code> — gravitational mass (0 → faint, 2 → heavy anchor)</li>
           <li><code>data-subjects</code> — the shelf-mate affinity edges</li>
           <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks</li>
+          <li><code>data-hot</code> — opts into the live density gather: hover and <code>--d</code> climbs toward 1</li>
+          <li><code>data-field-visual-for</code> — names the ratings line a <code>measurement</code> of its card</li>
         </ul>
       </div>
 
       <div class="ev-how-col">
         <p class="ev-how-label">2 — the evidence formula, retargeted</p>
-        <pre class="ev-code"><code>{`// IDENTICAL to /evidence — only the
-// signal changed: citations → ratings
-trust = log(ratings + 1)
-      / log(maxRatings + 1)
-
-// the other lenses re-run the same shape:
-// anticipation → wantToRead counts
-// longevity    → edition counts
-// then a FLIP re-sort settles the shelf`}</code></pre>
+        <CodeTabs variants={[{ label: "TypeScript", lang: "ts", code: SNIP_FORMULA }]} />
         <p class="ev-how-note">
           One log-normalized count becomes mass, exactly as on the Evidence page. Swapping
           which count feeds the formula is the whole difference between the three weightings.
@@ -184,20 +247,12 @@ trust = log(ratings + 1)
 
       <div class="ev-how-col">
         <p class="ev-how-label">3 — CSS reads the field's output</p>
-        <pre class="ev-code"><code>{`.cat-title a {
-  font-variation-settings:
-    'wght' calc(380 + var(--w) * 360);
-}
-.cat-card {
-  opacity: calc(0.58 + var(--w) * 0.42);
-  border-left: 3px solid
-    color-mix(in srgb,
-      var(--cat) calc(18% + var(--w) * 82%),
-      var(--line));
-}`}</code></pre>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIP_CSS }]} />
         <p class="ev-how-note">
           Type heft, ink, and the spine all read from one normalized trust score — the field
-          drives the measurement; CSS drives the presentation.
+          drives the measurement; CSS drives the presentation. The glow and the chip's charge
+          read <code>--d</code> and <code>--field-attention</code> — live writes, zeroed when
+          the field is off.
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
