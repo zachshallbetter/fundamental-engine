@@ -10,6 +10,9 @@ body:has(.lab) { align-items: flex-start; }
 /* the [hidden] attribute must win over the display rules below (we toggle panels with it) */
 .lab [hidden] { display: none !important; }
 
+/* screen-reader landmark — visually hidden so the instrument layout is undisturbed */
+.lab-title { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
 .lab-back { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); display: inline-flex; gap: 0.5rem; align-items: center; margin-bottom: 20px; transition: color 0.2s; }
 .lab-back:hover { color: var(--accent); }
 
