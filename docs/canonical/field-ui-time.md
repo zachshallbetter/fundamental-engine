@@ -15,7 +15,7 @@
 | [`field-ui-invisible-fields.md`](field-ui-invisible-fields.md) | The live channels the clocks feed |
 | [`field-ui-natural-fields.md`](field-ui-natural-fields.md) | Weak → transformation: the conceptual home of decay |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Truth modes (the kernels are *designed*, not physical) |
-| [`../physics-workover.md`](../physics-workover.md) | v0.4: real `dt` seconds + the fixed-step accumulator (simulation time's future) |
+| [`../engine-reference/physics-workover.md`](../engine-reference/physics-workover.md) | v0.4: real `dt` seconds + the fixed-step accumulator (simulation time's future) |
 
 ## 1. The three clocks
 

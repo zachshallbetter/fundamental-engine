@@ -12,6 +12,7 @@
     "check:packaging": "node scripts/check-packaging.mjs",
     "check:api": "tsc -p scripts/tsconfig.api.json --noEmit && node scripts/check-api-surface.mjs",
     "check:readme": "node scripts/check-readme.mjs",
+    "check:links": "node scripts/check-doc-links.mjs",
     "gen:recipes": "node --experimental-strip-types scripts/export-recipes.mjs",
     "check:recipes": "node --experimental-strip-types scripts/export-recipes.mjs && git diff --exit-code data/recipes.json",
     "gen:cem": "pnpm --filter @field-ui/elements exec cem analyze",

@@ -1,50 +1,80 @@
 name: Release
 
-# Publishes the @field-ui/* packages to npm WITH provenance — a signed attestation
-# (Sigstore) that ties each tarball to this repo, the exact commit, and this workflow
-# run. Provenance can only be produced from CI (it needs the OIDC id-token below); a
-# manual `npm publish` from a laptop cannot generate it.
+# The ONLY authorized publish path. Publishes the @field-ui/* packages to npm WITH
+# provenance — a signed attestation (Sigstore) that ties each tarball to this repo, the
+# exact commit, and this workflow run. Provenance can only be produced from CI (it needs
+# the OIDC id-token below); a manual `npm publish` from a laptop cannot generate it.
+#
+# Structure (each job is a hard gate on the next):
+#   gate          — the full CI gate + tag↔version match across all seven packages.
+#                   A publish NEVER starts if any of this fails.
+#   publish       — pnpm publish with provenance. Idempotent per-package: pnpm skips
+#                   versions already on the registry, so re-running a failed run is safe
+#                   (`gh run rerun <id> --failed` — never re-tag).
+#   post_publish  — proof the release is actually consumable: a smoke install of the
+#                   published version from the registry + provenance attestation checks.
+#   conclusion    — asserts every job above SUCCEEDED (skipped ≠ success).
 #
 # Trigger: push a version tag, e.g.
-#   pnpm -r exec npm version 0.2.3 --no-git-tag-version   # bump the packages
-#   git commit -am "release: 0.2.3" && git tag v0.2.3 && git push --tags
+#   pnpm --filter "@field-ui/*" exec npm version 0.2.4 --no-git-tag-version  # bump the seven together
+#   git commit -am "release: 0.2.4" && git tag v0.2.4 && git push --tags
 #
-# Prerequisite (one-time): add a repository secret `NPM_TOKEN` — a granular npm access
+# Rehearsal: workflow_dispatch with dry_run=true runs the entire path — gate, version
+# match, pack — without writing to the registry.
+#
+# Prerequisite (one-time): a repository secret `NPM_TOKEN` — a granular npm access
 # token with read+write to the @field-ui packages, created so it bypasses 2FA for
 # automation (CI cannot answer an interactive OTP prompt).
+#
+# The human rules around this workflow (when a tag may be pushed, partial-publish
+# recovery, token rotation) live in RELEASING.md.
 
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (must already exist, e.g. v0.2.4)'
+        required: true
+      dry_run:
+        description: 'Rehearse the full path without publishing'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
   id-token: write # required for npm provenance (OIDC)
 
 concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+  group: release
+  cancel-in-progress: false # never cancel a publish mid-run
+
+env:
+  NODE_VERSION: 22
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
-  publish:
-    name: build · verify · publish (provenance)
+  gate:
+    name: full gate + tag↔version match
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # The full pre-publish gate — never publish a tree that fails CI.
+      # The full pre-publish gate — identical to ci.yml. Never publish a tree that fails CI.
       - name: Build (typechecks all packages)
         run: pnpm build
       - name: Test
@@ -59,13 +89,122 @@ jobs:
         run: pnpm check:readme
       - name: Check recipes datafile
         run: pnpm check:recipes
+      - name: Check custom-elements manifest
+        run: pnpm check:cem
+
+      # The version-desync gate: the tag must match the version of EVERY @field-ui/*
+      # package, not just core — the seven are versioned in lockstep, and a publish with
+      # any package out of step is the partial-release class.
+      - name: Verify tag matches every package version
+        run: |
+          VERSION="${RELEASE_TAG#v}"
+          FAIL=0
+          for pkg in packages/*/package.json; do
+            NAME=$(node -p "require('./$pkg').name")
+            case "$NAME" in @field-ui/*) ;; *) continue ;; esac
+            PKGVER=$(node -p "require('./$pkg').version")
+            if [ "$PKGVER" != "$VERSION" ]; then
+              echo "::error::$NAME is $PKGVER but the tag is $RELEASE_TAG — bump the seven together first."
+              FAIL=1
+            fi
+          done
+          exit $FAIL
+
+  publish:
+    name: publish (provenance)
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
 
       # pnpm rewrites workspace:* deps to real versions and skips any package whose
       # version is already on the registry, so re-running a tag is safe. Only the seven
       # public @field-ui/* packages are targeted (apps are private; @forces-ui/* aliases
       # are intentionally excluded).
       - name: Publish with provenance
-        run: pnpm --filter "@field-ui/*" publish --access public --no-git-checks --provenance
+        run: pnpm --filter "@field-ui/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+  # Proof the release is consumable, not just that the publish command exited 0:
+  # a cold install of the published version from the registry, an import smoke test,
+  # and a provenance-attestation check on every package.
+  post_publish:
+    name: post-publish verification
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dry run — verification skipped
+        if: ${{ inputs.dry_run }}
+        run: echo "dry_run — nothing was published, nothing to verify"
+
+      # The registry can take a little while to serve a fresh version; retry before failing.
+      - name: Smoke-test install from the registry
+        if: ${{ !inputs.dry_run }}
+        run: |
+          VERSION="${RELEASE_TAG#v}"
+          mkdir /tmp/smoke && cd /tmp/smoke
+          npm init -y > /dev/null
+          for i in $(seq 1 10); do
+            if npm install "@field-ui/vanilla@$VERSION" "@field-ui/kit@$VERSION"; then
+              break
+            fi
+            if [ "$i" = 10 ]; then
+              echo "::error::@field-ui/*@$VERSION not installable from the registry after 10 attempts"
+              exit 1
+            fi
+            echo "registry not serving $VERSION yet — retry $i/10 in 30s"
+            sleep 30
+          done
+          node --input-type=module -e "
+            const vanilla = await import('@field-ui/vanilla');
+            if (typeof vanilla.createField !== 'function') { console.error('createField missing'); process.exit(1); }
+            console.log('smoke ok —', Object.keys(vanilla).join(', '));
+          "
+
+      - name: Verify provenance attestations
+        if: ${{ !inputs.dry_run }}
+        run: |
+          VERSION="${RELEASE_TAG#v}"
+          cd /tmp/smoke
+          npm audit signatures
+          FAIL=0
+          for p in core platform elements vanilla react kit field-ui; do
+            ATT=$(npm view "@field-ui/$p@$VERSION" dist.attestations.url 2>/dev/null || true)
+            if [ -z "$ATT" ]; then
+              echo "::error::@field-ui/$p@$VERSION has no provenance attestation"
+              FAIL=1
+            else
+              echo "@field-ui/$p@$VERSION attested: $ATT"
+            fi
+          done
+          exit $FAIL
+
+  conclusion:
+    name: conclusion
+    needs: [gate, publish, post_publish]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs succeeded
+        run: |
+          jq -C <<< '${{ toJson(needs) }}'
+          jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'

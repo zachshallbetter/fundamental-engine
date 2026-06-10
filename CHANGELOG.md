@@ -9,7 +9,7 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 The **physics workover** begins: a designed / natural / hybrid substrate that makes the
 engine more physically coherent without losing the designed interface feel. The full plan
-and an as-built audit live in [`docs/physics-workover.md`](docs/physics-workover.md); the
+and an as-built audit live in [`docs/engine-reference/physics-workover.md`](docs/engine-reference/physics-workover.md); the
 work ships across v0.3 to v0.6. (The audit's headline: first-class mass, softened
 inverse-square gravity/charge, `b.accreted`, and class-[S] source/sink budgeting already
 ship, so the work is the mode system, medium formalization, safety layer, `screen`,
@@ -97,7 +97,7 @@ The project moved from `forces-ui` to **field-ui** — a field-first framing whe
 invisible structure) is the primary abstraction. This is a rename + alias pass, **not** a rewrite:
 no force formulas, integrator behavior, magnetism (Lorentz `F = q(v × B)`), fieldflow, render
 math, heatmap math, force tokens, or `data-*` authoring changed. The migration plan is
-[`docs/field-ui-migration-plan.md`](docs/field-ui-migration-plan.md).
+`docs/field-ui-migration-plan.md` (since retired).
 
 Every old public name keeps working as a compatibility alias during the transition:
 

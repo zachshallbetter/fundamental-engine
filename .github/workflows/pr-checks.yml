@@ -1,0 +1,71 @@
+name: PR checks
+
+# PR-hygiene gates, separate from ci.yml's build/test correctness gates:
+#   changelog — a PR that changes a published package must carry a CHANGELOG entry.
+#               The check reads the CHANGELOG *diff* (authoritative), not the PR body.
+#   doc-links — every relative markdown link in the repo's docs resolves to a real file.
+# `conclusion-pr` is the required status check for this workflow on main's branch
+# protection, mirroring ci.yml's `conclusion` (skipped ≠ success).
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "pr-checks-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
+
+jobs:
+  changelog:
+    name: CHANGELOG entry for package changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          # the PR merge commit; HEAD^1 is the base tip, so `HEAD^1...HEAD` is the PR's diff
+          fetch-depth: 2
+
+      - name: Check CHANGELOG updated when packages/ changed
+        run: |
+          CHANGED=$(git diff --name-only HEAD^1 HEAD | grep '^packages/' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "no package changes — CHANGELOG entry not required"
+            exit 0
+          fi
+          if git diff HEAD^1 HEAD -- CHANGELOG.md | grep -q '^+'; then
+            echo "CHANGELOG.md updated — ok"
+          else
+            echo "::error::This PR changes packages/ but adds nothing to CHANGELOG.md. Add an entry under [Unreleased]."
+            exit 1
+          fi
+
+  doc-links:
+    name: internal doc links resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # plain node, no dependencies — see scripts/check-doc-links.mjs
+      - name: Check doc links
+        run: node scripts/check-doc-links.mjs
+
+  conclusion-pr:
+    name: conclusion-pr
+    needs: [changelog, doc-links]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs succeeded
+        run: |
+          jq -C <<< '${{ toJson(needs) }}'
+          jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'

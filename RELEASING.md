@@ -61,3 +61,44 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
   `@field-ui/*` packages **with provenance**. Requirements (all in place): the GitHub repo is **public**
   (npm rejects provenance for private repos) and an `NPM_TOKEN` secret holds a granular npm token with
   write to `@field-ui` and **2FA-bypass** enabled (CI cannot answer an interactive OTP).
+- **`pr-checks.yml`** — PR hygiene: a PR that changes `packages/` must add a CHANGELOG entry
+  (the diff is checked, not the PR body), and every relative doc link must resolve
+  (`pnpm check:links`). Its `conclusion-pr` job is a required check on `main`.
+- **`api-surface.yml`** — on PRs touching the packages, posts the frozen-surface delta
+  (base vs. head of `scripts/api-surface.data.mjs`) as a PR comment. Visibility only; the
+  blocker is `check:api` in `ci.yml`.
+
+Every workflow ends in a `conclusion` job that passes only if **every** dependency job
+succeeded — a skipped job can never satisfy a required check. Branch protection on `main`
+requires `conclusion` and `conclusion-pr`, with no admin bypass.
+
+## Release safety — the human rules
+
+CI makes a bad publish structurally hard; these are the rules for the parts only a human
+touches. The catastrophic-release taxonomy behind them (API breakage, broken/partial/
+no-provenance publish, version desync, red-main tag, credential leak) maps one-to-one to
+the gates above.
+
+- **Never push a tag on a non-green `main`.** Confirmed green in the Actions tab on the
+  exact merge commit — not "probably green". The release gate re-runs everything anyway,
+  but a red tag burns the version number.
+- **Never publish from a laptop**, except the documented manual fallback in
+  [PUBLISHING.md](PUBLISHING.md) (no provenance, OTP per package). If the fallback is ever
+  used, log it as an exception in the CHANGELOG entry for that release — "published
+  without provenance" is a recorded fact, not a silent degradation.
+- **Never bump one package alone.** Always
+  `pnpm --filter "@field-ui/*" exec npm version <bump> --no-git-tag-version` — the release
+  gate fails the tag if any of the seven is out of step.
+- **Never widen a failing gate to make it pass.** If `check:api` fails, the public
+  contract changed: fix the change or cut a deliberate 0.MINOR with a migration note —
+  never edit the baseline to silence it. If e2e fails on one browser, fix the race; don't
+  skip the project.
+- **Partial publish recovery:** `gh run rerun <run-id> --failed`. The publish is
+  idempotent per-package (already-published versions are skipped). Do **not** delete or
+  re-push the tag, and do not re-run the whole workflow from scratch.
+- **Token rotation:** create the new granular token (`@field-ui` write, 2FA-bypass) and
+  update the `NPM_TOKEN` secret **before** revoking the old one — a window with no valid
+  token makes the next release fail at auth. Verify with a `dry_run` dispatch of
+  `release.yml`.
+- **Changing these gates is a policy change**, not a PR judgment call — gate edits ride
+  their own PR that says so explicitly.

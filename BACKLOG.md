@@ -1,7 +1,7 @@
 # Backlog
 
 The running, granular queue. Strategic context lives in
-[`docs/roadmap-frontiers.md`](docs/roadmap-frontiers.md); shipped work moves to
+[`docs/planning-archive/roadmap-frontiers.md`](docs/planning-archive/roadmap-frontiers.md); shipped work moves to
 [`CHANGELOG.md`](CHANGELOG.md).
 
 Legend: `[ ]` planned · `[~]` in progress · `[x]` done (then moved to the changelog).
@@ -9,7 +9,7 @@ Legend: `[ ]` planned · `[~]` in progress · `[x]` done (then moved to the chan
 ## Physics workover — designed / natural / hybrid substrate
 
 The major current thrust. Full plan and as-built audit in
-[`docs/physics-workover.md`](docs/physics-workover.md). Ships across v0.3 to v0.6.
+[`docs/engine-reference/physics-workover.md`](docs/engine-reference/physics-workover.md). Ships across v0.3 to v0.6.
 
 **v0.3 — reconciliation, safety, boundary, metrics (the live queue):**
 
