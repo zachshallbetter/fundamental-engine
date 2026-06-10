@@ -440,6 +440,14 @@
   border-bottom-color: var(--accent);
 }
 
+/* tables — match the writing-body scroll pattern so wide tables don't stretch the page */
+.docs-content table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
 /* install chips */
 .install {
   position: relative;
