@@ -243,6 +243,34 @@
   }
 }
 
+/* ── live status chip — "live · checked Ns ago" / "snapshot · <date>" ─────── */
+.ex-catalog .cat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.ex-catalog .cat-status::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.ex-catalog .cat-status[data-live="on"]::before {
+  background: hsl(163 72% 50%);
+  box-shadow: 0 0 6px hsl(163 72% 50% / 0.55);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ex-catalog .cat-card {
     transition: none;

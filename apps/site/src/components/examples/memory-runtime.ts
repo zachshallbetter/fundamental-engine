@@ -1,6 +1,11 @@
 // Memory Field runtime. field-ui as an INVISIBLE measurement layer over Google ngrams word frequencies:
 //   · elapsed days slider decays retention w = a · exp(-days_eff / tau), updating styles in real time;
 //   · click a card to REVIEW it (w springs back to anchor a, and decays relative to review time);
+//   · reviews PERSIST on this device: the word → reviewedAtDay map mirrors to localStorage
+//     ("fui:memory-reviews") on every review and restores on init (only for words present on
+//     the page); the slider's day persists too ("fui:memory-day") and the initial decay renders
+//     from it. "reset reviews" clears the map and both keys. Storage failures (private windows,
+//     hardened browsers) are swallowed — the page simply doesn't remember;
 //   · entry: the cards stagger in (.mem-in, 20ms apart, capped at 400ms) once the grid is in view
 //     AND --field-scroll-v reads reading pace (< 2 px/frame) — skipped under reduced motion;
 //   · Field on/off — off, the page collapses to a plain grid and the scoped field is destroyed.
@@ -15,6 +20,33 @@ const STAGGER_CAP_MS = 400;
 
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ── persistence — localStorage, guarded: a private window or hardened browser may
+// throw on any access, and the page must keep working (it just won't remember). ──
+const REVIEWS_KEY = "fui:memory-reviews"; // JSON object: word → reviewedAtDay
+const DAY_KEY = "fui:memory-day"; // the slider's day
+
+const storeRead = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const storeWrite = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* full / denied — the session still works, it just won't persist */
+  }
+};
+const storeDrop = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* nothing to clear */
+  }
+};
 
 function initMemory(): () => void {
   const page = document.querySelector<HTMLElement>(".ex-memory");
@@ -32,6 +64,36 @@ function initMemory(): () => void {
   let sliderValue = Number(slider.value) || 7;
   const reviews = new Map<string, number>();
   let activeField: { destroy(): void } | null = null;
+
+  // restore persisted reviews — only for words actually present on the page — and the
+  // persisted slider day (clamped to the slider's range, reflected in label + render).
+  const wordsOnPage = new Set(
+    cards.map((card) => card.querySelector(".mx-word")?.textContent || ""),
+  );
+  const storedReviews = storeRead(REVIEWS_KEY);
+  if (storedReviews) {
+    try {
+      const parsed = JSON.parse(storedReviews) as Record<string, unknown>;
+      for (const [word, day] of Object.entries(parsed)) {
+        if (wordsOnPage.has(word) && typeof day === "number" && Number.isFinite(day))
+          reviews.set(word, day);
+      }
+    } catch {
+      /* corrupt entry — start fresh */
+    }
+  }
+  const storedDay = storeRead(DAY_KEY);
+  if (storedDay != null) {
+    const day = Math.round(Number(storedDay));
+    if (Number.isFinite(day)) {
+      sliderValue = Math.min(Number(slider.max) || 60, Math.max(Number(slider.min) || 0, day));
+      slider.value = String(sliderValue);
+      if (daysOut) daysOut.textContent = `${sliderValue}d`;
+    }
+  }
+
+  const persistReviews = (): void =>
+    storeWrite(REVIEWS_KEY, JSON.stringify(Object.fromEntries(reviews)));
 
   const updateRetention = (): void => {
     for (const card of cards) {
@@ -142,6 +204,7 @@ function initMemory(): () => void {
       if (!btn || !grid.contains(btn)) return;
       const word = btn.querySelector(".mx-word")?.textContent || "";
       reviews.set(word, sliderValue);
+      persistReviews(); // every review mirrors to this device's storage
       updateRetention();
     },
     { signal: ac.signal },
@@ -153,6 +216,7 @@ function initMemory(): () => void {
     () => {
       sliderValue = Number(slider.value);
       if (daysOut) daysOut.textContent = `${sliderValue}d`;
+      storeWrite(DAY_KEY, String(sliderValue)); // the day persists alongside the reviews
       updateRetention();
     },
     { signal: ac.signal },
@@ -162,6 +226,8 @@ function initMemory(): () => void {
     "click",
     () => {
       reviews.clear();
+      storeDrop(REVIEWS_KEY); // reset clears the device's memory too — both keys
+      storeDrop(DAY_KEY);
       updateRetention();
     },
     { signal: ac.signal },

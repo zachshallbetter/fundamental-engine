@@ -14,14 +14,35 @@
 //   · the color lens hashes artists onto the palette (server-assigned) or switches off;
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and
 //     the scoped field is destroyed; the queue keeps counting (it is the UI channel).
+//   · LIVE — ONCE per visit (the monthly window moves daily; polling would be theater) the
+//     page re-fetches the same ListenBrainz endpoint the snapshot script uses and updates
+//     listens IN PLACE — counts, --bar (vs the new max), --w (log mass) — matching rows by
+//     recording mbid (track+artist as the fallback). If the ranking changed, the ladder FLIP
+//     re-sorts and the rank gutter renumbers. Rows that fell out of the live top 30 stay,
+//     dimmed and labeled — no row removal mid-visit; new entrants are NOT added (the
+//     snapshot's 30 are the page's bodies). Any failure keeps the snapshot.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+import { wireLiveChip, politeLoop } from "../../lib/live-data";
 
 type LbLens = "artist" | "off";
 
 const QUEUE_MAX = 8;
 const SINGLE_HUE = "#60a5fa";
+
+// the same endpoint apps/site/scripts/snapshot-examples.mjs hits (CORS-enabled, no key)
+const LIVE_URL = "https://api.listenbrainz.org/1/stats/sitewide/recordings?range=month&count=30";
+const FIRST_CHECK_MS = 4_000;
+
+interface LbRecording {
+  track_name?: string;
+  artist_name?: string;
+  listen_count?: number;
+  recording_mbid?: string | null;
+}
+
+const fmtListens = (n: number): string => n.toLocaleString("en-US");
 
 const HINTS: Record<LbLens, string> = {
   artist: "<b>color</b> = artist — one palette hue per act, hashed from the name",
@@ -196,6 +217,107 @@ function initLibrary(): () => void {
     ac.signal.addEventListener("abort", () => io.disconnect());
   };
 
+  // ── live counts — ONCE per visit, the snapshot upgrades itself in place ────
+  // The committed snapshot stays the SSR baseline and the no-JS truth; the live
+  // pass updates counts/--bar/--w on the SAME rows and FLIP re-sorts only if the
+  // ranking actually changed. The queue (rows already queued) is untouched.
+  const statusEl = page.querySelector<HTMLElement>("[data-lb-status]");
+  const chip = wireLiveChip(statusEl, (statusEl?.textContent ?? "").replace(/^snapshot · /, ""));
+
+  // FLIP re-sort — the page's treatment (translate + settle), rank gutter renumbered
+  const flipResort = (ordered: HTMLElement[]): void => {
+    const first = new Map(ordered.map((r) => [r, r.getBoundingClientRect()]));
+    ordered.forEach((r) => list.appendChild(r));
+    ordered.forEach((r, i) => {
+      const rank = r.querySelector(".lb-rank");
+      if (rank) rank.textContent = String(i + 1).padStart(2, "0");
+      if (reduceMotion()) return;
+      const was = first.get(r);
+      if (!was) return;
+      const now = r.getBoundingClientRect();
+      const dy = was.top - now.top;
+      if (!dy) return;
+      r.style.transform = `translateY(${dy}px)`;
+      r.style.transition = "none";
+      requestAnimationFrame(() => {
+        r.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
+        r.style.transform = "";
+        r.addEventListener("transitionend", () => (r.style.transition = ""), { once: true });
+      });
+    });
+  };
+
+  const applyLive = (recs: LbRecording[]): void => {
+    const all = rowsOf();
+    // match by recording mbid; fall back to the track+artist string
+    const nameKey = (t: string, a: string): string =>
+      `${t.trim().toLowerCase()} ${a.trim().toLowerCase()}`;
+    const byMbid = new Map<string, HTMLElement>();
+    const byName = new Map<string, HTMLElement>();
+    for (const r of all) {
+      if (r.dataset.mbid) byMbid.set(r.dataset.mbid, r);
+      byName.set(nameKey(r.dataset.track ?? "", r.dataset.artist ?? ""), r);
+    }
+    const matched = new Set<HTMLElement>();
+    for (const rec of recs) {
+      const row =
+        (rec.recording_mbid ? byMbid.get(rec.recording_mbid) : undefined) ??
+        byName.get(nameKey(rec.track_name ?? "", rec.artist_name ?? ""));
+      if (!row || matched.has(row)) continue;
+      matched.add(row);
+      if (typeof rec.listen_count === "number") {
+        row.dataset.listens = String(rec.listen_count);
+        const b = row.querySelector<HTMLElement>(".lb-listens b");
+        if (b) b.textContent = fmtListens(rec.listen_count);
+      }
+    }
+    // rows that fell out of the live top 30 STAY — dimmed, honestly labeled
+    for (const r of all) {
+      if (matched.has(r)) {
+        r.removeAttribute("data-lb-fell");
+        r.removeAttribute("title");
+      } else {
+        r.setAttribute("data-lb-fell", "");
+        r.title = "fell off the chart since the snapshot";
+      }
+    }
+    // recompute --bar (linear vs the new max) and --w (log mass) IN PLACE
+    const counts = all.map((r) => Number(r.dataset.listens) || 0);
+    const max = Math.max(...counts, 1);
+    const lmin = Math.log(Math.min(...counts) + 1);
+    const lmax = Math.log(Math.max(...counts) + 1);
+    for (const r of all) {
+      const n = Number(r.dataset.listens) || 0;
+      const w = lmax > lmin ? (Math.log(n + 1) - lmin) / (lmax - lmin) : 1;
+      r.style.setProperty("--bar", (n / max).toFixed(3));
+      r.style.setProperty("--w", w.toFixed(3));
+      r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+    }
+    // re-sort only if the ranking actually changed
+    const ordered = [...all].sort(
+      (a, b) => (Number(b.dataset.listens) || 0) - (Number(a.dataset.listens) || 0),
+    );
+    if (ordered.some((r, i) => r !== all[i])) flipResort(ordered);
+  };
+
+  const refresh = async (): Promise<void> => {
+    const res = await fetch(LIVE_URL, { signal: ac.signal });
+    if (!res.ok) throw new Error(String(res.status));
+    const data: unknown = await res.json();
+    const recs = (data as { payload?: { recordings?: LbRecording[] } }).payload?.recordings;
+    if (!Array.isArray(recs)) throw new Error("unexpected shape");
+    applyLive(recs);
+  };
+
+  politeLoop({
+    run: refresh,
+    firstDelayMs: FIRST_CHECK_MS,
+    everyMs: null, // refresh ONCE per visit — the source updates daily
+    signal: ac.signal,
+    onSuccess: () => chip.ok(),
+    onFailure: () => chip.fail(),
+  });
+
   // ── queueing — delegated from the list ────────────────────────────────────
   list.addEventListener(
     "click",
@@ -249,6 +371,7 @@ function initLibrary(): () => void {
 
   return () => {
     ac.abort();
+    chip.destroy();
     activeField?.destroy();
   };
 }

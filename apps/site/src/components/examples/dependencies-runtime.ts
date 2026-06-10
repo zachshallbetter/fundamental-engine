@@ -8,9 +8,14 @@
 //   · CAUSALITY SPILL — hover an external dep: SVG threads run from the row to each workspace
 //     package that inherits it (red when the dep carries advisories, its --cat otherwise).
 //     Hover a workspace node: its full upstream chain lights (class highlights, no SVG).
+//   · LIVE — once per visit (~4s in) the page refreshes each external dep's last-week download
+//     count from api.npmjs.org and re-settles through the EXISTING reweight path. Once, not a
+//     poll: the figure is a weekly aggregate, so re-polling it would be theater. Failed rows
+//     keep their snapshot values; advisories and publish dates stay snapshot by design.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+import { wireLiveChip, politeLoop } from "../../lib/live-data.ts";
 
 type DepWeight = "downloads" | "freshness";
 
@@ -215,11 +220,53 @@ function initDependencies(): () => void {
     { signal: ac.signal },
   );
 
+  // ── live downloads — the snapshot upgrades itself ONCE per visit ───────────
+  // ~4s in (politeLoop skips hidden tabs), fetch each external dep's last-week
+  // figure from api.npmjs.org. The whole batch is one run: partial success is
+  // fine — rows whose fetch failed keep their snapshot values — and the run only
+  // counts as a failure when EVERY fetch failed. Fresh counts flow through the
+  // EXISTING reweight path: --w re-normalizes against the fresh max, data-strength
+  // follows, and the list FLIP re-sorts through the ACTIVE lens. No repeat
+  // (everyMs: null): downloads are weekly aggregates — polling would be theater.
+  const chipEl = page.querySelector<HTMLElement>("[data-dp-live]");
+  const chip = wireLiveChip(chipEl, chipEl?.dataset.snapshot ?? "");
+  const fmtDl = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
+  const refreshDownloads = async (): Promise<void> => {
+    const results = await Promise.allSettled(
+      rows().map(async (r) => {
+        const name = r.querySelector(".dp-name")?.textContent?.trim();
+        if (!name) throw new Error("unnamed row");
+        const res = await fetch(
+          `https://api.npmjs.org/downloads/point/last-week/${encodeURIComponent(name)}`,
+          { signal: ac.signal },
+        );
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as { downloads?: number };
+        if (typeof data.downloads !== "number") throw new Error("unexpected shape");
+        r.dataset.dl = String(data.downloads);
+        // the figure stays inside the row's declared measurement span (.dp-dl)
+        const fig = r.querySelector<HTMLElement>(".dp-dl b");
+        if (fig) fig.textContent = fmtDl.format(data.downloads);
+      }),
+    );
+    if (!results.some((x) => x.status === "fulfilled")) throw new Error("npm api unreachable");
+    reweight(); // the existing path: --w + data-strength + bars + FLIP re-sort, active lens
+  };
+  politeLoop({
+    run: refreshDownloads,
+    firstDelayMs: 4000,
+    everyMs: null, // once per visit — see above
+    signal: ac.signal,
+    onSuccess: () => chip.ok(),
+    onFailure: () => chip.fail(),
+  });
+
   wireSpill();
   runField();
 
   return () => {
     ac.abort();
+    chip.destroy();
     activeField?.destroy();
   };
 }

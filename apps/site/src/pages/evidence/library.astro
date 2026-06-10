@@ -145,6 +145,10 @@ const snippetCss = `.lb-title {
         <button type="button" data-lb-lens="off" aria-pressed="false">off</button>
       </div>
     </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="lb-status" data-lb-status title="counts refresh once per visit">snapshot · {snapshotDay}</span>
+    </div>
     <p class="ev-ctl-hint">
       <span><b>bar length</b> = listens (linear) · <b>type weight</b> = the log-scaled mass</span>
       <span class="ev-hint-sep">·</span>
@@ -207,6 +211,10 @@ const snippetCss = `.lb-title {
             data-range="200"
             data-strength={(0.4 + t.w * 1.6).toFixed(2)}
             data-artist-color={t.cat}
+            data-mbid={t.mbid ?? ""}
+            data-track={t.track}
+            data-artist={t.artist}
+            data-listens={t.listens}
             style={`--w:${t.w.toFixed(3)}; --cat:${t.cat}; --bar:${t.bar.toFixed(3)};`}
           >
             <span class="lb-rank">{String(t.rank).padStart(2, "0")}</span>
@@ -294,7 +302,11 @@ const snippetCss = `.lb-title {
         <p class="ev-how-note">
           <code>--w</code> is the log-normalized listen count — real plays in, type weight and
           ink out. <code>--bar</code> is the same count kept linear, so the bar lengths stay an
-          honest chart. The rest is CSS.
+          honest chart. The rest is CSS. In the browser the counts refresh from the same
+          ListenBrainz endpoint <strong>once per visit, on purpose</strong> — the monthly window
+          moves daily, so polling would be theater. The snapshot's {tracks.length} recordings
+          stay the page's bodies: tracks that fell out of the live top {tracks.length} dim
+          rather than vanish, and new entrants wait for the next snapshot.
         </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
@@ -307,10 +319,13 @@ const snippetCss = `.lb-title {
   <footer class="ev-fineprint">
     <p>
       Listens are <strong>plays, not endorsements</strong> — a sitewide top-30 says what people
-      actually queued this {library.range}, not what anyone thinks they should have. Counts are
-      frozen at the snapshot, so the page is stable. Data:
+      actually queued this {library.range}, not what anyone thinks they should have. The
+      committed snapshot ({snapshotDay}) ships in the HTML and is what renders without
+      JavaScript; in the browser the page <strong>refreshes the counts once per visit</strong>
+      from the same endpoint when the API is reachable — the bars and ranking re-settle, the
+      bodies stay the snapshot's {tracks.length}. Data:
       <a href="https://listenbrainz.org" rel="noopener">ListenBrainz</a> sitewide top
-      recordings ({library.range} window), CC0 / open data, snapshotted {snapshotDay}.
+      recordings ({library.range} window), CC0 / open data.
     </p>
     <p class="ev-built">
       <a href="/evidence">Back to the Evidence field →</a>

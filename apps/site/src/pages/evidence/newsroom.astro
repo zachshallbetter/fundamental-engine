@@ -113,7 +113,7 @@ return pct >= 0
     <h1>Attention, <span class="accent">measured</span> — not claimed.</h1>
     <p class="ev-lede">
       A trending list asserts importance; a pageview count records it. These are the articles
-      English Wikipedia readers <strong>actually read</strong> on {dayLabel} — the
+      English Wikipedia readers <strong>actually read</strong> on <span data-nw-day-text>{dayLabel}</span> — the
       <a href="https://wikimedia.org/api/rest_v1/" rel="noopener">Wikimedia pageviews API</a>'s
       most-read ranking, run as a <strong>field</strong> and laid out like a front page.
       Pageviews become gravitational mass, and mass buys column inches: the most-read article
@@ -148,12 +148,18 @@ return pct >= 0
         <button type="button" data-nw-lens="off" aria-pressed="false">off</button>
       </div>
     </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="nw-status" data-nw-status title="checks for a newer edition once per visit">snapshot · {dayLabel}</span>
+    </div>
     <p class="ev-ctl-hint">
       <span data-nw-hint><b>size & placement</b> = pageviews — the most-read story leads the page</span>
       <span class="ev-hint-sep">·</span>
       <span data-nw-lens-hint><b>color</b> = the day-over-day move — warm rising, cool falling, gray new</span>
     </p>
   </div>
+
+  <p class="nw-dateline" data-nw-dateline>edition: {dayLabel} (UTC)</p>
 
   <ul class="ev-legend" aria-label="How to read the field">
     <li><span class="ev-k ev-k-weight">Aa</span> <b>size & placement</b> = pageviews — lead, deck, then the index</li>
@@ -162,7 +168,7 @@ return pct >= 0
     <li><span class="ev-k ev-k-live"></span> <b>ink</b> = alive — hold a story and the field gathers (<code>--d</code>); placement never moves</li>
   </ul>
 
-  <div class="nw-front" data-nw-list>
+  <div class="nw-front" data-nw-list data-nw-day={newsroom.day}>
     <article
       class="nw-row nw-lead"
       data-body="attract"
@@ -266,7 +272,10 @@ return pct >= 0
       weight, <code>--cat</code> the lens color, <code>--d</code> the engine's live local density
       (hold a story and the field gathers), and <code>--field-attention</code> the recipe's eased
       attention metric, which sharpens the index item nearest the viewport center. Placement is
-      fixed; only the ink is alive.
+      fixed; only the ink is alive. In the browser the page also checks for a newer edition —
+      <strong>once per visit, on purpose</strong>: the pageviews API publishes each finished day
+      exactly once, so a polling loop would be theater. If a newer day exists, the front page is
+      rebuilt from it — same shaping rules, same markup, same field — and the dateline moves.
     </p>
 
     <div class="ev-how-cols">
@@ -305,9 +314,12 @@ return pct >= 0
   <footer class="ev-fineprint">
     <p>
       Pageviews are <strong>attention, not importance</strong> — they say what the world read,
-      not what mattered. The counts are English Wikipedia's most-read articles for {dayLabel},
-      with the trend computed against the prior day; the snapshot was taken {snapDate} (UTC).
-      Data: <a href="https://wikimedia.org/api/rest_v1/" rel="noopener">Wikimedia pageviews
+      not what mattered. The committed snapshot is the {dayLabel} edition (trend vs the prior
+      day), taken {snapDate} (UTC) — that baseline ships in the HTML and is what renders without
+      JavaScript. In the browser the page <strong>upgrades itself once per visit</strong> to the
+      latest fully-available day when the API is reachable; the API publishes each finished day
+      once, so a single check is the honest cadence. Data:
+      <a href="https://wikimedia.org/api/rest_v1/" rel="noopener">Wikimedia pageviews
       API</a> (CC0).
     </p>
     <p class="ev-built">

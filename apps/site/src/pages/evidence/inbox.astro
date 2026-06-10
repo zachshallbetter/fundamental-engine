@@ -74,6 +74,10 @@ const items = items1
   }))
   .sort((a, b) => b.w - a.w);
 
+// the normalization constants, handed to the runtime so live arrivals are scored on the
+// SAME scale as the snapshot (rec/vot/vie in 0..1, clamped for out-of-range live values).
+const norm = { lhMin, lhSpan, sMin, sSpan, lvMin, lvSpan };
+
 const fmtAge = (h: number) =>
   h < 48
     ? `${Math.round(h)}h ago`
@@ -132,6 +136,29 @@ const recipe = {
   metrics: [...new Set([...(base.metrics ?? []), "attention"])],
 };
 // the pipeline writes --field-attention per ask (eased 0..1)`;
+
+const SNIPPET_LIVE = `// every 5 min (politely: hidden tabs skip the
+// attempt, 3 misses retire the loop, and the
+// API's backoff field is honored) — fetch the
+// same unanswered-[javascript] feed:
+const fresh = items.filter(
+  (q) => !onPage.has(q.question_id), // dedupe
+);
+
+// new asks ENTER THE FIELD as full bodies —
+// the exact card contract, marked data-live-item
+// (age reads "new": honest, not snapshot-relative)
+stream.prepend(...cards);
+
+// N grew, so the budget grows with it —
+// conservation stays exact:
+budget = N × 0.42;  reallocate();  // Σ w = budget
+
+// the scoped field re-binds to the new bodies
+field.destroy(); field = applyRecipe(…);
+
+// past 60 unpinned, the oldest decay
+// off the bottom — then renormalize again`;
 
 const SNIPPET_CSS = `.ix-item {
   /* --w  = the server-allocated share (conserved)
@@ -209,6 +236,12 @@ const SNIPPET_CSS = `.ix-item {
         >100% allocated · pinned 0 · free {budget.toFixed(1)}</span
       >
     </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="ix-live" data-ix-live data-snapshot={snapshotDay} data-live="off"
+        >snapshot · {snapshotDay}</span
+      >
+    </div>
     <p class="ev-ctl-hint">
       <span data-ix-hint
         ><b>size</b> = urgency, recency-leaning — fresh asks pull hardest before they go cold</span
@@ -228,6 +261,11 @@ const SNIPPET_CSS = `.ix-item {
       is conserved, never created
     </li>
     <li>
+      <span class="ev-k ix-k-new" aria-hidden="true">new</span> the stream is <b>live</b> — new
+      unanswered asks arrive at the top and the budget renormalizes over the larger field; past
+      60 unpinned, <b>old asks decay off the bottom</b> — the inbox story, literally
+    </li>
+    <li>
       <span class="ev-k ix-k-live" aria-hidden="true"></span> the ink is <b>live</b> —
       <b>--w</b> is the server-allocated share and <b>--cat</b> the lens color; <b>--d</b> is the
       engine's local density (hold an ask and the field gathers) and <b>--field-attention</b> the
@@ -236,7 +274,13 @@ const SNIPPET_CSS = `.ix-item {
   </ul>
 
   <div class="ix-split" data-ix-split>
-    <ol class="ix-list" id="ix-stream" data-ix-list aria-label="The stream — every ask, competing">
+    <ol
+      class="ix-list"
+      id="ix-stream"
+      data-ix-list
+      data-ix-norm={JSON.stringify(norm)}
+      aria-label="The stream — every ask, competing"
+    >
       {
         items.map((it) => (
           <li
@@ -250,6 +294,7 @@ const SNIPPET_CSS = `.ix-item {
             data-rec={it.rec.toFixed(4)}
             data-vot={it.vot.toFixed(4)}
             data-vie={it.vie.toFixed(4)}
+            data-asked={it.askedAt}
             style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
           >
             <div class="ix-body">
@@ -326,11 +371,17 @@ const SNIPPET_CSS = `.ix-item {
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">2 — the conserved renormalization</p>
-        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
+        <p class="ev-how-label">2 — the conserved renormalization, live arrivals included</p>
+        <CodeTabs
+          variants={[
+            { label: "budget", lang: "ts", code: SNIPPET_TS },
+            { label: "arrivals", lang: "ts", code: SNIPPET_LIVE },
+          ]}
+        />
         <p class="ev-how-note">
           That invariant is the mechanic: the meter reads 100% no matter what you do, because
-          pinning or re-blending can only move attention, not mint it.
+          pinning, re-blending, arriving, or decaying can only move attention, not mint it.
+          Arrivals are the same flow end to end: fetch → dedupe → enter the field → renormalize.
         </p>
       </div>
 
@@ -354,7 +405,13 @@ const SNIPPET_CSS = `.ix-item {
     <p>
       Urgency here is <strong>competition, not importance</strong> — a fixed budget split by
       recency, votes, and views says which asks are winning your attention right now, not which
-      deserve it. Ages are measured against the snapshot, so the page is stable. Data: the
+      deserve it. Ages are measured against the snapshot, so the page is stable; live arrivals
+      are marked <em>new</em> instead of carrying a snapshot-relative age. The baseline is a
+      <strong>committed snapshot</strong>, and that is what ships in the HTML. In the browser
+      the stream <strong>upgrades itself to live arrivals</strong> when the API is reachable: it
+      re-polls the same unanswered-[javascript] feed every five minutes, new asks enter at the
+      top, the budget renormalizes over the larger field, and past 60 unpinned the oldest asks
+      decay off the bottom — falling back to the snapshot if a poll fails. Data: the
       <a href="https://api.stackexchange.com" rel="noopener">Stack Exchange API</a> (stackoverflow.com,
       unanswered [javascript] questions), CC BY-SA 4.0, snapshotted {snapshotDay}.
     </p>

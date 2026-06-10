@@ -5,12 +5,34 @@
 //   · shared-shelf affinity — hover or focus a book and every shelf-mate sharing ANY subject
 //     lights up (.cited); the strongest shared subject floats beside the card as a chip.
 //   · Field on/off — off, the page collapses to a plain grid and the scoped field is destroyed.
+//   · LIVE — ONCE per visit (shelf counts drift slowly; polling would be theater) the page
+//     re-runs the same Open Library search the snapshot script uses and updates ratings,
+//     stars, want-to-read, and editions IN PLACE — matching books by work key — then runs
+//     the fresh counts back through the ACTIVE weight lens and FLIP re-sorts (the existing
+//     reweight path, verbatim). Books missing from the fresh result keep their snapshot
+//     values, silently. Any failure keeps the snapshot.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+import { wireLiveChip, politeLoop } from "../../lib/live-data";
 
 type Signal = "consensus" | "anticipation" | "longevity";
 type Lens = "subject" | "off";
+
+// the same search apps/site/scripts/snapshot-examples.mjs runs (CORS-enabled, no key)
+const LIVE_URL =
+  "https://openlibrary.org/search.json?q=subject:%22science%20fiction%22&fields=key,title,author_name,first_publish_year,ratings_count,ratings_average,want_to_read_count,currently_reading_count,edition_count,subject&limit=60";
+const FIRST_CHECK_MS = 4_000;
+
+interface OlDoc {
+  key?: string;
+  ratings_count?: number;
+  ratings_average?: number;
+  want_to_read_count?: number;
+  edition_count?: number;
+}
+
+const fmtCount = (n: number): string => n.toLocaleString("en-US");
 
 const reduceMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -203,6 +225,74 @@ function initCatalog(): () => void {
     c.addEventListener("blur", clearAffinity, { signal: ac.signal });
   });
 
+  // ── live counts — ONCE per visit, the snapshot upgrades itself in place ────
+  // The committed snapshot stays the SSR baseline and the no-JS truth; the live
+  // pass updates the counts on the SAME 28 cards (matched by work key), then the
+  // existing reweight path re-runs the ACTIVE lens and FLIP re-sorts the shelf.
+  const statusEl = page.querySelector<HTMLElement>("[data-cat-status]");
+  const liveChip = wireLiveChip(statusEl, (statusEl?.textContent ?? "").replace(/^snapshot · /, ""));
+
+  const applyLive = (docs: OlDoc[]): void => {
+    const byId = new Map(cards.map((c) => [c.id, c]));
+    let touched = false;
+    for (const d of docs) {
+      const wid = d.key?.split("/").filter(Boolean).pop();
+      const card = wid ? byId.get(`bk-${wid}`) : undefined;
+      if (!card) continue; // not on this shelf — the snapshot's books are the bodies
+      touched = true;
+      if (typeof d.ratings_count === "number") {
+        card.dataset.ratings = String(d.ratings_count);
+        const ratings = card.querySelector<HTMLElement>(".cat-ratings");
+        if (ratings) ratings.textContent = `${fmtCount(d.ratings_count)} ratings`;
+        const label = card.getAttribute("aria-label");
+        if (label)
+          card.setAttribute(
+            "aria-label",
+            label.replace(/[\d,]+ ratings\./, `${fmtCount(d.ratings_count)} ratings.`),
+          );
+      }
+      if (typeof d.ratings_average === "number") {
+        const stars = card.querySelector<HTMLElement>(".cat-stars");
+        if (stars) {
+          stars.textContent = `★ ${d.ratings_average.toFixed(2)}`;
+          stars.setAttribute("aria-label", `${d.ratings_average.toFixed(2)} stars`);
+        }
+      }
+      if (typeof d.want_to_read_count === "number") {
+        card.dataset.want = String(d.want_to_read_count);
+        const want = card.querySelector<HTMLElement>(".cat-want");
+        if (want) want.textContent = `${fmtCount(d.want_to_read_count)} want to read`;
+      }
+      if (typeof d.edition_count === "number") {
+        card.dataset.editions = String(d.edition_count);
+        const editions = card.querySelector<HTMLElement>(".cat-editions");
+        if (editions) editions.textContent = `${d.edition_count} editions`;
+      }
+    }
+    if (!touched) throw new Error("no matching books"); // a wrong shape shouldn't read as live
+    // fresh counts → the ACTIVE weight lens → FLIP re-sort: the existing path, verbatim
+    clearAffinity();
+    reweight();
+  };
+
+  const refresh = async (): Promise<void> => {
+    const res = await fetch(LIVE_URL, { signal: ac.signal });
+    if (!res.ok) throw new Error(String(res.status));
+    const data: unknown = await res.json();
+    const docs = (data as { docs?: OlDoc[] }).docs;
+    if (!Array.isArray(docs)) throw new Error("unexpected shape");
+    applyLive(docs);
+  };
+
+  politeLoop({
+    run: refresh,
+    firstDelayMs: FIRST_CHECK_MS,
+    everyMs: null, // refresh ONCE per visit — shelf counts drift slowly by design
+    signal: ac.signal,
+    onSuccess: () => liveChip.ok(),
+    onFailure: () => liveChip.fail(),
+  });
+
   // ── controls ─────────────────────────────────────────────────────────────
   weightBtns.forEach((b) =>
     b.addEventListener(
@@ -258,6 +348,7 @@ function initCatalog(): () => void {
 
   return () => {
     ac.abort();
+    liveChip.destroy();
     clearAffinity();
     activeField?.destroy();
   };

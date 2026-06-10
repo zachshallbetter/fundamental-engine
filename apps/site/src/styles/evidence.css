@@ -820,3 +820,52 @@ a.ev-side-item.is-live:hover {
     transition: none;
   }
 }
+
+/* ── live status chip — "snapshot · <label>" / "live · checked Ns ago" ────────
+   wireLiveChip (lib/live-data.ts) owns the text + data-live; pages place the
+   chip in the controls row. The snapshot stays the SSR baseline and the no-JS
+   truth — the dot only warms once a refresh has actually landed. */
+.ev-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.ev-live::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ev-live[data-live='on'] {
+  border-color: color-mix(in srgb, #2dd4bf 35%, var(--line));
+}
+.ev-live[data-live='on']::before {
+  background: #2dd4bf;
+  box-shadow: 0 0 6px color-mix(in srgb, #2dd4bf 70%, transparent);
+}
+
+/* ── the refresh delta — "+N since snapshot" under the citations figure ───────
+   only inserted when a count actually moved; quiet by design. */
+.ev-cites-delta {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: color-mix(in srgb, #2dd4bf 55%, var(--text-4));
+}
+.ev-cites-delta[data-dir='down'] {
+  color: color-mix(in srgb, #ff6b6b 55%, var(--text-4));
+}

@@ -165,6 +165,14 @@
   min-width: 2.5ch;
 }
 
+/* the quiet honesty note — it's this device's localStorage, not an account */
+.ex-memory .mx-persist {
+  font-size: 0.68rem;
+  font-style: italic;
+  color: var(--text-4);
+  white-space: nowrap;
+}
+
 /* legend key ring */
 .ex-memory .mx-k-ring {
   width: 12px;
@@ -220,6 +228,7 @@
 
 .ex-memory[data-field="off"] .mx-days,
 .ex-memory[data-field="off"] .mx-days-out,
+.ex-memory[data-field="off"] .mx-persist,
 .ex-memory[data-field="off"] .mx-reset {
   opacity: 0.4;
   pointer-events: none;

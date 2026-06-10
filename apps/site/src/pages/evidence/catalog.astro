@@ -143,6 +143,10 @@ const SNIP_CSS = `.cat-title a {
         <button type="button" data-cat-lens="off" aria-pressed="false">off</button>
       </div>
     </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="cat-status" data-cat-status title="counts refresh once per visit">snapshot · {snapshotDay}</span>
+    </div>
     <p class="ev-ctl-hint">
       <span data-cat-hint><b>size</b> = ratings — the evidence trust math, retargeted at the shelf</span>
       <span class="ev-hint-sep">·</span>
@@ -219,7 +223,10 @@ const SNIP_CSS = `.cat-title a {
       Two live channels ride on top: the page's hidden engine writes <code>--d</code> (local
       particle density) to every <code>data-hot</code> card each frame, and the scoped recipe's
       attention lane writes an eased <code>--field-attention</code> — CSS turns both into a
-      felt glow and lift, and both go quiet when the field is off.
+      felt glow and lift, and both go quiet when the field is off. In the browser the counts
+      refresh from the same Open Library search <strong>once per visit, on purpose</strong> —
+      shelf counts drift slowly (a few ratings a day, not a ticker), so polling would be
+      theater. Fresh counts run back through the active weighting and the shelf re-settles.
     </p>
 
     <div class="ev-how-cols">
@@ -266,9 +273,11 @@ const SNIP_CSS = `.cat-title a {
     <p>
       Consensus here is <strong>engagement, not quality</strong> — a rating count says how many
       readers weighed in, not whether the book deserves a spot on your shelf. Making that
-      signal legible without faking a verdict is the point. Data:
-      <a href="https://openlibrary.org" rel="noopener">Open Library search API</a> (open data),
-      snapshotted {snapshotDay}.
+      signal legible without faking a verdict is the point. The committed snapshot
+      ({snapshotDay}) ships in the HTML and is what renders without JavaScript; in the browser
+      the page <strong>refreshes the counts once per visit</strong> from the same search when
+      the API is reachable, and the shelf re-settles through the active weighting. Data:
+      <a href="https://openlibrary.org" rel="noopener">Open Library search API</a> (open data).
     </p>
     <p class="ev-built">
       <a href="/evidence">Back to the Evidence field →</a>

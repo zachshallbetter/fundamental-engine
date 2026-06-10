@@ -9,15 +9,65 @@
 //     w = 1; the remaining budget redistributes over the unpinned stream. Unpin it and the
 //     card returns to its place in the stream's current sort order;
 //   · lens segments (fresh / voted / seen) re-blend the urgency and FLIP re-sort the stream;
+//   · LIVE ARRIVALS — every 5 minutes (politely: hidden tabs skip, 3 consecutive misses retire
+//     the loop, and the API's backoff field is honored) the page re-polls the same unanswered-
+//     [javascript] feed the snapshot script uses. New asks (deduped by question id against
+//     everything on the page) enter at the stream top as full bodies — the exact card contract,
+//     marked data-live-item so the age reads "new" instead of a snapshot-relative figure — then
+//     the budget renormalizes over the larger field (N grew; Σw = N × 0.42 stays exact) and the
+//     scoped field re-binds. Past 60 unpinned items, the oldest asks decay off the bottom (a
+//     brief fade, removal, renormalize again);
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+import { politeLoop, wireLiveChip } from "../../lib/live-data";
 
 type IxLens = "fresh" | "voted" | "seen";
 
 const BUDGET_PER_ITEM = 0.42;
+const STREAM_CAP = 60; // unpinned items the stream holds before the oldest decay off
+
+// the same feed apps/site/scripts/snapshot-examples.mjs snapshots (CORS-enabled, no key;
+// the anonymous quota is ~300/day, so the cadence stays a courteous 5 minutes)
+const LIVE_URL =
+  "https://api.stackexchange.com/2.3/questions/no-answers?site=stackoverflow&tagged=javascript&filter=default&order=desc&sort=creation&pagesize=20";
+const FIRST_POLL_MS = 4_000;
+const POLL_MS = 5 * 60_000;
+const MAX_FAILURES = 3;
+
+// the Stack Exchange /questions row shape (the fields this page reads)
+interface SeQuestion {
+  question_id?: number;
+  title?: string;
+  tags?: unknown;
+  score?: number;
+  view_count?: number;
+  creation_date?: number;
+  link?: string;
+  owner?: { display_name?: string } | null;
+}
+
+// the normalization constants the server rendered with — live arrivals are scored on the
+// same scale (clamped: a brand-new ask can sit past the snapshot's freshest edge)
+interface IxNorm {
+  lhMin: number;
+  lhSpan: number;
+  sMin: number;
+  sSpan: number;
+  lvMin: number;
+  lvSpan: number;
+}
+
+const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
+const fmtViews = (v: number): string => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v));
+// API titles arrive HTML-entity-encoded; a detached textarea decodes them as plain text
+const decodeEntities = (s: string): string => {
+  const t = document.createElement("textarea");
+  t.innerHTML = s;
+  return t.value;
+};
 
 const BLENDS: Record<IxLens, { rec: number; vot: number; vie: number }> = {
   fresh: { rec: 0.6, vot: 0.25, vie: 0.15 },
@@ -184,6 +234,180 @@ function initInbox(): () => void {
     }
   };
 
+  // ── live arrivals — the snapshot upgrades itself to a feed ──────────────────
+  // The chip in the controls row narrates the state: "snapshot · <date>" until the
+  // first successful poll, "live · checked Ns ago" (ticking) after it.
+  const chipEl = page.querySelector<HTMLElement>("[data-ix-live]");
+  const chip = wireLiveChip(chipEl, chipEl?.dataset.snapshot ?? "");
+
+  // build a stream card with the EXACT contract the server renders — every attribute the
+  // field, the lenses, and the budget read. Live items carry data-live-item and an honest
+  // "new" tick where snapshot cards carry a snapshot-relative age.
+  const buildCard = (q: SeQuestion, n: IxNorm, now: number): HTMLElement => {
+    const title = decodeEntities(q.title ?? "");
+    const hours = Math.max(0.5, (now - (q.creation_date ?? now)) / 3600);
+    const rec = clamp01(1 - (Math.log(hours + 1) - n.lhMin) / n.lhSpan);
+    const vot = clamp01(((q.score ?? 0) - n.sMin) / n.sSpan);
+    const vie = clamp01((Math.log((q.view_count ?? 0) + 1) - n.lvMin) / n.lvSpan);
+
+    const li = document.createElement("li");
+    li.className = "ix-item";
+    li.id = `q-${q.question_id}`;
+    li.dataset.body = "attract";
+    li.setAttribute("data-feedback", "");
+    li.setAttribute("data-hot", "");
+    li.dataset.range = "200";
+    li.dataset.strength = "0.40"; // reallocate() assigns the real mass immediately
+    li.dataset.rec = rec.toFixed(4);
+    li.dataset.vot = vot.toFixed(4);
+    li.dataset.vie = vie.toFixed(4);
+    li.dataset.asked = String(q.creation_date ?? Math.round(now));
+    li.setAttribute("data-live-item", "");
+    li.style.setProperty("--w", "0.000");
+    li.style.setProperty("--cat", `hsl(${Math.round(205 + rec * 125)} 74% 64%)`);
+
+    const body = document.createElement("div");
+    body.className = "ix-body";
+    const a = document.createElement("a");
+    a.className = "ix-title";
+    a.href = q.link ?? "#";
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = title;
+    const meta = document.createElement("span");
+    meta.className = "ix-meta";
+    const tagsEl = document.createElement("span");
+    tagsEl.className = "ix-tags";
+    const tags = Array.isArray(q.tags)
+      ? q.tags.filter((t): t is string => typeof t === "string")
+      : [];
+    for (const t of tags) {
+      const tag = document.createElement("span");
+      tag.className = "ix-tag";
+      tag.textContent = t;
+      tagsEl.appendChild(tag);
+    }
+    const rest = document.createElement("span");
+    rest.className = "ix-meta-rest";
+    const tick = document.createElement("span");
+    tick.className = "ix-new";
+    tick.textContent = "new";
+    rest.append(tick, ` · ${decodeEntities(q.owner?.display_name ?? "unknown")}`);
+    meta.append(tagsEl, rest);
+    body.append(a, meta);
+
+    const stats = document.createElement("div");
+    stats.className = "ix-stats";
+    const stat = (val: string, label: string): HTMLElement => {
+      const s = document.createElement("span");
+      s.className = "ix-stat";
+      const b = document.createElement("b");
+      b.textContent = val;
+      const l = document.createElement("span");
+      l.className = "ix-stat-l";
+      l.textContent = label;
+      s.append(b, l);
+      return s;
+    };
+    const share = document.createElement("span");
+    share.className = "ix-share";
+    share.setAttribute("aria-hidden", "true");
+    share.appendChild(document.createElement("i"));
+    stats.append(
+      stat(String(q.score ?? 0), "votes"),
+      stat(fmtViews(q.view_count ?? 0), "views"),
+      share,
+    );
+
+    const pin = document.createElement("button");
+    pin.className = "ix-pin";
+    pin.type = "button";
+    pin.setAttribute("aria-pressed", "false");
+    pin.setAttribute("aria-label", `Pin "${title}"`);
+    pin.textContent = "pin";
+
+    li.append(body, stats, pin);
+    return li;
+  };
+
+  // decay off the bottom: past STREAM_CAP unpinned items, the OLDEST asks leave —
+  // a brief fade, removal, then the budget renormalizes over the smaller field.
+  const trimStream = (): void => {
+    const unpinned = streamItems().filter((it) => !pinned.has(it));
+    const excess = unpinned.length - STREAM_CAP;
+    if (excess <= 0) return;
+    const leaving = [...unpinned]
+      .sort((a, b) => (Number(a.dataset.asked) || 0) - (Number(b.dataset.asked) || 0))
+      .slice(0, excess);
+    const finish = (): void => {
+      if (ac.signal.aborted) return;
+      leaving.forEach((it) => it.remove());
+      reallocate(); // N shrank — Σw re-pins to the smaller budget, exactly
+      runField(); // the scoped field re-binds without the departed bodies
+    };
+    if (reduceMotion()) {
+      finish();
+      return;
+    }
+    leaving.forEach((it) => it.setAttribute("data-ix-leaving", ""));
+    window.setTimeout(finish, 450); // matches the CSS fade
+  };
+
+  // new asks enter the field: dedupe by question id against EVERYTHING on the page
+  // (stream and focus pane), prepend with the existing FLIP settle plus a brief
+  // opacity+rise entry, renormalize over the larger N, re-bind the scoped field.
+  const applyArrivals = (rows: SeQuestion[], n: IxNorm): void => {
+    const known = new Set(itemsOf().map((it) => it.id));
+    const now = Date.now() / 1000;
+    const fresh = rows
+      .filter((q) => Number.isFinite(q.question_id) && !known.has(`q-${q.question_id}`))
+      .map((q) => buildCard(q, n, now));
+    if (!fresh.length) return;
+    const anchor = list.firstChild;
+    flip(() => fresh.forEach((c) => list.insertBefore(c, anchor)));
+    if (!reduceMotion())
+      fresh.forEach((c) => {
+        c.setAttribute("data-ix-entering", "");
+        c.addEventListener("animationend", () => c.removeAttribute("data-ix-entering"), {
+          once: true,
+        });
+      });
+    reallocate(); // N grew — the budget grows with it; Σw = N × 0.42, still exact
+    runField(); // destroy + re-apply so the new bodies join the scoped field
+    trimStream();
+  };
+
+  const wireArrivals = (): void => {
+    if (typeof fetch !== "function") return;
+    let norm: IxNorm | null = null;
+    try {
+      norm = JSON.parse(list.dataset.ixNorm ?? "") as IxNorm;
+    } catch {
+      /* no normalization constants — the page stays a snapshot */
+    }
+    if (!norm) return;
+    const n = norm;
+    let notBefore = 0; // the API's backoff contract: don't ask again before this
+    politeLoop({
+      run: async () => {
+        if (Date.now() < notBefore) return; // honoring backoff — a skip, not a failure
+        const res = await fetch(LIVE_URL, { signal: ac.signal });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as { items?: unknown; backoff?: number };
+        if (typeof data?.backoff === "number")
+          notBefore = Date.now() + data.backoff * 1000;
+        if (!Array.isArray(data?.items)) throw new Error("unexpected shape");
+        applyArrivals(data.items as SeQuestion[], n);
+        chip.ok();
+      },
+      firstDelayMs: FIRST_POLL_MS,
+      everyMs: POLL_MS,
+      maxFailures: MAX_FAILURES,
+      signal: ac.signal,
+      onFailure: () => chip.fail(),
+    });
+  };
+
   // ── pinning — click anywhere on an ask, in either pane (links keep navigating).
   // Pin: the card travels to the focus pane. Unpin: it returns to its place in the
   // stream's current sort order. ───────────────────────────────────────────────
@@ -258,9 +482,11 @@ function initInbox(): () => void {
   reallocate();
   syncFocus();
   runField();
+  wireArrivals();
 
   return () => {
     ac.abort();
+    chip.destroy();
     activeField?.destroy();
   };
 }

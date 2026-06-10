@@ -76,19 +76,22 @@ const snippetCss = `.ev-finding {
     'wght' calc(380 + var(--w) * 360);
 }`;
 
-const snippetInstall = `// npm
-import { createField } from '@field-ui/vanilla';
+const snippetLive = `// trust itself updates: ONCE per visit
+// (~4s in), one batched request per topic
+// asks OpenAlex for current counts —
+fetch('https://api.openalex.org/works'
+  + '?filter=ids.openalex:W301…|W204…'
+  + '&select=id,cited_by_count');
 
-// or: the web component, zero config
-<script type="module"
-  src="https://esm.sh/@field-ui/elements">
-</script>
-<field-root></field-root>
-
-// data-* in → --field-* out: the engine
-// writes --d (live density) and the recipe
-// writes --field-attention (eased attention).
-// The rest is CSS.`;
+// each finding updates IN PLACE
+// (data-cites + the figure + a quiet
+// "+N since snapshot" when it moved),
+// then the SAME reweight path re-runs:
+// --trust, data-strength, the bar,
+// the FLIP re-sort — trust re-settles
+// in front of you. Once, not a poll:
+// citations move slowly; polling
+// would be theater.`;
 ---
 
 <ExampleShell
@@ -140,6 +143,10 @@ import { createField } from '@field-ui/vanilla';
           <button type="button" data-ev-lens="recency" aria-pressed="false">recency</button>
           <button type="button" data-ev-lens="trust" aria-pressed="false">trust</button>
         </div>
+      </div>
+      <div class="ev-ctl">
+        <span class="ev-ctl-l">Data</span>
+        <span class="ev-live" data-ev-live>snapshot · OpenAlex</span>
       </div>
       <p class="ev-ctl-hint">
         <span data-ev-hint><b>size</b> = citations — how much the field leans on each work</span>
@@ -289,8 +296,14 @@ import { createField } from '@field-ui/vanilla';
         </div>
 
         <div class="ev-how-col">
-          <p class="ev-how-label">3 — add field-ui to any project</p>
-          <CodeTabs variants={[{ label: "TS", lang: "ts", code: snippetInstall }]} />
+          <p class="ev-how-label">3 — the snapshot upgrades itself</p>
+          <CodeTabs variants={[{ label: "TS", lang: "ts", code: snippetLive }]} />
+          <p class="ev-how-note">
+            The refresh covers every work on the page, deferred ones included — findings the
+            accretion reveal surfaces later already carry refreshed counts, because each reveal
+            folds in through the same reweight. Works the API doesn't return keep their snapshot
+            values; the delta note only appears where a count actually moved.
+          </p>
           <div class="ev-how-ctas">
             <a href="/docs" class="ev-how-link">Read the docs →</a>
             <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
@@ -304,7 +317,12 @@ import { createField } from '@field-ui/vanilla';
         Trust here is <strong>consensus, not correctness</strong> — citation count says how much the
         field has engaged a work, not whether it's right. Making that signal legible without faking a
         verdict is the point. Data: <a href="https://openalex.org" rel="noopener">OpenAlex</a> (CC0),
-        snapshotted.
+        snapshotted — and the snapshot is what ships in the HTML. In the browser the page
+        <strong>upgrades itself to current OpenAlex counts once per visit</strong> when the API is
+        reachable: each finding updates in place, counts that moved carry a quiet
+        "since snapshot" delta, and the trust re-settles through the same weighting that built the
+        page. Once, not a poll — citations move slowly, and polling them would be theater. If the
+        API can't be reached, the snapshot stands.
       </p>
       <p class="ev-built">
         <a href="/">See the field with its particles →</a>

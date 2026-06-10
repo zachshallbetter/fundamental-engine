@@ -29,6 +29,66 @@
   color: var(--text-3);
 }
 
+/* the live chip — "live · checked Ns ago" once a poll succeeds; "snapshot · <date>"
+   before the first success or after the loop retires. The dot goes teal when live. */
+.ex-inbox .ix-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.18rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  color: var(--text-4);
+  white-space: nowrap;
+}
+.ex-inbox .ix-live::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ex-inbox .ix-live[data-live='on'] {
+  color: var(--text-3);
+  border-color: color-mix(in srgb, #2dd4bf 35%, var(--line));
+}
+.ex-inbox .ix-live[data-live='on']::before {
+  background: #2dd4bf;
+  box-shadow: 0 0 6px color-mix(in srgb, #2dd4bf 70%, transparent);
+}
+
+/* the "new" tick — live arrivals can't honestly carry a snapshot-relative age */
+.ex-inbox .ix-new {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* arrivals enter with a brief opacity+rise; departures fade off the bottom */
+.ex-inbox .ix-item[data-ix-entering] {
+  animation: ix-enter 0.45s ease-out;
+}
+@keyframes ix-enter {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+}
+.ex-inbox .ix-item[data-ix-leaving] {
+  opacity: 0 !important;
+  transition: opacity 0.4s ease-out;
+  pointer-events: none;
+}
+
 /* legend keys */
 .ex-inbox .ix-k-pin {
   width: 12px;
@@ -55,6 +115,17 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--accent) 45%, transparent);
   box-shadow: 0 0 8px var(--accent);
+}
+.ex-inbox .ix-k-new {
+  width: auto;
+  padding: 0 0.3rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 /* ── the focus split: stream left, focus pane right (~38%) ─────────────────── */
@@ -412,6 +483,13 @@
 @media (prefers-reduced-motion: reduce) {
   .ex-inbox .ix-item,
   .ex-inbox .ix-share i {
+    transition: none;
+  }
+  /* entries/departures: the runtime already skips the animations; belt to its braces */
+  .ex-inbox .ix-item[data-ix-entering] {
+    animation: none;
+  }
+  .ex-inbox .ix-item[data-ix-leaving] {
     transition: none;
   }
 }

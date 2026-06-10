@@ -442,3 +442,38 @@
     transition: none;
   }
 }
+
+/* ── live status chip — "live · checked Ns ago" / "snapshot · <date>" ─────── */
+.ex-library .lb-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.ex-library .lb-status::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.ex-library .lb-status[data-live="on"]::before {
+  background: hsl(163 72% 50%);
+  box-shadow: 0 0 6px hsl(163 72% 50% / 0.55);
+}
+
+/* ── fell off the chart — the live top 30 moved on; the row stays, dimmed.
+      This is data provenance, not the field, so it persists when the field
+      is off (last in the file: it wins the specificity tie on purpose). ── */
+.ex-library .lb-row[data-lb-fell] {
+  opacity: calc((0.58 + var(--w) * 0.42) * 0.72);
+}

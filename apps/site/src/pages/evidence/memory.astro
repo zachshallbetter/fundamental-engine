@@ -59,6 +59,17 @@ const recipe = {
 };
 // the pipeline writes --field-attention per card (eased 0..1)`;
 
+const SNIPPET_PERSIST = `// reviews persist on this device — localStorage,
+// not an account:
+"fui:memory-reviews" → { word: reviewedAtDay }
+"fui:memory-day"     → the slider's day
+
+// restore on load: only words present on the
+// page; the slider + decay render from the
+// stored day. "reset reviews" clears both keys.
+// Storage reads/writes never throw — a private
+// window simply doesn't remember.`;
+
 const SNIPPET_CSS = `.mx-card {
   /* --w = retention (pure data math — the curve)
      --d = live engine density, data-hot gathers it
@@ -130,6 +141,7 @@ const SNIPPET_CSS = `.mx-card {
         value={String(DAYS0)}
       />
       <output class="mx-days-out" data-mx-days-out for="mx-days">{DAYS0}d</output>
+      <span class="mx-persist">reviews persist on this device</span>
     </div>
     <div class="ev-ctl">
       <button type="button" class="mx-reset" data-mx-reset>reset reviews</button>
@@ -208,11 +220,18 @@ const SNIPPET_CSS = `.mx-card {
       </div>
 
       <div class="ev-how-col">
-        <p class="ev-how-label">2 — the forgetting curve</p>
-        <CodeTabs variants={[{ label: "TS", lang: "ts", code: SNIPPET_TS }]} />
+        <p class="ev-how-label">2 — the forgetting curve, and where reviews live</p>
+        <CodeTabs
+          variants={[
+            { label: "curve", lang: "ts", code: SNIPPET_TS },
+            { label: "persist", lang: "ts", code: SNIPPET_PERSIST },
+          ]}
+        />
         <p class="ev-how-note">
           The shape is Ebbinghaus's: exponential decay with a stability term. The frequencies
           are real; the curve's constants are tuned for legibility, not fitted to recall data.
+          Reviews and the slider's day persist in this device's localStorage — close the tab,
+          come back, and the field remembers what you reviewed.
         </p>
       </div>
 

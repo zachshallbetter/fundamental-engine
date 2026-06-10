@@ -6,10 +6,15 @@
 //     signal, then re-sort with a FLIP reflow so you watch the field re-settle.
 //   · hover a finding → SVG threads to the works it builds on (referenced_works within the set).
 //   · question tabs swap which topic is live.
+//   · LIVE — once per visit (~4s in) the page asks OpenAlex for every work's CURRENT citation
+//     count (one batched request per topic) and updates each finding in place; the existing
+//     reweight path then re-settles trust in front of the reader. Once, not a poll: citations
+//     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
+import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
 
 const NS = "http://www.w3.org/2000/svg";
 const reduceMotion = () =>
@@ -399,10 +404,82 @@ function initEvidence(): () => void {
     if (hashTarget && hashTarget !== hashTopic) hashTarget.scrollIntoView();
   }
 
+  // ── live citations — trust itself updates, ONCE per visit ─────────────────
+  // ~4s after the initial wiring (politeLoop skips hidden tabs), fetch CURRENT
+  // cited_by_count for every work on the page — one batched OpenAlex request per
+  // topic, work ids pipe-joined from the findings' element ids (slug--W123…).
+  // Every finding updates IN PLACE, deferred (still-hidden) ones included, so
+  // batches the accretion reveal surfaces later already carry refreshed counts:
+  //   · data-cites + the formatted figure (+ the trust block's aria-label),
+  //   · a quiet "±N since snapshot" line, only where the count actually moved,
+  // then the EXISTING reweight path re-runs for the active topic — --trust,
+  // data-strength, the bar width, and the FLIP re-sort all flow through the
+  // same code the weight buttons use, so trust literally re-settles in front of
+  // the reader. The other topic folds in via wireTopic on its next tab switch.
+  // The run only fails when EVERY batch failed; works missing from a response
+  // keep their snapshot values. No repeat (everyMs: null): citations move
+  // slowly — polling would be theater.
+  const chip = wireLiveChip(page.querySelector<HTMLElement>("[data-ev-live]"), "OpenAlex");
+  const refreshCitations = async (): Promise<void> => {
+    const results = await Promise.allSettled(
+      topics.map(async (topic) => {
+        const findings = [...topic.querySelectorAll<HTMLElement>(".ev-finding")];
+        const ids = findings.map((f) => f.id.split("--").pop() ?? "").filter(Boolean);
+        if (!ids.length) return;
+        const url =
+          "https://api.openalex.org/works" +
+          `?filter=ids.openalex:${ids.join("|")}&per-page=50&select=id,cited_by_count`;
+        const res = await fetch(url, { signal: ac.signal });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as {
+          results?: { id?: string; cited_by_count?: number }[];
+        };
+        const counts = new Map<string, number>();
+        for (const w of data.results ?? []) {
+          const wid = (w.id ?? "").split("/").pop();
+          if (wid && typeof w.cited_by_count === "number") counts.set(wid, w.cited_by_count);
+        }
+        for (const f of findings) {
+          const next = counts.get(f.id.split("--").pop() ?? "");
+          if (next === undefined) continue; // missing from the response — keep the snapshot
+          const prev = Number(f.dataset.cites) || 0;
+          f.dataset.cites = String(next);
+          const fig = f.querySelector<HTMLElement>(".ev-cites");
+          if (fig) fig.textContent = next.toLocaleString();
+          const trust = f.querySelector<HTMLElement>(".ev-trust");
+          trust?.setAttribute("aria-label", `${next} citations`);
+          const delta = next - prev;
+          if (delta !== 0 && trust) {
+            let note = trust.querySelector<HTMLElement>(".ev-cites-delta");
+            if (!note) {
+              note = document.createElement("span");
+              note.className = "ev-cites-delta";
+              trust.insertBefore(note, trust.querySelector(".ev-bar"));
+            }
+            note.textContent = `${delta > 0 ? "+" : "−"}${Math.abs(delta).toLocaleString()} since snapshot`;
+            note.dataset.dir = delta > 0 ? "up" : "down";
+          }
+        }
+      }),
+    );
+    if (!results.some((r) => r.status === "fulfilled")) throw new Error("openalex unreachable");
+    const t = activeTopic();
+    if (t) reweight(t); // the existing path — trust re-settles where the reader is looking
+  };
+  politeLoop({
+    run: refreshCitations,
+    firstDelayMs: 4000,
+    everyMs: null, // once per visit — see above
+    signal: ac.signal,
+    onSuccess: () => chip.ok(),
+    onFailure: () => chip.fail(),
+  });
+
   return () => {
     ac.abort();
     topicAc?.abort();
     revealAc?.abort();
+    chip.destroy();
     activeField?.destroy();
   };
 }

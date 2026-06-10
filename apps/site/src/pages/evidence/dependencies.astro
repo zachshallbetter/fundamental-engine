@@ -177,6 +177,10 @@ const SNIP_CSS = `.dp-name {
         <button type="button" data-dp-weight="freshness" aria-pressed="false">freshness</button>
       </div>
     </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="ev-live" data-dp-live data-snapshot={snapshotDay}>snapshot · {snapshotDay}</span>
+    </div>
     <p class="ev-ctl-hint">
       <span data-dp-hint
         ><b>size</b> = weekly downloads — the mass the ecosystem already moves through each
@@ -334,6 +338,14 @@ const SNIP_CSS = `.dp-name {
           <code>--d</code> and <code>--field-attention</code> — live writes, zeroed when the
           field is off.
         </p>
+        <p class="ev-how-note">
+          The download counts also refresh <strong>once per visit</strong>: ~4s in, the page
+          fetches each package's last-week figure from api.npmjs.org (partial success is fine —
+          rows the API misses keep their snapshot values), then the existing reweight path
+          re-normalizes <code>--w</code> against the fresh max and FLIP re-sorts through the
+          active lens. Once, deliberately — the figure is a weekly aggregate, and polling a
+          number that changes weekly would be theater.
+        </p>
         <div class="ev-how-ctas">
           <a href="/docs" class="ev-how-link">Read the docs →</a>
           <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
@@ -347,7 +359,11 @@ const SNIP_CSS = `.dp-name {
       Downloads are <strong>popularity, not safety</strong> — and the advisory badges are
       historical OSV records for the package name, not findings against the pinned version.
       The workspace graph and external list come from this repo's real
-      <code>package.json</code> files; counts and versions are frozen at the snapshot. Data:
+      <code>package.json</code> files. The committed snapshot is the baseline and what ships in
+      the HTML; in the browser the page <strong>upgrades the download counts once per visit</strong>
+      from api.npmjs.org when it's reachable, and the list re-settles through the active lens.
+      Once, not a poll — the figure is a weekly aggregate, so re-polling it would be theater.
+      Advisories, versions, and publish dates stay at the snapshot. Data:
       the <a href="https://registry.npmjs.org" rel="noopener">npm registry</a> +
       <a href="https://api.npmjs.org" rel="noopener">api.npmjs.org</a> downloads +
       <a href="https://osv.dev" rel="noopener">OSV.dev</a> advisories, public registry data,
