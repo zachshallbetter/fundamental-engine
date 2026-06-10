@@ -29,8 +29,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browser
-        run: pnpm --filter @field-ui/site exec playwright install --with-deps chromium
+      # chromium carries the desktop suite AND the mobile (Pixel 7 emulation) project;
+      # webkit carries the desktop suite — the sparkline regression this suite exists to
+      # prevent was WebKit-specific, so chromium-only coverage could never catch its class.
+      - name: Install Playwright browsers
+        run: pnpm --filter @field-ui/site exec playwright install --with-deps chromium webkit
 
       # `pnpm -r build` builds the packages in topological order (the site's workspace deps
       # resolve from their dist) and then the Astro site itself — the e2e suite runs against
@@ -38,6 +41,8 @@ jobs:
       - name: Build (packages + site)
         run: pnpm build
 
+      # all three projects share the one preview webServer: chromium + webkit run the
+      # full desktop suite, mobile runs only e2e/mobile.spec.ts (its testMatch).
       - name: E2E
         run: pnpm --filter @field-ui/site test:e2e
 

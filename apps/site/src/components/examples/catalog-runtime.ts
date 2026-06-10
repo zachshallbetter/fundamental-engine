@@ -13,7 +13,7 @@
 //     values, silently. Any failure keeps the snapshot.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
 import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { applyRecipe, withFlip } from "@field-ui/platform";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
 
 type Signal = "consensus" | "anticipation" | "longevity";
@@ -33,9 +33,6 @@ interface OlDoc {
 }
 
 const fmtCount = (n: number): string => n.toLocaleString("en-US");
-
-const reduceMotion = () =>
-  typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const HINTS: Record<Signal, string> = {
   consensus: "<b>size</b> = ratings — the evidence trust math, retargeted at the shelf",
@@ -105,26 +102,16 @@ function initCatalog(): () => void {
     const wOf = (cell: HTMLElement): number =>
       Number(cell.querySelector<HTMLElement>(".cat-card")?.style.getPropertyValue("--w")) || 0;
     const ordered = [...cells].sort((a, b) => wOf(b) - wOf(a));
-    const first = new Map(cells.map((c) => [c, c.getBoundingClientRect()]));
-    ordered.forEach((c) => grid.appendChild(c));
-    ordered.forEach((c, i) => {
-      const rank = c.querySelector(".cat-rank");
-      if (rank) rank.textContent = String(i + 1).padStart(2, "0");
-      if (reduceMotion()) return;
-      const was = first.get(c);
-      if (!was) return;
-      const now = c.getBoundingClientRect();
-      const dx = was.left - now.left;
-      const dy = was.top - now.top;
-      if (!dx && !dy) return;
-      c.style.transform = `translate(${dx}px, ${dy}px)`;
-      c.style.transition = "none";
-      requestAnimationFrame(() => {
-        c.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
-        c.style.transform = "";
-        c.addEventListener("transitionend", () => (c.style.transition = ""), { once: true });
-      });
-    });
+    withFlip(
+      () => cells,
+      () => {
+        ordered.forEach((c) => grid.appendChild(c));
+        ordered.forEach((c, i) => {
+          const rank = c.querySelector(".cat-rank");
+          if (rank) rank.textContent = String(i + 1).padStart(2, "0");
+        });
+      },
+    );
   };
 
   // ── color lens — subject palette, or a single accent (size carries it all) ──

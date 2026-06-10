@@ -65,14 +65,24 @@ import { energyReport } from '../diagnostics/energy.ts';
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('field-ui: 2D canvas context unavailable');
+  // Signals-only mode (`render: 'none'`, §13.7 / #297): the full simulation + feedback pipeline
+  // runs, but the engine never acquires a 2d context, never sizes a canvas backing store (it stays
+  // 0×0 — the allocation win), and never draws. The field exists purely as signals: `--d`, `--load`,
+  // `--lit`, capture events, `scrollV()`. `ctx` stays null until `setRender` to a drawing mode
+  // acquires it lazily (and sizes the store then) — so a field created with 'none' allocates no
+  // render surface at all unless asked to draw.
+  let ctx: CanvasRenderingContext2D | null = null;
+  if ((opts.render ?? 'dots') !== 'none') {
+    ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('field-ui: 2D canvas context unavailable');
+  }
 
   // Field Surfaces: the optional OVERLAY surface, drawn in front of page content. Core only draws to
   // it (the caller owns the element + its fixed/pointer-events placement); its backing store is sized
   // in resize() to match the main canvas dpr. Keeps core DOM-free — the canvas is handed in.
+  // Under `render: 'none'` it is never acquired either (the overlay never draws in that mode).
   const overlayCanvas = opts.overlayCanvas ?? null;
-  const overlayCtx = overlayCanvas?.getContext('2d') ?? null;
+  let overlayCtx: CanvasRenderingContext2D | null = ctx ? (overlayCanvas?.getContext('2d') ?? null) : null;
 
   const store = new FieldStore();
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
@@ -633,22 +643,31 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ctx!.globalCompositeOperation = 'source-over';
   }
 
-  function resize(): void {
-    const vp = host.viewport();
-    W = vp.width;
-    H = vp.height;
-    const dpr = Math.min(vp.dpr || 1, 2);
+  // Size the drawing surfaces' backing stores to the current W×H (dpr-scaled). Split out of
+  // resize() so the lazy `setRender('none' → drawing)` path can run exactly this once. With no
+  // context (a field created with `render: 'none'`, §13.7 / #297) it is a no-op: the canvas
+  // backing store stays 0×0 while W/H — the simulation space — keep tracking the viewport.
+  function sizeSurfaces(dprRaw: number): void {
+    if (!ctx) return;
+    const dpr = Math.min(dprRaw || 1, 2);
     canvas.width = Math.floor(W * dpr);
     canvas.height = Math.floor(H * dpr);
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
-    ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     // size the overlay surface's backing store to match (same dpr transform → same CSS coords).
     if (overlayCanvas && overlayCtx) {
       overlayCanvas.width = Math.floor(W * dpr);
       overlayCanvas.height = Math.floor(H * dpr);
       overlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+  }
+
+  function resize(): void {
+    const vp = host.viewport();
+    W = vp.width;
+    H = vp.height;
+    sizeSurfaces(vp.dpr);
     env.W = W;
     env.H = H;
     maxScroll = host.scrollHeight() - H || 1;
@@ -1256,9 +1275,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     applyCausality();
     updateEvents();
     updateCaptureEvents();
-    // Draw only when the canvas can be seen. Under reduced motion the scene is static
-    // (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
-    if (canvasVisible && (!reduceMotion || frameN % 4 === 0)) {
+    // Draw only when there is a surface to draw to AND the canvas can be seen. Under the
+    // signals-only mode (`render: 'none'`, §13.7 / #297) the engine never draws — neither the
+    // underlay nor the overlay — and `ctx` may not even exist. Under reduced motion the scene is
+    // static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
+    if (ctx && cfg.render !== 'none' && canvasVisible && (!reduceMotion || frameN % 4 === 0)) {
       render();
       if (overlayCtx && cfg.overlay !== 'off') renderOverlay(overlayCtx, cfg.overlay);
     }
@@ -1358,6 +1379,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
     },
     setRender: (mode) => {
+      // Signals-only mode (§13.7 / #297). Switching FROM 'none' on a field created with
+      // `render: 'none'` acquires the 2d context lazily and sizes the backing store NOW — the
+      // first and only allocation. Switching TO 'none' at runtime just stops drawing from the
+      // next frame: an already-acquired context and backing store are kept (the no-allocation
+      // guarantee belongs to fields created with 'none'), and the last drawn frame stays on the
+      // canvas — hide or clear it with CSS if it is on screen, exactly as with setVisible(false).
+      if (mode !== 'none' && !ctx) {
+        ctx = canvas.getContext('2d');
+        if (!ctx) {
+          // context acquisition can genuinely fail (lost GPU process, too many contexts) —
+          // warn and stay signals-only rather than crash the live simulation.
+          console.warn(`field-ui: setRender('${mode}') could not acquire a 2d context; staying in render 'none'`);
+          return;
+        }
+        if (overlayCanvas && !overlayCtx) overlayCtx = overlayCanvas.getContext('2d');
+        sizeSurfaces(host.viewport().dpr); // the one deferred resize the lazy path needs
+      }
       cfg.render = mode;
     },
     setOverlay: (mode) => {

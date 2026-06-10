@@ -14,7 +14,7 @@
 //     error reverts silently to snapshot mode; 3 consecutive failures stop the polling.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { applyRecipe, withFlip } from "@field-ui/platform";
 
 type MarketWeight = "cap" | "volume";
 type MarketLens = "24h" | "7d";
@@ -148,51 +148,45 @@ function initMarket(): () => void {
   const reweight = (): void => {
     if (!list) return;
     const all = rows();
-    // 0) first: where every tile sits now (top AND left — the mosaic is 2D)
-    const first = new Map(all.map((r) => [r, r.getBoundingClientRect()]));
-    // 1) set the new weight on every tile (drives the type + the scoped field's
-    //    pull) and swap the tier class — mass is area, so reweighting resizes
-    const ws = recomputeWeights();
+    // re-tiered tiles are excluded from the translate (their footprint changed)
+    // and settle with a fade below.
     const retiered = new Set<HTMLElement>();
-    for (const r of all) {
-      const next = tierOf(ws.get(r) ?? 0);
-      if (!r.classList.contains(next)) {
-        r.classList.remove(...TIERS);
-        r.classList.add(next);
-        retiered.add(r);
-      }
-    }
-    // 2) re-sort by the signal, then animate the reflow
-    const ordered = [...all].sort((a, b) => valOf(b) - valOf(a));
-    ordered.forEach((r) => list.appendChild(r));
-    ordered.forEach((r, i) => {
-      const rank = r.querySelector(".mk-rank");
-      if (rank) rank.textContent = String(i + 1).padStart(2, "0");
-      r.removeAttribute("data-mk-retiered");
-      if (reduceMotion()) return;
-      if (retiered.has(r)) {
-        // restart the fade-settle (the attribute hooks the CSS animation)
+    // withFlip measures every tile BEFORE the mutation — top AND left, the mosaic is 2D.
+    withFlip(
+      () => all,
+      () => {
+        // 1) set the new weight on every tile (drives the type + the scoped field's
+        //    pull) and swap the tier class — mass is area, so reweighting resizes
+        const ws = recomputeWeights();
+        for (const r of all) {
+          const next = tierOf(ws.get(r) ?? 0);
+          if (!r.classList.contains(next)) {
+            r.classList.remove(...TIERS);
+            r.classList.add(next);
+            retiered.add(r);
+          }
+        }
+        // 2) re-sort by the signal
+        const ordered = [...all].sort((a, b) => valOf(b) - valOf(a));
+        ordered.forEach((r) => list.appendChild(r));
+        ordered.forEach((r, i) => {
+          const rank = r.querySelector(".mk-rank");
+          if (rank) rank.textContent = String(i + 1).padStart(2, "0");
+          r.removeAttribute("data-mk-retiered");
+        });
+      },
+      { exclude: (r) => retiered.has(r) },
+    );
+    // re-tiered tiles: restart the fade-settle (the attribute hooks the CSS animation)
+    if (!reduceMotion()) {
+      for (const r of retiered) {
         void r.offsetWidth;
         r.setAttribute("data-mk-retiered", "");
         r.addEventListener("animationend", () => r.removeAttribute("data-mk-retiered"), {
           once: true,
         });
-        return;
       }
-      const was = first.get(r);
-      if (!was) return;
-      const now = r.getBoundingClientRect();
-      const dx = was.left - now.left;
-      const dy = was.top - now.top;
-      if (!dx && !dy) return;
-      r.style.transform = `translate(${dx}px, ${dy}px)`;
-      r.style.transition = "none";
-      requestAnimationFrame(() => {
-        r.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
-        r.style.transform = "";
-        r.addEventListener("transitionend", () => (r.style.transition = ""), { once: true });
-      });
-    });
+    }
   };
 
   // ── the invisible scoped field (render: []) ───────────────────────────────

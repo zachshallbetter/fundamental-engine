@@ -14,14 +14,12 @@
 //     keep their snapshot values; advisories and publish dates stay snapshot by design.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { applyRecipe, withFlip } from "@field-ui/platform";
 import { wireLiveChip, politeLoop } from "../../lib/live-data.ts";
 
 type DepWeight = "downloads" | "freshness";
 
 const NS = "http://www.w3.org/2000/svg";
-const reduceMotion = (): boolean =>
-  typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function centerIn(el: HTMLElement, host: HTMLElement): { x: number; y: number } {
   const r = el.getBoundingClientRect();
@@ -85,20 +83,11 @@ function initDependencies(): () => void {
     const ordered = [...all].sort(
       (a, b) => Number(b.style.getPropertyValue("--w")) - Number(a.style.getPropertyValue("--w")),
     );
-    const firstTop = new Map(all.map((r) => [r, r.getBoundingClientRect().top]));
-    ordered.forEach((r) => list.appendChild(r));
-    ordered.forEach((r) => {
-      if (reduceMotion()) return;
-      const dy = (firstTop.get(r) ?? 0) - r.getBoundingClientRect().top;
-      if (!dy) return;
-      r.style.transform = `translateY(${dy}px)`;
-      r.style.transition = "none";
-      requestAnimationFrame(() => {
-        r.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
-        r.style.transform = "";
-        r.addEventListener("transitionend", () => (r.style.transition = ""), { once: true });
-      });
-    });
+    withFlip(
+      () => all,
+      () => ordered.forEach((r) => list.appendChild(r)),
+      { axis: "y" },
+    );
   };
 
   // ── causality spill (hover) — one SVG overlay spans both zones ─────────────

@@ -35,6 +35,13 @@ const topics = evidence.topics.map((t) => {
 const authorLine = (a: string[]) => (a.length > 2 ? `${a[0]} et al.` : a.join(" & ")) || "—";
 const linkFor = (w: { doi: string | null; id: string }) =>
   w.doi ? w.doi : `https://openalex.org/${w.id}`;
+// the provenance chip's baseline: the snapshot date when the data carries one
+// (snapshot-examples.mjs stamps snapshotAt on refresh), the source name otherwise.
+const snapshotLabel = (evidence as { snapshotAt?: string }).snapshotAt
+  ? new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
+      new Date((evidence as { snapshotAt?: string }).snapshotAt!),
+    )
+  : "OpenAlex";
 
 // How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
 const snippetBody = `<li id="finding-W2042"
@@ -154,7 +161,9 @@ fetch('https://api.openalex.org/works'
       </div>
       <div class="ev-ctl">
         <span class="ev-ctl-l">Data</span>
-        <span class="ev-live" data-ev-live>snapshot · OpenAlex</span>
+        <span class="ev-live" data-ev-live data-snapshot-label={snapshotLabel}
+          >snapshot · {snapshotLabel}</span
+        >
       </div>
       <p class="ev-ctl-hint">
         <span data-ev-hint><b>size</b> = citations — how much the field leans on each work</span>

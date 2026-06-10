@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { attentionMuls } from './attention.ts';
+import { attentionMuls, allocateAttention } from './attention.ts';
 
 const sum = (a: readonly number[]) => a.reduce((x, y) => x + y, 0);
 // total strength after allocation, for the conservation check
@@ -82,4 +82,89 @@ test('β scales how hard an engaged body competes', () => {
       { beta },
     );
   assert.ok(mk(4)[0]! > mk(2)[0]!, 'higher β → bigger boost for the engaged body');
+});
+
+// ── allocateAttention — the conserved water-filling allocation (#296) ──────────
+
+const items = (...us: number[]) => us.map((urgency) => ({ urgency }));
+const close = (a: number, b: number, msg?: string) =>
+  assert.ok(Math.abs(a - b) < 1e-9, msg ?? `${a} ≈ ${b}`);
+
+test('allocateAttention: Σw === budget exactly across urgency shapes', () => {
+  const cases: { us: number[]; budget: number }[] = [
+    { us: [1, 1, 1, 1], budget: 4 * 0.42 }, // uniform — the inbox's per-item budget
+    { us: [10, 1, 0.5, 0.25, 0.1], budget: 2.1 }, // skewed — the dominant item saturates
+    { us: [0.7], budget: 0.42 }, // single item
+    { us: [3, 0, 2, 0, 1], budget: 2 }, // zeros among positives
+    { us: [0.9, 0.8, 0.7, 0.6, 0.5, 0.4], budget: 5.5 }, // most items forced to the cap
+  ];
+  for (const { us, budget } of cases) {
+    const w = allocateAttention(items(...us), budget);
+    close(sum(w), budget, `Σw = ${sum(w)} ≈ ${budget} for [${us}]`);
+    for (const v of w) assert.ok(v >= 0 && v <= 1 + 1e-9 && Number.isFinite(v), `0 ≤ ${v} ≤ cap`);
+  }
+});
+
+test('allocateAttention: capped excess re-flows over the rest (water-filling)', () => {
+  // 3 × 0.42 = 1.26; the dominant ask saturates at 1 and the freed 0.26 splits evenly
+  const w = allocateAttention(items(10, 1, 1), 1.26);
+  assert.equal(w[0], 1, 'dominant item saturates at the cap');
+  close(w[1]!, 0.13);
+  close(w[2]!, 0.13);
+  close(sum(w), 1.26);
+});
+
+test('allocateAttention: budget past the ceiling saturates every weight at cap', () => {
+  const w = allocateAttention(items(5, 1, 0.2), 10);
+  assert.deepEqual(w, [1, 1, 1]);
+  const capped = allocateAttention(items(5, 1, 0.2), 10, { cap: 0.5 });
+  assert.deepEqual(capped, [0.5, 0.5, 0.5]);
+});
+
+test('allocateAttention: budget 0 → all 0; empty input → []', () => {
+  assert.deepEqual(allocateAttention(items(1, 2, 3), 0), [0, 0, 0]);
+  assert.deepEqual(allocateAttention([], 5), []);
+});
+
+test('allocateAttention: zero/negative/non-finite urgencies get 0 — budget flows only where there is demand', () => {
+  const w = allocateAttention(items(2, 0, -3, NaN), 1.2);
+  assert.equal(w[1], 0);
+  assert.equal(w[2], 0);
+  assert.equal(w[3], 0);
+  close(sum(w), 1, 'only the one demanding item is filled (to the cap)');
+  // all-zero urgencies allocate nothing — the inbox's exact degenerate behavior
+  assert.deepEqual(allocateAttention(items(0, 0, 0), 1.26), [0, 0, 0]);
+});
+
+test('allocateAttention: pins take exactly cap off the top; the rest still sums to budget − pins', () => {
+  const list = [
+    { urgency: 0.2, pinned: true },
+    { urgency: 0.9 },
+    { urgency: 0.4 },
+    { urgency: 0.1, pinned: true },
+    { urgency: 0.6 },
+  ];
+  const budget = 5 * 0.42; // 2.1, the inbox's shape: budget − pinnedCount water-fills the unpinned
+  const w = allocateAttention(list, budget);
+  assert.equal(w[0], 1, 'pinned holds cap regardless of urgency');
+  assert.equal(w[3], 1, 'pinned holds cap regardless of urgency');
+  close(w[1]! + w[2]! + w[4]!, budget - 2, 'unpinned share = budget − pinnedCount × cap');
+  close(sum(w), budget);
+  // pins past the budget: the floor at 0 holds and nothing goes negative
+  const over = allocateAttention(
+    [{ urgency: 1, pinned: true }, { urgency: 1, pinned: true }, { urgency: 1 }],
+    1,
+  );
+  assert.deepEqual(over, [1, 1, 0]);
+});
+
+test('allocateAttention: deterministic — the same input twice is identical', () => {
+  const list = [
+    { urgency: 0.83, pinned: true },
+    { urgency: 0.41 },
+    { urgency: 7 },
+    { urgency: 0 },
+    { urgency: 0.41 },
+  ];
+  assert.deepEqual(allocateAttention(list, 2.1), allocateAttention(list, 2.1));
 });
