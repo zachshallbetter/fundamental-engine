@@ -33,27 +33,21 @@ for (const route of ["/", "/eli5"] as const) {
         .poll(async () => page.evaluate(() => (document.querySelector("field-root") as any)?.particleCount?.() ?? 0))
         .toBeGreaterThan(50);
       // Every demo stage with a live chip gets a traced field-line canvas — the preset
-      // compositions (blackhole, galaxy, …) included — EXCEPT the tokens field-probe has no
-      // trace for (it returns null; StageFieldOverlay warns about them in dev). Deriving the
-      // expected set from the DOM (instead of a >=N threshold) is the point: one silently
-      // missing canvas fails the count, which is how eight broken stages once hid for months.
-      const UNTRACEABLE = ["fieldflow", "warp"];
-      // runs IN the page (Playwright serializes it): the traceable chip stages that are
-      // missing their canvas (or holding more than one), named by their stage label
-      const untracedStages = (untraceable: string[]) =>
+      // compositions (blackhole, galaxy, …) included; every engine token has a probe config,
+      // no exceptions. Deriving the expected set from the DOM (instead of a >=N threshold)
+      // is the point: one silently missing canvas fails the count, which is how eight broken
+      // stages once hid for months.
+      // runs IN the page (Playwright serializes it): the chip stages that are missing
+      // their canvas (or holding more than one), named by their stage label
+      const untracedStages = () =>
         [...document.querySelectorAll(".stage")]
-          .filter((s) => {
-            const chip = s.querySelector("[data-body], [data-preset]");
-            if (!chip) return false;
-            const token = chip.getAttribute("data-body")?.split(/\s+/)[0];
-            return !token || !untraceable.includes(token);
-          })
+          .filter((s) => s.querySelector("[data-body], [data-preset]"))
           .filter((s) => s.querySelectorAll("canvas.stage-field").length !== 1)
           .map((s) => s.querySelector(".stage-label")?.textContent?.trim() ?? "unlabeled stage");
       expect(await page.locator(".stage:has([data-body]), .stage:has([data-preset])").count()).toBeGreaterThan(0);
       // painting is time-sliced (it yields between stages), so the canvases land progressively
       await expect
-        .poll(async () => page.evaluate(untracedStages, UNTRACEABLE), { timeout: 20000 })
+        .poll(async () => page.evaluate(untracedStages), { timeout: 20000 })
         .toEqual([]);
       expect(errors).toEqual([]);
     });
