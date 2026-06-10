@@ -152,9 +152,12 @@
   --w: 0.42;
   /* the living ink: --d is the engine's live local density (0..1, written back every
      frame; data-hot gathers it on hover/focus), --field-attention the recipe's eased
-     attention lane. Both touch only ink — never --w, so Σ--w stays the budget. */
+     attention lane, and --field-recency the recency lane GROUNDED in this ask's declared
+     data-field-at (askedAt) — it decays on the world clock, not on your interaction.
+     All touch only ink — never --w, so Σ--w stays the budget. */
   --live: var(--d, 0);
   --att: var(--field-attention, 0);
+  --rec-live: var(--field-recency, 0);
   position: relative;
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -163,7 +166,11 @@
   padding: 0.85rem 1rem;
   border: 1px solid var(--line);
   border-left: 3px solid
-    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+    color-mix(
+      in srgb,
+      var(--cat, var(--accent)) calc(18% + var(--w) * 70% + var(--rec-live) * 12%),
+      var(--line)
+    );
   border-radius: 12px;
   background: color-mix(
     in srgb,

@@ -57,11 +57,14 @@
 
 /* a work item card: the blended weight (--w, 0..1) is felt — type heft, ink, and a
    left anchor whose color is the kind (--cat: teal PR, blue issue).
-   The living-ink channel: --live is the engine's --d (live local particle density,
-   written every frame; gathers toward 1 on data-hot hover/focus), and the background
-   also lifts with the scoped recipe's eased --field-attention. Felt, not loud. */
+   The living-ink channels: --live is the engine's --d (live local particle density,
+   written every frame; gathers toward 1 on data-hot hover/focus), the background lifts
+   with the scoped recipe's eased --field-attention, and the left anchor warms with
+   --field-recency — the recency lane GROUNDED in the card's declared data-field-at
+   (its updatedAt), decaying on the world clock. Felt, not loud. */
 .ex-backlog .wl-item {
   --live: var(--d, 0);
+  --rec-live: var(--field-recency, 0);
   position: relative;
   z-index: 2;
   display: flex;
@@ -70,7 +73,11 @@
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--line);
   border-left: 3px solid
-    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+    color-mix(
+      in srgb,
+      var(--cat, var(--accent)) calc(18% + var(--w) * 70% + var(--rec-live) * 12%),
+      var(--line)
+    );
   border-radius: 12px;
   background: color-mix(
     in srgb,

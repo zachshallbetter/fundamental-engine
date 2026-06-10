@@ -242,6 +242,16 @@ Two shipped per-body variables sit outside this metric list: `--load` (sink accr
 `:root`, not on bodies: `--field-scroll-v`, the engine's eased scroll velocity (px/frame),
 written by the platform write phase and deduped when unchanged.
 
+Three more shipped per-body variables also sit outside this list (physics workover v0.3):
+the **engine-measured thermodynamics** `--entropy`, `--coherence`, and `--temperature` —
+local particle-state measurements (velocity alignment, agitation, heat) written to
+`data-feedback` bodies through the feedback sink. They are deliberately bare-named:
+`--field-entropy`/`--field-coherence` above are the *platform-inferred interaction*
+metrics (a different signal, computed from interaction telemetry), and the two families
+must not be cross-written. (`--coherence` is additionally a palette *color* on `:root`
+via `cssTokens()` — the measured value is element-scoped and numeric.) Formulas:
+[`physics-workover.md`](../engine-reference/physics-workover.md) §"Metrics".
+
 **Engagement inputs** are part of this contract. The engine wires hover/focus engagement on
 `[data-hot]` elements at scan time (engaging one activates its body and gathers density — its
 `--d` rises). The platform metric pipeline reads `engaged` as

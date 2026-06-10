@@ -17,7 +17,7 @@
 //     scoped field is destroyed. The countdowns keep ticking — they're data, not field.
 //   · Color by status / off — --cat encodes launch status, or steps aside entirely.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { recipeById } from "@field-ui/core";
+import { imminence, recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 import calendar from "../../data/examples/calendar.json";
 
@@ -39,9 +39,10 @@ interface Rec {
   dayKey: string | null; // yyyy-mm-dd (UTC) for dated launches; null for TBD / unparsable
 }
 
-// imminence math — must match the server-side render in calendar.astro:
-// log-ramped against a 30-day horizon, floored at 0.08 for passed / TBD launches.
-const HORIZON = Math.log(24 * 30 + 1);
+// imminence math — must match the server-side render in calendar.astro: the core temporal
+// kernel (imminence: log-ramped to T−0 across the horizon), floored at 0.08 for passed /
+// TBD launches. The floor is page semantics; the ramp is the kernel.
+const HORIZON_MS = 30 * 24 * 36e5; // the 30-day horizon
 const W_FLOOR = 0.08;
 
 // status → anchor color — must match calendar.astro.
@@ -121,11 +122,10 @@ const byNet = (a: Rec, b: Rec): number => a.netMs - b.netMs;
 const isPassed = (r: Rec, now: number): boolean =>
   r.status !== "TBD" && !Number.isNaN(r.netMs) && r.netMs <= now;
 
-// distance-to-T−0 → weight (0..1), floored for passed / TBD launches.
+// distance-to-T−0 → weight (0..1): the imminence kernel, floored for passed / TBD launches.
 const weightOf = (r: Rec, now: number): number => {
   if (r.status === "TBD" || Number.isNaN(r.netMs) || r.netMs <= now) return W_FLOOR;
-  const hours = (r.netMs - now) / 36e5;
-  return Math.max(W_FLOOR, Math.min(1, 1 - Math.log(hours + 1) / HORIZON));
+  return Math.max(W_FLOOR, imminence(r.netMs, now, HORIZON_MS));
 };
 
 // the full countdown (day/week cards + the hero) and the compact one (month chips).

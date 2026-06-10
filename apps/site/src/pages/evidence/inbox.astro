@@ -1,4 +1,5 @@
 ---
+import { freshness } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import inbox from "../../data/examples/inbox.json";
@@ -8,16 +9,21 @@ import "../../styles/examples/inbox.css";
 // questions. Each ask is a body; its urgency (a blend of recency, votes, and views) becomes
 // mass — but the page holds a fixed attention total, so brightening one ask literally dims
 // the rest. Pin an ask and the remaining budget redistributes. No particle swarm.
-const snapshot = Date.parse(inbox.snapshotAt) / 1000;
+const snapMs = Date.parse(inbox.snapshotAt);
+const snapshot = snapMs / 1000;
 const BUDGET_PER_ITEM = 0.42;
+
+// recency's half-life: the platform default (7 days) — an ask a week old reads 0.5, a
+// year-old one ~0. The same askedAt rides each card as data-field-at (no data-field-halflife
+// needed; the default matches), so the platform's recency lane is GROUNDED in it too.
+const REC_HALF_LIFE_MS = 7 * 86_400_000;
 
 const hoursOf = (askedAt: number) => Math.max(0.5, (snapshot - askedAt) / 3600);
 const items0 = inbox.items.map((it) => ({ ...it, hours: hoursOf(it.askedAt) }));
 
-// normalize each raw signal to 0..1 once, server-side; the runtime re-blends them per lens.
-const lh = items0.map((it) => Math.log(it.hours + 1));
-const lhMin = Math.min(...lh);
-const lhSpan = Math.max(...lh) - lhMin || 1;
+// normalize votes/views to 0..1 once, server-side; the runtime re-blends them per lens.
+// Recency needs no normalization constants — the freshness kernel is already 0..1, and live
+// arrivals land on the SAME scale by construction.
 const sMin = Math.min(...items0.map((it) => it.score));
 const sSpan = Math.max(...items0.map((it) => it.score)) - sMin || 1;
 const lv = items0.map((it) => Math.log(it.views + 1));
@@ -26,7 +32,8 @@ const lvSpan = Math.max(...lv) - lvMin || 1;
 
 const items1 = items0.map((it, i) => ({
   ...it,
-  rec: 1 - (lh[i]! - lhMin) / lhSpan, // fresher = closer to 1 (log-scaled age)
+  // the core temporal kernel: exponential newness — fresher = closer to 1
+  rec: freshness(it.askedAt * 1000, snapMs, REC_HALF_LIFE_MS),
   vot: (it.score - sMin) / sSpan,
   vie: (lv[i]! - lvMin) / lvSpan,
 }));
@@ -75,8 +82,9 @@ const items = items1
   .sort((a, b) => b.w - a.w);
 
 // the normalization constants, handed to the runtime so live arrivals are scored on the
-// SAME scale as the snapshot (rec/vot/vie in 0..1, clamped for out-of-range live values).
-const norm = { lhMin, lhSpan, sMin, sSpan, lvMin, lvSpan };
+// SAME scale as the snapshot (vot/vie in 0..1, clamped for out-of-range live values;
+// rec is the freshness kernel — absolute, no constants needed).
+const norm = { sMin, sSpan, lvMin, lvSpan };
 
 const fmtAge = (h: number) =>
   h < 48
@@ -100,11 +108,18 @@ const SNIPPET_HTML = `<!-- the stream list holds a stable id; each ask is a body
     data-feedback
     data-hot
     data-rec="0.91" data-vot="0.25" data-vie="0.14"
+    data-field-at="1765324800000"
     style="--w: 0.51; --cat: hsl(318 74% 64%);"
   >
     <!-- your ordinary HTML here -->
   </li>
 </ol>
+
+<!-- data-rec = freshness(askedAt, snapshot) — the
+     @field-ui/core temporal kernel (half-life 7d).
+     data-field-at declares askedAt as WORLD TIME, so
+     the platform grounds its recency lane in the data:
+     --field-recency = freshness(at, now), live. -->
 
 <!-- the attention meter declares its provenance: a
      measurement visual OF the stream list -->
@@ -113,8 +128,13 @@ const SNIPPET_HTML = `<!-- the stream list holds a stable id; each ask is a body
   data-field-visual-role="measurement"
 ><i></i></span>`;
 
-const SNIPPET_TS = `// fresh lens — the blends differ per lens
-u[i] = 0.60·recency + 0.25·votes + 0.15·views
+const SNIPPET_TS = `// recency is the world-time kernel —
+// exponential newness, half-life 7 days:
+import { freshness } from "@field-ui/core";
+rec[i] = freshness(askedAtMs, nowMs, 7 * 86400000);
+
+// fresh lens — the blends differ per lens
+u[i] = 0.60·rec + 0.25·votes + 0.15·views
 
 // the fixed total: N items × 0.42
 budget = N × 0.42
@@ -295,6 +315,7 @@ const SNIPPET_CSS = `.ix-item {
             data-vot={it.vot.toFixed(4)}
             data-vie={it.vie.toFixed(4)}
             data-asked={it.askedAt}
+            data-field-at={it.askedAt * 1000}
             style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
           >
             <div class="ix-body">
@@ -350,10 +371,12 @@ const SNIPPET_CSS = `.ix-item {
       signals as data attributes. The page blends them into an urgency score per the active lens,
       then <strong>renormalizes</strong> so the weights always sum to one fixed budget. CSS turns
       each weight into type heft, ink, and anchor. The field never invents attention; it only
-      moves it. On top of that sit two live channels the engine writes back every frame —
+      moves it. On top of that sit live channels the engine writes back every frame —
       <code>--d</code> (local density, gathered by <code>data-hot</code> on hover) and
       <code>--field-attention</code> (the recipe's eased attention) — which touch only ink, never
-      the budget.
+      the budget. Each ask also declares its <code>askedAt</code> as <code>data-field-at</code>,
+      so the pipeline's recency lane is grounded in the data's own timestamp:
+      <code>--field-recency</code> decays against the real clock, not your interaction.
     </p>
 
     <div class="ev-how-cols">
@@ -363,7 +386,8 @@ const SNIPPET_CSS = `.ix-item {
         <ul class="ev-how-attrs">
           <li><code>data-body="attract"</code> — registers as a field participant</li>
           <li><code>data-strength</code> — mass, derived from the allocated weight</li>
-          <li><code>data-rec/vot/vie</code> — the normalized signals the lenses re-blend</li>
+          <li><code>data-rec/vot/vie</code> — the normalized signals the lenses re-blend (<code>data-rec</code> is the <code>freshness()</code> kernel over <code>askedAt</code>)</li>
+          <li><code>data-field-at</code> — the declared world timestamp; the platform grounds its recency lane in it (<code>--field-recency</code>)</li>
           <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks (<code>--d</code>)</li>
           <li><code>data-hot</code> — hover/focus gathers the field toward this ask</li>
           <li><code>data-field-visual-for</code> — the meter's declared provenance</li>
