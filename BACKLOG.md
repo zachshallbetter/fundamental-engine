@@ -21,14 +21,27 @@ The major current thrust. Full plan and as-built audit in
       (12); a conformance safety sweep asserts no NaN / Infinity, finite position, bounded
       velocity + heat, and stable count (unless a budgeted [S] source runs). The `velocityCap`
       config knob is deferred to v0.4 (the mode system).
-- [ ] **Source-budget guard.** Dev-mode warn + safe cap when an [S] force has no
-      `data-life` / `data-cap` / `data-budget` / `data-sink`.
-- [ ] **Modifier contract + parser.** Classify tokens into `{modifiers, forces, sources}`;
-      formalize order `spotlight → screen → resonate → core`.
-- [ ] **`screen` modifier.** Attenuate sibling forces inside a radius (quiet zones, text shielding).
-- [ ] **Entropy + coherence metrics.** Measured, not forces; exported as `--entropy` /
-      `--coherence` / `--temperature` / `--density`.
-- [ ] **Boundary docs.** The boundary-type table (wall / membrane / cone / horizon / shield / edge).
+- [x] **Source-budget guard.** Dev-mode warn (`guardSourceBudget`, named element + missing
+      attrs) + the safe default budget (`data-life="300"`, `data-cap="120"`) when an [S] force
+      has none of `data-life` / `data-cap` / `data-budget` / `data-sink`; `spawn` clamps its
+      rate to `cap/life`. Conformance pins the bounded count; the fountain preset declares
+      its budget explicitly.
+- [x] **Modifier contract + parser.** Tokens classify into `{modifiers, forces, sources}`
+      (`classifyBodyTokens`, exported from `config/forces.config.ts`, filled onto
+      `Body.classified`); modifiers evaluate in the formalized order
+      `spotlight → screen → resonate → core`. Zero behavior change for existing pages;
+      determinism + classification tests.
+- [x] **`screen` modifier.** Attenuates OTHER bodies' forces inside its radius (quiet zones,
+      text shielding): `clamp(1 − S·(1 − d/r)², min, 1)` in the integrator force pass;
+      truth mode designed; passported + conformance scenario (`extraBodies`).
+- [x] **Entropy + coherence metrics.** Measured, not forces; per-feedback-body local
+      measurements (`core/thermo.ts`, accumulated in the existing density pass) exported as
+      `--entropy` / `--coherence` / `--temperature` alongside `--d` through both feedback
+      sinks. Formulas recorded in the workover doc (engine-measured vs the platform's
+      inferred `--field-entropy` lanes — distinct signals).
+- [x] **Boundary docs.** The boundary-type table (wall / membrane / cone / horizon / shield /
+      portal / edge / content / shape / view) with truth modes + verified shipped status:
+      `forces-system.md` §20.11.
 
 **v0.4 — physical substrate:** `PhysicsMode` / `IntegratorMode` / `MediumMode`; real `dt` in
 seconds + fixed-step accumulator; semi-implicit Euler with `dt`; `FRICTION` → `designed-damping`

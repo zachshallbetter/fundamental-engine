@@ -25,6 +25,7 @@ are authoring surfaces. Canvas is one render surface, not the whole system.
 | [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | The agent model: element, relationship, user, layout, and data agents |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render + diagnostic methods, and **Surfaces & Placement** (underlay / overlay / typographic) |
 | [`field-ui-invisible-fields.md`](field-ui-invisible-fields.md) | The typographic (invisible) placement: two-field page architecture, live channels, engagement contracts, declared relationships, data provenance |
+| [`field-ui-time.md`](field-ui-time.md) | Time in the field: the three clocks (simulation / experiential / world), the temporal kernels, the `data-field-at` contract |
 | [`field-ui-visual-language-and-geometry.md`](field-ui-visual-language-and-geometry.md) | The visual language layer: metric→appearance mappings and geometry |
 | [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
 | [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |

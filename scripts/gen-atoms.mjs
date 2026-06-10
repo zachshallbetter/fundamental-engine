@@ -83,4 +83,4 @@ const atoms = [
 
 const byKind = atoms.reduce((m, a) => ((m[a.kind] = (m[a.kind] || 0) + 1), m), {});
 process.stderr.write(`  ${atoms.length} atoms — ${JSON.stringify(byKind)}\n`);
-process.stdout.write(JSON.stringify({ generated: "pnpm gen:atoms", count: atoms.length, atoms }, null, 2));
+process.stdout.write(JSON.stringify({ generated: "pnpm gen:atoms", count: atoms.length, atoms }, null, 2) + "\n");

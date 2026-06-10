@@ -1,4 +1,5 @@
 ---
+import { freshness } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import backlog from "../../data/examples/backlog.json";
@@ -13,22 +14,20 @@ import "../../styles/examples/backlog.css";
 const snapshot = Date.parse(backlog.snapshotAt);
 const present = new Set(backlog.items.map((it) => it.number));
 
-// normalized signals, computed once over the whole set (both sections share one scale);
-// the runtime re-blends them per lens — activity-leaning by default.
+// normalized signals (one scale for both sections); the runtime re-blends them per lens —
+// activity-leaning by default. Recency is the core temporal kernel: freshness(updatedAt,
+// snapshot, halfLife) — 1 for a just-touched item, exactly 0.5 one half-life later. The
+// same updatedAt rides each card as data-field-at, so the platform pipeline's recency
+// lane is GROUNDED in the declared world timestamp too (--field-recency, live).
+const REC_HALF_LIFE_MS = 24 * 36e5; // a day — this board's churn timescale
 const cmax = Math.log(Math.max(...backlog.items.map((it) => it.comments), 1) + 1);
-const ageH = backlog.items.map((it) =>
-  Math.max(1, (snapshot - Date.parse(it.updatedAt)) / 36e5),
-);
-const la = ageH.map((h) => Math.log(h + 1));
-const laMin = Math.min(...la);
-const laSpan = Math.max(...la) - laMin || 1;
 
 // color = kind: pull requests teal, issues blue.
 const KIND_COLOR: Record<string, string> = { pr: "#2dd4bf", issue: "#4da3ff" };
 
-const items = backlog.items.map((it, i) => {
+const items = backlog.items.map((it) => {
   const act = Math.log(it.comments + 1) / cmax;
-  const rec = 1 - (la[i]! - laMin) / laSpan;
+  const rec = freshness(Date.parse(it.updatedAt), snapshot, REC_HALF_LIFE_MS);
   return {
     ...it,
     act,
@@ -70,11 +69,20 @@ const SNIP_BODY = `<li
   data-feedback
   data-hot
   data-act="0.91" data-rec="0.99"
+  data-field-at="2026-06-09T22:41:00Z"
+  data-field-halflife="86400000"
   data-refs="wi-282 wi-269"
   style="--w: 0.94; --cat: #2dd4bf;"
 >
   <!-- #number · kind · title · author -->
-</li>`;
+</li>
+
+<!-- data-rec is the snapshot's freshness —
+     freshness(updatedAt, snapshot, 24h), the
+     @field-ui/core temporal kernel. data-field-at
+     declares the same updatedAt as WORLD TIME, so
+     the platform's recency lane is grounded in the
+     data: --field-recency = freshness(at, now). -->`;
 
 const SNIP_SINK = `/* the cycle bar is a real sink body that also
    declares itself as its own measurement:
@@ -253,6 +261,8 @@ function drop() { // pointerup — Esc/pointercancel aborts
               data-strength={(0.4 + it.w * 1.6).toFixed(2)}
               data-act={it.act.toFixed(4)}
               data-rec={it.rec.toFixed(4)}
+              data-field-at={it.updatedAt}
+              data-field-halflife={REC_HALF_LIFE_MS}
               data-closed={it.closedAt || undefined}
               data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
               style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
@@ -328,6 +338,8 @@ function drop() { // pointerup — Esc/pointercancel aborts
               data-strength={(0.4 + it.w * 1.6).toFixed(2)}
               data-act={it.act.toFixed(4)}
               data-rec={it.rec.toFixed(4)}
+              data-field-at={it.updatedAt}
+              data-field-halflife={REC_HALF_LIFE_MS}
               data-closed={it.closedAt || undefined}
               data-refs={it.refsHere.map((r) => `wi-${r}`).join(" ")}
               style={`--w:${it.w.toFixed(3)}; --cat:${it.cat};`}
@@ -361,7 +373,10 @@ function drop() { // pointerup — Esc/pointercancel aborts
       hidden engine writes <code>--d</code> (local particle density) to every
       <code>data-hot</code> card each frame, and the scoped recipe's attention lane writes an
       eased <code>--field-attention</code> — CSS turns both into a felt glow and lift, and both
-      go quiet when the field is off. The drag is hand-rolled pointer events — no library, no
+      go quiet when the field is off. Each card also declares its <code>updatedAt</code> as
+      <code>data-field-at</code>, so the pipeline's recency lane is grounded in the data's own
+      timestamp — <code>--field-recency</code> is <code>freshness(updatedAt, now)</code>, decaying
+      against the real clock rather than inferred from interaction. The drag is hand-rolled pointer events — no library, no
       HTML5 drag-and-drop — and it's a local triage sandbox: the arrangement persists to
       <code>localStorage</code>, and GitHub is never written.
     </p>
@@ -371,7 +386,8 @@ function drop() { // pointerup — Esc/pointercancel aborts
         <p class="ev-how-label">1 — each work item is a field body</p>
         <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIP_BODY }]} />
         <ul class="ev-how-attrs">
-          <li><code>data-act</code> / <code>data-rec</code> — the normalized signals the lenses re-blend</li>
+          <li><code>data-act</code> / <code>data-rec</code> — the normalized signals the lenses re-blend (<code>data-rec</code> is the <code>freshness()</code> kernel over <code>updatedAt</code>, half-life 24h)</li>
+          <li><code>data-field-at</code> — the declared world timestamp; the platform grounds its recency lane in it (<code>--field-recency</code>)</li>
           <li><code>data-refs</code> — the items this one references (the hover threads)</li>
           <li><code>data-strength</code> — gravitational mass from the blended weight</li>
           <li><code>data-hot</code> — opts into the live density gather: hover and <code>--d</code> climbs toward 1</li>

@@ -63,3 +63,24 @@ export function sampleStops(stops: readonly RGB[], frac: number): RGB {
   const b = stops[i + 1]!;
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 }
+
+/**
+ * The `screen` attenuation factor (workover v0.3 §"`screen` modifier") — pure:
+ *
+ *   falloff      = max(0, 1 − d/range)²
+ *   screenFactor = clamp(1 − S·falloff, min, 1)
+ *
+ * A body carrying the `screen` token damps OTHER bodies' forces on matter within its
+ * range by this factor (applied in the integrator's force pass). Smooth at the edge
+ * (falloff → 0 as d → range; no hard cliff); `min` clamps the floor (`data-screen-min`,
+ * default 0 = full cancellation at the core is allowed); a non-positive range is inert
+ * (returns 1 — screens are always local, never global), which also guarantees no NaN
+ * at zero range.
+ */
+export function screenFactor(d: number, range: number, strength: number, min = 0): number {
+  if (!(range > 0)) return 1;
+  const fall = Math.max(0, 1 - d / range);
+  const factor = 1 - strength * fall * fall;
+  const floor = Math.min(Math.max(min, 0), 1);
+  return factor < floor ? floor : factor > 1 ? 1 : factor;
+}

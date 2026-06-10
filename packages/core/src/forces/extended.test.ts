@@ -106,6 +106,7 @@ test('extended forces expose the §20.3 class [A] set', () => {
       'spawn',
       'resonate',
       'spotlight',
+      'screen',
       'pigment',
       'fieldflow',
       'warp',
@@ -509,6 +510,44 @@ test('spawn emits round(S·2) mortal particles from the body centre along the he
   emitted.length = 0;
   spawn.source!(body({ strength: 3, ux: 1, uy: 0 }), env({ spawn: collect }));
   assert.equal(emitted.length, 6); // round(3·2)
+});
+
+test('spawn honors the source budget: data-life sets the lifespan, data-cap clamps the rate to cap/life', () => {
+  // data-life flows onto every emission as its mortal age.
+  const emitted: Partial<Particle>[] = [];
+  const collect = (p: Partial<Particle>): void => void emitted.push(p);
+  spawn.source!(body({ strength: 1, life: 240 }), env({ spawn: collect }));
+  assert.ok(emitted.length > 0);
+  for (const e of emitted) assert.equal(e.age, 240);
+
+  // cap/life clamps the rate: life 300, cap 120 → 0.4/frame, so 10 frames emit exactly 4
+  // (the fractional accumulator carries the remainder between frames).
+  emitted.length = 0;
+  const budgeted = body({ strength: 1, life: 300, cap: 120 });
+  for (let f = 0; f < 10; f++) spawn.source!(budgeted, env({ spawn: collect }));
+  assert.equal(emitted.length, 4); // floor(10 × 0.4)
+  for (const e of emitted) assert.equal(e.age, 300);
+
+  // steady state: rate × life = (cap/life) × life = the cap — the body's live population bound.
+  assert.ok(Math.abs((120 / 300) * 300 - 120) < 1e-12);
+
+  // an unconstrained body (no life/cap) keeps the historical behavior exactly: 2/frame, age 90.
+  emitted.length = 0;
+  spawn.source!(body({ strength: 1 }), env({ spawn: collect }));
+  assert.equal(emitted.length, 2);
+  for (const e of emitted) assert.equal(e.age, 90);
+});
+
+// screen is a cross-body modifier: a registered no-op here (the attenuation itself lives in
+// the integrator's force pass — see integrator.test.ts and the conformance scenario).
+test('screen is a pure token: no-op apply, no modify hook, no source (the integrator does the work)', async () => {
+  const { screen } = await import('./extended.ts');
+  const p = part({ vx: 1.5, vy: -0.5 });
+  screen.apply(body({ strength: 1, range: 200 }), p, env({ dist: 10 }));
+  assert.equal(p.vx, 1.5);
+  assert.equal(p.vy, -0.5);
+  assert.equal(screen.modify, undefined);
+  assert.equal(screen.source, undefined);
 });
 
 test('pigment stains overlapping matter with the body tint, then advects it', () => {

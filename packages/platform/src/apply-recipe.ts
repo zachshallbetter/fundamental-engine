@@ -10,7 +10,7 @@
  */
 import { createFieldPlatform, type FieldPlatform } from './platform.ts';
 import { lintPlatform } from './lint.ts';
-import { computeMetrics, METRIC_KINDS, type MetricKind } from './metrics.ts';
+import { computeMetrics, groundedRecency, METRIC_KINDS, type MetricKind } from './metrics.ts';
 import {
   validateRecipe,
   compileRecipe,
@@ -141,6 +141,10 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
     platform.on('compute', (ctx) => {
       const vh = ctx.viewport?.height ?? (typeof window !== 'undefined' ? window.innerHeight : 800);
       const centre = vh / 2;
+      // WORLD TIME, once per frame: ctx.now is the scheduler's rAF timebase, not an epoch, so
+      // the declared-timestamp derivation samples the wall clock HERE — one instant shared by
+      // every element in the frame, never a per-element Date.now().
+      const worldNow = Date.now();
       const rels = platform.relationships.all();
       const unresolved = platform.relationships.unresolvedAll();
       for (const m of platform.measure.last()) {
@@ -159,6 +163,14 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
         for (const k of METRIC_KINDS) {
           const s = num(el.getAttribute(`data-field-${k}`));
           if (s != null) supplied[k] = s;
+        }
+        // A declared world timestamp (data-field-at) GROUNDS the recency lane: recency becomes
+        // freshness(at, now, halfLife) — data time, not interaction time. An explicit
+        // data-field-recency still wins; without either, computeMetrics infers recency from
+        // interaction (the existing eased behavior, unchanged).
+        if (supplied.recency == null) {
+          const r = groundedRecency(el, worldNow);
+          if (r != null) supplied.recency = r;
         }
         pending.set(
           el,

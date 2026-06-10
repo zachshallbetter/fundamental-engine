@@ -1,4 +1,5 @@
 ---
+import { imminence } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import calendar from "../../data/examples/calendar.json";
@@ -9,16 +10,17 @@ import "../../styles/examples/calendar.css";
 // runtime recomputes every weight once a second, so this is the one page where the field's
 // input is time itself. No particle swarm: the pull shows in the type.
 
-// imminence math — must match calendar-runtime.ts. A 30-day horizon flattens to the floor;
-// launches whose NET already passed (the snapshot ages) or whose date is TBD sit at the floor.
-const HORIZON = Math.log(24 * 30 + 1);
+// imminence math — must match calendar-runtime.ts: the core temporal kernel (imminence:
+// log-ramped to T−0 across a 30-day horizon). Launches whose NET already passed (the
+// snapshot ages) or whose date is TBD sit at the floor — page semantics atop the kernel.
+const HORIZON_MS = 30 * 24 * 36e5;
 const W_FLOOR = 0.08;
 const snap = Date.parse(calendar.snapshotAt);
 const wOf = (net: string, status: string): number => {
   if (status === "TBD") return W_FLOOR;
-  const hours = (Date.parse(net) - snap) / 36e5;
-  if (!(hours > 0)) return W_FLOOR;
-  return Math.max(W_FLOOR, Math.min(1, 1 - Math.log(hours + 1) / HORIZON));
+  const netMs = Date.parse(net);
+  if (!(netMs > snap)) return W_FLOOR;
+  return Math.max(W_FLOOR, imminence(netMs, snap, HORIZON_MS));
 };
 
 // status → anchor color: Go teal (confirmed), TBC amber (awaiting confirmation), everything
@@ -99,17 +101,16 @@ const SNIPPET_HTML = `<!-- each launch is a body. data-feedback: the engine writ
   <!-- name · provider · countdown -->
 </li>`;
 
-const SNIPPET_TS = `// every second, for every launch:
-const hours =
-  (Date.parse(row.dataset.net)
-    - Date.now()) / 36e5;
+const SNIPPET_TS = `// the world-time kernel — 1 at T−0,
+// log-ramping from 0 across the horizon:
+import { imminence } from "@field-ui/core";
 
-// imminence: log-ramped against
-// a 30-day horizon, floored at 0.08
-const w = hours > 0
-  ? Math.max(0.08, Math.min(1,
-      1 - Math.log(hours + 1)
-        / Math.log(24 * 30 + 1)))
+// every second, for every launch:
+const netMs = Date.parse(row.dataset.net);
+const w = netMs > Date.now()
+  ? Math.max(0.08, // the page's floor
+      imminence(netMs, Date.now(),
+        30 * 24 * 36e5)) // 30-day horizon
   : 0.08; // window passed · snapshot
 
 row.style.setProperty("--w", w);

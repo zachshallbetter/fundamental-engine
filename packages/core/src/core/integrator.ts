@@ -12,6 +12,8 @@ import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, type Wave } from './currents.ts';
 import { netField } from './streamlines.ts';
+import { screenFactor } from './math.ts';
+import { classifyBodyTokens, type ClassifiedTokens } from '../config/forces.config.ts';
 
 export const FRICTION = 0.95;
 export const HEAT_DECAY = 0.972;
@@ -31,6 +33,17 @@ function passes(conds: ConditionRegistry, b: Body, p: Particle, env: Env): boole
   if (!b.when) return true;
   const fn = conds[b.when];
   return fn ? fn(b, p, env) : true;
+}
+
+/**
+ * The body's classified token sets (the modifier contract, workover v0.3). The scanner fills
+ * `b.classified` at parse time; bodies built elsewhere (conformance, tests, shadow paths) get
+ * it memoized here on first touch — `tokens` never changes after construction, so the memo is
+ * safe. The integrator iterates modifiers in the formalized order `spotlight → screen →
+ * resonate`, then the core forces in authored order, then sources (the source pass).
+ */
+function classified(b: Body): ClassifiedTokens {
+  return b.classified ?? (b.classified = classifyBodyTokens(b.tokens));
 }
 
 /**
@@ -59,7 +72,28 @@ export function step(input: StepInput): void {
   // expose the net structure field so field-following forces (`fieldflow`) can read the
   // superposition of every body's field() — the same vector the streamlines view draws.
   env.fieldAt = (x, y) => netField(bodies, forces, x, y);
-  for (const b of bodies) b.count = 0;
+  for (const b of bodies) {
+    b.count = 0;
+    // thermodynamic accumulators (workover v0.3 §"Metrics") share the density window/cadence.
+    const th = b.thermo;
+    if (th) {
+      th.n = 0;
+      th.sx = 0;
+      th.sy = 0;
+      th.ss = 0;
+      th.ss2 = 0;
+      th.sh = 0;
+    }
+  }
+  // visible `screen` bodies (workover v0.3): each damps OTHER bodies' forces on matter inside
+  // its range (quiet zones / text shielding). No screens on the page (the common case) ⇒ this
+  // stays null and the whole pass is skipped — zero cost and zero behavior change.
+  let screens: Body[] | null = null;
+  for (const b of bodies) {
+    if (b.vis && b.tokens.length > 0 && classified(b).modifiers.indexOf('screen') >= 0)
+      (screens ??= []).push(b);
+  }
+  const screenFall: number[] | null = screens ? new Array<number>(screens.length) : null;
   const hasWaves = !!waves && waves.length > 0;
   const hasBodies = bodies.length > 0;
   let dead: Particle[] | null = null; // mortal (spawned) matter that expired this tick
@@ -112,6 +146,21 @@ export function step(input: StepInput): void {
 
     // DOM body forces — the page's elements move the field (§4).
     if (hasBodies) {
+      // per-particle screen factors (workover v0.3): one distance per screen body, computed
+      // once and reused across every body's pass below.
+      if (screens) {
+        for (let i = 0; i < screens.length; i++) {
+          const s = screens[i]!;
+          const sdx = s.cx - p.x;
+          const sdy = s.cy - p.y;
+          screenFall![i] = screenFactor(
+            Math.sqrt(sdx * sdx + sdy * sdy),
+            s.range,
+            s.strength,
+            s.screenMin ?? 0,
+          );
+        }
+      }
       // first-class mass (§21.3): an additive force's Δv is scaled by 1/m as it applies
       // (see applyForce); kinematic forces set velocity outright and are left unscaled.
       const inv = p.m !== 1 && p.m > 0 ? 1 / p.m : 1;
@@ -141,17 +190,44 @@ export function step(input: StepInput): void {
         // and every apply for matter beyond it. range 0 = global → never culled.
         if (b.range > 0 && d2 >= b.range * b.range * 2.56) continue;
         const d = Math.sqrt(d2);
-        // density sampling for two-way feedback (engine bookkeeping, ungated, §8)
-        if (b.feedback && d < b.range * 0.5) b.count += 1 - d / (b.range * 0.5);
+        // density sampling for two-way feedback (engine bookkeeping, ungated, §8) — and the
+        // thermodynamic sample (workover v0.3 §"Metrics"), same window, same cadence.
+        if (b.feedback && d < b.range * 0.5) {
+          b.count += 1 - d / (b.range * 0.5);
+          const th = (b.thermo ??= { n: 0, sx: 0, sy: 0, ss: 0, ss2: 0, sh: 0 });
+          const s2 = p.vx * p.vx + p.vy * p.vy;
+          th.n++;
+          th.sx += p.vx;
+          th.sy += p.vy;
+          th.ss += Math.sqrt(s2);
+          th.ss2 += s2;
+          th.sh += p.heat;
+        }
         if (b.when && !passes(conditions, b, p, env)) continue;
         env.dx = dx;
         env.dy = dy;
         env.dist = d < 1 ? 1 : d;
-        // modifier pass (§20.3): resonate scales sibling strength, spotlight gates it.
+        // modifier pass (§20.3, formalized by the workover v0.3 modifier contract): the body's
+        // OWN modifiers evaluate in the contract order `spotlight → screen → resonate`
+        // (cls.modifiers is pre-sorted), then any custom modify() hooks on its other tokens
+        // (dynamic discovery — unchanged behavior for registry-extended forces). spotlight
+        // gates siblings, resonate scales their strength; `screen` contributes through the
+        // cross-body factor below (a screen body never attenuates its own siblings). Gates OR
+        // and strength factors multiply, so the composed value is order-independent — the
+        // order is the *contract* (pinned for future modifiers where it will matter).
+        const cls = classified(b);
         let sMul = 1;
         let gated = false;
         let hasModifier = false;
-        for (const tok of b.tokens) {
+        for (const tok of cls.modifiers) {
+          const mod = forces[tok]?.modify;
+          if (!mod) continue;
+          hasModifier = true;
+          const m = mod(b, p, env);
+          if (m.strength != null) sMul *= m.strength;
+          if (m.gate) gated = true;
+        }
+        for (const tok of cls.forces) {
           const mod = forces[tok]?.modify;
           if (!mod) continue;
           hasModifier = true;
@@ -160,17 +236,28 @@ export function step(input: StepInput): void {
           if (m.gate) gated = true;
         }
         if (gated) continue; // spotlight cone excludes this particle
+        // `screen` (workover v0.3): OTHER bodies' quiet zones damp this body's force on this
+        // particle. Factors were computed once per particle above; a screen never damps itself.
+        let screenMul = 1;
+        if (screens) {
+          for (let i = 0; i < screens.length; i++) {
+            if (screens[i] !== b) screenMul *= screenFall![i]!;
+          }
+        }
         // conserved-attention multiplier (§2.4): a page-level effective strength,
         // 1 = neutral (the default, so the live field is untouched until opted in).
         const attn = b.attn ?? 1;
-        if (!hasModifier && attn === 1) {
+        // the composed effective-strength multiplier: resonate's S(t) × the attention
+        // budget × the screen attenuation. 1 ⇒ the untouched fast path.
+        const mul = sMul * attn * screenMul;
+        if (!hasModifier && mul === 1) {
           for (const tok of b.tokens) {
             const f = forces[tok];
             if (f) applyForce(f, b, p, env, inv);
           }
         } else if (!hasModifier) {
           const origS = b.strength;
-          b.strength = origS * attn;
+          b.strength = origS * mul;
           for (const tok of b.tokens) {
             const f = forces[tok];
             if (f) applyForce(f, b, p, env, inv);
@@ -178,7 +265,7 @@ export function step(input: StepInput): void {
           b.strength = origS;
         } else {
           const origS = b.strength;
-          b.strength = origS * sMul * attn; // resonate's S(t) × attention budget
+          b.strength = origS * mul;
           for (const tok of b.tokens) {
             const f = forces[tok];
             if (f && !f.modify) applyForce(f, b, p, env, inv);

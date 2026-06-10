@@ -72,6 +72,9 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-shaped', type: 'flag', desc: 'Shaped source — forces reference the nearest point on the element box, so matter shells the shape instead of bunching at its centre.' },
   { name: 'data-absorb', type: 'px', def: '64', desc: 'Capture radius for the sink force.' },
   { name: 'data-max', type: 'number', def: '60', desc: 'Load at which a sink supernovas (releases).' },
+  { name: 'data-life', type: 'frames', def: '90 (spawn)', desc: 'Source budget: how long each particle a spawn source emits lives. An unbudgeted source gets the safe default 300 (and a dev warning).' },
+  { name: 'data-cap', type: 'number', desc: 'Source budget: the most live particles a spawn source sustains — the emission rate is clamped to cap/life. The unbudgeted-source safe default is 120.' },
+  { name: 'data-screen-min', type: 'number', def: '0', desc: 'Floor of the screen modifier’s attenuation factor (0 = other forces may cancel fully at the screen’s core).' },
   { name: 'data-fmin / data-fmax', type: 'number', desc: 'Variable-font weight range that --d drives on a feedback body.' },
   { name: 'data-opsz', type: 'number', desc: 'Optical-size axis to drive alongside weight.' },
   { name: 'data-active', type: '"1"', desc: 'Engagement state — set automatically on hover/focus of a [data-hot] element.' },
@@ -87,6 +90,9 @@ export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--forces-heatmap-density', on: 'data-feedback + heatmap', desc: 'The ambient heatmap density under the body ∈ [0,1] — where matter pools around it, distinct from --d.' },
   { name: '--load / --mass', on: 'sink body', desc: 'A sink’s accretion fill fraction ∈ [0,1] (--mass is a back-compat alias).' },
   { name: '--lit', on: 'causality', desc: 'Spillover-lit density when a saturated neighbour bleeds density across a boundary.' },
+  { name: '--entropy', on: 'data-feedback', desc: 'Measured local disorder ∈ [0,1] — velocity-direction dispersion, gated by agitation (physics workover v0.3). Engine-measured; distinct from the platform’s inferred --field-entropy lane.' },
+  { name: '--coherence', on: 'data-feedback', desc: 'Measured local order ∈ [0,1] (= 1 − entropy; velocity alignment). Numeric — not the --coherence palette color on :root.' },
+  { name: '--temperature', on: 'data-feedback', desc: 'Measured local agitation ∈ [0,1] — half mean heat, half normalized kinetic energy.' },
 ];
 
 export const RENDER_MODES: { name: string; desc: string }[] = [

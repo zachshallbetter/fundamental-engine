@@ -45,6 +45,7 @@ import { resolvePalette } from '../config/palettes.ts';
 import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { defaultFeedbackSink } from './feedback-sink.ts';
+import { thermoMetrics } from './thermo.ts';
 import { attentionMuls } from './attention.ts';
 import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
@@ -196,7 +197,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // clear the field's CSS write-back when a still-connected host leaves the field, so it
   // doesn't keep a frozen `--d` glow (a removed light-DOM element is gone, so it needs no clear).
   const clearWriteback = (el: HTMLElement): void => {
-    for (const v of ['--d', '--forces-density', '--field-density', '--load', '--mass'])
+    for (const v of ['--d', '--forces-density', '--field-density', '--load', '--mass', '--entropy', '--coherence', '--temperature'])
       el.style.removeProperty(v);
   };
   const onRegister = (e: Event): void => {
@@ -815,11 +816,28 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const heatmapDensity = heatmap ? heatmap.norm(b.cx, b.cy) : undefined;
       const load = b.tokens.indexOf('sink') >= 0 && b.capacity > 0 ? sinkLoad(b) : undefined;
 
+      // measured thermodynamics (workover v0.3 §"Metrics"): entropy / coherence / temperature
+      // from the local sample the integrator accumulated this frame (b.thermo — the same
+      // range/2 window as the density count), eased like `d` so the signals stay calm.
+      const t = thermoMetrics(b.thermo);
+      const m = (b.metrics ??= { entropy: 0, coherence: 1, temperature: 0 });
+      m.entropy += (t.entropy - m.entropy) * 0.08;
+      m.coherence += (t.coherence - m.coherence) * 0.08;
+      m.temperature += (t.temperature - m.temperature) * 0.08;
+
       // ONE write path (#228): the CSS-var channels always go to the sink — the platform's
       // FeedbackRegistry route (D3) when configured, otherwise the internal default sink
       // (feedback-sink.ts), which performs the same direct writes the engine always made:
-      // `--d`/`--forces-density`/`--field-density`, the heatmap mirror pair, `--load`/`--mass`.
-      cfg.feedbackSink(writeEl, { density: b.d, heatmapDensity, load });
+      // `--d`/`--forces-density`/`--field-density`, the heatmap mirror pair, `--load`/`--mass`,
+      // plus the measured `--entropy`/`--coherence`/`--temperature`.
+      cfg.feedbackSink(writeEl, {
+        density: b.d,
+        heatmapDensity,
+        load,
+        entropy: m.entropy,
+        coherence: m.coherence,
+        temperature: m.temperature,
+      });
     }
   }
 

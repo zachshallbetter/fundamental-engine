@@ -173,6 +173,76 @@ export const ACCENT_JOURNEY: readonly string[] = [
   '#ff9d5c',
 ];
 
+// ── Body-token classification (physics workover v0.3 — the modifier contract) ─
+//
+// `data-body` tokens fall into three application classes, applied in a formalized
+// order each frame (workover §"Modifier contract"):
+//
+//   1. MODIFIERS transform the force context — `spotlight → screen → resonate`.
+//   2. Core FORCES apply (everything else, in authored order).
+//   3. SOURCES run through the budget lifecycle (the per-body source pass).
+//
+// This table is data — the parser (`core/scanner.ts`) classifies every body's
+// tokens with it, the integrator consumes the classified sets in the documented
+// order, and the Lab/docs render it. Unknown tokens classify as plain forces
+// (unchanged behavior: the registry simply has no module for them).
+
+/** A `data-body` token's application class. */
+export type BodyTokenKind = 'modifier' | 'force' | 'source';
+
+/** Modifier tokens in their formalized application order (`spotlight → screen → resonate`).
+ *  The order is part of the contract: authoring `data-body="resonate spotlight attract"`
+ *  evaluates the modifiers in THIS order, not authored order. (Today's modifiers compose
+ *  commutatively — gates OR, strength multipliers multiply — so the formalization changes
+ *  no existing behavior; it pins the contract for modifiers where order will matter.) */
+export const MODIFIER_ORDER: readonly string[] = ['spotlight', 'screen', 'resonate'];
+
+/** Class-[S] source tokens — they CREATE matter and must be budgeted: every [S] body
+ *  declares at least one of `data-life` / `data-cap` / `data-budget` / `data-sink`,
+ *  or the scanner's dev guard warns and applies {@link SOURCE_DEFAULT_LIFE} /
+ *  {@link SOURCE_DEFAULT_CAP} (workover §"Source and sink rules"). */
+export const SOURCE_TOKENS: readonly string[] = ['spawn'];
+
+/** The safe default budget the source guard applies to an unbudgeted [S] body:
+ *  each emitted particle lives this many frames (`data-life="300"`). */
+export const SOURCE_DEFAULT_LIFE = 300;
+/** …and the body sustains at most this many live particles (`data-cap="120"`);
+ *  the emission rate is clamped to `cap / life` per frame. */
+export const SOURCE_DEFAULT_CAP = 120;
+
+/** Classify one `data-body` token (unknown tokens are plain forces). */
+export function classifyBodyToken(token: string): BodyTokenKind {
+  if (MODIFIER_ORDER.includes(token)) return 'modifier';
+  if (SOURCE_TOKENS.includes(token)) return 'source';
+  return 'force';
+}
+
+/** A body's tokens split into the three application classes (workover §"Modifier contract"). */
+export interface ClassifiedTokens {
+  /** modifier tokens, sorted into the formalized order (`spotlight → screen → resonate`). */
+  modifiers: string[];
+  /** core force tokens (including unknown tokens — unchanged behavior), authored order. */
+  forces: string[];
+  /** class-[S] source tokens, authored order. */
+  sources: string[];
+}
+
+/** Split a body's tokens into `{ modifiers, forces, sources }`. Pure; preserves authored
+ *  order within each class except modifiers, which sort into {@link MODIFIER_ORDER}. */
+export function classifyBodyTokens(tokens: readonly string[]): ClassifiedTokens {
+  const modifiers: string[] = [];
+  const forces: string[] = [];
+  const sources: string[] = [];
+  for (const t of tokens) {
+    const kind = classifyBodyToken(t);
+    if (kind === 'modifier') modifiers.push(t);
+    else if (kind === 'source') sources.push(t);
+    else forces.push(t);
+  }
+  if (modifiers.length > 1) modifiers.sort((a, b) => MODIFIER_ORDER.indexOf(a) - MODIFIER_ORDER.indexOf(b));
+  return { modifiers, forces, sources };
+}
+
 // ── Formations (§7) ──────────────────────────────────────────────────────────
 
 export type FormationId = 'ambient' | 'wells' | 'lanes' | 'scatter' | 'accretion';
