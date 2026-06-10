@@ -16,6 +16,8 @@ import {
   lintStateRegistration,
   lintOverlayLinks,
   lintFeedbackVars,
+  lintSinkFeedback,
+  lintFeedbackVarReads,
   lintSchedulerViolations,
   lintPlatform,
 } from './lint.ts';
@@ -40,6 +42,76 @@ test('lintRelationTargets flags missing target attr and unresolvable targets, pa
   assert.ok(w.some((x) => x.message.includes('resolves to no element')));
   assert.ok(w.some((x) => x.message.includes('no data-field-target')));
   assert.ok(w.every((x) => x.code === 'relation-target-missing'));
+});
+
+/** A fake declarative element: getAttribute/hasAttribute over a plain attribute map. */
+function attrEl(attrs: Record<string, string>): Element {
+  return {
+    getAttribute: (n: string) => (n in attrs ? attrs[n]! : null),
+    hasAttribute: (n: string) => n in attrs,
+  } as unknown as Element;
+}
+
+/** A fake subtree whose querySelectorAll answers the two attribute selectors the rules use. */
+function attrRoot(els: Element[]): ParentNode {
+  return {
+    querySelectorAll: (sel: string) => {
+      const names = [...sel.matchAll(/\[([a-z-]+)\]/g)].map((m) => m[1]!);
+      return els.filter((el) => names.some((n) => el.hasAttribute(n)));
+    },
+  } as unknown as ParentNode;
+}
+
+test('lintSinkFeedback flags a capturing sink with no data-feedback (the shipped vessel bug)', () => {
+  // the historical shape: #bim-core captured matter for months but, without data-feedback,
+  // the engine never wrote --load back — the meter sat empty and nobody saw a thing.
+  const broken = attrEl({ 'data-body': 'sink attract', 'data-absorb': '74', 'data-max': '10' });
+  const w = lintSinkFeedback(attrRoot([broken]));
+  assert.equal(w.length, 1);
+  assert.equal(w[0]!.code, 'sink-without-feedback');
+  assert.equal(w[0]!.element, broken);
+  assert.match(w[0]!.message, /--load/);
+});
+
+test('lintSinkFeedback stays quiet on the correct shape and on non-sink bodies', () => {
+  const correct = attrEl({ 'data-body': 'sink', 'data-absorb': '', 'data-max': '8', 'data-feedback': '' });
+  const notASink = attrEl({ 'data-body': 'attract', 'data-max': '8' });
+  const plainSink = attrEl({ 'data-body': 'sink' }); // no absorb/max → nothing to capture
+  assert.deepEqual(lintSinkFeedback(attrRoot([correct, notASink, plainSink])), []);
+});
+
+test('lintFeedbackVarReads flags a body styled from channels it never opted into', () => {
+  // the historical shape: an element reads var(--load) in its inline style but carries
+  // data-body without data-feedback — the variable is never written for it.
+  const broken = attrEl({ 'data-body': 'sink', 'data-absorb': '', style: 'width: calc(var(--load, 0) * 100%)' });
+  const w = lintFeedbackVarReads(attrRoot([broken]));
+  assert.equal(w.length, 1);
+  assert.equal(w[0]!.code, 'feedback-vars-unwritten');
+  assert.equal(w[0]!.element, broken);
+  assert.match(w[0]!.message, /var\(--load/);
+  // the other two channel families lint the same way
+  for (const style of ['opacity: var(--d, 0)', 'scale: var(--field-attention, 1)']) {
+    assert.equal(lintFeedbackVarReads(attrRoot([attrEl({ 'data-body': 'attract', style })])).length, 1);
+  }
+});
+
+test('lintFeedbackVarReads stays quiet when data-feedback is present or no channel is read', () => {
+  const correct = attrEl({ 'data-body': 'sink', 'data-feedback': '', style: 'width: calc(var(--load, 0) * 100%)' });
+  const noRead = attrEl({ 'data-body': 'attract', style: '--cc: #4da3ff; left: 50%' });
+  const noStyle = attrEl({ 'data-body': 'attract' });
+  assert.deepEqual(lintFeedbackVarReads(attrRoot([correct, noRead, noStyle])), []);
+});
+
+test('lintPlatform surfaces the declarative feedback rules through opts.root', () => {
+  const el = fakeEl();
+  const platform = createFieldPlatform(el);
+  const root = attrRoot([
+    attrEl({ 'data-body': 'sink', 'data-absorb': '' }),
+    attrEl({ 'data-body': 'attract', style: 'opacity: var(--d, 0)' }),
+  ]);
+  const codes = lintPlatform(platform, { root }).map((w) => w.code);
+  assert.ok(codes.includes('sink-without-feedback'));
+  assert.ok(codes.includes('feedback-vars-unwritten'));
 });
 
 test('lintStateRegistration flags state on unregistered elements only', () => {
