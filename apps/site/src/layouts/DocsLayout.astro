@@ -43,7 +43,12 @@ const next = idx >= 0 && idx < DOCS_FLAT.length - 1 ? DOCS_FLAT[idx + 1] : null;
       <nav id="docsSide">
         {
           groups.map((g) => (
-            <div class="docs-group">
+            <div
+              class="docs-group"
+              style={[g.color && `--group-color: ${g.color}`, g.glyph && `--group-glyph: '${g.glyph}'`]
+                .filter(Boolean)
+                .join('; ') || undefined}
+            >
               <span class="docs-group-title">{g.title}</span>
               <ul>
                 {g.items.map((i) => (

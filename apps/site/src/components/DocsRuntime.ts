@@ -20,9 +20,32 @@
 // prefers-reduced-motion and the persisted sidebar toggle (main[data-field-docs="off"]).
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
-import { DOCS_NAV, ROUTE_FAMILIES } from "../lib/docs-nav.ts";
+import { DOCS_NAV, ROUTE_FAMILIES, groupColorFor } from "../lib/docs-nav.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";
 import { persisted } from "../lib/persisted.ts";
+
+// ── visited routes — the search "seen" memory ("where have I been") ──────────
+const normRoute = (href: string): string =>
+  (href.split("#")[0]!.split("?")[0] || "/").replace(/\/$/, "") || "/";
+const VISITED_KEY = "fui:docs-visited";
+function loadVisited(): Set<string> {
+  try {
+    const raw = localStorage.getItem(VISITED_KEY);
+    const arr = raw ? (JSON.parse(raw) as unknown) : [];
+    return new Set(Array.isArray(arr) ? (arr as string[]) : []);
+  } catch {
+    return new Set();
+  }
+}
+function recordVisit(route: string): void {
+  try {
+    const v = loadVisited();
+    v.add(route);
+    localStorage.setItem(VISITED_KEY, JSON.stringify([...v].slice(-200)));
+  } catch {
+    /* storage unavailable — search just won't show 'seen' marks */
+  }
+}
 
 const LEGACY_FIELD_KEY = "fieldui-docs-field";
 const fieldPref = persisted<boolean>("docs-field", true, { legacyKeys: [LEGACY_FIELD_KEY] });
@@ -76,50 +99,103 @@ function startField(main: HTMLElement, toc: HTMLElement | null): FieldBits | nul
   // every heading each frame. Nothing is drawn — the TOC's ink is the render surface.
   let applied: { destroy(): void } | null = null;
   try {
-    const base = recipeById("evidence-field");
+    // reading-field (was evidence-field) — the Reading Field recipe: it keeps the attention
+    // lane AND adds MEMORY, so sections you dwell on accrete --field-memory ("where I've read")
+    // alongside the live attention.
+    const base = recipeById("reading-field");
     if (base) {
       applied = applyRecipe(main, base, {
         bodies: heads,
         annotateBodies: false,
         renderless: true,
-        extraMetrics: ["attention"],
+        extraMetrics: ["attention", "memory"],
       });
     }
   } catch {
     /* the page engine's --d still flows; the TOC simply stays at rest */
   }
 
-  // one rAF mirror loop (~30 links max, write-on-change only): heading --field-attention
-  // → TOC link --att. Both are inline styles, so reading el.style costs no style recalc.
+  // one rAF mirror loop (~30 links max, write-on-change only): each heading's live
+  // --field-attention → TOC link --att, and --field-memory → --mem (the read trail). Both are
+  // inline styles, so reading el.style costs no style recalc.
   const links = toc ? [...toc.querySelectorAll<HTMLElement>("a[data-for]")] : [];
   const pairs = links
     .map((a) => ({ a, h: document.getElementById(a.dataset.for || "") }))
     .filter((p): p is { a: HTMLElement; h: HTMLElement } => p.h instanceof HTMLElement);
-  const last = new Map<HTMLElement, string>();
+  const lastA = new Map<HTMLElement, string>();
+  const lastM = new Map<HTMLElement, string>();
   let raf = 0;
   const mirror = (): void => {
     for (const { a, h } of pairs) {
-      const v = h.style.getPropertyValue("--field-attention") || "0";
-      if (last.get(a) !== v) {
-        last.set(a, v);
-        a.style.setProperty("--att", v);
+      const att = h.style.getPropertyValue("--field-attention") || "0";
+      if (lastA.get(a) !== att) {
+        lastA.set(a, att);
+        a.style.setProperty("--att", att);
+      }
+      const mem = h.style.getPropertyValue("--field-memory") || "0";
+      if (lastM.get(a) !== mem) {
+        lastM.set(a, mem);
+        a.style.setProperty("--mem", mem);
       }
     }
     raf = requestAnimationFrame(mirror);
   };
   if (pairs.length && applied) raf = requestAnimationFrame(mirror);
 
+  // the sidebar hierarchy as a Priority Well — runs under the same toggle as this field
+  const sidebar = startSidebarField();
+
   return {
     destroy() {
       cancelAnimationFrame(raf);
       applied?.destroy();
+      sidebar?.destroy();
       for (const h of heads) {
         for (const k of Object.keys(BODY_ATTRS)) h.removeAttribute(k);
       }
-      links.forEach((a) => a.style.removeProperty("--att"));
+      links.forEach((a) => {
+        a.style.removeProperty("--att");
+        a.style.removeProperty("--mem");
+      });
       fieldRoot?.rescan?.(); // the engine drops the heading bodies — off is honest
     },
   };
+}
+
+// the docs sidebar as a Priority Well (recipe `priority-well`, signals-only): each nav link is
+// a body, the current page pinned as the well via data-field-attention="1"; the platform writes
+// --field-attention / --field-priority back onto the links, which docs.css turns into weight + a
+// per-section glow. Called only from startField, so it lives and dies with the docs-field toggle.
+function startSidebarField(): { destroy(): void } | null {
+  const nav = document.getElementById("docsSide");
+  if (!nav) return null;
+  const links = [...nav.querySelectorAll<HTMLElement>("a")];
+  if (!links.length) return null;
+  const current = nav.querySelector<HTMLElement>('a[aria-current="page"]');
+  current?.setAttribute("data-field-attention", "1"); // the current route is the well
+  try {
+    const base = recipeById("priority-well");
+    if (!base) return null;
+    const applied = applyRecipe(nav, base, {
+      bodies: links,
+      annotateBodies: false,
+      renderless: true,
+      extraMetrics: ["attention"],
+    });
+    return {
+      destroy() {
+        applied.destroy();
+        current?.removeAttribute("data-field-attention");
+        for (const a of links) {
+          a.style.removeProperty("--field-attention");
+          a.style.removeProperty("--field-priority");
+          a.style.removeProperty("--field-density");
+        }
+      },
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ── feature 3: reference integrity, self-measured ───────────────────────────
@@ -196,6 +272,13 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
   const results = dialog?.querySelector<HTMLElement>("[data-docs-search-results]");
   if (!dialog || !openBtn || !input || !status || !results) return;
 
+  // the Search Relevance Field over the rendered hits (re-applied per query; torn down on close)
+  let searchField: { destroy(): void } | null = null;
+  sig.addEventListener("abort", () => {
+    searchField?.destroy();
+    searchField = null;
+  });
+
   // platform-correct shortcut hint
   const kbd = openBtn.querySelector("kbd");
   if (kbd && !/Mac|iPhone|iPad/.test(navigator.platform)) kbd.textContent = "Ctrl K";
@@ -241,6 +324,8 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
     const q = input.value.trim();
     const mine = ++seq;
     if (!q) {
+      searchField?.destroy();
+      searchField = null;
       results.replaceChildren();
       status.textContent = missing ? DEV_MESSAGE : "";
       select(-1);
@@ -252,26 +337,40 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
     if (mine !== seq) return;
     const pages = await Promise.all(res.results.slice(0, 6).map((r) => r.data()));
     if (mine !== seq) return;
+    searchField?.destroy();
+    searchField = null;
     results.replaceChildren();
+    const visited = loadVisited();
     let n = 0;
     for (const p of pages) {
+      const color = groupColorFor(p.url); // per-section wayfinding color
       const group = document.createElement("div");
       group.className = "ds-group";
       group.setAttribute("role", "group");
+      group.style.setProperty("--hit-color", color);
       const head = document.createElement("span");
       head.className = "ds-page";
       head.textContent = p.meta?.title || p.url;
       group.appendChild(head);
-      const subs = p.sub_results?.length
-        ? p.sub_results.slice(0, 4)
+      const sectioned = !!p.sub_results?.length;
+      const subs = sectioned
+        ? p.sub_results!.slice(0, 4)
         : [{ url: p.url, title: p.meta?.title || p.url, excerpt: p.excerpt }];
       for (const s of subs) {
         const a = document.createElement("a");
-        a.className = "ds-hit";
+        // result-type icon: a section hit (a heading inside a page) vs the page itself
+        a.className = `ds-hit ${sectioned ? "ds-hit-section" : "ds-hit-page"}`;
         a.href = s.url;
         a.id = `ds-opt-${n++}`;
         a.setAttribute("role", "option");
         a.setAttribute("aria-selected", "false");
+        a.style.setProperty("--hit-color", color);
+        // "seen" — a previously-visited route carries the memory mark; the relevance field
+        // reads data-field-memory back as --field-memory, and docs.css draws the dot.
+        if (visited.has(normRoute(s.url))) {
+          a.classList.add("ds-seen");
+          a.setAttribute("data-field-memory", "1");
+        }
         const t = document.createElement("b");
         t.textContent = s.title;
         const ex = document.createElement("span");
@@ -281,6 +380,24 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
         group.appendChild(a);
       }
       results.appendChild(group);
+    }
+    // Search Relevance Field (recipe `search-relevance-field`, signals-only): the rendered hits
+    // become bodies; seen routes carry data-field-memory → --field-memory for the "seen" mark.
+    // Skipped under reduced motion — the static list + dot still read.
+    if (!reduceMotion()) {
+      try {
+        const base = recipeById("search-relevance-field");
+        const hits = [...results.querySelectorAll<HTMLElement>("a.ds-hit")];
+        if (base && hits.length)
+          searchField = applyRecipe(results, base, {
+            bodies: hits,
+            annotateBodies: false,
+            renderless: true,
+            extraMetrics: ["memory", "recency"],
+          });
+      } catch {
+        /* the static result list stands on its own */
+      }
     }
     status.textContent = pages.length
       ? `${pages.length} page${pages.length === 1 ? "" : "s"}`
@@ -370,6 +487,7 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
 function initDocsShell(shell: HTMLElement): () => void {
   const main = shell.querySelector<HTMLElement>("main.docs-content");
   if (!main) return () => {};
+  recordVisit(normRoute(location.pathname)); // this page joins the search "seen" memory
   const ac = new AbortController();
   const toc = document.getElementById("docsToc");
   let bits: FieldBits | null = null;
