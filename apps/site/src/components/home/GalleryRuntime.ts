@@ -9,6 +9,7 @@ import { bindData } from "@field-ui/platform";
 
 type FieldEl = HTMLElement & {
   setRender?: (m: string) => void;
+  setOverlay?: (m: string | string[]) => void;
   setFormation?: (name: string) => void;
   rescan?: () => void;
 };
@@ -172,9 +173,74 @@ function initReadout(): () => void {
   };
 }
 
-/** #3 — See the field five ways: switch the <field-root> underlay render mode, only while in view. */
+/** #3 — Field Surfaces: the matter mode (underlay, exclusive) plus the overlay readings (additive —
+ *  any set of them stacks on the front surface). Applied to the whole-page field only while the
+ *  panel is in view; restores to dots / off on leave. The caption line defines whatever was last
+ *  touched: "<mode> — what it draws · what it reads". */
 function initRenderTour(): () => void {
-  return initPillTour("[data-rendertour]", "data-render", "dots", (f, v) => f?.setRender?.(v));
+  const root = document.querySelector<HTMLElement>("[data-rendertour]");
+  if (!root) return () => {};
+  const field = document.querySelector("field-root") as FieldEl | null;
+  const matter = [...root.querySelectorAll<HTMLButtonElement>("button[data-render]")];
+  const readings = [...root.querySelectorAll<HTMLButtonElement>("button[data-overlay-mode]")];
+  const caption = root.querySelector<HTMLElement>("[data-rt-caption]");
+  if (!matter.length) return () => {};
+  const ac = new AbortController();
+  let inView = false;
+  let mode = matter[0];
+  const active = new Set<string>();
+  const run = () => {
+    field?.setRender?.(inView && mode ? mode.dataset.render || "dots" : "dots");
+    const stack = inView ? [...active] : [];
+    field?.setOverlay?.(stack.length ? stack : "off");
+  };
+  const say = (b: HTMLButtonElement) => {
+    const name = b.dataset.render ?? b.dataset.overlayMode;
+    if (caption && name && b.dataset.def) caption.textContent = `${name} — ${b.dataset.def}`;
+  };
+  matter.forEach((b) =>
+    b.addEventListener(
+      "click",
+      () => {
+        mode = b;
+        matter.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        say(b);
+        run();
+      },
+      { signal: ac.signal },
+    ),
+  );
+  readings.forEach((b) =>
+    b.addEventListener(
+      "click",
+      () => {
+        const name = b.dataset.overlayMode;
+        if (!name) return;
+        if (active.has(name)) active.delete(name);
+        else active.add(name);
+        b.setAttribute("aria-pressed", String(active.has(name)));
+        say(b);
+        run();
+      },
+      { signal: ac.signal },
+    ),
+  );
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        inView = e.isIntersecting;
+        run();
+      }
+    },
+    { threshold: 0.4 },
+  );
+  io.observe(root);
+  return () => {
+    ac.abort();
+    io.disconnect();
+    field?.setRender?.("dots");
+    field?.setOverlay?.("off");
+  };
 }
 
 /** #6 — Formations: re-arrange the whole page field — ambient / wells / lanes / scatter / accretion. */

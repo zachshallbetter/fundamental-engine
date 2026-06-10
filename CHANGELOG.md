@@ -7,6 +7,19 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Field Surfaces: additive overlay readings.** `setOverlay` (core, `<field-root overlay>`,
+  vanilla) now accepts one reading **or a stack** — an array (`['grid','path']`) or a
+  space-separated attribute (`overlay="grid path"`) — drawn in order on the front surface, so
+  several readings compose over any underlay matter mode. Five new readings join
+  `streamlines` / `force-vectors` / `field-lines`, all line/text diagnostics (the overlay reveals,
+  never occludes): `grid` (a reference lattice displaced by the field — deformation),
+  `temperature` (iso-contours of particle heat), `energy` (iso-contours of kinetic energy),
+  `path` (streamline curves traced from seeded probes), and `data` (numeric `--d` density
+  readouts beside each measuring body). The home Field Surfaces panel now defines every mode
+  in place and exposes the readings as additive toggles, scoped to the panel in view.
+
 The **physics workover** begins: a designed / natural / hybrid substrate that makes the
 engine more physically coherent without losing the designed interface feel. The full plan
 and an as-built audit live in [`docs/engine-reference/physics-workover.md`](docs/engine-reference/physics-workover.md); the

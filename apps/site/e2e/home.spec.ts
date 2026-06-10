@@ -135,6 +135,53 @@ for (const route of ["/", "/eli5"] as const) {
         .toBeNull();
     });
 
+    test("Field Surfaces readings stack additively on the overlay and restore on leave", async ({
+      page,
+    }) => {
+      await skipUnless(page, "[data-rendertour] button[data-overlay-mode]", "Field Surfaces readings");
+      const tour = page.locator("[data-rendertour]");
+      await tour.scrollIntoViewIfNeeded();
+      // stack two readings — deformation grid + traced paths — over the default matter mode
+      await tour.locator('button[data-overlay-mode="grid"]').click();
+      await tour.locator('button[data-overlay-mode="path"]').click();
+      await expect(tour.locator('button[data-overlay-mode="grid"]')).toHaveAttribute("aria-pressed", "true");
+      await expect(tour.locator('button[data-overlay-mode="path"]')).toHaveAttribute("aria-pressed", "true");
+      // the caption defines the last-touched reading (the in-place definition contract)
+      await expect(tour.locator("[data-rt-caption]")).toContainText("path —");
+      // the stacked readings genuinely paint on the overlay surface (same painted-pixels
+      // probe as the picker test — report -1 until the deferred boot creates the canvas)
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(() => {
+              const cvs = [...document.querySelectorAll<HTMLCanvasElement>("body > canvas")].pop();
+              if (!cvs || cvs.width === 0 || cvs.height === 0) return -1; // not booted yet
+              const d = cvs.getContext("2d")!.getImageData(0, 0, cvs.width, cvs.height).data;
+              let n = 0;
+              for (let i = 3; i < d.length; i += 400) if (d[i]! > 0) n++;
+              return n;
+            }),
+          { timeout: 8000 },
+        )
+        .toBeGreaterThan(5);
+      // leave → the panel releases the page field: the overlay surface clears
+      await page.evaluate(() => scrollTo(0, 0));
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(() => {
+              const cvs = [...document.querySelectorAll<HTMLCanvasElement>("body > canvas")].pop();
+              if (!cvs || cvs.width === 0 || cvs.height === 0) return 0;
+              const d = cvs.getContext("2d")!.getImageData(0, 0, cvs.width, cvs.height).data;
+              let n = 0;
+              for (let i = 3; i < d.length; i += 400) if (d[i]! > 0) n++;
+              return n;
+            }),
+          { timeout: 8000 },
+        )
+        .toBe(0);
+    });
+
     test("the accretion vessel fills — the engine writes --load back (data-feedback)", async ({
       page,
     }) => {

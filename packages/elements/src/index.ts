@@ -1,4 +1,4 @@
-import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayMode } from '@field-ui/core';
+import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@field-ui/core';
 import { createBrowserField, type FieldPlatform } from '@field-ui/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -28,7 +28,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {number} waves - Intensity of the resting wave currents (the ambient drift).
  * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn.
- * @attr {string} overlay - Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.
+ * @attr {string} overlay - Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).
  * @attr {string} palette - Named color palette for the field.
  * @attr {number} mass - Global mass scaling applied to bodies.
  * @attr {boolean} attention - Enables the conserved-attention behaviour (one finite budget, redistributed).
@@ -102,10 +102,23 @@ export class FieldField extends HTMLElementBase {
       : 'dots';
   }
 
-  /** Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`. */
-  get overlay(): OverlayMode {
-    const v = this.getAttribute('overlay');
-    return v === 'streamlines' || v === 'force-vectors' || v === 'field-lines' ? v : 'off';
+  /** Field Surfaces: the overlay reading(s) — one mode or a space-separated additive stack. Default `off`. */
+  get overlay(): OverlayInput {
+    const KNOWN: readonly OverlayMode[] = [
+      'streamlines',
+      'force-vectors',
+      'field-lines',
+      'grid',
+      'temperature',
+      'energy',
+      'path',
+      'data',
+    ];
+    const list = (this.getAttribute('overlay') ?? '')
+      .split(/\s+/)
+      .filter((t): t is OverlayMode => (KNOWN as readonly string[]).includes(t));
+    if (!list.length) return 'off';
+    return list.length === 1 ? list[0]! : list;
   }
 
   /** color template name for the travelling accent (§9), or undefined for `ours`. */
@@ -165,8 +178,8 @@ export class FieldField extends HTMLElementBase {
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'): void {
     this.field?.setRender(mode);
   }
-  /** render a field-structure visualization on the overlay surface (Field Surfaces — in front of content). */
-  setOverlay(mode: OverlayMode): void {
+  /** render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack. */
+  setOverlay(mode: OverlayInput): void {
     this.field?.setOverlay(mode);
   }
   /** wire glowing connector lines between a set, or clear with null (§10). */

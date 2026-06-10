@@ -5340,8 +5340,11 @@ content — an axis orthogonal to every visualization method. The visible partic
   engagement contracts, data provenance — is canonical in
   [field-ui-invisible-fields.md](field-ui-invisible-fields.md).
 - **Overlay-suitable methods** are the structure/vector visualizations that reveal field *shape*
-  without occluding text: `streamlines`, `force-vectors`, `field-lines` (and, planned, the scalar
-  overlays `contours` / `potential`). Particle/matter methods (`dots`, `trails`, `metaballs`,
+  without occluding text: `streamlines`, `force-vectors`, `field-lines`, `grid` (the reference
+  lattice displaced by the field — deformation), `temperature` / `energy` (iso-contour instances of
+  the scalar `contours` method, reading heat and kinetic energy), `path` (streamline curves traced
+  from seeded probes), and `data` (numeric per-body density readouts — the inspector method's
+  lightest form). Particle/matter methods (`dots`, `trails`, `metaballs`,
   `voronoi`) stay on the **underlay** by design — drawn over text they would obscure it.
 - The overlay renders the **live** field (the engine's `forceAt` / `netField` samplers over the
   current bodies), not a static trace — so it tracks the page as bodies move, scroll, and engage.
@@ -5359,9 +5362,14 @@ content — an axis orthogonal to every visualization method. The visible partic
 ```
 
 ```ts
-field.setRender('dots');         // underlay (behind content)
-field.setOverlay('field-lines'); // overlay (in front of content); 'off' clears the surface
+field.setRender('dots');           // underlay (behind content)
+field.setOverlay('field-lines');   // overlay (in front of content); 'off' clears the surface
+field.setOverlay(['grid', 'path', 'temperature']); // readings are ADDITIVE — a stack composes
 ```
+
+Readings are **additive**: `setOverlay` takes one reading or a stack (an array; space-separated in
+the `overlay` attribute), drawn in order on the one front surface — so matter (underlay) + the
+heatmap layer + several overlay readings compose into a single legible picture of the same field.
 
 **Placement is orthogonal to mode** — any overlay-suitable method renders on either surface.
 `<field-root>` owns the overlay canvas (created in the light DOM, since the shadow host is `z-index:0`);
@@ -5369,9 +5377,9 @@ field.setOverlay('field-lines'); // overlay (in front of content); 'off' clears 
 the canvases it is handed.
 
 > **Planned (named, not built):** per-element / `inline` placement (a surface scoped to one box),
-> `framed` placement (within a stage), and overlay support for the scalar (`contours` / `potential`)
-> and graph (`topology` / `causality` / `prediction`) methods. The `OverlayMode` union is additive, so
-> these land without a breaking change.
+> `framed` placement (within a stage), the `potential` scalar overlay, and the graph overlays
+> (`topology` / `causality` / `prediction`). The `OverlayMode` union is additive, so these land
+> without a breaking change — exactly how `grid` / `temperature` / `energy` / `path` / `data` landed.
 
 ## 1. Particles
 

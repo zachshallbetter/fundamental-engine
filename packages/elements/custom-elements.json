@@ -827,9 +827,9 @@
               "kind": "field",
               "name": "overlay",
               "type": {
-                "text": "OverlayMode"
+                "text": "OverlayInput"
               },
-              "description": "Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`.",
+              "description": "Field Surfaces: the overlay reading(s) — one mode or a space-separated additive stack. Default `off`.",
               "readonly": true
             },
             {
@@ -1026,11 +1026,11 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "OverlayMode"
+                    "text": "OverlayInput"
                   }
                 }
               ],
-              "description": "render a field-structure visualization on the overlay surface (Field Surfaces — in front of content)."
+              "description": "render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack."
             },
             {
               "kind": "method",
@@ -1268,7 +1268,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`."
+              "description": "Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order)."
             },
             {
               "name": "palette",
@@ -1367,7 +1367,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.",
+              "description": "Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1564,9 +1564,9 @@
               "kind": "field",
               "name": "overlay",
               "type": {
-                "text": "OverlayMode"
+                "text": "OverlayInput"
               },
-              "description": "Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`.",
+              "description": "Field Surfaces: the overlay reading(s) — one mode or a space-separated additive stack. Default `off`.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1819,11 +1819,11 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "OverlayMode"
+                    "text": "OverlayInput"
                   }
                 }
               ],
-              "description": "render a field-structure visualization on the overlay surface (Field Surfaces — in front of content).",
+              "description": "render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2141,7 +2141,7 @@
               "type": {
                 "text": "string"
               },
-              "description": "Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.",
+              "description": "Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2338,9 +2338,9 @@
               "kind": "field",
               "name": "overlay",
               "type": {
-                "text": "OverlayMode"
+                "text": "OverlayInput"
               },
-              "description": "Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`.",
+              "description": "Field Surfaces: the overlay reading(s) — one mode or a space-separated additive stack. Default `off`.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2593,11 +2593,11 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "OverlayMode"
+                    "text": "OverlayInput"
                   }
                 }
               ],
-              "description": "render a field-structure visualization on the overlay surface (Field Surfaces — in front of content).",
+              "description": "render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

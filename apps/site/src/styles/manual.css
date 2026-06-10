@@ -1143,6 +1143,20 @@ html.hide-field-lines .stage-field {
   outline-offset: 2px;
 }
 
+/* Field Surfaces — the additive readings row + the definition caption */
+.rt-readings button[aria-pressed='true'] {
+  border-color: color-mix(in oklab, var(--accent, #7c9cff) 65%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent, #7c9cff) 45%, transparent);
+}
+.rt-caption {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-2, rgba(235, 238, 250, 0.62));
+  max-width: 56ch;
+}
+
+
 /* #8 bindData — a results surface bound from data, with the live field behind the rows. */
 .binddata {
   position: relative;

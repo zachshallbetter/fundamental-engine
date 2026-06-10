@@ -14,6 +14,7 @@ import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
 import CellGallery from "../components/CellGallery.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@field-ui/core";
+import { RENDER_MODES, OVERLAY_MODES } from "../lib/docs-api.ts";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
 import "../styles/landing.css";
@@ -1261,25 +1262,34 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
 
     <Concept>
       <span class="concept-no">Gallery · Field Surfaces <em class="truth truth-diagnostic">diagnostic</em></span>
-      <h2>One field, five readings.</h2>
+      <h2>One field, every reading.</h2>
       <p>
-        The same particles, drawn through different render modes — <code>field.setRender(mode)</code>,
-        the Field Surfaces underlay switch. Pick one and the whole page field re-draws itself; the
-        physics underneath never changes, only the reading.
+        The same particles, the same physics — only the reading changes. The <b>matter</b> row is the
+        underlay switch (<code>field.setRender</code>): one way of drawing the substance at a time.
+        The <b>readings</b> row is the overlay (<code>field.setOverlay</code>): line-drawn diagnostics
+        in front of the content — and they are <b>additive</b>. Stack a deformation grid over traced
+        paths over a temperature contour and read the field three ways at once.
       </p>
-      <p class="note">Active only while this panel is in view, then it restores to <code>dots</code>.</p>
+      <p class="note">
+        Scoped to this panel: the modes play across the whole-page field while it is in view, then
+        restore to <code>dots</code> / <code>off</code>.
+      </p>
       <Fragment slot="stage">
         <div class="rendertour" data-rendertour>
-          <span class="stage-label">field.setRender(mode)</span>
-          <div class="rt-modes" role="group" aria-label="Pick a render mode">
-            <button type="button" data-render="dots" aria-pressed="true">dots</button>
-            <button type="button" data-render="links" aria-pressed="false">links</button>
-            <button type="button" data-render="trails" aria-pressed="false">trails</button>
-            <button type="button" data-render="metaballs" aria-pressed="false">metaballs</button>
-            <button type="button" data-render="voronoi" aria-pressed="false">voronoi</button>
-            <button type="button" data-render="streamlines" aria-pressed="false">streamlines</button>
+          <span class="stage-label">matter · field.setRender(mode) — one at a time</span>
+          <div class="rt-modes" role="group" aria-label="Pick the matter mode (underlay — exclusive)">
+            {RENDER_MODES.map((m, i) => (
+              <button type="button" data-render={m.name} data-def={m.desc} aria-pressed={i === 0 ? "true" : "false"}>{m.name}</button>
+            ))}
           </div>
-          <span class="hintline">the change plays across the whole page field behind the content</span>
+          <span class="stage-label">readings · field.setOverlay([&hellip;]) — stack as many as you like</span>
+          <div class="rt-modes rt-readings" role="group" aria-label="Toggle overlay readings (in front — additive)">
+            {OVERLAY_MODES.map((m) => (
+              <button type="button" data-overlay-mode={m.name} data-def={m.desc} aria-pressed="false">{m.name}</button>
+            ))}
+          </div>
+          <p class="rt-caption" data-rt-caption aria-live="polite">{RENDER_MODES[0]!.name} — {RENDER_MODES[0]!.desc}</p>
+          <span class="hintline">plays across the whole page field behind the content while in view</span>
         </div>
       </Fragment>
     </Concept>

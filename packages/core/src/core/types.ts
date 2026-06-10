@@ -321,11 +321,33 @@ export type ConditionRegistry = Record<string, Condition>;
  * Field Surfaces — *where* a field visualization composites relative to page content:
  *   · the UNDERLAY (behind content) is the default `<field-root>` canvas, driven by `render`/setRender;
  *   · the OVERLAY (in front of content) is an optional second surface driven by `overlay`/setOverlay.
- * Setting both (immersive) lets content sit *inside* the field. Overlay modes are the structure/vector
- * visualizations that reveal field shape without occluding text; `'off'` clears the overlay surface.
- * (Scalar overlays — `contours`/`potential` — are a planned addition; the union is additive.)
+ * Setting both (immersive) lets content sit *inside* the field. Overlay modes are READINGS — line/text
+ * diagnostics that reveal what the field is doing without occluding text; `'off'` clears the overlay
+ * surface. The vocabulary (each: what it draws · which quantity it reads):
+ *   · `streamlines` — arrows along the net push a still probe would feel · vector flow (felt)
+ *   · `force-vectors` — the same arrows scaled by raw magnitude · vector flow (absolute)
+ *   · `field-lines` — arrows along the structure-only field (dipoles/monopoles) · field geometry
+ *   · `grid` — a reference lattice displaced by the local field · deformation
+ *   · `temperature` — iso-contour lines of accumulated particle heat · thermal scalar
+ *   · `energy` — iso-contour lines of kinetic energy (½m|v|²) · energy scalar
+ *   · `path` — streamline curves integrated from seeded probes · vector flow, traced over distance
+ *   · `data` — numeric density readouts at each measuring body · per-body measurement
+ * Readings are ADDITIVE: `setOverlay` accepts one mode or a stack (array), drawn in order on the one
+ * front surface — so matter (underlay) + heatmap + several readings compose into one legible picture.
  */
-export type OverlayMode = 'off' | 'streamlines' | 'force-vectors' | 'field-lines';
+export type OverlayMode =
+  | 'off'
+  | 'streamlines'
+  | 'force-vectors'
+  | 'field-lines'
+  | 'grid'
+  | 'temperature'
+  | 'energy'
+  | 'path'
+  | 'data';
+
+/** One reading, or an additive stack of readings, for `setOverlay` / `FieldOptions.overlay`. */
+export type OverlayInput = OverlayMode | readonly OverlayMode[];
 
 export interface FieldOptions {
   /** travelling accent color (§9). */
@@ -367,7 +389,7 @@ export interface FieldOptions {
    */
   overlayCanvas?: HTMLCanvasElement;
   /** initial overlay visualization mode (Field Surfaces); default `'off'`. */
-  overlay?: OverlayMode;
+  overlay?: OverlayInput;
   /**
    * Feedback seam (Phase D3): when set, the engine routes its per-body feedback channels to this
    * sink each frame *instead of* writing CSS variables / dispatching events directly — so the
@@ -439,11 +461,12 @@ export interface FieldHandle {
    */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'): void;
   /**
-   * Render a field-structure visualization on the OVERLAY surface — in front of page content (Field
-   * Surfaces). Pairs with `setRender` (the underlay); set both for an immersive look. No-op unless the
-   * field was created with an `overlayCanvas`. `'off'` clears the overlay surface.
+   * Render field READINGS on the OVERLAY surface — in front of page content (Field Surfaces). Pairs
+   * with `setRender` (the underlay); set both for an immersive look. No-op unless the field was created
+   * with an `overlayCanvas`. Accepts one reading or an additive stack (drawn in order); `'off'` (or an
+   * empty stack) clears the overlay surface.
    */
-  setOverlay(mode: OverlayMode): void;
+  setOverlay(mode: OverlayInput): void;
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void;
   /** a discrete one-shot: shove + heat matter near (x, y), optionally tinting it (§11). */

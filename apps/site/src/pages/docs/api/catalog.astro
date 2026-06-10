@@ -1,7 +1,7 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import { CONDITIONS, FORMATIONS, PALETTES, PALETTE_NAMES } from '@field-ui/core';
-import { RENDER_MODES } from '../../../lib/docs-api.ts';
+import { RENDER_MODES, OVERLAY_MODES } from '../../../lib/docs-api.ts';
 import SeeAlso from '../../../components/SeeAlso.astro';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
@@ -64,6 +64,28 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     <dl class="api-table">
       {
         RENDER_MODES.map((m) => (
+          <div class="api-row">
+            <dt class="k">
+              <code>{m.name}</code>
+            </dt>
+            <dd class="d">{m.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Overlay readings</h2>
+    <p>
+      Field Surfaces, the front layer — line-drawn diagnostics over the content. Set
+      <code>overlay</code> or call <code>field.setOverlay(reading)</code>; readings are
+      <b>additive</b> — pass a stack (<code>['grid','path']</code>, or space-separated in the
+      attribute) and they compose over whatever the underlay is drawing.
+    </p>
+    <dl class="api-table">
+      {
+        OVERLAY_MODES.map((m) => (
           <div class="api-row">
             <dt class="k">
               <code>{m.name}</code>

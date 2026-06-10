@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, Env, FieldHandle, FieldOptions, Formation, OverlayMode, Particle } from './types.ts';
+import type { AtomPayload, Body, Env, FieldHandle, FieldOptions, Formation, OverlayInput, OverlayMode, Particle } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -1127,19 +1127,26 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
   }
 
-  // Field Surfaces — draw a structure/vector visualization of the LIVE field onto the overlay surface
-  // (in front of content). Reuses the underlay's samplers: forceAt (the net force field) for
-  // `streamlines`/`force-vectors`, netField (structure-only — dipoles/monopoles) for `field-lines`.
-  // Tinted with the travelling accent, so setAccent recolors the overlay too.
-  function renderOverlay(octx: CanvasRenderingContext2D, mode: OverlayMode): void {
-    octx.clearRect(0, 0, W, H);
-    if (mode === 'off' || W === 0 || H === 0) return;
+  // Field Surfaces — the overlay readings. `setOverlay` accepts one reading or an additive stack;
+  // the stack is drawn in order onto the one front surface (cleared once per frame), so several
+  // quantities — flow, deformation, heat, energy, traced paths, per-body measurements — compose over
+  // any underlay matter mode. Every reading is a line/text diagnostic by design: the overlay sits in
+  // front of page content and must reveal, never occlude (visualization-methods taxonomy, Surfaces &
+  // Placement). All are tinted with the travelling accent, so setAccent recolors the overlay too.
+
+  /** Normalize an OverlayInput to the drawable stack — `'off'` anywhere or an empty list = nothing. */
+  function overlayStack(input: OverlayInput | undefined): OverlayMode[] {
+    const list = input === undefined ? [] : Array.isArray(input) ? input : [input];
+    return list.filter((m): m is Exclude<OverlayMode, 'off'> => m !== 'off');
+  }
+
+  // arrows along the sampled vector field — `streamlines` (felt, sqrt-compressed), `force-vectors`
+  // (felt, absolute magnitude), `field-lines` (structure-only geometry via netField).
+  function drawOverlayArrows(octx: CanvasRenderingContext2D, structure: boolean, absolute: boolean): void {
     const GRID = 44;
     const acc = hexToRgb(cfg.accent);
     octx.lineWidth = 1.2;
     octx.lineCap = 'round';
-    const structure = mode === 'field-lines'; // sample field() geometry instead of the apply-probe
-    const absolute = mode === 'force-vectors'; // scale arrows by raw magnitude, not normalized flow
     const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
     let maxMag = 0;
     for (let gx = GRID / 2; gx < W; gx += GRID) {
@@ -1182,6 +1189,179 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       octx.moveTo(ex, ey);
       octx.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
       octx.stroke();
+    }
+  }
+
+  // `grid` — a reference lattice whose vertices are displaced along the felt field; the page's
+  // space itself made visible, bending where the field is strong. Reads deformation.
+  function drawOverlayGrid(octx: CanvasRenderingContext2D): void {
+    const STEP = 56;
+    const MAXD = 11; // px displacement at the strongest sample — legible, never chaotic
+    const cols = Math.floor(W / STEP) + 2;
+    const rows = Math.floor(H / STEP) + 2;
+    const dx = new Float32Array(cols * rows);
+    const dy = new Float32Array(cols * rows);
+    let maxMag = 0;
+    const mags = new Float32Array(cols * rows);
+    for (let gy = 0; gy < rows; gy++) {
+      for (let gx = 0; gx < cols; gx++) {
+        const { fx, fy } = forceAt(bodies, reg.forces, env, gx * STEP, gy * STEP);
+        const mag = Math.hypot(fx, fy);
+        const i = gy * cols + gx;
+        if (mag > 1e-9) {
+          dx[i] = fx / mag;
+          dy[i] = fy / mag;
+          mags[i] = mag;
+          if (mag > maxMag) maxMag = mag;
+        }
+      }
+    }
+    const acc = hexToRgb(cfg.accent);
+    octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.16)`;
+    octx.lineWidth = 1;
+    octx.beginPath();
+    const px = (gx: number, gy: number): [number, number] => {
+      const i = gy * cols + gx;
+      const rel = maxMag > 0 ? Math.sqrt(mags[i]! / maxMag) : 0;
+      return [gx * STEP + dx[i]! * rel * MAXD, gy * STEP + dy[i]! * rel * MAXD];
+    };
+    for (let gy = 0; gy < rows; gy++) {
+      for (let gx = 0; gx < cols; gx++) {
+        const [x, y] = px(gx, gy);
+        if (gx === 0) octx.moveTo(x, y);
+        else octx.lineTo(x, y);
+      }
+    }
+    for (let gx = 0; gx < cols; gx++) {
+      for (let gy = 0; gy < rows; gy++) {
+        const [x, y] = px(gx, gy);
+        if (gy === 0) octx.moveTo(x, y);
+        else octx.lineTo(x, y);
+      }
+    }
+    octx.stroke();
+  }
+
+  // shared scalar-contour pass for `temperature` and `energy` — splat a per-particle scalar onto a
+  // coarse grid, then trace marching-squares iso-lines at fractions of the frame's max. Contours,
+  // not washes: the overlay must never paint area over content.
+  let oscalar: Float32Array | null = null;
+  function drawOverlayContours(octx: CanvasRenderingContext2D, weigh: (p: Particle) => number, alphaBase: number): void {
+    const STEP = 24;
+    const RAD = 42;
+    const cols = Math.ceil(W / STEP) + 1;
+    const rows = Math.ceil(H / STEP) + 1;
+    if (!oscalar || oscalar.length !== cols * rows) oscalar = new Float32Array(cols * rows);
+    else oscalar.fill(0);
+    let any = false;
+    for (const p of store.particles) {
+      if (p.cap) continue;
+      const w = weigh(p);
+      if (w <= 0) continue;
+      any = true;
+      splatDensity(oscalar, cols, rows, STEP, p.x, p.y, RAD, w);
+    }
+    if (!any) return;
+    let max = 0;
+    for (let i = 0; i < oscalar.length; i++) if (oscalar[i]! > max) max = oscalar[i]!;
+    if (max <= 0) return;
+    const acc = hexToRgb(cfg.accent);
+    octx.lineCap = 'round';
+    const LEVELS = [0.25, 0.5, 0.78]; // nested iso-rings: faint outer shell → bright core
+    for (let li = 0; li < LEVELS.length; li++) {
+      const level = LEVELS[li]! * max;
+      octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${alphaBase * (0.45 + 0.55 * (li / (LEVELS.length - 1)))})`;
+      octx.lineWidth = 1 + li * 0.3;
+      octx.beginPath();
+      for (let gy = 0; gy < rows - 1; gy++) {
+        for (let gx = 0; gx < cols - 1; gx++) {
+          const tl = oscalar[gy * cols + gx]!;
+          const tr = oscalar[gy * cols + gx + 1]!;
+          const br = oscalar[(gy + 1) * cols + gx + 1]!;
+          const bl = oscalar[(gy + 1) * cols + gx]!;
+          const segs = marchingCell(tl, tr, br, bl, level);
+          if (!segs.length) continue;
+          const ox = gx * STEP;
+          const oy = gy * STEP;
+          for (const sg of segs) {
+            octx.moveTo(ox + sg.x1 * STEP, oy + sg.y1 * STEP);
+            octx.lineTo(ox + sg.x2 * STEP, oy + sg.y2 * STEP);
+          }
+        }
+      }
+      octx.stroke();
+    }
+  }
+
+  // `path` — true streamlines: from a coarse lattice of seeds, integrate the felt field direction
+  // step by step and draw each traced curve, fading toward the tail. Where `streamlines` shows the
+  // instantaneous push per cell, `path` shows where that push CARRIES a probe over distance.
+  function drawOverlayPaths(octx: CanvasRenderingContext2D): void {
+    const SEED = 104; // seed lattice spacing (px)
+    const STEPPX = 9; // integration step (px)
+    const STEPS = 24; // max steps per path
+    const acc = hexToRgb(cfg.accent);
+    octx.lineWidth = 1.1;
+    octx.lineCap = 'round';
+    for (let sx = SEED / 2; sx < W; sx += SEED) {
+      for (let sy = SEED / 2; sy < H; sy += SEED) {
+        let x = sx;
+        let y = sy;
+        for (let i = 0; i < STEPS; i++) {
+          let { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
+          if (flow) {
+            const b = flowBias(x, y, flow, 0.04);
+            fx += b.x;
+            fy += b.y;
+          }
+          const mag = Math.hypot(fx, fy);
+          if (!(mag > 1e-9)) break; // dead zone — the path ends
+          const nx = x + (fx / mag) * STEPPX;
+          const ny = y + (fy / mag) * STEPPX;
+          if (nx < 0 || ny < 0 || nx > W || ny > H) break;
+          octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.34 * (1 - i / STEPS)})`;
+          octx.beginPath();
+          octx.moveTo(x, y);
+          octx.lineTo(nx, ny);
+          octx.stroke();
+          x = nx;
+          y = ny;
+        }
+      }
+    }
+  }
+
+  // `data` — the measurement made legible: each measuring body's eased local density d ∈ [0,1]
+  // (§8, the same number the platform mirrors to `--d`) printed beside the body. Feedback bodies
+  // lead (they asked to be measured); non-feedback bodies are skipped — no reading, no chip.
+  function drawOverlayData(octx: CanvasRenderingContext2D): void {
+    const acc = hexToRgb(cfg.accent);
+    octx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
+    octx.textBaseline = 'middle';
+    for (const b of bodies) {
+      if (!b.vis || !b.feedback) continue;
+      const label = `d ${b.d.toFixed(2)}`;
+      const tx = b.cx + b.hw + 8;
+      const ty = b.cy;
+      octx.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.3 + b.d * 0.55, 0, 0.85)})`;
+      octx.fillRect(tx - 3, ty - 7, octx.measureText(label).width + 6, 14);
+      octx.fillStyle = 'rgba(5,6,11,0.92)';
+      octx.fillText(label, tx, ty + 0.5);
+    }
+  }
+
+  function renderOverlay(octx: CanvasRenderingContext2D, stack: readonly OverlayMode[]): void {
+    octx.clearRect(0, 0, W, H);
+    if (!stack.length || W === 0 || H === 0) return;
+    for (const mode of stack) {
+      if (mode === 'streamlines') drawOverlayArrows(octx, false, false);
+      else if (mode === 'force-vectors') drawOverlayArrows(octx, false, true);
+      else if (mode === 'field-lines') drawOverlayArrows(octx, true, false);
+      else if (mode === 'grid') drawOverlayGrid(octx);
+      else if (mode === 'temperature') drawOverlayContours(octx, (p) => p.heat, 0.5);
+      else if (mode === 'energy') drawOverlayContours(octx, (p) => 0.5 * p.m * (p.vx * p.vx + p.vy * p.vy), 0.42);
+      else if (mode === 'path') drawOverlayPaths(octx);
+      else if (mode === 'data') drawOverlayData(octx);
     }
   }
 
@@ -1274,7 +1454,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
     if (ctx && cfg.render !== 'none' && canvasVisible && (!reduceMotion || frameN % 4 === 0)) {
       render();
-      if (overlayCtx && cfg.overlay !== 'off') renderOverlay(overlayCtx, cfg.overlay);
+      if (overlayCtx) {
+        const stack = overlayStack(cfg.overlay);
+        if (stack.length) renderOverlay(overlayCtx, stack);
+      }
     }
     raf = host.raf(frame);
   }
@@ -1393,7 +1576,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     setOverlay: (mode) => {
       cfg.overlay = mode;
-      if (mode === 'off' && overlayCtx) overlayCtx.clearRect(0, 0, W, H); // clear the front surface
+      if (!overlayStack(mode).length && overlayCtx) overlayCtx.clearRect(0, 0, W, H); // empty stack → clear the front surface
     },
     setHeatmap: (on) => {
       cfg.heatmap = on;

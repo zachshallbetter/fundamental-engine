@@ -199,10 +199,30 @@ test('setRender() accepts all seven render modes', () => {
 test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)', () => {
   installDOM();
   const field = new ForcesField();
-  const modes = ['streamlines', 'force-vectors', 'field-lines', 'off'] as const;
+  const modes = [
+    'streamlines',
+    'force-vectors',
+    'field-lines',
+    'grid',
+    'temperature',
+    'energy',
+    'path',
+    'data',
+    'off',
+  ] as const;
   for (const mode of modes) {
     assert.doesNotThrow(() => field.setOverlay(mode), `setOverlay('${mode}')`);
   }
+  field.destroy();
+});
+
+test('setOverlay() accepts an additive stack of readings (Field Surfaces)', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setOverlay(['grid', 'path']), 'two readings stack');
+  assert.doesNotThrow(() => field.setOverlay(['streamlines', 'temperature', 'data']), 'three readings stack');
+  assert.doesNotThrow(() => field.setOverlay([]), 'empty stack clears');
+  assert.doesNotThrow(() => field.setOverlay(['off']), "'off' in a list clears");
   field.destroy();
 });
 
