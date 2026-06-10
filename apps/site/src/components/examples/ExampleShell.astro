@@ -1,0 +1,54 @@
+---
+// The shared shell for the invisible-field examples: Base + nav + the roster sidebar,
+// with the page's content in the slot. Every example main carries .ev-page, so the
+// family-wide rules apply (the particle field-root is hidden; the ev-* design system
+// from evidence.css is the examples' shared visual language).
+import Base from "../../layouts/Base.astro";
+import SiteNav from "../SiteNav.astro";
+import SiteFooter from "../SiteFooter.astro";
+import { INVISIBLE_FIELDS } from "../../lib/invisible-fields.ts";
+import "../../styles/evidence.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** roster slug — drives aria-current in the sidebar */
+  current: string;
+  /** extra class on <main> for page-scoped styles (e.g. "ex-market") */
+  mainClass?: string;
+  /** extra attributes on <main> (e.g. data-field="on" state hooks) */
+  mainAttrs?: Record<string, string>;
+}
+const { title, description, current, mainClass = "", mainAttrs = {} } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <SiteNav current="evidence" />
+  <div class="ev-shell">
+    <aside class="ev-side" aria-label="Invisible-field examples">
+      <p class="ev-side-title">Invisible fields</p>
+      <p class="ev-side-note">
+        Real data becomes bodies; the field's measurements come back as type, ink, and anchor —
+        no particle swarm.
+      </p>
+      <nav class="ev-side-list">
+        {
+          INVISIBLE_FIELDS.map((s) => (
+            <a
+              class="ev-side-item is-live"
+              href={s.href}
+              aria-current={s.slug === current ? "page" : undefined}
+            >
+              <b>{s.name}</b>
+              <span>{s.hook}</span>
+            </a>
+          ))
+        }
+      </nav>
+    </aside>
+    <main class:list={["ev-page", mainClass]} {...mainAttrs}>
+      <slot />
+    </main>
+  </div>
+  <SiteFooter />
+</Base>

@@ -434,6 +434,27 @@ export interface FieldHandle {
    * (DataConsole, Inspector) don't need a reference to the internal particle array.
    */
   energy(): { kinetic: number; thermal: number; total: number; count: number };
+  /**
+   * The engine's eased page-scroll velocity for the current frame — the same EMA value the
+   * `scrolling` condition gate uses: `(prev × 0.7) + (|scrollDelta| × 0.3)` per frame.
+   * Units are pixels per frame at the native rAF cadence (~1 at 60 fps per pixel/s of scroll).
+   * Near 0 = user is reading/stopped; 2+ = slow deliberate scroll; 10+ = fast scan/jump.
+   * CAVEAT: px/frame is refresh-rate dependent — the same physical scroll reads roughly half
+   * this value on a 120 Hz display. A px/ms normalization may replace this unit before 1.0
+   * (the surface is experimental); thresholds tuned on 60 Hz should treat the value as coarse.
+   * Written to `--field-scroll-v` on `:root` by the platform write phase when a platform
+   * runtime is active. Pull-based: read on demand, do not poll in tight loops.
+   */
+  scrollV(): number;
+  /**
+   * Element-level visibility hint. `setVisible(false)` while the canvas is hidden or offscreen
+   * (`display:none`, scrolled out) skips ALL draw work — usually the dominant frame cost — while
+   * the simulation and its signals stay live: `scrollV()`, feedback vars (`--d`, `--load`),
+   * capture events keep flowing. Distinct from the tab-level pause (the engine already stops
+   * fully on the host's visibilitychange). `<field-root>` wires this automatically from an
+   * IntersectionObserver on the host element; call it yourself for custom embeddings.
+   */
+  setVisible(on: boolean): void;
   /** stop the loop and release listeners. */
   destroy(): void;
 }

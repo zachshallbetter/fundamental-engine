@@ -1,0 +1,458 @@
+/* ============================================================
+   THE THREADS FIELD — a comment thread as a binding structure over one real HN discussion.
+   Builds on the ev-* design system (evidence.css, imported by ExampleShell); everything
+   here is scoped under .ex-threads and only adds what this example needs: the story card,
+   the indented tree with per-depth guide lines, the clamped/expandable text, and the
+   ancestor-chain highlight.
+   ============================================================ */
+
+/* legend keys */
+.ex-threads .th-k-chain {
+  gap: 2px;
+  align-items: flex-end;
+}
+.ex-threads .th-k-chain i {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.ex-threads .th-k-chain i:nth-child(1) {
+  height: 8px;
+  opacity: 0.55;
+}
+.ex-threads .th-k-chain i:nth-child(2) {
+  height: 12px;
+  opacity: 0.75;
+}
+.ex-threads .th-k-chain i:nth-child(3) {
+  height: 16px;
+}
+.ex-threads .th-k-depth {
+  width: 18px;
+  height: 14px;
+  border-left: 1px solid var(--line);
+  background: repeating-linear-gradient(to right, transparent 0 5px, var(--line) 5px 6px);
+}
+.ex-threads .th-k-live {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.ex-threads .th-k-caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--text-3);
+}
+
+/* bulk collapse — text buttons; with 160 comments this is the reading workflow */
+.ex-threads .th-bulk {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.7rem;
+}
+.ex-threads .th-bulk-btn {
+  appearance: none;
+  border: 0;
+  padding: 0.1rem 0.2rem;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color 0.18s;
+}
+.ex-threads .th-bulk-btn:hover {
+  color: var(--accent);
+}
+.ex-threads .th-bulk-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.ex-threads .th-bulk-sep {
+  color: var(--text-4);
+  font-size: 0.68rem;
+}
+
+/* the story being discussed */
+.ex-threads .th-story {
+  margin-bottom: 0.9rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+.ex-threads .th-story-title {
+  display: block;
+  text-decoration: none;
+  color: var(--text);
+  font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'wght' 640;
+}
+.ex-threads .th-story-title:hover {
+  color: var(--accent);
+}
+.ex-threads .th-story-meta {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-3);
+}
+.ex-threads .th-story-meta b {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--text-2);
+}
+.ex-threads .th-story-meta a {
+  color: var(--accent);
+}
+
+/* the tree — indentation is the geometry; guide lines mark each depth level */
+.ex-threads .th-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.ex-threads .th-c {
+  --ind: clamp(0.8rem, 2.2vw, 1.3rem);
+  /* --depth is the AUTHORED indent (server-rendered, capped at 6). --d is a different
+     lane: the engine owns it — live local density (0..1) written back to every
+     data-feedback body each frame; data-hot gathers it on hover/focus. */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  position: relative;
+  padding-left: calc(var(--depth, 0) * var(--ind));
+}
+/* one vertical guide per depth level, drawn in the indent gutter */
+.ex-threads .th-c::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -0.45rem;
+  bottom: 0;
+  width: calc(var(--depth, 0) * var(--ind));
+  background: repeating-linear-gradient(
+    to right,
+    var(--line) 0 1px,
+    transparent 1px var(--ind)
+  );
+  opacity: 0.55;
+  pointer-events: none;
+}
+.ex-threads .th-c:first-child::before {
+  top: 0;
+}
+
+/* a comment: subtree mass (--w, 0..1) is felt — weight, ink, and a left anchor.
+   The living ink folds in --live (engine density) and --att (eased attention). */
+.ex-threads .th-row {
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem 0.75rem;
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 50%), transparent);
+  cursor: pointer;
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s,
+    transform 0.2s;
+}
+/* top-level comments that spawned big subtrees burn steadier — the glow carries a
+   weight-scaled floor with the live density folded on top */
+.ex-threads .th-c[data-top] .th-row {
+  box-shadow: 0 0 calc(var(--w) * 8px + var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--w) * 30% + var(--live) * 50%), transparent);
+}
+.ex-threads .th-c:focus-visible {
+  outline: none;
+}
+.ex-threads .th-c:focus-visible .th-row {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+/* the binding chain — self lit, ancestors + direct replies cited. The chain CHARGES:
+   while a comment is lit, the runtime mirrors its live --d onto the list as --chain,
+   and the connectors' ink reads it — guides brighten, anchors saturate. */
+.ex-threads .th-c.lit .th-row {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
+  transform: translateX(2px);
+}
+.ex-threads .th-c.cited .th-row {
+  opacity: 1;
+  border-left-color: var(--cat, var(--accent));
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(8% + var(--chain, 0) * 5%), transparent);
+}
+.ex-threads .th-c.cited::before,
+.ex-threads .th-c.lit::before {
+  background: repeating-linear-gradient(
+    to right,
+    color-mix(in srgb, var(--accent) calc(var(--chain, 0) * 60%), var(--line)) 0 1px,
+    transparent 1px var(--ind)
+  );
+  opacity: calc(0.55 + var(--chain, 0) * 0.45);
+}
+
+.ex-threads .th-meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+.ex-threads .th-author {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 55%), var(--text-3));
+}
+.ex-threads .th-replies {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) 70%, var(--text-2));
+}
+
+/* the subtree caret — a real button in the comment's gutter line; the triangle
+   rotates closed when its subtree is collapsed */
+.ex-threads .th-caret {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--text-3);
+  cursor: pointer;
+  flex: none;
+  align-self: center;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-threads .th-caret::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.18s;
+}
+.ex-threads .th-caret[aria-expanded='false']::before {
+  transform: rotate(-90deg);
+}
+.ex-threads .th-caret:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+}
+.ex-threads .th-caret:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 1px;
+}
+
+/* the placeholder chip while a subtree is hidden */
+.ex-threads .th-hidden-n {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
+  color: color-mix(in srgb, var(--cat, var(--accent)) 75%, var(--text-2));
+}
+/* a collapsed comment keeps its place but reads "folded" — the anchor goes dashed */
+.ex-threads .th-c[data-collapsed] > .th-row {
+  border-left-style: dashed;
+}
+.ex-threads .th-text {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ex-threads .th-c[aria-expanded='true'] .th-text {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+/* ── Field OFF — the same thread, flattened to a plain tree.
+   The live channels are silenced with the field: no density, no attention, no glow. ── */
+.ex-threads[data-field='off'] .th-c {
+  --w: 0.55;
+  --live: 0;
+  --att: 0;
+}
+.ex-threads[data-field='off'] .th-row {
+  opacity: 1;
+  border-left-color: var(--line);
+  box-shadow: none;
+}
+.ex-threads[data-field='off'] .th-c.lit .th-row,
+.ex-threads[data-field='off'] .th-c.cited .th-row {
+  transform: none;
+  background: color-mix(in srgb, var(--text) 3.7%, transparent);
+  border-color: var(--line);
+}
+.ex-threads[data-field='off'] .th-author {
+  color: var(--text-3);
+}
+.ex-threads[data-field='off'] .th-replies {
+  border-color: var(--line);
+  color: var(--text-3);
+}
+.ex-threads[data-field='off'] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@media (max-width: 620px) {
+  .ex-threads .th-c {
+    --ind: 0.55rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-threads .th-row {
+    transition: none;
+  }
+  .ex-threads .th-c.lit .th-row {
+    transform: none;
+  }
+  .ex-threads .th-caret::before {
+    transition: none;
+  }
+}
+
+/* ── CodeTabs (how-built) — the docs' highlighted code block, scoped locally because
+   this page does not load docs.css ──────────────────────────────────────────────── */
+.ex-threads .code-tabs {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-canvas, #07090e);
+  overflow: hidden;
+}
+.ex-threads .code-tabs .ct-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ex-threads .code-tabs .ct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ex-threads .code-tabs .ct-tab,
+.ex-threads .code-tabs .ct-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-threads .code-tabs .ct-tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-threads .code-tabs .ct-tab:hover {
+  color: var(--text-2);
+}
+.ex-threads .code-tabs .ct-tab[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ex-threads .code-tabs .ct-copy {
+  appearance: none;
+  align-self: center;
+  margin: 0 0.5rem 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-2, var(--line));
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: copy;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.ex-threads .code-tabs .ct-copy:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.ex-threads .code-tabs .ct-copy.copied {
+  color: var(--ok, #5fd0a8);
+  border-color: var(--ok, #5fd0a8);
+}
+.ex-threads .code-tabs .ct-body[hidden] {
+  display: none;
+}
+.ex-threads .code-tabs pre.astro-code,
+.ex-threads .code-tabs pre.astro-code code {
+  margin: 0;
+  background: transparent !important;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.ex-threads .code-tabs pre.astro-code {
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+}

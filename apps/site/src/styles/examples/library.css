@@ -1,0 +1,479 @@
+/* ============================================================
+   THE LIBRARY FIELD — what the world actually plays; the queue is a sink.
+   Builds on the ev-* design system (evidence.css, imported by ExampleShell); everything
+   here is scoped under .ex-library and only adds what this example needs: the track
+   list, the queue panel (a real field sink — the engine writes --load into it), the
+   chips, and the UI fill bar.
+   ============================================================ */
+
+/* legend keys */
+.ex-library .lb-k-bar {
+  width: 22px;
+  height: 9px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  border-right: 2px solid var(--accent);
+}
+.ex-library .lb-k-sink {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--line));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.ex-library .lb-k-release {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+
+/* the field scope — the sink and the rows share one scoped field */
+.ex-library .lb-field {
+  position: relative;
+}
+
+/* ── the queue — a genuine sink body. The glow reads the ENGINE's --load writeback;
+      the fill bar reads the page's queued count. Two channels, kept apart. ── */
+.ex-library .lb-queue {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 5;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) calc(12% + var(--load, 0) * 50%), var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) calc(var(--load, 0) * 7%), var(--bg-2));
+  box-shadow: 0 0 calc(4px + var(--load, 0) * 28px)
+    color-mix(in srgb, var(--accent) calc(var(--load, 0) * 45%), transparent);
+  transition:
+    box-shadow 0.35s,
+    background 0.35s,
+    border-color 0.35s;
+}
+.ex-library .lb-queue-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.ex-library .lb-queue-title {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.ex-library .lb-queue-count {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+/* the UI fill bar — queued/8, a counter, deliberately NOT the field's channel */
+.ex-library .lb-fill {
+  width: 5.5rem;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-library .lb-fill i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ex-library .lb-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ex-library .lb-chips:not(:empty) {
+  margin-top: 0.6rem;
+}
+.ex-library .lb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 16rem;
+  padding: 0.22rem 0.3rem 0.22rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 45%, var(--line));
+  background: color-mix(in srgb, var(--cat, var(--accent)) 9%, transparent);
+  font-size: 0.72rem;
+  color: var(--text-2);
+  transition:
+    opacity 0.45s,
+    transform 0.45s;
+}
+.ex-library .lb-chip-t {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ex-library .lb-chip-x {
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text-3);
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.ex-library .lb-chip-x:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+}
+.ex-library .lb-queue-empty {
+  margin: 0.45rem 0 0;
+  font-size: 0.74rem;
+  color: var(--text-4);
+}
+.ex-library .lb-release {
+  margin: 0.45rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--accent);
+}
+/* the release — chips settle out, the panel flashes once, then lets go */
+.ex-library .lb-queue[data-releasing] {
+  border-color: var(--accent);
+}
+.ex-library .lb-queue[data-releasing] .lb-chip {
+  opacity: 0;
+  transform: scale(0.82) translateY(0.3rem);
+}
+
+/* ── the tracks — a ranked bar ladder: listens are LENGTH. Each row's background
+      bar runs calc(var(--bar) * 100%) — the raw play count as a linear share of the
+      chart max, set server-side. --w (log-scaled mass) keeps driving type and ink;
+      the color lens (--cat) tints the bar. ── */
+.ex-library .lb-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.ex-library .lb-row {
+  --w: 0.5;
+  --bar: 0.5;
+  display: grid;
+  grid-template-columns: 2.8rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 0.9rem);
+  padding: 0.15rem 0;
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition: opacity 0.3s;
+}
+/* the rank — large in the left gutter */
+.ex-library .lb-rank {
+  font-family: var(--mono);
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  font-weight: 600;
+  text-align: right;
+  line-height: 1;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(20% + var(--w) * 55%), var(--text-4));
+}
+/* the bar zone — the ::before IS the chart */
+.ex-library .lb-bararea {
+  position: relative;
+  min-width: 0;
+  min-height: 3.1rem;
+  display: flex;
+  align-items: center;
+}
+.ex-library .lb-bararea::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--bar) * 100%);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(10% + var(--w) * 12%), transparent);
+  border-right: 2px solid color-mix(in srgb, var(--cat, var(--accent)) 60%, var(--line));
+  transition:
+    background 0.3s,
+    border-color 0.3s;
+}
+.ex-library .lb-row:hover .lb-bararea::before {
+  background: color-mix(in srgb, var(--cat, var(--accent)) calc(15% + var(--w) * 12%), transparent);
+}
+/* the title sits ON the bar — padded in from the bar's left edge */
+.ex-library .lb-body {
+  position: relative;
+  min-width: 0;
+  /* stay on the bar and clear of the count, whichever bites first */
+  max-width: min(calc(var(--bar) * 100% - 0.4rem), calc(100% - 6.6rem));
+  padding: 0.4rem 0.75rem;
+}
+.ex-library .lb-title {
+  display: block;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-library .lb-title:hover {
+  color: var(--accent);
+}
+.ex-library .lb-meta {
+  display: block;
+  margin-top: 0.22rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+.ex-library .lb-artist {
+  color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--text-3));
+}
+/* the count — right at the bar's end (clamped inside the row for the longest bars) */
+.ex-library .lb-listens {
+  position: absolute;
+  top: 50%;
+  left: min(calc(var(--bar) * 100% + 0.65rem), calc(100% - 5.9rem));
+  transform: translateY(-50%);
+  display: grid;
+  justify-items: start;
+  line-height: 1;
+  white-space: nowrap;
+  transition: left 0.3s;
+}
+.ex-library .lb-listens b {
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 60%), var(--text-3));
+}
+.ex-library .lb-listens-l {
+  margin-top: 0.18rem;
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-library .lb-add {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-4);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+.ex-library .lb-row:hover .lb-add:not(:disabled) {
+  color: var(--text-2);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+.ex-library .lb-add:disabled {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  cursor: default;
+  opacity: 0.8;
+}
+
+/* ── Field OFF — mass stops mattering; the engine channel (the glow) goes dark.
+      The bars stay (they are the data, like the rank) but lose the lens tint;
+      the queue keeps counting: that is the UI channel, and it is honest about it. ── */
+.ex-library[data-field='off'] .lb-row {
+  --w: 0.55;
+  opacity: 1;
+}
+.ex-library[data-field='off'] .lb-bararea::before {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border-right-color: var(--line);
+}
+.ex-library[data-field='off'] .lb-rank,
+.ex-library[data-field='off'] .lb-listens b {
+  color: var(--text-3);
+}
+.ex-library[data-field='off'] .lb-artist {
+  color: var(--text-3);
+}
+.ex-library[data-field='off'] .lb-queue {
+  border-color: var(--line);
+  background: var(--bg-2);
+  box-shadow: none;
+}
+.ex-library[data-field='off'] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── narrow: the bars stay; the gutter shrinks and the count tucks in beside
+      the title instead of floating at the bar's end ── */
+@media (max-width: 840px) {
+  .ex-library .lb-row {
+    grid-template-columns: 1.7rem minmax(0, 1fr) auto;
+    gap: 0.45rem;
+  }
+  .ex-library .lb-rank {
+    font-size: 0.85rem;
+  }
+  .ex-library .lb-body {
+    flex: 1;
+    max-width: none;
+    padding: 0.4rem 0.55rem;
+  }
+  .ex-library .lb-listens {
+    position: static;
+    transform: none;
+    flex: none;
+    justify-items: end;
+    padding-right: 0.3rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-library .lb-queue,
+  .ex-library .lb-fill i,
+  .ex-library .lb-chip,
+  .ex-library .lb-row,
+  .ex-library .lb-bararea::before,
+  .ex-library .lb-listens,
+  .ex-library .lb-add {
+    transition: none;
+  }
+}
+
+/* ── living ink — the engine's LIVE channels ────────────────────────────────
+   --d   : the page engine's local particle density (0..1), written back every
+           frame; data-hot makes it gather toward 1 on hover/focus.
+   --field-attention : the scoped recipe's eased attention metric.
+   Rows get a soft halo + tint; the bar's end-glow rides the density; the queue
+   blends the sink's --load with --d. Felt, not loud. */
+.ex-library .lb-row {
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--cat, var(--accent)) calc(var(--live) * 3% + var(--att) * 3%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 14px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 45%), transparent);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ex-library .lb-bararea::before {
+  box-shadow: calc(var(--live) * 4px) 0 calc(var(--live) * 14px) -4px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 70%), transparent);
+}
+/* the queue glow blends the sink's accreted --load with the engine's live --d */
+.ex-library .lb-queue {
+  --live: var(--d, 0);
+  box-shadow: 0 0 calc(4px + (var(--load, 0) + var(--live) * 0.5) * 28px)
+    color-mix(
+      in srgb,
+      var(--accent) calc(var(--load, 0) * 45% + var(--live) * 18%),
+      transparent
+    );
+}
+
+/* ── bar entry sweep — gated at reading pace. The runtime marks the field scope
+      [data-lb-anim] and adds .lb-in when a row enters the viewport while the
+      engine's --field-scroll-v says reading pace (< 2 px/frame); when the user
+      is scanning fast it adds .lb-in-instant too, so the bar is simply there.
+      No JS / reduced motion: bars are fully drawn. ── */
+@media (prefers-reduced-motion: no-preference) {
+  .ex-library [data-lb-anim] .lb-row:not(.lb-in) .lb-bararea::before {
+    width: 0;
+    border-right-color: transparent;
+  }
+  .ex-library [data-lb-anim] .lb-row.lb-in .lb-bararea::before {
+    transition:
+      background 0.3s,
+      border-color 0.3s,
+      width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .ex-library [data-lb-anim] .lb-row.lb-in.lb-in-instant .lb-bararea::before {
+    transition:
+      background 0.3s,
+      border-color 0.3s;
+  }
+}
+
+/* field off: the live channels go dark (the queue's off state already kills its glow) */
+.ex-library[data-field='off'] .lb-row,
+.ex-library[data-field='off'] .lb-queue {
+  --live: 0;
+  --att: 0;
+}
+.ex-library[data-field='off'] .lb-row {
+  background: transparent;
+  box-shadow: none;
+}
+.ex-library[data-field='off'] .lb-bararea::before {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-library .lb-row,
+  .ex-library .lb-bararea::before {
+    transition: none;
+  }
+}
+
+/* ── live status chip — "live · checked Ns ago" / "snapshot · <date>" ─────── */
+.ex-library .lb-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.ex-library .lb-status::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.ex-library .lb-status[data-live="on"]::before {
+  background: hsl(163 72% 50%);
+  box-shadow: 0 0 6px hsl(163 72% 50% / 0.55);
+}
+
+/* ── fell off the chart — the live top 30 moved on; the row stays, dimmed.
+      This is data provenance, not the field, so it persists when the field
+      is off (last in the file: it wins the specificity tie on purpose). ── */
+.ex-library .lb-row[data-lb-fell] {
+  opacity: calc((0.58 + var(--w) * 0.42) * 0.72);
+}

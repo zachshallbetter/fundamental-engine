@@ -48,9 +48,32 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
     <meta name="twitter:image" content={ogImageUrl} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- async font CSS: media="print" keeps the stylesheet off the render path; onload flips
+         it live. display=swap means text paints in fallback fonts immediately either way. -->
     <link
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@500;600&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@500;600&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'field-ui',
+        url: 'https://field-ui.com/',
+        description:
+          'A relational field runtime for the DOM — elements become bodies in an invisible physics field that bends them back.',
+        author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
+      })}
     />
     <!-- client-side navigation: no full reload, so the field below runs continuously -->
     <ClientRouter />

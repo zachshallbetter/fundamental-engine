@@ -10,10 +10,11 @@
     "test": "node --test \"src/lib/**/*.test.ts\""
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@field-ui/core": "workspace:*",
     "@field-ui/elements": "workspace:*",
     "@field-ui/platform": "workspace:*",
     "astro": "^5",
-    "@field-ui/core": "workspace:*",
     "mermaid": "^11.15.0"
   },
   "devDependencies": {

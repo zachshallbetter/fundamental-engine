@@ -1,0 +1,278 @@
+/* ============================================================
+   THE CATALOG FIELD — review consensus on the spine of a shelf.
+   Reuses the ev-* design system from evidence.css; everything new is
+   scoped under .ex-catalog. Tokens come from ds-tokens.css (via Base).
+   ============================================================ */
+
+.ex-catalog .cat-grid {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.7rem;
+}
+
+.ex-catalog .cat-cell {
+  display: flex;
+}
+
+/* the living-ink channel: --live is the engine's --d (live local particle density,
+   written every frame; gathers toward 1 on data-hot hover/focus); the background
+   also lifts with the scoped recipe's eased --field-attention. Felt, not loud. */
+.ex-catalog .cat-card {
+  --live: var(--d, 0);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.9rem 1rem 0.8rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--field-attention, 0) * 4%),
+    transparent
+  );
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    box-shadow 0.3s,
+    border-color 0.3s;
+}
+
+.ex-catalog .cat-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cat, var(--accent)) 70%, transparent);
+  outline-offset: 2px;
+}
+
+/* ── shared-shelf affinity — the hovered book and its shelf-mates ── */
+.ex-catalog .cat-card.lit {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--line));
+}
+
+.ex-catalog .cat-card.cited {
+  opacity: 1;
+  border-left-color: var(--cat, var(--accent));
+  background: color-mix(in srgb, var(--cat, var(--accent)) 8%, transparent);
+}
+
+.ex-catalog .cat-rank {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-4);
+}
+
+.ex-catalog .cat-title {
+  margin: 0;
+  padding-right: 2rem;
+  font-size: clamp(1rem, 1.4vw, 1.12rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+.ex-catalog .cat-title a {
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  text-decoration: none;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+  transition: color 0.2s;
+}
+
+.ex-catalog .cat-title a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--cat, var(--accent)) 60%, transparent);
+}
+
+.ex-catalog .cat-author {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-3);
+}
+
+.ex-catalog .cat-year {
+  font-family: var(--mono);
+  color: var(--text-4);
+}
+
+.ex-catalog .cat-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+
+/* the ratings line is the card's declared measurement (data-field-visual-for);
+   it sits inside the card, so the live vars (--d, --field-attention) inherit */
+.ex-catalog .cat-stats-live {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.ex-catalog .cat-stars {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(35% + var(--w) * 65%), var(--text-3));
+}
+
+.ex-catalog .cat-ratings {
+  font-family: var(--mono);
+  color: var(--text-4);
+}
+
+.ex-catalog .cat-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  margin: auto 0 0;
+  padding-top: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-4);
+}
+
+/* editions badge — longevity */
+.ex-catalog .cat-editions {
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.ex-catalog .cat-want {
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+/* ── the floating affinity chip — "also: time travel ×4". Its border charges with
+      the hovered card's live density: the runtime mirrors the card's --d onto the
+      chip as --live while the hover holds. ── */
+.ex-catalog .cat-chip {
+  position: absolute;
+  z-index: 2;
+  transform: translateY(-100%);
+  pointer-events: none;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid
+    color-mix(in srgb, var(--accent) calc(45% + var(--live, 0) * 45%), var(--line));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, Canvas);
+  box-shadow:
+    0 2px 10px rgb(0 0 0 / 0.35),
+    0 0 calc(var(--live, 0) * 12px)
+      color-mix(in srgb, var(--accent) calc(var(--live, 0) * 50%), transparent);
+}
+
+/* legend key — the shelf-mate glow */
+.ex-catalog .cat-k-mate {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--line));
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.ex-catalog .cat-k-live {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* ── Field OFF — the measurements stop; every card defaults to plain styling.
+      The live channels go quiet too: --live is forced to 0 (the page engine keeps
+      writing --d, but off means off). ── */
+.ex-catalog[data-field="off"] .cat-card {
+  --w: 0.55;
+  --live: 0;
+  opacity: 1;
+  border-left-color: var(--line);
+  background: transparent;
+}
+
+.ex-catalog[data-field="off"] .cat-card.lit,
+.ex-catalog[data-field="off"] .cat-card.cited {
+  border-color: var(--line);
+  border-left-color: var(--line);
+  background: transparent;
+}
+
+.ex-catalog[data-field="off"] .cat-title a {
+  color: var(--text-2);
+  font-variation-settings: 'wght' 500;
+}
+
+.ex-catalog[data-field="off"] .cat-stars {
+  color: var(--text-3);
+}
+
+.ex-catalog[data-field="off"] .cat-chip {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .ex-catalog .cat-grid {
+    grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+    gap: 0.55rem;
+  }
+}
+
+/* ── live status chip — "live · checked Ns ago" / "snapshot · <date>" ─────── */
+.ex-catalog .cat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.ex-catalog .cat-status::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.ex-catalog .cat-status[data-live="on"]::before {
+  background: hsl(163 72% 50%);
+  box-shadow: 0 0 6px hsl(163 72% 50% / 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-catalog .cat-card {
+    transition: none;
+  }
+}

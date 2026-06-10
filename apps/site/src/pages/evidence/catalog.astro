@@ -1,0 +1,290 @@
+---
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
+import catalog from "../../data/examples/catalog.json";
+import "../../styles/docs.css"; /* .code-tabs styles for CodeTabs */
+import "../../styles/examples/catalog.css";
+
+// The Catalog Field — the Evidence trust math retargeted at a real Open Library shelf.
+// Each book is a body; its rating count runs through the SAME formula evidence.astro uses
+// for citations: trust = log(ratings + 1) / log(maxRatings + 1). Consensus shows in the
+// spine — type weight, ink, and a left anchor — never a score badge. Hover or focus a book
+// and every shelf-mate sharing a subject lights up, with the strongest shared subject as a
+// floating chip. No particle swarm.
+const FIELD_PALETTE = [
+  "#4da3ff", "#2dd4bf", "#ff9d5c", "#a78bfa",
+  "#86e57f", "#fbbf24", "#f0abfc", "#38bdf8",
+];
+const lmax = Math.log(Math.max(...catalog.books.map((b) => b.ratings), 1) + 1);
+// map each distinct FIRST subject to a palette color (the subject lens).
+const subjectColor = new Map<string, string>();
+[...new Set(catalog.books.map((b) => b.subjects[0]).filter(Boolean))].forEach((s, i) =>
+  subjectColor.set(s!, FIELD_PALETTE[i % FIELD_PALETTE.length]!),
+);
+const books = catalog.books
+  .map((b) => ({
+    ...b,
+    trust: Math.log(b.ratings + 1) / lmax, // 0..1 — IDENTICAL to the evidence formula
+    cat: (b.subjects[0] && subjectColor.get(b.subjects[0])) || "#4da3ff",
+    // stable card id from the Open Library work key (e.g. bk-OL893415W) — the
+    // anchor the ratings line points its measurement provenance at.
+    wid: b.url.split("/").filter(Boolean).pop(),
+  }))
+  .sort((a, b) => b.trust - a.trust);
+const snapshotDay = catalog.snapshotAt.slice(0, 10);
+const fmt = (n: number) => n.toLocaleString("en-US");
+
+// ── how-built snippets (CodeTabs) ──────────────────────────────────────────
+const SNIP_BODY = `<article
+  id="bk-OL893415W"
+  data-body="attract"
+  data-strength="1.87"
+  data-feedback
+  data-hot
+  data-subjects="science fiction|time travel"
+  style="--w: 0.92; --cat: #4da3ff;"
+>
+  <!-- title · author -->
+  <!-- the ratings line declares itself a
+       measurement of this card -->
+  <span data-field-visual-for="#bk-OL893415W"
+        data-field-visual-role="measurement">
+    ★ 4.02 · 9,440 ratings
+  </span>
+</article>`;
+
+const SNIP_FORMULA = `// IDENTICAL to /evidence — only the
+// signal changed: citations → ratings
+trust = log(ratings + 1)
+      / log(maxRatings + 1)
+
+// the other lenses re-run the same shape:
+// anticipation → wantToRead counts
+// longevity    → edition counts
+// then a FLIP re-sort settles the shelf`;
+
+const SNIP_CSS = `.cat-title a {
+  font-variation-settings:
+    'wght' calc(380 + var(--w) * 360);
+}
+.cat-card {
+  /* --d: the engine's live local density,
+     written every frame; gathers toward 1
+     when a data-hot card is hovered/focused.
+     --field-attention: the scoped recipe's
+     eased attention lane. */
+  --live: var(--d, 0);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat)
+      calc(var(--live) * 55%), transparent);
+  opacity: calc(0.58 + var(--w) * 0.42);
+}
+/* the floating affinity chip charges with
+   the hovered card's --live (mirrored by
+   the runtime while the hover holds) */
+.cat-chip {
+  border-color: color-mix(in srgb,
+    var(--accent)
+    calc(45% + var(--live, 0) * 45%),
+    var(--line));
+}`;
+---
+
+<ExampleShell
+  title="field-ui — Catalog"
+  description="A real Open Library science-fiction shelf run as a field. Each book's rating count goes through the exact trust formula from the Evidence example — log-normalized counts become mass — and consensus shows in the spine: type weight, ink, and anchor, never a score badge. Hover a book and its shelf-mates light up. data-* in, --field-* out."
+  current="catalog"
+  mainClass="ex-catalog"
+  mainAttrs={{ "data-field": "on", "data-weight": "consensus", "data-lens": "subject" }}
+>
+  <header class="ev-hero">
+    <p class="ev-kicker">field-ui · invisible fields · catalog</p>
+    <h1>Consensus on the <span class="accent">shelf</span>.</h1>
+    <p class="ev-lede">
+      A bookshelf is usually a ranking in disguise: sort by rating count, slap a score badge on
+      each cover, and the top row wins. These {books.length} books are a real
+      <a href="https://openlibrary.org" rel="noopener">Open Library</a> science-fiction shelf
+      run as a <strong>field</strong> instead. Each book is a body, and its rating count goes
+      through <em>the same formula the Evidence example runs over citations</em> —
+      <code>trust = log(ratings + 1) / log(maxRatings + 1)</code> — so log-normalized rating
+      counts become gravitational mass.
+    </p>
+    <p class="ev-lede">
+      The consensus shows in the <strong>spine, not a score badge</strong>: heavier-rated books
+      carry more type weight, more ink, and a stronger left anchor. The field is invisible — no
+      particle swarm, no overlay. <strong>Hover or focus a book</strong> and every shelf-mate
+      sharing a subject lights up, with the strongest shared subject floating beside it.
+      Re-weight by anticipation or longevity and watch the shelf re-settle.
+      <strong>Toggle the field off</strong> and it collapses to a plain grid.
+    </p>
+  </header>
+
+  <!-- Controls — make the transformation legible. -->
+  <div class="ev-controls" role="group" aria-label="Field controls">
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Field</span>
+      <button type="button" class="ev-switch" data-cat-field aria-pressed="true">
+        <span class="ev-switch-dot" aria-hidden="true"></span>
+        <span class="ev-switch-txt">on</span>
+      </button>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Weight by</span>
+      <div class="ev-seg" role="group" aria-label="Weighting signal">
+        <button type="button" data-cat-weight="consensus" aria-pressed="true">consensus</button>
+        <button type="button" data-cat-weight="anticipation" aria-pressed="false">anticipation</button>
+        <button type="button" data-cat-weight="longevity" aria-pressed="false">longevity</button>
+      </div>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Color by</span>
+      <div class="ev-seg" role="group" aria-label="Color lens">
+        <button type="button" data-cat-lens="subject" aria-pressed="true">subject</button>
+        <button type="button" data-cat-lens="off" aria-pressed="false">off</button>
+      </div>
+    </div>
+    <div class="ev-ctl">
+      <span class="ev-ctl-l">Data</span>
+      <span class="cat-status" data-cat-status title="counts refresh once per visit">snapshot · {snapshotDay}</span>
+    </div>
+    <p class="ev-ctl-hint">
+      <span data-cat-hint><b>size</b> = ratings — the evidence trust math, retargeted at the shelf</span>
+      <span class="ev-hint-sep">·</span>
+      <span data-cat-lens-hint><b>color</b> = first subject — the shelf each book sits on</span>
+    </p>
+  </div>
+
+  <!-- Legend — reading the field. -->
+  <ul class="ev-legend" aria-label="How to read the field">
+    <li><span class="ev-k ev-k-weight">Aa</span> <b>size</b> = the weighting signal</li>
+    <li><span class="ev-k ev-k-anchor"></span> <b>color</b> = the lens (first subject)</li>
+    <li><span class="ev-k cat-k-mate"></span> hover or focus → shelf-mates sharing a subject light up</li>
+    <li>
+      <span class="ev-k cat-k-live"></span> the soft glow = <b>live density</b> — the hidden
+      engine writes <code>--d</code> to every card each frame; it gathers under your cursor,
+      and the floating chip's border charges with it
+    </li>
+  </ul>
+
+  <ul class="cat-grid" data-cat-grid>
+    {
+      books.map((b, i) => (
+        <li class="cat-cell">
+          <article
+            class="cat-card"
+            id={`bk-${b.wid}`}
+            data-body="attract"
+            data-feedback
+            data-hot
+            data-range="200"
+            data-strength={(0.4 + b.trust * 1.6).toFixed(2)}
+            data-ratings={b.ratings}
+            data-want={b.wantToRead}
+            data-editions={b.editions}
+            data-subjects={b.subjects.join("|")}
+            data-subject-color={b.cat}
+            style={`--w:${b.trust.toFixed(3)}; --cat:${b.cat};`}
+            tabindex="0"
+            aria-label={`${b.title} — ${b.author}, ${b.year}. ${fmt(b.ratings)} ratings.`}
+          >
+            <span class="cat-rank" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            <h3 class="cat-title">
+              <a href={b.url} target="_blank" rel="noopener">{b.title}</a>
+            </h3>
+            <p class="cat-author">{b.author} · <span class="cat-year">{b.year}</span></p>
+            <p class="cat-stats">
+              <span
+                class="cat-stats-live"
+                data-field-visual-for={`#bk-${b.wid}`}
+                data-field-visual-role="measurement"
+              >
+                <span class="cat-stars" aria-label={`${b.stars.toFixed(2)} stars`}>★ {b.stars.toFixed(2)}</span>
+                <span class="cat-ratings">{fmt(b.ratings)} ratings</span>
+              </span>
+            </p>
+            <p class="cat-foot">
+              <span class="cat-editions">{b.editions} editions</span>
+              <span class="cat-want">{fmt(b.wantToRead)} want to read</span>
+            </p>
+          </article>
+        </li>
+      ))
+    }
+  </ul>
+
+  <!-- How it's built — the evidence formula, retargeted. -->
+  <section class="ev-how" aria-labelledby="cat-how-h">
+    <h2 id="cat-how-h">How it's built</h2>
+    <p class="ev-how-lede">
+      Every book is ordinary semantic HTML — an <code>&lt;article&gt;</code> with a handful of
+      data attributes. field-ui reads them, runs a spatial field over the grid, and the trust
+      score is written once as <code>--w</code>; CSS turns it into type heft, ink, and the
+      spine. No canvas. No particle swarm. Shelf-mate affinity is class toggles, not SVG.
+      Two live channels ride on top: the page's hidden engine writes <code>--d</code> (local
+      particle density) to every <code>data-hot</code> card each frame, and the scoped recipe's
+      attention lane writes an eased <code>--field-attention</code> — CSS turns both into a
+      felt glow and lift, and both go quiet when the field is off. In the browser the counts
+      refresh from the same Open Library search <strong>once per visit, on purpose</strong> —
+      shelf counts drift slowly (a few ratings a day, not a ticker), so polling would be
+      theater. Fresh counts run back through the active weighting and the shelf re-settles.
+    </p>
+
+    <div class="ev-how-cols">
+      <div class="ev-how-col">
+        <p class="ev-how-label">1 — mark each book as a field body</p>
+        <CodeTabs variants={[{ label: "HTML", lang: "html", code: SNIP_BODY }]} />
+        <ul class="ev-how-attrs">
+          <li><code>data-body="attract"</code> — registers as a field participant</li>
+          <li><code>data-strength</code> — gravitational mass (0 → faint, 2 → heavy anchor)</li>
+          <li><code>data-subjects</code> — the shelf-mate affinity edges</li>
+          <li><code>data-feedback</code> — opt in to <code>--field-*</code> writebacks</li>
+          <li><code>data-hot</code> — opts into the live density gather: hover and <code>--d</code> climbs toward 1</li>
+          <li><code>data-field-visual-for</code> — names the ratings line a <code>measurement</code> of its card</li>
+        </ul>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">2 — the evidence formula, retargeted</p>
+        <CodeTabs variants={[{ label: "TypeScript", lang: "ts", code: SNIP_FORMULA }]} />
+        <p class="ev-how-note">
+          One log-normalized count becomes mass, exactly as on the Evidence page. Swapping
+          which count feeds the formula is the whole difference between the three weightings.
+        </p>
+      </div>
+
+      <div class="ev-how-col">
+        <p class="ev-how-label">3 — CSS reads the field's output</p>
+        <CodeTabs variants={[{ label: "CSS", lang: "css", code: SNIP_CSS }]} />
+        <p class="ev-how-note">
+          Type heft, ink, and the spine all read from one normalized trust score — the field
+          drives the measurement; CSS drives the presentation. The glow and the chip's charge
+          read <code>--d</code> and <code>--field-attention</code> — live writes, zeroed when
+          the field is off.
+        </p>
+        <div class="ev-how-ctas">
+          <a href="/docs" class="ev-how-link">Read the docs →</a>
+          <a href="/recipes" class="ev-how-link ev-how-link--dim">See recipes →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ev-fineprint">
+    <p>
+      Consensus here is <strong>engagement, not quality</strong> — a rating count says how many
+      readers weighed in, not whether the book deserves a spot on your shelf. Making that
+      signal legible without faking a verdict is the point. The committed snapshot
+      ({snapshotDay}) ships in the HTML and is what renders without JavaScript; in the browser
+      the page <strong>refreshes the counts once per visit</strong> from the same search when
+      the API is reachable, and the shelf re-settles through the active weighting. Data:
+      <a href="https://openlibrary.org" rel="noopener">Open Library search API</a> (open data).
+    </p>
+    <p class="ev-built">
+      <a href="/evidence">Back to the Evidence field →</a>
+    </p>
+  </footer>
+</ExampleShell>
+
+<script>
+  import "../../components/examples/catalog-runtime.ts";
+</script>

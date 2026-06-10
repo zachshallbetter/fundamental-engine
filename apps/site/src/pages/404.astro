@@ -1,0 +1,86 @@
+---
+import Base from "../layouts/Base.astro";
+import SiteNav from "../components/SiteNav.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+---
+
+<Base
+  title="field-ui — page not found"
+  description="That page isn't a body in this field. Try the docs, the lab, or the writings."
+>
+  <SiteNav />
+  <main class="nf-page">
+    <p class="nf-code">404</p>
+    <h1>Nothing here bends the field.</h1>
+    <p class="nf-lede">
+      The page you asked for isn't a body in this field — it may have moved, or never existed.
+      The places most things live:
+    </p>
+    <nav class="nf-links" aria-label="Helpful destinations">
+      <a href="/">Home — the field manual</a>
+      <a href="/docs">Docs — concepts &amp; API</a>
+      <a href="/lab">Lab — the live playground</a>
+      <a href="/writings">Writings — the research papers</a>
+      <a href="/evidence">Evidence — data run as a field</a>
+    </nav>
+  </main>
+  <SiteFooter />
+</Base>
+
+<style>
+  .nf-page {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 9rem clamp(1.2rem, 5vw, 3rem) 6rem;
+    min-height: 60svh;
+  }
+  .nf-code {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    color: var(--text-3);
+    margin: 0;
+  }
+  h1 {
+    margin: 1rem 0 0;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+  }
+  .nf-lede {
+    margin: 1.2rem 0 0;
+    max-width: 85%;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-2);
+    font-weight: 300;
+  }
+  .nf-links {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .nf-links a {
+    width: fit-content;
+    font-size: 0.95rem;
+    color: var(--text-2);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    transition:
+      border-color 0.18s,
+      color 0.18s,
+      background 0.18s;
+  }
+  .nf-links a:hover {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+</style>

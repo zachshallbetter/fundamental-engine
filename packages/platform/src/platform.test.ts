@@ -129,3 +129,24 @@ test('createFieldPlatform.tick runs read then write', () => {
   assert.equal(el.props['--field-attention'], '0.600');
   assert.equal(p.measure.for(el)!.rect.width, 100);
 });
+
+test('FeedbackRegistry.cssWritesLastFrame counts actual mutations (mirrored vars = 2, plain = 1)', () => {
+  const s = new StateRegistry();
+  const f = new FeedbackRegistry();
+  const el = fakeEl({ x: 0, y: 0, w: 10, h: 10 });
+  f.set(el, { '--load': 0.5 }); // plain var → 1 write
+  f.set(el, { '--field-density': 0.3 }); // mirrored to --forces-density → 2 writes
+  f.flush(s);
+  assert.equal(f.cssWritesLastFrame(), 3);
+  assert.equal(el.props['--forces-density'], '0.3', 'the mirror really was written');
+  f.flush(s); // direct queue drained → an idle frame writes nothing
+  assert.equal(f.cssWritesLastFrame(), 0);
+  // bound vars re-write on every flush while state holds a value — that recurring cost is
+  // exactly what this metric exists to surface (vs boundVars().length, which counts bindings).
+  f.bind(el, { density: '--field-density' });
+  s.set(el, 'density', 0.8);
+  f.flush(s);
+  assert.equal(f.cssWritesLastFrame(), 2);
+  f.flush(s);
+  assert.equal(f.cssWritesLastFrame(), 2, 'bound writes recur each frame');
+});

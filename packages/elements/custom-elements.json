@@ -754,6 +754,24 @@
             },
             {
               "kind": "field",
+              "name": "visibilityObserver",
+              "type": {
+                "text": "IntersectionObserver | undefined"
+              },
+              "privacy": "private",
+              "description": "element-level visibility: pages can hide the field (display:none) — skip draw work then."
+            },
+            {
+              "kind": "field",
+              "name": "fieldVisible",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true"
+            },
+            {
+              "kind": "field",
               "name": "platformRuntime",
               "type": {
                 "text": "PlatformRuntime | undefined"
@@ -1434,6 +1452,32 @@
               },
               "privacy": "private",
               "description": "Field Surfaces: the optional front overlay surface (light-DOM, above content).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "visibilityObserver",
+              "type": {
+                "text": "IntersectionObserver | undefined"
+              },
+              "privacy": "private",
+              "description": "element-level visibility: pages can hide the field (display:none) — skip draw work then.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "fieldVisible",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2182,6 +2226,32 @@
               },
               "privacy": "private",
               "description": "Field Surfaces: the optional front overlay surface (light-DOM, above content).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "visibilityObserver",
+              "type": {
+                "text": "IntersectionObserver | undefined"
+              },
+              "privacy": "private",
+              "description": "element-level visibility: pages can hide the field (display:none) — skip draw work then.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "fieldVisible",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "true",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

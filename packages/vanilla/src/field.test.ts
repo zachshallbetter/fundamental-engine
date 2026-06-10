@@ -87,6 +87,7 @@ test('new ForcesField() manages its canvas and forwards the full handle', () => 
     'setAttention',
     'setCausality',
     'setRender',
+    'setVisible',
     'threads',
     'burst',
     'destroy',
@@ -115,6 +116,14 @@ test('setAccent() accepts a hex string without throwing', () => {
   const field = new ForcesField();
   assert.doesNotThrow(() => field.setAccent('#ff6e9c'));
   assert.doesNotThrow(() => field.setAccent('#4da3ff'));
+  field.destroy();
+});
+
+test('setVisible() toggles without throwing (draw-skip is engine-internal)', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setVisible(false));
+  assert.doesNotThrow(() => field.setVisible(true));
   field.destroy();
 });
 

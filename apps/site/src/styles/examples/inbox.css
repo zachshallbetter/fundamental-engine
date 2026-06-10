@@ -1,0 +1,590 @@
+/* ============================================================
+   THE INBOX FIELD — attention as a conserved budget over real unanswered questions.
+   Focus-split layout: the STREAM on the left (compact rows), a narrow FOCUS pane
+   on the right where pinned asks physically move — attention has a place. Builds
+   on the ev-* design system (evidence.css, imported by ExampleShell); everything
+   here is scoped under .ex-inbox.
+   ============================================================ */
+
+/* the attention meter — always full, by construction */
+.ex-inbox .ix-meter-ctl {
+  flex-wrap: wrap;
+}
+.ex-inbox .ix-meter {
+  width: 5.5rem;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-inbox .ix-meter i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+}
+.ex-inbox .ix-meter-txt {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+/* the live chip — "live · checked Ns ago" once a poll succeeds; "snapshot · <date>"
+   before the first success or after the loop retires. The dot goes teal when live. */
+.ex-inbox .ix-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.18rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  color: var(--text-4);
+  white-space: nowrap;
+}
+.ex-inbox .ix-live::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-4);
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.ex-inbox .ix-live[data-live='on'] {
+  color: var(--text-3);
+  border-color: color-mix(in srgb, #2dd4bf 35%, var(--line));
+}
+.ex-inbox .ix-live[data-live='on']::before {
+  background: #2dd4bf;
+  box-shadow: 0 0 6px color-mix(in srgb, #2dd4bf 70%, transparent);
+}
+
+/* the "new" tick — live arrivals can't honestly carry a snapshot-relative age */
+.ex-inbox .ix-new {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* arrivals enter with a brief opacity+rise; departures fade off the bottom */
+.ex-inbox .ix-item[data-ix-entering] {
+  animation: ix-enter 0.45s ease-out;
+}
+@keyframes ix-enter {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+}
+.ex-inbox .ix-item[data-ix-leaving] {
+  opacity: 0 !important;
+  transition: opacity 0.4s ease-out;
+  pointer-events: none;
+}
+
+/* legend keys */
+.ex-inbox .ix-k-pin {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+}
+.ex-inbox .ix-k-meter {
+  width: 18px;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-inbox .ix-k-meter i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+}
+.ex-inbox .ix-k-live {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.ex-inbox .ix-k-new {
+  width: auto;
+  padding: 0 0.3rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ── the focus split: stream left, focus pane right (~38%) ─────────────────── */
+.ex-inbox .ix-split {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 38%);
+  gap: 1.2rem;
+  align-items: start;
+}
+
+/* the stream — each row's share of the budget shows as weight, ink, and anchor */
+.ex-inbox .ix-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.ex-inbox .ix-item {
+  --w: 0.42;
+  /* the living ink: --d is the engine's live local density (0..1, written back every
+     frame; data-hot gathers it on hover/focus), --field-attention the recipe's eased
+     attention lane. Both touch only ink — never --w, so Σ--w stays the budget. */
+  --live: var(--d, 0);
+  --att: var(--field-attention, 0);
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: clamp(0.7rem, 2vw, 1.4rem);
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid
+    color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--w) * 82%), var(--line));
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--text) calc(1.5% + var(--w) * 4% + var(--live) * 4% + var(--att) * 4%),
+    transparent
+  );
+  opacity: calc(0.58 + var(--w) * 0.42);
+  box-shadow: 0 0 calc(var(--live) * 16px) -6px
+    color-mix(in srgb, var(--cat, var(--accent)) calc(var(--live) * 55%), transparent);
+  cursor: pointer;
+  transition:
+    opacity 0.3s,
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s,
+    outline-color 0.2s;
+}
+.ex-inbox .ix-item:hover {
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) 40%, var(--line));
+}
+/* a pinned ask holds a full unit — ring highlight, full ink. Its glow burns steadier:
+   a constant floor with the live density (--live) folded on top. */
+.ex-inbox .ix-item[data-pinned] {
+  opacity: 1;
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  box-shadow: 0 0 calc(10px + var(--live) * 12px) -6px
+    color-mix(in srgb, var(--accent) calc(35% + var(--live) * 40%), transparent);
+}
+.ex-inbox .ix-body {
+  min-width: 0;
+}
+.ex-inbox .ix-title {
+  display: block;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--text) calc(45% + var(--w) * 55%), var(--text-4));
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'wght' calc(380 + var(--w) * 360);
+}
+.ex-inbox .ix-title:hover {
+  color: var(--accent);
+}
+.ex-inbox .ix-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 0.76rem;
+  color: var(--text-3);
+}
+.ex-inbox .ix-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.ex-inbox .ix-tag {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: color-mix(in srgb, var(--cat, var(--accent)) 55%, var(--text-3));
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+/* stream rows stay compact — clamp the tag set to the first three */
+.ex-inbox .ix-list .ix-tags .ix-tag:nth-child(n + 4) {
+  display: none;
+}
+.ex-inbox .ix-meta-rest {
+  margin-left: 0.25rem;
+}
+.ex-inbox .ix-stats {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-items: end;
+  align-items: center;
+  column-gap: 1rem;
+  row-gap: 0.3rem;
+}
+.ex-inbox .ix-stat {
+  display: grid;
+  justify-items: end;
+  line-height: 1;
+}
+.ex-inbox .ix-stat b {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--cat, var(--accent)) calc(25% + var(--w) * 60%), var(--text-3));
+}
+.ex-inbox .ix-stat-l {
+  margin-top: 0.18rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+/* the share bar — this ask's slice of the fixed budget */
+.ex-inbox .ix-share {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 7rem;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  overflow: hidden;
+}
+.ex-inbox .ix-share i {
+  display: block;
+  height: 100%;
+  background: var(--cat, var(--accent));
+  transition: width 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ex-inbox .ix-pin {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-4);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+.ex-inbox .ix-item:hover .ix-pin {
+  color: var(--text-2);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+.ex-inbox .ix-pin[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* ── the focus pane — where held attention lives ───────────────────────────── */
+.ex-inbox .ix-focus {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 3%, transparent);
+}
+.ex-inbox .ix-focus-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-2);
+}
+.ex-inbox .ix-focus-n {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-inbox .ix-focus-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.ex-inbox .ix-focus-list:empty {
+  display: none;
+}
+/* the quiet hint when nothing is held */
+.ex-inbox .ix-focus-hint {
+  margin: 0;
+  padding: 0.9rem 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--text-4);
+}
+.ex-inbox .ix-focus[data-has-pins] .ix-focus-hint {
+  display: none;
+}
+
+/* focus cards: slightly larger, stacked for the narrow pane, full tag set */
+.ex-inbox .ix-focus .ix-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 1rem;
+  gap: 0.6rem 0.8rem;
+}
+.ex-inbox .ix-focus .ix-body {
+  grid-column: 1;
+  grid-row: 1;
+}
+.ex-inbox .ix-focus .ix-pin {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+.ex-inbox .ix-focus .ix-title {
+  font-size: clamp(1.02rem, 1.6vw, 1.16rem);
+}
+.ex-inbox .ix-focus .ix-stats {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: auto auto 1fr;
+  justify-items: start;
+}
+.ex-inbox .ix-focus .ix-share {
+  grid-column: 3;
+  align-self: center;
+  min-width: 3rem;
+}
+
+/* ── Field OFF — the budget stops mattering; every ask reads at the same volume.
+   The live channels are silenced with the field: no density, no attention, no glow. ── */
+.ex-inbox[data-field='off'] .ix-item {
+  --w: 0.55;
+  --live: 0;
+  --att: 0;
+  opacity: 1;
+  border-left-color: var(--line);
+  cursor: default;
+}
+.ex-inbox[data-field='off'] .ix-item[data-pinned] {
+  outline: none;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--text) 3.7%, transparent);
+}
+.ex-inbox[data-field='off'] .ix-share {
+  opacity: 0.4;
+}
+.ex-inbox[data-field='off'] .ix-pin {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.ex-inbox[data-field='off'] .ev-seg {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.ex-inbox[data-field='off'] .ix-meter,
+.ex-inbox[data-field='off'] .ix-meter-txt {
+  opacity: 0.4;
+}
+.ex-inbox[data-field='off'] .ix-focus {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text) 1.5%, transparent);
+}
+
+/* ── responsive: the focus pane becomes a sticky strip above the stream ────── */
+@media (max-width: 840px) {
+  .ex-inbox .ix-split {
+    display: flex;
+    flex-direction: column;
+  }
+  .ex-inbox .ix-focus {
+    order: -1;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg, #04050a);
+  }
+  /* pinned cards line up horizontally; scroll if several are held */
+  .ex-inbox .ix-focus-list {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .ex-inbox .ix-focus .ix-item {
+    flex: 0 0 auto;
+    width: min(78vw, 20rem);
+  }
+  .ex-inbox .ix-focus-hint {
+    padding: 0.4rem 0;
+  }
+}
+@media (max-width: 640px) {
+  .ex-inbox .ix-list .ix-item {
+    grid-template-columns: 1fr auto;
+  }
+  .ex-inbox .ix-list .ix-stats {
+    grid-column: 1;
+    grid-row: 2;
+    justify-items: start;
+    grid-template-columns: auto auto 1fr;
+  }
+  .ex-inbox .ix-list .ix-share {
+    grid-column: 3;
+    align-self: center;
+    min-width: 4rem;
+  }
+  .ex-inbox .ix-list .ix-pin {
+    align-self: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-inbox .ix-item,
+  .ex-inbox .ix-share i {
+    transition: none;
+  }
+  /* entries/departures: the runtime already skips the animations; belt to its braces */
+  .ex-inbox .ix-item[data-ix-entering] {
+    animation: none;
+  }
+  .ex-inbox .ix-item[data-ix-leaving] {
+    transition: none;
+  }
+}
+
+/* ── CodeTabs (how-built) — the docs' highlighted code block, scoped locally because
+   this page does not load docs.css ──────────────────────────────────────────────── */
+.ex-inbox .code-tabs {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-canvas, #07090e);
+  overflow: hidden;
+}
+.ex-inbox .code-tabs .ct-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+.ex-inbox .code-tabs .ct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ex-inbox .code-tabs .ct-tab,
+.ex-inbox .code-tabs .ct-lang {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-inbox .code-tabs .ct-tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s;
+}
+.ex-inbox .code-tabs .ct-tab:hover {
+  color: var(--text-2);
+}
+.ex-inbox .code-tabs .ct-tab[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ex-inbox .code-tabs .ct-copy {
+  appearance: none;
+  align-self: center;
+  margin: 0 0.5rem 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-2, var(--line));
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: copy;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s;
+}
+.ex-inbox .code-tabs .ct-copy:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.ex-inbox .code-tabs .ct-copy.copied {
+  color: var(--ok, #5fd0a8);
+  border-color: var(--ok, #5fd0a8);
+}
+.ex-inbox .code-tabs .ct-body[hidden] {
+  display: none;
+}
+.ex-inbox .code-tabs pre.astro-code,
+.ex-inbox .code-tabs pre.astro-code code {
+  margin: 0;
+  background: transparent !important;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.ex-inbox .code-tabs pre.astro-code {
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+}

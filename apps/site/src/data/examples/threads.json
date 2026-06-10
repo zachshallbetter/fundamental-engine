@@ -1,0 +1,1617 @@
+{
+  "source": "Hacker News via Algolia API (hn.algolia.com)",
+  "license": "Y Combinator HN API terms",
+  "snapshotAt": "2026-06-10T00:38:18.741Z",
+  "story": {
+    "id": 41002195,
+    "title": "CrowdStrike Update: Windows Bluescreen and Boot Loops",
+    "url": "https://old.reddit.com/r/crowdstrike/comments/1e6vmkf/bsod_error_in_latest_crowdstrike_update/",
+    "points": 4489,
+    "author": "BLKNSLVR",
+    "createdAt": 1721366773,
+    "comments": 3859,
+    "hn": "https://news.ycombinator.com/item?id=41002195"
+  },
+  "comments": [
+    {
+      "id": 41002198,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "sammy2255",
+      "createdAt": 1721366849,
+      "points": null,
+      "text": "Yep happened to us too. Its global. And it just started happening.",
+      "replies": 1
+    },
+    {
+      "id": 41002259,
+      "parent": 41002198,
+      "depth": 1,
+      "author": "VargaLand",
+      "createdAt": 1721367824,
+      "points": null,
+      "text": "Same in Adelaide. Reports coming in from Gov agencies, utilities etc.",
+      "replies": 0
+    },
+    {
+      "id": 41002199,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "scriptsmith",
+      "createdAt": 1721366864,
+      "points": null,
+      "text": "It&#x27;s crowdstrike: https:&#x2F;&#x2F;www.reddit.com&#x2F;r&#x2F;crowdstrike&#x2F;comments&#x2F;1e6vmkf&#x2F;bsod_e... &gt; 7&#x2F;18&#x2F;24 10:20PT - Hello everyone - We have widespread reports of BSODs on windows hosts, occurring on multiple sensor versions. Investigating cause. TA will be published shortly. Pinned thread. &gt; SCOPE: EU-1, US-1, US-2 ",
+      "replies": 4
+    },
+    {
+      "id": 41002246,
+      "parent": 41002199,
+      "depth": 1,
+      "author": "ineptech",
+      "createdAt": 1721367612,
+      "points": null,
+      "text": "Can you post a summary? We&#x27;re affected but I don&#x27;t have access to that portal.",
+      "replies": 2
+    },
+    {
+      "id": 41002264,
+      "parent": 41002246,
+      "depth": 2,
+      "author": "scriptsmith",
+      "createdAt": 1721367970,
+      "points": null,
+      "text": "Someone posted this in the thread, but I also can&#x27;t log in to verify &gt; Summary &gt; CrowdStrike is aware of reports of crashes on Windows hosts related to the Falcon Sensor. &gt; Details &gt; Symptoms include hosts experiencing a bugcheck\\blue screen error related to the Falcon Sensor. &gt; Current Action &gt; Our Engineering teams are actively worki",
+      "replies": 0
+    },
+    {
+      "id": 41007545,
+      "parent": 41002246,
+      "depth": 2,
+      "author": "nofinator",
+      "createdAt": 1721403395,
+      "points": null,
+      "text": "They&#x27;ve bumped this support info to a blog post that&#x27;s linked from their home page: https:&#x2F;&#x2F;www.crowdstrike.com&#x2F;blog&#x2F;statement-on-falcon-content... It includes PDFs of some relevant support pages that someone printed with their browser 5 hours ago. That&#x27;s probably the right thing to do in such a situation to get this kind o",
+      "replies": 1
+    },
+    {
+      "id": 41007777,
+      "parent": 41007545,
+      "depth": 3,
+      "author": "unixhero",
+      "createdAt": 1721404660,
+      "points": null,
+      "text": "&quot;Start your free trial now.&quot; Hahahahah you have got to ne kidding me :)",
+      "replies": 0
+    },
+    {
+      "id": 41002776,
+      "parent": 41002199,
+      "depth": 1,
+      "author": "Neil44",
+      "createdAt": 1721373261,
+      "points": null,
+      "text": "Right after you enter the bit locker recovery key. You do have your bit locker recovery key, right? .....right?",
+      "replies": 6
+    },
+    {
+      "id": 41002926,
+      "parent": 41002776,
+      "depth": 2,
+      "author": "tamimio",
+      "createdAt": 1721374504,
+      "points": null,
+      "text": "I doubt most of the clients who use CS know what BitLocker is, let alone how to back it up, assuming it wasn’t backed up automatically by Windows.",
+      "replies": 2
+    },
+    {
+      "id": 41002988,
+      "parent": 41002926,
+      "depth": 3,
+      "author": "Fire-Dragon-DoL",
+      "createdAt": 1721374952,
+      "points": null,
+      "text": "Doesn&#x27;t that get backed up automatically to the Microsoft account?",
+      "replies": 2
+    },
+    {
+      "id": 41003059,
+      "parent": 41002988,
+      "depth": 4,
+      "author": "dist-epoch",
+      "createdAt": 1721375348,
+      "points": null,
+      "text": "That&#x27;s opt-in. In Enterprise setups the key should be backed somewhere in Active Directory.",
+      "replies": 2
+    },
+    {
+      "id": 41003128,
+      "parent": 41003059,
+      "depth": 5,
+      "author": "mrhhaacckk",
+      "createdAt": 1721375853,
+      "points": null,
+      "text": "Yes you should be able to pull it from your domain controllers. Unless they&#x27;re also down, which they&#x27;re likely to be seeing as Tier 0 assets are most likely to have crowdstrike on them. So you&#x27;re now in a catch 22.",
+      "replies": 1
+    },
+    {
+      "id": 41003987,
+      "parent": 41003128,
+      "depth": 6,
+      "author": "mavhc",
+      "createdAt": 1721380603,
+      "points": null,
+      "text": "Log into hypervisor, rollback VM",
+      "replies": 2
+    },
+    {
+      "id": 41008101,
+      "parent": 41003987,
+      "depth": 7,
+      "author": "olyjohn",
+      "createdAt": 1721406220,
+      "points": null,
+      "text": "Microsoft shops gonna be running Hyper-V. Probably also got hosed.",
+      "replies": 0
+    },
+    {
+      "id": 41010212,
+      "parent": 41003987,
+      "depth": 7,
+      "author": "tremon",
+      "createdAt": 1721417544,
+      "points": null,
+      "text": "Rolling back an Active Directory server is a spectacularly bad idea. Better make doubly sure it&#x27;s not connected to any network before you even attempt to do so.",
+      "replies": 0
+    },
+    {
+      "id": 41003809,
+      "parent": 41003059,
+      "depth": 5,
+      "author": "ryanjshaw",
+      "createdAt": 1721379555,
+      "points": null,
+      "text": "In theory. I&#x27;ve seen it not happen twice. (The worst part is that you can hit the Bitlocker recovery somewhat randomly because of an irrelevant piece of hardware failing, and now you have to rebuild the OS because the recovery key is MIA.)",
+      "replies": 0
+    },
+    {
+      "id": 41003064,
+      "parent": 41002988,
+      "depth": 4,
+      "author": "tamimio",
+      "createdAt": 1721375385,
+      "points": null,
+      "text": "I know it does for personal accounts once linked to your machine. Years ago, I used the enterprise version and it didn’t, probably because it was “assumed” that it should be done with group policies, but that was in 2017.",
+      "replies": 0
+    },
+    {
+      "id": 41005187,
+      "parent": 41002926,
+      "depth": 3,
+      "author": "acdha",
+      "createdAt": 1721388845,
+      "points": null,
+      "text": "Most people installed CrowdStrike because an audit said they needed it. I find it exceedingly unlikely that the same audit did not say they have to enable Bitlocker and backup its keys.",
+      "replies": 1
+    },
+    {
+      "id": 41006147,
+      "parent": 41005187,
+      "depth": 4,
+      "author": "toomuchtodo",
+      "createdAt": 1721394557,
+      "points": null,
+      "text": "I can confirm this. EDR checkbox for CrowdStrike, BitLocker enabled for local disk encryption checkbox. BitLocker backups to Entra because we know reality happens, no checkbox for that.",
+      "replies": 0
+    },
+    {
+      "id": 41003710,
+      "parent": 41002776,
+      "depth": 2,
+      "author": "paganel",
+      "createdAt": 1721378956,
+      "points": null,
+      "text": "This was particularly interesting (from the reddit thread posted above): &gt; A colleague is dealing with a particularly nasty case. The server storing the BitLocker recovery keys (for thousands of users) is itself BitLocker protected and running CrowdStrike (he says mandates state that all servers must have &quot;encryption at rest&quot;). &gt; His team bel",
+      "replies": 6
+    },
+    {
+      "id": 41003931,
+      "parent": 41003710,
+      "depth": 3,
+      "author": "radiator",
+      "createdAt": 1721380253,
+      "points": null,
+      "text": "I find that hilarious",
+      "replies": 1
+    },
+    {
+      "id": 41004623,
+      "parent": 41003931,
+      "depth": 4,
+      "author": "lukan",
+      "createdAt": 1721385260,
+      "points": null,
+      "text": "Me too, as I am also not affected. But I do pity those guys who now try to solve that deadlock.",
+      "replies": 0
+    },
+    {
+      "id": 41004516,
+      "parent": 41003710,
+      "depth": 3,
+      "author": "lordnacho",
+      "createdAt": 1721384454,
+      "points": null,
+      "text": "&gt; but they can&#x27;t access any of the documentation to do so, because everything is down. One of my biggest frustrations with learning networking was not being able to access the internet. Nowadays you probably have a phone with a browser, but back in the day if you were sitting in a data room and you&#x27;d configured stuff wrong, you had a problem.",
+      "replies": 0
+    },
+    {
+      "id": 41005097,
+      "parent": 41003710,
+      "depth": 3,
+      "author": "RobotToaster",
+      "createdAt": 1721388158,
+      "points": null,
+      "text": "Nobody, not one person, thought that documentation should be stored in hard copy?",
+      "replies": 1
+    },
+    {
+      "id": 41005989,
+      "parent": 41005097,
+      "depth": 4,
+      "author": "whynotmaybe",
+      "createdAt": 1721393615,
+      "points": null,
+      "text": "I&#x27;m guessing someone somewhere said that &quot;it must be stored in hard copy in a safe&quot; and the answer was in the range of &quot;we don&#x27;t have a safe, we&#x27;ll be fine&quot;. Or worse, if it&#x27;s like where I worked in the past, they&#x27;re still in the buying process for a safe (started 13 months ago) and the analysts are building up a ",
+      "replies": 1
+    },
+    {
+      "id": 41006742,
+      "parent": 41005989,
+      "depth": 5,
+      "author": "KineticLensman",
+      "createdAt": 1721397984,
+      "points": null,
+      "text": "Not just financial &#x2F; process barriers. I worked for a company in the early 90&#x27;s that needed a large secure safe to store classified documents and removable hard drives. A significant part of the delay in getting it was figuring out how to get it into the upstairs office where it would be located. The solution involved removing a window and hiring a",
+      "replies": 0
+    },
+    {
+      "id": 41005362,
+      "parent": 41003710,
+      "depth": 3,
+      "author": "Retr0id",
+      "createdAt": 1721389987,
+      "points": null,
+      "text": "Any chance you have a link to that comment?",
+      "replies": 2
+    },
+    {
+      "id": 41006095,
+      "parent": 41005362,
+      "depth": 4,
+      "author": "paganel",
+      "createdAt": 1721394266,
+      "points": null,
+      "text": "Didn&#x27;t bookmark it or anything and going back to the original reddit thread I now see that there are close to 9,000 comments, so unfortunately the answer is no...",
+      "replies": 0
+    },
+    {
+      "id": 41010722,
+      "parent": 41005362,
+      "depth": 4,
+      "author": "nrr",
+      "createdAt": 1721420569,
+      "points": null,
+      "text": "Here you go. &lt; https:&#x2F;&#x2F;www.reddit.com&#x2F;r&#x2F;crowdstrike&#x2F;comments&#x2F;1e6vmkf&#x2F;commen... &gt;",
+      "replies": 0
+    },
+    {
+      "id": 41006126,
+      "parent": 41003710,
+      "depth": 3,
+      "author": "sobellian",
+      "createdAt": 1721394486,
+      "points": null,
+      "text": "Just hope there is no mutual recursion, i.e. recovery key A is stored on machine B, recovery key B is stored on machine A!",
+      "replies": 0
+    },
+    {
+      "id": 41007577,
+      "parent": 41003710,
+      "depth": 3,
+      "author": "JCharante",
+      "createdAt": 1721403607,
+      "points": null,
+      "text": "Isn’t that what office safes are for? I don’t know the location, but all the old guard at my company knew that room xyz at Company Office A held a safe with printed out recovery keys and the root account credentials. No idea where the key to the safe is or if it’s a keypad lock instead. Almost had to use it one time.",
+      "replies": 0
+    },
+    {
+      "id": 41003829,
+      "parent": 41002776,
+      "depth": 2,
+      "author": "sebazzz",
+      "createdAt": 1721379654,
+      "points": null,
+      "text": "BitLocker for Business stores the bitlocker key centrally. Still, it is a huge manual undertaking fixing every system.",
+      "replies": 3
+    },
+    {
+      "id": 41003904,
+      "parent": 41003829,
+      "depth": 3,
+      "author": "tgshaik",
+      "createdAt": 1721380077,
+      "points": null,
+      "text": "Absolutely correct. Unfortunately, there is no other solution to this issue. If the laptops were powered down overnight, there might be a stroke of luck. However, this will be one of the most challenging recoveries in IT history, making it a highly unpleasant experience.",
+      "replies": 0
+    },
+    {
+      "id": 41003976,
+      "parent": 41003829,
+      "depth": 3,
+      "author": "teeheelol",
+      "createdAt": 1721380518,
+      "points": null,
+      "text": "Yeah in context we have about 1000 remote workers down. We have to call them and talk through each machine because we can&#x27;t fix them remotely because they are stuck boot looping. A large proportion of these users are non-technical.",
+      "replies": 2
+    },
+    {
+      "id": 41005441,
+      "parent": 41003976,
+      "depth": 4,
+      "author": "chrisjj",
+      "createdAt": 1721390514,
+      "points": null,
+      "text": "How fortunate the phone system is not vulnerable to CrowdStrike...",
+      "replies": 0
+    },
+    {
+      "id": 41005987,
+      "parent": 41003976,
+      "depth": 4,
+      "author": "CoastalCoder",
+      "createdAt": 1721393601,
+      "points": null,
+      "text": "Man, talk about a mass-phishing opportunity.",
+      "replies": 0
+    },
+    {
+      "id": 41004142,
+      "parent": 41003829,
+      "depth": 3,
+      "author": "immibis",
+      "createdAt": 1721381622,
+      "points": null,
+      "text": "I heard the central system was on Azure, running CrowdStrike.",
+      "replies": 0
+    },
+    {
+      "id": 41003893,
+      "parent": 41002776,
+      "depth": 2,
+      "author": "mschuster91",
+      "createdAt": 1721380020,
+      "points": null,
+      "text": "MS Windows Recovery screen (or the OS installer disk) might ask you for the recovery key only, but you can unlock the drive manually with the password as well! I had to do that a week ago after a disk clone gone wrong, so in case someone steps on the same issue (this here is tested with Win 10, but it should be just the same for W11 and Server): 1. Boot the ",
+      "replies": 2
+    },
+    {
+      "id": 41004247,
+      "parent": 41003893,
+      "depth": 3,
+      "author": "sam_lowry_",
+      "createdAt": 1721382465,
+      "points": null,
+      "text": "On my corporate Windows 11 22H2 &quot;manage-bde -unlock C: -Password&quot; does not unlock the disk with the user key. I guess it needs recovery key as well.",
+      "replies": 0
+    },
+    {
+      "id": 41004769,
+      "parent": 41003893,
+      "depth": 3,
+      "author": "plonk",
+      "createdAt": 1721386190,
+      "points": null,
+      "text": "Don’t you need more options if the key is in a TPM, or there is a password but it’s only part of the key? Can you even get the secret from the TPM in recovery mode?",
+      "replies": 1
+    },
+    {
+      "id": 41005543,
+      "parent": 41004769,
+      "depth": 4,
+      "author": "mschuster91",
+      "createdAt": 1721391077,
+      "points": null,
+      "text": "&gt; Can you even get the secret from the TPM in recovery mode? Given that you can (relatively trivially) sniff the TPM communication to obtain the key [1], yes it should be possible. Can&#x27;t verify it though as I&#x27;ve long ago switched to Mac for my primary driver and the old cheesegrater Mac I use as a gaming rig doesn&#x27;t have a hardware TPM chip",
+      "replies": 2
+    },
+    {
+      "id": 41007188,
+      "parent": 41005543,
+      "depth": 5,
+      "author": "toast0",
+      "createdAt": 1721401109,
+      "points": null,
+      "text": "TPMs embedded in the processor (fTPM) are pretty popular and it&#x27;s a lot harder to sniff communications that stay inside the cpu.",
+      "replies": 0
+    },
+    {
+      "id": 41015233,
+      "parent": 41005543,
+      "depth": 5,
+      "author": "plonk",
+      "createdAt": 1721467975,
+      "points": null,
+      "text": "yea I don&#x27;t need an attack on a weak system, I mean the authorized legal normal way of unlocking BL from Windows when you have the right credentials. Windows might not be able to unlock BitLocker with just your password. I don&#x27;t know how common it is to disable TPM-stored keys in companies, but on personal licenses, you need group policy to even al",
+      "replies": 0
+    },
+    {
+      "id": 41004112,
+      "parent": 41002776,
+      "depth": 2,
+      "author": "fragmede",
+      "createdAt": 1721381417,
+      "points": null,
+      "text": "help for if you have bitlocker turned on (because of course you do). https:&#x2F;&#x2F;x.com&#x2F;attilabubby&#x2F;status&#x2F;1814216589559861673 https:&#x2F;&#x2F;x.com&#x2F;nathanmcnulty&#x2F;status&#x2F;1785094215749476722?s=46 GPO to fix: https:&#x2F;&#x2F;gist.github.com&#x2F;whichbuffer&#x2F;7830c73711589dcf9e7a5217...",
+      "replies": 0
+    },
+    {
+      "id": 41011174,
+      "parent": 41002776,
+      "depth": 2,
+      "author": "downrightmike",
+      "createdAt": 1721422896,
+      "points": null,
+      "text": "Saved to my desktop? How does that help? &#x2F;s",
+      "replies": 0
+    },
+    {
+      "id": 41004610,
+      "parent": 41002199,
+      "depth": 1,
+      "author": "sva_",
+      "createdAt": 1721385115,
+      "points": null,
+      "text": "Happy weekend to everyone who works there.",
+      "replies": 0
+    },
+    {
+      "id": 41006066,
+      "parent": 41002199,
+      "depth": 1,
+      "author": "2OEH8eoCRo0",
+      "createdAt": 1721394094,
+      "points": null,
+      "text": "They had me at &quot;crowdstrike engineering&quot; So engineer-like.",
+      "replies": 0
+    },
+    {
+      "id": 41002225,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "jamesbfb",
+      "createdAt": 1721367220,
+      "points": null,
+      "text": "Our company is in panic mode. 15 machines blue screened for no apparent reason and stuck in boot loop. I’m a gloating Linux user :) Also in Australia",
+      "replies": 2
+    },
+    {
+      "id": 41002587,
+      "parent": 41002225,
+      "depth": 1,
+      "author": "jdleel",
+      "createdAt": 1721371497,
+      "points": null,
+      "text": "I think there are companies with 10000+ or probably more",
+      "replies": 0
+    },
+    {
+      "id": 41003025,
+      "parent": 41002225,
+      "depth": 1,
+      "author": "dabiged",
+      "createdAt": 1721375152,
+      "points": null,
+      "text": "Year of the Linux desktop at last!",
+      "replies": 0
+    },
+    {
+      "id": 41002268,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "VargaLand",
+      "createdAt": 1721368032,
+      "points": null,
+      "text": "According to Reddit It&#x27;s hitting Croatia, Philippines, US, Germany, Mexico, India, Japan. SAP servers dropping like flies, that&#x27;s Defence,Banks, Payroll all affected. Major Retail Chains like Big W down.",
+      "replies": 2
+    },
+    {
+      "id": 41002534,
+      "parent": 41002268,
+      "depth": 1,
+      "author": "aenis",
+      "createdAt": 1721370841,
+      "points": null,
+      "text": "We have outages across whole APAC and most EMEA. Despite being a very big client of CS, we do not have an official resolution yet, an hour into the incident.",
+      "replies": 0
+    },
+    {
+      "id": 41003337,
+      "parent": 41002268,
+      "depth": 1,
+      "author": "attentive",
+      "createdAt": 1721376940,
+      "points": null,
+      "text": "SAP isn&#x27;t linux?",
+      "replies": 1
+    },
+    {
+      "id": 41003347,
+      "parent": 41003337,
+      "depth": 2,
+      "author": "sgammon",
+      "createdAt": 1721376996,
+      "points": null,
+      "text": "Thundering herd? Idk",
+      "replies": 0
+    },
+    {
+      "id": 41002279,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "ajdlinux",
+      "createdAt": 1721368190,
+      "points": null,
+      "text": "Starting to get media coverage: https:&#x2F;&#x2F;www.abc.net.au&#x2F;news&#x2F;2024-07-19&#x2F;technology-shutdown-a...",
+      "replies": 4
+    },
+    {
+      "id": 41002368,
+      "parent": 41002279,
+      "depth": 1,
+      "author": "gamma032",
+      "createdAt": 1721369599,
+      "points": null,
+      "text": "Australian news reporting this has hit hospitals, fire and rescue, banking, media, airlines and many other companies worldwide.",
+      "replies": 0
+    },
+    {
+      "id": 41002600,
+      "parent": 41002279,
+      "depth": 1,
+      "author": "Napsty",
+      "createdAt": 1721371647,
+      "points": null,
+      "text": "yep spreading quickly now. https:&#x2F;&#x2F;www.geekersdigest.com&#x2F;windows-blue-screen-crash-caus... https:&#x2F;&#x2F;www.timesnownews.com&#x2F;technology-science&#x2F;latest-crowd... This is gonna be a tough Friday for IT departments...",
+      "replies": 0
+    },
+    {
+      "id": 41002639,
+      "parent": 41002279,
+      "depth": 1,
+      "author": "yen223",
+      "createdAt": 1721372026,
+      "points": null,
+      "text": "Newsreaders on the ABC are reading off paper notepads lmao",
+      "replies": 1
+    },
+    {
+      "id": 41005859,
+      "parent": 41002639,
+      "depth": 2,
+      "author": "jaza",
+      "createdAt": 1721392711,
+      "points": null,
+      "text": "I was listening to Triple J (one of ABC&#x27;s radio stations), they said: &quot;welcome to our first and possibly last ever Triple J&#x27;s USB Fridays, we can&#x27;t play any of our usual music because the computers are all down, all we can play is the songs that happen to be on the USB stick that one of us had in our pocket&quot;. LOL!",
+      "replies": 0
+    },
+    {
+      "id": 41002652,
+      "parent": 41002279,
+      "depth": 1,
+      "author": "Hawxy",
+      "createdAt": 1721372147,
+      "points": null,
+      "text": "The impact is Australia is immense. https:&#x2F;&#x2F;downdetector.com.au&#x2F; , it&#x27;s almost every major org in the country. NSW Government is completely offline.",
+      "replies": 0
+    },
+    {
+      "id": 41002296,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "thrdbndndn",
+      "createdAt": 1721368457,
+      "points": null,
+      "text": "I assume you have to install &quot;CrowdStrike&quot; yourself (i.e. not bundled with Windows by default)? I have no idea what it is before.",
+      "replies": 1
+    },
+    {
+      "id": 41002303,
+      "parent": 41002296,
+      "depth": 1,
+      "author": "sammy2255",
+      "createdAt": 1721368650,
+      "points": null,
+      "text": "Its paid antivirus software, they cater to businesses",
+      "replies": 0
+    },
+    {
+      "id": 41002305,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "alams",
+      "createdAt": 1721368696,
+      "points": null,
+      "text": "Anyone found any fixes, while Crowdstrike comes up with a fix?",
+      "replies": 2
+    },
+    {
+      "id": 41002428,
+      "parent": 41002305,
+      "depth": 1,
+      "author": "jimmy_lbts",
+      "createdAt": 1721370071,
+      "points": null,
+      "text": "we will found a troubleshooting , we start in revovery mode and rename the path C:\\windows\\system32\\drivers\\Crowdstrike",
+      "replies": 0
+    },
+    {
+      "id": 41002459,
+      "parent": 41002305,
+      "depth": 1,
+      "author": "h4kunamata",
+      "createdAt": 1721370241,
+      "points": null,
+      "text": "Do this at your own risk!! Apparently there are two NON-OFFICIAL solutions: 1. Rename csagent.sys ( the file causing the BSOD ) 2. Rename c:\\windows\\System32\\Drivers\\Crowdstrike Again, do this at your own risk. Both workaround have been reported as &quot;working&quot;. I am Linux user so I cannot tell.",
+      "replies": 0
+    },
+    {
+      "id": 41002310,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "michelevr",
+      "createdAt": 1721368770,
+      "points": null,
+      "text": "Husband is a deputy in California. His department and many others here are down as well (including PDs, jails, ambulance companies, etc.)",
+      "replies": 1
+    },
+    {
+      "id": 41002366,
+      "parent": 41002310,
+      "depth": 1,
+      "author": "mcast",
+      "createdAt": 1721369554,
+      "points": null,
+      "text": "This seems like a pretty severe point of failure.",
+      "replies": 0
+    },
+    {
+      "id": 41002337,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "aenis",
+      "createdAt": 1721369157,
+      "points": null,
+      "text": "We have ~50 thousand laptops in reboot loop and ~1.5k servers as well. No resolution yet.",
+      "replies": 0
+    },
+    {
+      "id": 41002374,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "kswap",
+      "createdAt": 1721369689,
+      "points": null,
+      "text": "Faced the same issue few minutes back after few loops of reboot my system is up",
+      "replies": 1
+    },
+    {
+      "id": 41002576,
+      "parent": 41002374,
+      "depth": 1,
+      "author": "aenis",
+      "createdAt": 1721371378,
+      "points": null,
+      "text": "We had a few machines come out of the boot loop - only to re-enter it 20 mins later. I am sure CS pulled the patch from their CDNs but ...maybe some cached versions still linger?",
+      "replies": 0
+    },
+    {
+      "id": 41002375,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "7am00dee",
+      "createdAt": 1721369695,
+      "points": null,
+      "text": "A system restore helps. But obviously not when you’ve got an environment of ~500 or more clients",
+      "replies": 0
+    },
+    {
+      "id": 41002395,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "zcretu",
+      "createdAt": 1721369844,
+      "points": null,
+      "text": "Quick fix that worked for us, In safe mode: 1.enter in drive C: 2.system 32 folder 3. Drivers 4. Rename crowdstrike folder to something else doesent matter what.",
+      "replies": 1
+    },
+    {
+      "id": 41010479,
+      "parent": 41002395,
+      "depth": 1,
+      "author": "jimbob45",
+      "createdAt": 1721419133,
+      "points": null,
+      "text": "Could you potentially do the same by just attaching the HDD to another computer as a secondary drive and renaming the folder if safe mode falls through?",
+      "replies": 1
+    },
+    {
+      "id": 41012357,
+      "parent": 41010479,
+      "depth": 2,
+      "author": "nrr",
+      "createdAt": 1721430196,
+      "points": null,
+      "text": "Not likely, not unless the disk is also not BitLockered.",
+      "replies": 0
+    },
+    {
+      "id": 41002399,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "_kyran",
+      "createdAt": 1721369866,
+      "points": null,
+      "text": "Was just using the energy vic website and thought I&#x27;d been rate limited when their API stopped working. Seems like it could be this.",
+      "replies": 0
+    },
+    {
+      "id": 41002411,
+      "parent": 41002195,
+      "depth": 0,
+      "author": "BLKNSLVR",
+      "createdAt": 1721369924,
+      "points": null,
+      "text": "In terms of analysing risk factors to minimise something like this happening again, what are the factors at play here? A Crowdstrike update being able to blue-screen Windows Desktops and Servers. Whilst Crowdstrike are going to cop a potentially existential-threatening amount of blame, an application shouldn&#x27;t be able to do this kind of damage to an ope",
+      "replies": 10
+    },
+    {
+      "id": 41002447,
+      "parent": 41002411,
+      "depth": 1,
+      "author": "aloha2436",
+      "createdAt": 1721370205,
+      "points": null,
+      "text": "&gt; an application shouldn&#x27;t be able to do this kind of damage to an operating system Antivirus software by its nature probably needs the kind of access that would let it bluescreen your computer.",
+      "replies": 2
+    },
+    {
+      "id": 41002518,
+      "parent": 41002447,
+      "depth": 2,
+      "author": "BLKNSLVR",
+      "createdAt": 1721370741,
+      "points": null,
+      "text": "Wading out my depth here, so forgive any stupidity following. And there&#x27;s a certain amount of sense to that, it has to get &quot;under&quot; the layer that viruses can typically get to, but I still think there should be another layer at which the OS is protected from misbehaving anti-virus software (which has been known to happen).",
+      "replies": 5
+    },
+    {
+      "id": 41002547,
+      "parent": 41002518,
+      "depth": 3,
+      "author": "eddythompson80",
+      "createdAt": 1721370992,
+      "points": null,
+      "text": "It&#x27;s a kernel mode driver. There aren&#x27;t layers in kernel drivers. Any kernel module&#x2F;driver can crash your system if it wants to.",
+      "replies": 1
+    },
+    {
+      "id": 41004514,
+      "parent": 41002547,
+      "depth": 4,
+      "author": "quietbritishjim",
+      "createdAt": 1721384437,
+      "points": null,
+      "text": "You&#x27;re taking about how things are, the comment you&#x27;re replying to is talking about how things could be. There&#x27;s not a contradiction there. Originally, x86 processors had 4 levels of hardware protection, from ring 0 up to ring 3 (if I remember right). The idea was indeed that non-OS drivers could operate at the intermediate levels. But no one ",
+      "replies": 0
+    },
+    {
+      "id": 41002575,
+      "parent": 41002518,
+      "depth": 3,
+      "author": "lnx01",
+      "createdAt": 1721371377,
+      "points": null,
+      "text": "It runs at Ring 0, there&#x27;s no lower ring (besides maybe IME and the like).",
+      "replies": 2
+    },
+    {
+      "id": 41002670,
+      "parent": 41002575,
+      "depth": 4,
+      "author": "BLKNSLVR",
+      "createdAt": 1721372389,
+      "points": null,
+      "text": "The problem I have with this is that anti-virus software has never felt like the most reliable, well-written, trustworthy software that&#x27;s deserving of it&#x27;s place in Ring 0. I understand I&#x27;m yelling into the storm here, because anti-virus also requires that level of system access due to the nature of what it&#x27;s trying to detect. But then ag",
+      "replies": 0
+    },
+    {
+      "id": 41006848,
+      "parent": 41002575,
+      "depth": 4,
+      "author": "yjftsjthsd-h",
+      "createdAt": 1721398803,
+      "points": null,
+      "text": "Technically, there are rings -1 through -3; hypervisor&#x2F;-1 actually seems widely used and maybe could be used here. https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Protection_ring#Miscellaneous",
+      "replies": 0
+    },
+    {
+      "id": 41003048,
+      "parent": 41002518,
+      "depth": 3,
+      "author": "DaoVeles",
+      "createdAt": 1721375288,
+      "points": null,
+      "text": "Need something like a hypervisor OS&#x2F;hardware that isnt IME.",
+      "replies": 1
+    },
+    {
+      "id": 41003080,
+      "parent": 41003048,
+      "depth": 4,
+      "author": "dist-epoch",
+      "createdAt": 1721375501,
+      "points": null,
+      "text": "Modern Windows installs already run under a hypervisor. It&#x27;s called Core Isolation or Virtualization Based Security.",
+      "replies": 0
+    },
+    {
+      "id": 41003228,
+      "parent": 41002518,
+      "depth": 3,
+      "author": "prmoustache",
+      "createdAt": 1721376409,
+      "points": null,
+      "text": "That usually makes it a port of entry for attacks. Antivirus are really malwares waiting to be exploited.",
+      "replies": 0
+    },
+    {
+      "id": 41007190,
+      "parent": 41002518,
+      "depth": 3,
+      "author": "chrisjj",
+      "createdAt": 1721401118,
+      "points": null,
+      "text": "[delayed]",
+      "replies": 0
+    },
+    {
+      "id": 41002629,
+      "parent": 41002447,
+      "depth": 2,
+      "author": "fulafel",
+      "createdAt": 1721371897,
+      "points": null,
+      "text": "This is not the case. There are many possible AV architectures, with or without kernel drivers and&#x2F;or administrator level permissions.",
+      "replies": 0
+    },
+    {
+      "id": 41002499,
+      "parent": 41002411,
+      "depth": 1,
+      "author": "zsims",
+      "createdAt": 1721370610,
+      "points": null,
+      "text": "&gt; Whilst Crowdstrike are going to cop a potentially existential-threatening amount of blame, an application shouldn&#x27;t be able to do this kind of damage to an operating system. It doesn&#x27;t operate in user space, they install a kernel driver.",
+      "replies": 1
+    },
+    {
+      "id": 41002604,
+      "parent": 41002499,
+      "depth": 2,
+      "author": "Reason077",
+      "createdAt": 1721371694,
+      "points": null,
+      "text": "&gt; &quot;they install a kernel driver&quot; And therein lies the problem!",
+      "replies": 4
+    },
+    {
+      "id": 41002703,
+      "parent": 41002604,
+      "depth": 3,
+      "author": "Tech-Untangler",
+      "createdAt": 1721372647,
+      "points": null,
+      "text": "Not like they have an option. Kernel drivers are required.",
+      "replies": 5
+    },
+    {
+      "id": 41002762,
+      "parent": 41002703,
+      "depth": 4,
+      "author": "viraptor",
+      "createdAt": 1721373103,
+      "points": null,
+      "text": "There&#x27;s a grey area between &quot;kernel drivers are required for crowdstrike&quot; and &quot;windows is not modular enough to expose necessary functionality to userspace&quot;. It could be solved differently given enough motivation.",
+      "replies": 1
+    },
+    {
+      "id": 41005337,
+      "parent": 41002762,
+      "depth": 5,
+      "author": "viraptor",
+      "createdAt": 1721389828,
+      "points": null,
+      "text": "An expanded explanation with the third option of: even with existing options, it was really badly implemented - https:&#x2F;&#x2F;social.treehouse.systems&#x2F;@marcan&#x2F;112812791936639598",
+      "replies": 0
+    },
+    {
+      "id": 41002771,
+      "parent": 41002703,
+      "depth": 4,
+      "author": "Reason077",
+      "createdAt": 1721373214,
+      "points": null,
+      "text": "Are they? Apple has pretty much banned kernel drivers (kexts) in macOS on Apple Silicon. When they were still used, they were a common cause of crashes and instability, not to mention potential gaping security holes. Most things that third-party kernel drivers used to do (device drivers, file systems, etc) are now done just as well, and much more safely, in ",
+      "replies": 1
+    },
+    {
+      "id": 41003351,
+      "parent": 41002771,
+      "depth": 5,
+      "author": "cywick",
+      "createdAt": 1721377018,
+      "points": null,
+      "text": "&gt; Presumably, Crowdstrike runs on macOS without a kernel extension? That&#x27;s correct: CrowdStrike now only installs an &quot;Endpoint Security&quot; system extension and a &quot;Network&quot; system extension on macOS, but no kernel extension anymore.",
+      "replies": 2
+    },
+    {
+      "id": 41003906,
+      "parent": 41003351,
+      "depth": 6,
+      "author": "lucasRW",
+      "createdAt": 1721380088,
+      "points": null,
+      "text": "Whatever protection is implemented in user-land can be removed from user-land too. This is why most EDR vendors are now gradually relying on kernel based mechanisms rather than doing stuff like injecting their DLL in a process, hooking syscalls, etc...",
+      "replies": 1
+    },
+    {
+      "id": 41004789,
+      "parent": 41003906,
+      "depth": 7,
+      "author": "JackSlateur",
+      "createdAt": 1721386339,
+      "points": null,
+      "text": "This is wrong, there are many facilities that, once applied, cannot be modified (unless reboot)",
+      "replies": 1
+    },
+    {
+      "id": 41005919,
+      "parent": 41004789,
+      "depth": 8,
+      "author": "lucasRW",
+      "createdAt": 1721393076,
+      "points": null,
+      "text": "Such as ?",
+      "replies": 1
+    },
+    {
+      "id": 41015275,
+      "parent": 41005919,
+      "depth": 9,
+      "author": "JackSlateur",
+      "createdAt": 1721468658,
+      "points": null,
+      "text": "Random example: https:&#x2F;&#x2F;man.openbsd.org&#x2F;OpenBSD-7.3&#x2F;msyscall This is a syscall used by userspace to tell the kernel which memory portion is allowed to do syscalls This syscall can only be used once : once the linker has done it, the kernel will refuse extra calls (so allowing more memory pages is not possible)",
+      "replies": 0
+    },
+    {
+      "id": 41004092,
+      "parent": 41003351,
+      "depth": 6,
+      "author": "tankenmate",
+      "createdAt": 1721381314,
+      "points": null,
+      "text": "One would hope that Crowdstrike does a similar thing on Linux and relies on fanotify and&#x2F;or ebpf instead of using a kernel module. The other upside to this would be not having to wait for Crowdstrike to be constantly updating their code for newer kernels.",
+      "replies": 2
+    },
+    {
+      "id": 41004802,
+      "parent": 41004092,
+      "depth": 7,
+      "author": "wjdp",
+      "createdAt": 1721386418,
+      "points": null,
+      "text": "I believe so but would like better details. We used to use another provider that depended on exact kernel versions whereas the falcon-sensor seems quite happy with kernel updates.",
+      "replies": 0
+    },
+    {
+      "id": 41005050,
+      "parent": 41004092,
+      "depth": 7,
+      "author": "BodyCulture",
+      "createdAt": 1721387863,
+      "points": null,
+      "text": "Wait, you still will be using CS? Why?",
+      "replies": 0
+    },
+    {
+      "id": 41002917,
+      "parent": 41002703,
+      "depth": 4,
+      "author": "mrweasel",
+      "createdAt": 1721374450,
+      "points": null,
+      "text": "The original Windows NT had microkernel architecture, where a driver&#x2F;server could not crash the OS. So no, Crowdstrike didn&#x27;t have an option really, but Microsoft did. As PC got faster, Microsoft could have returned to the microkernel architecture, or at least focused on isolating drivers better.",
+      "replies": 3
+    },
+    {
+      "id": 41003031,
+      "parent": 41002917,
+      "depth": 5,
+      "author": "DaoVeles",
+      "createdAt": 1721375208,
+      "points": null,
+      "text": "Yep, this is technical legacy in action.",
+      "replies": 0
+    },
+    {
+      "id": 41004829,
+      "parent": 41002917,
+      "depth": 5,
+      "author": "jsheard",
+      "createdAt": 1721386545,
+      "points": null,
+      "text": "They&#x27;ve done it to a degree but only for graphics drivers, Windows is (AFAIK) unique amongst the major OSes in that it can nearly always recover from a GPU driver or hardware crash without having to reboot. It makes sense that they would focus on that since graphics drivers are by far the most complex ones on most systems and there are only 3 vendors to",
+      "replies": 0
+    },
+    {
+      "id": 41005486,
+      "parent": 41002917,
+      "depth": 5,
+      "author": "nullindividual",
+      "createdAt": 1721390758,
+      "points": null,
+      "text": "NT was never a true microkernel. Most drivers are loaded into the kernel. Display drivers being a huge pain point, subsequently rolled back to user space in 2000, and printer drivers being the next pain point, but primarily with security -- hence moving to a Microsoft-supplied universal print driver, finally in Windows 11.",
+      "replies": 0
+    },
+    {
+      "id": 41002955,
+      "parent": 41002703,
+      "depth": 4,
+      "author": "tyho",
+      "createdAt": 1721374759,
+      "points": null,
+      "text": "Required for crowdstrike to do what crowdstrike does. Which is mostly useless security theatre.",
+      "replies": 0
+    },
+    {
+      "id": 41003304,
+      "parent": 41002703,
+      "depth": 4,
+      "author": "adrianN",
+      "createdAt": 1721376760,
+      "points": null,
+      "text": "The people installing crowdstrike have an option: Don&#x27;t install it.",
+      "replies": 0
+    },
+    {
+      "id": 41003212,
+      "parent": 41002604,
+      "depth": 3,
+      "author": "simfoo",
+      "createdAt": 1721376327,
+      "points": null,
+      "text": "Yep. We can&#x27;t migrate our workstations to Ubuntu 24.04 because Crowdstrikes falcon kernel modules don&#x27;t support the kernel version yet. Presumably they wanted to move to EBPF but I&#x27;m guessing that hasn&#x27;t happened yet. Also: I can&#x27;t find the source code of those kernel modules - they likely use GPL-only symbols, wouldn&#x27;t that be ",
+      "replies": 5
+    },
+    {
+      "id": 41003841,
+      "parent": 41003212,
+      "depth": 4,
+      "author": "actionfromafar",
+      "createdAt": 1721379714,
+      "points": null,
+      "text": "Probably only a violation if you distribute the linked result. Not if you only install it.",
+      "replies": 1
+    },
+    {
+      "id": 41003970,
+      "parent": 41003841,
+      "depth": 5,
+      "author": "saagarjha",
+      "createdAt": 1721380446,
+      "points": null,
+      "text": "How would you install it without them distributing it?",
+      "replies": 2
+    },
+    {
+      "id": 41004729,
+      "parent": 41003970,
+      "depth": 6,
+      "author": "diffeomorphism",
+      "createdAt": 1721385916,
+      "points": null,
+      "text": "Two different &quot;it&quot;. As an analogy: selling pizza Hawaii is dicey, but you can sell pineapple slices and customers can add those to their pizza themselves.",
+      "replies": 0
+    },
+    {
+      "id": 41004934,
+      "parent": 41003970,
+      "depth": 6,
+      "author": "tpush",
+      "createdAt": 1721387247,
+      "points": null,
+      "text": "They mean distributing Linux + the module together. Like e.g. shipping the Nvidia kernel module alone is fine, but shipping a Linux distro with that module preinstalled is not fine.",
+      "replies": 0
+    },
+    {
+      "id": 41004022,
+      "parent": 41003212,
+      "depth": 4,
+      "author": "rkangel",
+      "createdAt": 1721380876,
+      "points": null,
+      "text": "The generally accepted (but not well tested) legal position is that it&#x27;s ok to have a proprietary kernel module that is dynamically loaded. You can, for instance, ask a running kernel if it is &quot;tainted&quot; by having loaded a non-GPL module.",
+      "replies": 2
+    },
+    {
+      "id": 41004172,
+      "parent": 41004022,
+      "depth": 5,
+      "author": "immibis",
+      "createdAt": 1721381831,
+      "points": null,
+      "text": "GPL exported symbols are the ones that are thought to be so tightly coupled to the kernel implementation that if you are using them, you are writing a derivative work of the kernel.",
+      "replies": 1
+    },
+    {
+      "id": 41004370,
+      "parent": 41004172,
+      "depth": 6,
+      "author": "simfoo",
+      "createdAt": 1721383413,
+      "points": null,
+      "text": "Yeah that was also my understanding, and I can&#x27;t imagine a av module able to intercept filesystem and syscalls to be only using non-core symbols. But of course you never know without decompiling the module",
+      "replies": 1
+    },
+    {
+      "id": 41006862,
+      "parent": 41004370,
+      "depth": 7,
+      "author": "yjftsjthsd-h",
+      "createdAt": 1721398883,
+      "points": null,
+      "text": "&gt; and I can&#x27;t imagine a av module able to intercept filesystem and syscalls to be only using non-core symbols. I can, considering that you can do that from user space using strace. Or ebpf which is probably the actual right way to do this kind of thing.",
+      "replies": 0
+    },
+    {
+      "id": 41004782,
+      "parent": 41004022,
+      "depth": 5,
+      "author": "vbezhenar",
+      "createdAt": 1721386262,
+      "points": null,
+      "text": "Last time I dealt with HP, I had to use their fakeraid proprietary kernel module which &quot;tainted&quot; the kernel. Of course they never open-sourced it. I guess it&#x27;s not necessary.",
+      "replies": 0
+    },
+    {
+      "id": 41004278,
+      "parent": 41003212,
+      "depth": 4,
+      "author": "pmontra",
+      "createdAt": 1721382687,
+      "points": null,
+      "text": "Why would you use Crowdstrike on Ubuntu? Is because of a real security concern, or abiding to regulations (thou shalt have an antivirus) or else?",
+      "replies": 3
+    },
+    {
+      "id": 41004378,
+      "parent": 41004278,
+      "depth": 5,
+      "author": "simfoo",
+      "createdAt": 1721383455,
+      "points": null,
+      "text": "Ask my IT dep. AFAIK it&#x27;s audit related, safety-critical software",
+      "replies": 1
+    },
+    {
+      "id": 41004596,
+      "parent": 41004378,
+      "depth": 6,
+      "author": "jonathanlydall",
+      "createdAt": 1721385017,
+      "points": null,
+      "text": "I think &quot;compliance&quot; would be a better word to use that &quot;safety&quot; when it comes to a lot of &quot;security&quot; software on computers. And I bring up the distinction because while compliance is &quot;sometimes&quot; about safety, it&#x27;s also very often about KPIs of particular individuals or due to imaginary liability for having not re",
+      "replies": 0
+    },
+    {
+      "id": 41004562,
+      "parent": 41004278,
+      "depth": 5,
+      "author": "slow_typist",
+      "createdAt": 1721384757,
+      "points": null,
+      "text": "Just to be safe, of course! In my org they try to rollout sentinel one on every ‘endpoint’ regardless of operating system.",
+      "replies": 0
+    },
+    {
+      "id": 41004714,
+      "parent": 41004278,
+      "depth": 5,
+      "author": "thyrsus",
+      "createdAt": 1721385784,
+      "points": null,
+      "text": "I was given to understand that Crowdstrike provided some protection from unvetted export of data. I&#x27;m not sure that data would be useful without the rare domain expertise to use it, but I wasn&#x27;t shown the risk analysis. And then someone else demands and gets ssh access to GitHub. Sigh.",
+      "replies": 0
+    },
+    {
+      "id": 41004740,
+      "parent": 41003212,
+      "depth": 4,
+      "author": "qwertox",
+      "createdAt": 1721385963,
+      "points": null,
+      "text": "&gt; We can&#x27;t migrate our workstations to Ubuntu 24.04 because Crowdstrikes Should you upgrade before 24.04.1 is released? It&#x27;s scheduled for August 15.",
+      "replies": 0
+    },
+    {
+      "id": 41006074,
+      "parent": 41003212,
+      "depth": 4,
+      "author": "CoastalCoder",
+      "createdAt": 1721394159,
+      "points": null,
+      "text": "IIRC, about a 12-18 months ago CrowdStrike was recruiting for a development with eBPF skills.",
+      "replies": 0
+    },
+    {
+      "id": 41004269,
+      "parent": 41002604,
+      "depth": 3,
+      "author": "selfmodruntime",
+      "createdAt": 1721382648,
+      "points": null,
+      "text": "So what? Crowdstrike is a kernel AV. How else would you solve this?",
+      "replies": 0
+    },
+    {
+      "id": 41004646,
+      "parent": 41002604,
+      "depth": 3,
+      "author": "mr_mitm",
+      "createdAt": 1721385397,
+      "points": null,
+      "text": "It&#x27;s a design decision. People want the antivirus to protect them even if an attacker exploits a local privilege escalation vulnerability or if an attacker that compromised an admin account (which happens all the time in Windows environments) wants to load malicious software. That&#x27;s kind of the point of these things. Somebody exploits a memory vuln",
+      "replies": 1
+    },
+    {
+      "id": 41004901,
+      "parent": 41004646,
+      "depth": 4,
+      "author": "jsheard",
+      "createdAt": 1721386994,
+      "points": null,
+      "text": "Presumably Crowdstrikes driver also has the ELAM flag which guarantees it will be loaded before any other third party drivers, so even if a malicious driver is already installed they have the opportunity to preempt it at boot. https:&#x2F;&#x2F;learn.microsoft.com&#x2F;en-us&#x2F;windows-hardware&#x2F;drivers&#x2F;i...",
+      "replies": 1
+    },
+    {
+      "id": 41005927,
+      "parent": 41004901,
+      "depth": 5,
+      "author": "chrisjj",
+      "createdAt": 1721393092,
+      "points": null,
+      "text": "&gt; guarantees it will be loaded before any other third party drivers Point of information. &quot;Guarantee&quot; and &quot;any&quot; are unsubstantiated by that MS article.",
+      "replies": 1
+    },
+    {
+      "id": 41006173,
+      "parent": 41005927,
+      "depth": 6,
+      "author": "jsheard",
+      "createdAt": 1721394740,
+      "points": null,
+      "text": "If we are being pedantic then an ELAM driver can&#x27;t be guaranteed to load before another ELAM driver of course, but only a small list of vetted vendors are able to sign ELAM drivers so it is very unlikely that malware would be able to gain that privilege. That&#x27;s the whole point.",
+      "replies": 1
+    },
+    {
+      "id": 41006928,
+      "parent": 41006173,
+      "depth": 7,
+      "author": "chrisjj",
+      "createdAt": 1721399333,
+      "points": null,
+      "text": "Not pedantic. Just accurate. &gt; an ELAM driver can&#x27;t be guaranteed to load before another ELAM driver of course, Thanks for the correction.",
+      "replies": 0
+    },
+    {
+      "id": 41002516,
+      "parent": 41002411,
+      "depth": 1,
+      "author": "gamma032",
+      "createdAt": 1721370713,
+      "points": null,
+      "text": "At the end of the day, if you give an application a deep set of permissions, that&#x27;s on you as an administrator, not the OS. This unchecked global rollout appears to just be a violation of every good software engineering practice we know.",
+      "replies": 4
+    },
+    {
+      "id": 41002585,
+      "parent": 41002516,
+      "depth": 2,
+      "author": "BLKNSLVR",
+      "createdAt": 1721371478,
+      "points": null,
+      "text": "&gt; This unchecked global rollout appears to just be a violation of every good software engineering practice we know. Yeah, this is what surprises me. Corporate infrastructure policy seems to have been matched to smart phone default settings.",
+      "replies": 3
+    },
+    {
+      "id": 41003246,
+      "parent": 41002585,
+      "depth": 3,
+      "author": "freetanga",
+      "createdAt": 1721376517,
+      "points": null,
+      "text": "I have worked in Finance for 25 years, and the amount of pressure I had to stand from Auditing on &quot;Why do we have a 20-day-window on applying most updates as we get them from suppliers? We are not best practice!&quot; is gruelling. These people report to the Board Chairman, don&#x27;t understand any real implication of their work, and believe the world ",
+      "replies": 1
+    },
+    {
+      "id": 41005574,
+      "parent": 41003246,
+      "depth": 4,
+      "author": "chii",
+      "createdAt": 1721391191,
+      "points": null,
+      "text": "So the silver lining from this incident would be that you can simply point to it, and tell those auditors to fuck off.",
+      "replies": 0
+    },
+    {
+      "id": 41004874,
+      "parent": 41002585,
+      "depth": 3,
+      "author": "vbezhenar",
+      "createdAt": 1721386849,
+      "points": null,
+      "text": "I&#x27;m pretty sure Apple does gradual rollouts of upgrades, so default smartphone settings are better than that.",
+      "replies": 0
+    },
+    {
+      "id": 41006750,
+      "parent": 41002585,
+      "depth": 3,
+      "author": "strunz",
+      "createdAt": 1721398021,
+      "points": null,
+      "text": "It&#x27;s actually worse than phone updates. Ever looked at your phone and noticed it hasn&#x27;t updated to the new OS despite it having been out for a few days already? This is why.",
+      "replies": 0
+    },
+    {
+      "id": 41002809,
+      "parent": 41002516,
+      "depth": 2,
+      "author": "bzzzt",
+      "createdAt": 1721373596,
+      "points": null,
+      "text": "Administrators are to blame because management (and a lot of &#x27;cybersecurity policies&#x27;) demand there&#x27;s a virus scanner on the machines? While virus scanners might pick up some threats not addressed by OS updates yet every one of them I&#x27;ve seen is a rootkit in disguise wanting full system privileges. There are numerous incidents with securi",
+      "replies": 2
+    },
+    {
+      "id": 41002973,
+      "parent": 41002809,
+      "depth": 3,
+      "author": "attentive",
+      "createdAt": 1721374869,
+      "points": null,
+      "text": "Not so much in disguise. CS has official RCE root&#x2F;admin access on all the clients. Which skips any normal auth of the OS. Yes, on all windows, mac and linux.",
+      "replies": 0
+    },
+    {
+      "id": 41005350,
+      "parent": 41002809,
+      "depth": 3,
+      "author": "mycall",
+      "createdAt": 1721389883,
+      "points": null,
+      "text": "I often watch Crowdstrike thrash my laptop&#x27;s resources, making it slow to do compiles. Cybersecurity won&#x27;t let me disable it either, so I just set it to lower priority process.",
+      "replies": 1
+    },
+    {
+      "id": 41007464,
+      "parent": 41005350,
+      "depth": 4,
+      "author": "aeyes",
+      "createdAt": 1721402934,
+      "points": null,
+      "text": "You might have more luck asking Cybersecurity to add a path like ~&#x2F;code which contains your source code to the exclusion list.",
+      "replies": 0
+    },
+    {
+      "id": 41002947,
+      "parent": 41002516,
+      "depth": 2,
+      "author": "mrweasel",
+      "createdAt": 1721374710,
+      "points": null,
+      "text": "As someone who worked for a company, who&#x27;s a Crowdstrike partner, I assure you that Crowdstrike does not sell to administrators. It is very much a product sold to management and company auditors. Where you&#x27;re correct is that it&#x27;s on the administrators to rollout the updates, but I&#x27;m not sure that&#x27;s how Crowdstrike works. It&#x27;s a ",
+      "replies": 0
+    },
+    {
+      "id": 41004286,
+      "parent": 41002516,
+      "depth": 2,
+      "author": "tomohawk",
+      "createdAt": 1721382761,
+      "points": null,
+      "text": "This should clue you in. CS is not sold to SA or technical types. It&#x27;s sold to management as a risk reduction. The whole point is that if you are technical, you are so untrusted that management is willing to require circumvention of known good practices and force installation of this software against technical advice.",
+      "replies": 0
+    },
+    {
+      "id": 41002718,
+      "parent": 41002411,
+      "depth": 1,
+      "author": "nikau",
+      "createdAt": 1721372770,
+      "points": null,
+      "text": "I feel the need to make a mustang car crowdsrike meme",
+      "replies": 3
+    },
+    {
+      "id": 41006370,
+      "parent": 41002718,
+      "depth": 2,
+      "author": "CoastalCoder",
+      "createdAt": 1721395836,
+      "points": null,
+      "text": "Could you elaborate?",
+      "replies": 2
+    },
+    {
+      "id": 41007729,
+      "parent": 41006370,
+      "depth": 3,
+      "author": "nikau",
+      "createdAt": 1721404412,
+      "points": null,
+      "text": "Mustangs are famous for their high power and poor handling - there are lots of videos showing drivers doing burnouts, losing control, and striking the crowd they are showing off to.",
+      "replies": 0
+    },
+    {
+      "id": 41009146,
+      "parent": 41006370,
+      "depth": 3,
+      "author": "Arrath",
+      "createdAt": 1721411624,
+      "points": null,
+      "text": "Mustangs have a reputation as being &#x27;crowd (or streetlight) seeking&#x27; missiles. This is due to their price making them relatively more available to the enthusiasts than say Hellcats, enthusiasts who may not be experienced enough to deal with having that much power available to them in a RWD car. This confluence of power, confidence and lack of skill",
+      "replies": 0
+    },
+    {
+      "id": 41007186,
+      "parent": 41002718,
+      "depth": 2,
+      "author": "ncr100",
+      "createdAt": 1721401077,
+      "points": null,
+      "text": "I think it was a Dodge charger. That pro-trump KKK guy in the gray car who drove through the crowd while the crowd was I think it was a George Floyd protest? Also heard today crowd stroke.",
+      "replies": 0
+    },
+    {
+      "id": 41009932,
+      "parent": 41002718,
+      "depth": 2,
+      "author": "ric2b",
+      "createdAt": 1721415992,
+      "points": null,
+      "text": "There&#x27;s a better joke, Crowdstrike sponsors the Mercedes Formula 1 team and in 1955 Mercedes was involved in the worst motorsport accident ever, killing over 80 people watching from the stands when parts of the cars flew off and... striked the crowd...",
+      "replies": 0
+    },
+    {
+      "id": 41002854,
+      "parent": 41002411,
+      "depth": 1,
+      "author": "bratwurst3000",
+      "createdAt": 1721373982,
+      "points": null,
+      "text": "maybe they installed crowdstrike because they wanted updated without testing. and crowdstrike failed at testing them in their environment. sounds like they didnt test all cases and stumbled on a windows bug",
+      "replies": 0
+    },
+    {
+      "id": 41002864,
+      "parent": 41002411,
+      "depth": 1,
+      "author": "AmericanChopper",
+      "createdAt": 1721374114,
+      "points": null,
+      "text": "My experience working with Crowdstrike was that they were super arrogant about these risks. I was working on a ~50k enterprise rollout, and our CS guy was very belligerent about how long we were taking to do it, how much testing we wanted to do, the way that we were staggering roll outs and managing rollback plans. He didn’t think any of this was necessary, ",
+      "replies": 5
+    },
+    {
+      "id": 41003026,
+      "parent": 41002864,
+      "depth": 2,
+      "author": "BLKNSLVR",
+      "createdAt": 1721375156,
+      "points": null,
+      "text": "&gt; constantly yapped about how many bigger enterprises than ours completed their rollouts in just a couple of weeks. Evidence is pointing towards him actually being right about this, despite likely being wrong about everything else. It&#x27;d be worth giving him a call, just to check in how he&#x27;s going, and take him up on the offer to fire you as a cli",
+      "replies": 2
+    },
+    {
+      "id": 41003113,
+      "parent": 41003026,
+      "depth": 3,
+      "author": "AmericanChopper",
+      "createdAt": 1721375768,
+      "points": null,
+      "text": "I was just a contractor there, and don’t work with them at the moment. But I’m a customer of theirs and they’re definitely having an outage right now, so I’m guessing it’s all still in place.",
+      "replies": 1
+    },
+    {
+      "id": 41006285,
+      "parent": 41003113,
+      "depth": 4,
+      "author": "CoastalCoder",
+      "createdAt": 1721395339,
+      "points": null,
+      "text": "Mind rephrasing? I don&#x27;t understand what you&#x27;re saying.",
+      "replies": 1
+    },
+    {
+      "id": 41006333,
+      "parent": 41006285,
+      "depth": 5,
+      "author": "AmericanChopper",
+      "createdAt": 1721395627,
+      "points": null,
+      "text": "I don’t work there any more. But they were having an outage, so I’m guessing they never got fired as a client (guessing that they’re still using Crowdstrike) and could still take that offer (of being fired as a client) if they wanted to.",
+      "replies": 0
+    },
+    {
+      "id": 41009886,
+      "parent": 41003026,
+      "depth": 3,
+      "author": "ric2b",
+      "createdAt": 1721415736,
+      "points": null,
+      "text": "What evidence are you referring to? Was there a company that was breached for taking a few days or weeks to update crowdstrike?",
+      "replies": 0
+    },
+    {
+      "id": 41003063,
+      "parent": 41002864,
+      "depth": 2,
+      "author": "DaoVeles",
+      "createdAt": 1721375381,
+      "points": null,
+      "text": "Ouch, considering the devil works under Oracles lawyers, thats bad!",
+      "replies": 0
+    },
+    {
+      "id": 41003661,
+      "parent": 41002864,
+      "depth": 2,
+      "author": "shiroiushi",
+      "createdAt": 1721378592,
+      "points": null,
+      "text": "&gt;I hope this sort of thing humbles them a little. Hopefully not. It would be better that this company is sued into oblivion by all the customers that were affected by this huge outage.",
+      "replies": 1
+    },
+    {
+      "id": 41004483,
+      "parent": 41003661,
+      "depth": 3,
+      "author": "mym1990",
+      "createdAt": 1721384244,
+      "points": null,
+      "text": "Maybe humbles all the other surviving companies? We can only dream",
+      "replies": 0
+    },
+    {
+      "id": 41004587,
+      "parent": 41002864,
+      "depth": 2,
+      "author": "locococo",
+      "createdAt": 1721384985,
+      "points": null,
+      "text": "sounds like a very inexperienced person. If their mission is to protect businesses they should understand your concerns. Speed is useless without control.",
+      "replies": 1
+    }
+  ]
+}

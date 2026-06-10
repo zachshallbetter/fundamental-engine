@@ -118,7 +118,9 @@ const numbered = (e: CollectionEntry<'writings'>) =>
 
 <script>
   // Render Mermaid client-side with a field-ui dark theme. Dynamic import so mermaid only
-  // loads on pages that actually contain a diagram; re-run after view-transition navigations.
+  // loads on pages that actually contain a diagram — and only once a diagram is NEAR the
+  // viewport (the chunk graph is ~850 KB with its KaTeX dependency; articles usually keep
+  // their diagrams below the fold). Re-armed after view-transition navigations.
   async function renderMermaid() {
     const nodes = document.querySelectorAll<HTMLElement>('pre.mermaid:not([data-processed])');
     if (!nodes.length) return;
@@ -146,5 +148,23 @@ const numbered = (e: CollectionEntry<'writings'>) =>
     }
     nodes.forEach((n) => n.setAttribute('data-processed', 'true'));
   }
-  document.addEventListener('astro:page-load', renderMermaid);
+
+  let mermaidIO: IntersectionObserver | undefined;
+  function watchMermaid() {
+    mermaidIO?.disconnect();
+    const nodes = document.querySelectorAll<HTMLElement>('pre.mermaid:not([data-processed])');
+    if (!nodes.length) return;
+    mermaidIO = new IntersectionObserver(
+      (entries, obs) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        obs.disconnect();
+        void renderMermaid();
+      },
+      // start fetching a comfortable scroll-distance early so the swap is invisible
+      { rootMargin: '600px 0px' },
+    );
+    nodes.forEach((n) => mermaidIO!.observe(n));
+  }
+  document.addEventListener('astro:page-load', watchMermaid);
+  document.addEventListener('astro:before-swap', () => mermaidIO?.disconnect());
 </script>
