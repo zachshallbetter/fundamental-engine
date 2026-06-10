@@ -41,7 +41,11 @@ const dest = [
     <nav class="sn-dest" aria-label="Primary">
       {
         dest.map((d) => (
-          <a href={d.href} aria-current={current === d.key ? 'page' : undefined}>
+          <a
+            href={d.href}
+            aria-current={current === d.key ? 'page' : undefined}
+            data-field-attention={current === d.key ? '1' : undefined}
+          >
             {d.label}
           </a>
         ))
@@ -174,6 +178,58 @@ const dest = [
   syncAll();
 </script>
 
+<script>
+  // The Wayfinding Field (recipe `wayfinding-field`, experimental) — the invisible-fields family
+  // applied to the nav's own chrome. The engine runs SIGNALS-ONLY (render: []): the metric pipeline
+  // measures each destination's engagement + visibility and writes `--field-attention` back onto the
+  // link every frame; the current route is pinned as the well via data-field-attention="1" in the
+  // markup. Nothing is drawn — the only output is a CSS custom property the styles below consume.
+  //
+  // Progressive enhancement: with the engine off, the import skipped (reduced motion), or before it
+  // loads, `--field-attention` is simply unset → the links render exactly as plain chrome. The engine
+  // is lazy-imported so non-interactive / reduced-motion visitors never download it for the nav.
+  let navField: { destroy(): void } | null = null;
+  let navGen = 0;
+  const navReduceMotion = () =>
+    typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  async function startNavField() {
+    const mine = ++navGen;
+    navField?.destroy();
+    navField = null;
+    if (navReduceMotion()) return;
+    const nav = document.querySelector<HTMLElement>('.sn-dest');
+    const links = nav ? [...nav.querySelectorAll<HTMLElement>('a')] : [];
+    if (!nav || !links.length) return;
+    try {
+      const [{ recipeById }, { applyRecipe }] = await Promise.all([
+        import('@field-ui/core'),
+        import('@field-ui/platform'),
+      ]);
+      if (mine !== navGen) return; // a newer start / a teardown superseded this async boot
+      const base = recipeById('wayfinding-field');
+      if (!base) return;
+      // signals-only: run the simulation + feedback, draw no canvas
+      navField = applyRecipe(nav, { ...base, render: [] as never[] }, {
+        bodies: links,
+        annotateBodies: false, // don't write data-body — keep these out of the global field-root scan
+      });
+    } catch {
+      /* the plain-link nav stands on its own */
+    }
+  }
+  function stopNavField() {
+    navGen++;
+    navField?.destroy();
+    navField = null;
+  }
+
+  document.addEventListener('astro:page-load', startNavField);
+  document.addEventListener('astro:before-swap', stopNavField);
+  if (document.readyState !== 'loading') startNavField();
+  else document.addEventListener('DOMContentLoaded', startNavField);
+</script>
+
 <style>
   .site-nav {
     position: fixed;
@@ -231,15 +287,25 @@ const dest = [
     gap: clamp(1rem, 2.4vw, 1.6rem);
   }
   .sn-dest a {
+    /* Wayfinding Field (signals-only): the engine writes --field-attention (0..1, eased per frame)
+       onto each link from its engagement + visibility; the current route is pinned to 1. Absent
+       (engine off / reduced motion / pre-boot) it resolves to 0 → the plain chrome below. */
+    --att: var(--field-attention, 0);
     position: relative;
     font-family: var(--mono);
     font-size: 0.66rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--text-3, rgba(200, 212, 230, 0.46));
+    color: color-mix(
+      in srgb,
+      var(--text, #f3f6fc) calc(var(--att) * 100%),
+      var(--text-3, rgba(200, 212, 230, 0.46))
+    );
+    text-shadow: 0 0 calc(var(--att) * 9px)
+      color-mix(in srgb, var(--accent, #4da3ff) calc(var(--att) * 55%), transparent);
     text-decoration: none;
     padding: 0.2rem 0;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
   }
   .sn-dest a:hover {
     color: var(--text, #f3f6fc);

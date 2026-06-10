@@ -26,3 +26,30 @@ const { chapters } = Astro.props;
     ))
   }
 </nav>
+
+<style>
+  /* Wayfinding Current wake (signals-only). HomeRuntime applies the `wayfinding-current` recipe over
+     these links; the engine accretes --field-memory on the chapters you dwell on and decays it as you
+     move on. This left-edge tick grows + brightens with that memory — the "where have I been" trail.
+     Engine off / reduced motion / before boot → --field-memory unset → 0 → no tick (the plain rail). */
+  .chapter-rail a {
+    position: relative;
+    --mem: var(--field-memory, 0);
+  }
+  .chapter-rail a::before {
+    content: "";
+    position: absolute;
+    left: 0.05rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: calc(0.5rem + var(--mem) * 1.1rem);
+    border-radius: 2px;
+    background: var(--accent, #4da3ff);
+    opacity: calc(var(--mem) * 0.85);
+    transition:
+      height 0.35s ease,
+      opacity 0.35s ease;
+    pointer-events: none;
+  }
+</style>

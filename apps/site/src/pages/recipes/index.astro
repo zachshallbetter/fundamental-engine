@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
-import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, type FieldRecipe } from '@field-ui/core';
+import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, EXPERIMENTAL_RECIPES, type FieldRecipe } from '@field-ui/core';
 
 // The recipes hub — the engine's own catalog of 64 portable `FieldRecipe`s across four tiers
 // (RECIPE_TIERS: core/applied/systems/operational). Each card runs the REAL recipe live (lazily, via
@@ -89,6 +89,46 @@ const filters = [
       })}
     </div>
     <p class="empty" hidden>No recipes match that filter.</p>
+
+    <section class="rx-experimental" aria-labelledby="rx-exp-h">
+      <header class="rx-exp-head">
+        <h2 id="rx-exp-h">Experimental — Wayfinding</h2>
+        <p>
+          Two nav-chrome recipes that run the engine <i>signals-only</i> (no canvas) to drive the site's
+          own navigation — the invisible-fields family applied to wayfinding (<em>where am I</em> /
+          <em>where have I been</em>). Validated and live, but kept <b>outside the canonical {total}</b>
+          while they prove out.
+        </p>
+      </header>
+      <div class="recipe-grid">
+        {EXPERIMENTAL_RECIPES.map((r) => {
+          const fieldKey = r.naturalField ?? 'other';
+          const color = FIELD_COLOR[fieldKey] ?? '#9aa7b4';
+          return (
+            <article class="recipe-card rx-exp-card" data-field={fieldKey} style={`--rc: ${color}`}>
+              <header>
+                <div class="rc-tags">
+                  <span class="rc-field">{fieldLabelOf(r)}</span>
+                  <span class="rc-status">{r.status}</span>
+                </div>
+                <h2><a href={`/recipes/${r.id}`}>{r.name}</a></h2>
+                <p class="intent">{r.intent}</p>
+              </header>
+
+              <div class="rc-preview" data-recipe-preview={r.id} aria-hidden="true"></div>
+
+              <dl class="meta">
+                <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
+                <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd></div>
+                <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
+              </dl>
+
+              <a class="rc-open" href={`/recipes/${r.id}`}>Open recipe →</a>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   </main>
   <SiteFooter />
 </Base>
@@ -159,5 +199,11 @@ const filters = [
   .rc-open { margin-top: auto; font-size: 0.84rem; color: var(--rc, #4da3ff); text-decoration: none; padding-top: 0.4rem; }
   .rc-open:hover { text-decoration: underline; }
   .empty { color: var(--muted, #9aa); margin-top: 1.5rem; }
+  .rx-experimental { margin-top: 3rem; border-top: 1px dashed var(--line, #2a2a35); padding-top: 1.6rem; }
+  .rx-exp-head { max-width: 60rem; margin-bottom: 1rem; }
+  .rx-exp-head h2 { font-size: 1.4rem; margin: 0 0 0.4rem; }
+  .rx-exp-head p { color: var(--muted, #9aa); font-size: 0.9rem; max-width: 70ch; }
+  .rx-exp-card { border-top-style: dashed; }
+  .rc-status { color: #ff9d5c; text-transform: capitalize; }
   @media (max-width: 560px) { .meta > div { grid-template-columns: 1fr; } }
 </style>
