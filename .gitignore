@@ -21,3 +21,7 @@ AGENTS.md
 .cursorrules
 .aider*
 .github/copilot-instructions.md
+
+# Playwright artifacts (apps/site e2e)
+test-results/
+playwright-report/
