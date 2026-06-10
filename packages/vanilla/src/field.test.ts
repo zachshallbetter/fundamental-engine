@@ -8,21 +8,30 @@ import { ForcesField, mountField, createField } from './index.ts';
  * that never invokes its callback), so only the synchronous mount path is exercised. The
  * repo forbids a test framework or jsdom, so we hand-roll the few globals it touches.
  */
-function installDOM(): { body: { children: unknown[] }; makeCanvas: () => HTMLCanvasElement } {
+/** the stub canvas type — counts getContext calls so tests can assert the signals-only
+ *  mode (`render: 'none'`, #297) never acquires a context. */
+type StubCanvas = HTMLCanvasElement & { getContextCalls: number };
+
+function installDOM(): { body: { children: unknown[] }; makeCanvas: () => StubCanvas } {
   const noop = (): void => {};
-  const makeCanvas = (): HTMLCanvasElement => {
+  const makeCanvas = (): StubCanvas => {
     const node = {
       width: 0,
       height: 0,
       style: {} as Record<string, string>,
       _parent: null as { _remove(n: unknown): void } | null,
       setAttribute: noop,
-      getContext: () => ({ setTransform: noop }),
+      // instrumented: counts acquisitions, default behaviour unchanged (returns a 2d-ish stub).
+      getContextCalls: 0,
+      getContext: () => {
+        node.getContextCalls++;
+        return { setTransform: noop };
+      },
       remove(): void {
         node._parent?._remove(node);
       },
     };
-    return node as unknown as HTMLCanvasElement;
+    return node as unknown as StubCanvas;
   };
   const children: unknown[] = [];
   const body = {
@@ -177,10 +186,10 @@ test('setHeatmap() toggles the density heatmap layer without throwing', () => {
   field.destroy();
 });
 
-test('setRender() accepts all six render modes', () => {
+test('setRender() accepts all seven render modes', () => {
   installDOM();
   const field = new ForcesField();
-  const modes = ['dots', 'trails', 'links', 'metaballs', 'voronoi', 'streamlines'] as const;
+  const modes = ['dots', 'trails', 'links', 'metaballs', 'voronoi', 'streamlines', 'none'] as const;
   for (const mode of modes) {
     assert.doesNotThrow(() => field.setRender(mode), `setRender('${mode}')`);
   }
@@ -245,4 +254,40 @@ test('createField options: render, density, waves, palette, mass, attention, cau
     });
     h.destroy();
   });
+  // a drawing mode acquires the 2d context at creation (the baseline the 'none' tests contrast).
+  assert.equal(canvas.getContextCalls, 1);
+});
+
+// ── signals-only mode: render 'none' (§13.7 / #297) ──────────────────────────
+
+test("createField with render:'none' never acquires a context or sizes the backing store", () => {
+  const { makeCanvas } = installDOM();
+  const canvas = makeCanvas();
+  const h = createField(canvas, { render: 'none' });
+  // the structural guarantee: no getContext call, backing store left 0×0 (no allocation).
+  assert.equal(canvas.getContextCalls, 0);
+  assert.equal(canvas.width, 0);
+  assert.equal(canvas.height, 0);
+  // the signals surface stays callable and live: setVisible toggles, scrollV reads.
+  assert.doesNotThrow(() => h.setVisible(false));
+  assert.doesNotThrow(() => h.setVisible(true));
+  assert.equal(typeof h.scrollV(), 'number');
+  // constructs and tears down cleanly — destroy() must not need a context either.
+  assert.doesNotThrow(() => h.destroy());
+  assert.equal(canvas.getContextCalls, 0);
+});
+
+test("setRender from 'none' to a drawing mode acquires the context lazily and sizes the store once", () => {
+  const { makeCanvas } = installDOM();
+  const canvas = makeCanvas();
+  const h = createField(canvas, { render: 'none' });
+  assert.equal(canvas.getContextCalls, 0);
+  h.setRender('dots');
+  assert.equal(canvas.getContextCalls, 1); // acquired exactly at the transition
+  assert.equal(canvas.width, 1280); // backing store sized to the stub viewport (dpr 1)
+  assert.equal(canvas.height, 800);
+  h.setRender('none'); // back to signals-only: no re-acquisition, store kept
+  h.setRender('links');
+  assert.equal(canvas.getContextCalls, 1);
+  h.destroy();
 });

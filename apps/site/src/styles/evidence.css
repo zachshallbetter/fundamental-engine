@@ -467,7 +467,7 @@ a.ev-side-item.is-live:hover {
   font-size: 0.64rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-2); /* --text-3 fails WCAG contrast at this size */
 }
 .ev-switch {
   display: inline-flex;
@@ -517,7 +517,7 @@ a.ev-side-item.is-live:hover {
   border: 0;
   border-right: 1px solid var(--line);
   background: transparent;
-  color: var(--text-3);
+  color: var(--text-2); /* --text-3 fails WCAG contrast on the segment labels */
   transition:
     background 0.18s,
     color 0.18s;
@@ -553,8 +553,11 @@ a.ev-side-item.is-live:hover {
 }
 .ev-legend li {
   display: flex;
+  /* long legend lines must break between segments on narrow viewports — a nowrap
+     flex row would force the li (and the page) past the viewport edge */
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.2rem 0.5rem;
 }
 .ev-k {
   display: inline-flex;
@@ -839,6 +842,9 @@ a.ev-side-item.is-live:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  /* both label forms ("snapshot · <date>" / "live · checked NNs ago") fit without
+     reflow — the swap must not shift the controls row (CLS) */
+  min-inline-size: 17ch;
   padding: 0.22rem 0.6rem;
   border: 1px solid var(--line);
   border-radius: 999px;

@@ -12,7 +12,7 @@
 //     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { applyRecipe, withFlip } from "@field-ui/platform";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
 import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
 
@@ -90,25 +90,20 @@ function initEvidence(): () => void {
       (a, b) =>
         Number(b.style.getPropertyValue("--trust")) - Number(a.style.getPropertyValue("--trust")),
     );
-    const firstTop = new Map(findings.map((f) => [f, f.getBoundingClientRect().top]));
-    ordered.forEach((f) => list.appendChild(f));
-    // the sink sentinel stays the list's last child (re-sorting appends findings after it)
-    const sentinel = list.querySelector("[data-ev-sentinel]");
-    if (sentinel) list.appendChild(sentinel);
-    ordered.forEach((f, i) => {
-      const rank = f.querySelector(".ev-rank");
-      if (rank) rank.textContent = String(i + 1).padStart(2, "0");
-      if (reduceMotion()) return;
-      const dy = (firstTop.get(f) ?? 0) - f.getBoundingClientRect().top;
-      if (!dy) return;
-      f.style.transform = `translateY(${dy}px)`;
-      f.style.transition = "none";
-      requestAnimationFrame(() => {
-        f.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
-        f.style.transform = "";
-        f.addEventListener("transitionend", () => (f.style.transition = ""), { once: true });
-      });
-    });
+    withFlip(
+      () => findings,
+      () => {
+        ordered.forEach((f) => list.appendChild(f));
+        // the sink sentinel stays the list's last child (re-sorting appends findings after it)
+        const sentinel = list.querySelector("[data-ev-sentinel]");
+        if (sentinel) list.appendChild(sentinel);
+        ordered.forEach((f, i) => {
+          const rank = f.querySelector(".ev-rank");
+          if (rank) rank.textContent = String(i + 1).padStart(2, "0");
+        });
+      },
+      { axis: "y" },
+    );
   };
 
   // ── color lens — a second, orthogonal channel: size stays trust, color shows another aspect.
@@ -419,7 +414,8 @@ function initEvidence(): () => void {
   // The run only fails when EVERY batch failed; works missing from a response
   // keep their snapshot values. No repeat (everyMs: null): citations move
   // slowly — polling would be theater.
-  const chip = wireLiveChip(page.querySelector<HTMLElement>("[data-ev-live]"), "OpenAlex");
+  const chipEl = page.querySelector<HTMLElement>("[data-ev-live]");
+  const chip = wireLiveChip(chipEl, chipEl?.dataset.snapshotLabel || "OpenAlex");
   const refreshCitations = async (): Promise<void> => {
     const results = await Promise.allSettled(
       topics.map(async (topic) => {

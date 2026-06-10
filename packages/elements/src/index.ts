@@ -27,7 +27,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {number} waves - Intensity of the resting wave currents (the ambient drift).
- * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `links` | `trails`.
+ * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn.
  * @attr {string} overlay - Overlay render mode (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines`.
  * @attr {string} palette - Named color palette for the field.
  * @attr {number} mass - Global mass scaling applied to bodies.
@@ -94,10 +94,12 @@ export class FieldField extends HTMLElementBase {
     return this.getAttribute('waves') !== 'false';
   }
 
-  /** render mode (§20.6). */
-  get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' {
+  /** render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297). */
+  get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none' {
     const v = this.getAttribute('render');
-    return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' ? v : 'dots';
+    return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' || v === 'none'
+      ? v
+      : 'dots';
   }
 
   /** Field Surfaces: overlay-surface visualization mode (in front of content). Default `off`. */
@@ -159,8 +161,8 @@ export class FieldField extends HTMLElementBase {
   setHeatmap(on: boolean): void {
     this.field?.setHeatmap(on);
   }
-  /** switch the underlay render mode (§20.6) live. */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void {
+  /** switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297). */
+  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'): void {
     this.field?.setRender(mode);
   }
   /** render a field-structure visualization on the overlay surface (Field Surfaces — in front of content). */

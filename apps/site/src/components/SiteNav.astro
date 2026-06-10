@@ -290,4 +290,32 @@ const dest = [
     border-color: var(--accent, #4da3ff);
     background: color-mix(in srgb, var(--accent, #4da3ff) 10%, transparent);
   }
+
+  /* narrow viewports: the destinations become a scrollable strip (the field toggles are
+     desktop affordances — the persisted field keeps its state either way). */
+  @media (max-width: 720px) {
+    .sn-inner {
+      gap: 0.9rem;
+      height: 54px;
+      padding: 0 1rem;
+    }
+    .sn-dest {
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      gap: 1rem;
+      padding-right: 1.25rem;
+      mask-image: linear-gradient(to right, black 88%, transparent);
+      -webkit-mask-image: linear-gradient(to right, black 88%, transparent);
+    }
+    .sn-dest::-webkit-scrollbar {
+      display: none;
+    }
+    .sn-dest a {
+      flex: none;
+    }
+    .sn-toggles {
+      display: none;
+    }
+  }
 </style>

@@ -20,8 +20,8 @@
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { allocateAttention, recipeById } from "@field-ui/core";
+import { applyRecipe, withFlip } from "@field-ui/platform";
 import { politeLoop, wireLiveChip } from "../../lib/live-data";
 
 type IxLens = "fresh" | "voted" | "seen";
@@ -84,33 +84,6 @@ const HINTS: Record<IxLens, string> = {
 const reduceMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// conserved allocation: scale urgencies so Σw = budget, cap each at 1, re-flow capped
-// excess over the rest (water-filling). Mirrors the server-side initial allocation.
-function allocate(us: number[], budget: number): number[] {
-  const w = us.map(() => 0);
-  let free = us.map((_, i) => i);
-  let rem = budget;
-  for (let pass = 0; pass < 10 && free.length && rem > 0; pass++) {
-    const sum = free.reduce((s, i) => s + (us[i] ?? 0), 0) || 1;
-    const k = rem / sum;
-    const still: number[] = [];
-    let capped = 0;
-    for (const i of free) {
-      if ((us[i] ?? 0) * k >= 1) {
-        w[i] = 1;
-        capped++;
-      } else still.push(i);
-    }
-    if (!capped) {
-      for (const i of still) w[i] = (us[i] ?? 0) * k;
-      break;
-    }
-    rem -= capped;
-    free = still;
-  }
-  return w;
-}
-
 function initInbox(): () => void {
   const page = document.querySelector<HTMLElement>(".ex-inbox");
   if (!page) return () => {};
@@ -146,45 +119,20 @@ function initInbox(): () => void {
 
   // ── 2D FLIP — measure every card (both panes), mutate the DOM, then play the
   // inverted transforms so moves between stream and focus visibly travel. ──────
-  const flip = (mutate: () => void): void => {
-    if (reduceMotion()) {
-      mutate();
-      return;
-    }
-    const first = new Map(
-      itemsOf().map((it) => {
-        const b = it.getBoundingClientRect();
-        return [it, { top: b.top, left: b.left }] as const;
-      }),
-    );
-    mutate();
-    for (const it of itemsOf()) {
-      const f = first.get(it);
-      if (!f) continue;
-      const b = it.getBoundingClientRect();
-      const dx = f.left - b.left;
-      const dy = f.top - b.top;
-      if (!dx && !dy) continue;
-      it.style.transform = `translate(${dx}px, ${dy}px)`;
-      it.style.transition = "none";
-      requestAnimationFrame(() => {
-        it.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
-        it.style.transform = "";
-        it.addEventListener("transitionend", () => (it.style.transition = ""), { once: true });
-      });
-    }
-  };
+  const flip = (mutate: () => void): void => withFlip(itemsOf, mutate);
 
-  // ── the conserved budget: pins hold w=1 in the focus pane; the rest split what
-  // remains. Σ--w across BOTH panes stays at the budget, always. ───────────────
+  // ── the conserved budget: pins hold w=1 in the focus pane; the rest water-fill
+  // what remains (core's allocateAttention — §2.4's one finite budget). Σ--w across
+  // BOTH panes stays at the budget, always. ────────────────────────────────────
   const reallocate = (): void => {
     const items = itemsOf();
     const budget = items.length * BUDGET_PER_ITEM;
-    const unpinned = items.filter((it) => !pinned.has(it));
-    const ws = allocate(unpinned.map(urgencyOf), Math.max(0, budget - pinned.size));
-    const wOf = new Map<HTMLElement, number>(unpinned.map((it, i) => [it, ws[i] ?? 0]));
-    for (const it of items) {
-      const w = pinned.has(it) ? 1 : (wOf.get(it) ?? 0);
+    const ws = allocateAttention(
+      items.map((it) => ({ urgency: urgencyOf(it), pinned: pinned.has(it) })),
+      budget,
+    );
+    for (const [i, it] of items.entries()) {
+      const w = ws[i] ?? 0;
       it.style.setProperty("--w", w.toFixed(3));
       it.dataset.strength = (0.4 + w * 1.6).toFixed(2);
       const bar = it.querySelector<HTMLElement>(".ix-share i");

@@ -46,9 +46,27 @@ const fmtDate = date
   : '';
 const numbered = (e: CollectionEntry<'writings'>) =>
   e.data.category === 'research' && e.data.order != null && e.data.order < 90 ? `${e.data.order}. ` : '';
+
+// Article structured data. Only fields the entry actually has are emitted —
+// no placeholders. (Base has no head slot; JSON-LD is valid anywhere in the
+// document, so the script renders at the top of the layout body.)
+const articleLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  ...(description ? { description } : {}),
+  ...(date ? { datePublished: date.toISOString() } : {}),
+  author: {
+    '@type': 'Person',
+    name: author || 'Zach Shallbetter',
+    url: 'https://zachshallbetter.com',
+  },
+  mainEntityOfPage: `https://field-ui.com/writings/${slug}`,
+};
 ---
 
 <Base title={`${title} · field-ui writings`} description={description}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(articleLd)} />
   <SiteNav current="writings" />
   <div class="docs-shell">
     <aside class="docs-sidebar" aria-label="Writings navigation">

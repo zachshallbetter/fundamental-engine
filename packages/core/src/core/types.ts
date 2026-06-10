@@ -308,8 +308,12 @@ export interface FieldOptions {
   waves?: boolean;
   /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links'
    *  (constellation), 'metaballs' (a liquid iso-surface, not dots), 'streamlines'
-   *  (draw the force field itself — diagnostic). */
-  render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines';
+   *  (draw the force field itself — diagnostic), 'none' (the signals-only engine,
+   *  §13.7 / #297: the full simulation + feedback pipeline runs, but no canvas
+   *  context is acquired, no backing store is sized, and nothing is ever drawn —
+   *  the field exists purely as signals: `--d`, `--load`, `--lit`, capture
+   *  events, `scrollV()`). */
+  render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none';
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
    *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
   mass?: boolean;
@@ -385,8 +389,14 @@ export interface FieldHandle {
   setCausality(on: boolean): void;
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void;
-  /** switch the underlay render mode (§20.6) live — the surface behind content. */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'): void;
+  /**
+   * Switch the underlay render mode (§20.6) live — the surface behind content. `'none'` is the
+   * signals-only mode (§13.7 / #297): drawing stops from the next frame while the simulation and
+   * its signals stay live. Switching TO `'none'` at runtime keeps an already-acquired context and
+   * backing store (the no-allocation guarantee belongs to fields CREATED with `render: 'none'`);
+   * switching FROM `'none'` acquires the context lazily and sizes the backing store at that moment.
+   */
+  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'): void;
   /**
    * Render a field-structure visualization on the OVERLAY surface — in front of page content (Field
    * Surfaces). Pairs with `setRender` (the underlay); set both for an immersive look. No-op unless the

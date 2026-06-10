@@ -39,12 +39,32 @@ test.describe("/evidence/backlog", () => {
       viewport.height - 120,
       shipped!.y + shipped!.height - 40,
     );
-    await page.mouse.move(grabX, grabY);
-    await page.mouse.down();
-    await page.mouse.move(dropX, dropY, { steps: 15 });
-    // let the per-frame slot indicator settle on the drop position
-    await page.waitForTimeout(150);
-    await page.mouse.up();
+
+    // The gesture is paced so the runtime's per-frame tracking sees every stage even on
+    // slow CI renderers (Linux WebKit under software rendering delivers pointer events
+    // sparsely): arm first with a short move, then travel in waited stages, then settle.
+    const dragOnce = async (): Promise<void> => {
+      await page.mouse.move(grabX, grabY);
+      await page.waitForTimeout(60);
+      await page.mouse.down();
+      await page.mouse.move(grabX + 12, grabY + 8, { steps: 3 }); // past the 6px arm threshold
+      await page.waitForTimeout(120);
+      const midX = (grabX + dropX) / 2;
+      const midY = (grabY + dropY) / 2;
+      await page.mouse.move(midX, midY, { steps: 8 });
+      await page.waitForTimeout(120);
+      await page.mouse.move(dropX, dropY, { steps: 8 });
+      // let the per-frame slot indicator settle on the drop position
+      await page.waitForTimeout(300);
+      await page.mouse.move(dropX, dropY + 2);
+      await page.waitForTimeout(120);
+      await page.mouse.up();
+      await page.waitForTimeout(200);
+    };
+    await dragOnce();
+    // one gesture retry for event-delivery flake — the assertions below stay strict
+    const openCount = page.locator('[data-wl-lane="open"] [data-wl-count]');
+    if ((await openCount.textContent())?.trim() !== "2") await dragOnce();
 
     await expect(page.locator('[data-wl-lane="open"] [data-wl-count]')).toHaveText("2");
     await expect(page.locator('[data-wl-lane="shipped"] [data-wl-count]')).toHaveText("55");

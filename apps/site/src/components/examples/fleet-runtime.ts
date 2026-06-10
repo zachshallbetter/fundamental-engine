@@ -14,7 +14,7 @@
 //     retires itself; the chip falls back to the snapshot date. Never throws.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { applyRecipe, withFlip } from "@field-ui/platform";
 
 type FleetWeight = "involvement" | "recency";
 
@@ -89,28 +89,10 @@ function initFleet(): () => void {
       c.dataset.strength = (0.4 + w * 1.6).toFixed(2);
     }
     const ordered = [...all].sort(order);
-    const first = new Map(
-      all.map((c) => {
-        const r = c.getBoundingClientRect();
-        return [c, { x: r.left, y: r.top }];
-      }),
+    withFlip(
+      () => all,
+      () => ordered.forEach((c) => grid.appendChild(c)),
     );
-    ordered.forEach((c) => grid.appendChild(c));
-    ordered.forEach((c) => {
-      if (reduceMotion()) return;
-      const r = c.getBoundingClientRect();
-      const f = first.get(c);
-      const dx = (f?.x ?? r.left) - r.left;
-      const dy = (f?.y ?? r.top) - r.top;
-      if (!dx && !dy) return;
-      c.style.transform = `translate(${dx}px, ${dy}px)`;
-      c.style.transition = "none";
-      requestAnimationFrame(() => {
-        c.style.transition = "transform 0.5s cubic-bezier(.2, .7, .2, 1)";
-        c.style.transform = "";
-        c.addEventListener("transitionend", () => (c.style.transition = ""), { once: true });
-      });
-    });
   };
 
   // ── cross-highlight (hover) — incidents ↔ the services they named ─────────

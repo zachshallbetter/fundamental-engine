@@ -29,6 +29,7 @@ export * from './bind-data.ts';
 export * from './browser-host.ts';
 export * from './export-dom.ts';
 export * from './governor.ts';
+export * from './flip.ts';
 
 /** Start the core engine on a canvas with the default browser host — `createField` + `browserHost()`. */
 export function createBrowserField(canvas: HTMLCanvasElement, opts: Omit<FieldOptions, 'host'> = {}): FieldHandle {
