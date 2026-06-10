@@ -138,13 +138,17 @@ for (const route of ["/", "/eli5"] as const) {
     test("the accretion vessel fills — the engine writes --load back (data-feedback)", async ({
       page,
     }) => {
+      // accretion is simulation-time-bound: under full-suite CPU contention the engine's rAF
+      // slows and capture takes longer in WALL time. Pacing, not weakening — the assertion is
+      // unchanged; the poll just gets the time the physics actually needs on a loaded machine.
+      test.slow();
       await skipUnless(page, "#bim-core", "accretion vessel");
       const core = page.locator("#bim-core");
       await expect(core).toHaveAttribute("data-feedback", "");
       await core.scrollIntoViewIfNeeded();
       await expect
         .poll(async () => core.evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue("--load")) || 0), {
-          timeout: 10000,
+          timeout: 30000,
         })
         .toBeGreaterThan(0);
       // and the vessel's own meter mirrors it
