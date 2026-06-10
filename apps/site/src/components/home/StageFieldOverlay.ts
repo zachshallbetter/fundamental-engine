@@ -4,6 +4,7 @@
 // for this behaviour. `initStageFieldOverlay()` paints once and returns a teardown that
 // disconnects observers and removes the canvases it created — the page orchestrator calls
 // it on `astro:before-swap` so overlays never survive a client-side navigation.
+import { expandPreset } from "@field-ui/core";
 import { traceField, traceDipole } from "../../lib/field-probe.ts";
 
 function hexToRgb(hex?: string) {
@@ -155,21 +156,44 @@ export function initStageFieldOverlay(): () => void {
       "[data-body], [data-preset]",
     ) as HTMLElement | null;
     if (!chip) return;
-    const raw = chip.dataset.body || chip.dataset.preset || "";
-    const token = raw.split(/\s+/)[0]; // primary force of a composed body
     // Trace the SAME force the live chip configures — read its real data-* attrs so the
     // path matches the on-screen particles (heading, strength, range, spin, sibling tokens).
     const num = (v: any) =>
       v != null && v !== "" && isFinite(Number(v)) ? Number(v) : undefined;
-    const override = chip.dataset.body
-      ? {
-          tokens: raw.split(/\s+/).filter(Boolean),
-          strength: num(chip.dataset.strength),
-          range: num(chip.dataset.range),
-          spin: num(chip.dataset.spin),
-          angleDeg: num(chip.dataset.angle),
-        }
-      : {};
+    let token: string;
+    let override: {
+      tokens?: string[];
+      strength?: number;
+      range?: number;
+      spin?: number;
+      angleDeg?: number;
+    };
+    if (chip.dataset.body) {
+      const raw = chip.dataset.body;
+      token = raw.split(/\s+/)[0]!; // primary force of a composed body
+      override = {
+        tokens: raw.split(/\s+/).filter(Boolean),
+        strength: num(chip.dataset.strength),
+        range: num(chip.dataset.range),
+        spin: num(chip.dataset.spin),
+        angleDeg: num(chip.dataset.angle),
+      };
+    } else {
+      // a preset chip names a COMPOSITION (blackhole, galaxy, …) — expand it to its real
+      // sub-bodies and trace the primary one with its real attrs, so the preset stages get
+      // the same field-line overlay as single-force rows (the trace is the dominant force's
+      // true path; the live chip still runs the full composition).
+      const sub = expandPreset(chip.dataset.preset ?? "")[0];
+      if (!sub || !sub.tokens.length) return;
+      token = sub.tokens[0]!;
+      override = {
+        tokens: [...sub.tokens],
+        strength: num(sub.strength),
+        range: num(sub.range),
+        spin: num(sub.spin),
+        angleDeg: num(sub.angle),
+      };
+    }
     let trace;
     let dipole = null;
     try {

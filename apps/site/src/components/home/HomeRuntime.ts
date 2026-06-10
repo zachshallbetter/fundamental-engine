@@ -105,7 +105,13 @@ export function initHomeRuntime(): () => void {
       "pointerdown",
       (e) => {
         e.preventDefault();
-        el.setPointerCapture(e.pointerId);
+        // capture can throw (pointer already released, synthetic ids) — a failed capture
+        // must not kill the whole drag wiring; the move/up listeners still work without it.
+        try {
+          el.setPointerCapture(e.pointerId);
+        } catch {
+          /* drag continues uncaptured */
+        }
         const move = (ev: PointerEvent) => {
           const r = stage.getBoundingClientRect();
           place(ev.clientX - r.left, ev.clientY - r.top);
