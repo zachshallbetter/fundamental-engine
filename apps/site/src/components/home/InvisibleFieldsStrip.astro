@@ -1,0 +1,34 @@
+---
+// The invisible-fields feature strip — the homepage's pointer to the /evidence example family.
+// Twelve real-data pages where the field runs with no particle swarm: the measurement comes back
+// as type, ink, and anchor. The roster (slug/name/hook/href) is the same one the family's sidebar
+// reads (lib/invisible-fields.ts). Each item is an ordinary link made a light attractor, so the
+// homepage's visible field — the one page that has particles — gathers on whichever example you
+// engage. Styles in styles/invisible-strip.css (global, like manual.css).
+import { INVISIBLE_FIELDS } from "../../lib/invisible-fields";
+import "../../styles/invisible-strip.css";
+---
+
+<section class="concept ifs" id="invisible-fields">
+  <div class="wrap">
+    <span class="concept-no">invisible fields — live, over real data</span>
+    <h2>Everything above shows the field. These twelve never do.</h2>
+    <p class="ifs-lede">
+      Twelve ordinary page types — an inbox, a market, a backlog, a front page — run as fields
+      over <strong>real data</strong>: no particle swarm, the measurements come back as type,
+      ink, and anchor. Each ships its data as a committed snapshot, upgrades itself to live
+      counts when the source is reachable, and says which mode it's in.
+    </p>
+    <div class="ifs-grid">
+      {
+        INVISIBLE_FIELDS.map((f) => (
+          <a class="ifs-item" href={f.href} data-body="attract" data-strength="0.5">
+            <span class="ifs-name">{f.name}</span>
+            <span class="ifs-hook">{f.hook}</span>
+          </a>
+        ))
+      }
+    </div>
+    <p class="ifs-more"><a href="/evidence">See the family →</a></p>
+  </div>
+</section>
