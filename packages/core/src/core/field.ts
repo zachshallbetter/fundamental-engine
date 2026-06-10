@@ -145,6 +145,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let boot = reduceMotion ? 1 : 0;
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
+  // EMA (exponential moving average) of the per-frame peak magnitude for each arrow renderer.
+  // Normalizing to the raw frame max caused the entire arrow field to rescale in one step when
+  // maxMag shifted (body drag, animated strength, density ramp) — visible as a pulsing flash.
+  // The EMA tracks the true level but smooths transients: fast to rise (alpha=0.3 on peaks above
+  // the smoothed value), slow to fall (alpha=0.1 when the field weakens), so arrows converge
+  // quickly when a strong body is added but don't snap back on a single quiet frame.
+  // Each renderer keeps independent state so underlay and overlay don't cross-influence.
+  let slMaxSmoothed = 0; // underlay streamlines
+  let olMaxSmoothed = 0; // overlay arrows (streamlines / force-vectors / field-lines)
   // hard pool ceiling for class-[S] sources (§20.1) — generous above the ~130·density
   // base field so emission is never starved, but bounded so the sim can't grow forever.
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
@@ -1084,7 +1093,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // weak field (a magnetic/electric dipole, magnitudes ~1e-5) reads as clearly as a strong
       // one (an attractor). Absolute scaling drowned the dipole below the visibility cutoff.
       const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
-      let maxMag = 0;
+      let frameMax = 0;
       for (let gx = GRID / 2; gx < W; gx += GRID) {
         for (let gy = GRID / 2; gy < H; gy += GRID) {
           let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
@@ -1103,12 +1112,19 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
             continue;
           }
           samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
-          if (mag > maxMag) maxMag = mag;
+          if (mag > frameMax) frameMax = mag;
         }
       }
-      if (maxMag > 0) {
+      // Ease the normalization reference: rise quickly when the field strengthens, decay slowly
+      // when it weakens — prevents a single strong frame from spiking the scale, and a single
+      // quiet frame from collapsing it. Seed on first frame (slMaxSmoothed === 0).
+      if (slMaxSmoothed === 0) slMaxSmoothed = frameMax;
+      else slMaxSmoothed = frameMax > slMaxSmoothed
+        ? slMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
+        : slMaxSmoothed * 0.9 + frameMax * 0.1;  // decay slowly so quiet frames don't flash
+      if (slMaxSmoothed > 0) {
         for (const s of samples) {
-          const rel = Math.sqrt(s.mag / maxMag); // sqrt compresses the range so weak vectors still read
+          const rel = Math.sqrt(s.mag / slMaxSmoothed); // sqrt compresses the range so weak vectors still read
           const len = GRID * 0.46 * (0.28 + 0.72 * rel);
           const ex = s.gx + s.ux * len;
           const ey = s.gy + s.uy * len;
@@ -1148,7 +1164,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     octx.lineWidth = 1.2;
     octx.lineCap = 'round';
     const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
-    let maxMag = 0;
+    let frameMax = 0;
     for (let gx = GRID / 2; gx < W; gx += GRID) {
       for (let gy = GRID / 2; gy < H; gy += GRID) {
         let fx: number;
@@ -1170,12 +1186,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         const mag = Math.hypot(fx, fy);
         if (!(mag > 1e-9)) continue; // skip dead zones / NaN
         samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
-        if (mag > maxMag) maxMag = mag;
+        if (mag > frameMax) frameMax = mag;
       }
     }
-    if (maxMag <= 0) return;
+    // Same EMA approach as the underlay streamlines (see slMaxSmoothed) — independent state so
+    // the overlay scale never couples to the underlay's field strength.
+    if (olMaxSmoothed === 0) olMaxSmoothed = frameMax;
+    else olMaxSmoothed = frameMax > olMaxSmoothed
+      ? olMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
+      : olMaxSmoothed * 0.9 + frameMax * 0.1;  // decay slowly so quiet frames don't flash
+    if (olMaxSmoothed <= 0) return;
     for (const s of samples) {
-      const rel = absolute ? clamp(s.mag / maxMag, 0, 1) : Math.sqrt(s.mag / maxMag);
+      const rel = absolute ? clamp(s.mag / olMaxSmoothed, 0, 1) : Math.sqrt(s.mag / olMaxSmoothed);
       const len = GRID * 0.5 * (0.25 + 0.75 * rel);
       const ex = s.gx + s.ux * len;
       const ey = s.gy + s.uy * len;

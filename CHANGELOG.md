@@ -30,6 +30,15 @@ metrics, and the transformation primitives, not re-building what exists.)
 
 ### Fixed
 
+- **Streamlines arrow-field pulsing eliminated.** The `streamlines` underlay render and all three
+  overlay arrow modes (`streamlines`, `force-vectors`, `field-lines`) normalized arrow length and
+  alpha to the raw per-frame peak magnitude, so any frame-to-frame shift in `maxMag` (body drag,
+  animated strength, charge-feedback density ramp) rescaled the entire arrow field at once — a
+  visible flash/pulse. Both renderers now maintain an independent EMA of their normalization
+  reference (rise alpha 0.3, decay alpha 0.1), seeded on the first frame, so the scale tracks
+  real changes while smoothing transients. The underlay and overlay carry separate state and
+  cannot cross-influence each other.
+
 - The home manual's last two untraced stages now trace real engine runs: **`fieldflow`**
   pairs with a magnet on the live chip (it advects matter along the *net* field other
   forces radiate, so alone it had no lines to follow — the demo itself was a silent
