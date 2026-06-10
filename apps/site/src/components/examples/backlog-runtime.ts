@@ -24,15 +24,20 @@
 //     Keyboard: Space/Enter lifts, arrows move (Left/Right across lanes), Esc cancels.
 //     HONESTY: triage is a LOCAL SANDBOX — the arrangement persists to localStorage only;
 //     GitHub is never written.
-// The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { recipeById } from "@field-ui/core";
-import { applyRecipe, withFlip as flipReflow } from "@field-ui/platform";
+// The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
+import { recipeById, weightToStrength } from "@field-ui/core";
+import { applyRecipe, threadOverlay, withFlip as flipReflow } from "@field-ui/platform";
+import { wireFieldToggle, wireSegments } from "../../lib/controls";
+import { pageRuntime } from "../../lib/page-runtime";
+import { persisted } from "../../lib/persisted";
 
 type BacklogWeight = "activity" | "freshness";
 type LaneId = "open" | "shipped";
 
-const NS = "http://www.w3.org/2000/svg";
-const STORE_KEY = "field-ui:backlog:board:v1";
+// the canonical slot is fui:backlog:board:v1; the pre-helper key migrates forward on first
+// read (it stored JSON, so the helper's legacy migration covers it).
+const STORE_KEY = "backlog:board:v1";
+const LEGACY_STORE_KEYS = ["field-ui:backlog:board:v1"];
 const DRAG_THRESHOLD = 6; // px of travel before a mouse/pen pointerdown becomes a drag
 const EDGE = 60; // px from the viewport edge where auto-scroll engages
 const EDGE_SPEED = 16; // max px/frame of auto-scroll
@@ -41,12 +46,6 @@ const TOUCH_SLOP = 8; // px of touch travel that turns a pending press into a SC
 
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-function centerIn(el: HTMLElement, host: HTMLElement): { x: number; y: number } {
-  const r = el.getBoundingClientRect();
-  const h = host.getBoundingClientRect();
-  return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height / 2 };
-}
 
 // the lens blends — must match the server-side default in backlog.astro.
 const BLENDS: Record<BacklogWeight, { act: number; rec: number }> = {
@@ -59,9 +58,7 @@ const HINTS: Record<BacklogWeight, string> = {
   freshness: "<b>size</b> = freshness, recency-leaning — the items touched last pull hardest",
 };
 
-function initBacklog(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-backlog");
-  if (!page) return () => {};
+function initBacklog(page: HTMLElement): () => void {
   const ac = new AbortController();
   const zone = page.querySelector<HTMLElement>("[data-wl-zone]");
   const sink = page.querySelector<HTMLElement>("[data-wl-cycle]");
@@ -165,45 +162,33 @@ function initBacklog(): () => void {
   };
 
   // ── persistence — the arrangement saves locally on drop; GitHub is never written ──
-  const persist = (): void => {
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ snap: snapshot, ...arrangement() }));
-    } catch {
-      /* storage may be unavailable — the board still works, it just won't survive reload */
-    }
-  };
-  const hasStored = (): boolean => {
-    try {
-      return localStorage.getItem(STORE_KEY) !== null;
-    } catch {
-      return false;
-    }
-  };
+  const board = persisted<{ snap?: number; open?: number[]; shipped?: number[] } | null>(
+    STORE_KEY,
+    null,
+    { legacyKeys: LEGACY_STORE_KEYS },
+  );
+  const persist = (): void => board.set({ snap: snapshot, ...arrangement() });
+  const hasStored = (): boolean => board.get() !== null;
   const restore = (): void => {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return;
-      const data = JSON.parse(raw) as { snap?: number; open?: number[]; shipped?: number[] };
-      const stored = [...(data.open ?? []), ...(data.shipped ?? [])];
-      const known = new Set([...server.open, ...server.shipped]);
-      if (
-        data.snap !== snapshot ||
-        stored.length !== known.size ||
-        !stored.every((n) => known.has(n))
-      ) {
-        localStorage.removeItem(STORE_KEY); // a new snapshot invalidates old triage
-        return;
+    const data = board.get();
+    if (!data) return;
+    const stored = [...(data.open ?? []), ...(data.shipped ?? [])];
+    const known = new Set([...server.open, ...server.shipped]);
+    if (
+      data.snap !== snapshot ||
+      stored.length !== known.size ||
+      !stored.every((n) => known.has(n))
+    ) {
+      board.clear(); // a new snapshot invalidates old triage
+      return;
+    }
+    for (const id of LANES) {
+      const list = listEl(id);
+      if (!list) continue;
+      for (const n of data[id] ?? []) {
+        const card = page.querySelector<HTMLElement>(`#wi-${n}`);
+        if (card) list.appendChild(card);
       }
-      for (const id of LANES) {
-        const list = listEl(id);
-        if (!list) continue;
-        for (const n of data[id] ?? []) {
-          const card = page.querySelector<HTMLElement>(`#wi-${n}`);
-          if (card) list.appendChild(card);
-        }
-      }
-    } catch {
-      /* malformed storage — server order stands */
     }
   };
 
@@ -220,7 +205,7 @@ function initBacklog(): () => void {
       const w =
         blend.act * (Number(r.dataset.act) || 0) + blend.rec * (Number(r.dataset.rec) || 0);
       r.style.setProperty("--w", w.toFixed(3));
-      r.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      r.dataset.strength = weightToStrength(w).toFixed(2);
     }
     for (const id of LANES) {
       const list = listEl(id);
@@ -238,50 +223,38 @@ function initBacklog(): () => void {
   };
 
   // ── reference threads (hover) — the SVG overlays the whole board so threads cross lanes ──
-  // Geometry is computed at hover time, so a re-arranged board threads correctly on the
-  // next hover; drops just clear any live thread (the wires re-fire from the same cards).
+  // Geometry + lit/cited classes are the platform's threadOverlay (the family's centerIn
+  // cubic, sampled at hover time, so a re-arranged board threads correctly on the next
+  // hover); drops just clear any live thread (the wires re-fire from the same cards). The
+  // hover SEMANTICS — the color choice and the --thread-live density mirror — stay here.
+  const threads = zone ? threadOverlay(zone, { className: "ev-threads" }) : null;
   let liveRaf = 0;
   const clearThreads = (): void => {
     cancelAnimationFrame(liveRaf);
     liveRaf = 0;
-    const svg = zone?.querySelector<SVGSVGElement>("svg.ev-threads");
-    svg?.replaceChildren();
-    svg?.style.removeProperty("--thread-live");
-    rows().forEach((r) => r.classList.remove("lit", "cited"));
+    threads?.clear();
+    zone?.querySelector<SVGSVGElement>("svg.ev-threads")?.style.removeProperty("--thread-live");
   };
   const wireThreads = (): void => {
-    if (!zone) return;
-    let svg = zone.querySelector<SVGSVGElement>("svg.ev-threads");
-    if (!svg) {
-      svg = document.createElementNS(NS, "svg") as SVGSVGElement;
-      svg.setAttribute("class", "ev-threads");
-      svg.setAttribute("aria-hidden", "true");
-      zone.prepend(svg);
-    }
+    if (!zone || !threads) return;
     const draw = (from: HTMLElement): void => {
       if (!fieldOn || drag?.active) return;
-      const box = zone.getBoundingClientRect();
-      svg!.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
-      svg!.style.setProperty("--thread", getComputedStyle(from).getPropertyValue("--cat").trim());
+      const targets = (from.dataset.refs || "")
+        .split(" ")
+        .filter(Boolean)
+        .map((id) => zone.querySelector<HTMLElement>(`#${CSS.escape(id)}`))
+        .filter((t): t is HTMLElement => t !== null);
+      threads.draw(from, targets, {
+        color: getComputedStyle(from).getPropertyValue("--cat").trim(),
+      });
       // follow the hovered card's --d (an inline style the engine writes — cheap to read)
       cancelAnimationFrame(liveRaf);
+      const svg = zone.querySelector<SVGSVGElement>("svg.ev-threads");
       const followLive = (): void => {
-        svg!.style.setProperty("--thread-live", from.style.getPropertyValue("--d") || "0");
+        svg?.style.setProperty("--thread-live", from.style.getPropertyValue("--d") || "0");
         liveRaf = requestAnimationFrame(followLive);
       };
       followLive();
-      const a = centerIn(from, zone);
-      from.classList.add("lit");
-      let d = "";
-      for (const id of (from.dataset.refs || "").split(" ").filter(Boolean)) {
-        const t = zone.querySelector<HTMLElement>(`#${CSS.escape(id)}`);
-        if (!t) continue;
-        t.classList.add("cited");
-        const b = centerIn(t, zone);
-        const my = (a.y + b.y) / 2;
-        d += `<path d="M${a.x} ${a.y} C ${a.x} ${my}, ${b.x} ${my}, ${b.x} ${b.y}"/>`;
-      }
-      svg!.innerHTML = d;
     };
     rows().forEach((r) => {
       r.addEventListener("pointerenter", () => draw(r), { signal: ac.signal });
@@ -289,7 +262,7 @@ function initBacklog(): () => void {
     });
   };
 
-  // ── the invisible scoped field (render: []) ───────────────────────────────
+  // ── the invisible scoped field (renderless) ───────────────────────────────
   const runField = (): void => {
     activeField?.destroy();
     activeField = null;
@@ -297,22 +270,22 @@ function initBacklog(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain the attention + recency lanes. Attention:
+        // renderless — invisible; metrics gain the attention + recency lanes. Attention:
         // the pipeline writes an eased --field-attention (hover/focus + viewport-center
         // proximity + visibility) back to every card; a dragged card carries data-active,
         // which the pipeline reads as engaged — attention rises in flight. Recency: every
         // card declares data-field-at (its updatedAt), so the pipeline's recency lane is
         // GROUNDED in that world timestamp — --field-recency is freshness(updatedAt, now),
         // not an interaction guess.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention", "recency"])],
-        } as typeof base;
         // the cycle bar joins as a sink — the engine writes its fill back as --load.
         const bodies = rows();
         if (sink) bodies.push(sink);
-        activeField = applyRecipe(zone, recipe, { bodies, annotateBodies: false });
+        activeField = applyRecipe(zone, base, {
+          bodies,
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention", "recency"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -659,28 +632,23 @@ function initBacklog(): () => void {
   };
 
   // ── controls ───────────────────────────────────────────────────────────────
-  weightBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        weight = (b.dataset.wlWeight as BacklogWeight) || "activity";
-        page.dataset.weight = weight;
-        weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[weight];
-        reweight();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    weightBtns,
+    "wlWeight",
+    (value) => {
+      weight = (value as BacklogWeight) || "activity";
+      page.dataset.weight = weight;
+      if (hint) hint.innerHTML = HINTS[weight];
+      reweight();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -690,7 +658,7 @@ function initBacklog(): () => void {
         clearThreads();
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   // "reset board" — restore the server order, clear local storage
@@ -699,11 +667,7 @@ function initBacklog(): () => void {
     () => {
       if (drag?.active) finishDrag(false);
       if (kbCard) kbDrop(false);
-      try {
-        localStorage.removeItem(STORE_KEY);
-      } catch {
-        /* nothing stored */
-      }
+      board.clear();
       withFlip(rows(), () => {
         for (const id of LANES) {
           const list = listEl(id);
@@ -784,15 +748,4 @@ function initBacklog(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-backlog") ? initBacklog() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-backlog", initBacklog);

@@ -21,6 +21,8 @@
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+import { pageRuntime } from "../../lib/page-runtime.ts";
+import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
 
 type ThLens = "tempo" | "off";
 
@@ -30,9 +32,7 @@ const HINTS: Record<ThLens, string> = {
   off: "<b>color</b> = off — a single accent; size carries the whole signal",
 };
 
-function initThreads(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-threads");
-  if (!page) return () => {};
+function initThreads(page: HTMLElement): () => void {
   const ac = new AbortController();
   const list = page.querySelector<HTMLElement>("[data-th-list]");
   const fieldBtn = page.querySelector<HTMLButtonElement>("[data-th-field]");
@@ -218,16 +218,16 @@ function initThreads(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] keeps the field invisible; the extra "attention" metric asks the
+        // renderless keeps the field invisible; the extra "attention" metric asks the
         // platform pipeline to write --field-attention per comment (an eased 0..1 blend
         // of engagement, viewport-center proximity, and visibility) — read by the ink CSS.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        } as typeof base;
-        // visible bodies only — collapsed subtrees leave the field, not just the page
-        activeField = applyRecipe(list, recipe, { bodies: visibleRows(), annotateBodies: false });
+        // Visible bodies only — collapsed subtrees leave the field, not just the page.
+        activeField = applyRecipe(list, base, {
+          bodies: visibleRows(),
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -235,28 +235,23 @@ function initThreads(): () => void {
   };
 
   // ── controls ─────────────────────────────────────────────────────────────
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.thLens as ThLens) || "tempo";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[lens];
-        applyLens();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    lensBtns,
+    "thLens",
+    (v) => {
+      lens = (v as ThLens) || "tempo";
+      page.dataset.lens = lens;
+      if (hint) hint.innerHTML = HINTS[lens];
+      applyLens();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -265,7 +260,7 @@ function initThreads(): () => void {
         clearChain();
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   wireCollapse();
@@ -279,15 +274,4 @@ function initThreads(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-threads") ? initThreads() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-threads", initThreads);

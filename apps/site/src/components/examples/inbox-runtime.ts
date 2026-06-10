@@ -21,10 +21,12 @@
 //     brief fade, removal, renormalize again);
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
-// The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { allocateAttention, freshness, recipeById } from "@field-ui/core";
+// The scoped field runs render-less (applyRecipe renderless) — bodies compute (metrics flow) but nothing is drawn.
+import { allocateAttention, freshness, recipeById, weightToStrength } from "@field-ui/core";
 import { applyRecipe, withFlip } from "@field-ui/platform";
+import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { politeLoop, wireLiveChip } from "../../lib/live-data";
+import { pageRuntime } from "../../lib/page-runtime";
 
 type IxLens = "fresh" | "voted" | "seen";
 
@@ -89,9 +91,7 @@ const HINTS: Record<IxLens, string> = {
 const reduceMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function initInbox(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-inbox");
-  if (!page) return () => {};
+function initInbox(page: HTMLElement): () => void {
   const ac = new AbortController();
   const split = page.querySelector<HTMLElement>("[data-ix-split]");
   const list = page.querySelector<HTMLElement>("[data-ix-list]");
@@ -139,7 +139,7 @@ function initInbox(): () => void {
     for (const [i, it] of items.entries()) {
       const w = ws[i] ?? 0;
       it.style.setProperty("--w", w.toFixed(3));
-      it.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      it.dataset.strength = weightToStrength(w).toFixed(2);
       const bar = it.querySelector<HTMLElement>(".ix-share i");
       if (bar) bar.style.width = `${Math.round(w * 100)}%`;
     }
@@ -164,7 +164,7 @@ function initInbox(): () => void {
     flip(() => ordered.forEach((it) => list.appendChild(it)));
   };
 
-  // ── the invisible scoped field (render: []) — scoped to the split so both panes count ──
+  // ── the invisible scoped field (renderless) — scoped to the split so both panes count ──
   const runField = (): void => {
     activeField?.destroy();
     activeField = null;
@@ -172,16 +172,16 @@ function initInbox(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] keeps the field invisible; the extra metric lanes ask the platform
+        // renderless keeps the field invisible; the extra metric lanes ask the platform
         // pipeline to write --field-attention per ask (an eased 0..1 blend of engagement,
         // viewport-center proximity, and visibility) and --field-recency — GROUNDED in each
         // ask's declared data-field-at (askedAt), so it decays on the world clock.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention", "recency"])],
-        } as typeof base;
-        activeField = applyRecipe(split, recipe, { bodies: itemsOf(), annotateBodies: false });
+        activeField = applyRecipe(split, base, {
+          bodies: itemsOf(),
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention", "recency"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -403,29 +403,24 @@ function initInbox(): () => void {
   );
 
   // ── controls ─────────────────────────────────────────────────────────────
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.ixLens as IxLens) || "fresh";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = HINTS[lens];
-        reallocate();
-        resort();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    lensBtns,
+    "ixLens",
+    (value) => {
+      lens = (value as IxLens) || "fresh";
+      page.dataset.lens = lens;
+      if (hint) hint.innerHTML = HINTS[lens];
+      reallocate();
+      resort();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -433,7 +428,7 @@ function initInbox(): () => void {
         activeField = null;
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   reallocate();
@@ -448,15 +443,4 @@ function initInbox(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-inbox") ? initInbox() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-inbox", initInbox);

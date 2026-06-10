@@ -1,7 +1,10 @@
 ---
+import { logNormalizeBetween, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import library from "../../data/examples/library.json";
+import { FIELD_PALETTE } from "../../lib/palette.ts";
+import { fmtInt } from "../../lib/fmt.ts";
 import "../../styles/docs.css";
 import "../../styles/examples/library.css";
 
@@ -13,11 +16,10 @@ import "../../styles/examples/library.css";
 // No particle swarm — mass shows only in type weight, ink, and anchor.
 const QUEUE_MAX = 8;
 
-// field-ui's force palette — the artist color lens (hash the artist name → palette index).
-const FIELD_PALETTE = [
-  "#4da3ff", "#2dd4bf", "#ff9d5c", "#a78bfa",
-  "#86e57f", "#fbbf24", "#f0abfc", "#38bdf8",
-];
+// the artist color lens: hash the artist name → FIELD_PALETTE index. The hash stays this
+// page's (`>>> 0` accumulate + unsigned modulo) — palette.ts's hashColor folds with `| 0`
+// and Math.abs, which lands ~a third of this snapshot's artists on different hues, so
+// swapping it in would not be behavior-identical.
 const hashOf = (s: string) => {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
@@ -28,19 +30,18 @@ const hashOf = (s: string) => {
 // --bar is a SECOND, separate channel: the raw listens as a fraction of the chart
 // max (linear), driving each row's background bar length. --w stays the field's
 // log-normalized mass and keeps driving type weight and ink.
-const ll = library.tracks.map((t) => Math.log(t.listens + 1));
-const lmin = Math.min(...ll);
-const lspan = Math.max(...ll) - lmin || 1;
-const maxListens = Math.max(...library.tracks.map((t) => t.listens));
-const tracks = library.tracks.map((t, i) => ({
+const listens = library.tracks.map((t) => t.listens);
+const lsMin = Math.min(...listens);
+const lsMax = Math.max(...listens);
+const maxListens = lsMax;
+const tracks = library.tracks.map((t) => ({
   ...t,
-  w: (ll[i]! - lmin) / lspan,
+  w: logNormalizeBetween(t.listens, lsMin, lsMax, { equal: 0 }),
   bar: t.listens / maxListens,
   cat: FIELD_PALETTE[hashOf(t.artist) % FIELD_PALETTE.length]!,
 }));
 const linkFor = (t: { mbid: string }) =>
   t.mbid ? `https://musicbrainz.org/recording/${t.mbid}` : "https://listenbrainz.org/";
-const fmtListens = (n: number) => n.toLocaleString("en-US");
 const snapshotDay = library.snapshotAt.slice(0, 10);
 
 // How-it's-built snippets — highlighted at build time via CodeTabs (Shiki).
@@ -209,7 +210,7 @@ const snippetCss = `.lb-title {
             data-feedback
             data-hot
             data-range="200"
-            data-strength={(0.4 + t.w * 1.6).toFixed(2)}
+            data-strength={weightToStrength(t.w).toFixed(2)}
             data-artist-color={t.cat}
             data-mbid={t.mbid ?? ""}
             data-track={t.track}
@@ -234,7 +235,7 @@ const snippetCss = `.lb-title {
                 </span>
               </div>
               <span class="lb-listens">
-                <b>{fmtListens(t.listens)}</b>
+                <b>{fmtInt(t.listens)}</b>
                 <span class="lb-listens-l">listens</span>
               </span>
             </div>

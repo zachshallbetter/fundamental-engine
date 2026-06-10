@@ -1,6 +1,9 @@
 ---
+import { logNormalize, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
+import { fmtInt } from "../../lib/fmt";
+import { categoryColors } from "../../lib/palette";
 import catalog from "../../data/examples/catalog.json";
 import "../../styles/docs.css"; /* .code-tabs styles for CodeTabs */
 import "../../styles/examples/catalog.css";
@@ -11,20 +14,16 @@ import "../../styles/examples/catalog.css";
 // spine — type weight, ink, and a left anchor — never a score badge. Hover or focus a book
 // and every shelf-mate sharing a subject lights up, with the strongest shared subject as a
 // floating chip. No particle swarm.
-const FIELD_PALETTE = [
-  "#4da3ff", "#2dd4bf", "#ff9d5c", "#a78bfa",
-  "#86e57f", "#fbbf24", "#f0abfc", "#38bdf8",
-];
-const lmax = Math.log(Math.max(...catalog.books.map((b) => b.ratings), 1) + 1);
-// map each distinct FIRST subject to a palette color (the subject lens).
-const subjectColor = new Map<string, string>();
-[...new Set(catalog.books.map((b) => b.subjects[0]).filter(Boolean))].forEach((s, i) =>
-  subjectColor.set(s!, FIELD_PALETTE[i % FIELD_PALETTE.length]!),
+const maxRatings = Math.max(...catalog.books.map((b) => b.ratings));
+// map each distinct FIRST subject to a palette color (the subject lens) — the family's
+// shared categorical palette (lib/palette.ts), assigned by insertion order.
+const subjectColor = categoryColors(
+  catalog.books.map((b) => b.subjects[0]).filter((s): s is string => Boolean(s)),
 );
 const books = catalog.books
   .map((b) => ({
     ...b,
-    trust: Math.log(b.ratings + 1) / lmax, // 0..1 — IDENTICAL to the evidence formula
+    trust: logNormalize(b.ratings, maxRatings), // 0..1 — IDENTICAL to the evidence formula
     cat: (b.subjects[0] && subjectColor.get(b.subjects[0])) || "#4da3ff",
     // stable card id from the Open Library work key (e.g. bk-OL893415W) — the
     // anchor the ratings line points its measurement provenance at.
@@ -32,7 +31,7 @@ const books = catalog.books
   }))
   .sort((a, b) => b.trust - a.trust);
 const snapshotDay = catalog.snapshotAt.slice(0, 10);
-const fmt = (n: number) => n.toLocaleString("en-US");
+const fmt = fmtInt;
 
 // ── how-built snippets (CodeTabs) ──────────────────────────────────────────
 const SNIP_BODY = `<article
@@ -54,9 +53,11 @@ const SNIP_BODY = `<article
 </article>`;
 
 const SNIP_FORMULA = `// IDENTICAL to /evidence — only the
-// signal changed: citations → ratings
-trust = log(ratings + 1)
-      / log(maxRatings + 1)
+// signal changed: citations → ratings.
+// the shape is core's weight primitive:
+import { logNormalize } from "@field-ui/core";
+trust = logNormalize(ratings, maxRatings)
+      // = log(ratings + 1) / log(maxRatings + 1)
 
 // the other lenses re-run the same shape:
 // anticipation → wantToRead counts
@@ -177,7 +178,7 @@ const SNIP_CSS = `.cat-title a {
             data-feedback
             data-hot
             data-range="200"
-            data-strength={(0.4 + b.trust * 1.6).toFixed(2)}
+            data-strength={weightToStrength(b.trust).toFixed(2)}
             data-ratings={b.ratings}
             data-want={b.wantToRead}
             data-editions={b.editions}

@@ -11,31 +11,25 @@
 //     reweight path then re-settles trust in front of the reader. Once, not a poll: citations
 //     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { recipeById } from "@field-ui/core";
-import { applyRecipe, withFlip } from "@field-ui/platform";
+import { logNormalize, recipeById, weightToStrength } from "@field-ui/core";
+import { applyRecipe, threadOverlay, withFlip, type ThreadOverlay } from "@field-ui/platform";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
 import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
+import { pageRuntime } from "../lib/page-runtime.ts";
+import { wireSegments, wireFieldToggle } from "../lib/controls.ts";
+import { fmtInt } from "../lib/fmt.ts";
+import { READING_PACE_MAX, scrollV } from "../lib/reading-pace.ts";
 
-const NS = "http://www.w3.org/2000/svg";
 const reduceMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function centerIn(el: HTMLElement, host: HTMLElement) {
-  const r = el.getBoundingClientRect();
-  const h = host.getBoundingClientRect();
-  return { x: r.left - h.left + r.width / 2, y: r.top - h.top + r.height / 2 };
-}
-
 // ── reveal pacing ──────────────────────────────────────────────────────────
 const BATCH_SIZE = 4;
-const SCROLL_V_MAX = 2.0; // px/frame — above this the user is scanning, not reading
 const DWELL_MS = 350; // sustained reading-pace time near the sentinel before a batch reveals
 const LOAD_REVEAL = 0.5; // a sink charged past this short-circuits the dwell (field on only)
 const BATCH_COOLDOWN_MS = 600; // floor between batches so successive reveals settle, not dump
 
-function initEvidence(): () => void {
-  const page = document.querySelector<HTMLElement>(".ev-page");
-  if (!page) return () => {};
+function initEvidence(page: HTMLElement): () => void {
   const ac = new AbortController();
   const tabs = [...page.querySelectorAll<HTMLButtonElement>("[data-ev-tab]")];
   const topics = [...page.querySelectorAll<HTMLElement>("[data-ev-topic]")];
@@ -57,11 +51,11 @@ function initEvidence(): () => void {
   const trustOf = (
     f: HTMLElement,
     s: Signal,
-    st: { lmax: number; ymin: number; yspan: number },
+    st: { cmax: number; ymin: number; yspan: number },
   ): number => {
     const cites = Number(f.dataset.cites) || 0;
     const year = Number(f.dataset.year) || st.ymin;
-    const consensus = Math.log(cites + 1) / st.lmax;
+    const consensus = logNormalize(cites, st.cmax);
     const recency = st.yspan > 0 ? (year - st.ymin) / st.yspan : 0.5;
     return s === "consensus" ? consensus : s === "recency" ? recency : (consensus + recency) / 2;
   };
@@ -73,7 +67,7 @@ function initEvidence(): () => void {
     const cites = findings.map((f) => Number(f.dataset.cites) || 0);
     const years = findings.map((f) => Number(f.dataset.year) || 0).filter(Boolean);
     const st = {
-      lmax: Math.log(Math.max(...cites, 1) + 1),
+      cmax: Math.max(...cites),
       ymin: Math.min(...years),
       yspan: Math.max(...years) - Math.min(...years),
     };
@@ -81,7 +75,7 @@ function initEvidence(): () => void {
     for (const f of findings) {
       const t = trustOf(f, signal, st);
       f.style.setProperty("--trust", t.toFixed(3));
-      f.dataset.strength = (0.4 + t * 1.6).toFixed(2);
+      f.dataset.strength = weightToStrength(t).toFixed(2);
       const bar = f.querySelector<HTMLElement>(".ev-bar i");
       if (bar) bar.style.width = `${Math.round(t * 100)}%`;
     }
@@ -137,20 +131,20 @@ function initEvidence(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
-        // --field-attention (an eased 0..1 blend of engagement, center proximity, visibility)
-        // back to every finding each frame.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        };
         // the sink sentinel joins the field so particles drifting past the list's end accrete
         // into it — the engine writes the fill back as --load, which paces the reveal.
         const sentinel = list.querySelector<HTMLElement>("[data-ev-sentinel]");
         const bodies = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
         if (sentinel) bodies.push(sentinel);
-        activeField = applyRecipe(list, recipe, { bodies, annotateBodies: false });
+        // renderless — invisible; the extra "attention" metric asks the platform pipeline to
+        // write --field-attention (an eased 0..1 blend of engagement, center proximity,
+        // visibility) back to every finding each frame.
+        activeField = applyRecipe(list, base, {
+          bodies,
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* the static --trust layer stands on its own */
@@ -158,44 +152,40 @@ function initEvidence(): () => void {
   };
 
   // ── support-graph threads (hover) ────────────────────────────────────────
+  // Geometry + lit/cited marks live in the platform's threadOverlay (it adopts an existing
+  // svg.ev-threads and never stacks duplicates); the hover wiring and the supports → targets
+  // resolution stay here. One overlay per topic list, reused across re-wires, so clear()
+  // always reaches every mark this page made.
+  const overlays = new Map<HTMLElement, ThreadOverlay>();
+  const overlayFor = (list: HTMLElement): ThreadOverlay => {
+    let ov = overlays.get(list);
+    if (!ov) {
+      ov = threadOverlay(list, { className: "ev-threads" });
+      overlays.set(list, ov);
+    }
+    return ov;
+  };
   const wireThreads = (topic: HTMLElement): void => {
     topicAc?.abort();
     topicAc = new AbortController();
     const list = topic.querySelector<HTMLElement>("[data-ev-list]");
     if (!list) return;
-    let svg = list.querySelector<SVGSVGElement>("svg.ev-threads");
-    if (!svg) {
-      svg = document.createElementNS(NS, "svg") as SVGSVGElement;
-      svg.setAttribute("class", "ev-threads");
-      svg.setAttribute("aria-hidden", "true");
-      list.prepend(svg);
-    }
+    const overlay = overlayFor(list);
     const findings = [...list.querySelectorAll<HTMLElement>(".ev-finding")].filter((f) => !f.hidden);
-    const clear = (): void => {
-      svg!.innerHTML = "";
-      findings.forEach((f) => f.classList.remove("lit", "cited"));
-    };
     const draw = (from: HTMLElement): void => {
       if (!fieldOn) return;
-      const box = list.getBoundingClientRect();
-      svg!.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
-      svg!.style.setProperty("--thread", getComputedStyle(from).getPropertyValue("--cat").trim());
-      const a = centerIn(from, list);
-      from.classList.add("lit");
-      let d = "";
-      for (const id of (from.dataset.supports || "").split(" ").filter(Boolean)) {
-        const t = list.querySelector<HTMLElement>(`#${CSS.escape(id)}`);
-        if (!t) continue;
-        t.classList.add("cited");
-        const b = centerIn(t, list);
-        const my = (a.y + b.y) / 2;
-        d += `<path d="M${a.x} ${a.y} C ${a.x} ${my}, ${b.x} ${my}, ${b.x} ${b.y}"/>`;
-      }
-      svg!.innerHTML = d;
+      const targets = (from.dataset.supports || "")
+        .split(" ")
+        .filter(Boolean)
+        .map((id) => list.querySelector<HTMLElement>(`#${CSS.escape(id)}`))
+        .filter((t): t is HTMLElement => t !== null);
+      overlay.draw(from, targets, {
+        color: getComputedStyle(from).getPropertyValue("--cat").trim(),
+      });
     };
     findings.forEach((f) => {
       f.addEventListener("pointerenter", () => draw(f), { signal: topicAc!.signal });
-      f.addEventListener("pointerleave", clear, { signal: topicAc!.signal });
+      f.addEventListener("pointerleave", () => overlay.clear(), { signal: topicAc!.signal });
     });
   };
 
@@ -248,11 +238,9 @@ function initEvidence(): () => void {
         raf = 0;
         return;
       }
-      // both vars are inline styles (written by the platform / engine), so reading
-      // el.style avoids a forced style recalc that getComputedStyle would cost per frame.
-      const sv =
-        parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
-      if (sv < SCROLL_V_MAX) {
+      // both reads are inline styles (written by the platform / engine), so they avoid
+      // the forced style recalc getComputedStyle would cost per frame.
+      if (scrollV() < READING_PACE_MAX) {
         if (!slowSince) slowSince = t;
         const load = parseFloat(sentinel.style.getPropertyValue("--load")) || 0;
         const ready = t - slowSince >= DWELL_MS || load >= LOAD_REVEAL;
@@ -302,70 +290,60 @@ function initEvidence(): () => void {
   };
 
   // ── controls ─────────────────────────────────────────────────────────────
-  weightBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        signal = (b.dataset.evWeight as Signal) || "consensus";
-        page.dataset.weight = signal;
-        weightBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (hint) hint.innerHTML = EVIDENCE.hints[signal];
-        const t = activeTopic();
-        if (t) reweight(t);
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    weightBtns,
+    "evWeight",
+    (v) => {
+      signal = (v as Signal) || "consensus";
+      page.dataset.weight = signal;
+      if (hint) hint.innerHTML = EVIDENCE.hints[signal];
+      const t = activeTopic();
+      if (t) reweight(t);
+    },
+    ac.signal,
   );
 
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.evLens as Lens) || "field";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (lensHint) lensHint.innerHTML = EVIDENCE.lensHints[lens];
-        const t = activeTopic();
-        if (t) applyLens(t);
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    lensBtns,
+    "evLens",
+    (v) => {
+      lens = (v as Lens) || "field";
+      page.dataset.lens = lens;
+      if (lensHint) lensHint.innerHTML = EVIDENCE.lensHints[lens];
+      const t = activeTopic();
+      if (t) applyLens(t);
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       const t = activeTopic();
       if (fieldOn) {
         runField(t);
       } else {
         activeField?.destroy();
         activeField = null;
-        t?.querySelector(".ev-threads")?.replaceChildren();
-        t?.querySelectorAll(".ev-finding").forEach((f) => f.classList.remove("lit", "cited"));
+        const list = t?.querySelector<HTMLElement>("[data-ev-list]");
+        if (list) overlays.get(list)?.clear();
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
-  tabs.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        const slug = b.dataset.evTab!;
-        topics.forEach((t) => (t.hidden = t.dataset.evTopic !== slug));
-        tabs.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        wireTopic(topics.find((t) => t.dataset.evTopic === slug));
-        // topic state is shareable: reflect the active tab in the URL (no history entry)
-        history.replaceState(history.state, "", `#${slug}`);
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    tabs,
+    "evTab",
+    (slug) => {
+      topics.forEach((t) => (t.hidden = t.dataset.evTopic !== slug));
+      wireTopic(topics.find((t) => t.dataset.evTopic === slug));
+      // topic state is shareable: reflect the active tab in the URL (no history entry)
+      history.replaceState(history.state, "", `#${slug}`);
+    },
+    ac.signal,
   );
 
   wireTopic(activeTopic());
@@ -441,7 +419,7 @@ function initEvidence(): () => void {
           const prev = Number(f.dataset.cites) || 0;
           f.dataset.cites = String(next);
           const fig = f.querySelector<HTMLElement>(".ev-cites");
-          if (fig) fig.textContent = next.toLocaleString();
+          if (fig) fig.textContent = fmtInt(next);
           const trust = f.querySelector<HTMLElement>(".ev-trust");
           trust?.setAttribute("aria-label", `${next} citations`);
           const delta = next - prev;
@@ -452,7 +430,7 @@ function initEvidence(): () => void {
               note.className = "ev-cites-delta";
               trust.insertBefore(note, trust.querySelector(".ev-bar"));
             }
-            note.textContent = `${delta > 0 ? "+" : "−"}${Math.abs(delta).toLocaleString()} since snapshot`;
+            note.textContent = `${delta > 0 ? "+" : "−"}${fmtInt(Math.abs(delta))} since snapshot`;
             note.dataset.dir = delta > 0 ? "up" : "down";
           }
         }
@@ -480,15 +458,4 @@ function initEvidence(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ev-page") ? initEvidence() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ev-page", initEvidence);

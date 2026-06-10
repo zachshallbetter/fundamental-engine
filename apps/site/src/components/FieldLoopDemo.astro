@@ -57,21 +57,15 @@ const Tag = tag as any;
 <script>
   import { applyRecipe } from '@field-ui/platform';
   import { recipeById } from '@field-ui/core';
+  import { pageRuntime } from '../lib/page-runtime';
 
   // applyRecipe registers bodies and a scoped platform per .field-loop and writes --field-* back.
-  // Hold the returned handles so we can destroy() them — on astro:before-swap (navigating away) and
-  // before any re-init — so applied-recipe state never accumulates across client-side navigation.
-  // (This component's <script> is also re-run via astro:page-load so the demo initialises on every
-  // visit, not just the first module load.)
-  let applied: Array<{ destroy?: () => void }> = [];
-
-  function teardown() {
-    for (const a of applied) a.destroy?.();
-    applied = [];
-  }
-
-  function init() {
-    teardown(); // never stack a second set of applied recipes over a previous run
+  // pageRuntime owns the lifecycle: init on first load and every astro:page-load (the previous
+  // run's teardown always runs first), teardown on astro:before-swap — so applied-recipe state
+  // never accumulates across client-side navigation. One init handles EVERY .field-loop on the
+  // page (the selector only gates whether there is at least one).
+  pageRuntime('.field-loop[data-field-root]', () => {
+    const applied: Array<{ destroy?: () => void }> = [];
     const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     for (const root of document.querySelectorAll<HTMLElement>('.field-loop[data-field-root]')) {
       const recipe = recipeById(root.dataset.recipe || 'priority-well');
@@ -100,12 +94,10 @@ const Tag = tag as any;
         if (ro) ro.innerHTML = `--field-${metric}: <b>${v.toFixed(2)}</b>`;
       }
     }
-  }
-
-  if (document.readyState !== 'loading') init();
-  else document.addEventListener('DOMContentLoaded', init);
-  document.addEventListener('astro:page-load', init);
-  document.addEventListener('astro:before-swap', teardown);
+    return () => {
+      for (const a of applied) a.destroy?.();
+    };
+  });
 </script>
 
 <style>

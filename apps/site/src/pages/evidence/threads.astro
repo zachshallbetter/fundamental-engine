@@ -1,7 +1,9 @@
 ---
+import { logNormalize, logNormalizeBetween, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import threads from "../../data/examples/threads.json";
+import { fmtInt } from "../../lib/fmt.ts";
 import "../../styles/examples/threads.css";
 
 // The Threads Field — a comment thread as a BINDING structure over one real Hacker News
@@ -24,19 +26,21 @@ const decode = (s: string) =>
 
 const byId = new Map(threads.comments.map((c) => [c.id, c]));
 
-// mass = the subtree a comment spawned: w = log(replies + 1) / log(maxReplies + 1) —
-// the same log-normalization the Evidence example applies to citations. Most comments
-// spawn nothing and sit at the floor; that IS the real shape of a discussion.
-const lmax = Math.log(Math.max(...threads.comments.map((c) => c.replies), 1) + 1);
+// mass = the subtree a comment spawned: w = logNormalize(replies, maxReplies) — the same
+// core log-normalization the Evidence example applies to citations. Most comments spawn
+// nothing and sit at the floor; that IS the real shape of a discussion.
+const maxReplies = Math.max(...threads.comments.map((c) => c.replies));
 
 // tempo = how fast a comment landed after its parent (the story, for top-level), as a
 // log-scaled 0..1 — 1 is the fastest reply in the thread, 0 the slowest.
 const deltas = threads.comments.map((c) =>
   Math.max(60, c.createdAt - (byId.get(c.parent)?.createdAt ?? story.createdAt)),
 );
-const ld = deltas.map((d) => Math.log(d / 60 + 1));
-const ldMin = Math.min(...ld);
-const ldSpan = Math.max(...ld) - ldMin || 1;
+// minutes-scaled deltas through the family's min-max log shape (span||1 → equal: 0)
+const dm = deltas.map((d) => d / 60);
+const dmMin = Math.min(...dm);
+const dmMax = Math.max(...dm);
+const tempoOf = (i: number): number => logNormalizeBetween(dm[i]!, dmMin, dmMax, { equal: 0 });
 
 const tempoColor = (t: number) => `hsl(${Math.round(205 - t * 180)} 74% 64%)`;
 
@@ -61,8 +65,8 @@ const subtreeOf = (id: number): number => {
 const comments = threads.comments.map((c, i) => ({
   ...c,
   text: decode(c.text),
-  w: Math.log(c.replies + 1) / lmax,
-  tempo: 1 - (ld[i]! - ldMin) / ldSpan,
+  w: logNormalize(c.replies, maxReplies),
+  tempo: 1 - tempoOf(i),
   into: c.createdAt - story.createdAt,
   subtree: subtreeOf(c.id),
 }));
@@ -140,13 +144,10 @@ for (const kid of kids.get(row.dataset.id))
 list.style.setProperty("--chain",
   row.style.getPropertyValue("--d") || "0");
 
-// the scoped field runs invisible (render: []) and asks
-// for the attention metric lane (--field-attention):
-const recipe = {
-  ...base,
-  render: [],
-  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-};`;
+// the scoped field runs invisible (renderless) and asks
+// for the attention metric lane (--field-attention) —
+// applyRecipe options, not a hand-spread recipe:
+//   { renderless: true, extraMetrics: ["attention"] }`;
 
 const SNIPPET_COLLAPSE = `// collapse = hide the subtree, then RE-BIND
 caret.addEventListener("click", () => {
@@ -165,9 +166,11 @@ caret.addEventListener("click", () => {
   // collapsed comments leave the field, not just
   // the page (destroy + apply, like field on/off)
   field?.destroy();
-  field = applyRecipe(list, recipe, {
+  field = applyRecipe(list, base, {
     bodies: rows.filter((r) => !r.hidden),
     annotateBodies: false,
+    renderless: true,
+    extraMetrics: ["attention"],
   });
 });`;
 ---
@@ -262,9 +265,9 @@ caret.addEventListener("click", () => {
       {story.title}
     </a>
     <p class="th-story-meta">
-      <b>{story.points.toLocaleString()}</b> points · posted by
+      <b>{fmtInt(story.points)}</b> points · posted by
       <span class="th-author">{story.author}</span> ·
-      <b>{story.comments.toLocaleString()}</b> comments ·
+      <b>{fmtInt(story.comments)}</b> comments ·
       <a href={story.hn} target="_blank" rel="noopener">discuss on HN</a>
     </p>
   </article>
@@ -287,7 +290,7 @@ caret.addEventListener("click", () => {
           data-hot
           data-top={c.depth === 0 ? "" : undefined}
           data-range="200"
-          data-strength={(0.4 + c.w * 1.6).toFixed(2)}
+          data-strength={weightToStrength(c.w).toFixed(2)}
           data-id={String(c.id)}
           data-parent={String(c.parent)}
           data-tempo={c.tempo.toFixed(4)}
@@ -386,7 +389,7 @@ caret.addEventListener("click", () => {
     <p>
       Mass here is <strong>engagement, not merit</strong> — a heavy comment spawned a big subtree,
       which says people answered it, not that it was right. This page holds the first
-      {comments.length} comments of a thread that grew to {story.comments.toLocaleString()};
+      {comments.length} comments of a thread that grew to {fmtInt(story.comments)};
       ages are measured from the story's posting, so the page is stable. Data:
       <a href="https://hn.algolia.com" rel="noopener">Hacker News via the Algolia API</a>
       (Y Combinator HN API terms), snapshotted {snapshotDay}.

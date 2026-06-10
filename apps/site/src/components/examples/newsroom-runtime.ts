@@ -13,9 +13,12 @@
 //     the new bodies and re-applies the active lens. If the snapshot already is the latest
 //     edition, the chip flips to live and nothing is rebuilt. Any failure keeps the snapshot.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { recipeById } from "@field-ui/core";
+import { logNormalizeBetween, recipeById, weightToStrength } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
+import { pageRuntime } from "../../lib/page-runtime.ts";
+import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
+import { fmtInt } from "../../lib/fmt.ts";
 
 type NewsroomLens = "trend" | "off";
 
@@ -48,7 +51,6 @@ const labelOf = (path: string): string =>
   }).format(new Date(`${path.replaceAll("/", "-")}T00:00:00Z`));
 
 // formatters — must match the server-side render in newsroom.astro
-const fmtViews = new Intl.NumberFormat("en-US");
 const pctOf = (a: { views: number; priorViews: number | null }): number | null =>
   a.priorViews ? ((a.views - a.priorViews) / a.priorViews) * 100 : null;
 const badgeTxt = (pct: number | null): string =>
@@ -71,9 +73,7 @@ const LENS_HINTS: Record<NewsroomLens, string> = {
   off: "<b>color</b> = off — size and placement carry the whole signal",
 };
 
-function initNewsroom(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-newsroom");
-  if (!page) return () => {};
+function initNewsroom(page: HTMLElement): () => void {
   const ac = new AbortController();
   const list = page.querySelector<HTMLElement>("[data-nw-list]");
   const rows = (): HTMLElement[] => [...page.querySelectorAll<HTMLElement>(".nw-row")];
@@ -107,15 +107,15 @@ function initNewsroom(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] — invisible; metrics gain "attention" so the platform pipeline writes
-        // --field-attention (eased engagement + center proximity + visibility) per story —
-        // the index item nearest the viewport center sharpens. Placement never moves.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        };
-        activeField = applyRecipe(list, recipe, { bodies: rows(), annotateBodies: false });
+        // renderless — invisible; the extra "attention" metric asks the platform pipeline to
+        // write --field-attention (eased engagement + center proximity + visibility) per
+        // story — the index item nearest the viewport center sharpens. Placement never moves.
+        activeField = applyRecipe(list, base, {
+          bodies: rows(),
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* the static --w layer stands on its own */
@@ -152,7 +152,7 @@ function initNewsroom(): () => void {
     const pct = pctOf(a);
     const chg = el("span", "nw-chg", badgeTxt(pct));
     chg.dataset.dir = dirOf(pct);
-    wrap.append(el("span", "nw-count", fmtViews.format(a.views)), el("span", "nw-count-l", "views"), chg);
+    wrap.append(el("span", "nw-count", fmtInt(a.views)), el("span", "nw-count-l", "views"), chg);
     return wrap;
   };
   const bodyAttrs = (e: HTMLElement, a: WikiArticle, w: number): void => {
@@ -160,7 +160,7 @@ function initNewsroom(): () => void {
     e.setAttribute("data-feedback", "");
     e.setAttribute("data-hot", "");
     e.dataset.range = "200";
-    e.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+    e.dataset.strength = weightToStrength(w).toFixed(2);
     e.dataset.views = String(a.views);
     e.dataset.prior = a.priorViews == null ? "" : String(a.priorViews);
     e.style.setProperty("--w", w.toFixed(3));
@@ -171,10 +171,9 @@ function initNewsroom(): () => void {
   const rebuild = (articles: WikiArticle[]): void => {
     if (!list) return;
     const views = articles.map((a) => a.views);
-    const lmin = Math.log(Math.min(...views) + 1);
-    const lmax = Math.log(Math.max(...views) + 1);
-    const wOf = (v: number): number =>
-      lmax > lmin ? (Math.log(v + 1) - lmin) / (lmax - lmin) : 1;
+    const vMin = Math.min(...views);
+    const vMax = Math.max(...views);
+    const wOf = (v: number): number => logNormalizeBetween(v, vMin, vMax);
 
     const top = articles[0]!;
     const leadEl = el("article", "nw-row nw-lead");
@@ -259,28 +258,23 @@ function initNewsroom(): () => void {
   });
 
   // ── controls ───────────────────────────────────────────────────────────────
-  lensBtns.forEach((b) =>
-    b.addEventListener(
-      "click",
-      () => {
-        lens = (b.dataset.nwLens as NewsroomLens) || "trend";
-        page.dataset.lens = lens;
-        lensBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-        if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
-        applyLens();
-      },
-      { signal: ac.signal },
-    ),
+  wireSegments(
+    lensBtns,
+    "nwLens",
+    (v) => {
+      lens = (v as NewsroomLens) || "trend";
+      page.dataset.lens = lens;
+      if (lensHint) lensHint.innerHTML = LENS_HINTS[lens];
+      applyLens();
+    },
+    ac.signal,
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -288,7 +282,7 @@ function initNewsroom(): () => void {
         activeField = null;
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   applyLens();
@@ -301,15 +295,4 @@ function initNewsroom(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-newsroom") ? initNewsroom() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-newsroom", initNewsroom);

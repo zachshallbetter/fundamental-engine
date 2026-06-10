@@ -1,5 +1,5 @@
 ---
-import { imminence } from "@field-ui/core";
+import { imminence, weightToStrength } from "@field-ui/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import calendar from "../../data/examples/calendar.json";
@@ -103,7 +103,8 @@ const SNIPPET_HTML = `<!-- each launch is a body. data-feedback: the engine writ
 
 const SNIPPET_TS = `// the world-time kernel — 1 at T−0,
 // log-ramping from 0 across the horizon:
-import { imminence } from "@field-ui/core";
+import { imminence, weightToStrength }
+  from "@field-ui/core";
 
 // every second, for every launch:
 const netMs = Date.parse(row.dataset.net);
@@ -115,16 +116,18 @@ const w = netMs > Date.now()
 
 row.style.setProperty("--w", w);
 row.dataset.strength =
-  (0.4 + w * 1.6).toFixed(2);
+  weightToStrength(w).toFixed(2);
+// the 0.4..2.0 attract-body contract
 
-// the scoped field runs invisible (render: [])
-// and asks for the attention metric lane:
-const recipe = {
-  ...base,
-  render: [],
-  metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-};
-// the pipeline writes --field-attention per card (eased 0..1)`;
+// the scoped field runs invisible (renderless)
+// and asks for the attention metric lane —
+// the pipeline writes --field-attention per
+// card (eased 0..1):
+field = applyRecipe(zone, base, {
+  renderless: true,
+  extraMetrics: ["attention"],
+  /* …bodies below */
+});`;
 
 const SNIPPET_VIEWS = `// three geometries, one contract — every
 // view renders the same 30 launches
@@ -145,8 +148,12 @@ const bodies = [
   ...zone.querySelectorAll("[data-body]"),
   hero,
 ];
-field = applyRecipe(zone, recipe,
-  { bodies, annotateBodies: false });
+field = applyRecipe(zone, base, {
+  bodies,
+  annotateBodies: false,
+  renderless: true,
+  extraMetrics: ["attention"],
+});
 
 // the field doesn't care about the
 // layout — it measures whatever
@@ -259,7 +266,7 @@ const SNIPPET_CSS = `.cal-row {
           data-feedback
           data-hot
           data-range="260"
-          data-strength={(0.4 + wOf(hero.net, hero.status) * 1.6).toFixed(2)}
+          data-strength={weightToStrength(wOf(hero.net, hero.status)).toFixed(2)}
           data-net={hero.net}
           data-status={hero.status}
           style={`--w:${wOf(hero.net, hero.status).toFixed(3)}; --cat:${catFor(hero.status)};`}
@@ -303,7 +310,7 @@ const SNIPPET_CSS = `.cal-row {
                     data-feedback
                     data-hot
                     data-range="200"
-                    data-strength={(0.4 + w * 1.6).toFixed(2)}
+                    data-strength={weightToStrength(w).toFixed(2)}
                     data-id={l.id}
                     data-net={l.net}
                     data-status={l.status}
@@ -349,7 +356,7 @@ const SNIPPET_CSS = `.cal-row {
                   data-feedback
                   data-hot
                   data-range="200"
-                  data-strength={(0.4 + w * 1.6).toFixed(2)}
+                  data-strength={weightToStrength(w).toFixed(2)}
                   data-id={l.id}
                   data-net={l.net}
                   data-status={l.status}

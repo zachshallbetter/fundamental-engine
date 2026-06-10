@@ -2,8 +2,9 @@
 // INVISIBLE field, with the restraint a reading surface demands:
 //   · Headings as bodies — at init (never in page markup) every h2/h3 becomes a gentle
 //     attract body with engine feedback (data-hot, data-feedback), and a scoped render-less
-//     recipe (the established idiom: recipeById("evidence-field"), render: [], metrics +
-//     "attention") measures per-section attention each frame as --field-attention.
+//     recipe (the established idiom: recipeById("evidence-field") + applyRecipe's
+//     { renderless, extraMetrics: ["attention"] }) measures per-section attention each
+//     frame as --field-attention.
 //   · The attention TOC — one rAF loop mirrors each heading's --field-attention onto its
 //     "On this page" link as --att; CSS turns that into ink and weight. The scroll-spy's
 //     .active class stays the discrete signal; attention is the continuous one.
@@ -20,25 +21,27 @@
 import { recipeById } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
 import { DOCS_NAV, ROUTE_FAMILIES } from "../lib/docs-nav.ts";
+import { pageRuntime } from "../lib/page-runtime.ts";
+import { persisted } from "../lib/persisted.ts";
 
-const FIELD_KEY = "fieldui-docs-field";
+const LEGACY_FIELD_KEY = "fieldui-docs-field";
+const fieldPref = persisted<boolean>("docs-field", true, { legacyKeys: [LEGACY_FIELD_KEY] });
+// The legacy slot stored a RAW "on"/"off" string (pre-JSON helper), which the helper's
+// JSON-based legacy migration can't parse — migrate it by hand, once, so returning
+// visitors keep their choice. Idempotent: the legacy key is removed either way.
+const migrateLegacyFieldPref = (): void => {
+  try {
+    const legacy = localStorage.getItem(LEGACY_FIELD_KEY);
+    if (legacy === null) return;
+    if (localStorage.getItem("fui:docs-field") === null) fieldPref.set(legacy !== "off");
+    localStorage.removeItem(LEGACY_FIELD_KEY);
+  } catch {
+    /* storage unavailable — the default (on) stands */
+  }
+};
+
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const readPref = (): boolean => {
-  try {
-    return localStorage.getItem(FIELD_KEY) !== "off";
-  } catch {
-    return true;
-  }
-};
-const writePref = (on: boolean): void => {
-  try {
-    localStorage.setItem(FIELD_KEY, on ? "on" : "off");
-  } catch {
-    /* private mode — the toggle still works for this visit */
-  }
-};
 
 // ── feature 1 + 2: the page as an invisible field, mirrored into the TOC ────
 const BODY_ATTRS: Record<string, string> = {
@@ -75,12 +78,12 @@ function startField(main: HTMLElement, toc: HTMLElement | null): FieldBits | nul
   try {
     const base = recipeById("evidence-field");
     if (base) {
-      const recipe = {
-        ...base,
-        render: [] as never[],
-        metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-      } as typeof base;
-      applied = applyRecipe(main, recipe, { bodies: heads, annotateBodies: false });
+      applied = applyRecipe(main, base, {
+        bodies: heads,
+        annotateBodies: false,
+        renderless: true,
+        extraMetrics: ["attention"],
+      });
     }
   } catch {
     /* the page engine's --d still flows; the TOC simply stays at rest */
@@ -364,17 +367,17 @@ function wireSearch(shell: HTMLElement, sig: AbortSignal): void {
 }
 
 // ── init / lifecycle ─────────────────────────────────────────────────────────
-function initDocsShell(): () => void {
-  const shell = document.querySelector<HTMLElement>(".docs-shell");
-  const main = shell?.querySelector<HTMLElement>("main.docs-content");
-  if (!shell || !main) return () => {};
+function initDocsShell(shell: HTMLElement): () => void {
+  const main = shell.querySelector<HTMLElement>("main.docs-content");
+  if (!main) return () => {};
   const ac = new AbortController();
   const toc = document.getElementById("docsToc");
   let bits: FieldBits | null = null;
 
   // the docs-field toggle — default ON, persisted; reduced motion forces the field off
   // (the preference is kept, honored if the OS setting changes on a later visit).
-  let on = readPref();
+  migrateLegacyFieldPref();
+  let on = fieldPref.get();
   const toggle = shell.querySelector<HTMLButtonElement>("[data-docs-field-toggle]");
   const stateEl = shell.querySelector<HTMLElement>("[data-docs-field-state]");
   const apply = (): void => {
@@ -391,7 +394,7 @@ function initDocsShell(): () => void {
     "click",
     () => {
       on = !on;
-      writePref(on);
+      fieldPref.set(on);
       apply();
     },
     { signal: ac.signal },
@@ -408,15 +411,4 @@ function initDocsShell(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".docs-shell") ? initDocsShell() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".docs-shell", initDocsShell);

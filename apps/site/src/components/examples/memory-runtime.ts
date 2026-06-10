@@ -12,46 +12,27 @@
 //   · Field on/off — off, the page collapses to a plain grid and the scoped field is destroyed.
 // The scoped field runs with render: [] plus the "attention" metric, so the platform pipeline
 // writes --field-attention per card — the ink CSS reads it alongside the engine's live --d.
-import { DAY_MS, recipeById, retention } from "@field-ui/core";
+import { DAY_MS, recipeById, retention, weightToStrength } from "@field-ui/core";
 import { applyRecipe } from "@field-ui/platform";
+import { pageRuntime } from "../../lib/page-runtime.ts";
+import { persisted } from "../../lib/persisted.ts";
+import { wireFieldToggle } from "../../lib/controls.ts";
+import { atReadingPace } from "../../lib/reading-pace.ts";
 
-const SCROLL_V_MAX = 2; // px/frame — same reading-pace gate EvidenceRuntime's reveal uses
 const STAGGER_MS = 20;
 const STAGGER_CAP_MS = 400;
 
 const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// ── persistence — localStorage, guarded: a private window or hardened browser may
-// throw on any access, and the page must keep working (it just won't remember). ──
-const REVIEWS_KEY = "fui:memory-reviews"; // JSON object: word → reviewedAtDay
-const DAY_KEY = "fui:memory-day"; // the slider's day
+// ── persistence — the shared persisted() slots (fui:memory-reviews / fui:memory-day, the
+// same keys and JSON values the page has always written): a private window or hardened
+// browser degrades to in-memory behavior, and the page keeps working — it just won't
+// remember. ──
+const reviewsStore = persisted<Record<string, number>>("memory-reviews", {}); // word → reviewedAtDay
+const dayStore = persisted<number | null>("memory-day", null); // the slider's day
 
-const storeRead = (key: string): string | null => {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-};
-const storeWrite = (key: string, value: string): void => {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* full / denied — the session still works, it just won't persist */
-  }
-};
-const storeDrop = (key: string): void => {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    /* nothing to clear */
-  }
-};
-
-function initMemory(): () => void {
-  const page = document.querySelector<HTMLElement>(".ex-memory");
-  if (!page) return () => {};
+function initMemory(page: HTMLElement): () => void {
   const ac = new AbortController();
   const grid = page.querySelector<HTMLElement>("[data-mx-grid]");
   const fieldBtn = page.querySelector<HTMLButtonElement>("[data-mx-field]");
@@ -71,19 +52,14 @@ function initMemory(): () => void {
   const wordsOnPage = new Set(
     cards.map((card) => card.querySelector(".mx-word")?.textContent || ""),
   );
-  const storedReviews = storeRead(REVIEWS_KEY);
-  if (storedReviews) {
-    try {
-      const parsed = JSON.parse(storedReviews) as Record<string, unknown>;
-      for (const [word, day] of Object.entries(parsed)) {
-        if (wordsOnPage.has(word) && typeof day === "number" && Number.isFinite(day))
-          reviews.set(word, day);
-      }
-    } catch {
-      /* corrupt entry — start fresh */
+  const storedReviews = reviewsStore.get() as Record<string, unknown> | null;
+  if (storedReviews && typeof storedReviews === "object") {
+    for (const [word, day] of Object.entries(storedReviews)) {
+      if (wordsOnPage.has(word) && typeof day === "number" && Number.isFinite(day))
+        reviews.set(word, day);
     }
   }
-  const storedDay = storeRead(DAY_KEY);
+  const storedDay = dayStore.get();
   if (storedDay != null) {
     const day = Math.round(Number(storedDay));
     if (Number.isFinite(day)) {
@@ -93,8 +69,7 @@ function initMemory(): () => void {
     }
   }
 
-  const persistReviews = (): void =>
-    storeWrite(REVIEWS_KEY, JSON.stringify(Object.fromEntries(reviews)));
+  const persistReviews = (): void => reviewsStore.set(Object.fromEntries(reviews));
 
   const updateRetention = (): void => {
     for (const card of cards) {
@@ -107,7 +82,7 @@ function initMemory(): () => void {
       const w = retention(a, daysEff * DAY_MS);
 
       card.style.setProperty("--w", w.toFixed(3));
-      card.dataset.strength = (0.4 + w * 1.6).toFixed(2);
+      card.dataset.strength = weightToStrength(w).toFixed(2);
       if (reviewedAt >= 0) {
         card.setAttribute("data-reviewed", "");
       } else {
@@ -123,15 +98,15 @@ function initMemory(): () => void {
     try {
       const base = recipeById("evidence-field");
       if (base) {
-        // render: [] keeps the field invisible; the extra "attention" metric asks the
+        // renderless keeps the field invisible; the extra "attention" metric asks the
         // platform pipeline to write --field-attention per card (an eased 0..1 blend of
         // engagement, viewport-center proximity, and visibility) — read by the ink CSS.
-        const recipe = {
-          ...base,
-          render: [] as never[],
-          metrics: [...new Set([...(base.metrics ?? []), "attention"])],
-        } as typeof base;
-        activeField = applyRecipe(grid, recipe, { bodies: cards, annotateBodies: false });
+        activeField = applyRecipe(grid, base, {
+          bodies: cards,
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ["attention"],
+        });
       }
     } catch {
       /* static --w layer fallback */
@@ -139,10 +114,11 @@ function initMemory(): () => void {
   };
 
   // ── entry: stagger the cards in once the grid is in view AND the scroll has settled
-  // to reading pace. --field-scroll-v is the engine's live scroll velocity, written to
-  // the <html> inline style — reading el.style avoids a per-frame style recalc. The
-  // pre-state only exists while the grid carries data-mx-entry, so a runtime failure
-  // can never strand the cards invisible. Reduced motion: no stagger at all. ─────────
+  // to reading pace (the shared atReadingPace() gate — an inline-style read, no per-frame
+  // style recalc). The stagger itself stays bespoke: 20ms apart, capped at 400ms — a shape
+  // armEntryAtPace doesn't carry. The pre-state only exists while the grid carries
+  // data-mx-entry, so a runtime failure can never strand the cards invisible. Reduced
+  // motion: no stagger at all. ─────────
   const wireEntry = (): void => {
     if (reduceMotion()) return;
     grid.setAttribute("data-mx-entry", "");
@@ -170,9 +146,7 @@ function initMemory(): () => void {
     };
     const tick = (): void => {
       if (ac.signal.aborted) return;
-      const sv =
-        parseFloat(document.documentElement.style.getPropertyValue("--field-scroll-v")) || 0;
-      if (sv < SCROLL_V_MAX) {
+      if (atReadingPace()) {
         start();
         return;
       }
@@ -218,7 +192,7 @@ function initMemory(): () => void {
     () => {
       sliderValue = Number(slider.value);
       if (daysOut) daysOut.textContent = `${sliderValue}d`;
-      storeWrite(DAY_KEY, String(sliderValue)); // the day persists alongside the reviews
+      dayStore.set(sliderValue); // the day persists alongside the reviews
       updateRetention();
     },
     { signal: ac.signal },
@@ -228,21 +202,18 @@ function initMemory(): () => void {
     "click",
     () => {
       reviews.clear();
-      storeDrop(REVIEWS_KEY); // reset clears the device's memory too — both keys
-      storeDrop(DAY_KEY);
+      reviewsStore.clear(); // reset clears the device's memory too — both keys
+      dayStore.clear();
       updateRetention();
     },
     { signal: ac.signal },
   );
 
-  fieldBtn?.addEventListener(
-    "click",
-    () => {
-      fieldOn = !fieldOn;
-      page.dataset.field = fieldOn ? "on" : "off";
-      fieldBtn.setAttribute("aria-pressed", String(fieldOn));
-      const txt = fieldBtn.querySelector(".ev-switch-txt");
-      if (txt) txt.textContent = fieldOn ? "on" : "off";
+  wireFieldToggle(
+    fieldBtn,
+    page,
+    (on) => {
+      fieldOn = on;
       if (fieldOn) {
         runField();
       } else {
@@ -250,7 +221,7 @@ function initMemory(): () => void {
         activeField = null;
       }
     },
-    { signal: ac.signal },
+    ac.signal,
   );
 
   updateRetention();
@@ -263,15 +234,4 @@ function initMemory(): () => void {
   };
 }
 
-let teardown: (() => void) | undefined;
-function init(): void {
-  teardown?.();
-  teardown = document.querySelector(".ex-memory") ? initMemory() : undefined;
-}
-if (document.readyState !== "loading") init();
-else document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("astro:page-load", init);
-document.addEventListener("astro:before-swap", () => {
-  teardown?.();
-  teardown = undefined;
-});
+pageRuntime(".ex-memory", initMemory);
