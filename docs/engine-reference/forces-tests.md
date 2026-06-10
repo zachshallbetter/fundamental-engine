@@ -108,7 +108,9 @@ The class decides how `runScenario` wires the environment (§20.1):
   body per frame to *create* matter via `env.spawn`. Breaks conservation by design, so it
   self-budgets (a per-particle lifespan `age` + a hard pool ceiling). `spawn`.
 - **`modifier`.** `apply()` is a no-op; the work is in `modify()`, which scales or gates
-  sibling forces. `resonate`, `spotlight`.
+  sibling forces. `resonate`, `spotlight`. (`screen` is also classed `modifier` but is
+  *cross-body*: it has no `modify()` hook — the integrator's force pass damps OTHER
+  bodies' forces on matter inside its radius. Its scenario uses `extraBodies`.)
 
 ### runScenario
 
@@ -208,6 +210,7 @@ body. "Δv" is the frame-0 effect on a still particle unless a velocity is given
 | `spawn` | an engaged source, empty field | the pool grows as matter is emitted along the heading; mortal matter despawns | S | `source()` emits `round(S·2)`/frame, `age`-budgeted |
 | `resonate` | modifier on `attract` | scales the sibling's strength as `1 + sin(ωt)` (ω=3) | modifier | `modify → {strength}` |
 | `spotlight` | modifier on `stream` | gates the sibling outside a ~60° heading cone, lets it act inside | modifier | `modify → {gate}` when `û·heading < 0.5` |
+| `screen` | a quiet zone over a neighbour attractor (`extraBodies`) | matter at the screen's core barely moves (< 5% of the unshielded control); outside the radius the control feels plain attract exactly; the screen itself never moves matter | modifier | other bodies' force ×`clamp(1 − S(1 − d/r)², min, 1)` in the integrator pass |
 | `pigment` | p overlapping a tinted body | adopts the body's tint and carries it away (conserved color) | A | `c_p ← mix(c_p, tint)` on overlap (`d<0.6r`) |
 | `fieldflow` | neutral p in a charge's field | streams OUT along the field line; ends farther from the body; inert past range | A | steer `v += (n̂·\|v\| − v)·k` + stream `v += n̂·gain·a`, `n̂ = net field()/\|field\|` |
 | `warp` | p inside a paired throat | relocated to the `data-pair` body's throat (conserved — count unchanged), emerging just outside it; velocity rotated by `data-twist` | A | `p ← pairCentre + R(twist)·û·(absorbR·scale + 6)`, `v ← R(twist)·v` (kinematic teleport) |
@@ -245,11 +248,12 @@ Condition gating runs through the real condition registry (`active`, `fast`, `sl
 
 ## Coverage
 
-- **35 forces**, each with an experiment (35 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
-  ~73 invariant/exact checks), driven through the real engine and deterministic across
+- **36 forces**, each with an experiment (36 `EXPERIMENTS` + 3 `COMPOSITE_EXPERIMENTS`,
+  ~76 invariant/exact checks), driven through the real engine and deterministic across
   runs, on top of the golden per-force unit tests and the integrator suite. A **safety
-  sweep** then runs all 38 experiments through global finite/bounded/conserved invariants
-  (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count). Every merge green.
+  sweep** then runs all 39 experiments through global finite/bounded/conserved invariants
+  (no NaN/Infinity, speed ≤ `c`, bounded heat, stable count — plus the budgeted-source
+  bound for the [S] class). Every merge green.
 - **Composition + conditions** are covered, not deferred: `COMPOSITE_EXPERIMENTS` verifies
   that forces compose (`attract repel` cancel; `attract swirl` sums to a spiral) and gate
   on conditions (`data-when` runs through the real condition registry).

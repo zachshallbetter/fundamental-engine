@@ -36,6 +36,10 @@ export interface PresetEntry {
   absorb?: number;
   /** load at which a sink supernovas. */
   max?: number;
+  /** lifespan (frames) of matter a class-[S] source emits — the `data-life` budget. */
+  life?: number;
+  /** max live particles a class-[S] source sustains — the `data-cap` budget. */
+  cap?: number;
 }
 
 /**
@@ -97,7 +101,9 @@ export const PRESETS: Record<string, readonly PresetEntry[]> = {
   // §20.2 — a continuous class-[S] source jetting matter upward, the spray pulled back
   // down by a gentle global gravity well: a literal water fountain.
   fountain: [
-    { body: 'spawn', strength: 1.2, angle: -90 }, // jet up (−y); emits while on-screen
+    // the explicit budget (life 90 = the source's historical lifespan, kept so the look is
+    // unchanged) satisfies the [S] source-budget guard — presets always declare theirs.
+    { body: 'spawn', strength: 1.2, angle: -90, life: 90 }, // jet up (−y); emits while on-screen
     { body: 'gravity', strength: 60, range: 0 }, // the arc home — global, weak
   ],
 };

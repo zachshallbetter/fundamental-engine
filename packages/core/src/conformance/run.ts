@@ -46,6 +46,19 @@ function centerScenario(s: Scenario): Scenario {
         ? { targets: s.body.targets.map((t) => ({ x: t.x + CENTER.x, y: t.y + CENTER.y })) }
         : {}),
     },
+    // extra bodies share the world frame — translate their centres by the same offset.
+    ...(s.extraBodies
+      ? {
+          extraBodies: s.extraBodies.map((e) => ({
+            tokens: e.tokens,
+            attrs: {
+              ...e.attrs,
+              cx: (e.attrs.cx ?? 0) + CENTER.x,
+              cy: (e.attrs.cy ?? 0) + CENTER.y,
+            },
+          })),
+        }
+      : {}),
     particles: s.particles.map((p) => ({ ...p, x: p.x + CENTER.x, y: p.y + CENTER.y })),
   };
 }
@@ -71,12 +84,12 @@ export function allForces(): ForceRegistry {
   return reg.forces;
 }
 
-/** A full `Body` from a scenario's partial attrs (the engine's default shape). */
-export function resolveBody(s: Scenario): Body {
-  const angle = s.body.angle ?? 0;
+/** A full `Body` from tokens + partial attrs (the engine's default shape). */
+function resolvePartialBody(tokens: string[], attrs: Partial<Body>): Body {
+  const angle = attrs.angle ?? 0;
   return {
     el: {} as HTMLElement,
-    tokens: s.tokens ?? [s.force],
+    tokens,
     strength: 1,
     range: 300,
     absorbR: 64,
@@ -100,10 +113,15 @@ export function resolveBody(s: Scenario): Body {
     accreted: 0,
     count: 0,
     d: 0,
-    ...s.body,
+    ...attrs,
     // keep ux/uy consistent if angle was overridden
-    ...(s.body.angle != null ? { ux: Math.cos(s.body.angle), uy: Math.sin(s.body.angle) } : {}),
+    ...(attrs.angle != null ? { ux: Math.cos(attrs.angle), uy: Math.sin(attrs.angle) } : {}),
   };
+}
+
+/** A full `Body` from a scenario's partial attrs (the engine's default shape). */
+export function resolveBody(s: Scenario): Body {
+  return resolvePartialBody(s.tokens ?? [s.force], s.body);
 }
 
 function makeParticle(p: import('./types.ts').ScenarioParticle): Particle {
@@ -210,6 +228,8 @@ export function runScenario(input: Scenario, forces: ForceRegistry = allForces()
   const store = new FieldStore();
   for (const sp of s.particles) store.add(makeParticle(sp));
   const body = resolveBody(s);
+  // cross-body scenarios (workover v0.3): extra bodies simulate alongside the main one.
+  const bodies = [body, ...(s.extraBodies ?? []).map((e) => resolvePartialBody(e.tokens, e.attrs))];
   const env = makeEnv(store) as Env & { __grids: Map<string, ScalarGridImpl> };
 
   const origRandom = Math.random;
@@ -225,7 +245,7 @@ export function runScenario(input: Scenario, forces: ForceRegistry = allForces()
       env.frameN = f;
       env.t = f / 60;
       store.reindex();
-      step({ store, bodies: [body], env, forces, conditions });
+      step({ store, bodies, env, forces, conditions });
       if (env.dt) for (const g of env.__grids.values()) g.step();
       trajectory.push(store.particles.map(snap));
     }

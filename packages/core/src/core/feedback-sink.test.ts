@@ -110,3 +110,26 @@ test('lit boundary values match the legacy strict comparisons (0.5 does not arm,
   defaultFeedbackSink(el, { lit: 0.39 });
   assert.deepEqual(el.events[1], { type: 'field:dim', value: 0.39 });
 });
+
+test('measured thermodynamics write the bare names --entropy / --coherence / --temperature (workover v0.3)', () => {
+  const el = fakeEl();
+  defaultFeedbackSink(el, { entropy: 0.123456, coherence: 0.876544, temperature: 0.5 });
+  assert.deepEqual(el.writes, [
+    ['--entropy', '0.123'],
+    ['--coherence', '0.877'],
+    ['--temperature', '0.500'],
+  ]);
+  // independent channels — any subset writes only itself
+  const el2 = fakeEl();
+  defaultFeedbackSink(el2, { temperature: 0 });
+  assert.deepEqual(el2.writes, [['--temperature', '0.000']]);
+});
+
+test('thermo channels sit after load and before lit in a full write (the documented order)', () => {
+  const el = fakeEl();
+  defaultFeedbackSink(el, { density: 0.1, load: 0.2, entropy: 0.3, coherence: 0.7, temperature: 0.4, lit: 0.1 });
+  assert.deepEqual(
+    el.writes.map(([n]) => n),
+    ['--d', '--forces-density', '--field-density', '--load', '--mass', '--entropy', '--coherence', '--temperature', '--lit'],
+  );
+});

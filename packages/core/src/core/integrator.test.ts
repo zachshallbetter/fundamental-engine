@@ -284,3 +284,82 @@ test('mass leaves a wall bounce a true reflection', () => {
   // reflect (−2 × 0.85 = −1.7) then friction × 0.95 = −1.615, mass-independent.
   assert.ok(Math.abs(heavy.vx - -1.615) < 1e-9, `vx ${heavy.vx}`);
 });
+
+// ── the `screen` modifier (workover v0.3): cross-body attenuation in the force pass ──
+
+test('screen damps another body\'s force on matter inside its radius — and not outside', () => {
+  // probe reads the effective strength, so the attenuation is measured exactly.
+  const probe: Force = { token: 'probe', label: 'P', apply: (b, p) => void (p.vx += b.strength) };
+  const screenBody = makeBody({ tokens: ['screen'], cx: 300, cy: 100, range: 200, strength: 1, screenMin: 0 });
+  const wellNear = makeBody({ tokens: ['probe'], cx: 450, cy: 100, range: 600, strength: 1 });
+
+  // inside the quiet zone (at the screen's core): factor = 1 − 1·1 = 0 → no force at all.
+  const inside = makeP({ x: 300, y: 100, vx: 0 });
+  runBodies(inside, [screenBody, wellNear], { probe }, makeEnv());
+  assert.equal(inside.vx, 0, `inside the screen core the force must vanish (got ${inside.vx})`);
+
+  // outside the radius (600px from the screen): untouched — plain probe strength × friction.
+  const outside = makeP({ x: 900, y: 100, vx: 0 });
+  const wellFar = makeBody({ tokens: ['probe'], cx: 1000, cy: 100, range: 600, strength: 1 });
+  runBodies(outside, [screenBody, wellFar], { probe }, makeEnv());
+  assert.ok(Math.abs(outside.vx - 1 * FRICTION) < 1e-12, `outside must be unattenuated (got ${outside.vx})`);
+});
+
+test('screen falloff is smooth toward the edge (no hard cliff) and data-screen-min clamps the floor', () => {
+  const probe: Force = { token: 'probe', label: 'P', apply: (b, p) => void (p.vx += b.strength) };
+  const mkRun = (px: number, screenMin: number): number => {
+    const screenBody = makeBody({ tokens: ['screen'], cx: 300, cy: 100, range: 200, strength: 1, screenMin });
+    const well = makeBody({ tokens: ['probe'], cx: px + 10, cy: 100, range: 600, strength: 1 });
+    const p = makeP({ x: px, y: 100, vx: 0 });
+    runBodies(p, [screenBody, well], { probe }, makeEnv());
+    return p.vx / FRICTION; // the effective strength the probe felt
+  };
+  // monotonic recovery toward the edge: deeper in the zone = stronger attenuation.
+  const at50 = mkRun(350, 0); // d = 50 → factor 1 − (0.75)² = 0.4375
+  const at150 = mkRun(450, 0); // d = 150 → factor 1 − (0.25)² = 0.9375
+  const at199 = mkRun(499, 0); // d = 199 → factor ≈ 1 (smooth approach, no cliff)
+  assert.ok(Math.abs(at50 - 0.4375) < 1e-9, `factor at d=50: ${at50}`);
+  assert.ok(Math.abs(at150 - 0.9375) < 1e-9, `factor at d=150: ${at150}`);
+  assert.ok(at199 > 0.9999 && at199 <= 1, `factor at the edge approaches 1 smoothly: ${at199}`);
+  // the min clamp holds at the core
+  const clamped = mkRun(300, 0.25);
+  assert.ok(Math.abs(clamped - 0.25) < 1e-9, `data-screen-min floors the factor: ${clamped}`);
+});
+
+test('a screen never attenuates its own siblings (it shields against OTHER bodies)', () => {
+  const probe: Force = { token: 'probe', label: 'P', apply: (b, p) => void (p.vx += b.strength) };
+  const screenWithProbe = makeBody({ tokens: ['screen', 'probe'], cx: 300, cy: 100, range: 200, strength: 1, screenMin: 0 });
+  const p = makeP({ x: 300, y: 100, vx: 0 });
+  runBodies(p, [screenWithProbe], { probe }, makeEnv());
+  assert.ok(Math.abs(p.vx - 1 * FRICTION) < 1e-12, `own siblings stay at full strength (got ${p.vx})`);
+});
+
+// ── the modifier contract (workover v0.3): order-independent composition ──
+
+test('modifier determinism: authored token order does not change the outcome', () => {
+  const probe: Force = { token: 'probe', label: 'P', apply: (b, p) => void (p.vx += b.strength) };
+  const runOrder = (tokens: string[]): number => {
+    const body = makeBody({ tokens, cx: 200, cy: 100, range: 300, strength: 2, spin: 1, ux: 1, uy: 0 });
+    const p = makeP({ x: 300, y: 100, vx: 0 }); // ahead of the heading → inside the cone
+    runBodies(p, [body], { resonate, spotlight, probe }, makeEnv({ t: Math.PI / 6 })); // resonate ×2
+    return p.vx;
+  };
+  const a = runOrder(['spotlight', 'resonate', 'probe']);
+  const b = runOrder(['resonate', 'probe', 'spotlight']);
+  const c = runOrder(['probe', 'spotlight', 'resonate']);
+  assert.ok(a > 0, 'the cone admits the particle and resonate amplifies');
+  assert.equal(a, b);
+  assert.equal(b, c);
+});
+
+test('the parser-classified sets are honored; bodies built without them are memoized lazily', () => {
+  // a body built raw (no classified field — the conformance/test path) still runs the
+  // modifier pass correctly: the integrator memoizes classification on first touch.
+  const body = makeBody({ tokens: ['resonate', 'probe'], cx: 200, cy: 100, range: 300, strength: 2, spin: 1 });
+  assert.equal(body.classified, undefined);
+  const probe: Force = { token: 'probe', label: 'P', apply: (b, p) => void (p.vx += b.strength) };
+  const p = makeP({ x: 300, y: 100 });
+  runBodies(p, [body], { resonate, probe }, makeEnv({ t: Math.PI / 6 }));
+  assert.deepEqual(body.classified?.modifiers, ['resonate']);
+  assert.deepEqual(body.classified?.forces, ['probe']);
+});

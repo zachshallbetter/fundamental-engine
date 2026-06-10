@@ -730,6 +730,59 @@ export const EXPERIMENTS: ForceConformance[] = [
     expectations: [gatesOutsideCone(0, Math.PI)],
   },
   {
+    // screen is a CROSS-BODY modifier (workover v0.3): the quiet zone damps OTHER bodies'
+    // forces on matter inside its radius. Two identical attract wells act on two identical
+    // particles; one particle sits at the screen's core (factor → 0), the far pair is well
+    // outside the screen's range and must behave as plain attract.
+    scenario: {
+      force: 'screen',
+      label: "A quiet zone attenuating a neighbour attractor's pull",
+      family: 'extended',
+      klass: 'modifier',
+      body: { cx: 0, cy: 0, range: 200, strength: 1 }, // the screen: full cancellation at its core
+      extraBodies: [
+        { tokens: ['attract'], attrs: { cx: 150, cy: 0, range: 300, strength: 1 } }, // shielded pair
+        { tokens: ['attract'], attrs: { cx: 150, cy: 1200, range: 300, strength: 1 } }, // free pair
+      ],
+      particles: [
+        { x: 0, y: 0 }, // inside the screen (d = 0 → screenFactor 0)
+        { x: 0, y: 1200 }, // far outside the screen — the control
+      ],
+      frames: 30,
+    },
+    expectations: [
+      check('matter inside the quiet zone is measurably attenuated vs outside', 'invariant', (r) => {
+        const last = r.trajectory[r.trajectory.length - 1]!;
+        const first = r.trajectory[0]!;
+        const dispIn = Math.hypot(last[0]!.x - first[0]!.x, last[0]!.y - first[0]!.y);
+        const dispOut = Math.hypot(last[1]!.x - first[1]!.x, last[1]!.y - first[1]!.y);
+        return {
+          pass: dispOut > 1 && dispIn < dispOut * 0.05,
+          measured: `inside ${f3(dispIn)}px vs outside ${f3(dispOut)}px`,
+          expected: 'inside < 5% of outside (and outside actually moves)',
+        };
+      }),
+      check('no effect outside the radius — the control feels plain attract', 'exact', (r) => {
+        // frame 1 = one step: attract's Δvx 0.125 at d=150 (S=1, r=300), then friction ×0.95.
+        const vx = r.trajectory[1]![1]!.vx;
+        const want = 0.125 * 0.95;
+        return {
+          pass: Math.abs(vx - want) < 1e-9,
+          measured: `vx ${vx.toFixed(6)}`,
+          expected: `${want.toFixed(6)} (unattenuated attract × friction)`,
+        };
+      }),
+      check('the screen itself never moves matter (a pure modifier)', 'invariant', (r) => {
+        const d = r.applyDelta[0]!;
+        return {
+          pass: d.dvx === 0 && d.dvy === 0,
+          measured: `Δv (${f3(d.dvx)}, ${f3(d.dvy)})`,
+          expected: '(0, 0) — apply is a no-op',
+        };
+      }),
+    ],
+  },
+  {
     scenario: {
       force: 'pigment',
       label: 'A particle overlapping a pigment body',

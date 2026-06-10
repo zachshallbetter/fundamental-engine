@@ -47,6 +47,14 @@ export const defaultFeedbackSink: FeedbackSink = (el, ch) => {
     el.style.setProperty('--load', loadStr);
     el.style.setProperty('--mass', loadStr);
   }
+  // measured thermodynamics (workover v0.3): the bare names per the workover/BACKLOG contract.
+  // Engine-MEASURED local thermodynamics — distinct from the platform's INFERRED interaction
+  // lanes (`--field-entropy` / `--field-coherence`, system-contracts §6), and numeric where the
+  // `--coherence` on `:root` from cssTokens() is a palette *color* (element-scoped, so this
+  // shadows that color only on data-feedback subtrees that read it — none in the tree today).
+  if (ch.entropy !== undefined) el.style.setProperty('--entropy', ch.entropy.toFixed(3));
+  if (ch.coherence !== undefined) el.style.setProperty('--coherence', ch.coherence.toFixed(3));
+  if (ch.temperature !== undefined) el.style.setProperty('--temperature', ch.temperature.toFixed(3));
   if (ch.lit !== undefined) {
     const lit = ch.lit;
     el.style.setProperty('--lit', lit.toFixed(3));

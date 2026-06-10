@@ -3,7 +3,14 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeMetrics, METRIC_KINDS, type MetricInputs } from './metrics.ts';
+import {
+  computeMetrics,
+  groundedRecency,
+  parseFieldAt,
+  DEFAULT_RECENCY_HALF_LIFE_MS,
+  METRIC_KINDS,
+  type MetricInputs,
+} from './metrics.ts';
 
 const base: MetricInputs = {
   proximity: 0,
@@ -73,6 +80,48 @@ test('confidence is never fabricated from relationship presence', () => {
 test('confidence is present only when supplied, and is clamped to [0,1]', () => {
   assert.equal(computeMetrics({ ...base, supplied: { confidence: 0.62 } }).confidence, 0.62);
   assert.equal(computeMetrics({ ...base, supplied: { confidence: 1.5 } }).confidence, 1, 'out-of-range supplied confidence is clamped');
+});
+
+test('a declared data-field-at GROUNDS the recency lane; without one it stays interaction-inferred', () => {
+  const now = 1_750_000_000_000;
+  // a fake element whose data happened half a half-life ago (3.5 days on the 7-day default)
+  const at = now - DEFAULT_RECENCY_HALF_LIFE_MS / 2;
+  const el = { getAttribute: (n: string) => (n === 'data-field-at' ? String(at) : null) };
+  const grounded = groundedRecency(el, now);
+  assert.ok(grounded != null && Math.abs(grounded - Math.SQRT1_2) < 1e-12, 'freshness(half a half-life) = 2^−0.5');
+  // the grounded value rides the supplied lane and wins over the interaction-inferred path
+  const m = computeMetrics({ ...base, supplied: { recency: grounded }, prev: { recency: 0.2 } });
+  assert.ok(Math.abs(m.recency - grounded!) < 1e-12, 'grounded recency lands in the lane');
+  // the DEFAULT path (no timestamp) is unchanged: recency eases down from the prior frame
+  const inferred = computeMetrics({ ...base, prev: { recency: 0.2 } });
+  assert.ok(Math.abs(inferred.recency - 0.197) < 1e-9, 'interaction-inferred decay (0.2 − 0.003)');
+  // an explicit data-field-recency wins over the timestamp (apply-recipe only derives when absent)
+  const explicit = computeMetrics({ ...base, supplied: { recency: 0.9 } });
+  assert.equal(explicit.recency, 0.9);
+});
+
+test('parseFieldAt accepts ISO 8601 and epoch ms; invalid reads as absent', () => {
+  assert.equal(parseFieldAt('2026-06-10T00:00:00Z'), Date.parse('2026-06-10T00:00:00Z'), 'ISO 8601');
+  assert.equal(parseFieldAt('1750000000000'), 1_750_000_000_000, 'epoch ms');
+  assert.equal(parseFieldAt('not a timestamp'), undefined);
+  assert.equal(parseFieldAt(''), undefined);
+  assert.equal(parseFieldAt(null), undefined);
+  // no declared timestamp → no grounding (the caller falls through to the inferred path)
+  assert.equal(groundedRecency({ getAttribute: () => null }, 1_750_000_000_000), undefined);
+});
+
+test('data-field-halflife (ms) overrides the 7-day default; invalid half-lives fall back', () => {
+  const now = 1_750_000_000_000;
+  const at = now - 86_400_000; // one day ago
+  const attrs = (halflife: string | null) => ({
+    getAttribute: (n: string) =>
+      n === 'data-field-at' ? String(at) : n === 'data-field-halflife' ? halflife : null,
+  });
+  assert.equal(groundedRecency(attrs('86400000'), now), 0.5, 'one-day half-life: exactly 0.5 a day later');
+  const week = groundedRecency(attrs(null), now);
+  assert.ok(week != null && Math.abs(week - Math.pow(2, -1 / 7)) < 1e-12, 'default 7-day half-life');
+  assert.equal(groundedRecency(attrs('junk'), now), week, 'invalid half-life falls back to the default');
+  assert.equal(groundedRecency(attrs('-5'), now), week, 'non-positive half-life falls back to the default');
 });
 
 test('risk is never defaulted to safe — absent unless supplied', () => {
