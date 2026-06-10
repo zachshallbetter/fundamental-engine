@@ -7,8 +7,13 @@
 // `astro:before-swap` so nothing survives a client-side navigation.
 //
 // The wired controls are looked up by selector/id, so this is safe to call once the home
-// markup is in the DOM. `<field-root>` upgrades asynchronously, so we bind unconditionally
-// and check each method at call time (the element reference stays valid across upgrade).
+// markup is in the DOM. `<field-root>` upgrades asynchronously (Base.astro defers the import
+// to requestIdleCallback, which Safari does not implement — it falls back to setTimeout(300)).
+// Long-lived field state is driven through the element's ATTRIBUTES, not methods: attributes
+// set before the upgrade become the engine's construction-time config; set after, they forward
+// through attributeChangedCallback. One-shots (burst, flowTo/clearFlow) and hover-transients
+// (threads) stay imperative — their window is user-interaction-gated, so the element will
+// always be upgraded by the time they fire.
 
 type FieldEl = HTMLElement & {
   rescan?: () => void;
@@ -16,8 +21,6 @@ type FieldEl = HTMLElement & {
   clearFlow?: () => void;
   burst?: (x: number, y: number, color?: string) => void;
   setFormation?: (name: string) => void;
-  setAttention?: (on: boolean) => void;
-  setCausality?: (on: boolean) => void;
   threads?: (list: unknown) => void;
 };
 
@@ -199,7 +202,10 @@ export function initHomeRuntime(): () => void {
     );
   });
 
-  // formation pills
+  // formation pills. setFormation has no attribute equivalent, but the upgrade-race window is
+  // acceptably narrow here: the pills require a user click, and the scroll-IO path fires only
+  // after the user has scrolled to threshold 0.5 — both gated on user interaction that
+  // practically cannot happen within the 300ms boot delay. Left imperative intentionally.
   const setForm = (name: string) => {
     if (field && field.setFormation) field.setFormation(name);
     const readout = document.getElementById("form-name");
@@ -233,13 +239,17 @@ export function initHomeRuntime(): () => void {
   obs.push(formObs);
 
   // conserved attention (§2.4): switch the field's finite strength budget ON only while its
-  // demo is in view, so the rest of the manual is unaffected.
+  // demo is in view, so the rest of the manual is unaffected. Driven via the `attention`
+  // attribute (not setAttention()) so the write survives the upgrade race: the IO can fire
+  // within the first 300ms under Safari before <field-root> upgrades, and a method call on a
+  // bare HTMLElement is silently dropped.
   const attnSection = document.querySelector("[data-attention-demo]");
   if (attnSection && field) {
     const attnObs = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (field.setAttention) field.setAttention(e.isIntersecting);
+          if (e.isIntersecting) field.setAttribute("attention", "");
+          else field.removeAttribute("attention");
         }
       },
       { threshold: 0.45 },
@@ -249,13 +259,14 @@ export function initHomeRuntime(): () => void {
   }
 
   // cross-boundary causality (Concept 4): density spills to neighbours — on only while its
-  // demo is in view.
+  // demo is in view. Same attribute-write pattern as attention above.
   const causalSection = document.querySelector("[data-causality-demo]");
   if (causalSection && field) {
     const causalObs = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (field.setCausality) field.setCausality(e.isIntersecting);
+          if (e.isIntersecting) field.setAttribute("causality", "");
+          else field.removeAttribute("causality");
         }
       },
       { threshold: 0.45 },
@@ -278,7 +289,9 @@ export function initHomeRuntime(): () => void {
   window.addEventListener("scroll", onScroll, { passive: true, signal: sig });
   onScroll();
 
-  // threads between a hovered item and its set
+  // threads between a hovered item and its set. threads() has no attribute equivalent and is
+  // hover-gated — by the time a pointer can enter an item, the 300ms boot has elapsed and
+  // <field-root> is upgraded. Left imperative intentionally.
   document.querySelectorAll<HTMLElement>("[data-threads]").forEach((set) => {
     const items = [...set.querySelectorAll<HTMLElement>(".ti")];
     items.forEach((it) => {
@@ -325,5 +338,8 @@ export function initHomeRuntime(): () => void {
     clearTimeout(startupRescan);
     ac.abort();
     obs.forEach((o) => o.disconnect());
+    // reset any attribute-driven state so a re-init (astro:page-load) starts clean
+    field?.removeAttribute("attention");
+    field?.removeAttribute("causality");
   };
 }

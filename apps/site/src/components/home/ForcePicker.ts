@@ -8,11 +8,15 @@
 //     the underlay). setAccent tints both surfaces to the field's color.
 // Active only while the [data-forcepick] section is in view; restored to dots/off on leave.
 // rescan() on select/enter/leave. Shared by /eli5 and the home (/) — both render <NaturalFieldsSection>.
+//
+// The surfaces are driven via the element's ATTRIBUTES (accent/render/overlay), not its methods.
+// <field-root> upgrades asynchronously (the idle boot in Base.astro — a plain setTimeout under
+// Safari), so a method call made before the upgrade lands on a bare HTMLElement and is silently
+// dropped, leaving the overlay dark until the next picker event. Attributes close that gap: set
+// pre-upgrade they are the engine's construction-time config; set post-upgrade they forward
+// through attributeChangedCallback to the same setters.
 type FieldEl = HTMLElement & {
   rescan?: () => void;
-  setRender?: (m: string) => void;
-  setOverlay?: (m: string) => void;
-  setAccent?: (hex: string) => void;
 };
 
 export function initForcePicker(): () => void {
@@ -41,14 +45,14 @@ export function initForcePicker(): () => void {
       source.setAttribute("data-color", c.color || "#6366f1");
       source.style.setProperty("--fc", c.color || "#6366f1");
       source.classList.add("on");
-      field?.setAccent?.(c.color || "#6366f1"); // tint both surfaces to the field's color
-      field?.setRender?.(c.render || "dots"); // UNDER grammar: dots / links (bonds) / trails (fade)
-      field?.setOverlay?.(c.overlay || "off"); // OVER: live field structure, in front of content
+      field?.setAttribute("accent", c.color || "#6366f1"); // tint both surfaces to the field's color
+      field?.setAttribute("render", c.render || "dots"); // UNDER grammar: dots / links (bonds) / trails (fade)
+      field?.setAttribute("overlay", c.overlay || "off"); // OVER: live field structure, in front of content
     } else {
       source.removeAttribute("data-body");
       source.classList.remove("on");
-      field?.setRender?.("dots");
-      field?.setOverlay?.("off");
+      field?.setAttribute("render", "dots");
+      field?.setAttribute("overlay", "off");
     }
     rescan();
   };
@@ -83,8 +87,8 @@ export function initForcePicker(): () => void {
     io.disconnect();
     source.removeAttribute("data-body");
     source.classList.remove("on");
-    field?.setRender?.("dots");
-    field?.setOverlay?.("off");
+    field?.setAttribute("render", "dots");
+    field?.setAttribute("overlay", "off");
     rescan();
     if (home) home.insertBefore(source, anchor); // restore for a same-page re-init
   };

@@ -24,6 +24,12 @@ the #228 write-path migration shipped with **zero observable change** because th
 was tested against was built from real bugs first. Protect this ratchet — it is worth more
 than any individual fix.
 
+A corollary: **an exception list in a test is tracked debt, not resolution.** Each entry
+names a silent gap the suite is agreeing not to see. Burn-downs replace the entry with a
+positive check — `home.spec.ts`'s `UNTRACEABLE = ["fieldflow", "warp"]` became two probe
+recipes plus per-force demo-accuracy tests, and the boot test now asserts every
+chip-bearing stage holds exactly one traced canvas, no carve-outs.
+
 ## 2. The house bug class: silent contract gaps
 
 field-ui's authoring model is declarative attribute pairs, and their failure mode is never
@@ -35,6 +41,7 @@ an error — it is a page that quietly shows nothing. We have shipped this class
 | Threads' depth variable | a page-local `--d` silently shadowed the engine's density channel |
 | The accretion vessel (and two more homepage sinks) | `data-absorb` without `data-feedback` — captured for months, displayed nothing |
 | Eight stage canvases missing | a tracer's `return null` for unknown tokens read as a design choice |
+| The fieldflow demo chip | a transport force with no field-radiating sibling is a kinematic no-op — the stage looked plausibly alive (ambient drift) for months |
 
 The rules:
 
@@ -44,6 +51,32 @@ The rules:
   looks intentional.
 - Page-local CSS custom properties must not collide with the engine's channels (`--d`,
   `--load`, `--lit`, `--field-*`). Prefix page locals (`--cc`, `--depth`, `--bar`).
+
+**Sub-variant: the custom-element upgrade race.** Imperative method calls on a
+`<field-root>` (or any custom element with a deferred boot) made before `customElements.define`
+runs land on a bare `HTMLElement` and are silently dropped. `Base.astro` defers
+`import('@field-ui/elements')` to `requestIdleCallback` — but Safari has no
+`requestIdleCallback`, so the upgrade fires on a plain `setTimeout(300)` there. Any call that
+races this window sets durable wrong state in WebKit and is invisible in Chromium (which wins
+the race almost always). Observed in `ForcePicker.ts`: `setOverlay('streamlines')` called at
+IO-entry produced a permanently dark overlay in ~50 % of WebKit runs
+(`home.spec.ts:103` data-forcepick test).
+
+The fix: **drive long-lived field state through attributes, not methods.** Attributes set
+pre-upgrade become the engine's construction-time config; set post-upgrade they forward through
+`attributeChangedCallback` to the same setters — the race window is closed.
+
+```ts
+// ❌ method call — drops silently if element not yet upgraded (Safari)
+field?.setOverlay?.('streamlines');
+
+// ✓ attribute write — works pre- and post-upgrade
+field?.setAttribute('overlay', 'streamlines');
+```
+
+One-shots (burst, flowTo) may stay imperative — they have no meaningful pre-upgrade behavior.
+IO-driven toggles (attention, causality) and any mode that must survive a boot restart should
+use attributes.
 
 ## 3. Verify in the browser; treat probes as suspects
 

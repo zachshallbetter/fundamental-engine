@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { traceRaw, traceDipole, type RawTrace } from './field-probe.ts';
+import { traceRaw, traceDipole, WARP_PAIR_D, WARP_THROAT, type RawTrace } from './field-probe.ts';
 import { DEMO_OVERRIDES } from './demo-forces.ts';
 
 const mean = (xs: number[]): number => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
@@ -250,6 +250,21 @@ const CHECKS: Record<string, Check> = {
   resonate: (A) => {
     const r0 = mean(A.parts.map((p) => p.r0)), rN = mean(A.parts.map((p) => p.rN));
     return { ok: rN < r0 * 0.92, detail: `meanR ${r0.toFixed(0)}→${rN.toFixed(0)} (pulsing attract → inward)` };
+  },
+  fieldflow: (A) => {
+    // probes are released at REST beside a magnet; only fieldflow's transport along the net
+    // dipole field can move them — real drift from zero proves the field-follow does work.
+    const moved = mean(A.parts.map((p) => Math.hypot(p.xN - p.x0, p.yN - p.y0)));
+    const spN = mean(A.parts.map((p) => p.spN));
+    return { ok: moved > 20 && spN > 0.3, detail: `mean drift ${moved.toFixed(1)} from rest, final speed ${spN.toFixed(2)} (want stream along the lines)` };
+  },
+  warp: (A) => {
+    // probes driven into throat A must RELOCATE: end near the paired throat (down the
+    // heading), not at A — and the pool is conserved (a wormhole, not a source or sink).
+    const px = A.cx + A.headingX * WARP_PAIR_D, py = A.cy + A.headingY * WARP_PAIR_D;
+    const relocated = A.parts.filter((p) => Math.hypot(p.xN - px, p.yN - py) < WARP_THROAT * 2).length;
+    const conserved = A.finalCount === A.initCount;
+    return { ok: relocated >= A.parts.length / 2 && conserved, detail: `${relocated}/${A.parts.length} probes emerged at the pair, pool ${A.initCount}→${A.finalCount} (want relocation, conserved)` };
   },
   spotlight: (A) => {
     // stream gated to a cone around the heading: probes inside the cone travel along it; outside don't.
