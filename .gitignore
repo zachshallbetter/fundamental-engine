@@ -28,3 +28,4 @@ AGENTS.md
 # Playwright artifacts (apps/site e2e)
 test-results/
 playwright-report/
+.board_snapshot.*
