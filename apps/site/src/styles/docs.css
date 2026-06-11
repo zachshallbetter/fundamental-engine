@@ -88,13 +88,23 @@
   margin-bottom: 1.5rem;
 }
 .docs-group-title {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--mono);
   font-size: 0.6rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-4);
   margin-bottom: 0.6rem;
+}
+/* the per-section wayfinding glyph + color (docs-nav group meta) — decorative, via CSS content
+   so it never enters the title's textContent (the IA stays clean for tests + a11y). */
+.docs-group-title::before {
+  content: var(--group-glyph, '');
+  color: var(--group-color, var(--text-4));
+  font-size: 0.78rem;
+  line-height: 1;
 }
 .docs-group ul {
   list-style: none;
@@ -121,9 +131,24 @@
   background: rgba(255, 255, 255, 0.03);
 }
 .docs-group a[aria-current='page'] {
-  color: var(--accent);
-  border-left-color: var(--accent);
-  background: rgba(77, 163, 255, 0.06);
+  color: var(--group-color, var(--accent));
+  border-left-color: var(--group-color, var(--accent));
+  background: color-mix(in srgb, var(--group-color, var(--accent)) 8%, transparent);
+}
+
+/* ── the sidebar as a Priority Well (DocsRuntime, signals-only) ───────────────
+   priority-well writes --field-attention onto each nav link (the current route pinned to 1);
+   ink + weight follow it, and the current item gets a per-section glow. Active ONLY when the
+   docs field is on (same gate as the attention TOC) — resting docs read plain. */
+.docs-shell:has(.docs-content[data-field-docs='on']) .docs-group a {
+  --att: var(--field-attention, 0);
+  color: color-mix(in srgb, var(--text) calc(var(--att) * 65%), var(--text-3));
+  font-variation-settings: 'wght' calc(400 + var(--att) * 230);
+}
+.docs-shell:has(.docs-content[data-field-docs='on']) .docs-group a[aria-current='page'] {
+  color: var(--group-color, var(--accent));
+  text-shadow: 0 0 calc(var(--att, 0) * 10px)
+    color-mix(in srgb, var(--group-color, var(--accent)) calc(var(--att, 0) * 55%), transparent);
 }
 /* Examples deep-links — they leave the docs shell (the example family's own layout) */
 .docs-group a.ext .ext-mark {
@@ -199,6 +224,7 @@
   border-left: 1px solid var(--line);
 }
 .docs-toc a {
+  position: relative;
   font-size: 0.8rem;
   line-height: 1.35;
   color: var(--text-3);
@@ -208,9 +234,28 @@
   border-left: 1px solid transparent;
   transition: color 0.15s;
 }
+/* level marker on the rail — a bigger dot for h2, smaller for h3 (the outline "icon"). */
+.docs-toc a::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--line-2);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
 .docs-toc a.lvl3 {
   padding-left: 1.5rem;
   font-size: 0.76rem;
+}
+.docs-toc a.lvl3::before {
+  width: 3px;
+  height: 3px;
 }
 .docs-toc a:hover {
   color: var(--text-2);
@@ -233,6 +278,13 @@
 .docs-shell:has(.docs-content[data-field-docs='on']) .docs-toc a.active {
   /* the left-rail tick glows with the section's attention — felt, not loud */
   box-shadow: -7px 0 14px -8px rgba(77, 163, 255, calc(0.2 + var(--att, 0) * 0.6));
+}
+/* the read trail — the marker dot fills + glows with --mem (reading-field's memory lane), so the
+   sections you've dwelt on stay marked as you scroll past. Invisible at rest (--mem 0). */
+.docs-shell:has(.docs-content[data-field-docs='on']) .docs-toc a::before {
+  background: color-mix(in srgb, var(--accent) calc(15% + var(--mem, 0) * 85%), var(--line-2));
+  box-shadow: 0 0 calc(var(--mem, 0) * 7px)
+    color-mix(in srgb, var(--accent) calc(var(--mem, 0) * 60%), transparent);
 }
 
 /* headings are bodies while the docs field runs; the engine's --d (density gathers
@@ -267,12 +319,25 @@
 
 /* prev / next */
 .docs-prevnext {
+  position: relative;
   margin-top: 3rem;
   padding-top: 1.6rem;
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+}
+/* progress through the linear reading order — "N of M" centered between prev/next */
+.docs-prevnext .pn-progress {
+  position: absolute;
+  left: 50%;
+  top: calc(1.6rem + 50%);
+  transform: translate(-50%, -50%);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+  pointer-events: none;
 }
 .docs-prevnext .pn {
   display: flex;
@@ -288,9 +353,20 @@
 .docs-prevnext .pn.next {
   text-align: right;
   margin-left: auto;
+  /* the "likely next" path reads a touch forward (navigation-current) */
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
 }
 .docs-prevnext .pn:hover {
   border-color: var(--accent);
+}
+/* the route you came from (visited) carries a faint memory tint on its label */
+.docs-prevnext .pn.nav-visited span {
+  color: color-mix(in srgb, var(--accent) calc(35% + var(--field-memory, 0) * 65%), var(--text-4));
+}
+@media (max-width: 560px) {
+  .docs-prevnext .pn-progress {
+    display: none;
+  }
 }
 .docs-prevnext .pn span {
   font-family: var(--mono);
@@ -1051,15 +1127,47 @@ dialog.docs-search::backdrop {
   font-size: 0.58rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-4);
+  color: var(--hit-color, var(--text-4));
   padding: 0.3rem 0.45rem 0.2rem;
 }
 .docs-search .ds-hit {
+  position: relative;
   display: block;
   text-decoration: none;
   border: 1px solid transparent;
+  border-left: 2px solid transparent;
   border-radius: 8px;
-  padding: 0.45rem 0.55rem;
+  padding: 0.45rem 0.55rem 0.45rem 1.6rem;
+}
+/* result-type icon: a section hit (#) vs a whole page (¶), tinted the section's color */
+.docs-search .ds-hit::before {
+  position: absolute;
+  left: 0.55rem;
+  top: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1;
+  color: var(--hit-color, var(--text-4));
+  opacity: 0.75;
+}
+.docs-search .ds-hit-page::before {
+  content: '¶';
+}
+.docs-search .ds-hit-section::before {
+  content: '#';
+}
+/* "seen" — a previously-visited route gets a dot (filled by --field-memory when the relevance
+   field runs; visible on its own under reduced motion since .ds-seen is set from the visit log) */
+.docs-search .ds-hit.ds-seen::after {
+  content: '';
+  position: absolute;
+  right: 0.6rem;
+  top: 0.72rem;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--hit-color, var(--accent));
+  opacity: calc(0.45 + var(--field-memory, 0.55) * 0.55);
 }
 .docs-search .ds-hit b {
   display: block;
@@ -1085,8 +1193,10 @@ dialog.docs-search::backdrop {
 }
 .docs-search .ds-hit:hover {
   border-color: var(--line-2);
+  border-left-color: var(--hit-color, var(--line-2));
 }
 .docs-search .ds-hit[aria-selected='true'] {
-  border-color: var(--accent);
-  background: rgba(77, 163, 255, 0.07);
+  border-color: var(--hit-color, var(--accent));
+  border-left-color: var(--hit-color, var(--accent));
+  background: color-mix(in srgb, var(--hit-color, var(--accent)) 8%, transparent);
 }

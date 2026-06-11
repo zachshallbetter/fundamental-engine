@@ -191,3 +191,38 @@ helper (every runtime hand-rolls the same reflow), [#296](https://github.com/zac
 attention concept), [#297](https://github.com/zachshallbetter/field-ui/issues/297) a named
 signals-only engine mode, [#299](https://github.com/zachshallbetter/field-ui/issues/299) a
 mobile/touch QA pass.
+
+## 9. The same pattern, turned on the chrome (the navigation sweep)
+
+The invisible-field is not only for content — the site's own **navigation chrome** is a body set
+too. The nav sweep makes every navigation surface a field of its own links, each driven by an
+existing catalog recipe, all signals-only, all progressive enhancement (with the engine off or
+under reduced motion the `--field-*` lanes are unset and the links render as plain, reachable
+chrome):
+
+- top nav + footer → **`wayfinding-field`** ("where am I"); the home chapter rail → **`wayfinding-current`**
+  ("where have I been"); docs/writings sidebars → **`priority-well`** (the current route pinned as
+  the well); the on-this-page outline + examples spy → **`reading-field`** (a dwell-accreted read
+  trail); search → **`search-relevance-field`**; breadcrumbs + prev/next pagers → **`navigation-current`**.
+- A cross-surface **visit log** grounds one "seen / visited" memory shared by search, breadcrumbs,
+  and pagers.
+
+**What it earned the platform.** The navigation-chrome idiom — run a recipe `render: []` over the
+`<a href>` links, pin the current, mark the visited, return a teardown — lifted out of the site into
+**`bindFieldNav`** (`@field-ui/platform`), the same way the example family earned FLIP and
+`allocateAttention` above.
+
+**The honesty it forced.** On a small nav (a two-link pager, a breadcrumb) "signals-only" is mostly
+a *grounded-metric transport*: the host supplies the signal (current / visited), the platform eases
+it, CSS consumes it — the recipe's physics forces are dormant. That is the same honesty as a
+declared `data-field-at` grounding the recency lane (§6), not a claim that physics drives the nav.
+
+It also exposed a real silent gap: a recipe may **declare a metric the platform can never produce**.
+`computeMetrics` writes seven **computed** lanes; `confidence`/`risk` are **supplied-only** (the
+engine never invents them); everything else a recipe lists is **designed** — the host must supply
+`data-field-<m>` (or a domain model) or the `--field-<m>` lane is *inert*: declared, bound, never
+written. The sweep hit this — `navigation-current` declares `signal` and `route-strength`, which no
+signals-only binding produces. `classifyMetric(name)` now names the split, and **`lintInertFeedback`**
+(in `lintPlatform`) flags a feedback binding to an inert designed lane — the same silent-contract
+class as `lintSinkFeedback` (a sink that captures but never reports). A lane you can read but the
+engine will never write is now a lint, not a surprise.

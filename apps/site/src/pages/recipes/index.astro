@@ -4,6 +4,7 @@ import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
 import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, EXPERIMENTAL_RECIPES, type FieldRecipe } from '@field-ui/core';
+import { metricTitle } from '../../lib/metric-lanes.ts';
 
 // The recipes hub — the engine's own catalog of 64 portable `FieldRecipe`s across four tiers
 // (RECIPE_TIERS: core/applied/systems/operational). Each card runs the REAL recipe live (lazily, via
@@ -55,7 +56,12 @@ const filters = [
 
     <div class="filters" role="group" aria-label="Filter recipes">
       {filters.map((f) => (
-        <button class:list={['chip', { on: f.key === 'all' }]} data-filter={f.key} type="button">{f.label}</button>
+        <button
+          class:list={['chip', { on: f.key === 'all', 'chip-field': !!FIELD_COLOR[f.key] }]}
+          data-filter={f.key}
+          type="button"
+          style={FIELD_COLOR[f.key] ? `--chip-color: ${FIELD_COLOR[f.key]}` : undefined}
+        >{f.label}</button>
       ))}
     </div>
 
@@ -79,7 +85,7 @@ const filters = [
 
             <dl class="meta">
               <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
-              <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd></div>
+              <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}</dd></div>
               <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
             </dl>
 
@@ -119,7 +125,7 @@ const filters = [
 
               <dl class="meta">
                 <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
-                <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd></div>
+                <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}</dd></div>
                 <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
               </dl>
 
@@ -177,8 +183,10 @@ const filters = [
   .lede a { color: #4da3ff; }
   .lede-lanes { font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: baseline; }
   .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1.5rem 0 0.5rem; }
-  .chip { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
-  .chip.on { background: color-mix(in srgb, #4da3ff 22%, transparent); border-color: #4da3ff; }
+  .chip { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
+  .chip.on { background: color-mix(in srgb, var(--chip-color, #4da3ff) 22%, transparent); border-color: var(--chip-color, #4da3ff); }
+  /* a field chip carries its natural-field color as a leading dot — the field's identity at a glance */
+  .chip-field::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--chip-color, var(--accent)); flex: none; }
   .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.1rem; margin-top: 1rem; }
   .recipe-card[hidden] { display: none; }
   .recipe-card { display: flex; flex-direction: column; border: 1px solid var(--line, #2a2a35); border-top: 3px solid var(--rc, #4da3ff); border-radius: 12px; padding: 1rem 1.1rem; background: color-mix(in srgb, var(--text, #fff) 2.5%, transparent); }

@@ -1,0 +1,83 @@
+---
+// Breadcrumbs — the wayfinding question the site was missing: "how do I get back up?".
+// A path of crumbs from Home to the current page; intermediate section crumbs may be
+// label-only (a section has no single page). The trail carries the section color, chevron
+// separators are the icon, and a runtime (DocsRuntime / WritingsRuntime) runs the
+// `navigation-current` field over it so already-visited ancestors pick up a faint memory tint.
+export interface Crumb {
+  label: string;
+  href?: string;
+  color?: string;
+}
+interface Props {
+  crumbs: Crumb[];
+}
+const { crumbs } = Astro.props;
+---
+
+<nav class="breadcrumbs" aria-label="Breadcrumb" data-pagefind-ignore data-breadcrumbs>
+  <ol>
+    {
+      crumbs.map((c, i) => {
+        const last = i === crumbs.length - 1;
+        return (
+          <li style={c.color ? `--crumb-color: ${c.color}` : undefined}>
+            {c.href && !last ? (
+              <a href={c.href}>{c.label}</a>
+            ) : (
+              <span aria-current={last ? 'page' : undefined}>{c.label}</span>
+            )}
+            {!last && (
+              <span class="bc-sep" aria-hidden="true">
+                ›
+              </span>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+</nav>
+
+<style>
+  .breadcrumbs {
+    margin: 0 0 1rem;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+  }
+  .breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .breadcrumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .breadcrumbs a,
+  .breadcrumbs span[aria-current] {
+    color: var(--text-4);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .breadcrumbs a:hover {
+    color: var(--crumb-color, var(--text-2));
+  }
+  /* the current page — tinted its section color */
+  .breadcrumbs span[aria-current='page'] {
+    color: var(--crumb-color, var(--text-2));
+  }
+  .breadcrumbs .bc-sep {
+    color: var(--line-2);
+  }
+  /* visited ancestors get a faint memory tint (navigation-current writes --field-memory) */
+  .breadcrumbs a.nav-visited {
+    color: color-mix(in srgb, var(--crumb-color, var(--accent)) calc(40% + var(--field-memory, 0) * 60%), var(--text-4));
+  }
+</style>

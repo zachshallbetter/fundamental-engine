@@ -5,6 +5,8 @@
 import Base from './Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import Breadcrumbs, { type Crumb } from '../components/Breadcrumbs.astro';
+import { WRITING_CATS, writingCat, writingCatColor } from '../lib/writings-meta.ts';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import '../styles/ds-tokens.css';
 import '../styles/docs.css';
@@ -22,12 +24,7 @@ interface Props {
 }
 const { title, description, category, date, author, series, slug } = Astro.props;
 
-const CATS = [
-  { key: 'research', label: 'Research' },
-  { key: 'release', label: 'Releases' },
-  { key: 'feature', label: 'Features' },
-  { key: 'note', label: 'Notes' },
-];
+const CATS = WRITING_CATS;
 const sortEntries = (a: CollectionEntry<'writings'>, b: CollectionEntry<'writings'>) => {
   if (a.data.order != null && b.data.order != null) return a.data.order - b.data.order;
   return +b.data.date - +a.data.date;
@@ -39,8 +36,16 @@ const seriesItems = series ? all.filter((e) => e.data.series === series).sort(so
 const i = seriesItems.findIndex((e) => e.id === slug);
 const prev = i > 0 ? seriesItems[i - 1] : null;
 const next = i >= 0 && i < seriesItems.length - 1 ? seriesItems[i + 1] : null;
+const seriesPos = i >= 0 && seriesItems.length > 1 ? `${i + 1} / ${seriesItems.length}` : '';
 
 const path = `/writings/${slug}`;
+const catColor = writingCatColor(category);
+const crumbs: Crumb[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Writings', href: '/writings' },
+  ...(category ? [{ label: writingCat(category)?.label ?? category, color: catColor }] : []),
+  { label: title, color: catColor },
+];
 const fmtDate = date
   ? new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(date)
   : '';
@@ -77,7 +82,7 @@ const articleLd = {
         </div>
         {
           CATS.filter((c) => byCat(c.key).length > 0).map((c) => (
-            <div class="docs-group">
+            <div class="docs-group" style={`--group-color: ${c.color}; --group-glyph: '${c.glyph}'`}>
               <span class="docs-group-title">{c.label}</span>
               <ul>
                 {byCat(c.key).map((e) => (
@@ -96,6 +101,7 @@ const articleLd = {
     </aside>
 
     <main class="docs-content writing">
+      <Breadcrumbs crumbs={crumbs} />
       <header class="writing-head">
         <div class="writing-meta">
           <span class={`w-badge w-${category}`}>{category}</span>
@@ -120,6 +126,11 @@ const articleLd = {
             <span />
           )
         }
+        {seriesPos && (
+          <span class="pn-progress" aria-hidden="true">
+            {seriesPos}
+          </span>
+        )}
         {
           next && (
             <a class="pn next" href={`/writings/${next.id}`}>
@@ -135,6 +146,10 @@ const articleLd = {
 </Base>
 
 <script>
+  // the writings nav sweep — sidebar Priority Well, breadcrumbs + series pager as a
+  // Navigation Current (signals-only, reduced-motion-guarded).
+  import '../components/WritingsRuntime.ts';
+
   // Render Mermaid client-side with a field-ui dark theme. Dynamic import so mermaid only
   // loads on pages that actually contain a diagram — and only once a diagram is NEAR the
   // viewport (the chunk graph is ~850 KB with its KaTeX dependency; articles usually keep

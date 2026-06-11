@@ -15,6 +15,7 @@ import type { RelationshipRegistry } from './relationships.ts';
 import type { VisualBindingRegistry } from './visual-bindings.ts';
 import type { FrameScheduler } from './schedule.ts';
 import type { Resolver } from './relationships.ts';
+import { classifyMetric } from './metrics.ts';
 
 export type LintCode =
   | 'relation-target-missing'
@@ -25,7 +26,8 @@ export type LintCode =
   | 'feedback-non-css-var'
   | 'measurement-off-phase'
   | 'sink-without-feedback'
-  | 'feedback-vars-unwritten';
+  | 'feedback-vars-unwritten'
+  | 'feedback-lane-inert';
 
 export interface PlatformLintWarning {
   code: LintCode;
@@ -116,6 +118,33 @@ export function lintOverlayLinks(overlays: OverlayRegistry, relationships: Relat
   return [];
 }
 
+/**
+ * A feedback binding to a metric lane the platform can never produce: `--field-<m>` where `<m>` is a
+ * DESIGNED metric (not computed generically, not the supplied-only pair) AND the element declares no
+ * `data-field-<m>` to ground it. The lane is bound but will never be written — the element styles
+ * itself from a channel that stays at rest. This is the gap the navigation sweep hit
+ * (`navigation-current` declares `signal`/`route-strength`); same class as a sink that captures but
+ * never reports (`lintSinkFeedback`). Pure.
+ */
+export function lintInertFeedback(feedback: FeedbackRegistry): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  for (const { element, vars } of feedback.boundVars()) {
+    for (const name of vars) {
+      if (!name.startsWith('--field-')) continue;
+      const metric = name.slice('--field-'.length);
+      if (!metric || classifyMetric(metric) !== 'designed') continue;
+      if (element.hasAttribute(`data-field-${metric}`)) continue; // grounded by the host — fine
+      out.push({
+        code: 'feedback-lane-inert',
+        severity: 'warning',
+        element,
+        message: `feedback binds ${name} but "${metric}" is neither computed by the platform nor supplied (data-field-${metric}) on this element — the lane is never written`,
+      });
+    }
+  }
+  return out;
+}
+
 /** Feedback must write CSS custom properties, not ARIA/attributes — state is not accessibility state. Pure. */
 export function lintFeedbackVars(feedback: FeedbackRegistry): PlatformLintWarning[] {
   const out: PlatformLintWarning[] = [];
@@ -176,6 +205,7 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
     ...lintStateRegistration(platform.state, platform.measure),
     ...lintOverlayLinks(platform.overlays, platform.relationships),
     ...lintFeedbackVars(platform.feedback),
+    ...lintInertFeedback(platform.feedback),
     ...lintVisuals(platform.visuals),
     ...lintSchedulerViolations(platform.scheduler),
   ];

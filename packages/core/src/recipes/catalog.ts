@@ -33,7 +33,7 @@ export const PRIORITY_WELL: FieldRecipe = {
     reducedMotion: 'weight, glow, and the current-state marker hold their last value — no travel',
     meaningWithoutMotion: 'the important element is also stronger in weight, outline, and reading order',
   },
-  notes: 'Gravity + attract pull matter and attention into one well; density writes back as --field-density, driving weight and bloom.',
+  notes: 'Gravity + attract pull matter and attention into one well; --field-attention / --field-priority write back to drive weight and bloom. (The density lane is host-supplied — set data-field-density to ground --field-density; the engine\'s own live density channel is --d on data-feedback bodies.)',
 };
 
 export const FOCUS_ORBIT: FieldRecipe = {

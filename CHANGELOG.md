@@ -9,6 +9,18 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`bindFieldNav` + the inert-metric-lane guard.** The navigation-chrome idiom the site
+  hand-spread across ~12 surfaces (run a recipe signals-only over a nav's `<a href>` links, pin the
+  current as the well, mark visited links, return a teardown) lifts into
+  `bindFieldNav(root, recipe, { pin, visited, extraMetrics, reducedMotion })`
+  (`@field-ui/platform`); reduced motion → `null` (plain, reachable links). Paired guard:
+  `classifyMetric(name)` splits a recipe's metric lanes into **computed** / **supplied-only** /
+  **designed** (`COMPUTED_METRICS` + `SUPPLIED_ONLY_METRICS` partition `METRIC_KINDS`), and the new
+  `lintInertFeedback` rule (now in `lintPlatform`) flags a feedback binding to a designed
+  `--field-<m>` lane the host never supplies — declared but never written, the same silent-contract
+  class as `lintSinkFeedback`. The `/recipes` pages now document each metric's lane support. All
+  additive and unfrozen.
+
 - **Field Surfaces: additive overlay readings.** `setOverlay` (core, `<field-root overlay>`,
   vanilla) now accepts one reading **or a stack** — an array (`['grid','path']`) or a
   space-separated attribute (`overlay="grid path"`) — drawn in order on the front surface, so
@@ -29,6 +41,10 @@ ship, so the work is the mode system, medium formalization, safety layer, `scree
 metrics, and the transformation primitives, not re-building what exists.)
 
 ### Fixed
+
+- **`priority-well` recipe note corrected.** It claimed `density` writes back as `--field-density`;
+  that lane is host-supplied (ground it with `data-field-density`) — the engine's live density
+  channel is `--d` on `data-feedback` bodies. Surfaced by the new metric-lane classifier.
 
 - **Streamlines arrow-field pulsing eliminated.** The `streamlines` underlay render and all three
   overlay arrow modes (`streamlines`, `force-vectors`, `field-lines`) normalized arrow length and
