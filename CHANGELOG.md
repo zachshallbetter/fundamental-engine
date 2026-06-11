@@ -9,6 +9,20 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Bound Visual Sink — state mirroring for visual bindings.** The platform's
+  `VisualBindingRegistry` now mirrors a semantic body's feedback channels (`--d` /
+  `--field-density`, `--load` / `--mass`, `--lit`, and the measured metrics — the exported
+  `MIRRORED_CHANNELS`) onto every bound `representation` / `measurement` visual
+  (`data-field-visual-for`), change-gated via a MutationObserver on the source's style attribute.
+  CSS custom properties don't cross to siblings, so an `aria-hidden` SVG beside a sink heading can
+  now thicken its contours from `var(--load)` exactly as authored — the element absorbs, the visual
+  shows what absorption means, the text stays the source of meaning. On by default in
+  `createFieldPlatform` (`visuals.setMirroring(true)`); the element runtime scans declarative
+  visuals at start. The canon now names the sink tiers: Element Sink · Text Sink · Bound Visual
+  Sink · Contour Sink (Body Matter Interaction → Sink/Accretion).
+
+### Added
+
 - **`bindFieldNav` + the inert-metric-lane guard.** The navigation-chrome idiom the site
   hand-spread across ~12 surfaces (run a recipe signals-only over a nav's `<a href>` links, pin the
   current as the well, mark visited links, return a teardown) lifts into
