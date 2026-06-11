@@ -25,6 +25,22 @@ struct FrameSchedulerTests {
         #expect(count == 1)
     }
 
+    @Test("out-of-order unsubscribe removes the right handler (token, not stale index)")
+    func unsubscribeOutOfOrder() {
+        let scheduler = FrameScheduler()
+        var hits: [Int] = []
+        let off1 = scheduler.on(.read) { _ in hits.append(1) }
+        let off2 = scheduler.on(.read) { _ in hits.append(2) }
+        _ = scheduler.on(.read) { _ in hits.append(3) }
+        off2()                                  // remove the MIDDLE handler
+        scheduler.runFrame()
+        #expect(hits == [1, 3])                 // 2 gone; 1 and 3 still fire (no stale-index slip)
+        hits = []
+        off1()                                  // a captured index would now be out of range / wrong
+        scheduler.runFrame()
+        #expect(hits == [3])
+    }
+
     @Test("frame counter increments each runFrame")
     func frameCounter() {
         let scheduler = FrameScheduler()

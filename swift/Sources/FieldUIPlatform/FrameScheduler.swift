@@ -63,11 +63,15 @@ public struct FrameReport {
 /// The scheduler enforces the discipline: a geometry read requested during the write phase
 /// is a violation. In strict mode it throws; otherwise it records and continues.
 public final class FrameScheduler {
-    private var handlers: [Phase: [PhaseHandler]] = {
-        var d = [Phase: [PhaseHandler]]()
+    /// A registered handler tagged with a stable token, so an unsubscribe identifies the original
+    /// handler even after earlier removals shift the array (a captured index would go stale).
+    private struct Subscription { let id: Int; let handler: PhaseHandler }
+    private var handlers: [Phase: [Subscription]] = {
+        var d = [Phase: [Subscription]]()
         for p in Phase.allCases { d[p] = [] }
         return d
     }()
+    private var nextToken = 0
 
     private let strict: Bool
     private var recorded: [PhaseViolation] = []
@@ -83,10 +87,11 @@ public final class FrameScheduler {
     /// Register a handler for a phase. Returns an unsubscribe closure.
     @discardableResult
     public func on(_ phase: Phase, _ handler: @escaping PhaseHandler) -> () -> Void {
-        handlers[phase]!.append(handler)
-        let idx = handlers[phase]!.count - 1
+        let id = nextToken
+        nextToken += 1
+        handlers[phase]!.append(Subscription(id: id, handler: handler))
         return { [weak self] in
-            self?.handlers[phase]?.remove(at: idx)
+            self?.handlers[phase]?.removeAll { $0.id == id }
         }
     }
 
@@ -126,7 +131,7 @@ public final class FrameScheduler {
             current = phase
             ran.append(phase)
             let ctx = FrameContext(now: now, volume: volume, phase: phase, frame: frame)
-            for h in list { h(ctx) }
+            for sub in list { sub.handler(ctx) }
         }
 
         current = nil

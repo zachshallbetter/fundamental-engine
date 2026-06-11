@@ -47,6 +47,11 @@ public final class FieldField: FieldHandle {
     private let handle: any FieldHandle
     /// True when FieldField created the render surface (and must remove it on destroy).
     private let managed: Bool
+    /// The managed engine (concrete) — so `setRender` can attach a surface lazily when a
+    /// signals-only field (render `none`) starts drawing. nil for the unmanaged form.
+    private let managedEngine: FieldEngine?
+    /// Backing-store scale captured at mount, for lazy surface creation.
+    private let managedScale: CGFloat
     /// The mount point this field was attached to.
     private weak var mountPoint: (any FieldMountPoint)?
     /// The managed render surfaces added to the mount (Metal layer + CG readings layer
@@ -67,29 +72,14 @@ public final class FieldField: FieldHandle {
         let engine = FieldEngine(host: host, options: options)
         self.handle = engine
         self.managed = true
+        self.managedEngine = engine
+        self.managedScale = CGFloat(host.volume.scale)
         self.mountPoint = mountPoint
 
         // managed render surfaces — skipped entirely in signals-only mode (render "none"),
-        // matching the JS no-allocation guarantee (§13.7). Metal when the device exists
-        // (the hot layers on the GPU, readings on the CG layer above); CG-only otherwise.
-        #if canImport(QuartzCore)
-        if options.render != .none_ {
-            let scale = CGFloat(host.volume.scale)
-            #if canImport(Metal)
-            if let hybrid = HybridFieldRenderer(scale: scale) {
-                engine.renderer = hybrid
-                mountPoint.addFieldSurface(hybrid.metal.metalLayer) // beneath
-                mountPoint.addFieldSurface(hybrid.cg.surface)       // readings above
-                self.surfaces = [hybrid.metal.metalLayer, hybrid.cg.surface]
-                return
-            }
-            #endif
-            let renderer = CoreGraphicsFieldRenderer(scale: scale)
-            engine.renderer = renderer
-            mountPoint.addFieldSurface(renderer.surface)
-            self.surfaces = [renderer.surface]
-        }
-        #endif
+        // matching the JS no-allocation guarantee (§13.7). `setRender` out of "none" attaches
+        // them lazily (so a signals-only field can start drawing later, like the JS engine).
+        if options.render != .none_ { attachManagedSurfaces() }
     }
 
     /// Drive a field on a host you supply — the unmanaged form.
@@ -99,6 +89,30 @@ public final class FieldField: FieldHandle {
         engine.renderer = renderer
         self.handle = engine
         self.managed = false
+        self.managedEngine = nil   // unmanaged: the caller owns the render surface lifecycle
+        self.managedScale = 1
+    }
+
+    /// Attach the managed render surface(s) to the mount and wire them into the engine — the init
+    /// path, reused by `setRender` to create a surface lazily when leaving signals-only mode.
+    /// A no-op when unmanaged, when surfaces already exist, or with no QuartzCore.
+    private func attachManagedSurfaces() {
+        #if canImport(QuartzCore)
+        guard managed, surfaces.isEmpty, let engine = managedEngine, let mountPoint else { return }
+        #if canImport(Metal)
+        if let hybrid = HybridFieldRenderer(scale: managedScale) {
+            engine.renderer = hybrid
+            mountPoint.addFieldSurface(hybrid.metal.metalLayer) // beneath
+            mountPoint.addFieldSurface(hybrid.cg.surface)       // readings above
+            self.surfaces = [hybrid.metal.metalLayer, hybrid.cg.surface]
+            return
+        }
+        #endif
+        let renderer = CoreGraphicsFieldRenderer(scale: managedScale)
+        engine.renderer = renderer
+        mountPoint.addFieldSurface(renderer.surface)
+        self.surfaces = [renderer.surface]
+        #endif
     }
 
     // MARK: FieldHandle forwarding
@@ -108,7 +122,12 @@ public final class FieldField: FieldHandle {
 
     public func setAccent(_ hex: String)                  { handle.setAccent(hex) }
     public func setPalette(_ palette: [String])           { handle.setPalette(palette) }
-    public func setRender(_ mode: RenderMode)             { handle.setRender(mode) }
+    public func setRender(_ mode: RenderMode) {
+        handle.setRender(mode)
+        // leaving signals-only: a managed field built with render "none" has no surface yet —
+        // attach one now so it actually draws (idempotent once surfaces exist).
+        if mode != .none_ { attachManagedSurfaces() }
+    }
     public func setOverlay(_ input: OverlayInput)         { handle.setOverlay(input) }
     public func setFormation(_ name: String)              { handle.setFormation(name) }
     public func setAttention(_ on: Bool)                  { handle.setAttention(on) }
