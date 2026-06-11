@@ -33,6 +33,14 @@ enum LabSelection: Hashable {
 
 // MARK: - Root
 
+/// Which inspector settings the user has pinned this session. An untouched setting is
+/// "auto" — it follows each scene's own configuration; once the user changes it, it
+/// persists across sidebar selections until Reset.
+enum SettingKey: String, CaseIterable {
+    case formation, matter, overlays, density, waves
+    case mass, attention, causality, heatmap
+}
+
 struct LabRootView: View {
     @State private var selection: LabSelection = .tour(LabScenes.tour[0].id)
     @State private var formation = "ambient"
@@ -41,9 +49,18 @@ struct LabRootView: View {
     @State private var accent = Color(red: 0.30, green: 0.64, blue: 1.0)
     @State private var density: Double = 2
     @State private var waves = false
+    // Body Matter Interaction — how bodies and matter exchange (the engine truths)
+    @State private var firstClassMass = false
+    @State private var attention = false
+    @State private var causality = false
+    @State private var heatmap = false
     @State private var showInspector = true
     @State private var showPipeline = false
     @State private var stats = LiveStats()
+    /// Settings the user has pinned (everything else follows the scene).
+    @State private var pinned: Set<SettingKey> = []
+    /// True while a scene's defaults are being applied — those writes never pin.
+    @State private var applyingScene = false
 
     private static let tourSymbols: [String: String] = [
         "mass": "scalemass", "magnetism": "bolt.horizontal", "attention": "eye",
@@ -75,6 +92,10 @@ struct LabRootView: View {
                     accent: accent,
                     density: Float(density),
                     waves: waves,
+                    firstClassMass: firstClassMass,
+                    attention: attention,
+                    causality: causality,
+                    heatmap: heatmap,
                     stats: $stats
                 )
                 captionChip
@@ -89,13 +110,30 @@ struct LabRootView: View {
             }
         }
         .onChange(of: selection, initial: true) { _, _ in
-            let s = currentScene
-            formation = s.formation
-            renderMode = s.render
-            overlays = Set(s.overlay)
-            density = Double(s.density)
-            waves = s.waves
+            applySceneDefaults()
         }
+    }
+
+    /// Scene switch: apply the scene's configuration ONLY to settings the user hasn't
+    /// pinned — touched settings persist across the sidebar until Reset.
+    private func applySceneDefaults() {
+        let s = currentScene
+        applyingScene = true
+        defer { applyingScene = false }
+        if !pinned.contains(.formation) { formation = s.formation }
+        if !pinned.contains(.matter)    { renderMode = s.render }
+        if !pinned.contains(.overlays)  { overlays = Set(s.overlay) }
+        if !pinned.contains(.density)   { density = Double(s.density) }
+        if !pinned.contains(.waves)     { waves = s.waves }
+        if !pinned.contains(.attention) { attention = s.attention }
+        if !pinned.contains(.causality) { causality = s.causality }
+        if !pinned.contains(.heatmap)   { heatmap = s.heatmap }
+        // mass has no scene default (no tour scene uses it) — purely user-controlled
+    }
+
+    /// Mark a setting user-pinned (no-op while a scene is being applied).
+    private func pin(_ key: SettingKey) {
+        if !applyingScene { pinned.insert(key) }
     }
 
     // MARK: sidebar
@@ -295,12 +333,28 @@ struct LabRootView: View {
 
     private var inspector: some View {
         Form {
+            if !pinned.isEmpty {
+                Section {
+                    Button {
+                        pinned.removeAll()
+                        applySceneDefaults()
+                    } label: {
+                        Label("Reset to scene defaults", systemImage: "arrow.uturn.backward")
+                    }
+                } footer: {
+                    Text("Settings you change stay as you set them across the sidebar; untouched ones follow each scene. \(pinned.count) pinned.")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+
             Section {
                 Picker("Formation", selection: $formation) {
                     ForEach(FORMATIONS, id: \.id) { f in
                         Text(f.name).tag(f.id)
                     }
                 }
+                .onChange(of: formation) { _, _ in pin(.formation) }
                 .help(FORMATIONS.first { $0.id == formation }.map { "\($0.name) — \($0.cue)" } ?? "")
                 Picker("Matter", selection: $renderMode) {
                     Label("Dots", systemImage: "circle.grid.3x3.fill").tag(RenderMode.dots)
@@ -310,21 +364,41 @@ struct LabRootView: View {
                     Label("Voronoi", systemImage: "rectangle.split.3x3").tag(RenderMode.voronoi)
                     Label("Streamlines", systemImage: "water.waves").tag(RenderMode.streamlines)
                 }
+                .onChange(of: renderMode) { _, _ in pin(.matter) }
                 .help("How the same matter is drawn — the simulation underneath is identical in every mode.")
                 ColorPicker("Accent", selection: $accent, supportsOpacity: false)
                     .help("The travelling accent color — heat blends matter toward it.")
                 LabeledContent("Density") {
                     Slider(value: $density, in: 0.5...5, step: 0.5)
                 }
+                .onChange(of: density) { _, _ in pin(.density) }
                 .help("Particle-count multiplier: the pool is 130 × density, conserved while the field runs.")
                 Toggle(isOn: $waves) {
                     Label("Carrier waves", systemImage: "water.waves.slash")
                 }
+                .onChange(of: waves) { _, _ in pin(.waves) }
                 .help("The ambient resting structure (§2.3): five standing currents that carry bound shimmer and exchange matter with the free pool. Canon, but decorative here — off by default.")
             } header: {
                 Text("Field")
             } footer: {
                 Text("The medium. A formation biases every free particle; matter is how the one simulation is drawn; density is how much of it there is.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+
+            Section {
+                bmiToggle($firstClassMass, .mass, "First-class mass", "scalemass",
+                          "a = F/m — heavier matter accelerates less; mass ∝ size")
+                bmiToggle($attention, .attention, "Conserved attention", "eye",
+                          "one strength budget: engaging a body drains the others, Σ S·mul invariant")
+                bmiToggle($causality, .causality, "Cross-boundary causality", "arrow.triangle.branch",
+                          "saturated bodies spill density to neighbours — conserved, Σ deltas = 0")
+                bmiToggle($heatmap, .heatmap, "Density heatmap", "circle.lefthalf.filled.inverse",
+                          "a scalar buffer of where matter pools, drawn as a glow underlay")
+            } header: {
+                Text("Body Matter Interaction")
+            } footer: {
+                Text("How bodies and matter exchange — the model's truths, each conserved and measurable. Scenes set their own; your changes pin.")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -370,11 +444,32 @@ struct LabRootView: View {
         .formStyle(.grouped)
     }
 
+    /// A Body Matter Interaction toggle: title + the conservation law it enacts.
+    private func bmiToggle(_ binding: Binding<Bool>, _ key: SettingKey,
+                           _ label: String, _ symbol: String, _ meaning: String) -> some View {
+        Toggle(isOn: binding) {
+            Label {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(label)
+                    Text(meaning)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            } icon: {
+                Image(systemName: symbol)
+            }
+        }
+        .onChange(of: binding.wrappedValue) { _, _ in pin(key) }
+    }
+
     private func readingToggle(_ mode: FieldUICore.OverlayMode, _ label: String,
                                _ symbol: String, _ meaning: String) -> some View {
         Toggle(isOn: Binding(
             get: { overlays.contains(mode) },
-            set: { on in if on { overlays.insert(mode) } else { overlays.remove(mode) } }
+            set: { on in
+                if on { overlays.insert(mode) } else { overlays.remove(mode) }
+                pin(.overlays)
+            }
         )) {
             Label {
                 VStack(alignment: .leading, spacing: 1) {
@@ -457,37 +552,53 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
     let accent: Color
     let density: Float
     let waves: Bool
+    let firstClassMass: Bool
+    let attention: Bool
+    let causality: Bool
+    let heatmap: Bool
     @Binding var stats: LiveStats
 
-    func makeNSView(context: Context) -> FieldCanvasView {
+    private func configured() -> LabScene {
         var s = scene
         s.density = density
         s.waves = waves
-        let v = FieldCanvasView(scene: s)
+        s.attention = attention
+        s.causality = causality
+        s.heatmap = heatmap
+        return s
+    }
+
+    func makeNSView(context: Context) -> FieldCanvasView {
+        let v = FieldCanvasView(scene: configured(), firstClassMass: firstClassMass)
         context.coordinator.sceneId = scene.id
         context.coordinator.density = density
         context.coordinator.waves = waves
+        context.coordinator.mass = firstClassMass
         context.coordinator.startStats(canvas: v) { stats = $0 }
         return v
     }
 
     func updateNSView(_ canvas: FieldCanvasView, context: Context) {
-        var s = scene
-        s.density = density
-        s.waves = waves
-        // density and waves are creation-time options (pool size, the wave build) —
-        // changing them rebuilds the field, exactly as a resize does.
+        // density, waves, and first-class mass are creation-time options (pool size,
+        // the wave build, m ∝ size at seeding) — changing them rebuilds the field,
+        // exactly as a resize does. The other truths have live setters.
         if context.coordinator.sceneId != scene.id
             || context.coordinator.density != density
-            || context.coordinator.waves != waves {
+            || context.coordinator.waves != waves
+            || context.coordinator.mass != firstClassMass {
             context.coordinator.sceneId = scene.id
             context.coordinator.density = density
             context.coordinator.waves = waves
-            canvas.show(s)
+            context.coordinator.mass = firstClassMass
+            canvas.firstClassMass = firstClassMass
+            canvas.show(configured())
         }
         canvas.field?.setFormation(formation)
         canvas.field?.setRender(renderMode)
         canvas.field?.setOverlay(overlays.isEmpty ? .single(.off) : .stack(overlays))
+        canvas.field?.setAttention(attention)
+        canvas.field?.setCausality(causality)
+        canvas.field?.setHeatmap(heatmap)
         if let hex = accent.fieldHex {
             canvas.field?.setAccent(hex)
         }
@@ -499,6 +610,7 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
         var sceneId = ""
         var density: Float = 2
         var waves = false
+        var mass = false
         private var timer: Timer?
 
         func startStats(canvas: FieldCanvasView, push: @escaping (LiveStats) -> Void) {

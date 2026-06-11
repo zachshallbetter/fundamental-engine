@@ -38,6 +38,11 @@ public struct AxisBox {
 public struct Pole {
     public var position: Vec3
     public var charge: Float
+
+    public init(position: Vec3, charge: Float) {
+        self.position = position
+        self.charge = charge
+    }
 }
 
 // MARK: - Guard against divide-by-zero at a pole (1 unit, sub-pixel).

@@ -338,26 +338,71 @@ public final class FieldSurfaceLayer: CALayer {
         ctx.strokePath()
     }
 
-    /// Structure-field lines traced from seeds around each field-bearing body.
+    /// Structure-field lines traced through the NET field, seeded by each body's actual
+    /// field geometry — the site's algorithm (apps/site field-probe traceDipole), made
+    /// multi-body:
+    ///
+    ///   · DIPOLE bodies (magnetism): seed along the perpendicular bisector of the
+    ///     heading axis — the centre plus ring offsets either side. Each offset lies on
+    ///     a distinct nested field line, so tracing both directions closes one clean
+    ///     N→S loop per seed: the bar-magnet diagram.
+    ///   · MONOPOLE bodies (charge, gravity): seed a tight ring around the core — the
+    ///     radial-spokes diagram (out of +, into −; inward for gravity).
+    ///   · other field()-bearing bodies: a ring fallback.
+    ///
+    /// Tracing samples the superposition (frame.fieldSampler), so lines between two
+    /// magnets link them — the geometry between bodies emerges, never drawn by hand.
     ///
     /// One stroke PER polyline, never one giant path: CG's antialiaser computes segment
-    /// intersections, and a dipole's looping, self-crossing lines accumulated into a
-    /// single path drove `aa_intersection_event` superlinear — ~3 s/frame (the lag).
-    /// Stroked separately, each line is a simple path and the cost is linear.
+    /// intersections, and accumulated self-crossing loops drove `aa_intersection_event`
+    /// superlinear (~3 s/frame). Per-line strokes keep the cost linear; the turn budget
+    /// stops genuine orbits in combined fields without truncating a closed loop (which
+    /// turns exactly one revolution).
     private func drawFieldLines(_ frame: RenderFrame, in ctx: CGContext) {
         var opts = FieldLineOpts()
         opts.bounds = (frame.volume.width, frame.volume.height)
-        opts.step = 8        // live-reading trace budget — the diagnostic stays legible
-        opts.maxSteps = 220
-        opts.maxTurns = 1.5  // one closed dipole loop + slack; never an overdrawn orbit
+        opts.step = 5
+        opts.maxSteps = 500
+        opts.maxTurns = 2.25
+
         var seeds: [Vec3] = []
-        for b in frame.bodies where b.isVisible {
-            let r = max(b.range * 0.2, 40)
-            for k in 0..<8 {
-                let a = Float(k) / 8 * 2 * .pi
-                seeds.append(b.center + Vec3(cos(a) * r, sin(a) * r, 0))
+        for b in frame.bodies where b.isVisible && !b.tokens.isEmpty {
+            if b.tokens.contains("magnetism") {
+                // the dipole axis, with the same synthesized-pole fallback the field math
+                // uses (bodyDipole): a near-point body still reads as a full dipole.
+                var (pA, pB) = polePair(AxisBox(box: b.box, heading: b.heading, spin: b.spin))
+                let sep = simd_distance(pA.position, pB.position)
+                if sep < max(b.range * 0.06, 8) {
+                    let half = max(b.range * 0.18, 60)
+                    pA = Pole(position: b.center + b.heading * half, charge: b.spin < 0 ? -1 : 1)
+                    pB = Pole(position: b.center - b.heading * half, charge: b.spin < 0 ? 1 : -1)
+                }
+                // seeds on the perpendicular bisector: centre + RINGS offsets either side
+                let perp = simd_normalize(simd_cross(Vec3(0, 0, 1), b.heading))
+                let spacing = max(sep * 0.13, 18)
+                seeds.append(b.center)
+                for i in 1...8 {
+                    let off = Float(i) * spacing
+                    seeds.append(b.center + perp * off)
+                    seeds.append(b.center - perp * off)
+                }
+            } else if b.tokens.contains("charge") || b.tokens.contains("gravity") {
+                // monopole spokes: a tight ring close to the core
+                let r0 = max(min(b.box.hw, b.box.hh) * 0.8, 24)
+                for k in 0..<18 {
+                    let a = Float(k) / 18 * 2 * .pi
+                    seeds.append(b.center + Vec3(cos(a) * r0, sin(a) * r0, 0))
+                }
+            } else {
+                // any other field()-bearing body: the ring fallback
+                let r = max(b.range * 0.2, 40)
+                for k in 0..<8 {
+                    let a = Float(k) / 8 * 2 * .pi
+                    seeds.append(b.center + Vec3(cos(a) * r, sin(a) * r, 0))
+                }
             }
         }
+
         stroke(ctx, frame.accent, 0.35)
         for line in traceFieldLines(frame.fieldSampler, seeds: seeds, opts: opts) {
             ctx.move(to: CGPoint(x: CGFloat(line[0].x), y: CGFloat(line[0].y)))

@@ -200,6 +200,8 @@ final class FieldCanvasView: NSView {
     private var cards: [BodyCardView] = []
     private var scene: LabScene
     private var built = false
+    /// First-class mass (§21.3) — a creation-time truth; the representable rebuilds on change.
+    var firstClassMass = false
 
     /// Effective main-thread frame time (EMA of display-tick gaps) — the number the
     /// inspector's Live panel shows. Gaps above ~16.7ms are dropped frames.
@@ -207,8 +209,9 @@ final class FieldCanvasView: NSView {
     private var statsLink: CADisplayLink?
     private var lastTick: CFTimeInterval = 0
 
-    init(scene: LabScene) {
+    init(scene: LabScene, firstClassMass: Bool = false) {
         self.scene = scene
+        self.firstClassMass = firstClassMass
         super.init(frame: .zero)
         wantsLayer = true
         layer?.backgroundColor = NSColor(calibratedRed: 0.043, green: 0.055, blue: 0.078, alpha: 1).cgColor
@@ -274,6 +277,7 @@ final class FieldCanvasView: NSView {
         positionCards()
 
         var options = scene.options()
+        options.firstClassMass = firstClassMass // a = F/m once mass ∝ size (§21.3)
         options.feedbackSink = { view, channels in
             (view as? BodyCardView)?.apply(channels)
         }
