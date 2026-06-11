@@ -135,6 +135,13 @@ export class ScalarGridImpl implements ScalarGrid {
     this.nxt = prev;
   }
 
+  /** Zero every cell in all internal buffers (cur, nxt, prev). */
+  clear(): void {
+    this.cur.fill(0);
+    this.nxt.fill(0);
+    this.prev.fill(0);
+  }
+
   /** resize to a new viewport, preserving nothing (rebuilds the buffers). */
   resize(W: number, H: number): void {
     if (W === this.W && H === this.H) return;

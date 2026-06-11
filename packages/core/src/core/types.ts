@@ -162,6 +162,8 @@ export interface Body {
   /** fractional-emission accumulator for a budgeted [S] source (`spawn`) — carries the
    *  sub-1/frame remainder when the rate is clamped to `cap / life`. Runtime state. */
   emitAcc?: number;
+  /** prior engagement state, for the attention-gated discharge edge (#365). Runtime state. */
+  wasOn?: boolean;
   /** per-frame local thermodynamic accumulators (workover §"Metrics") — sums over the same
    *  `range/2` sample window as `count`, reset each step, only on `data-feedback` bodies:
    *  n samples, Σvx, Σvy, Σ|v|, Σ|v|², Σheat. Allocated lazily on first sample. */
@@ -225,6 +227,10 @@ export interface Env {
   /** recent page-scroll speed (eased, px/frame); drives the `scrolling` gate (§5).
    *  Undefined / 0 off the page, so the gate is inert under the conformance harness. */
   scrollV?: number;
+  /** the engine's random source (#371) — forces and the integrator draw jitter from here so a
+   *  seeded rng makes a run reproducible (record/replay). Optional for fixture back-compat;
+   *  call sites fall back to Math.random. */
+  rng?: () => number;
 
   // ── services (filled by the engine) ──────────────────────────────────────
   /** throw a micro-reaction at a point — sparks/heat (§23). */
@@ -390,6 +396,13 @@ export interface FieldOptions {
   overlayCanvas?: HTMLCanvasElement;
   /** initial overlay visualization mode (Field Surfaces); default `'off'`. */
   overlay?: OverlayInput;
+  /** the random source for ALL engine randomness — particle seeding, spawn scatter, jitter,
+   *  release angles (#371). Defaults to Math.random; supply a seeded generator and a run
+   *  becomes reproducible (the record/replay seam). */
+  rng?: () => number;
+  /** the wall-clock source for input-idle tracking (#371) — defaults to performance.now.
+   *  One of the three clocks (wall / frame / simulation); see temporal.ts for the others. */
+  now?: () => number;
   /**
    * Feedback seam (Phase D3): when set, the engine routes its per-body feedback channels to this
    * sink each frame *instead of* writing CSS variables / dispatching events directly — so the

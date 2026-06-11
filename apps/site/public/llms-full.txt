@@ -169,6 +169,7 @@ The concrete, fully shipped particle-level case. A `sink` body captures matter i
 | `--load` | `accreted / capacity` ∈ [0,1], written each frame | `field.ts` | **shipped** |
 | `--mass` | back-compat **alias** of `--load` (identical value) | `field.ts` | **legacy** alias |
 | release | saturation → `supernova` releases exactly the held particles, then resets | `field.ts` | **shipped** |
+| discharge | an engagement-gated sink (`data-when="active"`) releases on the FALLING edge of attention — same conserved ritual, same events (#365) | `accretion.ts` `dischargeDisengaged` | **shipped** |
 
 Terminology, per the [status rule](field-ui-documentation-standards.md): **`sink` is the runtime
 token.** `absorb` is **not** a token — only the `data-absorb` *attribute* exists. Treat `absorb` as
@@ -185,6 +186,47 @@ docks: it collapses toward the core (translate + scale → 0) and is held until 
 (supernova), which restores it. Docked elements become `aria-hidden` while collapsed and are restored
 on release and on teardown — element capture is conserved like particle capture. The collapse math is
 the pure `dock.ts` (`withinCapture` / `stepDock` / `dockTransform`), tested in `dock.test.ts`.
+
+### The sink tiers (one contract, four surfaces)
+
+The law that orders the whole hierarchy:
+
+> **The element absorbs field matter. The visual layer shows what that absorption means. The
+> semantic text remains the source of meaning.**
+
+One sentence for the combined concept: *a body-sink lets a semantic element act as a vessel — it
+captures field matter, exposes its load as feedback, and may release that matter back into the
+field, while any SVG, Canvas, or vector layer remains a bound visual representation of the semantic
+source.*
+
+```
+Body Matter Interaction
+  Sink / Accretion
+    Element Sink        — any DOM element as the vessel (the base contract above)
+    Text Sink           — the same contract on real text; the heading stays real text,
+                          CSS reads --d / --load for field-responsive typography
+    Bound Visual Sink   — an authored aria-hidden visual (SVG/Canvas) beside the body,
+                          bound via data-field-visual-for; the platform MIRRORS the
+                          body's feedback channels onto it (visual-bindings.ts,
+                          MIRRORED_CHANNELS), so var(--load) works on the sibling
+    Contour Sink        — the text/vector form: glyph outlines as the expressive
+                          boundary of a Text Sink. The platform primitive is
+                          font-agnostic (contours.ts: contourPathData / contourSvgFor —
+                          the caller supplies ANY parsed font; opentype.js fits the
+                          ContourFont contract), usable at runtime or build time (the
+                          site commits its output) — live at /docs/contour-typography
+```
+
+| Tier | Contract | Status |
+|---|---|---|
+| Element Sink | `data-body="sink …"` + `data-absorb`/`data-max`/`data-feedback` → `--load` | **shipped** |
+| Text Sink | identical — text elements are ordinary bodies; a11y rule: the text stays real | **shipped** |
+| Bound Visual Sink | `data-field-visual-for` + platform state mirroring (`setMirroring`, default on) | **shipped** |
+| Contour Sink | font-agnostic platform primitive (`contourSvgFor` — any parsed font) + Bound Visual mirroring; demo on /docs/contour-typography | **shipped** |
+
+Naming discipline: the tiers are *surfaces of one contract*, not new tokens — the token is `sink`
+in every tier, and a chip or doc that prints `ABSORB` instead of `SINK` is wrong (absorb is the
+attribute/concept lane). The visual layer never becomes the body; it represents the body.
 
 ## Events
 
@@ -583,10 +625,10 @@ type FieldRecipe = {
   concepts?: string[]                 // product-language lane — describes; never executed
   metrics: string[]                   // signal names; --field-density is the one written today
   diagnostics: string[]               // render/diagnostic modes that reveal the behavior
-  conditions?: string[]               // activation lane — when the behavior applies
-  bodies: BodyRecipe[]
+  conditions?: string[]               // activation vocabulary — when the behavior applies
+  bodies: BodyRecipe[]                // each body may carry `when` — the EXECUTABLE gate (data-when)
   relationships?: RelationshipRecipe[]
-  render: RenderLayer[]
+  render: RenderLayer[]               // compiled to a render PLAN; executes when applyRecipe gets a field
   accessibility: AccessibilityRecipe  // required: reducedMotion + meaningWithoutMotion
   status?: RecipeStatus               // implementation status
   budget?: Partial<PerformanceBudget>
@@ -600,9 +642,19 @@ The lanes stay separate: `primitives` (runtime tokens) execute, `concepts` / `tr
 appears in more than one lane.
 
 `validateRecipe` returns a problem for any unknown force token, unknown render layer, unknown
-diagnostic mode, unknown fundamental field, declared `primitives` that drift from the body tokens, or a
-missing accessibility equivalent. A recipe can't reference anything the engine doesn't have, and no
-recipe is motion-only.
+diagnostic mode, unknown fundamental field, an unknown per-body `when` condition id (an unregistered
+gate would silently never pass — rejected instead), declared `primitives` that drift from the body
+tokens, or a missing accessibility equivalent. A recipe can't reference anything the engine doesn't
+have, and no recipe is motion-only.
+
+**Recipes execute their declarations (#370).** `compileRecipe` derives an executable render plan from
+`render` — one underlay matter mode (`particles` → `dots`), the additive overlay reading stack, and
+the heatmap toggle; layers with no executable surface are NAMED in `plan.unapplied`, never silently
+dropped. `applyRecipe(root, recipe, { field })` drives a live field with the plan (a `FieldHandle` or
+`<field-root>` both satisfy the structural target) and releases the surfaces on `destroy()`;
+`renderless` and reduced motion skip the drive. Per-body `when` compiles to `data-when` on the body —
+the contour-charge recipe carries its own engagement gate this way. Without a `field` option, recipes
+remain signals-only, exactly as before.
 
 Example:
 
@@ -2497,11 +2549,30 @@ report of the phases that ran and any violations.
    navigation. `representation` and `relationship` roles require a resolved source; a missing one is
    reported as unresolved rather than throwing.
 
+   **State mirroring (the Bound Visual Sink tier).** CSS custom properties don't cross to siblings,
+   so the registry mirrors them: with `setMirroring(true)` — the `createFieldPlatform` default —
+   every `representation`/`measurement` visual receives its source's feedback channels
+   (`MIRRORED_CHANNELS`: `--d`/`--field-density`/`--forces-density`, `--load`/`--mass`, `--lit`,
+   `--entropy`/`--coherence`/`--temperature`, `--field-heatmap-density`) copied onto its own inline
+   style — an `aria-hidden` SVG beside a sink heading thickens its contours from `var(--load)`
+   exactly as authored. Change-gated via a MutationObserver on the source's style attribute: a quiet
+   field costs nothing. `decorative`/`debug` roles never mirror. The platform runtime
+   (`startPlatformRuntime`) scans declarative visuals at start; dynamically added visuals need a
+   `platform.visuals.scan()`.
+
    - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
-     `data-field-visual-role` (`scan()`), and the accessibility lint.
-   - **Not implemented:** font outline extraction, text → SVG path conversion, and glyph-contour
-     geometry. `scan()` binds an *authored* visual to its source; it does not generate vector
-     typography from text. (Tracked as a future frontier.)
+     `data-field-visual-role` (`scan()`), the accessibility lint, and source→visual state mirroring
+     (`setMirroring` / `mirrorNow` / `MIRRORED_CHANNELS`).
+   - **Glyph outlines (the Contour Sink tier):** `contours.ts` is the font-agnostic primitive —
+     `contourPathData(font, text, size)` (pure layout: per-glyph + pair kerning, Latin display
+     scope) and `contourSvgFor(el, font)` (generates the aria-hidden ring SVG from the element's
+     OWN text and computed size, binds it via `data-field-visual-for`, receives mirrored state).
+     The caller supplies the parsed font — any `ContourFont`-shaped object; opentype.js satisfies
+     it directly — so the primitive works with whatever face the author applied to the body, and
+     field-ui keeps its zero-dependency rule. The same primitive runs at build time (the site's
+     `gen-contours.mjs` commits its output). Automatic font-binary discovery from the element's
+     CSS, complex-script shaping, and true offset contours (polygon offsetting) remain future
+     work.
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*

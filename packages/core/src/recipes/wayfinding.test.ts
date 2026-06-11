@@ -38,7 +38,10 @@ test('the two variations are genuinely distinct — different natural field, for
 });
 
 test('both are experimental and kept OUT of the canonical 64', () => {
-  assert.equal(EXPERIMENTAL_RECIPES, WAYFINDING_RECIPES, 'EXPERIMENTAL_RECIPES is the surfaced alias');
+  // EXPERIMENTAL_RECIPES grew past the wayfinding pair (contour-charge joined, #365):
+  // it must CONTAIN the pair, in order, no longer BE it.
+  for (const r of WAYFINDING_RECIPES)
+    assert.ok(EXPERIMENTAL_RECIPES.includes(r), `${r.id} is surfaced experimentally`);
   for (const r of WAYFINDING_RECIPES) assert.equal(r.status, 'experimental', `${r.id} is experimental`);
   for (const r of WAYFINDING_RECIPES)
     assert.ok(!FIELD_RECIPES.some((g) => g.id === r.id), `${r.id} is not in FIELD_RECIPES`);

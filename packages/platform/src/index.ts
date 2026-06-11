@@ -32,6 +32,7 @@ export * from './export-dom.ts';
 export * from './governor.ts';
 export * from './flip.ts';
 export * from './text-bodies.ts';
+export * from './contours.ts';
 export * from './thread-overlay.ts';
 export * from './perf.ts';
 

@@ -7,6 +7,93 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Platform registries close their exits.** Three registries leaked entries for elements that
+  left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
+  elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never
+  re-resolved when a target later mounted), and `StateRegistry` (per-key `delete` stranded empty
+  listener maps). Each now prunes disconnected elements at its natural moment — `flush()`,
+  `discover()` (which also re-resolves late-mounting targets by replacing the unresolved set),
+  and a new `prune()` — and gains an explicit `unregister(element)` for immediate reclamation,
+  matching the standard `MeasurementRegistry` and `VisualBindingRegistry` already set.
+
+- **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,
+  `updateWarpTargets` now clears `pairBody` and `warpHas` so the wormhole closes instead of
+  relocating matter to the detached node. The link re-resolves naturally on the next rescan.
+
+- **Docked element removal (#368b).** A `[data-dock]` mover whose DOM node is removed while
+  docked no longer leaves the sink believing it holds that element. `updateMovers` now detects
+  `!el.isConnected`, clears `mv.docked` / `mv.dock.dock`, and skips all per-frame work for
+  the detached element — symmetric with how the rescan reconciliation handles departed bodies.
+
+- **Heatmap buffer persists across disable/enable (#369).** `setHeatmap(false)` now calls
+  `heatmap.clear()` before releasing the buffer, so a paused or mid-accumulation field never
+  bleeds stale density into the next active session. Re-enabling creates a fresh instance.
+  `Heatmap.clear()` (new) zeroes the grid and resets the peak tracker; `ScalarGridImpl.clear()`
+  (new) fills all three internal buffers with zero.
+
+### Added
+
+- **Recipes execute their declarations.** `recipe.render` and per-body condition gates stop being
+  descriptive (#370): `compileRecipe` now derives an executable render plan (one underlay matter
+  mode, the additive overlay reading stack, the heatmap toggle — unmappable layers are NAMED in
+  `plan.unapplied`, never silently dropped), and `applyRecipe` gains a structural `field` target
+  (`FieldHandle` and `<field-root>` both fit) that it drives with the plan and releases on
+  `destroy()`. `BodyRecipe.when` is the new executable gate — compiled to `data-when`, validated
+  against the engine's registered condition ids so an unknown gate is a validation error rather
+  than a silently-never-passing body. The `contour-charge` recipe now carries its own engagement
+  gate. Fully additive: without a `field` option recipes stay signals-only as before; `renderless`
+  and reduced motion skip the drive.
+
+### Added
+
+- **Injectable randomness and wall clock (#371).** Every random draw in the engine — particle
+  seeding, spawn scatter, brownian wander, force jitter and emission cones, release angles —
+  now flows through one source: `createField({ rng })` (default `Math.random`), carried to
+  forces and the integrator as `env.rng`. A seeded generator makes a run reproducible — the
+  seam record/replay needs, pinned by a bit-identical two-run test. The wall clock joins it:
+  `createField({ now })` (default `performance.now`) feeds input-idle tracking, completing the
+  three-clocks separation (wall / frame / simulation — see temporal.ts).
+
+### Added
+
+- **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
+  (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same
+  conserved supernova ritual (same radial burst, same `field:released` event) that saturation
+  fires; capture was already gated, release now matches (`dischargeDisengaged`, accretion.ts).
+  The experimental `contour-charge` recipe names the composed behavior — attract + sink gated on
+  `active`, glow ∝ `--load`, glyph-outline rings as the bound representation — and joins the
+  wayfinding pair in `EXPERIMENTAL_RECIPES` (bare `charge` stays the electric force token; the
+  compound respects the one-word-one-lane rule). The home Gallery demos it live: dwell on the
+  Charge mark to fill it, look away and it lets go.
+
+### Added
+
+- **Contour primitive — glyph outlines from any font (`@field-ui/platform`).**
+  `contourPathData(font, text, size)` lays out text as combined glyph-outline SVG path data
+  (per-glyph + pair kerning; Latin display scope), and `contourSvgFor(el, font)` generates the
+  aria-hidden contour-ring SVG from a body element's own text and computed font-size, binds it
+  with `data-field-visual-for`, and lets the Bound Visual mirroring drive its rings from the
+  body's live `--d` / `--load`. The caller supplies the parsed font — any object matching the
+  `ContourFont` contract (opentype.js's `Font` fits directly) — so the primitive works with
+  whatever face the author applied to the element and field-ui stays zero-dependency. The same
+  function powers the site's build-time generation (`gen-contours.mjs`).
+
+### Added
+
+- **Bound Visual Sink — state mirroring for visual bindings.** The platform's
+  `VisualBindingRegistry` now mirrors a semantic body's feedback channels (`--d` /
+  `--field-density`, `--load` / `--mass`, `--lit`, and the measured metrics — the exported
+  `MIRRORED_CHANNELS`) onto every bound `representation` / `measurement` visual
+  (`data-field-visual-for`), change-gated via a MutationObserver on the source's style attribute.
+  CSS custom properties don't cross to siblings, so an `aria-hidden` SVG beside a sink heading can
+  now thicken its contours from `var(--load)` exactly as authored — the element absorbs, the visual
+  shows what absorption means, the text stays the source of meaning. On by default in
+  `createFieldPlatform` (`visuals.setMirroring(true)`); the element runtime scans declarative
+  visuals at start. The canon now names the sink tiers: Element Sink · Text Sink · Bound Visual
+  Sink · Contour Sink (Body Matter Interaction → Sink/Accretion).
+
 ### Added
 
 - **`bindFieldNav` + the inert-metric-lane guard.** The navigation-chrome idiom the site

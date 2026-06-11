@@ -114,6 +114,7 @@ The concrete, fully shipped particle-level case. A `sink` body captures matter i
 | `--load` | `accreted / capacity` ∈ [0,1], written each frame | `field.ts` | **shipped** |
 | `--mass` | back-compat **alias** of `--load` (identical value) | `field.ts` | **legacy** alias |
 | release | saturation → `supernova` releases exactly the held particles, then resets | `field.ts` | **shipped** |
+| discharge | an engagement-gated sink (`data-when="active"`) releases on the FALLING edge of attention — same conserved ritual, same events (#365) | `accretion.ts` `dischargeDisengaged` | **shipped** |
 
 Terminology, per the [status rule](field-ui-documentation-standards.md): **`sink` is the runtime
 token.** `absorb` is **not** a token — only the `data-absorb` *attribute* exists. Treat `absorb` as
@@ -130,6 +131,47 @@ docks: it collapses toward the core (translate + scale → 0) and is held until 
 (supernova), which restores it. Docked elements become `aria-hidden` while collapsed and are restored
 on release and on teardown — element capture is conserved like particle capture. The collapse math is
 the pure `dock.ts` (`withinCapture` / `stepDock` / `dockTransform`), tested in `dock.test.ts`.
+
+### The sink tiers (one contract, four surfaces)
+
+The law that orders the whole hierarchy:
+
+> **The element absorbs field matter. The visual layer shows what that absorption means. The
+> semantic text remains the source of meaning.**
+
+One sentence for the combined concept: *a body-sink lets a semantic element act as a vessel — it
+captures field matter, exposes its load as feedback, and may release that matter back into the
+field, while any SVG, Canvas, or vector layer remains a bound visual representation of the semantic
+source.*
+
+```
+Body Matter Interaction
+  Sink / Accretion
+    Element Sink        — any DOM element as the vessel (the base contract above)
+    Text Sink           — the same contract on real text; the heading stays real text,
+                          CSS reads --d / --load for field-responsive typography
+    Bound Visual Sink   — an authored aria-hidden visual (SVG/Canvas) beside the body,
+                          bound via data-field-visual-for; the platform MIRRORS the
+                          body's feedback channels onto it (visual-bindings.ts,
+                          MIRRORED_CHANNELS), so var(--load) works on the sibling
+    Contour Sink        — the text/vector form: glyph outlines as the expressive
+                          boundary of a Text Sink. The platform primitive is
+                          font-agnostic (contours.ts: contourPathData / contourSvgFor —
+                          the caller supplies ANY parsed font; opentype.js fits the
+                          ContourFont contract), usable at runtime or build time (the
+                          site commits its output) — live at /docs/contour-typography
+```
+
+| Tier | Contract | Status |
+|---|---|---|
+| Element Sink | `data-body="sink …"` + `data-absorb`/`data-max`/`data-feedback` → `--load` | **shipped** |
+| Text Sink | identical — text elements are ordinary bodies; a11y rule: the text stays real | **shipped** |
+| Bound Visual Sink | `data-field-visual-for` + platform state mirroring (`setMirroring`, default on) | **shipped** |
+| Contour Sink | font-agnostic platform primitive (`contourSvgFor` — any parsed font) + Bound Visual mirroring; demo on /docs/contour-typography | **shipped** |
+
+Naming discipline: the tiers are *surfaces of one contract*, not new tokens — the token is `sink`
+in every tier, and a chip or doc that prints `ABSORB` instead of `SINK` is wrong (absorb is the
+attribute/concept lane). The visual layer never becomes the body; it represents the body.
 
 ## Events
 
