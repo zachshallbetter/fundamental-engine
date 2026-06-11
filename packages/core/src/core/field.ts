@@ -148,6 +148,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
+  // the injected sources (#371): every random draw and wall-clock read in the engine flows
+  // through these two, so a seeded rng + fixed clock make a run reproducible end to end.
+  const rng = opts.rng ?? Math.random;
+  const wallNow = opts.now ?? ((): number => performance.now());
   let boot = reduceMotion ? 1 : 0;
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
@@ -232,7 +236,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   };
   const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
-  const t0 = performance.now();
+  const t0 = wallNow();
 
   const env: Env = {
     dx: 0,
@@ -247,11 +251,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     c: 12,
     G: 1,
     scrollV: 0,
+    rng,
     spark: (x, y, power, color) => spawnSpark(x, y, power, color),
     supernova: (b) => {
       // release exactly what was captured — radial, from the core (§6.9, accretion.ts). Held matter
       // is conserved: released particles stay in the pool. `releaseCaptured` resets b.accreted to 0.
-      const released = releaseCaptured(store.particles, b);
+      const released = releaseCaptured(store.particles, b, rng);
       const justReleased = new Set(released);
       // the blast shoves nearby *free* matter outward (but not the matter it just released).
       for (const q of store.particles) {
@@ -304,24 +309,24 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const c: RGB = color ? hexToRgb(color) : [255, 122, 69]; // WARM default (§20.8)
     const n = sparkCount(power);
     for (let k = 0; k < n; k++) {
-      const a = Math.random() * 6.28318;
-      const s = 0.8 + Math.random() * (power > 0 ? power : 1) * 1.7;
+      const a = rng() * 6.28318;
+      const s = 0.8 + rng() * (power > 0 ? power : 1) * 1.7;
       sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, c });
     }
   }
 
   function newParticle(seed: Partial<Particle> = {}): Particle {
-    const size = seed.size ?? 0.7 + Math.random() * 1.8;
+    const size = seed.size ?? 0.7 + rng() * 1.8;
     return {
-      x: seed.x ?? Math.random() * W,
-      y: seed.y ?? Math.random() * H,
-      vx: seed.vx ?? (Math.random() - 0.5) * 0.25,
-      vy: seed.vy ?? (Math.random() - 0.5) * 0.18,
+      x: seed.x ?? rng() * W,
+      y: seed.y ?? rng() * H,
+      vx: seed.vx ?? (rng() - 0.5) * 0.25,
+      vy: seed.vy ?? (rng() - 0.5) * 0.18,
       m: seed.m ?? (cfg.mass ? size : 1), // mass ∝ size when first-class mass is on
       heat: seed.heat ?? 0,
       size,
-      gx: seed.gx ?? Math.random(),
-      gy: seed.gy ?? Math.random(),
+      gx: seed.gx ?? rng(),
+      gy: seed.gy ?? rng(),
       cap: null,
       ...(seed.age != null ? { age: seed.age } : {}), // mortal matter (a [S] source)
       ...(seed.color != null ? { color: seed.color } : {}),
@@ -350,7 +355,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     applySeed();
     // the Currents (§24) are opt-out: with waves off, the field is just the free particles.
     waves = cfg.waves ? buildWaves(WAVE_RGB) : [];
-    bound = cfg.waves ? buildBound(waves.length, cfg.density, Math.random) : [];
+    bound = cfg.waves ? buildBound(waves.length, cfg.density, rng) : [];
     boundTarget = bound.length;
   }
 
@@ -419,10 +424,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // refresh each warp body's relocate target from its paired body's live centre (§22.3 relocate).
   function updateWarpTargets(): void {
     for (const b of bodies) {
-      if (b.pairBody && b.pairBody.vis) {
-        b.warpX = b.pairBody.cx;
-        b.warpY = b.pairBody.cy;
-        b.warpHas = true;
+      if (b.pairBody) {
+        // If the paired element has left the DOM, sever the warp link so the wormhole closes
+        // rather than relocating matter to a ghost node. A later rescan re-resolves naturally
+        // when (or if) the element returns. The isConnected check is cheap — only reached when
+        // pairBody is set, so the common zero-pair case pays nothing.
+        if (!b.pairBody.el.isConnected) {
+          b.warpHas = false;
+          b.pairBody = undefined;
+          continue;
+        }
+        if (b.pairBody.vis) {
+          b.warpX = b.pairBody.cx;
+          b.warpY = b.pairBody.cy;
+          b.warpHas = true;
+        } else {
+          b.warpHas = false;
+        }
       } else if (b.pair) {
         b.warpHas = false;
       }
@@ -514,6 +532,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     });
     for (let i = 0; i < movers.length; i++) {
       const mv = movers[i]!;
+      // If this element has been removed from the DOM while docked, drop the dock reference so
+      // the sink no longer believes it holds the element. Restore is moot for a detached node;
+      // we just clear state so no per-frame work runs for it going forward. Consistent with how
+      // the rescan reconciliation (scan()) drops stale bodies: absent nodes are simply gone.
+      if (!mv.el.isConnected) {
+        if (mv.docked) {
+          mv.docked = null;
+          mv.dock.dock = 0;
+        }
+        continue;
+      }
       const cx = centers[i]!.x;
       const cy = centers[i]!.y;
       // docked: collapse toward the sink core and hold there, skipping force integration (§22.3).
@@ -628,7 +657,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       a: t.a,
       b: t.b,
       c: hexToRgb(t.color ?? cfg.accent),
-      seed: Math.random() * 6.28,
+      seed: rng() * 6.28,
     }));
   }
 
@@ -1458,7 +1487,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
       if (heatmap) heatmap.update(store.particles); // density heatmap buffer (H1)
-      healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
+      healWaves(store, bound, boundTarget, waves, W, H, env.t, rng);
       tearBoundByForces(bound, waves, bodies, reg.forces, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
       updateEmitters(); // element emit (§22.3): clone decorative templates, budgeted by data-max
@@ -1503,13 +1532,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       setFormation(next);
     }
   }
-  const markInput = (): void => void (lastInput = performance.now());
+  const markInput = (): void => void (lastInput = wallNow());
   const scrollHandler = (): void => {
     markInput();
     onScroll();
   };
   const idleTimer = setInterval(() => {
-    if (performance.now() - lastInput > 6000 && activeForm !== 'ambient') {
+    if (wallNow() - lastInput > 6000 && activeForm !== 'ambient') {
       activeForm = 'ambient';
       setFormation('ambient');
     }
@@ -1603,9 +1632,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     setHeatmap: (on) => {
       cfg.heatmap = on;
       if (on) {
+        // Re-enabling always starts with a fresh buffer so mid-accumulation state from a prior
+        // active period (or a paused field frozen mid-frame) never bleeds into the new session.
         if (!heatmap && W > 0) heatmap = new Heatmap(W, H);
       } else if (heatmap) {
-        heatmap = null; // drop the buffer; clear the write-back the layer left on bodies
+        // Clear accumulated data before releasing the buffer — a paused field can hold a
+        // non-zero grid that would persist visually if the buffer were recycled. Explicit clear
+        // makes the exit symmetrical with the fresh-start re-enable above.
+        heatmap.clear();
+        heatmap = null;
         for (const b of bodies) {
           const el = b.writeTarget ?? b.el;
           el.style.removeProperty('--forces-heatmap-density');

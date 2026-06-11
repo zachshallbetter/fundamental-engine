@@ -20,8 +20,10 @@ test.describe("/evidence", () => {
   test("the sidebar lists all 12 invisible-field examples with Evidence as the current page", async ({
     page,
   }) => {
+    // 12 roster examples + the Overview door at the top (it is not a roster entry)
     const links = page.locator(".ev-side-list a");
-    await expect(links).toHaveCount(12);
+    await expect(links).toHaveCount(13);
+    await expect(page.locator(".ev-side-list a:not(.ev-side-overview)")).toHaveCount(12);
     const current = page.locator('.ev-side-list a[aria-current="page"]');
     await expect(current).toHaveCount(1);
     await expect(current.locator("b")).toHaveText("Evidence");
@@ -58,4 +60,28 @@ test.describe("/evidence", () => {
       })
       .toBe("0.000");
   });
+});
+
+test('/evidence/overview orients the family: the pipeline, all 12 correlations, the honesty contract', async ({ page }) => {
+  await page.goto('/evidence/overview');
+  await expect(page.locator('h1')).toContainText('No particles');
+  // the one pipeline, stated structurally
+  await expect(page.locator('.ev-pipeline-big li')).toHaveCount(5);
+  // every example appears as a stated correlation (quantity → behavior)
+  await expect(page.locator('.ev-index li')).toHaveCount(12);
+  await expect(page.locator('.ev-index')).toContainText('urgency');
+  // the layout-agnostic law is stated
+  await expect(page.locator('main')).toContainText('measures whatever geometry you give it');
+});
+
+test('every example page carries the explainer band — the correlation made visible', async ({ page }) => {
+  await page.goto('/evidence/inbox');
+  const band = page.locator('.ev-explainer');
+  await expect(band).toHaveCount(1);
+  // the four pipeline steps, with the page's REAL variables named
+  await expect(band.locator('.ev-pipeline li')).toHaveCount(4);
+  await expect(band.locator('.ev-vars code').first()).toContainText('--w');
+  await expect(band).toContainText('No canvas is drawn here');
+  // the sidebar gained the overview door
+  await expect(page.locator('.ev-side-overview')).toHaveAttribute('href', '/evidence/overview');
 });

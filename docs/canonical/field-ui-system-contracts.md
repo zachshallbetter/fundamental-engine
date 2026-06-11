@@ -222,7 +222,35 @@ thresholded events
 debug metadata
 ```
 
-Suggested CSS variables (canonical `--field-*`; the `--forces-*` names are legacy/compat aliases the FeedbackRegistry auto-mirrors, and `--d` is the compact alias for density):
+**The three metric-output lanes.** Not every `--field-*` variable flows automatically — the lane
+that produces a variable determines whether it arrives at all:
+
+- **Engine-computed** — written by core's feedback sink every frame, regardless of recipes or
+  platform configuration: `--d` / `--field-density` (local particle density), `--load` / `--mass`
+  (sink accretion fill), `--lit` (continuous engagement, paired with `field:lit` / `field:dim`
+  hysteretic events), and the engine-measured thermodynamics `--entropy`, `--coherence`,
+  `--temperature` (velocity alignment, agitation, heat — written to `data-feedback` bodies; these
+  bare-named variables are distinct from the platform-inferred ones below).
+- **Platform-computed** — written by `applyRecipe` / `computeMetrics` when a recipe runs its
+  metric pipeline: `--field-attention`, `--field-memory`, `--field-coherence`, `--field-entropy`,
+  `--field-pressure`, `--field-recency`, `--field-priority`. These flow every frame that the
+  recipe pipeline ticks. `--field-confidence` and `--field-risk` are supplied-only — the engine
+  never invents them; they appear only when the host supplies `data-field-confidence` /
+  `data-field-risk`.
+- **Data-supplied (designed)** — lanes a recipe declares but that neither the engine nor the
+  platform metric pipeline computes. A recipe listing `signal`, `route-strength`, or any
+  domain-specific metric must have the host supply `data-field-<metric>` (or a domain model) or
+  the `--field-<metric>` lane stays **inert** — declared, bound, never written. The lint rule
+  `lintInertFeedback` surfaces this gap: a binding to an inert designed lane is the same
+  silent-contract class as a sink that captures but never reports.
+
+Recipe authors must not expect a designed lane to flow unless the host provides the data. The
+platform writes what it can compute; `classifyMetric(name)` returns `'computed'`,
+`'supplied-only'`, or `'designed'` for any metric name.
+
+Suggested CSS variables for the platform-computed lane (canonical `--field-*`; the `--forces-*`
+names are legacy/compat aliases the FeedbackRegistry auto-mirrors, and `--d` is the compact alias
+for density):
 
 ```css
 --field-density
@@ -236,20 +264,13 @@ Suggested CSS variables (canonical `--field-*`; the `--forces-*` names are legac
 --field-pull-y
 ```
 
-Two shipped per-body variables sit outside this metric list: `--load` (sink accretion fill, with
-`--mass` as the back-compat alias) and `--lit` (continuous engagement, paired with the
-`field:lit`/`field:dim` thresholded events). One shipped **page-global** variable lives on
-`:root`, not on bodies: `--field-scroll-v`, the engine's eased scroll velocity (px/frame),
-written by the platform write phase and deduped when unchanged.
-
-Three more shipped per-body variables also sit outside this list (physics workover v0.3):
-the **engine-measured thermodynamics** `--entropy`, `--coherence`, and `--temperature` —
-local particle-state measurements (velocity alignment, agitation, heat) written to
-`data-feedback` bodies through the feedback sink. They are deliberately bare-named:
-`--field-entropy`/`--field-coherence` above are the *platform-inferred interaction*
-metrics (a different signal, computed from interaction telemetry), and the two families
-must not be cross-written. (`--coherence` is additionally a palette *color* on `:root`
-via `cssTokens()` — the measured value is element-scoped and numeric.) Formulas:
+One shipped **page-global** variable lives on `:root`, not on bodies: `--field-scroll-v`, the
+engine's eased scroll velocity (px/frame), written by the platform write phase and deduped when
+unchanged. The engine-measured thermodynamics `--entropy`, `--coherence`, and `--temperature`
+are deliberately bare-named (distinct from the `--field-entropy` / `--field-coherence`
+platform-inferred interaction metrics — the two families must not be cross-written). (`--coherence`
+is additionally a palette *color* on `:root` via `cssTokens()` — the measured value is
+element-scoped and numeric.) Formulas:
 [`physics-workover.md`](../engine-reference/physics-workover.md) §"Metrics".
 
 **Engagement inputs** are part of this contract. The engine wires hover/focus engagement on
@@ -658,8 +679,13 @@ read      -> measure geometry; no writes allowed
 compute   -> evaluate field/relationship state; side-effect free
 state     -> reconcile registered state
 write     -> emit CSS variables, data attributes, feedback, events
-render    -> draw render surfaces and overlays
+render    -> draw render surfaces and overlays  [caller-open; not wired by the platform]
 ```
+
+The platform owns and wires discover through write. The render phase is caller-open — the
+platform defines the slot and its read-only contract, but does not install a handler; the legacy
+engine fills it by running the canvas simulate-and-render loop. The platform observes and feeds
+back DOM state; it does not draw.
 
 Scheduler rules:
 
@@ -668,6 +694,7 @@ No DOM writes during read or compute.
 No geometry reads during write.
 Every registry declares its phase and runs only in that phase.
 The phase order is fixed; registries do not reorder it.
+Render-phase handlers are caller-supplied; the platform wires none by default.
 ```
 
 ## 23. Platform-Lint Contract

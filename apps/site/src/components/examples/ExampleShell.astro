@@ -7,6 +7,7 @@ import Base from "../../layouts/Base.astro";
 import SiteNav from "../SiteNav.astro";
 import SiteFooter from "../SiteFooter.astro";
 import { INVISIBLE_FIELDS } from "../../lib/invisible-fields.ts";
+import FieldExplainer from "./FieldExplainer.astro";
 import "../../styles/evidence.css";
 
 interface Props {
@@ -32,6 +33,10 @@ const { title, description, current, mainClass = "", mainAttrs = {} } = Astro.pr
         no particle swarm.
       </p>
       <nav class="ev-side-list">
+        <a class="ev-side-item ev-side-overview" href="/evidence/overview" aria-current={current === "overview" ? "page" : undefined}>
+          <b>Overview</b>
+          <span>what these examples are — the one pipeline, stated plainly</span>
+        </a>
         {
           INVISIBLE_FIELDS.map((s) => (
             <a
@@ -47,6 +52,7 @@ const { title, description, current, mainClass = "", mainAttrs = {} } = Astro.pr
       </nav>
     </aside>
     <main class:list={["ev-page", mainClass]} {...mainAttrs}>
+      <FieldExplainer slug={current} />
       <slot />
     </main>
   </div>

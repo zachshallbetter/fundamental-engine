@@ -24,3 +24,6 @@ coverage
 test-results/
 playwright-report/
 .board_snapshot.*
+
+# Swift Package Manager build artifacts
+swift/.build/

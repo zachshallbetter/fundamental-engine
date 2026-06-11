@@ -67,11 +67,15 @@ discover → read → compute → state → write → render
 5. **write** — flush state to CSS variables, data attributes, ElementInternals, and thresholded events.
 6. **render** — draw overlays, field lines, and heatmaps from the registries (read-only).
 
-`createFieldPlatform(root, { strict? })` wires `measure → read` and `flush → write` by default,
-installs a read-phase guard (a measurement requested off-phase is recorded, or thrown under
-`strict`), and exposes `.scheduler` plus `.on(phase, handler)` so callers hang `discover` / `compute`
-/ `state` / `render` handlers off the same loop. `tick(now, viewport)` runs one frame and returns a
-report of the phases that ran and any violations.
+The platform **owns discover through write**. `createFieldPlatform(root, { strict? })` wires only
+two phases by default — `measure → read` and `flush → write` — and installs a read-phase guard (a
+measurement requested off-phase is recorded, or thrown under `strict`). The remaining phases
+(`discover`, `compute`, `state`, `render`) are **caller-open**: the platform exposes
+`.on(phase, handler)` so callers attach handlers off the same loop without the platform owning
+their logic. The render phase in particular is not wired by the platform at all — it is a slot the
+legacy engine fills by running the canvas simulate-and-render loop; the platform observes and feeds
+back DOM state, it does not draw. `tick(now, viewport)` runs one full frame and returns a report of
+the phases that ran and any violations.
 
 ## The six registries
 
