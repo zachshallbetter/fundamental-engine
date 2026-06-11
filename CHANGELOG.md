@@ -7,6 +7,16 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`<field-root heatmap>` declarative attribute (`@field-ui/elements`).** The density-heatmap
+  underlay (field-systems H1) was only reachable imperatively via `setHeatmap()`; it now has a
+  matching observed attribute, so a field can declare `<field-root heatmap>` (and toggle it live —
+  the attribute routes through `setHeatmap`, no rebuild). Closes a parity gap with the Swift port,
+  whose `FieldOptions.heatmap` was already a first-class construction flag. (The companion `depth`
+  knob Swift exposes has no JS engine support yet — the optional-z work added a per-particle z lane
+  but no field-level depth extent — so a `depth` attribute is deferred until the core option exists.)
+
 ### Fixed
 
 - **Platform registries close their exits.** Three registries leaked entries for elements that
