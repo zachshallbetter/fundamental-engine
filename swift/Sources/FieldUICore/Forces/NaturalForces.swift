@@ -206,9 +206,81 @@ public struct CollideForce: Force {
     }
 }
 
-/// The natural primitives, in spec order (§20.10). The grid-backed three (`diffuse`,
-/// `propagate`, `memory`) follow once the scalar-grid port lands — they no-op against
-/// the default NoopGrid, so registering this set early is harmless.
+/// §20.10 — `diffuse` (class [C], over the scalar `grid`): the pheromone/stigmergy
+/// field. Each frame a particle lays a mark into the shared `diffuse` grid (which the
+/// engine blurs via ∂φ/∂t = D∇²φ) and steers *up* the local gradient, following the
+/// smeared trail toward where matter has gathered. `strength` sets both the deposit and
+/// the follow gain. Self-organizing trails emerge from the deposit↔blur↔follow loop.
+public struct DiffuseForce: Force {
+    public let token = "diffuse"
+    public let label = "Diffuse"
+    public init() {}
+
+    public func apply(body b: Body, particle p: Particle, env e: Env) {
+        if e.dist >= b.range { return }
+        let g = e.grid("diffuse")
+        g.deposit(at: p.position, amount: b.strength) // lay a mark
+        let grad = g.gradient(at: p.position) // follow the blurred trail up-gradient
+        p.velocity += grad * b.strength
+    }
+}
+
+/// Frames between emitted shocks while a propagate body is engaged. A *pulse train* — not
+/// a continuous drip — is what keeps it a travelling wave: between pulses the grid
+/// radiates and damps, so no standing bump builds at the source.
+let WAVE_PULSE_PERIOD = 12
+/// How hard a passing wavefront carries matter outward (radiation pressure gain).
+let WAVE_PUSH: Float = 7
+
+/// §20.10 — `propagate` (class [C], over a wave-mode `grid`): a travelling disturbance,
+/// ∂²φ/∂t² = c²∇²φ. An engaged body injects an impulsive shock at its centre (via the
+/// body-level `source` hook, once per frame), and the grid carries it outward as a real
+/// expanding ring. Matter **rides the front out** — radiation pressure, not an inward pull.
+public struct PropagateForce: Force {
+    public let token = "propagate"
+    public let label = "Propagate"
+    public init() {}
+
+    public func source(body b: Body, env e: Env) {
+        if !b.isEngaged { return } // only an engaged body emits
+        if e.frameN % WAVE_PULSE_PERIOD != 0 { return } // a shock train, once per period
+        e.grid("wave-propagate").deposit(at: b.center, amount: b.strength) // 'wave…' → wave stepping
+    }
+
+    public func apply(body b: Body, particle p: Particle, env e: Env) {
+        if e.dist >= b.range { return }
+        let g = e.grid("wave-propagate")
+        let grad = g.gradient(at: p.position)
+        let act = simd_length(grad) // wavefront activity — steep where a front is passing
+        if act < 1e-6 { return } // no front here → coast
+        // ride the front: pushed radially OUTWARD (env.vector points toward the body, so negate).
+        let u = -e.vector / e.dist
+        p.velocity += u * (act * b.strength * WAVE_PUSH)
+        clampToC(p, e.c)
+    }
+}
+
+/// Memory (class [C], over a slow-decaying `memory` grid) — the field remembers.
+/// Each frame a particle lays occupancy where it sits, into a grid that barely blurs and
+/// fades slowly; the body's pull is then amplified by how worn the spot is: M(x) += λ and
+/// the effective force ×= (1 + μ·M) — frequently-travelled routes deepen and pull harder.
+public struct MemoryForce: Force {
+    public let token = "memory"
+    public let label = "Memory"
+    public init() {}
+
+    public func apply(body b: Body, particle p: Particle, env e: Env) {
+        if e.dist >= b.range { return }
+        let g = e.grid("memory") // 'memory' name → slow-decay stepping
+        g.deposit(at: p.position, amount: b.strength * 0.15) // wear the path where matter sits
+        let amp = 1 + 0.5 * g.sample(at: p.position) // worn paths pull harder (1 + μ·M)
+        let f = pow(1 - e.dist / b.range, 2) * b.strength * 0.5 * amp
+        p.velocity += (e.vector / e.dist) * f
+    }
+}
+
+/// The natural primitives, in spec order (§20.10).
 public func naturalForces() -> [any Force] {
-    [GravityForce(), ChargeForce(), MagnetismForce(), ThermalForce(), CollideForce()]
+    [GravityForce(), ChargeForce(), MagnetismForce(), ThermalForce(), CollideForce(),
+     DiffuseForce(), PropagateForce(), MemoryForce()]
 }

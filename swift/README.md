@@ -124,35 +124,57 @@ Two deliberate representation choices (semantics over idiom):
 
 ## Parity
 
-Ported and tested:
+Ported and tested — the full engine:
 
-- **The integrator** (`integrator.ts`, line-for-line): captured-matter drift, formation
-  currents, shaped sources, the 2.56× range cull, feedback density + thermodynamic
-  sampling, condition gates, the modifier contract (spotlight → screen → resonate),
-  cross-body screen attenuation, conserved attention, first-class mass, the `c` velocity
-  cap, friction/heat decay, wander, mortal age, toroidal wrap, the source pass.
-- **The canonical nine** (§6): attract, jet, tether, wall, stream, repel, viscosity,
-  swirl, sink.
-- **Natural primitives** (§20.10): gravity, charge (shared softened inverse-square
-  kernel, Plummer ε = 2GM/c²), magnetism (exact rotation — preserves |v| to FP
-  precision), thermal (Box–Muller Langevin), collide (momentum-conserving) — plus their
-  Stage B `field()` structure hooks (dipole, monopole, gravity well).
-- **Formations** (§7): the five presets verbatim, eased transitions, accretion targeting.
-- **Reactions + accretion** (§23, §6.9): burst impulses, conserved release, capture edges.
-- **Feedback** (§8): `count → eased d`, the same `count/20 + engaged·0.45` target.
-- **Vanilla surface** (§13): scan, formations, palette/accent, burst, flowTo*, seed/atomAt/
-  focusAt, particleCount, energy, scrollV, setVisible, destroy.
+- **The integrator** (`integrator.ts`, line-for-line): captured-matter drift, the wave
+  current (§2.3), formation currents, shaped sources, the 2.56× range cull, feedback
+  density + thermodynamic sampling, condition gates, the modifier contract (spotlight →
+  screen → resonate), cross-body screen attenuation, conserved attention, first-class
+  mass, the `c` velocity cap, friction/heat decay, wander, mortal age, toroidal wrap,
+  the source pass.
+- **All 33 forces.** The canonical nine (§6: attract, jet, tether, wall, stream, repel,
+  viscosity, swirl, sink); the natural primitives (§20.10: gravity, charge, magnetism,
+  thermal, collide, diffuse, propagate, memory — the grid-backed three run against real
+  scalar grids); the designed extended set (§20.3: lens, gate, buoyancy, shear,
+  crystallize, align, wind, cohesion, pressure, link, hunt, morph, spawn, resonate,
+  spotlight, screen, pigment, fieldflow, warp). Stage B `field()` structure hooks
+  (dipole, monopole, gravity well) included.
+- **Scalar grids** (`scalar-grid.ts`): the three stepping modes — diffuse (explicit heat
+  equation), wave (leapfrog, CFL-clamped), memory (slow decay) — with bilinear sampling
+  and central-difference gradients.
+- **Currents** (§2.3/§24): the five carrier waves, the bound shimmer pool, wave pulls.
+- **The bound↔free reservoir** (§2.4): wave-healing, tearing (burst/supernova/forces),
+  charge induction — count conserved throughout.
+- **Flow focus** (`flow.ts`): `flowTo`/`clearFlow` with linear-falloff pull, live.
+- **Formations** (§7), **reactions + accretion** (§23/§6.9), **feedback** (§8),
+  **conditions** (§5: active/fast/slow/hot/cool/scrolling).
+- **Measured thermodynamics** (workover §"Metrics"): entropy/coherence/temperature from
+  the accumulator sums, exported through the feedback sink.
+- **Conserved attention** (§2.4): the rest-neutral, total-conserving multiplier model +
+  the water-filling allocator. **Cross-boundary causality** (Concept 4): conserved
+  density spillover → the `lit` channel.
+- **Weights + temporal kernels** (`weights.ts`/`temporal.ts`): log-normalization, the
+  weight→strength contract, imminence/freshness/retention/phase.
+- **Overlay readings** (Field Surfaces): streamlines, force-vectors, field-lines
+  (traced), grid (deformation), temperature/energy (iso-contours via marching squares),
+  path, data — additive stacks on the render surface.
+- **Render modes** (§20.6): dots, trails, links, metaballs (marching squares), voronoi
+  (nearest-site walls), streamlines, none (signals-only) — plus waves, the bound
+  shimmer, sparks (§23), and the heatmap glow (H1) on the CoreGraphics backend.
+- **Recipes** (authoring §5): schema + validation + the compiler, with the locked
+  64-recipe catalog embedded from the canonical `recipes.json` (4 tiers × 16, never
+  hand-retyped) — every recipe validates against the standard registry in the tests.
+- **Vanilla surface** (§13): the full FieldHandle.
 
-Not yet ported (in rough priority order):
+Not yet ported (the platform-adjacent tranche — most is DOM-specific and maps to
+different Swift idioms):
 
-- Currents/waves (§2.3) — the ambient carrier motion behind everything
-- Scalar grids (§20.1 [C]) — until then `diffuse`/`propagate`/`memory` no-op safely
-- Overlay readings (streamlines, field-lines, heatmap, temperature/energy contours)
-- Render modes beyond `dots` (trails, links, metaballs, voronoi)
-- Sparks rendering (the engine fires `env.spark`; nothing draws it yet)
-- The extended force set (§20.3) and warp pairing (§22.3)
-- Recipes (the 64-recipe catalog → a Swift result-builder DSL)
-- `flowTo` is accepted but inert (the flow-focus port is pending)
+- `threads()` rendering (glowing connectors — the API is accepted, nothing draws yet)
+- The platform package's DOM modules: apply-recipe (DOM application), bind-data,
+  text-bodies, flip, export-dom — their Swift counterparts are view-tree concerns
+- The frame governor + experiential metrics pipeline (`governor.ts`, `metrics.ts`)
+- The agents directory (element/user/event agents — element-as-agent motion)
+- Inspect/diagnostics tooling, the conformance harness, semantic/visual registries
 - SwiftUI `.fieldBody()` registers geometry but isn't wired into scan yet
 
 ## Building & testing
@@ -160,7 +182,7 @@ Not yet ported (in rough priority order):
 ```sh
 cd swift
 swift build                  # macOS
-swift test                   # 69 tests: unit + headless full-loop integration
+swift test                   # 113 tests: unit + headless full-loop integration
 
 # cross-platform checks
 swift build --triple arm64-apple-ios17.0-simulator \

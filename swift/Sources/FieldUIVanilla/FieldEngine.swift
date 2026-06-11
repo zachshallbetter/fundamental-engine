@@ -8,12 +8,12 @@ func feedbackTarget(count: Float, engaged: Bool) -> Float {
     clamp(count / 20 + (engaged ? 0.45 : 0), 0, 1)
 }
 
-/// The concrete FieldHandle implementation — the running engine instance.
-/// Equivalent to the field closure `createField` builds in @field-ui/core.
+/// The concrete FieldHandle implementation — the running engine instance: the Swift
+/// counterpart of the field closure `createField` builds in @field-ui/core.
 ///
-/// Owns the particle pool, the per-frame step, feedback easing, and the display loop.
-/// Rendering is delegated through the FieldRenderer seam; the host supplies geometry,
-/// scanning, and frame scheduling.
+/// Owns the particle pool, the carrier waves + bound reservoir, the spark pool, the
+/// scalar grids, the per-frame step, feedback easing, attention/causality, and the
+/// display loop. Rendering is delegated through the FieldRenderer seam.
 final class FieldEngine: FieldHandle {
 
     private let host: any FieldHost
@@ -23,7 +23,7 @@ final class FieldEngine: FieldHandle {
     private let env: Env
     private var loopToken: AnyObject?
 
-    /// The render backend, if the mount provides one (signals-only when nil — render "none").
+    /// The render backend, if the mount provides one (signals-only when nil).
     var renderer: (any FieldRenderer)?
 
     // Simulation state
@@ -38,6 +38,17 @@ final class FieldEngine: FieldHandle {
     private var seeded: [AtomPayload] = []
     private let spawnCeiling: Int
     private var unsubscribers: [() -> Void] = []
+
+    // Currents (§2.3) + the bound↔free reservoir (§2.4)
+    private var waves: [Wave] = []
+    private var bound: [BoundParticle] = []
+    private var boundTarget: Int = 0
+
+    // Sparks (§23), flow focus, grids (§20.1 [C]), heatmap (H1)
+    private var sparks: [Spark] = []
+    private var flow: FlowFocus?
+    private var grids: [String: ScalarGridImpl] = [:]
+    private var heatmap: Heatmap?
 
     init(host: any FieldHost, options: FieldOptions, registry: Registry = .standard()) {
         self.host = host
@@ -70,6 +81,21 @@ final class FieldEngine: FieldHandle {
         env.neighbors = { [weak self] p, r in
             self?.store.neighbors(p, r: r) ?? []
         }
+        env.spark = { [weak self] at, power, color in
+            self?.spawnSpark(at: at, power: power, color: color)
+        }
+        // scalar field-buffer service (§20.1 class [C]): created on demand, so a field
+        // with no diffuse/propagate body allocates nothing. Grids named "wave…" use the
+        // wave scheme, "memory…" the slow-decay scheme; everything else diffuses.
+        env.grid = { [weak self] name in
+            guard let self else { return NoopGrid() }
+            if let g = self.grids[name] { return g }
+            let vol = self.host.volume
+            let mode: GridMode = name.hasPrefix("wave") ? .wave : name.hasPrefix("memory") ? .memory : .diffuse
+            let g = ScalarGridImpl(width: vol.width, height: vol.height, mode: mode)
+            self.grids[name] = g
+            return g
+        }
         env.supernova = { [weak self] b in
             guard let self else { return }
             // release exactly what was captured — radial, from the core (§6.9). Held matter
@@ -85,23 +111,50 @@ final class FieldEngine: FieldHandle {
                     q.heat = max(q.heat, 0.8)
                 }
             }
+            // the blast also tears nearby bound matter off the Currents (§6.9, §2.4).
+            let vol = self.host.volume
+            tearBoundNear(bound: &self.bound, waves: self.waves, center: b.center, radius: 320,
+                          W: vol.width, H: vol.height, time: self.env.t) { self.env.spawn($0) }
         }
-        // spark + grid stay at their defaults until the spark pool / scalar grid land.
+    }
+
+    /// Spark pool (§23) — capped, skipped under reduced motion.
+    private func spawnSpark(at: Vec3, power: Float, color: String?) {
+        if host.prefersReducedMotion || sparks.count > 260 { return }
+        let c: RGB = color.map(hexToRgb) ?? WARM
+        let n = sparkCount(power: power)
+        for _ in 0..<n {
+            let a = Float.random(in: 0..<6.28318)
+            let s = 0.8 + Float.random(in: 0..<1) * (power > 0 ? power : 1) * 1.7
+            sparks.append(Spark(position: at, velocity: Vec3(cos(a) * s, sin(a) * s, 0), life: 1, color: c))
+        }
     }
 
     // MARK: Pool build (§2.5)
 
-    /// (Re)build the base particle pool — `130 × density` particles, exactly the JS count.
+    /// (Re)build the base pool — 130×density free particles, the waves, and the bound
+    /// shimmer (16×density riders per wave), exactly the JS counts.
     private func build() {
-        let vol = host.volume
         let density = max(options.density ?? 1, 0)
-        let n = Int((130 * density).rounded())
         store.clear()
-        for _ in 0..<n {
+        for _ in 0..<Int((130 * density).rounded()) {
             store.add(newParticle())
         }
         applySeed()
-        _ = vol
+
+        if options.waves {
+            waves = buildWaves(palette: [accent, COOL, WARM])
+            bound = buildBound(waveCount: waves.count, density: density) { Float.random(in: 0..<1) }
+            boundTarget = bound.count
+        } else {
+            waves = []
+            bound = []
+            boundTarget = 0
+        }
+
+        let vol = host.volume
+        for g in grids.values { g.resize(width: vol.width, height: vol.height) }
+        heatmap?.resize(width: vol.width, height: vol.height)
     }
 
     private func newParticle(at position: Vec3? = nil) -> Particle {
@@ -125,15 +178,14 @@ final class FieldEngine: FieldHandle {
             gy: Float.random(in: 0..<1),
             gz: Float.random(in: 0..<1)
         )
-        if options.firstClassMass { p.mass = size } // mass ∝ size when first-class mass is on
+        if options.firstClassMass { p.mass = size }
         return p
     }
 
     /// Round-robin the seeded records onto the base pool; weight scales mass + size.
     private func applySeed() {
         guard !seeded.isEmpty else { return }
-        let ps = store.particles
-        for (i, p) in ps.enumerated() {
+        for (i, p) in store.particles.enumerated() {
             let atom = seeded[i % seeded.count]
             p.atom = atom
             if let w = atom.weight {
@@ -162,39 +214,142 @@ final class FieldEngine: FieldHandle {
         env.t = Float(timestamp - startTime!)
         env.frameN += 1
         env.dt = host.prefersReducedMotion ? 0 : 1
-        // eased scroll velocity — the same EMA the `scrolling` gate uses.
         scrollVel = scrollVel * 0.7 + abs(host.scrollY - lastScrollY) * 0.3
         lastScrollY = host.scrollY
         env.scrollV = scrollVel
 
-        // formation easing (§7): the active preset glides toward its target.
+        // formation easing (§7)
         easeFormation(&env.form, toward: formTarget)
 
-        // refresh body geometry + visibility from the host (the read phase).
+        // refresh body geometry + visibility from the host (the read phase), and resolve
+        // warp pairings (§22.3) into live relocate targets.
         for b in bodies {
             if let view = b.view, let box = host.worldBox(of: view) {
                 b.box = box
                 b.isVisible = boxVisible(box, in: vol)
             }
+            if let pair = b.pairBody {
+                b.warpTarget = pair.center
+                b.warpHas = true
+            } else {
+                b.warpHas = false
+            }
         }
+
+        // conserved attention (§2.4): one finite strength budget across the live bodies.
+        if options.attention {
+            let muls = attentionMuls(bodies.map { AttnInput(strength: $0.strength, on: $0.isEngaged) })
+            for (i, b) in bodies.enumerated() { b.attn = muls[i] }
+        } else {
+            for b in bodies { b.attn = nil }
+        }
+
+        // charge induction (§20.10): charge/magnetism bodies polarize neutral matter.
+        induceCharges(bodies: bodies, particles: store.particles)
 
         // simulate
         store.reindex()
         step(StepInput(store: store, bodies: bodies, env: env,
-                       forces: registry.forces, conditions: registry.conditions))
+                       forces: registry.forces, conditions: registry.conditions,
+                       waves: waves.isEmpty ? nil : waves))
 
-        // feedback easing (§8): fold count → eased density d.
+        // flow focus: pull free matter toward the target (gain 0.6, the JS particle gain).
+        if let flow {
+            for p in store.particles where p.cap == nil {
+                p.velocity += flowBias(at: p.position, focus: flow)
+            }
+        }
+
+        // the bound↔free reservoir (§2.4): forces tear bound matter loose; calm free
+        // matter heals back onto the lines, up to the build target.
+        if !waves.isEmpty && env.dt != 0 {
+            tearBoundByForces(bound: &bound, waves: waves, bodies: bodies, forces: registry.forces,
+                              W: vol.width, H: vol.height, time: env.t) { self.env.spawn($0) }
+            healWaves(store: store, bound: &bound, boundTarget: boundTarget, waves: waves,
+                      W: vol.width, H: vol.height, time: env.t) { Float.random(in: 0..<1) }
+        }
+
+        // advance the scalar grids (diffuse blur / wave leapfrog / memory decay).
+        for g in grids.values { g.step() }
+
+        // density heatmap (H1), when enabled.
+        if options.heatmap {
+            if heatmap == nil { heatmap = Heatmap(width: vol.width, height: vol.height) }
+            heatmap!.update(particles: store.particles)
+        }
+
+        // spark decay (§23) — drift, damp, fade, drop.
+        if !sparks.isEmpty {
+            for i in sparks.indices {
+                sparks[i].position += sparks[i].velocity
+                sparks[i].velocity *= 0.92
+                sparks[i].life -= 0.04
+            }
+            sparks.removeAll { $0.life <= 0 }
+        }
+
+        // feedback easing (§8) + measured thermodynamics + cross-boundary causality.
         for b in bodies where b.feedback {
             let target = feedbackTarget(count: b.count, engaged: b.isEngaged)
             b.d += (target - b.d) * 0.08
+            if b.thermo != nil { b.metrics = thermoMetrics(b.thermo) }
+        }
+        if options.causality {
+            let feedbackBodies = bodies.filter { $0.feedback }
+            let deltas = spillover(feedbackBodies.map { SpillBody(d: $0.d, center: $0.center) })
+            for (i, b) in feedbackBodies.enumerated() {
+                emitFeedback(b, lit: clamp(b.d + deltas[i], 0, 1))
+            }
+        } else {
+            for b in bodies where b.feedback { emitFeedback(b, lit: nil) }
         }
 
-        // render (skipped while invisible or in signals-only mode — the sim stays live).
+        // hold the focused particle still (the dwell affordance).
+        if let focused {
+            focused.velocity = .zero
+            focused.heat = 1
+        }
+
+        // render (skipped while invisible or signals-only — the sim stays live).
         if visible, options.render != .none_, let renderer {
+            let bodiesRef = bodies
+            let forcesRef = registry.forces
+            let envRef = env
             renderer.render(frame: RenderFrame(
                 particles: store.particles, bodies: bodies, accent: accent,
-                mode: options.render, projection: host.projection, volume: vol
+                mode: options.render, projection: host.projection, volume: vol,
+                time: env.t, waves: waves, bound: bound, sparks: sparks,
+                heatmap: options.heatmap ? heatmap : nil,
+                overlays: activeOverlays(),
+                forceSampler: { forceAt(bodies: bodiesRef, forces: forcesRef, env: envRef, at: $0) },
+                fieldSampler: { netField(bodies: bodiesRef, forces: forcesRef, at: $0) }
             ))
+        }
+    }
+
+    /// Route a body's per-frame channels to the configured sink (Phase D3 seam) — the
+    /// Swift counterpart of the CSS-variable write-back.
+    private func emitFeedback(_ b: Body, lit: Float?) {
+        guard let sink = options.feedbackSink, let view = b.view else { return }
+        var ch = FeedbackChannels()
+        ch.density = b.d
+        ch.load = sinkLoad(b)
+        ch.lit = lit
+        if let m = b.metrics {
+            ch.entropy = m.entropy
+            ch.coherence = m.coherence
+            ch.temperature = m.temperature
+        }
+        if options.heatmap, let hm = heatmap {
+            ch.heatmapDensity = hm.norm(at: b.center)
+        }
+        sink(view, ch)
+    }
+
+    private func activeOverlays() -> [OverlayMode] {
+        switch options.overlay {
+        case .single(let m): return m == .off ? [] : [m]
+        case .stack(let ms): return ms.filter { $0 != .off }
         }
     }
 
@@ -236,7 +391,7 @@ final class FieldEngine: FieldHandle {
     func setCausality(_ on: Bool) { options.causality = on }
     func setHeatmap(_ on: Bool)   { options.heatmap = on }
 
-    func threads(_ list: [ThreadLink]?) { /* thread rendering — lands with the renderer pass */ }
+    func threads(_ list: [ThreadLink]?) { /* glowing connectors — renderer support pending */ }
 
     /// Discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
     func burst(at position: Vec3, color: String? = nil) {
@@ -248,18 +403,27 @@ final class FieldEngine: FieldHandle {
             q.heat = max(q.heat, heat)
             if let color { q.color = color } // carried pigment (§20.8)
         }
-        env.spark(position, 2, color)
+        // detach nearby bound matter so the shock is actually felt (§2.4)
+        let vol = host.volume
+        tearBoundNear(bound: &bound, waves: waves, center: position, radius: R,
+                      W: vol.width, H: vol.height, time: env.t) { self.env.spawn($0) }
+        spawnSpark(at: position, power: 2, color: color) // a visible pop at the blast (§23)
     }
 
-    func flowTo(_ position: Vec3, strength: Float? = nil) { /* flow focus — next pass */ }
-    func clearFlow() {}
+    /// Place or move the flow focus (§flowTo) — retarget every frame to follow a path.
+    func flowTo(_ position: Vec3, strength: Float? = nil) {
+        flow = makeFlowFocus(at: position, strength: strength)
+    }
+
+    func clearFlow() {
+        flow = nil
+    }
 
     func seed(_ atoms: [AtomPayload]) {
         seeded = atoms
         applySeed()
     }
 
-    /// The seeded record on the nearest particle within ~24px, or nil. For hover-to-inspect.
     func atomAt(_ position: Vec3) -> AtomPayload? {
         nearestSeeded(to: position)?.atom
     }
@@ -306,5 +470,8 @@ final class FieldEngine: FieldHandle {
         for unsub in unsubscribers { unsub() }
         unsubscribers.removeAll()
         store.clear()
+        sparks.removeAll()
+        bound.removeAll()
+        grids.removeAll()
     }
 }

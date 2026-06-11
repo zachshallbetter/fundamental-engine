@@ -39,6 +39,8 @@ public struct FeedbackChannels {
     public var entropy: Float?
     public var coherence: Float?
     public var temperature: Float?
+
+    public init() {}
 }
 
 /// Receives a body's feedback in place of direct attribute writes.

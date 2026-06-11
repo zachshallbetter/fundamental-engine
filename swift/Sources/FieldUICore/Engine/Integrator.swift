@@ -22,13 +22,17 @@ public struct StepInput {
     public var env: Env
     public var forces: ForceRegistry
     public var conditions: ConditionRegistry
+    /// The carrier waves — free particles drift along their slope (§2.3).
+    public var waves: [Wave]?
 
-    public init(store: FieldStore, bodies: [Body], env: Env, forces: ForceRegistry, conditions: ConditionRegistry = [:]) {
+    public init(store: FieldStore, bodies: [Body], env: Env, forces: ForceRegistry,
+                conditions: ConditionRegistry = [:], waves: [Wave]? = nil) {
         self.store = store
         self.bodies = bodies
         self.env = env
         self.forces = forces
         self.conditions = conditions
+        self.waves = waves
     }
 }
 
@@ -59,19 +63,6 @@ private func applyForce(_ f: any Force, _ b: Body, _ p: Particle, _ env: Env, _ 
     let before = p.velocity
     f.apply(body: b, particle: p, env: env)
     p.velocity = before + (p.velocity - before) * inv
-}
-
-/// The net *structure* field at a world point — the superposition of every body's
-/// `field()` hook (the dipoles and monopoles, Stage B). The vector matter follows
-/// under `fieldflow`; the same vector the streamlines view draws.
-public func netField(bodies: [Body], forces: ForceRegistry, at point: Vec3) -> Vec3 {
-    var f = Vec3.zero
-    for b in bodies where b.isVisible {
-        for tok in b.tokens {
-            if let v = forces[tok]?.field(body: b, at: point) { f += v }
-        }
-    }
-    return f
 }
 
 public func step(_ input: StepInput) {
@@ -108,11 +99,31 @@ public func step(_ input: StepInput) {
     // the accretion target for `conv` — the first visible sink body (§7).
     let conv = form.conv > 0.02 ? accretionTarget(bodies) : nil
 
+    let waves = input.waves
+    let hasWaves = !(waves?.isEmpty ?? true)
+
     for p in store.particles {
         // captured matter is held inside a sink core, drifting to it (§6.9).
         if let cap = p.cap {
             p.position += (cap.center - p.position) * 0.18
             continue
+        }
+
+        // wave current (§2.3): near a wave line, drift along its slope like debris.
+        if hasWaves, let waves {
+            var near: Wave? = nil
+            var nd: Float = 1e9
+            for w in waves {
+                let d = abs(waveYat(w, x: p.position.x, time: env.t, H: H) - p.position.y)
+                if d < nd {
+                    nd = d
+                    near = w
+                }
+            }
+            if let near, nd < 70 {
+                p.velocity.x += near.dir * 0.035 * (1 - nd / 70)
+                p.velocity.y += waveSlope(near, x: p.position.x, time: env.t) * 0.1 * (1 - nd / 70)
+            }
         }
 
         // formation currents (§7), before the body forces: a lateral lane, an

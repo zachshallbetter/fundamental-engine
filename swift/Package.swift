@@ -27,6 +27,7 @@ let package = Package(
         .target(
             name: "FieldUICore",
             path: "Sources/FieldUICore",
+            resources: [.copy("Resources/recipes.json")], // the locked 64-recipe canon
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
         ),
         // ── Platform ────────────────────────────────────────────────────────
