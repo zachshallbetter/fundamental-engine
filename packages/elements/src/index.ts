@@ -238,6 +238,11 @@ export class FieldField extends HTMLElementBase {
   particleCount(): number {
     return this.field?.particleCount() ?? 0;
   }
+  /** copy live particle state into `out` (stride 4: x, y, heat, size); returns the count written
+   *  (0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws. */
+  readParticles(out: Float32Array): number {
+    return this.field?.readParticles(out) ?? 0;
+  }
   /** kinetic/thermal/total energy snapshot for the current frame. */
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field?.energy() ?? { kinetic: 0, thermal: 0, total: 0, count: 0 };

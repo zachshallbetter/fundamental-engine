@@ -1839,6 +1839,19 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       focusP = null;
     },
     particleCount: () => store.size,
+    readParticles: (out) => {
+      const ps = store.particles;
+      const n = Math.min(store.size, out.length >> 2); // stride 4; floor(out.length / 4)
+      for (let i = 0; i < n; i++) {
+        const p = ps[i]!;
+        const o = i << 2;
+        out[o] = p.x;
+        out[o + 1] = p.y;
+        out[o + 2] = p.heat;
+        out[o + 3] = p.size;
+      }
+      return n;
+    },
     energy: () => energyReport(store.particles),
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
