@@ -49,7 +49,7 @@ import { thermoMetrics } from './thermo.ts';
 import { attentionMuls } from './attention.ts';
 import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
-import { releaseCaptured, sinkLoad, captureEdge } from './accretion.ts';
+import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
 import { withinCapture, stepDock, dockTransform, type DockState } from './dock.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
@@ -1403,7 +1403,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const target = scrollY * (0.025 + w.depth * 0.08); // wave parallax (§24)
       w.offsetY += (target - w.offsetY) * 0.04;
     }
-    if (bodies.length && frameN % 6 === 0) measureBodies(bodies, W, H);
+    if (bodies.length && frameN % 6 === 0) {
+      measureBodies(bodies, W, H);
+      // attention-gated discharge (#365): an engagement-gated sink releases on the falling
+      // edge of engagement — the same conserved supernova ritual as saturation.
+      dischargeDisengaged(bodies, env.supernova);
+    }
 
     // spine: ease the wave-bend toward the flow focus (if set) or the engaged element (§24). A live
     // flow focus (field.flowTo) takes priority, so the streamline spine curves to the moving target.

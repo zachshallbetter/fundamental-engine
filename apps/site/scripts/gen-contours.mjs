@@ -26,7 +26,10 @@ const FONT = join(here, 'assets/bricolage-grotesque-variable.ttf');
 const OUT = join(here, '../src/data/contours.json');
 
 /** The text set pages may render as contour objects. Add a line, re-run, commit. */
-const TEXTS = [{ id: 'contour', text: 'Contour', fontSize: 96 }];
+const TEXTS = [
+  { id: 'contour', text: 'Contour', fontSize: 96 },
+  { id: 'charge', text: 'Charge', fontSize: 96 },
+];
 
 const font = opentype.parse(readFileSync(FONT).buffer);
 

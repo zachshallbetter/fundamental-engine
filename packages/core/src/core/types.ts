@@ -162,6 +162,8 @@ export interface Body {
   /** fractional-emission accumulator for a budgeted [S] source (`spawn`) — carries the
    *  sub-1/frame remainder when the rate is clamped to `cap / life`. Runtime state. */
   emitAcc?: number;
+  /** prior engagement state, for the attention-gated discharge edge (#365). Runtime state. */
+  wasOn?: boolean;
   /** per-frame local thermodynamic accumulators (workover §"Metrics") — sums over the same
    *  `range/2` sample window as `count`, reset each step, only on `data-feedback` bodies:
    *  n samples, Σvx, Σvy, Σ|v|, Σ|v|², Σheat. Allocated lazily on first sample. */

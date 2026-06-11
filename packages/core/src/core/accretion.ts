@@ -60,3 +60,25 @@ export function captureEdge(prevArmed: boolean, accreting: boolean): { fire: Cap
   if (!accreting && prevArmed) return { fire: 'released', armed: false };
   return { fire: null, armed: prevArmed };
 }
+
+/**
+ * Attention-gated discharge (#365, the Contour Charge behavior): a sink gated on engagement
+ * (`data-when="active"`) releases what it holds on the FALLING edge of engagement — the vessel
+ * charges while attended and discharges when attention leaves. The condition pass already gates
+ * capture (a closed gate pulls nothing new in); this is the matching release side. Pure trigger:
+ * the caller supplies the release ritual (the engine passes `env.supernova`, so discharge is the
+ * same conserved release — same radial burst, same `field:released` event — as saturation).
+ * Returns the bodies that discharged this pass.
+ */
+export function dischargeDisengaged(bodies: readonly Body[], release: (b: Body) => void): Body[] {
+  const discharged: Body[] = [];
+  for (const b of bodies) {
+    if (b.when !== 'active' || !b.tokens.includes('sink')) continue;
+    if (b.wasOn && !b.on && b.accreted > 0) {
+      release(b);
+      discharged.push(b);
+    }
+    b.wasOn = b.on;
+  }
+  return discharged;
+}

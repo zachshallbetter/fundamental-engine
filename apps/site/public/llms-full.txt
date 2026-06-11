@@ -169,6 +169,7 @@ The concrete, fully shipped particle-level case. A `sink` body captures matter i
 | `--load` | `accreted / capacity` ∈ [0,1], written each frame | `field.ts` | **shipped** |
 | `--mass` | back-compat **alias** of `--load` (identical value) | `field.ts` | **legacy** alias |
 | release | saturation → `supernova` releases exactly the held particles, then resets | `field.ts` | **shipped** |
+| discharge | an engagement-gated sink (`data-when="active"`) releases on the FALLING edge of attention — same conserved ritual, same events (#365) | `accretion.ts` `dischargeDisengaged` | **shipped** |
 
 Terminology, per the [status rule](field-ui-documentation-standards.md): **`sink` is the runtime
 token.** `absorb` is **not** a token — only the `data-absorb` *attribute* exists. Treat `absorb` as
