@@ -59,6 +59,8 @@ import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
 import { forceAt, netField } from './streamlines.ts';
+import { traceFieldLines } from './fieldlines.ts';
+import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
 import { energyReport } from '../diagnostics/energy.ts';
@@ -1185,9 +1187,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     return list.filter((m): m is Exclude<OverlayMode, 'off'> => m !== 'off');
   }
 
-  // arrows along the sampled vector field — `streamlines` (felt, sqrt-compressed), `force-vectors`
-  // (felt, absolute magnitude), `field-lines` (structure-only geometry via netField).
-  function drawOverlayArrows(octx: CanvasRenderingContext2D, structure: boolean, absolute: boolean): void {
+  // arrows along the sampled *felt* force field — `streamlines` (sqrt-compressed) and
+  // `force-vectors` (absolute magnitude). `field-lines` no longer draws arrows: it traces the
+  // real field-structure curves (drawOverlayFieldLines), so this reads only the felt field.
+  function drawOverlayArrows(octx: CanvasRenderingContext2D, absolute: boolean): void {
     const GRID = 44;
     const acc = hexToRgb(cfg.accent);
     octx.lineWidth = 1.2;
@@ -1196,17 +1199,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     let frameMax = 0;
     for (let gx = GRID / 2; gx < W; gx += GRID) {
       for (let gy = GRID / 2; gy < H; gy += GRID) {
-        let fx: number;
-        let fy: number;
-        if (structure) {
-          const v = netField(bodies, reg.forces, gx, gy);
-          fx = v.x;
-          fy = v.y;
-        } else {
-          const v = forceAt(bodies, reg.forces, env, gx, gy);
-          fx = v.fx;
-          fy = v.fy;
-        }
+        let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
         if (flow) {
           const b = flowBias(gx, gy, flow, 0.04);
           fx += b.x;
@@ -1239,6 +1232,34 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       octx.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
       octx.moveTo(ex, ey);
       octx.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
+      octx.stroke();
+    }
+  }
+
+  // `field-lines` — the field STRUCTURE traced as real curves. Each field-bearing body is seeded
+  // by its own geometry (a dipole's perpendicular bisector for a magnet, a core ring for a
+  // monopole charge/gravity well; fieldline-seeds.ts), then `traceFieldLines` follows the NET
+  // field through every seed — so the bar-magnet loops, the radial spokes, and the linkage
+  // between two bodies all emerge from the math, never drawn by hand. Bodies that radiate nothing
+  // (attract/sink/…) get no seeds, so the diagram stays the real structure, not a starburst.
+  function drawOverlayFieldLines(octx: CanvasRenderingContext2D): void {
+    const seeds = fieldLineSeeds(bodies);
+    if (!seeds.length) return;
+    const lines = traceFieldLines((x, y) => netField(bodies, reg.forces, x, y), seeds, {
+      step: 6,
+      maxSteps: 200,
+      bounds: { w: W, h: H },
+      loopDist: 8,
+    });
+    const acc = hexToRgb(cfg.accent);
+    octx.lineWidth = 1.1;
+    octx.lineCap = 'round';
+    octx.lineJoin = 'round';
+    octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.42)`; // one style → one batched stroke pass
+    for (const line of lines) {
+      octx.beginPath();
+      octx.moveTo(line[0]!.x, line[0]!.y);
+      for (let i = 1; i < line.length; i++) octx.lineTo(line[i]!.x, line[i]!.y);
       octx.stroke();
     }
   }
@@ -1405,9 +1426,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     octx.clearRect(0, 0, W, H);
     if (!stack.length || W === 0 || H === 0) return;
     for (const mode of stack) {
-      if (mode === 'streamlines') drawOverlayArrows(octx, false, false);
-      else if (mode === 'force-vectors') drawOverlayArrows(octx, false, true);
-      else if (mode === 'field-lines') drawOverlayArrows(octx, true, false);
+      if (mode === 'streamlines') drawOverlayArrows(octx, false);
+      else if (mode === 'force-vectors') drawOverlayArrows(octx, true);
+      else if (mode === 'field-lines') drawOverlayFieldLines(octx);
       else if (mode === 'grid') drawOverlayGrid(octx);
       else if (mode === 'temperature') drawOverlayContours(octx, (p) => p.heat, 0.5);
       else if (mode === 'energy') drawOverlayContours(octx, (p) => 0.5 * p.m * (p.vx * p.vx + p.vy * p.vy), 0.42);
