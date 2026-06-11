@@ -170,14 +170,24 @@ public enum LabScenes {
             blurb: "A real Lorentz force: matter polarizes, curls, and threads the dipole lines you can see.",
             story: "The data is polarity and orientation: spin (±1) picks the N/S sense, the card's box and angle lay the dipole axis. Neutral matter entering range is polarized by side (charge induction — state written onto particles), then the Lorentz force curls it and fieldflow advects it down the net field. The field-lines reading draws that structure: it IS the data, made geometry.",
             cards: [
+                // fieldflow advects ALL matter along the net dipole field — the iron-filings
+                // thread. A large range reaches most of the pool (otherwise only matter near
+                // the card follows the lines and the rest just drifts); strength is fieldflow's
+                // gain. magnetism's Lorentz curl rides on top, on the charge-induced matter.
                 CardSpec("N · dipole", x: 0.3, y: 0.5, w: 170, h: 64,
-                         tokens: ["magnetism", "fieldflow"], strength: 0.6, range: 320, spin: 1, angle: 0),
+                         tokens: ["magnetism", "fieldflow"], strength: 0.55, range: 640, spin: 1, angle: 0),
                 CardSpec("S · dipole", x: 0.7, y: 0.5, w: 170, h: 64,
-                         tokens: ["magnetism", "fieldflow"], strength: 0.6, range: 320, spin: -1, angle: .pi),
+                         tokens: ["magnetism", "fieldflow"], strength: 0.55, range: 640, spin: -1, angle: .pi),
             ]
         )
         s.overlay = [.fieldLines]
-        s.formation = "wells"
+        // scatter keeps matter spread across the whole field (an even-fill pull toward
+        // per-particle targets) while gentle fieldflow ALIGNS each particle to the local
+        // field tangent — so trails draw an iron-filings field that FILLS the loops
+        // rather than collapsing into the poles.
+        s.formation = "scatter"
+        s.render = .trails
+        s.density = 5
         return s
     }
 

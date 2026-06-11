@@ -6,6 +6,7 @@
 
 import Foundation
 import FieldLabKit
+import FieldUICore
 
 #if os(macOS)
 // --bench: where does a frame go? sim vs draw, per scene / matter mode / reading.
@@ -13,6 +14,22 @@ if CommandLine.arguments.contains("--bench") {
     print("FieldLab bench — 1280×800 @2x, 240 frames per row (after 60 warm-up)\n")
     let rows = Bench.standardSweep()
     print(Bench.table(rows))
+    exit(0)
+}
+
+// --verify: the two field-line fixes, with the readings the user pins.
+//   mass-lines: Mass + field-lines ON → clean spokes into the gravity body, not a starburst.
+//   magnetism:  the tour scene → matter threads the dipole loops.
+if CommandLine.arguments.contains("--verify") {
+    let dir = URL(fileURLWithPath: "/tmp/fl-verify")
+    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+    var mass = LabScenes.mass
+    mass.overlay = [.fieldLines]
+    try Snapshotter.render(scene: mass, options: Snapshotter.Options(),
+                           to: dir.appendingPathComponent("mass-lines.png"))
+    try Snapshotter.render(scene: LabScenes.magnetism, options: Snapshotter.Options(),
+                           to: dir.appendingPathComponent("magnetism.png"))
+    print("verify → \(dir.path)")
     exit(0)
 }
 

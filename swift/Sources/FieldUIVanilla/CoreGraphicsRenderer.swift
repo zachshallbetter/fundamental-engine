@@ -365,43 +365,10 @@ public final class FieldSurfaceLayer: CALayer {
         opts.maxSteps = 500
         opts.maxTurns = 2.25
 
-        var seeds: [Vec3] = []
-        for b in frame.bodies where b.isVisible && !b.tokens.isEmpty {
-            if b.tokens.contains("magnetism") {
-                // the dipole axis, with the same synthesized-pole fallback the field math
-                // uses (bodyDipole): a near-point body still reads as a full dipole.
-                var (pA, pB) = polePair(AxisBox(box: b.box, heading: b.heading, spin: b.spin))
-                let sep = simd_distance(pA.position, pB.position)
-                if sep < max(b.range * 0.06, 8) {
-                    let half = max(b.range * 0.18, 60)
-                    pA = Pole(position: b.center + b.heading * half, charge: b.spin < 0 ? -1 : 1)
-                    pB = Pole(position: b.center - b.heading * half, charge: b.spin < 0 ? 1 : -1)
-                }
-                // seeds on the perpendicular bisector: centre + RINGS offsets either side
-                let perp = simd_normalize(simd_cross(Vec3(0, 0, 1), b.heading))
-                let spacing = max(sep * 0.13, 18)
-                seeds.append(b.center)
-                for i in 1...8 {
-                    let off = Float(i) * spacing
-                    seeds.append(b.center + perp * off)
-                    seeds.append(b.center - perp * off)
-                }
-            } else if b.tokens.contains("charge") || b.tokens.contains("gravity") {
-                // monopole spokes: a tight ring close to the core
-                let r0 = max(min(b.box.hw, b.box.hh) * 0.8, 24)
-                for k in 0..<18 {
-                    let a = Float(k) / 18 * 2 * .pi
-                    seeds.append(b.center + Vec3(cos(a) * r0, sin(a) * r0, 0))
-                }
-            } else {
-                // any other field()-bearing body: the ring fallback
-                let r = max(b.range * 0.2, 40)
-                for k in 0..<8 {
-                    let a = Float(k) / 8 * 2 * .pi
-                    seeds.append(b.center + Vec3(cos(a) * r, sin(a) * r, 0))
-                }
-            }
-        }
+        // seeds from each body's actual field geometry (core fieldLineSeeds): dipole
+        // bisector for magnetism, monopole ring for charge/gravity, NONE for bodies that
+        // radiate nothing — so an attract-only card no longer starbursts a neighbour's well.
+        let seeds = fieldLineSeeds(bodies: frame.bodies)
 
         stroke(ctx, frame.accent, 0.35)
         for line in traceFieldLines(frame.fieldSampler, seeds: seeds, opts: opts) {
