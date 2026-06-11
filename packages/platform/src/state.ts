@@ -59,7 +59,27 @@ export class StateRegistry {
   }
 
   delete(element: Element, key: string): void {
-    this.store.get(element)?.delete(key);
+    const m = this.store.get(element);
+    if (m) {
+      m.delete(key);
+      if (m.size === 0) this.store.delete(element); // last key gone → no empty husk
+    }
+    // listener hygiene: an unsubscribe leaves an empty Set, and a per-key delete should not
+    // strand the listener scaffolding for that key — prune emptied maps so a long-lived
+    // registry never accumulates husks for keys that stopped existing.
+    const byKey = this.listeners.get(element);
+    if (byKey) {
+      const set = byKey.get(key);
+      if (set && set.size === 0) byKey.delete(key);
+      if (byKey.size === 0) this.listeners.delete(element);
+    }
+  }
+
+  /** Drop every state entry whose element left the DOM (the per-frame prune other registries do
+   *  at their natural moments — callers with a frame loop can run this on a cadence). */
+  prune(): void {
+    for (const el of this.store.keys()) if (el.isConnected === false) this.store.delete(el);
+    for (const el of this.listeners.keys()) if (el.isConnected === false) this.listeners.delete(el);
   }
 
   clear(element: Element): void {

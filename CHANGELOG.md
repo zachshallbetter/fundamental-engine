@@ -20,8 +20,37 @@ git tag (see [RELEASING.md](RELEASING.md)).
   attribute on the element runtime (observed, toggles live via `setHeatmap`), alongside the
   existing `mass` / `attention` / `causality`. The handle and `FieldOptions` already supported it;
   this exposes it to HTML authors. Documented in the regenerated custom-elements manifest.
+### Changed
+
+- **A supernova now ejects captured matter as PERSISTENT field matter** (`@field-ui/core`,
+  `accretion.ts`). When a sink saturates and supernovas, `releaseCaptured` clears each released
+  particle's `age`: mortal class-`[S]` source-spawned matter that the sink captured and held is
+  released **immortal**, so a `spawn → sink → supernova` loop visibly conserves — the matter a
+  source made rejoins the lasting field instead of silently dying once released. A **no-op for the
+  conserved base pool** (whose particles already have no `age`). Closes a long-standing gap where a
+  source's output, once captured and released, would quietly expire rather than return to the field.
+
+- **A supernova now ejects matter PAST the absorption radius, so the sink cycle repeats**
+  (`@field-ui/core`, `accretion.ts`). `releaseCaptured` placed ejecta *at the core* — inside
+  `absorbR` — so the sink re-captured its own ejecta on the very next frame, degenerating the
+  explosion into a ~1-per-frame strobe whose blast progressively evacuated the catchment until the
+  sink fell dormant ("exploded once, won't collect again"; ejecta appears to accelerate away and
+  never return). Each particle is now ejected just past `absorbR` along its bearing, so matter
+  leaves the accretion zone, a `sink+attract` well reels it back, and the
+  fill → explode → fall-back → refill cycle repeats at a real period (≈9 frames vs ≈1; in a headless
+  `sink+attract` repro, supernovas drop from 581 to 66 per 600 frames while the catchment stays
+  populated instead of decaying). A lone `sink` simply lets the ejecta disperse.
 
 ### Fixed
+
+- **Platform registries close their exits.** Three registries leaked entries for elements that
+  left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
+  elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never
+  re-resolved when a target later mounted), and `StateRegistry` (per-key `delete` stranded empty
+  listener maps). Each now prunes disconnected elements at its natural moment — `flush()`,
+  `discover()` (which also re-resolves late-mounting targets by replacing the unresolved set),
+  and a new `prune()` — and gains an explicit `unregister(element)` for immediate reclamation,
+  matching the standard `MeasurementRegistry` and `VisualBindingRegistry` already set.
 
 - **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,
   `updateWarpTargets` now clears `pairBody` and `warpHas` so the wormhole closes instead of
@@ -62,6 +91,16 @@ git tag (see [RELEASING.md](RELEASING.md)).
   three-clocks separation (wall / frame / simulation — see temporal.ts).
 
 ### Added
+
+- **`FieldLineOpts.maxTurns` — a turning budget for the field-line tracer** (`@field-ui/core`,
+  `fieldlines.ts`). A traced line orbiting a pole that never passes back through its *seed*
+  (so `loopDist` can't close it) otherwise winds the same circle for its whole step budget —
+  hundreds of overlapping segments that waste the trace and, on renderers whose antialiaser
+  computes path self-intersections, explode stroke cost superlinearly (measured at ~3 s/frame
+  in the Swift CoreGraphics renderer before this guard; ~81× faster after). The budget counts
+  cumulative heading change in full revolutions; `Infinity` — the default — preserves the
+  unbounded behavior exactly, so existing consumers and goldens are untouched. Renderers
+  tracing dipole fields should pass ~`1.5` (a closed dipole line turns exactly one revolution).
 
 - **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
   (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same

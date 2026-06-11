@@ -30,6 +30,18 @@ export interface FieldLineOpts {
   bounds?: { w: number; h: number };
   /** stop when the line returns within this of its seed (a closed loop). */
   loopDist?: number;
+  /**
+   * Turning budget, in full revolutions: stop once the line's cumulative heading change
+   * exceeds this. A line orbiting a pole that never passes back through its *seed* (so
+   * `loopDist` can't close it) otherwise winds the same circle for the whole step budget
+   * — hundreds of overlapping segments that waste the trace and, on renderers whose
+   * antialiaser computes path self-intersections, explode stroke cost superlinearly
+   * (measured at ~3 s/frame in the Swift CoreGraphics renderer before this guard).
+   * `Infinity` (the default) preserves the unbounded behavior; renderers tracing dipole
+   * fields should pass ~1.5 (one closed loop plus slack — a closed dipole line turns
+   * exactly one revolution).
+   */
+  maxTurns?: number;
 }
 
 const DEFAULTS: Required<Omit<FieldLineOpts, 'bounds'>> = {
@@ -40,6 +52,7 @@ const DEFAULTS: Required<Omit<FieldLineOpts, 'bounds'>> = {
   // field. Line length is bounded by maxSteps and bounds, not by an absolute threshold.
   minStrength: 1e-9,
   loopDist: 6,
+  maxTurns: Infinity,
 };
 
 /** Trace one direction (`dir = +1` downstream, `−1` upstream) from a seed. */
@@ -48,12 +61,27 @@ function traceOne(sample: FieldSample, sx: number, sy: number, dir: 1 | -1, o: R
   let x = sx;
   let y = sy;
   const m = o.step; // out-of-bounds margin
+  const turnBudget = o.maxTurns * 2 * Math.PI;
+  let prevUx = 0;
+  let prevUy = 0;
+  let turned = 0;
   for (let i = 0; i < o.maxSteps; i++) {
     const f = sample(x, y);
     const mag = Math.hypot(f.x, f.y);
     if (!(mag >= o.minStrength)) break; // below threshold or NaN → the line ends
-    x += (f.x / mag) * o.step * dir;
-    y += (f.y / mag) * o.step * dir;
+    const ux = (f.x / mag) * dir;
+    const uy = (f.y / mag) * dir;
+    if (Number.isFinite(turnBudget)) {
+      if (prevUx !== 0 || prevUy !== 0) {
+        const dot = Math.max(-1, Math.min(1, ux * prevUx + uy * prevUy));
+        turned += Math.acos(dot);
+        if (turned > turnBudget) break; // wound past the budget → an orbit, stop
+      }
+      prevUx = ux;
+      prevUy = uy;
+    }
+    x += ux * o.step;
+    y += uy * o.step;
     if (o.bounds && (x < -m || y < -m || x > o.bounds.w + m || y > o.bounds.h + m)) break;
     if (i > 4 && Math.hypot(x - sx, y - sy) < o.loopDist) {
       pts.push({ x, y }); // closed loop → snap shut and stop
