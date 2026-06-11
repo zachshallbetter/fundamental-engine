@@ -10,22 +10,26 @@ final class AppKitFieldHost: FieldHost {
     private weak var rootView: NSView?
     private var displayLink: CVDisplayLink?
     private var frameCallback: ((TimeInterval) -> Void)?
+    /// Simulation depth (pt). 0 = flat (the default, byte-identical to the JS field);
+    /// > 0 gives the field a shallow volume rendered through a perspective projection.
+    private let depth: Float
 
-    public init(rootView: NSView) {
+    public init(rootView: NSView, depth: Float = 0) {
         self.rootView = rootView
+        self.depth = max(0, depth)
     }
 
     // MARK: FieldHost — geometry
 
     public var volume: FieldVolume {
-        guard let screen = NSScreen.main else {
-            return FieldVolume(width: 1440, height: 900)
-        }
+        // the mount's own bounds, matching the UIKit host — per-view embeddings size correctly.
+        let bounds = rootView?.window?.frame ?? rootView?.bounds ?? .zero
+        let scale = rootView?.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 1
         return FieldVolume(
-            width:  Float(screen.frame.width),
-            height: Float(screen.frame.height),
-            depth:  0,
-            scale:  Float(screen.backingScaleFactor)
+            width:  Float(bounds.width),
+            height: Float(bounds.height),
+            depth:  depth,   // 0 = flat; > 0 = a shallow volume behind the surface
+            scale:  Float(scale)
         )
     }
 
@@ -74,7 +78,10 @@ final class AppKitFieldHost: FieldHost {
 
     // MARK: FieldHost — projection
 
-    public var projection: any FieldProjection { FlatProjection() }
+    /// Flat at depth 0; a shallow perspective once the field has volume.
+    public var projection: any FieldProjection {
+        depth > 0 ? PerspectiveProjection(focalLength: max(depth * 4, 200)) : FlatProjection()
+    }
 
     // MARK: FieldHost — body scanning
 

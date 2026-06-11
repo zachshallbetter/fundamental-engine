@@ -55,8 +55,14 @@ public final class FieldField: FieldHandle {
     // MARK: Init
 
     /// Attach a field to `mountPoint`. A render surface is created and added automatically.
-    public init(in mountPoint: any FieldMountPoint, options: FieldOptions = .init()) {
-        let host = FieldField.makeHost(for: mountPoint)
+    ///
+    /// `depth` gives a flat mount's field a shallow z volume (pt): 0 — the default — is the
+    /// flat field, byte-identical to the JS engine; > 0 lets matter drift in z, rendered
+    /// through a perspective projection (size/opacity recede with depth). The simulation is
+    /// 3D either way — depth only opens the third axis of the *volume*, never the math.
+    /// A RealityKit mount ignores it (a volumetric host defines its own extent).
+    public init(in mountPoint: any FieldMountPoint, options: FieldOptions = .init(), depth: Float = 0) {
+        let host = FieldField.makeHost(for: mountPoint, depth: depth)
         let engine = FieldEngine(host: host, options: options)
         self.handle = engine
         self.managed = true
@@ -125,21 +131,21 @@ public final class FieldField: FieldHandle {
 
     // MARK: Platform host factory
 
-    private static func makeHost(for mountPoint: any FieldMountPoint) -> any FieldHost {
+    private static func makeHost(for mountPoint: any FieldMountPoint, depth: Float) -> any FieldHost {
         #if canImport(RealityKit) && os(visionOS)
         if let mount = mountPoint as? RealityKitMountPoint,
            let entity = mount.fieldEntity as? Entity {
-            return RealityFieldHost(root: entity)
+            return RealityFieldHost(root: entity) // volumetric by construction; depth n/a
         }
         #endif
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
         if let nsView = mountPoint as? NSView {
-            return AppKitFieldHost(rootView: nsView)
+            return AppKitFieldHost(rootView: nsView, depth: depth)
         }
         #endif
         #if canImport(UIKit)
         if let uiView = mountPoint as? UIView {
-            return UIKitFieldHost(rootView: uiView)
+            return UIKitFieldHost(rootView: uiView, depth: depth)
         }
         #endif
         // Fallback — callers can also pass a fully custom host via init(host:options:).
@@ -150,14 +156,14 @@ public final class FieldField: FieldHandle {
 // MARK: - mountField
 
 /// Create and start a field attached to `mountPoint` — the free-function form.
-/// Mirrors `mountField` from @field-ui/vanilla.
+/// Mirrors `mountField` from @field-ui/vanilla. `depth` as in `FieldField.init(in:options:depth:)`.
 ///
 /// ```swift
 /// let handle = mountField(in: myView)
 /// handle.scan()
 /// ```
-public func mountField(in mountPoint: any FieldMountPoint, options: FieldOptions = .init()) -> any FieldHandle {
-    FieldField(in: mountPoint, options: options)
+public func mountField(in mountPoint: any FieldMountPoint, options: FieldOptions = .init(), depth: Float = 0) -> any FieldHandle {
+    FieldField(in: mountPoint, options: options, depth: depth)
 }
 
 // MARK: - RealityKitMountPoint (visionOS)

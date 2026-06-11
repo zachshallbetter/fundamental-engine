@@ -5,8 +5,10 @@ import FieldUIPlatform
 
 // MARK: - UIKitFieldHost
 
-/// The FieldHost implementation for UIKit (iOS / iPadOS).
-/// Maps UIKit geometry, events, and display sync to the platform-agnostic FieldHost protocol.
+/// The FieldHost implementation for UIKit (iOS / iPadOS, and visionOS windows).
+/// Maps UIKit geometry, events, and display sync to the platform-agnostic FieldHost
+/// protocol. `depth: 0` (default) is the flat field; > 0 opens a shallow z volume
+/// rendered through a perspective projection.
 final class UIKitFieldHost: FieldHost {
     private weak var rootView: UIView?
     private var displayLink: CADisplayLink?
@@ -15,9 +17,13 @@ final class UIKitFieldHost: FieldHost {
     private var scrollObservers:     [() -> Void] = []
     private var visibilityObservers: [() -> Void] = []
     private var inputObservers:      [() -> Void] = []
+    /// Simulation depth (pt). 0 = flat (the default, byte-identical to the JS field);
+    /// > 0 gives the field a shallow volume rendered through a perspective projection.
+    private let depth: Float
 
-    public init(rootView: UIView) {
+    public init(rootView: UIView, depth: Float = 0) {
         self.rootView = rootView
+        self.depth = max(0, depth)
         setupNotifications()
     }
 
@@ -31,7 +37,7 @@ final class UIKitFieldHost: FieldHost {
         return FieldVolume(
             width:  Float(bounds.width),
             height: Float(bounds.height),
-            depth:  0,   // flat surface; the volumetric host is RealityFieldHost
+            depth:  depth,   // 0 = flat; > 0 = a shallow volume behind the surface
             scale:  Float(scale)
         )
     }
@@ -97,7 +103,11 @@ final class UIKitFieldHost: FieldHost {
 
     // MARK: FieldHost — projection
 
-    public var projection: any FieldProjection { FlatProjection() }
+    /// Flat at depth 0; a shallow perspective once the field has volume — z nudges the
+    /// projected position and feeds the renderer's depth-hint sizing/fading.
+    public var projection: any FieldProjection {
+        depth > 0 ? PerspectiveProjection(focalLength: max(depth * 4, 200)) : FlatProjection()
+    }
 
     // MARK: FieldHost — body scanning
 

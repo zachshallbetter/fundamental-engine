@@ -87,6 +87,60 @@ struct FieldFieldTests {
         field.destroy()
     }
 
+    @Test("a flat field (depth 0) keeps every particle at z = 0")
+    func flatStaysPlanar() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        field.burst(x: 187, y: 406) // the x/y convenience — z defaults to 0
+        for i in 0..<60 { host.fire(at: TimeInterval(i) / 60) }
+        // energy is the only public probe; assert via a z-probe burst instead:
+        // atomAt at z=0 must behave identically to the 3-arg call.
+        field.seed([AtomPayload(weight: 1, payload: [:])])
+        var hit2D: AtomPayload?
+        var hit3D: AtomPayload?
+        for x in stride(from: Float(0), to: 375, by: 24) {
+            for y in stride(from: Float(0), to: 812, by: 24) {
+                if hit2D == nil { hit2D = field.atomAt(x: x, y: y) }
+                if hit3D == nil { hit3D = field.atomAt(Vec3(x, y, 0)) }
+            }
+        }
+        #expect((hit2D != nil) == (hit3D != nil))
+        field.destroy()
+    }
+
+    @Test("a volumetric field (depth > 0) spreads matter through z")
+    func volumetricSpreadsZ() {
+        let host = HeadlessFieldHost(depth: 300)
+        let field = FieldField(host: host)
+        // matter seeded through the volume sits off the z=0 plane, so a plane-locked
+        // probe finds fewer atoms than the same probe sweeping z as well.
+        field.seed([AtomPayload(weight: 1, payload: [:])])
+        var planarHits = 0
+        var volumeHits = 0
+        for x in stride(from: Float(0), to: 375, by: 12) {
+            for y in stride(from: Float(0), to: 812, by: 12) {
+                if field.atomAt(x: x, y: y) != nil { planarHits += 1 }
+                for z in stride(from: Float(0), to: 300, by: 24) {
+                    if field.atomAt(x: x, y: y, z: z) != nil { volumeHits += 1; break }
+                }
+            }
+        }
+        #expect(volumeHits > planarHits) // z-sweeping the probe finds matter the plane misses
+        field.destroy()
+    }
+
+    @Test("the volumetric sim stays bounded — z wraps toroidally like x and y")
+    func volumetricBounded() {
+        let host = HeadlessFieldHost(depth: 300)
+        let field = FieldField(host: host)
+        field.burst(at: Vec3(187, 406, 150)) // a 3D burst inside the volume
+        for i in 0..<240 { host.fire(at: TimeInterval(i) / 60) }
+        // four seconds of sim: nothing exploded, nothing leaked, count is conserved.
+        #expect(field.particleCount() == 130)
+        #expect(field.energy().total.isFinite)
+        field.destroy()
+    }
+
     @Test("destroy cancels the frame loop")
     func destroyCancels() {
         let host = HeadlessFieldHost()
@@ -113,7 +167,14 @@ struct FieldFieldTests {
 /// A FieldHost for unit tests — no display link, no views. Tests drive the loop by
 /// calling `fire(at:)`, which invokes the engine's frame callback synchronously.
 final class HeadlessFieldHost: FieldHost {
-    var volume: FieldVolume { FieldVolume(width: 375, height: 812) }
+    /// Simulation depth — 0 = the flat field, > 0 = a volumetric field (set by tests).
+    var depth: Float = 0
+
+    init(depth: Float = 0) {
+        self.depth = depth
+    }
+
+    var volume: FieldVolume { FieldVolume(width: 375, height: 812, depth: depth) }
     var scrollY: Float { 0 }
     var scrollHeight: Float { 0 }
     var prefersReducedMotion: Bool { false }

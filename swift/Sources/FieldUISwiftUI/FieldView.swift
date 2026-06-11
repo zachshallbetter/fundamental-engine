@@ -34,14 +34,18 @@ public extension EnvironmentValues {
 /// ```
 public struct FieldView: View {
     private let options: FieldOptions
+    private let depth: Float
     @State private var field: FieldField?
 
-    public init(options: FieldOptions = .init()) {
+    /// `depth` gives the field a shallow z volume (pt) on flat platforms; 0 — the
+    /// default — is the flat field. See `FieldField.init(in:options:depth:)`.
+    public init(options: FieldOptions = .init(), depth: Float = 0) {
         self.options = options
+        self.depth = depth
     }
 
     public var body: some View {
-        FieldRepresentable(options: options, field: $field)
+        FieldRepresentable(options: options, depth: depth, field: $field)
             .ignoresSafeArea()
             .environment(\.fieldHandle, field)
             .accessibilityHidden(true)   // decorative field (§18 a11y)
@@ -55,6 +59,7 @@ public struct FieldView: View {
 #if canImport(UIKit)
 struct FieldRepresentable: UIViewRepresentable {
     let options: FieldOptions
+    let depth: Float
     @Binding var field: FieldField?
 
     func makeUIView(context: Context) -> UIView {
@@ -65,7 +70,7 @@ struct FieldRepresentable: UIViewRepresentable {
 
     func updateUIView(_ container: UIView, context: Context) {
         if field == nil {
-            let f = FieldField(in: container, options: options)
+            let f = FieldField(in: container, options: options, depth: depth)
             f.scan()
             field = f
         }
@@ -78,6 +83,7 @@ struct FieldRepresentable: UIViewRepresentable {
 #elseif canImport(AppKit)
 struct FieldRepresentable: NSViewRepresentable {
     let options: FieldOptions
+    let depth: Float
     @Binding var field: FieldField?
 
     func makeNSView(context: Context) -> NSView {
@@ -87,7 +93,7 @@ struct FieldRepresentable: NSViewRepresentable {
 
     func updateNSView(_ container: NSView, context: Context) {
         if field == nil {
-            let f = FieldField(in: container, options: options)
+            let f = FieldField(in: container, options: options, depth: depth)
             f.scan()
             field = f
         }
@@ -97,6 +103,7 @@ struct FieldRepresentable: NSViewRepresentable {
 // visionOS: RealityView-based — field is driven via FieldView's RealityKit integration.
 struct FieldRepresentable: View {
     let options: FieldOptions
+    let depth: Float
     @Binding var field: FieldField?
     var body: some View { Color.clear }
 }

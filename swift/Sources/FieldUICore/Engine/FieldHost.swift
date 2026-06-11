@@ -3,11 +3,14 @@ import simd
 
 // MARK: - Viewport / Volume
 
-/// The render surface's current dimensions. On 2D platforms depth = 0.
+/// The render surface's current dimensions.
+/// `depth` is the z extent of the simulation volume: 0 = the flat field (every formula
+/// reduces to the JS 2D math exactly); > 0 = a volumetric field — a shallow opt-in
+/// volume on iOS/macOS (`FieldField(in:depth:)`), real meters on visionOS.
 public struct FieldVolume {
     public var width: Float
     public var height: Float
-    public var depth: Float      // 0 on iOS/macOS; real extent on visionOS
+    public var depth: Float
     public var scale: Float      // display scale factor (DPR equivalent)
 
     public init(width: Float, height: Float, depth: Float = 0, scale: Float = 1) {
@@ -31,7 +34,7 @@ public protocol FieldProjection {
     func depthHint(_ p: Vec3) -> Float
 }
 
-/// Flat projection — z is ignored. Used on iOS and macOS.
+/// Flat projection — z is ignored. The depth-0 (flat field) default on iOS and macOS.
 public struct FlatProjection: FieldProjection {
     public init() {}
     public func project(_ p: Vec3) -> (x: Float, y: Float) { (p.x, p.y) }
