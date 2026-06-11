@@ -110,7 +110,7 @@ export const jet: Force = {
     if (e.dist >= range) return;
     if (e.dist < 24) {
       // at the nozzle: relaunch as a hot jet, with a cone of spread.
-      const sp = (Math.random() - 0.5) * 0.8;
+      const sp = ((e.rng ?? Math.random)() - 0.5) * 0.8;
       const cs = Math.cos(sp);
       const sn = Math.sin(sp);
       const hx = b.ux * cs - b.uy * sn;

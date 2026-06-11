@@ -41,6 +41,15 @@ export interface ApplyRecipeOptions {
    */
   renderless?: boolean;
   /**
+   * A live field to DRIVE with the recipe's render plan (#370) — the missing execution half of
+   * `recipe.render`. Structural: a `FieldHandle` or a `<field-root>` element both satisfy it.
+   * When provided (and not `renderless`/reduced-motion), the compiled plan executes — underlay
+   * matter mode via setRender, the additive overlay reading stack via setOverlay, the heatmap
+   * toggle — and `destroy()` resets the surfaces it drove (dots / off / false). Omitted → the
+   * recipe stays signals-only, exactly as before (fully additive).
+   */
+  field?: RecipeFieldTarget;
+  /**
    * Extra metric lanes appended to the recipe's `metrics` (deduped, original order preserved) —
    * e.g. `['attention', 'recency']`. Each appended metric gains the standard feedback binding
    * (`attention` → `--field-attention`) and flows through the per-frame metric pipeline exactly
@@ -92,6 +101,20 @@ const elementKey = (el: Element, i: number): string => el.id || `${el.tagName.to
  * Apply a recipe to a root element. Validates, compiles, registers bodies, binds metrics, discovers
  * relationships, installs the reduced-motion output, and returns a destroyable, inspectable handle.
  */
+/** The slice of a live field a recipe can drive — FieldHandle and <field-root> both fit. */
+export interface RecipeFieldTarget {
+  setRender?(mode: string): void;
+  setOverlay?(mode: string | string[]): void;
+  setHeatmap?(on: boolean): void;
+}
+
+/** Execute a compiled render plan on a field target. Exported for tests and custom hosts. */
+export function driveRenderPlan(field: RecipeFieldTarget, plan: { underlay: string | null; overlay: string[]; heatmap: boolean }): void {
+  if (plan.underlay && field.setRender) field.setRender(plan.underlay);
+  if (field.setOverlay) field.setOverlay(plan.overlay.length ? plan.overlay : 'off');
+  if (field.setHeatmap) field.setHeatmap(plan.heatmap);
+}
+
 export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRecipeOptions = {}): AppliedRecipe {
   // Derive the effective recipe from the scoped-field options — a copy, so a shared catalog
   // recipe object is never mutated by an applied run (`renderless` strips the render stack;
@@ -110,9 +133,18 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
 
   const compiled = compileRecipe(recipe);
   const wantMetrics = options.metrics !== false;
+  // the execution half of recipe.render (#370): drive the supplied field with the compiled plan.
+  // Reduced motion skips the drive entirely — the recipe's static plan is the equivalent, and a
+  // field left at its resting surfaces (dots / off) IS the static reading.
+  let droveField: RecipeFieldTarget | null = null;
   const reducedMotion = options.reducedMotion ?? prefersReducedMotion();
 
   const platform = createFieldPlatform(root);
+
+  if (options.field && !options.renderless && !reducedMotion) {
+    driveRenderPlan(options.field, compiled.render);
+    droveField = options.field;
+  }
 
   // ── resolve body elements: annotate provided ones, or create demo bodies ──────────────
   const created: Element[] = [];
@@ -297,6 +329,11 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
   const destroy = (): void => {
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
+    // release the surfaces this recipe drove — the field returns to its resting reading
+    if (droveField) {
+      driveRenderPlan(droveField, { underlay: 'dots', overlay: [], heatmap: false });
+      droveField = null;
+    }
     // clear the feedback variables this recipe wrote, so a torn-down recipe leaves the DOM plain
     // (typeof-guarded like every other global here, so destroy() is safe off-DOM too)
     if (typeof HTMLElement !== 'undefined')
