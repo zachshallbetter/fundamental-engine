@@ -6,6 +6,7 @@ import VocabBadge from '../../components/VocabBadge.astro';
 import {
   FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe,
 } from '@field-ui/core';
+import { metricTitle, designedMetrics } from '../../lib/metric-lanes.ts';
 
 // One page per recipe (getStaticPaths over the 64 FIELD_RECIPES + the experimental set): a large live
 // preview, the full five-lane breakdown + render + a11y + notes + plain-language explanation, copyable
@@ -26,6 +27,8 @@ const isFirst = new Set(FIRST_RELEASE_RECIPE_IDS).has(r.id);
 const auth = recipeAuthoring(r);
 const exports = { html: auth.html, wc: auth.webComponent, react: auth.react, json: serializeRecipe(r) };
 const seeAlso = FIELD_RECIPES.filter((x) => x.id !== r.id && (x.naturalField === r.naturalField || x.tier === r.tier)).slice(0, 6);
+// which metric lanes need the host to ground them (else --field-<m> stays inert) — see lintInertFeedback
+const designed = designedMetrics(r.metrics);
 ---
 
 <Base title={`field-ui — ${r.name}`} description={`${r.name}: ${r.intent}. A live, validated field-ui recipe — runs in your browser, with the runtime tokens, metrics, diagnostics, accessibility equivalent, and copyable HTML / web component / React / JSON.`}>
@@ -61,7 +64,16 @@ const seeAlso = FIELD_RECIPES.filter((x) => x.id !== r.id && (x.naturalField ===
     <dl class="rp-meta">
       <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
       {r.concepts && r.concepts.length > 0 && <div><dt>Concepts</dt><dd>{r.concepts.map((c) => <VocabBadge kind="concept" label={c} />)}</dd></div>}
-      <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd></div>
+      <div><dt>Metrics</dt><dd>
+        {r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}
+        {designed.length > 0 && (
+          <span class="ml-note">
+            {designed.join(', ')} {designed.length === 1 ? 'is a host-supplied lane' : 'are host-supplied lanes'} —
+            drive {designed.length === 1 ? 'it' : 'them'} with <code>data-field-&lt;metric&gt;</code> (or a domain model);
+            without that, {designed.length === 1 ? 'its' : 'their'} <code>--field-*</code> stays inert.
+          </span>
+        )}
+      </dd></div>
       <div><dt>Diagnostics</dt><dd>{r.diagnostics.map((d) => <VocabBadge kind="diagnostic" label={d} />)}</dd></div>
       {r.conditions && r.conditions.length > 0 && <div><dt>Conditions</dt><dd>{r.conditions.map((c) => <VocabBadge kind="condition" label={c} />)}</dd></div>}
       <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
@@ -165,6 +177,8 @@ const seeAlso = FIELD_RECIPES.filter((x) => x.id !== r.id && (x.naturalField ===
   .rp-meta dt { color: var(--muted, #9aa); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
   .rp-meta dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; }
   .rp-meta dd.a11y { display: block; color: var(--muted, #c3c9d4); font-size: 0.9rem; }
+  .rp-meta dd .ml-note { flex-basis: 100%; margin-top: 0.35rem; color: var(--muted, #9aa); font-size: 0.8rem; line-height: 1.5; }
+  .rp-meta dd .ml-note code { font-size: 0.92em; color: var(--text-2, #c3c9d4); }
   .rc-render { font-family: ui-monospace, monospace; font-size: 0.82rem; color: var(--muted, #c3c9d4); }
   .rp-export { margin: 1.8rem 0; }
   .ex-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }

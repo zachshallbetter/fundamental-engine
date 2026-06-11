@@ -4,6 +4,7 @@ import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
 import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, EXPERIMENTAL_RECIPES, type FieldRecipe } from '@field-ui/core';
+import { metricTitle } from '../../lib/metric-lanes.ts';
 
 // The recipes hub — the engine's own catalog of 64 portable `FieldRecipe`s across four tiers
 // (RECIPE_TIERS: core/applied/systems/operational). Each card runs the REAL recipe live (lazily, via
@@ -84,7 +85,7 @@ const filters = [
 
             <dl class="meta">
               <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
-              <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd></div>
+              <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}</dd></div>
               <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
             </dl>
 
@@ -124,7 +125,7 @@ const filters = [
 
               <dl class="meta">
                 <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
-                <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} />)}</dd></div>
+                <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}</dd></div>
                 <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
               </dl>
 
