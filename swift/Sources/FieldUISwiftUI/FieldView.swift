@@ -62,6 +62,11 @@ struct FieldRepresentable: UIViewRepresentable {
     let depth: Float
     @Binding var field: FieldField?
 
+    /// Owns the engine's lifetime so `dismantleUIView` can tear it down — SwiftUI hands the
+    /// coordinator (not the binding) to dismantle, so without it the field leaked on disappear.
+    final class Coordinator { var field: FieldField? }
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
         container.backgroundColor = .clear
@@ -69,15 +74,18 @@ struct FieldRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ container: UIView, context: Context) {
-        if field == nil {
+        if context.coordinator.field == nil {
             let f = FieldField(in: container, options: options, depth: depth)
             f.scan()
-            field = f
+            context.coordinator.field = f
+            // publish to the environment binding after this update pass (never mutate during it)
+            DispatchQueue.main.async { field = f }
         }
     }
 
-    static func dismantleUIView(_ container: UIView, coordinator: ()) {
-        // field.destroy() called by FieldView.onDisappear via Binding
+    static func dismantleUIView(_ container: UIView, coordinator: Coordinator) {
+        coordinator.field?.destroy()
+        coordinator.field = nil
     }
 }
 #elseif canImport(AppKit)
@@ -86,17 +94,28 @@ struct FieldRepresentable: NSViewRepresentable {
     let depth: Float
     @Binding var field: FieldField?
 
+    /// Owns the engine's lifetime so `dismantleNSView` can tear it down (the field leaked before —
+    /// the AppKit branch had no dismantle at all).
+    final class Coordinator { var field: FieldField? }
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
     func makeNSView(context: Context) -> NSView {
         let container = NSView()
         return container
     }
 
     func updateNSView(_ container: NSView, context: Context) {
-        if field == nil {
+        if context.coordinator.field == nil {
             let f = FieldField(in: container, options: options, depth: depth)
             f.scan()
-            field = f
+            context.coordinator.field = f
+            DispatchQueue.main.async { field = f }
         }
+    }
+
+    static func dismantleNSView(_ container: NSView, coordinator: Coordinator) {
+        coordinator.field?.destroy()
+        coordinator.field = nil
     }
 }
 #else

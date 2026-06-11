@@ -133,7 +133,7 @@ public final class FieldSurfaceLayer: CALayer {
     /// Bucketed by a cell grid of the link radius — O(n·k) instead of the all-pairs O(n²)
     /// that dominated this mode's frame time at high densities.
     private func drawLinks(_ frame: RenderFrame, in ctx: CGContext) {
-        let r: Float = 70
+        let r: Float = 90 // match the JS connection radius (field.ts links R)
         let ps = frame.particles
         @inline(__always) func key(_ cx: Int32, _ cy: Int32) -> Int64 {
             (Int64(cx) << 32) | (Int64(cy) & 0xFFFF_FFFF)
@@ -179,15 +179,15 @@ public final class FieldSurfaceLayer: CALayer {
 
     /// A liquid iso-surface: splat density to a grid, trace one contour with marching squares.
     private func drawMetaballs(_ frame: RenderFrame, in ctx: CGContext) {
-        let step: Float = 18
+        let step: Float = 16 // JS STEP
         let cols = Int(frame.volume.width / step) + 2
         let rows = Int(frame.volume.height / step) + 2
         var grid = [Float](repeating: 0, count: cols * rows)
         for p in frame.particles {
             splatDensity(grid: &grid, cols: cols, rows: rows, step: step,
-                         px: p.position.x, py: p.position.y, radius: p.size * 14)
+                         px: p.position.x, py: p.position.y, radius: 34) // JS RAD (fixed, not size-scaled)
         }
-        let level: Float = 0.6
+        let level: Float = 0.9 // JS LEVEL
         stroke(ctx, frame.accent, 0.7, width: 1.5)
         for gy in 0..<(rows - 1) {
             for gx in 0..<(cols - 1) {
@@ -207,7 +207,7 @@ public final class FieldSurfaceLayer: CALayer {
 
     /// Shattered glass: nearest-site cells, walls between owner changes.
     private func drawVoronoi(_ frame: RenderFrame, in ctx: CGContext) {
-        let step: Float = 26
+        let step: Float = 18 // JS STEP — match wall density
         let cols = Int(frame.volume.width / step) + 1
         let rows = Int(frame.volume.height / step) + 1
         let sites = frame.particles.map { SIMD2<Float>($0.position.x, $0.position.y) }
@@ -308,7 +308,7 @@ public final class FieldSurfaceLayer: CALayer {
     /// Short arrows along the net felt force at a probe lattice. `raw` scales by
     /// magnitude (force-vectors); otherwise normalized direction (streamlines).
     private func drawStreamlineArrows(_ frame: RenderFrame, in ctx: CGContext, raw: Bool) {
-        let GRID: Float = 46
+        let GRID: Float = 44 // match the JS overlay arrow lattice
         stroke(ctx, frame.accent, 0.4)
         var y = GRID / 2
         while y < frame.volume.height {
