@@ -21,6 +21,7 @@ export * from './core/causality.ts';
 export * from './core/streamlines.ts';
 export * from './core/flow.ts';
 export * from './core/fieldlines.ts';
+export * from './core/fieldline-seeds.ts';
 export * from './core/reactions.ts';
 export * from './core/agents.ts';
 export * from './core/currents.ts';

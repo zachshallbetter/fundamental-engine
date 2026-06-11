@@ -627,7 +627,8 @@ type FieldRecipe = {
   diagnostics: string[]               // render/diagnostic modes that reveal the behavior
   conditions?: string[]               // activation vocabulary — when the behavior applies
   bodies: BodyRecipe[]                // each body may carry `when` — the EXECUTABLE gate (data-when)
-  relationships?: RelationshipRecipe[]
+  relationships?: RelationshipRecipe[]  // compiled metadata only — used for the reduced-motion static display;
+                                        // NOT registered as live edges into RelationshipRegistry
   render: RenderLayer[]               // compiled to a render PLAN; executes when applyRecipe gets a field
   accessibility: AccessibilityRecipe  // required: reducedMotion + meaningWithoutMotion
   status?: RecipeStatus               // implementation status
@@ -640,6 +641,14 @@ type FieldRecipe = {
 The lanes stay separate: `primitives` (runtime tokens) execute, `concepts` / `translation` describe,
 `metrics` measure, `diagnostics` explain, `conditions` activate. `validateRecipe` rejects a token that
 appears in more than one lane.
+
+`relationships` is **compiled metadata, not a live-graph registration**. `compileRecipe` preserves
+the declared `from → to` pairs for one purpose only: populating the reduced-motion static display
+(`applyRecipe` renders them as a `<p class="rs-rels">` list when `prefers-reduced-motion` is set).
+The `RelationshipRegistry`'s live graph is built solely by `RelationshipRegistry.discover()`,
+which reads native DOM signals — `a[href^="#"]`, `label[for]`, ARIA references, and
+`data-field-relation` / `data-field-target` attributes. A recipe author who wants an edge in the
+live graph must author it in HTML with `data-field-relation`, not in the recipe schema.
 
 `validateRecipe` returns a problem for any unknown force token, unknown render layer, unknown
 diagnostic mode, unknown fundamental field, an unknown per-body `when` condition id (an unregistered
@@ -2146,8 +2155,9 @@ documentation.
 
 ## 4. Declared relationships
 
-The RelationshipRegistry discovers native graph semantics (`a[href^="#"]`, `label[for]`,
-`aria-controls/-describedby/-labelledby/-flowto`) and one declarative form:
+The `RelationshipRegistry` builds the live relationship graph from DOM signals only. Its
+`discover()` scan matches native link semantics (`a[href^="#"]`, `label[for]`,
+`aria-controls/-describedby/-labelledby/-flowto`) and one declarative attribute form:
 
 ```html
 <!-- one edge per element: type + id-ref target (+ optional data-field-strength) -->
@@ -2160,6 +2170,11 @@ on-page versus those declared-but-unresolved — that ratio is what `--field-coh
 The evidence example renders its real citation edges this way: the same edges its hover threads
 draw are the graph the platform measures, and connected findings read `--field-coherence: 1.000`
 while unconnected ones read `0.000` (verified live).
+
+The `relationships?: RelationshipRecipe[]` field in the `FieldRecipe` schema is **not** a live-graph
+input. It is compiled metadata used exclusively for the reduced-motion static display — `applyRecipe`
+renders declared pairs as a `<p class="rs-rels">` list when `prefers-reduced-motion` is set. To put
+an edge into the live graph, author it in the DOM with `data-field-relation` / `data-field-target`.
 
 ## 5. Conditions in the page: the reading-pace gate
 
@@ -2513,11 +2528,15 @@ discover → read → compute → state → write → render
 5. **write** — flush state to CSS variables, data attributes, ElementInternals, and thresholded events.
 6. **render** — draw overlays, field lines, and heatmaps from the registries (read-only).
 
-`createFieldPlatform(root, { strict? })` wires `measure → read` and `flush → write` by default,
-installs a read-phase guard (a measurement requested off-phase is recorded, or thrown under
-`strict`), and exposes `.scheduler` plus `.on(phase, handler)` so callers hang `discover` / `compute`
-/ `state` / `render` handlers off the same loop. `tick(now, viewport)` runs one frame and returns a
-report of the phases that ran and any violations.
+The platform **owns discover through write**. `createFieldPlatform(root, { strict? })` wires only
+two phases by default — `measure → read` and `flush → write` — and installs a read-phase guard (a
+measurement requested off-phase is recorded, or thrown under `strict`). The remaining phases
+(`discover`, `compute`, `state`, `render`) are **caller-open**: the platform exposes
+`.on(phase, handler)` so callers attach handlers off the same loop without the platform owning
+their logic. The render phase in particular is not wired by the platform at all — it is a slot the
+legacy engine fills by running the canvas simulate-and-render loop; the platform observes and feeds
+back DOM state, it does not draw. `tick(now, viewport)` runs one full frame and returns a report of
+the phases that ran and any violations.
 
 ## The six registries
 
@@ -2908,7 +2927,35 @@ thresholded events
 debug metadata
 ```
 
-Suggested CSS variables (canonical `--field-*`; the `--forces-*` names are legacy/compat aliases the FeedbackRegistry auto-mirrors, and `--d` is the compact alias for density):
+**The three metric-output lanes.** Not every `--field-*` variable flows automatically — the lane
+that produces a variable determines whether it arrives at all:
+
+- **Engine-computed** — written by core's feedback sink every frame, regardless of recipes or
+  platform configuration: `--d` / `--field-density` (local particle density), `--load` / `--mass`
+  (sink accretion fill), `--lit` (continuous engagement, paired with `field:lit` / `field:dim`
+  hysteretic events), and the engine-measured thermodynamics `--entropy`, `--coherence`,
+  `--temperature` (velocity alignment, agitation, heat — written to `data-feedback` bodies; these
+  bare-named variables are distinct from the platform-inferred ones below).
+- **Platform-computed** — written by `applyRecipe` / `computeMetrics` when a recipe runs its
+  metric pipeline: `--field-attention`, `--field-memory`, `--field-coherence`, `--field-entropy`,
+  `--field-pressure`, `--field-recency`, `--field-priority`. These flow every frame that the
+  recipe pipeline ticks. `--field-confidence` and `--field-risk` are supplied-only — the engine
+  never invents them; they appear only when the host supplies `data-field-confidence` /
+  `data-field-risk`.
+- **Data-supplied (designed)** — lanes a recipe declares but that neither the engine nor the
+  platform metric pipeline computes. A recipe listing `signal`, `route-strength`, or any
+  domain-specific metric must have the host supply `data-field-<metric>` (or a domain model) or
+  the `--field-<metric>` lane stays **inert** — declared, bound, never written. The lint rule
+  `lintInertFeedback` surfaces this gap: a binding to an inert designed lane is the same
+  silent-contract class as a sink that captures but never reports.
+
+Recipe authors must not expect a designed lane to flow unless the host provides the data. The
+platform writes what it can compute; `classifyMetric(name)` returns `'computed'`,
+`'supplied-only'`, or `'designed'` for any metric name.
+
+Suggested CSS variables for the platform-computed lane (canonical `--field-*`; the `--forces-*`
+names are legacy/compat aliases the FeedbackRegistry auto-mirrors, and `--d` is the compact alias
+for density):
 
 ```css
 --field-density
@@ -2922,20 +2969,13 @@ Suggested CSS variables (canonical `--field-*`; the `--forces-*` names are legac
 --field-pull-y
 ```
 
-Two shipped per-body variables sit outside this metric list: `--load` (sink accretion fill, with
-`--mass` as the back-compat alias) and `--lit` (continuous engagement, paired with the
-`field:lit`/`field:dim` thresholded events). One shipped **page-global** variable lives on
-`:root`, not on bodies: `--field-scroll-v`, the engine's eased scroll velocity (px/frame),
-written by the platform write phase and deduped when unchanged.
-
-Three more shipped per-body variables also sit outside this list (physics workover v0.3):
-the **engine-measured thermodynamics** `--entropy`, `--coherence`, and `--temperature` —
-local particle-state measurements (velocity alignment, agitation, heat) written to
-`data-feedback` bodies through the feedback sink. They are deliberately bare-named:
-`--field-entropy`/`--field-coherence` above are the *platform-inferred interaction*
-metrics (a different signal, computed from interaction telemetry), and the two families
-must not be cross-written. (`--coherence` is additionally a palette *color* on `:root`
-via `cssTokens()` — the measured value is element-scoped and numeric.) Formulas:
+One shipped **page-global** variable lives on `:root`, not on bodies: `--field-scroll-v`, the
+engine's eased scroll velocity (px/frame), written by the platform write phase and deduped when
+unchanged. The engine-measured thermodynamics `--entropy`, `--coherence`, and `--temperature`
+are deliberately bare-named (distinct from the `--field-entropy` / `--field-coherence`
+platform-inferred interaction metrics — the two families must not be cross-written). (`--coherence`
+is additionally a palette *color* on `:root` via `cssTokens()` — the measured value is
+element-scoped and numeric.) Formulas:
 [`physics-workover.md`](../engine-reference/physics-workover.md) §"Metrics".
 
 **Engagement inputs** are part of this contract. The engine wires hover/focus engagement on
@@ -3344,8 +3384,13 @@ read      -> measure geometry; no writes allowed
 compute   -> evaluate field/relationship state; side-effect free
 state     -> reconcile registered state
 write     -> emit CSS variables, data attributes, feedback, events
-render    -> draw render surfaces and overlays
+render    -> draw render surfaces and overlays  [caller-open; not wired by the platform]
 ```
+
+The platform owns and wires discover through write. The render phase is caller-open — the
+platform defines the slot and its read-only contract, but does not install a handler; the legacy
+engine fills it by running the canvas simulate-and-render loop. The platform observes and feeds
+back DOM state; it does not draw.
 
 Scheduler rules:
 
@@ -3354,6 +3399,7 @@ No DOM writes during read or compute.
 No geometry reads during write.
 Every registry declares its phase and runs only in that phase.
 The phase order is fixed; registries do not reorder it.
+Render-phase handlers are caller-supplied; the platform wires none by default.
 ```
 
 ## 23. Platform-Lint Contract

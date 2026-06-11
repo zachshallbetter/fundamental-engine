@@ -60,6 +60,8 @@ import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
 import { canvas2dBackend, type RenderBackend, type Stroke } from './render-backend.ts';
 import { forceAt, netField } from './streamlines.ts';
+import { traceFieldLines } from './fieldlines.ts';
+import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
 import { energyReport } from '../diagnostics/energy.ts';
@@ -1200,8 +1202,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     return list.filter((m): m is Exclude<OverlayMode, 'off'> => m !== 'off');
   }
 
-  // arrows along the sampled vector field — `streamlines` (felt, sqrt-compressed), `force-vectors`
-  // (felt, absolute magnitude), `field-lines` (structure-only geometry via netField).
+  // arrows along the sampled felt force field — `streamlines` (sqrt-compressed) and `force-vectors`
+  // (absolute magnitude). `field-lines` no longer routes here: it traces the real field-structure
+  // curves (drawOverlayFieldLines). The `structure` arm is retained for the backend contract but is
+  // unused by the current dispatch (both arrow modes read the felt field).
   function drawOverlayArrows(out: RenderBackend, structure: boolean, absolute: boolean): void {
     const GRID = 44;
     const acc = hexToRgb(cfg.accent);
@@ -1209,17 +1213,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     let frameMax = 0;
     for (let gx = GRID / 2; gx < W; gx += GRID) {
       for (let gy = GRID / 2; gy < H; gy += GRID) {
-        let fx: number;
-        let fy: number;
-        if (structure) {
-          const v = netField(bodies, reg.forces, gx, gy);
-          fx = v.x;
-          fy = v.y;
-        } else {
-          const v = forceAt(bodies, reg.forces, env, gx, gy);
-          fx = v.fx;
-          fy = v.fy;
-        }
+        let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
         if (flow) {
           const b = flowBias(gx, gy, flow, 0.04);
           fx += b.x;
@@ -1254,6 +1248,35 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       seg[8] = ex; seg[9] = ey; seg[10] = ex - s.ux * ah + s.uy * ah * 0.6; seg[11] = ey - s.uy * ah - s.ux * ah * 0.6;
       stroke.alpha = clamp(0.12 + rel * 0.55, 0, 0.8);
       out.segments(seg, stroke);
+    }
+  }
+
+  // `field-lines` — the field STRUCTURE traced as real curves. Each field-bearing body is seeded
+  // by its own geometry (a dipole's perpendicular bisector for a magnet, a core ring for a
+  // monopole charge/gravity well; fieldline-seeds.ts), then `traceFieldLines` follows the NET
+  // field through every seed — so the bar-magnet loops, the radial spokes, and the linkage
+  // between two bodies all emerge from the math, never drawn by hand. Bodies that radiate nothing
+  // (attract/sink/…) get no seeds, so the diagram stays the real structure, not a starburst.
+  function drawOverlayFieldLines(out: RenderBackend): void {
+    const seeds = fieldLineSeeds(bodies);
+    if (!seeds.length) return;
+    const lines = traceFieldLines((x, y) => netField(bodies, reg.forces, x, y), seeds, {
+      step: 6,
+      maxSteps: 200,
+      bounds: { w: W, h: H },
+      loopDist: 8,
+    });
+    const acc = hexToRgb(cfg.accent);
+    // one polyline per traced curve through the backend seam (#373) — same shared stroke style.
+    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0.42, width: 1.1 };
+    for (const line of lines) {
+      if (line.length < 2) continue;
+      const pts = new Float32Array(line.length * 2);
+      for (let i = 0; i < line.length; i++) {
+        pts[i * 2] = line[i]!.x;
+        pts[i * 2 + 1] = line[i]!.y;
+      }
+      out.polyline(pts, stroke);
     }
   }
 
@@ -1412,7 +1435,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (const mode of stack) {
       if (mode === 'streamlines') drawOverlayArrows(out, false, false);
       else if (mode === 'force-vectors') drawOverlayArrows(out, false, true);
-      else if (mode === 'field-lines') drawOverlayArrows(out, true, false);
+      else if (mode === 'field-lines') drawOverlayFieldLines(out);
       else if (mode === 'grid') drawOverlayGrid(out);
       else if (mode === 'temperature') drawOverlayContours(out, (p) => p.heat, 0.5);
       else if (mode === 'energy') drawOverlayContours(out, (p) => 0.5 * p.m * (p.vx * p.vx + p.vy * p.vy), 0.42);
