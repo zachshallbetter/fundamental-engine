@@ -209,11 +209,11 @@ Body Matter Interaction
                           body's feedback channels onto it (visual-bindings.ts,
                           MIRRORED_CHANNELS), so var(--load) works on the sibling
     Contour Sink        — the text/vector form: glyph outlines as the expressive
-                          boundary of a Text Sink. textBodies() (platform) is its
-                          boundary-geometry primitive; glyph outlines are generated at
-                          BUILD time from the self-hosted face (the site's
-                          gen-contours.mjs) and bound as a representation — live at
-                          /docs/contour-typography. Runtime extraction stays a frontier
+                          boundary of a Text Sink. The platform primitive is
+                          font-agnostic (contours.ts: contourPathData / contourSvgFor —
+                          the caller supplies ANY parsed font; opentype.js fits the
+                          ContourFont contract), usable at runtime or build time (the
+                          site commits its output) — live at /docs/contour-typography
 ```
 
 | Tier | Contract | Status |
@@ -221,7 +221,7 @@ Body Matter Interaction
 | Element Sink | `data-body="sink …"` + `data-absorb`/`data-max`/`data-feedback` → `--load` | **shipped** |
 | Text Sink | identical — text elements are ordinary bodies; a11y rule: the text stays real | **shipped** |
 | Bound Visual Sink | `data-field-visual-for` + platform state mirroring (`setMirroring`, default on) | **shipped** |
-| Contour Sink | build-time glyph outlines (gen-contours.mjs) + Bound Visual mirroring; demo on /docs/contour-typography | **shipped** (build-time; runtime extraction is a named frontier) |
+| Contour Sink | font-agnostic platform primitive (`contourSvgFor` — any parsed font) + Bound Visual mirroring; demo on /docs/contour-typography | **shipped** |
 
 Naming discipline: the tiers are *surfaces of one contract*, not new tokens — the token is `sink`
 in every tier, and a chip or doc that prints `ABSORB` instead of `SINK` is wrong (absorb is the
@@ -2552,12 +2552,16 @@ report of the phases that ran and any violations.
    - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
      `data-field-visual-role` (`scan()`), the accessibility lint, and source→visual state mirroring
      (`setMirroring` / `mirrorNow` / `MIRRORED_CHANNELS`).
-   - **Build-time, not platform:** glyph-outline extraction (text → SVG path data) ships as the
-     site's build step (`apps/site/scripts/gen-contours.mjs`, opentype.js over the self-hosted
-     face — committed output, no font parsing in the browser); the generated SVG binds like any
-     authored visual and receives mirrored state. A *runtime* extraction primitive in the platform
-     remains unbuilt (a named frontier). True offset contours (constant-distance rings) need a
-     polygon-offsetting pass and are likewise future work.
+   - **Glyph outlines (the Contour Sink tier):** `contours.ts` is the font-agnostic primitive —
+     `contourPathData(font, text, size)` (pure layout: per-glyph + pair kerning, Latin display
+     scope) and `contourSvgFor(el, font)` (generates the aria-hidden ring SVG from the element's
+     OWN text and computed size, binds it via `data-field-visual-for`, receives mirrored state).
+     The caller supplies the parsed font — any `ContourFont`-shaped object; opentype.js satisfies
+     it directly — so the primitive works with whatever face the author applied to the body, and
+     field-ui keeps its zero-dependency rule. The same primitive runs at build time (the site's
+     `gen-contours.mjs` commits its output). Automatic font-binary discovery from the element's
+     CSS, complex-script shaping, and true offset contours (polygon offsetting) remain future
+     work.
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*
