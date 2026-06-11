@@ -9,6 +9,7 @@
  * field at all.
  */
 import type { Vec2 } from './types.ts';
+import { polePair, type AxisRect, type Pole } from './geometry.ts';
 
 export interface Pt {
   x: number;
@@ -109,3 +110,81 @@ export function traceFieldLines(sample: FieldSample, seeds: readonly Pt[], opts:
   return seeds.map((s) => traceFieldLine(sample, s.x, s.y, opts)).filter((line) => line.length > 1);
 }
 
+
+// MARK: - Field-line seeds (extracted from apps/site field-probe `traceDipole`)
+//
+// WHERE to start tracing so the diagram is the correct STRUCTURE, not arbitrary rings.
+// A field line is seeded by the body's own field geometry:
+//
+//   · DIPOLE (magnetism) — seeds along the perpendicular bisector of the heading axis:
+//     the centre plus ring offsets either side. Each offset lies on a distinct nested
+//     field line, so tracing both directions closes one clean N→S loop per seed: the
+//     bar-magnet diagram.
+//   · MONOPOLE (charge / gravity) — a tight ring around the core → radial spokes (out of
+//     a + source, into a −; inward for gravity).
+//
+// Pure: the canonical home of the seeding algorithm, so every consumer (the site's force
+// chips, the native renderers, any future bridge) shares one definition.
+
+/** A body's field geometry, the input the seed generators read. */
+export interface SeedBody {
+  cx: number;
+  cy: number;
+  /** half-extents (the box that lays the dipole axis). */
+  hw: number;
+  hh: number;
+  /** unit heading (cos θ, sin θ). */
+  ux: number;
+  uy: number;
+  /** polarity sign (which end is the + / N pole). */
+  spin: number;
+  /** influence radius — the synthesized-dipole fallback keys off it. */
+  range: number;
+}
+
+/** px below which the box gives no usable dipole axis (mirrors `bodyDipole`). */
+const DIPOLE_MIN_SEP = 8;
+/** synthesized-pole reach floor (covers point / range-0 bodies). */
+const DIPOLE_MIN_REACH = 60;
+
+/**
+ * Dipole seeds: the centre plus `rings` offsets either side of the heading's
+ * perpendicular bisector. Uses the same synthesized-pole fallback the field math
+ * (`bodyDipole`) uses, so a near-point body still reads as a full dipole.
+ */
+export function dipoleSeeds(b: SeedBody, rings = 8): Pt[] {
+  const axis: AxisRect = { cx: b.cx, cy: b.cy, hw: b.hw, hh: b.hh, ux: b.ux, uy: b.uy, spin: b.spin };
+  let poles = polePair(axis);
+  let sep = Math.hypot(poles[0].x - poles[1].x, poles[0].y - poles[1].y);
+  if (sep < Math.max(b.range * 0.06, DIPOLE_MIN_SEP)) {
+    const half = Math.max(b.range * 0.18, DIPOLE_MIN_REACH);
+    const sgn = b.spin < 0 ? -1 : 1;
+    poles = [
+      { x: b.cx + b.ux * half, y: b.cy + b.uy * half, q: sgn },
+      { x: b.cx - b.ux * half, y: b.cy - b.uy * half, q: -sgn },
+    ] as [Pole, Pole];
+    sep = Math.hypot(poles[0].x - poles[1].x, poles[0].y - poles[1].y);
+  }
+  // the unit perpendicular to the heading
+  const perpx = -b.uy;
+  const perpy = b.ux;
+  const spacing = Math.max(sep * 0.13, 18);
+  const seeds: Pt[] = [{ x: b.cx, y: b.cy }]; // the central axial line through both poles
+  for (let i = 1; i <= rings; i++) {
+    const off = i * spacing;
+    seeds.push({ x: b.cx + perpx * off, y: b.cy + perpy * off });
+    seeds.push({ x: b.cx - perpx * off, y: b.cy - perpy * off });
+  }
+  return seeds;
+}
+
+/** Monopole seeds: a tight ring close to the core → radial spokes. */
+export function monopoleSeeds(b: SeedBody, count = 18): Pt[] {
+  const r0 = Math.max(Math.min(b.hw, b.hh) * 0.8, 24);
+  const seeds: Pt[] = [];
+  for (let k = 0; k < count; k++) {
+    const a = (k / count) * Math.PI * 2;
+    seeds.push({ x: b.cx + Math.cos(a) * r0, y: b.cy + Math.sin(a) * r0 });
+  }
+  return seeds;
+}

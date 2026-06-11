@@ -16,6 +16,8 @@ import {
   polePair,
   dipoleField,
   traceFieldLines,
+  dipoleSeeds,
+  monopoleSeeds,
   type Scenario,
   type ScenarioParticle,
   type ScenarioResult,
@@ -453,11 +455,14 @@ export function traceDipole(token: string, override: ProbeOverride = {}): FieldT
   const cx = W / 2;
   const cy = H / 2;
 
+  // a synthetic body for the seed generators — the chip's dipole/monopole geometry.
+  const seedBody = { cx, cy, hw: 74, hh: 28, ux: Math.cos(a), uy: Math.sin(a), spin, range: 0 };
+
   let lines: Pt[][];
   if (token === 'charge') {
     // A lone electric charge is a MONOPOLE: straight radial field lines, OUT of a + source
-    // (spin ≥ 0) and IN to a −. Seed a ring close to the body and trace the radial field both
-    // ways, giving clean spokes from the core to the rim — the textbook electric-field diagram.
+    // (spin ≥ 0) and IN to a −. Trace the radial field from the core-ring seeds, giving
+    // clean spokes — the textbook electric-field diagram.
     const sgn = spin < 0 ? -1 : 1;
     const sample = (x: number, y: number) => {
       const dx = x - cx;
@@ -466,30 +471,14 @@ export function traceDipole(token: string, override: ProbeOverride = {}): FieldT
       const m = sgn / (d * d); // radial 1/d², signed by polarity
       return { x: (dx / d) * m, y: (dy / d) * m };
     };
-    const N = 18;
-    const r0 = 38;
-    const seeds = [];
-    for (let i = 0; i < N; i++) {
-      const ang = (i / N) * Math.PI * 2;
-      seeds.push({ x: cx + Math.cos(ang) * r0, y: cy + Math.sin(ang) * r0 });
-    }
+    const seeds = monopoleSeeds(seedBody); // the canonical ring (core fieldlines.ts)
     lines = traceFieldLines(sample, seeds, { step: 7, maxSteps: 240, bounds: { w: W, h: H } });
   } else {
-    // magnetism: a DIPOLE (no magnetic monopoles exist) — the bar-magnet loops. Seed along the
-    // perpendicular bisector of the heading axis: each offset lies on a distinct nested field
-    // line, so tracing both ways closes a clean loop from + around to −.
-    const body = { cx, cy, hw: 74, hh: 28, ux: Math.cos(a), uy: Math.sin(a), spin };
-    const poles = polePair(body);
+    // magnetism: a DIPOLE (no magnetic monopoles exist) — the bar-magnet loops, seeded
+    // along the perpendicular bisector of the heading axis (core dipoleSeeds).
+    const poles = polePair(seedBody);
     const sample = (x: number, y: number) => dipoleField(poles, x, y);
-    const perp = { x: -body.uy, y: body.ux }; // unit ⟂ to the heading axis
-    const RINGS = 8;
-    const SPACING = 22;
-    const seeds = [{ x: cx, y: cy }]; // the central axial line through both poles
-    for (let i = 1; i <= RINGS; i++) {
-      const off = i * SPACING;
-      seeds.push({ x: cx + perp.x * off, y: cy + perp.y * off });
-      seeds.push({ x: cx - perp.x * off, y: cy - perp.y * off });
-    }
+    const seeds = dipoleSeeds(seedBody); // the canonical bisector seeds (core fieldlines.ts)
     lines = traceFieldLines(sample, seeds, { step: 5, maxSteps: 500, bounds: { w: W, h: H } });
   }
 

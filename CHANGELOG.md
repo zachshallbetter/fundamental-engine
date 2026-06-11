@@ -7,6 +7,19 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`fieldLineSeeds` / `dipoleSeeds` / `monopoleSeeds`** (`@field-ui/core`, `fieldlines.ts`).
+  The field-line *seeding* algorithm — where to start tracing so the diagram is the correct
+  STRUCTURE (dipole loops seeded along the heading's perpendicular bisector; monopole spokes
+  from a core ring) — was app-only, living in `apps/site/src/lib/field-probe.ts`. It is now a
+  pure core export with the synthesized-dipole fallback the field math uses, so every consumer
+  (the site's force chips, the native renderers, any future bridge) shares one definition. The
+  site's `traceDipole` is refactored onto it; behavior is unchanged.
+- **`<field-root heatmap>`** — the density heatmap layer (field-systems H1) is now a declarative
+  attribute on the element runtime (observed, toggles live via `setHeatmap`), alongside the
+  existing `mass` / `attention` / `causality`. The handle and `FieldOptions` already supported it;
+  this exposes it to HTML authors. Documented in the regenerated custom-elements manifest.
 ### Changed
 
 - **A supernova now ejects captured matter as PERSISTENT field matter** (`@field-ui/core`,
