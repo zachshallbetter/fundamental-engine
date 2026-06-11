@@ -87,6 +87,8 @@ test('monopoleSeeds: a ring of `count` points around the core', () => {
   assert.equal(seeds.length, 18);
   // every seed lies on a ring of radius max(min(hw,hh)·0.8, 24) = max(16, 24) = 24
   assert.ok(seeds.every((s) => Math.abs(Math.hypot(s.x - 50, s.y - 50) - 24) < 1e-6));
+});
+
 test('traceFieldLine: maxTurns stops an orbit that never re-enters loopDist', () => {
   // a pure rotational field about (0, 0): every line is a circle. Seeded at radius 100
   // with loopDist 6, the seed IS on the circle, so loopDist closes it after one lap —
