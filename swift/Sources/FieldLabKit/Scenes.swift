@@ -59,6 +59,9 @@ public struct LabScene {
     public var name: String
     /// The one-sentence claim this scene proves.
     public var blurb: String
+    /// The correlation story: how DATA becomes body parameters, becomes field behavior,
+    /// becomes feedback — the pipeline this scene demonstrates, stated explicitly.
+    public var story: String = ""
     public var cards: [CardSpec]
     public var formation: String = "ambient"
     public var render: RenderMode = .dots
@@ -66,15 +69,19 @@ public struct LabScene {
     public var attention = false
     public var causality = false
     public var heatmap = false
-    public var waves = true
+    /// The carrier waves (§2.3) — ambient resting structure. Off by default in the lab:
+    /// they're canon, but decorative here; the inspector's Waves toggle brings them back
+    /// with their bound shimmer and the reservoir exchange.
+    public var waves = false
     public var depth: Float = 0
     public var accent = "#4da3ff"
     public var density: Float = 2
 
-    public init(id: String, name: String, blurb: String, cards: [CardSpec]) {
+    public init(id: String, name: String, blurb: String, story: String = "", cards: [CardSpec]) {
         self.id = id
         self.name = name
         self.blurb = blurb
+        self.story = story
         self.cards = cards
     }
 
@@ -141,6 +148,7 @@ public enum LabScenes {
     public static let mass = LabScene(
         id: "mass", name: "Mass",
         blurb: "Importance is physical: the heavy card gathers the field; the light ones barely dent it.",
+            story: "The data is each card's importance, written as strength (here 1.8 vs 0.4–0.55 — the 0.4…2.0 weightToStrength contract). attract turns strength into a designed well, gravity into a real 1/d² one; range is the data's reach. Matter pools in proportion, and the card's glow is the measurement coming back: its eased local density d, the same number the web engine writes as --field-density.",
         cards: [
             CardSpec("Ship the keynote", x: 0.38, y: 0.42, w: 220, h: 84,
                      tokens: ["attract", "gravity"], strength: 1.8, range: 340),
@@ -160,6 +168,7 @@ public enum LabScenes {
         var s = LabScene(
             id: "magnetism", name: "Magnetism",
             blurb: "A real Lorentz force: matter polarizes, curls, and threads the dipole lines you can see.",
+            story: "The data is polarity and orientation: spin (±1) picks the N/S sense, the card's box and angle lay the dipole axis. Neutral matter entering range is polarized by side (charge induction — state written onto particles), then the Lorentz force curls it and fieldflow advects it down the net field. The field-lines reading draws that structure: it IS the data, made geometry.",
             cards: [
                 CardSpec("N · dipole", x: 0.3, y: 0.5, w: 170, h: 64,
                          tokens: ["magnetism", "fieldflow"], strength: 0.6, range: 320, spin: 1, angle: 0),
@@ -178,6 +187,7 @@ public enum LabScenes {
         var s = LabScene(
             id: "attention", name: "Attention",
             blurb: "One budget: engaging a card strengthens it by exactly what the others lose.",
+            story: "The data is the budget itself: four equal strengths, summed. Hover writes one bit per card — engaged — and the conserved allocator multiplies each card's effective strength so the TOTAL never changes (Σ strength·mul is invariant). What one card gains in pull is arithmetically what the others lose; the dimming you see is the budget flowing, not a style.",
             cards: [
                 CardSpec("Inbox", x: 0.25, y: 0.3, tokens: ["attract"], strength: 1, range: 230),
                 CardSpec("Roadmap", x: 0.75, y: 0.3, tokens: ["attract"], strength: 1, range: 230,
@@ -196,6 +206,7 @@ public enum LabScenes {
         var s = LabScene(
             id: "causality", name: "Causality",
             blurb: "Saturate one card and its neighbours light up — the wiring is matter, not markup.",
+            story: "The data is adjacency: spill weights are proximity, 1 − distance/falloff. When a card's measured density d crosses the threshold, the excess transfers to neighbours as a conserved flow (Σ deltas = 0); each card's brightness is d plus what it received minus what it donated — the lit channel. Relationships render because matter moves, not because an edge was drawn.",
             cards: [
                 CardSpec("Design", x: 0.22, y: 0.5, tokens: ["attract"], strength: 0.9, range: 220),
                 CardSpec("Build", x: 0.5, y: 0.5, tokens: ["attract"], strength: 1.4, range: 260,
@@ -214,6 +225,7 @@ public enum LabScenes {
         var s = LabScene(
             id: "volume", name: "Volume",
             blurb: "The field has depth: matter recedes into a 420pt volume and the page plane pulls it home.",
+            story: "The data is depth: a 420pt z-volume opened behind the surface. Matter seeds through z, the perspective projection recedes it (smaller, fainter — the only thing depth changes is the volume, never the force math), and the well on the page plane pulls everything home, because bodies — UI elements — always live at z = 0.",
             cards: [
                 CardSpec("Surface", x: 0.5, y: 0.5, w: 190, h: 72,
                          tokens: ["attract", "gravity"], strength: 1.4, range: 380),
@@ -231,6 +243,7 @@ public enum LabScenes {
         var s = LabScene(
             id: "source-sink", name: "Source & Sink",
             blurb: "A budgeted fountain feeds a sink that saturates and supernovas — creation, capture, release.",
+            story: "The data is the budget contract: the emitter's life (140 frames per particle) and rate bound its population — every spawned particle is mortal. The collector's absorbR and capacity (60) are the other half: it captures, holds (conserved — held matter stays in the pool), and at capacity supernovas everything back. Creation and destruction both ledger-checked.",
             cards: [
                 CardSpec("Emitter", x: 0.25, y: 0.68, w: 150, h: 60,
                          tokens: ["spawn"], strength: 1.6, range: 200,
@@ -250,6 +263,7 @@ public enum LabScenes {
         var s = LabScene(
             id: "warp", name: "Warp",
             blurb: "Two cards, one wormhole: matter that enters here exits there, momentum intact.",
+            story: "The data is the pairing: each throat names the other (the data-pair contract). Matter entering within absorbR is relocated — not destroyed — to its pair, momentum rotated through; the trails render shows the conserved hand-off. Two pieces of UI become one topology because the data said they were connected.",
             cards: [
                 CardSpec("Here", x: 0.27, y: 0.5, w: 150, h: 64,
                          tokens: ["warp", "attract"], strength: 1.0, range: 260,
@@ -271,6 +285,7 @@ public enum LabScenes {
         var s = LabScene(
             id: "storm", name: "Storm",
             blurb: "A hot card boils the medium, a cold one crystallizes it — temperature is a real scalar here.",
+            story: "The data is temperature: the hot card's strength IS T (Langevin kicks scale as √2T), the cold card's lattice is where cool matter (heat < 0.5) freezes. The temperature reading contours the heat the matter actually carries — measured from particles, never painted on — and collide keeps the exchange momentum-true.",
             cards: [
                 CardSpec("Hot path", x: 0.3, y: 0.42, w: 170, h: 66,
                          tokens: ["thermal", "collide"], strength: 1.1, range: 300, engaged: true),

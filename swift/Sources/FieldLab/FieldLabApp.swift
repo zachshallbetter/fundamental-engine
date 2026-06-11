@@ -40,7 +40,9 @@ struct LabRootView: View {
     @State private var overlays: Set<FieldUICore.OverlayMode> = []
     @State private var accent = Color(red: 0.30, green: 0.64, blue: 1.0)
     @State private var density: Double = 2
+    @State private var waves = false
     @State private var showInspector = true
+    @State private var showPipeline = false
     @State private var stats = LiveStats()
 
     private static let tourSymbols: [String: String] = [
@@ -72,6 +74,7 @@ struct LabRootView: View {
                     overlays: Array(overlays),
                     accent: accent,
                     density: Float(density),
+                    waves: waves,
                     stats: $stats
                 )
                 captionChip
@@ -91,6 +94,7 @@ struct LabRootView: View {
             renderMode = s.render
             overlays = Set(s.overlay)
             density = Double(s.density)
+            waves = s.waves
         }
     }
 
@@ -150,6 +154,17 @@ struct LabRootView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .secondaryAction) {
+            Button {
+                showPipeline.toggle()
+            } label: {
+                Label("How a field works", systemImage: "info.circle")
+            }
+            .help("The data → force → field → feedback pipeline")
+            .popover(isPresented: $showPipeline, arrowEdge: .bottom) {
+                pipelineExplainer
+            }
+        }
         ToolbarItem(placement: .primaryAction) {
             Button {
                 showInspector.toggle()
@@ -157,6 +172,40 @@ struct LabRootView: View {
                 Label("Inspector", systemImage: "sidebar.trailing")
             }
             .help("Show or hide the field inspector")
+        }
+    }
+
+    /// The whole model in four steps — what every scene in this app is an instance of.
+    private var pipelineExplainer: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("How a field works")
+                .font(.headline)
+            pipelineStep("1", "Data becomes bodies",
+                         "A card's data — importance, polarity, adjacency, budget — is written as body parameters: force tokens, strength (0.4…2.0 by the weight contract), range, spin, heading. The card IS the data, standing in the field.")
+            pipelineStep("2", "Bodies bend the field",
+                         "Every visible body applies its forces to the shared matter each frame — designed falloffs (attract, repel…) or real laws (gravity 1/d², the Lorentz force). Forces compose; modifiers gate and scale them.")
+            pipelineStep("3", "Matter responds, conserved",
+                         "The pool is finite and ledgered: attention is one budget, sinks hold what they capture, sources are mortal-budgeted, spillover sums to zero. Nothing is styled — everything is accounted.")
+            pipelineStep("4", "The field measures back",
+                         "Each measuring card receives its eased local density d, load, lit, and the thermo metrics — the same channels the web engine writes as --field-* variables. The glow you see on a card is a measurement, not a decoration.")
+            Text("Field Agent Consumption Model → Body Matter Interaction → Sink/Accretion")
+                .font(.caption2.monospaced())
+                .foregroundStyle(.tertiary)
+        }
+        .padding(18)
+        .frame(width: 440)
+    }
+
+    private func pipelineStep(_ n: String, _ title: String, _ body: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(n)
+                .font(.caption.bold().monospaced())
+                .padding(6)
+                .background(.quaternary, in: Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.subheadline.bold())
+                Text(body).font(.caption).foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -169,6 +218,12 @@ struct LabRootView: View {
             Text(currentScene.blurb)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+            if !currentScene.story.isEmpty {
+                Text(currentScene.story)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 2)
+            }
             if case .recipe(let id) = selection, let r = FieldRecipes.recipe(id: id) {
                 recipeDetails(r)
             }
@@ -221,12 +276,13 @@ struct LabRootView: View {
 
     private var inspector: some View {
         Form {
-            Section("Field") {
+            Section {
                 Picker("Formation", selection: $formation) {
                     ForEach(FORMATIONS, id: \.id) { f in
                         Text(f.name).tag(f.id)
                     }
                 }
+                .help(FORMATIONS.first { $0.id == formation }.map { "\($0.name) — \($0.cue)" } ?? "")
                 Picker("Matter", selection: $renderMode) {
                     Label("Dots", systemImage: "circle.grid.3x3.fill").tag(RenderMode.dots)
                     Label("Trails", systemImage: "scribble.variable").tag(RenderMode.trails)
@@ -235,39 +291,95 @@ struct LabRootView: View {
                     Label("Voronoi", systemImage: "rectangle.split.3x3").tag(RenderMode.voronoi)
                     Label("Streamlines", systemImage: "water.waves").tag(RenderMode.streamlines)
                 }
+                .help("How the same matter is drawn — the simulation underneath is identical in every mode.")
                 ColorPicker("Accent", selection: $accent, supportsOpacity: false)
+                    .help("The travelling accent color — heat blends matter toward it.")
                 LabeledContent("Density") {
                     Slider(value: $density, in: 0.5...5, step: 0.5)
                 }
+                .help("Particle-count multiplier: the pool is 130 × density, conserved while the field runs.")
+                Toggle(isOn: $waves) {
+                    Label("Carrier waves", systemImage: "water.waves.slash")
+                }
+                .help("The ambient resting structure (§2.3): five standing currents that carry bound shimmer and exchange matter with the free pool. Canon, but decorative here — off by default.")
+            } header: {
+                Text("Field")
+            } footer: {
+                Text("The medium. A formation biases every free particle; matter is how the one simulation is drawn; density is how much of it there is.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
 
-            Section("Readings") {
-                readingToggle(.streamlines, "Streamlines", "water.waves")
-                readingToggle(.forceVectors, "Force vectors", "arrow.up.right")
-                readingToggle(.fieldLines, "Field lines", "point.forward.to.point.capsulepath")
-                readingToggle(.grid, "Deformation grid", "grid")
-                readingToggle(.temperature, "Temperature", "thermometer.medium")
-                readingToggle(.energy, "Energy", "bolt")
-                readingToggle(.path, "Path traces", "point.topleft.down.to.point.bottomright.curvepath")
-                readingToggle(.data, "Density readouts", "gauge.with.needle")
+            Section {
+                readingToggle(.streamlines, "Streamlines", "water.waves",
+                              "the net push a still probe would feel, as direction arrows")
+                readingToggle(.forceVectors, "Force vectors", "arrow.up.right",
+                              "the same arrows scaled by raw magnitude")
+                readingToggle(.fieldLines, "Field lines", "point.forward.to.point.capsulepath",
+                              "structure only — the dipoles and monopoles bodies radiate")
+                readingToggle(.grid, "Deformation grid", "grid",
+                              "a reference lattice displaced by the local field")
+                readingToggle(.temperature, "Temperature", "thermometer.medium",
+                              "iso-contours of the heat the matter carries")
+                readingToggle(.energy, "Energy", "bolt",
+                              "iso-contours of kinetic energy, ½·m·|v|²")
+                readingToggle(.path, "Path traces", "point.topleft.down.to.point.bottomright.curvepath",
+                              "flow integrated over distance from seeded probes")
+                readingToggle(.data, "Density readouts", "gauge.with.needle",
+                              "each measuring card's d as a fill ring — the --d signal")
+            } header: {
+                Text("Readings")
+            } footer: {
+                Text("Line diagnostics drawn over the matter. Each reveals one quantity the field is computing anyway — readings measure, they never push.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
 
-            Section("Live") {
-                LabeledContent("Particles", value: "\(stats.particles)")
-                LabeledContent("Kinetic", value: String(format: "%.1f", stats.kinetic))
-                LabeledContent("Thermal", value: String(format: "%.1f", stats.thermal))
-                LabeledContent("Frame", value: String(format: "%.1f ms", stats.frameMs))
+            Section {
+                liveRow("Particles", "\(stats.particles)", "the conserved pool (130 × density + budgeted sources)")
+                liveRow("Kinetic", String(format: "%.1f", stats.kinetic), "Σ ½·m·|v|² over the pool")
+                liveRow("Thermal", String(format: "%.1f", stats.thermal), "Σ heat — agitation the matter carries")
+                liveRow("Frame", String(format: "%.1f ms", stats.frameMs), "main-thread tick gap (EMA) — 16.7 ms is 60 fps")
+            } header: {
+                Text("Live")
+            } footer: {
+                Text("Measured from the running simulation each half-second — the same accessors (particleCount, energy) the engine exposes to any host.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
         }
         .formStyle(.grouped)
     }
 
-    private func readingToggle(_ mode: FieldUICore.OverlayMode, _ label: String, _ symbol: String) -> some View {
+    private func readingToggle(_ mode: FieldUICore.OverlayMode, _ label: String,
+                               _ symbol: String, _ meaning: String) -> some View {
         Toggle(isOn: Binding(
             get: { overlays.contains(mode) },
             set: { on in if on { overlays.insert(mode) } else { overlays.remove(mode) } }
         )) {
-            Label(label, systemImage: symbol)
+            Label {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(label)
+                    Text(meaning)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            } icon: {
+                Image(systemName: symbol)
+            }
+        }
+    }
+
+    private func liveRow(_ label: String, _ value: String, _ meaning: String) -> some View {
+        LabeledContent {
+            Text(value).monospacedDigit()
+        } label: {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(label)
+                Text(meaning)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
         }
     }
 }
@@ -315,12 +427,17 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
     let overlays: [FieldUICore.OverlayMode]
     let accent: Color
     let density: Float
+    let waves: Bool
     @Binding var stats: LiveStats
 
     func makeNSView(context: Context) -> FieldCanvasView {
-        let v = FieldCanvasView(scene: scene)
+        var s = scene
+        s.density = density
+        s.waves = waves
+        let v = FieldCanvasView(scene: s)
         context.coordinator.sceneId = scene.id
         context.coordinator.density = density
+        context.coordinator.waves = waves
         context.coordinator.startStats(canvas: v) { stats = $0 }
         return v
     }
@@ -328,9 +445,15 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
     func updateNSView(_ canvas: FieldCanvasView, context: Context) {
         var s = scene
         s.density = density
-        if context.coordinator.sceneId != scene.id || context.coordinator.density != density {
+        s.waves = waves
+        // density and waves are creation-time options (pool size, the wave build) —
+        // changing them rebuilds the field, exactly as a resize does.
+        if context.coordinator.sceneId != scene.id
+            || context.coordinator.density != density
+            || context.coordinator.waves != waves {
             context.coordinator.sceneId = scene.id
             context.coordinator.density = density
+            context.coordinator.waves = waves
             canvas.show(s)
         }
         canvas.field?.setFormation(formation)
@@ -346,6 +469,7 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
     final class Coordinator {
         var sceneId = ""
         var density: Float = 2
+        var waves = false
         private var timer: Timer?
 
         func startStats(canvas: FieldCanvasView, push: @escaping (LiveStats) -> Void) {
