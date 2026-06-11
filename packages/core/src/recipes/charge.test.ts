@@ -40,3 +40,9 @@ test('compiles and round-trips', () => {
   assert.ok(plan.bodies.length === 1, 'one vessel body');
   assert.deepEqual(parseRecipe(serializeRecipe(CONTOUR_CHARGE)), CONTOUR_CHARGE);
 });
+
+test('the recipe is self-executing: the vessel body compiles with its data-when gate (#370)', () => {
+  const plan = compileRecipe(CONTOUR_CHARGE);
+  assert.equal(plan.bodies[0]!.attributes['data-when'], 'active');
+  assert.deepEqual(plan.render, { underlay: 'dots', overlay: [], heatmap: true, unapplied: [] });
+});

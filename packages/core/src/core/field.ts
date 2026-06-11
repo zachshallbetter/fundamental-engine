@@ -418,10 +418,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // refresh each warp body's relocate target from its paired body's live centre (§22.3 relocate).
   function updateWarpTargets(): void {
     for (const b of bodies) {
-      if (b.pairBody && b.pairBody.vis) {
-        b.warpX = b.pairBody.cx;
-        b.warpY = b.pairBody.cy;
-        b.warpHas = true;
+      if (b.pairBody) {
+        // If the paired element has left the DOM, sever the warp link so the wormhole closes
+        // rather than relocating matter to a ghost node. A later rescan re-resolves naturally
+        // when (or if) the element returns. The isConnected check is cheap — only reached when
+        // pairBody is set, so the common zero-pair case pays nothing.
+        if (!b.pairBody.el.isConnected) {
+          b.warpHas = false;
+          b.pairBody = undefined;
+          continue;
+        }
+        if (b.pairBody.vis) {
+          b.warpX = b.pairBody.cx;
+          b.warpY = b.pairBody.cy;
+          b.warpHas = true;
+        } else {
+          b.warpHas = false;
+        }
       } else if (b.pair) {
         b.warpHas = false;
       }
@@ -513,6 +526,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     });
     for (let i = 0; i < movers.length; i++) {
       const mv = movers[i]!;
+      // If this element has been removed from the DOM while docked, drop the dock reference so
+      // the sink no longer believes it holds the element. Restore is moot for a detached node;
+      // we just clear state so no per-frame work runs for it going forward. Consistent with how
+      // the rescan reconciliation (scan()) drops stale bodies: absent nodes are simply gone.
+      if (!mv.el.isConnected) {
+        if (mv.docked) {
+          mv.docked = null;
+          mv.dock.dock = 0;
+        }
+        continue;
+      }
       const cx = centers[i]!.x;
       const cy = centers[i]!.y;
       // docked: collapse toward the sink core and hold there, skipping force integration (§22.3).
@@ -1613,9 +1637,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     setHeatmap: (on) => {
       cfg.heatmap = on;
       if (on) {
+        // Re-enabling always starts with a fresh buffer so mid-accumulation state from a prior
+        // active period (or a paused field frozen mid-frame) never bleeds into the new session.
         if (!heatmap && W > 0) heatmap = new Heatmap(W, H);
       } else if (heatmap) {
-        heatmap = null; // drop the buffer; clear the write-back the layer left on bodies
+        // Clear accumulated data before releasing the buffer — a paused field can hold a
+        // non-zero grid that would persist visually if the buffer were recycled. Explicit clear
+        // makes the exit symmetrical with the fresh-start re-enable above.
+        heatmap.clear();
+        heatmap = null;
         for (const b of bodies) {
           const el = b.writeTarget ?? b.el;
           el.style.removeProperty('--forces-heatmap-density');
