@@ -190,11 +190,11 @@ type FieldRecipe = {
   concepts?: string[]                 // product-language lane — describes; never executed
   metrics: string[]                   // signal names; --field-density is the one written today
   diagnostics: string[]               // render/diagnostic modes that reveal the behavior
-  conditions?: string[]               // activation lane — when the behavior applies
-  bodies: BodyRecipe[]
+  conditions?: string[]               // activation vocabulary — when the behavior applies
+  bodies: BodyRecipe[]                // each body may carry `when` — the EXECUTABLE gate (data-when)
   relationships?: RelationshipRecipe[]  // compiled metadata only — used for the reduced-motion static display;
                                         // NOT registered as live edges into RelationshipRegistry
-  render: RenderLayer[]
+  render: RenderLayer[]               // compiled to a render PLAN; executes when applyRecipe gets a field
   accessibility: AccessibilityRecipe  // required: reducedMotion + meaningWithoutMotion
   status?: RecipeStatus               // implementation status
   budget?: Partial<PerformanceBudget>
@@ -216,9 +216,19 @@ which reads native DOM signals — `a[href^="#"]`, `label[for]`, ARIA references
 live graph must author it in HTML with `data-field-relation`, not in the recipe schema.
 
 `validateRecipe` returns a problem for any unknown force token, unknown render layer, unknown
-diagnostic mode, unknown fundamental field, declared `primitives` that drift from the body tokens, or a
-missing accessibility equivalent. A recipe can't reference anything the engine doesn't have, and no
-recipe is motion-only.
+diagnostic mode, unknown fundamental field, an unknown per-body `when` condition id (an unregistered
+gate would silently never pass — rejected instead), declared `primitives` that drift from the body
+tokens, or a missing accessibility equivalent. A recipe can't reference anything the engine doesn't
+have, and no recipe is motion-only.
+
+**Recipes execute their declarations (#370).** `compileRecipe` derives an executable render plan from
+`render` — one underlay matter mode (`particles` → `dots`), the additive overlay reading stack, and
+the heatmap toggle; layers with no executable surface are NAMED in `plan.unapplied`, never silently
+dropped. `applyRecipe(root, recipe, { field })` drives a live field with the plan (a `FieldHandle` or
+`<field-root>` both satisfy the structural target) and releases the surfaces on `destroy()`;
+`renderless` and reduced motion skip the drive. Per-body `when` compiles to `data-when` on the body —
+the contour-charge recipe carries its own engagement gate this way. Without a `field` option, recipes
+remain signals-only, exactly as before.
 
 Example:
 
