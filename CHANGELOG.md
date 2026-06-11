@@ -7,6 +7,19 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`fieldLineSeeds` / `dipoleSeeds` / `monopoleSeeds`** (`@field-ui/core`, `fieldlines.ts`).
+  The field-line *seeding* algorithm — where to start tracing so the diagram is the correct
+  STRUCTURE (dipole loops seeded along the heading's perpendicular bisector; monopole spokes
+  from a core ring) — was app-only, living in `apps/site/src/lib/field-probe.ts`. It is now a
+  pure core export with the synthesized-dipole fallback the field math uses, so every consumer
+  (the site's force chips, the native renderers, any future bridge) shares one definition. The
+  site's `traceDipole` is refactored onto it; behavior is unchanged.
+- **`<field-root heatmap>`** — the density heatmap layer (field-systems H1) is now a declarative
+  attribute on the element runtime (observed, toggles live via `setHeatmap`), alongside the
+  existing `mass` / `attention` / `causality`. The handle and `FieldOptions` already supported it;
+  this exposes it to HTML authors. Documented in the regenerated custom-elements manifest.
 ### Changed
 
 - **A supernova now ejects captured matter as PERSISTENT field matter** (`@field-ui/core`,
@@ -30,6 +43,17 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **One source of truth for reduced-motion and page-visibility probes (`@field-ui/platform`).** Four
+  independent `matchMedia('(prefers-reduced-motion: reduce)')` calls and two direct `document.hidden`
+  reads scattered across `flip.ts`, `field-nav.ts`, `apply-recipe.ts`, and `browser-host.ts` have
+  been consolidated into a single `env.ts` module exposing `prefersReducedMotion()` and
+  `pageHidden()`. Both helpers are SSR-safe (return `false` when `window`/`document` are absent) and
+  accept overrides via `setEnvOverrides` / `clearEnvOverrides` — a clean test seam that replaces
+  the previous approach of stubbing `globalThis.matchMedia` in tests. `browserHost()` implements its
+  `reducedMotion` and `hidden` methods through the helpers; `flip.ts` tests now use `setEnvOverrides`
+  instead of patching the global. The site-level `politeLoop` (apps/site) gains injectable
+  `isHidden` and `onVisibilityChange` options (both default to the live `document` behaviour) for
+  the same reason.
 - **Platform registries close their exits.** Three registries leaked entries for elements that
   left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
   elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never
@@ -79,6 +103,16 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **RenderBackend — the drawing seam (#373).** The structural contract between the engine and a
+  drawing surface (`size` / `clear` / `segments` / `polyline` / `rect` / `text`), with the
+  Canvas 2D implementation as the default. The OVERLAY surface — all eight readings — now
+  renders exclusively through it; `createField({ overlayBackend })` accepts any conforming
+  implementation, which is the seam the WebGL/WebGPU frontier builds on. The underlay matter
+  modes (dots' gradients, metaballs, voronoi) still draw on the 2D context directly and convert
+  in a later slice — the contract grows additively when their needs (gradients, composite modes)
+  arrive. Contract pinned by recording-stub tests.
+
+### Added
 - **`FieldLineOpts.maxTurns` — a turning budget for the field-line tracer** (`@field-ui/core`,
   `fieldlines.ts`). A traced line orbiting a pole that never passes back through its *seed*
   (so `loopDist` can't close it) otherwise winds the same circle for its whole step budget —

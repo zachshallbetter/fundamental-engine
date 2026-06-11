@@ -45,6 +45,7 @@ export class FieldField extends HTMLElementBase {
     'mass',
     'attention',
     'causality',
+    'heatmap',
   ];
 
   private readonly canvas: HTMLCanvasElement;
@@ -139,6 +140,11 @@ export class FieldField extends HTMLElementBase {
   /** first-class mass (§21.3): present and not `"false"` → particle mass ∝ size. */
   get mass(): boolean {
     return this.hasAttribute('mass') && this.getAttribute('mass') !== 'false';
+  }
+
+  /** density heatmap (field-systems H1): present and not `"false"` → the pooling glow underlay. */
+  get heatmap(): boolean {
+    return this.hasAttribute('heatmap') && this.getAttribute('heatmap') !== 'false';
   }
 
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
@@ -279,6 +285,9 @@ export class FieldField extends HTMLElementBase {
       case 'causality':
         this.field.setCausality(this.causality);
         break;
+      case 'heatmap':
+        this.field.setHeatmap(this.heatmap);
+        break;
       default: // density / waves / mass are construction-time → rebuild
         this.field.destroy();
         this.start();
@@ -322,6 +331,7 @@ export class FieldField extends HTMLElementBase {
       mass: this.mass,
       attention: this.attention,
       causality: this.causality,
+      heatmap: this.heatmap,
       feedbackSink,
     });
     // attach the handle so the platform write phase can read scrollV → --field-scroll-v

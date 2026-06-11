@@ -14,6 +14,7 @@
  */
 import { recipeById, type FieldRecipe } from '@field-ui/core';
 import { applyRecipe } from './apply-recipe.ts';
+import { prefersReducedMotion } from './env.ts';
 
 export interface FieldNavOptions {
   /** the link to pin as the current/"well" — its attention lane is held at 1. */
@@ -38,9 +39,6 @@ const NAV_METRIC_VARS = [
   '--field-density',
   '--field-recency',
 ];
-
-const prefersReducedMotion = (): boolean =>
-  typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
  * Bind a recipe signals-only over the `<a href>` links inside `root`. `recipe` may be a `FieldRecipe`

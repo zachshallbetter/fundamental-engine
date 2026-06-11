@@ -10,6 +10,7 @@
  */
 import { createFieldPlatform, type FieldPlatform } from './platform.ts';
 import { lintPlatform } from './lint.ts';
+import { prefersReducedMotion } from './env.ts';
 import { computeMetrics, groundedRecency, METRIC_KINDS, type MetricKind } from './metrics.ts';
 import {
   validateRecipe,
@@ -136,9 +137,7 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
   // Reduced motion skips the drive entirely — the recipe's static plan is the equivalent, and a
   // field left at its resting surfaces (dots / off) IS the static reading.
   let droveField: RecipeFieldTarget | null = null;
-  const reducedMotion =
-    options.reducedMotion ??
-    (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const reducedMotion = options.reducedMotion ?? prefersReducedMotion();
 
   const platform = createFieldPlatform(root);
 
