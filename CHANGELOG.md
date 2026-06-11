@@ -17,6 +17,17 @@ git tag (see [RELEASING.md](RELEASING.md)).
   conserved base pool** (whose particles already have no `age`). Closes a long-standing gap where a
   source's output, once captured and released, would quietly expire rather than return to the field.
 
+- **A supernova now ejects matter PAST the absorption radius, so the sink cycle repeats**
+  (`@field-ui/core`, `accretion.ts`). `releaseCaptured` placed ejecta *at the core* — inside
+  `absorbR` — so the sink re-captured its own ejecta on the very next frame, degenerating the
+  explosion into a ~1-per-frame strobe whose blast progressively evacuated the catchment until the
+  sink fell dormant ("exploded once, won't collect again"; ejecta appears to accelerate away and
+  never return). Each particle is now ejected just past `absorbR` along its bearing, so matter
+  leaves the accretion zone, a `sink+attract` well reels it back, and the
+  fill → explode → fall-back → refill cycle repeats at a real period (≈9 frames vs ≈1; in a headless
+  `sink+attract` repro, supernovas drop from 581 to 66 per 600 frames while the catchment stays
+  populated instead of decaying). A lone `sink` simply lets the ejecta disperse.
+
 ### Fixed
 
 - **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,

@@ -11,11 +11,18 @@
 import type { Body, Particle } from './types.ts';
 
 /**
- * Release exactly the particles a body captured: reposition each at the core, give it a radial
- * outward velocity, clear its capture + heat to 1, and reset the body's load to 0. Held matter is
- * **conserved** — released particles stay in the caller's pool (never deleted), so `count` is
- * preserved. Returns the released particles (in pool order). `rng` is injectable for deterministic
- * tests; defaults to `Math.random`.
+ * Release exactly the particles a body captured: eject each just **past** the absorption radius
+ * along a random bearing, give it a radial outward velocity, clear its capture + heat to 1, and
+ * reset the body's load to 0. Held matter is **conserved** — released particles stay in the
+ * caller's pool (never deleted), so `count` is preserved. Returns the released particles (in pool
+ * order). `rng` is injectable for deterministic tests; defaults to `Math.random`.
+ *
+ * Ejecting past `absorbR` (rather than at the core) is what makes a supernova a real cycle. Matter
+ * dropped at the core sits *inside* the capture radius and is re-grabbed on the very next frame,
+ * degenerating the explosion into a per-frame strobe whose blast progressively evacuates the
+ * catchment until the sink falls dormant. Leaving the accretion zone lets a `sink+attract` well
+ * reel the ejecta back for a genuine fill → explode → fall-back → refill cycle (a lone `sink`
+ * simply lets it disperse).
  */
 export function releaseCaptured(
   particles: readonly Particle[],
@@ -23,13 +30,14 @@ export function releaseCaptured(
   rng: () => number = Math.random
 ): Particle[] {
   const released: Particle[] = [];
+  const rim = b.absorbR + 6; // clear the capture horizon so it isn't re-captured next frame
   for (const q of particles) {
     if (q.cap !== b) continue;
     const ang = rng() * Math.PI * 2;
     const spd = 4 + rng() * 3;
     q.cap = null;
-    q.x = b.cx;
-    q.y = b.cy;
+    q.x = b.cx + Math.cos(ang) * rim;
+    q.y = b.cy + Math.sin(ang) * rim;
     q.vx = Math.cos(ang) * spd;
     q.vy = Math.sin(ang) * spd;
     q.heat = 1;

@@ -66,7 +66,7 @@ test('1b. held matter DRIFTS to the core on the next step, still captured + stil
   assert.equal(store.size, 3, 'still conserved in the pool');
 });
 
-test('1c. on RELEASE the SAME particles are freed (conserved), repositioned + flung outward', () => {
+test('1c. on RELEASE the SAME particles are freed (conserved), ejected past absorbR + flung outward', () => {
   const store = new FieldStore();
   const body = sinkBody({ capacity: 1000 });
   const ps = fill(store, 6, 500, 500);
@@ -80,8 +80,10 @@ test('1c. on RELEASE the SAME particles are freed (conserved), repositioned + fl
   assert.equal(body.accreted, 0, 'load resets to empty');
   for (const p of ps) {
     assert.equal(p.cap, null, 'no longer held');
-    assert.equal(p.x, body.cx, 'repositioned at the core');
-    assert.equal(p.y, body.cy);
+    // ejected just past the absorption radius so the sink can't re-grab its own ejecta next
+    // frame (which would strobe the supernova and evacuate the catchment).
+    const r = Math.hypot(p.x - body.cx, p.y - body.cy);
+    assert.ok(Math.abs(r - (body.absorbR + 6)) < 1e-9, 'ejected to the absorption rim, not the core');
     assert.ok(Math.hypot(p.vx, p.vy) > 0, 'flung outward with a radial velocity');
     assert.equal(p.heat, 1, 'released hot');
   }
