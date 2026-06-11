@@ -50,7 +50,9 @@ function classified(b: Body): ClassifiedTokens {
  * Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's
  * velocity change is scaled by `1/m` (a = F/m, so heavier matter moves less), while a
  * `kinematic` force (a reflection / rotation / relaunch) sets velocity outright and is left
- * unscaled. `inv === 1` (the default, `m = 1`) is the identity path either way.
+ * unscaled. `inv === 1` (the default, `m = 1`) is the identity path either way. The z lane is
+ * scaled identically so depth-enabled fields keep `a = F/m` on all three axes (a heavy particle
+ * pushed off-plane accelerates as little along z as it does in x/y).
  */
 function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
   if (inv === 1 || f.kinematic) {
@@ -59,9 +61,13 @@ function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void
   }
   const bvx = p.vx;
   const bvy = p.vy;
+  const bvz = p.vz ?? 0;
   f.apply(b, p, env);
   p.vx = bvx + (p.vx - bvx) * inv;
   p.vy = bvy + (p.vy - bvy) * inv;
+  // only rescale z when the force actually engaged the lane — never materialize a spurious 0
+  // on a flat (z-less) particle.
+  if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
 }
 
 export function step(input: StepInput): void {

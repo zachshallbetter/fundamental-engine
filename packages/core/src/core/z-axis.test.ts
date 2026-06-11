@@ -144,6 +144,23 @@ test('volume: attract pulls off-plane matter back toward the page plane', () => 
   assert.ok(p.vz! < 0, `vz should pull toward the plane, got ${p.vz}`);
 });
 
+test('volume: the z leg of an additive force scales by 1/m (first-class mass on all three axes)', () => {
+  // a heavy particle pushed off-plane must accelerate as little along z as a light one — the
+  // z impulse honours a = F/m just like x/y. The old applyForce snapshot only rescaled vx/vy,
+  // so vz bypassed the mass model and heavy matter fell to the plane at full strength.
+  const light = new FieldStore();
+  const heavy = new FieldStore();
+  const pL = light.add(particle({ x: 400, y: 300, z: 120, vz: 0, m: 1 }));
+  const pH = heavy.add(particle({ x: 400, y: 300, z: 120, vz: 0, m: 4 }));
+  const env = makeEnv({ D: 300 });
+  light.reindex();
+  heavy.reindex();
+  step({ store: light, bodies: [makeBody(['attract'])], env, forces: FORCES, conditions: {} });
+  step({ store: heavy, bodies: [makeBody(['attract'])], env, forces: FORCES, conditions: {} });
+  assert.ok(pL.vz! < 0 && pH.vz! < 0, 'both pulled toward the plane along z');
+  assert.ok(Math.abs(pH.vz! - pL.vz! / 4) < 1e-12, `heavy ${pH.vz} should be light/4 ${pL.vz! / 4}`);
+});
+
 test('volume: gravity z leg follows the inverse-square kernel', () => {
   const store = new FieldStore();
   const near = store.add(particle({ x: 400, y: 300, z: 50 }));
