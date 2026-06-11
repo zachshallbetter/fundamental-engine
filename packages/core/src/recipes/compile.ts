@@ -25,7 +25,50 @@ export function recipeBodyAttributes(b: BodyRecipe): Record<string, string> {
   if (b.spin != null) a['data-spin'] = String(b.spin);
   if (b.angle != null) a['data-angle'] = String(b.angle);
   if (b.feedback) a['data-feedback'] = '';
+  if (b.when) a['data-when'] = b.when; // the executable per-body gate (#370) — validated against the registry
   return a;
+}
+
+/** The executable form of a recipe's render stack (#370): which Field Surface each declared
+ *  layer drives. One matter mode owns the underlay; overlay readings stack additively; heatmap
+ *  is its own toggle. Layers with no executable surface yet are NAMED in `unapplied` — never
+ *  silently dropped (the no-silent-caps rule). */
+export interface RecipeRenderPlan {
+  /** the underlay matter mode (`setRender`), or null to leave the field's current mode alone. */
+  underlay: string | null;
+  /** the additive overlay reading stack (`setOverlay`); empty = 'off'. */
+  overlay: string[];
+  /** drive the density heatmap layer (`setHeatmap`). */
+  heatmap: boolean;
+  /** declared layers with no executable surface today — visible, not silently dropped. */
+  unapplied: string[];
+}
+
+const MATTER_MODES = new Set(['particles', 'dots', 'trails', 'links', 'metaballs', 'voronoi']);
+const OVERLAY_READINGS = new Set(['streamlines', 'force-vectors', 'field-lines', 'grid', 'temperature', 'energy', 'path', 'data']);
+
+/** Derive the render plan from a recipe's declared layers (pure; `particles` is the base matter
+ *  layer and maps to `dots`). `streamlines` prefers the overlay (it reads over content) unless it
+ *  is the recipe's ONLY layer, where the underlay render mode of the same name serves. */
+export function recipeRenderPlan(layers: readonly string[]): RecipeRenderPlan {
+  let underlay: string | null = null;
+  const overlay: string[] = [];
+  let heatmap = false;
+  const unapplied: string[] = [];
+  for (const layer of layers) {
+    if (layer === 'heatmap') heatmap = true;
+    else if (MATTER_MODES.has(layer)) {
+      const mode = layer === 'particles' ? 'dots' : layer;
+      if (underlay === null) underlay = mode;
+      else unapplied.push(layer); // one underlay only — the second matter mode is named, not silently dropped
+    } else if (OVERLAY_READINGS.has(layer)) overlay.push(layer);
+    else unapplied.push(layer);
+  }
+  if (underlay === null && overlay.length === 1 && overlay[0] === 'streamlines' && layers.length === 1) {
+    underlay = 'streamlines';
+    overlay.length = 0;
+  }
+  return { underlay, overlay, heatmap, unapplied };
 }
 
 /** One compiled body: the attribute set + the runtime tokens it carries. */
@@ -66,6 +109,8 @@ export interface CompiledRecipe {
   diagnostics: string[];
   metrics: string[];
   conditions: string[];
+  /** the executable render plan (#370) — what applyRecipe drives when given a field target. */
+  render: RecipeRenderPlan;
   reducedMotion: RecipeReducedMotionPlan;
 }
 
@@ -97,6 +142,7 @@ export function compileRecipe(r: FieldRecipe): CompiledRecipe {
     diagnostics: [...r.diagnostics],
     metrics: [...r.metrics],
     conditions: [...(r.conditions ?? [])],
+    render: recipeRenderPlan(r.render ?? []),
     reducedMotion: {
       reducedMotion: r.accessibility.reducedMotion,
       meaningWithoutMotion: r.accessibility.meaningWithoutMotion,

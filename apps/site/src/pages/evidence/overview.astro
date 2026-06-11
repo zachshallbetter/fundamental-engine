@@ -1,0 +1,85 @@
+---
+// The orienting front door for the invisible-fields family: what these pages are, why no
+// particles are visible, the one pipeline they all run, and every example as a stated
+// correlation. Copy derives from docs/canonical/field-ui-invisible-fields.md — the truth
+// gate applies: nothing here claims more than the pages demonstrate.
+import ExampleShell from "../../components/examples/ExampleShell.astro";
+import { INVISIBLE_FIELDS } from "../../lib/invisible-fields.ts";
+---
+
+<ExampleShell
+  title="Invisible fields — what these examples are"
+  description="Twelve real interfaces where the field runs with no drawn surface: data becomes bodies, the field measures, and the measurements come back as typography, ink, and anchor."
+  current="overview"
+  mainClass="ex-overview"
+>
+  <header class="ev-head">
+    <p class="ev-kicker">Invisible fields · the examples, explained</p>
+    <h1>No particles. That is the point.</h1>
+    <p class="ev-lede">
+      Every page in this section is a real interface on real data — an inbox, a market, a
+      backlog, a calendar. Each one runs a full physics field, and none of them draw it.
+      The field is a <strong>measuring instrument</strong> here, not a picture: data becomes
+      bodies, the field measures them every frame, and the measurements come back as CSS
+      variables your styles consume. What you see — type gaining weight, ink deepening, a row
+      sinking toward quiet — <em>is</em> the field.
+    </p>
+  </header>
+
+  <section class="ev-sec">
+    <h2>The one pipeline, all twelve pages</h2>
+    <ol class="ev-pipeline ev-pipeline-big" aria-label="The invisible-field pipeline">
+      <li><i>data</i><span>a real dataset — citations, listens, launches, incidents</span></li>
+      <li><i>bodies</i><span>each record becomes a body: its quantity sets <code>data-strength</code> / mass</span></li>
+      <li><i>measure</i><span>the field measures every frame — density, attention, load</span></li>
+      <li><i>variables</i><span>measurements return as CSS custom properties (<code>--w</code>, <code>--d</code>, <code>--field-attention</code>, <code>--load</code>)</span></li>
+      <li><i>you see</i><span>CSS renders them: weight, ink, anchor, fill — no canvas, no swarm</span></li>
+    </ol>
+    <p class="ev-note">
+      The page-level lesson, true of all twelve: <strong>the field does not care about the
+      layout; it measures whatever geometry you give it.</strong> A list, a grid, a front page,
+      a calendar — same instrument, different surface.
+    </p>
+  </section>
+
+  <section class="ev-sec">
+    <h2>Why this beats hand-rolling it</h2>
+    <p>
+      Each page replaces a category of code you would otherwise write and maintain: the scoring
+      scheme and the re-sort pass, the staleness timers, the priority tiers that drift until a
+      meeting renormalizes them. Here the question each of those answered — <em>what matters,
+      what's related, what's gone stale</em> — is answered continuously by the field, and the
+      readout is simply already current. The scope is honest: the field measures <em>the
+      field</em> — emphasis, attention, decay in the interface — never your users, your data
+      layer, or your analytics.
+    </p>
+  </section>
+
+  <section class="ev-sec">
+    <h2>Every example, as a correlation</h2>
+    <ul class="ev-index">
+      {
+        INVISIBLE_FIELDS.map((f) => (
+          <li>
+            <a href={f.href}>
+              <b>{f.name}</b>
+              <span class="ev-index-map">
+                {f.becomes} → <em>{f.see}</em>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="ev-sec">
+    <h2>The honesty contract</h2>
+    <p>
+      Every page states its data provenance in a chip — <code>live · checked Ns ago</code>
+      after a successful refresh, <code>snapshot · date</code> otherwise — and each one's
+      explainer band names exactly which variables the field writes. If a page can't prove a
+      claim live, the claim isn't made.
+    </p>
+  </section>
+</ExampleShell>

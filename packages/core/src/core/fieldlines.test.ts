@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { traceFieldLine, traceFieldLines } from './fieldlines.ts';
+import { traceFieldLine, traceFieldLines, dipoleSeeds, monopoleSeeds } from './fieldlines.ts';
 import { dipoleField, type Pole } from './geometry.ts';
 
 // a dipole in positive canvas space: + pole at (100, 200), − pole at (300, 200)
@@ -60,4 +60,52 @@ test('traceFieldLines: traces one polyline per non-degenerate seed', () => {
   const lines = traceFieldLines(sample, seeds, { step: 4, maxSteps: 400, bounds });
   assert.ok(lines.length >= 1);
   assert.ok(lines.every((l) => l.length > 1 && finite(l)));
+});
+
+test('dipoleSeeds: centre + symmetric perpendicular-bisector offsets', () => {
+  const body = { cx: 100, cy: 100, hw: 74, hh: 28, ux: 1, uy: 0, spin: 1, range: 0 };
+  const seeds = dipoleSeeds(body, 8);
+  assert.equal(seeds.length, 1 + 8 * 2); // centre + 8 rings × 2 sides
+  assert.deepEqual(seeds[0], { x: 100, y: 100 }); // the central axial seed
+  // heading is +x, so the bisector is ±y: offsets are vertical, symmetric about the centre
+  assert.ok(seeds.slice(1).every((s) => Math.abs(s.x - 100) < 1e-9));
+  assert.ok(seeds.some((s) => s.y > 100) && seeds.some((s) => s.y < 100));
+});
+
+test('dipoleSeeds: a point body synthesizes a dipole from range (no NaN)', () => {
+  const point = { cx: 0, cy: 0, hw: 0, hh: 0, ux: 1, uy: 0, spin: 1, range: 200 };
+  const seeds = dipoleSeeds(point, 4);
+  assert.equal(seeds.length, 1 + 4 * 2);
+  assert.ok(seeds.every((s) => Number.isFinite(s.x) && Number.isFinite(s.y)));
+  // synthesized reach = max(range·0.18, 60) = 36 → 60; spacing = max(120·0.13, 18) ≥ 18
+  assert.ok(seeds.slice(1).some((s) => Math.abs(s.y) >= 18));
+});
+
+test('monopoleSeeds: a ring of `count` points around the core', () => {
+  const body = { cx: 50, cy: 50, hw: 40, hh: 20, ux: 1, uy: 0, spin: 1, range: 0 };
+  const seeds = monopoleSeeds(body, 18);
+  assert.equal(seeds.length, 18);
+  // every seed lies on a ring of radius max(min(hw,hh)·0.8, 24) = max(16, 24) = 24
+  assert.ok(seeds.every((s) => Math.abs(Math.hypot(s.x - 50, s.y - 50) - 24) < 1e-6));
+});
+
+test('traceFieldLine: maxTurns stops an orbit that never re-enters loopDist', () => {
+  // a pure rotational field about (0, 0): every line is a circle. Seeded at radius 100
+  // with loopDist 6, the seed IS on the circle, so loopDist closes it after one lap —
+  // use a spiral-free check via maxSteps headroom instead: with maxTurns 1.5 the trace
+  // stops within ~1.5 revolutions even when the step budget would allow ten.
+  const swirl = (x: number, y: number) => ({ x: -y, y: x });
+  const unbounded = traceFieldLine(swirl, 100, 0, { step: 4, maxSteps: 2000, loopDist: 0.0001 });
+  const budgeted = traceFieldLine(swirl, 100, 0, { step: 4, maxSteps: 2000, loopDist: 0.0001, maxTurns: 1.5 });
+  // circumference ≈ 2π·100 ≈ 628px → ~157 steps per lap at step 4; the budget applies
+  // per traced direction (upstream + downstream), so ~1.5 laps each ≈ 470–530 points
+  // total, against ~4000 for the unbounded trace.
+  assert.ok(unbounded.length > 1500, `unbounded keeps winding: ${unbounded.length} pts`);
+  assert.ok(budgeted.length < 600, `budgeted stops by ~1.5 laps per direction: ${budgeted.length} pts`);
+});
+
+test('traceFieldLine: maxTurns leaves straight lines untouched', () => {
+  const straight = traceFieldLine(() => ({ x: 1, y: 0 }), 0, 0, { step: 5, maxSteps: 40, maxTurns: 1.5 });
+  const free = traceFieldLine(() => ({ x: 1, y: 0 }), 0, 0, { step: 5, maxSteps: 40 });
+  assert.equal(straight.length, free.length); // zero turning → the budget never bites
 });

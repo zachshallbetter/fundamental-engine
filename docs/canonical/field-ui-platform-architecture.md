@@ -67,11 +67,15 @@ discover → read → compute → state → write → render
 5. **write** — flush state to CSS variables, data attributes, ElementInternals, and thresholded events.
 6. **render** — draw overlays, field lines, and heatmaps from the registries (read-only).
 
-`createFieldPlatform(root, { strict? })` wires `measure → read` and `flush → write` by default,
-installs a read-phase guard (a measurement requested off-phase is recorded, or thrown under
-`strict`), and exposes `.scheduler` plus `.on(phase, handler)` so callers hang `discover` / `compute`
-/ `state` / `render` handlers off the same loop. `tick(now, viewport)` runs one frame and returns a
-report of the phases that ran and any violations.
+The platform **owns discover through write**. `createFieldPlatform(root, { strict? })` wires only
+two phases by default — `measure → read` and `flush → write` — and installs a read-phase guard (a
+measurement requested off-phase is recorded, or thrown under `strict`). The remaining phases
+(`discover`, `compute`, `state`, `render`) are **caller-open**: the platform exposes
+`.on(phase, handler)` so callers attach handlers off the same loop without the platform owning
+their logic. The render phase in particular is not wired by the platform at all — it is a slot the
+legacy engine fills by running the canvas simulate-and-render loop; the platform observes and feeds
+back DOM state, it does not draw. `tick(now, viewport)` runs one full frame and returns a report of
+the phases that ran and any violations.
 
 ## The six registries
 
@@ -103,11 +107,30 @@ report of the phases that ran and any violations.
    navigation. `representation` and `relationship` roles require a resolved source; a missing one is
    reported as unresolved rather than throwing.
 
+   **State mirroring (the Bound Visual Sink tier).** CSS custom properties don't cross to siblings,
+   so the registry mirrors them: with `setMirroring(true)` — the `createFieldPlatform` default —
+   every `representation`/`measurement` visual receives its source's feedback channels
+   (`MIRRORED_CHANNELS`: `--d`/`--field-density`/`--forces-density`, `--load`/`--mass`, `--lit`,
+   `--entropy`/`--coherence`/`--temperature`, `--field-heatmap-density`) copied onto its own inline
+   style — an `aria-hidden` SVG beside a sink heading thickens its contours from `var(--load)`
+   exactly as authored. Change-gated via a MutationObserver on the source's style attribute: a quiet
+   field costs nothing. `decorative`/`debug` roles never mirror. The platform runtime
+   (`startPlatformRuntime`) scans declarative visuals at start; dynamically added visuals need a
+   `platform.visuals.scan()`.
+
    - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
-     `data-field-visual-role` (`scan()`), and the accessibility lint.
-   - **Not implemented:** font outline extraction, text → SVG path conversion, and glyph-contour
-     geometry. `scan()` binds an *authored* visual to its source; it does not generate vector
-     typography from text. (Tracked as a future frontier.)
+     `data-field-visual-role` (`scan()`), the accessibility lint, and source→visual state mirroring
+     (`setMirroring` / `mirrorNow` / `MIRRORED_CHANNELS`).
+   - **Glyph outlines (the Contour Sink tier):** `contours.ts` is the font-agnostic primitive —
+     `contourPathData(font, text, size)` (pure layout: per-glyph + pair kerning, Latin display
+     scope) and `contourSvgFor(el, font)` (generates the aria-hidden ring SVG from the element's
+     OWN text and computed size, binds it via `data-field-visual-for`, receives mirrored state).
+     The caller supplies the parsed font — any `ContourFont`-shaped object; opentype.js satisfies
+     it directly — so the primitive works with whatever face the author applied to the body, and
+     field-ui keeps its zero-dependency rule. The same primitive runs at build time (the site's
+     `gen-contours.mjs` commits its output). Automatic font-binary discovery from the element's
+     CSS, complex-script shaping, and true offset contours (polygon offsetting) remain future
+     work.
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*

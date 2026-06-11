@@ -1,12 +1,14 @@
 /**
  * withFlip tests. Same fake-element pattern as platform.test.ts — EventTarget-backed fakes with a
  * recorded style and a programmable rect, so the measure→mutate→invert→release sequence is
- * verified without a real DOM. matchMedia and requestAnimationFrame are stubbed per test (rAF
- * runs synchronously) and restored afterward.
+ * verified without a real DOM. The reduced-motion flag is set via `setEnvOverrides` (the env
+ * module's test seam); requestAnimationFrame is stubbed per test (rAF runs synchronously) and
+ * restored afterward.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { withFlip } from './flip.ts';
+import { setEnvOverrides, clearEnvOverrides } from './env.ts';
 
 interface FakeEl extends HTMLElement {
   rect: { top: number; left: number };
@@ -36,14 +38,13 @@ function fakeEl(top: number, left = 0): FakeEl {
   return el;
 }
 
-/** Stub matchMedia + a synchronous requestAnimationFrame for the duration of `fn`, then restore. */
+/** Stub requestAnimationFrame (runs synchronously) + set the reduced-motion override for the
+ * duration of `fn`, then restore both. */
 function withStubs(reduce: boolean, fn: () => void): void {
   const g = globalThis as Record<string, unknown>;
-  const hadMM = 'matchMedia' in g;
   const hadRaf = 'requestAnimationFrame' in g;
-  const prevMM = g.matchMedia;
   const prevRaf = g.requestAnimationFrame;
-  g.matchMedia = (query: string) => ({ matches: reduce, media: query });
+  setEnvOverrides({ reducedMotion: reduce });
   g.requestAnimationFrame = (cb: (t: number) => void) => {
     cb(0);
     return 0;
@@ -51,8 +52,7 @@ function withStubs(reduce: boolean, fn: () => void): void {
   try {
     fn();
   } finally {
-    if (hadMM) g.matchMedia = prevMM;
-    else delete g.matchMedia;
+    clearEnvOverrides();
     if (hadRaf) g.requestAnimationFrame = prevRaf;
     else delete g.requestAnimationFrame;
   }

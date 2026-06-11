@@ -46,22 +46,11 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- async font CSS: media="print" keeps the stylesheet off the render path; onload flips
-         it live. display=swap means text paints in fallback fonts immediately either way. -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@500;600&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Martian+Mono:wght@500;600&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
+    <!-- self-hosted fonts (perf: no third-party request; prerequisite for glyph-outline
+         generation — scripts/gen-contours.mjs parses the same family). display=swap in
+         /fonts/fonts.css means text paints in fallback fonts immediately. -->
+    <link rel="preload" href="/fonts/bricolage-grotesque-02.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
     <script
       type="application/ld+json"
       is:inline

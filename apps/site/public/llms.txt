@@ -10,7 +10,7 @@ Every element can become a body in an invisible physics field via the `data-body
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-10 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-11 by apps/site/scripts/gen-llms.mjs.
 
 ## Docs
 
@@ -22,6 +22,7 @@ render from the same file. Generated 2026-06-10 by apps/site/scripts/gen-llms.mj
 - [Start here — Core engine](https://field-ui.com/docs/guides/core): createField on a canvas you own, with an injected host
 - [Concepts — Concepts](https://field-ui.com/docs/concepts): the mental model — bodies, the shared field context, reciprocity, the vocabulary lanes
 - [Concepts — Natural fields](https://field-ui.com/docs/natural-fields): the Natural Field Translation System: gravity → priority, EM → polarity/signal, strong → binding, weak → transformation
+- [Concepts — Contour typography](https://field-ui.com/docs/contour-typography)
 - [Concepts — Narrative walkthrough](https://field-ui.com/docs/narrative): one ordinary element revealed as a field participant, layer by layer
 - [Concepts — Reading Field](https://field-ui.com/docs/reading-field): the flagship platform demo — a content page that measures attention and remembers it
 - [Build — Authoring across surfaces](https://field-ui.com/docs/authoring): three authoring surfaces, one [data-body] contract

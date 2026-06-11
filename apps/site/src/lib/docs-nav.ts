@@ -22,6 +22,10 @@ export interface DocLink {
 export interface DocGroup {
   title: string;
   items: DocLink[];
+  /** accent color for the group — the per-section wayfinding color (sidebar marker, search hits). */
+  color?: string;
+  /** a small mono glyph marking the group in the sidebar. */
+  glyph?: string;
 }
 
 // The example family's flagship deep-links — pulled from the roster so it stays the
@@ -34,6 +38,8 @@ const flagships: DocLink[] = INVISIBLE_FIELDS.filter((f) =>
 export const DOCS_NAV: DocGroup[] = [
   {
     title: 'Start here',
+    color: '#4da3ff',
+    glyph: '▸',
     items: [
       { href: '/docs', label: 'Overview', ready: true },
       { href: '/docs/tutorial', label: 'Your first field', ready: true },
@@ -45,15 +51,20 @@ export const DOCS_NAV: DocGroup[] = [
   },
   {
     title: 'Concepts',
+    color: '#a78bfa',
+    glyph: '◈',
     items: [
       { href: '/docs/concepts', label: 'Concepts', ready: true },
       { href: '/docs/natural-fields', label: 'Natural fields', ready: true },
+      { href: '/docs/contour-typography', label: 'Contour typography', ready: true },
       { href: '/docs/narrative', label: 'Narrative walkthrough', ready: true },
       { href: '/docs/reading-field', label: 'Reading Field', ready: true },
     ],
   },
   {
     title: 'Build',
+    color: '#2dd4bf',
+    glyph: '▦',
     items: [
       { href: '/docs/authoring', label: 'Authoring across surfaces', ready: true },
       { href: '/docs/recipes', label: 'Recipe model', ready: true },
@@ -65,6 +76,8 @@ export const DOCS_NAV: DocGroup[] = [
   },
   {
     title: 'Reference',
+    color: '#ff9d5c',
+    glyph: '§',
     items: [
       { href: '/docs/api', label: 'Overview', ready: true },
       { href: '/docs/api/options', label: 'createField', ready: true },
@@ -80,6 +93,8 @@ export const DOCS_NAV: DocGroup[] = [
   },
   {
     title: 'Field studies',
+    color: '#f472b6',
+    glyph: '✦',
     items: [
       { href: '/docs/studies/reading-field', label: 'Reading Field Study', ready: true },
       { href: '/docs/studies/review-field', label: 'Review Field Study', ready: true },
@@ -96,6 +111,8 @@ export const DOCS_NAV: DocGroup[] = [
   },
   {
     title: 'Examples',
+    color: '#7dd3fc',
+    glyph: '◉',
     items: [
       { href: '/evidence', label: 'Evidence', ready: true, external: true },
       ...flagships,
@@ -111,6 +128,25 @@ export const DOCS_NAV: DocGroup[] = [
 export const DOCS_FLAT: DocLink[] = DOCS_NAV.flatMap((g) =>
   g.items.filter((i) => i.ready && !i.external),
 );
+
+/**
+ * The wayfinding color for a route — the color of the DOCS_NAV group that owns it (exact match,
+ * then longest-prefix family match). Used to color-code search hits by section. Falls back to a
+ * neutral gray for routes outside the docs tree.
+ */
+export function groupColorFor(href: string): string {
+  const route = (href.split('#')[0]!.split('?')[0] || '/').replace(/\/$/, '') || '/';
+  for (const g of DOCS_NAV)
+    if (g.items.some((i) => (i.href.replace(/\/$/, '') || '/') === route)) return g.color ?? '#9aa7b4';
+  let best: { len: number; color: string } | null = null;
+  for (const g of DOCS_NAV)
+    for (const i of g.items) {
+      const base = i.href.replace(/\/$/, '');
+      if (base && base !== '/' && route.startsWith(`${base}/`) && (!best || base.length > best.len))
+        best = { len: base.length, color: g.color ?? '#9aa7b4' };
+    }
+  return best?.color ?? '#9aa7b4';
+}
 
 /**
  * Route families the docs may link into that are NOT enumerated by DOCS_NAV —

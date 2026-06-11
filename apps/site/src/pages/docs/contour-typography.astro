@@ -1,0 +1,218 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+import contours from '../../data/contours.json';
+
+// Body Matter Interaction, the Contour Sink tier: the heading is the field body (it attracts and
+// sinks matter); the generated glyph-outline SVG is its bound visual representation; the platform
+// mirrors the body's live state (--d, --load) onto it. The semantic text remains the source of
+// meaning — the SVG never replaces it.
+const contour = contours.entries.contour;
+
+const cssStroke = `.title {
+  color: transparent;
+  -webkit-text-stroke: 2px currentColor;
+  paint-order: stroke fill;
+}`;
+
+const genericUsage = `import { load } from 'opentype.js';            // or any parser — you bring the font
+import { contourSvgFor } from '@field-ui/platform';
+
+const title = document.querySelector('#hero-title');   // your sink body, YOUR font
+const font = await load('/fonts/your-font.woff');      // whatever face the element uses
+contourSvgFor(title, font);                            // aria-hidden SVG, bound + mirrored`;
+
+const genCmd = `node apps/site/scripts/gen-contours.mjs   # the same primitive at build time — parses the site's face, commits the output`;
+
+const bindingMarkup = `<h1 id="hero-title" data-body="sink attract" data-absorb="80" data-max="36" data-feedback>
+  <span class="sr-only">Contour</span>
+</h1>
+
+<svg data-field-visual-for="hero-title" data-field-visual-role="representation"
+     aria-hidden="true" focusable="false" viewBox="…">
+  <path class="ring ring-1" d="…" />
+  <path class="ring ring-2" d="…" />
+  <path class="ring ring-3" d="…" />
+</svg>`;
+
+const ringCss = `/* the rings read the MIRRORED body state — no wiring beyond the binding */
+.ring { fill: none; stroke: currentColor; vector-effect: non-scaling-stroke; }
+.ring-1 { stroke-width: calc(1.4px + var(--load, 0) * 4px); }
+.ring-2 { stroke-width: calc(4px + var(--load, 0) * 8px);  opacity: calc(0.3 + var(--d, 0) * 0.4); }
+.ring-3 { stroke-width: calc(8px + var(--load, 0) * 14px); opacity: calc(0.1 + var(--d, 0) * 0.25); }`;
+---
+
+<DocsLayout
+  title="Contour typography — field-ui docs"
+  description="Text as a contour object: live text with a stroked outline, or build-time glyph outlines bound to the semantic source — with the field's sink state driving the rings."
+>
+  <h1>Contour typography</h1>
+  <p class="docs-lede">
+    Text can become a contour object without ever stopping being text. The architecture is the
+    Body Matter Interaction law: <strong>the element absorbs field matter; the visual layer shows
+    what that absorption means; the semantic text remains the source of meaning.</strong> This page
+    is the Contour Sink tier — the text/vector form of the <code>sink</code> contract.
+  </p>
+
+  <section class="docs-sec">
+    <h2>The quick form — live text, stroked</h2>
+    <p>
+      For simple typographic outlines, keep the text live and stroke the glyphs. Selectable,
+      accessible, zero tooling:
+    </p>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: cssStroke }]} />
+    <p class="contour-stroke-demo" aria-hidden="true">Contour</p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The vector form — generated glyph outlines</h2>
+    <p>
+      For true contour behavior the glyphs become vector paths — from <em>any font the author
+      applies to the body</em>. The platform primitive is font-agnostic: field-ui ships no parser
+      (the zero-dependency rule); you hand <code>contourSvgFor</code> a parsed font — anything
+      matching the <code>ContourFont</code> shape, which opentype.js satisfies directly — and it
+      lays out the element's own text at its computed size, generates the ring SVG, and binds it:
+    </p>
+    <CodeTabs variants={[{ label: 'Any font, at runtime', lang: 'ts', code: genericUsage }]} />
+    <p>
+      Prefer zero font work in the browser? Run the same primitive at build time and commit the
+      output — this site does exactly that with its self-hosted face:
+    </p>
+    <CodeTabs variants={[{ label: 'Build step', lang: 'bash', code: genCmd }]} />
+    <p>
+      The generated SVG is a <em>representation</em>, never a replacement: it binds to its semantic
+      source with <code>data-field-visual-for</code>, stays <code>aria-hidden</code>, and the
+      platform mirrors the body's live feedback channels onto it
+      (<code>MIRRORED_CHANNELS</code> — density, sink load, the measured metrics):
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: bindingMarkup }, { label: 'CSS', lang: 'css', code: ringCss }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Live — the title is a sink; the rings are its readout</h2>
+    <p>
+      The heading below is a real <code>sink attract</code> body on the page field. The outlines
+      are the generated paths. As the body gathers and captures matter, its mirrored
+      <code>--d</code> and <code>--load</code> thicken and brighten the rings — hover and dwell to
+      feed it.
+    </p>
+
+    <div class="contour-stage" data-contour-demo>
+      <h2 class="contour-source" id="contour-title" data-body="sink attract" data-absorb="96" data-max="24" data-feedback>
+        <span class="sr-only">{contour.text}</span>
+      </h2>
+      <svg
+        class="contour-rings"
+        data-field-visual-for="contour-title"
+        data-field-visual-role="representation"
+        aria-hidden="true"
+        focusable="false"
+        viewBox={contour.viewBox}
+      >
+        <path class="ring ring-3" d={contour.d}></path>
+        <path class="ring ring-2" d={contour.d}></path>
+        <path class="ring ring-1" d={contour.d}></path>
+      </svg>
+      <p class="contour-readout"><code>--d</code> <b data-contour-d>0.000</b> · <code>--load</code> <b data-contour-load>0.000</b></p>
+    </div>
+
+    <p class="note">
+      True offset contours — rings at a mathematically constant distance from the glyph boundary —
+      need polygon offsetting (a Clipper-class pass, best done in the same build step). The rings
+      here are stacked strokes of the one outline: the documented practical form.
+    </p>
+  </section>
+</DocsLayout>
+
+<style>
+  .contour-stroke-demo {
+    font-family: var(--display, 'Bricolage Grotesque', sans-serif);
+    font-size: clamp(48px, 9vw, 110px);
+    font-weight: 700;
+    line-height: 1;
+    margin: 0.4em 0 0;
+    color: transparent;
+    -webkit-text-stroke: 2px currentcolor;
+    paint-order: stroke fill;
+  }
+  .contour-stage {
+    position: relative;
+    margin: 1.4rem 0 0.6rem;
+    padding: 1.6rem 1.2rem;
+    border: 1px solid color-mix(in oklab, currentcolor 14%, transparent);
+    border-radius: 10px;
+  }
+  .contour-source {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+  }
+  /* the semantic text: present for AT and selection, visually replaced by its representation */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .contour-rings {
+    display: block;
+    width: min(560px, 100%);
+    margin: 0 auto;
+    color: var(--accent, #7c9cff);
+    pointer-events: none;
+  }
+  .ring {
+    fill: none;
+    stroke: currentcolor;
+    vector-effect: non-scaling-stroke;
+  }
+  .ring-1 {
+    stroke-width: calc(1.4px + var(--load, 0) * 4px);
+  }
+  .ring-2 {
+    stroke-width: calc(4px + var(--load, 0) * 8px);
+    opacity: calc(0.3 + var(--d, 0) * 0.4);
+  }
+  .ring-3 {
+    stroke-width: calc(8px + var(--load, 0) * 14px);
+    opacity: calc(0.1 + var(--d, 0) * 0.25);
+  }
+  .contour-readout {
+    margin: 0.8rem 0 0;
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.75;
+  }
+</style>
+
+<script>
+  // The Bound Visual rail, used exactly as documented: scan the declarative binding, turn on
+  // mirroring, and the engine's writes to the heading (--d, --load) arrive on the SVG.
+  import { VisualBindingRegistry } from '@field-ui/platform';
+
+  const start = () => {
+    const stage = document.querySelector('[data-contour-demo]');
+    if (!stage) return;
+    const reg = new VisualBindingRegistry();
+    reg.scan(document);
+    reg.setMirroring(true);
+    // the readout: surface the mirrored values as text (a diagnostic, not the mechanism)
+    const svg = stage.querySelector<SVGElement>('.contour-rings');
+    const dEl = stage.querySelector('[data-contour-d]');
+    const loadEl = stage.querySelector('[data-contour-load]');
+    const tick = () => {
+      if (svg && dEl && loadEl) {
+        dEl.textContent = svg.style.getPropertyValue('--d') || '0.000';
+        loadEl.textContent = svg.style.getPropertyValue('--load') || '0.000';
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
+</script>

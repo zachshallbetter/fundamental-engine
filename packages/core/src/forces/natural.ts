@@ -88,16 +88,19 @@ export function inverseSquare(b: Body, p: Particle, e: Env, s: number): void {
   const f = s / (e.dist * e.dist + rs * rs); // s/(d²+ε²)
   p.vx += (e.dx / e.dist) * f;
   p.vy += (e.dy / e.dist) * f;
+  if (e.dz) p.vz = (p.vz ?? 0) + (e.dz / e.dist) * f; // z leg (z-axis.md) — inert when flat
   clampToC(p, e.c);
 }
 
 /** Clamp a particle's speed to the unit system's `c` — the hard velocity cap that
  *  IS the in-sim speed of light (§20.10). Shared by the natural primitives. */
 function clampToC(p: Particle, c: number): void {
-  const sp = Math.hypot(p.vx, p.vy);
+  const vz = p.vz ?? 0;
+  const sp = Math.hypot(p.vx, p.vy, vz);
   if (sp > c) {
     p.vx = (p.vx / sp) * c;
     p.vy = (p.vy / sp) * c;
+    if (vz) p.vz = (vz / sp) * c;
   }
 }
 
@@ -216,6 +219,11 @@ export const thermal: Force = {
     const ang = 2 * Math.PI * Math.random();
     p.vx += mag * Math.cos(ang);
     p.vy += mag * Math.sin(ang);
+    // in a depth > 0 volume the kick is isotropic in 3D — a third gaussian leg (z-axis.md).
+    if (e.D) {
+      const u2 = Math.random() || 1e-9;
+      p.vz = (p.vz ?? 0) + sigma * Math.sqrt(-2 * Math.log(u2)) * Math.cos(2 * Math.PI * Math.random());
+    }
     if (b.on) p.heat = Math.max(p.heat, falloff * 0.4);
     clampToC(p, e.c);
   },
@@ -241,11 +249,13 @@ export const collide: Force = {
       const qr = Math.max(1, q.size);
       const nx = p.x - q.x;
       const ny = p.y - q.y;
-      const d = Math.hypot(nx, ny);
+      const nz = (p.z ?? 0) - (q.z ?? 0); // spheres, not discs, in a volume (z-axis.md)
+      const d = Math.hypot(nx, ny, nz);
       if (d >= pr + qr || d < 1e-6) continue; // not in contact
       const ux = nx / d;
       const uy = ny / d;
-      const relN = (p.vx - q.vx) * ux + (p.vy - q.vy) * uy;
+      const uz = nz / d;
+      const relN = (p.vx - q.vx) * ux + (p.vy - q.vy) * uy + ((p.vz ?? 0) - (q.vz ?? 0)) * uz;
       if (relN >= 0) continue; // separating already → no impulse
       // resolve the pair symmetrically in one pass (equal & opposite impulses) so the
       // result is momentum-conserving and order-independent — the integrator processes
@@ -257,6 +267,10 @@ export const collide: Force = {
       p.vy -= j * uy;
       q.vx += j * ux;
       q.vy += j * uy;
+      if (nz) {
+        p.vz = (p.vz ?? 0) - j * uz;
+        q.vz = (q.vz ?? 0) + j * uz;
+      }
     }
   },
   meta: { desc: 'elastic pairwise collision — the hard-sphere billiard force' },
@@ -322,6 +336,7 @@ export const propagate: Force = {
     const uy = -e.dy / e.dist;
     p.vx += ux * act * b.strength * WAVE_PUSH;
     p.vy += uy * act * b.strength * WAVE_PUSH;
+    if (e.dz) p.vz = (p.vz ?? 0) + (-e.dz / e.dist) * act * b.strength * WAVE_PUSH;
     clampToC(p, e.c);
   },
   meta: { desc: 'a travelling wave — a shock train expands from the source, sweeping matter out' },
@@ -345,6 +360,7 @@ export const memory: Force = {
     const f = (1 - e.dist / b.range) ** 2 * b.strength * 0.5 * amp;
     p.vx += (e.dx / e.dist) * f;
     p.vy += (e.dy / e.dist) * f;
+    if (e.dz) p.vz = (p.vz ?? 0) + (e.dz / e.dist) * f;
   },
   meta: { desc: 'the field remembers — occupancy wears in paths that pull harder' },
 };

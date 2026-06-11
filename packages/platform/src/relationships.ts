@@ -124,16 +124,44 @@ export class RelationshipRegistry {
   private readonly rels = new Map<string, FieldRelationship>();
   private readonly unresolvedRels = new Map<string, UnresolvedRelationship>();
 
-  /** Scan a root for native + declared relationships (idempotent — keys dedupe). */
+  /**
+   * Scan a root for native + declared relationships. Each call REPLACES the unresolved set (so
+   * previously-missing targets that have since mounted resolve on the next pass for free) and prunes
+   * resolved edges whose endpoints are no longer connected (elements removed from the DOM).
+   * Resolved edges accumulate across passes — only disconnected ones are dropped.
+   */
   discover(root: ParentNode, resolve?: Resolver): void {
     const r: Resolver =
       resolve ?? ((id) => (typeof document !== 'undefined' ? document.getElementById(id) : null));
+
+    // prune resolved edges whose from or to element left the DOM before rescanning
+    for (const [id, rl] of this.rels) {
+      if (!rl.from.isConnected || !rl.to.isConnected) this.rels.delete(id);
+    }
+
+    // replace the unresolved set entirely — previously-missing targets that have since mounted will
+    // now resolve, and targets that are still absent will be re-recorded fresh
+    this.unresolvedRels.clear();
+
     const sel = 'a[href^="#"], label[for], [aria-controls], [aria-describedby], [aria-labelledby], [aria-flowto], [data-field-relation]';
     root.querySelectorAll(sel).forEach((el) => {
       const { resolved, unresolved } = scanRelationships(el, r);
       for (const rl of resolved) this.rels.set(rl.id, rl);
       for (const u of unresolved) this.unresolvedRels.set(`${idOf(u.from)}~${u.type}~${u.target}`, u);
     });
+  }
+
+  /**
+   * Drop all resolved and unresolved edges that touch `element` (as either endpoint). Use when an
+   * element is removed and you want immediate reclamation ahead of the next discover() pass.
+   */
+  unregister(element: Element): void {
+    for (const [id, rl] of this.rels) {
+      if (rl.from === element || rl.to === element) this.rels.delete(id);
+    }
+    for (const [key, u] of this.unresolvedRels) {
+      if (u.from === element) this.unresolvedRels.delete(key);
+    }
   }
 
   /** Add an expressive relationship by hand (source defaults to `runtime`). */

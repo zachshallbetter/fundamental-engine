@@ -113,12 +113,30 @@ export class FeedbackRegistry {
   }
 
   /**
+   * Drop ALL bindings and thresholds registered for one element. Use when an element is removed from
+   * the DOM and you want immediate reclamation rather than waiting for the next flush() sweep.
+   */
+  unregister(element: Element): void {
+    this.bindings.delete(element);
+    this.direct.delete(element);
+    // splice in reverse so the index arithmetic stays correct as we remove entries
+    for (let i = this.thresholds.length - 1; i >= 0; i--) {
+      if (this.thresholds[i]!.element === element) this.thresholds.splice(i, 1);
+    }
+  }
+
+  /**
    * Write-phase: apply bound state → CSS vars, apply queued direct writes, and run thresholders →
-   * fire edge events. `state` supplies the numeric values for bound vars + thresholds.
+   * fire edge events. `state` supplies the numeric values for bound vars + thresholds. Disconnected
+   * elements are pruned here — the natural per-frame moment — so bindings and thresholds for removed
+   * elements never accumulate across the lifetime of the registry.
    */
   flush(state: StateRegistry, now = 0): void {
     this._cssWritesLastFrame = 0;
     for (const [el, map] of this.bindings) {
+      // prune entries whose element left the DOM; writing to a disconnected element is a no-op
+      // layout-wise but still costs a Map lookup + style.setProperty call every frame.
+      if (!el.isConnected) { this.bindings.delete(el); continue; }
       for (const key of Object.keys(map)) {
         const v = state.get(el, key);
         if (!v) continue;
@@ -129,7 +147,10 @@ export class FeedbackRegistry {
       for (const name of Object.keys(vars)) this._cssWritesLastFrame += writeVar(el, name, vars[name]!);
     }
     this.direct.clear();
-    for (const t of this.thresholds) {
+    // prune disconnected threshold entries in-place (reverse splice keeps indices stable)
+    for (let i = this.thresholds.length - 1; i >= 0; i--) {
+      if (!this.thresholds[i]!.element.isConnected) { this.thresholds.splice(i, 1); continue; }
+      const t = this.thresholds[i]!;
       const value = state.number(t.element, t.metric);
       const edge = t.thresholder.update(value, now);
       if (edge === 'entered') fire(t.element, t.eventName, { metric: t.metric, value });

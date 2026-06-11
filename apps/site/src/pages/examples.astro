@@ -168,6 +168,8 @@ const GROUPS = [
   {
     id: 'reciprocity',
     title: 'Reciprocity',
+    color: '#4da3ff',
+    glyph: '◆',
     items: [
       { id: 'hero-word', label: 'Glowing hero word' },
       { id: 'card-grid', label: 'Reacting card grid' },
@@ -177,6 +179,8 @@ const GROUPS = [
   {
     id: 'layout',
     title: 'Layout as physics',
+    color: '#2dd4bf',
+    glyph: '▦',
     items: [
       { id: 'self-spacing', label: 'Self-spacing labels' },
       { id: 'magnetic-snapping', label: 'Magnetic snapping' },
@@ -186,6 +190,8 @@ const GROUPS = [
   {
     id: 'control',
     title: 'Field control',
+    color: '#a78bfa',
+    glyph: '✦',
     items: [
       { id: 'flow-field', label: 'Controlled flow field' },
       { id: 'text-boundary', label: 'Text as boundary' },
@@ -205,7 +211,7 @@ const GROUPS = [
       <nav>
         {
           GROUPS.map((g) => (
-            <div class="ex-side-group">
+            <div class="ex-side-group" style={`--group-color: ${g.color}; --group-glyph: '${g.glyph}'`}>
               <span class="ex-side-title">{g.title}</span>
               <ul>
                 {g.items.map((it) => (
@@ -788,6 +794,74 @@ const GROUPS = [
   })();
 </script>
 
+<script>
+  // Reading Field over the demo sections → the concept side-nav reads live attention. Same idiom
+  // as the docs "on this page": each demo section is a render-less reading-field body; the section
+  // in view writes --field-attention (and accretes --field-memory), mirrored onto its nav link as
+  // --att / --mem. Signals-only + reduced-motion-guarded; the scroll-spy .active stays the discrete
+  // signal. Engine off / RM → the vars are unset and the nav reads plain.
+  import { recipeById } from '@field-ui/core';
+  import { applyRecipe } from '@field-ui/platform';
+  import { reduceMotion } from '../lib/nav-field.ts';
+
+  type Bits = { destroy(): void };
+  let exTeardown: (() => void) | undefined;
+
+  function initExamplesNav(): () => void {
+    const side = document.querySelector<HTMLElement>('.examples-side');
+    if (!side || reduceMotion()) return () => {};
+    const links = [...side.querySelectorAll<HTMLElement>('a[data-spy]')];
+    const pairs = links
+      .map((a) => ({ a, el: document.getElementById(a.dataset.spy || '') }))
+      .filter((p): p is { a: HTMLElement; el: HTMLElement } => p.el instanceof HTMLElement);
+    if (!pairs.length) return () => {};
+    // scope the platform to the ancestor that holds BOTH the sections and the nav
+    const root = side.closest<HTMLElement>('.examples-layout') ?? document.body;
+    let applied: Bits | null = null;
+    try {
+      const base = recipeById('reading-field');
+      if (base)
+        applied = applyRecipe(root, base, {
+          bodies: pairs.map((p) => p.el),
+          annotateBodies: false,
+          renderless: true,
+          extraMetrics: ['attention', 'memory'],
+        });
+    } catch {
+      /* the scroll-spy .active still works on its own */
+    }
+    let raf = 0;
+    const mirror = (): void => {
+      for (const { a, el } of pairs) {
+        a.style.setProperty('--att', el.style.getPropertyValue('--field-attention') || '0');
+        a.style.setProperty('--mem', el.style.getPropertyValue('--field-memory') || '0');
+      }
+      raf = requestAnimationFrame(mirror);
+    };
+    if (applied) raf = requestAnimationFrame(mirror);
+    return () => {
+      cancelAnimationFrame(raf);
+      applied?.destroy();
+      for (const { a } of pairs) {
+        a.style.removeProperty('--att');
+        a.style.removeProperty('--mem');
+      }
+    };
+  }
+
+  function goExamplesNav(): void {
+    exTeardown?.();
+    exTeardown = initExamplesNav();
+  }
+  if (document.readyState !== 'loading') goExamplesNav();
+  else document.addEventListener('DOMContentLoaded', goExamplesNav);
+  document.addEventListener('astro:page-load', goExamplesNav);
+  document.addEventListener('astro:before-swap', () => {
+    exTeardown?.();
+    exTeardown = undefined;
+  });
+</script>
+
 <style>
   /* Standalone top-level page: a grouped sidebar + content column, clear of the fixed
      nav and above the persisted field canvas (field z-index 0, scrim 1). */
@@ -822,12 +896,21 @@ const GROUPS = [
     gap: 0.35rem;
   }
   .ex-side-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-family: var(--mono);
     font-size: 0.64rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--text-4);
     padding-left: 0.6rem;
+  }
+  .ex-side-title::before {
+    content: var(--group-glyph, '');
+    color: var(--group-color, var(--text-4));
+    font-size: 0.82rem;
+    line-height: 1;
   }
   .ex-side-group ul {
     list-style: none;
@@ -854,10 +937,17 @@ const GROUPS = [
   .ex-side-group a:hover {
     color: var(--text);
   }
+  /* reading-field over the demo sections, mirrored onto these links (--att) — ink follows the
+     section in view; --mem leaves a faint read-trail on the rail. Unset (engine off / RM) → plain. */
+  .ex-side-group a {
+    --att: var(--field-attention, 0);
+    color: color-mix(in srgb, var(--text) calc(var(--att, 0) * 55%), var(--text-3));
+    border-left-color: color-mix(in srgb, var(--group-color, var(--accent)) calc(var(--mem, 0) * 70%), transparent);
+  }
   .ex-side-group a.active {
-    color: var(--accent);
-    border-left-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    color: var(--group-color, var(--accent));
+    border-left-color: var(--group-color, var(--accent));
+    background: color-mix(in srgb, var(--group-color, var(--accent)) 9%, transparent);
   }
   .ex-group-head {
     scroll-margin-top: calc(58px + 1rem);

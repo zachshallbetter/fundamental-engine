@@ -11,6 +11,16 @@
  *   semantic HTML + data attributes → VisualBindingRegistry
  * It does NOT extract glyph outlines or generate vector geometry — it only binds an authored visual
  * layer to its source so the field can lint and inspect the pairing.
+ *
+ * State mirroring (Body Matter Interaction — the Bound Visual tier): the element absorbs field
+ * matter; the visual layer shows what that absorption means; the semantic text remains the source
+ * of meaning. CSS custom properties don't cross to siblings, so with mirroring enabled
+ * (`setMirroring(true)` — the platform default) every `representation`/`measurement` visual
+ * receives its source's feedback channels (`--d`/`--field-density`, `--load`/`--mass`, the measured
+ * metrics — see MIRRORED_CHANNELS) copied onto its own inline style: an aria-hidden SVG beside a
+ * sink heading thickens its contours from `var(--load)` exactly as if it were the body itself.
+ * Change-gated via a MutationObserver on the source's style attribute — no polling, no frame cost
+ * while the field is quiet.
  */
 
 export type VisualRole = 'decorative' | 'representation' | 'debug' | 'relationship' | 'measurement';
@@ -56,6 +66,27 @@ export interface VisualBindingScanResult {
 
 const ariaHidden = (el: Element): boolean => el.getAttribute('aria-hidden') === 'true';
 
+/** The feedback channels a bound visual mirrors from its semantic source — the engine's write-back
+ *  lanes (density, sink load, causality, measured metrics). One list, shared with the docs. */
+export const MIRRORED_CHANNELS: readonly string[] = [
+  '--d',
+  '--field-density',
+  '--forces-density',
+  '--load',
+  '--mass',
+  '--lit',
+  '--entropy',
+  '--coherence',
+  '--temperature',
+  '--field-heatmap-density',
+];
+
+/** roles that re-present source state and therefore receive mirrored feedback channels. */
+const mirrorsState = (b: VisualBinding): boolean =>
+  b.semanticSource != null && (b.role === 'representation' || b.role === 'measurement');
+
+type Styled = Element & { style?: { getPropertyValue(k: string): string; setProperty(k: string, v: string): void; removeProperty(k: string): void } };
+
 /** Build the default document-backed source resolver for a scan root (the §"resolution policy"). */
 function defaultResolver(root: ParentNode): (ref: string) => Element | null {
   const doc: Document | null =
@@ -80,6 +111,8 @@ function defaultResolver(root: ParentNode): (ref: string) => Element | null {
 
 export class VisualBindingRegistry {
   private readonly bindings = new Map<Element, VisualBinding>();
+  private mirroring = false;
+  private readonly observers = new Map<Element, MutationObserver>();
 
   /** Bind a visual layer to a semantic source. `representation`/`relationship` need a source. */
   bind(opts: { visual: Element; source?: Element | null; role: VisualRole }): VisualBinding {
@@ -97,7 +130,56 @@ export class VisualBindingRegistry {
       },
     };
     this.bindings.set(opts.visual, b);
+    if (this.mirroring) this.watch(b);
     return b;
+  }
+
+  /**
+   * Turn source→visual state mirroring on or off for every current and future binding (the Bound
+   * Visual tier of Body Matter Interaction). On: each `representation`/`measurement` visual gets an
+   * immediate copy of its source's MIRRORED_CHANNELS plus a style-attribute observer that re-copies
+   * whenever the engine writes the source (change-gated — quiet field, zero work). Off: observers
+   * disconnect; already-mirrored values are left in place (the visual keeps its last honest state).
+   */
+  setMirroring(on: boolean): void {
+    this.mirroring = on;
+    if (!on) {
+      for (const obs of this.observers.values()) obs.disconnect();
+      this.observers.clear();
+      return;
+    }
+    for (const b of this.bindings.values()) this.watch(b);
+  }
+
+  /** Copy the source's current feedback channels onto the visual's inline style (one pass). */
+  mirrorNow(visual: Element): void {
+    const b = this.bindings.get(visual);
+    if (!b || !mirrorsState(b)) return;
+    const src = b.semanticSource as Styled;
+    const dst = b.visual as Styled;
+    if (!src.style?.getPropertyValue || !dst.style?.setProperty) return; // non-styled host (tests, SSR)
+    for (const channel of MIRRORED_CHANNELS) {
+      const value = src.style.getPropertyValue(channel);
+      if (value !== '' && value !== dst.style.getPropertyValue(channel)) dst.style.setProperty(channel, value);
+    }
+  }
+
+  private watch(b: VisualBinding): void {
+    this.unwatch(b.visual);
+    if (!mirrorsState(b)) return;
+    this.mirrorNow(b.visual);
+    if (typeof MutationObserver === 'undefined' || !b.semanticSource) return;
+    const obs = new MutationObserver(() => this.mirrorNow(b.visual));
+    obs.observe(b.semanticSource, { attributes: true, attributeFilter: ['style'] });
+    this.observers.set(b.visual, obs);
+  }
+
+  private unwatch(visual: Element): void {
+    const obs = this.observers.get(visual);
+    if (obs) {
+      obs.disconnect();
+      this.observers.delete(visual);
+    }
   }
 
   /**
@@ -107,8 +189,12 @@ export class VisualBindingRegistry {
    * and disconnected visuals are pruned. `resolve` defaults to a document-backed resolver.
    */
   scan(root: ParentNode, resolve: (ref: string) => Element | null = defaultResolver(root)): VisualBindingScanResult {
-    // navigation hygiene: drop bindings whose visual left the DOM
-    for (const [el] of this.bindings) if (el.isConnected === false) this.bindings.delete(el);
+    // navigation hygiene: drop bindings whose visual left the DOM (and stop mirroring them)
+    for (const [el] of this.bindings)
+      if (el.isConnected === false) {
+        this.unwatch(el);
+        this.bindings.delete(el);
+      }
 
     const visuals = [...root.querySelectorAll('[data-field-visual-for], [data-field-visual-role], [data-visual-for]')];
     const warnings: VisualBindingScanWarning[] = [];

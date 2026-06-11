@@ -33,6 +33,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {number} mass - Global mass scaling applied to bodies.
  * @attr {boolean} attention - Enables the conserved-attention behaviour (one finite budget, redistributed).
  * @attr {boolean} causality - Enables the causality demo behaviour.
+ * @attr {string} background - Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.
  */
 export class FieldField extends HTMLElementBase {
   static readonly observedAttributes = [
@@ -45,6 +46,8 @@ export class FieldField extends HTMLElementBase {
     'mass',
     'attention',
     'causality',
+    'heatmap',
+    'background',
   ];
 
   private readonly canvas: HTMLCanvasElement;
@@ -102,6 +105,13 @@ export class FieldField extends HTMLElementBase {
       : 'dots';
   }
 
+  /** substrate background: `transparent` (present and not `"false"`) clears to transparent so the
+   *  underlay composites over light content; default `opaque` paints the near-black substrate. */
+  get background(): 'opaque' | 'transparent' {
+    const v = this.getAttribute('background');
+    return v === 'transparent' || (v === '' && this.hasAttribute('background')) ? 'transparent' : 'opaque';
+  }
+
   /** Field Surfaces: the overlay reading(s) — one mode or a space-separated additive stack. Default `off`. */
   get overlay(): OverlayInput {
     const KNOWN: readonly OverlayMode[] = [
@@ -141,6 +151,11 @@ export class FieldField extends HTMLElementBase {
     return this.hasAttribute('mass') && this.getAttribute('mass') !== 'false';
   }
 
+  /** density heatmap (field-systems H1): present and not `"false"` → the pooling glow underlay. */
+  get heatmap(): boolean {
+    return this.hasAttribute('heatmap') && this.getAttribute('heatmap') !== 'false';
+  }
+
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
   /** re-scan the document for `[data-body]` bodies after a DOM change. */
   scan(): void {
@@ -169,6 +184,10 @@ export class FieldField extends HTMLElementBase {
   /** toggle cross-boundary causality (Concept 4) live. */
   setCausality(on: boolean): void {
     this.field?.setCausality(on);
+  }
+  /** switch the substrate background live: `transparent` composites the underlay over light content. */
+  setBackground(mode: 'opaque' | 'transparent'): void {
+    this.field?.setBackground(mode);
   }
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void {
@@ -279,6 +298,12 @@ export class FieldField extends HTMLElementBase {
       case 'causality':
         this.field.setCausality(this.causality);
         break;
+      case 'heatmap':
+        this.field.setHeatmap(this.heatmap);
+        break;
+      case 'background':
+        this.field.setBackground(this.background);
+        break;
       default: // density / waves / mass are construction-time → rebuild
         this.field.destroy();
         this.start();
@@ -315,6 +340,7 @@ export class FieldField extends HTMLElementBase {
       accent: this.getAttribute('accent') ?? undefined,
       density: this.density,
       waves: this.waves,
+      background: this.background,
       render: this.renderMode,
       overlayCanvas: this.overlayCanvas,
       overlay: this.overlay,
@@ -322,6 +348,7 @@ export class FieldField extends HTMLElementBase {
       mass: this.mass,
       attention: this.attention,
       causality: this.causality,
+      heatmap: this.heatmap,
       feedbackSink,
     });
     // attach the handle so the platform write phase can read scrollV → --field-scroll-v

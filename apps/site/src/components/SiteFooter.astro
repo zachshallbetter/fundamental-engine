@@ -22,6 +22,56 @@ const dest = [
   </div>
 </footer>
 
+<script>
+  // A light Wayfinding Field over the footer destinations — same signals-only pattern as the top
+  // nav: the engine writes --field-attention back onto each link (the current section pinned),
+  // lazy-imported and reduced-motion-guarded so it costs nothing for plain/RM visitors.
+  let footField: { destroy(): void } | null = null;
+  let footGen = 0;
+  const footReduce = () =>
+    typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  async function startFootField() {
+    const mine = ++footGen;
+    footField?.destroy();
+    footField = null;
+    if (footReduce()) return;
+    const nav = document.querySelector<HTMLElement>('.sf-links');
+    const links = nav ? [...nav.querySelectorAll<HTMLElement>('a[href^="/"]')] : [];
+    if (!nav || !links.length) return;
+    // pin the current section's footer link as the well
+    const here = location.pathname.replace(/\/$/, '') || '/';
+    for (const a of links) {
+      const r = (a.getAttribute('href') || '').replace(/\/$/, '') || '/';
+      if (r === here || (r !== '/' && here.startsWith(`${r}/`))) a.setAttribute('data-field-attention', '1');
+    }
+    try {
+      const [{ recipeById }, { applyRecipe }] = await Promise.all([
+        import('@field-ui/core'),
+        import('@field-ui/platform'),
+      ]);
+      if (mine !== footGen) return;
+      const base = recipeById('wayfinding-field');
+      if (!base) return;
+      footField = applyRecipe(nav, { ...base, render: [] as never[] }, {
+        bodies: links,
+        annotateBodies: false,
+      });
+    } catch {
+      /* the plain footer links stand on their own */
+    }
+  }
+  function stopFootField() {
+    footGen++;
+    footField?.destroy();
+    footField = null;
+  }
+  document.addEventListener('astro:page-load', startFootField);
+  document.addEventListener('astro:before-swap', stopFootField);
+  if (document.readyState !== 'loading') startFootField();
+  else document.addEventListener('DOMContentLoaded', startFootField);
+</script>
+
 <style>
   .site-foot {
     position: relative;
@@ -69,13 +119,23 @@ const dest = [
     gap: 1.4rem;
   }
   .sf-links a {
+    /* Wayfinding Field (signals-only): --field-attention eases ink + glow; unset → plain. */
+    --att: var(--field-attention, 0);
     font-family: var(--mono);
     font-size: 0.66rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--text-3, rgba(200, 212, 230, 0.46));
+    color: color-mix(
+      in srgb,
+      var(--text, #f3f6fc) calc(var(--att) * 80%),
+      var(--text-3, rgba(200, 212, 230, 0.46))
+    );
+    text-shadow: 0 0 calc(var(--att) * 8px)
+      color-mix(in srgb, var(--accent, #4da3ff) calc(var(--att) * 50%), transparent);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition:
+      color 0.2s ease,
+      text-shadow 0.2s ease;
   }
   .sf-links a:hover {
     color: var(--accent, #4da3ff);

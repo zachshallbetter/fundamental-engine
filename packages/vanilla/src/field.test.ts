@@ -25,7 +25,7 @@ function installDOM(): { body: { children: unknown[] }; makeCanvas: () => StubCa
       getContextCalls: 0,
       getContext: () => {
         node.getContextCalls++;
-        return { setTransform: noop };
+        return { setTransform: noop, clearRect: noop, fillRect: noop };
       },
       remove(): void {
         node._parent?._remove(node);
@@ -133,6 +133,21 @@ test('setVisible() toggles without throwing (draw-skip is engine-internal)', () 
   const field = new ForcesField();
   assert.doesNotThrow(() => field.setVisible(false));
   assert.doesNotThrow(() => field.setVisible(true));
+  field.destroy();
+});
+
+test('setBackground() switches the substrate live without throwing, both directions', () => {
+  installDOM();
+  const field = new ForcesField();
+  assert.doesNotThrow(() => field.setBackground('transparent')); // underlay over light content
+  assert.doesNotThrow(() => field.setBackground('opaque')); // back to the near-black substrate
+  field.destroy();
+});
+
+test('background: "transparent" is accepted at construction (additive option)', () => {
+  installDOM();
+  const field = new ForcesField({ background: 'transparent' });
+  assert.doesNotThrow(() => field.setRender('trails')); // the transparent-trails fade path
   field.destroy();
 });
 

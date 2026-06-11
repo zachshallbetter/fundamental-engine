@@ -9,6 +9,210 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`background: 'transparent'` — the underlay can sit over light content.** The engine painted a
+  near-black substrate every frame, so the underlay blanked out anything beneath it (a 3D scene,
+  an image, a light page) — consumers had to reach for a `mix-blend-mode: screen` workaround. A new
+  additive `FieldOptions.background` (`'opaque'` default · `'transparent'`) clears to transparent
+  instead, so the bright matter composites over the content and trails light-paint that fade to
+  transparent rather than to black (`destination-out`). Live via `field.setBackground(mode)`,
+  declaratively via `<field-root background="transparent">`, and as a prop on the React component.
+  Purely additive — the default is unchanged.
+
+### Added
+
+- **Traced field lines + the `gravity-field` preset.** The `field-lines` overlay reading now draws
+  the field's real *structure as curves* instead of sampled arrows: `fieldLineSeeds` (new,
+  `@field-ui/core` `fieldline-seeds.ts`) seeds each field-bearing body by its own geometry — a
+  dipole's perpendicular bisector for a magnet, a core ring for a monopole `charge`/`gravity` well —
+  and `traceFieldLines` follows the **net** field through every seed, so the bar-magnet loops, the
+  radial spokes, and the linkage between two bodies all emerge from the math (bodies that radiate no
+  `field()` get no seeds, so the diagram stays the structure, never a starburst). `FIELD_BEARING_TOKENS`
+  is the canonical set (`magnetism`, `charge`, `gravity`). Built on this, the experimental
+  **`gravity-field`** recipe presents gravity as a *visible, followable natural field* — `gravity`
+  radiates the monopole structure the lines trace, and a light `swirl` makes infalling matter thread
+  those lines in orbit rather than dropping straight in. It joins `EXPERIMENTAL_RECIPES` (outside the
+  locked 64; `gravity` and `swirl` stay their own force tokens).
+- **`fieldLineSeeds` / `dipoleSeeds` / `monopoleSeeds`** (`@field-ui/core`, `fieldlines.ts`).
+  The field-line *seeding* algorithm — where to start tracing so the diagram is the correct
+  STRUCTURE (dipole loops seeded along the heading's perpendicular bisector; monopole spokes
+  from a core ring) — was app-only, living in `apps/site/src/lib/field-probe.ts`. It is now a
+  pure core export with the synthesized-dipole fallback the field math uses, so every consumer
+  (the site's force chips, the native renderers, any future bridge) shares one definition. The
+  site's `traceDipole` is refactored onto it; behavior is unchanged.
+- **`<field-root heatmap>`** — the density heatmap layer (field-systems H1) is now a declarative
+  attribute on the element runtime (observed, toggles live via `setHeatmap`), alongside the
+  existing `mass` / `attention` / `causality`. The handle and `FieldOptions` already supported it;
+  this exposes it to HTML authors. Documented in the regenerated custom-elements manifest.
+### Changed
+
+- **A supernova now ejects captured matter as PERSISTENT field matter** (`@field-ui/core`,
+  `accretion.ts`). When a sink saturates and supernovas, `releaseCaptured` clears each released
+  particle's `age`: mortal class-`[S]` source-spawned matter that the sink captured and held is
+  released **immortal**, so a `spawn → sink → supernova` loop visibly conserves — the matter a
+  source made rejoins the lasting field instead of silently dying once released. A **no-op for the
+  conserved base pool** (whose particles already have no `age`). Closes a long-standing gap where a
+  source's output, once captured and released, would quietly expire rather than return to the field.
+
+- **A supernova now ejects matter PAST the absorption radius, so the sink cycle repeats**
+  (`@field-ui/core`, `accretion.ts`). `releaseCaptured` placed ejecta *at the core* — inside
+  `absorbR` — so the sink re-captured its own ejecta on the very next frame, degenerating the
+  explosion into a ~1-per-frame strobe whose blast progressively evacuated the catchment until the
+  sink fell dormant ("exploded once, won't collect again"; ejecta appears to accelerate away and
+  never return). Each particle is now ejected just past `absorbR` along its bearing, so matter
+  leaves the accretion zone, a `sink+attract` well reels it back, and the
+  fill → explode → fall-back → refill cycle repeats at a real period (≈9 frames vs ≈1; in a headless
+  `sink+attract` repro, supernovas drop from 581 to 66 per 600 frames while the catchment stays
+  populated instead of decaying). A lone `sink` simply lets the ejecta disperse.
+
+### Fixed
+
+- **One source of truth for reduced-motion and page-visibility probes (`@field-ui/platform`).** Four
+  independent `matchMedia('(prefers-reduced-motion: reduce)')` calls and two direct `document.hidden`
+  reads scattered across `flip.ts`, `field-nav.ts`, `apply-recipe.ts`, and `browser-host.ts` have
+  been consolidated into a single `env.ts` module exposing `prefersReducedMotion()` and
+  `pageHidden()`. Both helpers are SSR-safe (return `false` when `window`/`document` are absent) and
+  accept overrides via `setEnvOverrides` / `clearEnvOverrides` — a clean test seam that replaces
+  the previous approach of stubbing `globalThis.matchMedia` in tests. `browserHost()` implements its
+  `reducedMotion` and `hidden` methods through the helpers; `flip.ts` tests now use `setEnvOverrides`
+  instead of patching the global. The site-level `politeLoop` (apps/site) gains injectable
+  `isHidden` and `onVisibilityChange` options (both default to the live `document` behaviour) for
+  the same reason.
+- **Platform registries close their exits.** Three registries leaked entries for elements that
+  left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
+  elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never
+  re-resolved when a target later mounted), and `StateRegistry` (per-key `delete` stranded empty
+  listener maps). Each now prunes disconnected elements at its natural moment — `flush()`,
+  `discover()` (which also re-resolves late-mounting targets by replacing the unresolved set),
+  and a new `prune()` — and gains an explicit `unregister(element)` for immediate reclamation,
+  matching the standard `MeasurementRegistry` and `VisualBindingRegistry` already set.
+
+- **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,
+  `updateWarpTargets` now clears `pairBody` and `warpHas` so the wormhole closes instead of
+  relocating matter to the detached node. The link re-resolves naturally on the next rescan.
+
+- **Docked element removal (#368b).** A `[data-dock]` mover whose DOM node is removed while
+  docked no longer leaves the sink believing it holds that element. `updateMovers` now detects
+  `!el.isConnected`, clears `mv.docked` / `mv.dock.dock`, and skips all per-frame work for
+  the detached element — symmetric with how the rescan reconciliation handles departed bodies.
+
+- **Heatmap buffer persists across disable/enable (#369).** `setHeatmap(false)` now calls
+  `heatmap.clear()` before releasing the buffer, so a paused or mid-accumulation field never
+  bleeds stale density into the next active session. Re-enabling creates a fresh instance.
+  `Heatmap.clear()` (new) zeroes the grid and resets the peak tracker; `ScalarGridImpl.clear()`
+  (new) fills all three internal buffers with zero.
+
+### Added
+
+- **Recipes execute their declarations.** `recipe.render` and per-body condition gates stop being
+  descriptive (#370): `compileRecipe` now derives an executable render plan (one underlay matter
+  mode, the additive overlay reading stack, the heatmap toggle — unmappable layers are NAMED in
+  `plan.unapplied`, never silently dropped), and `applyRecipe` gains a structural `field` target
+  (`FieldHandle` and `<field-root>` both fit) that it drives with the plan and releases on
+  `destroy()`. `BodyRecipe.when` is the new executable gate — compiled to `data-when`, validated
+  against the engine's registered condition ids so an unknown gate is a validation error rather
+  than a silently-never-passing body. The `contour-charge` recipe now carries its own engagement
+  gate. Fully additive: without a `field` option recipes stay signals-only as before; `renderless`
+  and reduced motion skip the drive.
+
+### Added
+
+- **Injectable randomness and wall clock (#371).** Every random draw in the engine — particle
+  seeding, spawn scatter, brownian wander, force jitter and emission cones, release angles —
+  now flows through one source: `createField({ rng })` (default `Math.random`), carried to
+  forces and the integrator as `env.rng`. A seeded generator makes a run reproducible — the
+  seam record/replay needs, pinned by a bit-identical two-run test. The wall clock joins it:
+  `createField({ now })` (default `performance.now`) feeds input-idle tracking, completing the
+  three-clocks separation (wall / frame / simulation — see temporal.ts).
+
+### Added
+
+- **RenderBackend — the drawing seam (#373).** The structural contract between the engine and a
+  drawing surface (`size` / `clear` / `segments` / `polyline` / `rect` / `text`), with the
+  Canvas 2D implementation as the default. The OVERLAY surface — all eight readings — now
+  renders exclusively through it; `createField({ overlayBackend })` accepts any conforming
+  implementation, which is the seam the WebGL/WebGPU frontier builds on. The underlay matter
+  modes (dots' gradients, metaballs, voronoi) still draw on the 2D context directly and convert
+  in a later slice — the contract grows additively when their needs (gradients, composite modes)
+  arrive. Contract pinned by recording-stub tests.
+
+### Added
+- **`FieldLineOpts.maxTurns` — a turning budget for the field-line tracer** (`@field-ui/core`,
+  `fieldlines.ts`). A traced line orbiting a pole that never passes back through its *seed*
+  (so `loopDist` can't close it) otherwise winds the same circle for its whole step budget —
+  hundreds of overlapping segments that waste the trace and, on renderers whose antialiaser
+  computes path self-intersections, explode stroke cost superlinearly (measured at ~3 s/frame
+  in the Swift CoreGraphics renderer before this guard; ~81× faster after). The budget counts
+  cumulative heading change in full revolutions; `Infinity` — the default — preserves the
+  unbounded behavior exactly, so existing consumers and goldens are untouched. Renderers
+  tracing dipole fields should pass ~`1.5` (a closed dipole line turns exactly one revolution).
+
+- **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
+  (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same
+  conserved supernova ritual (same radial burst, same `field:released` event) that saturation
+  fires; capture was already gated, release now matches (`dischargeDisengaged`, accretion.ts).
+  The experimental `contour-charge` recipe names the composed behavior — attract + sink gated on
+  `active`, glow ∝ `--load`, glyph-outline rings as the bound representation — and joins the
+  wayfinding pair in `EXPERIMENTAL_RECIPES` (bare `charge` stays the electric force token; the
+  compound respects the one-word-one-lane rule). The home Gallery demos it live: dwell on the
+  Charge mark to fill it, look away and it lets go.
+
+### Added
+
+- **Contour primitive — glyph outlines from any font (`@field-ui/platform`).**
+  `contourPathData(font, text, size)` lays out text as combined glyph-outline SVG path data
+  (per-glyph + pair kerning; Latin display scope), and `contourSvgFor(el, font)` generates the
+  aria-hidden contour-ring SVG from a body element's own text and computed font-size, binds it
+  with `data-field-visual-for`, and lets the Bound Visual mirroring drive its rings from the
+  body's live `--d` / `--load`. The caller supplies the parsed font — any object matching the
+  `ContourFont` contract (opentype.js's `Font` fits directly) — so the primitive works with
+  whatever face the author applied to the element and field-ui stays zero-dependency. The same
+  function powers the site's build-time generation (`gen-contours.mjs`).
+
+### Added
+
+- **The optional z lane — a not-required third axis** (`@field-ui/core`,
+  [docs/engine-reference/z-axis.md](docs/engine-reference/z-axis.md)). The engine simulates an
+  opt-in depth dimension: `createField({ depth: 300 })` seeds matter through a shallow volume
+  behind the page, bodies stay on the page plane (z = 0) and their falloffs pull matter back
+  toward it, z integrates/damps/wraps toroidally, the `c` cap bounds the full 3D speed, and the
+  dots render recedes (smaller + fainter) with depth. **Flat is exact:** with no `depth` — the
+  default — every z term multiplies away to nothing and the engine matches its prior behavior
+  bit-for-bit (enforced by the `z-axis.test.ts` suite). Every new field is optional
+  (`Particle.z`/`vz`/`gz`, `Env.dz`/`D`, `FieldOptions.depth`) so existing `Particle`/`Env`
+  literals keep compiling unchanged; no public call signature changes (`burst(x, y)` et al. act on
+  the plane, their effects extending into the volume automatically). Distance is 3D everywhere
+  (the body delta, range cull, spatial-hash filter, sink absorption, sampling, atom picking,
+  kinetic energy); radial forces gain a spherical z leg; the neighbour forces (`collide` —
+  spheres, not discs — `cohesion`, `pressure`, `link`, `hunt`, `align`) are truly 3D; the
+  deliberately-planar set (`wall`, `magnetism`/`lens`, the currents, the grids, the modifiers) is
+  documented per-force with its reasoning.
+
+- **Bound Visual Sink — state mirroring for visual bindings.** The platform's
+  `VisualBindingRegistry` now mirrors a semantic body's feedback channels (`--d` /
+  `--field-density`, `--load` / `--mass`, `--lit`, and the measured metrics — the exported
+  `MIRRORED_CHANNELS`) onto every bound `representation` / `measurement` visual
+  (`data-field-visual-for`), change-gated via a MutationObserver on the source's style attribute.
+  CSS custom properties don't cross to siblings, so an `aria-hidden` SVG beside a sink heading can
+  now thicken its contours from `var(--load)` exactly as authored — the element absorbs, the visual
+  shows what absorption means, the text stays the source of meaning. On by default in
+  `createFieldPlatform` (`visuals.setMirroring(true)`); the element runtime scans declarative
+  visuals at start. The canon now names the sink tiers: Element Sink · Text Sink · Bound Visual
+  Sink · Contour Sink (Body Matter Interaction → Sink/Accretion).
+
+### Added
+
+- **`bindFieldNav` + the inert-metric-lane guard.** The navigation-chrome idiom the site
+  hand-spread across ~12 surfaces (run a recipe signals-only over a nav's `<a href>` links, pin the
+  current as the well, mark visited links, return a teardown) lifts into
+  `bindFieldNav(root, recipe, { pin, visited, extraMetrics, reducedMotion })`
+  (`@field-ui/platform`); reduced motion → `null` (plain, reachable links). Paired guard:
+  `classifyMetric(name)` splits a recipe's metric lanes into **computed** / **supplied-only** /
+  **designed** (`COMPUTED_METRICS` + `SUPPLIED_ONLY_METRICS` partition `METRIC_KINDS`), and the new
+  `lintInertFeedback` rule (now in `lintPlatform`) flags a feedback binding to a designed
+  `--field-<m>` lane the host never supplies — declared but never written, the same silent-contract
+  class as `lintSinkFeedback`. The `/recipes` pages now document each metric's lane support. All
+  additive and unfrozen.
+
 - **Field Surfaces: additive overlay readings.** `setOverlay` (core, `<field-root overlay>`,
   vanilla) now accepts one reading **or a stack** — an array (`['grid','path']`) or a
   space-separated attribute (`overlay="grid path"`) — drawn in order on the front surface, so
@@ -29,6 +233,10 @@ ship, so the work is the mode system, medium formalization, safety layer, `scree
 metrics, and the transformation primitives, not re-building what exists.)
 
 ### Fixed
+
+- **`priority-well` recipe note corrected.** It claimed `density` writes back as `--field-density`;
+  that lane is host-supplied (ground it with `data-field-density`) — the engine's live density
+  channel is `--d` on `data-feedback` bodies. Surfaced by the new metric-lane classifier.
 
 - **Streamlines arrow-field pulsing eliminated.** The `streamlines` underlay render and all three
   overlay arrow modes (`streamlines`, `force-vectors`, `field-lines`) normalized arrow length and

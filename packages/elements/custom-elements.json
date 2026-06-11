@@ -825,6 +825,15 @@
             },
             {
               "kind": "field",
+              "name": "background",
+              "type": {
+                "text": "'opaque' | 'transparent'"
+              },
+              "description": "substrate background: `transparent` (present and not `\"false\"`) clears to transparent so the\nunderlay composites over light content; default `opaque` paints the near-black substrate.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "overlay",
               "type": {
                 "text": "OverlayInput"
@@ -866,6 +875,15 @@
                 "text": "boolean"
               },
               "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "heatmap",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "density heatmap (field-systems H1): present and not `\"false\"` → the pooling glow underlay.",
               "readonly": true
             },
             {
@@ -977,6 +995,24 @@
                 }
               ],
               "description": "toggle cross-boundary causality (Concept 4) live."
+            },
+            {
+              "kind": "method",
+              "name": "setBackground",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'opaque' | 'transparent'"
+                  }
+                }
+              ],
+              "description": "switch the substrate background live: `transparent` composites the underlay over light content."
             },
             {
               "kind": "method",
@@ -1297,6 +1333,16 @@
                 "text": "boolean"
               },
               "description": "Enables the causality demo behaviour."
+            },
+            {
+              "name": "heatmap"
+            },
+            {
+              "name": "background",
+              "type": {
+                "text": "string"
+              },
+              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate."
             }
           ],
           "superclass": {
@@ -1412,6 +1458,24 @@
                 "text": "boolean"
               },
               "description": "Enables the causality demo behaviour.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "heatmap",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "background",
+              "type": {
+                "text": "string"
+              },
+              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1562,6 +1626,19 @@
             },
             {
               "kind": "field",
+              "name": "background",
+              "type": {
+                "text": "'opaque' | 'transparent'"
+              },
+              "description": "substrate background: `transparent` (present and not `\"false\"`) clears to transparent so the\nunderlay composites over light content; default `opaque` paints the near-black substrate.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
               "name": "overlay",
               "type": {
                 "text": "OverlayInput"
@@ -1619,6 +1696,19 @@
                 "text": "boolean"
               },
               "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "heatmap",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "density heatmap (field-systems H1): present and not `\"false\"` → the pooling glow underlay.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1758,6 +1848,28 @@
                 }
               ],
               "description": "toggle cross-boundary causality (Concept 4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setBackground",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'opaque' | 'transparent'"
+                  }
+                }
+              ],
+              "description": "switch the substrate background live: `transparent` composites the underlay over light content.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2190,6 +2302,24 @@
                 "name": "FieldField",
                 "module": "src/index.ts"
               }
+            },
+            {
+              "name": "heatmap",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "background",
+              "type": {
+                "text": "string"
+              },
+              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
             }
           ],
           "members": [
@@ -2336,6 +2466,19 @@
             },
             {
               "kind": "field",
+              "name": "background",
+              "type": {
+                "text": "'opaque' | 'transparent'"
+              },
+              "description": "substrate background: `transparent` (present and not `\"false\"`) clears to transparent so the\nunderlay composites over light content; default `opaque` paints the near-black substrate.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
               "name": "overlay",
               "type": {
                 "text": "OverlayInput"
@@ -2393,6 +2536,19 @@
                 "text": "boolean"
               },
               "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "heatmap",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "density heatmap (field-systems H1): present and not `\"false\"` → the pooling glow underlay.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2532,6 +2688,28 @@
                 }
               ],
               "description": "toggle cross-boundary causality (Concept 4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setBackground",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'opaque' | 'transparent'"
+                  }
+                }
+              ],
+              "description": "switch the substrate background live: `transparent` composites the underlay over light content.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

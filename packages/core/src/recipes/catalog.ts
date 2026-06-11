@@ -12,7 +12,7 @@
  * primitives and add NO new engine behavior. Eight ids are the recommended first-release set.
  */
 import type { FieldRecipe, RecipeTier } from './schema.ts';
-import { WAYFINDING_RECIPES } from './wayfinding.ts';
+import { EXPERIMENTAL_RECIPES } from './wayfinding.ts';
 
 // ── Gravity: priority, convergence, hierarchy ───────────────────────────────────────
 
@@ -33,7 +33,7 @@ export const PRIORITY_WELL: FieldRecipe = {
     reducedMotion: 'weight, glow, and the current-state marker hold their last value — no travel',
     meaningWithoutMotion: 'the important element is also stronger in weight, outline, and reading order',
   },
-  notes: 'Gravity + attract pull matter and attention into one well; density writes back as --field-density, driving weight and bloom.',
+  notes: 'Gravity + attract pull matter and attention into one well; --field-attention / --field-priority write back to drive weight and bloom. (The density lane is host-supplied — set data-field-density to ground --field-density; the engine\'s own live density channel is --d on data-feedback bodies.)',
 };
 
 export const FOCUS_ORBIT: FieldRecipe = {
@@ -1551,5 +1551,5 @@ export const FIRST_RELEASE_RECIPES: readonly FieldRecipe[] = FIRST_RELEASE_RECIP
 
 /** Look up a recipe by id — the canonical 64 first, then the experimental set (undefined if unknown). */
 export function recipeById(id: string): FieldRecipe | undefined {
-  return FIELD_RECIPES.find((r) => r.id === id) ?? WAYFINDING_RECIPES.find((r) => r.id === id);
+  return FIELD_RECIPES.find((r) => r.id === id) ?? EXPERIMENTAL_RECIPES.find((r) => r.id === id);
 }

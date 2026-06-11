@@ -49,7 +49,7 @@ import { thermoMetrics } from './thermo.ts';
 import { attentionMuls } from './attention.ts';
 import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
-import { releaseCaptured, sinkLoad, captureEdge } from './accretion.ts';
+import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
 import { withinCapture, stepDock, dockTransform, type DockState } from './dock.ts';
 import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
@@ -58,7 +58,10 @@ import { registerExtendedForces } from '../forces/extended.ts';
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { sparkCount, burstImpulse } from './reactions.ts';
 import { linkAlpha, marchingCell, splatDensity, nearestSite, voronoiWalls } from './render-modes.ts';
+import { canvas2dBackend, type RenderBackend, type Stroke } from './render-backend.ts';
 import { forceAt, netField } from './streamlines.ts';
+import { traceFieldLines } from './fieldlines.ts';
+import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
 import { energyReport } from '../diagnostics/energy.ts';
@@ -85,6 +88,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Under `render: 'none'` it is never acquired either (the overlay never draws in that mode).
   const overlayCanvas = opts.overlayCanvas ?? null;
   let overlayCtx: CanvasRenderingContext2D | null = ctx ? (overlayCanvas?.getContext('2d') ?? null) : null;
+  // The overlay draws exclusively through the RenderBackend contract (#373) — the structural
+  // seam a WebGL/WebGPU surface implements later. Callers may inject one; the default wraps the
+  // overlay's own 2d context.
+  let overlayBackend: RenderBackend | null =
+    opts.overlayBackend ?? (overlayCanvas && overlayCtx ? canvas2dBackend(overlayCanvas, overlayCtx) : null);
 
   const store = new FieldStore();
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
@@ -110,11 +118,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'dots',
     waves: opts.waves ?? true, // draw the background Currents (§24); opt-out for the bare field
+    background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
     overlay: opts.overlay ?? 'off', // Field Surfaces: overlay-surface visualization mode, opt-in
+    // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
+    // to the 2D engine; > 0 opens a shallow depth the matter drifts through, opt-in.
+    depth: opts.depth && opts.depth > 0 ? opts.depth : 0,
     // ONE write path (#228, Phase 5): every feedback write goes through a sink. The platform
     // supplies one (D3, FeedbackRegistry via <field-root>); without it the engine installs the
     // internal default sink, whose writes are byte-identical to the historical direct writes.
@@ -142,6 +154,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
+  // the injected sources (#371): every random draw and wall-clock read in the engine flows
+  // through these two, so a seeded rng + fixed clock make a run reproducible end to end.
+  const rng = opts.rng ?? Math.random;
+  const wallNow = opts.now ?? ((): number => performance.now());
   let boot = reduceMotion ? 1 : 0;
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
@@ -226,26 +242,29 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   };
   const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
-  const t0 = performance.now();
+  const t0 = wallNow();
 
   const env: Env = {
     dx: 0,
     dy: 0,
+    dz: 0,
     dist: 1,
     form: { ...FORMATION_BY.ambient.preset },
     W: 0,
     H: 0,
+    D: cfg.depth, // the optional z volume (z-axis.md); 0 = the flat field
     t: 0,
     frameN: 0,
     dt: reduceMotion ? 0 : 1,
     c: 12,
     G: 1,
     scrollV: 0,
+    rng,
     spark: (x, y, power, color) => spawnSpark(x, y, power, color),
     supernova: (b) => {
       // release exactly what was captured — radial, from the core (§6.9, accretion.ts). Held matter
       // is conserved: released particles stay in the pool. `releaseCaptured` resets b.accreted to 0.
-      const released = releaseCaptured(store.particles, b);
+      const released = releaseCaptured(store.particles, b, rng);
       const justReleased = new Set(released);
       // the blast shoves nearby *free* matter outward (but not the matter it just released).
       for (const q of store.particles) {
@@ -298,24 +317,29 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const c: RGB = color ? hexToRgb(color) : [255, 122, 69]; // WARM default (§20.8)
     const n = sparkCount(power);
     for (let k = 0; k < n; k++) {
-      const a = Math.random() * 6.28318;
-      const s = 0.8 + Math.random() * (power > 0 ? power : 1) * 1.7;
+      const a = rng() * 6.28318;
+      const s = 0.8 + rng() * (power > 0 ? power : 1) * 1.7;
       sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, c });
     }
   }
 
   function newParticle(seed: Partial<Particle> = {}): Particle {
-    const size = seed.size ?? 0.7 + Math.random() * 1.8;
+    const size = seed.size ?? 0.7 + rng() * 1.8;
     return {
-      x: seed.x ?? Math.random() * W,
-      y: seed.y ?? Math.random() * H,
-      vx: seed.vx ?? (Math.random() - 0.5) * 0.25,
-      vy: seed.vy ?? (Math.random() - 0.5) * 0.18,
+      x: seed.x ?? rng() * W,
+      y: seed.y ?? rng() * H,
+      vx: seed.vx ?? (rng() - 0.5) * 0.25,
+      vy: seed.vy ?? (rng() - 0.5) * 0.18,
+      // the optional z lane (z-axis.md): seeded through the volume in a depth > 0
+      // field, pinned to the plane (0) in the flat default — through the injectable rng (#371).
+      z: seed.z ?? (cfg.depth > 0 ? rng() * cfg.depth : 0),
+      vz: seed.vz ?? (cfg.depth > 0 ? (rng() - 0.5) * 0.18 : 0),
       m: seed.m ?? (cfg.mass ? size : 1), // mass ∝ size when first-class mass is on
       heat: seed.heat ?? 0,
       size,
-      gx: seed.gx ?? Math.random(),
-      gy: seed.gy ?? Math.random(),
+      gx: seed.gx ?? rng(),
+      gy: seed.gy ?? rng(),
+      gz: seed.gz ?? rng(),
       cap: null,
       ...(seed.age != null ? { age: seed.age } : {}), // mortal matter (a [S] source)
       ...(seed.color != null ? { color: seed.color } : {}),
@@ -344,7 +368,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     applySeed();
     // the Currents (§24) are opt-out: with waves off, the field is just the free particles.
     waves = cfg.waves ? buildWaves(WAVE_RGB) : [];
-    bound = cfg.waves ? buildBound(waves.length, cfg.density, Math.random) : [];
+    bound = cfg.waves ? buildBound(waves.length, cfg.density, rng) : [];
     boundTarget = bound.length;
   }
 
@@ -413,10 +437,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // refresh each warp body's relocate target from its paired body's live centre (§22.3 relocate).
   function updateWarpTargets(): void {
     for (const b of bodies) {
-      if (b.pairBody && b.pairBody.vis) {
-        b.warpX = b.pairBody.cx;
-        b.warpY = b.pairBody.cy;
-        b.warpHas = true;
+      if (b.pairBody) {
+        // If the paired element has left the DOM, sever the warp link so the wormhole closes
+        // rather than relocating matter to a ghost node. A later rescan re-resolves naturally
+        // when (or if) the element returns. The isConnected check is cheap — only reached when
+        // pairBody is set, so the common zero-pair case pays nothing.
+        if (!b.pairBody.el.isConnected) {
+          b.warpHas = false;
+          b.pairBody = undefined;
+          continue;
+        }
+        if (b.pairBody.vis) {
+          b.warpX = b.pairBody.cx;
+          b.warpY = b.pairBody.cy;
+          b.warpHas = true;
+        } else {
+          b.warpHas = false;
+        }
       } else if (b.pair) {
         b.warpHas = false;
       }
@@ -508,6 +545,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     });
     for (let i = 0; i < movers.length; i++) {
       const mv = movers[i]!;
+      // If this element has been removed from the DOM while docked, drop the dock reference so
+      // the sink no longer believes it holds the element. Restore is moot for a detached node;
+      // we just clear state so no per-frame work runs for it going forward. Consistent with how
+      // the rescan reconciliation (scan()) drops stale bodies: absent nodes are simply gone.
+      if (!mv.el.isConnected) {
+        if (mv.docked) {
+          mv.docked = null;
+          mv.dock.dock = 0;
+        }
+        continue;
+      }
       const cx = centers[i]!.x;
       const cy = centers[i]!.y;
       // docked: collapse toward the sink core and hold there, skipping force integration (§22.3).
@@ -622,7 +670,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       a: t.a,
       b: t.b,
       c: hexToRgb(t.color ?? cfg.accent),
-      seed: Math.random() * 6.28,
+      seed: rng() * 6.28,
     }));
   }
 
@@ -670,11 +718,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     // size the overlay surface's backing store to match (same dpr transform → same CSS coords).
-    if (overlayCanvas && overlayCtx) {
-      overlayCanvas.width = Math.floor(W * dpr);
-      overlayCanvas.height = Math.floor(H * dpr);
-      overlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
+    overlayBackend?.size(W, H, dpr);
   }
 
   function resize(): void {
@@ -919,12 +963,26 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   function render(): void {
     // substrate clear — 'trails' uses a faded clear so motion light-paints (§20.6).
-    if (cfg.render === 'trails') {
-      ctx!.fillStyle = 'rgba(5,6,11,0.22)';
+    if (cfg.background === 'transparent') {
+      // clear to TRANSPARENT so the underlay composites over light content without blanking it.
+      if (cfg.render === 'trails') {
+        // light-paint that fades to transparent (not to black): remove ~22% of existing alpha
+        // each frame via destination-out, instead of laying an opaque near-black veil over it.
+        ctx!.globalCompositeOperation = 'destination-out';
+        ctx!.fillStyle = 'rgba(0,0,0,0.22)';
+        ctx!.fillRect(0, 0, W, H);
+        ctx!.globalCompositeOperation = 'source-over';
+      } else {
+        ctx!.clearRect(0, 0, W, H);
+      }
     } else {
-      ctx!.fillStyle = 'rgb(5,6,11)';
+      if (cfg.render === 'trails') {
+        ctx!.fillStyle = 'rgba(5,6,11,0.22)';
+      } else {
+        ctx!.fillStyle = 'rgb(5,6,11)';
+      }
+      ctx!.fillRect(0, 0, W, H);
     }
-    ctx!.fillRect(0, 0, W, H);
     drawWaves();
     if (heatmap) drawHeatmap();
     drawBound();
@@ -958,8 +1016,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         g += (pg - g) * 0.75;
         b += (pb - b) * 0.75;
       }
-      const size = p.size * (1 - 0.4 * rs) + h * 2;
-      const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot, 0, 1);
+      // depth recession (z-axis.md): in a depth > 0 field, matter deeper in the volume
+      // draws smaller and fainter — the flat field's factor is exactly 1.
+      const zk = cfg.depth > 0 ? 1 - Math.min(Math.abs(p.z ?? 0) / cfg.depth, 1) * 0.55 : 1;
+      const size = (p.size * (1 - 0.4 * rs) + h * 2) * zk;
+      const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot * zk, 0, 1);
       const cr = r | 0;
       const cg = g | 0;
       const cb = b | 0;
@@ -1156,28 +1217,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     return list.filter((m): m is Exclude<OverlayMode, 'off'> => m !== 'off');
   }
 
-  // arrows along the sampled vector field — `streamlines` (felt, sqrt-compressed), `force-vectors`
-  // (felt, absolute magnitude), `field-lines` (structure-only geometry via netField).
-  function drawOverlayArrows(octx: CanvasRenderingContext2D, structure: boolean, absolute: boolean): void {
+  // arrows along the sampled felt force field — `streamlines` (sqrt-compressed) and `force-vectors`
+  // (absolute magnitude). `field-lines` no longer routes here: it traces the real field-structure
+  // curves (drawOverlayFieldLines). The `structure` arm is retained for the backend contract but is
+  // unused by the current dispatch (both arrow modes read the felt field).
+  function drawOverlayArrows(out: RenderBackend, structure: boolean, absolute: boolean): void {
     const GRID = 44;
     const acc = hexToRgb(cfg.accent);
-    octx.lineWidth = 1.2;
-    octx.lineCap = 'round';
     const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
     let frameMax = 0;
     for (let gx = GRID / 2; gx < W; gx += GRID) {
       for (let gy = GRID / 2; gy < H; gy += GRID) {
-        let fx: number;
-        let fy: number;
-        if (structure) {
-          const v = netField(bodies, reg.forces, gx, gy);
-          fx = v.x;
-          fy = v.y;
-        } else {
-          const v = forceAt(bodies, reg.forces, env, gx, gy);
-          fx = v.fx;
-          fy = v.fy;
-        }
+        let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
         if (flow) {
           const b = flowBias(gx, gy, flow, 0.04);
           fx += b.x;
@@ -1196,27 +1247,57 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ? olMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
       : olMaxSmoothed * 0.9 + frameMax * 0.1;  // decay slowly so quiet frames don't flash
     if (olMaxSmoothed <= 0) return;
+    // one backend call per arrow: shaft + two head strokes packed as three segments. Alpha varies
+    // per arrow (it encodes magnitude), so arrows can't share one batch without quantizing — the
+    // call count matches the previous per-arrow beginPath/stroke exactly.
+    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0, width: 1.2 };
+    const seg = new Float64Array(12);
     for (const s of samples) {
       const rel = absolute ? clamp(s.mag / olMaxSmoothed, 0, 1) : Math.sqrt(s.mag / olMaxSmoothed);
       const len = GRID * 0.5 * (0.25 + 0.75 * rel);
       const ex = s.gx + s.ux * len;
       const ey = s.gy + s.uy * len;
-      octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.12 + rel * 0.55, 0, 0.8)})`;
-      octx.beginPath();
-      octx.moveTo(s.gx, s.gy);
-      octx.lineTo(ex, ey);
       const ah = 3.6;
-      octx.moveTo(ex, ey);
-      octx.lineTo(ex - s.ux * ah - s.uy * ah * 0.6, ey - s.uy * ah + s.ux * ah * 0.6);
-      octx.moveTo(ex, ey);
-      octx.lineTo(ex - s.ux * ah + s.uy * ah * 0.6, ey - s.uy * ah - s.ux * ah * 0.6);
-      octx.stroke();
+      seg[0] = s.gx; seg[1] = s.gy; seg[2] = ex; seg[3] = ey;
+      seg[4] = ex; seg[5] = ey; seg[6] = ex - s.ux * ah - s.uy * ah * 0.6; seg[7] = ey - s.uy * ah + s.ux * ah * 0.6;
+      seg[8] = ex; seg[9] = ey; seg[10] = ex - s.ux * ah + s.uy * ah * 0.6; seg[11] = ey - s.uy * ah - s.ux * ah * 0.6;
+      stroke.alpha = clamp(0.12 + rel * 0.55, 0, 0.8);
+      out.segments(seg, stroke);
+    }
+  }
+
+  // `field-lines` — the field STRUCTURE traced as real curves. Each field-bearing body is seeded
+  // by its own geometry (a dipole's perpendicular bisector for a magnet, a core ring for a
+  // monopole charge/gravity well; fieldline-seeds.ts), then `traceFieldLines` follows the NET
+  // field through every seed — so the bar-magnet loops, the radial spokes, and the linkage
+  // between two bodies all emerge from the math, never drawn by hand. Bodies that radiate nothing
+  // (attract/sink/…) get no seeds, so the diagram stays the real structure, not a starburst.
+  function drawOverlayFieldLines(out: RenderBackend): void {
+    const seeds = fieldLineSeeds(bodies);
+    if (!seeds.length) return;
+    const lines = traceFieldLines((x, y) => netField(bodies, reg.forces, x, y), seeds, {
+      step: 6,
+      maxSteps: 200,
+      bounds: { w: W, h: H },
+      loopDist: 8,
+    });
+    const acc = hexToRgb(cfg.accent);
+    // one polyline per traced curve through the backend seam (#373) — same shared stroke style.
+    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0.42, width: 1.1 };
+    for (const line of lines) {
+      if (line.length < 2) continue;
+      const pts = new Float32Array(line.length * 2);
+      for (let i = 0; i < line.length; i++) {
+        pts[i * 2] = line[i]!.x;
+        pts[i * 2 + 1] = line[i]!.y;
+      }
+      out.polyline(pts, stroke);
     }
   }
 
   // `grid` — a reference lattice whose vertices are displaced along the felt field; the page's
   // space itself made visible, bending where the field is strong. Reads deformation.
-  function drawOverlayGrid(octx: CanvasRenderingContext2D): void {
+  function drawOverlayGrid(out: RenderBackend): void {
     const STEP = 56;
     const MAXD = 11; // px displacement at the strongest sample — legible, never chaotic
     const cols = Math.floor(W / STEP) + 2;
@@ -1239,36 +1320,30 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
     }
     const acc = hexToRgb(cfg.accent);
-    octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.16)`;
-    octx.lineWidth = 1;
-    octx.beginPath();
+    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0.16, width: 1 };
     const px = (gx: number, gy: number): [number, number] => {
       const i = gy * cols + gx;
       const rel = maxMag > 0 ? Math.sqrt(mags[i]! / maxMag) : 0;
       return [gx * STEP + dx[i]! * rel * MAXD, gy * STEP + dy[i]! * rel * MAXD];
     };
+    const row: number[] = [];
     for (let gy = 0; gy < rows; gy++) {
-      for (let gx = 0; gx < cols; gx++) {
-        const [x, y] = px(gx, gy);
-        if (gx === 0) octx.moveTo(x, y);
-        else octx.lineTo(x, y);
-      }
+      row.length = 0;
+      for (let gx = 0; gx < cols; gx++) row.push(...px(gx, gy));
+      out.polyline(row, stroke);
     }
     for (let gx = 0; gx < cols; gx++) {
-      for (let gy = 0; gy < rows; gy++) {
-        const [x, y] = px(gx, gy);
-        if (gy === 0) octx.moveTo(x, y);
-        else octx.lineTo(x, y);
-      }
+      row.length = 0;
+      for (let gy = 0; gy < rows; gy++) row.push(...px(gx, gy));
+      out.polyline(row, stroke);
     }
-    octx.stroke();
   }
 
   // shared scalar-contour pass for `temperature` and `energy` — splat a per-particle scalar onto a
   // coarse grid, then trace marching-squares iso-lines at fractions of the frame's max. Contours,
   // not washes: the overlay must never paint area over content.
   let oscalar: Float32Array | null = null;
-  function drawOverlayContours(octx: CanvasRenderingContext2D, weigh: (p: Particle) => number, alphaBase: number): void {
+  function drawOverlayContours(out: RenderBackend, weigh: (p: Particle) => number, alphaBase: number): void {
     const STEP = 24;
     const RAD = 42;
     const cols = Math.ceil(W / STEP) + 1;
@@ -1288,13 +1363,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (let i = 0; i < oscalar.length; i++) if (oscalar[i]! > max) max = oscalar[i]!;
     if (max <= 0) return;
     const acc = hexToRgb(cfg.accent);
-    octx.lineCap = 'round';
     const LEVELS = [0.25, 0.5, 0.78]; // nested iso-rings: faint outer shell → bright core
+    const packed: number[] = [];
     for (let li = 0; li < LEVELS.length; li++) {
       const level = LEVELS[li]! * max;
-      octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${alphaBase * (0.45 + 0.55 * (li / (LEVELS.length - 1)))})`;
-      octx.lineWidth = 1 + li * 0.3;
-      octx.beginPath();
+      packed.length = 0;
       for (let gy = 0; gy < rows - 1; gy++) {
         for (let gx = 0; gx < cols - 1; gx++) {
           const tl = oscalar[gy * cols + gx]!;
@@ -1305,26 +1378,30 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           if (!segs.length) continue;
           const ox = gx * STEP;
           const oy = gy * STEP;
-          for (const sg of segs) {
-            octx.moveTo(ox + sg.x1 * STEP, oy + sg.y1 * STEP);
-            octx.lineTo(ox + sg.x2 * STEP, oy + sg.y2 * STEP);
-          }
+          for (const sg of segs) packed.push(ox + sg.x1 * STEP, oy + sg.y1 * STEP, ox + sg.x2 * STEP, oy + sg.y2 * STEP);
         }
       }
-      octx.stroke();
+      if (packed.length)
+        out.segments(packed, {
+          r: acc[0]!,
+          g: acc[1]!,
+          b: acc[2]!,
+          alpha: alphaBase * (0.45 + 0.55 * (li / (LEVELS.length - 1))),
+          width: 1 + li * 0.3,
+        });
     }
   }
 
   // `path` — true streamlines: from a coarse lattice of seeds, integrate the felt field direction
   // step by step and draw each traced curve, fading toward the tail. Where `streamlines` shows the
   // instantaneous push per cell, `path` shows where that push CARRIES a probe over distance.
-  function drawOverlayPaths(octx: CanvasRenderingContext2D): void {
+  function drawOverlayPaths(out: RenderBackend): void {
     const SEED = 104; // seed lattice spacing (px)
     const STEPPX = 9; // integration step (px)
     const STEPS = 24; // max steps per path
     const acc = hexToRgb(cfg.accent);
-    octx.lineWidth = 1.1;
-    octx.lineCap = 'round';
+    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0, width: 1.1 };
+    const seg = new Float64Array(4);
     for (let sx = SEED / 2; sx < W; sx += SEED) {
       for (let sy = SEED / 2; sy < H; sy += SEED) {
         let x = sx;
@@ -1341,11 +1418,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           const nx = x + (fx / mag) * STEPPX;
           const ny = y + (fy / mag) * STEPPX;
           if (nx < 0 || ny < 0 || nx > W || ny > H) break;
-          octx.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.34 * (1 - i / STEPS)})`;
-          octx.beginPath();
-          octx.moveTo(x, y);
-          octx.lineTo(nx, ny);
-          octx.stroke();
+          // per-step segment: the alpha fades toward the tail, so each step is its own stroke
+          seg[0] = x; seg[1] = y; seg[2] = nx; seg[3] = ny;
+          stroke.alpha = 0.34 * (1 - i / STEPS);
+          out.segments(seg, stroke);
           x = nx;
           y = ny;
         }
@@ -1356,34 +1432,30 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // `data` — the measurement made legible: each measuring body's eased local density d ∈ [0,1]
   // (§8, the same number the platform mirrors to `--d`) printed beside the body. Feedback bodies
   // lead (they asked to be measured); non-feedback bodies are skipped — no reading, no chip.
-  function drawOverlayData(octx: CanvasRenderingContext2D): void {
+  function drawOverlayData(out: RenderBackend): void {
     const acc = hexToRgb(cfg.accent);
-    octx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
-    octx.textBaseline = 'middle';
     for (const b of bodies) {
       if (!b.vis || !b.feedback) continue;
       const label = `d ${b.d.toFixed(2)}`;
       const tx = b.cx + b.hw + 8;
       const ty = b.cy;
-      octx.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${clamp(0.3 + b.d * 0.55, 0, 0.85)})`;
-      octx.fillRect(tx - 3, ty - 7, octx.measureText(label).width + 6, 14);
-      octx.fillStyle = 'rgba(5,6,11,0.92)';
-      octx.fillText(label, tx, ty + 0.5);
+      out.rect(tx - 3, ty - 7, out.measureText(label) + 6, 14, acc[0]!, acc[1]!, acc[2]!, clamp(0.3 + b.d * 0.55, 0, 0.85));
+      out.text(label, tx, ty + 0.5, 5, 6, 11, 0.92);
     }
   }
 
-  function renderOverlay(octx: CanvasRenderingContext2D, stack: readonly OverlayMode[]): void {
-    octx.clearRect(0, 0, W, H);
+  function renderOverlay(out: RenderBackend, stack: readonly OverlayMode[]): void {
+    out.clear();
     if (!stack.length || W === 0 || H === 0) return;
     for (const mode of stack) {
-      if (mode === 'streamlines') drawOverlayArrows(octx, false, false);
-      else if (mode === 'force-vectors') drawOverlayArrows(octx, false, true);
-      else if (mode === 'field-lines') drawOverlayArrows(octx, true, false);
-      else if (mode === 'grid') drawOverlayGrid(octx);
-      else if (mode === 'temperature') drawOverlayContours(octx, (p) => p.heat, 0.5);
-      else if (mode === 'energy') drawOverlayContours(octx, (p) => 0.5 * p.m * (p.vx * p.vx + p.vy * p.vy), 0.42);
-      else if (mode === 'path') drawOverlayPaths(octx);
-      else if (mode === 'data') drawOverlayData(octx);
+      if (mode === 'streamlines') drawOverlayArrows(out, false, false);
+      else if (mode === 'force-vectors') drawOverlayArrows(out, false, true);
+      else if (mode === 'field-lines') drawOverlayFieldLines(out);
+      else if (mode === 'grid') drawOverlayGrid(out);
+      else if (mode === 'temperature') drawOverlayContours(out, (p) => p.heat, 0.5);
+      else if (mode === 'energy') drawOverlayContours(out, (p) => 0.5 * p.m * (p.vx * p.vx + p.vy * p.vy), 0.42);
+      else if (mode === 'path') drawOverlayPaths(out);
+      else if (mode === 'data') drawOverlayData(out);
     }
   }
 
@@ -1403,7 +1475,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const target = scrollY * (0.025 + w.depth * 0.08); // wave parallax (§24)
       w.offsetY += (target - w.offsetY) * 0.04;
     }
-    if (bodies.length && frameN % 6 === 0) measureBodies(bodies, W, H);
+    if (bodies.length && frameN % 6 === 0) {
+      measureBodies(bodies, W, H);
+      // attention-gated discharge (#365): an engagement-gated sink releases on the falling
+      // edge of engagement — the same conserved supernova ritual as saturation.
+      dischargeDisengaged(bodies, env.supernova);
+    }
 
     // spine: ease the wave-bend toward the flow focus (if set) or the engaged element (§24). A live
     // flow focus (field.flowTo) takes priority, so the streamline spine curves to the moving target.
@@ -1461,7 +1538,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
       if (heatmap) heatmap.update(store.particles); // density heatmap buffer (H1)
-      healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
+      healWaves(store, bound, boundTarget, waves, W, H, env.t, rng);
       tearBoundByForces(bound, waves, bodies, reg.forces, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
       updateEmitters(); // element emit (§22.3): clone decorative templates, budgeted by data-max
@@ -1476,9 +1553,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
     if (ctx && cfg.render !== 'none' && canvasVisible && (!reduceMotion || frameN % 4 === 0)) {
       render();
-      if (overlayCtx) {
+      if (overlayBackend) {
         const stack = overlayStack(cfg.overlay);
-        if (stack.length) renderOverlay(overlayCtx, stack);
+        if (stack.length) renderOverlay(overlayBackend, stack);
       }
     }
     raf = host.raf(frame);
@@ -1506,13 +1583,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       setFormation(next);
     }
   }
-  const markInput = (): void => void (lastInput = performance.now());
+  const markInput = (): void => void (lastInput = wallNow());
   const scrollHandler = (): void => {
     markInput();
     onScroll();
   };
   const idleTimer = setInterval(() => {
-    if (performance.now() - lastInput > 6000 && activeForm !== 'ambient') {
+    if (wallNow() - lastInput > 6000 && activeForm !== 'ambient') {
       activeForm = 'ambient';
       setFormation('ambient');
     }
@@ -1591,21 +1668,30 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           console.warn(`field-ui: setRender('${mode}') could not acquire a 2d context; staying in render 'none'`);
           return;
         }
-        if (overlayCanvas && !overlayCtx) overlayCtx = overlayCanvas.getContext('2d');
+        if (overlayCanvas && !overlayCtx) {
+          overlayCtx = overlayCanvas.getContext('2d');
+          if (overlayCtx && !overlayBackend) overlayBackend = opts.overlayBackend ?? canvas2dBackend(overlayCanvas, overlayCtx);
+        }
         sizeSurfaces(host.viewport().dpr); // the one deferred resize the lazy path needs
       }
       cfg.render = mode;
     },
     setOverlay: (mode) => {
       cfg.overlay = mode;
-      if (!overlayStack(mode).length && overlayCtx) overlayCtx.clearRect(0, 0, W, H); // empty stack → clear the front surface
+      if (!overlayStack(mode).length) overlayBackend?.clear(); // empty stack → clear the front surface
     },
     setHeatmap: (on) => {
       cfg.heatmap = on;
       if (on) {
+        // Re-enabling always starts with a fresh buffer so mid-accumulation state from a prior
+        // active period (or a paused field frozen mid-frame) never bleeds into the new session.
         if (!heatmap && W > 0) heatmap = new Heatmap(W, H);
       } else if (heatmap) {
-        heatmap = null; // drop the buffer; clear the write-back the layer left on bodies
+        // Clear accumulated data before releasing the buffer — a paused field can hold a
+        // non-zero grid that would persist visually if the buffer were recycled. Explicit clear
+        // makes the exit symmetrical with the fresh-start re-enable above.
+        heatmap.clear();
+        heatmap = null;
         for (const b of bodies) {
           const el = b.writeTarget ?? b.el;
           el.style.removeProperty('--forces-heatmap-density');
@@ -1618,10 +1704,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
       const R = 160;
       for (const q of store.particles) {
-        const imp = burstImpulse(q.x - x, q.y - y, R);
+        // the blast point sits on the page plane (z = 0): matter off-plane is shoved
+        // deeper as well as outward — the 3D leg is 0 in a flat field (z-axis.md).
+        const imp = burstImpulse(q.x - x, q.y - y, R, 6, q.z ?? 0);
         if (imp.heat === 0) continue;
         q.vx += imp.vx;
         q.vy += imp.vy;
+        if (imp.vz) q.vz = (q.vz ?? 0) + imp.vz;
         q.heat = Math.max(q.heat, imp.heat);
         if (hex) q.color = hex; // carried pigment (§20.8)
       }
@@ -1644,9 +1733,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     atomAt: (x, y) => {
       let best: AtomPayload | null = null;
       let bd = Infinity;
+      // the pointer lives on the page plane: depth counts against pickability, so a
+      // dot deep in the volume is harder to pick than one at the surface (z-axis.md).
       for (const p of store.near(x, y, 24)) {
         if (p.atom == null) continue;
-        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+        const d = (p.x - x) ** 2 + (p.y - y) ** 2 + (p.z ?? 0) ** 2;
         if (d < bd) {
           bd = d;
           best = p.atom;
@@ -1659,7 +1750,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       let bd = Infinity;
       for (const p of store.near(x, y, 24)) {
         if (p.atom == null) continue;
-        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+        const d = (p.x - x) ** 2 + (p.y - y) ** 2 + (p.z ?? 0) ** 2;
         if (d < bd) {
           bd = d;
           best = p;
@@ -1681,6 +1772,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;
+    },
+    setBackground: (mode) => {
+      cfg.background = mode;
+      // a one-time clear on the way INTO transparent wipes the last opaque substrate frame, so
+      // the surface goes clear immediately rather than holding the old near-black until redrawn.
+      if (mode === 'transparent' && ctx) ctx.clearRect(0, 0, W, H);
     },
     destroy: () => {
       host.cancelRaf(raf);

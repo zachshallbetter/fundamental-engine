@@ -43,5 +43,5 @@ test('burstImpulse is radial and inert beyond the radius', () => {
   const up = burstImpulse(0, 40, 160); // straight up
   assert.ok(up.vy > 0 && Math.abs(up.vx) < 1e-9);
   const out = burstImpulse(200, 0, 160); // past the rim
-  assert.deepEqual(out, { vx: 0, vy: 0, heat: 0 });
+  assert.deepEqual(out, { vx: 0, vy: 0, vz: 0, heat: 0 }); // vz: the optional z lane (z-axis.md)
 });

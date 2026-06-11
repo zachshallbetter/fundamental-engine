@@ -164,6 +164,10 @@ export interface PlatformRuntime {
 export function startPlatformRuntime(root: Element): PlatformRuntime {
   const platform = createFieldPlatform(root);
   platform.measure.register(root, { role: 'field-root' });
+  // Bound Visual tier: discover declarative [data-field-visual-for] visuals at start so the
+  // platform's default state mirroring covers them (the registry re-copies on every source
+  // style write; dynamically added visuals need a platform.visuals.scan()).
+  platform.visuals.scan(root);
   // D2: the discover phase syncs body elements into MeasurementRegistry each frame, so the platform
   // measures the same bodies the legacy scanner finds (geometry only — still no observable change).
   platform.on('discover', (ctx) => {

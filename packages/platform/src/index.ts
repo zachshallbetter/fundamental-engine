@@ -14,6 +14,7 @@ import { createField, type FieldHandle, type FieldOptions } from '@field-ui/core
 import { browserHost } from './browser-host.ts';
 
 export * from './types.ts';
+export * from './env.ts';
 export * from './schedule.ts';
 export * from './measurement.ts';
 export * from './state.ts';
@@ -25,12 +26,14 @@ export * from './lint.ts';
 export * from './platform.ts';
 export * from './metrics.ts';
 export * from './apply-recipe.ts';
+export * from './field-nav.ts';
 export * from './bind-data.ts';
 export * from './browser-host.ts';
 export * from './export-dom.ts';
 export * from './governor.ts';
 export * from './flip.ts';
 export * from './text-bodies.ts';
+export * from './contours.ts';
 export * from './thread-overlay.ts';
 export * from './perf.ts';
 
