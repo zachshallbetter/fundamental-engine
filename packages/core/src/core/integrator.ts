@@ -50,7 +50,9 @@ function classified(b: Body): ClassifiedTokens {
  * Apply one force to a particle, honouring first-class mass (§21.3): an *additive* force's
  * velocity change is scaled by `1/m` (a = F/m, so heavier matter moves less), while a
  * `kinematic` force (a reflection / rotation / relaunch) sets velocity outright and is left
- * unscaled. `inv === 1` (the default, `m = 1`) is the identity path either way.
+ * unscaled. `inv === 1` (the default, `m = 1`) is the identity path either way. The z lane is
+ * scaled identically so depth-enabled fields keep `a = F/m` on all three axes (a heavy particle
+ * pushed off-plane accelerates as little along z as it does in x/y).
  */
 function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
   if (inv === 1 || f.kinematic) {
@@ -59,9 +61,13 @@ function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void
   }
   const bvx = p.vx;
   const bvy = p.vy;
+  const bvz = p.vz ?? 0;
   f.apply(b, p, env);
   p.vx = bvx + (p.vx - bvx) * inv;
   p.vy = bvy + (p.vy - bvy) * inv;
+  // only rescale z when the force actually engaged the lane — never materialize a spurious 0
+  // on a flat (z-less) particle.
+  if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
 }
 
 export function step(input: StepInput): void {
@@ -100,13 +106,24 @@ export function step(input: StepInput): void {
   // the accretion target for `conv` — the first visible sink body (§7).
   const conv = form.conv > 0.02 ? accretionTarget(bodies) : null;
 
+  // the optional z lane (z-axis.md): D = 0 — the default — is the flat field, where
+  // every z term below is exactly 0 and the 2D behavior is preserved bit-for-bit.
+  const D = env.D ?? 0;
+
   for (const p of store.particles) {
-    // captured matter is held inside a sink core, drifting to it (§6.9).
+    // captured matter is held inside a sink core, drifting to it (§6.9). The core
+    // lives on the z = 0 plane, so held matter also settles flat.
     if (p.cap) {
       p.x += (p.cap.cx - p.x) * 0.18;
       p.y += (p.cap.cy - p.y) * 0.18;
+      if (p.z) p.z += -p.z * 0.18;
       continue;
     }
+    // normalize the optional lane once: after this the lane is concrete numbers for
+    // the rest of this particle's frame (forces and the integrate step write through).
+    if (p.z === undefined) p.z = 0;
+    if (p.vz === undefined) p.vz = 0;
+    const pz = p.z;
 
     // wave current (§2.3): near a wave line, drift along its slope like debris.
     if (hasWaves) {
@@ -135,13 +152,16 @@ export function step(input: StepInput): void {
       const ty = gy * H;
       p.vx += (tx - p.x) * 0.0006 * form.spread;
       p.vy += (ty - p.y) * 0.0006 * form.spread;
+      if (D > 0) p.vz! += ((p.gz ?? 0.5) * D - pz) * 0.0006 * form.spread;
     }
     if (conv) {
       const cdx = conv.cx - p.x;
       const cdy = conv.cy - p.y;
-      const cd = Math.hypot(cdx, cdy) || 1;
+      const cdz = -pz; // the sink core sits on the z = 0 plane
+      const cd = Math.hypot(cdx, cdy, cdz) || 1;
       p.vx += (cdx / cd) * form.conv * 0.06;
       p.vy += (cdy / cd) * form.conv * 0.06;
+      p.vz! += (cdz / cd) * form.conv * 0.06;
     }
 
     // DOM body forces — the page's elements move the field (§4).
@@ -184,7 +204,12 @@ export function step(input: StepInput): void {
           dx = b.cx - p.x;
           dy = b.cy - p.y;
         }
-        const d2 = dx * dx + dy * dy;
+        // optional z lane (z-axis.md): bodies live on the z = 0 plane, so the z leg of
+        // the particle→body vector is just −p.z — exactly 0 in a flat field. Matter
+        // that drifts into the volume is pulled back toward the plane by the same
+        // falloffs that pull it across it.
+        const dz = -p.z!;
+        const d2 = dx * dx + dy * dy + dz * dz;
         // range cull: a ranged body can't reach past ~1.6× its range (the largest
         // on-state multiplier, tether's 1.575×). Skip the sqrt, the modifier pass,
         // and every apply for matter beyond it. range 0 = global → never culled.
@@ -206,6 +231,7 @@ export function step(input: StepInput): void {
         if (b.when && !passes(conditions, b, p, env)) continue;
         env.dx = dx;
         env.dy = dy;
+        env.dz = dz;
         env.dist = d < 1 ? 1 : d;
         // modifier pass (§20.3, formalized by the workover v0.3 modifier contract): the body's
         // OWN modifiers evaluate in the contract order `spotlight → screen → resonate`
@@ -280,18 +306,21 @@ export function step(input: StepInput): void {
     // enforces it for *every* force. A non-finite velocity slips the `> c²` test — the
     // conformance safety sweep is what catches a NaN-producing force.
     const cap = env.c;
-    const sp2 = p.vx * p.vx + p.vy * p.vy;
+    const sp2 = p.vx * p.vx + p.vy * p.vy + p.vz! * p.vz!;
     if (sp2 > cap * cap) {
       const k = cap / Math.sqrt(sp2);
       p.vx *= k;
       p.vy *= k;
+      p.vz! *= k;
     }
 
-    // integrate, then damp (§2.2).
+    // integrate, then damp (§2.2). The z lane integrates identically — inert at 0.
     p.x += p.vx * dt;
     p.y += p.vy * dt;
+    p.z! += p.vz! * dt;
     p.vx *= FRICTION;
     p.vy *= FRICTION;
+    p.vz! *= FRICTION;
 
     // wander (after damping, so it stays lively): a periodic brownian jitter
     // every 40 frames, plus a smooth curl-noise eddy (§7).
@@ -299,6 +328,8 @@ export function step(input: StepInput): void {
       const wsc = 0.05 * form.wander;
       p.vx += ((env.rng ?? Math.random)() - 0.5) * wsc;
       p.vy += ((env.rng ?? Math.random)() - 0.5) * wsc;
+      // the brownian kick gains a z leg in a volume — through the same injectable rng (#371)
+      if (D > 0) p.vz! += ((env.rng ?? Math.random)() - 0.5) * wsc;
     }
     if (form.wander > 0.05) {
       const cn =
@@ -318,11 +349,15 @@ export function step(input: StepInput): void {
       if (p.age <= 0) (dead ??= []).push(p);
     }
 
-    // toroidal wrap at the edges.
+    // toroidal wrap at the edges (z wraps only in a depth > 0 volume).
     if (p.x < -EDGE) p.x = W + EDGE;
     else if (p.x > W + EDGE) p.x = -EDGE;
     if (p.y < -EDGE) p.y = H + EDGE;
     else if (p.y > H + EDGE) p.y = -EDGE;
+    if (D > 0) {
+      if (p.z! < -EDGE) p.z = D + EDGE;
+      else if (p.z! > D + EDGE) p.z = -EDGE;
+    }
   }
 
   // class-[S] sources (§20.1): a body-level pass *after* the per-particle loop, so a

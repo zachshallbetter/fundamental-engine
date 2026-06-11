@@ -44,9 +44,9 @@ export class FieldStore {
     this.hash.rebuild(this.particles);
   }
 
-  /** neighbours within `r` of `p`, excluding `p` itself. */
+  /** neighbours within `r` of `p` (true 3D distance), excluding `p` itself. */
   neighbors(p: Particle, r: number): Particle[] {
-    const found = this.hash.near(p.x, p.y, r);
+    const found = this.hash.near(p.x, p.y, r, p.z ?? 0);
     const out: Particle[] = [];
     for (const n of found) if (n !== p) out.push(n);
     return out;

@@ -35,19 +35,22 @@ export function recoilImpulse(dpx: number, dpy: number, mOther: number): Vec2 {
 
 /**
  * A discrete radial burst impulse (§11) — the velocity kick and heat a one-shot
- * `field.burst(x, y)` imparts to matter at offset `(dx, dy)` from the blast, falling
- * off linearly to nothing at radius `r`; outside `r` it's inert. Pure: the field's
- * `burst` glue applies this per particle and tears nearby bound matter loose.
+ * `field.burst(x, y)` imparts to matter at offset `(dx, dy[, dz])` from the blast,
+ * falling off linearly to nothing at radius `r`; outside `r` it's inert. `dz` is the
+ * optional z lane (z-axis.md) — omit it (or pass 0) for the flat-field impulse, which
+ * is bit-identical to the 2D form. Pure: the field's `burst` glue applies this per
+ * particle and tears nearby bound matter loose.
  */
 export function burstImpulse(
   dx: number,
   dy: number,
   r: number,
   power = 6,
-): { vx: number; vy: number; heat: number } {
-  const d = Math.hypot(dx, dy) || 1;
-  if (d >= r) return { vx: 0, vy: 0, heat: 0 };
+  dz = 0,
+): { vx: number; vy: number; vz: number; heat: number } {
+  const d = Math.hypot(dx, dy, dz) || 1;
+  if (d >= r) return { vx: 0, vy: 0, vz: 0, heat: 0 };
   const falloff = 1 - d / r;
   const f = falloff * power;
-  return { vx: (dx / d) * f, vy: (dy / d) * f, heat: falloff * 0.9 };
+  return { vx: (dx / d) * f, vy: (dy / d) * f, vz: (dz / d) * f, heat: falloff * 0.9 };
 }

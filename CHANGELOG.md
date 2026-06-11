@@ -159,6 +159,23 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **The optional z lane — a not-required third axis** (`@field-ui/core`,
+  [docs/engine-reference/z-axis.md](docs/engine-reference/z-axis.md)). The engine simulates an
+  opt-in depth dimension: `createField({ depth: 300 })` seeds matter through a shallow volume
+  behind the page, bodies stay on the page plane (z = 0) and their falloffs pull matter back
+  toward it, z integrates/damps/wraps toroidally, the `c` cap bounds the full 3D speed, and the
+  dots render recedes (smaller + fainter) with depth. **Flat is exact:** with no `depth` — the
+  default — every z term multiplies away to nothing and the engine matches its prior behavior
+  bit-for-bit (enforced by the `z-axis.test.ts` suite). Every new field is optional
+  (`Particle.z`/`vz`/`gz`, `Env.dz`/`D`, `FieldOptions.depth`) so existing `Particle`/`Env`
+  literals keep compiling unchanged; no public call signature changes (`burst(x, y)` et al. act on
+  the plane, their effects extending into the volume automatically). Distance is 3D everywhere
+  (the body delta, range cull, spatial-hash filter, sink absorption, sampling, atom picking,
+  kinetic energy); radial forces gain a spherical z leg; the neighbour forces (`collide` —
+  spheres, not discs — `cohesion`, `pressure`, `link`, `hunt`, `align`) are truly 3D; the
+  deliberately-planar set (`wall`, `magnetism`/`lens`, the currents, the grids, the modifiers) is
+  documented per-force with its reasoning.
+
 - **Bound Visual Sink — state mirroring for visual bindings.** The platform's
   `VisualBindingRegistry` now mirrors a semantic body's feedback channels (`--d` /
   `--field-density`, `--load` / `--mass`, `--lit`, and the measured metrics — the exported

@@ -5,10 +5,11 @@
  */
 import type { Particle } from '../core/types.ts';
 
-/** Kinetic energy Σ ½·m·|v|². */
+/** Kinetic energy Σ ½·m·|v|² — the full 3D speed (vz is 0 in a flat field, z-axis.md). */
 export function kineticEnergy(particles: readonly Particle[]): number {
   let k = 0;
-  for (const p of particles) k += 0.5 * (p.m || 1) * (p.vx * p.vx + p.vy * p.vy);
+  for (const p of particles)
+    k += 0.5 * (p.m || 1) * (p.vx * p.vx + p.vy * p.vy + (p.vz ?? 0) * (p.vz ?? 0));
   return k;
 }
 

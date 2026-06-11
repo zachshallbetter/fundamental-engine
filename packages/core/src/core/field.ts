@@ -123,6 +123,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
     overlay: opts.overlay ?? 'off', // Field Surfaces: overlay-surface visualization mode, opt-in
+    // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
+    // to the 2D engine; > 0 opens a shallow depth the matter drifts through, opt-in.
+    depth: opts.depth && opts.depth > 0 ? opts.depth : 0,
     // ONE write path (#228, Phase 5): every feedback write goes through a sink. The platform
     // supplies one (D3, FeedbackRegistry via <field-root>); without it the engine installs the
     // internal default sink, whose writes are byte-identical to the historical direct writes.
@@ -243,10 +246,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const env: Env = {
     dx: 0,
     dy: 0,
+    dz: 0,
     dist: 1,
     form: { ...FORMATION_BY.ambient.preset },
     W: 0,
     H: 0,
+    D: cfg.depth, // the optional z volume (z-axis.md); 0 = the flat field
     t: 0,
     frameN: 0,
     dt: reduceMotion ? 0 : 1,
@@ -324,11 +329,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       y: seed.y ?? rng() * H,
       vx: seed.vx ?? (rng() - 0.5) * 0.25,
       vy: seed.vy ?? (rng() - 0.5) * 0.18,
+      // the optional z lane (z-axis.md): seeded through the volume in a depth > 0
+      // field, pinned to the plane (0) in the flat default — through the injectable rng (#371).
+      z: seed.z ?? (cfg.depth > 0 ? rng() * cfg.depth : 0),
+      vz: seed.vz ?? (cfg.depth > 0 ? (rng() - 0.5) * 0.18 : 0),
       m: seed.m ?? (cfg.mass ? size : 1), // mass ∝ size when first-class mass is on
       heat: seed.heat ?? 0,
       size,
       gx: seed.gx ?? rng(),
       gy: seed.gy ?? rng(),
+      gz: seed.gz ?? rng(),
       cap: null,
       ...(seed.age != null ? { age: seed.age } : {}), // mortal matter (a [S] source)
       ...(seed.color != null ? { color: seed.color } : {}),
@@ -991,8 +1001,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         g += (pg - g) * 0.75;
         b += (pb - b) * 0.75;
       }
-      const size = p.size * (1 - 0.4 * rs) + h * 2;
-      const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot, 0, 1);
+      // depth recession (z-axis.md): in a depth > 0 field, matter deeper in the volume
+      // draws smaller and fainter — the flat field's factor is exactly 1.
+      const zk = cfg.depth > 0 ? 1 - Math.min(Math.abs(p.z ?? 0) / cfg.depth, 1) * 0.55 : 1;
+      const size = (p.size * (1 - 0.4 * rs) + h * 2) * zk;
+      const alpha = clamp((0.5 - 0.3 * rs + h * 0.5) * boot * zk, 0, 1);
       const cr = r | 0;
       const cg = g | 0;
       const cb = b | 0;
@@ -1676,10 +1689,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
       const R = 160;
       for (const q of store.particles) {
-        const imp = burstImpulse(q.x - x, q.y - y, R);
+        // the blast point sits on the page plane (z = 0): matter off-plane is shoved
+        // deeper as well as outward — the 3D leg is 0 in a flat field (z-axis.md).
+        const imp = burstImpulse(q.x - x, q.y - y, R, 6, q.z ?? 0);
         if (imp.heat === 0) continue;
         q.vx += imp.vx;
         q.vy += imp.vy;
+        if (imp.vz) q.vz = (q.vz ?? 0) + imp.vz;
         q.heat = Math.max(q.heat, imp.heat);
         if (hex) q.color = hex; // carried pigment (§20.8)
       }
@@ -1702,9 +1718,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     atomAt: (x, y) => {
       let best: AtomPayload | null = null;
       let bd = Infinity;
+      // the pointer lives on the page plane: depth counts against pickability, so a
+      // dot deep in the volume is harder to pick than one at the surface (z-axis.md).
       for (const p of store.near(x, y, 24)) {
         if (p.atom == null) continue;
-        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+        const d = (p.x - x) ** 2 + (p.y - y) ** 2 + (p.z ?? 0) ** 2;
         if (d < bd) {
           bd = d;
           best = p.atom;
@@ -1717,7 +1735,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       let bd = Infinity;
       for (const p of store.near(x, y, 24)) {
         if (p.atom == null) continue;
-        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+        const d = (p.x - x) ** 2 + (p.y - y) ** 2 + (p.z ?? 0) ** 2;
         if (d < bd) {
           bd = d;
           best = p;

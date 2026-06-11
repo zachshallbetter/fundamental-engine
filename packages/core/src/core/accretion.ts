@@ -40,6 +40,9 @@ export function releaseCaptured(
     q.y = b.cy + Math.sin(ang) * rim;
     q.vx = Math.cos(ang) * spd;
     q.vy = Math.sin(ang) * spd;
+    // the core sits on the page plane: release resets the z lane too (z-axis.md).
+    if (q.z) q.z = 0;
+    if (q.vz) q.vz = 0;
     q.heat = 1;
     // A supernova is a CONSERVATION event: the ejected matter rejoins the PERSISTENT
     // field. Mortal (class-[S] source-spawned) matter that a sink captured and held is
