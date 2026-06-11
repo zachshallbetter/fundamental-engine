@@ -113,7 +113,8 @@ struct LabRootView: View {
                 Section("\(group) forces") {
                     ForEach(ForceCatalog.entries(group: group)) { entry in
                         SidebarRow(symbol: Self.forceSymbol(entry.token),
-                                   title: entry.label, subtitle: entry.blurb)
+                                   title: entry.label, subtitle: entry.blurb,
+                                   tint: Color(fieldHex: forceColor(entry.token)))
                             .tag(LabSelection.force(entry.token))
                     }
                 }
@@ -228,10 +229,18 @@ struct LabRootView: View {
                 recipeDetails(r)
             }
             if case .force(let token) = selection, let entry = ForceCatalog.entry(token: token) {
-                Text("\(entry.group.lowercased()) force · token \(entry.token)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 2)
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color(fieldHex: forceColor(token)))
+                        .frame(width: 8, height: 8)
+                    Text("\(entry.group.lowercased()) force · token \(entry.token)")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.tertiary)
+                    Text("— its color everywhere: this chip, the sidebar, the card's stripe, meter, and glow")
+                        .font(.caption2)
+                        .foregroundStyle(.quaternary)
+                }
+                .padding(.top, 2)
             }
             Text("click → burst · drag → flow · hover a card → engage")
                 .font(.caption2)
@@ -250,9 +259,19 @@ struct LabRootView: View {
     @ViewBuilder
     private func recipeDetails(_ r: FieldRecipe) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(r.primitives.joined(separator: " · "))
-                .font(.caption.monospaced())
-                .foregroundStyle(.secondary)
+            // the token lane, each in its force's identity color — the same hue the
+            // cards carrying that token wear
+            HStack(spacing: 5) {
+                ForEach(r.primitives, id: \.self) { token in
+                    Text(token)
+                        .font(.caption2.monospaced())
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 1.5)
+                        .background(Color(fieldHex: forceColor(token)).opacity(0.18),
+                                    in: Capsule())
+                        .foregroundStyle(Color(fieldHex: forceColor(token)))
+                }
+            }
             if !r.metrics.isEmpty {
                 Text("measures: " + r.metrics.joined(separator: " · "))
                     .font(.caption2)
@@ -392,6 +411,7 @@ struct SidebarRow: View {
     let symbol: String
     let title: String
     let subtitle: String
+    var tint: Color? = nil // the force's identity color — same hue on its cards
 
     var body: some View {
         Label {
@@ -404,8 +424,17 @@ struct SidebarRow: View {
             }
         } icon: {
             Image(systemName: symbol)
+                .foregroundStyle(tint ?? .secondary)
         }
         .padding(.vertical, 1)
+    }
+}
+
+extension Color {
+    /// A Color from the engine's `#rrggbb` strings (force identities, accents).
+    init(fieldHex hex: String) {
+        let rgb = hexToRgb(hex)
+        self.init(red: Double(rgb.x) / 255, green: Double(rgb.y) / 255, blue: Double(rgb.z) / 255)
     }
 }
 

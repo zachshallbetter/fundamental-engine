@@ -175,7 +175,7 @@ public struct WallForce: Force {
             p.velocity.z = -p.velocity.z * 0.85
         }
         if speed > 0.7 {
-            e.spark(p.position, min(2.4, speed), nil)
+            e.spark(p.position, min(2.4, speed), CANONICAL_FORCE_COLORS["wall"]) // canon spark tint (forces.config)
             p.heat = max(p.heat, min(0.85, speed * 0.4))
         }
     }

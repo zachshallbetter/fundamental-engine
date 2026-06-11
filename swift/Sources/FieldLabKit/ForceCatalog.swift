@@ -210,3 +210,54 @@ public enum ForceCatalog {
              render: .trails),
     ]
 }
+
+// MARK: - Force color identity
+//
+// The canonical nine carry their canon colors (CANONICAL_FORCE_COLORS, ported from
+// forces.config.ts). The natural and extended sets have no canon colors — these are
+// the LAB's presentation palette: physics-flavored families (naturals warm/electric,
+// extended cooler utility hues), stable per token so a force is the same color in the
+// sidebar, the caption chip, and on every card that carries it.
+
+public let LAB_FORCE_COLORS: [String: String] = [
+    // natural primitives
+    "gravity":     "#ffce6b",
+    "charge":      "#f472b6",
+    "magnetism":   "#60a5fa",
+    "thermal":     "#fb7185",
+    "collide":     "#e2e8f0",
+    "diffuse":     "#34d399",
+    "propagate":   "#22d3ee",
+    "memory":      "#c084fc",
+    // designed extended
+    "lens":        "#93c5fd",
+    "gate":        "#fbbf24",
+    "buoyancy":    "#67e8f9",
+    "shear":       "#a3e635",
+    "crystallize": "#bae6fd",
+    "align":       "#5eead4",
+    "wind":        "#a5f3fc",
+    "cohesion":    "#38bdf8",
+    "pressure":    "#f97316",
+    "link":        "#84cc16",
+    "hunt":        "#f87171",
+    "morph":       "#e879f9",
+    "spawn":       "#fde047",
+    "resonate":    "#f0abfc",
+    "spotlight":   "#fef08a",
+    "screen":      "#94a3b8",
+    "pigment":     "#fb923c",
+    "fieldflow":   "#818cf8",
+    "warp":        "#c4b5fd",
+]
+
+/// The identity color for a force token: canon first, the lab palette second,
+/// the accent blue as the final fallback.
+public func forceColor(_ token: String) -> String {
+    canonicalForceColor(token) ?? LAB_FORCE_COLORS[token] ?? "#4da3ff"
+}
+
+/// A card's identity color — its FIRST force token (the primary behavior).
+public func cardColor(tokens: [String]) -> String {
+    forceColor(tokens.first ?? "")
+}
