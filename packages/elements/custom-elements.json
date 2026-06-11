@@ -869,6 +869,15 @@
               "readonly": true
             },
             {
+              "kind": "field",
+              "name": "heatmap",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "density heatmap (field-systems H1): present and not `\"false\"` → the pooling glow underlay.",
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "scan",
               "return": {
@@ -1297,6 +1306,9 @@
                 "text": "boolean"
               },
               "description": "Enables the causality demo behaviour."
+            },
+            {
+              "name": "heatmap"
             }
           ],
           "superclass": {
@@ -1412,6 +1424,13 @@
                 "text": "boolean"
               },
               "description": "Enables the causality demo behaviour.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "heatmap",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1619,6 +1638,19 @@
                 "text": "boolean"
               },
               "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "heatmap",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "density heatmap (field-systems H1): present and not `\"false\"` → the pooling glow underlay.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2190,6 +2222,13 @@
                 "name": "FieldField",
                 "module": "src/index.ts"
               }
+            },
+            {
+              "name": "heatmap",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
             }
           ],
           "members": [
@@ -2393,6 +2432,19 @@
                 "text": "boolean"
               },
               "description": "first-class mass (§21.3): present and not `\"false\"` → particle mass ∝ size.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "heatmap",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "density heatmap (field-systems H1): present and not `\"false\"` → the pooling glow underlay.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
