@@ -35,6 +35,7 @@ export function FieldField({
   accent,
   density,
   waves,
+  background,
   render,
   mass,
   palette,
@@ -48,11 +49,11 @@ export function FieldField({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createBrowserField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
+    const field = createBrowserField(canvas, { accent, density, waves, background, render, mass, palette, attention, causality });
     onReadyRef.current?.(field);
     return () => field.destroy();
     // re-create only when an engine option actually changes
-  }, [accent, density, waves, render, mass, palette, attention, causality]);
+  }, [accent, density, waves, background, render, mass, palette, attention, causality]);
 
   return (
     <canvas ref={canvasRef} aria-hidden="true" className={className} style={{ ...FIXED, ...style }} />
@@ -69,17 +70,17 @@ export function useFieldField(opts: FieldOptions = {}): {
 } {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fieldRef = useRef<FieldHandle | null>(null);
-  const { accent, density, waves, render, mass, palette, attention, causality } = opts;
+  const { accent, density, waves, background, render, mass, palette, attention, causality } = opts;
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createBrowserField(canvas, { accent, density, waves, render, mass, palette, attention, causality });
+    const field = createBrowserField(canvas, { accent, density, waves, background, render, mass, palette, attention, causality });
     fieldRef.current = field;
     return () => {
       field.destroy();
       fieldRef.current = null;
     };
-  }, [accent, density, waves, render, mass, palette, attention, causality]);
+  }, [accent, density, waves, background, render, mass, palette, attention, causality]);
   return { canvasRef, fieldRef };
 }
 

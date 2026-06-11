@@ -389,6 +389,12 @@ export interface FieldOptions {
   /** draw the background Currents (§24); default true. Set false for the bare
    *  free-particle field with no carrier waves. */
   waves?: boolean;
+  /** substrate background: `'opaque'` (default) paints the near-black substrate each frame;
+   *  `'transparent'` clears to transparent instead, so the underlay can sit OVER light content
+   *  (a 3D scene, an image, a light page) without blanking it out. The bright matter survives;
+   *  no `mix-blend-mode` workaround needed. Trails light-paint and fade to transparent rather
+   *  than to black. Purely additive — the default is unchanged. */
+  background?: 'opaque' | 'transparent';
   /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links'
    *  (constellation), 'metaballs' (a liquid iso-surface, not dots), 'streamlines'
    *  (draw the force field itself — diagnostic), 'none' (the signals-only engine,
@@ -572,6 +578,12 @@ export interface FieldHandle {
    * IntersectionObserver on the host element; call it yourself for custom embeddings.
    */
   setVisible(on: boolean): void;
+  /**
+   * Switch the substrate background live (the construction `background` option, at runtime).
+   * `'transparent'` clears to transparent so the underlay composites over light content;
+   * `'opaque'` restores the near-black substrate. Additive — no existing caller is affected.
+   */
+  setBackground(mode: 'opaque' | 'transparent'): void;
   /** stop the loop and release listeners. */
   destroy(): void;
 }

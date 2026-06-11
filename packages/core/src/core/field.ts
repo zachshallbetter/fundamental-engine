@@ -118,6 +118,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'dots',
     waves: opts.waves ?? true, // draw the background Currents (§24); opt-out for the bare field
+    background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
@@ -962,12 +963,26 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   function render(): void {
     // substrate clear — 'trails' uses a faded clear so motion light-paints (§20.6).
-    if (cfg.render === 'trails') {
-      ctx!.fillStyle = 'rgba(5,6,11,0.22)';
+    if (cfg.background === 'transparent') {
+      // clear to TRANSPARENT so the underlay composites over light content without blanking it.
+      if (cfg.render === 'trails') {
+        // light-paint that fades to transparent (not to black): remove ~22% of existing alpha
+        // each frame via destination-out, instead of laying an opaque near-black veil over it.
+        ctx!.globalCompositeOperation = 'destination-out';
+        ctx!.fillStyle = 'rgba(0,0,0,0.22)';
+        ctx!.fillRect(0, 0, W, H);
+        ctx!.globalCompositeOperation = 'source-over';
+      } else {
+        ctx!.clearRect(0, 0, W, H);
+      }
     } else {
-      ctx!.fillStyle = 'rgb(5,6,11)';
+      if (cfg.render === 'trails') {
+        ctx!.fillStyle = 'rgba(5,6,11,0.22)';
+      } else {
+        ctx!.fillStyle = 'rgb(5,6,11)';
+      }
+      ctx!.fillRect(0, 0, W, H);
     }
-    ctx!.fillRect(0, 0, W, H);
     drawWaves();
     if (heatmap) drawHeatmap();
     drawBound();
@@ -1757,6 +1772,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;
+    },
+    setBackground: (mode) => {
+      cfg.background = mode;
+      // a one-time clear on the way INTO transparent wipes the last opaque substrate frame, so
+      // the surface goes clear immediately rather than holding the old near-black until redrawn.
+      if (mode === 'transparent' && ctx) ctx.clearRect(0, 0, W, H);
     },
     destroy: () => {
       host.cancelRaf(raf);

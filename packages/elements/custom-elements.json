@@ -825,6 +825,15 @@
             },
             {
               "kind": "field",
+              "name": "background",
+              "type": {
+                "text": "'opaque' | 'transparent'"
+              },
+              "description": "substrate background: `transparent` (present and not `\"false\"`) clears to transparent so the\nunderlay composites over light content; default `opaque` paints the near-black substrate.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "overlay",
               "type": {
                 "text": "OverlayInput"
@@ -986,6 +995,24 @@
                 }
               ],
               "description": "toggle cross-boundary causality (Concept 4) live."
+            },
+            {
+              "kind": "method",
+              "name": "setBackground",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'opaque' | 'transparent'"
+                  }
+                }
+              ],
+              "description": "switch the substrate background live: `transparent` composites the underlay over light content."
             },
             {
               "kind": "method",
@@ -1309,6 +1336,13 @@
             },
             {
               "name": "heatmap"
+            },
+            {
+              "name": "background",
+              "type": {
+                "text": "string"
+              },
+              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate."
             }
           ],
           "superclass": {
@@ -1431,6 +1465,17 @@
             },
             {
               "name": "heatmap",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "background",
+              "type": {
+                "text": "string"
+              },
+              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1573,6 +1618,19 @@
                 "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
               },
               "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "background",
+              "type": {
+                "text": "'opaque' | 'transparent'"
+              },
+              "description": "substrate background: `transparent` (present and not `\"false\"`) clears to transparent so the\nunderlay composites over light content; default `opaque` paints the near-black substrate.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1790,6 +1848,28 @@
                 }
               ],
               "description": "toggle cross-boundary causality (Concept 4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setBackground",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'opaque' | 'transparent'"
+                  }
+                }
+              ],
+              "description": "switch the substrate background live: `transparent` composites the underlay over light content.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2229,6 +2309,17 @@
                 "name": "FieldField",
                 "module": "src/index.ts"
               }
+            },
+            {
+              "name": "background",
+              "type": {
+                "text": "string"
+              },
+              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
             }
           ],
           "members": [
@@ -2367,6 +2458,19 @@
                 "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
               },
               "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "background",
+              "type": {
+                "text": "'opaque' | 'transparent'"
+              },
+              "description": "substrate background: `transparent` (present and not `\"false\"`) clears to transparent so the\nunderlay composites over light content; default `opaque` paints the near-black substrate.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2584,6 +2688,28 @@
                 }
               ],
               "description": "toggle cross-boundary causality (Concept 4) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setBackground",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "'opaque' | 'transparent'"
+                  }
+                }
+              ],
+              "description": "switch the substrate background live: `transparent` composites the underlay over light content.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

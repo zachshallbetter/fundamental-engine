@@ -9,6 +9,17 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`background: 'transparent'` — the underlay can sit over light content.** The engine painted a
+  near-black substrate every frame, so the underlay blanked out anything beneath it (a 3D scene,
+  an image, a light page) — consumers had to reach for a `mix-blend-mode: screen` workaround. A new
+  additive `FieldOptions.background` (`'opaque'` default · `'transparent'`) clears to transparent
+  instead, so the bright matter composites over the content and trails light-paint that fade to
+  transparent rather than to black (`destination-out`). Live via `field.setBackground(mode)`,
+  declaratively via `<field-root background="transparent">`, and as a prop on the React component.
+  Purely additive — the default is unchanged.
+
+### Added
+
 - **Traced field lines + the `gravity-field` preset.** The `field-lines` overlay reading now draws
   the field's real *structure as curves* instead of sampled arrows: `fieldLineSeeds` (new,
   `@field-ui/core` `fieldline-seeds.ts`) seeds each field-bearing body by its own geometry — a
