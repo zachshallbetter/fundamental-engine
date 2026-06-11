@@ -31,6 +31,38 @@ export const METRIC_KINDS = [
 ] as const;
 export type MetricKind = (typeof METRIC_KINDS)[number];
 
+/** The lanes `computeMetrics` produces generically every frame (everything except the supplied-only pair). */
+export const COMPUTED_METRICS = [
+  'attention',
+  'memory',
+  'coherence',
+  'entropy',
+  'pressure',
+  'recency',
+  'priority',
+] as const;
+/** Metrics the engine NEVER invents — present ONLY when the host supplies them (`data-field-<m>`). */
+export const SUPPLIED_ONLY_METRICS = ['confidence', 'risk'] as const;
+
+/**
+ * How a metric lane is produced:
+ * - `computed`     — the generic pipeline writes it every frame (proximity/engagement/relations/age).
+ * - `supplied-only`— confidence/risk; the engine has no evidence, so it's written ONLY when supplied.
+ * - `designed`     — a semantic lane (signal, route-strength, sync, …) the HOST must supply via
+ *                    `data-field-<m>` (or a domain model). With neither a supply nor a computed source
+ *                    its `--field-<m>` is **inert** — declared but never written. This is the gap the
+ *                    nav sweep hit (navigation-current's `signal`/`route-strength`); `lintInertFeedback`
+ *                    surfaces it, the same way `lintSinkFeedback` catches a capturing-but-silent sink.
+ */
+export type MetricSupport = 'computed' | 'supplied-only' | 'designed';
+
+/** Classify a metric name by how its `--field-<name>` lane is produced (see {@link MetricSupport}). */
+export function classifyMetric(name: string): MetricSupport {
+  if ((COMPUTED_METRICS as readonly string[]).includes(name)) return 'computed';
+  if ((SUPPLIED_ONLY_METRICS as readonly string[]).includes(name)) return 'supplied-only';
+  return 'designed';
+}
+
 /**
  * One frame of computed metrics: every lane is a number except `confidence` and `risk`, which are
  * present ONLY when the host supplies them (the engine never invents them — see `computeMetrics`).

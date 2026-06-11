@@ -9,8 +9,36 @@ import {
   parseFieldAt,
   DEFAULT_RECENCY_HALF_LIFE_MS,
   METRIC_KINDS,
+  COMPUTED_METRICS,
+  SUPPLIED_ONLY_METRICS,
+  classifyMetric,
   type MetricInputs,
 } from './metrics.ts';
+
+test('classifyMetric splits lanes into computed / supplied-only / designed', () => {
+  // every computed lane is actually produced by computeMetrics for a baseline input
+  const out = computeMetrics({
+    proximity: 1, visible: 1, engaged: true, dtFrames: 1,
+    relResolved: 1, relTotal: 1, relConflict: 0, supplied: {}, prev: {},
+  });
+  for (const m of COMPUTED_METRICS) {
+    assert.equal(classifyMetric(m), 'computed');
+    assert.equal(typeof out[m], 'number', `${m} is computed every frame`);
+  }
+  for (const m of SUPPLIED_ONLY_METRICS) {
+    assert.equal(classifyMetric(m), 'supplied-only');
+    assert.equal(out[m], undefined, `${m} is absent unless supplied`);
+  }
+  // the semantic lanes the nav sweep hit are 'designed' — host-supplied or inert
+  assert.equal(classifyMetric('signal'), 'designed');
+  assert.equal(classifyMetric('route-strength'), 'designed');
+  assert.equal(classifyMetric('sync'), 'designed');
+  // COMPUTED + SUPPLIED-ONLY partition METRIC_KINDS exactly
+  assert.deepEqual(
+    [...COMPUTED_METRICS, ...SUPPLIED_ONLY_METRICS].sort(),
+    [...METRIC_KINDS].sort(),
+  );
+});
 
 const base: MetricInputs = {
   proximity: 0,

@@ -1,9 +1,11 @@
-// Shared helpers for the navigation sweep — the invisible-fields treatment applied to nav chrome.
-// Every binding is signals-only (render: []) and reduced-motion-guarded; the engine writes
-// --field-* custom properties back onto the links, which CSS turns into ink/weight/marks. With the
-// engine off the vars are simply unset and the links render as plain, reachable chrome.
-import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+// Site-side glue for the navigation sweep. The signals-only binding itself now lives in the platform
+// (`bindFieldNav`); this module keeps the SITE policy on top of it: the cross-surface visit log (the
+// "seen / where have I been" memory) and route normalization. `applyNavField` is a thin adapter that
+// feeds the visit log to `bindFieldNav` as a `visited` predicate, so every site runtime keeps its
+// existing call shape.
+import { bindFieldNav, type FieldNavHandle } from "@field-ui/platform";
+
+export type NavFieldHandle = FieldNavHandle;
 
 export const reduceMotion = (): boolean =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -33,66 +35,21 @@ export function recordVisit(route: string): void {
   }
 }
 
-const METRIC_VARS = [
-  "--field-attention",
-  "--field-memory",
-  "--field-priority",
-  "--field-density",
-  "--field-recency",
-];
-
-export interface NavFieldHandle {
-  destroy(): void;
-}
-
 /**
- * Apply a recipe signals-only over the `<a>` links inside `root`. Optionally pin one link as the
- * "well"/current (data-field-attention=1) and mark previously-visited links (data-field-memory=1 +
- * a `nav-visited` class) from the visit log. Returns a teardown, or null when there's nothing to do
- * (reduced motion, no links, unknown recipe, or the engine failed to load).
+ * Apply a recipe signals-only over the `<a>` links inside `root` (via the platform's `bindFieldNav`).
+ * Optionally pin one link as the current/"well" and mark previously-visited links from the site visit
+ * log. Returns a teardown, or null when there's nothing to bind (reduced motion, no links, unknown
+ * recipe).
  */
 export function applyNavField(
   root: HTMLElement,
   recipeId: string,
   opts: { pin?: HTMLElement | null; markVisited?: boolean; extraMetrics?: string[] } = {},
 ): NavFieldHandle | null {
-  if (reduceMotion()) return null;
-  const links = [...root.querySelectorAll<HTMLAnchorElement>("a[href]")];
-  if (!links.length) return null;
-  const pinned = opts.pin ?? null;
-  pinned?.setAttribute("data-field-attention", "1");
-  const marked: HTMLElement[] = [];
-  if (opts.markVisited) {
-    const visited = loadVisited();
-    for (const a of links) {
-      if (visited.has(normRoute(a.getAttribute("href") || ""))) {
-        a.setAttribute("data-field-memory", "1");
-        a.classList.add("nav-visited");
-        marked.push(a);
-      }
-    }
-  }
-  try {
-    const base = recipeById(recipeId);
-    if (!base) return null;
-    const applied = applyRecipe(root, base, {
-      bodies: links,
-      annotateBodies: false,
-      renderless: true,
-      extraMetrics: opts.extraMetrics ?? ["attention", "memory"],
-    });
-    return {
-      destroy() {
-        applied.destroy();
-        pinned?.removeAttribute("data-field-attention");
-        for (const a of marked) {
-          a.removeAttribute("data-field-memory");
-          a.classList.remove("nav-visited");
-        }
-        for (const a of links) for (const v of METRIC_VARS) a.style.removeProperty(v);
-      },
-    };
-  } catch {
-    return null;
-  }
+  const visited = opts.markVisited ? loadVisited() : null;
+  return bindFieldNav(root, recipeId, {
+    pin: opts.pin ?? null,
+    visited: visited ? (href) => visited.has(normRoute(href)) : undefined,
+    extraMetrics: opts.extraMetrics,
+  });
 }

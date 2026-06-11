@@ -18,9 +18,38 @@ import {
   lintFeedbackVars,
   lintSinkFeedback,
   lintFeedbackVarReads,
+  lintInertFeedback,
   lintSchedulerViolations,
   lintPlatform,
 } from './lint.ts';
+
+/** A fake FeedbackRegistry exposing just the boundVars() the inert-lane rule reads. */
+function fakeFeedback(entries: Array<{ element: Element; vars: string[] }>): FeedbackRegistry {
+  return { boundVars: () => entries } as unknown as FeedbackRegistry;
+}
+
+test('lintInertFeedback flags a designed lane neither computed nor supplied (the nav-sweep gap)', () => {
+  // navigation-current declares memory (computed) + signal/route-strength (designed, unsupplied)
+  const el = { getAttribute: () => null, hasAttribute: () => false } as unknown as Element;
+  const w = lintInertFeedback(
+    fakeFeedback([{ element: el, vars: ['--field-memory', '--field-signal', '--field-route-strength'] }]),
+  );
+  assert.equal(w.length, 2);
+  assert.ok(w.every((x) => x.code === 'feedback-lane-inert'));
+});
+
+test('lintInertFeedback stays quiet when the lane is computed, supplied, or not a --field- lane', () => {
+  const computed = { getAttribute: () => null, hasAttribute: () => false } as unknown as Element;
+  assert.deepEqual(
+    lintInertFeedback(fakeFeedback([{ element: computed, vars: ['--field-attention', '--field-memory', '--field-priority'] }])),
+    [],
+  );
+  // host grounds the designed lane → fine
+  const supplied = { getAttribute: () => '0.5', hasAttribute: (n: string) => n === 'data-field-signal' } as unknown as Element;
+  assert.deepEqual(lintInertFeedback(fakeFeedback([{ element: supplied, vars: ['--field-signal'] }])), []);
+  // non --field- channels (--d, --load) are out of scope
+  assert.deepEqual(lintInertFeedback(fakeFeedback([{ element: computed, vars: ['--d', '--load'] }])), []);
+});
 
 function fakeEl(connected = true): Element {
   const el = new EventTarget() as unknown as Element & { isConnected: boolean };
