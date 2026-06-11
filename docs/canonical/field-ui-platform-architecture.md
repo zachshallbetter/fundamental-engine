@@ -117,9 +117,12 @@ report of the phases that ran and any violations.
    - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
      `data-field-visual-role` (`scan()`), the accessibility lint, and source→visual state mirroring
      (`setMirroring` / `mirrorNow` / `MIRRORED_CHANNELS`).
-   - **Not implemented:** font outline extraction, text → SVG path conversion, and glyph-contour
-     geometry. `scan()` binds an *authored* visual to its source; it does not generate vector
-     typography from text. (The Contour Sink tier — tracked as #257's remaining slices.)
+   - **Build-time, not platform:** glyph-outline extraction (text → SVG path data) ships as the
+     site's build step (`apps/site/scripts/gen-contours.mjs`, opentype.js over the self-hosted
+     face — committed output, no font parsing in the browser); the generated SVG binds like any
+     authored visual and receives mirrored state. A *runtime* extraction primitive in the platform
+     remains unbuilt (a named frontier). True offset contours (constant-distance rings) need a
+     polygon-offsetting pass and are likewise future work.
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*

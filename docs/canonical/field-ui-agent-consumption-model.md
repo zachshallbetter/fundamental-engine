@@ -155,8 +155,10 @@ Body Matter Interaction
                           MIRRORED_CHANNELS), so var(--load) works on the sibling
     Contour Sink        — the text/vector form: glyph outlines as the expressive
                           boundary of a Text Sink. textBodies() (platform) is its
-                          shipped geometry primitive (box/line/word boundary bodies);
-                          automatic glyph-outline extraction is #257's remaining work
+                          boundary-geometry primitive; glyph outlines are generated at
+                          BUILD time from the self-hosted face (the site's
+                          gen-contours.mjs) and bound as a representation — live at
+                          /docs/contour-typography. Runtime extraction stays a frontier
 ```
 
 | Tier | Contract | Status |
@@ -164,7 +166,7 @@ Body Matter Interaction
 | Element Sink | `data-body="sink …"` + `data-absorb`/`data-max`/`data-feedback` → `--load` | **shipped** |
 | Text Sink | identical — text elements are ordinary bodies; a11y rule: the text stays real | **shipped** |
 | Bound Visual Sink | `data-field-visual-for` + platform state mirroring (`setMirroring`, default on) | **shipped** |
-| Contour Sink | authored-SVG form works via Bound Visual mirroring; auto glyph outlines | **partial** (#257) |
+| Contour Sink | build-time glyph outlines (gen-contours.mjs) + Bound Visual mirroring; demo on /docs/contour-typography | **shipped** (build-time; runtime extraction is a named frontier) |
 
 Naming discipline: the tiers are *surfaces of one contract*, not new tokens — the token is `sink`
 in every tier, and a chip or doc that prints `ABSORB` instead of `SINK` is wrong (absorb is the

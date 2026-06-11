@@ -210,8 +210,10 @@ Body Matter Interaction
                           MIRRORED_CHANNELS), so var(--load) works on the sibling
     Contour Sink        — the text/vector form: glyph outlines as the expressive
                           boundary of a Text Sink. textBodies() (platform) is its
-                          shipped geometry primitive (box/line/word boundary bodies);
-                          automatic glyph-outline extraction is #257's remaining work
+                          boundary-geometry primitive; glyph outlines are generated at
+                          BUILD time from the self-hosted face (the site's
+                          gen-contours.mjs) and bound as a representation — live at
+                          /docs/contour-typography. Runtime extraction stays a frontier
 ```
 
 | Tier | Contract | Status |
@@ -219,7 +221,7 @@ Body Matter Interaction
 | Element Sink | `data-body="sink …"` + `data-absorb`/`data-max`/`data-feedback` → `--load` | **shipped** |
 | Text Sink | identical — text elements are ordinary bodies; a11y rule: the text stays real | **shipped** |
 | Bound Visual Sink | `data-field-visual-for` + platform state mirroring (`setMirroring`, default on) | **shipped** |
-| Contour Sink | authored-SVG form works via Bound Visual mirroring; auto glyph outlines | **partial** (#257) |
+| Contour Sink | build-time glyph outlines (gen-contours.mjs) + Bound Visual mirroring; demo on /docs/contour-typography | **shipped** (build-time; runtime extraction is a named frontier) |
 
 Naming discipline: the tiers are *surfaces of one contract*, not new tokens — the token is `sink`
 in every tier, and a chip or doc that prints `ABSORB` instead of `SINK` is wrong (absorb is the
@@ -2550,9 +2552,12 @@ report of the phases that ran and any violations.
    - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
      `data-field-visual-role` (`scan()`), the accessibility lint, and source→visual state mirroring
      (`setMirroring` / `mirrorNow` / `MIRRORED_CHANNELS`).
-   - **Not implemented:** font outline extraction, text → SVG path conversion, and glyph-contour
-     geometry. `scan()` binds an *authored* visual to its source; it does not generate vector
-     typography from text. (The Contour Sink tier — tracked as #257's remaining slices.)
+   - **Build-time, not platform:** glyph-outline extraction (text → SVG path data) ships as the
+     site's build step (`apps/site/scripts/gen-contours.mjs`, opentype.js over the self-hosted
+     face — committed output, no font parsing in the browser); the generated SVG binds like any
+     authored visual and receives mirrored state. A *runtime* extraction primitive in the platform
+     remains unbuilt (a named frontier). True offset contours (constant-distance rings) need a
+     polygon-offsetting pass and are likewise future work.
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*
