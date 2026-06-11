@@ -9,6 +9,15 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **Platform registries close their exits.** Three registries leaked entries for elements that
+  left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
+  elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never
+  re-resolved when a target later mounted), and `StateRegistry` (per-key `delete` stranded empty
+  listener maps). Each now prunes disconnected elements at its natural moment — `flush()`,
+  `discover()` (which also re-resolves late-mounting targets by replacing the unresolved set),
+  and a new `prune()` — and gains an explicit `unregister(element)` for immediate reclamation,
+  matching the standard `MeasurementRegistry` and `VisualBindingRegistry` already set.
+
 - **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,
   `updateWarpTargets` now clears `pairBody` and `warpHas` so the wormhole closes instead of
   relocating matter to the detached node. The link re-resolves naturally on the next rescan.
