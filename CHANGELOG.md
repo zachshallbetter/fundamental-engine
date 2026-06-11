@@ -20,6 +20,14 @@ git tag (see [RELEASING.md](RELEASING.md)).
   instead of patching the global. The site-level `politeLoop` (apps/site) gains injectable
   `isHidden` and `onVisibilityChange` options (both default to the live `document` behaviour) for
   the same reason.
+- **Platform registries close their exits.** Three registries leaked entries for elements that
+  left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
+  elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never
+  re-resolved when a target later mounted), and `StateRegistry` (per-key `delete` stranded empty
+  listener maps). Each now prunes disconnected elements at its natural moment — `flush()`,
+  `discover()` (which also re-resolves late-mounting targets by replacing the unresolved set),
+  and a new `prune()` — and gains an explicit `unregister(element)` for immediate reclamation,
+  matching the standard `MeasurementRegistry` and `VisualBindingRegistry` already set.
 
 - **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,
   `updateWarpTargets` now clears `pairBody` and `warpHas` so the wormhole closes instead of

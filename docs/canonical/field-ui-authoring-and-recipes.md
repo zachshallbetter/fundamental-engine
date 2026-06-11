@@ -192,7 +192,8 @@ type FieldRecipe = {
   diagnostics: string[]               // render/diagnostic modes that reveal the behavior
   conditions?: string[]               // activation vocabulary — when the behavior applies
   bodies: BodyRecipe[]                // each body may carry `when` — the EXECUTABLE gate (data-when)
-  relationships?: RelationshipRecipe[]
+  relationships?: RelationshipRecipe[]  // compiled metadata only — used for the reduced-motion static display;
+                                        // NOT registered as live edges into RelationshipRegistry
   render: RenderLayer[]               // compiled to a render PLAN; executes when applyRecipe gets a field
   accessibility: AccessibilityRecipe  // required: reducedMotion + meaningWithoutMotion
   status?: RecipeStatus               // implementation status
@@ -205,6 +206,14 @@ type FieldRecipe = {
 The lanes stay separate: `primitives` (runtime tokens) execute, `concepts` / `translation` describe,
 `metrics` measure, `diagnostics` explain, `conditions` activate. `validateRecipe` rejects a token that
 appears in more than one lane.
+
+`relationships` is **compiled metadata, not a live-graph registration**. `compileRecipe` preserves
+the declared `from → to` pairs for one purpose only: populating the reduced-motion static display
+(`applyRecipe` renders them as a `<p class="rs-rels">` list when `prefers-reduced-motion` is set).
+The `RelationshipRegistry`'s live graph is built solely by `RelationshipRegistry.discover()`,
+which reads native DOM signals — `a[href^="#"]`, `label[for]`, ARIA references, and
+`data-field-relation` / `data-field-target` attributes. A recipe author who wants an edge in the
+live graph must author it in HTML with `data-field-relation`, not in the recipe schema.
 
 `validateRecipe` returns a problem for any unknown force token, unknown render layer, unknown
 diagnostic mode, unknown fundamental field, an unknown per-body `when` condition id (an unregistered

@@ -1,0 +1,47 @@
+---
+// The correlation, made visible (one band, all twelve examples): what the field READS in the
+// data, what that BECOMES in the field, which CSS variables it WRITES, and what you SEE — the
+// pipeline every invisible-field page runs, stated structurally instead of buried in prose.
+// Content comes from the roster (invisible-fields.ts), the family's single source of truth.
+import { INVISIBLE_FIELDS } from "../../lib/invisible-fields.ts";
+
+interface Props {
+  /** roster slug — picks the page's mapping */
+  slug: string;
+}
+const { slug } = Astro.props;
+const entry = INVISIBLE_FIELDS.find((f) => f.slug === slug);
+---
+
+{
+  entry && (
+    <section class="ev-explainer" aria-label="What the field does on this page">
+      <ol class="ev-pipeline">
+        <li>
+          <i>reads</i>
+          <span>{entry.reads}</span>
+        </li>
+        <li>
+          <i>becomes</i>
+          <span>{entry.becomes}</span>
+        </li>
+        <li>
+          <i>writes</i>
+          <span class="ev-vars">
+            {entry.writes.map((v) => (
+              <code>{v}</code>
+            ))}
+          </span>
+        </li>
+        <li>
+          <i>you see</i>
+          <span>{entry.see}</span>
+        </li>
+      </ol>
+      <p class="ev-instead">
+        No canvas is drawn here — the field is invisible; these variables are its only output.
+        Without it you would build: <em>{entry.instead}</em>.
+      </p>
+    </section>
+  )
+}

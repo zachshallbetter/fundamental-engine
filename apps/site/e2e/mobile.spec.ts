@@ -62,7 +62,8 @@ test.describe("mobile · sidebar", () => {
   test("the roster renders as the horizontal chip strip with 12 items", async ({ page }) => {
     await page.goto("/evidence");
     const list = page.locator(".ev-side-list");
-    await expect(list.locator("a.ev-side-item")).toHaveCount(12);
+    // 12 roster examples + the Overview door (not a roster entry) — match the desktop sidebar spec
+    await expect(list.locator("a.ev-side-item:not(.ev-side-overview)")).toHaveCount(12);
     // the ≤1080px layout: a row that scrolls horizontally inside itself
     await expect(list).toHaveCSS("flex-direction", "row");
     await expect(list).toHaveCSS("overflow-x", "auto");
