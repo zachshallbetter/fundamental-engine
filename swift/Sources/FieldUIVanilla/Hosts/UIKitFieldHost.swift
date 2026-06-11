@@ -7,7 +7,7 @@ import FieldUIPlatform
 
 /// The FieldHost implementation for UIKit (iOS / iPadOS).
 /// Maps UIKit geometry, events, and display sync to the platform-agnostic FieldHost protocol.
-public final class UIKitFieldHost: FieldHost {
+final class UIKitFieldHost: FieldHost {
     private weak var rootView: UIView?
     private var displayLink: CADisplayLink?
     private var frameCallback: ((TimeInterval) -> Void)?

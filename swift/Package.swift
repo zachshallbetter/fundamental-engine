@@ -9,13 +9,19 @@ let package = Package(
         .visionOS(.v1),
     ],
     products: [
-        .library(name: "FieldUICore",      targets: ["FieldUICore"]),
-        .library(name: "FieldUIPlatform",  targets: ["FieldUIPlatform"]),
-        .library(name: "FieldUIiOS",       targets: ["FieldUIiOS"]),
-        .library(name: "FieldUImacOS",     targets: ["FieldUImacOS"]),
-        .library(name: "FieldUIvisionOS",  targets: ["FieldUIvisionOS"]),
+        // Pure physics contracts — use this when you only need the engine types.
+        .library(name: "FieldUICore",     targets: ["FieldUICore"]),
+        // Platform scheduler + registries — use when building a custom integration.
+        .library(name: "FieldUIPlatform", targets: ["FieldUIPlatform"]),
+        // The universal imperative API — works on iOS, macOS, and visionOS.
+        // The Swift equivalent of @field-ui/vanilla.
+        .library(name: "FieldUIVanilla",  targets: ["FieldUIVanilla"]),
+        // SwiftUI adapter — drop-in FieldView + modifiers.
+        // The Swift equivalent of @field-ui/react.
+        .library(name: "FieldUISwiftUI",  targets: ["FieldUISwiftUI"]),
     ],
     targets: [
+        // ── Core ────────────────────────────────────────────────────────────
         // Pure physics — no platform imports, no UIKit/AppKit/RealityKit.
         // 3D-native: Vec3 = SIMD3<Float> throughout.
         .target(
@@ -23,32 +29,32 @@ let package = Package(
             path: "Sources/FieldUICore",
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
         ),
-        // The six-phase scheduler + registries. No UIKit/AppKit dep.
-        // Depends on FieldUICore for shared types.
+        // ── Platform ────────────────────────────────────────────────────────
+        // Six-phase scheduler + registries. No UIKit/AppKit dep.
         .target(
             name: "FieldUIPlatform",
             dependencies: ["FieldUICore"],
             path: "Sources/FieldUIPlatform",
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
         ),
-        // UIKit host + UIView-based measurement / render.
+        // ── Vanilla ─────────────────────────────────────────────────────────
+        // Universal imperative API. Platform hosts are internal — selected at
+        // compile time via #if canImport(UIKit/AppKit/RealityKit). One import,
+        // all Apple platforms.
         .target(
-            name: "FieldUIiOS",
+            name: "FieldUIVanilla",
             dependencies: ["FieldUICore", "FieldUIPlatform"],
-            path: "Sources/FieldUIiOS"
+            path: "Sources/FieldUIVanilla"
         ),
-        // AppKit host + NSView-based measurement / render.
+        // ── SwiftUI ─────────────────────────────────────────────────────────
+        // Declarative SwiftUI adapter. Wraps FieldUIVanilla, adds FieldView and
+        // view modifiers. Mirror of @field-ui/react.
         .target(
-            name: "FieldUImacOS",
-            dependencies: ["FieldUICore", "FieldUIPlatform"],
-            path: "Sources/FieldUImacOS"
+            name: "FieldUISwiftUI",
+            dependencies: ["FieldUIVanilla"],
+            path: "Sources/FieldUISwiftUI"
         ),
-        // RealityKit / SwiftUI host — full volumetric simulation.
-        .target(
-            name: "FieldUIvisionOS",
-            dependencies: ["FieldUICore", "FieldUIPlatform"],
-            path: "Sources/FieldUIvisionOS"
-        ),
+        // ── Tests ────────────────────────────────────────────────────────────
         .testTarget(
             name: "FieldUICoreTests",
             dependencies: ["FieldUICore"],
@@ -58,6 +64,11 @@ let package = Package(
             name: "FieldUIPlatformTests",
             dependencies: ["FieldUIPlatform"],
             path: "Tests/FieldUIPlatformTests"
+        ),
+        .testTarget(
+            name: "FieldUIVanillaTests",
+            dependencies: ["FieldUIVanilla"],
+            path: "Tests/FieldUIVanillaTests"
         ),
     ]
 )

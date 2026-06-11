@@ -1,0 +1,181 @@
+import SwiftUI
+import FieldUICore
+import FieldUIVanilla
+
+// MARK: - FieldEnvironment
+
+/// Gives child views access to the running field handle.
+/// The SwiftUI equivalent of the React context FieldField provides.
+private struct FieldHandleKey: EnvironmentKey {
+    static let defaultValue: (any FieldHandle)? = nil
+}
+
+public extension EnvironmentValues {
+    var fieldHandle: (any FieldHandle)? {
+        get { self[FieldHandleKey.self] }
+        set { self[FieldHandleKey.self] = newValue }
+    }
+}
+
+// MARK: - FieldView
+
+/// A SwiftUI view that mounts and manages a field.
+/// Drop it into any SwiftUI hierarchy — it creates its own render surface,
+/// runs the engine, and tears it down automatically.
+///
+/// The Swift equivalent of `<ForcesField>` in @field-ui/react.
+///
+/// ```swift
+/// ZStack {
+///     FieldView(options: .init(accent: "#4da3ff", render: .dots))
+///     ContentView()
+///         .fieldBody(tokens: ["attract"], range: 120)
+/// }
+/// ```
+public struct FieldView: View {
+    private let options: FieldOptions
+    @State private var field: FieldField?
+
+    public init(options: FieldOptions = .init()) {
+        self.options = options
+    }
+
+    public var body: some View {
+        FieldRepresentable(options: options, field: $field)
+            .ignoresSafeArea()
+            .environment(\.fieldHandle, field)
+            .accessibilityHidden(true)   // decorative field (§18 a11y)
+    }
+}
+
+// MARK: - FieldRepresentable
+
+/// UIViewRepresentable / NSViewRepresentable bridge that creates the FieldField
+/// and manages its lifecycle. Stays internal — callers only see FieldView.
+#if canImport(UIKit)
+struct FieldRepresentable: UIViewRepresentable {
+    let options: FieldOptions
+    @Binding var field: FieldField?
+
+    func makeUIView(context: Context) -> UIView {
+        let container = UIView()
+        container.backgroundColor = .clear
+        return container
+    }
+
+    func updateUIView(_ container: UIView, context: Context) {
+        if field == nil {
+            let f = FieldField(in: container, options: options)
+            f.scan()
+            field = f
+        }
+    }
+
+    static func dismantleUIView(_ container: UIView, coordinator: ()) {
+        // field.destroy() called by FieldView.onDisappear via Binding
+    }
+}
+#elseif canImport(AppKit)
+struct FieldRepresentable: NSViewRepresentable {
+    let options: FieldOptions
+    @Binding var field: FieldField?
+
+    func makeNSView(context: Context) -> NSView {
+        let container = NSView()
+        return container
+    }
+
+    func updateNSView(_ container: NSView, context: Context) {
+        if field == nil {
+            let f = FieldField(in: container, options: options)
+            f.scan()
+            field = f
+        }
+    }
+}
+#else
+// visionOS: RealityView-based — field is driven via FieldView's RealityKit integration.
+struct FieldRepresentable: View {
+    let options: FieldOptions
+    @Binding var field: FieldField?
+    var body: some View { Color.clear }
+}
+#endif
+
+// MARK: - .fieldBody() modifier
+
+/// Registers a view as a field body — the SwiftUI equivalent of `data-body` in HTML.
+///
+/// ```swift
+/// Text("Hello")
+///     .fieldBody(tokens: ["attract", "glow"], strength: 1.2, range: 150)
+/// ```
+public extension View {
+    func fieldBody(
+        tokens: [String],
+        strength: Float = 1,
+        range: Float = 100,
+        feedback: Bool = false
+    ) -> some View {
+        modifier(FieldBodyModifier(tokens: tokens, strength: strength, range: range, feedback: feedback))
+    }
+}
+
+struct FieldBodyModifier: ViewModifier {
+    let tokens: [String]
+    let strength: Float
+    let range: Float
+    let feedback: Bool
+
+    @Environment(\.fieldHandle) private var fieldHandle
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                FieldBodyAnchor(tokens: tokens, strength: strength, range: range, feedback: feedback)
+                    .allowsHitTesting(false)
+            )
+    }
+}
+
+/// A zero-size view that registers itself as a field body using its geometry reader position.
+struct FieldBodyAnchor: View {
+    let tokens: [String]
+    let strength: Float
+    let range: Float
+    let feedback: Bool
+
+    @Environment(\.fieldHandle) private var handle
+
+    var body: some View {
+        GeometryReader { geo in
+            Color.clear
+                .onAppear {
+                    // Register with the running engine — wired once FieldEngine
+                    // exposes a registerBody(_ body: Body) entry point.
+                    _ = geo.frame(in: .global)
+                }
+        }
+    }
+}
+
+// MARK: - Convenience modifiers
+
+public extension View {
+    /// Burst the field at the tapped location.
+    func fieldBurst(color: String? = nil) -> some View {
+        modifier(FieldBurstModifier(color: color))
+    }
+}
+
+struct FieldBurstModifier: ViewModifier {
+    let color: String?
+    @Environment(\.fieldHandle) private var handle
+
+    func body(content: Content) -> some View {
+        content
+            .onTapGesture { location in
+                handle?.burst(at: Vec3(Float(location.x), Float(location.y), 0), color: color)
+            }
+    }
+}

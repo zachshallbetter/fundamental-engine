@@ -22,7 +22,7 @@ public struct FieldMeasurement {
 /// Strict read-phase: `measure()` only reads. Feedback (writes) happens separately.
 public final class MeasurementRegistry {
     private var entries: [ObjectIdentifier: Body] = [:]
-    private(set) var snapshot: [FieldMeasurement] = []
+    public private(set) var snapshot: [FieldMeasurement] = []
     private var guard_: ((String) -> Void)?
 
     public init() {}

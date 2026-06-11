@@ -24,6 +24,10 @@ public struct EnergyReport {
     public var thermal: Float
     public var total: Float
     public var count: Int
+
+    public init(kinetic: Float, thermal: Float, total: Float, count: Int) {
+        self.kinetic = kinetic; self.thermal = thermal; self.total = total; self.count = count
+    }
 }
 
 /// Per-element feedback the engine produces each frame (Phase D3 seam).

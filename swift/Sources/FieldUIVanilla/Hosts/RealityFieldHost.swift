@@ -13,7 +13,7 @@ import FieldUIPlatform
 /// directly by a RealityKit Entity hierarchy.
 ///
 /// Projection: identity (particles live in 3D world space; no 2D projection needed).
-public final class RealityFieldHost: FieldHost {
+final class RealityFieldHost: FieldHost {
     /// The root RealityKit Entity that owns the simulation volume.
     public let root: Entity
     /// World-space volume the simulation occupies (in meters on visionOS).

@@ -6,7 +6,7 @@ import FieldUIPlatform
 // MARK: - AppKitFieldHost
 
 /// The FieldHost implementation for AppKit (macOS).
-public final class AppKitFieldHost: FieldHost {
+final class AppKitFieldHost: FieldHost {
     private weak var rootView: NSView?
     private var displayLink: CVDisplayLink?
     private var frameCallback: ((TimeInterval) -> Void)?
