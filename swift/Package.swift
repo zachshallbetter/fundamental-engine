@@ -55,6 +55,28 @@ let package = Package(
             dependencies: ["FieldUIVanilla"],
             path: "Sources/FieldUISwiftUI"
         ),
+        // ── FieldLab (the showcase) ─────────────────────────────────────────
+        // Scene specs + the headless snapshot pipeline, shared by the app and
+        // the proof tool — what a snapshot shows is exactly what the app runs.
+        .target(
+            name: "FieldLabKit",
+            dependencies: ["FieldUICore", "FieldUIVanilla"],
+            path: "Sources/FieldLabKit"
+        ),
+        // The macOS lab app: every engine pillar as a live, interactive scene.
+        //   swift run FieldLab
+        .executableTarget(
+            name: "FieldLab",
+            dependencies: ["FieldLabKit", "FieldUICore", "FieldUIVanilla"],
+            path: "Sources/FieldLab"
+        ),
+        // Headless proof: renders the tour scenes to PNGs through the real engine.
+        //   swift run -c release FieldLabSnapshots /tmp/fieldlab
+        .executableTarget(
+            name: "FieldLabSnapshots",
+            dependencies: ["FieldLabKit"],
+            path: "Sources/FieldLabSnapshots"
+        ),
         // ── Tests ────────────────────────────────────────────────────────────
         .testTarget(
             name: "FieldUICoreTests",

@@ -32,7 +32,7 @@ final class UIKitFieldHost: FieldHost {
     public var volume: FieldVolume {
         // the mount's own bounds, not the screen — works on visionOS (no UIScreen)
         // and sizes per-view embeddings correctly everywhere else.
-        let bounds = rootView?.window?.bounds ?? rootView?.bounds ?? .zero
+        let bounds = rootView?.bounds ?? .zero // the mount IS the field; works on visionOS too (no UIScreen)
         let scale  = rootView?.traitCollection.displayScale ?? 1
         return FieldVolume(
             width:  Float(bounds.width),

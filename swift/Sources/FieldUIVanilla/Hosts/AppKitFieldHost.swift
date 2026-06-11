@@ -22,8 +22,8 @@ final class AppKitFieldHost: FieldHost {
     // MARK: FieldHost — geometry
 
     public var volume: FieldVolume {
-        // the mount's own bounds, matching the UIKit host — per-view embeddings size correctly.
-        let bounds = rootView?.window?.frame ?? rootView?.bounds ?? .zero
+        // the mount IS the field: per-view embeddings size to their own bounds.
+        let bounds = rootView?.bounds ?? .zero
         let scale = rootView?.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 1
         return FieldVolume(
             width:  Float(bounds.width),
@@ -69,9 +69,19 @@ final class AppKitFieldHost: FieldHost {
         frameCallback = nil
     }
 
-    // MARK: FieldHost — events (stubs; connect via NSNotificationCenter / KVO as needed)
+    // MARK: FieldHost — events
 
-    public func onResize(_ callback: @escaping () -> Void) -> () -> Void { { } }
+    /// Real resize wiring: the engine rebuilds its pool when the mount's frame changes
+    /// (the JS engine does the same on window resize).
+    public func onResize(_ callback: @escaping () -> Void) -> () -> Void {
+        guard let view = rootView else { return {} }
+        view.postsFrameChangedNotifications = true
+        let token = NotificationCenter.default.addObserver(
+            forName: NSView.frameDidChangeNotification, object: view, queue: .main
+        ) { _ in callback() }
+        return { NotificationCenter.default.removeObserver(token) }
+    }
+
     public func onScroll(_ callback: @escaping () -> Void) -> () -> Void { { } }
     public func onVisibility(_ callback: @escaping () -> Void) -> () -> Void { { } }
     public func onInput(_ callback: @escaping () -> Void) -> () -> Void { { } }
