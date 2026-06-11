@@ -23,10 +23,10 @@ export const CONTOUR_CHARGE: FieldRecipe = {
   concepts: ['vessel', 'charge-up', 'discharge', 'glow', 'contour'],
   conditions: ['active'],
   bodies: [
-    // one body carries both tokens: attract gathers, sink captures — both gated on engagement,
-    // so the vessel only charges while attended. data-when='active' is what arms the engine's
-    // falling-edge discharge.
-    { body: 'sink attract', strength: 0.9, range: 300, feedback: true },
+    // one body carries both tokens: attract gathers, sink captures — both gated on engagement
+    // via the executable `when` gate (compiled to data-when='active'), which is also what arms
+    // the engine's falling-edge discharge. The recipe now carries its own activation (#370).
+    { body: 'sink attract', strength: 0.9, range: 300, feedback: true, when: 'active' },
   ],
   render: ['particles', 'heatmap'],
   metrics: ['density', 'load'],
