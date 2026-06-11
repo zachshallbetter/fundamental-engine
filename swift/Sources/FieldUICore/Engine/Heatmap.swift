@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - Heatmap (heatmap.ts, field-systems H1)
 //

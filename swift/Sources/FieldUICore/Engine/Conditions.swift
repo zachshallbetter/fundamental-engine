@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - Built-in `when` gate predicates (§5) — conditions.ts
 //

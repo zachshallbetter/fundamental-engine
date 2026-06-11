@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - Streamlines / vector-field probes (streamlines.ts, §20.6 diagnostic)
 //

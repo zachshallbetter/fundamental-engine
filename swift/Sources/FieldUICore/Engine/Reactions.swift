@@ -1,4 +1,6 @@
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - Micro-reactions (§23)
 // "Energy isn't lost — it's spent on spectacle." (§23.1)

@@ -1,5 +1,7 @@
 import Testing
+#if canImport(simd)
 import simd
+#endif
 @testable import FieldUICore
 
 @Suite("Geometry")

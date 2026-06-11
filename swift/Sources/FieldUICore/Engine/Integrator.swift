@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - The integrator (§2.2, §7)
 //

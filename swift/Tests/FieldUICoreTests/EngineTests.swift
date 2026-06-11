@@ -1,6 +1,8 @@
 import Foundation
 import Testing
+#if canImport(simd)
 import simd
+#endif
 @testable import FieldUICore
 
 // MARK: - Helpers

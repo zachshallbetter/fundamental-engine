@@ -1,6 +1,8 @@
 import Foundation
 import Testing
+#if canImport(simd)
 import simd
+#endif
 @testable import FieldUICore
 
 // Tests for the full-parity port: grids, waves, flow, conditions, thermo, attention,

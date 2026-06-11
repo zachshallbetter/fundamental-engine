@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - Measured thermodynamics (thermo.ts, workover v0.3 §"Metrics")
 //

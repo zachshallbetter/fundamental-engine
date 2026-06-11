@@ -1,4 +1,6 @@
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - Field-line seeds (apps/site field-probe `traceDipole`, made multi-body)
 //

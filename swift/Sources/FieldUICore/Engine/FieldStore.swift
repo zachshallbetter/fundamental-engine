@@ -1,4 +1,6 @@
+#if canImport(simd)
 import simd
+#endif
 
 /// FieldStore — owns the particle pool and the spatial index (§20.1 foundation).
 ///

@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - The bound↔free reservoir (reservoir.ts, §2.4)
 //

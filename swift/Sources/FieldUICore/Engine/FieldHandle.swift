@@ -1,4 +1,6 @@
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - FieldOptions
 

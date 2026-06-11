@@ -1,4 +1,6 @@
+#if canImport(simd)
 import simd
+#endif
 
 /// A uniform-grid spatial hash for neighbour queries — the index that makes
 /// particle↔particle forces (§20.1 class [B]) O(n·k) instead of O(n²).

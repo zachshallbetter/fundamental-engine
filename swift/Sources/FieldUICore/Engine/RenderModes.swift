@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(simd)
 import simd
+#endif
 
 // MARK: - Render-mode geometry (render-modes.ts, §20.6)
 //

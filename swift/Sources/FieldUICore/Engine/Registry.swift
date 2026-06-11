@@ -1,4 +1,6 @@
+#if canImport(simd)
 import simd
+#endif
 
 /// The force + condition registry (§4, §5). The engine never changes to add a force —
 /// register a module and a body opts in by carrying its token.
