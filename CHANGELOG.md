@@ -30,6 +30,17 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **One source of truth for reduced-motion and page-visibility probes (`@field-ui/platform`).** Four
+  independent `matchMedia('(prefers-reduced-motion: reduce)')` calls and two direct `document.hidden`
+  reads scattered across `flip.ts`, `field-nav.ts`, `apply-recipe.ts`, and `browser-host.ts` have
+  been consolidated into a single `env.ts` module exposing `prefersReducedMotion()` and
+  `pageHidden()`. Both helpers are SSR-safe (return `false` when `window`/`document` are absent) and
+  accept overrides via `setEnvOverrides` / `clearEnvOverrides` — a clean test seam that replaces
+  the previous approach of stubbing `globalThis.matchMedia` in tests. `browserHost()` implements its
+  `reducedMotion` and `hidden` methods through the helpers; `flip.ts` tests now use `setEnvOverrides`
+  instead of patching the global. The site-level `politeLoop` (apps/site) gains injectable
+  `isHidden` and `onVisibilityChange` options (both default to the live `document` behaviour) for
+  the same reason.
 - **Platform registries close their exits.** Three registries leaked entries for elements that
   left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
   elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never

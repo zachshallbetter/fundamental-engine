@@ -57,6 +57,18 @@ export interface PoliteLoopOpts {
   signal: AbortSignal;
   onSuccess?: () => void;
   onFailure?: (retired: boolean) => void;
+  /**
+   * Injectable visibility probe — returns true when the page is hidden.
+   * Defaults to `() => document.hidden`. Provide a stub in tests to avoid
+   * touching `document` globals directly.
+   */
+  isHidden?: () => boolean;
+  /**
+   * Injectable visibility-change subscription — registers a listener and returns a teardown.
+   * Defaults to wiring `document.addEventListener('visibilitychange', …)`. Provide a stub in
+   * tests.
+   */
+  onVisibilityChange?: (cb: () => void) => () => void;
 }
 
 /**
@@ -65,7 +77,18 @@ export interface PoliteLoopOpts {
  * lifecycle aborts. Failures are silent by design — the page keeps its snapshot.
  */
 export function politeLoop(opts: PoliteLoopOpts): void {
-  const { run, firstDelayMs = 4000, everyMs = null, maxFailures = 3, signal } = opts;
+  const {
+    run,
+    firstDelayMs = 4000,
+    everyMs = null,
+    maxFailures = 3,
+    signal,
+    isHidden = () => typeof document !== 'undefined' && document.hidden,
+    onVisibilityChange = (cb) => {
+      document.addEventListener("visibilitychange", cb);
+      return () => document.removeEventListener("visibilitychange", cb);
+    },
+  } = opts;
   let failures = 0;
   let interval = 0;
   let retired = false;
@@ -75,7 +98,7 @@ export function politeLoop(opts: PoliteLoopOpts): void {
   let owed = false;
   const attempt = async (): Promise<void> => {
     if (signal.aborted || retired) return;
-    if (document.hidden) {
+    if (isHidden()) {
       owed = true;
       return;
     }
@@ -95,9 +118,9 @@ export function politeLoop(opts: PoliteLoopOpts): void {
     }
   };
   const onVisible = (): void => {
-    if (!document.hidden && owed) void attempt();
+    if (!isHidden() && owed) void attempt();
   };
-  document.addEventListener("visibilitychange", onVisible);
+  const removeVisibilityListener = onVisibilityChange(onVisible);
   const first = window.setTimeout(() => {
     void attempt();
     if (everyMs) interval = window.setInterval(() => void attempt(), everyMs);
@@ -106,6 +129,6 @@ export function politeLoop(opts: PoliteLoopOpts): void {
     clearTimeout(first);
     if (interval) clearInterval(interval);
     interval = 0;
-    document.removeEventListener("visibilitychange", onVisible);
+    removeVisibilityListener();
   });
 }
