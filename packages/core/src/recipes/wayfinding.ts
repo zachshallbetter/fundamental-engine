@@ -97,6 +97,11 @@ export const WAYFINDING_CURRENT: FieldRecipe = {
 export const WAYFINDING_RECIPES: readonly FieldRecipe[] = [WAYFINDING_FIELD, WAYFINDING_CURRENT];
 
 import { CHARGE_RECIPES } from './charge.ts';
+import { GRAVITY_RECIPES } from './gravity.ts';
 
 /** Experimental recipes surfaced on the /recipes hub outside the canonical 64. */
-export const EXPERIMENTAL_RECIPES: readonly FieldRecipe[] = [...WAYFINDING_RECIPES, ...CHARGE_RECIPES];
+export const EXPERIMENTAL_RECIPES: readonly FieldRecipe[] = [
+  ...WAYFINDING_RECIPES,
+  ...CHARGE_RECIPES,
+  ...GRAVITY_RECIPES,
+];

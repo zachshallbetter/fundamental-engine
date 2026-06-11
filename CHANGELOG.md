@@ -9,6 +9,18 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Traced field lines + the `gravity-field` preset.** The `field-lines` overlay reading now draws
+  the field's real *structure as curves* instead of sampled arrows: `fieldLineSeeds` (new,
+  `@field-ui/core` `fieldline-seeds.ts`) seeds each field-bearing body by its own geometry — a
+  dipole's perpendicular bisector for a magnet, a core ring for a monopole `charge`/`gravity` well —
+  and `traceFieldLines` follows the **net** field through every seed, so the bar-magnet loops, the
+  radial spokes, and the linkage between two bodies all emerge from the math (bodies that radiate no
+  `field()` get no seeds, so the diagram stays the structure, never a starburst). `FIELD_BEARING_TOKENS`
+  is the canonical set (`magnetism`, `charge`, `gravity`). Built on this, the experimental
+  **`gravity-field`** recipe presents gravity as a *visible, followable natural field* — `gravity`
+  radiates the monopole structure the lines trace, and a light `swirl` makes infalling matter thread
+  those lines in orbit rather than dropping straight in. It joins `EXPERIMENTAL_RECIPES` (outside the
+  locked 64; `gravity` and `swirl` stay their own force tokens).
 - **`fieldLineSeeds` / `dipoleSeeds` / `monopoleSeeds`** (`@field-ui/core`, `fieldlines.ts`).
   The field-line *seeding* algorithm — where to start tracing so the diagram is the correct
   STRUCTURE (dipole loops seeded along the heading's perpendicular bisector; monopole spokes
