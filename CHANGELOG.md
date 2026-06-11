@@ -7,6 +7,36 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,
+  `updateWarpTargets` now clears `pairBody` and `warpHas` so the wormhole closes instead of
+  relocating matter to the detached node. The link re-resolves naturally on the next rescan.
+
+- **Docked element removal (#368b).** A `[data-dock]` mover whose DOM node is removed while
+  docked no longer leaves the sink believing it holds that element. `updateMovers` now detects
+  `!el.isConnected`, clears `mv.docked` / `mv.dock.dock`, and skips all per-frame work for
+  the detached element — symmetric with how the rescan reconciliation handles departed bodies.
+
+- **Heatmap buffer persists across disable/enable (#369).** `setHeatmap(false)` now calls
+  `heatmap.clear()` before releasing the buffer, so a paused or mid-accumulation field never
+  bleeds stale density into the next active session. Re-enabling creates a fresh instance.
+  `Heatmap.clear()` (new) zeroes the grid and resets the peak tracker; `ScalarGridImpl.clear()`
+  (new) fills all three internal buffers with zero.
+
+### Added
+
+- **Recipes execute their declarations.** `recipe.render` and per-body condition gates stop being
+  descriptive (#370): `compileRecipe` now derives an executable render plan (one underlay matter
+  mode, the additive overlay reading stack, the heatmap toggle — unmappable layers are NAMED in
+  `plan.unapplied`, never silently dropped), and `applyRecipe` gains a structural `field` target
+  (`FieldHandle` and `<field-root>` both fit) that it drives with the plan and releases on
+  `destroy()`. `BodyRecipe.when` is the new executable gate — compiled to `data-when`, validated
+  against the engine's registered condition ids so an unknown gate is a validation error rather
+  than a silently-never-passing body. The `contour-charge` recipe now carries its own engagement
+  gate. Fully additive: without a `field` option recipes stay signals-only as before; `renderless`
+  and reduced motion skip the drive.
+
 ### Added
 
 - **RenderBackend — the drawing seam (#373).** The structural contract between the engine and a

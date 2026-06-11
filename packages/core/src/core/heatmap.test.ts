@@ -52,3 +52,25 @@ test('an empty field never divides by zero (peak floored)', () => {
   const v = hm.norm(200, 150);
   assert.ok(Number.isFinite(v) && v >= 0, `empty-field sample must be finite, got ${v}`);
 });
+
+test('clear() zeros accumulated data so a re-enabled heatmap starts fresh', () => {
+  const hm = new Heatmap(800, 600);
+  const ps = cluster();
+  // let data accumulate
+  for (let f = 0; f < 30; f++) hm.update(ps);
+  const before = hm.norm(206, 206);
+  assert.ok(before > 0.2, `should have accumulated heat before clear, got ${before.toFixed(3)}`);
+
+  // clear: buffer zeroed, peak reset to floor
+  hm.clear();
+
+  // immediately after clear the entire map is zero
+  const after = hm.norm(206, 206);
+  assert.strictEqual(after, 0, `clear() must zero the buffer — norm should be 0, got ${after}`);
+
+  // update with no particles: must stay zero and not divide by zero
+  hm.update([]);
+  const empty = hm.norm(206, 206);
+  assert.ok(Number.isFinite(empty) && empty >= 0 && empty <= 1,
+    `post-clear update with no particles must be finite ∈ [0,1], got ${empty}`);
+});
