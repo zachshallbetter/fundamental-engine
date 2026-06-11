@@ -50,6 +50,12 @@ export function createFieldPlatform(root: Element, opts: PlatformOptions = {}): 
   // read-phase discipline: measurement consults the scheduler before reading layout.
   measure.setPhaseGuard(scheduler.readGuard());
 
+  // Body Matter Interaction, Bound Visual tier: source→visual state mirroring is the platform
+  // default — a scanned representation/measurement visual receives its source's feedback channels
+  // (--d / --load / the metrics) without the author wiring anything. Change-gated; see
+  // visual-bindings.ts MIRRORED_CHANNELS.
+  visuals.setMirroring(true);
+
   // the two phases the registries own outright. Everything else is opt-in via platform.on(...).
   scheduler.on('read', (ctx) => measure.measure(ctx.now, ctx.viewport));
   scheduler.on('write', (ctx) => feedback.flush(state, ctx.now));

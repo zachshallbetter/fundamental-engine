@@ -103,11 +103,23 @@ report of the phases that ran and any violations.
    navigation. `representation` and `relationship` roles require a resolved source; a missing one is
    reported as unresolved rather than throwing.
 
+   **State mirroring (the Bound Visual Sink tier).** CSS custom properties don't cross to siblings,
+   so the registry mirrors them: with `setMirroring(true)` — the `createFieldPlatform` default —
+   every `representation`/`measurement` visual receives its source's feedback channels
+   (`MIRRORED_CHANNELS`: `--d`/`--field-density`/`--forces-density`, `--load`/`--mass`, `--lit`,
+   `--entropy`/`--coherence`/`--temperature`, `--field-heatmap-density`) copied onto its own inline
+   style — an `aria-hidden` SVG beside a sink heading thickens its contours from `var(--load)`
+   exactly as authored. Change-gated via a MutationObserver on the source's style attribute: a quiet
+   field costs nothing. `decorative`/`debug` roles never mirror. The platform runtime
+   (`startPlatformRuntime`) scans declarative visuals at start; dynamically added visuals need a
+   `platform.visuals.scan()`.
+
    - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
-     `data-field-visual-role` (`scan()`), and the accessibility lint.
+     `data-field-visual-role` (`scan()`), the accessibility lint, and source→visual state mirroring
+     (`setMirroring` / `mirrorNow` / `MIRRORED_CHANNELS`).
    - **Not implemented:** font outline extraction, text → SVG path conversion, and glyph-contour
      geometry. `scan()` binds an *authored* visual to its source; it does not generate vector
-     typography from text. (Tracked as a future frontier.)
+     typography from text. (The Contour Sink tier — tracked as #257's remaining slices.)
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*
