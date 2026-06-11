@@ -11,6 +11,7 @@
  * reduced-motion probe runs at call time). Under `prefers-reduced-motion: reduce` the mutation
  * still runs; only the animation is skipped.
  */
+import { prefersReducedMotion } from './env.ts';
 
 /** Options for {@link withFlip}. */
 export interface FlipOptions {
@@ -46,9 +47,7 @@ const DEFAULT_EASING = 'cubic-bezier(.2, .7, .2, 1)';
  * `prefers-reduced-motion: reduce` (`mutate` still runs).
  */
 export function withFlip(elements: () => HTMLElement[], mutate: () => void, opts: FlipOptions = {}): void {
-  const reduce =
-    typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce) {
+  if (prefersReducedMotion()) {
     mutate();
     return;
   }

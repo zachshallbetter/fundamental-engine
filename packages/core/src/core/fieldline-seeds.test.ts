@@ -5,7 +5,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fieldLineSeeds, dipoleSeeds, monopoleSeeds, FIELD_BEARING_TOKENS, type SeedBody } from './fieldline-seeds.ts';
+import { dipoleSeeds, monopoleSeeds, type SeedBody } from './fieldlines.ts';
+import { fieldLineSeeds, FIELD_BEARING_TOKENS } from './fieldline-seeds.ts';
 
 const body = (o: Partial<SeedBody> = {}): SeedBody => ({
   cx: 500, cy: 500, hw: 40, hh: 30, ux: 1, uy: 0, spin: 1, range: 300, tokens: ['gravity'], vis: true, ...o,

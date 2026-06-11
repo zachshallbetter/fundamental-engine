@@ -14,6 +14,7 @@ import { createField, type FieldHandle, type FieldOptions } from '@field-ui/core
 import { browserHost } from './browser-host.ts';
 
 export * from './types.ts';
+export * from './env.ts';
 export * from './schedule.ts';
 export * from './measurement.ts';
 export * from './state.ts';

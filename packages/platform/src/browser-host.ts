@@ -6,6 +6,7 @@
  * or a custom host to drive the same engine from a headless renderer / a different document / a test.
  */
 import type { FieldHost } from '@field-ui/core';
+import { prefersReducedMotion, pageHidden } from './env.ts';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 
@@ -16,8 +17,8 @@ export function browserHost(): FieldHost {
     viewport: () => ({ width: window.innerWidth, height: window.innerHeight, dpr: window.devicePixelRatio || 1 }),
     scrollY: () => window.scrollY || 0,
     scrollHeight: () => document.documentElement.scrollHeight,
-    reducedMotion: () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches,
-    hidden: () => document.hidden,
+    reducedMotion: () => prefersReducedMotion(),
+    hidden: () => pageHidden(),
     raf: (cb) => requestAnimationFrame(cb),
     cancelRaf: (id) => cancelAnimationFrame(id),
     createCanvas: () => document.createElement('canvas'),
