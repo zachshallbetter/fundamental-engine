@@ -234,6 +234,23 @@ final class FieldCanvasView: NSView {
         lastTick = link.timestamp
     }
 
+    // MARK: live body manipulation (the formula panel's sliders)
+
+    /// The scene's primary force body params (first card) — to initialize the sliders.
+    var primaryParams: (strength: Float, range: Float, spin: Float)? {
+        cards.first.map { ($0.fieldBody.strength, $0.fieldBody.range, $0.fieldBody.spin) }
+    }
+
+    /// Push a parameter to every body in the scene live — the integrator reads it next
+    /// frame, so the field responds immediately (no rebuild). nil leaves a param untouched.
+    func setBodyParams(strength: Float?, range: Float?, spin: Float?) {
+        for card in cards {
+            if let s = strength { card.fieldBody.strength = s }
+            if let r = range { card.fieldBody.range = r }
+            if let sp = spin { card.fieldBody.spin = sp }
+        }
+    }
+
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError() }
 
@@ -241,9 +258,30 @@ final class FieldCanvasView: NSView {
 
     // MARK: scene lifecycle
 
+    /// Full rebuild — a fresh engine + pool. Use only when a creation-time option
+    /// (density / waves / first-class mass / depth) changes, since those size the pool,
+    /// build the waves, or set mass-at-seeding.
     func show(_ newScene: LabScene) {
         scene = newScene
         rebuild()
+    }
+
+    /// Persistent swap — keep the SAME running field and its particle pool; only replace
+    /// the bodies. The matter that was orbiting the old scene's bodies keeps flowing and
+    /// responds to the new ones, so switching scenes is a continuous transition, not a
+    /// blink. Used whenever the creation-time options are unchanged.
+    func swapScene(_ newScene: LabScene) {
+        guard let f = field else { show(newScene); return }
+        scene = newScene
+        cards.forEach { $0.removeFromSuperview() }
+        cards = newScene.cards.map(BodyCardView.init(spec:))
+        cards.forEach {
+            addSubview($0)
+            $0.layer?.zPosition = 10
+        }
+        positionCards()
+        f.rescan()                       // re-discover bodies from the new card views
+        f.setFormation(newScene.formation)
     }
 
     override func layout() {

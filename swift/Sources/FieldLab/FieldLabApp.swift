@@ -61,6 +61,13 @@ struct LabRootView: View {
     @State private var pinned: Set<SettingKey> = []
     /// True while a scene's defaults are being applied — those writes never pin.
     @State private var applyingScene = false
+    // live body parameters the formula panel manipulates (reset per scene).
+    @State private var paramStrength: Double = 1
+    @State private var paramRange: Double = 240
+    @State private var paramSpin: Double = 1
+
+    /// The token whose formula + params the panel shows — the scene's primary force.
+    private var primaryToken: String { currentScene.cards.first?.tokens.first ?? "" }
 
     private static let tourSymbols: [String: String] = [
         "mass": "scalemass", "magnetism": "bolt.horizontal", "attention": "eye",
@@ -96,6 +103,9 @@ struct LabRootView: View {
                     attention: attention,
                     causality: causality,
                     heatmap: heatmap,
+                    bodyStrength: Float(paramStrength),
+                    bodyRange: Float(paramRange),
+                    bodySpin: Float(paramSpin),
                     stats: $stats
                 )
                 captionChip
@@ -128,6 +138,13 @@ struct LabRootView: View {
         if !pinned.contains(.attention) { attention = s.attention }
         if !pinned.contains(.causality) { causality = s.causality }
         if !pinned.contains(.heatmap)   { heatmap = s.heatmap }
+        // the formula panel's params always reset to the new scene's primary body —
+        // manipulation is scene-local (never pinned), so each force opens at its own values.
+        if let c = s.cards.first {
+            paramStrength = Double(c.strength)
+            paramRange = Double(c.range)
+            paramSpin = Double(c.spin)
+        }
         // mass has no scene default (no tour scene uses it) — purely user-controlled
     }
 
@@ -248,12 +265,16 @@ struct LabRootView: View {
         }
     }
 
-    // MARK: caption chip — the scene's claim, plus canon details for recipes/forces
+    // MARK: caption chip — the scene's claim + narrative (the math moved to the formula panel)
 
     private var captionChip: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(currentScene.name)
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 7) {
+                if case .force(let token) = selection {
+                    Circle().fill(Color(fieldHex: forceColor(token))).frame(width: 9, height: 9)
+                }
+                Text(currentScene.name).font(.headline)
+            }
             Text(currentScene.blurb)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -266,21 +287,7 @@ struct LabRootView: View {
             if case .recipe(let id) = selection, let r = FieldRecipes.recipe(id: id) {
                 recipeDetails(r)
             }
-            if case .force(let token) = selection, let entry = ForceCatalog.entry(token: token) {
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(Color(fieldHex: forceColor(token)))
-                        .frame(width: 8, height: 8)
-                    Text("\(entry.group.lowercased()) force · token \(entry.token)")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.tertiary)
-                    Text("— its color everywhere: this chip, the sidebar, the card's stripe, meter, and glow")
-                        .font(.caption2)
-                        .foregroundStyle(.quaternary)
-                }
-                .padding(.top, 2)
-            }
-            Text("click → burst · drag → flow · hover a card → engage")
+            Text("click → burst · drag → flow · hover a card → engage · adjust the formula in the inspector ›")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .padding(.top, 2)
@@ -329,10 +336,65 @@ struct LabRootView: View {
         .padding(.top, 2)
     }
 
+    // MARK: formula panel — the live math + the sliders that drive it
+
+    @ViewBuilder
+    private var formulaSection: some View {
+        if let formula = ForceFormulas.formula(for: primaryToken) {
+            let lines = formula.render(Float(paramStrength), Float(paramRange), Float(paramSpin))
+            Section {
+                ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(line.math)
+                            .font(.system(.callout, design: .monospaced))
+                            .foregroundStyle(Color(fieldHex: forceColor(primaryToken)))
+                            .textSelection(.enabled)
+                        if let note = line.note {
+                            Text(note).font(.caption2).foregroundStyle(.tertiary)
+                        }
+                    }
+                    .padding(.vertical, 1)
+                }
+                ForEach(formula.params, id: \.key.rawValue) { p in
+                    paramSlider(p)
+                }
+            } header: {
+                Label(formula.title, systemImage: "function")
+            } footer: {
+                Text("Live: every number is the body's current value, and the sliders drive the real field — no rebuild.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private func paramSlider(_ p: TunableParam) -> some View {
+        let binding: Binding<Double> = {
+            switch p.key {
+            case .strength: return $paramStrength
+            case .range:    return $paramRange
+            case .spin:     return $paramSpin
+            }
+        }()
+        return VStack(alignment: .leading, spacing: 1) {
+            HStack {
+                Text("\(p.symbol) · \(p.label)").font(.caption)
+                Spacer()
+                Text(p.key == .range ? String(format: "%.0f", binding.wrappedValue)
+                                     : String(format: "%.2f", binding.wrappedValue))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            Slider(value: binding, in: p.range, step: p.step)
+        }
+    }
+
     // MARK: inspector
 
     private var inspector: some View {
         Form {
+            formulaSection
+
             if !pinned.isEmpty {
                 Section {
                     Button {
@@ -556,6 +618,9 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
     let attention: Bool
     let causality: Bool
     let heatmap: Bool
+    let bodyStrength: Float
+    let bodyRange: Float
+    let bodySpin: Float
     @Binding var stats: LiveStats
 
     private func configured() -> LabScene {
@@ -579,19 +644,22 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
     }
 
     func updateNSView(_ canvas: FieldCanvasView, context: Context) {
-        // density, waves, and first-class mass are creation-time options (pool size,
-        // the wave build, m ∝ size at seeding) — changing them rebuilds the field,
-        // exactly as a resize does. The other truths have live setters.
-        if context.coordinator.sceneId != scene.id
-            || context.coordinator.density != density
-            || context.coordinator.waves != waves
-            || context.coordinator.mass != firstClassMass {
-            context.coordinator.sceneId = scene.id
-            context.coordinator.density = density
-            context.coordinator.waves = waves
-            context.coordinator.mass = firstClassMass
+        // density / waves / first-class mass are creation-time options (pool size, the
+        // wave build, m ∝ size at seeding) — changing them needs a full rebuild. A scene
+        // switch alone keeps the SAME running field and pool, swapping only the bodies, so
+        // the matter flows continuously across the transition.
+        let coord = context.coordinator
+        let creationChanged = coord.density != density || coord.waves != waves || coord.mass != firstClassMass
+        if creationChanged {
+            coord.sceneId = scene.id
+            coord.density = density
+            coord.waves = waves
+            coord.mass = firstClassMass
             canvas.firstClassMass = firstClassMass
             canvas.show(configured())
+        } else if coord.sceneId != scene.id {
+            coord.sceneId = scene.id
+            canvas.swapScene(configured()) // persistent — keep the pool, swap the bodies
         }
         canvas.field?.setFormation(formation)
         canvas.field?.setRender(renderMode)
@@ -599,6 +667,9 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
         canvas.field?.setAttention(attention)
         canvas.field?.setCausality(causality)
         canvas.field?.setHeatmap(heatmap)
+        // the formula panel's sliders push live body params — the integrator reads them
+        // next frame, so the field responds without a rebuild.
+        canvas.setBodyParams(strength: bodyStrength, range: bodyRange, spin: bodySpin)
         if let hex = accent.fieldHex {
             canvas.field?.setAccent(hex)
         }
