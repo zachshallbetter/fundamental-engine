@@ -9,6 +9,18 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
+  (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same
+  conserved supernova ritual (same radial burst, same `field:released` event) that saturation
+  fires; capture was already gated, release now matches (`dischargeDisengaged`, accretion.ts).
+  The experimental `contour-charge` recipe names the composed behavior — attract + sink gated on
+  `active`, glow ∝ `--load`, glyph-outline rings as the bound representation — and joins the
+  wayfinding pair in `EXPERIMENTAL_RECIPES` (bare `charge` stays the electric force token; the
+  compound respects the one-word-one-lane rule). The home Gallery demos it live: dwell on the
+  Charge mark to fill it, look away and it lets go.
+
+### Added
+
 - **Contour primitive — glyph outlines from any font (`@field-ui/platform`).**
   `contourPathData(font, text, size)` lays out text as combined glyph-outline SVG path data
   (per-glyph + pair kerning; Latin display scope), and `contourSvgFor(el, font)` generates the

@@ -6,7 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { releaseCaptured, sinkLoad, captureEdge } from './accretion.ts';
+import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
 import { step } from './integrator.ts';
 import { FieldStore } from './field-store.ts';
 import { sink } from '../forces/index.ts';
@@ -110,4 +110,36 @@ test('2b. captureEdge fires captured on the rising edge and released on the fall
   assert.deepEqual(captureEdge(true, true), { fire: null, armed: true }, 'still accreting — no repeat');
   assert.deepEqual(captureEdge(true, false), { fire: 'released', armed: false }, 'load dropped to 0');
   assert.deepEqual(captureEdge(false, false), { fire: null, armed: false });
+});
+
+test('3a. dischargeDisengaged releases on the falling edge of engagement — and only then', () => {
+  const b = sinkBody({ accreted: 5, when: 'active' });
+  const released: unknown[] = [];
+  const release = (x: unknown) => released.push(x);
+
+  b.on = true;
+  dischargeDisengaged([b], release);
+  assert.equal(released.length, 0, 'engaged and holding — keeps charging');
+
+  b.on = false; // attention leaves
+  const out = dischargeDisengaged([b], release);
+  assert.deepEqual(out, [b], 'the falling edge discharges');
+  assert.equal(released.length, 1);
+
+  dischargeDisengaged([b], release);
+  assert.equal(released.length, 1, 'stays quiet while disengaged — edge, not level');
+});
+
+test('3b. dischargeDisengaged ignores ungated sinks, non-sinks, and empty vessels', () => {
+  const ungated = sinkBody({ accreted: 5, when: '' });
+  const empty = sinkBody({ accreted: 0, when: 'active' });
+  const notSink = sinkBody({ accreted: 5, when: 'active' });
+  notSink.tokens = ['attract'];
+  const released: unknown[] = [];
+  for (const b of [ungated, empty, notSink]) {
+    b.wasOn = true;
+    b.on = false;
+  }
+  dischargeDisengaged([ungated, empty, notSink], (x) => released.push(x));
+  assert.equal(released.length, 0, 'no discharge outside the gated, holding sink case');
 });

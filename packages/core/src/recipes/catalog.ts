@@ -12,7 +12,7 @@
  * primitives and add NO new engine behavior. Eight ids are the recommended first-release set.
  */
 import type { FieldRecipe, RecipeTier } from './schema.ts';
-import { WAYFINDING_RECIPES } from './wayfinding.ts';
+import { EXPERIMENTAL_RECIPES } from './wayfinding.ts';
 
 // ── Gravity: priority, convergence, hierarchy ───────────────────────────────────────
 
@@ -1551,5 +1551,5 @@ export const FIRST_RELEASE_RECIPES: readonly FieldRecipe[] = FIRST_RELEASE_RECIP
 
 /** Look up a recipe by id — the canonical 64 first, then the experimental set (undefined if unknown). */
 export function recipeById(id: string): FieldRecipe | undefined {
-  return FIELD_RECIPES.find((r) => r.id === id) ?? WAYFINDING_RECIPES.find((r) => r.id === id);
+  return FIELD_RECIPES.find((r) => r.id === id) ?? EXPERIMENTAL_RECIPES.find((r) => r.id === id);
 }

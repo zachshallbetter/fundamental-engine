@@ -1414,3 +1414,48 @@ html.hide-field-lines .stage-field {
 html.atom-armed {
   cursor: pointer;
 }
+
+
+/* Contour Charge (gallery) — the attention-charged vessel. The rings are the body's bound
+   representation: width charges with --load (mirrored from the heading), opacity breathes
+   with --d, and the whole mark glows as it fills — the discharge reads as the glow letting go. */
+.charge-stage {
+  position: relative;
+  padding: 0.6rem 0.2rem;
+}
+.charge-source {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.charge-rings {
+  display: block;
+  width: min(420px, 92%);
+  margin: 0 auto;
+  color: var(--accent, #7c9cff);
+  pointer-events: none;
+  filter: drop-shadow(0 0 calc(var(--load, 0) * 26px) color-mix(in oklab, var(--accent, #7c9cff) 70%, transparent));
+  transition: filter 0.35s ease;
+}
+.cring {
+  fill: none;
+  stroke: currentcolor;
+  vector-effect: non-scaling-stroke;
+}
+.cring-1 {
+  stroke-width: calc(1.3px + var(--load, 0) * 3.5px);
+}
+.cring-2 {
+  stroke-width: calc(3.5px + var(--load, 0) * 7px);
+  opacity: calc(0.28 + var(--d, 0) * 0.45);
+}
+.cring-3 {
+  stroke-width: calc(7px + var(--load, 0) * 12px);
+  opacity: calc(0.08 + var(--d, 0) * 0.3);
+}
+@media (prefers-reduced-motion: reduce) {
+  .charge-rings {
+    transition: none;
+  }
+}

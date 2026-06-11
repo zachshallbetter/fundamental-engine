@@ -10,6 +10,7 @@ export * from './schema.ts';
 export * from './intent.ts';
 export * from './gallery.ts';
 export * from './wayfinding.ts';
+export * from './charge.ts';
 export * from './explain.ts';
 export * from './compile.ts';
 
