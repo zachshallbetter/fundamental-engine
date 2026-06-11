@@ -383,8 +383,8 @@ export const morph: Force = {
     const arrived = d < MORPH_ARRIVE ? 1 - d / MORPH_ARRIVE : 0;
     const jit = (1 - arrived) * k * 0.3; // jitter that fades to zero on arrival
     if (jit > 0) {
-      p.vx += (Math.random() - 0.5) * jit;
-      p.vy += (Math.random() - 0.5) * jit;
+      p.vx += ((e.rng ?? Math.random)() - 0.5) * jit;
+      p.vy += ((e.rng ?? Math.random)() - 0.5) * jit;
     }
   },
   meta: { desc: 'matter assembles into a mark/chart/logo — never words (§11)' },
@@ -424,12 +424,12 @@ export const spawn: Force = {
     b.emitAcc -= n;
     for (; n > 0; n--) {
       // rotate the heading by a small random angle → a soft emission cone
-      const j = (Math.random() - 0.5) * 0.6;
+      const j = ((e.rng ?? Math.random)() - 0.5) * 0.6;
       const c = Math.cos(j);
       const s = Math.sin(j);
       const hx = b.ux * c - b.uy * s;
       const hy = b.ux * s + b.uy * c;
-      const speed = 2 + Math.random() * 2;
+      const speed = 2 + (e.rng ?? Math.random)() * 2;
       e.spawn({ x: b.cx, y: b.cy, vx: hx * speed, vy: hy * speed, age: life, heat: 0.6 });
     }
   },

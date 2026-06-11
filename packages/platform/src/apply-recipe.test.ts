@@ -109,3 +109,28 @@ test('extraMetrics appends + dedupes, never mutates the input, and the metric ac
   applied.destroy();
   assert.ok(!('data-body' in el.attrs), 'annotateBodies:false left the element unannotated throughout');
 });
+
+test('a supplied field target is DRIVEN by the compiled render plan, and destroy releases it (#370)', () => {
+  const calls: string[] = [];
+  const field = {
+    setRender: (m: string) => void calls.push(`render:${m}`),
+    setOverlay: (m: string | string[]) => void calls.push(`overlay:${Array.isArray(m) ? m.join('+') : m}`),
+    setHeatmap: (on: boolean) => void calls.push(`heatmap:${on}`),
+  };
+  const base = recipeById('contour-charge')!; // render: ['particles', 'heatmap'] → dots + heatmap
+  const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
+  const applied = applyRecipe(fakeRoot(), base, { bodies: [el], annotateBodies: false, drive: false, reducedMotion: false, field });
+  assert.deepEqual(calls, ['render:dots', 'overlay:off', 'heatmap:true'], 'the plan executed on apply');
+  calls.length = 0;
+  applied.destroy();
+  assert.deepEqual(calls, ['render:dots', 'overlay:off', 'heatmap:false'], 'destroy returns the field to rest');
+});
+
+test('renderless keeps a supplied field untouched — the guard also covers reduced motion (#370)', () => {
+  const calls: string[] = [];
+  const field = { setRender: () => void calls.push('x'), setOverlay: () => void calls.push('x'), setHeatmap: () => void calls.push('x') };
+  const base = recipeById('contour-charge')!;
+  const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
+  applyRecipe(fakeRoot(), base, { bodies: [el], annotateBodies: false, drive: false, reducedMotion: false, field, renderless: true }).destroy();
+  assert.deepEqual(calls, [], 'renderless never drives the field (reduced motion shares the same single guard)');
+});
