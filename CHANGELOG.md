@@ -9,6 +9,19 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Recipes execute their declarations.** `recipe.render` and per-body condition gates stop being
+  descriptive (#370): `compileRecipe` now derives an executable render plan (one underlay matter
+  mode, the additive overlay reading stack, the heatmap toggle — unmappable layers are NAMED in
+  `plan.unapplied`, never silently dropped), and `applyRecipe` gains a structural `field` target
+  (`FieldHandle` and `<field-root>` both fit) that it drives with the plan and releases on
+  `destroy()`. `BodyRecipe.when` is the new executable gate — compiled to `data-when`, validated
+  against the engine's registered condition ids so an unknown gate is a validation error rather
+  than a silently-never-passing body. The `contour-charge` recipe now carries its own engagement
+  gate. Fully additive: without a `field` option recipes stay signals-only as before; `renderless`
+  and reduced motion skip the drive.
+
+### Added
+
 - **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
   (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same
   conserved supernova ritual (same radial burst, same `field:released` event) that saturation
