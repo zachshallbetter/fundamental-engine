@@ -33,6 +33,8 @@ public struct CardSpec {
     public var life: Float?
     /// Index of the warp-paired card, for `warp` throats.
     public var warpPair: Int?
+    /// Give this card's body a ring of morph targets around its centre (`morph` scenes).
+    public var morphRing: Bool = false
 
     public init(
         _ label: String, x: Float, y: Float, w: Float = 150, h: Float = 64,
@@ -110,6 +112,14 @@ public struct LabScene {
             b.isEngaged = c.engaged
             b.tint = c.tint
             b.life = c.life
+            if c.morphRing {
+                // a ring mark around the card — never words or letterforms (§11)
+                let r = min(width, height) * 0.28
+                b.targets = (0..<48).map { k in
+                    let a = Float(k) / 48 * 2 * .pi
+                    return Vec3(c.x * width + cos(a) * r, c.y * height + sin(a) * r, 0)
+                }
+            }
             return b
         }
         // resolve warp pairs after all bodies exist

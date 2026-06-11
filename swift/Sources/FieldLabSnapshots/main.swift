@@ -8,6 +8,14 @@ import Foundation
 import FieldLabKit
 
 #if os(macOS)
+// --bench: where does a frame go? sim vs draw, per scene / matter mode / reading.
+if CommandLine.arguments.contains("--bench") {
+    print("FieldLab bench — 1280×800 @2x, 240 frames per row (after 60 warm-up)\n")
+    let rows = Bench.standardSweep()
+    print(Bench.table(rows))
+    exit(0)
+}
+
 let outDir = URL(fileURLWithPath: CommandLine.arguments.count > 1
     ? CommandLine.arguments[1]
     : FileManager.default.temporaryDirectory.appendingPathComponent("fieldlab").path)

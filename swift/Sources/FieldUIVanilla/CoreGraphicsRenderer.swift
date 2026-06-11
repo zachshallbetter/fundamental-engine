@@ -14,6 +14,7 @@ public final class FieldSurfaceLayer: CALayer {
     public override init() {
         super.init()
         isOpaque = false
+        drawsAsynchronously = true // CA executes the CG command stream off the main thread
         actions = ["contents": NSNull(), "bounds": NSNull(), "position": NSNull()]
     }
 
@@ -45,15 +46,18 @@ public final class FieldSurfaceLayer: CALayer {
     }
 
     // MARK: shared
+    // setFillColor(red:green:blue:alpha:) writes components straight into graphics state —
+    // no CGColor object per call. At ~500 fills/frame the CGColor allocation churn of the
+    // old path was a measurable slice of draw time.
 
     private func fill(_ ctx: CGContext, _ rgb: RGB, _ alpha: Float) {
-        ctx.setFillColor(CGColor(red: CGFloat(rgb.x / 255), green: CGFloat(rgb.y / 255),
-                                 blue: CGFloat(rgb.z / 255), alpha: CGFloat(clamp(alpha, 0, 1))))
+        ctx.setFillColor(red: CGFloat(rgb.x / 255), green: CGFloat(rgb.y / 255),
+                         blue: CGFloat(rgb.z / 255), alpha: CGFloat(clamp(alpha, 0, 1)))
     }
 
     private func stroke(_ ctx: CGContext, _ rgb: RGB, _ alpha: Float, width: CGFloat = 1) {
-        ctx.setStrokeColor(CGColor(red: CGFloat(rgb.x / 255), green: CGFloat(rgb.y / 255),
-                                   blue: CGFloat(rgb.z / 255), alpha: CGFloat(clamp(alpha, 0, 1))))
+        ctx.setStrokeColor(red: CGFloat(rgb.x / 255), green: CGFloat(rgb.y / 255),
+                           blue: CGFloat(rgb.z / 255), alpha: CGFloat(clamp(alpha, 0, 1)))
         ctx.setLineWidth(width)
     }
 
@@ -69,14 +73,36 @@ public final class FieldSurfaceLayer: CALayer {
 
     // MARK: matter modes (§20.6)
 
+    /// Batched by quantized color: hundreds of per-dot setFillColor + fillEllipse calls
+    /// collapse into one path-fill per color bucket (~20–40 buckets a frame). Each CG
+    /// state change + fill flushes the rasterizer; batching is the difference between
+    /// a CPU renderer that keeps 60fps and one that doesn't.
     private func drawDots(_ frame: RenderFrame, in ctx: CGContext) {
+        var buckets: [UInt32: CGMutablePath] = [:]
+        var colors: [UInt32: (RGB, Float)] = [:]
         for p in frame.particles {
             let (x, y) = frame.projection.project(p.position)
             let depth = frame.projection.depthHint(p.position)
             let radius = CGFloat(p.size * (1 + p.heat * 0.8) * (1 - depth * 0.5))
-            fill(ctx, particleColor(p, frame), (0.55 + p.heat * 0.4) * (1 - depth * 0.6))
-            ctx.fillEllipse(in: CGRect(x: CGFloat(x) - radius, y: CGFloat(y) - radius,
+            let rgb = particleColor(p, frame)
+            let alpha = clamp((0.55 + p.heat * 0.4) * (1 - depth * 0.6), 0, 1)
+            // quantize to 16 levels/channel + 16 alpha steps → a stable, small bucket set
+            let k = ((UInt32(rgb.x) >> 4) << 12) | ((UInt32(rgb.y) >> 4) << 8)
+                  | ((UInt32(rgb.z) >> 4) << 4) | UInt32(alpha * 15)
+            let path = buckets[k] ?? {
+                let p = CGMutablePath()
+                buckets[k] = p
+                colors[k] = (rgb, alpha)
+                return p
+            }()
+            path.addEllipse(in: CGRect(x: CGFloat(x) - radius, y: CGFloat(y) - radius,
                                        width: radius * 2, height: radius * 2))
+        }
+        for (k, path) in buckets {
+            let (rgb, alpha) = colors[k]!
+            fill(ctx, rgb, alpha)
+            ctx.addPath(path)
+            ctx.fillPath()
         }
     }
 
@@ -95,19 +121,48 @@ public final class FieldSurfaceLayer: CALayer {
     }
 
     /// Constellation: short lines between close pairs, alpha by separation (linkAlpha).
+    /// Bucketed by a cell grid of the link radius — O(n·k) instead of the all-pairs O(n²)
+    /// that dominated this mode's frame time at high densities.
     private func drawLinks(_ frame: RenderFrame, in ctx: CGContext) {
         let r: Float = 70
         let ps = frame.particles
-        for i in 0..<ps.count {
-            for j in (i + 1)..<ps.count {
-                let d = simd_distance(ps[i].position, ps[j].position)
-                let a = linkAlpha(d: d, r: r)
-                if a <= 0 { continue }
-                let (x1, y1) = frame.projection.project(ps[i].position)
-                let (x2, y2) = frame.projection.project(ps[j].position)
-                stroke(ctx, frame.accent, a)
-                ctx.move(to: CGPoint(x: CGFloat(x1), y: CGFloat(y1)))
-                ctx.addLine(to: CGPoint(x: CGFloat(x2), y: CGFloat(y2)))
+        @inline(__always) func key(_ cx: Int32, _ cy: Int32) -> Int64 {
+            (Int64(cx) << 32) | (Int64(cy) & 0xFFFF_FFFF)
+        }
+        var buckets: [Int64: [Int]] = [:]
+        buckets.reserveCapacity(ps.count)
+        for (i, p) in ps.enumerated() {
+            buckets[key(Int32(p.position.x / r), Int32(p.position.y / r)), default: []].append(i)
+        }
+        // Collect segments grouped by quantized alpha, then stroke each segment as its
+        // OWN tiny path with the color set once per group. Two truths shape this:
+        // per-pair state changes are expensive (the original 46ms), AND many crossing
+        // segments union'd into one stroke path explode CG's AA intersection pass (the
+        // batched version was worse). A 2-point path cannot self-intersect — per-segment
+        // strokes inside per-alpha groups dodge both costs.
+        var groups: [[(CGFloat, CGFloat, CGFloat, CGFloat)]] = Array(repeating: [], count: 12)
+        for (i, p) in ps.enumerated() {
+            let cx = Int32(p.position.x / r)
+            let cy = Int32(p.position.y / r)
+            for dx: Int32 in -1...1 {
+                for dy: Int32 in -1...1 {
+                    guard let bin = buckets[key(cx + dx, cy + dy)] else { continue }
+                    for j in bin where j > i { // each undirected pair once
+                        let a = linkAlpha(d: simd_distance(p.position, ps[j].position), r: r)
+                        if a <= 0 { continue }
+                        let (x1, y1) = frame.projection.project(p.position)
+                        let (x2, y2) = frame.projection.project(ps[j].position)
+                        let q = min(11, Int(a / 0.12 * 12))
+                        groups[q].append((CGFloat(x1), CGFloat(y1), CGFloat(x2), CGFloat(y2)))
+                    }
+                }
+            }
+        }
+        for (q, segs) in groups.enumerated() where !segs.isEmpty {
+            stroke(ctx, frame.accent, (Float(q) + 0.5) / 12 * 0.12)
+            for s in segs {
+                ctx.move(to: CGPoint(x: s.0, y: s.1))
+                ctx.addLine(to: CGPoint(x: s.2, y: s.3))
                 ctx.strokePath()
             }
         }
@@ -234,23 +289,8 @@ public final class FieldSurfaceLayer: CALayer {
         case .forceVectors:  drawStreamlineArrows(frame, in: ctx, raw: true)
         case .fieldLines:    drawFieldLines(frame, in: ctx)
         case .grid:          drawDeformedGrid(frame, in: ctx)
-        case .temperature:   drawContours(frame, in: ctx) { p in
-                                 // accumulated heat near a point (kernel over particles)
-                                 var v: Float = 0
-                                 for q in frame.particles {
-                                     let d = simd_distance(q.position, p)
-                                     if d < 60 { v += q.heat * (1 - d / 60) }
-                                 }
-                                 return v
-                             }
-        case .energy:        drawContours(frame, in: ctx) { p in
-                                 var v: Float = 0
-                                 for q in frame.particles {
-                                     let d = simd_distance(q.position, p)
-                                     if d < 60 { v += 0.5 * q.mass * simd_length_squared(q.velocity) * (1 - d / 60) }
-                                 }
-                                 return v
-                             }
+        case .temperature:   drawContours(frame, in: ctx) { $0.heat }
+        case .energy:        drawContours(frame, in: ctx) { 0.5 * $0.mass * simd_length_squared($0.velocity) }
         case .path:          drawPaths(frame, in: ctx)
         case .data:          drawDataReadouts(frame, in: ctx)
         }
@@ -290,9 +330,17 @@ public final class FieldSurfaceLayer: CALayer {
     }
 
     /// Structure-field lines traced from seeds around each field-bearing body.
+    ///
+    /// One stroke PER polyline, never one giant path: CG's antialiaser computes segment
+    /// intersections, and a dipole's looping, self-crossing lines accumulated into a
+    /// single path drove `aa_intersection_event` superlinear — ~3 s/frame (the lag).
+    /// Stroked separately, each line is a simple path and the cost is linear.
     private func drawFieldLines(_ frame: RenderFrame, in ctx: CGContext) {
         var opts = FieldLineOpts()
         opts.bounds = (frame.volume.width, frame.volume.height)
+        opts.step = 8        // live-reading trace budget — the diagnostic stays legible
+        opts.maxSteps = 220
+        opts.maxTurns = 1.5  // one closed dipole loop + slack; never an overdrawn orbit
         var seeds: [Vec3] = []
         for b in frame.bodies where b.isVisible {
             let r = max(b.range * 0.2, 40)
@@ -307,8 +355,8 @@ public final class FieldSurfaceLayer: CALayer {
             for pt in line.dropFirst() {
                 ctx.addLine(to: CGPoint(x: CGFloat(pt.x), y: CGFloat(pt.y)))
             }
+            ctx.strokePath() // stroke THIS line; do not accumulate
         }
-        ctx.strokePath()
     }
 
     /// A reference lattice displaced by the local field — the deformation reading.
@@ -342,20 +390,24 @@ public final class FieldSurfaceLayer: CALayer {
         ctx.strokePath()
     }
 
-    /// Iso-contour lines of a scalar sampler (temperature / energy readings).
-    private func drawContours(_ frame: RenderFrame, in ctx: CGContext, sampler: (Vec3) -> Float) {
+    /// Iso-contour lines of a per-particle scalar (temperature / energy readings).
+    /// Splat-based: each particle deposits its weighted kernel into the node grid ONCE —
+    /// O(particles × kernel nodes) instead of the O(nodes × particles) sweep that made
+    /// these the most expensive readings by an order of magnitude.
+    private func drawContours(_ frame: RenderFrame, in ctx: CGContext, weight: (Particle) -> Float) {
         let step: Float = 36
         let cols = Int(frame.volume.width / step) + 2
         let rows = Int(frame.volume.height / step) + 2
         var grid = [Float](repeating: 0, count: cols * rows)
-        var peak: Float = 1e-6
-        for gy in 0..<rows {
-            for gx in 0..<cols {
-                let v = sampler(Vec3(Float(gx) * step, Float(gy) * step, 0))
-                grid[gy * cols + gx] = v
-                peak = max(peak, v)
+        for q in frame.particles {
+            let w = weight(q)
+            if w > 1e-5 {
+                splatDensity(grid: &grid, cols: cols, rows: rows, step: step,
+                             px: q.position.x, py: q.position.y, radius: 60, weight: w)
             }
         }
+        var peak: Float = 1e-6
+        for v in grid where v > peak { peak = v }
         stroke(ctx, frame.accent, 0.4)
         for level in [0.25, 0.5, 0.75] {
             let iso = Float(level) * peak
@@ -380,6 +432,7 @@ public final class FieldSurfaceLayer: CALayer {
         var opts = FieldLineOpts()
         opts.bounds = (frame.volume.width, frame.volume.height)
         opts.maxSteps = 120
+        opts.maxTurns = 1.5  // orbital paths circle a well forever otherwise (same AA explosion)
         var seeds: [Vec3] = []
         let n = 6
         for i in 0..<n {
@@ -394,8 +447,8 @@ public final class FieldSurfaceLayer: CALayer {
             for pt in line.dropFirst() {
                 ctx.addLine(to: CGPoint(x: CGFloat(pt.x), y: CGFloat(pt.y)))
             }
+            ctx.strokePath() // per-line stroke — same AA-intersection fix as field-lines
         }
-        ctx.strokePath()
     }
 
     /// Per-body density readout: a ring whose fill arc reads the eased density d.

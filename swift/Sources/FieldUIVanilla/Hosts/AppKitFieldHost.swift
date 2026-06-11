@@ -8,7 +8,7 @@ import FieldUIPlatform
 /// The FieldHost implementation for AppKit (macOS).
 final class AppKitFieldHost: FieldHost {
     private weak var rootView: NSView?
-    private var displayLink: CVDisplayLink?
+    private var displayLink: CADisplayLink?
     private var frameCallback: ((TimeInterval) -> Void)?
     /// Simulation depth (pt). 0 = flat (the default, byte-identical to the JS field);
     /// > 0 gives the field a shallow volume rendered through a perspective projection.
@@ -42,29 +42,31 @@ final class AppKitFieldHost: FieldHost {
 
     public var isHidden: Bool { rootView?.isHidden ?? true }
 
-    // MARK: FieldHost — loop (CVDisplayLink)
+    // MARK: FieldHost — loop (CADisplayLink, macOS 14)
+    //
+    // NSView.displayLink fires on the MAIN run loop, coalesced by Core Animation — a
+    // missed frame is dropped, never queued. (The previous CVDisplayLink + main.async
+    // approach enqueued a block per display tick unconditionally: on a 120Hz panel with
+    // a busy main thread the backlog grew without bound — the classic lag spiral — and
+    // the simulation ran at 2× speed besides.) The 60Hz clamp keeps the sim cadence the
+    // engine's constants were tuned for (dt = 1 per frame at 60fps, same as the JS rAF).
 
     public func scheduleFrame(_ callback: @escaping (TimeInterval) -> Void) -> AnyObject {
         frameCallback = callback
-        // CVDisplayLink setup — fires on a background thread; dispatch to main for UI safety.
-        var link: CVDisplayLink?
-        CVDisplayLinkCreateWithActiveCGDisplays(&link)
-        if let link {
-            CVDisplayLinkSetOutputHandler(link) { [weak self] _, inNow, _, _, _ in
-                let time = TimeInterval(inNow.pointee.videoTime) /
-                           TimeInterval(inNow.pointee.videoTimeScale)
-                DispatchQueue.main.async { self?.frameCallback?(time) }
-                return kCVReturnSuccess
-            }
-            CVDisplayLinkStart(link)
-            displayLink = link
-            return link as AnyObject
-        }
-        return NSObject()
+        guard let view = rootView else { return NSObject() }
+        let link = view.displayLink(target: self, selector: #selector(displayLinkFired(_:)))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+        return link
+    }
+
+    @objc private func displayLinkFired(_ link: CADisplayLink) {
+        frameCallback?(link.timestamp)
     }
 
     public func cancelFrame(_ token: AnyObject) {
-        if let link = displayLink { CVDisplayLinkStop(link) }
+        displayLink?.invalidate()
         displayLink = nil
         frameCallback = nil
     }

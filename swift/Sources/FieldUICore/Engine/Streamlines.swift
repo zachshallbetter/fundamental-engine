@@ -77,6 +77,13 @@ public struct FieldLineOpts {
     public var bounds: (w: Float, h: Float)? = nil
     /// Stop when the line returns within this of its seed (a closed loop).
     public var loopDist: Float = 6
+    /// Turning budget, in full revolutions: stop once the line's cumulative heading
+    /// change exceeds this. A line orbiting a pole that never passes back through its
+    /// seed (so loopDist can't close it) otherwise winds the same circle for the whole
+    /// step budget — thousands of overlapping segments that explode an antialiasing
+    /// renderer's intersection pass. `.infinity` (the default) preserves the unbounded
+    /// behavior; renderers pass ~1.5 (one closed loop plus slack).
+    public var maxTurns: Float = .infinity
 
     public init() {}
 }
@@ -86,11 +93,23 @@ private func traceOne(_ sample: FieldSampler, seed: Vec3, dir: Float, o: FieldLi
     var pts: [Vec3] = [seed]
     var p = seed
     let m = o.step // out-of-bounds margin
+    var prevDir = Vec3.zero
+    var turned: Float = 0
+    let turnBudget = o.maxTurns * 2 * .pi
     for i in 0..<o.maxSteps {
         let f = sample(p)
         let mag = simd_length(f)
         if !(mag >= o.minStrength) { break } // below threshold or NaN → the line ends
-        p += (f / mag) * (o.step * dir)
+        let u = (f / mag) * dir
+        if turnBudget.isFinite {
+            if prevDir != .zero {
+                let dot = clamp(simd_dot(u, prevDir), -1, 1)
+                turned += acos(dot)
+                if turned > turnBudget { break } // wound past the budget → an orbit, stop
+            }
+            prevDir = u
+        }
+        p += u * o.step
         if let b = o.bounds, p.x < -m || p.y < -m || p.x > b.w + m || p.y > b.h + m { break }
         if i > 4 && simd_distance(p, seed) < o.loopDist {
             pts.append(p) // closed loop → snap shut and stop

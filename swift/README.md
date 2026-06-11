@@ -177,6 +177,32 @@ different Swift idioms):
 - Inspect/diagnostics tooling, the conformance harness, semantic/visual registries
 - SwiftUI `.fieldBody()` registers geometry but isn't wired into scan yet
 
+## FieldLab — the showcase
+
+The engine's pillars as live, interactive scenes, in a native macOS app:
+
+```sh
+cd swift
+swift/Scripts/package-fieldlab.sh   # build + bundle dist/FieldLab.app + launch
+```
+
+- **The tour** — eight scenes, each one claim proven live: Mass, Magnetism, Attention,
+  Causality, Volume, Source & Sink, Warp, Storm.
+- **The force catalog** — all 36 registered forces as browsable scenes (canonical /
+  natural / extended), each with its honest minimum pairing and a one-line physics blurb.
+- **The canon** — the locked 64 recipes, compiled and runnable.
+- The inspector exposes everything live: formation, all six matter modes, all eight
+  overlay readings, accent, density, and a frame-time readout.
+- Cards are real AppKit views that ARE bodies: hover engages, the feedback sink glows
+  them with gathered density. Click = burst, drag = flow focus.
+
+Headless proof and performance:
+
+```sh
+swift run -c release FieldLabSnapshots /tmp/fieldlab   # render the tour to PNGs
+swift run -c release FieldLabSnapshots --bench         # sim vs draw ms per configuration
+```
+
 ## Building & testing
 
 ```sh

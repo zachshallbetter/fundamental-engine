@@ -40,6 +40,7 @@ final class BodyCardView: NSView, NSFieldBodyProvider {
 
         wantsLayer = true
         layer?.cornerRadius = 12
+        layer?.cornerCurve = .continuous // the Apple squircle, not a plain round-rect
         layer?.borderWidth = 1
         layer?.backgroundColor = NSColor(calibratedWhite: 0.09, alpha: 0.92).cgColor
         layer?.borderColor = NSColor(calibratedWhite: 1, alpha: 0.14).cgColor
@@ -49,11 +50,11 @@ final class BodyCardView: NSView, NSFieldBodyProvider {
         layer?.shadowOpacity = 0
 
         titleField.stringValue = spec.label
-        titleField.font = .systemFont(ofSize: 13, weight: .semibold)
-        titleField.textColor = .white
+        titleField.font = .preferredFont(forTextStyle: .headline)
+        titleField.textColor = .labelColor
         tokenField.stringValue = spec.tokens.joined(separator: " · ")
-        tokenField.font = .monospacedSystemFont(ofSize: 9, weight: .regular)
-        tokenField.textColor = NSColor(calibratedWhite: 1, alpha: 0.45)
+        tokenField.font = .monospacedSystemFont(ofSize: NSFont.preferredFont(forTextStyle: .caption2).pointSize, weight: .regular)
+        tokenField.textColor = .tertiaryLabelColor
         for f in [titleField, tokenField] {
             f.translatesAutoresizingMaskIntoConstraints = false
             addSubview(f)
@@ -121,11 +122,34 @@ final class FieldCanvasView: NSView {
     private var scene: LabScene
     private var built = false
 
+    /// Effective main-thread frame time (EMA of display-tick gaps) — the number the
+    /// inspector's Live panel shows. Gaps above ~16.7ms are dropped frames.
+    private(set) var lastFrameMs: Double = 0
+    private var statsLink: CADisplayLink?
+    private var lastTick: CFTimeInterval = 0
+
     init(scene: LabScene) {
         self.scene = scene
         super.init(frame: .zero)
         wantsLayer = true
         layer?.backgroundColor = NSColor(calibratedRed: 0.043, green: 0.055, blue: 0.078, alpha: 1).cgColor
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        statsLink?.invalidate()
+        guard window != nil else { return }
+        let link = displayLink(target: self, selector: #selector(statsTick(_:)))
+        link.add(to: .main, forMode: .common)
+        statsLink = link
+    }
+
+    @objc private func statsTick(_ link: CADisplayLink) {
+        if lastTick > 0 {
+            let gap = (link.timestamp - lastTick) * 1000
+            lastFrameMs = lastFrameMs == 0 ? gap : lastFrameMs * 0.9 + gap * 0.1
+        }
+        lastTick = link.timestamp
     }
 
     @available(*, unavailable)
@@ -199,6 +223,7 @@ final class FieldCanvasView: NSView {
     }
 
     deinit {
+        statsLink?.invalidate()
         field?.destroy()
     }
 }
