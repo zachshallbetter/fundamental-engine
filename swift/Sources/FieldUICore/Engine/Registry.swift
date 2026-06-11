@@ -77,13 +77,20 @@ public struct RenderFrame {
     public let forceSampler: (Vec3) -> Vec3
     /// Probe the structure-only field at a point (field-lines reading).
     public let fieldSampler: (Vec3) -> Vec3
+    /// The active flow focus, if any — overlay arrows bend toward it like the felt field does.
+    public let flow: FlowFocus?
+    /// Resolved glowing-connector segments (§10), drawn over the field with travelling pulses.
+    public let threads: [ThreadSegment]
 
     public init(particles: [Particle], bodies: [Body], accent: RGB, mode: RenderMode,
                 projection: any FieldProjection, volume: FieldVolume,
                 time: Float = 0, waves: [Wave] = [], bound: [BoundParticle] = [],
                 sparks: [Spark] = [], heatmap: Heatmap? = nil, overlays: [OverlayMode] = [],
                 forceSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
-                fieldSampler: @escaping (Vec3) -> Vec3 = { _ in .zero }) {
+                fieldSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
+                flow: FlowFocus? = nil, threads: [ThreadSegment] = []) {
+        self.flow = flow
+        self.threads = threads
         self.particles = particles
         self.bodies = bodies
         self.accent = accent

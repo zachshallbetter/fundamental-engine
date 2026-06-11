@@ -11,6 +11,10 @@ import FieldUICore
 public final class FieldSurfaceLayer: CALayer {
     var frameData: RenderFrame?
 
+    /// EMA of the arrow-field normalization peak (overlay streamlines/force-vectors), so the
+    /// arrow scale tracks real change while a quiet frame never flashes the whole lattice.
+    private var arrowMaxSmoothed: Float = 0
+
     /// Hybrid composition flags (HybridFieldRenderer): when the Metal layer beneath
     /// covers a pass, the CG layer skips it so nothing draws twice.
     /// `skipAmbient` — waves, the bound shimmer, and sparks.
@@ -50,8 +54,34 @@ public final class FieldSurfaceLayer: CALayer {
             }
         }
         if !skipAmbient, !frame.sparks.isEmpty { drawSparks(frame, in: ctx) }
+        if !frame.threads.isEmpty { drawThreads(frame, in: ctx) }
         // overlay readings, additive, in declared order
         for overlay in frame.overlays { drawOverlay(overlay, frame, in: ctx) }
+    }
+
+    /// Glowing connectors (§10): each resolved thread is a soft line with three pulses
+    /// travelling along it (phase from sim time), tinted by the link color or the accent.
+    private func drawThreads(_ frame: RenderFrame, in ctx: CGContext) {
+        ctx.setLineCap(.round)
+        for seg in frame.threads {
+            let (ax, ay) = frame.projection.project(seg.a)
+            let (bx, by) = frame.projection.project(seg.b)
+            let rgb = seg.color.map(hexToRgb) ?? frame.accent
+            // the connector itself — a faint glowing line.
+            stroke(ctx, rgb, 0.28, width: 1.5)
+            ctx.move(to: CGPoint(x: CGFloat(ax), y: CGFloat(ay)))
+            ctx.addLine(to: CGPoint(x: CGFloat(bx), y: CGFloat(by)))
+            ctx.strokePath()
+            // three pulses riding A→B, evenly spaced, looping on sim time.
+            for k in 0..<3 {
+                let t = ((frame.time * 0.6 + Float(k) / 3).truncatingRemainder(dividingBy: 1))
+                let px = ax + (bx - ax) * t
+                let py = ay + (by - ay) * t
+                let r: CGFloat = 2.2
+                fill(ctx, rgb, 0.7 * (1 - t))
+                ctx.fillEllipse(in: CGRect(x: CGFloat(px) - r, y: CGFloat(py) - r, width: r * 2, height: r * 2))
+            }
+        }
     }
 
     // MARK: shared
@@ -310,37 +340,55 @@ public final class FieldSurfaceLayer: CALayer {
         }
     }
 
-    /// Short arrows along the net felt force at a probe lattice. `raw` scales by
-    /// magnitude (force-vectors); otherwise normalized direction (streamlines).
+    /// Short arrows along the net felt force at a probe lattice, bent toward the flow focus.
+    /// `raw` scales length+alpha by absolute magnitude (force-vectors); otherwise by the
+    /// sqrt-compressed magnitude (streamlines), so weak vectors still read. Both normalize to an
+    /// EMA-smoothed frame peak (rise 0.3 / decay 0.1) so a quiet frame never flashes the field —
+    /// matching the JS source (field.ts), which Swift previously didn't (fixed lengths, no bend).
     private func drawStreamlineArrows(_ frame: RenderFrame, in ctx: CGContext, raw: Bool) {
         let GRID: Float = 44 // match the JS overlay arrow lattice
-        stroke(ctx, frame.accent, 0.4)
+        let acc = frame.accent
+        // pass 1: sample the felt field (+ flow bend) at the lattice and find the frame peak.
+        var samples: [(x: Float, y: Float, ux: Float, uy: Float, mag: Float)] = []
+        var frameMax: Float = 0
         var y = GRID / 2
         while y < frame.volume.height {
             var x = GRID / 2
             while x < frame.volume.width {
-                let f = frame.forceSampler(Vec3(x, y, 0))
+                var f = frame.forceSampler(Vec3(x, y, 0))
+                if let flow = frame.flow { f += flowBias(at: Vec3(x, y, 0), focus: flow, gain: 0.04) }
                 let mag = simd_length(f)
                 if mag > 1e-6 {
-                    let len: Float = raw ? min(mag * 18, GRID * 0.9) : GRID * 0.4
-                    let u = f / mag
-                    let tip = CGPoint(x: CGFloat(x + u.x * len), y: CGFloat(y + u.y * len))
-                    ctx.move(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
-                    ctx.addLine(to: tip)
-                    // arrowhead
-                    let side = simd_cross(Vec3(u.x, u.y, 0), Vec3(0, 0, 1))
-                    ctx.move(to: tip)
-                    ctx.addLine(to: CGPoint(x: tip.x - CGFloat((u.x * 0.6 + side.x * 0.4) * 5),
-                                            y: tip.y - CGFloat((u.y * 0.6 + side.y * 0.4) * 5)))
-                    ctx.move(to: tip)
-                    ctx.addLine(to: CGPoint(x: tip.x - CGFloat((u.x * 0.6 - side.x * 0.4) * 5),
-                                            y: tip.y - CGFloat((u.y * 0.6 - side.y * 0.4) * 5)))
+                    samples.append((x, y, f.x / mag, f.y / mag, mag))
+                    if mag > frameMax { frameMax = mag }
                 }
                 x += GRID
             }
             y += GRID
         }
-        ctx.strokePath()
+        // EMA-smooth the normalization reference so transient frames don't rescale the whole field.
+        if arrowMaxSmoothed == 0 { arrowMaxSmoothed = frameMax }
+        else { arrowMaxSmoothed = frameMax > arrowMaxSmoothed
+            ? arrowMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
+            : arrowMaxSmoothed * 0.9 + frameMax * 0.1 } // decay slowly so quiet frames don't flash
+        guard arrowMaxSmoothed > 0 else { return }
+        // pass 2: draw each arrow, length + alpha scaled by the (compressed) relative magnitude.
+        for s in samples {
+            let rel = raw ? clamp(s.mag / arrowMaxSmoothed, 0, 1) : (s.mag / arrowMaxSmoothed).squareRoot()
+            let len = GRID * 0.5 * (0.25 + 0.75 * rel)
+            let tip = CGPoint(x: CGFloat(s.x + s.ux * len), y: CGFloat(s.y + s.uy * len))
+            stroke(ctx, acc, clamp(0.12 + rel * 0.55, 0, 0.8))
+            ctx.move(to: CGPoint(x: CGFloat(s.x), y: CGFloat(s.y)))
+            ctx.addLine(to: tip)
+            let side = simd_cross(Vec3(s.ux, s.uy, 0), Vec3(0, 0, 1))
+            ctx.move(to: tip)
+            ctx.addLine(to: CGPoint(x: tip.x - CGFloat((s.ux * 0.6 + side.x * 0.4) * 5),
+                                    y: tip.y - CGFloat((s.uy * 0.6 + side.y * 0.4) * 5)))
+            ctx.move(to: tip)
+            ctx.addLine(to: CGPoint(x: tip.x - CGFloat((s.ux * 0.6 - side.x * 0.4) * 5),
+                                    y: tip.y - CGFloat((s.uy * 0.6 - side.y * 0.4) * 5)))
+            ctx.strokePath()
+        }
     }
 
     /// Structure-field lines traced through the NET field, seeded by each body's actual

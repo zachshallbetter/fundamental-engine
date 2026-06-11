@@ -47,6 +47,7 @@ final class FieldEngine: FieldHandle {
     // Sparks (§23), flow focus, grids (§20.1 [C]), heatmap (H1)
     private var sparks: [Spark] = []
     private var flow: FlowFocus?
+    private var threadLinks: [ThreadLink] = []
     private var grids: [String: ScalarGridImpl] = [:]
     private var heatmap: Heatmap?
 
@@ -322,7 +323,8 @@ final class FieldEngine: FieldHandle {
                 heatmap: options.heatmap ? heatmap : nil,
                 overlays: activeOverlays(),
                 forceSampler: { forceAt(bodies: bodiesRef, forces: forcesRef, env: envRef, at: $0) },
-                fieldSampler: { netField(bodies: bodiesRef, forces: forcesRef, at: $0) }
+                fieldSampler: { netField(bodies: bodiesRef, forces: forcesRef, at: $0) },
+                flow: flow, threads: resolvedThreads()
             ))
         }
     }
@@ -391,7 +393,20 @@ final class FieldEngine: FieldHandle {
     func setCausality(_ on: Bool) { options.causality = on }
     func setHeatmap(_ on: Bool)   { options.heatmap = on }
 
-    func threads(_ list: [ThreadLink]?) { /* glowing connectors — renderer support pending */ }
+    /// Glowing connectors (§10): store the links; they're resolved to live body positions and
+    /// drawn (with travelling pulses) each frame. `nil` clears them.
+    func threads(_ list: [ThreadLink]?) { threadLinks = list ?? [] }
+
+    /// Resolve each link's view endpoints to the current centers of their bodies — the segments
+    /// the renderer draws. A link whose endpoints aren't both live bodies this frame is dropped.
+    private func resolvedThreads() -> [ThreadSegment] {
+        guard !threadLinks.isEmpty else { return [] }
+        return threadLinks.compactMap { link in
+            guard let a = bodies.first(where: { $0.view === link.a })?.center,
+                  let b = bodies.first(where: { $0.view === link.b })?.center else { return nil }
+            return ThreadSegment(a: a, b: b, color: link.color)
+        }
+    }
 
     /// Discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
     func burst(at position: Vec3, color: String? = nil) {

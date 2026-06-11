@@ -375,6 +375,19 @@ public struct ThreadLink {
     }
 }
 
+/// A `ThreadLink` with its endpoints resolved to field positions — what the renderer draws.
+public struct ThreadSegment {
+    public var a: Vec3
+    public var b: Vec3
+    public var color: String?
+
+    public init(a: Vec3, b: Vec3, color: String? = nil) {
+        self.a = a
+        self.b = b
+        self.color = color
+    }
+}
+
 // MARK: - Condition  (§5)
 
 public typealias Condition = (_ body: Body, _ particle: Particle, _ env: Env?) -> Bool
