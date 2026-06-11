@@ -11,6 +11,13 @@ import FieldUICore
 public final class FieldSurfaceLayer: CALayer {
     var frameData: RenderFrame?
 
+    /// Hybrid composition flags (HybridFieldRenderer): when the Metal layer beneath
+    /// covers a pass, the CG layer skips it so nothing draws twice.
+    /// `skipAmbient` — waves, the bound shimmer, and sparks.
+    public var skipAmbient = false
+    /// `skipMatter` — the particle layer (dots/trails/links).
+    public var skipMatter = false
+
     public override init() {
         super.init()
         isOpaque = false
@@ -30,17 +37,19 @@ public final class FieldSurfaceLayer: CALayer {
         guard let frame = frameData else { return }
         // underlay stack: heatmap glow → waves + bound shimmer → matter → sparks
         if let hm = frame.heatmap { drawHeatmap(hm, frame, in: ctx) }
-        if !frame.waves.isEmpty { drawWaves(frame, in: ctx) }
-        switch frame.mode {
-        case .dots:        drawDots(frame, in: ctx)
-        case .trails:      drawTrails(frame, in: ctx)
-        case .links:       drawLinks(frame, in: ctx); drawDots(frame, in: ctx)
-        case .metaballs:   drawMetaballs(frame, in: ctx)
-        case .voronoi:     drawVoronoi(frame, in: ctx); drawDots(frame, in: ctx)
-        case .streamlines: drawStreamlineArrows(frame, in: ctx, raw: false)
-        case .none_:       break
+        if !skipAmbient, !frame.waves.isEmpty { drawWaves(frame, in: ctx) }
+        if !skipMatter { // the hybrid sets this exactly when Metal owns dots/trails/links
+            switch frame.mode {
+            case .dots:        drawDots(frame, in: ctx)
+            case .trails:      drawTrails(frame, in: ctx)
+            case .links:       drawLinks(frame, in: ctx); drawDots(frame, in: ctx)
+            case .metaballs:   drawMetaballs(frame, in: ctx)
+            case .voronoi:     drawVoronoi(frame, in: ctx); drawDots(frame, in: ctx)
+            case .streamlines: drawStreamlineArrows(frame, in: ctx, raw: false)
+            case .none_:       break
+            }
         }
-        if !frame.sparks.isEmpty { drawSparks(frame, in: ctx) }
+        if !skipAmbient, !frame.sparks.isEmpty { drawSparks(frame, in: ctx) }
         // overlay readings, additive, in declared order
         for overlay in frame.overlays { drawOverlay(overlay, frame, in: ctx) }
     }

@@ -212,3 +212,36 @@ final class HeadlessFieldHost: FieldHost {
     func scanBodies() -> [Body] { bodies }
     func worldBox(of view: AnyObject) -> Box? { boxes[ObjectIdentifier(view)] }
 }
+
+#if canImport(Metal)
+import Metal
+
+@Suite("MetalRenderer")
+struct MetalRendererTests {
+
+    @Test("the hybrid renderer initializes and encodes a frame without crashing")
+    func metalSmoke() throws {
+        guard MTLCreateSystemDefaultDevice() != nil else {
+            return // no GPU in this environment (CI) — the CG fallback covers it
+        }
+        let hybrid = try #require(HybridFieldRenderer(scale: 2))
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host, options: .init(render: .dots), renderer: hybrid)
+        field.scan()
+        for i in 0..<10 { host.fire(at: TimeInterval(i) / 60) }
+        // ten frames through the Metal encode path: assembled, uploaded, committed.
+        #expect(field.particleCount() == 130)
+        field.destroy()
+    }
+
+    @Test("linkSegments finds close pairs once with separation alpha")
+    func linkGeometry() {
+        let a = Particle(position: Vec3(100, 100, 0))
+        let b = Particle(position: Vec3(130, 100, 0))   // 30 apart < 70
+        let c = Particle(position: Vec3(400, 400, 0))   // far
+        let segs = linkSegments(particles: [a, b, c])
+        #expect(segs.count == 1)
+        #expect(abs(segs[0].alpha - linkAlpha(d: 30, r: 70)) < 1e-6)
+    }
+}
+#endif

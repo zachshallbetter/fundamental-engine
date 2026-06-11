@@ -100,27 +100,29 @@ struct LabRootView: View {
         List(selection: $selection) {
             Section("The tour") {
                 ForEach(LabScenes.tour, id: \.id) { scene in
-                    Label(scene.name, systemImage: Self.tourSymbols[scene.id] ?? "circle.dotted")
+                    SidebarRow(symbol: Self.tourSymbols[scene.id] ?? "circle.dotted",
+                               title: scene.name, subtitle: scene.blurb)
                         .tag(LabSelection.tour(scene.id))
                 }
             }
             ForEach(ForceCatalog.groups, id: \.self) { group in
                 Section("\(group) forces") {
                     ForEach(ForceCatalog.entries(group: group)) { entry in
-                        Label(entry.label, systemImage: Self.forceSymbol(entry.token))
+                        SidebarRow(symbol: Self.forceSymbol(entry.token),
+                                   title: entry.label, subtitle: entry.blurb)
                             .tag(LabSelection.force(entry.token))
                     }
                 }
             }
             Section("The canon — 64 recipes") {
                 ForEach(FieldRecipes.all, id: \.id) { r in
-                    Label(r.name, systemImage: "book.closed")
+                    SidebarRow(symbol: "book.closed", title: r.name, subtitle: r.intent)
                         .tag(LabSelection.recipe(r.id))
                 }
             }
         }
         .listStyle(.sidebar)
-        .navigationSplitViewColumnWidth(min: 210, ideal: 240)
+        .navigationSplitViewColumnWidth(min: 230, ideal: 270)
     }
 
     private static func forceSymbol(_ token: String) -> String {
@@ -158,25 +160,61 @@ struct LabRootView: View {
         }
     }
 
-    // MARK: caption chip
+    // MARK: caption chip — the scene's claim, plus canon details for recipes/forces
 
     private var captionChip: some View {
-        VStack(alignment: .leading, spacing: 3) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(currentScene.name)
                 .font(.headline)
             Text(currentScene.blurb)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+            if case .recipe(let id) = selection, let r = FieldRecipes.recipe(id: id) {
+                recipeDetails(r)
+            }
+            if case .force(let token) = selection, let entry = ForceCatalog.entry(token: token) {
+                Text("\(entry.group.lowercased()) force · token \(entry.token)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 2)
+            }
             Text("click → burst · drag → flow · hover a card → engage")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .padding(.top, 2)
         }
         .padding(14)
-        .frame(maxWidth: 430, alignment: .leading)
+        .frame(maxWidth: 460, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .padding(20)
         .allowsHitTesting(false)
+    }
+
+    /// The recipe's canon lanes, straight from the locked data: tokens execute, metrics
+    /// measure, accessibility survives without motion.
+    @ViewBuilder
+    private func recipeDetails(_ r: FieldRecipe) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(r.primitives.joined(separator: " · "))
+                .font(.caption.monospaced())
+                .foregroundStyle(.secondary)
+            if !r.metrics.isEmpty {
+                Text("measures: " + r.metrics.joined(separator: " · "))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            if let notes = r.notes {
+                Text(notes)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(3)
+            }
+            Text("without motion: \(r.accessibility.meaningWithoutMotion)")
+                .font(.caption2.italic())
+                .foregroundStyle(.tertiary)
+                .lineLimit(2)
+        }
+        .padding(.top, 2)
     }
 
     // MARK: inspector
@@ -231,6 +269,31 @@ struct LabRootView: View {
         )) {
             Label(label, systemImage: symbol)
         }
+    }
+}
+
+// MARK: - Sidebar row
+
+/// A two-line sidebar row: title + the item's one-sentence description, straight from
+/// the scene/force/recipe data — every entry explains itself before it's opened.
+struct SidebarRow: View {
+    let symbol: String
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        Label {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+        } icon: {
+            Image(systemName: symbol)
+        }
+        .padding(.vertical, 1)
     }
 }
 
@@ -305,6 +368,16 @@ extension Color {
         guard let c = NSColor(self).usingColorSpace(.sRGB) else { return nil }
         return String(format: "#%02x%02x%02x",
                       Int(c.redComponent * 255), Int(c.greenComponent * 255), Int(c.blueComponent * 255))
+    }
+}
+#endif
+
+#if !os(macOS)
+// FieldLab is a macOS app; cross-platform package builds still need an entry point.
+@main
+struct FieldLabUnavailable {
+    static func main() {
+        print("FieldLab is a macOS app — run it there: swift run FieldLab")
     }
 }
 #endif

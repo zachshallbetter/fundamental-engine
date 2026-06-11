@@ -190,11 +190,25 @@ swift/Scripts/package-fieldlab.sh   # build + bundle dist/FieldLab.app + launch
   Causality, Volume, Source & Sink, Warp, Storm.
 - **The force catalog** — all 36 registered forces as browsable scenes (canonical /
   natural / extended), each with its honest minimum pairing and a one-line physics blurb.
-- **The canon** — the locked 64 recipes, compiled and runnable.
+- **The canon** — the locked 64 recipes, compiled and runnable, with each recipe's
+  lanes (tokens · metrics · reduced-motion meaning) shown from the canon data.
+- Every sidebar entry carries its description from the data — scenes their claim,
+  forces their physics, recipes their intent.
 - The inspector exposes everything live: formation, all six matter modes, all eight
   overlay readings, accent, density, and a frame-time readout.
 - Cards are real AppKit views that ARE bodies: hover engages, the feedback sink glows
   them with gathered density. Click = burst, drag = flow focus.
+
+### Rendering: Metal + CoreGraphics hybrid
+
+Managed mounts render through `HybridFieldRenderer` when a GPU exists: the hot
+per-frame layers — matter (dots / trails / links), the carrier waves, the bound
+shimmer, sparks — draw on a `CAMetalLayer` (soft-circle instances + line primitives,
+4× MSAA, two pipelines, ≤4 draw calls, ~0.1 ms CPU encode), while the CoreGraphics
+layer above keeps the diagnostic readings and the CG-only matter modes (metaballs /
+voronoi / streamlines). `CoreGraphicsFieldRenderer` remains the complete single-layer
+fallback — it draws everything when Metal is unavailable, and it's what the headless
+snapshot and bench pipelines use deterministically.
 
 Headless proof and performance:
 

@@ -49,8 +49,9 @@ public final class FieldField: FieldHandle {
     private let managed: Bool
     /// The mount point this field was attached to.
     private weak var mountPoint: (any FieldMountPoint)?
-    /// The managed render surface added to the mount (a CALayer on iOS/macOS), if any.
-    private var surface: AnyObject?
+    /// The managed render surfaces added to the mount (Metal layer + CG readings layer
+    /// in the hybrid, or the single CG layer), in mount order.
+    private var surfaces: [AnyObject] = []
 
     // MARK: Init
 
@@ -68,14 +69,25 @@ public final class FieldField: FieldHandle {
         self.managed = true
         self.mountPoint = mountPoint
 
-        // managed render surface — skipped entirely in signals-only mode (render "none"),
-        // matching the JS no-allocation guarantee (§13.7).
+        // managed render surfaces — skipped entirely in signals-only mode (render "none"),
+        // matching the JS no-allocation guarantee (§13.7). Metal when the device exists
+        // (the hot layers on the GPU, readings on the CG layer above); CG-only otherwise.
         #if canImport(QuartzCore)
         if options.render != .none_ {
-            let renderer = CoreGraphicsFieldRenderer(scale: CGFloat(host.volume.scale))
+            let scale = CGFloat(host.volume.scale)
+            #if canImport(Metal)
+            if let hybrid = HybridFieldRenderer(scale: scale) {
+                engine.renderer = hybrid
+                mountPoint.addFieldSurface(hybrid.metal.metalLayer) // beneath
+                mountPoint.addFieldSurface(hybrid.cg.surface)       // readings above
+                self.surfaces = [hybrid.metal.metalLayer, hybrid.cg.surface]
+                return
+            }
+            #endif
+            let renderer = CoreGraphicsFieldRenderer(scale: scale)
             engine.renderer = renderer
             mountPoint.addFieldSurface(renderer.surface)
-            self.surface = renderer.surface
+            self.surfaces = [renderer.surface]
         }
         #endif
     }
@@ -122,11 +134,11 @@ public final class FieldField: FieldHandle {
 
     public func destroy() {
         handle.destroy()
-        // remove the managed render surface, mirroring `destroy()` removing the managed canvas.
-        if managed, let surface, let mountPoint {
-            mountPoint.removeFieldSurface(surface)
+        // remove the managed render surfaces, mirroring `destroy()` removing the managed canvas.
+        if managed, let mountPoint {
+            for s in surfaces { mountPoint.removeFieldSurface(s) }
         }
-        surface = nil
+        surfaces = []
     }
 
     // MARK: Platform host factory

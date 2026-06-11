@@ -123,3 +123,42 @@ public func voronoiWalls(owners: [Int], cols: Int, rows: Int) -> [GridSeg] {
     }
     return walls
 }
+
+/// One constellation link: endpoints + the separation alpha.
+public struct LinkSegment {
+    public let a: Vec3
+    public let b: Vec3
+    public let alpha: Float
+}
+
+/// The links-mode segment set: every close pair once, alpha by separation, found via a
+/// cell grid of the link radius (O(n·k), never all-pairs). Pure geometry shared by the
+/// render backends — CoreGraphics strokes them, Metal uploads them as line vertices.
+public func linkSegments(particles: [Particle], radius r: Float = 70) -> [LinkSegment] {
+    @inline(__always) func key(_ cx: Int32, _ cy: Int32) -> Int64 {
+        (Int64(cx) << 32) | (Int64(cy) & 0xFFFF_FFFF)
+    }
+    var buckets: [Int64: [Int]] = [:]
+    buckets.reserveCapacity(particles.count)
+    for (i, p) in particles.enumerated() {
+        buckets[key(Int32(p.position.x / r), Int32(p.position.y / r)), default: []].append(i)
+    }
+    var out: [LinkSegment] = []
+    for (i, p) in particles.enumerated() {
+        let cx = Int32(p.position.x / r)
+        let cy = Int32(p.position.y / r)
+        for dx: Int32 in -1...1 {
+            for dy: Int32 in -1...1 {
+                guard let bin = buckets[key(cx + dx, cy + dy)] else { continue }
+                for j in bin where j > i { // each undirected pair once
+                    let q = particles[j]
+                    let a = linkAlpha(d: simd_distance(p.position, q.position), r: r)
+                    if a > 0 {
+                        out.append(LinkSegment(a: p.position, b: q.position, alpha: a))
+                    }
+                }
+            }
+        }
+    }
+    return out
+}
