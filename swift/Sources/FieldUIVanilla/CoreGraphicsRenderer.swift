@@ -381,32 +381,57 @@ public final class FieldSurfaceLayer: CALayer {
     }
 
     /// A reference lattice displaced by the local field — the deformation reading.
+    ///
+    /// The displacement is the field DIRECTION times a power-compressed, peak-normalized
+    /// magnitude: `dir · (|f|/peak)^0.4 · maxDisp`. Two problems the naive
+    /// `clamp(f, -1, 1)·10` had, both fixed here:
+    ///   · scale — a designed force (attract ≈ 0.3) and a real law (gravity ≈ M/d²)
+    ///     differ 100×, so the fixed clamp rendered gravity sub-pixel. Peak-normalizing
+    ///     makes any field scale read.
+    ///   · falloff shape — gravity's 1/d² spikes at the body and is ~0 elsewhere, so even
+    ///     normalized it gave one dimple, not a well. The 0.4 power lifts the weak-field
+    ///     deflections (at 4× distance, |f| = peak/16 → still 0.30·maxDisp) into the
+    ///     rubber-sheet funnel everyone reads as a gravity well.
     private func drawDeformedGrid(_ frame: RenderFrame, in ctx: CGContext) {
         let GRID: Float = 44
-        stroke(ctx, frame.accent, 0.22)
-        var y: Float = 0
-        while y <= frame.volume.height {
-            var first = true
-            var x: Float = 0
-            while x <= frame.volume.width {
-                let f = frame.forceSampler(Vec3(x, y, 0))
-                let pt = CGPoint(x: CGFloat(x + clamp(f.x, -1, 1) * 10), y: CGFloat(y + clamp(f.y, -1, 1) * 10))
-                if first { ctx.move(to: pt); first = false } else { ctx.addLine(to: pt) }
-                x += GRID / 2
+        let SUB = GRID / 2
+        let maxDisp: Float = 18
+        let cols = Int(frame.volume.width / SUB) + 1
+        let rows = Int(frame.volume.height / SUB) + 1
+
+        // pass 1: sample the field at every lattice node, track the peak magnitude
+        var fx = [Float](repeating: 0, count: cols * rows)
+        var fy = [Float](repeating: 0, count: cols * rows)
+        var peak: Float = 1e-6
+        for gy in 0..<rows {
+            for gx in 0..<cols {
+                let f = frame.forceSampler(Vec3(Float(gx) * SUB, Float(gy) * SUB, 0))
+                let i = gy * cols + gx
+                fx[i] = f.x
+                fy[i] = f.y
+                peak = max(peak, simd_length(f))
             }
-            y += GRID
         }
-        var x: Float = 0
-        while x <= frame.volume.width {
-            var first = true
-            var y2: Float = 0
-            while y2 <= frame.volume.height {
-                let f = frame.forceSampler(Vec3(x, y2, 0))
-                let pt = CGPoint(x: CGFloat(x + clamp(f.x, -1, 1) * 10), y: CGFloat(y2 + clamp(f.y, -1, 1) * 10))
-                if first { ctx.move(to: pt); first = false } else { ctx.addLine(to: pt) }
-                y2 += GRID / 2
-            }
-            x += GRID
+
+        @inline(__always) func node(_ gx: Int, _ gy: Int) -> CGPoint {
+            let i = gy * cols + gx
+            let mag = sqrt(fx[i] * fx[i] + fy[i] * fy[i])
+            guard mag > 1e-9 else { return CGPoint(x: CGFloat(Float(gx) * SUB), y: CGFloat(Float(gy) * SUB)) }
+            let disp = pow(mag / peak, 0.4) * maxDisp // power-compressed so weak field still reads
+            return CGPoint(x: CGFloat(Float(gx) * SUB + (fx[i] / mag) * disp),
+                           y: CGFloat(Float(gy) * SUB + (fy[i] / mag) * disp))
+        }
+
+        stroke(ctx, frame.accent, 0.22)
+        // horizontal lines (every other row, fine columns)
+        for gy in stride(from: 0, to: rows, by: 2) {
+            ctx.move(to: node(0, gy))
+            for gx in 1..<cols { ctx.addLine(to: node(gx, gy)) }
+        }
+        // vertical lines (every other column, fine rows)
+        for gx in stride(from: 0, to: cols, by: 2) {
+            ctx.move(to: node(gx, 0))
+            for gy in 1..<rows { ctx.addLine(to: node(gx, gy)) }
         }
         ctx.strokePath()
     }

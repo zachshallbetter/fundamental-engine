@@ -7,8 +7,36 @@
 import Foundation
 import FieldLabKit
 import FieldUICore
+import FieldUIVanilla
 
 #if os(macOS)
+// --probe-source: does the source actually produce real, counted particles, and does the
+// sink supernova release them back persistently? Runs source-sink for 600 frames, logging
+// the live count + a supernova counter (a sharp accreted→0 on the collector).
+if CommandLine.arguments.contains("--probe-source") {
+    let scene = LabScenes.sourceSink
+    let bodies = scene.makeBodies(width: 1280, height: 800)
+    let host = ManualFieldHost(width: 1280, height: 800, bodies: bodies)
+    let field = FieldField(host: host, options: scene.options())
+    field.scan()
+    field.setFormation(scene.formation)
+    let collector = bodies.first { $0.tokens.contains("sink") }!
+    var prevAccreted: Float = 0
+    var supernovas = 0
+    print("frame  count  accreted  supernovas")
+    for i in 0..<600 {
+        host.fire(at: TimeInterval(i) / 60)
+        if prevAccreted > 5 && collector.accreted < prevAccreted - 5 { supernovas += 1 }
+        prevAccreted = collector.accreted
+        if i % 30 == 0 {
+            print(String(format: "%5d  %5d  %8.0f  %d",
+                         i, field.particleCount(), collector.accreted, supernovas))
+        }
+    }
+    field.destroy()
+    exit(0)
+}
+
 // --bench: where does a frame go? sim vs draw, per scene / matter mode / reading.
 if CommandLine.arguments.contains("--bench") {
     print("FieldLab bench — 1280×800 @2x, 240 frames per row (after 60 warm-up)\n")
@@ -29,6 +57,16 @@ if CommandLine.arguments.contains("--verify") {
                            to: dir.appendingPathComponent("mass-lines.png"))
     try Snapshotter.render(scene: LabScenes.magnetism, options: Snapshotter.Options(),
                            to: dir.appendingPathComponent("magnetism.png"))
+    // gravity + the deformation grid — should now visibly curve toward the mass.
+    if let gravity = ForceCatalog.entry(token: "gravity")?.scene {
+        var g = gravity
+        g.overlay = [.grid]
+        try Snapshotter.render(scene: g, options: Snapshotter.Options(),
+                               to: dir.appendingPathComponent("gravity-grid.png"))
+    }
+    // source & sink — supernovas eject persistent matter.
+    try Snapshotter.render(scene: LabScenes.sourceSink, options: Snapshotter.Options(),
+                           to: dir.appendingPathComponent("source-sink.png"))
     print("verify → \(dir.path)")
     exit(0)
 }

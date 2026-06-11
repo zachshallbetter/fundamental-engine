@@ -253,14 +253,16 @@ public enum LabScenes {
         var s = LabScene(
             id: "source-sink", name: "Source & Sink",
             blurb: "A budgeted fountain feeds a sink that saturates and supernovas — creation, capture, release.",
-            story: "The data is the budget contract: the emitter's life (140 frames per particle) and rate bound its population — every spawned particle is mortal. The collector's absorbR and capacity (60) are the other half: it captures, holds (conserved — held matter stays in the pool), and at capacity supernovas everything back. Creation and destruction both ledger-checked.",
+            story: "The emitter's life (110 frames/particle) and rate bound its population — every spawned particle is mortal. The collector captures, holds (conserved), and at capacity (24) SUPERNOVAS: the ejected matter rejoins the field as persistent matter — so the source→sink→supernova loop visibly conserves, the transient stream becoming lasting field, bounded by the pool ceiling.",
             cards: [
                 CardSpec("Emitter", x: 0.25, y: 0.68, w: 150, h: 60,
-                         tokens: ["spawn"], strength: 1.6, range: 200,
-                         angle: -.pi / 3, engaged: true, life: 140),
+                         tokens: ["spawn"], strength: 1.8, range: 200,
+                         angle: -.pi / 3, engaged: true, life: 110),
+                // a hungry collector with a small capacity → frequent, visible supernovas;
+                // each ejection rejoins the field (releaseCaptured clears age).
                 CardSpec("Collector", x: 0.72, y: 0.35, w: 170, h: 66,
-                         tokens: ["sink", "attract"], strength: 1.2, range: 300,
-                         absorbR: 34, capacity: 60),
+                         tokens: ["sink", "attract"], strength: 1.8, range: 460,
+                         absorbR: 46, capacity: 24),
             ]
         )
         s.formation = "lanes"

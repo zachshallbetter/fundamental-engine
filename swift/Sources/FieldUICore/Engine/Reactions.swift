@@ -55,6 +55,13 @@ public func releaseCaptured(
         q.position = b.center
         q.velocity = Vec3(cos(ang) * spd, sin(ang) * spd, 0)
         q.heat = 1
+        // a supernova is a CONSERVATION event: the ejected matter rejoins the persistent
+        // field. Mortal (source-spawned) matter that a sink captured and held is released
+        // immortal — so a source→sink→supernova loop visibly conserves (the matter the
+        // source made becomes lasting field matter, bounded by the engine's pool ceiling),
+        // instead of the released particles aging out and vanishing moments later. A no-op
+        // for the canonical immortal base pool (age is already nil).
+        q.age = nil
         released.append(q)
     }
     b.accreted = 0
