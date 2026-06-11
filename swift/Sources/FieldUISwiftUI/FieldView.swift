@@ -54,6 +54,30 @@ public struct FieldView: View {
 
 // MARK: - FieldRepresentable
 
+/// The construction-time options — changing any of these rebuilds the engine (the rest are
+/// live-settable). `FieldOptions` isn't `Equatable` (it carries a sink closure), so compare by hand.
+private struct BuildSignature: Equatable {
+    let density: Float?
+    let waves: Bool
+    let mass: Bool
+    let depth: Float
+    init(_ o: FieldOptions, _ depth: Float) {
+        density = o.density; waves = o.waves; mass = o.firstClassMass; self.depth = depth
+    }
+}
+
+/// Re-apply the live-settable options onto a running field (idempotent) — so changing `options`
+/// on a live `FieldView` actually takes effect, instead of being a no-op after first build.
+private func applyLiveOptions(_ f: FieldField, _ o: FieldOptions) {
+    if let a = o.accent { f.setAccent(a) }
+    if let p = o.palette { f.setPalette(p) }
+    f.setRender(o.render)
+    f.setOverlay(o.overlay)
+    f.setAttention(o.attention)
+    f.setCausality(o.causality)
+    f.setHeatmap(o.heatmap)
+}
+
 /// UIViewRepresentable / NSViewRepresentable bridge that creates the FieldField
 /// and manages its lifecycle. Stays internal — callers only see FieldView.
 #if canImport(UIKit)
@@ -64,7 +88,7 @@ struct FieldRepresentable: UIViewRepresentable {
 
     /// Owns the engine's lifetime so `dismantleUIView` can tear it down — SwiftUI hands the
     /// coordinator (not the binding) to dismantle, so without it the field leaked on disappear.
-    final class Coordinator { var field: FieldField? }
+    final class Coordinator { var field: FieldField?; fileprivate var build: BuildSignature? }
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeUIView(context: Context) -> UIView {
@@ -74,13 +98,18 @@ struct FieldRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ container: UIView, context: Context) {
-        if context.coordinator.field == nil {
-            let f = FieldField(in: container, options: options, depth: depth)
-            f.scan()
-            context.coordinator.field = f
-            // publish to the environment binding after this update pass (never mutate during it)
-            DispatchQueue.main.async { field = f }
+        let c = context.coordinator
+        let sig = BuildSignature(options, depth)
+        if let f = c.field {
+            if c.build == sig { applyLiveOptions(f, options); return } // live re-apply, no rebuild
+            f.destroy(); c.field = nil // a construction-time option changed → rebuild below
         }
+        let f = FieldField(in: container, options: options, depth: depth)
+        f.scan()
+        c.field = f
+        c.build = sig
+        // publish to the environment binding after this update pass (never mutate during it)
+        DispatchQueue.main.async { field = f }
     }
 
     static func dismantleUIView(_ container: UIView, coordinator: Coordinator) {
@@ -96,7 +125,7 @@ struct FieldRepresentable: NSViewRepresentable {
 
     /// Owns the engine's lifetime so `dismantleNSView` can tear it down (the field leaked before —
     /// the AppKit branch had no dismantle at all).
-    final class Coordinator { var field: FieldField? }
+    final class Coordinator { var field: FieldField?; fileprivate var build: BuildSignature? }
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> NSView {
@@ -105,12 +134,17 @@ struct FieldRepresentable: NSViewRepresentable {
     }
 
     func updateNSView(_ container: NSView, context: Context) {
-        if context.coordinator.field == nil {
-            let f = FieldField(in: container, options: options, depth: depth)
-            f.scan()
-            context.coordinator.field = f
-            DispatchQueue.main.async { field = f }
+        let c = context.coordinator
+        let sig = BuildSignature(options, depth)
+        if let f = c.field {
+            if c.build == sig { applyLiveOptions(f, options); return }
+            f.destroy(); c.field = nil
         }
+        let f = FieldField(in: container, options: options, depth: depth)
+        f.scan()
+        c.field = f
+        c.build = sig
+        DispatchQueue.main.async { field = f }
     }
 
     static func dismantleNSView(_ container: NSView, coordinator: Coordinator) {
