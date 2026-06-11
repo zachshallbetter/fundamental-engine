@@ -392,6 +392,10 @@ export interface FieldOptions {
   overlayCanvas?: HTMLCanvasElement;
   /** initial overlay visualization mode (Field Surfaces); default `'off'`. */
   overlay?: OverlayInput;
+  /** the drawing backend for the overlay surface (#373) — defaults to the Canvas 2D
+   *  implementation over `overlayCanvas`. The structural seam a WebGL/WebGPU surface
+   *  implements; see render-backend.ts. */
+  overlayBackend?: import('./render-backend.ts').RenderBackend;
   /**
    * Feedback seam (Phase D3): when set, the engine routes its per-body feedback channels to this
    * sink each frame *instead of* writing CSS variables / dispatching events directly — so the
