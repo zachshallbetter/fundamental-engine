@@ -7,6 +7,9 @@ import UIKit
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #endif
+#if canImport(RealityKit) && os(visionOS)
+import RealityKit
+#endif
 
 // MARK: - MountPoint
 
@@ -46,21 +49,37 @@ public final class FieldField: FieldHandle {
     private let managed: Bool
     /// The mount point this field was attached to.
     private weak var mountPoint: (any FieldMountPoint)?
+    /// The managed render surface added to the mount (a CALayer on iOS/macOS), if any.
+    private var surface: AnyObject?
 
     // MARK: Init
 
     /// Attach a field to `mountPoint`. A render surface is created and added automatically.
     public init(in mountPoint: any FieldMountPoint, options: FieldOptions = .init()) {
         let host = FieldField.makeHost(for: mountPoint)
-        self.handle = FieldEngine(host: host, options: options)
+        let engine = FieldEngine(host: host, options: options)
+        self.handle = engine
         self.managed = true
         self.mountPoint = mountPoint
+
+        // managed render surface — skipped entirely in signals-only mode (render "none"),
+        // matching the JS no-allocation guarantee (§13.7).
+        #if canImport(QuartzCore)
+        if options.render != .none_ {
+            let renderer = CoreGraphicsFieldRenderer(scale: CGFloat(host.volume.scale))
+            engine.renderer = renderer
+            mountPoint.addFieldSurface(renderer.surface)
+            self.surface = renderer.surface
+        }
+        #endif
     }
 
     /// Drive a field on a host you supply — the unmanaged form.
     /// Use this when you want full control of the render surface lifecycle.
-    public init(host: any FieldHost, options: FieldOptions = .init()) {
-        self.handle = FieldEngine(host: host, options: options)
+    public init(host: any FieldHost, options: FieldOptions = .init(), renderer: (any FieldRenderer)? = nil) {
+        let engine = FieldEngine(host: host, options: options)
+        engine.renderer = renderer
+        self.handle = engine
         self.managed = false
     }
 
@@ -97,16 +116,20 @@ public final class FieldField: FieldHandle {
 
     public func destroy() {
         handle.destroy()
-        // If we created the render surface, hand it back off.
-        // (Concrete removal is handled by each platform host's destroy().)
+        // remove the managed render surface, mirroring `destroy()` removing the managed canvas.
+        if managed, let surface, let mountPoint {
+            mountPoint.removeFieldSurface(surface)
+        }
+        surface = nil
     }
 
     // MARK: Platform host factory
 
     private static func makeHost(for mountPoint: any FieldMountPoint) -> any FieldHost {
         #if canImport(RealityKit) && os(visionOS)
-        if let entity = mountPoint as? RealityKitMountPoint {
-            return RealityFieldHost(root: entity.fieldEntity)
+        if let mount = mountPoint as? RealityKitMountPoint,
+           let entity = mount.fieldEntity as? Entity {
+            return RealityFieldHost(root: entity)
         }
         #endif
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)

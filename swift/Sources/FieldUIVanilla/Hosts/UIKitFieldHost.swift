@@ -24,12 +24,14 @@ final class UIKitFieldHost: FieldHost {
     // MARK: FieldHost — geometry
 
     public var volume: FieldVolume {
-        let screen = UIScreen.main.bounds
-        let scale  = UIScreen.main.scale
+        // the mount's own bounds, not the screen — works on visionOS (no UIScreen)
+        // and sizes per-view embeddings correctly everywhere else.
+        let bounds = rootView?.window?.bounds ?? rootView?.bounds ?? .zero
+        let scale  = rootView?.traitCollection.displayScale ?? 1
         return FieldVolume(
-            width:  Float(screen.width),
-            height: Float(screen.height),
-            depth:  0,   // 2D platform
+            width:  Float(bounds.width),
+            height: Float(bounds.height),
+            depth:  0,   // flat surface; the volumetric host is RealityFieldHost
             scale:  Float(scale)
         )
     }

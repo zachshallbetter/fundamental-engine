@@ -1,8 +1,9 @@
+import Foundation
 import simd
 
 // MARK: - Agent kinds
 
-public enum AgentKind {
+public enum AgentKind: Sendable {
     case particle
     case element
     case eventSink
@@ -11,8 +12,12 @@ public enum AgentKind {
 // MARK: - Particle  (§3.2, §21)
 
 /// A free particle — the lightest agent.
-/// All positions and velocities are 3D. On 2D platforms, z ≈ 0.
-public struct Particle {
+///
+/// A reference type, deliberately: the integrator mutates particles through neighbour
+/// lists (`collide` exchanges momentum with `q` directly, exactly as the JS engine does),
+/// and capture (`cap`) is an identity relationship. All positions/velocities are 3D;
+/// on 2D platforms z stays 0.
+public final class Particle {
     public var position: Vec3
     public var velocity: Vec3
     /// Inertial mass — 1 = nominal (§21). Under first-class mass ∝ size.
@@ -24,14 +29,14 @@ public struct Particle {
     /// The sink/blackhole body holding this particle, or nil (§6.9).
     public weak var cap: Body?
 
-    // Formation scatter targets (§7)
-    public var gx: Float?
-    public var gy: Float?
-    public var gz: Float?
+    /// Stable per-particle scatter target fractions, for the `spread` formation (§7).
+    public var gx: Float
+    public var gy: Float
+    public var gz: Float
 
     // Extended-force attributes (§20)
-    /// Frames-to-live for mortal (spawned) matter; nil = immortal.
-    public var age: Int?
+    /// Frames-to-live for mortal (spawned) matter; nil = immortal (the conserved base field).
+    public var age: Float?
     /// Signed charge q, for `charge` / `magnetism` (§20.10).
     public var charge: Float?
     /// Species tag, for `hunt` (§20.3).
@@ -46,13 +51,19 @@ public struct Particle {
         velocity: Vec3 = .zero,
         mass: Float = 1,
         heat: Float = 0,
-        size: Float = 1
+        size: Float = 1,
+        gx: Float = 0.5,
+        gy: Float = 0.5,
+        gz: Float = 0.5
     ) {
         self.position = position
         self.velocity = velocity
         self.mass = mass
         self.heat = heat
         self.size = size
+        self.gx = gx
+        self.gy = gy
+        self.gz = gz
     }
 }
 
@@ -72,12 +83,13 @@ public struct AtomPayload: Sendable {
 
 /// A registered view acting as a force source.
 /// Parsed from platform-specific attribute equivalents; runtime fields refreshed each scan/frame.
-public final class Body: AnyObject {
+public final class Body {
     // ── identity ────────────────────────────────────────────────────────────
     /// Opaque platform reference (UIView, NSView, Entity…). Weak to avoid retain cycles.
     public weak var view: AnyObject?
     /// Space-joined force ids (they compose, §4).
     public var tokens: [String]
+    /// Memoized token classification (filled lazily by the integrator).
     public var classified: ClassifiedTokens?
 
     // ── field parameters ────────────────────────────────────────────────────
@@ -91,6 +103,7 @@ public final class Body: AnyObject {
     public var when: String
     public var feedback: Bool
     public var tint: String?
+    /// Shaped source: forces reference the nearest point on the box, not its centre.
     public var shaped: Bool
     public var fmin: Float
     public var fmax: Float
@@ -101,8 +114,8 @@ public final class Body: AnyObject {
     public var warpScale: Float?
 
     // Source budget (§20)
-    public var life: Int?
-    public var cap_: Int?          // renamed to avoid collision with Particle.cap
+    public var life: Float?
+    public var sourceCap: Int?
     public var budgeted: Bool
     public var screenMin: Float?
 
@@ -112,10 +125,10 @@ public final class Body: AnyObject {
     public var M: Float
 
     // ── runtime state ────────────────────────────────────────────────────────
-    public var isEngaged: Bool       // hover/focus/tap → active
+    public var isEngaged: Bool       // hover/focus/tap → active (`b.on` in JS)
     public var isVisible: Bool       // on-screen and exerting force (§2.1)
     public var accreted: Float       // captured load (was `mass`, §21.2)
-    public var count: Int            // per-frame density tally
+    public var count: Float          // per-frame density tally
     public var d: Float              // eased density value ∈ [0,1]
     public var attn: Float?          // conserved-attention strength multiplier (§2.4)
     public var emitAcc: Float?       // fractional-emission accumulator for budgeted [S] sources
@@ -172,26 +185,47 @@ public final class Body: AnyObject {
         self.warpHas = false
     }
 
+    // Convenience geometry accessors (the JS cx/cy/hw/hh)
+    @inline(__always) public var center: Vec3 { box.center }
+
     public struct Thermo {
-        public var n: Int
-        public var sv: Vec3     // Σvelocity
-        public var ss: Float    // Σ|v|
-        public var ss2: Float   // Σ|v|²
-        public var sh: Float    // Σheat
+        public var n: Int = 0
+        public var sv: Vec3 = .zero   // Σvelocity
+        public var ss: Float = 0      // Σ|v|
+        public var ss2: Float = 0     // Σ|v|²
+        public var sh: Float = 0      // Σheat
+        public init() {}
     }
 
     public struct Metrics {
-        public var entropy: Float       // ∈ [0,1]
-        public var coherence: Float     // ∈ [0,1]
-        public var temperature: Float   // ∈ [0,1]
+        public var entropy: Float = 0       // ∈ [0,1]
+        public var coherence: Float = 0     // ∈ [0,1]
+        public var temperature: Float = 0   // ∈ [0,1]
+        public init() {}
     }
 }
 
-/// Token classification result — mirrors `ClassifiedTokens` from the JS config.
+/// Token classification — `{ modifiers, forces, sources }` per the modifier contract
+/// (workover v0.3). Modifiers carry the formalized order `spotlight → screen → resonate`.
 public struct ClassifiedTokens {
     public var modifiers: [String]
     public var forces: [String]
-    public var sources: [String]
+
+    public init(modifiers: [String], forces: [String]) {
+        self.modifiers = modifiers
+        self.forces = forces
+    }
+}
+
+/// The formalized modifier order (workover v0.3): spotlight → screen → resonate.
+public let MODIFIER_ORDER: [String] = ["spotlight", "screen", "resonate"]
+
+/// Split a body's tokens into modifiers (in contract order) and forces (in authored order).
+public func classifyBodyTokens(_ tokens: [String]) -> ClassifiedTokens {
+    var modifiers: [String] = []
+    for m in MODIFIER_ORDER where tokens.contains(m) { modifiers.append(m) }
+    let forces = tokens.filter { !MODIFIER_ORDER.contains($0) }
+    return ClassifiedTokens(modifiers: modifiers, forces: forces)
 }
 
 // MARK: - Formation  (§7)
@@ -204,51 +238,72 @@ public struct Formation: Sendable {
     public var spread: Float
     public var conv: Float
 
-    public static let neutral = Formation(driftX: 0, wander: 0, orbit: 0, spread: 0, conv: 0)
+    public init(driftX: Float = 0, wander: Float = 0, orbit: Float = 0, spread: Float = 0, conv: Float = 0) {
+        self.driftX = driftX
+        self.wander = wander
+        self.orbit = orbit
+        self.spread = spread
+        self.conv = conv
+    }
+
+    public static let neutral = Formation()
 }
 
 // MARK: - Scalar grid  (§20.1 class [C])
 
-public protocol ScalarGrid {
+public protocol ScalarGrid: AnyObject {
     func sample(at p: Vec3) -> Float
     func deposit(at p: Vec3, amount: Float)
     func gradient(at p: Vec3) -> Vec3
 }
 
+/// A grid that holds nothing — the default until the scalar-grid port lands.
+/// Grid-backed forces (`diffuse`, `propagate`, `memory`) no-op against it.
+public final class NoopGrid: ScalarGrid {
+    public init() {}
+    public func sample(at p: Vec3) -> Float { 0 }
+    public func deposit(at p: Vec3, amount: Float) {}
+    public func gradient(at p: Vec3) -> Vec3 { .zero }
+}
+
 // MARK: - Env  (§3.3)
 
 /// The shared per-frame environment handed to every force.
-/// `vector` is the body→particle vector (3D). On 2D platforms, z=0.
-public struct Env {
+///
+/// A reference type: the integrator updates `vector`/`dist` per body–particle pair in the
+/// hot loop (exactly as the JS engine mutates `env.dx/dy/dist`), and forces read it.
+public final class Env {
     /// Vector from particle to body: (body.center − particle.position).
-    public var vector: Vec3
+    public var vector: Vec3 = .zero
     /// |vector|, clamped ≥ 1.
-    public var dist: Float
+    public var dist: Float = 1
     /// The active, eased formation (§7).
-    public var form: Formation
+    public var form: Formation = .neutral
     /// World volume (width, height, depth). Depth = 0 on 2D platforms.
-    public var volume: Vec3
+    public var volume: Vec3 = .zero
     /// Elapsed time in seconds.
-    public var t: Float
+    public var t: Float = 0
     /// Frame counter.
-    public var frameN: Int
+    public var frameN: Int = 0
     /// Integration step: 1 a frame, 0 under reduced motion (§2.2/§18).
-    public var dt: Float
+    public var dt: Float = 1
     /// Velocity cap / "speed of light" (§20.10).
-    public var c: Float
+    public var c: Float = 12
     /// Gravitational constant (§20.10).
-    public var G: Float
+    public var G: Float = 1
     /// Recent scroll speed (eased, units/frame); 0 when inactive.
-    public var scrollV: Float
+    public var scrollV: Float = 0
 
     // ── services (closures filled by the engine) ──────────────────────────
-    public var spark: (_ at: Vec3, _ power: Float, _ color: String?) -> Void
-    public var supernova: (_ body: Body) -> Void
-    public var spawn: (_ partial: Particle) -> Void
-    public var neighbors: (_ p: Particle, _ r: Float) -> [Particle]
-    public var grid: (_ name: String) -> any ScalarGrid
-    /// Net structure field at a world point (dipoles + monopoles).
+    public var spark: (_ at: Vec3, _ power: Float, _ color: String?) -> Void = { _, _, _ in }
+    public var supernova: (_ body: Body) -> Void = { _ in }
+    public var spawn: (_ p: Particle) -> Void = { _ in }
+    public var neighbors: (_ p: Particle, _ r: Float) -> [Particle] = { _, _ in [] }
+    public var grid: (_ name: String) -> any ScalarGrid = { _ in NoopGrid() }
+    /// Net structure field at a world point (dipoles + monopoles). Set by the integrator.
     public var fieldAt: ((_ p: Vec3) -> Vec3)?
+
+    public init() {}
 }
 
 // MARK: - Force  (§4)
@@ -259,12 +314,16 @@ public protocol Force {
     var label: String { get }
     var targets: [AgentKind] { get }
 
-    /// Apply this force to a free particle. Mutate `p` in place.
-    func apply(body: Body, particle: inout Particle, env: Env)
+    /// Apply this force to a free particle (mutates the particle).
+    func apply(body: Body, particle: Particle, env: Env)
 
-    /// True if this force replaces velocity (kinematic) rather than adding an acceleration.
-    /// Kinematic forces are not scaled by 1/m under first-class mass (§21.3).
+    /// True if this force replaces velocity (a reflection, rotation, or relaunch) rather
+    /// than adding an acceleration — first-class mass must not scale it (§21.3).
     var isKinematic: Bool { get }
+
+    /// Whether this force implements `modify` — the JS engine checks `f.modify` existence;
+    /// Swift protocols can't, so modifier forces declare it. Default false.
+    var hasModify: Bool { get }
 
     /// Optional modifier hook — run before the body's other tokens.
     func modify(body: Body, particle: Particle, env: Env) -> ForceModification?
@@ -284,12 +343,18 @@ public struct ForceModification {
     public var strength: Float?
     /// When true, skips all sibling forces entirely.
     public var gate: Bool
+
+    public init(strength: Float? = nil, gate: Bool = false) {
+        self.strength = strength
+        self.gate = gate
+    }
 }
 
 // Default no-ops so concrete types only implement what they need.
 public extension Force {
     var targets: [AgentKind] { [.particle] }
     var isKinematic: Bool { false }
+    var hasModify: Bool { false }
     func modify(body: Body, particle: Particle, env: Env) -> ForceModification? { nil }
     func source(body: Body, env: Env) {}
     func field(body: Body, at p: Vec3) -> Vec3? { nil }
@@ -302,6 +367,12 @@ public struct ThreadLink {
     public var a: AnyObject
     public var b: AnyObject
     public var color: String?
+
+    public init(a: AnyObject, b: AnyObject, color: String? = nil) {
+        self.a = a
+        self.b = b
+        self.color = color
+    }
 }
 
 // MARK: - Condition  (§5)
