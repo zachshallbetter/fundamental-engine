@@ -7,6 +7,110 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **A supernova now ejects captured matter as PERSISTENT field matter** (`@field-ui/core`,
+  `accretion.ts`). When a sink saturates and supernovas, `releaseCaptured` clears each released
+  particle's `age`: mortal class-`[S]` source-spawned matter that the sink captured and held is
+  released **immortal**, so a `spawn → sink → supernova` loop visibly conserves — the matter a
+  source made rejoins the lasting field instead of silently dying once released. A **no-op for the
+  conserved base pool** (whose particles already have no `age`). Closes a long-standing gap where a
+  source's output, once captured and released, would quietly expire rather than return to the field.
+
+- **A supernova now ejects matter PAST the absorption radius, so the sink cycle repeats**
+  (`@field-ui/core`, `accretion.ts`). `releaseCaptured` placed ejecta *at the core* — inside
+  `absorbR` — so the sink re-captured its own ejecta on the very next frame, degenerating the
+  explosion into a ~1-per-frame strobe whose blast progressively evacuated the catchment until the
+  sink fell dormant ("exploded once, won't collect again"; ejecta appears to accelerate away and
+  never return). Each particle is now ejected just past `absorbR` along its bearing, so matter
+  leaves the accretion zone, a `sink+attract` well reels it back, and the
+  fill → explode → fall-back → refill cycle repeats at a real period (≈9 frames vs ≈1; in a headless
+  `sink+attract` repro, supernovas drop from 581 to 66 per 600 frames while the catchment stays
+  populated instead of decaying). A lone `sink` simply lets the ejecta disperse.
+
+### Fixed
+
+- **Platform registries close their exits.** Three registries leaked entries for elements that
+  left the DOM: `FeedbackRegistry` (no unregister at all — bindings and thresholds for removed
+  elements flushed forever), `RelationshipRegistry` (unresolved edges accumulated and were never
+  re-resolved when a target later mounted), and `StateRegistry` (per-key `delete` stranded empty
+  listener maps). Each now prunes disconnected elements at its natural moment — `flush()`,
+  `discover()` (which also re-resolves late-mounting targets by replacing the unresolved set),
+  and a new `prune()` — and gains an explicit `unregister(element)` for immediate reclamation,
+  matching the standard `MeasurementRegistry` and `VisualBindingRegistry` already set.
+
+- **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,
+  `updateWarpTargets` now clears `pairBody` and `warpHas` so the wormhole closes instead of
+  relocating matter to the detached node. The link re-resolves naturally on the next rescan.
+
+- **Docked element removal (#368b).** A `[data-dock]` mover whose DOM node is removed while
+  docked no longer leaves the sink believing it holds that element. `updateMovers` now detects
+  `!el.isConnected`, clears `mv.docked` / `mv.dock.dock`, and skips all per-frame work for
+  the detached element — symmetric with how the rescan reconciliation handles departed bodies.
+
+- **Heatmap buffer persists across disable/enable (#369).** `setHeatmap(false)` now calls
+  `heatmap.clear()` before releasing the buffer, so a paused or mid-accumulation field never
+  bleeds stale density into the next active session. Re-enabling creates a fresh instance.
+  `Heatmap.clear()` (new) zeroes the grid and resets the peak tracker; `ScalarGridImpl.clear()`
+  (new) fills all three internal buffers with zero.
+
+### Added
+
+- **Recipes execute their declarations.** `recipe.render` and per-body condition gates stop being
+  descriptive (#370): `compileRecipe` now derives an executable render plan (one underlay matter
+  mode, the additive overlay reading stack, the heatmap toggle — unmappable layers are NAMED in
+  `plan.unapplied`, never silently dropped), and `applyRecipe` gains a structural `field` target
+  (`FieldHandle` and `<field-root>` both fit) that it drives with the plan and releases on
+  `destroy()`. `BodyRecipe.when` is the new executable gate — compiled to `data-when`, validated
+  against the engine's registered condition ids so an unknown gate is a validation error rather
+  than a silently-never-passing body. The `contour-charge` recipe now carries its own engagement
+  gate. Fully additive: without a `field` option recipes stay signals-only as before; `renderless`
+  and reduced motion skip the drive.
+
+### Added
+
+- **Injectable randomness and wall clock (#371).** Every random draw in the engine — particle
+  seeding, spawn scatter, brownian wander, force jitter and emission cones, release angles —
+  now flows through one source: `createField({ rng })` (default `Math.random`), carried to
+  forces and the integrator as `env.rng`. A seeded generator makes a run reproducible — the
+  seam record/replay needs, pinned by a bit-identical two-run test. The wall clock joins it:
+  `createField({ now })` (default `performance.now`) feeds input-idle tracking, completing the
+  three-clocks separation (wall / frame / simulation — see temporal.ts).
+
+### Added
+
+- **`FieldLineOpts.maxTurns` — a turning budget for the field-line tracer** (`@field-ui/core`,
+  `fieldlines.ts`). A traced line orbiting a pole that never passes back through its *seed*
+  (so `loopDist` can't close it) otherwise winds the same circle for its whole step budget —
+  hundreds of overlapping segments that waste the trace and, on renderers whose antialiaser
+  computes path self-intersections, explode stroke cost superlinearly (measured at ~3 s/frame
+  in the Swift CoreGraphics renderer before this guard; ~81× faster after). The budget counts
+  cumulative heading change in full revolutions; `Infinity` — the default — preserves the
+  unbounded behavior exactly, so existing consumers and goldens are untouched. Renderers
+  tracing dipole fields should pass ~`1.5` (a closed dipole line turns exactly one revolution).
+
+- **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
+  (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same
+  conserved supernova ritual (same radial burst, same `field:released` event) that saturation
+  fires; capture was already gated, release now matches (`dischargeDisengaged`, accretion.ts).
+  The experimental `contour-charge` recipe names the composed behavior — attract + sink gated on
+  `active`, glow ∝ `--load`, glyph-outline rings as the bound representation — and joins the
+  wayfinding pair in `EXPERIMENTAL_RECIPES` (bare `charge` stays the electric force token; the
+  compound respects the one-word-one-lane rule). The home Gallery demos it live: dwell on the
+  Charge mark to fill it, look away and it lets go.
+
+### Added
+
+- **Contour primitive — glyph outlines from any font (`@field-ui/platform`).**
+  `contourPathData(font, text, size)` lays out text as combined glyph-outline SVG path data
+  (per-glyph + pair kerning; Latin display scope), and `contourSvgFor(el, font)` generates the
+  aria-hidden contour-ring SVG from a body element's own text and computed font-size, binds it
+  with `data-field-visual-for`, and lets the Bound Visual mirroring drive its rings from the
+  body's live `--d` / `--load`. The caller supplies the parsed font — any object matching the
+  `ContourFont` contract (opentype.js's `Font` fits directly) — so the primitive works with
+  whatever face the author applied to the element and field-ui stays zero-dependency. The same
+  function powers the site's build-time generation (`gen-contours.mjs`).
+
 ### Added
 
 - **The optional z lane — a not-required third axis** (`@field-ui/core`,

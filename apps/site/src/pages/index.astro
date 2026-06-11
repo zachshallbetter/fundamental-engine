@@ -15,6 +15,7 @@ import PresetRow from "../components/home/PresetRow.astro";
 import CellGallery from "../components/CellGallery.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@field-ui/core";
 import { RENDER_MODES, OVERLAY_MODES } from "../lib/docs-api.ts";
+import contours from "../data/contours.json";
 import "../styles/manual.css";
 import "../styles/force-glyphs.css";
 import "../styles/landing.css";
@@ -1291,6 +1292,56 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
           </div>
           <p class="rt-caption" data-rt-caption aria-live="polite">{RENDER_MODES[0]!.name} — {RENDER_MODES[0]!.desc}</p>
           <span class="hintline">plays across the whole page field behind the content while in view</span>
+        </div>
+      </Fragment>
+    </Concept>
+
+    <Concept>
+      <span class="concept-no">Gallery · Contour Charge <em class="truth truth-hybrid">hybrid</em></span>
+      <h2>Charge it with attention.</h2>
+      <p>
+        The <code>contour-charge</code> recipe: the word below is a real text body —
+        <code>sink attract</code>, gated on engagement — wearing its generated glyph outlines as a
+        bound representation. Hold your pointer on it and it pulls matter in, captures it, and the
+        contour rings thicken and glow as <code>--load</code> rises. Take your attention away and it
+        <b>discharges</b> — the engine releases exactly the matter it held, in a burst.
+      </p>
+      <p class="note">
+        The vessel charges only while attended (<code>data-when="active"</code>); release fires on the
+        falling edge of attention. Conserved end to end — the same particles return to the field.
+      </p>
+      <Fragment slot="stage">
+        <div class="chargetour" data-chargetour>
+          <span class="stage-label">recipe: contour-charge · sink attract ?active</span>
+          <div class="charge-stage">
+            <h3
+              class="charge-source"
+              id="charge-title"
+              data-body="sink attract"
+              data-when="active"
+              data-hot
+              data-absorb="110"
+              data-max="20"
+              data-strength="0.9"
+              data-range="300"
+              data-feedback
+            >
+              <span class="sr-only">Charge</span>
+            </h3>
+            <svg
+              class="charge-rings"
+              data-field-visual-for="charge-title"
+              data-field-visual-role="representation"
+              aria-hidden="true"
+              focusable="false"
+              viewBox={contours.entries.charge.viewBox}
+            >
+              <path class="cring cring-3" d={contours.entries.charge.d}></path>
+              <path class="cring cring-2" d={contours.entries.charge.d}></path>
+              <path class="cring cring-1" d={contours.entries.charge.d}></path>
+            </svg>
+          </div>
+          <span class="hintline">dwell to charge it — look away (pointer off) and it lets go</span>
         </div>
       </Fragment>
     </Concept>

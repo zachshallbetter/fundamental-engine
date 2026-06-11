@@ -6,7 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { releaseCaptured, sinkLoad, captureEdge } from './accretion.ts';
+import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
 import { step } from './integrator.ts';
 import { FieldStore } from './field-store.ts';
 import { sink } from '../forces/index.ts';
@@ -66,7 +66,7 @@ test('1b. held matter DRIFTS to the core on the next step, still captured + stil
   assert.equal(store.size, 3, 'still conserved in the pool');
 });
 
-test('1c. on RELEASE the SAME particles are freed (conserved), repositioned + flung outward', () => {
+test('1c. on RELEASE the SAME particles are freed (conserved), ejected past absorbR + flung outward', () => {
   const store = new FieldStore();
   const body = sinkBody({ capacity: 1000 });
   const ps = fill(store, 6, 500, 500);
@@ -80,8 +80,10 @@ test('1c. on RELEASE the SAME particles are freed (conserved), repositioned + fl
   assert.equal(body.accreted, 0, 'load resets to empty');
   for (const p of ps) {
     assert.equal(p.cap, null, 'no longer held');
-    assert.equal(p.x, body.cx, 'repositioned at the core');
-    assert.equal(p.y, body.cy);
+    // ejected just past the absorption radius so the sink can't re-grab its own ejecta next
+    // frame (which would strobe the supernova and evacuate the catchment).
+    const r = Math.hypot(p.x - body.cx, p.y - body.cy);
+    assert.ok(Math.abs(r - (body.absorbR + 6)) < 1e-9, 'ejected to the absorption rim, not the core');
     assert.ok(Math.hypot(p.vx, p.vy) > 0, 'flung outward with a radial velocity');
     assert.equal(p.heat, 1, 'released hot');
   }
@@ -110,4 +112,55 @@ test('2b. captureEdge fires captured on the rising edge and released on the fall
   assert.deepEqual(captureEdge(true, true), { fire: null, armed: true }, 'still accreting — no repeat');
   assert.deepEqual(captureEdge(true, false), { fire: 'released', armed: false }, 'load dropped to 0');
   assert.deepEqual(captureEdge(false, false), { fire: null, armed: false });
+});
+
+test('3a. dischargeDisengaged releases on the falling edge of engagement — and only then', () => {
+  const b = sinkBody({ accreted: 5, when: 'active' });
+  const released: unknown[] = [];
+  const release = (x: unknown) => released.push(x);
+
+  b.on = true;
+  dischargeDisengaged([b], release);
+  assert.equal(released.length, 0, 'engaged and holding — keeps charging');
+
+  b.on = false; // attention leaves
+  const out = dischargeDisengaged([b], release);
+  assert.deepEqual(out, [b], 'the falling edge discharges');
+  assert.equal(released.length, 1);
+
+  dischargeDisengaged([b], release);
+  assert.equal(released.length, 1, 'stays quiet while disengaged — edge, not level');
+});
+
+test('3b. dischargeDisengaged ignores ungated sinks, non-sinks, and empty vessels', () => {
+  const ungated = sinkBody({ accreted: 5, when: '' });
+  const empty = sinkBody({ accreted: 0, when: 'active' });
+  const notSink = sinkBody({ accreted: 5, when: 'active' });
+  notSink.tokens = ['attract'];
+  const released: unknown[] = [];
+  for (const b of [ungated, empty, notSink]) {
+    b.wasOn = true;
+    b.on = false;
+  }
+  dischargeDisengaged([ungated, empty, notSink], (x) => released.push(x));
+  assert.equal(released.length, 0, 'no discharge outside the gated, holding sink case');
+});
+
+test('1e. a supernova ejects MORTAL captured matter as PERSISTENT (conservation event)', () => {
+  // mortal source-spawned matter that a sink captured and held is released immortal — so a
+  // source→sink→supernova loop conserves: the matter the source made becomes lasting field.
+  const store = new FieldStore();
+  const body = sinkBody({ capacity: 1000 });
+  // two captured particles: one mortal (from a [S] source), one immortal (the base pool)
+  const mortal = store.add({ x: 500, y: 500, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: body, age: 12 });
+  const immortal = store.add({ x: 500, y: 500, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: body });
+  body.accreted = 2;
+
+  releaseCaptured(store.particles, body, seeded(9));
+
+  assert.equal(store.size, 2, 'both conserved — released into the pool, none destroyed');
+  assert.equal(mortal.age, undefined, 'the mortal one is released immortal — it persists, never returns to dying');
+  assert.equal(immortal.age, undefined, 'the immortal one is unchanged (no-op)');
+  assert.equal(mortal.cap, null);
+  assert.equal(immortal.cap, null);
 });

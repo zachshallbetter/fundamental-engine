@@ -7,6 +7,8 @@
 
 import { bindData } from "@field-ui/platform";
 
+import { VisualBindingRegistry } from "@field-ui/platform";
+
 type FieldEl = HTMLElement & {
   setRender?: (m: string) => void;
   setOverlay?: (m: string | string[]) => void;
@@ -248,12 +250,25 @@ function initFormationTour(): () => void {
   return initPillTour("[data-formationtour]", "data-formation", "ambient", (f, v) => f?.setFormation?.(v));
 }
 
+/** #7 — Contour Charge: the bound ring SVG receives the heading's live --d/--load via the
+ *  platform's visual-binding mirroring (the engine handles the physics: engagement-gated capture,
+ *  falling-edge discharge — this only wires the representation). */
+function initContourCharge(): () => void {
+  const stage = document.querySelector<HTMLElement>("[data-chargetour]");
+  if (!stage) return () => {};
+  const reg = new VisualBindingRegistry();
+  reg.scan(stage);
+  reg.setMirroring(true);
+  return () => reg.setMirroring(false);
+}
+
 export function initGallery(): () => void {
   const teardowns = [
     initLifecycle(),
     initReadout(),
     initRenderTour(),
     initFormationTour(),
+    initContourCharge(),
     initBindData(),
   ];
   return () => teardowns.forEach((t) => t());

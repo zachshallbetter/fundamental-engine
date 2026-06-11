@@ -14,6 +14,10 @@ import { FUNDAMENTAL_FIELDS } from '../config/manual.ts';
 import { passportFor } from '../contracts/passport.ts';
 
 /** A render layer in a scene's stack (matter / structure / scalar surfaces). */
+/** The engine's registered condition ids (core/conditions.ts) — the executable `when` gates. */
+import { conditions as ENGINE_CONDITION_REGISTRY } from '../core/conditions.ts';
+const ENGINE_CONDITIONS: ReadonlySet<string> = new Set(Object.keys(ENGINE_CONDITION_REGISTRY));
+
 export type RenderLayer =
   | 'particles'
   | 'dots'
@@ -45,6 +49,11 @@ export interface BodyRecipe {
   angle?: number;
   feedback?: boolean;
   scope?: 'local' | 'global';
+  /** condition gate for this body (`data-when`) — must be a REGISTERED engine condition id
+   *  (active, fast, slow, hot, cool, scrolling); validateRecipe rejects unknown ids so a
+   *  recipe can never declare a gate that silently never passes (#370). Recipe-level
+   *  `conditions` remain the activation vocabulary; `when` is the executable per-body gate. */
+  when?: string;
 }
 
 export interface RelationshipRecipe {
@@ -193,6 +202,10 @@ export function validateRecipe(r: FieldRecipe): RecipeProblem[] {
     if (tokens.length === 0) problems.push({ path: `bodies[${i}].body`, issue: 'empty force token list' });
     for (const t of tokens)
       if (!passportFor(t)) problems.push({ path: `bodies[${i}].body`, issue: `unknown force token "${t}"` });
+    // an executable gate must resolve in the engine's condition registry — an unknown id would
+    // gate the body shut forever (the silent-contract-gap class this field exists to prevent).
+    if (b.when != null && !ENGINE_CONDITIONS.has(b.when))
+      problems.push({ path: `bodies[${i}].when`, issue: `unknown condition id "${b.when}" (registered: ${[...ENGINE_CONDITIONS].join(', ')})` });
   });
   // declared primitives must be exactly the distinct body tokens (no drift between data and bodies).
   const derived = primitivesOf(r.bodies ?? []);

@@ -19,42 +19,27 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
+import { contourPathData } from '@field-ui/platform';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const FONT = join(here, 'assets/bricolage-grotesque-variable.ttf');
 const OUT = join(here, '../src/data/contours.json');
 
 /** The text set pages may render as contour objects. Add a line, re-run, commit. */
-const TEXTS = [{ id: 'contour', text: 'Contour', fontSize: 96 }];
+const TEXTS = [
+  { id: 'contour', text: 'Contour', fontSize: 96 },
+  { id: 'charge', text: 'Charge', fontSize: 96 },
+];
 
 const font = opentype.parse(readFileSync(FONT).buffer);
 
+// The layout itself is the platform's font-agnostic primitive (contourPathData) — this
+// script is just its build-time usage: parse THIS font file, lay out THIS text set, commit.
+// Any font the author applies to a body works the same way; opentype.js's Font satisfies
+// the ContourFont contract structurally.
 const entries = {};
 for (const { id, text, fontSize } of TEXTS) {
-  // baseline at ascender height so the path's bbox starts near y=0
-  const ascent = (font.ascender / font.unitsPerEm) * fontSize;
-  // Per-glyph layout instead of font.getPath: opentype.js's shaper rejects this font's
-  // GSUB ccmp lookup format, and Latin display text needs no shaping — chars map to
-  // glyphs one-to-one, with pair kerning applied by hand.
-  const scale = fontSize / font.unitsPerEm;
-  const path = new opentype.Path();
-  let x = 0;
-  let prev = null;
-  for (const ch of text) {
-    const glyph = font.charToGlyph(ch);
-    if (prev) x += font.getKerningValue(prev, glyph) * scale;
-    path.extend(glyph.getPath(x, ascent, fontSize));
-    x += glyph.advanceWidth * scale;
-    prev = glyph;
-  }
-  const box = path.getBoundingBox();
-  const pad = 12; // breathing room so wide ring strokes don't clip
-  entries[id] = {
-    text,
-    fontSize,
-    viewBox: `${(box.x1 - pad).toFixed(1)} ${(box.y1 - pad).toFixed(1)} ${(box.x2 - box.x1 + pad * 2).toFixed(1)} ${(box.y2 - box.y1 + pad * 2).toFixed(1)}`,
-    d: path.toPathData(2),
-  };
+  entries[id] = contourPathData(font, text, fontSize);
 }
 
 writeFileSync(

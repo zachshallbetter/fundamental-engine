@@ -67,11 +67,15 @@ discover → read → compute → state → write → render
 5. **write** — flush state to CSS variables, data attributes, ElementInternals, and thresholded events.
 6. **render** — draw overlays, field lines, and heatmaps from the registries (read-only).
 
-`createFieldPlatform(root, { strict? })` wires `measure → read` and `flush → write` by default,
-installs a read-phase guard (a measurement requested off-phase is recorded, or thrown under
-`strict`), and exposes `.scheduler` plus `.on(phase, handler)` so callers hang `discover` / `compute`
-/ `state` / `render` handlers off the same loop. `tick(now, viewport)` runs one frame and returns a
-report of the phases that ran and any violations.
+The platform **owns discover through write**. `createFieldPlatform(root, { strict? })` wires only
+two phases by default — `measure → read` and `flush → write` — and installs a read-phase guard (a
+measurement requested off-phase is recorded, or thrown under `strict`). The remaining phases
+(`discover`, `compute`, `state`, `render`) are **caller-open**: the platform exposes
+`.on(phase, handler)` so callers attach handlers off the same loop without the platform owning
+their logic. The render phase in particular is not wired by the platform at all — it is a slot the
+legacy engine fills by running the canvas simulate-and-render loop; the platform observes and feeds
+back DOM state, it does not draw. `tick(now, viewport)` runs one full frame and returns a report of
+the phases that ran and any violations.
 
 ## The six registries
 
@@ -117,12 +121,16 @@ report of the phases that ran and any violations.
    - **Implemented:** the registry, declarative binding via `data-field-visual-for` /
      `data-field-visual-role` (`scan()`), the accessibility lint, and source→visual state mirroring
      (`setMirroring` / `mirrorNow` / `MIRRORED_CHANNELS`).
-   - **Build-time, not platform:** glyph-outline extraction (text → SVG path data) ships as the
-     site's build step (`apps/site/scripts/gen-contours.mjs`, opentype.js over the self-hosted
-     face — committed output, no font parsing in the browser); the generated SVG binds like any
-     authored visual and receives mirrored state. A *runtime* extraction primitive in the platform
-     remains unbuilt (a named frontier). True offset contours (constant-distance rings) need a
-     polygon-offsetting pass and are likewise future work.
+   - **Glyph outlines (the Contour Sink tier):** `contours.ts` is the font-agnostic primitive —
+     `contourPathData(font, text, size)` (pure layout: per-glyph + pair kerning, Latin display
+     scope) and `contourSvgFor(el, font)` (generates the aria-hidden ring SVG from the element's
+     OWN text and computed size, binds it via `data-field-visual-for`, receives mirrored state).
+     The caller supplies the parsed font — any `ContourFont`-shaped object; opentype.js satisfies
+     it directly — so the primitive works with whatever face the author applied to the body, and
+     field-ui keeps its zero-dependency rule. The same primitive runs at build time (the site's
+     `gen-contours.mjs` commits its output). Automatic font-binary discovery from the element's
+     CSS, complex-script shaping, and true offset contours (polygon offsetting) remain future
+     work.
 6. **OverlayRegistry** — relationship lines, field lines, debug layers. Render layers only: they read
    from the relationship + measurement registries and produce geometry to draw. They never own
    relationships or mutate physics. *Overlays reveal. They do not define.*

@@ -326,9 +326,10 @@ export function step(input: StepInput): void {
     // every 40 frames, plus a smooth curl-noise eddy (§7).
     if (env.frameN % 40 === 0 && form.wander > 0) {
       const wsc = 0.05 * form.wander;
-      p.vx += (Math.random() - 0.5) * wsc;
-      p.vy += (Math.random() - 0.5) * wsc;
-      if (D > 0) p.vz! += (Math.random() - 0.5) * wsc; // the brownian kick gains a z leg in a volume
+      p.vx += ((env.rng ?? Math.random)() - 0.5) * wsc;
+      p.vy += ((env.rng ?? Math.random)() - 0.5) * wsc;
+      // the brownian kick gains a z leg in a volume — through the same injectable rng (#371)
+      if (D > 0) p.vz! += ((env.rng ?? Math.random)() - 0.5) * wsc;
     }
     if (form.wander > 0.05) {
       const cn =
