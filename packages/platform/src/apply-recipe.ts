@@ -10,6 +10,7 @@
  */
 import { createFieldPlatform, type FieldPlatform } from './platform.ts';
 import { lintPlatform } from './lint.ts';
+import { prefersReducedMotion } from './env.ts';
 import { computeMetrics, groundedRecency, METRIC_KINDS, type MetricKind } from './metrics.ts';
 import {
   validateRecipe,
@@ -109,9 +110,7 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
 
   const compiled = compileRecipe(recipe);
   const wantMetrics = options.metrics !== false;
-  const reducedMotion =
-    options.reducedMotion ??
-    (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const reducedMotion = options.reducedMotion ?? prefersReducedMotion();
 
   const platform = createFieldPlatform(root);
 
