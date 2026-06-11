@@ -37,10 +37,18 @@ public func burstImpulse(delta: Vec3, r: Float, power: Float = 6) -> (dv: Vec3, 
 
 // MARK: - Accretion (§6.9)
 
-/// Release exactly the particles a body captured: reposition each at the core, give it a
-/// radial outward velocity, clear its capture + heat to 1, and reset the body's load to 0.
-/// Held matter is **conserved** — released particles stay in the caller's pool. Returns
-/// the released particles (in pool order). `rng` is injectable for deterministic tests.
+/// Release exactly the particles a body captured: eject each just **past** the absorption
+/// radius along a random bearing, give it a radial outward velocity, clear its capture +
+/// heat to 1, and reset the body's load to 0. Held matter is **conserved** — released
+/// particles stay in the caller's pool. Returns the released particles (in pool order).
+/// `rng` is injectable for deterministic tests.
+///
+/// Ejecting past `absorbR` (not at the core) is what makes a supernova a real cycle: matter
+/// dropped at the core sits *inside* the capture radius and is re-grabbed on the very next
+/// frame, degenerating the explosion into a per-frame strobe whose blast progressively
+/// evacuates the catchment until the sink goes dormant. Leaving the accretion zone lets a
+/// `sink+attract` well reel the ejecta back for a genuine fill → explode → fall-back → refill
+/// cycle (a lone `sink` simply lets it disperse).
 @discardableResult
 public func releaseCaptured(
     _ particles: [Particle],
@@ -48,11 +56,12 @@ public func releaseCaptured(
     rng: () -> Float = { Float.random(in: 0..<1) }
 ) -> [Particle] {
     var released: [Particle] = []
+    let rim = b.absorbR + 6 // clear the capture horizon so it isn't re-captured next frame
     for q in particles where q.cap === b {
         let ang = rng() * .pi * 2
         let spd = 4 + rng() * 3
         q.cap = nil
-        q.position = b.center
+        q.position = b.center + Vec3(cos(ang) * rim, sin(ang) * rim, 0)
         q.velocity = Vec3(cos(ang) * spd, sin(ang) * spd, 0)
         q.heat = 1
         // a supernova is a CONSERVATION event: the ejected matter rejoins the persistent

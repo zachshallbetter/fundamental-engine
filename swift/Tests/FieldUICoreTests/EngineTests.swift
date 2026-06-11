@@ -337,6 +337,9 @@ struct ForceTests {
         #expect(p1.cap == nil && p2.cap == nil)
         #expect(p1.heat == 1)
         #expect(simd_length(p1.velocity) > 3) // radial outward kick
+        // ejected PAST the absorption radius so a sink can't re-grab its own ejecta next
+        // frame (which would strobe the supernova and evacuate the catchment).
+        #expect(abs(simd_distance(p1.position, b.center) - (b.absorbR + 6)) < 0.5)
     }
 
     @Test("wall reflects the axis of least penetration and stays planar on flat boxes")
