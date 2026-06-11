@@ -9,6 +9,16 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldLineOpts.maxTurns` — a turning budget for the field-line tracer** (`@field-ui/core`,
+  `fieldlines.ts`). A traced line orbiting a pole that never passes back through its *seed*
+  (so `loopDist` can't close it) otherwise winds the same circle for its whole step budget —
+  hundreds of overlapping segments that waste the trace and, on renderers whose antialiaser
+  computes path self-intersections, explode stroke cost superlinearly (measured at ~3 s/frame
+  in the Swift CoreGraphics renderer before this guard; ~81× faster after). The budget counts
+  cumulative heading change in full revolutions; `Infinity` — the default — preserves the
+  unbounded behavior exactly, so existing consumers and goldens are untouched. Renderers
+  tracing dipole fields should pass ~`1.5` (a closed dipole line turns exactly one revolution).
+
 - **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
   (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same
   conserved supernova ritual (same radial burst, same `field:released` event) that saturation
