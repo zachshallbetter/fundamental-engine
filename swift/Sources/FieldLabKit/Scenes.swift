@@ -191,6 +191,29 @@ public enum LabScenes {
         return s
     }
 
+    /// Gravity as a visible, followable natural field: a real 1/d² well that radiates the
+    /// monopole structure the field-lines trace, with a light swirl threading infalling matter
+    /// into orbit — the iron-filings look, the way a magnet reads, but for gravity.
+    public static var gravityField: LabScene {
+        var s = LabScene(
+            id: "gravity-field", name: "Gravity Field",
+            blurb: "Gravity made visible: the field lines you can see, and matter that threads them in orbit.",
+            story: "Gravity already owns a field() — the softened 1/d² monopole — so it radiates real structure: the field-lines reading traces its radial spokes straight from the body geometry, never hand-drawn. A light swirl rides on top so infalling matter orbits along the lines instead of dropping straight to the core. That orbital threading is what makes gravity read as a natural FIELD, the way a magnet does, rather than a plain attractor.",
+            cards: [
+                // one well carries both: gravity is the real law and radiates the structure the
+                // lines trace; swirl supplies the tangential component so matter threads the lines.
+                CardSpec("Well", x: 0.5, y: 0.5, w: 96, h: 96,
+                         tokens: ["gravity", "swirl"], strength: 1.2, range: 520, spin: 1),
+            ]
+        )
+        s.overlay = [.fieldLines]
+        // scatter keeps matter spread; swirl threads it into orbit along the radial lines.
+        s.formation = "scatter"
+        s.render = .trails
+        s.density = 5
+        return s
+    }
+
     /// Conserved attention: one finite budget. Engage a card and it physically drains
     /// force from every other — the field cannot emphasise two things at once.
     public static var attention: LabScene {
@@ -343,6 +366,6 @@ public enum LabScenes {
 
     /// The curated tour, in narrative order.
     public static let tour: [LabScene] = [
-        mass, magnetism, attention, causality, volume, sourceSink, warp, storm,
+        mass, magnetism, gravityField, attention, causality, volume, sourceSink, warp, storm,
     ]
 }
