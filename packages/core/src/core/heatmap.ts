@@ -32,6 +32,17 @@ export class Heatmap {
     this.grid.resize(width, height);
   }
 
+  /**
+   * Zero every cell in the accumulation buffer and reset the peak tracker. Called by
+   * `setHeatmap(false)` so that re-enabling starts with a clean slate rather than
+   * carrying over stale density from a previous active period. Also the right call after
+   * a hard field reset where continuity of the heat history would be misleading.
+   */
+  clear(): void {
+    this.grid.clear();
+    this.peak = 1e-3;
+  }
+
   /** Deposit the current particle field, decay + blur, and track the peak. Call once a frame. */
   update(particles: readonly Particle[]): void {
     for (const p of particles) this.grid.deposit(p.x, p.y, 1);
