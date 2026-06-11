@@ -15,7 +15,14 @@ const cssStroke = `.title {
   paint-order: stroke fill;
 }`;
 
-const genCmd = `node apps/site/scripts/gen-contours.mjs   # parses the self-hosted face, writes src/data/contours.json`;
+const genericUsage = `import { load } from 'opentype.js';            // or any parser — you bring the font
+import { contourSvgFor } from '@field-ui/platform';
+
+const title = document.querySelector('#hero-title');   // your sink body, YOUR font
+const font = await load('/fonts/your-font.woff');      // whatever face the element uses
+contourSvgFor(title, font);                            // aria-hidden SVG, bound + mirrored`;
+
+const genCmd = `node apps/site/scripts/gen-contours.mjs   # the same primitive at build time — parses the site's face, commits the output`;
 
 const bindingMarkup = `<h1 id="hero-title" data-body="sink attract" data-absorb="80" data-max="36" data-feedback>
   <span class="sr-only">Contour</span>
@@ -60,9 +67,16 @@ const ringCss = `/* the rings read the MIRRORED body state — no wiring beyond 
   <section class="docs-sec">
     <h2>The vector form — generated glyph outlines</h2>
     <p>
-      For true contour behavior the glyphs become vector paths. The site parses its own
-      self-hosted display face (Bricolage Grotesque) at build time and commits the outline path
-      data — no font parsing ships to the browser:
+      For true contour behavior the glyphs become vector paths — from <em>any font the author
+      applies to the body</em>. The platform primitive is font-agnostic: field-ui ships no parser
+      (the zero-dependency rule); you hand <code>contourSvgFor</code> a parsed font — anything
+      matching the <code>ContourFont</code> shape, which opentype.js satisfies directly — and it
+      lays out the element's own text at its computed size, generates the ring SVG, and binds it:
+    </p>
+    <CodeTabs variants={[{ label: 'Any font, at runtime', lang: 'ts', code: genericUsage }]} />
+    <p>
+      Prefer zero font work in the browser? Run the same primitive at build time and commit the
+      output — this site does exactly that with its self-hosted face:
     </p>
     <CodeTabs variants={[{ label: 'Build step', lang: 'bash', code: genCmd }]} />
     <p>

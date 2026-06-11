@@ -9,6 +9,18 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Contour primitive — glyph outlines from any font (`@field-ui/platform`).**
+  `contourPathData(font, text, size)` lays out text as combined glyph-outline SVG path data
+  (per-glyph + pair kerning; Latin display scope), and `contourSvgFor(el, font)` generates the
+  aria-hidden contour-ring SVG from a body element's own text and computed font-size, binds it
+  with `data-field-visual-for`, and lets the Bound Visual mirroring drive its rings from the
+  body's live `--d` / `--load`. The caller supplies the parsed font — any object matching the
+  `ContourFont` contract (opentype.js's `Font` fits directly) — so the primitive works with
+  whatever face the author applied to the element and field-ui stays zero-dependency. The same
+  function powers the site's build-time generation (`gen-contours.mjs`).
+
+### Added
+
 - **Bound Visual Sink — state mirroring for visual bindings.** The platform's
   `VisualBindingRegistry` now mirrors a semantic body's feedback channels (`--d` /
   `--field-density`, `--load` / `--mass`, `--lit`, and the measured metrics — the exported
