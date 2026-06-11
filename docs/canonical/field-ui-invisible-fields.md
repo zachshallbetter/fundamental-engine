@@ -104,8 +104,9 @@ documentation.
 
 ## 4. Declared relationships
 
-The RelationshipRegistry discovers native graph semantics (`a[href^="#"]`, `label[for]`,
-`aria-controls/-describedby/-labelledby/-flowto`) and one declarative form:
+The `RelationshipRegistry` builds the live relationship graph from DOM signals only. Its
+`discover()` scan matches native link semantics (`a[href^="#"]`, `label[for]`,
+`aria-controls/-describedby/-labelledby/-flowto`) and one declarative attribute form:
 
 ```html
 <!-- one edge per element: type + id-ref target (+ optional data-field-strength) -->
@@ -118,6 +119,11 @@ on-page versus those declared-but-unresolved — that ratio is what `--field-coh
 The evidence example renders its real citation edges this way: the same edges its hover threads
 draw are the graph the platform measures, and connected findings read `--field-coherence: 1.000`
 while unconnected ones read `0.000` (verified live).
+
+The `relationships?: RelationshipRecipe[]` field in the `FieldRecipe` schema is **not** a live-graph
+input. It is compiled metadata used exclusively for the reduced-motion static display — `applyRecipe`
+renders declared pairs as a `<p class="rs-rels">` list when `prefers-reduced-motion` is set. To put
+an edge into the live graph, author it in the DOM with `data-field-relation` / `data-field-target`.
 
 ## 5. Conditions in the page: the reading-pace gate
 
