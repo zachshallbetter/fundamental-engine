@@ -9,6 +9,8 @@
 export interface Point {
   x: number;
   y: number;
+  /** optional z lane (z-axis.md) — undefined reads as 0 (the flat plane). */
+  z?: number;
 }
 
 export class SpatialHash<T extends Point> {
@@ -43,8 +45,13 @@ export class SpatialHash<T extends Point> {
     for (const it of items) this.insert(it);
   }
 
-  /** items within radius `r` of (x, y), filtered by true distance. */
-  near(x: number, y: number, r: number): T[] {
+  /**
+   * Items within radius `r` of (x, y, z), filtered by TRUE (3D) distance. Bins stay
+   * planar — items at any z share their (x, y) cell — which over-collects candidates
+   * in a deep volume but never returns a wrong result; the z² term below is the
+   * contract. `z` defaults to 0, so flat-field callers are byte-identical.
+   */
+  near(x: number, y: number, r: number, z = 0): T[] {
     const out: T[] = [];
     const r2 = r * r;
     const minCx = Math.floor((x - r) / this.cell);
@@ -58,7 +65,8 @@ export class SpatialHash<T extends Point> {
         for (const it of bin) {
           const dx = it.x - x;
           const dy = it.y - y;
-          if (dx * dx + dy * dy <= r2) out.push(it);
+          const dz = (it.z ?? 0) - z;
+          if (dx * dx + dy * dy + dz * dz <= r2) out.push(it);
         }
       }
     }

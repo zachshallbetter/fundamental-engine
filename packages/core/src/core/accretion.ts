@@ -32,6 +32,9 @@ export function releaseCaptured(
     q.y = b.cy;
     q.vx = Math.cos(ang) * spd;
     q.vy = Math.sin(ang) * spd;
+    // the core sits on the page plane: release resets the z lane too (z-axis.md).
+    if (q.z) q.z = 0;
+    if (q.vz) q.vz = 0;
     q.heat = 1;
     released.push(q);
   }

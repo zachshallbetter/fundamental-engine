@@ -39,6 +39,14 @@ export interface Particle {
   y: number;
   vx: number;
   vy: number;
+  /**
+   * OPTIONAL Z LANE (docs/engine-reference/z-axis.md): position/velocity along the
+   * depth axis. Undefined ⇒ 0 ⇒ the flat field — every formula reduces to the 2D
+   * engine exactly. Only a field created with `depth > 0` ever moves these; authors
+   * never have to supply them. Bodies (DOM elements) always live on the z = 0 plane.
+   */
+  z?: number;
+  vz?: number;
   /** inertial mass — 1 = nominal (§21). */
   m: number;
   /** ∈ [0,1]; drives color (toward accent), size, and glow (§2.2). */
@@ -50,6 +58,8 @@ export interface Particle {
   /** stable per-particle scatter target fractions, for the `spread` formation (§7). */
   gx?: number;
   gy?: number;
+  /** scatter fraction along z — only meaningful in a `depth > 0` field. */
+  gz?: number;
   // optional attributes consumed by extended forces (§20)
   /** frames-to-live for *mortal* (spawned) matter — decremented each tick, despawned at
    *  ≤ 0 (the [S] source sink). Undefined ⇒ immortal (the conserved base field). */
@@ -206,12 +216,20 @@ export interface Env {
   /** vector from particle to body: (b.cx − p.x, b.cy − p.y). */
   dx: number;
   dy: number;
-  /** |(dx, dy)|, clamped ≥ 1. */
+  /**
+   * z component of the particle→body vector (z-axis.md). OPTIONAL — undefined reads
+   * as 0. Bodies live on the z = 0 plane, so this is `0 − (p.z ?? 0)` — always 0 in a
+   * flat field, where every force's z term vanishes and the 2D behavior is exact.
+   */
+  dz?: number;
+  /** |(dx, dy, dz)|, clamped ≥ 1 (= the 2D distance in a flat field). */
   dist: number;
   /** the active, eased formation (§7). */
   form: Formation;
   W: number;
   H: number;
+  /** depth of the simulation volume (z-axis.md). OPTIONAL; 0/undefined = the flat field. */
+  D?: number;
   /** elapsed time in seconds (for time-varying terms: curl drift, resonance). */
   t: number;
   /** frame counter (for the periodic brownian jitter + scatter animation, §7). */
@@ -354,6 +372,14 @@ export interface FieldOptions {
   accent?: string;
   /** particle-count multiplier (§2.5). */
   density?: number;
+  /**
+   * OPT-IN Z VOLUME (docs/engine-reference/z-axis.md): depth of the simulation volume
+   * in px. 0 — the default — is the flat field, byte-identical to the 2D engine. > 0
+   * lets matter seed, wander, and wrap through a shallow z volume behind the surface;
+   * bodies stay on the z = 0 plane and their forces pull matter back toward it. The
+   * render projects z as a size/alpha recession. Purely additive: no API requires z.
+   */
+  depth?: number;
   /** draw the background Currents (§24); default true. Set false for the bare
    *  free-particle field with no carrier waves. */
   waves?: boolean;

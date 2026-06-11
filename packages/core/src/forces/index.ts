@@ -24,8 +24,10 @@ export const attract: Force = {
     const uy = e.dy / e.dist;
     p.vx += ux * f;
     p.vy += uy * f;
+    // optional z leg (z-axis.md): e.dz is 0 in a flat field, so this is inert there.
+    if (e.dz) p.vz = (p.vz ?? 0) + (e.dz / e.dist) * f;
     if (e.form.orbit) {
-      p.vx += -uy * f * e.form.orbit; // tangential swirl → orbits
+      p.vx += -uy * f * e.form.orbit; // tangential swirl → orbits (about the z axis)
       p.vy += ux * f * e.form.orbit;
     }
     if (b.on) p.heat = Math.max(p.heat, (1 - e.dist / range) * 0.9);
@@ -44,6 +46,7 @@ export const repel: Force = {
     const f = (1 - e.dist / range) ** 2 * s * 0.5;
     p.vx -= (e.dx / e.dist) * f;
     p.vy -= (e.dy / e.dist) * f;
+    if (e.dz) p.vz = (p.vz ?? 0) - (e.dz / e.dist) * f; // z leg — inert in a flat field
   },
   meta: { desc: 'inverse-square outward push' },
 };
@@ -65,6 +68,8 @@ export const swirl: Force = {
     // whirlpool belongs in a preset (`whirlpool` / `blackhole` / `accretion`), not here.
     p.vx += uy * f * spin + ux * f * 0.12;
     p.vy += -ux * f * spin + uy * f * 0.12;
+    // the swirl is about the z axis (planar tangent); only the inward retention gets a z leg.
+    if (e.dz) p.vz = (p.vz ?? 0) + (e.dz / e.dist) * f * 0.12;
     if (b.on) p.heat = Math.max(p.heat, (1 - e.dist / range) * 0.6);
   },
   meta: { desc: 'tangential swirl with light inward retention' },
@@ -96,6 +101,7 @@ export const viscosity: Force = {
     const k = (1 - e.dist / range) * (0.05 + b.strength * 0.07) * (b.on ? 1.6 : 1);
     p.vx -= p.vx * k;
     p.vy -= p.vy * k;
+    if (p.vz) p.vz -= p.vz * k; // the medium thickens in all three axes
   },
   meta: { desc: 'thickens the medium — bleeds momentum' },
 };
@@ -120,12 +126,16 @@ export const jet: Force = {
       p.vy = hy * spd;
       p.x = b.cx + hx * 26;
       p.y = b.cy + hy * 26;
+      // the nozzle relaunches on the body plane (z-axis.md): z is reset like x/y.
+      if (p.z) p.z = 0;
+      if (p.vz) p.vz = 0;
       p.heat = Math.max(p.heat, 0.9);
     } else {
       // feed: draw surrounding matter toward the nozzle.
       const f = (1 - e.dist / range) ** 2 * (0.25 + b.strength * 0.15);
       p.vx += (e.dx / e.dist) * f;
       p.vy += (e.dy / e.dist) * f;
+      if (e.dz) p.vz = (p.vz ?? 0) + (e.dz / e.dist) * f; // z leg of the feed
     }
   },
   meta: { desc: 'a fountain — draws matter in, jets it out along a heading' },
@@ -145,8 +155,10 @@ export const tether: Force = {
     const uy = e.dy / e.dist;
     p.vx += ux * stretch * k;
     p.vy += uy * stretch * k;
+    if (e.dz) p.vz = (p.vz ?? 0) + (e.dz / e.dist) * stretch * k; // the shell is spherical
     p.vx *= 0.985;
     p.vy *= 0.985;
+    if (p.vz) p.vz *= 0.985;
     if (b.on) p.heat = Math.max(p.heat, (1 - Math.min(1, Math.abs(stretch) / rest)) * 0.5);
   },
   meta: { desc: 'a tether with a rest length — holds matter at a fixed radius' },

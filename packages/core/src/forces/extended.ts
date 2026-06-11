@@ -136,26 +136,33 @@ export const align: Force = {
   label: 'Align',
   apply(b, p, e) {
     if (e.dist >= b.range) return;
-    const speed = Math.hypot(p.vx, p.vy); // steer toward ĥ·|v| → turns without speeding up
+    const pvz = p.vz ?? 0;
+    const speed = Math.hypot(p.vx, p.vy, pvz); // steer toward ĥ·|v| → turns without speeding up
     const k = b.strength;
-    let hx = b.ux; // [A] default: the body heading
+    let hx = b.ux; // [A] default: the body heading (planar — data-angle is in-plane)
     let hy = b.uy;
+    let hz = 0;
     let sx = 0;
     let sy = 0;
+    let sz = 0;
     for (const n of e.neighbors(p, b.range)) {
-      const ns = Math.hypot(n.vx, n.vy); // sum the neighbours' unit velocities (v̂)
+      const nvz = n.vz ?? 0;
+      const ns = Math.hypot(n.vx, n.vy, nvz); // sum the neighbours' unit velocities (v̂)
       if (ns > 1e-6) {
         sx += n.vx / ns;
         sy += n.vy / ns;
+        sz += nvz / ns;
       }
     }
-    const sm = Math.hypot(sx, sy);
+    const sm = Math.hypot(sx, sy, sz);
     if (sm > 1e-6) {
       hx = sx / sm; // [B]: the mean neighbour heading
       hy = sy / sm;
+      hz = sz / sm;
     }
     p.vx += (hx * speed - p.vx) * k;
     p.vy += (hy * speed - p.vy) * k;
+    if (hz || pvz) p.vz = pvz + (hz * speed - pvz) * k;
   },
   meta: { desc: 'steers toward the neighbour-mean heading (or the body heading when alone)' },
 };
@@ -213,18 +220,22 @@ export const cohesion: Force = {
     for (const n of e.neighbors(p, r1)) {
       const dx = n.x - p.x;
       const dy = n.y - p.y;
-      const dn = Math.hypot(dx, dy);
+      const dzn = (n.z ?? 0) - (p.z ?? 0); // 3D separation in a volume (z-axis.md)
+      const dn = Math.hypot(dx, dy, dzn);
       if (dn < 1e-6) continue;
       const ux = dx / dn;
       const uy = dy / dn;
+      const uz = dzn / dn;
       if (dn < r0) {
         const f = (k * (r0 - dn)) / r0; // pressure: push apart (no overlap)
         p.vx -= f * ux;
         p.vy -= f * uy;
+        if (dzn) p.vz = (p.vz ?? 0) - f * uz;
       } else {
         const f = (k * (dn - r0)) / (r1 - r0); // cohesion: pull toward the skin
         p.vx += f * ux;
         p.vy += f * uy;
+        if (dzn) p.vz = (p.vz ?? 0) + f * uz;
       }
     }
   },
@@ -254,7 +265,7 @@ export const pressure: Force = {
     let rho = 0;
     const ns = e.neighbors(p, h);
     for (const n of ns) {
-      const d = Math.hypot(n.x - p.x, n.y - p.y);
+      const d = Math.hypot(n.x - p.x, n.y - p.y, (n.z ?? 0) - (p.z ?? 0));
       if (d < h) rho += (1 - d / h) ** 2;
     }
     const over = rho - PRESSURE_REST; // pressure scalar P = k·(ρ − ρ₀)
@@ -264,11 +275,13 @@ export const pressure: Force = {
     for (const n of ns) {
       const dx = p.x - n.x; // neighbour → p, i.e. the away-from-crowd direction
       const dy = p.y - n.y;
-      const d = Math.hypot(dx, dy);
+      const dzn = (p.z ?? 0) - (n.z ?? 0);
+      const d = Math.hypot(dx, dy, dzn);
       if (d < 1e-6 || d >= h) continue;
-      const f = (k * over * (1 - d / h)) / d; // ∝ P · ∇W, normalized by d to use (dx, dy)
+      const f = (k * over * (1 - d / h)) / d; // ∝ P · ∇W, normalized by d to use the deltas
       p.vx += f * dx;
       p.vy += f * dy;
+      if (dzn) p.vz = (p.vz ?? 0) + f * dzn;
     }
   },
   meta: { desc: 'SPH density relaxation — incompressible even-fill via mutual repulsion' },
@@ -296,7 +309,8 @@ export const hunt: Force = {
       if ((n.species ?? 0) === me) continue;
       const dx = n.x - p.x;
       const dy = n.y - p.y;
-      const d2 = dx * dx + dy * dy;
+      const dzn = (n.z ?? 0) - (p.z ?? 0);
+      const d2 = dx * dx + dy * dy + dzn * dzn;
       if (d2 < bestD2) {
         bestD2 = d2;
         target = n;
@@ -305,10 +319,12 @@ export const hunt: Force = {
     if (!target) return; // nothing of the other species in reach
     const dx = target.x - p.x;
     const dy = target.y - p.y;
-    const d = Math.hypot(dx, dy) || 1;
+    const dzn = (target.z ?? 0) - (p.z ?? 0);
+    const d = Math.hypot(dx, dy, dzn) || 1;
     const dir = me === 0 ? 1 : -1; // predator seeks (toward), prey flees (away)
     p.vx += (dx / d) * b.strength * dir;
     p.vy += (dy / d) * b.strength * dir;
+    if (dzn) p.vz = (p.vz ?? 0) + (dzn / d) * b.strength * dir;
   },
   meta: { desc: 'two-species pursuit — predators seek prey, prey flee predators' },
 };
@@ -335,12 +351,14 @@ export const link: Force = {
     for (const n of e.neighbors(p, r)) {
       const dx = n.x - p.x;
       const dy = n.y - p.y;
-      const d = Math.hypot(dx, dy);
+      const dzn = (n.z ?? 0) - (p.z ?? 0); // 3D bond length in a volume (z-axis.md)
+      const d = Math.hypot(dx, dy, dzn);
       if (d < 1e-6) continue;
       const err = d - L; // +ve → too far (pull together); −ve → too close (push apart)
       const f = 0.5 * k * (err / L); // half the Verlet correction; the partner does its half
       p.vx += f * (dx / d);
       p.vy += f * (dy / d);
+      if (dzn) p.vz = (p.vz ?? 0) + f * (dzn / d);
     }
   },
   meta: { desc: 'a Verlet distance constraint — holds a rest length, so matter ropes and drapes' },
@@ -380,6 +398,8 @@ export const morph: Force = {
     const k = b.strength;
     p.vx += dx * k * 0.02; // spring toward the target point
     p.vy += dy * k * 0.02;
+    // targets are marks on the page plane (z-axis.md): the same spring returns matter to z = 0.
+    if (p.z) p.vz = (p.vz ?? 0) - p.z * k * 0.02;
     const arrived = d < MORPH_ARRIVE ? 1 - d / MORPH_ARRIVE : 0;
     const jit = (1 - arrived) * k * 0.3; // jitter that fades to zero on arrival
     if (jit > 0) {
@@ -542,21 +562,27 @@ export const fieldflow: Force = {
     const falloff = b.range > 0 ? 1 - e.dist / b.range : 1;
     const gain = b.strength * falloff;
     // 1) STEER onto the line — turn velocity toward the tangent without spending it (like `align`).
-    const sp = Math.hypot(p.vx, p.vy);
+    // The structure field is planar (bodies radiate in the page plane), so the steer also
+    // turns any z velocity onto the in-plane line — matter funnels back toward the plane.
+    const pvz = p.vz ?? 0;
+    const sp = Math.hypot(p.vx, p.vy, pvz);
     if (sp > 1e-6) {
       const k = Math.min(1, gain * FIELDFLOW_STEER);
       p.vx += (ux * sp - p.vx) * k;
       p.vy += (uy * sp - p.vy) * k;
+      if (pvz) p.vz = pvz + (0 - pvz) * k; // the line's z tangent is 0
     }
     // 2) STREAM down the line — accelerate along it (the flare ejection; does work).
     p.vx += ux * gain * FIELDFLOW_ACCEL;
     p.vy += uy * gain * FIELDFLOW_ACCEL;
     // bound by the unit system's speed of light (§20.10), as gravity/thermal do.
-    const s2 = p.vx * p.vx + p.vy * p.vy;
+    const vz2 = p.vz ?? 0;
+    const s2 = p.vx * p.vx + p.vy * p.vy + vz2 * vz2;
     if (s2 > e.c * e.c) {
       const inv = e.c / Math.sqrt(s2);
       p.vx *= inv;
       p.vy *= inv;
+      if (vz2) p.vz = vz2 * inv;
     }
     if (b.on) p.heat = Math.max(p.heat, falloff * 0.4);
   },
@@ -592,7 +618,10 @@ export const warp: Force = {
     const outR = throat * k + 6;
     p.x = b.warpX! + rux * outR;
     p.y = b.warpY! + ruy * outR;
-    // carry momentum through, rotated by the same twist (speed conserved)
+    // the paired throat sits on the page plane: the z offset passes through unscaled
+    // (the twist is about the z axis, so z is its rotation invariant).
+    if (p.z) p.z = (-e.dz! / e.dist) * outR;
+    // carry momentum through, rotated by the same twist (speed conserved; vz invariant)
     const vx = p.vx;
     const vy = p.vy;
     p.vx = vx * cs - vy * sn;
