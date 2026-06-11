@@ -124,6 +124,9 @@ export class FieldField implements FieldHandle {
   setVisible(on: boolean): void {
     this.field.setVisible(on);
   }
+  setBackground(mode: Parameters<FieldHandle['setBackground']>[0]): void {
+    this.field.setBackground(mode);
+  }
   /** stop the loop, release listeners, and remove the canvas if this instance made it. */
   destroy(): void {
     this.field.destroy();
