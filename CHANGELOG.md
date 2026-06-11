@@ -103,6 +103,16 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **RenderBackend — the drawing seam (#373).** The structural contract between the engine and a
+  drawing surface (`size` / `clear` / `segments` / `polyline` / `rect` / `text`), with the
+  Canvas 2D implementation as the default. The OVERLAY surface — all eight readings — now
+  renders exclusively through it; `createField({ overlayBackend })` accepts any conforming
+  implementation, which is the seam the WebGL/WebGPU frontier builds on. The underlay matter
+  modes (dots' gradients, metaballs, voronoi) still draw on the 2D context directly and convert
+  in a later slice — the contract grows additively when their needs (gradients, composite modes)
+  arrive. Contract pinned by recording-stub tests.
+
+### Added
 - **`FieldLineOpts.maxTurns` — a turning budget for the field-line tracer** (`@field-ui/core`,
   `fieldlines.ts`). A traced line orbiting a pole that never passes back through its *seed*
   (so `loopDist` can't close it) otherwise winds the same circle for its whole step budget —
