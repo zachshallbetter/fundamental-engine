@@ -142,6 +142,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
+  // the injected sources (#371): every random draw and wall-clock read in the engine flows
+  // through these two, so a seeded rng + fixed clock make a run reproducible end to end.
+  const rng = opts.rng ?? Math.random;
+  const wallNow = opts.now ?? ((): number => performance.now());
   let boot = reduceMotion ? 1 : 0;
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
@@ -226,7 +230,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   };
   const onUpdateBody = scheduleScan; // attrs/geometry changed → re-scan (coalesced)
   const probe: Particle = { x: 0, y: 0, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: null };
-  const t0 = performance.now();
+  const t0 = wallNow();
 
   const env: Env = {
     dx: 0,
@@ -241,11 +245,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     c: 12,
     G: 1,
     scrollV: 0,
+    rng,
     spark: (x, y, power, color) => spawnSpark(x, y, power, color),
     supernova: (b) => {
       // release exactly what was captured — radial, from the core (§6.9, accretion.ts). Held matter
       // is conserved: released particles stay in the pool. `releaseCaptured` resets b.accreted to 0.
-      const released = releaseCaptured(store.particles, b);
+      const released = releaseCaptured(store.particles, b, rng);
       const justReleased = new Set(released);
       // the blast shoves nearby *free* matter outward (but not the matter it just released).
       for (const q of store.particles) {
@@ -298,24 +303,24 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const c: RGB = color ? hexToRgb(color) : [255, 122, 69]; // WARM default (§20.8)
     const n = sparkCount(power);
     for (let k = 0; k < n; k++) {
-      const a = Math.random() * 6.28318;
-      const s = 0.8 + Math.random() * (power > 0 ? power : 1) * 1.7;
+      const a = rng() * 6.28318;
+      const s = 0.8 + rng() * (power > 0 ? power : 1) * 1.7;
       sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, c });
     }
   }
 
   function newParticle(seed: Partial<Particle> = {}): Particle {
-    const size = seed.size ?? 0.7 + Math.random() * 1.8;
+    const size = seed.size ?? 0.7 + rng() * 1.8;
     return {
-      x: seed.x ?? Math.random() * W,
-      y: seed.y ?? Math.random() * H,
-      vx: seed.vx ?? (Math.random() - 0.5) * 0.25,
-      vy: seed.vy ?? (Math.random() - 0.5) * 0.18,
+      x: seed.x ?? rng() * W,
+      y: seed.y ?? rng() * H,
+      vx: seed.vx ?? (rng() - 0.5) * 0.25,
+      vy: seed.vy ?? (rng() - 0.5) * 0.18,
       m: seed.m ?? (cfg.mass ? size : 1), // mass ∝ size when first-class mass is on
       heat: seed.heat ?? 0,
       size,
-      gx: seed.gx ?? Math.random(),
-      gy: seed.gy ?? Math.random(),
+      gx: seed.gx ?? rng(),
+      gy: seed.gy ?? rng(),
       cap: null,
       ...(seed.age != null ? { age: seed.age } : {}), // mortal matter (a [S] source)
       ...(seed.color != null ? { color: seed.color } : {}),
@@ -344,7 +349,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     applySeed();
     // the Currents (§24) are opt-out: with waves off, the field is just the free particles.
     waves = cfg.waves ? buildWaves(WAVE_RGB) : [];
-    bound = cfg.waves ? buildBound(waves.length, cfg.density, Math.random) : [];
+    bound = cfg.waves ? buildBound(waves.length, cfg.density, rng) : [];
     boundTarget = bound.length;
   }
 
@@ -646,7 +651,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       a: t.a,
       b: t.b,
       c: hexToRgb(t.color ?? cfg.accent),
-      seed: Math.random() * 6.28,
+      seed: rng() * 6.28,
     }));
   }
 
@@ -1490,7 +1495,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (env.dt) {
       for (const g of grids.values()) g.step(); // advance field buffers (§20.1 [C])
       if (heatmap) heatmap.update(store.particles); // density heatmap buffer (H1)
-      healWaves(store, bound, boundTarget, waves, W, H, env.t, Math.random);
+      healWaves(store, bound, boundTarget, waves, W, H, env.t, rng);
       tearBoundByForces(bound, waves, bodies, reg.forces, W, H, env.t, (p) => void store.add(newParticle(p)));
       updateMovers();
       updateEmitters(); // element emit (§22.3): clone decorative templates, budgeted by data-max
@@ -1535,13 +1540,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       setFormation(next);
     }
   }
-  const markInput = (): void => void (lastInput = performance.now());
+  const markInput = (): void => void (lastInput = wallNow());
   const scrollHandler = (): void => {
     markInput();
     onScroll();
   };
   const idleTimer = setInterval(() => {
-    if (performance.now() - lastInput > 6000 && activeForm !== 'ambient') {
+    if (wallNow() - lastInput > 6000 && activeForm !== 'ambient') {
       activeForm = 'ambient';
       setFormation('ambient');
     }

@@ -39,6 +39,16 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Injectable randomness and wall clock (#371).** Every random draw in the engine — particle
+  seeding, spawn scatter, brownian wander, force jitter and emission cones, release angles —
+  now flows through one source: `createField({ rng })` (default `Math.random`), carried to
+  forces and the integrator as `env.rng`. A seeded generator makes a run reproducible — the
+  seam record/replay needs, pinned by a bit-identical two-run test. The wall clock joins it:
+  `createField({ now })` (default `performance.now`) feeds input-idle tracking, completing the
+  three-clocks separation (wall / frame / simulation — see temporal.ts).
+
+### Added
+
 - **Attention-gated discharge + the `contour-charge` recipe.** A sink gated on engagement
   (`data-when="active"`) now RELEASES what it holds on the falling edge of attention — the same
   conserved supernova ritual (same radial burst, same `field:released` event) that saturation
