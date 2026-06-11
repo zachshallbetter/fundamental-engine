@@ -77,7 +77,12 @@ public final class FieldSurfaceLayer: CALayer {
         let dx = p.position.x - cx
         let dy = p.position.y - cy
         let rs = clamp((dx * dx + dy * dy) / (cx * cx + cy * cy), 0, 1)
-        return particleRGB(rs: rs, heat: p.heat, accent: p.color.map(hexToRgb) ?? frame.accent)
+        let base = particleRGB(rs: rs, heat: p.heat, accent: frame.accent)
+        // carried pigment (§): a stained particle blends 75% toward its pigment over the field
+        // tint — NOT a full replacement (matches the JS source, field.ts), so stained matter stays
+        // legible against the accent rather than reading over-saturated.
+        guard let stain = p.color.map(hexToRgb) else { return base }
+        return base + (stain - base) * 0.75
     }
 
     // MARK: matter modes (§20.6)
