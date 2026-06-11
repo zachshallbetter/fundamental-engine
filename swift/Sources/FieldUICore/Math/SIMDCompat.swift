@@ -53,6 +53,11 @@ func simd_clamp(_ v: SIMD3<Float>, _ lo: SIMD3<Float>, _ hi: SIMD3<Float>) -> SI
 }
 
 @inline(__always)
+func simd_max(_ a: SIMD3<Float>, _ b: SIMD3<Float>) -> SIMD3<Float> {
+    SIMD3<Float>(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
+}
+
+@inline(__always)
 func simd_cross(_ a: SIMD3<Float>, _ b: SIMD3<Float>) -> SIMD3<Float> {
     SIMD3<Float>(a.y * b.z - a.z * b.y,
                  a.z * b.x - a.x * b.z,

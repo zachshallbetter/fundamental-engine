@@ -1,6 +1,8 @@
 import Testing
 #if canImport(simd)
 import simd
+#else
+import Foundation
 #endif
 @testable import FieldUICore
 

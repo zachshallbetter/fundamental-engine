@@ -1,5 +1,7 @@
 #if canImport(simd)
 import simd
+#else
+import Foundation
 #endif
 
 // MARK: - FieldOptions

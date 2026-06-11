@@ -1,5 +1,7 @@
 #if canImport(simd)
 import simd
+#else
+import Foundation
 #endif
 
 /// A uniform-grid spatial hash for neighbour queries — the index that makes

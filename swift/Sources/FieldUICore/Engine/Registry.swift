@@ -1,5 +1,7 @@
 #if canImport(simd)
 import simd
+#else
+import Foundation
 #endif
 
 /// The force + condition registry (§4, §5). The engine never changes to add a force —
