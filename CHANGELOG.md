@@ -7,6 +7,16 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **A supernova now ejects captured matter as PERSISTENT field matter** (`@field-ui/core`,
+  `accretion.ts`). When a sink saturates and supernovas, `releaseCaptured` clears each released
+  particle's `age`: mortal class-`[S]` source-spawned matter that the sink captured and held is
+  released **immortal**, so a `spawn → sink → supernova` loop visibly conserves — the matter a
+  source made rejoins the lasting field instead of silently dying once released. A **no-op for the
+  conserved base pool** (whose particles already have no `age`). Closes a long-standing gap where a
+  source's output, once captured and released, would quietly expire rather than return to the field.
+
 ### Fixed
 
 - **Warp pair ghost (#368a).** When a paired element (resolved via `data-pair`) leaves the DOM,

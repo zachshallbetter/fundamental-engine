@@ -143,3 +143,22 @@ test('3b. dischargeDisengaged ignores ungated sinks, non-sinks, and empty vessel
   dischargeDisengaged([ungated, empty, notSink], (x) => released.push(x));
   assert.equal(released.length, 0, 'no discharge outside the gated, holding sink case');
 });
+
+test('1e. a supernova ejects MORTAL captured matter as PERSISTENT (conservation event)', () => {
+  // mortal source-spawned matter that a sink captured and held is released immortal — so a
+  // source→sink→supernova loop conserves: the matter the source made becomes lasting field.
+  const store = new FieldStore();
+  const body = sinkBody({ capacity: 1000 });
+  // two captured particles: one mortal (from a [S] source), one immortal (the base pool)
+  const mortal = store.add({ x: 500, y: 500, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: body, age: 12 });
+  const immortal = store.add({ x: 500, y: 500, vx: 0, vy: 0, m: 1, heat: 0, size: 1, cap: body });
+  body.accreted = 2;
+
+  releaseCaptured(store.particles, body, seeded(9));
+
+  assert.equal(store.size, 2, 'both conserved — released into the pool, none destroyed');
+  assert.equal(mortal.age, undefined, 'the mortal one is released immortal — it persists, never returns to dying');
+  assert.equal(immortal.age, undefined, 'the immortal one is unchanged (no-op)');
+  assert.equal(mortal.cap, null);
+  assert.equal(immortal.cap, null);
+});

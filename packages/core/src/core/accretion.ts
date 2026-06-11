@@ -33,6 +33,14 @@ export function releaseCaptured(
     q.vx = Math.cos(ang) * spd;
     q.vy = Math.sin(ang) * spd;
     q.heat = 1;
+    // A supernova is a CONSERVATION event: the ejected matter rejoins the PERSISTENT
+    // field. Mortal (class-[S] source-spawned) matter that a sink captured and held is
+    // released immortal — so a source→sink→supernova loop visibly conserves (the matter
+    // the source made becomes lasting field matter, bounded by the engine's pool ceiling)
+    // instead of the released particles aging out and vanishing moments after release. A
+    // no-op for the conserved base pool (age already undefined), so the canonical sink —
+    // captured base particles return exactly as before — is unchanged.
+    q.age = undefined;
     released.push(q);
   }
   b.accreted = 0;
