@@ -42,8 +42,18 @@ final class UIKitFieldHost: FieldHost {
         )
     }
 
-    public var scrollY: Float { 0 }      // caller supplies via a UIScrollView subclass
-    public var scrollHeight: Float { 0 }
+    /// The nearest enclosing scroll view, if the field is mounted inside one — so a page-like
+    /// layout drives the `scrolling` condition and the travelling accent (§9) for free.
+    private var enclosingScroll: UIScrollView? {
+        var v: UIView? = rootView
+        while let cur = v { if let s = cur as? UIScrollView { return s }; v = cur.superview }
+        return nil
+    }
+    public var scrollY: Float { Float(enclosingScroll?.contentOffset.y ?? 0) }
+    public var scrollHeight: Float {
+        guard let s = enclosingScroll else { return 0 }
+        return Float(max(0, s.contentSize.height - s.bounds.height))
+    }
 
     // MARK: FieldHost — system signals
 

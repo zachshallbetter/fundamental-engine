@@ -33,8 +33,11 @@ final class AppKitFieldHost: FieldHost {
         )
     }
 
-    public var scrollY: Float { 0 }
-    public var scrollHeight: Float { 0 }
+    public var scrollY: Float { Float(rootView?.enclosingScrollView?.documentVisibleRect.origin.y ?? 0) }
+    public var scrollHeight: Float {
+        guard let sv = rootView?.enclosingScrollView, let doc = sv.documentView else { return 0 }
+        return Float(max(0, doc.bounds.height - sv.contentView.bounds.height))
+    }
 
     public var prefersReducedMotion: Bool {
         NSWorkspace.shared.accessibilityDisplayShouldReduceMotion

@@ -30,6 +30,10 @@ final class FieldEngine: FieldHandle {
     private var bodies: [Body] = []
     private var formTarget: Formation
     private var accent: RGB
+    /// The travelling-accent journey (§9): palette stops the accent traverses with scroll.
+    private var journey: [RGB] = []
+    /// A hover-driven override (the app sets it from a focused element's tint); wins over scroll.
+    private var hoverAccent: RGB?
     private var visible = true
     private var startTime: TimeInterval?
     private var lastScrollY: Float = 0
@@ -59,6 +63,7 @@ final class FieldEngine: FieldHandle {
         self.env = Env()
         self.accent = hexToRgb(options.accent ?? "#4da3ff")
         self.formTarget = formation(named: "ambient")!.preset
+        self.journey = Self.buildJourney(palette: options.palette, accent: accent)
         let density = max(options.density ?? 1, 0)
         self.spawnCeiling = Int((130 * density).rounded()) * 4
 
@@ -219,6 +224,16 @@ final class FieldEngine: FieldHandle {
         lastScrollY = host.scrollY
         env.scrollV = scrollVel
 
+        // travelling accent (§9): a hovered element's tint wins; otherwise, when mounted in a
+        // scroll view, the accent traverses the palette journey by scroll position. With no scroll
+        // range (the static native default) the journey is inert and `setAccent` holds.
+        if let hoverAccent {
+            accent += (hoverAccent - accent) * 0.08
+        } else if host.scrollHeight > 0, !journey.isEmpty {
+            let frac = clamp(host.scrollY / host.scrollHeight, 0, 1)
+            accent += (sampleStops(journey, frac: frac) - accent) * 0.08
+        }
+
         // formation easing (§7)
         easeFormation(&env.form, toward: formTarget)
 
@@ -378,7 +393,22 @@ final class FieldEngine: FieldHandle {
         accent = hexToRgb(hex)
     }
 
-    func setPalette(_ palette: [String]) { options.palette = palette }
+    func setPalette(_ palette: [String]) {
+        options.palette = palette
+        journey = Self.buildJourney(palette: palette, accent: accent)
+        if let first = journey.first { accent = first } // adopt the new journey's first stop (JS parity)
+    }
+
+    /// The hover-driven accent override (§9): pass a hex to pin the travelling accent to a focused
+    /// element's tint, or `nil` to release it back to the scroll journey.
+    func setHoverAccent(_ hex: String?) { hoverAccent = hex.map(hexToRgb) }
+
+    /// The palette stops the travelling accent traverses — the named/explicit palette, or the
+    /// default cool→warm sweep seeded from the base accent.
+    private static func buildJourney(palette: [String]?, accent: RGB) -> [RGB] {
+        if let palette, !palette.isEmpty { return palette.map(hexToRgb) }
+        return [accent, COOL, WARM]
+    }
     func setRender(_ mode: RenderMode)   { options.render = mode }
 
     func setOverlay(_ input: OverlayInput) {
