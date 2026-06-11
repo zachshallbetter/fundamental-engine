@@ -56,6 +56,7 @@ export const DOCS_NAV: DocGroup[] = [
     items: [
       { href: '/docs/concepts', label: 'Concepts', ready: true },
       { href: '/docs/natural-fields', label: 'Natural fields', ready: true },
+      { href: '/docs/contour-typography', label: 'Contour typography', ready: true },
       { href: '/docs/narrative', label: 'Narrative walkthrough', ready: true },
       { href: '/docs/reading-field', label: 'Reading Field', ready: true },
     ],
