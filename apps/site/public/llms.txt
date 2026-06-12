@@ -10,7 +10,7 @@ Every element can become a body in an invisible physics field via the `data-body
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-11 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-12 by apps/site/scripts/gen-llms.mjs.
 
 ## Docs
 
