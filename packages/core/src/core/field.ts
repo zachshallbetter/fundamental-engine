@@ -170,6 +170,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Each renderer keeps independent state so underlay and overlay don't cross-influence.
   let slMaxSmoothed = 0; // underlay streamlines
   let olMaxSmoothed = 0; // overlay arrows (streamlines / force-vectors / field-lines)
+  // Cached force-field samples for the underlay streamlines / 'flow' arrows. The sampled field is
+  // driven by body positions, which only update on the measureBodies cadence (every 6th frame), so
+  // re-sampling the whole grid every frame is wasted work that surfaces as scroll jank. We resample
+  // on a cadence and DRAW from this cache every frame (so the arrows never flicker or step).
+  let slSamples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] | null = null;
+  let slQuiescent: { gx: number; gy: number }[] = [];
   // hard pool ceiling for class-[S] sources (§20.1) — generous above the ~130·density
   // base field so emission is never starved, but bounded so the sim can't grow forever.
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
@@ -1191,41 +1197,56 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const acc = hexToRgb(cfg.accent);
       ctx!.lineWidth = 1;
       ctx!.lineCap = 'round';
-      // Sample the field on the grid, then scale arrows RELATIVE to the strongest sample, so a
-      // weak field (a magnetic/electric dipole, magnitudes ~1e-5) reads as clearly as a strong
-      // one (an attractor). Absolute scaling drowned the dipole below the visibility cutoff.
-      const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
-      let frameMax = 0;
-      for (let gx = GRID / 2; gx < W; gx += GRID) {
-        for (let gy = GRID / 2; gy < H; gy += GRID) {
-          let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
-          // a live flow focus bends the rendered field lines toward the target (field.flowTo).
-          if (flow) {
-            const b = flowBias(gx, gy, flow, 0.04);
-            fx += b.x;
-            fy += b.y;
+      // RESAMPLE the field on a cadence, not every frame. The arrows trace the body-induced force
+      // field, which only changes when bodies are re-measured (every 6th frame) or a flow focus is
+      // live — so a per-frame regrid (≈grid×bodies force evals) was wasted work that surfaced as
+      // scroll choppiness. Resample every 3rd frame (or when the cache is empty, or while a flow
+      // focus is animating); DRAW from the cache every frame so the arrows never flicker or step.
+      if (slSamples === null || flow || frameN % 3 === 0) {
+        // Sample the field on the grid, then scale arrows RELATIVE to the strongest sample, so a
+        // weak field (a magnetic/electric dipole, magnitudes ~1e-5) reads as clearly as a strong
+        // one (an attractor). Absolute scaling drowned the dipole below the visibility cutoff.
+        const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
+        const quiescent: { gx: number; gy: number }[] = [];
+        let frameMax = 0;
+        for (let gx = GRID / 2; gx < W; gx += GRID) {
+          for (let gy = GRID / 2; gy < H; gy += GRID) {
+            let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
+            // a live flow focus bends the rendered field lines toward the target (field.flowTo).
+            if (flow) {
+              const b = flowBias(gx, gy, flow, 0.04);
+              fx += b.x;
+              fy += b.y;
+            }
+            const mag = Math.hypot(fx, fy);
+            // Skip only true dead zones / NaN (a tiny epsilon, not an absolute magnitude floor) —
+            // a weak dipole's outer field is still a real pattern and must survive to be scaled.
+            if (!(mag > 1e-9)) {
+              quiescent.push({ gx, gy }); // quiescent → a faint dot, drawn from cache below
+              continue;
+            }
+            samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
+            if (mag > frameMax) frameMax = mag;
           }
-          const mag = Math.hypot(fx, fy);
-          // Skip only true dead zones / NaN (a tiny epsilon, not an absolute magnitude floor) —
-          // a weak dipole's outer field is still a real pattern and must survive to be scaled.
-          if (!(mag > 1e-9)) {
-            ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
-            ctx!.fillRect(gx - 0.5, gy - 0.5, 1, 1); // quiescent → a faint dot
-            continue;
-          }
-          samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
-          if (mag > frameMax) frameMax = mag;
         }
+        // Ease the normalization reference: rise quickly when the field strengthens, decay slowly
+        // when it weakens — prevents a single strong frame from spiking the scale, and a single
+        // quiet frame from collapsing it. Seed on first frame (slMaxSmoothed === 0).
+        if (slMaxSmoothed === 0) slMaxSmoothed = frameMax;
+        else slMaxSmoothed = frameMax > slMaxSmoothed
+          ? slMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
+          : slMaxSmoothed * 0.9 + frameMax * 0.1;  // decay slowly so quiet frames don't flash
+        slSamples = samples;
+        slQuiescent = quiescent;
       }
-      // Ease the normalization reference: rise quickly when the field strengthens, decay slowly
-      // when it weakens — prevents a single strong frame from spiking the scale, and a single
-      // quiet frame from collapsing it. Seed on first frame (slMaxSmoothed === 0).
-      if (slMaxSmoothed === 0) slMaxSmoothed = frameMax;
-      else slMaxSmoothed = frameMax > slMaxSmoothed
-        ? slMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
-        : slMaxSmoothed * 0.9 + frameMax * 0.1;  // decay slowly so quiet frames don't flash
-      if (slMaxSmoothed > 0) {
-        for (const s of samples) {
+      // DRAW from the cache every frame (the canvas is cleared each frame, so quiescent dots and
+      // arrows must both be re-laid even on the frames we don't resample).
+      if (slQuiescent.length) {
+        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},0.05)`;
+        for (const q of slQuiescent) ctx!.fillRect(q.gx - 0.5, q.gy - 0.5, 1, 1);
+      }
+      if (slMaxSmoothed > 0 && slSamples) {
+        for (const s of slSamples) {
           const rel = Math.sqrt(s.mag / slMaxSmoothed); // sqrt compresses the range so weak vectors still read
           const len = GRID * 0.46 * (0.28 + 0.72 * rel);
           const ex = s.gx + s.ux * len;

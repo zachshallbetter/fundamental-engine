@@ -28,6 +28,12 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **Smoother scrolling with the streamline arrows on.** The underlay streamlines / `flow` arrows
+  re-sampled the whole force-field grid every frame, even though the sampled field is driven by
+  body positions that only update on the `measureBodies` cadence (every 6th frame). The grid is
+  now resampled every 3rd frame (or when the cache is empty / a flow focus is animating) and the
+  arrows draw from the cache every frame — no flicker or stepping, ~3× less per-frame work for the
+  flow layer, and dropped frames during scroll fall sharply. (#406)
 - **The Field-Surfaces overlay canvas no longer costs framerate when idle.** The full-viewport
   `mix-blend-mode: screen` overlay canvas was left in the compositing tree even with `overlay:
   off`, so the browser re-blended the whole screen against the animating underlay every frame —
