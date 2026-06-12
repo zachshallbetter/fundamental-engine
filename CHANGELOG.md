@@ -7,6 +7,17 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`overlay` prop for `@field-ui/react` — Field Surfaces parity with `<field-root>`.** The
+  `<FieldField>` component and `useFieldField` hook now accept an `overlay` prop (`OverlayInput`
+  — one mode or an additive stack) that activates the front overlay surface. The component
+  lazily creates a fixed, full-viewport, `pointer-events:none`, `z-index:5`,
+  `mix-blend-mode:screen` canvas on `document.body` when an overlay mode is first set —
+  matching the pattern of `<field-root overlay="…">` — and removes it on unmount. The
+  `overlay` dep is wired into the effect's dep array alongside the other engine options, so
+  changing the mode re-creates the field with the new overlay. Purely additive; no behavior
+  changes when `overlay` is omitted. (#352)
 ### Fixed
 
 - **`[data-dock]` collapsed elements and emit clones now set `inert` alongside `aria-hidden`**, so focusable descendants inside a scale-collapsed mover or a decorative emit clone are removed from the tab order and cannot receive keyboard focus while invisible. `inert` is removed on all restore paths (undock, teardown). (#353)
