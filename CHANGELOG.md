@@ -18,8 +18,22 @@ git tag (see [RELEASING.md](RELEASING.md)).
   `overlay` dep is wired into the effect's dep array alongside the other engine options, so
   changing the mode re-creates the field with the new overlay. Purely additive; no behavior
   changes when `overlay` is omitted. (#352)
+- **`render: 'flow'` — particles and the streamline arrows in one underlay canvas.** A new
+  underlay render mode that draws the dot swarm AND the field's streamline arrows together in
+  the single `<field-root>` canvas — the particles drifting along the visible flow — with no
+  separate front surface and no `mix-blend`, so it stays one cheap composited layer.
+  (`'streamlines'` still draws the arrows alone; `'flow'` keeps the dots underneath.) Accepted
+  by `createField({ render: 'flow' })`, `setRender('flow')`, and `<field-root render="flow">`.
+  Additive — the frozen API surface is unchanged. (#405)
+
 ### Fixed
 
+- **The Field-Surfaces overlay canvas no longer costs framerate when idle.** The full-viewport
+  `mix-blend-mode: screen` overlay canvas was left in the compositing tree even with `overlay:
+  off`, so the browser re-blended the whole screen against the animating underlay every frame —
+  roughly halving the framerate of a singleton page field since the surface landed. `<field-root>`
+  now takes the canvas out of the tree (`display: none`) whenever no reading is active and restores
+  it when one is set. Visible-overlay behavior is unchanged. (#405)
 - **`[data-dock]` collapsed elements and emit clones now set `inert` alongside `aria-hidden`**, so focusable descendants inside a scale-collapsed mover or a decorative emit clone are removed from the tab order and cannot receive keyboard focus while invisible. `inert` is removed on all restore paths (undock, teardown). (#353)
 - **`scan()` / `rescan()` reconciles consumer state across rescans** instead of rebuilding from scratch: persisting `[data-move]` elements carry their offset and dock progress forward (no reset during a live animation), and `[data-emit]` emitters carry their existing clones forward so repeat scans no longer accumulate up to `cap × rescans` clones. Clones from emitter elements that have left the scan root are removed on the next scan. (#354)
 
