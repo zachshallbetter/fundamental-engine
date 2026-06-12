@@ -1055,13 +1055,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const cy = H * 0.4;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
     if (showMatter) for (const p of store.particles) {
-      if (p.cap) {
-        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.55 * boot})`;
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, 1.3, 0, 6.28318);
-        ctx!.fill();
-        continue;
-      }
+      // CAPTURED matter is held inside the body, not free in the field — it does not render. The
+      // particle is conserved (still pooled, returned on supernova/discharge), but visually it has
+      // been absorbed: it vanishes into the body, and the body's --load is what now shows the gain.
+      if (p.cap) continue;
       const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
       const rs = d * d;
       const h = p.heat;

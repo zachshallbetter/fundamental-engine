@@ -27,9 +27,14 @@ const bodyAttrs = mass
       "data-shaped": "",
       "data-hot": "",
       "data-feedback": "",
-      "data-strength": "0.55",
-      "data-range": "130",
-      "data-absorb": "70",
+      // gather harder and over a wider catchment so the vessel actually fills — and a modest
+      // capacity (data-max) so the accreted matter reads as a high --load (a visible charge),
+      // not a trickle against the default 60. It plateaus below saturation; the dramatic release
+      // is the scroll burst, not a constant auto-supernova.
+      "data-strength": "0.8",
+      "data-range": "175",
+      "data-absorb": "95",
+      "data-max": "40",
     }
   : {};
 ---
