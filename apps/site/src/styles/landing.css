@@ -12,12 +12,15 @@
    the same readout as the §54 demo, applied as a hero treatment at H1 size. */
 .hero-mass {
   --d: 0;
+  --load: 0; /* sink fill (Body Matter Interaction): rises as the word accretes the field's matter */
   --cat: var(--accent);
-  color: color-mix(in srgb, var(--cat) calc(45% + var(--d) * 55%), var(--text));
-  font-variation-settings: 'wght' calc(540 + var(--d) * 260), 'opsz' calc(40 + var(--d) * 54);
+  color: color-mix(in srgb, var(--cat) calc(45% + var(--d) * 55% + var(--load) * 30%), var(--text));
+  font-variation-settings: 'wght' calc(540 + var(--d) * 260 + var(--load) * 120), 'opsz' calc(40 + var(--d) * 54);
   letter-spacing: calc(-0.02em - var(--d) * 0.04em);
-  text-shadow: 0 0 calc(6px + var(--d) * 40px)
-    color-mix(in srgb, var(--cat) calc(20% + var(--d) * 70%), transparent);
+  /* two haloes: the ambient density glow (--d) and the charge halo that swells as the vessel fills (--load) */
+  text-shadow:
+    0 0 calc(6px + var(--d) * 40px) color-mix(in srgb, var(--cat) calc(20% + var(--d) * 70%), transparent),
+    0 0 calc(var(--load) * 46px) color-mix(in srgb, var(--cat) calc(var(--load) * 80%), transparent);
   cursor: default;
   transition: letter-spacing 0.2s var(--ease, ease), color 0.2s var(--ease, ease);
 }
