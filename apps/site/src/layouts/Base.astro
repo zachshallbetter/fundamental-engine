@@ -74,8 +74,9 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
          the field is one continuous medium, never reset between pages. -->
     <div class="field" aria-hidden="true" transition:persist></div>
     <!-- waves off → the bare free-particle field: the matter itself, reacting to the page's
-         bodies, rather than the carrier-wave background. -->
-    <field-root accent="#4da3ff" waves="false" transition:persist></field-root>
+         bodies, rather than the carrier-wave background. density 3 → ~3× the base ~130 particles,
+         so the field reads as a dense medium the bodies gather and absorb. -->
+    <field-root accent="#4da3ff" waves="false" density="3" transition:persist></field-root>
     <div class="scrim" aria-hidden="true" transition:persist></div>
     <slot />
     <DataConsole />
