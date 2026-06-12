@@ -2,24 +2,35 @@
 // A design-system button/link. Renders an <a> when `href` is set, otherwise a <button>.
 // Emits the manual.css `.btn` / `.btn.primary` / `.btn.ghost` classes — customize on declaration.
 //
-// Mass by default: a button is a focal control, so it's a body — `attract` (a designed UI well)
-// that gathers the page field's matter, engaged on hover/focus (data-hot) and reporting its own
-// gathered density back (data-feedback → --d). The field thesis applied to its own controls.
-// Pass mass={false} to opt a button out; any explicit data-* on the instance overrides (rest is
-// spread last).
+// Mass by default: a button is a focal control, so it's a body — a `sink attract` VESSEL. attract
+// gathers the page field's matter, sink captures it; engaged on hover/focus (data-hot), reporting
+// its load/density back (data-feedback → --d / --load). `data-shaped` makes the forces reference the
+// button's BOX, not its centre, so matter gathers in a shell around the control and accretes into it
+// rather than collapsing to a single central point. The field thesis applied to its own controls.
+// Pass mass={false} to opt out; any explicit data-* on the instance overrides (rest is spread last).
 interface Props {
   href?: string;
   variant?: "primary" | "ghost";
   class?: string;
-  /** participate in the page field as an `attract` body (default true). */
+  /** participate in the page field as a `sink attract` vessel (default true). */
   mass?: boolean;
   [key: string]: unknown;
 }
 const { href, variant, class: cls, mass = true, ...rest } = Astro.props;
 const className = ["btn", variant, cls].filter(Boolean).join(" ");
-// a gentle local well — modest range so buttons are focal points, not page-dominating attractors.
+// a shaped vessel: attract gathers matter around the box, sink absorbs it; modest range so the
+// button is a local well, and data-shaped keeps the gathering off-centre (the button's outline,
+// not a hot dot at its middle).
 const bodyAttrs = mass
-  ? { "data-body": "attract", "data-hot": "", "data-feedback": "", "data-strength": "0.6", "data-range": "150" }
+  ? {
+      "data-body": "sink attract",
+      "data-shaped": "",
+      "data-hot": "",
+      "data-feedback": "",
+      "data-strength": "0.55",
+      "data-range": "130",
+      "data-absorb": "70",
+    }
   : {};
 ---
 
