@@ -35,6 +35,11 @@ export function initForcePicker(): () => void {
   let current: HTMLButtonElement | undefined = cards[0];
   let inView = false;
   const rescan = () => field && field.rescan && field.rescan();
+  // The page-wide field-flow default lives on the nav toggle (data-nav-flow). When this picker
+  // isn't engaged, restore the overlay to THAT, not a hard off — otherwise scrolling past the
+  // section silently kills the global flow the user expects to be on.
+  const restingOverlay = () =>
+    field?.dataset.navFlow === "on" ? "streamlines" : "off";
 
   const apply = () => {
     if (inView && current) {
@@ -52,7 +57,7 @@ export function initForcePicker(): () => void {
       source.removeAttribute("data-body");
       source.classList.remove("on");
       field?.setAttribute("render", "dots");
-      field?.setAttribute("overlay", "off");
+      field?.setAttribute("overlay", restingOverlay());
     }
     rescan();
   };
@@ -88,7 +93,7 @@ export function initForcePicker(): () => void {
     source.removeAttribute("data-body");
     source.classList.remove("on");
     field?.setAttribute("render", "dots");
-    field?.setAttribute("overlay", "off");
+    field?.setAttribute("overlay", restingOverlay());
     rescan();
     if (home) home.insertBefore(source, anchor); // restore for a same-page re-init
   };

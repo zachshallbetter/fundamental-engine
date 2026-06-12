@@ -191,10 +191,15 @@ function initRenderTour(): () => void {
   let inView = false;
   let mode = matter[0];
   const active = new Set<string>();
+  // resting overlay = the page-wide field-flow default (the nav toggle, data-nav-flow). When this
+  // panel isn't showing its own readings, fall back to THAT, not a hard off — so scrolling past the
+  // panel doesn't silently kill the global flow the user expects to be on.
+  const restingOverlay = () =>
+    field?.dataset.navFlow === "on" ? "streamlines" : "off";
   const run = () => {
     field?.setRender?.(inView && mode ? mode.dataset.render || "dots" : "dots");
     const stack = inView ? [...active] : [];
-    field?.setOverlay?.(stack.length ? stack : "off");
+    field?.setOverlay?.(stack.length ? stack : restingOverlay());
   };
   const say = (b: HTMLButtonElement) => {
     const name = b.dataset.render ?? b.dataset.overlayMode;
@@ -241,7 +246,7 @@ function initRenderTour(): () => void {
     ac.abort();
     io.disconnect();
     field?.setRender?.("dots");
-    field?.setOverlay?.("off");
+    field?.setOverlay?.(restingOverlay());
   };
 }
 
