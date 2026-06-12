@@ -1,8 +1,8 @@
 /**
  * `ParticlePool` — the particle bridge. The engine runs headless (`render: 'none'`) and exposes its
- * swarm through `FieldHandle.readParticles(buf)` (stride 4: `x, y, heat, size`). This pool pulls
+ * swarm through `FieldHandle.readParticles(buf)` (stride 5: `x, y, z, heat, size`). This pool pulls
  * that buffer each frame and writes it onto a `THREE.Points` geometry via the `FieldProjection` —
- * position from `(x, y)`, an `aHeat`/`aSize` attribute per vertex for the material. Zero per-frame
+ * position from `(x, y, z)`, an `aHeat`/`aSize` attribute per vertex for the material. Zero per-frame
  * allocation: the typed buffers are sized once to `capacity`.
  *
  * The conversion (`write`) is a pure function of the packed buffer + projection, so it is unit-
@@ -99,7 +99,7 @@ export class ParticlePool {
   constructor(opts: ParticlePoolOptions) {
     this.capacity = Math.max(1, opts.capacity | 0);
     this.projection = opts.projection;
-    this.packed = new Float32Array(this.capacity * 4);
+    this.packed = new Float32Array(this.capacity * 5);
 
     this.geometry = new BufferGeometry();
     this.position = new Float32BufferAttribute(new Float32Array(this.capacity * 3), 3);
@@ -138,13 +138,20 @@ export class ParticlePool {
     const heat = this.aHeat.array as Float32Array;
     const sz = this.aSize.array as Float32Array;
     for (let i = 0; i < count; i++) {
-      const o = i * 4;
-      this.projection.toWorld(this.packed[o]!, this.packed[o + 1]!, this.packed[o + 2]!, this.packed[o + 3]!, _v);
+      const o = i * 5; // [x, y, z, heat, size]
+      this.projection.toWorld(
+        this.packed[o]!,
+        this.packed[o + 1]!,
+        this.packed[o + 2]!,
+        this.packed[o + 3]!,
+        this.packed[o + 4]!,
+        _v,
+      );
       pos[i * 3] = _v.x;
       pos[i * 3 + 1] = _v.y;
       pos[i * 3 + 2] = _v.z;
-      heat[i] = this.packed[o + 2]!;
-      sz[i] = this.packed[o + 3]!;
+      heat[i] = this.packed[o + 3]!;
+      sz[i] = this.packed[o + 4]!;
     }
     this.count = count;
     this.geometry.setDrawRange(0, count);
@@ -154,7 +161,7 @@ export class ParticlePool {
     return count;
   }
 
-  /** the stride-4 staging buffer — exposed for tests to fill before calling `write`. */
+  /** the stride-5 staging buffer (`[x, y, z, heat, size]`) — exposed for tests to fill before `write`. */
   get staging(): Float32Array {
     return this.packed;
   }

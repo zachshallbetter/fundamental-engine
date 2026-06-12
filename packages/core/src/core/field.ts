@@ -1841,14 +1841,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     particleCount: () => store.size,
     readParticles: (out) => {
       const ps = store.particles;
-      const n = Math.min(store.size, out.length >> 2); // stride 4; floor(out.length / 4)
+      const n = Math.min(store.size, Math.floor(out.length / 5)); // stride 5
       for (let i = 0; i < n; i++) {
         const p = ps[i]!;
-        const o = i << 2;
+        const o = i * 5;
         out[o] = p.x;
         out[o + 1] = p.y;
-        out[o + 2] = p.heat;
-        out[o + 3] = p.size;
+        out[o + 2] = p.z ?? 0; // optional z lane (z-axis.md); 0 in a flat field
+        out[o + 3] = p.heat;
+        out[o + 4] = p.size;
       }
       return n;
     },

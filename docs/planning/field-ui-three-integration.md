@@ -1,8 +1,9 @@
 # `@field-ui/three` — Three.js integration spec
 
-> Status: **Level A shipped on `three-port`**. A new authoring-surface package `@field-ui/three`,
-> **plane-first but 3D-extensible** coordinate model, the **particle bridge** as the first
-> deliverable. Author: Zach Shallbetter. Home on the RC1 board (user project #24).
+> Status: **Level A shipped on `three-port`**, rebased onto `origin/main` to consume the optional z
+> lane (#362). A new authoring-surface package `@field-ui/three` with **both flat (`PlaneProjection`)
+> and genuinely volumetric (`VolumeProjection`)** coordinate models, the **particle bridge** as the
+> first deliverable. Author: Zach Shallbetter. Home on the RC1 board (user project #24).
 
 ## Why this is tractable
 
@@ -38,9 +39,10 @@ contract additively in a later core slice. Until then, the swarm needs path B.
 ### B · Particle bridge (the swarm, via `readParticles`)
 
 `FieldHandle.readParticles(out)` (added on this branch) copies live particle state into a
-caller-owned `Float32Array` (stride 4: `x, y, heat, size`), zero-alloc. A renderer fills a
-`THREE.BufferAttribute` from it each frame. This is the fast path to the *swarm* in 3D and the
-complement to path A until the underlay routes through `RenderBackend`.
+caller-owned `Float32Array` (stride 5: `x, y, z, heat, size`), zero-alloc. The `z` is the engine's
+**optional depth lane** (z-axis.md, #362) — `0` in a flat field, real depth when the field was created
+with `depth > 0`. A renderer fills a `THREE.BufferAttribute` from it each frame. This is the fast path
+to the *swarm* in 3D and the complement to path A until the underlay routes through `RenderBackend`.
 
 ## Package shape (mirrors `@field-ui/vanilla`)
 
@@ -58,20 +60,26 @@ src/
   backend.ts      threeBackend(): RenderBackend (line overlays)
 ```
 
-## The coordinate seam: `FieldProjection` (plane-first, 3D-ready)
+## The coordinate seam: `FieldProjection` (flat plane or real volume)
 
 ```ts
 interface FieldProjection {
   size(): { width: number; height: number };                          // feeds host.viewport()
-  toWorld(x, y, heat, size, target?): THREE.Vector3;                  // field px → world
+  toWorld(x, y, z, heat, size, target?): THREE.Vector3;               // field point → world
   toField(p: THREE.Vector3): { x: number; y: number };               // world → field px
 }
 ```
 
-- **`PlaneProjection` (shipped):** field on the world XY plane (screen-y-down flipped to world-y-up),
-  `z` lifted from `heat * relief`. Allocation-free hot path via a reused `target`.
-- **`VolumeProjection` (later):** same interface, `z` a real axis — needs the engine's force math
-  extended to a z-component; absorbed with zero churn to `FieldLayer`.
+- **`PlaneProjection` (shipped):** field on the world XY plane (screen-y-down flipped to world-y-up);
+  the engine `z` is ignored and `z` is lifted stylistically from `heat * relief`. For flat fields.
+- **`VolumeProjection` (shipped):** maps the engine's **real depth lane** (`z ∈ [0, depth)`, the opt-in
+  z axis from #362) onto a world depth range — a genuinely volumetric swarm. `createFieldLayer({ depth })`
+  defaults to it automatically. Bodies stay on the `z = 0` page plane; matter drifts through the volume.
+
+> The earlier "volumetric needs the engine extended to a z-component" framing was stale — the
+> **optional z lane already landed (#362)**. The Three.js side just consumes it: stride-5
+> `readParticles` carries `z`, and `VolumeProjection` maps it. The two projections share one interface,
+> so `FieldLayer` / `threeBackend` don't change.
 
 ## Level A usage (shipped)
 
@@ -88,21 +96,23 @@ so `burst`/`flowTo`/`setFormation`/`seed` drive the 3D layer unchanged.
 
 ## Done on this branch
 
-1. **core (additive):** `FieldHandle.readParticles(out)` + impl + test; mirrored through
-   vanilla/elements; `RenderBackend`/`Stroke` exported from `@field-ui/core`; freeze-gate entry; CEM
-   regenerated.
-2. `@field-ui/three`: `PlaneProjection`, `threeHost`, `ParticlePool`, `FieldLayer` /
+1. **core (additive):** `FieldHandle.readParticles(out)` — **stride 5 `[x, y, z, heat, size]`**,
+   carrying the optional z lane (#362) — + impl + tests (incl. a `depth > 0` z-population check);
+   mirrored through vanilla/elements; `RenderBackend`/`Stroke` exported from `@field-ui/core`;
+   freeze-gate entry; CEM regenerated.
+2. `@field-ui/three`: `PlaneProjection` + **`VolumeProjection`** (consumes the real z lane;
+   `createFieldLayer({ depth })` selects it), `threeHost`, `ParticlePool`, `FieldLayer` /
    `createFieldLayer`, `threeBackend`, `createThreeField`; renderer-free tests (projection
-   round-trip, particle write path); README + LICENSE.
+   round-trips for both, particle write path); README + LICENSE.
 
 ## Next (file on board #24)
 
 - **B-overlay polish:** label sprites for `threeBackend.text()` (the `data` reading's numeric chips;
-  `measureText` already honored). Currently the line overlays render; chip plates draw unlabeled.
+  `measureText` already honored). Currently the line overlays render; chip plates draw unlabeled. (#391)
 - **Native 3D visuals:** streamline **tubes** (`TubeGeometry` along `traceFieldLine`), instanced
-  vector-field arrows, density volume — all from `forceAt`/`netField` (re-exported).
+  vector-field arrows, density volume — all from `forceAt`/`netField` (re-exported). (#392)
 - **Level C — meshes as bodies:** a `threeHost` variant where `Object3D`s register as field bodies
-  (measurement via `projection.toField`, feedback to `material.uniforms`).
+  (measurement via `projection.toField`, feedback to `material.uniforms`). (#393)
 - **Underlay through `RenderBackend`:** when core's matter-mode slice lands (gradient/point
   primitives), the swarm can also route through `threeBackend`, retiring the separate bridge if
   desired.

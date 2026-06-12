@@ -115,7 +115,7 @@ export class FieldField implements FieldHandle {
   particleCount(): number {
     return this.field.particleCount();
   }
-  /** copy live particle state into `out` (stride 4: x, y, heat, size); returns the count written. */
+  /** copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written. */
   readParticles(out: Float32Array): number {
     return this.field.readParticles(out);
   }

@@ -79,9 +79,9 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
 
   const metrics = metricsContext();
 
-  /** map a CSS-pixel point to the overlay plane and push xyz onto `arr`. */
+  /** map a CSS-pixel point to the overlay plane and push xyz onto `arr` (overlay owns its own z). */
   function pushPoint(arr: number[], x: number, y: number): void {
-    projection.toWorld(x, y, 0, 0, _v);
+    projection.toWorld(x, y, 0, 0, 0, _v); // z/heat/size irrelevant — the overlay draws at a fixed plane
     arr.push(_v.x, _v.y, z);
   }
   /** premultiplied 0..1 rgb (additive compositing turns alpha into intensity). */

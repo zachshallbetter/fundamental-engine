@@ -1260,7 +1260,7 @@
                   }
                 }
               ],
-              "description": "copy live particle state into `out` (stride 4: x, y, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws."
+              "description": "copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws."
             },
             {
               "kind": "method",
@@ -2187,7 +2187,7 @@
                   }
                 }
               ],
-              "description": "copy live particle state into `out` (stride 4: x, y, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws.",
+              "description": "copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -3049,7 +3049,7 @@
                   }
                 }
               ],
-              "description": "copy live particle state into `out` (stride 4: x, y, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws.",
+              "description": "copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

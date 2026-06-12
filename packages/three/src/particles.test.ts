@@ -16,15 +16,15 @@ test('write maps the staging buffer onto position / aHeat / aSize', () => {
   const projection = new PlaneProjection({ width: 1000, height: 600, scale: 0.01 });
   const pool = new ParticlePool({ capacity: 4, projection });
 
-  // two particles: a centered cold one, and a hot offset one
-  pool.staging.set([500, 300, 0, 2, /* p1 */ 600, 300, 1, 3 /* p2 */], 0);
+  // two particles (stride 5: x, y, z, heat, size): a centered cold one, a hot offset one
+  pool.staging.set([500, 300, 0, 0, 2, /* p1 */ 600, 300, 0, 1, 3 /* p2 */], 0);
   const n = pool.write(2);
   assert.equal(n, 2, 'returns the written count');
   assert.equal(pool.size, 2);
   assert.equal(pool.geometry.drawRange.count, 2, 'draw range tracks the live count');
 
   const pos = arr(pool.geometry.getAttribute('position'));
-  const expected = projection.toWorld(500, 300, 0, 2);
+  const expected = projection.toWorld(500, 300, 0, 0, 2);
   assert.ok(Math.abs(pos[0]! - expected.x) < 1e-6 && Math.abs(pos[1]! - expected.y) < 1e-6, 'p1 at field center');
 
   const heat = arr(pool.geometry.getAttribute('aHeat'));

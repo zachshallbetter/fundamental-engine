@@ -43,11 +43,24 @@ renderer.setAnimationLoop(() => {
 `FieldLayer` implements the full `FieldHandle` surface, so `layer.burst()`, `layer.flowTo()`,
 `layer.setFormation()`, and `layer.seed()` drive the 3D layer exactly as they drive the DOM field.
 
-## The coordinate seam
+## Flat plane or real volume
 
-`FieldProjection` maps the engine's 2D, CSS-pixel field space to 3D world space. `PlaneProjection`
-ships today (the field on a quad, `z` lifted from per-particle `heat`); the interface is designed so a
-volumetric mode can slot in later without changing `FieldLayer`.
+`FieldProjection` maps the engine's CSS-pixel field space to 3D world space:
+
+- **`PlaneProjection`** — the field on a quad; `z` is lifted stylistically from per-particle `heat`.
+  The right choice for a flat field.
+- **`VolumeProjection`** — maps the engine's real **depth lane** (`z ∈ [0, depth)`, the opt-in z axis)
+  onto a world depth range, for a genuinely volumetric swarm.
+
+Pass `depth` and the layer defaults to a `VolumeProjection` automatically — bodies stay on the page
+plane (`z = 0`) while free matter drifts through the volume and is pulled gently back, reading as depth
+and parallax around the content:
+
+```ts
+const layer = createFieldLayer({ depth: 300, renderer, accent: '#4da3ff' });
+```
+
+Both projections implement one interface, so `FieldLayer` and `threeBackend` are unchanged by the choice.
 
 ## RenderBackend (diagnostic overlays)
 

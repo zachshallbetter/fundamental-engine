@@ -22,7 +22,7 @@ import type { AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport,
 import { Group } from 'three';
 import type { WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
-import { PlaneProjection, type FieldProjection } from './project.ts';
+import { PlaneProjection, VolumeProjection, type FieldProjection } from './project.ts';
 import { ParticlePool, type ParticleStyle } from './particles.ts';
 
 /** Three.js is browser-only; this stub satisfies the `createField` signature (never touched under
@@ -58,7 +58,9 @@ export class FieldLayer implements FieldHandle {
   private readonly field: FieldHandle;
 
   constructor(opts: FieldLayerOptions = {}) {
-    this.projection = opts.projection ?? new PlaneProjection();
+    // default the mapping to the field's shape: a real volume when `depth > 0`, else a flat plane.
+    this.projection =
+      opts.projection ?? (opts.depth && opts.depth > 0 ? new VolumeProjection({ depth: opts.depth }) : new PlaneProjection());
     const resolveDpr = (): number =>
       opts.dpr ?? opts.renderer?.getPixelRatio() ?? (typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1);
     const viewport = (): HostViewport => ({ ...this.projection.size(), dpr: resolveDpr() });
@@ -151,6 +153,9 @@ export class FieldLayer implements FieldHandle {
   }
   scrollV(): number {
     return this.field.scrollV();
+  }
+  setBackground(mode: Parameters<FieldHandle['setBackground']>[0]): void {
+    this.field.setBackground(mode);
   }
 
   /** stop the engine, release host listeners, and free the swarm's GPU resources. */

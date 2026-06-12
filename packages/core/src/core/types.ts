@@ -562,15 +562,17 @@ export interface FieldHandle {
   energy(): { kinetic: number; thermal: number; total: number; count: number };
   /**
    * Copy live particle state into a caller-owned buffer and return the number of particles
-   * written. Stride 4, packed `[x, y, heat, size, …]` in CSS-pixel field coordinates — the
+   * written. Stride 5, packed `[x, y, z, heat, size, …]` in CSS-pixel field coordinates — the
    * layout maps straight onto a renderer's vertex buffer (e.g. a `THREE.BufferAttribute`), so an
    * alternative surface can draw the swarm without a 2D context and without the engine exposing
-   * its internal particle objects. Zero-allocation and read-only: it never mutates the pool.
+   * its internal particle objects. `z` is the optional depth lane (z-axis.md): always `0` in a flat
+   * field, populated only when the field was created with `depth > 0`. Zero-allocation and
+   * read-only: it never mutates the pool.
    *
-   * Writes `min(particleCount(), floor(out.length / 4))` particles — pass `new Float32Array(cap *
-   * 4)` sized to your cap (over-sizing is safe; the return value is the count actually written).
+   * Writes `min(particleCount(), floor(out.length / 5))` particles — pass `new Float32Array(cap *
+   * 5)` sized to your cap (over-sizing is safe; the return value is the count actually written).
    * Pull-based: call once per frame after the engine has stepped, then upload the slice
-   * `[0, n*4)`. The companion of `particleCount()` for renderers that need positions, not just the
+   * `[0, n*5)`. The companion of `particleCount()` for renderers that need positions, not just the
    * tally; `@field-ui/three`'s particle bridge is the first consumer.
    */
   readParticles(out: Float32Array): number;

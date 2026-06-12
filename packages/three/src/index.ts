@@ -29,8 +29,8 @@ export { threeBackend } from './backend.ts';
 export type { ThreeBackend, ThreeBackendOptions } from './backend.ts';
 export { ParticlePool } from './particles.ts';
 export type { ParticlePoolOptions, ParticleStyle } from './particles.ts';
-export { PlaneProjection } from './project.ts';
-export type { FieldProjection, PlaneProjectionOptions } from './project.ts';
+export { PlaneProjection, VolumeProjection } from './project.ts';
+export type { FieldProjection, PlaneProjectionOptions, VolumeProjectionOptions } from './project.ts';
 
 // Re-export the field samplers from core so a Three.js consumer building its own field visuals
 // (3D streamline tubes, vector grids, density) has them without a second import.
