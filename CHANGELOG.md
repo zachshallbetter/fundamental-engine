@@ -56,9 +56,13 @@ git tag (see [RELEASING.md](RELEASING.md)).
   frame, and the full-viewport bilinear-upscale draw is suppressed while the page is scrolling fast
   (eased `env.scrollV`) — the heatmap is ambient density you read at rest, not detail you track
   mid-scroll, so it returns the instant the page settles and scrolling never pays its fill cost.
-- **Absorbed matter vanishes into the body.** A sink's captured particles no longer render as dots
-  on the body — once absorbed they disappear (still pooled and conserved, returned on
-  supernova/discharge), so the body reads as consuming the field while its `--load` carries the gain.
+- **Particles render as a soft glow, not a solid disc.** Each particle is now three concentric
+  additive discs — a wide faint aura, a mid body, a small bright core — summing under the `lighter`
+  composite into a smooth radial falloff, so matter reads as *light* rather than a hard filled
+  circle. Cheap (a few small arcs; no per-particle gradient or shadowBlur). And a sink's captured
+  matter renders again as its dim orbital cloud (an earlier change had removed it entirely) — the
+  body visibly gathers and holds a real swarm before the supernova flings it back out; still
+  conserved either way.
 - **The Field-Surfaces overlay canvas no longer costs framerate when idle.** The full-viewport
   `mix-blend-mode: screen` overlay canvas was left in the compositing tree even with `overlay:
   off`, so the browser re-blended the whole screen against the animating underlay every frame —
