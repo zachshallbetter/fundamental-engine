@@ -385,6 +385,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     measureBodies(bodies, W, H);
     bindEngagement();
+    // Reconcile movers: carry forward offset + dock state for elements that persist across
+    // rescans (shadow-DOM re-register, Astro nav re-mounts, explicit rescan()). An element that
+    // was docked under the old record but is absent from the new scan has already left the DOM;
+    // nothing to restore (the isConnected guard in updateMovers already cleared its dock state).
+    // An element that is present in both scans keeps its in-flight offset and dock progress so a
+    // rescan during a live dock animation doesn't reset the element to its layout slot.
+    const prevMovers = new Map(movers.map((mv) => [mv.el, mv]));
     movers = [...host.root.querySelectorAll('[data-move]')].map((node) => {
       const el = node as HTMLElement;
       const r = el.getBoundingClientRect();
@@ -397,6 +404,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const dockable = el.hasAttribute('data-dock');
       // `data-warp` opts into element relocate (§22.3): teleport on entering a warp throat.
       const warpable = el.hasAttribute('data-warp');
+      const prev = prevMovers.get(el);
+      if (prev) {
+        // Persist the in-flight state: the element was already known, keep its offset + dock
+        // progress. Re-check dockable/warpable/layout in case attributes changed. mEl re-measured.
+        return { el, o: prev.o, mEl, layout, dockable, dock: prev.dock, docked: prev.docked, warpable, warpCool: prev.warpCool };
+      }
       return { el, o: { x: 0, y: 0, vx: 0, vy: 0 } as ElementOffset, mEl, layout, dockable, dock: { dock: 0 }, docked: null, warpable, warpCool: 0 };
     });
     eventEls = [...host.root.querySelectorAll('[data-on]')].map((node) => {
@@ -420,6 +433,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       b.pairBody = target ? bodies.find((o) => o.el === target) : undefined;
     }
     // element emit (§22.3): bodies with data-emit clone a referenced template, capped by data-max.
+    // Reconcile across rescans: emitter elements that persist carry their existing clones forward
+    // (cap × rescans accumulation is the regression from #260). Clones that have been disconnected
+    // from the DOM (e.g. the emitter's subtree was replaced during an Astro nav) are pruned here
+    // before re-use. Emitter elements that have left the DOM have their clones removed.
+    const prevEmitters = new Map(emitters.map((em) => [em.el, em]));
+    // clean up clones belonging to emitter elements that are no longer in the scan root.
+    for (const [el, em] of prevEmitters) {
+      if (!host.root.contains(el)) {
+        for (const clone of em.emitted) clone.remove();
+      }
+    }
     emitters = [...host.root.querySelectorAll('[data-emit]')].map((node) => {
       const el = node as HTMLElement;
       const sel = el.dataset.emit ?? '';
@@ -430,6 +454,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         tmpl = null;
       }
       const cap = Math.max(0, Math.round(Number.parseFloat(el.dataset.max ?? '') || 8));
+      const prev = prevEmitters.get(el);
+      if (prev) {
+        // Carry the existing clones forward, but prune any that were disconnected while the
+        // emitter element itself persisted (partial subtree replacement). Cap may have changed.
+        const live = prev.emitted.filter((c) => c.isConnected);
+        // Remove clones that exceed the (possibly changed) cap.
+        while (live.length > cap) live.pop()!.remove();
+        return { el, tmpl, cap, emitted: live };
+      }
       return { el, tmpl, cap, emitted: [] as HTMLElement[] };
     });
   }
@@ -461,7 +494,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
 
   // element emit (§22.3): clone the decorative template into the emit element, budgeted by cap. Clones
-  // are aria-hidden (expression, not meaning) and id-stripped (no duplicate ids); removed on destroy.
+  // are aria-hidden + inert (decorative, not meaningful; focusable descendants must not reach tab
+  // order) and id-stripped (no duplicate ids); removed on destroy.
   function updateEmitters(): void {
     if (emitters.length === 0 || env.frameN % 30 !== 0) return;
     for (const em of emitters) {
@@ -469,6 +503,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const clone = em.tmpl.cloneNode(true) as HTMLElement;
       clone.removeAttribute('id');
       clone.setAttribute('aria-hidden', 'true');
+      clone.setAttribute('inert', '');
       clone.dataset.fieldEmitted = '';
       em.el.appendChild(clone);
       em.emitted.push(clone);
@@ -530,6 +565,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       mv.docked = null;
       mv.dock.dock = 0;
       if (mv.el.getAttribute('aria-hidden') === 'true') mv.el.removeAttribute('aria-hidden');
+      mv.el.removeAttribute('inert');
       mv.el.style.opacity = '';
       fireCaptureEvent(mv.el, 'released', {});
     }
@@ -565,7 +601,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         const tf = dockTransform(home, mv.o, { x: mv.docked.cx, y: mv.docked.cy }, mv.dock.dock);
         mv.el.style.transform = `translate(${tf.tx.toFixed(2)}px, ${tf.ty.toFixed(2)}px) scale(${tf.scale.toFixed(3)})`;
         mv.el.style.opacity = tf.opacity.toFixed(3);
-        if (mv.dock.dock >= 1 && mv.el.getAttribute('aria-hidden') !== 'true') mv.el.setAttribute('aria-hidden', 'true');
+        if (mv.dock.dock >= 1 && mv.el.getAttribute('aria-hidden') !== 'true') {
+          mv.el.setAttribute('aria-hidden', 'true');
+          mv.el.setAttribute('inert', '');
+        }
         continue;
       }
       probe.x = cx;
@@ -1793,13 +1832,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         delete e.el.dataset.fxEngaged;
       }
       engaged = [];
-      // restore any docked elements so teardown never leaves content collapsed / aria-hidden.
+      // restore any docked elements so teardown never leaves content collapsed / aria-hidden / inert.
       for (const mv of movers) {
         if (mv.docked || mv.dock.dock > 0) {
           mv.docked = null;
           mv.dock.dock = 0;
           mv.el.style.opacity = '';
           if (mv.el.getAttribute('aria-hidden') === 'true') mv.el.removeAttribute('aria-hidden');
+          mv.el.removeAttribute('inert');
         }
       }
       // remove any DOM nodes emitted by element-emit bodies (§22.3), so teardown leaves no clones.
