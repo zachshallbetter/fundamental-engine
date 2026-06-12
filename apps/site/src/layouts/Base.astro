@@ -68,6 +68,11 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
     <ClientRouter />
   </head>
   <body>
+    <!-- skip navigation: the first focusable element on every page. Visually hidden
+         until focused so keyboard users can jump past the nav/sidebar directly to the
+         main content landmark. The #main anchor is placed on the primary <main> (or
+         the home page's manual-shell <div>) by each layout/page. -->
+    <a class="skip-link" href="#main">Skip to content</a>
     <!-- the CSS gradient is color ambiance; the live <field-root> renders the
          particle field over it, reacting to [data-body] elements on the page.
          transition:persist keeps the engine running across client-side navigation —
@@ -172,6 +177,110 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
         .field {
           animation: none;
         }
+      }
+
+      /* ============================================================
+         KEYBOARD ACCESSIBILITY — skip-link + :focus-visible indicators
+         All rules use :focus-visible so mouse/touch users are unaffected.
+         Outline style matches the accent palette from ds-tokens.css.
+         ============================================================ */
+
+      /* Skip-to-content link — first focusable element in <body>.
+         Visually hidden until it receives keyboard focus; revealed inline
+         at the top of the viewport so it doesn't fight the fixed nav. */
+      .skip-link {
+        position: fixed;
+        top: -100%;
+        left: 1rem;
+        z-index: 999;
+        padding: 0.5rem 1.1rem;
+        background: var(--bg-surface, #0a0d14);
+        color: var(--accent, #4da3ff);
+        border: 1px solid var(--accent, #4da3ff);
+        border-radius: var(--r-sm, 6px);
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: top 0.15s;
+      }
+      .skip-link:focus-visible {
+        top: 1rem;
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+      }
+
+      /* Nav links (SiteNav .sn-dest a, .sn-mark) */
+      .sn-dest a:focus-visible,
+      .sn-mark:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+
+      /* Nav icon buttons (stream-toggle, heatmap-toggle, field-toggle) */
+      .sn-field-btn:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+      }
+
+      /* Docs sidebar: Menu disclosure button, Search button, sidebar links */
+      .docs-side-toggle:focus-visible,
+      .docs-search-btn:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+        border-radius: var(--r-sm, 6px);
+      }
+      #docsSide a:focus-visible,
+      #writingsSide a:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+
+      /* Docs field toggle (switch) */
+      .docs-field-toggle:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+        border-radius: var(--r-sm, 6px);
+      }
+
+      /* General buttons (.btn covers CTA + ghost variants used in home/docs) */
+      .btn:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 3px;
+      }
+
+      /* Home render-tour buttons and other pill/chip controls */
+      .rt-modes button:focus-visible,
+      .rt-readings button:focus-visible,
+      .force-card:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+      }
+
+      /* Breadcrumb + pagination links */
+      .breadcrumb a:focus-visible,
+      .docs-prevnext a:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+
+      /* Evidence/example sidebar links */
+      .ev-side-item:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+        border-radius: var(--r-sm, 6px);
+      }
+
+      /* TOC links */
+      #docsToc a:focus-visible {
+        outline: 2px solid var(--accent, #4da3ff);
+        outline-offset: 2px;
+        border-radius: 2px;
       }
     </style>
   </body>

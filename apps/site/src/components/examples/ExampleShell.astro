@@ -51,7 +51,7 @@ const { title, description, current, mainClass = "", mainAttrs = {} } = Astro.pr
         }
       </nav>
     </aside>
-    <main class:list={["ev-page", mainClass]} {...mainAttrs}>
+    <main id="main" class:list={["ev-page", mainClass]} {...mainAttrs}>
       <FieldExplainer slug={current} />
       <slot />
     </main>
