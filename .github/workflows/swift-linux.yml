@@ -1,0 +1,27 @@
+name: swift-linux
+
+# Proves the platform-free engine (FieldUICore + FieldUIPlatform) builds and its tests pass on a
+# non-Apple Swift toolchain. The Apple-only targets (Vanilla/SwiftUI/Lab) are excluded on Linux by
+# Package.swift, so this exercises exactly the portable core — with the `simd` shim (SIMDCompat.swift)
+# standing in for Apple's Accelerate module.
+
+on:
+  push:
+    branches: [swift-port, main]
+    paths: ['swift/**', '.github/workflows/swift-linux.yml']
+  pull_request:
+    paths: ['swift/**', '.github/workflows/swift-linux.yml']
+
+jobs:
+  core:
+    name: build + test (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.0-jammy
+    steps:
+      - uses: actions/checkout@v4
+      - name: swift build (release)
+        working-directory: swift
+        run: swift build -c release
+      - name: swift test
+        working-directory: swift
+        run: swift test
