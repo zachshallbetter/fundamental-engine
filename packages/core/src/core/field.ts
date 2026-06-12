@@ -1055,10 +1055,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const cy = H * 0.4;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
     if (showMatter) for (const p of store.particles) {
-      // CAPTURED matter is held inside the body, not free in the field — it does not render. The
-      // particle is conserved (still pooled, returned on supernova/discharge), but visually it has
-      // been absorbed: it vanishes into the body, and the body's --load is what now shows the gain.
-      if (p.cap) continue;
+      // captured matter is held in orbit by the sink — drawn dim and small (the accretion's orbital
+      // work), distinct from the free swarm. It stays visible: the body gathers and holds a real
+      // cloud, then the supernova flings it back out. (Conserved either way — see accretion.ts.)
+      if (p.cap) {
+        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.55 * boot})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, 1.3, 0, 6.28318);
+        ctx!.fill();
+        continue;
+      }
       const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
       const rs = d * d;
       const h = p.heat;
@@ -1078,18 +1084,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const cr = r | 0;
       const cg = g | 0;
       const cb = b | 0;
-      // glow for hot matter via a cheap additive halo under the core (the canvas is
-      // composited 'lighter'), not per-particle shadowBlur — the same look without the
-      // 10×+ per-draw cost that spiked frames during interaction.
-      if (h > 0.2) {
-        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.13 * h * boot})`;
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, size + 3 + 6 * h, 0, 6.28318);
-        ctx!.fill();
-      }
-      ctx!.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
+      // Soft additive glow, not a solid disc. Three concentric discs — a wide faint aura, a mid
+      // body, a small bright core — sum under the 'lighter' composite into a smooth radial falloff,
+      // so the particle reads as LIGHT rather than a hard filled circle. Cheap (a few small arcs,
+      // no per-particle gradient or shadowBlur — the costs §20.8 deliberately avoids), and it keeps
+      // the per-particle tint. Hotter matter glows wider.
+      const col = `${cr},${cg},${cb}`;
+      ctx!.fillStyle = `rgba(${col},${(0.05 + 0.08 * h) * boot * zk})`;
       ctx!.beginPath();
-      ctx!.arc(p.x, p.y, size, 0, 6.28318);
+      ctx!.arc(p.x, p.y, (size + 1) * (2 + h * 1.6), 0, 6.28318);
+      ctx!.fill();
+      ctx!.fillStyle = `rgba(${col},${0.16 * alpha})`;
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, size * 1.25 + 0.6, 0, 6.28318);
+      ctx!.fill();
+      ctx!.fillStyle = `rgba(${col},${0.55 * alpha})`;
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, Math.max(0.4, size * 0.55), 0, 6.28318);
       ctx!.fill();
     }
     drawSparks();
