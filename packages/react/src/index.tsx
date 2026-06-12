@@ -15,7 +15,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
-import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions } from '@field-ui/core';
+import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions, type OverlayInput } from '@field-ui/core';
 import { createBrowserField } from '@field-ui/platform';
 
 export interface FieldFieldProps extends FieldOptions {
@@ -23,6 +23,8 @@ export interface FieldFieldProps extends FieldOptions {
   style?: CSSProperties;
   /** called once the field is created, with its handle (scan/burst/setAccent/…). */
   onReady?: (field: FieldHandle) => void;
+  // `overlay?: OverlayInput` is inherited from FieldOptions. The component creates and manages the
+  // front overlay canvas automatically — callers only set the mode, not the canvas element.
 }
 
 // the fixed, click-through surface — shared with the vanilla mount via core/surface.ts.
@@ -37,6 +39,7 @@ export function FieldField({
   waves,
   background,
   render,
+  overlay,
   mass,
   palette,
   attention,
@@ -45,15 +48,38 @@ export function FieldField({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  /** Field Surfaces: the front overlay surface this component owns, lazily created. */
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createBrowserField(canvas, { accent, density, waves, background, render, mass, palette, attention, causality });
+
+    // Field Surfaces: lazily create the overlay canvas the first time an overlay is set.
+    // Matches the element's pattern: fixed, full-viewport, click-through, above content.
+    if (overlay !== undefined && overlay !== 'off' && !overlayCanvasRef.current && typeof document !== 'undefined') {
+      const oc = document.createElement('canvas');
+      oc.setAttribute('aria-hidden', 'true');
+      oc.style.cssText =
+        'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
+      document.body.appendChild(oc);
+      overlayCanvasRef.current = oc;
+    }
+
+    const field = createBrowserField(canvas, {
+      accent, density, waves, background, render,
+      overlay, overlayCanvas: overlayCanvasRef.current ?? undefined,
+      mass, palette, attention, causality,
+    });
     onReadyRef.current?.(field);
-    return () => field.destroy();
+    return () => {
+      field.destroy();
+      // Field Surfaces: remove the overlay canvas this component owns on teardown.
+      overlayCanvasRef.current?.remove();
+      overlayCanvasRef.current = null;
+    };
     // re-create only when an engine option actually changes
-  }, [accent, density, waves, background, render, mass, palette, attention, causality]);
+  }, [accent, density, waves, background, render, overlay, mass, palette, attention, causality]);
 
   return (
     <canvas ref={canvasRef} aria-hidden="true" className={className} style={{ ...FIXED, ...style }} />
@@ -70,17 +96,37 @@ export function useFieldField(opts: FieldOptions = {}): {
 } {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fieldRef = useRef<FieldHandle | null>(null);
-  const { accent, density, waves, background, render, mass, palette, attention, causality } = opts;
+  /** Field Surfaces: the front overlay surface this hook owns, lazily created. */
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { accent, density, waves, background, render, overlay, mass, palette, attention, causality } = opts;
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const field = createBrowserField(canvas, { accent, density, waves, background, render, mass, palette, attention, causality });
+
+    // Field Surfaces: lazily create the overlay canvas when an overlay reading is requested.
+    if (overlay !== undefined && overlay !== 'off' && !overlayCanvasRef.current && typeof document !== 'undefined') {
+      const oc = document.createElement('canvas');
+      oc.setAttribute('aria-hidden', 'true');
+      oc.style.cssText =
+        'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
+      document.body.appendChild(oc);
+      overlayCanvasRef.current = oc;
+    }
+
+    const field = createBrowserField(canvas, {
+      accent, density, waves, background, render,
+      overlay, overlayCanvas: overlayCanvasRef.current ?? undefined,
+      mass, palette, attention, causality,
+    });
     fieldRef.current = field;
     return () => {
       field.destroy();
       fieldRef.current = null;
+      // Field Surfaces: remove the overlay canvas this hook owns on teardown.
+      overlayCanvasRef.current?.remove();
+      overlayCanvasRef.current = null;
     };
-  }, [accent, density, waves, background, render, mass, palette, attention, causality]);
+  }, [accent, density, waves, background, render, overlay, mass, palette, attention, causality]);
   return { canvasRef, fieldRef };
 }
 
