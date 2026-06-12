@@ -7,7 +7,7 @@
  *      wrong package),
  *   2. the root README's catalog counts (forces, presets, formations, render modes, recipes) match the
  *      live catalog,
- *   3. the root README names all five publishable packages.
+ *   3. the root README names every publishable package.
  *
  * Run after a build (`pnpm -r build`). Wired into `pnpm check:readme` and CI.
  */
@@ -28,8 +28,8 @@ const read = async (rel) => {
 };
 
 // Every package directory that should carry a README naming its real package.
-const PKG_DIRS = ['core', 'platform', 'elements', 'react', 'vanilla', 'kit', 'field-ui', 'compat-core', 'compat-elements', 'compat-react', 'compat-vanilla'];
-const PUBLISHABLE = ['core', 'platform', 'elements', 'react', 'vanilla'];
+const PKG_DIRS = ['core', 'platform', 'elements', 'react', 'vanilla', 'three', 'kit', 'field-ui', 'compat-core', 'compat-elements', 'compat-react', 'compat-vanilla'];
+const PUBLISHABLE = ['core', 'platform', 'elements', 'react', 'vanilla', 'three'];
 
 // 1 · every package README exists and names its real package
 for (const dir of PKG_DIRS) {
@@ -65,7 +65,7 @@ if (core) {
   }
 }
 
-// 3 · the root README names all five publishable packages
+// 3 · the root README names every publishable package
 for (const dir of PUBLISHABLE) {
   const name = JSON.parse(await read(`packages/${dir}/package.json`) || '{}').name;
   if (name && !rootReadme.includes(name)) fail(`README.md does not mention the package "${name}"`);
@@ -77,4 +77,4 @@ if (problems.length) {
   console.error('\nThe READMEs drifted from the code. Update them (and re-run) so they stay living.');
   process.exit(1);
 }
-console.log(`✓ READMEs are living — ${PKG_DIRS.length} package READMEs named correctly, catalog counts match, all five publishable packages referenced.`);
+console.log(`✓ READMEs are living — ${PKG_DIRS.length} package READMEs named correctly, catalog counts match, all ${PUBLISHABLE.length} publishable packages referenced.`);
