@@ -98,9 +98,9 @@ export class FieldField extends HTMLElementBase {
   }
 
   /** render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297). */
-  get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none' {
+  get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none' {
     const v = this.getAttribute('render');
-    return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' || v === 'none'
+    return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' || v === 'flow' || v === 'none'
       ? v
       : 'dots';
   }
@@ -194,12 +194,13 @@ export class FieldField extends HTMLElementBase {
     this.field?.setHeatmap(on);
   }
   /** switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297). */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'): void {
+  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void {
     this.field?.setRender(mode);
   }
   /** render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack. */
   setOverlay(mode: OverlayInput): void {
     this.field?.setOverlay(mode);
+    syncOverlaySurface(this.overlayCanvas, mode);
   }
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void {
@@ -291,6 +292,7 @@ export class FieldField extends HTMLElementBase {
         break;
       case 'overlay':
         this.field.setOverlay(this.overlay);
+        syncOverlaySurface(this.overlayCanvas, this.overlay);
         break;
       case 'attention':
         this.field.setAttention(this.attention);
@@ -357,7 +359,22 @@ export class FieldField extends HTMLElementBase {
     // a rebuild (density/waves/mass change) starts a fresh engine that defaults to visible —
     // re-apply the last observed element visibility so a hidden field stays draw-skipped.
     if (!this.fieldVisible) this.field.setVisible(false);
+    // take the overlay canvas out of the compositing tree unless a reading is actually active.
+    syncOverlaySurface(this.overlayCanvas, this.overlay);
   }
+}
+
+/**
+ * Field Surfaces perf: the overlay canvas is a full-viewport `mix-blend-mode: screen` layer, so while
+ * it's in the compositing tree the browser re-blends the whole screen against the animating underlay
+ * every frame — even with nothing drawn on it. Take it OUT of the tree (`display:none`) whenever no
+ * reading is active, and put it back only when one is. Keeps the common `overlay: off` case as cheap
+ * as a single-canvas field. Module-level (not a class member) so it stays out of the public manifest.
+ */
+function syncOverlaySurface(canvas: HTMLCanvasElement | undefined, input: OverlayInput): void {
+  if (!canvas) return;
+  const active = Array.isArray(input) ? input.some((m) => m !== 'off') : input !== 'off';
+  canvas.style.display = active ? '' : 'none';
 }
 
 if (typeof customElements !== 'undefined' && !customElements.get('field-field')) {

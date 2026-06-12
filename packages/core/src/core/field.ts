@@ -1182,9 +1182,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.globalCompositeOperation = 'source-over';
     }
 
-    // streamlines: draw the force field itself — a grid of arrows along the net
-    // push a still test particle would feel (§20.6 diagnostic).
-    if (cfg.render === 'streamlines') {
+    // streamlines: draw the force field itself — a grid of arrows along the net push a still test
+    // particle would feel (§20.6 diagnostic). 'streamlines' draws them ALONE (showMatter suppressed
+    // the dots above); 'flow' draws the SAME arrows additively over the dots already painted — the
+    // particles plus the flow they ride, in this one underlay canvas (no second surface, no blend).
+    if (cfg.render === 'streamlines' || cfg.render === 'flow') {
       const GRID = 46;
       const acc = hexToRgb(cfg.accent);
       ctx!.lineWidth = 1;

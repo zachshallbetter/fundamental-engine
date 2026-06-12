@@ -397,12 +397,15 @@ export interface FieldOptions {
   background?: 'opaque' | 'transparent';
   /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links'
    *  (constellation), 'metaballs' (a liquid iso-surface, not dots), 'streamlines'
-   *  (draw the force field itself — diagnostic), 'none' (the signals-only engine,
+   *  (draw the force field itself — diagnostic, REPLACES the dots), 'flow' (the dots
+   *  AND the streamlines drawn together in the one underlay canvas — particles
+   *  drifting along the visible flow, with no separate front surface and no
+   *  `mix-blend`, so it stays a single cheap layer), 'none' (the signals-only engine,
    *  §13.7 / #297: the full simulation + feedback pipeline runs, but no canvas
    *  context is acquired, no backing store is sized, and nothing is ever drawn —
    *  the field exists purely as signals: `--d`, `--load`, `--lit`, capture
    *  events, `scrollV()`). */
-  render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none';
+  render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none';
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
    *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
   mass?: boolean;
@@ -508,7 +511,7 @@ export interface FieldHandle {
    * backing store (the no-allocation guarantee belongs to fields CREATED with `render: 'none'`);
    * switching FROM `'none'` acquires the context lazily and sizes the backing store at that moment.
    */
-  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'): void;
+  setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void;
   /**
    * Render field READINGS on the OVERLAY surface — in front of page content (Field Surfaces). Pairs
    * with `setRender` (the underlay); set both for an immersive look. No-op unless the field was created

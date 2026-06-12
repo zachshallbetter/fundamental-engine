@@ -35,11 +35,12 @@ export function initForcePicker(): () => void {
   let current: HTMLButtonElement | undefined = cards[0];
   let inView = false;
   const rescan = () => field && field.rescan && field.rescan();
-  // The page-wide field-flow default lives on the nav toggle (data-nav-flow). When this picker
-  // isn't engaged, restore the overlay to THAT, not a hard off — otherwise scrolling past the
-  // section silently kills the global flow the user expects to be on.
-  const restingOverlay = () =>
-    field?.dataset.navFlow === "on" ? "streamlines" : "off";
+  // The page-wide field flow is the 'flow' UNDERLAY render (the nav toggle, data-nav-flow). When this
+  // picker isn't engaged, restore the underlay to THAT, not a hard 'dots' — otherwise scrolling past
+  // the section silently kills the global flow the user expects to be on. The overlay surface is
+  // independent here: it's only the picker's own in-front reading, so it just goes off when idle.
+  const restingRender = () =>
+    field?.dataset.navFlow === "on" ? "flow" : "dots";
 
   const apply = () => {
     if (inView && current) {
@@ -56,8 +57,8 @@ export function initForcePicker(): () => void {
     } else {
       source.removeAttribute("data-body");
       source.classList.remove("on");
-      field?.setAttribute("render", "dots");
-      field?.setAttribute("overlay", restingOverlay());
+      field?.setAttribute("render", restingRender());
+      field?.setAttribute("overlay", "off");
     }
     rescan();
   };
@@ -92,8 +93,8 @@ export function initForcePicker(): () => void {
     io.disconnect();
     source.removeAttribute("data-body");
     source.classList.remove("on");
-    field?.setAttribute("render", "dots");
-    field?.setAttribute("overlay", restingOverlay());
+    field?.setAttribute("render", restingRender());
+    field?.setAttribute("overlay", "off");
     rescan();
     if (home) home.insertBefore(source, anchor); // restore for a same-page re-init
   };

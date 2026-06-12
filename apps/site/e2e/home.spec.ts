@@ -185,22 +185,17 @@ for (const route of ["/", "/eli5"] as const) {
           { timeout: 8000 },
         )
         .toBeGreaterThan(5);
-      // leave → the panel releases ITS readings, but the overlay returns to the page-default
-      // field flow (streamlines, data-nav-flow=on in Base.astro) rather than going dark — a
-      // scoped panel must not kill the page-wide flow the rest of the site shows. So the
-      // overlay stays alive after leave; the resting flow is the source of truth.
+      // leave → the panel releases the page field: the overlay surface clears. The page-wide field
+      // flow lives on the UNDERLAY ('flow' render), not this overlay, so releasing the overlay genuinely
+      // empties the front surface (the engine clears it and the element takes the canvas out of the
+      // compositing tree — the Field-Surfaces-when-idle perf path).
       await page.evaluate(() => scrollTo(0, 0));
-      await expect
-        .poll(async () =>
-          page.evaluate(() => document.querySelector("field-root")?.getAttribute("data-nav-flow")),
-        )
-        .toBe("on");
       await expect
         .poll(
           async () =>
             page.evaluate(() => {
               const cvs = [...document.querySelectorAll<HTMLCanvasElement>("body > canvas")].pop();
-              if (!cvs || cvs.width === 0 || cvs.height === 0) return -1; // not booted yet
+              if (!cvs || cvs.width === 0 || cvs.height === 0) return 0;
               const d = cvs.getContext("2d")!.getImageData(0, 0, cvs.width, cvs.height).data;
               let n = 0;
               for (let i = 3; i < d.length; i += 400) if (d[i]! > 0) n++;
@@ -208,7 +203,7 @@ for (const route of ["/", "/eli5"] as const) {
             }),
           { timeout: 8000 },
         )
-        .toBeGreaterThan(0);
+        .toBe(0);
     });
 
     test("the accretion vessel fills — the engine writes --load back (data-feedback)", async ({

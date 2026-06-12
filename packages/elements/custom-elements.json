@@ -818,7 +818,7 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
               },
               "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
               "readonly": true
@@ -1044,7 +1044,7 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
                   }
                 }
               ],
@@ -1615,7 +1615,7 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
               },
               "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
               "readonly": true,
@@ -1909,7 +1909,7 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
                   }
                 }
               ],
@@ -2455,7 +2455,7 @@
               "kind": "field",
               "name": "renderMode",
               "type": {
-                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
+                "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
               },
               "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
               "readonly": true,
@@ -2749,7 +2749,7 @@
                 {
                   "name": "mode",
                   "type": {
-                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'none'"
+                    "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
                   }
                 }
               ],
