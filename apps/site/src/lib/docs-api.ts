@@ -15,7 +15,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'waves', type: 'boolean', def: 'true', desc: 'Draw the background Currents (the wave layers).' },
   { name: 'background', type: "'opaque' | 'transparent'", def: "'opaque'", desc: "Substrate background. 'transparent' clears to transparent instead of painting the near-black substrate, so the underlay composites over light content (an image, a 3D scene, a light page) — trails fade to transparent rather than to black. Also a <field-root background> attribute and live via setBackground." },
   { name: 'depth', type: 'number', def: '0', desc: 'Optional z volume. 0 (the default) is the flat field, byte-identical to the 2D engine; > 0 opens a shallow depth the matter drifts through, projected as a size/alpha recession. Purely additive — no API requires z.' },
-  { name: 'render', type: "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines'", def: "'dots'", desc: 'Render mode for the underlay surface (behind content) — the same physics drawn differently.' },
+  { name: 'render', type: "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow'", def: "'dots'", desc: 'Render mode for the underlay surface (behind content) — the same physics drawn differently.' },
   { name: 'overlay', type: "OverlayMode | OverlayMode[]", def: "'off'", desc: 'Field Surfaces: the overlay READING(S) drawn in front of content (see the overlay-readings table) — one reading or an additive stack. Set alongside render. <field-root> manages the front canvas (space-separated tokens in the attribute); for createField directly, pass overlayCanvas.' },
   { name: 'mass', type: 'boolean', def: 'false', desc: 'First-class mass: particle mass ∝ size and body forces accelerate by a = F/m.' },
   { name: 'palette', type: 'string | string[]', def: "'ours'", desc: 'Accent template — a built-in name or custom hex stops.' },
@@ -39,7 +39,7 @@ export const HANDLE: MethodRow[] = [
   { sig: 'setAttention(on)', desc: 'Toggle conserved attention live (one finite strength budget).' },
   { sig: 'setCausality(on)', desc: 'Toggle cross-boundary causality live (density spills to neighbours).' },
   { sig: 'setHeatmap(on)', desc: 'Toggle the density heatmap layer live (a glow of where matter pools).' },
-  { sig: 'setRender(mode)', desc: 'Switch the underlay render mode (behind content): dots / trails / links / metaballs / voronoi / streamlines.' },
+  { sig: 'setRender(mode)', desc: 'Switch the underlay render mode (behind content): dots / trails / links / metaballs / voronoi / streamlines / flow.' },
   { sig: 'setOverlay(mode | mode[])', desc: 'Field Surfaces: render overlay reading(s) in front of content — one reading or an additive stack (the readings compose). The vocabulary: streamlines / force-vectors / field-lines / grid / temperature / energy / path / data, or off. Pairs with setRender.' },
   { sig: 'setBackground(mode)', desc: "Switch the substrate live: 'transparent' clears to transparent so the underlay composites over light content; 'opaque' restores the near-black substrate. Additive." },
   { sig: 'threads(list | null)', desc: 'Wire glowing connector lines between an engaged set, or clear with null.' },
@@ -104,7 +104,8 @@ export const RENDER_MODES: { name: string; desc: string }[] = [
   { name: 'links', desc: 'Constellation — lines drawn between nearby particles.' },
   { name: 'metaballs', desc: 'A liquid iso-surface — the swarm rendered as one molten skin via marching squares, not dots.' },
   { name: 'voronoi', desc: 'Shattered glass — each particle owns a cell; the walls are the boundaries between nearest-neighbour regions.' },
-  { name: 'streamlines', desc: 'Draws the force field itself — a grid of arrows along the net push. A diagnostic view.' },
+  { name: 'streamlines', desc: 'Draws the force field itself — a grid of arrows along the net push. A diagnostic view, REPLACES the dots.' },
+  { name: 'flow', desc: 'The dots AND the streamline arrows together in the one underlay canvas — particles drifting along the visible flow. No second blended surface, so it stays cheap.' },
 ];
 
 /** Field Surfaces — the overlay READINGS (`field.setOverlay`). Line/text diagnostics drawn in front of

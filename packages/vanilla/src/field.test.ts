@@ -201,10 +201,10 @@ test('setHeatmap() toggles the density heatmap layer without throwing', () => {
   field.destroy();
 });
 
-test('setRender() accepts all seven render modes', () => {
+test('setRender() accepts all eight render modes', () => {
   installDOM();
   const field = new ForcesField();
-  const modes = ['dots', 'trails', 'links', 'metaballs', 'voronoi', 'streamlines', 'none'] as const;
+  const modes = ['dots', 'trails', 'links', 'metaballs', 'voronoi', 'streamlines', 'flow', 'none'] as const;
   for (const mode of modes) {
     assert.doesNotThrow(() => field.setRender(mode), `setRender('${mode}')`);
   }
