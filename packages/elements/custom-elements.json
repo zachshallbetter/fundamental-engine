@@ -1246,6 +1246,24 @@
             },
             {
               "kind": "method",
+              "name": "readParticles",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "out",
+                  "type": {
+                    "text": "Float32Array"
+                  }
+                }
+              ],
+              "description": "copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws."
+            },
+            {
+              "kind": "method",
               "name": "energy",
               "return": {
                 "type": {
@@ -2155,6 +2173,28 @@
             },
             {
               "kind": "method",
+              "name": "readParticles",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "out",
+                  "type": {
+                    "text": "Float32Array"
+                  }
+                }
+              ],
+              "description": "copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "energy",
               "return": {
                 "type": {
@@ -2988,6 +3028,28 @@
                 }
               },
               "description": "live particle-pool size — `store.size` forwarded through the public handle.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "readParticles",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "out",
+                  "type": {
+                    "text": "Float32Array"
+                  }
+                }
+              ],
+              "description": "copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

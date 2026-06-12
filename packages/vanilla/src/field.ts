@@ -115,6 +115,10 @@ export class FieldField implements FieldHandle {
   particleCount(): number {
     return this.field.particleCount();
   }
+  /** copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written. */
+  readParticles(out: Float32Array): number {
+    return this.field.readParticles(out);
+  }
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();
   }

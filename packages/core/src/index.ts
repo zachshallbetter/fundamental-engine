@@ -42,6 +42,10 @@ export * from './core/render-modes.ts';
 export * from './core/heatmap.ts';
 export * from './core/surface.ts';
 export * from './core/host.ts';
+// RenderBackend (#373): the structural drawing seam alongside FieldHost. Exported so an external
+// surface (WebGL/WebGPU/Three.js — see @field-ui/three) can implement the contract by name and
+// inject it via `createField({ overlayBackend })`.
+export * from './core/render-backend.ts';
 export * from './core/field.ts';
 export * from './forces/index.ts';
 // physics conformance — the Lab-as-detector framework (shared by tests + the Lab UI)

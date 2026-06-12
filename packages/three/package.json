@@ -1,0 +1,64 @@
+{
+  "name": "@field-ui/three",
+  "version": "0.2.3",
+  "description": "Three.js authoring surface for field-ui — run the reciprocal field engine headless and render its swarm as a THREE.Points layer (the particle bridge), plus threeHost() and threeBackend() (a RenderBackend) for binding the engine to a WebGL scene.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
+  "homepage": "https://field-ui.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachshallbetter/field-ui.git",
+    "directory": "packages/three"
+  },
+  "bugs": {
+    "url": "https://github.com/zachshallbetter/field-ui/issues"
+  },
+  "keywords": [
+    "field-ui",
+    "three",
+    "threejs",
+    "webgl",
+    "particles",
+    "physics",
+    "field",
+    "reciprocal"
+  ],
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test"
+  },
+  "peerDependencies": {
+    "three": ">=0.150.0"
+  },
+  "dependencies": {
+    "@field-ui/core": "workspace:*"
+  },
+  "devDependencies": {
+    "three": "^0.169.0",
+    "@types/three": "^0.169.0",
+    "typescript": "^5.9.3"
+  }
+}
