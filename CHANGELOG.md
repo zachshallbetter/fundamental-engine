@@ -9,6 +9,23 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@field-ui/three` — bind the field engine to a Three.js scene.** A new authoring-surface
+  package that runs the engine headless (`render: 'none'`) and renders its conserved swarm as a
+  `THREE.Points` layer: `createFieldLayer()` / `FieldLayer` (which implements the full
+  `FieldHandle`, so `burst`/`flowTo`/`setFormation`/`seed` drive the 3D layer). A `FieldProjection`
+  coordinate seam maps the field to world space — `PlaneProjection` (flat, stylistic heat-relief) or
+  `VolumeProjection` (the engine's real depth lane; `createFieldLayer({ depth })` selects it). Also
+  ships `threeHost()` (the `FieldHost` for a WebGL scene) and `threeBackend()` (a `RenderBackend`
+  drawing the diagnostic line overlays — streamlines, field-lines, grid, contours — as scene
+  geometry). `three` is a peer dependency. (#408)
+- **`FieldHandle.readParticles(out)` — render-agnostic swarm read-out.** Copies live particle state
+  into a caller-owned `Float32Array` (stride 5: `x, y, z, heat, size`; `z` is the optional depth lane
+  from the z-axis, `0` in a flat field) and returns the count written. Zero-allocation and read-only,
+  so a surface with no 2D context (the `@field-ui/three` particle bridge) can draw the swarm directly.
+  Mirrored on `@field-ui/vanilla` and `<field-root>`; additive, the frozen API surface is unchanged.
+  `RenderBackend` / `Stroke` are now also exported from `@field-ui/core` for external surfaces to
+  implement. (#408)
+
 - **`overlay` prop for `@field-ui/react` — Field Surfaces parity with `<field-root>`.** The
   `<FieldField>` component and `useFieldField` hook now accept an `overlay` prop (`OverlayInput`
   — one mode or an additive stack) that activates the front overlay surface. The component
