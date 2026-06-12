@@ -1,6 +1,6 @@
 {
   "name": "@field-ui/platform",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "The platform-adjacent layer for field-ui — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives field-ui wishes existed, built on the ones it has.",
   "type": "module",
   "license": "MIT",

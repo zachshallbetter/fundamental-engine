@@ -1,7 +1,7 @@
 # field-ui — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/field-ui
-Generated: 2026-06-11 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-12 by apps/site/scripts/gen-llms.mjs
 Files: 16
 
 These are the project's canonical documents — the authority on concepts, terminology, and
