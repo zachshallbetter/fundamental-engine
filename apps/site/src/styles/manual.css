@@ -799,6 +799,29 @@ a.btn.primary:hover {
   color: #06080d;
 }
 
+/* The button is a sink vessel (Button.astro: `sink attract` shaped): it charges as the field's
+   matter accretes into it. --load is the sink fill (0→1, then it discharges), --d the gathered
+   density — the engine writes both every frame onto these data-feedback bodies. They surface here
+   as an accretion glow + a brightening rim, so the mass the control holds is visible. No transition
+   on the glow: it tracks --load live each frame (the values are already eased by the engine). */
+.btn {
+  --load: 0;
+  --d: 0;
+  box-shadow:
+    0 0 calc(var(--load) * 28px) color-mix(in srgb, var(--accent) calc(var(--load) * 60%), transparent),
+    inset 0 0 calc(var(--d) * 16px) color-mix(in srgb, var(--accent) calc(var(--d) * 22%), transparent);
+}
+a.btn:not(.primary),
+button.btn:not(.primary) {
+  border-color: color-mix(in srgb, var(--accent) calc(18% + var(--load) * 62%), var(--line-2));
+}
+@media (prefers-reduced-motion: reduce) {
+  /* the glow still reflects the resting charge, it just doesn't pulse with capture/release churn */
+  .btn {
+    box-shadow: 0 0 calc(var(--load) * 16px) color-mix(in srgb, var(--accent) calc(var(--load) * 45%), transparent);
+  }
+}
+
 @media (max-width: 900px) {
   .concept-grid {
     grid-template-columns: 1fr;

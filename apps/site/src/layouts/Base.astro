@@ -81,7 +81,9 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
     <!-- waves off → the bare free-particle field: the matter itself, reacting to the page's
          bodies, rather than the carrier-wave background. density 3 → ~3× the base ~130 particles,
          so the field reads as a dense medium the bodies gather and absorb. -->
-    <field-root accent="#4da3ff" waves="false" density="3" transition:persist></field-root>
+    <!-- overlay="streamlines" → the field flow shows by default (the arrows reveal the structure
+         the particles move through); data-nav-flow keeps the nav toggle in sync with it. -->
+    <field-root accent="#4da3ff" waves="false" density="3" overlay="streamlines" data-nav-flow="on" transition:persist></field-root>
     <div class="scrim" aria-hidden="true" transition:persist></div>
     <slot />
     <DataConsole />
