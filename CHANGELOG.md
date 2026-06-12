@@ -34,6 +34,14 @@ git tag (see [RELEASING.md](RELEASING.md)).
   now resampled every 3rd frame (or when the cache is empty / a flow focus is animating) and the
   arrows draw from the cache every frame — no flicker or stepping, ~3× less per-frame work for the
   flow layer, and dropped frames during scroll fall sharply. (#406)
+- **The density heatmap is much cheaper per frame.** Its texel grid is now recomputed on a cadence
+  (every 3rd frame) into a reused `ImageData` buffer instead of being rebuilt and reallocated every
+  frame, and the full-viewport bilinear-upscale draw is suppressed while the page is scrolling fast
+  (eased `env.scrollV`) — the heatmap is ambient density you read at rest, not detail you track
+  mid-scroll, so it returns the instant the page settles and scrolling never pays its fill cost.
+- **Absorbed matter vanishes into the body.** A sink's captured particles no longer render as dots
+  on the body — once absorbed they disappear (still pooled and conserved, returned on
+  supernova/discharge), so the body reads as consuming the field while its `--load` carries the gain.
 - **The Field-Surfaces overlay canvas no longer costs framerate when idle.** The full-viewport
   `mix-blend-mode: screen` overlay canvas was left in the compositing tree even with `overlay:
   off`, so the browser re-blended the whole screen against the animating underlay every frame —

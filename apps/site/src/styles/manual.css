@@ -807,18 +807,26 @@ a.btn.primary:hover {
 .btn {
   --load: 0;
   --d: 0;
+  /* two charge cues so the gain reads even at a modest fill: an OUTER accretion glow (the mass it
+     holds radiating out) and an INNER fill (the vessel lighting up from within as it charges). A
+     hair of scale at full load. The values track --load live each frame — no transition. */
   box-shadow:
-    0 0 calc(var(--load) * 28px) color-mix(in srgb, var(--accent) calc(var(--load) * 60%), transparent),
-    inset 0 0 calc(var(--d) * 16px) color-mix(in srgb, var(--accent) calc(var(--d) * 22%), transparent);
+    0 0 calc(4px + var(--load) * 52px) color-mix(in srgb, var(--accent) calc(var(--load) * 85%), transparent),
+    inset 0 0 calc(var(--load) * 28px) color-mix(in srgb, var(--accent) calc(var(--load) * 52%), transparent),
+    inset 0 0 calc(var(--d) * 14px) color-mix(in srgb, var(--accent) calc(var(--d) * 20%), transparent);
+  transform: scale(calc(1 + var(--load) * 0.025));
 }
 a.btn:not(.primary),
 button.btn:not(.primary) {
-  border-color: color-mix(in srgb, var(--accent) calc(18% + var(--load) * 62%), var(--line-2));
+  border-color: color-mix(in srgb, var(--accent) calc(18% + var(--load) * 72%), var(--line-2));
 }
 @media (prefers-reduced-motion: reduce) {
   /* the glow still reflects the resting charge, it just doesn't pulse with capture/release churn */
   .btn {
-    box-shadow: 0 0 calc(var(--load) * 16px) color-mix(in srgb, var(--accent) calc(var(--load) * 45%), transparent);
+    transform: none;
+    box-shadow:
+      0 0 calc(var(--load) * 20px) color-mix(in srgb, var(--accent) calc(var(--load) * 55%), transparent),
+      inset 0 0 calc(var(--load) * 18px) color-mix(in srgb, var(--accent) calc(var(--load) * 40%), transparent);
   }
 }
 

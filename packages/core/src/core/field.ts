@@ -973,6 +973,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // smoothing: a smooth glow for the cost of a small image, no blocky per-cell blobs.
   let hmCanvas: HTMLCanvasElement | null = null;
   let hmCtx: CanvasRenderingContext2D | null = null;
+  let hmImg: ImageData | null = null; // reused buffer — no per-frame allocation
   function drawHeatmap(): void {
     if (!heatmap) return;
     const cell = heatmap.cell;
@@ -986,20 +987,27 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (hmCanvas.width !== cols || hmCanvas.height !== rows) {
       hmCanvas.width = cols;
       hmCanvas.height = rows;
+      hmImg = null; // dims changed → rebuild the buffer
     }
-    const acc = hexToRgb(cfg.accent);
-    const img = hmCtx.createImageData(cols, rows);
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const v = heatmap.norm(c * cell + cell / 2, r * cell + cell / 2);
-        const i = (r * cols + c) * 4;
-        img.data[i] = acc[0];
-        img.data[i + 1] = acc[1];
-        img.data[i + 2] = acc[2];
-        img.data[i + 3] = Math.round(clamp(v * 0.5 * boot, 0, 1) * 255);
+    // RECOMPUTE the density texel grid on a cadence, not every frame: the heatmap is a smooth,
+    // slow-moving glow (and the field it samples only shifts on the measureBodies cadence), so a
+    // ~20 Hz refresh is imperceptible — and it keeps the per-frame heatmap cost to just the upscale.
+    if (hmImg === null || frameN % 3 === 0) {
+      if (hmImg === null) hmImg = hmCtx.createImageData(cols, rows);
+      const acc = hexToRgb(cfg.accent);
+      const data = hmImg.data;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const v = heatmap.norm(c * cell + cell / 2, r * cell + cell / 2);
+          const i = (r * cols + c) * 4;
+          data[i] = acc[0];
+          data[i + 1] = acc[1];
+          data[i + 2] = acc[2];
+          data[i + 3] = Math.round(clamp(v * 0.5 * boot, 0, 1) * 255);
+        }
       }
+      hmCtx.putImageData(hmImg, 0, 0);
     }
-    hmCtx.putImageData(img, 0, 0);
     ctx!.globalCompositeOperation = 'lighter';
     ctx!.imageSmoothingEnabled = true;
     ctx!.drawImage(hmCanvas, 0, 0, W, H); // bilinear upscale → smooth glow
@@ -1029,7 +1037,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.fillRect(0, 0, W, H);
     }
     drawWaves();
-    if (heatmap) drawHeatmap();
+    // The heatmap is a full-viewport bilinear-upscale glow — the heaviest per-frame layer. It's
+    // ambient density you read at rest, not detail you track mid-scroll, so suppress it while the
+    // page is scrolling fast (eased env.scrollV). Scrolling never pays the heatmap's fill cost; the
+    // glow returns the moment the page settles. (Body charge/glow is CSS --load, unaffected.)
+    if (heatmap && (env.scrollV ?? 0) < 6) drawHeatmap();
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
@@ -1043,13 +1055,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const cy = H * 0.4;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
     if (showMatter) for (const p of store.particles) {
-      if (p.cap) {
-        ctx!.fillStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.55 * boot})`;
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, 1.3, 0, 6.28318);
-        ctx!.fill();
-        continue;
-      }
+      // CAPTURED matter is held inside the body, not free in the field — it does not render. The
+      // particle is conserved (still pooled, returned on supernova/discharge), but visually it has
+      // been absorbed: it vanishes into the body, and the body's --load is what now shows the gain.
+      if (p.cap) continue;
       const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
       const rs = d * d;
       const h = p.heat;
