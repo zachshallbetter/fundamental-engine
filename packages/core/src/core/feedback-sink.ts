@@ -21,9 +21,8 @@ import type { FeedbackSink } from './types.ts';
  * Write a body's feedback channels straight onto the element — the legacy direct-write behavior,
  * preserved exactly:
  *
- * - density → `--d` (the established var), `--forces-density` (the explicit alias, shadow CSS
- *   contract), `--field-density` (the field-ui-migration alias) — same value, three decimals.
- * - heatmapDensity → `--forces-heatmap-density` + `--field-heatmap-density` (migration mirror).
+ * - density → `--d` (the established var) + `--field-density` — same value, three decimals.
+ * - heatmapDensity → `--field-heatmap-density`.
  * - load → `--load` (the canonical author-facing var) + `--mass` (back-compat alias, §21.2).
  * - lit → `--lit`, plus the thresholded `field:lit` (rising past 0.5) / `field:dim` (falling past
  *   0.4) events, armed via `data-fx-lit` for hysteresis.
@@ -34,12 +33,10 @@ export const defaultFeedbackSink: FeedbackSink = (el, ch) => {
   if (ch.density !== undefined) {
     const dStr = ch.density.toFixed(3);
     el.style.setProperty('--d', dStr);
-    el.style.setProperty('--forces-density', dStr);
     el.style.setProperty('--field-density', dStr);
   }
   if (ch.heatmapDensity !== undefined) {
     const hStr = ch.heatmapDensity.toFixed(3);
-    el.style.setProperty('--forces-heatmap-density', hStr);
     el.style.setProperty('--field-heatmap-density', hStr);
   }
   if (ch.load !== undefined) {

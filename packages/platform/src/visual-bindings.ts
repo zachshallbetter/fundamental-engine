@@ -71,7 +71,6 @@ const ariaHidden = (el: Element): boolean => el.getAttribute('aria-hidden') === 
 export const MIRRORED_CHANNELS: readonly string[] = [
   '--d',
   '--field-density',
-  '--forces-density',
   '--load',
   '--mass',
   '--lit',

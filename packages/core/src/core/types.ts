@@ -419,7 +419,7 @@ export interface FieldOptions {
    *  neighbours (writing `--lit` + firing `field:lit`/`field:dim`). Default false. */
   causality?: boolean;
   /** density heatmap (field-systems H1): a scalar buffer of where matter pools, drawn as a
-   *  glow underlay and sampled to bodies as `--forces-heatmap-density`. Default false. */
+   *  glow underlay and sampled to bodies as `--field-heatmap-density`. Default false. */
   heatmap?: boolean;
   /**
    * Field Surfaces (overlay placement): a caller-provided canvas for the OVERLAY surface, drawn in
@@ -464,9 +464,9 @@ export interface FieldOptions {
 
 /** Per-element feedback values the engine produces each frame (Phase D3 seam). */
 export interface FeedbackChannels {
-  /** the body's eased gathered density `d` ∈ [0,1] → `--d` / `--field-density` / `--forces-density`. */
+  /** the body's eased gathered density `d` ∈ [0,1] → `--d` / `--field-density`. */
   density?: number;
-  /** the ambient heatmap density at the body → `--field-heatmap-density` / `--forces-heatmap-density`. */
+  /** the ambient heatmap density at the body → `--field-heatmap-density`. */
   heatmapDensity?: number;
   /** sink accretion fill ∈ [0,1] → `--load` / `--mass`. */
   load?: number;

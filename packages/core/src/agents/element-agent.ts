@@ -2,7 +2,7 @@
  * ElementAgent (system-contracts §6) — a DOM element that receives field metrics and writes DOM
  * state. The engine already writes `--d` / `--field-density` for the density metric; this widens
  * that to the full ElementAgent metric set (attention, heat, entropy, coherence, memory, pressure,
- * pull-x/y) and emits both the `--field-*` and the `--forces-*` alias for each, plus a
+ * pull-x/y) and emits the `--field-*` var for each, plus a
  * `data-field-*` state attribute band for CSS that prefers attribute selectors.
  *
  * `elementAgentVars` / `elementAgentState` are pure (no DOM) so they are node-testable; the thin
@@ -39,17 +39,15 @@ const SUFFIX: Record<keyof ElementMetrics, string> = {
 const fmt = (n: number): string => (Number.isFinite(n) ? n.toFixed(3) : '0');
 
 /**
- * The CSS custom properties an ElementAgent writes for a metric set — each metric as both
- * `--field-<m>` and its `--forces-<m>` migration alias (identical value). Pure.
+ * The CSS custom properties an ElementAgent writes for a metric set — each metric as
+ * `--field-<m>`. Pure.
  */
 export function elementAgentVars(m: ElementMetrics): Record<string, string> {
   const out: Record<string, string> = {};
   for (const key of Object.keys(m) as (keyof ElementMetrics)[]) {
     const v = m[key];
     if (v == null) continue;
-    const s = fmt(v);
-    out[`--field-${SUFFIX[key]}`] = s;
-    out[`--forces-${SUFFIX[key]}`] = s;
+    out[`--field-${SUFFIX[key]}`] = fmt(v);
   }
   return out;
 }
@@ -81,7 +79,6 @@ export function writeElementAgent(el: HTMLElement, m: ElementMetrics): void {
 export function clearElementAgent(el: HTMLElement): void {
   for (const key of Object.keys(SUFFIX) as (keyof ElementMetrics)[]) {
     el.style.removeProperty(`--field-${SUFFIX[key]}`);
-    el.style.removeProperty(`--forces-${SUFFIX[key]}`);
     el.removeAttribute(`data-field-${SUFFIX[key]}`);
   }
 }
