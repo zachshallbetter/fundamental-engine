@@ -54,6 +54,18 @@ test('the rect tracks the mesh as it moves', () => {
   assert.ok(after.left - before.left - 100 < 1e-6 && after.left > before.left, 'rect follows the mesh');
 });
 
+test('set() mutates the attrs the engine re-reads (reactive params, no re-scan)', () => {
+  const reg = new FieldBodyRegistry(new PlaneProjection());
+  const body = reg.add(new Object3D(), { tokens: 'attract', strength: 0.5, range: 300 });
+  const el = els(reg)[0]!;
+  assert.equal(el.getAttribute('data-strength'), '0.5');
+
+  body.set({ strength: 2.4, range: 500, angle: 90 });
+  assert.equal(el.getAttribute('data-strength'), '2.4', 'live strength visible to the scanner');
+  assert.equal(el.getAttribute('data-range'), '500');
+  assert.equal(el.getAttribute('data-angle'), '90', 'angle in degrees');
+});
+
 test('feedback routes to the body; remove unregisters', () => {
   const projection = new PlaneProjection();
   const reg = new FieldBodyRegistry(projection);
