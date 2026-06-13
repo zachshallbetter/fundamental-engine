@@ -566,10 +566,10 @@ let heapBase: number | null = null;
 const evCounts = { lit: 0, captured: 0, released: 0, relocated: 0 };
 type EvKey = keyof typeof evCounts;
 const EV_MAP: Record<string, EvKey> = {
-  'field:lit': 'lit', 'forces:lit': 'lit',
-  'field:captured': 'captured', 'forces:captured': 'captured',
-  'field:released': 'released', 'forces:released': 'released',
-  'field:relocated': 'relocated', 'forces:relocated': 'relocated',
+  'field:lit': 'lit',
+  'field:captured': 'captured',
+  'field:released': 'released',
+  'field:relocated': 'relocated',
 };
 
 function onFieldEvent(e: Event) {
