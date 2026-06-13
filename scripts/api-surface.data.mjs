@@ -29,10 +29,10 @@ export const FROZEN_TYPES = [
   { pkg: '@fundamental-engine/platform', name: 'FieldPlatform', note: 'the surface createFieldPlatform returns.' },
 ];
 
-/** Frozen custom-element tag names, owned by @fundamental-engine/elements (field-* names; forces-* are deprecated aliases). */
+/** Frozen custom-element tag names, owned by @fundamental-engine/elements. */
 export const FROZEN_ELEMENTS = [
-  { pkg: '@fundamental-engine/elements', tag: 'field-root', note: 'one background field per page; scans the document for [data-body]. Alias of deprecated <forces-field>.' },
-  { pkg: '@fundamental-engine/elements', tag: 'field-cell', note: 'a scoped local field region. Alias of deprecated <forces-cell>.' },
+  { pkg: '@fundamental-engine/elements', tag: 'field-root', note: 'one background field per page; scans the document for [data-body].' },
+  { pkg: '@fundamental-engine/elements', tag: 'field-cell', note: 'a scoped local field region.' },
 ];
 
 /**
@@ -78,6 +78,5 @@ export const COMPAT_RULES = [
   'createField is frozen in BOTH field-ui (host-required primitive; throws without opts.host) and @fundamental-engine/vanilla (host-bundled convenience). Both contracts are preserved; the vanilla door must keep auto-supplying browserHost.',
   'Package ownership is part of the contract and must not drift within 0.x: compileRecipe / FieldRecipe / FieldHost are core (field-ui); createFieldPlatform / applyRecipe / bindData / FieldPlatform / browserHost are @fundamental-engine/platform; field-root / field-cell are @fundamental-engine/elements.',
   'Bodies are a stable ATTRIBUTE contract: [data-body] on ordinary elements is the frozen authoring surface. There is no <field-body> tag and none will be introduced as the body mechanism.',
-  'forces-* → field-* alias window (deprecated, removal-gated): <forces-field>/<forces-cell>, ForcesField/ForcesCell/ForcesController, useForcesField, forces:* events, --forces-* vars, and the compat-* packages keep working behavior-identically through 0.x and emit @deprecated guidance, but are excluded from the additive-only guarantee and scheduled for removal on a MINOR bump with a CHANGELOG entry.',
   'The experimental surface carries no semver guarantee. Diagnostics/agent/render-mode exports that happen to ship today are shipped-but-unfrozen — treat them as experimental until explicitly added to the frozen list.',
 ];
