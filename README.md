@@ -23,9 +23,9 @@ It is **native-platform-first, dependency-light, and framework-agnostic**: a cus
 component, or a plain function. The core ships with zero runtime dependencies; framework integrations
 are adapters, not requirements.
 
-> **See it live.** The whole system runs over the engine at **[field-ui.com](https://field-ui.com)**, with a physics [Lab](https://field-ui.com/lab) where you fire particles into a force and watch the math hold.
+> **See it live.** The whole system runs over the engine at **[fundamental-engine.com](https://fundamental-engine.com)**, with a physics [Lab](https://fundamental-engine.com/lab) where you fire particles into a force and watch the math hold.
 
-> **Renamed to `@fundamental-engine/core`.** This project was `forces-ui`; it is now **field-ui**, putting the field (the invisible structure) first. Every old public name still works as a compatibility alias during the transition: the `forces-ui` / `@forces-ui/*` packages, the `forces:*` events, the `--forces-*` CSS variables, and the `<forces-field>` / `<forces-cell>` elements all keep working alongside their `@fundamental-engine/core` / `field:*` / `--field-*` / `<field-root>` equivalents. The alias window is documented and removal-gated in [API stability](docs/canonical/field-ui-api-stability.md).
+> **Now `@fundamental-engine`.** This project was `forces-ui`, then `field-ui`; it is now **Fundamental** — *fundamental forces acting across a field*. The engine's primitive is unchanged: `<field-root>`, `FieldHandle`, `createField`, and the `--field-*` CSS variables stay. The old `@field-ui/*` / `@forces-ui/*` packages are deprecated and point here.
 
 ## The idea
 
@@ -177,9 +177,7 @@ Browse and run all 64 at the [recipe gallery](https://field-ui.com/docs/gallery)
 | [`@fundamental-engine/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
 | [`@fundamental-engine/three`](packages/three) | bind the engine to a Three.js scene: `createFieldLayer()` (the particle bridge → `THREE.Points`), `PlaneProjection` / `VolumeProjection`, `threeHost()`, `threeBackend()`. `three` is a peer dependency |
 
-Want everything in one install? [`@fundamental-engine/kit`](packages/kit) is a meta-package that depends on all five — `npm i @fundamental-engine/kit`, then import from the specific package you need. (`fundamental-engine` is a thin alias for the kit.)
-
-The four `@forces-ui/*` (and `forces-ui`) packages are thin, removal-gated [compatibility aliases](packages/compat-core).
+Want everything in one install? **`npm i fundamental-engine`** — the bare umbrella package pulls in the whole suite (via [`@fundamental-engine/kit`](packages/kit)); then import from the specific package you need.
 
 The dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
 `vanilla → platform → core`. `@fundamental-engine/core` imports zero DOM (renderer-agnostic); the browser host
