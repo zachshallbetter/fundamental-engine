@@ -17,6 +17,14 @@ git tag (see [RELEASING.md](RELEASING.md)).
   `addBody`. The `sampler` is the `FieldSampler` interface, so an agent can follow a layer, a raw
   handle, or any custom blend. Renderer-free and unit-tested. (#426)
 
+### Changed
+
+- **`@field-ui/three`'s `three` peer range relaxed to `>=0.147.0`** (was `>=0.150.0`). An API audit
+  shows the package touches only long-stable three symbols — the newest are `InstancedMesh` (r109)
+  and `Object3D.clear()` (r123) — and r147 is verified live in a real integration (a no-build game
+  pinning `three@0.147`). The old floor forced `?deps`/import-map overrides to fight the manifest;
+  now the declared range matches reality.
+
 ## [0.3.1] — 2026-06-12
 
 `@field-ui/three` joins the published family — the Three.js authoring surface (the engine headless,

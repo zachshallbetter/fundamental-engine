@@ -12,9 +12,10 @@ render its swarm as a `THREE.Points` layer in your own WebGL scene. The same phy
 npm i @field-ui/three three
 ```
 
-`three` is a **peer dependency** — you bring your own version. The package is built and tested
-against modern three (≥ 0.150) and uses only long-stable APIs; it runs against builds as old as
-r147 in practice.
+`three` is a **peer dependency** — you bring your own version (**≥ 0.147**, the tested floor).
+The package touches only long-stable three APIs (the newest are `InstancedMesh`, r109, and
+`Object3D.clear()`, r123); it is built against modern three (0.169) and r147 is verified live in
+a real integration.
 
 ### No build step? (CDN / single-file pages)
 
