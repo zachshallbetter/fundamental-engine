@@ -289,6 +289,45 @@ export function scanBodies(root: ParentNode): Body[] {
 }
 
 /** Refresh each body's measured rect, visibility, and engaged state (§2.1). */
+/**
+ * Re-read a body's *dynamic* force params from its element each measure cycle, so a live attribute
+ * change (a `FieldBody.set` from `@fundamental-engine/three`, or a `data-strength` tweak on a DOM
+ * body) takes effect without a full `rescan()` — params are now reactive on the measure cadence.
+ * Only attributes actually PRESENT on the element override; a preset/intent body (whose params were
+ * compiled out of band, not on the element) keeps its parsed values untouched.
+ */
+function refreshBodyParams(b: Body): void {
+  const el = b.el as Partial<HTMLElement>;
+  if (typeof el.getAttribute !== 'function') return;
+  const s = el.getAttribute('data-strength');
+  if (s != null) {
+    const v = Number.parseFloat(s);
+    if (Number.isFinite(v)) {
+      b.strength = v;
+      b.M = v; // source mass tracks strength (§20.10, k_g = 1)
+    }
+  }
+  const r = el.getAttribute('data-range');
+  if (r != null) {
+    const v = Number.parseFloat(r);
+    if (Number.isFinite(v)) b.range = v;
+  }
+  const sp = el.getAttribute('data-spin');
+  if (sp != null) {
+    const v = Number.parseFloat(sp);
+    if (Number.isFinite(v)) b.spin = v;
+  }
+  const a = el.getAttribute('data-angle');
+  if (a != null) {
+    const deg = Number.parseFloat(a);
+    if (Number.isFinite(deg)) {
+      b.angle = (deg * Math.PI) / 180;
+      b.ux = Math.cos(b.angle);
+      b.uy = Math.sin(b.angle);
+    }
+  }
+}
+
 export function measureBodies(bodies: readonly Body[], W: number, H: number): void {
   const margin = H * 0.15;
   for (const b of bodies) {
@@ -302,5 +341,6 @@ export function measureBodies(bodies: readonly Body[], W: number, H: number): vo
     b.on = b.el.dataset.active === '1';
     b.vis =
       r.bottom > -margin && r.top < H + margin && r.right > -margin && r.left < W + margin;
+    refreshBodyParams(b); // reactive force params (live, no rescan)
   }
 }

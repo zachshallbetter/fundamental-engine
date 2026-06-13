@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Reactive body params — live `strength`/`range`/`angle`/`spin` without a `rescan()`.** A body's
+  hot force params are now re-read from its element on the measure cadence, so changing `data-strength`
+  on a DOM body (or calling `FieldBody.set({ strength })` in `@fundamental-engine/three`) takes effect
+  within a frame. Only attributes actually present override, so preset/intent bodies are untouched.
+  `@fundamental-engine/three`'s `FieldBody` gains `set({ strength, range, angle, spin })`. (#442)
+
 ### Fixed
 
 - **Frame-rate-independent particle motion.** `env.dt` was a flat `1` regardless of framerate, so the

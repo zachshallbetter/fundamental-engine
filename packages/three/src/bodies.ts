@@ -52,6 +52,9 @@ export interface FieldBody {
   data: unknown;
   /** the body's most recent feedback (density/load/lit/…); `{}` until the field writes. */
   readonly channels: Readonly<FeedbackChannels>;
+  /** update force params live — applied within a frame on the measure cadence, no re-scan
+   *  (a fox getting hungrier, a lure fading). `angle` in degrees, for directional forces. */
+  set(params: { strength?: number; range?: number; angle?: number; spin?: number }): void;
   /** unregister this body from the field. */
   remove(): void;
 }
@@ -80,6 +83,8 @@ class BodyImpl implements FieldBody {
   data: unknown;
   channels: FeedbackChannels = {};
   readonly el: VirtualBodyElement;
+  /** the live attr map the virtual element reads — mutating it makes params reactive (see set). */
+  private readonly attrs: Record<string, string>;
   private readonly onFeedback?: (channels: FeedbackChannels, body: FieldBody) => void;
   private readonly registry: FieldBodyRegistry;
 
@@ -96,6 +101,7 @@ class BodyImpl implements FieldBody {
     if (spec.spin != null) attrs['data-spin'] = String(spec.spin);
     if (spec.angle != null) attrs['data-angle'] = String(spec.angle);
     if (spec.feedback ?? true) attrs['data-feedback'] = '';
+    this.attrs = attrs; // the virtual element's getAttribute closes over this same object
 
     const half = (spec.sizePx ?? 20) / 2;
     const self = this;
@@ -126,6 +132,14 @@ class BodyImpl implements FieldBody {
   receive(channels: FeedbackChannels): void {
     this.channels = channels;
     this.onFeedback?.(channels, this);
+  }
+
+  set(params: { strength?: number; range?: number; angle?: number; spin?: number }): void {
+    if (params.strength != null) this.attrs['data-strength'] = String(params.strength);
+    if (params.range != null) this.attrs['data-range'] = String(params.range);
+    if (params.angle != null) this.attrs['data-angle'] = String(params.angle);
+    if (params.spin != null) this.attrs['data-spin'] = String(params.spin);
+    // no re-scan: the engine re-reads these on the next measure cycle (reactive params)
   }
 
   remove(): void {
