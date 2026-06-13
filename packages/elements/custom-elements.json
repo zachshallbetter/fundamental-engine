@@ -1274,6 +1274,30 @@
             },
             {
               "kind": "method",
+              "name": "sample",
+              "return": {
+                "type": {
+                  "text": "{ x: number; y: number }"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "sample the live field at `(x, y)` — the net force vector a still test particle would feel\n(zero before the field starts). The seam external visualizers consume to build field geometry."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -2209,6 +2233,34 @@
             },
             {
               "kind": "method",
+              "name": "sample",
+              "return": {
+                "type": {
+                  "text": "{ x: number; y: number }"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "sample the live field at `(x, y)` — the net force vector a still test particle would feel\n(zero before the field starts). The seam external visualizers consume to build field geometry.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -3064,6 +3116,34 @@
                 }
               },
               "description": "kinetic/thermal/total energy snapshot for the current frame.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "sample",
+              "return": {
+                "type": {
+                  "text": "{ x: number; y: number }"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "sample the live field at `(x, y)` — the net force vector a still test particle would feel\n(zero before the field starts). The seam external visualizers consume to build field geometry.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

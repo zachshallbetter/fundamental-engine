@@ -122,6 +122,10 @@ export class FieldField implements FieldHandle {
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();
   }
+  /** sample the live field at `(x, y)` — the net force vector a still test particle would feel. */
+  sample(x: number, y: number): { x: number; y: number } {
+    return this.field.sample(x, y);
+  }
   scrollV(): number {
     return this.field.scrollV();
   }

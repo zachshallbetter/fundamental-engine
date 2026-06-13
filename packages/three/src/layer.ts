@@ -20,10 +20,11 @@
 import { createField } from '@field-ui/core';
 import type { AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ThreadLink } from '@field-ui/core';
 import { Group } from 'three';
-import type { WebGLRenderer } from 'three';
+import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
 import { PlaneProjection, VolumeProjection, type FieldProjection } from './project.ts';
 import { ParticlePool, type ParticleStyle } from './particles.ts';
+import { FieldBodyRegistry, type FieldBody, type FieldBodySpec } from './bodies.ts';
 
 /** Three.js is browser-only; this stub satisfies the `createField` signature (never touched under
  *  `render: 'none'`, which acquires no 2D context). */
@@ -55,28 +56,44 @@ export class FieldLayer implements FieldHandle {
   readonly pool: ParticlePool;
   /** the active 2D↔3D mapping. */
   readonly projection: FieldProjection;
+  /** the mesh-bodies registered on this field — `layer.addBody(...)` is the ergonomic entry. */
+  readonly bodies: FieldBodyRegistry;
   private readonly field: FieldHandle;
 
   constructor(opts: FieldLayerOptions = {}) {
     // default the mapping to the field's shape: a real volume when `depth > 0`, else a flat plane.
     this.projection =
       opts.projection ?? (opts.depth && opts.depth > 0 ? new VolumeProjection({ depth: opts.depth }) : new PlaneProjection());
+    this.bodies = new FieldBodyRegistry(this.projection);
     const resolveDpr = (): number =>
       opts.dpr ?? opts.renderer?.getPixelRatio() ?? (typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1);
     const viewport = (): HostViewport => ({ ...this.projection.size(), dpr: resolveDpr() });
-    const host = threeHost({ viewport, root: opts.root });
+    // the host scans the body registry; mesh-bodies are added via layer.addBody(...)
+    const host = threeHost({ viewport, root: this.bodies.root });
 
     const { projection, renderer, dpr, root, canvas, capacity, style, ...fieldOpts } = opts;
     void projection;
     void renderer;
     void dpr;
     void root;
-    this.field = createField(canvas ?? stubCanvas(), { ...fieldOpts, host, render: 'none' });
+    // route body feedback (density/load/lit) to the meshes instead of CSS custom properties
+    this.field = createField(canvas ?? stubCanvas(), { ...fieldOpts, host, render: 'none', feedbackSink: this.bodies.sink });
+    this.bodies.setOnChange(() => this.field.scan());
 
     const cap = Math.max(capacity ?? 0, Math.ceil(this.field.particleCount() * 1.25) + 64);
     this.pool = new ParticlePool({ capacity: cap, projection: this.projection, style });
     this.object = new Group();
     this.object.add(this.pool.points);
+  }
+
+  /**
+   * Register a scene object as a field body — it bends the field, the swarm responds, and feedback
+   * (density/load/lit) flows back to it. The body carries `spec.data`, so a mesh can be a meaningful
+   * agent (a bloom with its genome, a hive accruing honey), not just a force. Returns a handle whose
+   * `.data`, `.channels`, and `.remove()` you use; the body tracks the mesh as it moves.
+   */
+  addBody(object: Object3D, spec: FieldBodySpec): FieldBody {
+    return this.bodies.add(object, spec);
   }
 
   /** sync the swarm geometry from the engine's current particle state; returns the live count. */
@@ -150,6 +167,9 @@ export class FieldLayer implements FieldHandle {
   }
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();
+  }
+  sample(x: number, y: number): { x: number; y: number } {
+    return this.field.sample(x, y);
   }
   scrollV(): number {
     return this.field.scrollV();

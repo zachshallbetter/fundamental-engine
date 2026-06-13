@@ -9,6 +9,21 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.sample(x, y)` — read the live field at a point.** Returns the net force a still test
+  particle would feel as `{ x, y }` (a thin wrapper over `forceAt(bodies, forces, env)`): pure,
+  read-only, samplable at any resolution. The seam external 3D visualizers consume to build their own
+  field geometry. Mirrored on `@field-ui/vanilla` and `<field-root>`; additive, the frozen API surface
+  is unchanged.
+- **`@field-ui/three`: meshes as bodies.** `layer.addBody(object3d, spec)` (and `FieldBodyRegistry`)
+  registers a `THREE.Object3D` as a field body — it bends the field and the swarm responds, while
+  `density` / `load` / `lit` feedback flows back onto the mesh (drive a uniform from `onFeedback`).
+  Crucially the body **carries a `data` record** (a genome, an inventory), so a mesh can be a
+  meaningful agent, not just a force. Needs no core change — the body is a lightweight non-DOM
+  element scanned through the host, its rect projected from the mesh's world position.
+- **`@field-ui/three`: native field visuals.** `vectorField()` (instanced arrow grid) and
+  `streamlineTubes()` (traced flow tubes) build scene geometry from `FieldHandle.sample()` — the
+  field's structure rendered directly, not via particles. The tracing core is pure and tested.
+
 - **`@field-ui/three` — bind the field engine to a Three.js scene.** A new authoring-surface
   package that runs the engine headless (`render: 'none'`) and renders its conserved swarm as a
   `THREE.Points` layer: `createFieldLayer()` / `FieldLayer` (which implements the full

@@ -1,0 +1,208 @@
+---
+import Base from '../layouts/Base.astro';
+
+const title = 'field-ui — meshes as bodies';
+const description =
+  'Blooms are field bodies that carry their genome; a pollinator swarm attends to them; feedback brightens each bloom as matter gathers. The field as living, data-carrying behavior — with @field-ui/three.';
+---
+
+<Base title={title} description={description}>
+  <main id="poll-main" class="poll">
+    <header class="poll__head">
+      <h1>Meshes as bodies</h1>
+      <p>
+        Each bloom is a <code>THREE.Mesh</code> registered as a field <strong>body</strong> — it bends
+        the field, so the pollinator swarm attends to it. Every bloom <strong>carries its genome</strong>
+        (species + hue) as data, and the field's local density flows back as feedback, brightening a
+        bloom as matter gathers on it. The faint arrows are the field structure, sampled live. Nothing
+        here is scripted per-bee — it's a relational field.
+      </p>
+      <div class="poll__controls">
+        <button type="button" data-action="arrows">Toggle field</button>
+        <span class="poll__read" data-read aria-live="polite"></span>
+      </div>
+    </header>
+    <div class="poll__stage">
+      <canvas id="poll-canvas"></canvas>
+    </div>
+  </main>
+</Base>
+
+<script>
+  import * as THREE from 'three';
+  import { createFieldLayer, PlaneProjection, vectorField, type FieldBody } from '@field-ui/three';
+
+  // a little "genome" each bloom carries — exactly the kind of data a Verdant-Garden-style game holds
+  const GENOMES = [
+    { species: 'aster', hue: 0.62, pos: [-3.1, 0, -0.6] },
+    { species: 'poppy', hue: 0.02, pos: [3.0, 0, 0.8] },
+    { species: 'crocus', hue: 0.78, pos: [0.2, 0, 2.2] },
+    { species: 'marigold', hue: 0.1, pos: [-1.4, 0, 1.7] },
+  ] as const;
+
+  let teardown: (() => void) | null = null;
+
+  function init(): void {
+    const canvas = document.getElementById('poll-canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    if (teardown) teardown();
+
+    const stage = canvas.parentElement as HTMLElement;
+    const size = (): { w: number; h: number } => ({
+      w: stage.clientWidth || window.innerWidth,
+      h: stage.clientHeight || Math.round(window.innerHeight * 0.66),
+    });
+    let { w, h } = size();
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
+    camera.position.set(0, 5.4, 8.5);
+    camera.lookAt(0, 0, 0.4);
+
+    // a flat field on the ground plane; pollinators lift a little with heat
+    const projection = new PlaneProjection({ width: w, height: h, scale: 0.013, relief: 0.5 });
+    const layer = createFieldLayer({
+      projection,
+      renderer,
+      density: 2.2,
+      style: { base: '#caa24a', accent: '#ffe39a', size: 2.1, focal: 110 }, // warm, bee-like pollen motes
+    });
+    scene.add(layer.object);
+
+    // ── the blooms: meshes that ARE field bodies, each carrying its genome ──────────────────────
+    const blooms: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; body: FieldBody; base: THREE.Color }[] = [];
+    for (const g of GENOMES) {
+      const base = new THREE.Color().setHSL(g.hue, 0.65, 0.5);
+      const mat = new THREE.MeshBasicMaterial({ color: base.clone() });
+      const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.34, 0), mat);
+      mesh.position.set(g.pos[0], g.pos[1], g.pos[2]);
+      scene.add(mesh);
+      // register the mesh as an attract body; it carries its genome and reacts to feedback
+      const body = layer.addBody(mesh, {
+        tokens: 'attract',
+        strength: 0.5, // gentle — pollinators gather AROUND the bloom and stay a visible swarm
+        range: 320,
+        data: { species: g.species, hue: g.hue, visits: 0 },
+        onFeedback: (ch) => {
+          const d = Math.min(1, ch.density ?? 0); // how much matter has gathered on this bloom
+          mesh.scale.setScalar(1 + d * 0.3);
+          mat.color.copy(base).offsetHSL(0, 0, d * 0.22); // brighten a touch, keep its genome hue
+        },
+      });
+      blooms.push({ mesh, mat, body, base });
+    }
+
+    // ── the field structure, sampled live (static here — the blooms don't move) ─────────────────
+    const arrows = vectorField(layer, { projection, step: 70, maxLength: 0.5, color: '#8fd0ff', z: 0.02 });
+    arrows.update();
+    scene.add(arrows.object);
+
+    const readEl = document.querySelector('[data-read]');
+    let raf = 0;
+    let t = 0;
+    const loop = (): void => {
+      t += 0.005;
+      layer.tick();
+      renderer.render(scene, camera);
+      if (readEl && Math.floor(t * 120) % 36 === 0) {
+        // read each bloom's carried data + its live gathered density — the game's pollination signal
+        const busiest = blooms.reduce((a, b) => ((b.body.channels.density ?? 0) > (a.body.channels.density ?? 0) ? b : a));
+        const g = busiest.body.data as { species: string };
+        readEl.textContent = `${layer.particleCount()} pollinators · busiest bloom: ${g.species}`;
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    loop();
+
+    const onResize = (): void => {
+      ({ w, h } = size());
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    };
+    window.addEventListener('resize', onResize);
+
+    const onControls = (e: Event): void => {
+      const action = (e.target as HTMLElement)?.closest('[data-action]')?.getAttribute('data-action');
+      if (action === 'arrows') arrows.object.visible = !arrows.object.visible;
+    };
+    document.querySelector('.poll__controls')?.addEventListener('click', onControls);
+
+    teardown = (): void => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+      document.querySelector('.poll__controls')?.removeEventListener('click', onControls);
+      for (const b of blooms) {
+        b.mesh.geometry.dispose();
+        b.mat.dispose();
+      }
+      arrows.dispose();
+      layer.destroy();
+      renderer.dispose();
+    };
+  }
+
+  init();
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => {
+    if (teardown) teardown();
+    teardown = null;
+  });
+</script>
+
+<style>
+  .poll {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 4rem;
+  }
+  .poll__head {
+    max-width: 48rem;
+  }
+  .poll__head h1 {
+    margin: 0 0 0.5rem;
+  }
+  .poll__head p {
+    color: var(--ink-2, #9fb0c4);
+    line-height: 1.6;
+  }
+  .poll__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0 0;
+    flex-wrap: wrap;
+  }
+  .poll__controls button {
+    font: inherit;
+    color: inherit;
+    background: color-mix(in oklab, var(--accent, #4da3ff) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent, #4da3ff) 40%, transparent);
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+  }
+  .poll__read {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2, #9fb0c4);
+    font-size: 0.9rem;
+  }
+  .poll__stage {
+    margin-top: 1.5rem;
+    height: 66vh;
+    min-height: 22rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: radial-gradient(120% 120% at 50% 25%, #101a14 0%, #07100a 70%);
+    border: 1px solid color-mix(in oklab, #8fd0ff 18%, transparent);
+  }
+  #poll-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
