@@ -175,6 +175,7 @@ Browse and run all 64 at the [recipe gallery](https://field-ui.com/docs/gallery)
 | [`@field-ui/vanilla`](packages/vanilla) | the framework-free door: the `FieldField` class, `mountField()`, and a host-bundled `createField()`, no custom element |
 | [`@field-ui/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
 | [`@field-ui/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
+| [`@field-ui/three`](packages/three) | bind the engine to a Three.js scene: `createFieldLayer()` (the particle bridge → `THREE.Points`), `PlaneProjection` / `VolumeProjection`, `threeHost()`, `threeBackend()`. `three` is a peer dependency |
 
 Want everything in one install? [`@field-ui/kit`](packages/kit) is a meta-package that depends on all five — `npm i @field-ui/kit`, then import from the specific package you need. (`@field-ui/field-ui` is a thin alias for the kit.)
 

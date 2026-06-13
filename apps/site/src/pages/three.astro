@@ -1,0 +1,239 @@
+---
+import Base from '../layouts/Base.astro';
+
+const title = 'field-ui — Three.js';
+const description =
+  'The same reciprocal field engine that drives the DOM, rendered headless as a volumetric THREE.Points swarm with @field-ui/three.';
+---
+
+<Base title={title} description={description}>
+  <main id="three-main" class="three-demo">
+    <header class="three-demo__head">
+      <h1>field-ui in Three.js</h1>
+      <p>
+        The reciprocal field engine runs headless — no DOM canvas — and its conserved particle swarm is
+        rendered as a volumetric <code>THREE.Points</code> cloud through
+        <a href="https://www.npmjs.com/package/@field-ui/three"><code>@field-ui/three</code></a>. The
+        engine's optional depth lane gives the swarm real depth, which the layer maps into the scene.
+        <strong>Move your pointer over the field</strong> — the matter attends to it, gathering and
+        heating toward the point; click to burst.
+      </p>
+      <div class="three-demo__controls">
+        <button type="button" data-action="burst">Burst</button>
+        <button type="button" data-action="formation">Cycle formation</button>
+        <span class="three-demo__count" data-count aria-live="polite"></span>
+      </div>
+    </header>
+    <div class="three-demo__stage">
+      <canvas id="three-canvas"></canvas>
+    </div>
+  </main>
+</Base>
+
+<script>
+  import * as THREE from 'three';
+  import { createFieldLayer, VolumeProjection, type FieldLayer } from '@field-ui/three';
+
+  const FORMATIONS = ['ambient', 'orbit', 'wells', 'spread'] as const;
+
+  let teardown: (() => void) | null = null;
+
+  function init(): void {
+    const canvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    if (teardown) teardown(); // client-side nav can re-run init; tear the old scene down first
+
+    const stage = canvas.parentElement as HTMLElement;
+    const size = (): { w: number; h: number } => ({
+      w: stage.clientWidth || window.innerWidth,
+      h: stage.clientHeight || Math.round(window.innerHeight * 0.66),
+    });
+
+    let { w, h } = size();
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 100);
+    camera.position.set(0, 0.8, 8.5); // mostly head-on (clean pointer mapping) with a slight tilt for depth
+    camera.lookAt(0, 0, 0);
+
+    // The engine's opt-in z lane → a real volume. Bodies live on z = 0; free matter drifts in depth.
+    const depth = 320;
+    const layer: FieldLayer = createFieldLayer({
+      projection: new VolumeProjection({ width: w, height: h, depth, scale: 0.0095, depthScale: 0.014, centerZ: true }),
+      depth,
+      density: 2.6,
+      renderer,
+      style: { base: '#3b5e8a', accent: '#9fd4ff', size: 1.9, focal: 120 },
+    });
+    scene.add(layer.object);
+
+    // A visible marker for the attention point — where the field is being pulled toward. A bright
+    // core sphere plus a larger, faint, additive halo sphere (both round; a textureless Sprite
+    // would render as a square).
+    const focusMarker = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0xdfeeff }),
+    );
+    const focusHalo = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0x6fb8ff, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false }),
+    );
+    focusMarker.add(focusHalo);
+    scene.add(focusMarker);
+
+    // Pointer → field mapping: unproject the cursor onto the engine's page plane (z = 0 in field
+    // space), so the attention point sits exactly under the cursor in the 3D view.
+    const raycaster = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    const hit = new THREE.Vector3();
+    const tmp = new THREE.Vector3();
+    const pageZ = layer.projection.toWorld(0, 0, 0, 0, 0, new THREE.Vector3()).z; // world-z of the page plane
+    const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -pageZ);
+
+    const pointerToField = (clientX: number, clientY: number): { x: number; y: number } | null => {
+      const r = canvas.getBoundingClientRect();
+      ndc.set(((clientX - r.left) / r.width) * 2 - 1, -(((clientY - r.top) / r.height) * 2 - 1));
+      raycaster.setFromCamera(ndc, camera);
+      return raycaster.ray.intersectPlane(plane, hit) ? layer.projection.toField(hit) : null;
+    };
+
+    // The attention point, in field pixels. Idle: drifts in a slow orbit. Pointer: follows the cursor.
+    let focus = { x: w / 2, y: h / 2 };
+    let pointerActive = false;
+
+    const onPointerMove = (e: PointerEvent): void => {
+      const f = pointerToField(e.clientX, e.clientY);
+      if (f) { focus = f; pointerActive = true; }
+    };
+    const onPointerLeave = (): void => { pointerActive = false; };
+    const onPointerDown = (e: PointerEvent): void => {
+      const f = pointerToField(e.clientX, e.clientY);
+      if (f) layer.burst(f.x, f.y); // a shove + heat at the attention point
+    };
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerleave', onPointerLeave);
+    canvas.addEventListener('pointerdown', onPointerDown);
+
+    const countEl = document.querySelector('[data-count]');
+    let raf = 0;
+    let t = 0;
+    let formationIdx = 0;
+
+    const loop = (): void => {
+      t += 0.005;
+      if (pointerActive) {
+        // give the point attention: the field bends toward the cursor, pulling + heating nearby
+        // matter. Gentle strength — the focus is the only body here, so a strong one would sweep the
+        // whole conserved swarm into a single clump.
+        layer.flowTo(focus.x, focus.y, { strength: 0.4, radius: Math.min(w, h) * 0.42 });
+        layer.projection.toWorld(focus.x, focus.y, 0, 0, 0, tmp);
+        focusMarker.position.copy(tmp);
+        focusMarker.visible = true;
+      } else {
+        // at rest it is just the swarm: no focus, so the conserved matter stays an even ambient cloud
+        layer.clearFlow();
+        focusMarker.visible = false;
+      }
+      const n = layer.tick();
+      if (countEl && Math.floor(t * 120) % 30 === 0) countEl.textContent = `${n.toLocaleString()} particles`;
+      renderer.render(scene, camera);
+      raf = requestAnimationFrame(loop);
+    };
+    loop();
+
+    const onResize = (): void => {
+      ({ w, h } = size());
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    };
+    window.addEventListener('resize', onResize);
+
+    const onControls = (e: Event): void => {
+      const action = (e.target as HTMLElement)?.closest('[data-action]')?.getAttribute('data-action');
+      if (action === 'burst') layer.burst(focus.x, focus.y);
+      if (action === 'formation') {
+        formationIdx = (formationIdx + 1) % FORMATIONS.length;
+        layer.setFormation(FORMATIONS[formationIdx]!);
+      }
+    };
+    document.querySelector('.three-demo__controls')?.addEventListener('click', onControls);
+
+    teardown = (): void => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerleave', onPointerLeave);
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      document.querySelector('.three-demo__controls')?.removeEventListener('click', onControls);
+      layer.destroy();
+      renderer.dispose();
+    };
+  }
+
+  init();
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => {
+    if (teardown) teardown();
+    teardown = null;
+  });
+</script>
+
+<style>
+  .three-demo {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 4rem;
+  }
+  .three-demo__head {
+    max-width: 46rem;
+  }
+  .three-demo__head h1 {
+    margin: 0 0 0.5rem;
+  }
+  .three-demo__head p {
+    color: var(--ink-2, #9fb0c4);
+    line-height: 1.6;
+  }
+  .three-demo__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0 0;
+    flex-wrap: wrap;
+  }
+  .three-demo__controls button {
+    font: inherit;
+    color: inherit;
+    background: color-mix(in oklab, var(--accent, #4da3ff) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent, #4da3ff) 40%, transparent);
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+  }
+  .three-demo__controls button:hover {
+    background: color-mix(in oklab, var(--accent, #4da3ff) 24%, transparent);
+  }
+  .three-demo__count {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2, #9fb0c4);
+    font-size: 0.9rem;
+  }
+  .three-demo__stage {
+    margin-top: 1.5rem;
+    height: 66vh;
+    min-height: 22rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: radial-gradient(120% 120% at 50% 30%, #0d1422 0%, #070a11 70%);
+    border: 1px solid color-mix(in oklab, var(--accent, #4da3ff) 18%, transparent);
+  }
+  #three-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
