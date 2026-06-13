@@ -46,6 +46,9 @@ export * from './core/host.ts';
 // surface (WebGL/WebGPU/Three.js — see @fundamental-engine/three) can implement the contract by name and
 // inject it via `createField({ overlayBackend })`.
 export * from './core/render-backend.ts';
+// The CSS feedback adapter — feedback is plain data first; this writes channels to CSS vars (the
+// DOM door's default). Non-DOM hosts pass their own FeedbackSink instead.
+export { cssFeedbackSink } from './core/feedback-sink.ts';
 export * from './core/field.ts';
 export * from './forces/index.ts';
 // physics conformance — the Lab-as-detector framework (shared by tests + the Lab UI)
