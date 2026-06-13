@@ -52,7 +52,7 @@ much page an asset takes, and the day's move polarizes — direction is color, m
 intensity. Toggle the field off and it collapses to a uniform grid, every asset the same size, the
 same ink.
 
-**The backlog** is the repo measuring itself: field-ui's own issues and pull requests, with
+**The backlog** is the repo measuring itself: Fundamental's own issues and pull requests, with
 activity as mass and references threading each item to the work it builds on. The cards drag —
 hand-rolled pointer events, no library — but the page is explicit that it's a local triage
 sandbox: the arrangement saves to `localStorage`, and GitHub is never written.

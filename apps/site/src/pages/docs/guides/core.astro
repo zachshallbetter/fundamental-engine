@@ -2,7 +2,11 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
+<<<<<<< HEAD
 const create = `// @fundamental-engine/core is renderer-agnostic — createField requires an explicit host.
+=======
+const create = `// Fundamental is renderer-agnostic — createField requires an explicit host.
+>>>>>>> 7c71b58 (docs(site): finish the Fundamental rename across the site)
 // In the browser, browserHost() (from @fundamental-engine/platform) is the host. Pass a custom
 // host to drive a headless or alternative renderer.
 import { createField } from '@fundamental-engine/core';
@@ -56,7 +60,11 @@ const lift: Force = {
   </header>
 
   <div class="callout">
+<<<<<<< HEAD
     <b>Where this fits.</b> Use <code>@fundamental-engine/core</code> when you own the render surface and want
+=======
+    <b>Where this fits.</b> Use <code>Fundamental</code> when you own the render surface and want
+>>>>>>> 7c71b58 (docs(site): finish the Fundamental rename across the site)
     renderer-agnostic field math. When you want DOM participation — measurement, feedback,
     relationships, visual bindings, and overlays on a frame scheduler — reach for
     <a href="/docs/api">@fundamental-engine/platform</a>. Canvas is one render surface, not the whole system.

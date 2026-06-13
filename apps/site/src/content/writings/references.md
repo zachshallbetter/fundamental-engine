@@ -1,17 +1,17 @@
 ---
 title: "References"
-description: "Running bibliography for the field-ui research paper family."
+description: "Running bibliography for the Fundamental research paper family."
 summary: "The shared bibliography for the paper family."
 date: 2026-06-07
 category: research
-series: "field-ui research"
+series: "Fundamental research"
 order: 99
 author: "Zach Shallbetter"
 ---
 
 # References (running bibliography)
 
-> Shared bibliography for the field-ui paper family. Markdown now; exported to `references.bib` when
+> Shared bibliography for the Fundamental paper family. Markdown now; exported to `references.bib` when
 > papers convert to LaTeX. Entries marked **[verify]** are real, well-known works but still need their
 > exact bibliographic details (venue, year, pages, DOI/URL) confirmed before submission. Entries
 > marked **[TODO: locate]** are topics for which a specific citation must still be found — do **not**
@@ -21,7 +21,7 @@ author: "Zach Shallbetter"
 
 The papers treat the codebase and canonical docs as primary evidence, cited inline by path. Anchors:
 
-- `[fieldui-repo]` field-ui monorepo — `packages/core`, `packages/platform`, `packages/{elements,react,vanilla}`.
+- `[fieldui-repo]` Fundamental monorepo — `packages/core`, `packages/platform`, `packages/{elements,react,vanilla}`.
 - `[fieldui-contracts]` `docs/canonical/field-ui-system-contracts.md` — the hard contracts.
 - `[fieldui-platform]` `docs/canonical/field-ui-platform-architecture.md` — scheduler + registries.
 - `[fieldui-natural]` `docs/canonical/field-ui-natural-fields.md` — the four-field translation system.
