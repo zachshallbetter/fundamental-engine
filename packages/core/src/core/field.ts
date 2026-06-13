@@ -156,6 +156,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const rng = opts.rng ?? Math.random;
   const wallNow = opts.now ?? ((): number => performance.now());
   let boot = reduceMotion ? 1 : 0;
+  let lastNow = NaN; // previous frame timestamp — drives the frame-rate-independent dt (#434)
   let mball: Float32Array | null = null; // scratch density grid for the metaballs render mode
   let vor: Int32Array | null = null; // scratch owner grid for the voronoi render mode
   // EMA (exponential moving average) of the per-frame peak magnitude for each arrow renderer.
@@ -1081,23 +1082,19 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const cr = r | 0;
       const cg = g | 0;
       const cb = b | 0;
-      // Soft additive glow, not a solid disc. Three concentric discs — a wide faint aura, a mid
-      // body, a small bright core — sum under the 'lighter' composite into a smooth radial falloff,
-      // so the particle reads as LIGHT rather than a hard filled circle. Cheap (a few small arcs,
-      // no per-particle gradient or shadowBlur — the costs §20.8 deliberately avoids), and it keeps
-      // the per-particle tint. Hotter matter glows wider.
-      const col = `${cr},${cg},${cb}`;
-      ctx!.fillStyle = `rgba(${col},${(0.05 + 0.08 * h) * boot * zk})`;
+      // glow for hot matter via a cheap additive halo under the core (the canvas is
+      // composited 'lighter'), not per-particle shadowBlur — the same look without the
+      // 10×+ per-draw cost that spiked frames during interaction. Hot matter only, so the
+      // free swarm reads as crisp points of light rather than wide overlapping clouds.
+      if (h > 0.2) {
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.13 * h * boot})`;
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, size + 3 + 6 * h, 0, 6.28318);
+        ctx!.fill();
+      }
+      ctx!.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
       ctx!.beginPath();
-      ctx!.arc(p.x, p.y, (size + 1) * (2 + h * 1.6), 0, 6.28318);
-      ctx!.fill();
-      ctx!.fillStyle = `rgba(${col},${0.16 * alpha})`;
-      ctx!.beginPath();
-      ctx!.arc(p.x, p.y, size * 1.25 + 0.6, 0, 6.28318);
-      ctx!.fill();
-      ctx!.fillStyle = `rgba(${col},${0.55 * alpha})`;
-      ctx!.beginPath();
-      ctx!.arc(p.x, p.y, Math.max(0.4, size * 0.55), 0, 6.28318);
+      ctx!.arc(p.x, p.y, size, 0, 6.28318);
       ctx!.fill();
     }
     drawSparks();
@@ -1542,7 +1539,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     frameN++;
     env.t = (now - t0) / 1000;
     env.frameN = frameN;
-    env.dt = reduceMotion ? 0 : 1;
+    // Frame-rate-independent timestep (#434): dt is the real frame interval normalized to a
+    // 60fps baseline (≈1 at 60fps, ≈0.5 at 120fps, ≈2 at 30fps), clamped so a long stall
+    // (tab switch, GC pause) can't teleport matter. Previously dt was a flat 1 regardless of
+    // FPS, so when the perf work lifted the homepage to 60–120fps the same per-frame physics
+    // ran 2–4× faster on screen. Position alone is dt-scaled (forces/friction are per-frame by
+    // design, §applyForce) — that's enough to make displacement-per-second FPS-independent.
+    // Still 0 under reduce-motion: the integrator and the `if (env.dt)` gates read it as the
+    // "is the field animating" flag, so it must stay falsy when still and >0 when moving.
+    const dtRaw = Number.isFinite(lastNow) ? (now - lastNow) / 16.6667 : 1;
+    lastNow = now;
+    env.dt = reduceMotion ? 0 : clamp(dtRaw, 0.2, 2);
     if (boot < 1) boot = Math.min(1, boot + 0.012);
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
 
