@@ -1,8 +1,8 @@
 /**
  * `@fundamental-engine/vanilla` — the framework-free TypeScript door to the reciprocal field.
  *
- * The same engine the `<forces-field>` custom element and the React `<ForcesField>` wrap,
- * exposed as a typed `ForcesField` class and the imperative `mountField()` / `createField()`,
+ * The same engine the `<field-root>` custom element and the React `<FieldField>` wrap,
+ * exposed as a typed `FieldField` class and the imperative `mountField()` / `createField()`,
  * with **no** custom-element registration and **no** framework dependency. This package has
  * no side effects: importing it never defines a custom element. Reach for it from plain
  * TypeScript, or any stack where you want to drive the field by hand.
@@ -10,8 +10,8 @@
  * Spec: `docs/engine-reference/forces-system.md`.
  */
 
-export { FieldField, ForcesField } from './field.ts';
-export type { FieldFieldInit, ForcesFieldInit } from './field.ts';
+export { FieldField } from './field.ts';
+export type { FieldFieldInit } from './field.ts';
 export { mountField, makeFieldCanvas } from './mount.ts';
 export type { MountOptions } from './mount.ts';
 

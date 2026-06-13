@@ -1,12 +1,12 @@
 /**
- * The React adapter (Phase 7) — `<ForcesField>` mounts the reciprocal field on a
+ * The React adapter (Phase 7) — `<FieldField>` mounts the reciprocal field on a
  * canvas via the core engine, the same field the custom element and `mountField`
  * wrap. React is a peer dependency (the one framework dep; the core stays zero-dep).
  *
  * ```tsx
- * import { ForcesField } from '@fundamental-engine/react';
- * <ForcesField accent="#4da3ff" />            // a full-viewport reciprocal field
- * <ForcesField onReady={(f) => f.scan()} />   // grab the handle to drive it
+ * import { FieldField } from '@fundamental-engine/react';
+ * <FieldField accent="#4da3ff" />            // a full-viewport reciprocal field
+ * <FieldField onReady={(f) => f.scan()} />   // grab the handle to drive it
  * ```
  *
  * The field reacts to `[data-body]` elements anywhere on the page (the field-reacts
@@ -129,13 +129,3 @@ export function useFieldField(opts: FieldOptions = {}): {
   }, [accent, density, waves, background, render, overlay, mass, palette, attention, causality]);
   return { canvasRef, fieldRef };
 }
-
-// ── deprecated field-ui-migration aliases ──────────────────────────────────────
-// `Field*` (above) are canonical; these `Forces*` exports keep working unchanged until the
-// migration removal version (docs/planning-archive/field-ui-migration-plan.md §3).
-/** @deprecated alias of {@link FieldFieldProps}. */
-export type ForcesFieldProps = FieldFieldProps;
-/** @deprecated alias of {@link FieldField}. */
-export const ForcesField = FieldField;
-/** @deprecated alias of {@link useFieldField}. */
-export const useForcesField = useFieldField;

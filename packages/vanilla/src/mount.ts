@@ -3,11 +3,11 @@
  *
  * Creates a fixed, full-viewport canvas behind the page, starts the engine on it, and
  * returns the `FieldHandle` (whose `destroy()` also removes the canvas it made). It is the
- * same engine the `<forces-field>` custom element and the React `<ForcesField>` wrap, for
+ * same engine the `<field-root>` custom element and the React `<FieldField>` wrap, for
  * plain scripts and imperative mounts: `const field = mountField(); field.scan()`.
  *
  * This is the canonical home of the imperative mount; `@fundamental-engine/elements` re-exports it.
- * For object-oriented ergonomics (and driving a canvas you own), see the `ForcesField` class.
+ * For object-oriented ergonomics (and driving a canvas you own), see the `FieldField` class.
  */
 
 import { FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from '@fundamental-engine/core';
@@ -34,7 +34,7 @@ export function assertBrowser(): void {
 
 /**
  * Create the fixed, full-viewport, decorative canvas the managed mounts run on. Internal —
- * shared by `mountField` and the `ForcesField` class so the styling lives in one place.
+ * shared by `mountField` and the `FieldField` class so the styling lives in one place.
  */
 export function makeFieldCanvas(target: HTMLElement = document.body): HTMLCanvasElement {
   const canvas = document.createElement('canvas');

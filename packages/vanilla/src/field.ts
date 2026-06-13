@@ -5,7 +5,7 @@
  * `new FieldField()` builds a managed, full-viewport canvas and starts the engine on it;
  * pass `{ canvas }` to drive a `<canvas>` you own instead. The class implements the full
  * `FieldHandle` surface, so an instance is type-compatible anywhere a handle is expected,
- * and it exposes the `canvas` it renders to. (`ForcesField` remains as a deprecated alias.)
+ * and it exposes the `canvas` it renders to.
  *
  * ```ts
  * import { FieldField } from '@fundamental-engine/vanilla';
@@ -141,8 +141,3 @@ export class FieldField implements FieldHandle {
     if (this.managed) this.canvas.remove();
   }
 }
-
-/** @deprecated field-ui-migration alias of {@link FieldField}; use `FieldField`. */
-export { FieldField as ForcesField };
-/** @deprecated field-ui-migration alias of {@link FieldFieldInit}; use `FieldFieldInit`. */
-export type { FieldFieldInit as ForcesFieldInit };
