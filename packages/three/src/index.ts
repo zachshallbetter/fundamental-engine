@@ -37,6 +37,9 @@ export type { FieldBody, FieldBodySpec } from './bodies.ts';
 // Native 3D field visuals — vector grids + streamline tubes from FieldHandle.sample().
 export { vectorField, streamlineTubes, traceStreamline } from './samplers.ts';
 export type { FieldSampler, FieldVisual, VectorFieldOptions, StreamlineTubesOptions } from './samplers.ts';
+// FieldAgent — an Object3D that rides the field: the creatures primitive (bees, fish, drones).
+export { FieldAgent } from './agents.ts';
+export type { FieldAgentOptions } from './agents.ts';
 
 // Re-export the field samplers from core so a Three.js consumer building its own field visuals
 // (3D streamline tubes, vector grids, density) has them without a second import.

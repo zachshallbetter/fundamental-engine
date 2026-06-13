@@ -7,6 +7,24 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`FieldAgent` — an `Object3D` that rides the field (`@field-ui/three`).** The creatures
+  primitive: a specific scene object (a bee, a fish, a drone) that samples the live field at its own
+  position each frame, steers along the force (acceleration toward it, drag, a top speed, optional
+  wander and hover-bob), and writes its world position through the shared `FieldProjection`. Agents
+  are consumers, not bodies — they feel the field but exert nothing back unless also registered with
+  `addBody`. The `sampler` is the `FieldSampler` interface, so an agent can follow a layer, a raw
+  handle, or any custom blend. Renderer-free and unit-tested. (#426)
+
+### Changed
+
+- **`@field-ui/three`'s `three` peer range relaxed to `>=0.147.0`** (was `>=0.150.0`). An API audit
+  shows the package touches only long-stable three symbols — the newest are `InstancedMesh` (r109)
+  and `Object3D.clear()` (r123) — and r147 is verified live in a real integration (a no-build game
+  pinning `three@0.147`). The old floor forced `?deps`/import-map overrides to fight the manifest;
+  now the declared range matches reality.
+
 ## [0.3.1] — 2026-06-12
 
 `@field-ui/three` joins the published family — the Three.js authoring surface (the engine headless,
