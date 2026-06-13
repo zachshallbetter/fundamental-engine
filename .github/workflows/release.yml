@@ -101,7 +101,7 @@ jobs:
           FAIL=0
           for pkg in packages/*/package.json; do
             NAME=$(node -p "require('./$pkg').name")
-            case "$NAME" in @fundamental-engine/*) ;; *) continue ;; esac
+            case "$NAME" in @fundamental-engine/*|fundamental-engine) ;; *) continue ;; esac
             PKGVER=$(node -p "require('./$pkg').version")
             if [ "$PKGVER" != "$VERSION" ]; then
               echo "::error::$NAME is $PKGVER but the tag is $RELEASE_TAG — bump the seven together first."
@@ -135,11 +135,11 @@ jobs:
         run: pnpm build
 
       # pnpm rewrites workspace:* deps to real versions and skips any package whose
-      # version is already on the registry, so re-running a tag is safe. Only the seven
-      # public @fundamental-engine/* packages are targeted (apps are private; @forces-ui/* aliases
-      # are intentionally excluded).
+      # version is already on the registry, so re-running a tag is safe. The public
+      # @fundamental-engine/* packages plus the unscoped `fundamental-engine` umbrella are
+      # targeted (apps are private; the @forces-ui/* aliases are intentionally excluded).
       - name: Publish with provenance
-        run: pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: pnpm --filter "@fundamental-engine/*" --filter "fundamental-engine" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
@@ -164,7 +164,7 @@ jobs:
           mkdir /tmp/smoke && cd /tmp/smoke
           npm init -y > /dev/null
           for i in $(seq 1 10); do
-            if npm install "@fundamental-engine/vanilla@$VERSION" "@fundamental-engine/kit@$VERSION"; then
+            if npm install "@fundamental-engine/vanilla@$VERSION" "@fundamental-engine/kit@$VERSION" "fundamental-engine@$VERSION"; then
               break
             fi
             if [ "$i" = 10 ]; then
@@ -187,13 +187,15 @@ jobs:
           cd /tmp/smoke
           npm audit signatures
           FAIL=0
-          for p in core platform elements vanilla react kit field-ui; do
-            ATT=$(npm view "@fundamental-engine/$p@$VERSION" dist.attestations.url 2>/dev/null || true)
+          for p in @fundamental-engine/core @fundamental-engine/platform @fundamental-engine/elements \
+                   @fundamental-engine/vanilla @fundamental-engine/react @fundamental-engine/three \
+                   @fundamental-engine/kit fundamental-engine; do
+            ATT=$(npm view "$p@$VERSION" dist.attestations.url 2>/dev/null || true)
             if [ -z "$ATT" ]; then
-              echo "::error::@fundamental-engine/$p@$VERSION has no provenance attestation"
+              echo "::error::$p@$VERSION has no provenance attestation"
               FAIL=1
             else
-              echo "@fundamental-engine/$p@$VERSION attested: $ATT"
+              echo "$p@$VERSION attested: $ATT"
             fi
           done
           exit $FAIL
