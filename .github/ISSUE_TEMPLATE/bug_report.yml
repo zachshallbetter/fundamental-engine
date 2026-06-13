@@ -9,7 +9,7 @@ body:
     id: package
     attributes:
       label: Package & version
-      placeholder: field-ui 0.2.0 (or @field-ui/elements, @field-ui/react)
+      placeholder: field-ui 0.2.0 (or @fundamental-engine/elements, @fundamental-engine/react)
     validations:
       required: true
   - type: textarea

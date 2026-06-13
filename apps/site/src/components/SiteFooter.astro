@@ -1,7 +1,7 @@
 ---
 // The shared site footer — one consistent close on every public page: the
 // wordmark + thesis line, the destinations, and contact.
-import corePkg from '@field-ui/core/package.json';
+import corePkg from '@fundamental-engine/core/package.json';
 const version = corePkg.version; // single source of truth — never goes stale
 const dest = [
   { href: '/docs', label: 'Docs' },
@@ -47,8 +47,8 @@ const dest = [
     }
     try {
       const [{ recipeById }, { applyRecipe }] = await Promise.all([
-        import('@field-ui/core'),
-        import('@field-ui/platform'),
+        import('@fundamental-engine/core'),
+        import('@fundamental-engine/platform'),
       ]);
       if (mine !== footGen) return;
       const base = recipeById('wayfinding-field');

@@ -2193,61 +2193,61 @@
     },
     {
       "kind": "package",
-      "id": "pkg:@field-ui/core",
-      "label": "@field-ui/core",
+      "id": "pkg:@fundamental-engine/core",
+      "label": "@fundamental-engine/core",
       "color": "#38bdf8",
       "href": "/docs",
       "weight": 0.25,
       "data": {
-        "name": "@field-ui/core",
+        "name": "@fundamental-engine/core",
         "role": "the renderer-agnostic engine"
       }
     },
     {
       "kind": "package",
-      "id": "pkg:@field-ui/platform",
-      "label": "@field-ui/platform",
+      "id": "pkg:@fundamental-engine/platform",
+      "label": "@fundamental-engine/platform",
       "color": "#38bdf8",
       "href": "/docs",
       "weight": 0.25,
       "data": {
-        "name": "@field-ui/platform",
+        "name": "@fundamental-engine/platform",
         "role": "binds the engine to the DOM"
       }
     },
     {
       "kind": "package",
-      "id": "pkg:@field-ui/elements",
-      "label": "@field-ui/elements",
+      "id": "pkg:@fundamental-engine/elements",
+      "label": "@fundamental-engine/elements",
       "color": "#38bdf8",
       "href": "/docs",
       "weight": 0.25,
       "data": {
-        "name": "@field-ui/elements",
+        "name": "@fundamental-engine/elements",
         "role": "the <field-root> / <field-cell> elements"
       }
     },
     {
       "kind": "package",
-      "id": "pkg:@field-ui/react",
-      "label": "@field-ui/react",
+      "id": "pkg:@fundamental-engine/react",
+      "label": "@fundamental-engine/react",
       "color": "#38bdf8",
       "href": "/docs",
       "weight": 0.25,
       "data": {
-        "name": "@field-ui/react",
+        "name": "@fundamental-engine/react",
         "role": "the React adapter"
       }
     },
     {
       "kind": "package",
-      "id": "pkg:@field-ui/vanilla",
-      "label": "@field-ui/vanilla",
+      "id": "pkg:@fundamental-engine/vanilla",
+      "label": "@fundamental-engine/vanilla",
       "color": "#38bdf8",
       "href": "/docs",
       "weight": 0.25,
       "data": {
-        "name": "@field-ui/vanilla",
+        "name": "@fundamental-engine/vanilla",
         "role": "the framework-free door"
       }
     }

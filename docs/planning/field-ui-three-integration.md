@@ -1,7 +1,7 @@
-# `@field-ui/three` — Three.js integration spec
+# `@fundamental-engine/three` — Three.js integration spec
 
 > Status: **Level A shipped on `three-port`**, rebased onto `origin/main` to consume the optional z
-> lane (#362). A new authoring-surface package `@field-ui/three` with **both flat (`PlaneProjection`)
+> lane (#362). A new authoring-surface package `@fundamental-engine/three` with **both flat (`PlaneProjection`)
 > and genuinely volumetric (`VolumeProjection`)** coordinate models, the **particle bridge** as the
 > first deliverable. Author: Zach Shallbetter. Home on the RC1 board (user project #24).
 
@@ -9,7 +9,7 @@
 
 The engine is already the hard part, and it's done:
 
-1. **`@field-ui/core` imports zero DOM** — all environment access goes through an injected
+1. **`@fundamental-engine/core` imports zero DOM** — all environment access goes through an injected
    `FieldHost` (`packages/core/src/core/host.ts`), enforced by `core/dom-boundary.test.ts`
    (empty allowlist). A Three.js binding is *another host*, not an engine fork.
 2. **The field is query-based, not a baked texture.** Sample it anywhere, at any resolution:
@@ -44,10 +44,10 @@ caller-owned `Float32Array` (stride 5: `x, y, z, heat, size`), zero-alloc. The `
 with `depth > 0`. A renderer fills a `THREE.BufferAttribute` from it each frame. This is the fast path
 to the *swarm* in 3D and the complement to path A until the underlay routes through `RenderBackend`.
 
-## Package shape (mirrors `@field-ui/vanilla`)
+## Package shape (mirrors `@fundamental-engine/vanilla`)
 
-`packages/three` → `@field-ui/three`, `three` as a **peer dependency**, depends only on
-`@field-ui/core` (not platform — its registries are DOM-flavored; the particle bridge doesn't need
+`packages/three` → `@fundamental-engine/three`, `three` as a **peer dependency**, depends only on
+`@fundamental-engine/core` (not platform — its registries are DOM-flavored; the particle bridge doesn't need
 them). Authoring-surface tier: `core ← three`, same level as vanilla/react.
 
 ```
@@ -84,7 +84,7 @@ interface FieldProjection {
 ## Level A usage (shipped)
 
 ```ts
-import { createFieldLayer, PlaneProjection } from '@field-ui/three';
+import { createFieldLayer, PlaneProjection } from '@fundamental-engine/three';
 const layer = createFieldLayer({ projection: new PlaneProjection({ relief: 2 }), renderer, accent: '#4da3ff' });
 scene.add(layer.object);
 renderer.setAnimationLoop(() => { layer.tick(); renderer.render(scene, camera); });
@@ -98,9 +98,9 @@ so `burst`/`flowTo`/`setFormation`/`seed` drive the 3D layer unchanged.
 
 1. **core (additive):** `FieldHandle.readParticles(out)` — **stride 5 `[x, y, z, heat, size]`**,
    carrying the optional z lane (#362) — + impl + tests (incl. a `depth > 0` z-population check);
-   mirrored through vanilla/elements; `RenderBackend`/`Stroke` exported from `@field-ui/core`;
+   mirrored through vanilla/elements; `RenderBackend`/`Stroke` exported from `@fundamental-engine/core`;
    freeze-gate entry; CEM regenerated.
-2. `@field-ui/three`: `PlaneProjection` + **`VolumeProjection`** (consumes the real z lane;
+2. `@fundamental-engine/three`: `PlaneProjection` + **`VolumeProjection`** (consumes the real z lane;
    `createFieldLayer({ depth })` selects it), `threeHost`, `ParticlePool`, `FieldLayer` /
    `createFieldLayer`, `threeBackend`, `createThreeField`; renderer-free tests (projection
    round-trips for both, particle write path); README + LICENSE.

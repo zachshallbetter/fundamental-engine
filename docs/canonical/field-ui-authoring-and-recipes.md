@@ -16,7 +16,7 @@
 ## Purpose
 
 This document defines how authors use `field-ui`. `field-ui` is a platform-native relational field
-runtime for the DOM: `field-ui` computes renderer-agnostic field behavior, `@field-ui/platform`
+runtime for the DOM: `field-ui` computes renderer-agnostic field behavior, `@fundamental-engine/platform`
 binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
 scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
 field context. Authors write the same `[data-body]` contract regardless of surface.
@@ -73,7 +73,7 @@ platform runtime is the default participation path:
 React — `<FieldField>` renders the same contract; props map onto the same `data-*` tokens:
 
 ```tsx
-import { FieldField } from "@field-ui/react";
+import { FieldField } from "@fundamental-engine/react";
 
 function Headline() {
   return (
@@ -271,7 +271,7 @@ Example:
 
 > **Implemented.** All **sixty-four** ship as validated `FieldRecipe`s in
 > `packages/core/src/recipes/catalog.ts` (`FIELD_RECIPES`; `gallery.ts` re-exports it), grouped into four tiers (`RECIPE_TIERS`),
-> live on [`/docs/gallery`](https://field-ui.com/docs/gallery). They are the four-field translation
+> live on [`/docs/gallery`](https://fundamental-engine.com/docs/gallery). They are the four-field translation
 > model made practical — and classification/authoring artifacts only: they **compose existing
 > primitives and add no new engine behavior**. Eight are the recommended first-release set
 > (`FIRST_RELEASE_RECIPE_IDS`).

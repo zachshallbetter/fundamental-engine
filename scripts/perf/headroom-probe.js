@@ -19,7 +19,7 @@
  *    completes. When done it prints the final result block to the console.
  *
  * Alternatively run it via puppeteer:
- *   node scripts/perf/run-headroom.mjs --url https://field-ui.com
+ *   node scripts/perf/run-headroom.mjs --url https://fundamental-engine.com
  *
  * ── How it works ───────────────────────────────────────────────────────────
  * Each "level" runs for FRAMES_PER_LEVEL animation frames. The probe inserts a

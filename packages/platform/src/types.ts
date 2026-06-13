@@ -1,5 +1,5 @@
 /**
- * @field-ui/platform — shared contracts for the platform-adjacent registries. These describe the
+ * @fundamental-engine/platform — shared contracts for the platform-adjacent registries. These describe the
  * native primitives field-ui wishes the browser had (frame-stable geometry, typed element state,
  * relationships, visual-semantic pairing) built on the ones it has. Pure data shapes; no DOM here.
  */

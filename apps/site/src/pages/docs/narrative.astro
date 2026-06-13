@@ -100,8 +100,8 @@ const stages = [
 </DocsLayout>
 
 <script>
-  import { applyRecipe } from '@field-ui/platform';
-  import { recipeById } from '@field-ui/core';
+  import { applyRecipe } from '@fundamental-engine/platform';
+  import { recipeById } from '@fundamental-engine/core';
 
   interface Stage { title: string; body: string; markup: string; feedback?: boolean; rel?: boolean; link?: string; reduced?: boolean }
   const data: Stage[] = (window as unknown as { __NR__?: Stage[] }).__NR__ ?? [];

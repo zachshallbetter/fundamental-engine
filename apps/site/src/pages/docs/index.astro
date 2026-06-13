@@ -79,32 +79,32 @@ const hookFor = (href: string): string | undefined =>
   <section class="docs-sec">
     <h2>Install</h2>
     <p>
-      Most projects want <b><code>@field-ui/vanilla</code></b> — the framework-free door, host-bundled
-      so <code>createField</code> works with no wiring. React users want <code>@field-ui/react</code>.
+      Most projects want <b><code>@fundamental-engine/vanilla</code></b> — the framework-free door, host-bundled
+      so <code>createField</code> works with no wiring. React users want <code>@fundamental-engine/react</code>.
       The other packages are there when you need them; the core engine has zero runtime dependencies.
     </p>
     <div class="pkg-grid">
       <div class="pkg">
-        <code class="install" data-copy="npm i @field-ui/vanilla">npm i @field-ui/vanilla</code>
+        <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
         <span>the framework-free <code>FieldField</code> class, <code>mountField()</code>, and host-bundled <code>createField</code>. <b>The recommended starting point.</b></span>
       </div>
       <div class="pkg">
-        <code class="install" data-copy="npm i @field-ui/react">npm i @field-ui/react</code>
+        <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
         <span>the <code>&lt;FieldField&gt;</code> React component + <code>useFieldField</code> hook</span>
       </div>
       <div class="pkg">
-        <code class="install" data-copy="npm i @field-ui/elements">npm i @field-ui/elements</code>
+        <code class="install" data-copy="npm i @fundamental-engine/elements">npm i @fundamental-engine/elements</code>
         <span>the <code>&lt;field-root&gt;</code> web component — drops into any framework or plain HTML</span>
       </div>
       <div class="pkg">
-        <code class="install" data-copy="npm i @field-ui/core">npm i @field-ui/core</code>
+        <code class="install" data-copy="npm i @fundamental-engine/core">npm i @fundamental-engine/core</code>
         <span>the renderer-agnostic engine — when you own the canvas and wire your own host</span>
       </div>
     </div>
     <p class="pkg-note">
       No build step? Import straight from a CDN:
-      <code>import {'{'} createField {'}'} from 'https://esm.sh/@field-ui/vanilla'</code>.
-      Want everything in one install? <code>npm i @field-ui/kit</code> is an optional convenience
+      <code>import {'{'} createField {'}'} from 'https://esm.sh/@fundamental-engine/vanilla'</code>.
+      Want everything in one install? <code>npm i @fundamental-engine/kit</code> is an optional convenience
       bundle that pulls the whole suite (you still import from the specific package).
       In a hurry? <a href="/docs/tutorial">Your first field</a> goes from install to a reacting
       headline in eight steps.

@@ -29,21 +29,19 @@ function fakeEl(): HTMLElement & { writes: Array<[string, string]>; events: Arra
   return el as unknown as ReturnType<typeof fakeEl>;
 }
 
-test('density writes --d + both aliases, three decimals, legacy order', () => {
+test('density writes --d + --field-density, three decimals, in order', () => {
   const el = fakeEl();
   defaultFeedbackSink(el, { density: 0.123456 });
   assert.deepEqual(el.writes, [
     ['--d', '0.123'],
-    ['--forces-density', '0.123'],
     ['--field-density', '0.123'],
   ]);
 });
 
-test('heatmapDensity writes the forces mirror FIRST, then the field alias (legacy order)', () => {
+test('heatmapDensity writes --field-heatmap-density', () => {
   const el = fakeEl();
   defaultFeedbackSink(el, { heatmapDensity: 0.5 });
   assert.deepEqual(el.writes, [
-    ['--forces-heatmap-density', '0.500'],
     ['--field-heatmap-density', '0.500'],
   ]);
 });
@@ -69,7 +67,7 @@ test('the full writeFeedback channel set lands in the legacy order: density, hea
   defaultFeedbackSink(el, { density: 0.25, heatmapDensity: 0.0625, load: 0.75 });
   assert.deepEqual(
     el.writes.map(([n]) => n),
-    ['--d', '--forces-density', '--field-density', '--forces-heatmap-density', '--field-heatmap-density', '--load', '--mass'],
+    ['--d', '--field-density', '--field-heatmap-density', '--load', '--mass'],
   );
 });
 
@@ -130,6 +128,6 @@ test('thermo channels sit after load and before lit in a full write (the documen
   defaultFeedbackSink(el, { density: 0.1, load: 0.2, entropy: 0.3, coherence: 0.7, temperature: 0.4, lit: 0.1 });
   assert.deepEqual(
     el.writes.map(([n]) => n),
-    ['--d', '--forces-density', '--field-density', '--load', '--mass', '--entropy', '--coherence', '--temperature', '--lit'],
+    ['--d', '--field-density', '--load', '--mass', '--entropy', '--coherence', '--temperature', '--lit'],
   );
 });

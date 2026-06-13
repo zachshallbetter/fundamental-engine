@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { EXPERIMENTS, MANUAL_FORCES, classifyForce } from '@field-ui/core';
+import { EXPERIMENTS, MANUAL_FORCES, classifyForce } from '@fundamental-engine/core';
 import '../styles/force-glyphs.css';
 import '../styles/instrument.css';
 import '../styles/lab.css';
@@ -259,7 +259,7 @@ const FILTER_COLOR: Record<string, string> = {
   <SiteFooter />
 
   <script>
-    import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from '@field-ui/core';
+    import { EXPERIMENTS, runScenario, allForces, forceAt, MANUAL_FORCES } from '@fundamental-engine/core';
 
     type Any = Record<string, any>;
     const forces = allForces();

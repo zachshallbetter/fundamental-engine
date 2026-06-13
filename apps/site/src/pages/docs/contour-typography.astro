@@ -16,7 +16,7 @@ const cssStroke = `.title {
 }`;
 
 const genericUsage = `import { load } from 'opentype.js';            // or any parser — you bring the font
-import { contourSvgFor } from '@field-ui/platform';
+import { contourSvgFor } from '@fundamental-engine/platform';
 
 const title = document.querySelector('#hero-title');   // your sink body, YOUR font
 const font = await load('/fonts/your-font.woff');      // whatever face the element uses
@@ -193,7 +193,7 @@ const ringCss = `/* the rings read the MIRRORED body state — no wiring beyond 
 <script>
   // The Bound Visual rail, used exactly as documented: scan the declarative binding, turn on
   // mirroring, and the engine's writes to the heading (--d, --load) arrive on the SVG.
-  import { VisualBindingRegistry } from '@field-ui/platform';
+  import { VisualBindingRegistry } from '@fundamental-engine/platform';
 
   const start = () => {
     const stage = document.querySelector('[data-contour-demo]');

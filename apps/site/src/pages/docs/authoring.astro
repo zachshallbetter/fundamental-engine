@@ -17,13 +17,13 @@ const bodyHtml = `<!-- the page is the medium; any element can be a body -->
 </article>
 
 <script type="module">
-  import { createField } from '@field-ui/vanilla'; // wires the browser host for you
+  import { createField } from '@fundamental-engine/vanilla'; // wires the browser host for you
   // mounts the field and scans the page for [data-body] elements
   createField(document.getElementById('field'));
 </script>`;
 
 const bodyWc = `<!-- <field-root> is the singleton field; it scans [data-body] for you -->
-<script type="module">import '@field-ui/elements';</script>
+<script type="module">import '@fundamental-engine/elements';</script>
 
 <field-root accent="#4da3ff"></field-root>
 
@@ -31,7 +31,7 @@ const bodyWc = `<!-- <field-root> is the singleton field; it scans [data-body] f
   Pulls matter inward
 </article>`;
 
-const bodyReact = `import { FieldField } from '@field-ui/react';
+const bodyReact = `import { FieldField } from '@fundamental-engine/react';
 
 export function Page() {
   return (
@@ -45,7 +45,7 @@ export function Page() {
   );
 }`;
 
-const platformExample = `import { createFieldPlatform } from '@field-ui/platform';
+const platformExample = `import { createFieldPlatform } from '@fundamental-engine/platform';
 
 // the substrate beneath every surface: measure → state → write, on one scheduler
 const platform = createFieldPlatform(document.querySelector('article'));
@@ -80,8 +80,8 @@ const CONTRACT = [
     Three surfaces, one contract. A body authored in plain HTML, as a web component, or in React is
     the <em>same</em> body in the field — each is just a different way to write the
     <code>[data-body]</code> <ApiStamp name="data-body" /> contract the scanner reads. The HTML path
-    mounts with <code>createField</code> <ApiStamp name="createField" pkg="@field-ui/vanilla" /> from
-    <code>@field-ui/vanilla</code>. Pick the surface your stack already uses;
+    mounts with <code>createField</code> <ApiStamp name="createField" pkg="@fundamental-engine/vanilla" /> from
+    <code>@fundamental-engine/vanilla</code>. Pick the surface your stack already uses;
     field-ui does not ask you to adopt a framework.
   </p>
 
@@ -134,7 +134,7 @@ const CONTRACT = [
     The surfaces above author <em>bodies</em>. When you need the page itself to participate — to
     measure elements, hold state, and write feedback on a disciplined loop — reach for
     <code>createFieldPlatform()</code> <ApiStamp name="createFieldPlatform" /> from
-    <code>@field-ui/platform</code> directly. It is framework-agnostic; the same code runs under any
+    <code>@fundamental-engine/platform</code> directly. It is framework-agnostic; the same code runs under any
     surface.
   </p>
   <CodeTabs

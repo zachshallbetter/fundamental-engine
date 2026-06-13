@@ -1,15 +1,15 @@
-# @field-ui/three
+# @fundamental-engine/three
 
-**The Three.js door to [`@field-ui/core`](../core)** — run the reciprocal field engine headless and
+**The Three.js door to [`@fundamental-engine/core`](../core)** — run the reciprocal field engine headless and
 render its swarm as a `THREE.Points` layer in your own WebGL scene. The same physics the
-`<field-root>` element and `@field-ui/{vanilla,react}` wrap, bound to a 3D scene instead of the DOM.
+`<field-root>` element and `@fundamental-engine/{vanilla,react}` wrap, bound to a 3D scene instead of the DOM.
 
-→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 
 ```sh
-npm i @field-ui/three three
+npm i @fundamental-engine/three three
 ```
 
 `three` is a **peer dependency** — you bring your own version (**≥ 0.147**, the tested floor).
@@ -26,7 +26,7 @@ one Three.js:
 ```html
 <script type="module">
   // ?deps pins the peer; match it to your page's three version
-  import * as FieldUI from "https://esm.sh/@field-ui/three@0.3.1?deps=three@0.147.0";
+  import * as FieldUI from "https://esm.sh/@fundamental-engine/three@0.3.1?deps=three@0.147.0";
   window.FieldUI = FieldUI;                          // hand it to classic scripts
   window.dispatchEvent(new Event("fieldui-ready"));  // module scripts are deferred — signal readiness
 </script>
@@ -46,7 +46,7 @@ onto your page's global `THREE`:
 
 ```sh
 echo "module.exports = window.THREE" > three-shim.cjs
-npx esbuild node_modules/@field-ui/three/dist/index.js --bundle --format=iife \
+npx esbuild node_modules/@fundamental-engine/three/dist/index.js --bundle --format=iife \
   --global-name=FieldUI --alias:three=./three-shim.cjs --outfile=vendor/field-ui-three.js
 ```
 
@@ -58,7 +58,7 @@ geometry via a `FieldProjection`.
 
 ```ts
 import * as THREE from 'three';
-import { createFieldLayer, PlaneProjection } from '@field-ui/three';
+import { createFieldLayer, PlaneProjection } from '@fundamental-engine/three';
 
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -105,7 +105,7 @@ overlays — streamlines, field-lines, grid, contours, force-vector arrows — d
 Inject it via the lower-level `createThreeField`:
 
 ```ts
-import { createThreeField, threeBackend, PlaneProjection } from '@field-ui/three';
+import { createThreeField, threeBackend, PlaneProjection } from '@fundamental-engine/three';
 
 const projection = new PlaneProjection();
 const overlay = threeBackend({ projection });

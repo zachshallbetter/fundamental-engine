@@ -246,8 +246,8 @@ test('recipeAuthoring emits html / web-component / react surfaces with real toke
   const a = recipeAuthoring(recipeById('priority-well')!);
   assert.match(a.html, /<field-root><\/field-root>/);
   assert.match(a.html, /data-body="attract"/);
-  assert.match(a.webComponent, /@field-ui\/elements/);
-  assert.match(a.react, /@field-ui\/react/);
+  assert.match(a.webComponent, /@fundamental-engine\/elements/);
+  assert.match(a.react, /@fundamental-engine\/react/);
   assert.match(a.react, /<FieldField>/);
   assert.match(a.react, /data-body="attract"/);
 });

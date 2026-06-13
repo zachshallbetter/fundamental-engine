@@ -3,7 +3,7 @@
 The reciprocal field engine — elements bend the field; the field's density bends them back —
 as a native Swift package for **iOS**, **macOS**, and **visionOS**.
 
-This is a port of the [field-ui](https://field-ui.com) JS engine, not a reinterpretation.
+This is a port of the [field-ui](https://fundamental-engine.com) JS engine, not a reinterpretation.
 The package layout, the API surface, and the physics mirror the npm packages one-to-one;
 where the two diverge it is a bug (or listed under [Parity](#parity) below).
 
@@ -11,10 +11,10 @@ where the two diverge it is a bug (or listed under [Parity](#parity) below).
 
 | Swift target      | npm equivalent       | What it is |
 |-------------------|----------------------|------------|
-| `FieldUICore`     | `@field-ui/core`     | The pure physics: particles, bodies, forces, the integrator, formations, reactions. Zero platform imports. |
-| `FieldUIPlatform` | `@field-ui/platform` | The six-phase frame scheduler (`discover → read → compute → state → write → render`) and the registries (measurement, state, feedback, relationships, visual bindings, overlays). |
-| `FieldUIVanilla`  | `@field-ui/vanilla`  | The universal imperative API: `FieldField`, `mountField`. One import, every Apple platform — the host (UIKit / AppKit / RealityKit) is selected internally at compile time. |
-| `FieldUISwiftUI`  | `@field-ui/react`    | The declarative adapter: `FieldView`, `.fieldBody()`, `.fieldBurst()`, the `fieldHandle` environment value. |
+| `FieldUICore`     | `@fundamental-engine/core`     | The pure physics: particles, bodies, forces, the integrator, formations, reactions. Zero platform imports. |
+| `FieldUIPlatform` | `@fundamental-engine/platform` | The six-phase frame scheduler (`discover → read → compute → state → write → render`) and the registries (measurement, state, feedback, relationships, visual bindings, overlays). |
+| `FieldUIVanilla`  | `@fundamental-engine/vanilla`  | The universal imperative API: `FieldField`, `mountField`. One import, every Apple platform — the host (UIKit / AppKit / RealityKit) is selected internally at compile time. |
+| `FieldUISwiftUI`  | `@fundamental-engine/react`    | The declarative adapter: `FieldView`, `.fieldBody()`, `.fieldBurst()`, the `fieldHandle` environment value. |
 
 Anything platform-specific lives in `FieldUIVanilla/Hosts/` as an internal implementation
 detail. Consumers never import UIKit/AppKit/RealityKit through this API.
@@ -108,7 +108,7 @@ FieldRenderer (protocol)           ← the render seam
  └─ CoreGraphicsFieldRenderer        the `dots` mode on a CALayer
 ```
 
-This mirrors the JS seam exactly: `browserHost()` is the one thing `@field-ui/platform`
+This mirrors the JS seam exactly: `browserHost()` is the one thing `@fundamental-engine/platform`
 swaps per environment, and `FieldHost` is its Swift counterpart. Everything above the
 host — the integrator, the forces, the registries — is platform-free and identical
 across all three OS targets.

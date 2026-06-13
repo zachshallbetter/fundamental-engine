@@ -1,5 +1,5 @@
 {
-  "name": "field-ui-monorepo",
+  "name": "fundamental-engine-monorepo",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,14 +15,14 @@
     "check:links": "node scripts/check-doc-links.mjs",
     "gen:recipes": "node --experimental-strip-types scripts/export-recipes.mjs",
     "check:recipes": "node --experimental-strip-types scripts/export-recipes.mjs && git diff --exit-code data/recipes.json",
-    "gen:cem": "pnpm --filter @field-ui/elements exec cem analyze",
+    "gen:cem": "pnpm --filter @fundamental-engine/elements exec cem analyze",
     "check:cem": "pnpm gen:cem && git diff --exit-code packages/elements/custom-elements.json",
     "gen:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json",
     "check:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json && git diff --exit-code apps/site/src/data/atoms.json",
-    "dev": "pnpm --filter @field-ui/site dev",
-    "build:site": "pnpm --filter @field-ui/site build",
-    "docs:dev": "pnpm --filter @field-ui/docs dev",
-    "docs:build": "pnpm --filter @field-ui/docs build"
+    "dev": "pnpm --filter @fundamental-engine/site dev",
+    "build:site": "pnpm --filter @fundamental-engine/site build",
+    "docs:dev": "pnpm --filter @fundamental-engine/docs dev",
+    "docs:build": "pnpm --filter @fundamental-engine/docs build"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.0",

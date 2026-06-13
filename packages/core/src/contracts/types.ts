@@ -49,7 +49,7 @@ export interface SinkBudget {
   capacity: number;
   /** what happens at capacity — release them, or stop capturing. */
   saturation: 'release' | 'hold' | 'destroy';
-  /** fraction of capacity at which `forces:saturated` fires. */
+  /** fraction of capacity at which `field:saturated` fires. */
   saturationThreshold: number;
 }
 

@@ -13,15 +13,15 @@ A comprehensive map of the engine: every source module, what it owns, the data-f
 them together, and the catalogs (forces, classes, services, render modes, formations,
 conditions, presets, recipes) it ships.
 
-Two packages do the engine work (three thin authoring surfaces — `@field-ui/{elements,react,vanilla}`
+Two packages do the engine work (three thin authoring surfaces — `@fundamental-engine/{elements,react,vanilla}`
 — wrap them; `@forces-ui/*` are deprecated aliases):
 
-- **`@field-ui/core`** — `packages/core/src/`. The renderer + force math + the conserved
+- **`@fundamental-engine/core`** — `packages/core/src/`. The renderer + force math + the conserved
   simulation, plus the contracts, diagnostics, recipes, semantic/visual layers, and inspection.
   **Zero runtime dependencies** and renderer-agnostic: the `core/dom-boundary.test.ts` guard keeps an
   **empty allowlist** — no file in core may reference a DOM global. `field.ts` reaches the page only
   through the injected `FieldHost`; `export.ts` serializes a caller-supplied canvas.
-- **`@field-ui/platform`** — `packages/platform/src/`. The DOM participation layer: native-first
+- **`@fundamental-engine/platform`** — `packages/platform/src/`. The DOM participation layer: native-first
   registries (measurement, state, feedback, relationship, visual-binding, overlay) sequenced by
   one `FrameScheduler`. **Strict dependency direction:** platform depends on core for contracts;
   core never depends on platform.
@@ -34,7 +34,7 @@ Section refs (§) point into [forces-system.md](forces-system.md) and the canoni
 
 `createField(canvas, opts)` (`core/field.ts`) needs a `FieldHost` (`core/host.ts`) — the seam
 that abstracts every DOM-global (viewport, scroll, rAF, reduced-motion, scan root). In the
-browser the host is `browserHost()` from `@field-ui/platform` (or the `createBrowserField`
+browser the host is `browserHost()` from `@fundamental-engine/platform` (or the `createBrowserField`
 convenience). Under the platform runtime (Phase D, the default for `<field-root>`) the DOM-facing
 work is owned by the platform and sequenced by its `FrameScheduler`'s six phases:
 
@@ -181,7 +181,7 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 
 ---
 
-## 3. The platform package (`@field-ui/platform`)
+## 3. The platform package (`@fundamental-engine/platform`)
 
 Native-first registries; the participation surface field-ui wishes the browser exposed. Depends
 on core, never the reverse. Full architecture: [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md).
@@ -326,5 +326,5 @@ Shared per-frame environment (`core/types.ts`), filled by the engine: `dx/dy/dis
 - **Drift guards**: `config/manual.ts` is pinned to the registered force arrays; `forces-tests.md`
   must backtick every registered force; `core/dom-boundary.test.ts` keeps core renderer-agnostic;
   every force is checked to be both **passported** and **conformance-covered** (`inspect/report.ts`).
-- Run `pnpm --filter @field-ui/core test` (Node's built-in `node:test`, zero framework). Full write-up:
+- Run `pnpm --filter @fundamental-engine/core test` (Node's built-in `node:test`, zero framework). Full write-up:
   [forces-tests.md](forces-tests.md) and [../canonical/field-ui-testing-and-conformance.md](../canonical/field-ui-testing-and-conformance.md).

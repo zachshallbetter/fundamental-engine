@@ -13,7 +13,7 @@ import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro"
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
 import CellGallery from "../components/CellGallery.astro";
-import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@field-ui/core";
+import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@fundamental-engine/core";
 import { RENDER_MODES, OVERLAY_MODES } from "../lib/docs-api.ts";
 import contours from "../data/contours.json";
 import "../styles/manual.css";
@@ -130,23 +130,23 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         <span class="concept-no">Install</span>
         <h2>Add it to the stack you already have.</h2>
         <p class="lp-lede">
-          Most projects want <code>@field-ui/vanilla</code> — framework-free and
+          Most projects want <code>@fundamental-engine/vanilla</code> — framework-free and
           host-bundled, so <code>createField</code> works with no wiring. React users
-          want <code>@field-ui/react</code>. The core engine has zero runtime dependencies.
+          want <code>@fundamental-engine/react</code>. The core engine has zero runtime dependencies.
         </p>
         <div class="lp-pkgs">
           <div class="lp-pkg">
-            <code class="install" data-copy="npm i @field-ui/vanilla">npm i @field-ui/vanilla</code>
+            <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
             <span><b>Recommended</b> — framework-free, host-bundled (<code>createField</code> works with no wiring).</span>
           </div>
           <div class="lp-pkg">
-            <code class="install" data-copy="npm i @field-ui/react">npm i @field-ui/react</code>
+            <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
             <span>The <code>&lt;FieldField&gt;</code> React component + <code>useFieldField</code> hook.</span>
           </div>
         </div>
         <p class="lp-note">
           No build step? Import from a CDN (playground / prototyping only):
-          <code>import {'{'} createField {'}'} from 'https://esm.sh/@field-ui/vanilla'</code>
+          <code>import {'{'} createField {'}'} from 'https://esm.sh/@fundamental-engine/vanilla'</code>
         </p>
         <p class="lp-note">
           The full package map and an install-to-reacting-headline walkthrough live in the

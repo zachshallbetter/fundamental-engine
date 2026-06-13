@@ -35,7 +35,7 @@ apply, **declaration wins over inference** (§3).
 
 Temporal distance is a distance. The engine derives force from spatial distance; the kernels
 derive weight from temporal distance — pure, deterministic functions in
-`@field-ui/core` (`core/temporal.ts`), all `(…, nowMs) → 0..1`, no `Date.now()` inside
+`@fundamental-engine/core` (`core/temporal.ts`), all `(…, nowMs) → 0..1`, no `Date.now()` inside
 (callers supply `now`, which keeps them testable and frame-coherent):
 
 | Kernel | Shape | The question it answers |

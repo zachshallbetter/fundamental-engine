@@ -1,4 +1,4 @@
-# @field-ui/platform
+# @fundamental-engine/platform
 
 **The platform layer for [field-ui](../core)** — the native browser primitives the engine wishes
 existed, built on the ones it has. The core is renderer-agnostic; this package owns DOM participation:
@@ -6,12 +6,12 @@ it supplies the browser host, the six registries that let the engine treat the D
 measurable, semantic environment, the frame scheduler that keeps reads and writes from thrashing, and
 the runtime that runs recipes and binds data.
 
-→ Live at **[field-ui.com](https://field-ui.com)**.
+→ Live at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 
 ```sh
-npm i @field-ui/platform
+npm i @fundamental-engine/platform
 ```
 
 The public surface is frozen for `0.x` (see
@@ -23,8 +23,8 @@ The core's `createField` is renderer-agnostic and requires a `FieldHost`. `brows
 canonical DOM implementation, and `createBrowserField()` is the host-bundled shortcut:
 
 ```ts
-import { createField } from '@field-ui/core';
-import { browserHost, createBrowserField } from '@field-ui/platform';
+import { createField } from '@fundamental-engine/core';
+import { browserHost, createBrowserField } from '@fundamental-engine/platform';
 
 const canvas = document.querySelector('canvas')!;
 const field = createField(canvas, { host: browserHost() });
@@ -47,7 +47,7 @@ scheduler that runs them in order: **discover → read → compute → state →
 | `OverlayRegistry` | relationship / field-line / debug render layers |
 
 ```ts
-import { createFieldPlatform } from '@field-ui/platform';
+import { createFieldPlatform } from '@fundamental-engine/platform';
 
 const platform = createFieldPlatform(document.documentElement);
 platform.measure.register(card, { role: 'body' });
@@ -65,8 +65,8 @@ The platform runs recipes and binds application data to the field. `compileRecip
 compiler) lives in [the core](../core); application lives here:
 
 ```ts
-import { applyRecipe, bindData } from '@field-ui/platform';
-import { recipeById } from '@field-ui/core';
+import { applyRecipe, bindData } from '@fundamental-engine/platform';
+import { recipeById } from '@fundamental-engine/core';
 
 // Run a recipe over a region; inspect the live run; tear it down.
 const applied = applyRecipe(root, recipeById('reading-field')!);
@@ -99,8 +99,8 @@ package. During the migration window, writes mirror `--field-*` to `--forces-*` 
 
 ## Related
 
-[`field-ui`](../core) · [`@field-ui/elements`](../elements) · [`@field-ui/react`](../react) ·
-[`@field-ui/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
+[`field-ui`](../core) · [`@fundamental-engine/elements`](../elements) · [`@fundamental-engine/react`](../react) ·
+[`@fundamental-engine/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
 
 ## License
 

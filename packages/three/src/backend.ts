@@ -26,7 +26,7 @@ import {
   MeshBasicMaterial,
   Vector3,
 } from 'three';
-import type { RenderBackend, Stroke } from '@field-ui/core';
+import type { RenderBackend, Stroke } from '@fundamental-engine/core';
 import type { FieldProjection } from './project.ts';
 
 const _v = new Vector3();

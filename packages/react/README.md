@@ -1,16 +1,16 @@
-# @field-ui/react
+# @fundamental-engine/react
 
-**The React adapter for [`@field-ui/core`](../core)** — a reciprocal DOM-physics field as a React
+**The React adapter for [`@fundamental-engine/core`](../core)** — a reciprocal DOM-physics field as a React
 component. Elements you mark with `data-body` become forces; the single background field reacts to
 them, and its density reacts back. You author meaning in JSX (`data-*` in); the field returns
 measurement (`--field-*` CSS variables out).
 
-→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 
 ```sh
-npm i @field-ui/react
+npm i @fundamental-engine/react
 ```
 
 React (17, 18, or 19) is a **peer dependency** — the core engine itself stays zero-dependency.
@@ -18,7 +18,7 @@ React (17, 18, or 19) is a **peer dependency** — the core engine itself stays 
 ## Use
 
 ```tsx
-import { FieldField } from '@field-ui/react';
+import { FieldField } from '@fundamental-engine/react';
 
 export function App() {
   return (
@@ -121,8 +121,8 @@ Router, render it from a Client Component (`'use client'`).
 ## Recipes & data binding
 
 To apply a named recipe or bind data to the field, use `applyRecipe()` / `bindData()` from
-[`@field-ui/platform`](../platform) against a ref'd container. Browse all 64 recipes at
-[`/docs/gallery`](https://field-ui.com/docs/gallery).
+[`@fundamental-engine/platform`](../platform) against a ref'd container. Browse all 64 recipes at
+[`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
 ## Aliases
 
@@ -131,8 +131,8 @@ To apply a named recipe or bind data to the field, use `applyRecipe()` / `bindDa
 
 ## Related
 
-[`@field-ui/core`](../core) · [`@field-ui/platform`](../platform) · [`@field-ui/elements`](../elements)
-· [`@field-ui/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
+[`@fundamental-engine/core`](../core) · [`@fundamental-engine/platform`](../platform) · [`@fundamental-engine/elements`](../elements)
+· [`@fundamental-engine/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
 
 ## License
 

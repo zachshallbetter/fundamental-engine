@@ -149,10 +149,10 @@ The registry is the canonical channel for platform-layer state that isn't a CSS 
 
 All of these are pure — they read state, they don't mutate physics.
 
-### Energy accounting (`@field-ui/core`)
+### Energy accounting (`@fundamental-engine/core`)
 
 ```ts
-import { energyReport, energyDrift } from '@field-ui/core';
+import { energyReport, energyDrift } from '@fundamental-engine/core';
 // or, without holding the particle array:
 const { kinetic, thermal, total, count } = handle.energy();
 ```
@@ -162,10 +162,10 @@ externally accessible forward that doesn't require a particle reference.
 `energyDrift(before, after)` gives fractional conservation drift between two total-energy
 snapshots — used in regression tests.
 
-### Performance budget (`@field-ui/core`)
+### Performance budget (`@fundamental-engine/core`)
 
 ```ts
-import { inspectBudget, withinBudget, DEFAULT_BUDGET } from '@field-ui/core';
+import { inspectBudget, withinBudget, DEFAULT_BUDGET } from '@fundamental-engine/core';
 
 const findings = inspectBudget({
   particles: handle.particleCount(),
@@ -182,7 +182,7 @@ dimensions you can observe.
 ### Scene snapshot
 
 ```ts
-import { captureSnapshot } from '@field-ui/core';
+import { captureSnapshot } from '@fundamental-engine/core';
 ```
 
 `captureSnapshot(scenario)` runs a seeded `Scenario` through the pure engine and returns a
@@ -193,7 +193,7 @@ running instance.
 ### System report
 
 ```ts
-import { systemReport } from '@field-ui/core';
+import { systemReport } from '@fundamental-engine/core';
 const report = systemReport();
 // → { forces, passports, contracts, recipes, agentTypes, conformanceExperiments,
 //     forcesMissingPassport, forcesMissingConformance }
@@ -204,7 +204,7 @@ Aggregate counts for the registered force system. Loaded once; does not change a
 ### Force causality probes
 
 ```ts
-import { causalityAt } from '@field-ui/core';
+import { causalityAt } from '@fundamental-engine/core';
 const contributions = causalityAt(x, y);
 // → CausalContribution[] — [{ token, dvx, dvy }, ...] ranked by |Δv|
 ```

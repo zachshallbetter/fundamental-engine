@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 
 const title = 'field-ui — meshes as bodies';
 const description =
-  'Blooms are field bodies that carry their genome; a pollinator swarm attends to them; feedback brightens each bloom as matter gathers. The field as living, data-carrying behavior — with @field-ui/three.';
+  'Blooms are field bodies that carry their genome; a pollinator swarm attends to them; feedback brightens each bloom as matter gathers. The field as living, data-carrying behavior — with @fundamental-engine/three.';
 ---
 
 <Base title={title} description={description}>
@@ -30,7 +30,7 @@ const description =
 
 <script>
   import * as THREE from 'three';
-  import { createFieldLayer, PlaneProjection, vectorField, type FieldBody } from '@field-ui/three';
+  import { createFieldLayer, PlaneProjection, vectorField, type FieldBody } from '@fundamental-engine/three';
 
   // a little "genome" each bloom carries — exactly the kind of data a Verdant-Garden-style game holds
   const GENOMES = [

@@ -22,8 +22,8 @@
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs render-less (applyRecipe renderless) — bodies compute (metrics flow) but nothing is drawn.
-import { allocateAttention, freshness, recipeById, weightToStrength } from "@field-ui/core";
-import { applyRecipe, withFlip } from "@field-ui/platform";
+import { allocateAttention, freshness, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { applyRecipe, withFlip } from "@fundamental-engine/platform";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { politeLoop, wireLiveChip } from "../../lib/live-data";
 import { pageRuntime } from "../../lib/page-runtime";

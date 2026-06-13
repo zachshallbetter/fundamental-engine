@@ -54,49 +54,45 @@ export class Thresholder {
   }
 }
 
-/** A named field event with its `field:*` canonical name and `forces:*` migration alias. */
+/** A named field event with its `field:*` name. */
 export interface FieldEventName {
   field: string;
-  forces: string;
   /** the metric whose threshold crossing fires it (where applicable). */
   metric?: string;
 }
 
 /**
  * The named field-event catalog (system-contracts §9, shadow-dom §22, interaction §12). These are
- * the thresholded, debounced events the engine may dispatch — never per-frame by default. Each
- * carries both namespaces during the migration. `field:lit`/`dim` and the `*-body` lifecycle events
- * are dispatched today; the rest are the agreed names for agent/threshold events as they wire up.
+ * the thresholded, debounced events the engine may dispatch — never per-frame by default.
+ * `field:lit`/`dim` and the `*-body` lifecycle events are dispatched today; the rest are the agreed
+ * names for agent/threshold events as they wire up.
  */
 export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
   // --- dispatched today (shipped) ---
-  registerBody: { field: 'field:register-body', forces: 'forces:register-body' },
-  unregisterBody: { field: 'field:unregister-body', forces: 'forces:unregister-body' },
-  updateBody: { field: 'field:update-body', forces: 'forces:update-body' },
-  lit: { field: 'field:lit', forces: 'forces:lit', metric: 'density' },
-  dim: { field: 'field:dim', forces: 'forces:dim', metric: 'density' },
+  registerBody: { field: 'field:register-body' },
+  unregisterBody: { field: 'field:unregister-body' },
+  updateBody: { field: 'field:update-body' },
+  lit: { field: 'field:lit', metric: 'density' },
+  dim: { field: 'field:dim', metric: 'density' },
   // capture/release (§22.3): a sink fires field:captured on the rising edge of accreting and
   // field:released on supernova; docked elements fire them too. Edge-debounced (see field.ts).
-  captured: { field: 'field:captured', forces: 'forces:captured' },
-  released: { field: 'field:released', forces: 'forces:released' },
+  captured: { field: 'field:captured' },
+  released: { field: 'field:released' },
   // relocate (§22.3): a [data-warp] element teleports its transform to its paired throat.
-  relocated: { field: 'field:relocated', forces: 'forces:relocated' },
+  relocated: { field: 'field:relocated' },
   // --- names reserved; NOT yet dispatched by the engine (planned agent-threshold events).
   //     See docs/canonical/field-ui-agent-consumption-model.md (Events). ---
-  entered: { field: 'field:entered', forces: 'forces:entered', metric: 'density' },
-  exited: { field: 'field:exited', forces: 'forces:exited', metric: 'density' },
-  saturated: { field: 'field:saturated', forces: 'forces:saturated', metric: 'accreted' },
-  attentionShifted: { field: 'field:attention-shifted', forces: 'forces:attention-shifted', metric: 'attention' },
-  relationshipStrengthened: { field: 'field:relationship-strengthened', forces: 'forces:relationship-strengthened', metric: 'strength' },
-  memoryThreshold: { field: 'field:memory-threshold', forces: 'forces:memory-threshold', metric: 'memory' },
-  entropyWarning: { field: 'field:entropy-warning', forces: 'forces:entropy-warning', metric: 'entropy' },
+  entered: { field: 'field:entered', metric: 'density' },
+  exited: { field: 'field:exited', metric: 'density' },
+  saturated: { field: 'field:saturated', metric: 'accreted' },
+  attentionShifted: { field: 'field:attention-shifted', metric: 'attention' },
+  relationshipStrengthened: { field: 'field:relationship-strengthened', metric: 'strength' },
+  memoryThreshold: { field: 'field:memory-threshold', metric: 'memory' },
+  entropyWarning: { field: 'field:entropy-warning', metric: 'entropy' },
 };
 
-/** Map a metric to its conventional `field:*` / `forces:*` event names for an edge. */
-export function eventNamesFor(metric: string, edge: Exclude<ThresholdEdge, null>): {
-  field: string;
-  forces: string;
-} {
+/** Map a metric to its conventional `field:*` event name for an edge. */
+export function eventNamesFor(metric: string, edge: Exclude<ThresholdEdge, null>): { field: string } {
   // density → lit/dim; attention → attention-shifted; generic → entered/exited
   const verb =
     metric === 'density'
@@ -106,5 +102,5 @@ export function eventNamesFor(metric: string, edge: Exclude<ThresholdEdge, null>
       : edge === 'entered'
         ? 'entered'
         : 'exited';
-  return { field: `field:${verb}`, forces: `forces:${verb}` };
+  return { field: `field:${verb}` };
 }

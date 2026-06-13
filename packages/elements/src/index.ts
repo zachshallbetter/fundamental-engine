@@ -1,5 +1,5 @@
-import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@field-ui/core';
-import { createBrowserField, type FieldPlatform } from '@field-ui/platform';
+import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@fundamental-engine/core';
+import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 
@@ -8,7 +8,7 @@ export { usePlatformRuntime, isPlatformRuntimeDefault, shouldUsePlatformRuntime,
 export type { PlatformRuntime } from './platform-runtime.ts';
 
 /**
- * `<forces-field>` — the reciprocal field as a custom element.
+ * `<field-root>` — the reciprocal field as a custom element.
  *
  * Drop it once on a page; it renders a full-viewport canvas behind the content
  * and scans the document for `[data-body]` / `[data-preset]` elements, turning
@@ -23,7 +23,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  *
  * @summary The page-singleton reciprocal field — a full-viewport canvas that turns
  * `[data-body]` / `[data-preset]` elements into bodies. Registered as `<field-root>`
- * (canonical), `<field-field>`, and `<forces-field>` (deprecated alias).
+ * (canonical) and `<field-field>`.
  * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {number} waves - Intensity of the resting wave currents (the ambient drift).
@@ -61,7 +61,7 @@ export class FieldField extends HTMLElementBase {
   platformRuntime?: PlatformRuntime;
 
   /**
-   * The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on
+   * The live `@fundamental-engine/platform` instance backing this field (Phase D default), or `undefined` on
    * the legacy path. Read-only introspection for tools like the Inspector — the registries here are
    * the real running state (measurements, state, feedback bindings, relationships, overlays, lint).
    * Read with `measure.last()` etc.; don't call `measure.measure()` off the read phase.
@@ -392,43 +392,32 @@ if (typeof customElements !== 'undefined' && !customElements.get('field-field'))
 }
 
 /**
- * Tag aliases of the canonical {@link FieldField} element. The registry rejects registering one
- * constructor under two tag names, so each alias is a thin subclass with identical behaviour,
- * attributes, and body contract. `<field-root>` is the recommended tag for the singleton field;
- * `<forces-field>` is the deprecated field-ui-migration alias kept until the removal version
- * (docs/planning-archive/field-ui-migration-plan.md §3).
+ * `<field-root>` — the recommended tag for the singleton field. The registry rejects registering one
+ * constructor under two tag names, so this is a thin subclass of {@link FieldField} with identical
+ * behaviour, attributes, and body contract.
  */
 export class FieldRoot extends FieldField {}
-/** @deprecated use `<field-root>` / `FieldField`. */
-export class ForcesField extends FieldField {}
 
 if (typeof customElements !== 'undefined') {
   if (!customElements.get('field-root')) customElements.define('field-root', FieldRoot);
-  if (!customElements.get('forces-field')) customElements.define('forces-field', ForcesField);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
     'field-field': FieldField;
     'field-root': FieldRoot;
-    'forces-field': ForcesField;
   }
 }
 
-export * from './forces-cell.ts';
+export * from './field-cell.ts';
 export * from './cell-force.ts';
 export * from './mount.ts';
 // shadow-DOM participation: the helper a custom element uses to join the field without
 // repeating registration-event boilerplate (docs/engine-reference/shadow-dom.md §31.1).
 export {
   FieldController,
-  ForcesController, // @deprecated alias of FieldController
   REGISTER_BODY,
   UNREGISTER_BODY,
   UPDATE_BODY,
-  // field:* event aliases (field-ui migration) — dispatched and listened alongside forces:*.
-  FIELD_REGISTER_BODY,
-  FIELD_UNREGISTER_BODY,
-  FIELD_UPDATE_BODY,
-} from '@field-ui/core';
-export type { RegisterBodyDetail } from '@field-ui/core';
+} from '@fundamental-engine/core';
+export type { RegisterBodyDetail } from '@fundamental-engine/core';

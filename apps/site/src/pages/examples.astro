@@ -58,7 +58,7 @@ stage.addEventListener('pointerleave', () => field.clearFlow());
 
 field.setRender('streamlines'); // optional: watch the flow LINES bend, not just the matter`;
 
-const flowCoreSrc = `import { createField } from '@field-ui/vanilla'; // wires the browser host for you
+const flowCoreSrc = `import { createField } from '@fundamental-engine/vanilla'; // wires the browser host for you
 
 const field = createField(canvas);
 
@@ -150,7 +150,7 @@ function reflow(items, mutate) {
   });
 }`;
 
-const textBoundarySrc = `import { textBodies } from '@field-ui/platform';
+const textBoundarySrc = `import { textBodies } from '@fundamental-engine/platform';
 
 const sentence = document.querySelector('#headline');
 const field = document.querySelector('field-root');
@@ -465,7 +465,7 @@ const GROUPS = [
   // Text-as-boundary demo: textBodies (the #257 Range-geometry slice) samples the sentence's
   // rendered word boxes into shear boundary spans; field-root.rescan() registers/drops them.
   // One handle per visit — handle.annotate() is idempotent, so resize just re-annotates.
-  import { textBodies } from '@field-ui/platform';
+  import { textBodies } from '@fundamental-engine/platform';
 
   const rescan = () => {
     const f = document.querySelector('field-root') as (Element & { rescan?: () => void }) | null;
@@ -800,8 +800,8 @@ const GROUPS = [
   // in view writes --field-attention (and accretes --field-memory), mirrored onto its nav link as
   // --att / --mem. Signals-only + reduced-motion-guarded; the scroll-spy .active stays the discrete
   // signal. Engine off / RM → the vars are unset and the nav reads plain.
-  import { recipeById } from '@field-ui/core';
-  import { applyRecipe } from '@field-ui/platform';
+  import { recipeById } from '@fundamental-engine/core';
+  import { applyRecipe } from '@fundamental-engine/platform';
   import { reduceMotion } from '../lib/nav-field.ts';
 
   type Bits = { destroy(): void };

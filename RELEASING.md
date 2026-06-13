@@ -5,10 +5,10 @@ How versions are cut and published. The mechanical detail lives in
 
 ## Versioning policy
 
-The eight published packages — `@field-ui/core`, `@field-ui/platform`, `@field-ui/elements`,
-`@field-ui/react`, `@field-ui/vanilla`, `@field-ui/three`, and the meta-packages `@field-ui/kit` /
-`@field-ui/field-ui` — are versioned **together**. (`@field-ui/three` declares `three` as a peer
-dependency and is deliberately *not* part of `@field-ui/kit`, so the kit never forces a Three.js
+The eight published packages — `@fundamental-engine/core`, `@fundamental-engine/platform`, `@fundamental-engine/elements`,
+`@fundamental-engine/react`, `@fundamental-engine/vanilla`, `@fundamental-engine/three`, and the meta-packages `@fundamental-engine/kit` /
+`fundamental-engine` — are versioned **together**. (`@fundamental-engine/three` declares `three` as a peer
+dependency and is deliberately *not* part of `@fundamental-engine/kit`, so the kit never forces a Three.js
 install.) They follow [Semantic Versioning](https://semver.org):
 
 - **patch** (`0.2.x`) — bug fixes, internal changes, **and additive backward-compatible features**
@@ -21,9 +21,9 @@ install.) They follow [Semantic Versioning](https://semver.org):
   **Breaking** heading with a migration note. Consumers should pin to `~0.MINOR`.
 - **major** (`1.0.0`) — the stability promise itself; from 1.0 on, standard SemVer applies.
 
-The engine's public surface is: the `@field-ui/core` exports (`createField`, `FieldOptions`,
+The engine's public surface is: the `@fundamental-engine/core` exports (`createField`, `FieldOptions`,
 `FieldHandle`, the catalog, the conformance API), the `data-*` attribute vocabulary, the `<field-root>`
-element attributes/methods, the `@field-ui/vanilla` `FieldField` class and `mountField`, and the React
+element attributes/methods, the `@fundamental-engine/vanilla` `FieldField` class and `mountField`, and the React
 adapter's props. The internal integrator, render code, and the site are not part of the public
 contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
 [API stability](docs/canonical/field-ui-api-stability.md).
@@ -40,7 +40,7 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
    [Keep a Changelog](https://keepachangelog.com).
 3. **Bump all seven packages together** (keep them at the same version):
    ```sh
-   pnpm --filter "@field-ui/*" exec npm version <patch|minor|major> --no-git-tag-version
+   pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
    ```
    The private apps (`site`, `starter`) are versioned independently and are not published.
 4. **Commit, tag, push the tag** — pushing the tag triggers the release workflow:
@@ -50,17 +50,17 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
    git push && git push origin vX.Y.Z
    ```
 5. **CI publishes.** `.github/workflows/release.yml` runs the full gate, then publishes every
-   `@field-ui/*` package with provenance. Watch it: `gh run watch` (or the Actions tab). It re-reads the
+   `@fundamental-engine/*` package with provenance. Watch it: `gh run watch` (or the Actions tab). It re-reads the
    `NPM_TOKEN` secret each run, so a failed publish can be retried with `gh run rerun <id> --failed`.
 6. **Create the GitHub release** for the tag, pasting the CHANGELOG section.
-7. **Smoke-test** a clean install (`npm i @field-ui/kit` in a fresh directory) and confirm the scoped
+7. **Smoke-test** a clean install (`npm i @fundamental-engine/kit` in a fresh directory) and confirm the scoped
    packages resolve the core dependency.
 
 ## What CI does
 
 - **`ci.yml`** — typecheck · test · build · checks on every push and PR to `main`. Never publishes.
 - **`release.yml`** — on a `v*` tag (or manual dispatch): runs the gate, then publishes all
-  `@field-ui/*` packages **with provenance**. Requirements (all in place): the GitHub repo is **public**
+  `@fundamental-engine/*` packages **with provenance**. Requirements (all in place): the GitHub repo is **public**
   (npm rejects provenance for private repos) and an `NPM_TOKEN` secret holds a granular npm token with
   write to `@field-ui` and **2FA-bypass** enabled (CI cannot answer an interactive OTP).
 - **`pr-checks.yml`** — PR hygiene: a PR that changes `packages/` must add a CHANGELOG entry
@@ -89,7 +89,7 @@ the gates above.
   used, log it as an exception in the CHANGELOG entry for that release — "published
   without provenance" is a recorded fact, not a silent degradation.
 - **Never bump one package alone.** Always
-  `pnpm --filter "@field-ui/*" exec npm version <bump> --no-git-tag-version` — the release
+  `pnpm --filter "@fundamental-engine/*" exec npm version <bump> --no-git-tag-version` — the release
   gate fails the tag if any of the seven is out of step.
 - **Never widen a failing gate to make it pass.** If `check:api` fails, the public
   contract changed: fix the change or cut a deliberate 0.MINOR with a migration note —

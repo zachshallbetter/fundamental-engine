@@ -6,9 +6,9 @@ import rehypeKatex from 'rehype-katex';
 import remarkMermaid from './src/lib/remark-mermaid.mjs';
 
 // Static output (default) → apps/site/dist, served by Vercel.
-// The live `<field-root>` element (@field-ui/elements) runs the engine.
+// The live `<field-root>` element (@fundamental-engine/elements) runs the engine.
 export default defineConfig({
-  site: 'https://field-ui.com',
+  site: 'https://fundamental-engine.com',
   integrations: [
     // sitemap-index.xml + per-chunk sitemaps; referenced from public/robots.txt.
     // The redirect stubs below carry noindex — keep them out of the sitemap too.
@@ -32,7 +32,7 @@ export default defineConfig({
   redirects: {
     '/reference': '/',
     // The core-engine guide moved off the ambiguous "vanilla" slug (it collided
-    // with the @field-ui/vanilla package, documented under /typescript).
+    // with the @fundamental-engine/vanilla package, documented under /typescript).
     '/docs/guides/vanilla': '/docs/guides/core',
     // The research papers moved into the /writings datastore (research is a category).
     '/research': '/writings',

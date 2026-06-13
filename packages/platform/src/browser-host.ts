@@ -1,11 +1,11 @@
 /**
  * browserHost — the default {@link FieldHost}, binding the renderer-agnostic core engine to the
- * browser (`window` / `document` / `requestAnimationFrame`). It lives in `@field-ui/platform` (the DOM
+ * browser (`window` / `document` / `requestAnimationFrame`). It lives in `@fundamental-engine/platform` (the DOM
  * participation layer), NOT in `field-ui` — core imports zero DOM. `createField(canvas, opts)`
  * requires a host; pass `browserHost()` in the browser (or `createBrowserField` for the convenience),
  * or a custom host to drive the same engine from a headless renderer / a different document / a test.
  */
-import type { FieldHost } from '@field-ui/core';
+import type { FieldHost } from '@fundamental-engine/core';
 import { prefersReducedMotion, pageHidden } from './env.ts';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;

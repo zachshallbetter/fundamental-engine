@@ -13,20 +13,19 @@ const clamp = (v: number, lo: number, hi: number): number =>
   Math.max(lo, Math.min(hi, v));
 
 /**
- * `<forces-cell force="swirl" color="#2dd4bf">` — an in-frame field surface (§25.1).
+ * `<field-cell force="swirl" color="#2dd4bf">` — an in-frame field surface (§25.1).
  *
  * A standalone field sized to its container that renders *one* force, with its own
  * lightweight particle pool, its own pointer interaction, and a lifecycle that pauses
  * when off-screen. It is **not** the §-engine: it's a lighter "demo/poster" engine,
- * completely separate from the page `<forces-field>` and the core field loop.
+ * completely separate from the page `<field-root>` and the core field loop.
  *
  * - `ResizeObserver` re-fits the canvas (DPR-aware) and rebuilds the pool.
  * - `IntersectionObserver` gates the rAF loop — paused when off-screen.
  * - Honours `prefers-reduced-motion`: renders one static frame, no animation.
  *
  * @summary A standalone, in-frame demo field that renders one force with its own
- * particle pool, in-view-gated. Registered as `<field-cell>` (canonical) and
- * `<forces-cell>` (deprecated alias).
+ * particle pool, in-view-gated. Registered as `<field-cell>`.
  * @attr {string} force - The single force token rendered: `attract` | `repel` | `swirl` | `gravity` | `stream` | `buoyancy` | `tether`.
  * @attr {string} color - Accent color (hex) for the cell's particles.
  * @attr {number} count - Number of particles in the cell's pool.
@@ -251,20 +250,8 @@ if (typeof customElements !== 'undefined' && !customElements.get('field-cell')) 
   customElements.define('field-cell', FieldCell);
 }
 
-/**
- * `<forces-cell>` — deprecated field-ui-migration alias of `<field-cell>` (a thin subclass, since
- * the registry forbids two tag names per constructor). Identical behaviour; prefer `<field-cell>`
- * in new markup. Kept working until the migration removal version.
- */
-export class ForcesCell extends FieldCell {}
-
-if (typeof customElements !== 'undefined' && !customElements.get('forces-cell')) {
-  customElements.define('forces-cell', ForcesCell);
-}
-
 declare global {
   interface HTMLElementTagNameMap {
     'field-cell': FieldCell;
-    'forces-cell': ForcesCell;
   }
 }

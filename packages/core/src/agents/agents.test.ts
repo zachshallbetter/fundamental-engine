@@ -1,7 +1,7 @@
 /**
  * FieldAgent model tests (Phase 5). The agent dynamics are pure, so each is checked deterministically:
  * the thresholder emits one clean hysteretic/debounced edge per crossing; relationships strengthen
- * and decay; ElementAgent metrics map to both --field-* and --forces-* vars; the UserAgent respects
+ * and decay; ElementAgent metrics map to --field-* vars; the UserAgent respects
  * reduced motion; layout aggregates and data salience decays.
  */
 import { test } from 'node:test';
@@ -34,10 +34,10 @@ test('Thresholder debounce suppresses a too-soon edge', () => {
   assert.equal(t.update(0.2, 700), 'exited'); // after window
 });
 
-test('eventNamesFor maps density to lit/dim with both namespaces', () => {
-  assert.deepEqual(eventNamesFor('density', 'entered'), { field: 'field:lit', forces: 'forces:lit' });
-  assert.deepEqual(eventNamesFor('density', 'exited'), { field: 'field:dim', forces: 'forces:dim' });
-  assert.deepEqual(eventNamesFor('attention', 'entered'), { field: 'field:entered', forces: 'forces:entered' });
+test('eventNamesFor maps density to lit/dim in the field:* namespace', () => {
+  assert.deepEqual(eventNamesFor('density', 'entered'), { field: 'field:lit' });
+  assert.deepEqual(eventNamesFor('density', 'exited'), { field: 'field:dim' });
+  assert.deepEqual(eventNamesFor('attention', 'entered'), { field: 'field:entered' });
 });
 
 test('relationship strengthens with use and decays when idle, bounded to [0,1]', () => {
@@ -56,12 +56,11 @@ test('attentionTransfer scales by strength', () => {
   assert.equal(attentionTransfer(r, 1, 0.4), 0.2); // 1 * 0.5 * 0.4
 });
 
-test('ElementAgent maps metrics to both --field-* and --forces-* vars + data bands', () => {
+test('ElementAgent maps metrics to --field-* vars + data bands', () => {
   const vars = elementAgentVars({ density: 0.8, pullX: -0.5 });
   assert.equal(vars['--field-density'], '0.800');
-  assert.equal(vars['--forces-density'], '0.800');
   assert.equal(vars['--field-pull-x'], '-0.500');
-  assert.equal(vars['--forces-pull-x'], '-0.500');
+  assert.equal('--forces-density' in vars, false, 'no --forces-* alias is emitted');
   const state = elementAgentState({ density: 0.8, heat: 0.1 });
   assert.equal(state['data-field-density'], 'high');
   assert.equal(state['data-field-heat'], 'low');

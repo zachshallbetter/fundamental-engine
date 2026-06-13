@@ -1,21 +1,21 @@
 {
-  "name": "@field-ui/three",
+  "name": "@fundamental-engine/three",
   "version": "0.3.1",
-  "description": "Three.js authoring surface for field-ui — run the reciprocal field engine headless and render its swarm as a THREE.Points layer (the particle bridge), plus threeHost() and threeBackend() (a RenderBackend) for binding the engine to a WebGL scene.",
+  "description": "Three.js authoring surface for Fundamental — run the reciprocal field engine headless and render its swarm as a THREE.Points layer (the particle bridge), plus threeHost() and threeBackend() (a RenderBackend) for binding the engine to a WebGL scene.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://field-ui.com",
+  "homepage": "https://fundamental-engine.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zachshallbetter/field-ui.git",
+    "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
     "directory": "packages/three"
   },
   "bugs": {
-    "url": "https://github.com/zachshallbetter/field-ui/issues"
+    "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
-    "field-ui",
+    "Fundamental",
     "three",
     "threejs",
     "webgl",
@@ -54,7 +54,7 @@
     "three": ">=0.147.0"
   },
   "dependencies": {
-    "@field-ui/core": "workspace:*"
+    "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {
     "three": "^0.169.0",

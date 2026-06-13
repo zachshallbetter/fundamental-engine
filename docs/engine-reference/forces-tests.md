@@ -13,7 +13,7 @@ A physics engine is only as trustworthy as its proof that each force behaves. Th
 document is that proof, in two registers: the **unit math** (each force's exact
 per-frame Δv) and the **behavior** (the invariants that define "reacts appropriately").
 The behavioral layer is a single declarative catalog that drives both the test suite
-and the **Lab detector** ([`/lab`](https://field-ui.com/lab)) — so "did the expected
+and the **Lab detector** ([`/lab`](https://fundamental-engine.com/lab)) — so "did the expected
 thing happen?" is answered identically in code and on screen.
 
 The Lab is the human face of it: think of it like a particle collider. A known particle
@@ -57,9 +57,9 @@ How they relate:
   finite, speed ≤ `c`, heat bounded, and the particle count stable unless a budgeted [S]
   source is active — the net that catches a runaway a bespoke check would miss.
 - **The benchmark is not a correctness gate** — it tracks throughput so a regression is
-  visible (`pnpm --filter @field-ui/core bench`).
+  visible (`pnpm --filter @fundamental-engine/core bench`).
 
-Run everything with `pnpm --filter @field-ui/core test` (Node's built-in `node:test`, zero
+Run everything with `pnpm --filter @fundamental-engine/core test` (Node's built-in `node:test`, zero
 test framework). RNG forces are seeded, so the suite is deterministic across runs.
 
 ---

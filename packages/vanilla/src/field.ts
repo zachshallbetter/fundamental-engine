@@ -5,10 +5,10 @@
  * `new FieldField()` builds a managed, full-viewport canvas and starts the engine on it;
  * pass `{ canvas }` to drive a `<canvas>` you own instead. The class implements the full
  * `FieldHandle` surface, so an instance is type-compatible anywhere a handle is expected,
- * and it exposes the `canvas` it renders to. (`ForcesField` remains as a deprecated alias.)
+ * and it exposes the `canvas` it renders to.
  *
  * ```ts
- * import { FieldField } from '@field-ui/vanilla';
+ * import { FieldField } from '@fundamental-engine/vanilla';
  *
  * const field = new FieldField({ accent: '#4da3ff', render: 'dots' });
  * field.setFormation('wells');
@@ -17,8 +17,8 @@
  * ```
  */
 
-import { type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@field-ui/core';
-import { createBrowserField } from '@field-ui/platform';
+import { type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@fundamental-engine/core';
+import { createBrowserField } from '@fundamental-engine/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
 export interface FieldFieldInit extends FieldOptions {
@@ -141,8 +141,3 @@ export class FieldField implements FieldHandle {
     if (this.managed) this.canvas.remove();
   }
 }
-
-/** @deprecated field-ui-migration alias of {@link FieldField}; use `FieldField`. */
-export { FieldField as ForcesField };
-/** @deprecated field-ui-migration alias of {@link FieldFieldInit}; use `FieldFieldInit`. */
-export type { FieldFieldInit as ForcesFieldInit };

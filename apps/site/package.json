@@ -1,5 +1,5 @@
 {
-  "name": "@field-ui/site",
+  "name": "@fundamental-engine/site",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
-    "@field-ui/core": "workspace:*",
-    "@field-ui/elements": "workspace:*",
-    "@field-ui/platform": "workspace:*",
-    "@field-ui/three": "workspace:*",
+    "@fundamental-engine/core": "workspace:*",
+    "@fundamental-engine/elements": "workspace:*",
+    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/three": "workspace:*",
     "astro": "^5",
     "mermaid": "^11.15.0",
     "three": "^0.169.0"

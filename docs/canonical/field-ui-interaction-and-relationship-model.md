@@ -17,7 +17,7 @@
 
 This document expands `field-ui` beyond particles.
 
-`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
+`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
@@ -122,10 +122,10 @@ Conserved attention mode:
 Suggested DOM variables:
 
 ```css
---forces-attention
---forces-attention-share
---forces-attention-rank
---forces-related-attention
+--field-attention
+--field-attention-share
+--field-attention-rank
+--field-related-attention
 ```
 
 Key phrase:
@@ -283,9 +283,9 @@ desire paths
 Suggested outputs:
 
 ```css
---forces-memory
---forces-path-use
---forces-user-wake
+--field-memory
+--field-path-use
+--field-user-wake
 ```
 
 ## 12. Events as Field Thresholds
@@ -317,15 +317,15 @@ Field events should be thresholded, debounced, and inspectable.
 Possible outputs:
 
 ```css
---forces-density
---forces-attention
---forces-pressure
---forces-coherence
---forces-entropy
---forces-memory
---forces-pull-x
---forces-pull-y
---forces-layout-shift
+--field-density
+--field-attention
+--field-pressure
+--field-coherence
+--field-entropy
+--field-memory
+--field-pull-x
+--field-pull-y
+--field-layout-shift
 ```
 
 Example:
@@ -334,10 +334,10 @@ Example:
 .card {
   transform:
     translate(
-      calc(var(--forces-pull-x, 0) * 12px),
-      calc(var(--forces-pull-y, 0) * 12px)
+      calc(var(--field-pull-x, 0) * 12px),
+      calc(var(--field-pull-y, 0) * 12px)
     )
-    scale(calc(1 + var(--forces-attention, 0) * 0.04));
+    scale(calc(1 + var(--field-attention, 0) * 0.04));
 }
 ```
 

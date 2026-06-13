@@ -3,10 +3,10 @@ import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 const create = `// field-ui is renderer-agnostic — createField requires an explicit host.
-// In the browser, browserHost() (from @field-ui/platform) is the host. Pass a custom
+// In the browser, browserHost() (from @fundamental-engine/platform) is the host. Pass a custom
 // host to drive a headless or alternative renderer.
-import { createField } from '@field-ui/core';
-import { browserHost } from '@field-ui/platform';
+import { createField } from '@fundamental-engine/core';
+import { browserHost } from '@fundamental-engine/platform';
 
 const canvas = document.querySelector('canvas');
 const field = createField(canvas, {
@@ -17,16 +17,16 @@ const field = createField(canvas, {
   causality: false,
 });
 
-// Prefer a browser convenience wrapper? @field-ui/vanilla re-exports a createField
+// Prefer a browser convenience wrapper? @fundamental-engine/vanilla re-exports a createField
 // that wires browserHost() for you, so you can drop the host:
-//   import { createField } from '@field-ui/vanilla';
+//   import { createField } from '@fundamental-engine/vanilla';
 //   const field = createField(canvas, { accent: '#4da3ff' });
 
 // the field reads every [data-body] element on the page.
 // after you add or remove bodies, rescan:
 field.scan();`;
 
-const custom = `import type { Force } from '@field-ui/core';
+const custom = `import type { Force } from '@fundamental-engine/core';
 
 // Every force is one object: a token + an apply(body, particle, env).
 // This is the exact contract all 34 built-ins implement.
@@ -43,7 +43,7 @@ const lift: Force = {
 
 <DocsLayout
   title="field-ui — Core engine guide"
-  description="Drive the field-ui engine directly: createField() on a canvas you own, returning the FieldHandle. The renderer-agnostic core takes an injected host (browserHost from @field-ui/platform, or use @field-ui/vanilla which wires it). For a managed canvas and a typed class, see the TypeScript guide."
+  description="Drive the field-ui engine directly: createField() on a canvas you own, returning the FieldHandle. The renderer-agnostic core takes an injected host (browserHost from @fundamental-engine/platform, or use @fundamental-engine/vanilla which wires it). For a managed canvas and a typed class, see the TypeScript guide."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
@@ -59,13 +59,13 @@ const lift: Force = {
     <b>Where this fits.</b> Use <code>field-ui</code> when you own the render surface and want
     renderer-agnostic field math. When you want DOM participation — measurement, feedback,
     relationships, visual bindings, and overlays on a frame scheduler — reach for
-    <a href="/docs/api">@field-ui/platform</a>. Canvas is one render surface, not the whole system.
+    <a href="/docs/api">@fundamental-engine/platform</a>. Canvas is one render surface, not the whole system.
   </div>
 
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">
-      <code class="install" data-copy="npm i @field-ui/core">npm i @field-ui/core</code>
+      <code class="install" data-copy="npm i @fundamental-engine/core">npm i @fundamental-engine/core</code>
       <span>the engine itself — when you own the canvas</span>
     </div>
   </section>
@@ -75,7 +75,7 @@ const lift: Force = {
     <p>
       When you want to place and size the canvas yourself, hand it to <code>createField</code>.
       You get the <a href="/docs/api/handle">FieldHandle</a>. This is the lowest-level entry
-      point; the web component, the React adapter, and <code>@field-ui/vanilla</code> all wrap it.
+      point; the web component, the React adapter, and <code>@fundamental-engine/vanilla</code> all wrap it.
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: create }]} />
     <div class="callout">
@@ -85,7 +85,7 @@ const lift: Force = {
       when the tab is backgrounded.
     </div>
     <div class="callout">
-      <b>Want a managed canvas?</b> <code>@field-ui/vanilla</code> creates and tears down the
+      <b>Want a managed canvas?</b> <code>@fundamental-engine/vanilla</code> creates and tears down the
       canvas for you — as a <code>FieldField</code> class or the <code>mountField()</code>
       function. See the <a href="/docs/guides/typescript">TypeScript guide</a>.
     </div>

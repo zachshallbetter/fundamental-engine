@@ -14,7 +14,7 @@ alias second.*
 | Typecheck | ✅ all 8 buildable projects clean |
 | Test suite | ✅ **434 pass / 0 fail** (was 422 pre-migration; +12 migration tests) |
 | Build | ✅ all packages + Astro site (24 pages) build |
-| Dist smoke check | ✅ `field-ui`, `@field-ui/vanilla`, `@field-ui/elements`, `@field-ui/react` |
+| Dist smoke check | ✅ `field-ui`, `@fundamental-engine/vanilla`, `@fundamental-engine/elements`, `@fundamental-engine/react` |
 | Magnetism = Lorentz | ✅ 43 assertions incl. "does no work / speed preserved", "still charge feels no force", "neutral matter unaffected" |
 | Fieldflow = field-aligned transport | ✅ "neutral matter following a charge field line" |
 | Old public names still work | ✅ package / event / CSS-var / element aliases all verified |
@@ -44,15 +44,15 @@ so no physics was touched.
 | Old | New |
 |---|---|
 | `forces-ui` (core, unscoped) | `field-ui` |
-| `@forces-ui/elements` / `react` / `vanilla` / `site` | `@field-ui/*` |
+| `@forces-ui/elements` / `react` / `vanilla` / `site` | `@fundamental-engine/*` |
 | `forces-ui-monorepo` | `field-ui-monorepo` |
 
 All 29 `from 'forces-ui'` imports, 34 `@forces-ui/*` references, workspace deps, and root script
 filters were updated. Product-name strings in the README, the Astro site (titles, prose, install
 commands, demo copy), CONTRIBUTING, the core module header, and two thrown error messages were
-rebranded to `field-ui`. The production domain was moved to **`field-ui.com`** (Astro `site:`,
+rebranded to `field-ui`. The production domain was moved to **`fundamental-engine.com`** (Astro `site:`,
 canonical/OG URLs, package `homepage` fields, README/docs links). The GitHub repository was renamed
-to **`github.com/zachshallbetter/field-ui`** (the old `forces-ui` URL still redirects); the
+to **`github.com/zachshallbetter/fundamental-engine`** (the old `forces-ui` URL still redirects); the
 `repository` / `bugs` URLs across all package manifests were updated to match.
 
 ## 4. Aliases added (old + new both resolve)
@@ -60,7 +60,7 @@ to **`github.com/zachshallbetter/field-ui`** (the old `forces-ui` URL still redi
 - **Packages** — 4 thin re-export shim packages keep the old import specifiers working:
   `packages/compat-core` → `forces-ui`, `compat-elements` → `@forces-ui/elements`,
   `compat-react` → `@forces-ui/react`, `compat-vanilla` → `@forces-ui/vanilla`. Each depends on
-  and re-exports its `@field-ui/*` target (the elements shim also re-runs the element
+  and re-exports its `@fundamental-engine/*` target (the elements shim also re-runs the element
   registration). Verified: importing the old names yields `createField`, `FORCES`, `ForcesField`,
   `mountField`, `REGISTER_BODY`, `useForcesField`.
 - **Events** — `field:register-body` / `field:unregister-body` / `field:update-body` are now
@@ -98,7 +98,7 @@ to **`github.com/zachshallbetter/field-ui`** (the old `forces-ui` URL still redi
 
 ## 7. Follow-up pass (field-first completion, post-adoption)
 
-After field-ui was adopted as the working repo and the domain moved to **field-ui.com**:
+After field-ui was adopted as the working repo and the domain moved to **fundamental-engine.com**:
 
 - **Canonical class/hook names flipped to field-first.** `FieldField` / `FieldController` /
   `FieldCell` / `useFieldField` / `FieldFieldProps` / `FieldFieldInit` are now the canonical

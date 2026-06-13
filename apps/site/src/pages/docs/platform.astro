@@ -2,9 +2,9 @@
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import ApiStamp from '../../components/ApiStamp.astro';
 import SeeItLive from '../../components/SeeItLive.astro';
-import { PHASES } from '@field-ui/platform';
+import { PHASES } from '@fundamental-engine/platform';
 
-// The platform layer as a public page — data-driven from @field-ui/platform (PHASES) so the loop can't
+// The platform layer as a public page — data-driven from @fundamental-engine/platform (PHASES) so the loop can't
 // drift. Companion to the canonical doc docs/canonical/field-ui-platform-architecture.md.
 
 const PHASE_DESC: Record<string, string> = {
@@ -19,7 +19,7 @@ const PHASE_DESC: Record<string, string> = {
 const REGISTRIES = [
   { name: 'MeasurementRegistry', phase: 'read', blurb: 'Frame-stable geometry: every registered element measured once per frame into an immutable snapshot, so nothing calls getBoundingClientRect ad hoc and thrashes layout. A getRect override covers closed Shadow roots.' },
   { name: 'StateRegistry', phase: 'state', blurb: 'Typed, observable element state (number / boolean / string / vector2) — internal truth, distinct from ARIA. CSS and JS both consume it; only feedback writes it.' },
-  { name: 'FeedbackRegistry', phase: 'write', blurb: 'The write phase: held state → CSS custom properties (continuous) + thresholded, debounced events (discrete, with hysteresis). Mirrors --field-* → --forces-* and field:* → forces:* during the alias window.' },
+  { name: 'FeedbackRegistry', phase: 'write', blurb: 'The write phase: held state → CSS custom properties (continuous) + thresholded, debounced events (discrete, with hysteresis). Writes --field-* vars and field:* events.' },
   { name: 'RelationshipRegistry', phase: 'discover', blurb: 'The DOM is a tree; interfaces are graphs. Normalizes native links (href#id, label[for], aria-controls/describedby/labelledby/flowto, data-field-relation) into one typed graph.' },
   { name: 'VisualBindingRegistry', phase: 'discover', blurb: 'Binds an expressive visual layer (SVG/Canvas/WebGL) to its semantic DOM source without duplicating meaning. Author declaratively with data-field-visual-for + data-field-visual-role, then platform.visuals.scan(root) — idempotent, navigation-safe. aria-hidden unless it carries independent meaning; lint flags orphan + un-hidden visuals. Binds authored visuals; does not extract glyph outlines.' },
   { name: 'OverlayRegistry', phase: 'render', blurb: 'Relationship lines, field lines, debug layers. Render layers only — they read from measurement + relationships and produce geometry to draw. They never own relationships or mutate physics.' },
@@ -39,13 +39,13 @@ const LINT = [
 
 <DocsLayout
   title="field-ui — The platform layer"
-  description="@field-ui/platform binds field behavior to the DOM: the FrameScheduler (discover → read → compute → state → write → render) and six registries — measurement, state, feedback, relationships, visual bindings, overlays — plus lintPlatform(). The core engine stays renderer-agnostic."
+  description="@fundamental-engine/platform binds field behavior to the DOM: the FrameScheduler (discover → read → compute → state → write → render) and six registries — measurement, state, feedback, relationships, visual bindings, overlays — plus lintPlatform(). The core engine stays renderer-agnostic."
 >
   <header class="docs-hero">
     <p class="kicker">Concepts</p>
     <h1>The <span class="accent">platform</span> layer</h1>
     <p class="lede">
-      <code>field-ui</code> (the core) computes field behavior, renderer-agnostic. <code>@field-ui/platform</code>
+      <code>field-ui</code> (the core) computes field behavior, renderer-agnostic. <code>@fundamental-engine/platform</code>
       binds it to the DOM — measurement, state, feedback, relationships, visual bindings, and overlays,
       all driven by one frame scheduler. It is the DOM participation layer; canvas is one render surface.
     </p>
@@ -54,10 +54,10 @@ const LINT = [
   <section class="docs-sec">
     <h2>Package hierarchy</h2>
     <pre class="pf-tree"><code>field-ui                    renderer-agnostic field, force, particle, metric, recipe, diagnostic logic
-@field-ui/platform          DOM participation: the six registries + scheduler + lintPlatform()
-@field-ui/elements          native web components — &lt;field-root&gt; + the [data-body] contract
-@field-ui/react             the React adapter over the same contracts
-@field-ui/vanilla           the FieldField class for plain TypeScript</code></pre>
+@fundamental-engine/platform          DOM participation: the six registries + scheduler + lintPlatform()
+@fundamental-engine/elements          native web components — &lt;field-root&gt; + the [data-body] contract
+@fundamental-engine/react             the React adapter over the same contracts
+@fundamental-engine/vanilla           the FieldField class for plain TypeScript</code></pre>
     <p>
       Dependency direction is strict: <code>elements → platform → core</code>,
       <code>react → platform → core</code>, <code>vanilla → core</code>. Since the runtime-unification
@@ -82,7 +82,7 @@ const LINT = [
       <ApiStamp name="createFieldPlatform" />
       wires <code>measure → read</code> and <code>flush → write</code> by default and exposes
       <code>.on(phase, fn)</code> for the rest. The platform also exports <code>browserHost()</code>
-      <ApiStamp name="browserHost" pkg="@field-ui/platform" /> — the canonical DOM host the
+      <ApiStamp name="browserHost" pkg="@fundamental-engine/platform" /> — the canonical DOM host the
       renderer-agnostic core requires.
     </p>
   </section>
@@ -117,7 +117,7 @@ const LINT = [
   <div class="callout">
     <b>See it whole.</b> The <a href="/docs/reading-field">Reading Field</a> demo exercises all six
     registries on the scheduler over ordinary prose. The deep reference is the canonical
-    <a href="https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-platform-architecture.md">platform-architecture</a>
+    <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-platform-architecture.md">platform-architecture</a>
     doc; the API surface is under <a href="/docs/api">API reference</a>.
   </div>
 </DocsLayout>

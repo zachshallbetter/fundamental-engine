@@ -1,21 +1,21 @@
 {
-  "name": "@field-ui/elements",
+  "name": "@fundamental-engine/elements",
   "version": "0.3.1",
-  "description": "Web-component keystone for field-ui — the <forces-field> custom element + declarative data-body bodies.",
+  "description": "Web-component keystone for Fundamental — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://field-ui.com",
+  "homepage": "https://fundamental-engine.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zachshallbetter/field-ui.git",
+    "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
     "directory": "packages/elements"
   },
   "bugs": {
-    "url": "https://github.com/zachshallbetter/field-ui/issues"
+    "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
-    "field-ui",
+    "Fundamental",
     "web-components",
     "custom-elements",
     "particles",
@@ -53,9 +53,9 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@field-ui/platform": "workspace:*",
-    "@field-ui/vanilla": "workspace:*",
-    "@field-ui/core": "workspace:*"
+    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/vanilla": "workspace:*",
+    "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

@@ -1,5 +1,5 @@
 ---
-import { freshness, weightToStrength } from "@field-ui/core";
+import { freshness, weightToStrength } from "@fundamental-engine/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import inbox from "../../data/examples/inbox.json";
@@ -116,7 +116,7 @@ const SNIPPET_HTML = `<!-- the stream list holds a stable id; each ask is a body
 </ol>
 
 <!-- data-rec = freshness(askedAt, snapshot) — the
-     @field-ui/core temporal kernel (half-life 7d).
+     @fundamental-engine/core temporal kernel (half-life 7d).
      data-field-at declares askedAt as WORLD TIME, so
      the platform grounds its recency lane in the data:
      --field-recency = freshness(at, now), live. -->
@@ -130,7 +130,7 @@ const SNIPPET_HTML = `<!-- the stream list holds a stable id; each ask is a body
 
 const SNIPPET_TS = `// recency is the world-time kernel —
 // exponential newness, half-life 7 days:
-import { freshness } from "@field-ui/core";
+import { freshness } from "@fundamental-engine/core";
 rec[i] = freshness(askedAtMs, nowMs, 7 * 86400000);
 
 // fresh lens — the blends differ per lens

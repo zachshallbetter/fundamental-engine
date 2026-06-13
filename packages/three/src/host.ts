@@ -5,11 +5,11 @@
  * from the projection (the field's own pixel space), not `window.innerWidth`, and page-scroll
  * coupling is off by default (a 3D field has no document scroll unless you opt in).
  *
- * `@field-ui/three` is an authoring surface, so unlike `@field-ui/core` it may touch the DOM — the
+ * `@fundamental-engine/three` is an authoring surface, so unlike `@fundamental-engine/core` it may touch the DOM — the
  * browser globals here are the same ones any Three.js app already depends on.
  */
 
-import type { FieldHost, HostViewport } from '@field-ui/core';
+import type { FieldHost, HostViewport } from '@fundamental-engine/core';
 
 /** A scan root that exposes no `[data-body]` elements — the default for a synthetic / 3D field. */
 const EMPTY_ROOT = {

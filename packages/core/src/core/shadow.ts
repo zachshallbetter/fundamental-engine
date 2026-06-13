@@ -6,7 +6,7 @@
  * `getRect`, and writes field state back as CSS variables on the host (or a write target).
  *
  * Two halves, deliberately split so the engine logic is testable without a DOM event system:
- *  - `ForcesController` — the component side: dispatches register / unregister / update.
+ *  - `FieldController` — the component side: dispatches register / unregister / update.
  *  - `ShadowRegistry`   — the engine side: holds registered hosts, prunes the disconnected,
  *                          and builds bodies. The DOM-event wiring lives in `field.ts`.
  */
@@ -14,28 +14,11 @@ import type { Body } from './types.ts';
 import type { BodyAttrs } from './scanner.ts';
 
 /** The registration event names. `composed: true` lets them cross the shadow boundary. */
-export const REGISTER_BODY = 'forces:register-body';
-export const UNREGISTER_BODY = 'forces:unregister-body';
-export const UPDATE_BODY = 'forces:update-body';
+export const REGISTER_BODY = 'field:register-body';
+export const UNREGISTER_BODY = 'field:unregister-body';
+export const UPDATE_BODY = 'field:update-body';
 
-/**
- * `field:*` aliases (field-ui migration). Dispatched alongside the `forces:*` names and listened
- * for in parallel, so register / unregister / update work under either namespace during the
- * transition (docs/planning-archive/field-ui-migration-plan.md §15, Alias Implementation Contract). The `forces:*`
- * names remain canonical until the migration removal version.
- */
-export const FIELD_REGISTER_BODY = 'field:register-body';
-export const FIELD_UNREGISTER_BODY = 'field:unregister-body';
-export const FIELD_UPDATE_BODY = 'field:update-body';
-
-/** Each `forces:*` registration event mapped to its `field:*` twin, for paired dispatch. */
-const FIELD_EVENT_ALIAS: Record<string, string> = {
-  [REGISTER_BODY]: FIELD_REGISTER_BODY,
-  [UNREGISTER_BODY]: FIELD_UNREGISTER_BODY,
-  [UPDATE_BODY]: FIELD_UPDATE_BODY,
-};
-
-/** Payload of a `forces:register-body` event (shadow-dom.md §7). */
+/** Payload of a `field:register-body` event (shadow-dom.md §7). */
 export interface RegisterBodyDetail {
   /** the public physical element — usually the custom-element host. */
   element: HTMLElement;
@@ -77,16 +60,9 @@ export class FieldController {
 
   private emit(type: string): void {
     const detail = { element: this.host, ...this.detail };
-    const fire = (t: string): void =>
-      void this.host.dispatchEvent(new CustomEvent(t, { bubbles: true, composed: true, detail }));
-    fire(type); // canonical forces:* event
-    const twin = FIELD_EVENT_ALIAS[type];
-    if (twin) fire(twin); // field:* alias, so listeners on either namespace are reached
+    this.host.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail }));
   }
 }
-
-/** @deprecated field-ui-migration alias of {@link FieldController}; use `FieldController`. */
-export { FieldController as ForcesController };
 
 /** A minimal element shape the registry needs — kept structural so tests need no real DOM. */
 interface RegistrableElement extends HTMLElement {

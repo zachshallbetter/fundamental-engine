@@ -1,21 +1,21 @@
 {
-  "name": "@field-ui/kit",
+  "name": "@fundamental-engine/kit",
   "version": "0.3.1",
-  "description": "The whole field-ui suite in one install — the engine (@field-ui/core), the DOM platform, and the web-component, React, and vanilla adapters. A meta-package: install it, then import from the specific @field-ui/* package you need.",
+  "description": "The whole Fundamental suite in one install — the engine (@fundamental-engine/core), the DOM platform, and the web-component, React, and vanilla adapters. A meta-package: install it, then import from the specific @fundamental-engine/* package you need.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://field-ui.com",
+  "homepage": "https://fundamental-engine.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zachshallbetter/field-ui.git",
+    "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
     "directory": "packages/kit"
   },
   "bugs": {
-    "url": "https://github.com/zachshallbetter/field-ui/issues"
+    "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
-    "field-ui",
+    "Fundamental",
     "bundle",
     "suite",
     "meta",
@@ -31,10 +31,10 @@
     "access": "public"
   },
   "dependencies": {
-    "@field-ui/core": "workspace:*",
-    "@field-ui/platform": "workspace:*",
-    "@field-ui/elements": "workspace:*",
-    "@field-ui/react": "workspace:*",
-    "@field-ui/vanilla": "workspace:*"
+    "@fundamental-engine/core": "workspace:*",
+    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/elements": "workspace:*",
+    "@fundamental-engine/react": "workspace:*",
+    "@fundamental-engine/vanilla": "workspace:*"
   }
 }

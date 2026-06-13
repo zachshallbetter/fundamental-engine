@@ -5,19 +5,19 @@ way any outside project would. No framework, no canvas code, no per-element wiri
 
 ```bash
 pnpm install
-pnpm --filter @field-ui/starter dev      # http://localhost:5180
-pnpm --filter @field-ui/starter build    # bundles the workspace packages
+pnpm --filter @fundamental-engine/starter dev      # http://localhost:5180
+pnpm --filter @fundamental-engine/starter build    # bundles the workspace packages
 ```
 
 > In this monorepo the dependencies are `workspace:*`. Outside the repo they are ordinary installs:
-> `npm install @field-ui/core @field-ui/elements @field-ui/platform`.
+> `npm install @fundamental-engine/core @fundamental-engine/elements @fundamental-engine/platform`.
 
 ## What it shows
 
-One recipe — [`priority-well`](https://field-ui.com/docs/gallery#priority-well) — demonstrated three ways. The whole integration lives in [`src/main.ts`](src/main.ts).
+One recipe — [`priority-well`](https://fundamental-engine.com/docs/gallery#priority-well) — demonstrated three ways. The whole integration lives in [`src/main.ts`](src/main.ts).
 
 1. **Declarative.** A single `<field-root>` renders a background field and scans the document for
-   `[data-body]` elements. Importing `@field-ui/elements` once is what turns the tag on.
+   `[data-body]` elements. Importing `@fundamental-engine/elements` once is what turns the tag on.
 
    ```html
    <field-root></field-root>
@@ -28,8 +28,8 @@ One recipe — [`priority-well`](https://field-ui.com/docs/gallery#priority-well
    it tracks and writes them back as `--field-*` custom properties your CSS reads.
 
    ```ts
-   import { recipeById } from '@field-ui/core';
-   import { applyRecipe } from '@field-ui/platform';
+   import { recipeById } from '@fundamental-engine/core';
+   import { applyRecipe } from '@fundamental-engine/platform';
    const applied = applyRecipe(root, recipeById('priority-well')!, { bodies });
    applied.inspect(); // { frame, measurements, relationships, lint }
    ```
@@ -39,7 +39,7 @@ One recipe — [`priority-well`](https://field-ui.com/docs/gallery#priority-well
    out rather than popping.
 
    ```ts
-   import { bindData } from '@field-ui/platform';
+   import { bindData } from '@fundamental-engine/platform';
    const binding = bindData(root, tasks, (t) => ({
      id: t.id,
      body: { tokens: ['attract'], strength: 0.4 + t.priority },

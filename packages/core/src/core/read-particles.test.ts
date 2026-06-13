@@ -1,6 +1,6 @@
 /**
  * `FieldHandle.readParticles(out)` — the render-agnostic swarm read-out. A renderer with no 2D
- * context (the `@field-ui/three` particle bridge) copies live particle state into its own typed
+ * context (the `@fundamental-engine/three` particle bridge) copies live particle state into its own typed
  * buffer each frame; this pins the contract: stride 4 `[x, y, heat, size]`, return = count written
  * = `min(particleCount(), floor(out.length / 4))`, zero mutation of the pool. Driven under
  * `render: 'none'` with a minimal host stub so the test needs no DOM or canvas.

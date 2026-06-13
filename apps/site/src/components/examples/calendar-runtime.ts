@@ -17,8 +17,8 @@
 //     scoped field is destroyed. The countdowns keep ticking — they're data, not field.
 //   · Color by status / off — --cat encodes launch status, or steps aside entirely.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { imminence, recipeById, weightToStrength } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { imminence, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { applyRecipe } from "@fundamental-engine/platform";
 import calendar from "../../data/examples/calendar.json";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { persisted } from "../../lib/persisted.ts";

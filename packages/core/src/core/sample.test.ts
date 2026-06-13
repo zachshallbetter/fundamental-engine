@@ -4,7 +4,7 @@
  *
  * The test also pins the **duck-typed virtual-element body path**: the engine builds a body from any
  * object implementing `getAttribute` / `hasAttribute` / `dataset` / `getBoundingClientRect` — no real
- * DOM — which is exactly how `@field-ui/three` registers a `THREE.Object3D` as a field body. So this
+ * DOM — which is exactly how `@fundamental-engine/three` registers a `THREE.Object3D` as a field body. So this
  * doubles as the contract test for meshes-as-bodies.
  */
 import { test } from 'node:test';

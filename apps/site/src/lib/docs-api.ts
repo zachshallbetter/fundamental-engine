@@ -9,7 +9,7 @@ export interface OptionRow {
   desc: string;
 }
 export const OPTIONS: OptionRow[] = [
-  { name: 'host', type: 'FieldHost', def: 'required', desc: 'The environment seam (viewport, scroll, rAF, canvas). createField throws without it — pass browserHost() from @field-ui/platform, or use @field-ui/vanilla / the web component, which wire it for you.' },
+  { name: 'host', type: 'FieldHost', def: 'required', desc: 'The environment seam (viewport, scroll, rAF, canvas). createField throws without it — pass browserHost() from @fundamental-engine/platform, or use @fundamental-engine/vanilla / the web component, which wire it for you.' },
   { name: 'accent', type: 'string', def: "palette's first stop", desc: 'The travelling accent color (a hex string).' },
   { name: 'density', type: 'number', def: '1', desc: 'Particle-count multiplier.' },
   { name: 'waves', type: 'boolean', def: 'true', desc: 'Draw the background Currents (the wave layers).' },
@@ -21,7 +21,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'palette', type: 'string | string[]', def: "'ours'", desc: 'Accent template — a built-in name or custom hex stops.' },
   { name: 'attention', type: 'boolean', def: 'false', desc: 'Conserved attention — one finite strength budget; engaging a body starves the others.' },
   { name: 'causality', type: 'boolean', def: 'false', desc: 'Cross-boundary causality — a saturated body spills density to its neighbours.' },
-  { name: 'heatmap', type: 'boolean', def: 'false', desc: 'Density heatmap — a glow layer of where matter pools, sampled back to bodies as --forces-heatmap-density.' },
+  { name: 'heatmap', type: 'boolean', def: 'false', desc: 'Density heatmap — a glow layer of where matter pools, sampled back to bodies as --field-heatmap-density.' },
   { name: 'overlayCanvas', type: 'HTMLCanvasElement', def: 'undefined', desc: 'Field Surfaces: a caller-provided canvas for the overlay surface (drawn in front of content). The web component creates/manages this for you; pass it only when calling createField directly.' },
   { name: 'feedbackSink', type: 'FeedbackSink', def: 'undefined', desc: 'Advanced: route per-body density/feedback writes to the platform FeedbackRegistry instead of letting the engine write the DOM (Phase D3).' },
 ];
@@ -52,7 +52,7 @@ export const HANDLE: MethodRow[] = [
   { sig: 'clearFocus()', desc: 'Release the focused particle; it resumes drifting.' },
   { sig: 'particleCount()', desc: 'Live size of the particle pool. Use for external budget monitors or debug overlays without walking the particle array. Shipped-but-unfrozen.' },
   { sig: 'energy()', desc: 'Per-frame energy snapshot: { kinetic, thermal, total, count }. Forwards to energyReport() without requiring a reference to the internal particle array. Shipped-but-unfrozen.' },
-  { sig: 'readParticles(out)', desc: 'Copy live particle state into a caller-owned Float32Array (stride 5: x, y, z, heat, size — z is the optional depth lane, 0 in a flat field); returns the count written = min(particleCount(), floor(out.length/5)). Zero-alloc and read-only — the render-agnostic swarm read-out an alternative surface (e.g. @field-ui/three) draws from. Shipped-but-unfrozen; the stride may widen (a color lane) before 1.0.' },
+  { sig: 'readParticles(out)', desc: 'Copy live particle state into a caller-owned Float32Array (stride 5: x, y, z, heat, size — z is the optional depth lane, 0 in a flat field); returns the count written = min(particleCount(), floor(out.length/5)). Zero-alloc and read-only — the render-agnostic swarm read-out an alternative surface (e.g. @fundamental-engine/three) draws from. Shipped-but-unfrozen; the stride may widen (a color lane) before 1.0.' },
   { sig: 'sample(x, y)', desc: 'The net field force a still test particle would feel at (x, y), as { x, y } in field-pixel space — every visible body superposed (wells, dipole structure, flow bias). Pure and read-only, samplable at any resolution; the seam external visualizers consume for vector grids, streamline tubes, or mesh displacement. Shipped-but-unfrozen.' },
   { sig: 'scrollV()', desc: "The engine's eased page-scroll velocity — the same EMA the scrolling condition gate reads: (prev × 0.7) + (|Δscroll| × 0.3) per frame. Units are px/frame at the display refresh rate (refresh-rate dependent — roughly half on 120 Hz; may normalize to px/ms before 1.0). Mirrored to --field-scroll-v on :root by the platform runtime. Pull-based: read on demand, don't poll in tight loops. Shipped-but-unfrozen." },
   { sig: 'setVisible(on)', desc: 'Element-level visibility hint: setVisible(false) skips all draw work (render + overlay) each frame while the simulation and its feedback signals stay live — scrollV(), --d, --load, capture events keep flowing. Distinct from the tab-level pause (visibilitychange already stops the loop entirely). <field-root> wires it automatically from an IntersectionObserver on the host. Shipped-but-unfrozen.' },
@@ -91,8 +91,8 @@ export const ATTRS: AttrRow[] = [
  *  your own CSS to make an element answer the field. Written only to bodies that opt in. */
 export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--d', on: 'data-feedback', desc: "The body's own gathered density ∈ [0,1], eased. The canonical reaction var." },
-  { name: '--forces-density', on: 'data-feedback', desc: 'Explicit alias of --d (the namespaced name; same value).' },
-  { name: '--forces-heatmap-density', on: 'data-feedback + heatmap', desc: 'The ambient heatmap density under the body ∈ [0,1] — where matter pools around it, distinct from --d.' },
+  { name: '--field-density', on: 'data-feedback', desc: 'Namespaced alias of --d (same value).' },
+  { name: '--field-heatmap-density', on: 'data-feedback + heatmap', desc: 'The ambient heatmap density under the body ∈ [0,1] — where matter pools around it, distinct from --d.' },
   { name: '--load / --mass', on: 'sink body', desc: 'A sink’s accretion fill fraction ∈ [0,1] (--mass is a back-compat alias).' },
   { name: '--lit', on: 'causality', desc: 'Spillover-lit density when a saturated neighbour bleeds density across a boundary.' },
   { name: '--entropy', on: 'data-feedback', desc: 'Measured local disorder ∈ [0,1] — velocity-direction dispersion, gated by agitation (physics workover v0.3). Engine-measured; distinct from the platform’s inferred --field-entropy lane.' },

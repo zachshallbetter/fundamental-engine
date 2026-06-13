@@ -6,7 +6,7 @@
  * H1 ships the **density** layer: each frame every particle deposits into a coarse grid that
  * decays and lightly blurs, so the buffer tracks where matter currently gathers. Values are
  * normalized to [0, 1] by an eased running peak, so the glow render and the
- * `--forces-heatmap-density` write-back are stable and resolution-independent. Built on the
+ * `--field-heatmap-density` write-back are stable and resolution-independent. Built on the
  * existing class-[C] `ScalarGridImpl`, the same buffer the diffuse/wave/memory forces use.
  */
 import { ScalarGridImpl } from './scalar-grid.ts';

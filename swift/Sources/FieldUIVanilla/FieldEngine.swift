@@ -9,7 +9,7 @@ func feedbackTarget(count: Float, engaged: Bool) -> Float {
 }
 
 /// The concrete FieldHandle implementation — the running engine instance: the Swift
-/// counterpart of the field closure `createField` builds in @field-ui/core.
+/// counterpart of the field closure `createField` builds in @fundamental-engine/core.
 ///
 /// Owns the particle pool, the carrier waves + bound reservoir, the spark pool, the
 /// scalar grids, the per-frame step, feedback easing, attention/causality, and the

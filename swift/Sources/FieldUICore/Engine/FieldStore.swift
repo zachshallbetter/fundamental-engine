@@ -57,7 +57,7 @@ public final class FieldStore {
 // MARK: - Energy diagnostics
 
 /// Snapshot of kinetic, thermal, and total energy for the current pool.
-/// The Swift port of `energyReport` from @field-ui/core/diagnostics/energy.
+/// The Swift port of `energyReport` from @fundamental-engine/core/diagnostics/energy.
 public func energyReport(_ particles: [Particle]) -> EnergyReport {
     var kinetic: Float = 0
     var thermal: Float = 0

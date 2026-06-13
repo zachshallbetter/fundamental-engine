@@ -4,7 +4,7 @@ import CodeTabs from '../../components/CodeTabs.astro';
 import SeeAlso from '../../components/SeeAlso.astro';
 import VocabLegend from '../../components/VocabLegend.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
-import { FIELD_RECIPES, RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, recipeById, serializeRecipe } from '@field-ui/core';
+import { FIELD_RECIPES, RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, recipeById, serializeRecipe } from '@fundamental-engine/core';
 
 // The Recipe Model page: how a FieldRecipe separates the vocabulary lanes, the schema, the strict rule
 // (prose expressive, runtime tokens real), and the concept->token mapping. Counts are data-driven.
@@ -155,7 +155,7 @@ const tokenCount = new Set(FIELD_RECIPES.flatMap((r) => r.primitives)).size;
 </DocsLayout>
 
 <script>
-  import { bindData } from '@field-ui/platform';
+  import { bindData } from '@fundamental-engine/platform';
 
   const stage = document.querySelector<HTMLElement>('[data-bd-stage]');
   const status = document.querySelector<HTMLElement>('[data-bd-status]');

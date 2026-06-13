@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 
 const title = 'field-ui — Three.js';
 const description =
-  'The same reciprocal field engine that drives the DOM, rendered headless as a volumetric THREE.Points swarm with @field-ui/three.';
+  'The same reciprocal field engine that drives the DOM, rendered headless as a volumetric THREE.Points swarm with @fundamental-engine/three.';
 ---
 
 <Base title={title} description={description}>
@@ -13,7 +13,7 @@ const description =
       <p>
         The reciprocal field engine runs headless — no DOM canvas — and its conserved particle swarm is
         rendered as a volumetric <code>THREE.Points</code> cloud through
-        <a href="https://www.npmjs.com/package/@field-ui/three"><code>@field-ui/three</code></a>. The
+        <a href="https://www.npmjs.com/package/@fundamental-engine/three"><code>@fundamental-engine/three</code></a>. The
         engine's optional depth lane gives the swarm real depth, which the layer maps into the scene.
         <strong>Move your pointer over the field</strong> — the matter attends to it, gathering and
         heating toward the point; click to burst.
@@ -32,7 +32,7 @@ const description =
 
 <script>
   import * as THREE from 'three';
-  import { createFieldLayer, VolumeProjection, type FieldLayer } from '@field-ui/three';
+  import { createFieldLayer, VolumeProjection, type FieldLayer } from '@fundamental-engine/three';
 
   const FORMATIONS = ['ambient', 'orbit', 'wells', 'spread'] as const;
 

@@ -6,10 +6,10 @@
 // into view, `destroy()` when they leave, and a global cap bounds how many run concurrently. Reduced
 // motion renders the recipe's static `meaningWithoutMotion` output and starts no loop.
 //
-// Reused: `recipeById` (field-ui) + `applyRecipe` (@field-ui/platform). Returns a teardown for the
+// Reused: `recipeById` (field-ui) + `applyRecipe` (@fundamental-engine/platform). Returns a teardown for the
 // Astro `before-swap` lifecycle.
-import { recipeById } from "@field-ui/core";
-import { applyRecipe, type AppliedRecipe } from "@field-ui/platform";
+import { recipeById } from "@fundamental-engine/core";
+import { applyRecipe, type AppliedRecipe } from "@fundamental-engine/platform";
 
 interface PreviewOptions {
   selector?: string;

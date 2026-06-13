@@ -1,5 +1,5 @@
 {
-  "source": "GitHub API — zachshallbetter/field-ui work items (issues + pull requests)",
+  "source": "GitHub API — zachshallbetter/fundamental-engine work items (issues + pull requests)",
   "license": "public repository data",
   "snapshotAt": "2026-06-10T00:40:44.216Z",
   "items": [
@@ -15,7 +15,7 @@
       "closedAt": null,
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/294"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/294"
     },
     {
       "number": 293,
@@ -29,7 +29,7 @@
       "closedAt": "2026-06-09T20:43:14Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/293"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/293"
     },
     {
       "number": 292,
@@ -43,7 +43,7 @@
       "closedAt": "2026-06-09T20:06:01Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/292"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/292"
     },
     {
       "number": 291,
@@ -59,7 +59,7 @@
       "refs": [
         290
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/291"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/291"
     },
     {
       "number": 290,
@@ -73,7 +73,7 @@
       "closedAt": "2026-06-09T19:25:12Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/290"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/290"
     },
     {
       "number": 288,
@@ -87,7 +87,7 @@
       "closedAt": "2026-06-09T19:17:43Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/288"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/288"
     },
     {
       "number": 289,
@@ -109,7 +109,7 @@
         6,
         7
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/289"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/289"
     },
     {
       "number": 287,
@@ -123,11 +123,11 @@
       "closedAt": "2026-06-09T18:36:19Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/287"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/287"
     },
     {
       "number": 286,
-      "title": "docs(site): CDN hero, @field-ui/vanilla as default door, demote kit",
+      "title": "docs(site): CDN hero, @fundamental-engine/vanilla as default door, demote kit",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -137,7 +137,7 @@
       "closedAt": "2026-06-09T18:31:11Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/286"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/286"
     },
     {
       "number": 282,
@@ -151,7 +151,7 @@
       "closedAt": "2026-06-09T18:19:10Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/282"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/282"
     },
     {
       "number": 284,
@@ -165,11 +165,11 @@
       "closedAt": "2026-06-09T18:17:00Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/284"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/284"
     },
     {
       "number": 285,
-      "title": "docs: coherence pass for @field-ui/core, kit, and CI provenance release",
+      "title": "docs: coherence pass for @fundamental-engine/core, kit, and CI provenance release",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -179,11 +179,11 @@
       "closedAt": "2026-06-09T18:15:08Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/285"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/285"
     },
     {
       "number": 283,
-      "title": "fix(site): hero → @field-ui/kit, dynamic footer version, document the kit",
+      "title": "fix(site): hero → @fundamental-engine/kit, dynamic footer version, document the kit",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -193,7 +193,7 @@
       "closedAt": "2026-06-09T17:31:33Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/283"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/283"
     },
     {
       "number": 279,
@@ -207,7 +207,7 @@
       "closedAt": "2026-06-09T06:35:00Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/279"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/279"
     },
     {
       "number": 281,
@@ -221,11 +221,11 @@
       "closedAt": "2026-06-09T06:05:57Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/281"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/281"
     },
     {
       "number": 280,
-      "title": "feat(site): hero → @field-ui/elements + @field-ui/kit on the install grid",
+      "title": "feat(site): hero → @fundamental-engine/elements + @fundamental-engine/kit on the install grid",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -238,11 +238,11 @@
         278,
         279
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/280"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/280"
     },
     {
       "number": 278,
-      "title": "Scope core as @field-ui/core, publish 0.2.1, add @field-ui/kit umbrella",
+      "title": "Scope core as @fundamental-engine/core, publish 0.2.1, add @fundamental-engine/kit umbrella",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -252,7 +252,7 @@
       "closedAt": "2026-06-09T05:42:40Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/278"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/278"
     },
     {
       "number": 277,
@@ -266,7 +266,7 @@
       "closedAt": "2026-06-09T05:20:44Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/277"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/277"
     },
     {
       "number": 276,
@@ -280,7 +280,7 @@
       "closedAt": "2026-06-09T05:09:52Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/276"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/276"
     },
     {
       "number": 275,
@@ -294,7 +294,7 @@
       "closedAt": "2026-06-09T05:09:49Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/275"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/275"
     },
     {
       "number": 274,
@@ -308,7 +308,7 @@
       "closedAt": "2026-06-09T01:41:30Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/274"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/274"
     },
     {
       "number": 273,
@@ -322,7 +322,7 @@
       "closedAt": "2026-06-09T01:05:34Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/273"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/273"
     },
     {
       "number": 272,
@@ -336,7 +336,7 @@
       "closedAt": "2026-06-09T01:05:31Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/272"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/272"
     },
     {
       "number": 271,
@@ -350,7 +350,7 @@
       "closedAt": "2026-06-09T00:33:17Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/271"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/271"
     },
     {
       "number": 270,
@@ -366,7 +366,7 @@
       "refs": [
         268
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/270"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/270"
     },
     {
       "number": 269,
@@ -380,7 +380,7 @@
       "closedAt": "2026-06-09T00:32:39Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/269"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/269"
     },
     {
       "number": 268,
@@ -394,7 +394,7 @@
       "closedAt": "2026-06-08T22:09:59Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/268"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/268"
     },
     {
       "number": 267,
@@ -408,7 +408,7 @@
       "closedAt": "2026-06-08T21:56:35Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/267"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/267"
     },
     {
       "number": 266,
@@ -422,7 +422,7 @@
       "closedAt": "2026-06-08T20:52:53Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/266"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/266"
     },
     {
       "number": 265,
@@ -436,7 +436,7 @@
       "closedAt": "2026-06-08T19:58:20Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/265"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/265"
     },
     {
       "number": 264,
@@ -450,7 +450,7 @@
       "closedAt": "2026-06-08T18:52:25Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/264"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/264"
     },
     {
       "number": 263,
@@ -466,7 +466,7 @@
       "refs": [
         262
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/263"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/263"
     },
     {
       "number": 262,
@@ -480,7 +480,7 @@
       "closedAt": "2026-06-08T18:22:09Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/262"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/262"
     },
     {
       "number": 261,
@@ -494,7 +494,7 @@
       "closedAt": "2026-06-08T18:03:48Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/261"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/261"
     },
     {
       "number": 258,
@@ -508,7 +508,7 @@
       "closedAt": "2026-06-08T18:03:52Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/258"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/258"
     },
     {
       "number": 254,
@@ -525,7 +525,7 @@
         249,
         250
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/254"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/254"
     },
     {
       "number": 252,
@@ -544,7 +544,7 @@
         220,
         223
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/252"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/252"
     },
     {
       "number": 222,
@@ -560,7 +560,7 @@
       "refs": [
         220
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/222"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/222"
     },
     {
       "number": 223,
@@ -574,11 +574,11 @@
       "closedAt": "2026-06-07T21:05:53Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/223"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/223"
     },
     {
       "number": 239,
-      "title": "fix: unbreak main — @field-ui/core in research papers + HomeHero metric claim",
+      "title": "fix: unbreak main — @fundamental-engine/core in research papers + HomeHero metric claim",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -592,7 +592,7 @@
         230,
         237
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/239"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/239"
     },
     {
       "number": 220,
@@ -606,7 +606,7 @@
       "closedAt": "2026-06-07T21:04:47Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/220"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/220"
     },
     {
       "number": 244,
@@ -620,7 +620,7 @@
       "closedAt": "2026-06-07T22:48:33Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/244"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/244"
     },
     {
       "number": 245,
@@ -634,7 +634,7 @@
       "closedAt": "2026-06-08T14:13:27Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/245"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/245"
     },
     {
       "number": 229,
@@ -648,7 +648,7 @@
       "closedAt": "2026-06-07T20:56:36Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/229"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/229"
     },
     {
       "number": 234,
@@ -662,7 +662,7 @@
       "closedAt": "2026-06-07T21:15:01Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/234"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/234"
     },
     {
       "number": 240,
@@ -676,7 +676,7 @@
       "closedAt": "2026-06-07T22:13:20Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/240"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/240"
     },
     {
       "number": 241,
@@ -690,7 +690,7 @@
       "closedAt": "2026-06-07T22:24:50Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/241"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/241"
     },
     {
       "number": 251,
@@ -704,7 +704,7 @@
       "closedAt": "2026-06-08T15:09:38Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/pull/251"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/pull/251"
     },
     {
       "number": 257,
@@ -720,7 +720,7 @@
       "refs": [
         256
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/257"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/257"
     },
     {
       "number": 250,
@@ -734,7 +734,7 @@
       "closedAt": "2026-06-08T14:29:23Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/250"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/250"
     },
     {
       "number": 249,
@@ -748,7 +748,7 @@
       "closedAt": "2026-06-08T14:29:23Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/249"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/249"
     },
     {
       "number": 248,
@@ -762,7 +762,7 @@
       "closedAt": "2026-06-08T14:28:07Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/248"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/248"
     },
     {
       "number": 247,
@@ -776,7 +776,7 @@
       "closedAt": "2026-06-08T14:28:06Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/247"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/247"
     },
     {
       "number": 246,
@@ -790,7 +790,7 @@
       "closedAt": "2026-06-08T14:28:06Z",
       "author": "zachshallbetter",
       "refs": [],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/246"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/246"
     },
     {
       "number": 227,
@@ -806,7 +806,7 @@
       "refs": [
         223
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/227"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/227"
     },
     {
       "number": 226,
@@ -822,7 +822,7 @@
       "refs": [
         220
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/226"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/226"
     },
     {
       "number": 228,
@@ -838,7 +838,7 @@
       "refs": [
         224
       ],
-      "url": "https://github.com/zachshallbetter/field-ui/issues/228"
+      "url": "https://github.com/zachshallbetter/fundamental-engine/issues/228"
     }
   ]
 }

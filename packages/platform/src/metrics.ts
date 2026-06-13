@@ -16,7 +16,7 @@
  *   recency becomes `freshness(at, now, halfLife)` (the core temporal kernel) instead of the
  *   interaction-inferred ease. See `groundedRecency` below; the wiring is `apply-recipe.ts`.
  */
-import { freshness } from '@field-ui/core';
+import { freshness } from '@fundamental-engine/core';
 
 export const METRIC_KINDS = [
   'attention',

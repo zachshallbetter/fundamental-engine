@@ -2,7 +2,7 @@
  * Experimental platform-backed runtime for `<field-root>` (Phase D: runtime platform unification).
  *
  * D1 establishes the *path*, not the migration: when the experimental flag is on, the element starts
- * a `@field-ui/platform` runtime alongside the legacy `createField` engine. For now it only measures
+ * a `@fundamental-engine/platform` runtime alongside the legacy `createField` engine. For now it only measures
  * the scan root each frame on the six-phase scheduler — a foothold the later phases fill in (D2 moves
  * body scanning onto MeasurementRegistry, D3 feedback onto FeedbackRegistry, D4 shadow, D5
  * relationships). Default is OFF, so behavior is unchanged until D6 flips it.
@@ -10,17 +10,15 @@
  * The legacy engine still owns everything visible in D1; the platform adds nothing observable, which
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
-import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@field-ui/platform';
-import type { FieldHandle } from '@field-ui/core';
+import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@fundamental-engine/platform';
+import type { FieldHandle } from '@fundamental-engine/core';
 import {
   bodyElements,
   REGISTER_BODY,
-  FIELD_REGISTER_BODY,
   UNREGISTER_BODY,
-  FIELD_UNREGISTER_BODY,
   type FeedbackSink,
   type RegisterBodyDetail,
-} from '@field-ui/core';
+} from '@fundamental-engine/core';
 
 /** A minimal view of MeasurementRegistry — what body syncing + shadow registration need. */
 interface MeasureSink {
@@ -104,9 +102,7 @@ export function shouldUsePlatformRuntime(el: { getAttribute(name: string): strin
 /**
  * Build a feedback sink (D3) that routes the engine's per-body channels through the platform's
  * FeedbackRegistry. The eased density value is the engine's own — only the *write* moves — so the
- * signal is preserved exactly. FeedbackRegistry mirrors `--field-*` → `--forces-*` and `field:*` →
- * `forces:*`, so both alias families stay live. Writes apply on the platform's write phase (its
- * scheduler tick).
+ * signal is preserved exactly. Writes apply on the platform's write phase (its scheduler tick).
  *
  * Since #228 the sink contract is the engine's ONLY write path: with no sink configured,
  * `createField` installs an internal default sink (`core/feedback-sink.ts`) whose direct writes are
@@ -119,9 +115,9 @@ export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
   // match the legacy engine's 3-decimal var formatting exactly, so the platform path is byte-identical.
   const f3 = (n: number): string => n.toFixed(3);
   return (el, ch) => {
-    // density → --d (original) + --field-density (auto-mirrors --forces-density)
+    // density → --d (original) + --field-density
     if (ch.density !== undefined) platform.feedback.set(el, { '--d': f3(ch.density), '--field-density': f3(ch.density) });
-    // heatmap density → --field-heatmap-density (auto-mirrors --forces-heatmap-density)
+    // heatmap density → --field-heatmap-density
     if (ch.heatmapDensity !== undefined) platform.feedback.set(el, { '--field-heatmap-density': f3(ch.heatmapDensity) });
     // accretion load → --load + --mass (back-compat alias)
     if (ch.load !== undefined) platform.feedback.set(el, { '--load': f3(ch.load), '--mass': f3(ch.load) });
@@ -176,7 +172,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
     if (shouldDiscoverRelationships(ctx.frame)) platform.relationships.discover(root);
   });
 
-  // D4: shadow-DOM hosts join via composed register/unregister events (forces:* + field:* twins).
+  // D4: shadow-DOM hosts join via composed field:register-body / field:unregister-body events.
   // The host's getRect (for closed roots) flows into MeasurementRegistry's rect override. Listening
   // on the document catches the composed events that bubble out of any shadow tree.
   const doc = root.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
@@ -185,9 +181,9 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   const onUnregister = (e: Event): void => unregisterShadowBody(platform.measure, detailOf(e));
   const wired: Array<[string, EventListener]> = [];
   if (doc) {
-    for (const name of [REGISTER_BODY, FIELD_REGISTER_BODY]) doc.addEventListener(name, onRegister as EventListener);
-    for (const name of [UNREGISTER_BODY, FIELD_UNREGISTER_BODY]) doc.addEventListener(name, onUnregister as EventListener);
-    wired.push([REGISTER_BODY, onRegister as EventListener], [FIELD_REGISTER_BODY, onRegister as EventListener], [UNREGISTER_BODY, onUnregister as EventListener], [FIELD_UNREGISTER_BODY, onUnregister as EventListener]);
+    doc.addEventListener(REGISTER_BODY, onRegister as EventListener);
+    doc.addEventListener(UNREGISTER_BODY, onUnregister as EventListener);
+    wired.push([REGISTER_BODY, onRegister as EventListener], [UNREGISTER_BODY, onUnregister as EventListener]);
   }
   const unwireShadow = (): void => {
     if (doc) for (const [name, fn] of wired) doc.removeEventListener(name, fn);

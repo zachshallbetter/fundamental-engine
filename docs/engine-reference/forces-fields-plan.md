@@ -18,7 +18,7 @@ monopole fields and `fieldlines.ts` (Stage B), `data-shaped` sampling (Stage C),
 > expanded far past it: the full render-mode set now ships (dots, trails, links, streamlines,
 > metaballs, voronoi, field-lines, heatmap, force-vectors, contours, potential, energy,
 > **topology, inspector, causality, prediction**) and is live at `/docs/diagnostics`, while
-> overlays are now owned by `@field-ui/platform`'s `OverlayRegistry` on the frame scheduler.
+> overlays are now owned by `@fundamental-engine/platform`'s `OverlayRegistry` on the frame scheduler.
 > Treat the stage list below as historical for this slice, not as the bound on what the engine
 > renders today.
 

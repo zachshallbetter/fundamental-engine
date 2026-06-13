@@ -2,10 +2,20 @@
 
 All notable changes are documented here, following
 [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
-The packages are published to npm under the `@field-ui` scope; each release is also cut as a
-git tag (see [RELEASING.md](RELEASING.md)).
+The packages are published to npm under the `@fundamental-engine` scope; each release is also cut as
+a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
+
+### Changed
+
+- **Renamed: `@field-ui/*` → `@fundamental-engine/*`.** The project is now **Fundamental**
+  (`fundamental-engine.com`). All packages move to the `@fundamental-engine` scope, and the one-install
+  umbrella is now the bare package **`fundamental-engine`** (`npm i fundamental-engine`), replacing
+  `@field-ui/kit` / `@field-ui/field-ui`. A **hard rename** — the deprecated `@forces-ui/*` compatibility
+  shims are dropped (there are no external consumers yet). The **engine's primitive is unchanged**:
+  `<field-root>`, `FieldHandle`, `createField`, and the `--field-*` CSS variables stay — *fundamental
+  forces act across a field*. Old `@field-ui/*` packages will be deprecated on npm pointing here.
 
 ### Added
 

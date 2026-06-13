@@ -5,7 +5,7 @@ relationships, measurements, and feedback all participate in one shared field co
 the field; the field bends them back. The visible particle canvas is one render surface, not the
 whole system.
 
-[![Live demo: field-ui.com](https://img.shields.io/badge/demo-field--ui.com-4da3ff)](https://field-ui.com)
+[![Live demo: fundamental-engine.com](https://img.shields.io/badge/demo-field--ui.com-4da3ff)](https://fundamental-engine.com)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Core runtime dependencies: 0](https://img.shields.io/badge/core%20runtime%20deps-0-2dd4bf)
 ![TypeScript: strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
@@ -14,8 +14,8 @@ whole system.
 
 Mark any element as a body with one attribute and it starts to pull, push, swirl, or hold the matter
 around it. Where the field gathers, it writes that density back into the element as weight, glow, and
-motion. A renderer-agnostic core (`@field-ui/core`) computes the field; a platform layer
-(`@field-ui/platform`) binds it to the DOM through measurement, state, feedback, relationships, visual
+motion. A renderer-agnostic core (`@fundamental-engine/core`) computes the field; a platform layer
+(`@fundamental-engine/platform`) binds it to the DOM through measurement, state, feedback, relationships, visual
 bindings, overlays, and a frame scheduler. The interface lives inside one medium instead of sitting on
 top of an effect.
 
@@ -23,9 +23,9 @@ It is **native-platform-first, dependency-light, and framework-agnostic**: a cus
 component, or a plain function. The core ships with zero runtime dependencies; framework integrations
 are adapters, not requirements.
 
-> **See it live.** The whole system runs over the engine at **[field-ui.com](https://field-ui.com)**, with a physics [Lab](https://field-ui.com/lab) where you fire particles into a force and watch the math hold.
+> **See it live.** The whole system runs over the engine at **[fundamental-engine.com](https://fundamental-engine.com)**, with a physics [Lab](https://fundamental-engine.com/lab) where you fire particles into a force and watch the math hold.
 
-> **Renamed to `@field-ui/core`.** This project was `forces-ui`; it is now **field-ui**, putting the field (the invisible structure) first. Every old public name still works as a compatibility alias during the transition: the `forces-ui` / `@forces-ui/*` packages, the `forces:*` events, the `--forces-*` CSS variables, and the `<forces-field>` / `<forces-cell>` elements all keep working alongside their `@field-ui/core` / `field:*` / `--field-*` / `<field-root>` equivalents. The alias window is documented and removal-gated in [API stability](docs/canonical/field-ui-api-stability.md).
+> **Now `@fundamental-engine`.** This project was `forces-ui`, then `field-ui`; it is now **Fundamental** — *fundamental forces acting across a field*. The engine's primitive is unchanged: `<field-root>`, `FieldHandle`, `createField`, and the `--field-*` CSS variables stay. The old `@field-ui/*` / `@forces-ui/*` packages are deprecated and point here.
 
 ## The idea
 
@@ -41,7 +41,7 @@ The geometry is re-read every frame on a six-phase scheduler (`discover → read
 ### Vanilla TypeScript — the default door
 
 ```ts
-import { FieldField } from '@field-ui/vanilla';
+import { FieldField } from '@fundamental-engine/vanilla';
 
 const field = new FieldField({ render: 'dots' });
 field.setFormation('wells');
@@ -49,13 +49,13 @@ field.burst(window.innerWidth / 2, 200);
 // field.scan(); field.destroy();
 ```
 
-`@field-ui/vanilla` is the framework-free door and the recommended starting point: a typed `FieldField` class, with `mountField()` and a host-bundled `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
+`@fundamental-engine/vanilla` is the framework-free door and the recommended starting point: a typed `FieldField` class, with `mountField()` and a host-bundled `createField()` re-exported, and no custom-element registration. To run the engine on a `<canvas>` you control yourself, call `createField(canvas, options)`.
 
 **No build step?** Import straight from a CDN — no install at all:
 
 ```html
 <script type="module">
-  import { createField } from 'https://esm.sh/@field-ui/vanilla';
+  import { createField } from 'https://esm.sh/@fundamental-engine/vanilla';
   createField(document.querySelector('canvas'), { render: 'dots' });
 </script>
 ```
@@ -63,7 +63,7 @@ field.burst(window.innerWidth / 2, 200);
 ### React
 
 ```tsx
-import { FieldField } from '@field-ui/react';
+import { FieldField } from '@fundamental-engine/react';
 
 export default function Page() {
   return (
@@ -81,7 +81,7 @@ Reach for `useFieldField(options)` when you want the field handle instead of the
 
 ```html
 <script type="module">
-  import '@field-ui/elements';
+  import '@fundamental-engine/elements';
 </script>
 
 <field-root></field-root>
@@ -119,11 +119,11 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 - **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`. Real field laws: softened inverse-square, Lorentz, Langevin, diffusion, travelling waves.
 - **Designed-extended (19):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, the `resonate`, `spotlight`, and `screen` modifiers, `pigment` color transport, field-line transport `fieldflow`, and wormhole relocate `warp`.
 
-Forces also carry a four-field classification (gravity / electromagnetic / strong / weak), so the catalog reads as a translation of the four fundamental fields into interface behavior. See [`/docs/natural-fields`](https://field-ui.com/docs/natural-fields).
+Forces also carry a four-field classification (gravity / electromagnetic / strong / weak), so the catalog reads as a translation of the four fundamental fields into interface behavior. See [`/docs/natural-fields`](https://fundamental-engine.com/docs/natural-fields).
 
 **8 presets** compose those primitives into cosmology with no new engine code: `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
 
-**16 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`; and the diagnostic modes `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, `prediction`. Live on [`/docs/diagnostics`](https://field-ui.com/docs/diagnostics).
+**16 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`; and the diagnostic modes `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, `prediction`. Live on [`/docs/diagnostics`](https://fundamental-engine.com/docs/diagnostics).
 
 **Controlled flow.** `field.flowTo(x, y)` places a movable flow focus the field bends toward — it pulls matter in and curves the streamlines; retarget it each frame to follow the pointer, an element, or a path (`field.clearFlow()` to release).
 
@@ -143,8 +143,8 @@ A **recipe** is a portable field program: it names an intent and composes existi
 **64 recipes across 4 tiers** (core / workflow / professional / enterprise) ship in the catalog. The runtime is three calls:
 
 ```ts
-import { recipeById, compileRecipe } from '@field-ui/core';            // pure: recipe → plan (no DOM)
-import { applyRecipe, bindData } from '@field-ui/platform';      // DOM: run it / bind data to it
+import { recipeById, compileRecipe } from '@fundamental-engine/core';            // pure: recipe → plan (no DOM)
+import { applyRecipe, bindData } from '@fundamental-engine/platform';      // DOM: run it / bind data to it
 
 const applied = applyRecipe(root, recipeById('reading-field')!); // run a recipe over a region
 applied.inspect();                                               // { frame, measurements, relationships, lint }
@@ -156,11 +156,11 @@ bindData(listEl, tasks, (t) => ({                                // records → 
 }), { recipe: 'priority-well' });
 ```
 
-Browse and run all 64 at the [recipe gallery](https://field-ui.com/docs/gallery), pick apart a compiled plan in the [inspector](https://field-ui.com/docs/inspector), and see the three surfaces wired together in the [starter app](apps/starter). The [concept studies](https://field-ui.com/docs/studies/reading-field) (Reading, Review, Search, System Weather, Evidence) reinterpret familiar pages as data-driven fields, and stay legible with the field off.
+Browse and run all 64 at the [recipe gallery](https://fundamental-engine.com/docs/gallery), pick apart a compiled plan in the [inspector](https://fundamental-engine.com/docs/inspector), and see the three surfaces wired together in the [starter app](apps/starter). The [concept studies](https://fundamental-engine.com/docs/studies/reading-field) (Reading, Review, Search, System Weather, Evidence) reinterpret familiar pages as data-driven fields, and stay legible with the field off.
 
 ## Inspect and verify
 
-**The field is readable, not a black box.** The [inspector](https://field-ui.com/docs/inspector) reads the live platform each frame (the six-phase spine, registry counts, the typed relationship graph, and lint warnings) without mutating it.
+**The field is readable, not a black box.** The [inspector](https://fundamental-engine.com/docs/inspector) reads the live platform each frame (the six-phase spine, registry counts, the typed relationship graph, and lint warnings) without mutating it.
 
 **Verified, not eyeballed.** A conformance framework fires known particles into each force and checks the measured trajectory against the math. The same catalog drives the test suite and the visual Lab. The repository carries **600+ deterministic tests** (core, platform, scheduler, lint, and the site) and a global safety sweep that holds every force finite, bounded in velocity and heat, and conserved in count.
 
@@ -170,30 +170,28 @@ Browse and run all 64 at the [recipe gallery](https://field-ui.com/docs/gallery)
 
 | Package | What it is |
 |---|---|
-| [`@field-ui/core`](packages/core) | the renderer-agnostic engine: catalog, contracts, `FieldStore`, integrator, the force set, recipes (`compileRecipe`), diagnostics, conformance |
-| [`@field-ui/platform`](packages/platform) | DOM participation: `browserHost()`, the FrameScheduler, the six registries (measurement, state, feedback, relationships, visual bindings, overlays), `applyRecipe()` / `bindData()`, and `lintPlatform()` |
-| [`@field-ui/vanilla`](packages/vanilla) | the framework-free door: the `FieldField` class, `mountField()`, and a host-bundled `createField()`, no custom element |
-| [`@field-ui/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
-| [`@field-ui/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
-| [`@field-ui/three`](packages/three) | bind the engine to a Three.js scene: `createFieldLayer()` (the particle bridge → `THREE.Points`), `PlaneProjection` / `VolumeProjection`, `threeHost()`, `threeBackend()`. `three` is a peer dependency |
+| [`@fundamental-engine/core`](packages/core) | the renderer-agnostic engine: catalog, contracts, `FieldStore`, integrator, the force set, recipes (`compileRecipe`), diagnostics, conformance |
+| [`@fundamental-engine/platform`](packages/platform) | DOM participation: `browserHost()`, the FrameScheduler, the six registries (measurement, state, feedback, relationships, visual bindings, overlays), `applyRecipe()` / `bindData()`, and `lintPlatform()` |
+| [`@fundamental-engine/vanilla`](packages/vanilla) | the framework-free door: the `FieldField` class, `mountField()`, and a host-bundled `createField()`, no custom element |
+| [`@fundamental-engine/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
+| [`@fundamental-engine/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
+| [`@fundamental-engine/three`](packages/three) | bind the engine to a Three.js scene: `createFieldLayer()` (the particle bridge → `THREE.Points`), `PlaneProjection` / `VolumeProjection`, `threeHost()`, `threeBackend()`. `three` is a peer dependency |
 
-Want everything in one install? [`@field-ui/kit`](packages/kit) is a meta-package that depends on all five — `npm i @field-ui/kit`, then import from the specific package you need. (`@field-ui/field-ui` is a thin alias for the kit.)
-
-The four `@forces-ui/*` (and `forces-ui`) packages are thin, removal-gated [compatibility aliases](packages/compat-core).
+Want everything in one install? **`npm i fundamental-engine`** — the bare umbrella package pulls in the whole suite (via [`@fundamental-engine/kit`](packages/kit)); then import from the specific package you need.
 
 The dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
-`vanilla → platform → core`. `@field-ui/core` imports zero DOM (renderer-agnostic); the browser host
-adapter lives in `@field-ui/platform`. See [`docs/canonical/field-ui-platform-architecture.md`](docs/canonical/field-ui-platform-architecture.md).
+`vanilla → platform → core`. `@fundamental-engine/core` imports zero DOM (renderer-agnostic); the browser host
+adapter lives in `@fundamental-engine/platform`. See [`docs/canonical/field-ui-platform-architecture.md`](docs/canonical/field-ui-platform-architecture.md).
 
 ## Availability
 
-The packages are published to npm under the `@field-ui` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @field-ui/vanilla`** (the host-bundled default door) or **`@field-ui/react`** for React; `@field-ui/elements` (web component) and `@field-ui/core` (own the canvas) are there when you need them. `@field-ui/kit` is an optional bundle that installs the whole suite at once. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@field-ui/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
+The packages are published to npm under the `@field-ui` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. `@fundamental-engine/kit` is an optional bundle that installs the whole suite at once. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
 
 ## Documentation
 
-- **Field Manual** at [field-ui.com](https://field-ui.com): every concept running live over the engine.
-- **Lab** at [field-ui.com/lab](https://field-ui.com/lab): fire particles into a force, watch the track, share the result through a URL.
-- **Recipe gallery** at [field-ui.com/docs/gallery](https://field-ui.com/docs/gallery) and the **inspector** at [field-ui.com/docs/inspector](https://field-ui.com/docs/inspector).
+- **Field Manual** at [fundamental-engine.com](https://fundamental-engine.com): every concept running live over the engine.
+- **Lab** at [fundamental-engine.com/lab](https://fundamental-engine.com/lab): fire particles into a force, watch the track, share the result through a URL.
+- **Recipe gallery** at [fundamental-engine.com/docs/gallery](https://fundamental-engine.com/docs/gallery) and the **inspector** at [fundamental-engine.com/docs/inspector](https://fundamental-engine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map (canonical architecture, engine reference, planning archive).
 - [`docs/canonical/field-ui-api-stability.md`](docs/canonical/field-ui-api-stability.md): the frozen `0.x` surface and compatibility rules.
 - [`docs/engine-reference/forces-system.md`](docs/engine-reference/forces-system.md): the full engine specification.
@@ -222,7 +220,7 @@ The build is `tsc`. There is no bundler; the library ships unbundled ESM. The si
 - **Nothing is created from nothing.** The default field conserves particle count. Sources and sinks break conservation only when they are explicitly budgeted.
 - **Designed and natural, side by side.** Canonical forces stay bounded and legible for interface work. Natural primitives carry real laws for cosmology and material systems. A composite picks the register it needs.
 - **Native-platform-first, dependency-light.** The core recreates what it needs on the platform and ships with zero runtime dependencies; the only development dependency is TypeScript. Framework integrations are adapters, not requirements. Any new dependency has to justify itself as a real exception.
-- **Core stays renderer-agnostic.** `@field-ui/core` (core) computes field behavior against plain data and touches no DOM globals (guarded by a boundary test); `@field-ui/platform` owns DOM participation. Canvas is one render surface, not the whole system.
+- **Core stays renderer-agnostic.** `@fundamental-engine/core` (core) computes field behavior against plain data and touches no DOM globals (guarded by a boundary test); `@fundamental-engine/platform` owns DOM participation. Canvas is one render surface, not the whole system.
 - **Lanes stay separate.** Concepts describe, tokens execute, metrics measure, diagnostics explain, conditions activate, recipes compose. A word lives in exactly one lane, and recipes never invent engine behavior.
 - **Framework-agnostic.** The custom element makes "every element is a body" a portable primitive that behaves the same in React, Svelte, Astro, Vue, or plain HTML.
 

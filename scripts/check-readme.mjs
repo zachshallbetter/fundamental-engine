@@ -28,7 +28,7 @@ const read = async (rel) => {
 };
 
 // Every package directory that should carry a README naming its real package.
-const PKG_DIRS = ['core', 'platform', 'elements', 'react', 'vanilla', 'three', 'kit', 'field-ui', 'compat-core', 'compat-elements', 'compat-react', 'compat-vanilla'];
+const PKG_DIRS = ['core', 'platform', 'elements', 'react', 'vanilla', 'three', 'kit', 'fundamental-engine'];
 const PUBLISHABLE = ['core', 'platform', 'elements', 'react', 'vanilla', 'three'];
 
 // 1 · every package README exists and names its real package

@@ -18,8 +18,8 @@
 //     native, keyboard-first, and honest in dev (the index only exists in a built site).
 // Everything the field writes is felt, not loud, and ALL of it is gated behind
 // prefers-reduced-motion and the persisted sidebar toggle (main[data-field-docs="off"]).
-import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { recipeById } from "@fundamental-engine/core";
+import { applyRecipe } from "@fundamental-engine/platform";
 import { DOCS_NAV, ROUTE_FAMILIES, groupColorFor } from "../lib/docs-nav.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";
 import { persisted } from "../lib/persisted.ts";

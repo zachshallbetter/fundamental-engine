@@ -1,6 +1,6 @@
 # Publishing
 
-The seven `@field-ui/*` packages publish to npm **with provenance** via CI. This document is the
+The seven `@fundamental-engine/*` packages publish to npm **with provenance** via CI. This document is the
 mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING.md).
 
 > The public surface is frozen for `0.x` — see
@@ -11,13 +11,13 @@ mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING
 
 | npm name | role |
 |---|---|
-| `@field-ui/core` | the engine (no workspace deps) |
-| `@field-ui/platform` | depends on core |
-| `@field-ui/vanilla` | depends on core + platform |
-| `@field-ui/react` | depends on core + platform |
-| `@field-ui/elements` | depends on core + platform + vanilla |
-| `@field-ui/kit` | umbrella meta-package — depends on all five |
-| `@field-ui/field-ui` | thin alias — depends on kit |
+| `@fundamental-engine/core` | the engine (no workspace deps) |
+| `@fundamental-engine/platform` | depends on core |
+| `@fundamental-engine/vanilla` | depends on core + platform |
+| `@fundamental-engine/react` | depends on core + platform |
+| `@fundamental-engine/elements` | depends on core + platform + vanilla |
+| `@fundamental-engine/kit` | umbrella meta-package — depends on all five |
+| `fundamental-engine` | thin alias — depends on kit |
 
 All carry `publishConfig.access: public`, so the scoped names publish publicly. `pnpm` rewrites
 `workspace:*` to the real version at pack time and publishes in dependency order automatically — never
@@ -33,7 +33,7 @@ git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin vX.Y.Z
 ```
 
 This triggers [`.github/workflows/release.yml`](.github/workflows/release.yml): full gate →
-`pnpm --filter "@field-ui/*" publish --access public --no-git-checks --provenance`. A failed publish can
+`pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance`. A failed publish can
 be retried without re-tagging: `gh run rerun <run-id> --failed`.
 
 ### Prerequisites (all currently satisfied)
@@ -51,7 +51,7 @@ Only if CI is unavailable. This publishes **without** provenance and needs an OT
 
 ```sh
 pnpm -r build && pnpm test && pnpm check:dist && pnpm check:api   # gate
-pnpm --filter "@field-ui/*" publish --access public --no-git-checks --otp=<code>
+pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --otp=<code>
 ```
 
 ## Versioning
@@ -59,7 +59,7 @@ pnpm --filter "@field-ui/*" publish --access public --no-git-checks --otp=<code>
 All seven packages are versioned together (currently `0.2.2`). Bump them as one:
 
 ```sh
-pnpm --filter "@field-ui/*" exec npm version <patch|minor|major> --no-git-tag-version
+pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
 ```
 
 Per the `0.x` rules in [API stability](docs/canonical/field-ui-api-stability.md), a breaking change to a

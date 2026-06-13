@@ -1,5 +1,5 @@
 {
-  "name": "@field-ui/starter",
+  "name": "@fundamental-engine/starter",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,9 +11,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@field-ui/elements": "workspace:*",
-    "@field-ui/platform": "workspace:*",
-    "@field-ui/core": "workspace:*"
+    "@fundamental-engine/elements": "workspace:*",
+    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

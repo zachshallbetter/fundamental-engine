@@ -66,7 +66,7 @@ public struct PerspectiveProjection: FieldProjection {
 
 /// The platform seam — everything the engine needs from the surrounding runtime.
 /// Implement this once per platform target (iOS, macOS, visionOS).
-/// Equivalent to `browserHost()` in @field-ui/platform.
+/// Equivalent to `browserHost()` in @fundamental-engine/platform.
 public protocol FieldHost: AnyObject {
     // ── geometry ──────────────────────────────────────────────────────────
     var volume: FieldVolume { get }

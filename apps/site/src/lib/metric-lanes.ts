@@ -1,9 +1,9 @@
 // Recipe-metric documentation helpers. A recipe lists the metric lanes it drives, but not all lanes
 // are produced the same way — and a lane the platform never writes (and the host never supplies) is
-// inert. `classifyMetric` (from @field-ui/platform) makes the split; these wrap it for the recipe
+// inert. `classifyMetric` (from @fundamental-engine/platform) makes the split; these wrap it for the recipe
 // pages so an author sees, per metric, whether its --field-<m> lane is live by default or needs the
 // host to ground it. Mirrors the guard `lintInertFeedback` checks at runtime.
-import { classifyMetric, type MetricSupport } from '@field-ui/platform';
+import { classifyMetric, type MetricSupport } from '@fundamental-engine/platform';
 
 export { classifyMetric, type MetricSupport };
 

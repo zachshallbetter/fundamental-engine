@@ -15,18 +15,18 @@ const expItem = (sig: string): string | undefined => {
   return EXPERIMENTAL.find((x: { item: string }) => x.item.includes(fn))?.item;
 };
 
-const getWc = `import '@field-ui/elements';
+const getWc = `import '@fundamental-engine/elements';
 
 // the <field-root> element proxies the entire FieldHandle:
 const field = document.querySelector('field-root');
 field.setFormation('wells');`;
 
-const getVanilla = `import { createField } from '@field-ui/vanilla'; // wires the browser host
+const getVanilla = `import { createField } from '@fundamental-engine/vanilla'; // wires the browser host
 
 const field = createField(canvas);   // ← createField returns the handle
 field.setRender('links');`;
 
-const getReact = `import { FieldField } from '@field-ui/react';
+const getReact = `import { FieldField } from '@fundamental-engine/react';
 
 // onReady hands you the live handle once the field mounts:
 <FieldField onReady={(field) => field.setPalette('heatmap')} />`;
@@ -52,7 +52,7 @@ field.scan();
 // release the loop + listeners when you're done
 field.destroy();`;
 
-const workedVanilla = `import { createField } from '@field-ui/vanilla';
+const workedVanilla = `import { createField } from '@fundamental-engine/vanilla';
 
 const field = createField(canvas);   // the handle
 
@@ -72,7 +72,7 @@ addEventListener('click', (e) => field.burst(e.clientX, e.clientY));
 field.scan();      // re-scan after the DOM changes
 field.destroy();   // release the loop + listeners`;
 
-const workedReact = `import { FieldField } from '@field-ui/react';
+const workedReact = `import { FieldField } from '@fundamental-engine/react';
 
 export function Background() {
   // onReady hands you the same handle once the field mounts
@@ -102,7 +102,7 @@ export function Background() {
     <p class="kicker">API reference</p>
     <h1>The <span class="accent">FieldHandle</span></h1>
     <p class="lede">
-      Every entry point — <code>createField</code> <ApiStamp name="createField" pkg="@field-ui/core" />, <code>mountField</code>, the
+      Every entry point — <code>createField</code> <ApiStamp name="createField" pkg="@fundamental-engine/core" />, <code>mountField</code>, the
       <code>FieldField</code> class, the <code>&lt;field-root&gt;</code> element (proxied), and
       the React <code>onReady</code> — hands you a <code>FieldHandle</code>. Use it to drive the
       field after it mounts.
@@ -159,7 +159,7 @@ export function Background() {
       </div>
       <div class="api-row">
         <dt class="k"><code>energy() → &#123; kinetic, thermal, total, count &#125;</code> <ApiStamp item="FieldHandle.particleCount() / .energy()" /></dt>
-        <dd class="d">Per-frame energy snapshot. Forwards to <code>energyReport(store.particles)</code> — the function exists in <code>@field-ui/core/diagnostics/energy</code>; this accessor exposes it without requiring a reference to the internal particle array.</dd>
+        <dd class="d">Per-frame energy snapshot. Forwards to <code>energyReport(store.particles)</code> — the function exists in <code>@fundamental-engine/core/diagnostics/energy</code>; this accessor exposes it without requiring a reference to the internal particle array.</dd>
       </div>
     </dl>
     <div class="callout callout--warn">

@@ -12,7 +12,7 @@
  * reachable. The caller owns the visit log and the recipe lookup; this helper owns the binding and its
  * teardown. Unfrozen (experimental) — option names may refine before 1.0.
  */
-import { recipeById, type FieldRecipe } from '@field-ui/core';
+import { recipeById, type FieldRecipe } from '@fundamental-engine/core';
 import { applyRecipe } from './apply-recipe.ts';
 import { prefersReducedMotion } from './env.ts';
 

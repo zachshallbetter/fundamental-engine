@@ -253,11 +253,11 @@ field-ui is organized into packages whose dependency direction is strict and one
 
 ```
 field-ui      renderer-agnostic field/force/particle/metric/diagnostic/conformance engine
-@field-ui/platform  DOM participation: measurement, state, feedback, relationships,
+@fundamental-engine/platform  DOM participation: measurement, state, feedback, relationships,
                     visual bindings, overlays, scheduling, linting
-@field-ui/elements  <field-root> / <field-cell> custom elements + [data-body] authoring
-@field-ui/react     <FieldField> component + useFieldField hook
-@field-ui/vanilla   the framework-free FieldField class
+@fundamental-engine/elements  <field-root> / <field-cell> custom elements + [data-body] authoring
+@fundamental-engine/react     <FieldField> component + useFieldField hook
+@fundamental-engine/vanilla   the framework-free FieldField class
 
 elements → platform → core      react → platform → core      vanilla → platform → core
 ```
@@ -265,7 +265,7 @@ elements → platform → core      react → platform → core      vanilla →
 The layering encodes a claim, not merely a code organization: *field behavior is independent of its
 presentation substrate.* `field-ui` computes field behavior against plain data and touches no
 DOM globals; the browser environment adapter — `browserHost()`, viewport/scroll/`requestAnimationFrame`
-access, the canvas factory, DOM download helpers — lives in `@field-ui/platform`. The core reaches
+access, the canvas factory, DOM download helpers — lives in `@fundamental-engine/platform`. The core reaches
 the environment only through an injected `FieldHost` interface, so the same engine runs against
 Canvas, WebGL, WebGPU, a native target, or a headless harness by supplying a different host.
 

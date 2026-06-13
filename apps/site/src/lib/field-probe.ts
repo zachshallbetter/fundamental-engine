@@ -21,7 +21,7 @@ import {
   type Scenario,
   type ScenarioParticle,
   type ScenarioResult,
-} from '@field-ui/core';
+} from '@fundamental-engine/core';
 
 export interface Pt {
   x: number;

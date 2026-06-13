@@ -194,8 +194,8 @@ Ordered for overnight (highest visible value first):
 
 - [x] **Vanilla adapter** — `mountField(opts)` creates a fixed full-viewport canvas,
       starts the engine, returns the `FieldHandle` (`destroy()` also removes the canvas).
-      The framework-free imperative mount, in `@field-ui/elements`.
-- [x] **React adapter** (`@field-ui/react`) — `<FieldField>` component + `useFieldField`
+      The framework-free imperative mount, in `@fundamental-engine/elements`.
+- [x] **React adapter** (`@fundamental-engine/react`) — `<FieldField>` component + `useFieldField`
       hook mount the engine via `createField`; every `FieldOptions` prop + an `onReady(handle)`.
       React is a peer dependency (the one approved framework dep; core stays zero-dep).
       Typecheck + `pnpm -r build` green.
@@ -206,7 +206,7 @@ Ordered for overnight (highest visible value first):
       the catalog (completeness-tested), so it can't drift from the engine. Opens with a
       **live, playable `<forces-cell>` demo** + a force switcher (attract/repel/swirl/stream/
       gravity/tether/buoyancy) — the manual explains by being it.
-- [x] **field-ui.com rebuilt on the engine.** The home page is now the engine-driven
+- [x] **fundamental-engine.com rebuilt on the engine.** The home page is now the engine-driven
       manual — the live `<forces-field>` runs the whole engine (its first real consumer);
       the hero `mass.` is a real `data-feedback` body that glows; the Field Cell row demos
       forces; the chapter rail (Substrate → Forces → Conditions → System), the "every element
@@ -258,10 +258,10 @@ through a **web-component** keystone so it drops into anything.
 | Package | What | Tech |
 |---|---|---|
 | `packages/core` (`field-ui`) | the engine — catalog, contracts, FieldStore, forces | vanilla TS |
-| `packages/vanilla` (`@field-ui/vanilla`) | framework-free door — `FieldField` class + `mountField()`, no side effects | vanilla TS |
-| `packages/elements` (`@field-ui/elements`) | `<forces-field>` + declarative `data-body` | web components (plain now; Lit when there's UI to template, e.g. the Lab) |
-| `apps/site` (`@field-ui/site`) | field-ui.com — the manual / landing / Lab | Astro (static) |
-| `packages/react` (`@field-ui/react`) | thin React adapter | React |
+| `packages/vanilla` (`@fundamental-engine/vanilla`) | framework-free door — `FieldField` class + `mountField()`, no side effects | vanilla TS |
+| `packages/elements` (`@fundamental-engine/elements`) | `<forces-field>` + declarative `data-body` | web components (plain now; Lit when there's UI to template, e.g. the Lab) |
+| `apps/site` (`@fundamental-engine/site`) | fundamental-engine.com — the manual / landing / Lab | Astro (static) |
+| `packages/react` (`@fundamental-engine/react`) | thin React adapter | React |
 
 Why web components as the keystone: "every element is a body" is a web-components-
 shaped idea; a custom element works in React/Svelte/Astro/plain HTML unchanged →
@@ -276,7 +276,7 @@ separate, swappable choice and shares no code with the engine.
   forces carries a canonical color, cross-checked by a completeness test.
 - **Site shell** — Astro, chosen and built (static; it shares no code with the engine, so
   it stays cheap to revisit).
-- **Package names** — `field-ui` (core), `@field-ui/elements`, `@field-ui/react`.
+- **Package names** — `field-ui` (core), `@fundamental-engine/elements`, `@fundamental-engine/react`.
 
 The only remaining gate is the deliberate, human-run **first publish** (npm + repo
 visibility) — see [`RELEASING.md`](RELEASING.md) and [`PUBLISHING.md`](PUBLISHING.md).

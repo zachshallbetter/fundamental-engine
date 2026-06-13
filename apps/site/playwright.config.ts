@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // E2E suite for the invisible-fields example pages (/evidence and /evidence/<slug>).
-// The webServer serves the BUILT site (astro preview) — run `pnpm --filter @field-ui/site build`
+// The webServer serves the BUILT site (astro preview) — run `pnpm --filter @fundamental-engine/site build`
 // before `pnpm test:e2e` locally; CI builds the workspace first. See e2e/README.md.
 export default defineConfig({
   testDir: "e2e",

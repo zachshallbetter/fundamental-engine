@@ -70,7 +70,7 @@ export const CONTRACTS: readonly ContractMeta[] = [
     mustExist: 'a write-back of field state to CSS vars / data-state / ElementInternals',
     mayMutate: 'presentation (visually yes), not meaning',
     sideEffectFree: 'must not break readability or require motion for meaning',
-    testable: 'density write-back sets both --field-* and --forces-*; reduced-motion holds meaning',
+    testable: 'density write-back sets --field-* / --d; reduced-motion holds meaning',
     inspectable: 'the CSS variables and data-state written on each body',
   },
   {

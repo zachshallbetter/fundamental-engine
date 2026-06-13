@@ -1,11 +1,11 @@
 # field-ui — full canonical documentation
 
-Source: docs/canonical/ in https://github.com/zachshallbetter/field-ui
-Generated: 2026-06-12 by apps/site/scripts/gen-llms.mjs
+Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
+Generated: 2026-06-13 by apps/site/scripts/gen-llms.mjs
 Files: 16
 
 These are the project's canonical documents — the authority on concepts, terminology, and
-contracts — concatenated in filename order. The live site map is https://field-ui.com/llms.txt.
+contracts — concatenated in filename order. The live site map is https://fundamental-engine.com/llms.txt.
 
 ========================================================================
 FILE: README.md
@@ -20,7 +20,7 @@ FILE: README.md
 # Canonical documentation map
 
 field-ui is a platform-native relational field runtime for the DOM. `field-ui` (core) computes
-renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM; `elements`/`react`
+renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM; `elements`/`react`
 are authoring surfaces. Canvas is one render surface, not the whole system.
 
 > Concepts describe. Tokens execute. Metrics measure. Diagnostics explain. Conditions activate.
@@ -321,9 +321,9 @@ same package, with the same kind (value / type / element), and its shape does no
 of the `0.x` line. The freeze is mechanically enforced — `pnpm check:api` fails the build if a frozen
 symbol is removed, renamed, moved between packages, or changes kind.
 
-> Package npm names: core is published as **`@field-ui/core`**; the rest are
-> `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`. The umbrella
-> **`@field-ui/kit`** installs the whole suite in one dependency (`@field-ui/field-ui` is a thin alias
+> Package npm names: core is published as **`@fundamental-engine/core`**; the rest are
+> `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The umbrella
+> **`@fundamental-engine/kit`** installs the whole suite in one dependency (`fundamental-engine` is a thin alias
 > for it); these are convenience meta-packages, not part of the frozen API surface.
 
 ## The stable surface (`0.x`)
@@ -332,33 +332,33 @@ symbol is removed, renamed, moved between packages, or changes kind.
 
 | Symbol | Package | Kind | What it is |
 | --- | --- | --- | --- |
-| `createField` | `@field-ui/core` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
-| `createField` | `@field-ui/vanilla` | value | The host-bundled convenience door (= `createBrowserField`); auto-supplies `browserHost()`. |
-| `browserHost` | `@field-ui/platform` | value | The canonical DOM `FieldHost` for `createField`. |
-| `browserHost` | `@field-ui/vanilla` | value | Re-export of the platform host for the no-framework path. |
-| `createFieldPlatform` | `@field-ui/platform` | value | Wires the six native-first registries on a root. |
-| `applyRecipe` | `@field-ui/platform` | value | Applies a recipe to a live platform. |
-| `bindData` | `@field-ui/platform` | value | Binds records → bodies; data drives the field. |
-| `compileRecipe` | `@field-ui/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
+| `createField` | `@fundamental-engine/core` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
+| `createField` | `@fundamental-engine/vanilla` | value | The host-bundled convenience door (= `createBrowserField`); auto-supplies `browserHost()`. |
+| `browserHost` | `@fundamental-engine/platform` | value | The canonical DOM `FieldHost` for `createField`. |
+| `browserHost` | `@fundamental-engine/vanilla` | value | Re-export of the platform host for the no-framework path. |
+| `createFieldPlatform` | `@fundamental-engine/platform` | value | Wires the six native-first registries on a root. |
+| `applyRecipe` | `@fundamental-engine/platform` | value | Applies a recipe to a live platform. |
+| `bindData` | `@fundamental-engine/platform` | value | Binds records → bodies; data drives the field. |
+| `compileRecipe` | `@fundamental-engine/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
 
 `createField` has **two doors on purpose**: the core primitive is renderer-agnostic and host-required;
-`@field-ui/vanilla` re-exports the host-bundled convenience so the no-framework path stays one call.
+`@fundamental-engine/vanilla` re-exports the host-bundled convenience so the no-framework path stays one call.
 Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 
 ### Types
 
 | Type | Package | What it is |
 | --- | --- | --- |
-| `FieldRecipe` | `@field-ui/core` | The recipe schema. |
-| `FieldHost` | `@field-ui/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
-| `FieldPlatform` | `@field-ui/platform` | The surface `createFieldPlatform` returns. |
+| `FieldRecipe` | `@fundamental-engine/core` | The recipe schema. |
+| `FieldHost` | `@fundamental-engine/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
+| `FieldPlatform` | `@fundamental-engine/platform` | The surface `createFieldPlatform` returns. |
 
 ### Elements and the body contract
 
 | Surface | Package | What it is |
 | --- | --- | --- |
-| `<field-root>` | `@field-ui/elements` | One background field per page; scans the document for `[data-body]`. |
-| `<field-cell>` | `@field-ui/elements` | A scoped local field region. |
+| `<field-root>` | `@fundamental-engine/elements` | One background field per page; scans the document for `[data-body]`. |
+| `<field-cell>` | `@fundamental-engine/elements` | A scoped local field region. |
 | `data-body` (attribute) | core `BODY_SELECTOR` | **The body contract.** "Every element is a body" via the `data-body` attribute on ordinary elements. |
 
 **There is no `<field-body>` element.** Bodies are an attribute on ordinary elements, not a tag, and
@@ -374,9 +374,9 @@ of the contract until they are added to the table above.
 | Area | Status | Notes |
 | --- | --- | --- |
 | `FieldHandle` (full surface) | partial | The handle shape is not frozen as a type. Entry points that return it (`createField`, `createBrowserField`) are frozen, but new methods may be added in any patch. |
-| `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@field-ui/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
+| `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@fundamental-engine/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
 | Advanced diagnostics | partial | `DIAGNOSTICS` / `DIAGNOSTIC_LENS` / `draw*` primitives ship but are unfrozen. |
-| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@field-ui/core`; `FieldPerf` (frame-duration split, adaptive governor) is designed but not yet implemented. |
+| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) is designed but not yet implemented. |
 | Visual recipe editor | absent | No editor UI; the authoring toolkit is the substrate to build one on. |
 | GPU / WebGPU backend | planned | A named direction; the six shipped render modes are CPU/canvas. |
 | Multi-root bridge | absent | No API for coordinating multiple `<field-root>` instances yet. |
@@ -425,7 +425,7 @@ migration note and a `0.MINOR` bump.
 
 ## Status
 
-The packages are **published to npm** under the `@field-ui` scope (`@field-ui/core` and the four
+The packages are **published to npm** under the `@field-ui` scope (`@fundamental-engine/core` and the four
 adapters). This freeze defines the `0.x` contract consumers build against; the publish steps and
 order are in [`PUBLISHING.md`](../../PUBLISHING.md).
 
@@ -451,7 +451,7 @@ FILE: field-ui-authoring-and-recipes.md
 ## Purpose
 
 This document defines how authors use `field-ui`. `field-ui` is a platform-native relational field
-runtime for the DOM: `field-ui` computes renderer-agnostic field behavior, `@field-ui/platform`
+runtime for the DOM: `field-ui` computes renderer-agnostic field behavior, `@fundamental-engine/platform`
 binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
 scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
 field context. Authors write the same `[data-body]` contract regardless of surface.
@@ -508,7 +508,7 @@ platform runtime is the default participation path:
 React — `<FieldField>` renders the same contract; props map onto the same `data-*` tokens:
 
 ```tsx
-import { FieldField } from "@field-ui/react";
+import { FieldField } from "@fundamental-engine/react";
 
 function Headline() {
   return (
@@ -706,7 +706,7 @@ Example:
 
 > **Implemented.** All **sixty-four** ship as validated `FieldRecipe`s in
 > `packages/core/src/recipes/catalog.ts` (`FIELD_RECIPES`; `gallery.ts` re-exports it), grouped into four tiers (`RECIPE_TIERS`),
-> live on [`/docs/gallery`](https://field-ui.com/docs/gallery). They are the four-field translation
+> live on [`/docs/gallery`](https://fundamental-engine.com/docs/gallery). They are the four-field translation
 > model made practical — and classification/authoring artifacts only: they **compose existing
 > primitives and add no new engine behavior**. Eight are the recommended first-release set
 > (`FIRST_RELEASE_RECIPE_IDS`).
@@ -917,7 +917,7 @@ FILE: field-ui-definition-document.md
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 
-`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@field-ui/elements` and `@field-ui/react` are authoring surfaces. Canvas is one render surface, not the whole system.
+`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
 
 Core principle:
 
@@ -991,9 +991,9 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@field-ui/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `field-ui` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `field-ui` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
-The package set: `field-ui`, `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `field-ui` specifically carries zero runtime dependencies.
+The package set: `field-ui`, `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `field-ui` specifically carries zero runtime dependencies.
 
 ### Platform layer
 
@@ -1363,10 +1363,10 @@ are written or revised, they follow the framing below.
 field-ui is a platform-native relational field runtime for the DOM.
 
 field-ui      computes renderer-agnostic field behavior.
-@field-ui/platform  binds field behavior to the DOM through measurement, state, feedback,
+@fundamental-engine/platform  binds field behavior to the DOM through measurement, state, feedback,
                     relationships, visual bindings, overlays, linting, and scheduling.
-@field-ui/elements  exposes native HTML and web-component authoring.
-@field-ui/react     adapts the same contracts for React.
+@fundamental-engine/elements  exposes native HTML and web-component authoring.
+@fundamental-engine/react     adapts the same contracts for React.
 
 Canvas is one render surface, not the whole system.
 ```
@@ -1408,7 +1408,7 @@ These are shipped and may be described in the present tense (verify specifics ag
 asserting anything new):
 
 ```
-field-ui · @field-ui/platform · @field-ui/elements · @field-ui/react · @field-ui/vanilla
+field-ui · @fundamental-engine/platform · @fundamental-engine/elements · @fundamental-engine/react · @fundamental-engine/vanilla
 FrameScheduler (discover → read → compute → state → write → render)
 MeasurementRegistry · StateRegistry · FeedbackRegistry · RelationshipRegistry ·
   VisualBindingRegistry · OverlayRegistry · lintPlatform()
@@ -1421,7 +1421,7 @@ the Natural Field Translation System (four-field classification + /docs/natural-
 ```
 
 `field-ui` imports **zero DOM** — the engine routes the environment through an injected
-`FieldHost`; `browserHost()` lives in `@field-ui/platform`, and `createField` requires a host (the
+`FieldHost`; `browserHost()` lives in `@fundamental-engine/platform`, and `createField` requires a host (the
 framework entry points wire it). `core/dom-boundary.test.ts` enforces this with an empty allowlist.
 
 ## Document-status taxonomy
@@ -1477,7 +1477,7 @@ FILE: field-ui-interaction-and-relationship-model.md
 
 This document expands `field-ui` beyond particles.
 
-`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
+`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
@@ -1582,10 +1582,10 @@ Conserved attention mode:
 Suggested DOM variables:
 
 ```css
---forces-attention
---forces-attention-share
---forces-attention-rank
---forces-related-attention
+--field-attention
+--field-attention-share
+--field-attention-rank
+--field-related-attention
 ```
 
 Key phrase:
@@ -1743,9 +1743,9 @@ desire paths
 Suggested outputs:
 
 ```css
---forces-memory
---forces-path-use
---forces-user-wake
+--field-memory
+--field-path-use
+--field-user-wake
 ```
 
 ## 12. Events as Field Thresholds
@@ -1777,15 +1777,15 @@ Field events should be thresholded, debounced, and inspectable.
 Possible outputs:
 
 ```css
---forces-density
---forces-attention
---forces-pressure
---forces-coherence
---forces-entropy
---forces-memory
---forces-pull-x
---forces-pull-y
---forces-layout-shift
+--field-density
+--field-attention
+--field-pressure
+--field-coherence
+--field-entropy
+--field-memory
+--field-pull-x
+--field-pull-y
+--field-layout-shift
 ```
 
 Example:
@@ -1794,10 +1794,10 @@ Example:
 .card {
   transform:
     translate(
-      calc(var(--forces-pull-x, 0) * 12px),
-      calc(var(--forces-pull-y, 0) * 12px)
+      calc(var(--field-pull-x, 0) * 12px),
+      calc(var(--field-pull-y, 0) * 12px)
     )
-    scale(calc(1 + var(--forces-attention, 0) * 0.04));
+    scale(calc(1 + var(--field-attention, 0) * 0.04));
 }
 ```
 
@@ -2097,7 +2097,7 @@ Two shipped mechanisms produce it:
   (`packages/platform/src/apply-recipe.ts`).
 
 Formalizing the first mechanism as a named engine mode is filed as
-[#297](https://github.com/zachshallbetter/field-ui/issues/297).
+[#297](https://github.com/zachshallbetter/fundamental-engine/issues/297).
 
 ## 2. The two-field page architecture
 
@@ -2150,7 +2150,7 @@ Two attributes make engagement programmable; both are shipped and verified:
   notices the change).
 
 Canon-doc coverage of these two attributes is the substance of
-[#298](https://github.com/zachshallbetter/field-ui/issues/298); this section is that
+[#298](https://github.com/zachshallbetter/fundamental-engine/issues/298); this section is that
 documentation.
 
 ## 4. Declared relationships
@@ -2242,11 +2242,11 @@ packages.
 ## 8. What the pattern earned the platform
 
 Building twelve pages against the contracts above surfaced the platform's next API work, filed
-and boarded: [#295](https://github.com/zachshallbetter/field-ui/issues/295) a platform FLIP
-helper (every runtime hand-rolls the same reflow), [#296](https://github.com/zachshallbetter/field-ui/issues/296)
+and boarded: [#295](https://github.com/zachshallbetter/fundamental-engine/issues/295) a platform FLIP
+helper (every runtime hand-rolls the same reflow), [#296](https://github.com/zachshallbetter/fundamental-engine/issues/296)
 `allocateAttention()` (the inbox's exact conserved water-filling belongs to the engine's
-attention concept), [#297](https://github.com/zachshallbetter/field-ui/issues/297) a named
-signals-only engine mode, [#299](https://github.com/zachshallbetter/field-ui/issues/299) a
+attention concept), [#297](https://github.com/zachshallbetter/fundamental-engine/issues/297) a named
+signals-only engine mode, [#299](https://github.com/zachshallbetter/fundamental-engine/issues/299) a
 mobile/touch QA pass.
 
 ## 9. The same pattern, turned on the chrome (the navigation sweep)
@@ -2266,7 +2266,7 @@ chrome):
 
 **What it earned the platform.** The navigation-chrome idiom — run a recipe `render: []` over the
 `<a href>` links, pin the current, mark the visited, return a teardown — lifted out of the site into
-**`bindFieldNav`** (`@field-ui/platform`), the same way the example family earned FLIP and
+**`bindFieldNav`** (`@fundamental-engine/platform`), the same way the example family earned FLIP and
 `allocateAttention` above.
 
 **The honesty it forced.** On a small nav (a two-link pager, a breadcrumb) "signals-only" is mostly
@@ -2433,7 +2433,7 @@ Each diagnostic answers "which invisible relation am I revealing?"
 | Inspector | all of the above | system |
 
 All diagnostic render modes are shipped — see [visualization-methods-taxonomy.md](visualization-methods-taxonomy.md)
-and the live [/docs/diagnostics](https://field-ui.com/docs/diagnostics).
+and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics).
 
 ## Recipes by meaning
 
@@ -2460,7 +2460,7 @@ FILE: field-ui-platform-architecture.md
 ========================================================================
 
 > **Status: canonical.**
-> This document defines the current `@field-ui/platform` architecture as of the runtime-platform
+> This document defines the current `@fundamental-engine/platform` architecture as of the runtime-platform
 > unification phase (Phase D): the FrameScheduler, the six registries, `lintPlatform()`, the live
 > `<field-root>` runtime, and the platform→core boundary. For force/field math see
 > [forces-system.md](../engine-reference/forces-system.md); for the data model and contracts see
@@ -2483,22 +2483,22 @@ field-ui
   core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
   export.ts are the two allowlisted, quarantined exceptions).
 
-@field-ui/platform
+@fundamental-engine/platform
   DOM participation: measurement, state, feedback, relationships, visual bindings, overlays,
   scheduling, and linting. Depends on core for contracts; core never depends on it.
 
-@field-ui/elements
+@fundamental-engine/elements
   native web components — <field-root> / <field-cell> and the [data-body] authoring contract.
 
-@field-ui/react
+@fundamental-engine/react
   the React adapter over the same contracts (<FieldField>, useFieldField).
 
-@field-ui/vanilla
+@fundamental-engine/vanilla
   the FieldField class for plain TypeScript apps.
 
-@field-ui/kit
+@fundamental-engine/kit
   umbrella meta-package — installs the whole suite (core + platform + the three adapters) in one
-  dependency. No code of its own; import from the specific package. @field-ui/field-ui is a thin alias.
+  dependency. No code of its own; import from the specific package. fundamental-engine is a thin alias.
 
 apps/site · lab · docs
   product surfaces, executable documentation, diagnostics, examples, and previews.
@@ -2507,7 +2507,7 @@ apps/site · lab · docs
 Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
 `vanilla → platform → core`. `field-ui` is renderer-agnostic and imports **zero** DOM (enforced
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
-`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@field-ui/platform`.
+`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/platform`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
 you. Compatibility alias packages (`@forces-ui/*`, `forces-ui`) re-export the renamed
 families during the migration window.
@@ -2621,7 +2621,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 - **D3** — CSS-variable + event feedback routed through FeedbackRegistry via a `feedbackSink` seam in
   `createField`; the eased density signal is unchanged, only the write target moves. Since #228 the
   sink contract is the engine's **only** feedback write path: when no platform sink is configured
-  (raw `createField`, `@field-ui/vanilla`, recipe-scoped engines), the engine installs an internal
+  (raw `createField`, `@fundamental-engine/vanilla`, recipe-scoped engines), the engine installs an internal
   default sink (`core/feedback-sink.ts`) whose direct writes are byte-identical to the historical
   behavior — same variables (`--d`/`--forces-density`/`--field-density`, the heatmap mirror pair,
   `--load`/`--mass`, `--lit`), same three-decimal formatting, same `field:lit`/`field:dim`
@@ -2637,7 +2637,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 **Frontier — done:** `core/field.ts` (the engine + canvas render loop) no longer touches any DOM
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
-to `@field-ui/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
+to `@fundamental-engine/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
 source file in `field-ui` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
@@ -2684,7 +2684,7 @@ unfrozen/experimental.
 
 ## Reading Field
 
-[/docs/reading-field](https://field-ui.com/docs/reading-field) is the flagship demonstration: an
+[/docs/reading-field](https://fundamental-engine.com/docs/reading-field) is the flagship demonstration: an
 ordinary content page (sections, headings, citations, a table of contents) wired to
 `createFieldPlatform`, exercising every registry through the scheduler. Sections are measured bodies;
 viewport-centre proximity becomes attention; attention accumulates into memory; the table of contents
@@ -2721,7 +2721,7 @@ FILE: field-ui-system-contracts.md
 
 ## Purpose
 
-field-ui is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+field-ui is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -3317,10 +3317,10 @@ The semantic layer should remain real HTML text.
 
 ## 20. Platform Contract
 
-> **Implemented.** `@field-ui/platform` ships `createFieldPlatform(root)` plus the six registries, the
+> **Implemented.** `@fundamental-engine/platform` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
-`@field-ui/platform` binds the renderer-agnostic field computed by `field-ui` to the DOM. It owns DOM participation; core stays free of DOM side effects.
+`@fundamental-engine/platform` binds the renderer-agnostic field computed by `field-ui` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:
 
@@ -3343,7 +3343,7 @@ The platform must not move force-engine math into the DOM layer. Core computes f
 
 ## 21. Registry Contract
 
-> **Implemented.** Six registries ship in `@field-ui/platform`: `MeasurementRegistry`,
+> **Implemented.** Six registries ship in `@fundamental-engine/platform`: `MeasurementRegistry`,
 > `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`,
 > `OverlayRegistry`.
 
@@ -3372,7 +3372,7 @@ Overlays must reference real links.
 
 ## 22. Scheduler Contract
 
-> **Implemented.** `FrameScheduler` in `@field-ui/platform` runs the explicit phase pipeline below.
+> **Implemented.** `FrameScheduler` in `@fundamental-engine/platform` runs the explicit phase pipeline below.
 
 The scheduler runs registries in a fixed phase order each frame. Reads never interleave with writes.
 
@@ -3404,7 +3404,7 @@ Render-phase handlers are caller-supplied; the platform wires none by default.
 
 ## 23. Platform-Lint Contract
 
-> **Implemented.** `lintPlatform()` in `@field-ui/platform` enforces the rules below.
+> **Implemented.** `lintPlatform()` in `@fundamental-engine/platform` enforces the rules below.
 
 Platform lint validates that registries are used correctly before behavior depends on them.
 
@@ -3812,7 +3812,7 @@ fatal
 
 ## 15. Platform Tests
 
-`@field-ui/platform` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
+`@fundamental-engine/platform` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
 (Phase D) it is the default runtime for `<field-root>`: the platform owns DOM participation
 (measurement, feedback writes, shadow registration, relationships) while the legacy `core/field.ts`
 still simulates and renders the canvas. `createFieldPlatform(root)` wires the six registries onto the
@@ -3983,7 +3983,7 @@ apply, **declaration wins over inference** (§3).
 
 Temporal distance is a distance. The engine derives force from spatial distance; the kernels
 derive weight from temporal distance — pure, deterministic functions in
-`@field-ui/core` (`core/temporal.ts`), all `(…, nowMs) → 0..1`, no `Date.now()` inside
+`@fundamental-engine/core` (`core/temporal.ts`), all `(…, nowMs) → 0..1`, no `Date.now()` inside
 (callers supply `now`, which keeps them testable and frame-coherent):
 
 | Kernel | Shape | The question it answers |
@@ -4074,7 +4074,7 @@ The field should not only move particles. It should be able to influence typogra
 
 The visual system is native-platform-first, dependency-light, and framework-agnostic. The `field-ui` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
 
-These visual layers are render surfaces bound to the field runtime by `@field-ui/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `field-ui` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
+These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `field-ui` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
 
 Implementation should use fundamental web APIs wherever possible:
 
@@ -4775,7 +4775,7 @@ Suggested order:
 
 Some experiences may place particles above DOM, but the default should protect readability.
 
-These layers are not a single canvas. The canvas render surface owns the field washes, scalar fields, field lines, particles, and topology; SVG overlays own path-accurate relationship lines and crisp diagnostic marks; and diagnostic overlays own the inspector and debug views. The `@field-ui/platform` `OverlayRegistry` registers and orders the SVG and diagnostic overlays, while the `FrameScheduler` keeps each layer on its phase (`discover -> read -> compute -> state -> write -> render`) so render surfaces never measure or mutate physics mid-frame.
+These layers are not a single canvas. The canvas render surface owns the field washes, scalar fields, field lines, particles, and topology; SVG overlays own path-accurate relationship lines and crisp diagnostic marks; and diagnostic overlays own the inspector and debug views. The `@fundamental-engine/platform` `OverlayRegistry` registers and orders the SVG and diagnostic overlays, while the `FrameScheduler` keeps each layer on its phase (`discover -> read -> compute -> state -> write -> render`) so render surfaces never measure or mutate physics mid-frame.
 
 The full set of render and diagnostic modes ships and is browsable at `/docs/diagnostics`: `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`, `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, and `prediction`. None of these are planned; they are all live render surfaces over the shared field context.
 
@@ -4891,7 +4891,7 @@ Performance: CSS only
 
 ## 18.1 Visual Binding and Overlay Registries
 
-The `@field-ui/platform` runtime makes the visual contract above operational. Two registries on the `FrameScheduler` own the visual-to-semantic boundary.
+The `@fundamental-engine/platform` runtime makes the visual contract above operational. Two registries on the `FrameScheduler` own the visual-to-semantic boundary.
 
 `VisualBindingRegistry` pairs each visual layer with the semantic body it expresses. A binding declares its source metrics, its target properties, and the semantic element it must stay paired with, so an expressive canvas or SVG layer is never the sole carrier of meaning. The platform lint surfaces two relevant rules here:
 
@@ -5428,7 +5428,7 @@ DOM state shows reciprocity.
 > `drawInspector`, `causalityAt` + `drawCausality`, `ghostTrajectory` + `drawPrediction`). All of these
 > are exercised on the live `/docs/diagnostics` page. The canvas is one render surface among these
 > layers, not the whole system: `field-ui` computes renderer-agnostic field behavior and
-> `@field-ui/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
+> `@fundamental-engine/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
 
 ## Render Modes Catalog
 

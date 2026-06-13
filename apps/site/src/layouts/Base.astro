@@ -14,8 +14,8 @@ const {
   description = "field-ui — elements bend the field; the field's density bends them back. A medium your interface lives inside, not a backdrop it sits on.",
   ogImage = '/og.jpg',
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://field-ui.com').href;
-const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://fundamental-engine.com').href;
+const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.com').href;
 ---
 
 <!doctype html>
@@ -58,7 +58,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'field-ui',
-        url: 'https://field-ui.com/',
+        url: 'https://fundamental-engine.com/',
         description:
           'A relational field runtime for the DOM — elements become bodies in an invisible physics field that bends them back.',
         author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
@@ -91,7 +91,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
 
     <script>
       // Idle-until-urgent engine boot. The field is ambiance — a slightly late start is
-      // invisible — so the '@field-ui/elements' module (which registers <field-root>; the
+      // invisible — so the '@fundamental-engine/elements' module (which registers <field-root>; the
       // engine mounts on connect) loads OFF the critical path via a deferred dynamic
       // import. Until it runs, <field-root> is an unknown element: inert, invisible, zero
       // layout (the canvas is position:fixed/z-index:0 inside its shadow root), so the
@@ -114,7 +114,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://field-ui.com').href;
       // Boot when the main thread first goes idle, or after ~1.5s — whichever comes
       // first. Safari has no requestIdleCallback; a short fixed delay clears the
       // critical path there the same way.
-      const boot = () => void import('@field-ui/elements');
+      const boot = () => void import('@fundamental-engine/elements');
       if ('requestIdleCallback' in window) {
         requestIdleCallback(boot, { timeout: 1500 });
       } else {

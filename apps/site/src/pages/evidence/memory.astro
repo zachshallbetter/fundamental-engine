@@ -1,5 +1,5 @@
 ---
-import { DAY_MS, retention, weightToStrength } from "@field-ui/core";
+import { DAY_MS, retention, weightToStrength } from "@fundamental-engine/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import memory from "../../data/examples/memory.json";
@@ -43,7 +43,7 @@ const SNIPPET_HTML = `<!-- each word is a body. data-feedback: the engine writes
 const SNIPPET_TS = `// the world-time kernel — Ebbinghaus
 // retention with a stability term:
 //   w = a·exp(−since/τ(a)), τ = 4 + a·56 days
-import { retention, DAY_MS } from "@field-ui/core";
+import { retention, DAY_MS } from "@fundamental-engine/core";
 
 // a = zipf, normalized 0.15..1
 //     (real Trillion Word Corpus counts)

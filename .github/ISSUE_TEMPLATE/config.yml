@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security report
-    url: https://github.com/zachshallbetter/field-ui/security/policy
+    url: https://github.com/zachshallbetter/fundamental-engine/security/policy
     about: Please report security issues privately — see SECURITY.md, not a public issue.

@@ -3,10 +3,9 @@
  * and thresholded, debounced events (discrete). The native primitive field-ui wishes existed —
  * standard feedback channels with hysteresis instead of per-frame DOM events.
  *
- * Writes happen only in `flush()`, after measurement + simulation reads. During the migration window
- * every `--field-*` is mirrored to `--forces-*`, and every `field:*` event to its `forces:*` twin.
+ * Writes happen only in `flush()`, after measurement + simulation reads.
  */
-import { Thresholder } from '@field-ui/core';
+import { Thresholder } from '@fundamental-engine/core';
 import type { StateRegistry } from './state.ts';
 
 /** Map of state-key → CSS-var name written for an element. */
@@ -20,15 +19,11 @@ interface ThresholdEntry {
   thresholder: Thresholder;
 }
 
-/** Write a CSS custom property and its `--forces-*` mirror. Returns the count of actual DOM mutations. */
+/** Write a CSS custom property. Returns the count of actual DOM mutations. */
 function writeVar(element: Element, name: string, value: string): number {
   const style = (element as HTMLElement).style;
   if (!style || typeof style.setProperty !== 'function') return 0;
   style.setProperty(name, value);
-  if (name.startsWith('--field-')) {
-    style.setProperty('--forces-' + name.slice('--field-'.length), value);
-    return 2;
-  }
   return 1;
 }
 
@@ -36,14 +31,11 @@ function removeVar(element: Element, name: string): void {
   const style = (element as HTMLElement).style;
   if (!style || typeof style.removeProperty !== 'function') return;
   style.removeProperty(name);
-  if (name.startsWith('--field-')) style.removeProperty('--forces-' + name.slice('--field-'.length));
 }
 
 function fire(element: Element, type: string, detail: unknown): void {
   if (typeof element.dispatchEvent !== 'function') return;
   element.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail }));
-  if (type.startsWith('field:'))
-    element.dispatchEvent(new CustomEvent('forces:' + type.slice('field:'.length), { bubbles: true, composed: true, detail }));
 }
 
 export interface ThresholdOptions {
@@ -68,7 +60,7 @@ export class FeedbackRegistry {
   }
 
   /**
-   * Remove the CSS var bound to `key` on `element` (and its `--forces-*` mirror) from the DOM. Use
+   * Remove the CSS var bound to `key` on `element` from the DOM. Use
    * when a metric becomes absent — e.g. the host stops supplying `data-field-confidence` — so a value
    * written on an earlier `flush()` doesn't linger. A no-op when nothing is bound for `key`; the
    * binding itself is left intact, so the var is rewritten if the metric returns. `flush()` already
@@ -85,8 +77,7 @@ export class FeedbackRegistry {
   }
 
   /**
-   * Actual `style.setProperty` calls made during the last `flush()` — counting both the primary
-   * `--field-*` write and its `--forces-*` mirror as separate mutations. Use this (not
+   * Actual `style.setProperty` calls made during the last `flush()`. Use this (not
    * `boundVars().length`) to measure real per-frame DOM write cost: off-screen elements with
    * active bindings still generate mutations even though they produce no visible change.
    */

@@ -2,7 +2,7 @@
 // runtime, EvidenceRuntime, DocsRuntime, the home runtimes): boot on first load AND on every
 // ClientRouter navigation, tear down before each swap, never stack. This is the site's
 // Astro-lifecycle adapter; if it ever generalizes beyond this app it becomes the seed of an
-// @field-ui/astro integration.
+// @fundamental-engine/astro integration.
 
 /**
  * Wire a page runtime: `init` runs when (and only when) `selector` matches — on initial

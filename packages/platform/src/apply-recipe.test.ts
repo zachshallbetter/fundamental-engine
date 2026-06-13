@@ -7,7 +7,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { recipeById } from '@field-ui/core';
+import { recipeById } from '@fundamental-engine/core';
 import { applyRecipe } from './apply-recipe.ts';
 
 interface FakeEl extends Element {
