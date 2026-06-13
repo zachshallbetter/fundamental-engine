@@ -625,6 +625,26 @@ export interface FieldHandle {
    */
   sample(x: number, y: number): Vec2;
   /**
+   * Sample the live **density scalar** at a point ∈ [0,1]: the smooth, diffused field of where matter
+   * has gathered — distinct from `sample()` (the force vector) and from a body's own `--d`. Unlike a
+   * nearest-body readout, this is a true bilinear grid (the heatmap), so its gradient stays meaningful
+   * right at a source — the thing forage-by-gradient needs. Requires the heatmap layer
+   * (`createField({ heatmap: true })` or `setHeatmap(true)`); returns `0` when it is off. Read-only;
+   * updated each frame even under `render: 'none'`. Finite-difference it for the gradient.
+   */
+  sampleScalar(x: number, y: number): number;
+  /**
+   * Sample the **smooth density scalar** at a point — the diffused heatmap grid, normalized to
+   * `[0, 1]`. Unlike a nearest-body readout (which flattens to a flat top right at a source), this
+   * is the per-frame particle-density field after a diffuse pass, so it has a real, non-zero
+   * **gradient everywhere** — finite-difference it to climb toward where matter actually gathers
+   * (forage-by-gradient). Bilinear, samplable at any resolution. Requires the heatmap layer to be on
+   * (`createField({ heatmap: true })` or `setHeatmap(true)`); returns `0` when it is off. Maintained
+   * even under `render: 'none'`, so it works headless. (`@fundamental-engine/three`'s `FieldLayer`
+   * enables it so agents can forage out of the box.)
+   */
+  sampleScalar(x: number, y: number): number;
+  /**
    * Copy live particle state into a caller-owned buffer and return the number of particles
    * written. Stride 5, packed `[x, y, z, heat, size, …]` in CSS-pixel field coordinates — the
    * layout maps straight onto a renderer's vertex buffer (e.g. a `THREE.BufferAttribute`), so an

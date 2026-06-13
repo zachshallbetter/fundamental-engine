@@ -256,6 +256,10 @@ export class FieldField extends HTMLElementBase {
   sample(x: number, y: number): { x: number; y: number } {
     return this.field?.sample(x, y) ?? { x: 0, y: 0 };
   }
+  /** sample the smooth density scalar ∈ [0,1] at `(x, y)` (needs `heatmap`); 0 when off/not started. */
+  sampleScalar(x: number, y: number): number {
+    return this.field?.sampleScalar(x, y) ?? 0;
+  }
 
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).

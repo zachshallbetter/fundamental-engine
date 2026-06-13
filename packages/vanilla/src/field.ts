@@ -130,6 +130,10 @@ export class FieldField implements FieldHandle {
   sample(x: number, y: number): { x: number; y: number } {
     return this.field.sample(x, y);
   }
+  /** sample the smooth density scalar ∈ [0,1] at `(x, y)` (needs `heatmap: true`); 0 when off. */
+  sampleScalar(x: number, y: number): number {
+    return this.field.sampleScalar(x, y);
+  }
   scrollV(): number {
     return this.field.scrollV();
   }

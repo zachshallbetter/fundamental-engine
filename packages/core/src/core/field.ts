@@ -1900,6 +1900,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
       return { x: fx, y: fy };
     },
+    sampleScalar: (x, y) => (heatmap ? heatmap.norm(x, y) : 0),
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;
