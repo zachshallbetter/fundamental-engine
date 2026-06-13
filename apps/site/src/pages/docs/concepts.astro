@@ -22,7 +22,7 @@ cy = (rect.top  + rect.height / 2) * DPR
 
 // write phase — field → DOM (platform FeedbackRegistry, per data-feedback body)
 element.style.setProperty('--field-density', density)   // d ∈ [0, 1]
-// (the compact --d and --forces-density are written too, as aliases)`;
+// (the compact --d is written too, as an alias)`;
 
 const feedbackSnippet = `.headline {
   /* the field writes --field-density; CSS turns density into weight + glow.
@@ -132,7 +132,7 @@ const DEMOS = [
       instantaneous change to the force geometry, so animating the DOM animates the runtime for free.
       <strong>Write (feedback out):</strong> the field samples how much matter pooled on each
       <code>data-feedback</code> body and writes it back as <code>--field-density</code> (with the
-      compact <code>--d</code> and <code>--forces-density</code> as aliases).
+      compact <code>--d</code> as an alias).
     </p>
   </section>
 
@@ -141,8 +141,8 @@ const DEMOS = [
     <p>
       Reciprocity is the payoff. Opt a body in with <code>data-feedback</code> and the FeedbackRegistry
       eases the gathered density into a CSS custom property <code>--field-density</code> ∈ [0, 1] on the
-      element (the compact <code>--d</code> and <code>--forces-density</code> are written alongside it as
-      aliases). Your styles turn that number into anything — weight, glow, scale, color:
+      element (the compact <code>--d</code> is written alongside it as an
+      alias). Your styles turn that number into anything — weight, glow, scale, color:
     </p>
     <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: feedbackSnippet }]} />
     <p>

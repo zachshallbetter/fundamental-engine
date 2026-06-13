@@ -21,7 +21,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'palette', type: 'string | string[]', def: "'ours'", desc: 'Accent template — a built-in name or custom hex stops.' },
   { name: 'attention', type: 'boolean', def: 'false', desc: 'Conserved attention — one finite strength budget; engaging a body starves the others.' },
   { name: 'causality', type: 'boolean', def: 'false', desc: 'Cross-boundary causality — a saturated body spills density to its neighbours.' },
-  { name: 'heatmap', type: 'boolean', def: 'false', desc: 'Density heatmap — a glow layer of where matter pools, sampled back to bodies as --forces-heatmap-density.' },
+  { name: 'heatmap', type: 'boolean', def: 'false', desc: 'Density heatmap — a glow layer of where matter pools, sampled back to bodies as --field-heatmap-density.' },
   { name: 'overlayCanvas', type: 'HTMLCanvasElement', def: 'undefined', desc: 'Field Surfaces: a caller-provided canvas for the overlay surface (drawn in front of content). The web component creates/manages this for you; pass it only when calling createField directly.' },
   { name: 'feedbackSink', type: 'FeedbackSink', def: 'undefined', desc: 'Advanced: route per-body density/feedback writes to the platform FeedbackRegistry instead of letting the engine write the DOM (Phase D3).' },
 ];
@@ -91,8 +91,8 @@ export const ATTRS: AttrRow[] = [
  *  your own CSS to make an element answer the field. Written only to bodies that opt in. */
 export const WRITEBACK: { name: string; on: string; desc: string }[] = [
   { name: '--d', on: 'data-feedback', desc: "The body's own gathered density ∈ [0,1], eased. The canonical reaction var." },
-  { name: '--forces-density', on: 'data-feedback', desc: 'Explicit alias of --d (the namespaced name; same value).' },
-  { name: '--forces-heatmap-density', on: 'data-feedback + heatmap', desc: 'The ambient heatmap density under the body ∈ [0,1] — where matter pools around it, distinct from --d.' },
+  { name: '--field-density', on: 'data-feedback', desc: 'Namespaced alias of --d (same value).' },
+  { name: '--field-heatmap-density', on: 'data-feedback + heatmap', desc: 'The ambient heatmap density under the body ∈ [0,1] — where matter pools around it, distinct from --d.' },
   { name: '--load / --mass', on: 'sink body', desc: 'A sink’s accretion fill fraction ∈ [0,1] (--mass is a back-compat alias).' },
   { name: '--lit', on: 'causality', desc: 'Spillover-lit density when a saturated neighbour bleeds density across a boundary.' },
   { name: '--entropy', on: 'data-feedback', desc: 'Measured local disorder ∈ [0,1] — velocity-direction dispersion, gated by agitation (physics workover v0.3). Engine-measured; distinct from the platform’s inferred --field-entropy lane.' },

@@ -20,7 +20,7 @@ const DEFAULT: Item[] = [
   { kind: 'diagnostic', label: 'Diagnostic', def: 'inspection or render mode (potential, topology, causality, field-lines)' },
   { kind: 'condition', label: 'Condition', def: 'activation logic (dwell, threshold, stale, in-view, focused)' },
   { kind: 'phase', label: 'Scheduler phase', def: 'runtime step — discover → read → compute → state → write → render' },
-  { kind: 'alias', label: 'Compatibility alias', def: 'older naming (--d, --forces-*, forces:*) — kept, but not the primary path' },
+  { kind: 'alias', label: 'Compatibility alias', def: 'older naming (--d, --mass) — kept, but not the primary path' },
 ];
 const { items = DEFAULT } = Astro.props;
 ---
