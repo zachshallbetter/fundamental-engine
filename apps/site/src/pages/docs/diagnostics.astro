@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import { RENDER_MODES } from '@field-ui/core';
+import { RENDER_MODES } from '@fundamental-engine/core';
 
 // Live diagnostic overlays: the C1 renderers draw the diagnostics data onto a canvas. The status
 // table below is rendered from the engine catalog so the "shipped vs planned" status stays honest.
@@ -38,7 +38,7 @@ const table = RENDER_MODES;
   <h2>Runtime observables</h2>
   <p>
     Beyond the canvas overlays above, the engine exposes pull-based data surfaces through
-    <code>FieldHandle</code> and <code>@field-ui/core</code>:
+    <code>FieldHandle</code> and <code>@fundamental-engine/core</code>:
   </p>
   <table class="vt-table">
     <thead><tr><th>API</th><th>Returns</th><th>Source</th></tr></thead>
@@ -114,8 +114,8 @@ const table = RENDER_MODES;
     drawCausality,
     ghostTrajectory,
     drawPrediction,
-  } from '@field-ui/core';
-  import { downloadCanvasPng, downloadText } from '@field-ui/platform';
+  } from '@fundamental-engine/core';
+  import { downloadCanvasPng, downloadText } from '@fundamental-engine/platform';
 
   const canvas = document.getElementById('diag-canvas') as HTMLCanvasElement | null;
   const ctx = canvas?.getContext('2d');

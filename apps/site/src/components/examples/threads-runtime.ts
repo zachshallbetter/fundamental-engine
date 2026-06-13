@@ -19,8 +19,8 @@
 //   · Field on/off — off, the page collapses to a plain tree (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { recipeById } from "@fundamental-engine/core";
+import { applyRecipe } from "@fundamental-engine/platform";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
 

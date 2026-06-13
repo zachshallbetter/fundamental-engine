@@ -146,7 +146,7 @@ Marking something up to join all this is, at the simplest level, one attribute â
 works in plain HTML, React, Svelte, or Astro:
 
 ```ts
-import { FieldField } from '@field-ui/react';
+import { FieldField } from '@fundamental-engine/react';
 
 export function Headline() {
   // density returns to the element through --field-density; your CSS reads it back

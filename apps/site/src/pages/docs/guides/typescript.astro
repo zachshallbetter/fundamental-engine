@@ -2,7 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const cls = `import { FieldField } from '@field-ui/vanilla';
+const cls = `import { FieldField } from '@fundamental-engine/vanilla';
 
 // builds + manages a fixed full-viewport canvas, starts the engine
 const field = new FieldField({ accent: '#4da3ff', render: 'dots' });
@@ -13,13 +13,13 @@ field.burst(window.innerWidth / 2, 200);
 // …later
 field.destroy();   // stops the loop AND removes the managed canvas`;
 
-const own = `import { FieldField } from '@field-ui/vanilla';
+const own = `import { FieldField } from '@fundamental-engine/vanilla';
 
 // drive a <canvas> you place and size yourself — nothing is created or removed,
 // and destroy() only stops the engine.
 const field = new FieldField({ canvas: myCanvas, density: 1.2 });`;
 
-const mount = `import { mountField, createField } from '@field-ui/vanilla';
+const mount = `import { mountField, createField } from '@fundamental-engine/vanilla';
 
 // the plain factory form — same managed canvas, returns the bare FieldHandle
 const field = mountField({ render: 'trails' });
@@ -31,13 +31,13 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
 
 <DocsLayout
   title="field-ui — TypeScript guide"
-  description="Use field-ui from plain TypeScript with @field-ui/vanilla: a typed FieldField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
+  description="Use field-ui from plain TypeScript with @fundamental-engine/vanilla: a typed FieldField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
     <h1>The <span class="accent">TypeScript</span> wrapper</h1>
     <p class="lede">
-      <code>@field-ui/vanilla</code> is the framework-free door — a typed <code>FieldField</code>
+      <code>@fundamental-engine/vanilla</code> is the framework-free door — a typed <code>FieldField</code>
       class for plain TypeScript apps, with no custom element to register and no framework
       dependency. It wraps the same zero-dependency engine the web component and React adapter do.
     </p>
@@ -46,7 +46,7 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">
-      <code class="install" data-copy="npm i @field-ui/vanilla">npm i @field-ui/vanilla</code>
+      <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
     </div>
   </section>
 
@@ -77,7 +77,7 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
     <p>
       Prefer a plain function over a class? <code>mountField()</code> returns the bare
       <a href="/docs/api/handle">FieldHandle</a>; its <code>destroy()</code> also removes the
-      canvas it made. <code>@field-ui/vanilla</code> also re-exports a <b>browser-wired</b>
+      canvas it made. <code>@fundamental-engine/vanilla</code> also re-exports a <b>browser-wired</b>
       <code>createField</code> (it injects <code>browserHost()</code> for you) for when you own the
       canvas. The lowest-level engine entry is <code>field-ui</code>'s <code>createField</code>
       with an explicit host — see the <a href="/docs/guides/core">core engine</a> guide.

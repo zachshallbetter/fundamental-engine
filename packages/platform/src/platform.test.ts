@@ -1,5 +1,5 @@
 /**
- * @field-ui/platform foundation tests. The registries are exercised with tiny EventTarget-backed
+ * @fundamental-engine/platform foundation tests. The registries are exercised with tiny EventTarget-backed
  * fake elements (a recorded style + getBoundingClientRect), so the read/state/write logic is
  * verified without a real DOM — the same pattern core uses.
  */

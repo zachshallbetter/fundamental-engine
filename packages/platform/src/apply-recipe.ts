@@ -17,7 +17,7 @@ import {
   compileRecipe,
   type FieldRecipe,
   type CompiledRecipe,
-} from '@field-ui/core';
+} from '@fundamental-engine/core';
 
 export interface ApplyRecipeOptions {
   /** existing elements (or a selector within root) to annotate as the recipe's bodies; if omitted, demo elements are created. */

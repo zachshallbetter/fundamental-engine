@@ -4,7 +4,7 @@
 // for this behaviour. `initStageFieldOverlay()` paints once and returns a teardown that
 // disconnects observers and removes the canvases it created — the page orchestrator calls
 // it on `astro:before-swap` so overlays never survive a client-side navigation.
-import { expandPreset } from "@field-ui/core";
+import { expandPreset } from "@fundamental-engine/core";
 import { traceField, traceDipole } from "../../lib/field-probe.ts";
 
 function hexToRgb(hex?: string) {

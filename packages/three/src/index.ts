@@ -1,7 +1,7 @@
 /**
- * `@field-ui/three` — the Three.js door to the reciprocal field.
+ * `@fundamental-engine/three` — the Three.js door to the reciprocal field.
  *
- * The same engine the `<field-root>` custom element and `@field-ui/{vanilla,react}` wrap, bound to a
+ * The same engine the `<field-root>` custom element and `@fundamental-engine/{vanilla,react}` wrap, bound to a
  * WebGL scene instead of the DOM. Two paths, composable:
  *
  * 1. **Particle bridge** (`createFieldLayer`) — run the engine headless and render its swarm as a
@@ -14,7 +14,7 @@
  * coordinate model swappable: `PlaneProjection` ships now; a volumetric mode slots in later.
  *
  * ```ts
- * import { createFieldLayer, PlaneProjection } from '@field-ui/three';
+ * import { createFieldLayer, PlaneProjection } from '@fundamental-engine/three';
  * const layer = createFieldLayer({ projection: new PlaneProjection({ relief: 2 }), accent: '#4da3ff' });
  * scene.add(layer.object);
  * // render loop: layer.tick(); renderer.render(scene, camera);
@@ -43,5 +43,5 @@ export type { FieldAgentOptions } from './agents.ts';
 
 // Re-export the field samplers from core so a Three.js consumer building its own field visuals
 // (3D streamline tubes, vector grids, density) has them without a second import.
-export { forceAt, netField } from '@field-ui/core';
-export type { FieldHandle, FieldOptions, Particle, Body } from '@field-ui/core';
+export { forceAt, netField } from '@fundamental-engine/core';
+export type { FieldHandle, FieldOptions, Particle, Body } from '@fundamental-engine/core';

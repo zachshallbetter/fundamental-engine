@@ -2,7 +2,7 @@
 /**
  * Packaging correctness gate. Run after `pnpm build`.
  *
- * For each published @field-ui/* package and @forces-ui/* source-compat shim:
+ * For each published @fundamental-engine/* package and @forces-ui/* source-compat shim:
  *   1. publint  — exports map, types conditions, file presence in dist
  *   2. attw     — TypeScript resolution under all module/bundler conditions
  *
@@ -18,10 +18,8 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = [
-  // primary @field-ui/* (published via CI)
+  // primary @fundamental-engine/* (published via CI)
   'core', 'platform', 'vanilla', 'elements', 'react', 'kit',
-  // source-compat shims for the forces-ui → field-ui migration (not published to npm)
-  'compat-core', 'compat-vanilla', 'compat-elements', 'compat-react',
 ];
 
 let failed = 0;

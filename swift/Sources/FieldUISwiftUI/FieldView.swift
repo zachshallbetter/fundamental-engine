@@ -23,7 +23,7 @@ public extension EnvironmentValues {
 /// Drop it into any SwiftUI hierarchy — it creates its own render surface,
 /// runs the engine, and tears it down automatically.
 ///
-/// The Swift equivalent of `<ForcesField>` in @field-ui/react.
+/// The Swift equivalent of `<ForcesField>` in @fundamental-engine/react.
 ///
 /// ```swift
 /// ZStack {

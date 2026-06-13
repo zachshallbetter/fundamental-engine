@@ -1,20 +1,20 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import CodeTabs from '../../components/CodeTabs.astro';
-import { MANUAL_FORCES } from '@field-ui/core';
+import { MANUAL_FORCES } from '@fundamental-engine/core';
 
-const installWc = `npm i @field-ui/elements`;
-const installReact = `npm i @field-ui/react`;
-const installCore = `npm i @field-ui/vanilla`;
+const installWc = `npm i @fundamental-engine/elements`;
+const installReact = `npm i @fundamental-engine/react`;
+const installCore = `npm i @fundamental-engine/vanilla`;
 
 const setupWc = `<` + `script type="module">
-  import '@field-ui/elements';
+  import '@fundamental-engine/elements';
 </` + `script>
 
 <!-- one field, behind everything -->
 <field-root accent="#4da3ff"></field-root>`;
 
-const setupReact = `import { FieldField } from '@field-ui/react';
+const setupReact = `import { FieldField } from '@fundamental-engine/react';
 
 export default function App() {
   return (
@@ -25,7 +25,7 @@ export default function App() {
   );
 }`;
 
-const setupCore = `import { mountField } from '@field-ui/vanilla';
+const setupCore = `import { mountField } from '@fundamental-engine/vanilla';
 
 // creates + manages a fixed full-viewport canvas, returns the handle
 const field = mountField({ accent: '#4da3ff' });`;

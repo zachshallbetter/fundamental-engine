@@ -27,7 +27,7 @@ const root = resolve(site, '../..'); // repo root
 const outDir = join(site, 'public');
 
 const SITE_URL = 'https://field-ui.com';
-const CANON_BLOB = 'https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical';
+const CANON_BLOB = 'https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical';
 const DATE = new Date().toISOString().slice(0, 10);
 
 // ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ const DOC_DESC = {
   '/docs/narrative': 'one ordinary element revealed as a field participant, layer by layer',
   '/docs/reading-field': 'the flagship platform demo — a content page that measures attention and remembers it',
   '/docs/guides/web-component': 'the <field-root> element in any framework or plain HTML',
-  '/docs/guides/typescript': 'the typed FieldField class from @field-ui/vanilla — no framework, no custom-element registration',
+  '/docs/guides/typescript': 'the typed FieldField class from @fundamental-engine/vanilla — no framework, no custom-element registration',
   '/docs/guides/react': 'the <FieldField> component and the useFieldField hook',
   '/docs/guides/core': 'createField on a canvas you own, with an injected host',
   '/docs/api': 'the complete API surface, generated from the engine catalog',
@@ -156,10 +156,10 @@ const exampleLines = EXAMPLES.map((e) => line(e.name, `${SITE_URL}${e.href}`, e.
 
 const llms = `# field-ui
 
-> field-ui is a platform-native relational field runtime for the DOM. The core (\`@field-ui/core\`)
-> computes renderer-agnostic field behavior; \`@field-ui/platform\` binds field behavior to the DOM
+> field-ui is a platform-native relational field runtime for the DOM. The core (\`@fundamental-engine/core\`)
+> computes renderer-agnostic field behavior; \`@fundamental-engine/platform\` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
-> scheduling; \`@field-ui/elements\` exposes native HTML and web-component authoring; \`@field-ui/react\`
+> scheduling; \`@fundamental-engine/elements\` exposes native HTML and web-component authoring; \`@fundamental-engine/react\`
 > adapts the same contracts for React. Canvas is one render surface, not the whole system.
 
 Every element can become a body in an invisible physics field via the \`data-body\` attribute:
@@ -190,7 +190,7 @@ ${exampleLines.join('\n')}
 ## Optional
 
 - [llms-full.txt](${SITE_URL}/llms-full.txt): every canonical document, concatenated into one file
-- [GitHub repository](https://github.com/zachshallbetter/field-ui): the monorepo — core, platform, elements, react, vanilla, and this site
+- [GitHub repository](https://github.com/zachshallbetter/fundamental-engine): the monorepo — core, platform, elements, react, vanilla, and this site
 - [Writings](${SITE_URL}/writings): the eight-paper research family on the field model
 - [The Lab](${SITE_URL}/lab): a physics detector — fire a particle into any force and verify its law
 - [Design system](${SITE_URL}/design): tokens, the force palette, type, and glyphs
@@ -202,7 +202,7 @@ ${exampleLines.join('\n')}
 const SEP = '='.repeat(72);
 const fullHeader = `# field-ui — full canonical documentation
 
-Source: docs/canonical/ in https://github.com/zachshallbetter/field-ui
+Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
 Generated: ${DATE} by apps/site/scripts/gen-llms.mjs
 Files: ${canon.length}
 

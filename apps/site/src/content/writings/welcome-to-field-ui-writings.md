@@ -45,7 +45,7 @@ Marking an element as a body is one attribute — the same markup works in plain
 Astro:
 
 ```ts
-import { FieldField } from '@field-ui/react';
+import { FieldField } from '@fundamental-engine/react';
 
 export function Headline() {
   // density returns to the element through --field-density; CSS reads it back

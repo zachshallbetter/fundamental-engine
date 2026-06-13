@@ -15,8 +15,8 @@
 // (threads) stay imperative — their window is user-interaction-gated, so the element will
 // always be upgraded by the time they fire.
 
-import { recipeById } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { recipeById } from "@fundamental-engine/core";
+import { applyRecipe } from "@fundamental-engine/platform";
 
 type FieldEl = HTMLElement & {
   rescan?: () => void;

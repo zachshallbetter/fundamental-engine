@@ -5,7 +5,7 @@ import ForceCell from '../../components/ForceCell.astro';
 import FieldLoopDemo from '../../components/FieldLoopDemo.astro';
 import ApiStamp from '../../components/ApiStamp.astro';
 import SeeItLive from '../../components/SeeItLive.astro';
-import { MANUAL_FORCES } from '@field-ui/core';
+import { MANUAL_FORCES } from '@fundamental-engine/core';
 
 const bodySnippet = `<a
   data-body="attract swirl"  // forces compose, space-separated
@@ -102,7 +102,7 @@ const DEMOS = [
     <h2>The platform layer</h2>
     <p>
       <code>field-ui</code> (the core) computes the field against plain data and stays renderer-agnostic.
-      <code>@field-ui/platform</code> binds it to the DOM through six registries — <strong>measurement</strong>
+      <code>@fundamental-engine/platform</code> binds it to the DOM through six registries — <strong>measurement</strong>
       (frame-stable geometry), <strong>state</strong> (typed element state), <strong>feedback</strong>
       (CSS variables + thresholded events), <strong>relationships</strong> (the native href/aria/data
       graph), <strong>visual bindings</strong> (visual ↔ semantic pairing), and <strong>overlays</strong>

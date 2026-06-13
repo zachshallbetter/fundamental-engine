@@ -73,11 +73,11 @@ const atoms = [
   ].map(([field, maps]) => atom("natural-field", `nf:${field}`, field, NF_COLOR[field] || "#86e57f", "/docs/natural-fields", { field, maps })),
   // the published packages.
   ...[
-    ["@field-ui/core", "the renderer-agnostic engine"],
-    ["@field-ui/platform", "binds the engine to the DOM"],
-    ["@field-ui/elements", "the <field-root> / <field-cell> elements"],
-    ["@field-ui/react", "the React adapter"],
-    ["@field-ui/vanilla", "the framework-free door"],
+    ["@fundamental-engine/core", "the renderer-agnostic engine"],
+    ["@fundamental-engine/platform", "binds the engine to the DOM"],
+    ["@fundamental-engine/elements", "the <field-root> / <field-cell> elements"],
+    ["@fundamental-engine/react", "the React adapter"],
+    ["@fundamental-engine/vanilla", "the framework-free door"],
   ].map(([name, role]) => atom("package", `pkg:${name}`, name, KIND_COLOR.package, "/docs", { name, role })),
 ];
 

@@ -2,7 +2,7 @@
  * The whole field-ui integration for this starter, in one file.
  *
  * Three surfaces, one recipe (priority-well):
- *   1. Declarative — importing '@field-ui/elements' upgrades <field-root>, which scans the page for
+ *   1. Declarative — importing '@fundamental-engine/elements' upgrades <field-root>, which scans the page for
  *      [data-body] elements. Nothing else to do.
  *   2. applyRecipe() — run a recipe over markup that already exists; it writes --field-* state back.
  *   3. bindData()    — records drive the field; updates diff by id, removed records decay out.
@@ -10,9 +10,9 @@
  * A reduced-motion toggle re-runs (2) and (3) with the recipe's static fallback, and a per-frame
  * loop reads each handle's inspect() so you can watch the field's own accounting.
  */
-import '@field-ui/elements'; // side effect: registers <field-root>, <field-cell>, <field-field>
-import { recipeById, compileRecipe } from '@field-ui/core';
-import { applyRecipe, bindData } from '@field-ui/platform';
+import '@fundamental-engine/elements'; // side effect: registers <field-root>, <field-cell>, <field-field>
+import { recipeById, compileRecipe } from '@fundamental-engine/core';
+import { applyRecipe, bindData } from '@fundamental-engine/platform';
 
 const RECIPE_ID = 'priority-well';
 const recipe = recipeById(RECIPE_ID);

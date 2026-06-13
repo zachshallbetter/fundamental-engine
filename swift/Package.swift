@@ -21,9 +21,9 @@ let coreProducts: [Product] = [
 
 let appleProducts: [Product] = [
     // The universal imperative API — works on iOS, macOS, and visionOS.
-    // The Swift equivalent of @field-ui/vanilla.
+    // The Swift equivalent of @fundamental-engine/vanilla.
     .library(name: "FieldUIVanilla",  targets: ["FieldUIVanilla"]),
-    // SwiftUI adapter — drop-in FieldView + modifiers. Mirror of @field-ui/react.
+    // SwiftUI adapter — drop-in FieldView + modifiers. Mirror of @fundamental-engine/react.
     .library(name: "FieldUISwiftUI",  targets: ["FieldUISwiftUI"]),
 ]
 

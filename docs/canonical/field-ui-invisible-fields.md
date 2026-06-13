@@ -46,7 +46,7 @@ Two shipped mechanisms produce it:
   (`packages/platform/src/apply-recipe.ts`).
 
 Formalizing the first mechanism as a named engine mode is filed as
-[#297](https://github.com/zachshallbetter/field-ui/issues/297).
+[#297](https://github.com/zachshallbetter/fundamental-engine/issues/297).
 
 ## 2. The two-field page architecture
 
@@ -99,7 +99,7 @@ Two attributes make engagement programmable; both are shipped and verified:
   notices the change).
 
 Canon-doc coverage of these two attributes is the substance of
-[#298](https://github.com/zachshallbetter/field-ui/issues/298); this section is that
+[#298](https://github.com/zachshallbetter/fundamental-engine/issues/298); this section is that
 documentation.
 
 ## 4. Declared relationships
@@ -191,11 +191,11 @@ packages.
 ## 8. What the pattern earned the platform
 
 Building twelve pages against the contracts above surfaced the platform's next API work, filed
-and boarded: [#295](https://github.com/zachshallbetter/field-ui/issues/295) a platform FLIP
-helper (every runtime hand-rolls the same reflow), [#296](https://github.com/zachshallbetter/field-ui/issues/296)
+and boarded: [#295](https://github.com/zachshallbetter/fundamental-engine/issues/295) a platform FLIP
+helper (every runtime hand-rolls the same reflow), [#296](https://github.com/zachshallbetter/fundamental-engine/issues/296)
 `allocateAttention()` (the inbox's exact conserved water-filling belongs to the engine's
-attention concept), [#297](https://github.com/zachshallbetter/field-ui/issues/297) a named
-signals-only engine mode, [#299](https://github.com/zachshallbetter/field-ui/issues/299) a
+attention concept), [#297](https://github.com/zachshallbetter/fundamental-engine/issues/297) a named
+signals-only engine mode, [#299](https://github.com/zachshallbetter/fundamental-engine/issues/299) a
 mobile/touch QA pass.
 
 ## 9. The same pattern, turned on the chrome (the navigation sweep)
@@ -215,7 +215,7 @@ chrome):
 
 **What it earned the platform.** The navigation-chrome idiom — run a recipe `render: []` over the
 `<a href>` links, pin the current, mark the visited, return a teardown — lifted out of the site into
-**`bindFieldNav`** (`@field-ui/platform`), the same way the example family earned FLIP and
+**`bindFieldNav`** (`@fundamental-engine/platform`), the same way the example family earned FLIP and
 `allocateAttention` above.
 
 **The honesty it forced.** On a small nav (a two-link pager, a breadcrumb) "signals-only" is mostly

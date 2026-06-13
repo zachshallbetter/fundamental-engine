@@ -23,16 +23,16 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.7.3
         version: 3.7.3
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@field-ui/elements':
+      '@fundamental-engine/elements':
         specifier: workspace:*
         version: link:../../packages/elements
-      '@field-ui/platform':
+      '@fundamental-engine/platform':
         specifier: workspace:*
         version: link:../../packages/platform
-      '@field-ui/three':
+      '@fundamental-engine/three':
         specifier: workspace:*
         version: link:../../packages/three
       astro:
@@ -69,13 +69,13 @@ importers:
 
   apps/starter:
     dependencies:
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@field-ui/elements':
+      '@fundamental-engine/elements':
         specifier: workspace:*
         version: link:../../packages/elements
-      '@field-ui/platform':
+      '@fundamental-engine/platform':
         specifier: workspace:*
         version: link:../../packages/platform
     devDependencies:
@@ -86,52 +86,6 @@ importers:
         specifier: ^6
         version: 6.4.3(@types/node@24.13.1)
 
-  packages/compat-core:
-    dependencies:
-      '@field-ui/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/compat-elements:
-    dependencies:
-      '@field-ui/elements':
-        specifier: workspace:*
-        version: link:../elements
-    devDependencies:
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/compat-react:
-    dependencies:
-      '@field-ui/react':
-        specifier: workspace:*
-        version: link:../react
-    devDependencies:
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.16
-      react:
-        specifier: ^19.0.0
-        version: 19.2.7
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/compat-vanilla:
-    dependencies:
-      '@field-ui/vanilla':
-        specifier: workspace:*
-        version: link:../vanilla
-    devDependencies:
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   packages/core:
     devDependencies:
       typescript:
@@ -140,13 +94,13 @@ importers:
 
   packages/elements:
     dependencies:
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
-      '@field-ui/platform':
+      '@fundamental-engine/platform':
         specifier: workspace:*
         version: link:../platform
-      '@field-ui/vanilla':
+      '@fundamental-engine/vanilla':
         specifier: workspace:*
         version: link:../vanilla
     devDependencies:
@@ -154,33 +108,33 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/field-ui:
+  packages/fundamental-engine:
     dependencies:
-      '@field-ui/kit':
+      '@fundamental-engine/kit':
         specifier: workspace:*
         version: link:../kit
 
   packages/kit:
     dependencies:
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
-      '@field-ui/elements':
+      '@fundamental-engine/elements':
         specifier: workspace:*
         version: link:../elements
-      '@field-ui/platform':
+      '@fundamental-engine/platform':
         specifier: workspace:*
         version: link:../platform
-      '@field-ui/react':
+      '@fundamental-engine/react':
         specifier: workspace:*
         version: link:../react
-      '@field-ui/vanilla':
+      '@fundamental-engine/vanilla':
         specifier: workspace:*
         version: link:../vanilla
 
   packages/platform:
     dependencies:
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -190,10 +144,10 @@ importers:
 
   packages/react:
     dependencies:
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
-      '@field-ui/platform':
+      '@fundamental-engine/platform':
         specifier: workspace:*
         version: link:../platform
     devDependencies:
@@ -209,7 +163,7 @@ importers:
 
   packages/three:
     dependencies:
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -225,10 +179,10 @@ importers:
 
   packages/vanilla:
     dependencies:
-      '@field-ui/core':
+      '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
-      '@field-ui/platform':
+      '@fundamental-engine/platform':
         specifier: workspace:*
         version: link:../platform
     devDependencies:

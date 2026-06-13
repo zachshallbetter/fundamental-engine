@@ -8,7 +8,7 @@
  * and it exposes the `canvas` it renders to. (`ForcesField` remains as a deprecated alias.)
  *
  * ```ts
- * import { FieldField } from '@field-ui/vanilla';
+ * import { FieldField } from '@fundamental-engine/vanilla';
  *
  * const field = new FieldField({ accent: '#4da3ff', render: 'dots' });
  * field.setFormation('wells');
@@ -17,8 +17,8 @@
  * ```
  */
 
-import { type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@field-ui/core';
-import { createBrowserField } from '@field-ui/platform';
+import { type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@fundamental-engine/core';
+import { createBrowserField } from '@fundamental-engine/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
 export interface FieldFieldInit extends FieldOptions {

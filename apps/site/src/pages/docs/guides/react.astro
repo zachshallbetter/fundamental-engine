@@ -2,7 +2,7 @@
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
-const basic = `import { FieldField } from '@field-ui/react';
+const basic = `import { FieldField } from '@fundamental-engine/react';
 
 export function App() {
   return (
@@ -23,7 +23,7 @@ const onReady = `// the field reacts to [data-body] elements anywhere on the pag
   onReady={(field) => field.scan()}
 />`;
 
-const hook = `import { useFieldField } from '@field-ui/react';
+const hook = `import { useFieldField } from '@fundamental-engine/react';
 
 function Background() {
   // own the canvas element yourself
@@ -55,7 +55,7 @@ function Background() {
   <section class="docs-sec">
     <h2>Install</h2>
     <div class="pkg">
-      <code class="install" data-copy="npm i @field-ui/react">npm i @field-ui/react</code>
+      <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
     </div>
   </section>
 

@@ -18,9 +18,9 @@ The repo is a pnpm monorepo:
 | Package | What |
 |---|---|
 | `packages/core` (`field-ui`) | the engine — catalog, contracts, FieldStore, forces, conformance |
-| `packages/elements` (`@field-ui/elements`) | `<field-root>` + the declarative `data-body` keystone |
-| `packages/react` (`@field-ui/react`) | the React adapter |
-| `apps/site` (`@field-ui/site`) | field-ui.com — Manual, Lab, Docs |
+| `packages/elements` (`@fundamental-engine/elements`) | `<field-root>` + the declarative `data-body` keystone |
+| `packages/react` (`@fundamental-engine/react`) | the React adapter |
+| `apps/site` (`@fundamental-engine/site`) | field-ui.com — Manual, Lab, Docs |
 
 ## Conventions
 

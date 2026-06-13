@@ -1,5 +1,5 @@
 > **Status: as-built engine reference.**
-> Documents the optional z lane shipped in `@field-ui/core`. The flat field (the
+> Documents the optional z lane shipped in `@fundamental-engine/core`. The flat field (the
 > default) is the canonical engine described in [forces-system.md](forces-system.md);
 > this document defines exactly what changes — and what provably does not — when a
 > field opts into depth.

@@ -7,8 +7,8 @@
  * Page contract: buttons carry `data-study="field"` / `data-study="reduced"`; a status element carries
  * `data-study-status`.
  */
-import { recipeById } from '@field-ui/core';
-import { applyRecipe, type AppliedRecipe, type DataBinding } from '@field-ui/platform';
+import { recipeById } from '@fundamental-engine/core';
+import { applyRecipe, type AppliedRecipe, type DataBinding } from '@fundamental-engine/platform';
 
 export interface StudyGroup {
   root: HTMLElement;

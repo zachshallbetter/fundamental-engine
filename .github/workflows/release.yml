@@ -1,6 +1,6 @@
 name: Release
 
-# The ONLY authorized publish path. Publishes the @field-ui/* packages to npm WITH
+# The ONLY authorized publish path. Publishes the @fundamental-engine/* packages to npm WITH
 # provenance — a signed attestation (Sigstore) that ties each tarball to this repo, the
 # exact commit, and this workflow run. Provenance can only be produced from CI (it needs
 # the OIDC id-token below); a manual `npm publish` from a laptop cannot generate it.
@@ -16,7 +16,7 @@ name: Release
 #   conclusion    — asserts every job above SUCCEEDED (skipped ≠ success).
 #
 # Trigger: push a version tag, e.g.
-#   pnpm --filter "@field-ui/*" exec npm version 0.2.4 --no-git-tag-version  # bump the seven together
+#   pnpm --filter "@fundamental-engine/*" exec npm version 0.2.4 --no-git-tag-version  # bump the seven together
 #   git commit -am "release: 0.2.4" && git tag v0.2.4 && git push --tags
 #
 # Rehearsal: workflow_dispatch with dry_run=true runs the entire path — gate, version
@@ -92,7 +92,7 @@ jobs:
       - name: Check custom-elements manifest
         run: pnpm check:cem
 
-      # The version-desync gate: the tag must match the version of EVERY @field-ui/*
+      # The version-desync gate: the tag must match the version of EVERY @fundamental-engine/*
       # package, not just core — the seven are versioned in lockstep, and a publish with
       # any package out of step is the partial-release class.
       - name: Verify tag matches every package version
@@ -101,7 +101,7 @@ jobs:
           FAIL=0
           for pkg in packages/*/package.json; do
             NAME=$(node -p "require('./$pkg').name")
-            case "$NAME" in @field-ui/*) ;; *) continue ;; esac
+            case "$NAME" in @fundamental-engine/*) ;; *) continue ;; esac
             PKGVER=$(node -p "require('./$pkg').version")
             if [ "$PKGVER" != "$VERSION" ]; then
               echo "::error::$NAME is $PKGVER but the tag is $RELEASE_TAG — bump the seven together first."
@@ -136,10 +136,10 @@ jobs:
 
       # pnpm rewrites workspace:* deps to real versions and skips any package whose
       # version is already on the registry, so re-running a tag is safe. Only the seven
-      # public @field-ui/* packages are targeted (apps are private; @forces-ui/* aliases
+      # public @fundamental-engine/* packages are targeted (apps are private; @forces-ui/* aliases
       # are intentionally excluded).
       - name: Publish with provenance
-        run: pnpm --filter "@field-ui/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
@@ -164,18 +164,18 @@ jobs:
           mkdir /tmp/smoke && cd /tmp/smoke
           npm init -y > /dev/null
           for i in $(seq 1 10); do
-            if npm install "@field-ui/vanilla@$VERSION" "@field-ui/kit@$VERSION"; then
+            if npm install "@fundamental-engine/vanilla@$VERSION" "@fundamental-engine/kit@$VERSION"; then
               break
             fi
             if [ "$i" = 10 ]; then
-              echo "::error::@field-ui/*@$VERSION not installable from the registry after 10 attempts"
+              echo "::error::@fundamental-engine/*@$VERSION not installable from the registry after 10 attempts"
               exit 1
             fi
             echo "registry not serving $VERSION yet — retry $i/10 in 30s"
             sleep 30
           done
           node --input-type=module -e "
-            const vanilla = await import('@field-ui/vanilla');
+            const vanilla = await import('@fundamental-engine/vanilla');
             if (typeof vanilla.createField !== 'function') { console.error('createField missing'); process.exit(1); }
             console.log('smoke ok —', Object.keys(vanilla).join(', '));
           "
@@ -188,12 +188,12 @@ jobs:
           npm audit signatures
           FAIL=0
           for p in core platform elements vanilla react kit field-ui; do
-            ATT=$(npm view "@field-ui/$p@$VERSION" dist.attestations.url 2>/dev/null || true)
+            ATT=$(npm view "@fundamental-engine/$p@$VERSION" dist.attestations.url 2>/dev/null || true)
             if [ -z "$ATT" ]; then
-              echo "::error::@field-ui/$p@$VERSION has no provenance attestation"
+              echo "::error::@fundamental-engine/$p@$VERSION has no provenance attestation"
               FAIL=1
             else
-              echo "@field-ui/$p@$VERSION attested: $ATT"
+              echo "@fundamental-engine/$p@$VERSION attested: $ATT"
             fi
           done
           exit $FAIL

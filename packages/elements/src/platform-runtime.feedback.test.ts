@@ -6,7 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { makeFeedbackSink } from './platform-runtime.ts';
-import type { FieldPlatform } from '@field-ui/platform';
+import type { FieldPlatform } from '@fundamental-engine/platform';
 
 function fakePlatform() {
   const sets: Array<{ el: Element; vars: Record<string, number | string> }> = [];

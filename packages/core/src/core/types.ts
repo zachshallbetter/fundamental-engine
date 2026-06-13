@@ -456,7 +456,7 @@ export interface FieldOptions {
   /**
    * The environment seam (frontier): the {@link FieldHost} the engine drives the DOM through. REQUIRED
    * by `createField` (core imports zero DOM). In the browser, use `browserHost()` from
-   * `@field-ui/platform`, or the `@field-ui/{vanilla,elements,react}` entry points that wire it for
+   * `@fundamental-engine/platform`, or the `@fundamental-engine/{vanilla,elements,react}` entry points that wire it for
    * you; inject a custom host for a headless renderer / different document / tests.
    */
   host?: FieldHost;
@@ -555,7 +555,7 @@ export interface FieldHandle {
   particleCount(): number;
   /**
    * Snapshot of kinetic, thermal, and total energy for the current frame. Thin forward to
-   * `energyReport(store.particles)` from `@field-ui/core/diagnostics/energy` — the function
+   * `energyReport(store.particles)` from `@fundamental-engine/core/diagnostics/energy` — the function
    * already exists; this accessor exposes it through the public handle so external tools
    * (DataConsole, Inspector) don't need a reference to the internal particle array.
    */
@@ -566,7 +566,7 @@ export interface FieldHandle {
    * dipole structure, flow bias, …). Returns the force vector as `{ x, y }` in field-pixel space.
    * Pure and read-only (no pool mutation), safe to call any time and at any spatial resolution —
    * the engine does not pre-bake a grid. The seam external visualizers consume to build their own
-   * field geometry: vector grids, streamline tubes, mesh displacement. `@field-ui/three`'s
+   * field geometry: vector grids, streamline tubes, mesh displacement. `@fundamental-engine/three`'s
    * `vectorField` / `streamlineTubes` are the first consumers. Thin wrapper over the existing
    * `forceAt(bodies, forces, env, x, y)`.
    */
@@ -584,7 +584,7 @@ export interface FieldHandle {
    * 5)` sized to your cap (over-sizing is safe; the return value is the count actually written).
    * Pull-based: call once per frame after the engine has stepped, then upload the slice
    * `[0, n*5)`. The companion of `particleCount()` for renderers that need positions, not just the
-   * tally; `@field-ui/three`'s particle bridge is the first consumer.
+   * tally; `@fundamental-engine/three`'s particle bridge is the first consumer.
    */
   readParticles(out: Float32Array): number;
   /**

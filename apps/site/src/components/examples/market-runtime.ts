@@ -13,8 +13,8 @@
 //     sparkline path). A poll never re-sorts or re-tiers — hostile under the cursor. Any fetch
 //     error reverts silently to snapshot mode; 3 consecutive failures stop the polling.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { logNormalizeBetween, recipeById, weightToStrength } from "@field-ui/core";
-import { applyRecipe, withFlip } from "@field-ui/platform";
+import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { applyRecipe, withFlip } from "@fundamental-engine/platform";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
 import { armEntryAtPace } from "../../lib/reading-pace.ts";

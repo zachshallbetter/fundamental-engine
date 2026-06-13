@@ -1,4 +1,4 @@
-// Custom Elements Manifest config for @field-ui/elements.
+// Custom Elements Manifest config for @fundamental-engine/elements.
 //
 // Generates `custom-elements.json` — the machine-readable description of the field-ui custom
 // elements (`<field-root>` / `<field-cell>` and their deprecated `forces-*` aliases): their

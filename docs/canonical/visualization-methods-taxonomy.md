@@ -58,7 +58,7 @@ DOM state shows reciprocity.
 > `drawInspector`, `causalityAt` + `drawCausality`, `ghostTrajectory` + `drawPrediction`). All of these
 > are exercised on the live `/docs/diagnostics` page. The canvas is one render surface among these
 > layers, not the whole system: `field-ui` computes renderer-agnostic field behavior and
-> `@field-ui/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
+> `@fundamental-engine/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
 
 ## Render Modes Catalog
 

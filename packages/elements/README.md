@@ -1,6 +1,6 @@
-# @field-ui/elements
+# @fundamental-engine/elements
 
-**The web-component keystone for [`@field-ui/core`](../core).** "Every element is a body" is a
+**The web-component keystone for [`@fundamental-engine/core`](../core).** "Every element is a body" is a
 web-components-shaped idea: drop one tag, mark up your bodies, and the field runs in any framework or
 plain HTML, unchanged. Semantic HTML stays the source of meaning; the field is a behavior +
 visualization layer on top.
@@ -10,7 +10,7 @@ visualization layer on top.
 ## Install
 
 ```sh
-npm i @field-ui/elements
+npm i @fundamental-engine/elements
 ```
 
 ## Use
@@ -19,7 +19,7 @@ Import the package once to register the elements, then mark up the field and you
 
 ```html
 <script type="module">
-  import '@field-ui/elements';
+  import '@fundamental-engine/elements';
 </script>
 
 <field-root accent="#4da3ff"></field-root>
@@ -85,7 +85,7 @@ For a canvas you do not want declared in markup, `mountField(opts)` creates one,
 returns the handle (its `destroy()` also removes the canvas).
 
 ```js
-import { mountField } from '@field-ui/elements';
+import { mountField } from '@fundamental-engine/elements';
 const field = mountField({ render: 'trails', accent: '#2dd4bf' });
 ```
 
@@ -98,22 +98,22 @@ simplified in-frame model, not the canonical engine math. The deprecated `<force
 ## Framework use
 
 The custom elements work unchanged in React, Vue, Svelte, Solid, Angular, or plain HTML — register once
-(`import '@field-ui/elements'`) and write `<field-root>` in your markup. In React, prefer
-[`@field-ui/react`](../react) for typed props and a `FieldHandle` ref; reach for the element directly
+(`import '@fundamental-engine/elements'`) and write `<field-root>` in your markup. In React, prefer
+[`@fundamental-engine/react`](../react) for typed props and a `FieldHandle` ref; reach for the element directly
 when you want one field across a whole page regardless of framework.
 
 ## Recipes & data binding
 
 To apply a named recipe over your markup (or bind data to it) rather than wire bodies by hand, use
-`applyRecipe()` / `bindData()` from [`@field-ui/platform`](../platform); browse all 64 recipes at
+`applyRecipe()` / `bindData()` from [`@fundamental-engine/platform`](../platform); browse all 64 recipes at
 [`/docs/gallery`](https://field-ui.com/docs/gallery). The starter app in
 [`apps/starter`](../../apps/starter) shows the declarative element, `applyRecipe`, and `bindData`
 together.
 
 ## Related
 
-[`@field-ui/core`](../core) · [`@field-ui/platform`](../platform) · [`@field-ui/react`](../react) ·
-[`@field-ui/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
+[`@fundamental-engine/core`](../core) · [`@fundamental-engine/platform`](../platform) · [`@fundamental-engine/react`](../react) ·
+[`@fundamental-engine/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
 
 ## License
 

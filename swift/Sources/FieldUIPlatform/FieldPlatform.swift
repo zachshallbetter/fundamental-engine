@@ -4,7 +4,7 @@ import FieldUICore
 // MARK: - FieldPlatform
 
 /// The coordinator that binds the platform registries to one shared FrameScheduler.
-/// Mirrors `createFieldPlatform` from @field-ui/platform.
+/// Mirrors `createFieldPlatform` from @fundamental-engine/platform.
 ///
 /// The scheduler owns loop discipline: every frame walks
 ///   discover → read → compute → state → write → render

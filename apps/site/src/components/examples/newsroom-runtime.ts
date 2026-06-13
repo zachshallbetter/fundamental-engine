@@ -13,8 +13,8 @@
 //     the new bodies and re-applies the active lens. If the snapshot already is the latest
 //     edition, the chip flips to live and nothing is rebuilt. Any failure keeps the snapshot.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { logNormalizeBetween, recipeById, weightToStrength } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { applyRecipe } from "@fundamental-engine/platform";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";

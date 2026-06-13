@@ -1,7 +1,7 @@
 /**
  * Recipe compiler (authoring-and-recipes §5). Turns a portable `FieldRecipe` from validated catalog
  * data into a runtime plan — the bridge from "recipe as record" to "recipe as program". Pure +
- * node-testable; the DOM-applying counterpart is `applyRecipe` in `@field-ui/platform`.
+ * node-testable; the DOM-applying counterpart is `applyRecipe` in `@fundamental-engine/platform`.
  *
  * The lane split is preserved on purpose:
  *   concepts describe · tokens execute · metrics measure · diagnostics explain · conditions activate.
@@ -181,7 +181,7 @@ export function recipeAuthoring(r: FieldRecipe): RecipeAuthoring {
   const reactBodies = r.bodies.map((b) => `      <div ${attrsToString(recipeBodyAttributes(b))} />`).join('\n');
   return {
     html: recipeToMarkup(r),
-    webComponent: `<script type="module">\n  import '@field-ui/elements';\n</script>\n\n<field-root></field-root>\n${bodyLines}`,
-    react: `import { FieldField } from '@field-ui/react';\n\nexport default function ${pascal(r.id)}() {\n  return (\n    <FieldField>\n${reactBodies}\n    </FieldField>\n  );\n}`,
+    webComponent: `<script type="module">\n  import '@fundamental-engine/elements';\n</script>\n\n<field-root></field-root>\n${bodyLines}`,
+    react: `import { FieldField } from '@fundamental-engine/react';\n\nexport default function ${pascal(r.id)}() {\n  return (\n    <FieldField>\n${reactBodies}\n    </FieldField>\n  );\n}`,
   };
 }

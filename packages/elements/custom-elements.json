@@ -784,7 +784,7 @@
               "type": {
                 "text": "FieldPlatform | undefined"
               },
-              "description": "The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "description": "The live `@fundamental-engine/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
               "readonly": true
             },
             {
@@ -1607,7 +1607,7 @@
               "type": {
                 "text": "FieldPlatform | undefined"
               },
-              "description": "The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "description": "The live `@fundamental-engine/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -2497,7 +2497,7 @@
               "type": {
                 "text": "FieldPlatform | undefined"
               },
-              "description": "The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "description": "The live `@fundamental-engine/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
@@ -3293,7 +3293,7 @@
           "name": "FieldController",
           "declaration": {
             "name": "FieldController",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3301,7 +3301,7 @@
           "name": "ForcesController",
           "declaration": {
             "name": "ForcesController",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3309,7 +3309,7 @@
           "name": "REGISTER_BODY",
           "declaration": {
             "name": "REGISTER_BODY",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3317,7 +3317,7 @@
           "name": "UNREGISTER_BODY",
           "declaration": {
             "name": "UNREGISTER_BODY",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3325,7 +3325,7 @@
           "name": "UPDATE_BODY",
           "declaration": {
             "name": "UPDATE_BODY",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3333,7 +3333,7 @@
           "name": "FIELD_REGISTER_BODY",
           "declaration": {
             "name": "FIELD_REGISTER_BODY",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3341,7 +3341,7 @@
           "name": "FIELD_UNREGISTER_BODY",
           "declaration": {
             "name": "FIELD_UNREGISTER_BODY",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3349,7 +3349,7 @@
           "name": "FIELD_UPDATE_BODY",
           "declaration": {
             "name": "FIELD_UPDATE_BODY",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         },
         {
@@ -3357,7 +3357,7 @@
           "name": "RegisterBodyDetail",
           "declaration": {
             "name": "RegisterBodyDetail",
-            "package": "@field-ui/core"
+            "package": "@fundamental-engine/core"
           }
         }
       ]
@@ -3372,7 +3372,7 @@
           "name": "mountField",
           "declaration": {
             "name": "mountField",
-            "package": "@field-ui/vanilla"
+            "package": "@fundamental-engine/vanilla"
           }
         },
         {
@@ -3380,7 +3380,7 @@
           "name": "MountOptions",
           "declaration": {
             "name": "MountOptions",
-            "package": "@field-ui/vanilla"
+            "package": "@fundamental-engine/vanilla"
           }
         }
       ]

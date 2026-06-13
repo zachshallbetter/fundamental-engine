@@ -81,7 +81,7 @@ to let the two communicate through exactly one injected interface:
 
 - A renderer-agnostic **core** (`field-ui`) computes field, force, particle, metric,
   diagnostic, and conformance logic against plain data. It imports no DOM globals.
-- A browser **platform** (`@field-ui/platform`) owns DOM participation: measurement, state, feedback,
+- A browser **platform** (`@fundamental-engine/platform`) owns DOM participation: measurement, state, feedback,
   relationships, visual bindings, overlays, scheduling, and linting.
 - A single **host boundary** — the `FieldHost` interface — is the only path by which the core reaches
   the environment (viewport, scroll, rAF, reduced-motion, visibility, scan root, events, a canvas
@@ -175,11 +175,11 @@ package hierarchy is given in `docs/canonical/field-ui-platform-architecture.md`
 ```
 field-ui      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
                     Computes field behavior against plain data. Imports no DOM globals.
-@field-ui/platform  DOM participation: measurement, state, feedback, relationships, visual bindings,
+@fundamental-engine/platform  DOM participation: measurement, state, feedback, relationships, visual bindings,
                     overlays, scheduling, linting — plus the browser host adapter.
-@field-ui/elements  <field-root> / <field-cell> custom elements + the [data-body] authoring contract.
-@field-ui/react     <FieldField> component + useFieldField hook.
-@field-ui/vanilla   the framework-free FieldField class.
+@fundamental-engine/elements  <field-root> / <field-cell> custom elements + the [data-body] authoring contract.
+@fundamental-engine/react     <FieldField> component + useFieldField hook.
+@fundamental-engine/vanilla   the framework-free FieldField class.
 
 elements → platform → core      react → platform → core      vanilla → platform → core
 ```

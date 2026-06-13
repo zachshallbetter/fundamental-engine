@@ -369,7 +369,7 @@ planning notes.
   `packages/platform/src/metrics.ts`, with `--field-coherence` / `--field-entropy` as real output
   variables.
 - **`bindData()`** — the data-binding mechanism that wires real claim/source records into the field —
-  ships in `@field-ui/platform` (`packages/platform/src/bind-data.ts`, with `apply-recipe.ts` and a
+  ships in `@fundamental-engine/platform` (`packages/platform/src/bind-data.ts`, with `apply-recipe.ts` and a
   test suite). Records become bodies, mapped metrics become state, and mapped relationships become
   graph edges, with deterministic id-diffed updates and decay-on-remove. (Its mechanics are the
   subject of Paper 7; we use it here only as the evidence wiring.)

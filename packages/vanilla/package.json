@@ -1,5 +1,5 @@
 {
-  "name": "@field-ui/vanilla",
+  "name": "@fundamental-engine/vanilla",
   "version": "0.3.1",
   "description": "Framework-free TypeScript wrapper for field-ui — the reciprocal DOM-physics field as a typed FieldField class + mountField(), with no custom-element registration and no framework dependency.",
   "type": "module",
@@ -8,11 +8,11 @@
   "homepage": "https://field-ui.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zachshallbetter/field-ui.git",
+    "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
     "directory": "packages/vanilla"
   },
   "bugs": {
-    "url": "https://github.com/zachshallbetter/field-ui/issues"
+    "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
     "field-ui",
@@ -52,8 +52,8 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@field-ui/platform": "workspace:*",
-    "@field-ui/core": "workspace:*"
+    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

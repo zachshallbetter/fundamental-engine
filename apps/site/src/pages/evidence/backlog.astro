@@ -1,5 +1,5 @@
 ---
-import { freshness, logNormalize, weightToStrength } from "@field-ui/core";
+import { freshness, logNormalize, weightToStrength } from "@fundamental-engine/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import backlog from "../../data/examples/backlog.json";
@@ -80,7 +80,7 @@ const SNIP_BODY = `<li
 
 <!-- data-rec is the snapshot's freshness —
      freshness(updatedAt, snapshot, 24h), the
-     @field-ui/core temporal kernel. data-field-at
+     @fundamental-engine/core temporal kernel. data-field-at
      declares the same updatedAt as WORLD TIME, so
      the platform's recency lane is grounded in the
      data: --field-recency = freshness(at, now). -->`;
@@ -167,7 +167,7 @@ function drop() { // pointerup — Esc/pointercancel aborts
     <h1>Work has <span class="accent">weight</span>.</h1>
     <p class="ev-lede">
       This one is the repo measuring itself: the {items.length} most recent work items from
-      <a href="https://github.com/zachshallbetter/field-ui" rel="noopener">field-ui's own
+      <a href="https://github.com/zachshallbetter/fundamental-engine" rel="noopener">field-ui's own
       repository</a> — the issues and pull requests that built the engine rendering this page.
       A tracker flattens them into identical rows; here each item is a <strong>body</strong>,
       and its mass is a blend of activity (discussion) and freshness (how recently it was
@@ -444,7 +444,7 @@ function drop() { // pointerup — Esc/pointercancel aborts
       conversation happened, not what mattered most. Ages are measured against the snapshot, so
       the page is stable. Data: the
       <a href="https://docs.github.com/en/rest" rel="noopener">GitHub API</a>
-      (zachshallbetter/field-ui issues and pull requests), public repository data, snapshotted
+      (zachshallbetter/fundamental-engine issues and pull requests), public repository data, snapshotted
       {snapshotDay}.
     </p>
     <p class="ev-built">

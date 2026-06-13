@@ -17,8 +17,8 @@
  * the geometry, so it is safe to call from any render loop at any cadence.
  */
 
-import { createField } from '@field-ui/core';
-import type { AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ThreadLink } from '@field-ui/core';
+import { createField } from '@fundamental-engine/core';
+import type { AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ThreadLink } from '@fundamental-engine/core';
 import { Group } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';

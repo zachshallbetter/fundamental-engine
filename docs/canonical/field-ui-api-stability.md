@@ -20,9 +20,9 @@ same package, with the same kind (value / type / element), and its shape does no
 of the `0.x` line. The freeze is mechanically enforced — `pnpm check:api` fails the build if a frozen
 symbol is removed, renamed, moved between packages, or changes kind.
 
-> Package npm names: core is published as **`@field-ui/core`**; the rest are
-> `@field-ui/platform`, `@field-ui/elements`, `@field-ui/react`, `@field-ui/vanilla`. The umbrella
-> **`@field-ui/kit`** installs the whole suite in one dependency (`@field-ui/field-ui` is a thin alias
+> Package npm names: core is published as **`@fundamental-engine/core`**; the rest are
+> `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The umbrella
+> **`@fundamental-engine/kit`** installs the whole suite in one dependency (`fundamental-engine` is a thin alias
 > for it); these are convenience meta-packages, not part of the frozen API surface.
 
 ## The stable surface (`0.x`)
@@ -31,33 +31,33 @@ symbol is removed, renamed, moved between packages, or changes kind.
 
 | Symbol | Package | Kind | What it is |
 | --- | --- | --- | --- |
-| `createField` | `@field-ui/core` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
-| `createField` | `@field-ui/vanilla` | value | The host-bundled convenience door (= `createBrowserField`); auto-supplies `browserHost()`. |
-| `browserHost` | `@field-ui/platform` | value | The canonical DOM `FieldHost` for `createField`. |
-| `browserHost` | `@field-ui/vanilla` | value | Re-export of the platform host for the no-framework path. |
-| `createFieldPlatform` | `@field-ui/platform` | value | Wires the six native-first registries on a root. |
-| `applyRecipe` | `@field-ui/platform` | value | Applies a recipe to a live platform. |
-| `bindData` | `@field-ui/platform` | value | Binds records → bodies; data drives the field. |
-| `compileRecipe` | `@field-ui/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
+| `createField` | `@fundamental-engine/core` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
+| `createField` | `@fundamental-engine/vanilla` | value | The host-bundled convenience door (= `createBrowserField`); auto-supplies `browserHost()`. |
+| `browserHost` | `@fundamental-engine/platform` | value | The canonical DOM `FieldHost` for `createField`. |
+| `browserHost` | `@fundamental-engine/vanilla` | value | Re-export of the platform host for the no-framework path. |
+| `createFieldPlatform` | `@fundamental-engine/platform` | value | Wires the six native-first registries on a root. |
+| `applyRecipe` | `@fundamental-engine/platform` | value | Applies a recipe to a live platform. |
+| `bindData` | `@fundamental-engine/platform` | value | Binds records → bodies; data drives the field. |
+| `compileRecipe` | `@fundamental-engine/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
 
 `createField` has **two doors on purpose**: the core primitive is renderer-agnostic and host-required;
-`@field-ui/vanilla` re-exports the host-bundled convenience so the no-framework path stays one call.
+`@fundamental-engine/vanilla` re-exports the host-bundled convenience so the no-framework path stays one call.
 Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 
 ### Types
 
 | Type | Package | What it is |
 | --- | --- | --- |
-| `FieldRecipe` | `@field-ui/core` | The recipe schema. |
-| `FieldHost` | `@field-ui/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
-| `FieldPlatform` | `@field-ui/platform` | The surface `createFieldPlatform` returns. |
+| `FieldRecipe` | `@fundamental-engine/core` | The recipe schema. |
+| `FieldHost` | `@fundamental-engine/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
+| `FieldPlatform` | `@fundamental-engine/platform` | The surface `createFieldPlatform` returns. |
 
 ### Elements and the body contract
 
 | Surface | Package | What it is |
 | --- | --- | --- |
-| `<field-root>` | `@field-ui/elements` | One background field per page; scans the document for `[data-body]`. |
-| `<field-cell>` | `@field-ui/elements` | A scoped local field region. |
+| `<field-root>` | `@fundamental-engine/elements` | One background field per page; scans the document for `[data-body]`. |
+| `<field-cell>` | `@fundamental-engine/elements` | A scoped local field region. |
 | `data-body` (attribute) | core `BODY_SELECTOR` | **The body contract.** "Every element is a body" via the `data-body` attribute on ordinary elements. |
 
 **There is no `<field-body>` element.** Bodies are an attribute on ordinary elements, not a tag, and
@@ -73,9 +73,9 @@ of the contract until they are added to the table above.
 | Area | Status | Notes |
 | --- | --- | --- |
 | `FieldHandle` (full surface) | partial | The handle shape is not frozen as a type. Entry points that return it (`createField`, `createBrowserField`) are frozen, but new methods may be added in any patch. |
-| `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@field-ui/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
+| `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@fundamental-engine/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
 | Advanced diagnostics | partial | `DIAGNOSTICS` / `DIAGNOSTIC_LENS` / `draw*` primitives ship but are unfrozen. |
-| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@field-ui/core`; `FieldPerf` (frame-duration split, adaptive governor) is designed but not yet implemented. |
+| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) is designed but not yet implemented. |
 | Visual recipe editor | absent | No editor UI; the authoring toolkit is the substrate to build one on. |
 | GPU / WebGPU backend | planned | A named direction; the six shipped render modes are CPU/canvas. |
 | Multi-root bridge | absent | No API for coordinating multiple `<field-root>` instances yet. |
@@ -124,6 +124,6 @@ migration note and a `0.MINOR` bump.
 
 ## Status
 
-The packages are **published to npm** under the `@field-ui` scope (`@field-ui/core` and the four
+The packages are **published to npm** under the `@field-ui` scope (`@fundamental-engine/core` and the four
 adapters). This freeze defines the `0.x` contract consumers build against; the publish steps and
 order are in [`PUBLISHING.md`](../../PUBLISHING.md).

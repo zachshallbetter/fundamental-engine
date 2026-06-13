@@ -114,7 +114,7 @@ const SOURCES = {
     // PR volume dwarfs issues — fetch deep enough to catch every actual issue, then merge.
     const gh = (page) =>
       get(
-        `https://api.github.com/repos/zachshallbetter/field-ui/issues?state=all&per_page=100&sort=updated&page=${page}`,
+        `https://api.github.com/repos/zachshallbetter/fundamental-engine/issues?state=all&per_page=100&sort=updated&page=${page}`,
         { headers: { Accept: 'application/vnd.github+json' } },
       );
     const pages = [await gh(1), await gh(2), await gh(3)];
@@ -124,7 +124,7 @@ const SOURCES = {
       ...pages.flat().filter((i) => !i.pull_request), // every real issue
     ].filter((i) => (seen.has(i.number) ? false : seen.add(i.number)));
     write('backlog', {
-      source: 'GitHub API — zachshallbetter/field-ui work items (issues + pull requests)',
+      source: 'GitHub API — zachshallbetter/fundamental-engine work items (issues + pull requests)',
       license: 'public repository data',
       snapshotAt: new Date().toISOString(),
       items: batch.slice(0, 64).map((i) => ({
@@ -217,13 +217,13 @@ const SOURCES = {
   // ── Dependencies — the monorepo's real npm deps + advisories ────────────────────────
   async dependencies() {
     const pkgDirs = ['packages/core', 'packages/platform', 'packages/elements', 'packages/vanilla', 'packages/react', 'apps/site'];
-    const internal = new Set(['@field-ui/core', '@field-ui/platform', '@field-ui/elements', '@field-ui/vanilla', '@field-ui/react', '@field-ui/kit']);
+    const internal = new Set(['@fundamental-engine/core', '@fundamental-engine/platform', '@fundamental-engine/elements', '@fundamental-engine/vanilla', '@fundamental-engine/react', '@fundamental-engine/kit']);
     const usedBy = new Map(); // external dep → [workspace pkgs]
     for (const dir of pkgDirs) {
       const pj = JSON.parse(readFileSync(resolve(ROOT, '../../', dir, 'package.json'), 'utf8'));
       const short = dir.split('/')[1];
       for (const name of Object.keys({ ...(pj.dependencies ?? {}), ...(pj.devDependencies ?? {}) })) {
-        if (internal.has(name) || name.startsWith('@field-ui/')) continue;
+        if (internal.has(name) || name.startsWith('@fundamental-engine/')) continue;
         usedBy.set(name, [...(usedBy.get(name) ?? []), short]);
       }
     }

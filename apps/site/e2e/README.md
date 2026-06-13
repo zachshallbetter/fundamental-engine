@@ -19,8 +19,8 @@ Three projects share one webServer (see `playwright.config.ts`):
 The suite runs against the **built** site (`astro preview` serves `dist/`), so build first:
 
 ```sh
-pnpm --filter @field-ui/site build   # packages' dist must already be built (pnpm build at the root)
-pnpm --filter @field-ui/site test:e2e
+pnpm --filter @fundamental-engine/site build   # packages' dist must already be built (pnpm build at the root)
+pnpm --filter @fundamental-engine/site test:e2e
 ```
 
 Every test blocks non-localhost network (see `fixtures.ts`), so the live-data loops fail
@@ -30,7 +30,7 @@ part of what the suite pins.
 
 ## Known WebKit quirks
 
-**Custom-element upgrade timing.** `Base.astro` defers `import('@field-ui/elements')` to
+**Custom-element upgrade timing.** `Base.astro` defers `import('@fundamental-engine/elements')` to
 `requestIdleCallback`, which Safari does not implement — it falls back to
 `setTimeout(300)`. Imperative method calls on `<field-root>` made before that timer fires
 land on a bare `HTMLElement` and are silently dropped. The `home.spec.ts` natural-field

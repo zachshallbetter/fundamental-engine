@@ -11,7 +11,7 @@
  * The recipe frames the field (which metrics → --field-* are tracked); the per-record mapper owns the
  * body tokens, metric values, and relationships — so the data drives the field, not a mock.
  */
-import { recipeById, type FieldRecipe } from '@field-ui/core';
+import { recipeById, type FieldRecipe } from '@fundamental-engine/core';
 import { applyRecipe, type AppliedRecipe } from './apply-recipe.ts';
 
 export interface MappedBody {

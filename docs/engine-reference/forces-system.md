@@ -16,7 +16,7 @@ exercised through the authoring surfaces (`<field-root>`, `mountField()`,
 `<FieldField>`). This document is the canonical reference for the **force engine**;
 it does **not** define the full field-ui platform architecture. DOM participation —
 measurement, state, feedback writes, relationships, visual bindings, overlays,
-scheduling, and linting — now lives in `@field-ui/platform`, which binds the
+scheduling, and linting — now lives in `@fundamental-engine/platform`, which binds the
 renderer-agnostic core to the DOM (the platform runtime is the default for
 `<field-root>`). For that architecture see
 [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md)
@@ -569,7 +569,7 @@ and `ds-interactions.js`):
 ## 13. Public field API (`FieldHandle`)
 
 > **As-built note.** The prototype exposed a `window.__field` global; the shipped API is the
-> `FieldHandle` returned by `createField()` (or `createBrowserField()` in `@field-ui/vanilla`),
+> `FieldHandle` returned by `createField()` (or `createBrowserField()` in `@fundamental-engine/vanilla`),
 > and proxied onto `<field-root>` as instance methods. All interaction with the running engine
 > goes through this handle; the internal `store`, `env`, and particle array are not accessible
 > from outside.
@@ -620,7 +620,7 @@ read-only access to engine state that would otherwise require a reference to int
 | Method | Returns | Description |
 |---|---|---|
 | `particleCount()` | `number` | Live size of the particle pool (`store.size`). Use for budget monitors that need the count without walking the array. |
-| `energy()` | `{ kinetic, thermal, total, count }` | Per-frame energy snapshot. Forwards to `energyReport(store.particles)` from `@field-ui/core/diagnostics/energy`. |
+| `energy()` | `{ kinetic, thermal, total, count }` | Per-frame energy snapshot. Forwards to `energyReport(store.particles)` from `@fundamental-engine/core/diagnostics/energy`. |
 | `scrollV()` | `number` | The engine's eased page-scroll velocity — the same EMA the `scrolling` condition gate (§5) reads: `(prev × 0.7) + (\|Δscroll\| × 0.3)` per frame. Units are **px/frame at the display refresh rate** — refresh-rate dependent (roughly half on a 120 Hz display; a px/ms normalization may replace the unit before 1.0 — the surface is experimental). The platform runtime mirrors it to `--field-scroll-v` on `:root` each frame. Pull-based: read on demand, do not poll in tight loops. |
 
 > **Encapsulation note.** `store.particles` (the internal `Particle[]`) is not exposed — only
@@ -649,7 +649,7 @@ inset:0`, so not-intersecting means hidden or zero-sized), and an engine rebuild
 cost control: under `prefers-reduced-motion` the scene is static (`dt = 0`), so a visible canvas
 redraws at quarter rate — visually identical at a quarter of the cost.
 
-**Render mode `'none'` — the signals-only engine ([#297](https://github.com/zachshallbetter/field-ui/issues/297)).**
+**Render mode `'none'` — the signals-only engine ([#297](https://github.com/zachshallbetter/fundamental-engine/issues/297)).**
 Where `setVisible(false)` is a *dynamic* hint (the field may become visible again any frame, so
 the drawing machinery stays ready), `render: 'none'` is the *structural* contract behind the
 typographic (invisible) placement. A field **created** with `createField(canvas, { render:
@@ -852,7 +852,7 @@ pattern for embedding the (cost-heavy) field inside a denser documentation UI.
 ### 18.2 Performance budget
 
 The engine defines a `PerformanceBudget` with defaults enforced by `inspectBudget()` from
-`@field-ui/core`:
+`@fundamental-engine/core`:
 
 | Dimension | Default limit | Notes |
 |---|---|---|
@@ -864,7 +864,7 @@ The engine defines a `PerformanceBudget` with defaults enforced by `inspectBudge
 | `dprCap` | 2 | Device pixel ratio ceiling for the canvas backing store. |
 
 ```ts
-import { inspectBudget, DEFAULT_BUDGET } from '@field-ui/core';
+import { inspectBudget, DEFAULT_BUDGET } from '@fundamental-engine/core';
 
 const findings = inspectBudget({ bodies: n, particles: handle.particleCount() });
 // → BudgetFinding[] — each over-limit dimension with { field, value, limit, over }
@@ -891,7 +891,7 @@ supply; they do not sample the engine.
 > **As-built note.** This section describes how the *force engine* is mounted; it is
 > not the full platform architecture. In the shipped system, `field-ui`
 > computes renderer-agnostic field behavior (force math, conservation, conditions,
-> formations) and `@field-ui/platform` binds it to the DOM — measurement, state,
+> formations) and `@fundamental-engine/platform` binds it to the DOM — measurement, state,
 > feedback writes, relationships, visual bindings, overlays, scheduling (the explicit
 > discover → read → compute → state → write → render phases), and linting. The
 > platform runtime is the **default** for `<field-root>`. For the complete

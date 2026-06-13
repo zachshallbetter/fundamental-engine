@@ -1,5 +1,5 @@
 > **Status: canonical.**
-> This document defines the current `@field-ui/platform` architecture as of the runtime-platform
+> This document defines the current `@fundamental-engine/platform` architecture as of the runtime-platform
 > unification phase (Phase D): the FrameScheduler, the six registries, `lintPlatform()`, the live
 > `<field-root>` runtime, and the platform→core boundary. For force/field math see
 > [forces-system.md](../engine-reference/forces-system.md); for the data model and contracts see
@@ -22,22 +22,22 @@ field-ui
   core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
   export.ts are the two allowlisted, quarantined exceptions).
 
-@field-ui/platform
+@fundamental-engine/platform
   DOM participation: measurement, state, feedback, relationships, visual bindings, overlays,
   scheduling, and linting. Depends on core for contracts; core never depends on it.
 
-@field-ui/elements
+@fundamental-engine/elements
   native web components — <field-root> / <field-cell> and the [data-body] authoring contract.
 
-@field-ui/react
+@fundamental-engine/react
   the React adapter over the same contracts (<FieldField>, useFieldField).
 
-@field-ui/vanilla
+@fundamental-engine/vanilla
   the FieldField class for plain TypeScript apps.
 
-@field-ui/kit
+@fundamental-engine/kit
   umbrella meta-package — installs the whole suite (core + platform + the three adapters) in one
-  dependency. No code of its own; import from the specific package. @field-ui/field-ui is a thin alias.
+  dependency. No code of its own; import from the specific package. fundamental-engine is a thin alias.
 
 apps/site · lab · docs
   product surfaces, executable documentation, diagnostics, examples, and previews.
@@ -46,7 +46,7 @@ apps/site · lab · docs
 Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
 `vanilla → platform → core`. `field-ui` is renderer-agnostic and imports **zero** DOM (enforced
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
-`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@field-ui/platform`.
+`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/platform`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
 you. Compatibility alias packages (`@forces-ui/*`, `forces-ui`) re-export the renamed
 families during the migration window.
@@ -160,7 +160,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 - **D3** — CSS-variable + event feedback routed through FeedbackRegistry via a `feedbackSink` seam in
   `createField`; the eased density signal is unchanged, only the write target moves. Since #228 the
   sink contract is the engine's **only** feedback write path: when no platform sink is configured
-  (raw `createField`, `@field-ui/vanilla`, recipe-scoped engines), the engine installs an internal
+  (raw `createField`, `@fundamental-engine/vanilla`, recipe-scoped engines), the engine installs an internal
   default sink (`core/feedback-sink.ts`) whose direct writes are byte-identical to the historical
   behavior — same variables (`--d`/`--forces-density`/`--field-density`, the heatmap mirror pair,
   `--load`/`--mass`, `--lit`), same three-decimal formatting, same `field:lit`/`field:dim`
@@ -176,7 +176,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 **Frontier — done:** `core/field.ts` (the engine + canvas render loop) no longer touches any DOM
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
-to `@field-ui/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
+to `@fundamental-engine/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
 source file in `field-ui` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 

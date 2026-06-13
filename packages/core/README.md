@@ -1,13 +1,13 @@
 # field-ui
 
-**The renderer-agnostic field engine.** `@field-ui/core` computes the field: forces, particles, metrics,
+**The renderer-agnostic field engine.** `@fundamental-engine/core` computes the field: forces, particles, metrics,
 recipes, diagnostics, and conformance, against plain data, with **zero runtime dependencies** and
 **zero DOM**. Your page's elements become physical bodies in one shared field; they exert force, and
 the field's local density bends them back. The visible canvas is one render surface, not the system.
 
 This is the core. Most apps consume it through a thin adapter that wires the browser for you:
-[`@field-ui/elements`](../elements) (web component), [`@field-ui/react`](../react), or
-[`@field-ui/vanilla`](../vanilla). Reach for the core directly when you own the render loop or target a
+[`@fundamental-engine/elements`](../elements) (web component), [`@fundamental-engine/react`](../react), or
+[`@fundamental-engine/vanilla`](../vanilla). Reach for the core directly when you own the render loop or target a
 renderer other than the DOM canvas.
 
 → Live manual, Lab, and design system at **[field-ui.com](https://field-ui.com)**.
@@ -15,11 +15,11 @@ renderer other than the DOM canvas.
 ## Install
 
 ```sh
-npm i @field-ui/core
+npm i @fundamental-engine/core
 ```
 
-The browser host lives in [`@field-ui/platform`](../platform); most apps reach for a thin adapter
-([`@field-ui/elements`](../elements), [`@field-ui/react`](../react), [`@field-ui/vanilla`](../vanilla))
+The browser host lives in [`@fundamental-engine/platform`](../platform); most apps reach for a thin adapter
+([`@fundamental-engine/elements`](../elements), [`@fundamental-engine/react`](../react), [`@fundamental-engine/vanilla`](../vanilla))
 instead of wiring the host themselves. The public surface is frozen for `0.x` (see
 [API stability](../../docs/canonical/field-ui-api-stability.md)).
 
@@ -37,18 +37,18 @@ instead of wiring the host themselves. The public surface is frozen for `0.x` (s
   `voronoi`, `field-lines`, `heatmap`) and diagnostics (`force-vectors`, `contours`, `potential`,
   `energy`, `topology`, `inspector`, `causality`, `prediction`).
 - **64 recipes** across 4 tiers: a recipe is a portable field program. `compileRecipe()` lives here
-  (pure, no DOM); `applyRecipe()` and `bindData()` are in [`@field-ui/platform`](../platform).
+  (pure, no DOM); `applyRecipe()` and `bindData()` are in [`@fundamental-engine/platform`](../platform).
 - **A conformance framework** that fires known particles into each force and checks the measured
   trajectory against the math. The same catalog drives the tests and the visual Lab.
 
 ## Quick start
 
 `createField` is renderer-agnostic, so it **requires a host** (a `FieldHost`: viewport, scroll, raf,
-and a canvas). In the browser, the host comes from [`@field-ui/platform`](../platform):
+and a canvas). In the browser, the host comes from [`@fundamental-engine/platform`](../platform):
 
 ```ts
-import { createField } from '@field-ui/core';
-import { browserHost } from '@field-ui/platform';
+import { createField } from '@fundamental-engine/core';
+import { browserHost } from '@fundamental-engine/platform';
 
 const canvas = document.querySelector('canvas')!;
 const field = createField(canvas, { host: browserHost(), accent: '#4da3ff' });
@@ -58,9 +58,9 @@ const field = createField(canvas, { host: browserHost(), accent: '#4da3ff' });
 field.scan(); // re-scan [data-body] after a DOM change
 ```
 
-If you do not want to wire the host yourself, [`@field-ui/vanilla`](../vanilla) re-exports a
-host-bundled `createField` (and a `FieldField` class), and [`@field-ui/elements`](../elements) /
-[`@field-ui/react`](../react) wrap it as a custom element / component. `createField` called without a
+If you do not want to wire the host yourself, [`@fundamental-engine/vanilla`](../vanilla) re-exports a
+host-bundled `createField` (and a `FieldField` class), and [`@fundamental-engine/elements`](../elements) /
+[`@fundamental-engine/react`](../react) wrap it as a custom element / component. `createField` called without a
 host throws a clear error pointing you to those doors.
 
 ## The model
@@ -101,26 +101,26 @@ its lanes stay separate: concepts describe, tokens execute, metrics measure, dia
 conditions activate. `compileRecipe()` turns a `FieldRecipe` into a compiled plan with no DOM:
 
 ```ts
-import { compileRecipe, recipeById } from '@field-ui/core';
+import { compileRecipe, recipeById } from '@fundamental-engine/core';
 
 const plan = compileRecipe(recipeById('priority-well')!);
 // → bodies, relationships, feedback, diagnostics, metrics, and a reduced-motion output.
 ```
 
 `applyRecipe()` (run a recipe on a live DOM platform) and `bindData()` (records → bodies) are in
-[`@field-ui/platform`](../platform). Browse all 64 at [`/docs/gallery`](https://field-ui.com/docs/gallery).
+[`@fundamental-engine/platform`](../platform). Browse all 64 at [`/docs/gallery`](https://field-ui.com/docs/gallery).
 
 ## Renderer-agnostic
 
 The engine touches no DOM globals (a boundary test keeps the allowlist empty). Everything the browser
 provides arrives through an injected `FieldHost`, so the same engine runs on a DOM canvas, an offscreen
 canvas, a headless harness, or any renderer you implement. `browserHost()` (in
-[`@field-ui/platform`](../platform)) is the canonical DOM implementation of that contract.
+[`@fundamental-engine/platform`](../platform)) is the canonical DOM implementation of that contract.
 
 ## Related
 
-[`@field-ui/platform`](../platform) · [`@field-ui/elements`](../elements) ·
-[`@field-ui/react`](../react) · [`@field-ui/vanilla`](../vanilla) · the
+[`@fundamental-engine/platform`](../platform) · [`@fundamental-engine/elements`](../elements) ·
+[`@fundamental-engine/react`](../react) · [`@fundamental-engine/vanilla`](../vanilla) · the
 [documentation map](../../docs/README.md).
 
 ## License

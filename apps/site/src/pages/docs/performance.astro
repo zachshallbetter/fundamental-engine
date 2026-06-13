@@ -8,9 +8,9 @@ light     800p ×  3b          0.25      ~3900     ~9.5M int/s
 typical   2000p ×  6b         0.58      ~1730     ~21M  int/s
 heavy     5000p × 10b         1.84       ~540     ~27M  int/s
 stress    10000p × 16b        6.11       ~164     ~26M  int/s
-# pnpm --filter @field-ui/core bench  (Node 22, one core)`;
+# pnpm --filter @fundamental-engine/core bench  (Node 22, one core)`;
 
-const budgetEx = `import { inspectBudget, withinBudget, DEFAULT_BUDGET } from '@field-ui/core';
+const budgetEx = `import { inspectBudget, withinBudget, DEFAULT_BUDGET } from '@fundamental-engine/core';
 
 const field = document.querySelector('field-root');
 
@@ -112,7 +112,7 @@ const { kinetic, thermal, total, count } = field.energy();
     <h2>Performance budget</h2>
     <p>
       The engine ships a <code>PerformanceBudget</code> — a set of default limits you can check your
-      scene against at runtime. Use <code>inspectBudget()</code> from <code>@field-ui/core</code>:
+      scene against at runtime. Use <code>inspectBudget()</code> from <code>@fundamental-engine/core</code>:
     </p>
     <CodeTabs variants={[{ label: 'Budget check', lang: 'ts', code: budgetEx }]} />
     <table class="api-tbl">

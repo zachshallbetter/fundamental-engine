@@ -6,7 +6,7 @@
  * Writes happen only in `flush()`, after measurement + simulation reads. During the migration window
  * every `--field-*` is mirrored to `--forces-*`, and every `field:*` event to its `forces:*` twin.
  */
-import { Thresholder } from '@field-ui/core';
+import { Thresholder } from '@fundamental-engine/core';
 import type { StateRegistry } from './state.ts';
 
 /** Map of state-key → CSS-var name written for an element. */

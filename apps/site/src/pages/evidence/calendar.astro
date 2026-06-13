@@ -1,5 +1,5 @@
 ---
-import { imminence, weightToStrength } from "@field-ui/core";
+import { imminence, weightToStrength } from "@fundamental-engine/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import calendar from "../../data/examples/calendar.json";
@@ -104,7 +104,7 @@ const SNIPPET_HTML = `<!-- each launch is a body. data-feedback: the engine writ
 const SNIPPET_TS = `// the world-time kernel — 1 at T−0,
 // log-ramping from 0 across the horizon:
 import { imminence, weightToStrength }
-  from "@field-ui/core";
+  from "@fundamental-engine/core";
 
 // every second, for every launch:
 const netMs = Date.parse(row.dataset.net);

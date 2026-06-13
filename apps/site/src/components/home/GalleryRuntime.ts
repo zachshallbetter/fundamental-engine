@@ -5,9 +5,9 @@
 //   · --field-density — the metric the platform writes back onto a [data-feedback] body (feedback.ts).
 //   · field.setRender(mode) — the Field Surfaces underlay switch on <field-root>.
 
-import { bindData } from "@field-ui/platform";
+import { bindData } from "@fundamental-engine/platform";
 
-import { VisualBindingRegistry } from "@field-ui/platform";
+import { VisualBindingRegistry } from "@fundamental-engine/platform";
 
 type FieldEl = HTMLElement & {
   setRender?: (m: string) => void;

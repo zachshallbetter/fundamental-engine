@@ -55,7 +55,7 @@ The rules:
 **Sub-variant: the custom-element upgrade race.** Imperative method calls on a
 `<field-root>` (or any custom element with a deferred boot) made before `customElements.define`
 runs land on a bare `HTMLElement` and are silently dropped. `Base.astro` defers
-`import('@field-ui/elements')` to `requestIdleCallback` — but Safari has no
+`import('@fundamental-engine/elements')` to `requestIdleCallback` — but Safari has no
 `requestIdleCallback`, so the upgrade fires on a plain `setTimeout(300)` there. Any call that
 races this window sets durable wrong state in WebKit and is invisible in Chromium (which wins
 the race almost always). Observed in `ForcePicker.ts`: `setOverlay('streamlines')` called at
@@ -127,7 +127,7 @@ Before declaring done or merging, always:
 ```txt
 pnpm typecheck · pnpm build · pnpm test
 pnpm check:api · check:dist · check:readme · check:recipes · check:cem
-pnpm --filter @field-ui/site test:e2e     (chromium + webkit + mobile)
+pnpm --filter @fundamental-engine/site test:e2e     (chromium + webkit + mobile)
 ```
 
 CI runs the same gate plus the e2e matrix on PRs; `snapshots.yml` refreshes example data

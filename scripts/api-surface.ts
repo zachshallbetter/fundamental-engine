@@ -11,11 +11,11 @@
  * Note: a value-import of a type-only export (or vice versa) is itself an error under
  * verbatimModuleSyntax, so these imports also lock each symbol's KIND, not just its presence.
  */
-import { createField as coreCreateField, compileRecipe } from '@field-ui/core';
-import type { FieldRecipe, FieldHost, FieldHandle, OverlayMode } from '@field-ui/core';
-import { browserHost, createFieldPlatform, applyRecipe, bindData } from '@field-ui/platform';
-import type { FieldPlatform } from '@field-ui/platform';
-import { createField as vanillaCreateField, browserHost as vanillaBrowserHost } from '@field-ui/vanilla';
+import { createField as coreCreateField, compileRecipe } from '@fundamental-engine/core';
+import type { FieldRecipe, FieldHost, FieldHandle, OverlayMode } from '@fundamental-engine/core';
+import { browserHost, createFieldPlatform, applyRecipe, bindData } from '@fundamental-engine/platform';
+import type { FieldPlatform } from '@fundamental-engine/platform';
+import { createField as vanillaCreateField, browserHost as vanillaBrowserHost } from '@fundamental-engine/vanilla';
 
 // Reference every frozen VALUE so its removal/rename is a compile error here.
 const FROZEN_VALUES = [

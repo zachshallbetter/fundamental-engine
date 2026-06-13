@@ -1,5 +1,5 @@
-import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@field-ui/core';
-import { createBrowserField, type FieldPlatform } from '@field-ui/platform';
+import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@fundamental-engine/core';
+import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
 
@@ -61,7 +61,7 @@ export class FieldField extends HTMLElementBase {
   platformRuntime?: PlatformRuntime;
 
   /**
-   * The live `@field-ui/platform` instance backing this field (Phase D default), or `undefined` on
+   * The live `@fundamental-engine/platform` instance backing this field (Phase D default), or `undefined` on
    * the legacy path. Read-only introspection for tools like the Inspector — the registries here are
    * the real running state (measurements, state, feedback bindings, relationships, overlays, lint).
    * Read with `measure.last()` etc.; don't call `measure.measure()` off the read phase.
@@ -430,5 +430,5 @@ export {
   FIELD_REGISTER_BODY,
   FIELD_UNREGISTER_BODY,
   FIELD_UPDATE_BODY,
-} from '@field-ui/core';
-export type { RegisterBodyDetail } from '@field-ui/core';
+} from '@fundamental-engine/core';
+export type { RegisterBodyDetail } from '@fundamental-engine/core';

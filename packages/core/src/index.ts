@@ -43,7 +43,7 @@ export * from './core/heatmap.ts';
 export * from './core/surface.ts';
 export * from './core/host.ts';
 // RenderBackend (#373): the structural drawing seam alongside FieldHost. Exported so an external
-// surface (WebGL/WebGPU/Three.js — see @field-ui/three) can implement the contract by name and
+// surface (WebGL/WebGPU/Three.js — see @fundamental-engine/three) can implement the contract by name and
 // inject it via `createField({ overlayBackend })`.
 export * from './core/render-backend.ts';
 export * from './core/field.ts';

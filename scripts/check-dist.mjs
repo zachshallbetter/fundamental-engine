@@ -9,7 +9,6 @@
  * This catches build-output / exports-map / `files` mistakes that typecheck and unit tests
  * can't see. Run after `pnpm build`. Used by CI and the publish checklist (PUBLISHING.md).
  *
- * Covers both the primary @field-ui/* packages and the @forces-ui/* source-compat shims
  * (not published to npm; validated here to keep the migration-path code honest). For deeper exports-map
  * and TypeScript-resolution checks, see scripts/check-packaging.mjs (publint + attw).
  */
@@ -20,10 +19,8 @@ import { dirname, join, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = [
-  // primary @field-ui/* (published via CI)
+  // primary @fundamental-engine/* (published via CI)
   'core', 'platform', 'vanilla', 'elements', 'react',
-  // source-compat shims for the forces-ui → field-ui migration (not published to npm)
-  'compat-core', 'compat-vanilla', 'compat-elements', 'compat-react',
 ];
 
 /** Collect every relative file path the package.json points at as an entry point. */

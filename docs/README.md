@@ -11,14 +11,14 @@ interaction participate in one **shared field context**. Elements bend the field
 back. The visible particle canvas is **one render surface**, not the whole system.
 
 ```txt
-@field-ui/core      computes renderer-agnostic field, force, particle, metric, recipe, and diagnostic
+@fundamental-engine/core      computes renderer-agnostic field, force, particle, metric, recipe, and diagnostic
                     behavior. The engine. (The unscoped `field-ui` name is taken by an unrelated package.)
-@field-ui/platform  binds field behavior to the DOM: the browser host, measurement, state, feedback,
+@fundamental-engine/platform  binds field behavior to the DOM: the browser host, measurement, state, feedback,
                     relationships, visual bindings, overlays, recipes, data binding, lint, scheduling.
-@field-ui/elements  native web components and the [data-body] HTML authoring contract.
-@field-ui/react     the React adapter over the same contracts.
-@field-ui/vanilla   the FieldField class for plain TypeScript.
-@field-ui/kit       umbrella meta-package — one install for the whole suite (@field-ui/field-ui aliases it).
+@fundamental-engine/elements  native web components and the [data-body] HTML authoring contract.
+@fundamental-engine/react     the React adapter over the same contracts.
+@fundamental-engine/vanilla   the FieldField class for plain TypeScript.
+@fundamental-engine/kit       umbrella meta-package — one install for the whole suite (fundamental-engine aliases it).
 ```
 
 ## Document statuses
@@ -39,7 +39,7 @@ The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-ar
 |---|---|
 | [`field-ui-definition-document.md`](canonical/field-ui-definition-document.md) | Canonical concept and operating model |
 | [`field-ui-system-contracts.md`](canonical/field-ui-system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
-| [`field-ui-platform-architecture.md`](canonical/field-ui-platform-architecture.md) | `@field-ui/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
+| [`field-ui-platform-architecture.md`](canonical/field-ui-platform-architecture.md) | `@fundamental-engine/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
 | [`field-ui-api-stability.md`](canonical/field-ui-api-stability.md) | The frozen `0.x` public API surface, the experimental surface, and the compatibility rules — enforced by `pnpm check:api` |
 | [`field-ui-natural-fields.md`](canonical/field-ui-natural-fields.md) | The Natural Field Translation System — the four fundamental fields translated into interface behavior |
 | [`field-ui-documentation-standards.md`](canonical/field-ui-documentation-standards.md) | How field-ui is described everywhere — the architecture statement, doctrine, status taxonomy, naming policy, and verify-against-code rule |

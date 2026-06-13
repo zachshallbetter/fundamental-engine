@@ -47,9 +47,9 @@ test.describe("docs content systems", () => {
 
   test("API provenance stamps on /docs/api/handle match the freeze data", async ({ page }) => {
     await page.goto("/docs/api/handle");
-    // createField (the entry point in the lede) is frozen in @field-ui/core
+    // createField (the entry point in the lede) is frozen in @fundamental-engine/core
     const frozen = page.locator('.docs-hero .api-stamp[data-status="frozen"]');
-    await expect(frozen).toHaveText("frozen · @field-ui/core");
+    await expect(frozen).toHaveText("frozen · @fundamental-engine/core");
     // scrollV() is explicitly experimental in scripts/api-surface.data.mjs
     const scrollRow = page
       .locator(".api-row", { has: page.locator("code", { hasText: "scrollV()" }) })

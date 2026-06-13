@@ -4,7 +4,7 @@
  * wrap. React is a peer dependency (the one framework dep; the core stays zero-dep).
  *
  * ```tsx
- * import { ForcesField } from '@field-ui/react';
+ * import { ForcesField } from '@fundamental-engine/react';
  * <ForcesField accent="#4da3ff" />            // a full-viewport reciprocal field
  * <ForcesField onReady={(f) => f.scan()} />   // grab the handle to drive it
  * ```
@@ -15,8 +15,8 @@
 
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
-import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions, type OverlayInput } from '@field-ui/core';
-import { createBrowserField } from '@field-ui/platform';
+import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions, type OverlayInput } from '@fundamental-engine/core';
+import { createBrowserField } from '@fundamental-engine/platform';
 
 export interface FieldFieldProps extends FieldOptions {
   className?: string;

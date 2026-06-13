@@ -84,7 +84,7 @@ test('re-exports FieldField, ForcesField, useFieldField, useForcesField', async 
 
 test('createBrowserField accepts an overlayCanvas + overlay mode without throwing', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@field-ui/platform');
+  const { createBrowserField } = await import('@fundamental-engine/platform');
   const main = makeCanvas();
   const oc = makeCanvas();
   assert.doesNotThrow(() => {
@@ -99,7 +99,7 @@ test('createBrowserField accepts an overlayCanvas + overlay mode without throwin
 
 test('createBrowserField accepts an overlay stack (array of modes) without throwing', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@field-ui/platform');
+  const { createBrowserField } = await import('@fundamental-engine/platform');
   const main = makeCanvas();
   const oc = makeCanvas();
   assert.doesNotThrow(() => {
@@ -113,7 +113,7 @@ test('createBrowserField accepts an overlay stack (array of modes) without throw
 
 test('overlay:"off" with overlayCanvas does not throw', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@field-ui/platform');
+  const { createBrowserField } = await import('@fundamental-engine/platform');
   const main = makeCanvas();
   const oc = makeCanvas();
   assert.doesNotThrow(() => {
@@ -124,7 +124,7 @@ test('overlay:"off" with overlayCanvas does not throw', async () => {
 
 test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@field-ui/platform');
+  const { createBrowserField } = await import('@fundamental-engine/platform');
   const main = makeCanvas();
   const oc = makeCanvas();
   const h = createBrowserField(main, { overlay: 'off', overlayCanvas: oc });
@@ -140,7 +140,7 @@ test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)',
 
 test('setOverlay() accepts an additive stack of readings without throwing', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@field-ui/platform');
+  const { createBrowserField } = await import('@fundamental-engine/platform');
   const main = makeCanvas();
   const oc = makeCanvas();
   const h = createBrowserField(main, { overlayCanvas: oc });
@@ -152,7 +152,7 @@ test('setOverlay() accepts an additive stack of readings without throwing', asyn
 
 test('overlay canvas is removable after field destroy (cleanup invariant)', async () => {
   const { body, makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@field-ui/platform');
+  const { createBrowserField } = await import('@fundamental-engine/platform');
   const main = makeCanvas();
   // simulate the component appending an overlay canvas to body before creating the field
   const oc = makeCanvas();

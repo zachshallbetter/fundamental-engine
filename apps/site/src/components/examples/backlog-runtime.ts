@@ -25,8 +25,8 @@
 //     HONESTY: triage is a LOCAL SANDBOX — the arrangement persists to localStorage only;
 //     GitHub is never written.
 // The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
-import { recipeById, weightToStrength } from "@field-ui/core";
-import { applyRecipe, threadOverlay, withFlip as flipReflow } from "@field-ui/platform";
+import { recipeById, weightToStrength } from "@fundamental-engine/core";
+import { applyRecipe, threadOverlay, withFlip as flipReflow } from "@fundamental-engine/platform";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { pageRuntime } from "../../lib/page-runtime";
 import { persisted } from "../../lib/persisted";

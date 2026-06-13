@@ -6,13 +6,13 @@ import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
 
 // lowest-level: field-ui is renderer-agnostic, so createField requires an explicit host.
-const sig = `import { createField } from '@field-ui/core';
-import { browserHost } from '@field-ui/platform';
+const sig = `import { createField } from '@fundamental-engine/core';
+import { browserHost } from '@fundamental-engine/platform';
 
 const field = createField(canvas, { host: browserHost(), ...options });   // → FieldHandle
 
-// browser convenience — @field-ui/vanilla re-exports a createField that wires browserHost() for you:
-import { createField } from '@field-ui/vanilla';
+// browser convenience — @fundamental-engine/vanilla re-exports a createField that wires browserHost() for you:
+import { createField } from '@fundamental-engine/vanilla';
 const field2 = createField(canvas, options);                              // host wired internally`;
 
 const cfgResting = `// the resting field — an accent and a palette, nothing else
@@ -34,16 +34,16 @@ createField(canvas, { mass: true });`;
 
 <DocsLayout
   title="field-ui — createField & options"
-  description="createField(canvas, { host, ...options }) starts the engine on a canvas and returns the FieldHandle. A host is required (the core is renderer-agnostic); @field-ui/vanilla wires the browser host for you. Every FieldOptions field: accent, density, waves, render, mass, palette, attention, causality — with types and defaults."
+  description="createField(canvas, { host, ...options }) starts the engine on a canvas and returns the FieldHandle. A host is required (the core is renderer-agnostic); @fundamental-engine/vanilla wires the browser host for you. Every FieldOptions field: accent, density, waves, render, mass, palette, attention, causality — with types and defaults."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
-    <h1><span class="accent">createField</span> &amp; options <ApiStamp name="createField" pkg="@field-ui/core" /></h1>
+    <h1><span class="accent">createField</span> &amp; options <ApiStamp name="createField" pkg="@fundamental-engine/core" /></h1>
     <p class="lede">
       The lowest-level entry point. <code>createField(canvas, &#123; host, ...options &#125;)</code>
       starts the engine on a canvas you provide and returns the
       <a href="/docs/api/handle">FieldHandle</a> — a <code>host</code> is required (the core is
-      renderer-agnostic; <code>@field-ui/vanilla</code> wires the browser host for you). The web
+      renderer-agnostic; <code>@fundamental-engine/vanilla</code> wires the browser host for you). The web
       component, the <code>FieldField</code> class, and <code>mountField()</code> all wrap it.
     </p>
   </header>
@@ -54,11 +54,11 @@ createField(canvas, { mass: true });`;
     <div class="callout">
       <b>A host is required.</b> <code>field-ui</code> is renderer-agnostic, so
       <code>createField</code> takes a <code>host</code>. In the browser, use <code>createField</code>
-      from <a href="/docs/guides/typescript"><code>@field-ui/vanilla</code></a>
-      <ApiStamp name="createField" pkg="@field-ui/vanilla" /> (it wires
-      <code>browserHost()</code> <ApiStamp name="browserHost" pkg="@field-ui/platform" /> for you)
+      from <a href="/docs/guides/typescript"><code>@fundamental-engine/vanilla</code></a>
+      <ApiStamp name="createField" pkg="@fundamental-engine/vanilla" /> (it wires
+      <code>browserHost()</code> <ApiStamp name="browserHost" pkg="@fundamental-engine/platform" /> for you)
       or pass <code>host: browserHost()</code> from
-      <a href="/docs/platform"><code>@field-ui/platform</code></a>. The snippets below omit it for brevity.
+      <a href="/docs/platform"><code>@fundamental-engine/platform</code></a>. The snippets below omit it for brevity.
     </div>
   </section>
 
@@ -88,7 +88,7 @@ createField(canvas, { mass: true });`;
     <p>
       Every option is optional and the defaults keep the field calm. These are the combinations
       worth knowing — each is the whole <code>options</code> object (the <code>host</code> is omitted;
-      wire it per the signature above, or use <code>@field-ui/vanilla</code>). Switch tabs to compare.
+      wire it per the signature above, or use <code>@fundamental-engine/vanilla</code>). Switch tabs to compare.
     </p>
     <CodeTabs
       variants={[

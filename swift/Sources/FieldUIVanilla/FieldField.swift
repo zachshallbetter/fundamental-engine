@@ -26,7 +26,7 @@ public protocol FieldMountPoint: AnyObject {
 
 // MARK: - FieldField
 
-/// The universal imperative field — the Swift equivalent of `FieldField` in @field-ui/vanilla.
+/// The universal imperative field — the Swift equivalent of `FieldField` in @fundamental-engine/vanilla.
 ///
 /// ```swift
 /// import FieldUIVanilla
@@ -187,7 +187,7 @@ public final class FieldField: FieldHandle {
 // MARK: - mountField
 
 /// Create and start a field attached to `mountPoint` — the free-function form.
-/// Mirrors `mountField` from @field-ui/vanilla. `depth` as in `FieldField.init(in:options:depth:)`.
+/// Mirrors `mountField` from @fundamental-engine/vanilla. `depth` as in `FieldField.init(in:options:depth:)`.
 ///
 /// ```swift
 /// let handle = mountField(in: myView)

@@ -7,7 +7,7 @@
 # Canonical documentation map
 
 field-ui is a platform-native relational field runtime for the DOM. `field-ui` (core) computes
-renderer-agnostic field behavior; `@field-ui/platform` binds it to the DOM; `elements`/`react`
+renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM; `elements`/`react`
 are authoring surfaces. Canvas is one render surface, not the whole system.
 
 > Concepts describe. Tokens execute. Metrics measure. Diagnostics explain. Conditions activate.

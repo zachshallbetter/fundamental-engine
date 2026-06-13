@@ -1,23 +1,23 @@
 # field-ui
 
-> field-ui is a platform-native relational field runtime for the DOM. The core (`@field-ui/core`)
-> computes renderer-agnostic field behavior; `@field-ui/platform` binds field behavior to the DOM
+> field-ui is a platform-native relational field runtime for the DOM. The core (`@fundamental-engine/core`)
+> computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
-> scheduling; `@field-ui/elements` exposes native HTML and web-component authoring; `@field-ui/react`
+> scheduling; `@fundamental-engine/elements` exposes native HTML and web-component authoring; `@fundamental-engine/react`
 > adapts the same contracts for React. Canvas is one render surface, not the whole system.
 
 Every element can become a body in an invisible physics field via the `data-body` attribute:
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-12 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-13 by apps/site/scripts/gen-llms.mjs.
 
 ## Docs
 
 - [Start here — Overview](https://field-ui.com/docs): the documentation map — install, the IA, the examples, and the agent endpoints
 - [Start here — Your first field](https://field-ui.com/docs/tutorial): step-by-step: npm install to a glowing, reacting headline
 - [Start here — Web component](https://field-ui.com/docs/guides/web-component): the <field-root> element in any framework or plain HTML
-- [Start here — TypeScript](https://field-ui.com/docs/guides/typescript): the typed FieldField class from @field-ui/vanilla — no framework, no custom-element registration
+- [Start here — TypeScript](https://field-ui.com/docs/guides/typescript): the typed FieldField class from @fundamental-engine/vanilla — no framework, no custom-element registration
 - [Start here — React](https://field-ui.com/docs/guides/react): the <FieldField> component and the useFieldField hook
 - [Start here — Core engine](https://field-ui.com/docs/guides/core): createField on a canvas you own, with an injected host
 - [Concepts — Concepts](https://field-ui.com/docs/concepts): the mental model — bodies, the shared field context, reciprocity, the vocabulary lanes
@@ -58,22 +58,22 @@ render from the same file. Generated 2026-06-12 by apps/site/scripts/gen-llms.mj
 The canonical documents are the project's authority on concepts, terminology, and contracts.
 They live in the repository, not on the site:
 
-- [Canonical documentation map](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/README.md): The documentation map for docs/canonical/ — one line per document and its role.
-- [Field Agent Consumption Model](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-agent-consumption-model.md): The Field Agent Consumption Model: the unified account of what a force acts on and how each target consumes the influence.
-- [field-ui API stability](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-api-stability.md): This document defines the frozen public API surface for field-ui 0.x and the compatibility rules that govern it: what is stable, what is experimental, how versions move, and how the alias window works.
-- [field-ui Authoring and Recipes](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-authoring-and-recipes.md): Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules.
-- [field-ui Definition Document](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-definition-document.md): The canonical concept and operating model.
-- [field-ui documentation standards](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-documentation-standards.md): This document governs how field-ui is described across the docs, the site, and the Lab: the canonical architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the "verify against…
-- [field-ui Interaction and Relationship Model](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
-- [field-ui Invisible Fields](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-invisible-fields.md): The invisible-fields pattern: running the field with no drawn surface at all, so its measurements come back as typography, ink, and anchor.
-- [Natural Fields](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-natural-fields.md): This document defines the Natural Field Translation System — how field-ui translates the four fundamental fields into interface behavior.
-- [field-ui platform architecture](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-platform-architecture.md): This document defines the current @field-ui/platform architecture as of the runtime-platform unification phase (Phase D): the FrameScheduler, the six registries, lintPlatform(), the live <field-root> runtime, and the…
-- [field-ui System Contracts](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-system-contracts.md): Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform.
-- [field-ui Testing and Conformance](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-testing-and-conformance.md): The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage.
-- [Time in the Field](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-time.md): How field-ui handles time: the three clocks (simulation, experiential, world), the temporal kernels, and the declared-timestamp contract (data-field-at).
-- [field-ui Visual Language and Geometry System](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/field-ui-visual-language-and-geometry.md): Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics.
-- [Fundamental Field Behavior Table for field-ui](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
-- [Visualization Methods Taxonomy for field-ui](https://github.com/zachshallbetter/field-ui/blob/main/docs/canonical/visualization-methods-taxonomy.md): Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction.
+- [Canonical documentation map](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/README.md): The documentation map for docs/canonical/ — one line per document and its role.
+- [Field Agent Consumption Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-agent-consumption-model.md): The Field Agent Consumption Model: the unified account of what a force acts on and how each target consumes the influence.
+- [field-ui API stability](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-api-stability.md): This document defines the frozen public API surface for field-ui 0.x and the compatibility rules that govern it: what is stable, what is experimental, how versions move, and how the alias window works.
+- [field-ui Authoring and Recipes](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-authoring-and-recipes.md): Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules.
+- [field-ui Definition Document](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-definition-document.md): The canonical concept and operating model.
+- [field-ui documentation standards](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-documentation-standards.md): This document governs how field-ui is described across the docs, the site, and the Lab: the canonical architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the "verify against…
+- [field-ui Interaction and Relationship Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
+- [field-ui Invisible Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-invisible-fields.md): The invisible-fields pattern: running the field with no drawn surface at all, so its measurements come back as typography, ink, and anchor.
+- [Natural Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-natural-fields.md): This document defines the Natural Field Translation System — how field-ui translates the four fundamental fields into interface behavior.
+- [field-ui platform architecture](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-platform-architecture.md): This document defines the current @fundamental-engine/platform architecture as of the runtime-platform unification phase (Phase D): the FrameScheduler, the six registries, lintPlatform(), the live <field-root> runtime…
+- [field-ui System Contracts](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-system-contracts.md): Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform.
+- [field-ui Testing and Conformance](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-testing-and-conformance.md): The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage.
+- [Time in the Field](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-time.md): How field-ui handles time: the three clocks (simulation, experiential, world), the temporal kernels, and the declared-timestamp contract (data-field-at).
+- [field-ui Visual Language and Geometry System](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-visual-language-and-geometry.md): Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics.
+- [Fundamental Field Behavior Table for field-ui](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
+- [Visualization Methods Taxonomy for field-ui](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/visualization-methods-taxonomy.md): Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction.
 
 ## Examples
 
@@ -97,7 +97,7 @@ counts when its source is reachable:
 ## Optional
 
 - [llms-full.txt](https://field-ui.com/llms-full.txt): every canonical document, concatenated into one file
-- [GitHub repository](https://github.com/zachshallbetter/field-ui): the monorepo — core, platform, elements, react, vanilla, and this site
+- [GitHub repository](https://github.com/zachshallbetter/fundamental-engine): the monorepo — core, platform, elements, react, vanilla, and this site
 - [Writings](https://field-ui.com/writings): the eight-paper research family on the field model
 - [The Lab](https://field-ui.com/lab): a physics detector — fire a particle into any force and verify its law
 - [Design system](https://field-ui.com/design): tokens, the force palette, type, and glyphs

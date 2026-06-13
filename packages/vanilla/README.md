@@ -1,6 +1,6 @@
-# @field-ui/vanilla
+# @fundamental-engine/vanilla
 
-**The framework-free door to [`@field-ui/core`](../core)** — a reciprocal DOM-physics field as a typed
+**The framework-free door to [`@fundamental-engine/core`](../core)** — a reciprocal DOM-physics field as a typed
 `FieldField` class and the imperative `mountField()`. Elements you mark with `data-body` become forces;
 the single background field reacts to them, and its density reacts back. No custom-element
 registration, no framework dependency, no import side effects.
@@ -10,17 +10,17 @@ registration, no framework dependency, no import side effects.
 ## Install
 
 ```sh
-npm i @field-ui/vanilla
+npm i @fundamental-engine/vanilla
 ```
 
-The only dependency is the zero-dependency core plus [`@field-ui/platform`](../platform) (which supplies
+The only dependency is the zero-dependency core plus [`@fundamental-engine/platform`](../platform) (which supplies
 the browser host). Reach for this from plain TypeScript, or any stack where you want to drive the field
 by hand.
 
 ## The class
 
 ```ts
-import { FieldField } from '@field-ui/vanilla';
+import { FieldField } from '@fundamental-engine/vanilla';
 
 const field = new FieldField({ accent: '#4da3ff', render: 'dots' });
 field.setFormation('wells');
@@ -77,7 +77,7 @@ const field = new FieldField({ canvas: myCanvas, density: 1.2 });
 If you prefer a plain factory over a class, `mountField()` returns the bare `FieldHandle`:
 
 ```ts
-import { mountField } from '@field-ui/vanilla';
+import { mountField } from '@fundamental-engine/vanilla';
 
 const field = mountField({ render: 'trails' });
 // field.destroy() also removes the canvas it created.
@@ -87,7 +87,7 @@ To run the engine on a `<canvas>` with no managed wrapper at all, the host-bundl
 re-exported (this one supplies `browserHost()` for you, unlike the core primitive):
 
 ```ts
-import { createField } from '@field-ui/vanilla';
+import { createField } from '@fundamental-engine/vanilla';
 
 const field = createField(document.querySelector('canvas')!, { accent: '#2dd4bf' });
 ```
@@ -110,19 +110,19 @@ For building UI around the field (a force picker, a legend), the catalog data is
 need no second install: `FORCES`, `FORMATIONS`, `CONDITIONS`, `PALETTE`.
 
 ```ts
-import { FORCES, FORMATIONS } from '@field-ui/vanilla';
+import { FORCES, FORMATIONS } from '@fundamental-engine/vanilla';
 ```
 
 ## Recipes & data binding
 
 To apply a named recipe over your markup or bind data to the field, use `applyRecipe()` / `bindData()`
-from [`@field-ui/platform`](../platform); browse all 64 recipes at
+from [`@fundamental-engine/platform`](../platform); browse all 64 recipes at
 [`/docs/gallery`](https://field-ui.com/docs/gallery).
 
 ## Related
 
-[`@field-ui/core`](../core) · [`@field-ui/platform`](../platform) · [`@field-ui/elements`](../elements)
-· [`@field-ui/react`](../react) · the [documentation map](../../docs/README.md).
+[`@fundamental-engine/core`](../core) · [`@fundamental-engine/platform`](../platform) · [`@fundamental-engine/elements`](../elements)
+· [`@fundamental-engine/react`](../react) · the [documentation map](../../docs/README.md).
 
 ## License
 

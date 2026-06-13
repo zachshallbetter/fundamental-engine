@@ -11,8 +11,8 @@
 //     reweight path then re-settles trust in front of the reader. Once, not a poll: citations
 //     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
-import { logNormalize, recipeById, weightToStrength } from "@field-ui/core";
-import { applyRecipe, threadOverlay, withFlip, type ThreadOverlay } from "@field-ui/platform";
+import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { applyRecipe, threadOverlay, withFlip, type ThreadOverlay } from "@fundamental-engine/platform";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
 import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";

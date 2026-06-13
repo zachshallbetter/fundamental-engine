@@ -1,5 +1,5 @@
 /**
- * @field-ui/platform — the platform-adjacent layer: native-first registries that let the field
+ * @fundamental-engine/platform — the platform-adjacent layer: native-first registries that let the field
  * engine treat the DOM as a connected, measurable, semantic environment. Strict dependency
  * direction: this package depends on `field-ui` (core) for contracts; core never depends on it.
  *
@@ -10,7 +10,7 @@
  * default FieldHost), `createBrowserField()` (createField + browserHost), and the DOM download
  * helpers — so core can import zero DOM.
  */
-import { createField, type FieldHandle, type FieldOptions } from '@field-ui/core';
+import { createField, type FieldHandle, type FieldOptions } from '@fundamental-engine/core';
 import { browserHost } from './browser-host.ts';
 
 export * from './types.ts';

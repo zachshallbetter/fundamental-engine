@@ -1,5 +1,5 @@
 ---
-import { logNormalize, weightToStrength } from "@field-ui/core";
+import { logNormalize, weightToStrength } from "@fundamental-engine/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import { fmtInt } from "../../lib/fmt";
@@ -55,7 +55,7 @@ const SNIP_BODY = `<article
 const SNIP_FORMULA = `// IDENTICAL to /evidence — only the
 // signal changed: citations → ratings.
 // the shape is core's weight primitive:
-import { logNormalize } from "@field-ui/core";
+import { logNormalize } from "@fundamental-engine/core";
 trust = logNormalize(ratings, maxRatings)
       // = log(ratings + 1) / log(maxRatings + 1)
 

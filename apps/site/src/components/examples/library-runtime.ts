@@ -22,8 +22,8 @@
 //     dimmed and labeled — no row removal mid-visit; new entrants are NOT added (the
 //     snapshot's 30 are the page's bodies). Any failure keeps the snapshot.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
-import { logNormalizeBetween, recipeById, weightToStrength } from "@field-ui/core";
-import { applyRecipe } from "@field-ui/platform";
+import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
+import { applyRecipe } from "@fundamental-engine/platform";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";

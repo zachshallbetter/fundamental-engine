@@ -14,7 +14,7 @@
 
 import { Vector3 } from 'three';
 import type { Object3D } from 'three';
-import type { FeedbackChannels, FeedbackSink } from '@field-ui/core';
+import type { FeedbackChannels, FeedbackSink } from '@fundamental-engine/core';
 import type { FieldProjection } from './project.ts';
 
 const _w = new Vector3();
