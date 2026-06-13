@@ -24,9 +24,6 @@ import {
   REGISTER_BODY,
   UNREGISTER_BODY,
   UPDATE_BODY,
-  FIELD_REGISTER_BODY,
-  FIELD_UNREGISTER_BODY,
-  FIELD_UPDATE_BODY,
   type RegisterBodyDetail,
 } from './shadow.ts';
 import { easeFormation } from './formations.ts';
@@ -228,7 +225,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // clear the field's CSS write-back when a still-connected host leaves the field, so it
   // doesn't keep a frozen `--d` glow (a removed light-DOM element is gone, so it needs no clear).
   const clearWriteback = (el: HTMLElement): void => {
-    for (const v of ['--d', '--forces-density', '--field-density', '--load', '--mass', '--entropy', '--coherence', '--temperature'])
+    for (const v of ['--d', '--field-density', '--load', '--mass', '--entropy', '--coherence', '--temperature'])
       el.style.removeProperty(v);
   };
   const onRegister = (e: Event): void => {
@@ -926,7 +923,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // ONE write path (#228): the CSS-var channels always go to the sink — the platform's
       // FeedbackRegistry route (D3) when configured, otherwise the internal default sink
       // (feedback-sink.ts), which performs the same direct writes the engine always made:
-      // `--d`/`--forces-density`/`--field-density`, the heatmap mirror pair, `--load`/`--mass`,
+      // `--d`/`--field-density`, `--field-heatmap-density`, `--load`/`--mass`,
       // plus the measured `--entropy`/`--coherence`/`--temperature`.
       cfg.feedbackSink(writeEl, {
         density: b.d,
@@ -1699,9 +1696,6 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   teardowns.push(host.onBodyEvent(REGISTER_BODY, onRegister as (e: Event) => void));
   teardowns.push(host.onBodyEvent(UNREGISTER_BODY, onUnregister as (e: Event) => void));
   teardowns.push(host.onBodyEvent(UPDATE_BODY, onUpdateBody as (e: Event) => void));
-  teardowns.push(host.onBodyEvent(FIELD_REGISTER_BODY, onRegister as (e: Event) => void));
-  teardowns.push(host.onBodyEvent(FIELD_UNREGISTER_BODY, onUnregister as (e: Event) => void));
-  teardowns.push(host.onBodyEvent(FIELD_UPDATE_BODY, onUpdateBody as (e: Event) => void));
   onScroll();
   raf = host.raf(frame);
 
@@ -1776,7 +1770,6 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         heatmap = null;
         for (const b of bodies) {
           const el = b.writeTarget ?? b.el;
-          el.style.removeProperty('--forces-heatmap-density');
           el.style.removeProperty('--field-heatmap-density');
         }
       }

@@ -15,9 +15,7 @@ import type { FieldHandle } from '@fundamental-engine/core';
 import {
   bodyElements,
   REGISTER_BODY,
-  FIELD_REGISTER_BODY,
   UNREGISTER_BODY,
-  FIELD_UNREGISTER_BODY,
   type FeedbackSink,
   type RegisterBodyDetail,
 } from '@fundamental-engine/core';
@@ -185,9 +183,9 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
   const onUnregister = (e: Event): void => unregisterShadowBody(platform.measure, detailOf(e));
   const wired: Array<[string, EventListener]> = [];
   if (doc) {
-    for (const name of [REGISTER_BODY, FIELD_REGISTER_BODY]) doc.addEventListener(name, onRegister as EventListener);
-    for (const name of [UNREGISTER_BODY, FIELD_UNREGISTER_BODY]) doc.addEventListener(name, onUnregister as EventListener);
-    wired.push([REGISTER_BODY, onRegister as EventListener], [FIELD_REGISTER_BODY, onRegister as EventListener], [UNREGISTER_BODY, onUnregister as EventListener], [FIELD_UNREGISTER_BODY, onUnregister as EventListener]);
+    doc.addEventListener(REGISTER_BODY, onRegister as EventListener);
+    doc.addEventListener(UNREGISTER_BODY, onUnregister as EventListener);
+    wired.push([REGISTER_BODY, onRegister as EventListener], [UNREGISTER_BODY, onUnregister as EventListener]);
   }
   const unwireShadow = (): void => {
     if (doc) for (const [name, fn] of wired) doc.removeEventListener(name, fn);
