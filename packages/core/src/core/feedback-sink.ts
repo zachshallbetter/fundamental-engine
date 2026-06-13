@@ -7,9 +7,11 @@
  * write now flows through the ONE sink contract, so instrumentation, lint, and future throttling
  * see every write regardless of which sink is installed.
  *
- * Engine-internal plumbing: not exported from the package index, not public API. The platform
- * route (`makeFeedbackSink` in @fundamental-engine/elements) replaces this sink when the platform runtime
- * is on; both honor the same {@link FeedbackChannels} contract.
+ * `defaultFeedbackSink` is engine-internal plumbing (the default at `createField`); the same write
+ * path is exported publicly as {@link cssFeedbackSink} below — the named "CSS adapter" so a host can
+ * install it explicitly and a non-DOM host can clearly opt out. The platform route
+ * (`makeFeedbackSink` in @fundamental-engine/elements) replaces the sink when the platform runtime is
+ * on; all three honor the same plain-data {@link FeedbackChannels} contract.
  *
  * DOM boundary note: this writes via the same `el.style` / `dispatchEvent` element members the
  * engine has always used on injected nodes — it touches no DOM *globals*, so the empty-allowlist
@@ -65,3 +67,15 @@ export const defaultFeedbackSink: FeedbackSink = (el, ch) => {
     }
   }
 };
+
+/**
+ * The CSS-variable feedback **adapter** — the public name for the DOM write path above. Feedback is
+ * plain data first: the engine emits a {@link FeedbackChannels} record per body, and a sink decides
+ * what to do with it. This adapter is *one* choice — write the channels to the element's CSS custom
+ * properties (`--d`, `--field-density`, `--load`, `--lit`, …) so an author's stylesheet reacts with
+ * no JS. The DOM door (`createField` / `@fundamental-engine/vanilla` / `<field-root>`) installs it by
+ * default; a non-DOM host (e.g. `@fundamental-engine/three`'s `FieldLayer`) passes its own
+ * `feedbackSink` and never goes near CSS. Pass `createField({ feedbackSink: cssFeedbackSink })`
+ * explicitly when you want the CSS behavior on a hand-wired host.
+ */
+export const cssFeedbackSink: FeedbackSink = defaultFeedbackSink;
