@@ -1,6 +1,6 @@
 {
   "name": "@field-ui/elements",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Web-component keystone for field-ui — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
