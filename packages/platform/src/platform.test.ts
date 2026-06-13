@@ -63,7 +63,7 @@ test('StateRegistry holds typed values and notifies on change only', () => {
   assert.deepEqual(s.get(el, 'pull'), { type: 'vector2', x: 1, y: -1 });
 });
 
-test('FeedbackRegistry writes bound vars (dual --field/--forces) on flush', () => {
+test('FeedbackRegistry writes bound vars on flush', () => {
   const s = new StateRegistry();
   const f = new FeedbackRegistry();
   const el = fakeEl({ x: 0, y: 0, w: 1, h: 1 });
@@ -71,11 +71,9 @@ test('FeedbackRegistry writes bound vars (dual --field/--forces) on flush', () =
   s.set(el, 'density', 0.5);
   f.flush(s, 0);
   assert.equal(el.props['--field-density'], '0.500');
-  assert.equal(el.props['--forces-density'], '0.500', 'mirrored to the forces alias');
   f.set(el, { '--field-heat': 0.25 });
   f.flush(s, 0);
   assert.equal(el.props['--field-heat'], '0.25');
-  assert.equal(el.props['--forces-heat'], '0.25');
 });
 
 test('FeedbackRegistry.clearVar removes a stale bound var when its state goes absent', () => {
@@ -83,31 +81,28 @@ test('FeedbackRegistry.clearVar removes a stale bound var when its state goes ab
   const f = new FeedbackRegistry();
   const el = fakeEl({ x: 0, y: 0, w: 1, h: 1 });
   f.bind(el, { confidence: '--field-confidence' });
-  // host supplied confidence on an earlier frame → var written (with the --forces mirror)
+  // host supplied confidence on an earlier frame → var written
   s.set(el, 'confidence', 0.3);
   f.flush(s, 0);
   assert.equal(el.props['--field-confidence'], '0.300');
-  assert.equal(el.props['--forces-confidence'], '0.300');
   // host stops supplying it: drop the state and clear the bound var. flush() alone would only skip
   // re-writing — the previously written value would otherwise linger and read as last-known.
   s.delete(el, 'confidence');
   f.clearVar(el, 'confidence');
   f.flush(s, 16);
   assert.equal(el.props['--field-confidence'], undefined, 'stale --field-confidence cleared');
-  assert.equal(el.props['--forces-confidence'], undefined, 'the --forces mirror is cleared too');
   // the binding survives, so the var is re-emitted if the metric returns
   s.set(el, 'confidence', 0.8);
   f.flush(s, 32);
   assert.equal(el.props['--field-confidence'], '0.800', 'rebinds on return');
 });
 
-test('FeedbackRegistry fires thresholded, hysteretic events (field:* + forces:* twins)', () => {
+test('FeedbackRegistry fires thresholded, hysteretic field:* events', () => {
   const s = new StateRegistry();
   const f = new FeedbackRegistry();
   const el = fakeEl({ x: 0, y: 0, w: 1, h: 1 });
   const got: string[] = [];
   el.addEventListener('field:lit', () => got.push('field:lit'));
-  el.addEventListener('forces:lit', () => got.push('forces:lit'));
   el.addEventListener('field:dim', () => got.push('field:dim'));
   f.threshold(el, 'field:lit', { metric: 'density', enter: 0.7, exit: 0.4, exitEvent: 'field:dim' });
   s.set(el, 'density', 0.2);
@@ -116,7 +111,7 @@ test('FeedbackRegistry fires thresholded, hysteretic events (field:* + forces:* 
   f.flush(s, 100); // crosses up
   s.set(el, 'density', 0.3);
   f.flush(s, 200); // crosses down
-  assert.deepEqual(got, ['field:lit', 'forces:lit', 'field:dim']);
+  assert.deepEqual(got, ['field:lit', 'field:dim']);
 });
 
 test('createFieldPlatform.tick runs read then write', () => {
@@ -130,15 +125,15 @@ test('createFieldPlatform.tick runs read then write', () => {
   assert.equal(p.measure.for(el)!.rect.width, 100);
 });
 
-test('FeedbackRegistry.cssWritesLastFrame counts actual mutations (mirrored vars = 2, plain = 1)', () => {
+test('FeedbackRegistry.cssWritesLastFrame counts actual mutations (one per var)', () => {
   const s = new StateRegistry();
   const f = new FeedbackRegistry();
   const el = fakeEl({ x: 0, y: 0, w: 10, h: 10 });
-  f.set(el, { '--load': 0.5 }); // plain var → 1 write
-  f.set(el, { '--field-density': 0.3 }); // mirrored to --forces-density → 2 writes
+  f.set(el, { '--load': 0.5 }); // 1 write
+  f.set(el, { '--field-density': 0.3 }); // 1 write
   f.flush(s);
-  assert.equal(f.cssWritesLastFrame(), 3);
-  assert.equal(el.props['--forces-density'], '0.3', 'the mirror really was written');
+  assert.equal(f.cssWritesLastFrame(), 2);
+  assert.equal(el.props['--field-density'], '0.3');
   f.flush(s); // direct queue drained → an idle frame writes nothing
   assert.equal(f.cssWritesLastFrame(), 0);
   // bound vars re-write on every flush while state holds a value — that recurring cost is
@@ -146,7 +141,7 @@ test('FeedbackRegistry.cssWritesLastFrame counts actual mutations (mirrored vars
   f.bind(el, { density: '--field-density' });
   s.set(el, 'density', 0.8);
   f.flush(s);
-  assert.equal(f.cssWritesLastFrame(), 2);
+  assert.equal(f.cssWritesLastFrame(), 1);
   f.flush(s);
-  assert.equal(f.cssWritesLastFrame(), 2, 'bound writes recur each frame');
+  assert.equal(f.cssWritesLastFrame(), 1, 'bound writes recur each frame');
 });

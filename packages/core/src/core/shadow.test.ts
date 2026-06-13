@@ -5,14 +5,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ForcesController,
+  FieldController,
   ShadowRegistry,
   REGISTER_BODY,
   UNREGISTER_BODY,
   UPDATE_BODY,
-  FIELD_REGISTER_BODY,
-  FIELD_UNREGISTER_BODY,
-  FIELD_UPDATE_BODY,
 } from './shadow.ts';
 import { bodyFromElement } from './scanner.ts';
 
@@ -30,7 +27,13 @@ function fakeHost(attrs: Record<string, string> = {}, connected = true): HTMLEle
   return el;
 }
 
-test('ForcesController dispatches composed register/update/unregister carrying the host', () => {
+test('the registration event constants carry the field:* namespace', () => {
+  assert.equal(REGISTER_BODY, 'field:register-body');
+  assert.equal(UNREGISTER_BODY, 'field:unregister-body');
+  assert.equal(UPDATE_BODY, 'field:update-body');
+});
+
+test('FieldController dispatches composed register/update/unregister carrying the host', () => {
   const host = fakeHost({ body: 'attract' });
   const seen: { type: string; el: unknown; composed: boolean; bubbles: boolean }[] = [];
   const record = (type: string) => (e: Event) => {
@@ -41,7 +44,7 @@ test('ForcesController dispatches composed register/update/unregister carrying t
   host.addEventListener(UPDATE_BODY, record('update'));
   host.addEventListener(UNREGISTER_BODY, record('unregister'));
 
-  const c = new ForcesController(host);
+  const c = new FieldController(host);
   c.connect();
   c.update();
   c.disconnect();
@@ -51,59 +54,16 @@ test('ForcesController dispatches composed register/update/unregister carrying t
   assert.ok(seen.every((s) => s.composed && s.bubbles), 'events cross the shadow boundary');
 });
 
-// ── field-ui migration: event aliases (docs/planning-archive/field-ui-migration-plan.md §15) ──────────────────
-test('field:* event constants carry the field namespace', () => {
-  assert.equal(FIELD_REGISTER_BODY, 'field:register-body');
-  assert.equal(FIELD_UNREGISTER_BODY, 'field:unregister-body');
-  assert.equal(FIELD_UPDATE_BODY, 'field:update-body');
-});
-
-test('ForcesController dispatches BOTH forces:* and field:* twins for each action', () => {
+test('FieldController fires exactly one event per action — no alias twin', () => {
   const host = fakeHost({ body: 'attract' });
-  const fired: string[] = [];
-  const mark = (name: string) => () => void fired.push(name);
-  // listen on the old AND the new namespace
-  host.addEventListener(REGISTER_BODY, mark('forces:register'));
-  host.addEventListener(UNREGISTER_BODY, mark('forces:unregister'));
-  host.addEventListener(UPDATE_BODY, mark('forces:update'));
-  host.addEventListener(FIELD_REGISTER_BODY, mark('field:register'));
-  host.addEventListener(FIELD_UNREGISTER_BODY, mark('field:unregister'));
-  host.addEventListener(FIELD_UPDATE_BODY, mark('field:update'));
-
-  const c = new ForcesController(host);
+  let count = 0;
+  host.addEventListener(REGISTER_BODY, () => void count++);
+  const c = new FieldController(host);
   c.connect();
-  c.update();
-  c.disconnect();
-
-  // each action reaches a listener on either namespace — a rename is not complete until both work
-  assert.deepEqual(fired, [
-    'forces:register',
-    'field:register',
-    'forces:update',
-    'field:update',
-    'forces:unregister',
-    'field:unregister',
-  ]);
+  assert.equal(count, 1, 'connect dispatches one field:register-body, not a twin');
 });
 
-test('field:* registration event carries the same composed host detail as forces:*', () => {
-  const host = fakeHost({ body: 'repel' });
-  let forcesDetail: unknown;
-  let fieldDetail: unknown;
-  let composed = false;
-  host.addEventListener(REGISTER_BODY, (e) => void (forcesDetail = (e as CustomEvent).detail.element));
-  host.addEventListener(FIELD_REGISTER_BODY, (e) => {
-    const ce = e as CustomEvent;
-    fieldDetail = ce.detail.element;
-    composed = ce.composed && ce.bubbles;
-  });
-  new ForcesController(host).connect();
-  assert.equal(fieldDetail, host, 'field:register-body detail.element is the host');
-  assert.equal(fieldDetail, forcesDetail, 'both namespaces carry an identical payload');
-  assert.ok(composed, 'field:* events also cross the shadow boundary');
-});
-
-test('ForcesController forwards extra detail (getRect, writeTarget, attrs)', () => {
+test('FieldController forwards extra detail (getRect, writeTarget, attrs)', () => {
   const host = fakeHost();
   const target = fakeHost();
   const rect = () => host.getBoundingClientRect();
@@ -111,7 +71,7 @@ test('ForcesController forwards extra detail (getRect, writeTarget, attrs)', () 
   host.addEventListener(REGISTER_BODY, (e) => {
     got = (e as CustomEvent).detail;
   });
-  new ForcesController(host, { getRect: rect, writeTarget: target, attrs: { body: 'repel' } }).connect();
+  new FieldController(host, { getRect: rect, writeTarget: target, attrs: { body: 'repel' } }).connect();
   assert.equal(got.element, host);
   assert.equal(got.getRect, rect);
   assert.equal(got.writeTarget, target);

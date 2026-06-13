@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ForcesField, mountField, createField } from './index.ts';
+import { FieldField, mountField, createField } from './index.ts';
 
 /**
  * A throwaway, zero-dependency DOM stub — just enough surface for `createField` to construct
@@ -70,7 +70,7 @@ function installDOM(): { body: { children: unknown[] }; makeCanvas: () => StubCa
 test('re-exports the imperative surface', () => {
   assert.equal(typeof createField, 'function');
   assert.equal(typeof mountField, 'function');
-  assert.equal(typeof ForcesField, 'function');
+  assert.equal(typeof FieldField, 'function');
 });
 
 test('mountField appends a managed canvas and destroy() removes it', () => {
@@ -82,9 +82,9 @@ test('mountField appends a managed canvas and destroy() removes it', () => {
   assert.equal(body.children.length, 0);
 });
 
-test('new ForcesField() manages its canvas and forwards the full handle', () => {
+test('new FieldField() manages its canvas and forwards the full handle', () => {
   const { body } = installDOM();
-  const field = new ForcesField({ accent: '#4da3ff' });
+  const field = new FieldField({ accent: '#4da3ff' });
   assert.equal(body.children.length, 1);
   assert.equal(field.canvas, body.children[0]);
   const methods = [
@@ -108,10 +108,10 @@ test('new ForcesField() manages its canvas and forwards the full handle', () => 
   assert.equal(body.children.length, 0);
 });
 
-test('ForcesField drives a canvas you own without creating or removing one', () => {
+test('FieldField drives a canvas you own without creating or removing one', () => {
   const { body, makeCanvas } = installDOM();
   const own = makeCanvas();
-  const field = new ForcesField({ canvas: own });
+  const field = new FieldField({ canvas: own });
   assert.equal(body.children.length, 0); // we did not append it
   assert.equal(field.canvas, own);
   field.destroy();
@@ -122,7 +122,7 @@ test('ForcesField drives a canvas you own without creating or removing one', () 
 
 test('setAccent() accepts a hex string without throwing', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setAccent('#ff6e9c'));
   assert.doesNotThrow(() => field.setAccent('#4da3ff'));
   field.destroy();
@@ -130,7 +130,7 @@ test('setAccent() accepts a hex string without throwing', () => {
 
 test('setVisible() toggles without throwing (draw-skip is engine-internal)', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setVisible(false));
   assert.doesNotThrow(() => field.setVisible(true));
   field.destroy();
@@ -138,7 +138,7 @@ test('setVisible() toggles without throwing (draw-skip is engine-internal)', () 
 
 test('setBackground() switches the substrate live without throwing, both directions', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setBackground('transparent')); // underlay over light content
   assert.doesNotThrow(() => field.setBackground('opaque')); // back to the near-black substrate
   field.destroy();
@@ -146,14 +146,14 @@ test('setBackground() switches the substrate live without throwing, both directi
 
 test('background: "transparent" is accepted at construction (additive option)', () => {
   installDOM();
-  const field = new ForcesField({ background: 'transparent' });
+  const field = new FieldField({ background: 'transparent' });
   assert.doesNotThrow(() => field.setRender('trails')); // the transparent-trails fade path
   field.destroy();
 });
 
 test('setPalette() accepts a built-in name or a custom hex array', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setPalette('ours'));
   assert.doesNotThrow(() => field.setPalette(['#111111', '#222222', '#333333']));
   field.destroy();
@@ -161,7 +161,7 @@ test('setPalette() accepts a built-in name or a custom hex array', () => {
 
 test('setFormation() accepts every valid formation id', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   const formations = ['ambient', 'wells', 'lanes', 'scatter', 'accretion'] as const;
   for (const f of formations) {
     assert.doesNotThrow(() => field.setFormation(f), `setFormation('${f}')`);
@@ -171,14 +171,14 @@ test('setFormation() accepts every valid formation id', () => {
 
 test('setFormation() with an unknown name does not throw', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setFormation('nonexistent-formation'));
   field.destroy();
 });
 
 test('setAttention() toggles the attention budget without throwing', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setAttention(true));
   assert.doesNotThrow(() => field.setAttention(false));
   assert.doesNotThrow(() => field.setAttention(true));
@@ -187,7 +187,7 @@ test('setAttention() toggles the attention budget without throwing', () => {
 
 test('setCausality() toggles cross-boundary density without throwing', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setCausality(true));
   assert.doesNotThrow(() => field.setCausality(false));
   field.destroy();
@@ -195,7 +195,7 @@ test('setCausality() toggles cross-boundary density without throwing', () => {
 
 test('setHeatmap() toggles the density heatmap layer without throwing', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setHeatmap(true));
   assert.doesNotThrow(() => field.setHeatmap(false));
   field.destroy();
@@ -203,7 +203,7 @@ test('setHeatmap() toggles the density heatmap layer without throwing', () => {
 
 test('setRender() accepts all eight render modes', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   const modes = ['dots', 'trails', 'links', 'metaballs', 'voronoi', 'streamlines', 'flow', 'none'] as const;
   for (const mode of modes) {
     assert.doesNotThrow(() => field.setRender(mode), `setRender('${mode}')`);
@@ -213,7 +213,7 @@ test('setRender() accepts all eight render modes', () => {
 
 test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   const modes = [
     'streamlines',
     'force-vectors',
@@ -233,7 +233,7 @@ test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)',
 
 test('setOverlay() accepts an additive stack of readings (Field Surfaces)', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.setOverlay(['grid', 'path']), 'two readings stack');
   assert.doesNotThrow(() => field.setOverlay(['streamlines', 'temperature', 'data']), 'three readings stack');
   assert.doesNotThrow(() => field.setOverlay([]), 'empty stack clears');
@@ -243,7 +243,7 @@ test('setOverlay() accepts an additive stack of readings (Field Surfaces)', () =
 
 test('threads() accepts a ThreadLink array and null', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   const fakeEl = {} as HTMLElement;
   assert.doesNotThrow(() => field.threads([{ a: fakeEl, b: fakeEl, color: '#ffffff' }]));
   assert.doesNotThrow(() => field.threads(null));
@@ -252,7 +252,7 @@ test('threads() accepts a ThreadLink array and null', () => {
 
 test('burst() fires without crashing at arbitrary coordinates', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.burst(400, 300));
   assert.doesNotThrow(() => field.burst(0, 0, '#4da3ff'));
   assert.doesNotThrow(() => field.burst(9999, 9999));
@@ -261,7 +261,7 @@ test('burst() fires without crashing at arbitrary coordinates', () => {
 
 test('scan() and rescan() run without crashing', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   assert.doesNotThrow(() => field.scan());
   assert.doesNotThrow(() => field.rescan());
   field.destroy();
@@ -269,7 +269,7 @@ test('scan() and rescan() run without crashing', () => {
 
 test('destroy() is idempotent — calling it twice does not throw', () => {
   installDOM();
-  const field = new ForcesField();
+  const field = new FieldField();
   field.destroy();
   assert.doesNotThrow(() => field.destroy());
 });

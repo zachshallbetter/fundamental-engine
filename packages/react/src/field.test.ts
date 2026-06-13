@@ -67,15 +67,13 @@ function installDOM(): { body: { children: unknown[] }; makeCanvas: () => StubCa
 // Import from the built dist (`.tsx` isn't natively loadable by node --test;
 // the build output is plain `.js`).
 
-test('re-exports FieldField, ForcesField, useFieldField, useForcesField', async () => {
+test('re-exports FieldField and useFieldField', async () => {
   const mod = await import('../dist/index.js');
   assert.equal(typeof mod.FieldField, 'function');
-  assert.equal(typeof mod.ForcesField, 'function');
   assert.equal(typeof mod.useFieldField, 'function');
-  assert.equal(typeof mod.useForcesField, 'function');
-  // deprecated aliases forward to the canonical names
-  assert.equal(mod.ForcesField, mod.FieldField);
-  assert.equal(mod.useForcesField, mod.useFieldField);
+  // the deprecated Forces* aliases are gone
+  assert.equal('ForcesField' in mod, false);
+  assert.equal('useForcesField' in mod, false);
 });
 
 // ── overlay canvas wiring (via createBrowserField) ───────────────────────────

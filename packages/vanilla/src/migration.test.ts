@@ -1,15 +1,17 @@
 /**
- * field-ui migration: the vanilla `FieldField` alias (docs/planning-archive/field-ui-migration-plan.md §3) is the
- * same class as `ForcesField`, so existing imports and the field-first name resolve identically.
+ * The vanilla door exposes the field-first names only — the deprecated `Forces*` aliases were
+ * removed with the forces-ui alias window.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ForcesField, FieldField, mountField } from './index.ts';
+import * as mod from './index.ts';
 
-test('FieldField is an alias of ForcesField', () => {
-  assert.equal(FieldField, ForcesField);
+test('the deprecated Forces* aliases are gone', () => {
+  assert.equal('ForcesField' in mod, false);
+  assert.equal('ForcesFieldInit' in mod, false);
 });
 
-test('mountField stays field-named and exported', () => {
-  assert.equal(typeof mountField, 'function');
+test('the field-first names stay exported', () => {
+  assert.equal(typeof mod.FieldField, 'function');
+  assert.equal(typeof mod.mountField, 'function');
 });

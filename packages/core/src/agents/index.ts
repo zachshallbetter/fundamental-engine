@@ -29,7 +29,7 @@ export const AGENT_CONTRACTS: readonly ContractMeta[] = [
     mustExist: 'a DOM element + the metrics it receives (density, attention, heat, entropy, coherence, memory, pressure, pull-x/y)',
     mayMutate: 'CSS variables and data-field-* state on its element',
     sideEffectFree: 'metric reads; it must not mutate particles unless also a registered body',
-    testable: 'receives metrics → writes the matching --field-*/--forces-* vars and data bands; respects reduced motion',
+    testable: 'receives metrics → writes the matching --field-* vars and data bands; respects reduced motion',
     inspectable: 'the CSS variables and data-field-* attributes on the element',
   },
   {

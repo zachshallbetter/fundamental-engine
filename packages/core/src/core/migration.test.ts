@@ -37,15 +37,16 @@ test('internal workspace deps point at the @fundamental-engine packages — no l
   }
 });
 
-// ── CSS variable write-both contract (source-level) ─────────────────────────────────────────
-test('density write-back emits both --forces-* and --field-* variables', () => {
+// ── CSS variable write-back contract (source-level) ─────────────────────────────────────────
+test('density write-back emits the --field-* variables (no --forces-* alias)', () => {
   // the engine's one write path is the sink contract (#228): the internal default sink
   // (feedback-sink.ts) performs the direct writes when no platform sink is configured.
   const src = readFileSync(resolve(ROOT, 'packages/core/src/core/feedback-sink.ts'), 'utf8');
-  for (const v of ['--forces-density', '--field-density', '--forces-heatmap-density', '--field-heatmap-density']) {
+  for (const v of ['--d', '--field-density', '--field-heatmap-density']) {
     assert.ok(src.includes(`setProperty('${v}'`), `feedback-sink.ts writes ${v}`);
   }
-  // cleanup must drop the field alias too, so removing a body clears both
+  assert.ok(!src.includes('--forces-'), 'feedback-sink.ts no longer writes any --forces-* alias');
+  // cleanup must drop the field var too, so removing a body clears it
   const fieldSrc = readFileSync(resolve(ROOT, 'packages/core/src/core/field.ts'), 'utf8');
   assert.ok(fieldSrc.includes('--field-density'), 'clearWriteback covers --field-density');
 });

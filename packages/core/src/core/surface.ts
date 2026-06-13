@@ -1,7 +1,7 @@
 /**
  * The decorative full-viewport canvas surface (§13, §18) — one source of truth for the
  * fixed, click-through, behind-everything styling every managed mount uses. The vanilla
- * `mountField` / `ForcesField` and the React `<ForcesField>` render this exact surface; the
+ * `mountField` / `FieldField` and the React `<FieldField>` render this exact surface; the
  * web component styles its shadow host to match.
  */
 

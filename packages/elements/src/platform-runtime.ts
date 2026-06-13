@@ -102,9 +102,7 @@ export function shouldUsePlatformRuntime(el: { getAttribute(name: string): strin
 /**
  * Build a feedback sink (D3) that routes the engine's per-body channels through the platform's
  * FeedbackRegistry. The eased density value is the engine's own — only the *write* moves — so the
- * signal is preserved exactly. FeedbackRegistry mirrors `--field-*` → `--forces-*` and `field:*` →
- * `forces:*`, so both alias families stay live. Writes apply on the platform's write phase (its
- * scheduler tick).
+ * signal is preserved exactly. Writes apply on the platform's write phase (its scheduler tick).
  *
  * Since #228 the sink contract is the engine's ONLY write path: with no sink configured,
  * `createField` installs an internal default sink (`core/feedback-sink.ts`) whose direct writes are
@@ -117,9 +115,9 @@ export function makeFeedbackSink(platform: FieldPlatform): FeedbackSink {
   // match the legacy engine's 3-decimal var formatting exactly, so the platform path is byte-identical.
   const f3 = (n: number): string => n.toFixed(3);
   return (el, ch) => {
-    // density → --d (original) + --field-density (auto-mirrors --forces-density)
+    // density → --d (original) + --field-density
     if (ch.density !== undefined) platform.feedback.set(el, { '--d': f3(ch.density), '--field-density': f3(ch.density) });
-    // heatmap density → --field-heatmap-density (auto-mirrors --forces-heatmap-density)
+    // heatmap density → --field-heatmap-density
     if (ch.heatmapDensity !== undefined) platform.feedback.set(el, { '--field-heatmap-density': f3(ch.heatmapDensity) });
     // accretion load → --load + --mass (back-compat alias)
     if (ch.load !== undefined) platform.feedback.set(el, { '--load': f3(ch.load), '--mass': f3(ch.load) });
@@ -174,7 +172,7 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
     if (shouldDiscoverRelationships(ctx.frame)) platform.relationships.discover(root);
   });
 
-  // D4: shadow-DOM hosts join via composed register/unregister events (forces:* + field:* twins).
+  // D4: shadow-DOM hosts join via composed field:register-body / field:unregister-body events.
   // The host's getRect (for closed roots) flows into MeasurementRegistry's rect override. Listening
   // on the document catches the composed events that bubble out of any shadow tree.
   const doc = root.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
