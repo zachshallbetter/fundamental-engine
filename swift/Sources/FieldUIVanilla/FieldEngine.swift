@@ -36,6 +36,7 @@ final class FieldEngine: FieldHandle {
     private var hoverAccent: RGB?
     private var visible = true
     private var startTime: TimeInterval?
+    private var lastTimestamp: TimeInterval? // previous frame time — drives the frame-rate-independent dt (#434)
     private var lastScrollY: Float = 0
     private var scrollVel: Float = 0
     private var focused: Particle?
@@ -219,7 +220,14 @@ final class FieldEngine: FieldHandle {
         env.volume = vol.size3
         env.t = Float(timestamp - startTime!)
         env.frameN += 1
-        env.dt = host.prefersReducedMotion ? 0 : 1
+        // Frame-rate-independent timestep (#434): the real frame interval normalized to a 60fps
+        // baseline (≈1 at 60fps, ≈0.5 at 120fps), clamped so a long stall can't teleport matter.
+        // Mirrors the JS core (field.ts). Still 0 under reduced motion — the integrator and the
+        // `env.dt` gates read it as the "is the field animating" flag. Position alone is dt-scaled;
+        // forces and friction stay per-frame by design (see applyForce / the integrator).
+        let dtRaw = lastTimestamp.map { Float((timestamp - $0) * 60.0) } ?? 1
+        lastTimestamp = timestamp
+        env.dt = host.prefersReducedMotion ? 0 : clamp(dtRaw, 0.2, 2)
         scrollVel = scrollVel * 0.7 + abs(host.scrollY - lastScrollY) * 0.3
         lastScrollY = host.scrollY
         env.scrollV = scrollVel
