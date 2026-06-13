@@ -30,6 +30,9 @@ export interface FieldBodySpec {
   spin?: number;
   /** heading in radians for directional forces (`data-angle`). */
   angle?: number;
+  /** the body's tint (`data-color`) — the `pigment` force dyes passing matter with it, so the
+   *  swarm visibly carries this body's color to wherever it drifts next (conserved color transport). */
+  color?: string;
   /** opt into density/load feedback back onto the mesh (default `true`). */
   feedback?: boolean;
   /** the body's box half-size in field pixels — its footprint, not its range (default 20). */
@@ -97,7 +100,8 @@ class BodyImpl implements FieldBody {
     const half = (spec.sizePx ?? 20) / 2;
     const self = this;
     this.el = {
-      dataset: {},
+      // the scanner reads tint from `el.dataset.color` (not getAttribute), so it lives here
+      dataset: spec.color != null ? { color: spec.color } : {},
       getAttribute: (n) => attrs[n] ?? null,
       hasAttribute: (n) => n in attrs,
       getBoundingClientRect: () => {

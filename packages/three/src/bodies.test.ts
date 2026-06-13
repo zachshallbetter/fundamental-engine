@@ -35,6 +35,13 @@ test('a registered mesh becomes a body element with token attrs + a projected re
   assert.deepEqual(body.data, { genome: 'rose' }, 'the body carries its data record');
 });
 
+test('spec.color lands on the virtual element dataset (the pigment tint the scanner reads)', () => {
+  const reg = new FieldBodyRegistry(new PlaneProjection());
+  reg.add(new Object3D(), { tokens: 'attract pigment', color: '#e86fa4' });
+  const el = (reg.root.querySelectorAll('[data-body]') as unknown as { dataset: Record<string, string> }[])[0]!;
+  assert.equal(el.dataset.color, '#e86fa4', 'dataset.color carries the tint');
+});
+
 test('the rect tracks the mesh as it moves', () => {
   const projection = new PlaneProjection({ width: 1000, height: 600, scale: 0.01 });
   const reg = new FieldBodyRegistry(projection);
