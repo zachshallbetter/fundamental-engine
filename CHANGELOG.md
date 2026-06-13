@@ -15,14 +15,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   explicitly and a non-DOM host (e.g. `@fundamental-engine/three`'s `FieldLayer`) clearly opts out by
   passing its own sink. Behavior is identical — the default for `createField`/vanilla/`<field-root>`
   is unchanged. (#445)
-
-### Added
-
 - **Reactive body params — live `strength`/`range`/`angle`/`spin` without a `rescan()`.** A body's
   hot force params are now re-read from its element on the measure cadence, so changing `data-strength`
   on a DOM body (or calling `FieldBody.set({ strength })` in `@fundamental-engine/three`) takes effect
   within a frame. Only attributes actually present override, so preset/intent bodies are untouched.
   `@fundamental-engine/three`'s `FieldBody` gains `set({ strength, range, angle, spin })`. (#442)
+- **`FieldHandle.sampleScalar(x, y)` — smooth, gradient-capable density sampling.** Returns the
+  diffused density scalar ∈ [0,1] (the heatmap grid, bilinear-sampled) at a point, so its gradient
+  stays meaningful *at* a source — what forage-by-gradient needs (a nearest-body readout flattens
+  there). Requires the heatmap layer (`createField({ heatmap: true })` / `setHeatmap(true)`); returns
+  `0` when off; updated each frame including under `render: 'none'`. Mirrored on
+  `@fundamental-engine/vanilla`, `<field-root>`, and `@fundamental-engine/three`'s `FieldLayer`.
+  Additive. (#440)
 
 ### Fixed
 
