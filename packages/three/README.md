@@ -12,7 +12,42 @@ render its swarm as a `THREE.Points` layer in your own WebGL scene. The same phy
 npm i @field-ui/three three
 ```
 
-`three` is a **peer dependency** — you bring your own version (>= 0.150).
+`three` is a **peer dependency** — you bring your own version. The package is built and tested
+against modern three (≥ 0.150) and uses only long-stable APIs; it runs against builds as old as
+r147 in practice.
+
+### No build step? (CDN / single-file pages)
+
+The package is plain ESM, so a page with no bundler consumes it straight from a CDN. Pin the
+`three` peer to **the same revision your page already uses** so the library and your scene share
+one Three.js:
+
+```html
+<script type="module">
+  // ?deps pins the peer; match it to your page's three version
+  import * as FieldUI from "https://esm.sh/@field-ui/three@0.3.1?deps=three@0.147.0";
+  window.FieldUI = FieldUI;                          // hand it to classic scripts
+  window.dispatchEvent(new Event("fieldui-ready"));  // module scripts are deferred — signal readiness
+</script>
+<script>
+  // a classic script can't await the module — start on the ready signal
+  function startField() {
+    const layer = window.FieldUI.createFieldLayer({ /* … */ });
+    // scene.add(layer.object); tick in your render loop
+  }
+  if (window.FieldUI) startField();
+  else window.addEventListener("fieldui-ready", startField, { once: true });
+</script>
+```
+
+Prefer a fully offline page? Bundle once with esbuild and commit the artifact, mapping the peer
+onto your page's global `THREE`:
+
+```sh
+echo "module.exports = window.THREE" > three-shim.cjs
+npx esbuild node_modules/@field-ui/three/dist/index.js --bundle --format=iife \
+  --global-name=FieldUI --alias:three=./three-shim.cjs --outfile=vendor/field-ui-three.js
+```
 
 ## The particle bridge
 

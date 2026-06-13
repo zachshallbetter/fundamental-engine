@@ -5,9 +5,11 @@ How versions are cut and published. The mechanical detail lives in
 
 ## Versioning policy
 
-The seven published packages — `@field-ui/core`, `@field-ui/platform`, `@field-ui/elements`,
-`@field-ui/react`, `@field-ui/vanilla`, and the meta-packages `@field-ui/kit` / `@field-ui/field-ui` —
-are versioned **together** and follow [Semantic Versioning](https://semver.org):
+The eight published packages — `@field-ui/core`, `@field-ui/platform`, `@field-ui/elements`,
+`@field-ui/react`, `@field-ui/vanilla`, `@field-ui/three`, and the meta-packages `@field-ui/kit` /
+`@field-ui/field-ui` — are versioned **together**. (`@field-ui/three` declares `three` as a peer
+dependency and is deliberately *not* part of `@field-ui/kit`, so the kit never forces a Three.js
+install.) They follow [Semantic Versioning](https://semver.org):
 
 - **patch** (`0.2.x`) — bug fixes, internal changes, **and additive backward-compatible features**
   (a new force, a new `FieldOption`, a new `FieldHandle` method). Pre-1.0, additions land in a patch —

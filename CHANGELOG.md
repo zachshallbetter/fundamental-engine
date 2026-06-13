@@ -7,8 +7,18 @@ git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-06-12
+
+`@field-ui/three` joins the published family — the Three.js authoring surface (the engine headless,
+its swarm and structure rendered in a WebGL scene), plus the two engine read-outs it consumes. All
+additive; the frozen API surface is unchanged.
+
 ### Added
 
+- **`FieldBodySpec.color` — pigment tint on mesh-bodies (`@field-ui/three`).** The scanner reads a
+  body's tint from `el.dataset.color` (the `pigment` force's conserved color transport); the virtual
+  element now carries it from the spec, so a registered mesh can dye passing matter with its color.
+  (#418)
 - **`FieldHandle.sample(x, y)` — read the live field at a point.** Returns the net force a still test
   particle would feel as `{ x, y }` (a thin wrapper over `forceAt(bodies, forces, env)`): pure,
   read-only, samplable at any resolution. The seam external 3D visualizers consume to build their own
