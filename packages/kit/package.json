@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/kit",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "The whole Fundamental suite in one install — the engine (@fundamental-engine/core), the DOM platform, and the web-component, React, and vanilla adapters. A meta-package: install it, then import from the specific @fundamental-engine/* package you need.",
   "type": "module",
   "license": "MIT",

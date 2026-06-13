@@ -7,6 +7,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-06-13
+
 ### Changed
 
 - **Renamed: `@field-ui/*` → `@fundamental-engine/*`.** The project is now **Fundamental**
