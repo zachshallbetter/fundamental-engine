@@ -1865,6 +1865,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       return n;
     },
     energy: () => energyReport(store.particles),
+    sample: (x, y) => {
+      const { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
+      return { x: fx, y: fy };
+    },
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;

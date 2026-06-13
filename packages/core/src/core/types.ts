@@ -561,6 +561,17 @@ export interface FieldHandle {
    */
   energy(): { kinetic: number; thermal: number; total: number; count: number };
   /**
+   * Sample the live field at a point: the net force a still test particle would feel there — the
+   * superposition of every visible body's influence (attract/gravity wells, charge/magnetism
+   * dipole structure, flow bias, …). Returns the force vector as `{ x, y }` in field-pixel space.
+   * Pure and read-only (no pool mutation), safe to call any time and at any spatial resolution —
+   * the engine does not pre-bake a grid. The seam external visualizers consume to build their own
+   * field geometry: vector grids, streamline tubes, mesh displacement. `@field-ui/three`'s
+   * `vectorField` / `streamlineTubes` are the first consumers. Thin wrapper over the existing
+   * `forceAt(bodies, forces, env, x, y)`.
+   */
+  sample(x: number, y: number): Vec2;
+  /**
    * Copy live particle state into a caller-owned buffer and return the number of particles
    * written. Stride 5, packed `[x, y, z, heat, size, …]` in CSS-pixel field coordinates — the
    * layout maps straight onto a renderer's vertex buffer (e.g. a `THREE.BufferAttribute`), so an

@@ -247,6 +247,11 @@ export class FieldField extends HTMLElementBase {
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field?.energy() ?? { kinetic: 0, thermal: 0, total: 0, count: 0 };
   }
+  /** sample the live field at `(x, y)` — the net force vector a still test particle would feel
+   *  (zero before the field starts). The seam external visualizers consume to build field geometry. */
+  sample(x: number, y: number): { x: number; y: number } {
+    return this.field?.sample(x, y) ?? { x: 0, y: 0 };
+  }
 
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).

@@ -31,6 +31,12 @@ export { ParticlePool } from './particles.ts';
 export type { ParticlePoolOptions, ParticleStyle } from './particles.ts';
 export { PlaneProjection, VolumeProjection } from './project.ts';
 export type { FieldProjection, PlaneProjectionOptions, VolumeProjectionOptions } from './project.ts';
+// Meshes as bodies — register an Object3D as a field body carrying a data record.
+export { FieldBodyRegistry } from './bodies.ts';
+export type { FieldBody, FieldBodySpec } from './bodies.ts';
+// Native 3D field visuals — vector grids + streamline tubes from FieldHandle.sample().
+export { vectorField, streamlineTubes, traceStreamline } from './samplers.ts';
+export type { FieldSampler, FieldVisual, VectorFieldOptions, StreamlineTubesOptions } from './samplers.ts';
 
 // Re-export the field samplers from core so a Three.js consumer building its own field visuals
 // (3D streamline tubes, vector grids, density) has them without a second import.
