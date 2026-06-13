@@ -5,7 +5,7 @@ Generated: 2026-06-13 by apps/site/scripts/gen-llms.mjs
 Files: 16
 
 These are the project's canonical documents — the authority on concepts, terminology, and
-contracts — concatenated in filename order. The live site map is https://field-ui.com/llms.txt.
+contracts — concatenated in filename order. The live site map is https://fundamental-engine.com/llms.txt.
 
 ========================================================================
 FILE: README.md
@@ -706,7 +706,7 @@ Example:
 
 > **Implemented.** All **sixty-four** ship as validated `FieldRecipe`s in
 > `packages/core/src/recipes/catalog.ts` (`FIELD_RECIPES`; `gallery.ts` re-exports it), grouped into four tiers (`RECIPE_TIERS`),
-> live on [`/docs/gallery`](https://field-ui.com/docs/gallery). They are the four-field translation
+> live on [`/docs/gallery`](https://fundamental-engine.com/docs/gallery). They are the four-field translation
 > model made practical — and classification/authoring artifacts only: they **compose existing
 > primitives and add no new engine behavior**. Eight are the recommended first-release set
 > (`FIRST_RELEASE_RECIPE_IDS`).
@@ -1582,10 +1582,10 @@ Conserved attention mode:
 Suggested DOM variables:
 
 ```css
---forces-attention
---forces-attention-share
---forces-attention-rank
---forces-related-attention
+--field-attention
+--field-attention-share
+--field-attention-rank
+--field-related-attention
 ```
 
 Key phrase:
@@ -1743,9 +1743,9 @@ desire paths
 Suggested outputs:
 
 ```css
---forces-memory
---forces-path-use
---forces-user-wake
+--field-memory
+--field-path-use
+--field-user-wake
 ```
 
 ## 12. Events as Field Thresholds
@@ -1777,15 +1777,15 @@ Field events should be thresholded, debounced, and inspectable.
 Possible outputs:
 
 ```css
---forces-density
---forces-attention
---forces-pressure
---forces-coherence
---forces-entropy
---forces-memory
---forces-pull-x
---forces-pull-y
---forces-layout-shift
+--field-density
+--field-attention
+--field-pressure
+--field-coherence
+--field-entropy
+--field-memory
+--field-pull-x
+--field-pull-y
+--field-layout-shift
 ```
 
 Example:
@@ -1794,10 +1794,10 @@ Example:
 .card {
   transform:
     translate(
-      calc(var(--forces-pull-x, 0) * 12px),
-      calc(var(--forces-pull-y, 0) * 12px)
+      calc(var(--field-pull-x, 0) * 12px),
+      calc(var(--field-pull-y, 0) * 12px)
     )
-    scale(calc(1 + var(--forces-attention, 0) * 0.04));
+    scale(calc(1 + var(--field-attention, 0) * 0.04));
 }
 ```
 
@@ -2433,7 +2433,7 @@ Each diagnostic answers "which invisible relation am I revealing?"
 | Inspector | all of the above | system |
 
 All diagnostic render modes are shipped — see [visualization-methods-taxonomy.md](visualization-methods-taxonomy.md)
-and the live [/docs/diagnostics](https://field-ui.com/docs/diagnostics).
+and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics).
 
 ## Recipes by meaning
 
@@ -2684,7 +2684,7 @@ unfrozen/experimental.
 
 ## Reading Field
 
-[/docs/reading-field](https://field-ui.com/docs/reading-field) is the flagship demonstration: an
+[/docs/reading-field](https://fundamental-engine.com/docs/reading-field) is the flagship demonstration: an
 ordinary content page (sections, headings, citations, a table of contents) wired to
 `createFieldPlatform`, exercising every registry through the scheduler. Sections are measured bodies;
 viewport-centre proximity becomes attention; attention accumulates into memory; the table of contents

@@ -8,7 +8,7 @@ import remarkMermaid from './src/lib/remark-mermaid.mjs';
 // Static output (default) → apps/site/dist, served by Vercel.
 // The live `<field-root>` element (@fundamental-engine/elements) runs the engine.
 export default defineConfig({
-  site: 'https://field-ui.com',
+  site: 'https://fundamental-engine.com',
   integrations: [
     // sitemap-index.xml + per-chunk sitemaps; referenced from public/robots.txt.
     // The redirect stubs below carry noindex — keep them out of the sitemap too.

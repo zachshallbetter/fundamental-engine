@@ -4,7 +4,7 @@
 render its swarm as a `THREE.Points` layer in your own WebGL scene. The same physics the
 `<field-root>` element and `@fundamental-engine/{vanilla,react}` wrap, bound to a 3D scene instead of the DOM.
 
-→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 

@@ -5,7 +5,7 @@
 the single background field reacts to them, and its density reacts back. No custom-element
 registration, no framework dependency, no import side effects.
 
-→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 
@@ -117,7 +117,7 @@ import { FORCES, FORMATIONS } from '@fundamental-engine/vanilla';
 
 To apply a named recipe over your markup or bind data to the field, use `applyRecipe()` / `bindData()`
 from [`@fundamental-engine/platform`](../platform); browse all 64 recipes at
-[`/docs/gallery`](https://field-ui.com/docs/gallery).
+[`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
 ## Related
 

@@ -5,7 +5,7 @@ relationships, measurements, and feedback all participate in one shared field co
 the field; the field bends them back. The visible particle canvas is one render surface, not the
 whole system.
 
-[![Live demo: field-ui.com](https://img.shields.io/badge/demo-field--ui.com-4da3ff)](https://field-ui.com)
+[![Live demo: fundamental-engine.com](https://img.shields.io/badge/demo-field--ui.com-4da3ff)](https://fundamental-engine.com)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Core runtime dependencies: 0](https://img.shields.io/badge/core%20runtime%20deps-0-2dd4bf)
 ![TypeScript: strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
@@ -119,11 +119,11 @@ Engaging an element (hover, focus, tap) widens its range and amplifies its stren
 - **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`, `memory`. Real field laws: softened inverse-square, Lorentz, Langevin, diffusion, travelling waves.
 - **Designed-extended (19):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`, `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, the `resonate`, `spotlight`, and `screen` modifiers, `pigment` color transport, field-line transport `fieldflow`, and wormhole relocate `warp`.
 
-Forces also carry a four-field classification (gravity / electromagnetic / strong / weak), so the catalog reads as a translation of the four fundamental fields into interface behavior. See [`/docs/natural-fields`](https://field-ui.com/docs/natural-fields).
+Forces also carry a four-field classification (gravity / electromagnetic / strong / weak), so the catalog reads as a translation of the four fundamental fields into interface behavior. See [`/docs/natural-fields`](https://fundamental-engine.com/docs/natural-fields).
 
 **8 presets** compose those primitives into cosmology with no new engine code: `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`.
 
-**16 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`; and the diagnostic modes `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, `prediction`. Live on [`/docs/diagnostics`](https://field-ui.com/docs/diagnostics).
+**16 render modes (all shipped):** the matter/structure modes `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`; and the diagnostic modes `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, `prediction`. Live on [`/docs/diagnostics`](https://fundamental-engine.com/docs/diagnostics).
 
 **Controlled flow.** `field.flowTo(x, y)` places a movable flow focus the field bends toward — it pulls matter in and curves the streamlines; retarget it each frame to follow the pointer, an element, or a path (`field.clearFlow()` to release).
 
@@ -156,11 +156,11 @@ bindData(listEl, tasks, (t) => ({                                // records → 
 }), { recipe: 'priority-well' });
 ```
 
-Browse and run all 64 at the [recipe gallery](https://field-ui.com/docs/gallery), pick apart a compiled plan in the [inspector](https://field-ui.com/docs/inspector), and see the three surfaces wired together in the [starter app](apps/starter). The [concept studies](https://field-ui.com/docs/studies/reading-field) (Reading, Review, Search, System Weather, Evidence) reinterpret familiar pages as data-driven fields, and stay legible with the field off.
+Browse and run all 64 at the [recipe gallery](https://fundamental-engine.com/docs/gallery), pick apart a compiled plan in the [inspector](https://fundamental-engine.com/docs/inspector), and see the three surfaces wired together in the [starter app](apps/starter). The [concept studies](https://fundamental-engine.com/docs/studies/reading-field) (Reading, Review, Search, System Weather, Evidence) reinterpret familiar pages as data-driven fields, and stay legible with the field off.
 
 ## Inspect and verify
 
-**The field is readable, not a black box.** The [inspector](https://field-ui.com/docs/inspector) reads the live platform each frame (the six-phase spine, registry counts, the typed relationship graph, and lint warnings) without mutating it.
+**The field is readable, not a black box.** The [inspector](https://fundamental-engine.com/docs/inspector) reads the live platform each frame (the six-phase spine, registry counts, the typed relationship graph, and lint warnings) without mutating it.
 
 **Verified, not eyeballed.** A conformance framework fires known particles into each force and checks the measured trajectory against the math. The same catalog drives the test suite and the visual Lab. The repository carries **600+ deterministic tests** (core, platform, scheduler, lint, and the site) and a global safety sweep that holds every force finite, bounded in velocity and heat, and conserved in count.
 
@@ -189,9 +189,9 @@ The packages are published to npm under the `@field-ui` scope, **with provenance
 
 ## Documentation
 
-- **Field Manual** at [field-ui.com](https://field-ui.com): every concept running live over the engine.
-- **Lab** at [field-ui.com/lab](https://field-ui.com/lab): fire particles into a force, watch the track, share the result through a URL.
-- **Recipe gallery** at [field-ui.com/docs/gallery](https://field-ui.com/docs/gallery) and the **inspector** at [field-ui.com/docs/inspector](https://field-ui.com/docs/inspector).
+- **Field Manual** at [fundamental-engine.com](https://fundamental-engine.com): every concept running live over the engine.
+- **Lab** at [fundamental-engine.com/lab](https://fundamental-engine.com/lab): fire particles into a force, watch the track, share the result through a URL.
+- **Recipe gallery** at [fundamental-engine.com/docs/gallery](https://fundamental-engine.com/docs/gallery) and the **inspector** at [fundamental-engine.com/docs/inspector](https://fundamental-engine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map (canonical architecture, engine reference, planning archive).
 - [`docs/canonical/field-ui-api-stability.md`](docs/canonical/field-ui-api-stability.md): the frozen `0.x` surface and compatibility rules.
 - [`docs/engine-reference/forces-system.md`](docs/engine-reference/forces-system.md): the full engine specification.

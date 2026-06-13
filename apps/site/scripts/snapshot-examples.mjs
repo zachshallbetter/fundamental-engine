@@ -15,7 +15,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'src/data/examples');
 mkdirSync(OUT, { recursive: true });
 
-const UA = { 'User-Agent': 'field-ui.com snapshot script (hi@zachshallbetter.com)' };
+const UA = { 'User-Agent': 'fundamental-engine.com snapshot script (hi@zachshallbetter.com)' };
 const get = async (url, init = {}) => {
   const res = await fetch(url, { ...init, headers: { ...UA, ...(init.headers ?? {}) } });
   if (!res.ok) throw new Error(`${res.status} ${url}`);

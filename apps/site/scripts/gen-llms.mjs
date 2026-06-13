@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * gen-llms.mjs — agent-first publishing for field-ui.com.
+ * gen-llms.mjs — agent-first publishing for fundamental-engine.com.
  *
  * Generates two files into apps/site/public/ (committed; servable by `astro preview`):
  *
@@ -26,7 +26,7 @@ const site = resolve(here, '..'); // apps/site
 const root = resolve(site, '../..'); // repo root
 const outDir = join(site, 'public');
 
-const SITE_URL = 'https://field-ui.com';
+const SITE_URL = 'https://fundamental-engine.com';
 const CANON_BLOB = 'https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical';
 const DATE = new Date().toISOString().slice(0, 10);
 

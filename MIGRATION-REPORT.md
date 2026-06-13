@@ -50,7 +50,7 @@ so no physics was touched.
 All 29 `from 'forces-ui'` imports, 34 `@forces-ui/*` references, workspace deps, and root script
 filters were updated. Product-name strings in the README, the Astro site (titles, prose, install
 commands, demo copy), CONTRIBUTING, the core module header, and two thrown error messages were
-rebranded to `field-ui`. The production domain was moved to **`field-ui.com`** (Astro `site:`,
+rebranded to `field-ui`. The production domain was moved to **`fundamental-engine.com`** (Astro `site:`,
 canonical/OG URLs, package `homepage` fields, README/docs links). The GitHub repository was renamed
 to **`github.com/zachshallbetter/fundamental-engine`** (the old `forces-ui` URL still redirects); the
 `repository` / `bugs` URLs across all package manifests were updated to match.
@@ -98,7 +98,7 @@ to **`github.com/zachshallbetter/fundamental-engine`** (the old `forces-ui` URL 
 
 ## 7. Follow-up pass (field-first completion, post-adoption)
 
-After field-ui was adopted as the working repo and the domain moved to **field-ui.com**:
+After field-ui was adopted as the working repo and the domain moved to **fundamental-engine.com**:
 
 - **Canonical class/hook names flipped to field-first.** `FieldField` / `FieldController` /
   `FieldCell` / `useFieldField` / `FieldFieldProps` / `FieldFieldInit` are now the canonical

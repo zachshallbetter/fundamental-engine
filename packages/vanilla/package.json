@@ -1,11 +1,11 @@
 {
   "name": "@fundamental-engine/vanilla",
   "version": "0.3.1",
-  "description": "Framework-free TypeScript wrapper for field-ui — the reciprocal DOM-physics field as a typed FieldField class + mountField(), with no custom-element registration and no framework dependency.",
+  "description": "Framework-free TypeScript wrapper for Fundamental — the reciprocal DOM-physics field as a typed FieldField class + mountField(), with no custom-element registration and no framework dependency.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://field-ui.com",
+  "homepage": "https://fundamental-engine.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
@@ -15,7 +15,7 @@
     "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
-    "field-ui",
+    "Fundamental",
     "typescript",
     "vanilla",
     "particles",

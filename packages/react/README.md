@@ -5,7 +5,7 @@ component. Elements you mark with `data-body` become forces; the single backgrou
 them, and its density reacts back. You author meaning in JSX (`data-*` in); the field returns
 measurement (`--field-*` CSS variables out).
 
-→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 
@@ -122,7 +122,7 @@ Router, render it from a Client Component (`'use client'`).
 
 To apply a named recipe or bind data to the field, use `applyRecipe()` / `bindData()` from
 [`@fundamental-engine/platform`](../platform) against a ref'd container. Browse all 64 recipes at
-[`/docs/gallery`](https://field-ui.com/docs/gallery).
+[`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
 ## Aliases
 

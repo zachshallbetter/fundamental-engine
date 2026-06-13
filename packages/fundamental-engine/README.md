@@ -21,4 +21,4 @@ This pulls in [`@fundamental-engine/kit`](https://www.npmjs.com/package/@fundame
 - The whole suite is **[`@fundamental-engine/kit`](https://www.npmjs.com/package/@fundamental-engine/kit)**.
 - Or install just the adapter you need: `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`.
 
-→ **[field-ui.com](https://field-ui.com)**
+→ **[fundamental-engine.com](https://fundamental-engine.com)**

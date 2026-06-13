@@ -14,7 +14,7 @@ pnpm --filter @fundamental-engine/starter build    # bundles the workspace packa
 
 ## What it shows
 
-One recipe — [`priority-well`](https://field-ui.com/docs/gallery#priority-well) — demonstrated three ways. The whole integration lives in [`src/main.ts`](src/main.ts).
+One recipe — [`priority-well`](https://fundamental-engine.com/docs/gallery#priority-well) — demonstrated three ways. The whole integration lives in [`src/main.ts`](src/main.ts).
 
 1. **Declarative.** A single `<field-root>` renders a background field and scans the document for
    `[data-body]` elements. Importing `@fundamental-engine/elements` once is what turns the tag on.

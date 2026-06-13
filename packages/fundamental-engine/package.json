@@ -1,11 +1,11 @@
 {
   "name": "fundamental-engine",
   "version": "0.3.1",
-  "description": "Alias for @fundamental-engine/kit — one install for the whole field-ui suite. Prefer @fundamental-engine/kit, or install the individual @fundamental-engine/* packages directly. (The engine itself is @fundamental-engine/core.)",
+  "description": "Alias for @fundamental-engine/kit — one install for the whole Fundamental suite. Prefer @fundamental-engine/kit, or install the individual @fundamental-engine/* packages directly. (The engine itself is @fundamental-engine/core.)",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://field-ui.com",
+  "homepage": "https://fundamental-engine.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
@@ -15,7 +15,7 @@
     "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
-    "field-ui",
+    "Fundamental",
     "alias",
     "meta",
     "field",

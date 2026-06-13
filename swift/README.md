@@ -3,7 +3,7 @@
 The reciprocal field engine — elements bend the field; the field's density bends them back —
 as a native Swift package for **iOS**, **macOS**, and **visionOS**.
 
-This is a port of the [field-ui](https://field-ui.com) JS engine, not a reinterpretation.
+This is a port of the [field-ui](https://fundamental-engine.com) JS engine, not a reinterpretation.
 The package layout, the API surface, and the physics mirror the npm packages one-to-one;
 where the two diverge it is a bug (or listed under [Parity](#parity) below).
 

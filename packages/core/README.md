@@ -10,7 +10,7 @@ This is the core. Most apps consume it through a thin adapter that wires the bro
 [`@fundamental-engine/vanilla`](../vanilla). Reach for the core directly when you own the render loop or target a
 renderer other than the DOM canvas.
 
-→ Live manual, Lab, and design system at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and design system at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 
@@ -108,7 +108,7 @@ const plan = compileRecipe(recipeById('priority-well')!);
 ```
 
 `applyRecipe()` (run a recipe on a live DOM platform) and `bindData()` (records → bodies) are in
-[`@fundamental-engine/platform`](../platform). Browse all 64 at [`/docs/gallery`](https://field-ui.com/docs/gallery).
+[`@fundamental-engine/platform`](../platform). Browse all 64 at [`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
 ## Renderer-agnostic
 

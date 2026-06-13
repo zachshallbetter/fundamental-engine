@@ -1,6 +1,6 @@
 # @fundamental-engine/kit
 
-**The whole [field-ui](https://field-ui.com) suite in one install.** `@fundamental-engine/kit` is a
+**The whole [field-ui](https://fundamental-engine.com) suite in one install.** `@fundamental-engine/kit` is a
 meta-package: it has no code of its own — it just depends on every published `@fundamental-engine/*` package, so
 a single install pulls the entire stack. Import from the specific package you need.
 
@@ -42,4 +42,4 @@ import { browserHost } from '@fundamental-engine/platform';
 Prefer installing only the packages you use? Skip the kit and `npm i @fundamental-engine/core` (and whichever
 adapter you need) directly.
 
-→ Live manual, Lab, and design system at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and design system at **[fundamental-engine.com](https://fundamental-engine.com)**.

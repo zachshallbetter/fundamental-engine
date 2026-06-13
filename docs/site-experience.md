@@ -1,5 +1,5 @@
 > **Status: as-built.**
-> The design of the field-ui.com documentation and examples experience after the 2026-06
+> The design of the fundamental-engine.com documentation and examples experience after the 2026-06
 > rebuild — what it does, why each piece exists, and where it lives. The conceptual canon for
 > the underlying pattern is [docs/canonical/field-ui-invisible-fields.md](canonical/field-ui-invisible-fields.md);
 > the practices that produced it are [docs/engineering-practices.md](engineering-practices.md).

@@ -5,7 +5,7 @@ web-components-shaped idea: drop one tag, mark up your bodies, and the field run
 plain HTML, unchanged. Semantic HTML stays the source of meaning; the field is a behavior +
 visualization layer on top.
 
-→ Live manual, Lab, and gallery at **[field-ui.com](https://field-ui.com)**.
+→ Live manual, Lab, and gallery at **[fundamental-engine.com](https://fundamental-engine.com)**.
 
 ## Install
 
@@ -106,7 +106,7 @@ when you want one field across a whole page regardless of framework.
 
 To apply a named recipe over your markup (or bind data to it) rather than wire bodies by hand, use
 `applyRecipe()` / `bindData()` from [`@fundamental-engine/platform`](../platform); browse all 64 recipes at
-[`/docs/gallery`](https://field-ui.com/docs/gallery). The starter app in
+[`/docs/gallery`](https://fundamental-engine.com/docs/gallery). The starter app in
 [`apps/starter`](../../apps/starter) shows the declarative element, `applyRecipe`, and `bindData`
 together.
 

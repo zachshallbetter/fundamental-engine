@@ -20,7 +20,7 @@ The repo is a pnpm monorepo:
 | `packages/core` (`field-ui`) | the engine — catalog, contracts, FieldStore, forces, conformance |
 | `packages/elements` (`@fundamental-engine/elements`) | `<field-root>` + the declarative `data-body` keystone |
 | `packages/react` (`@fundamental-engine/react`) | the React adapter |
-| `apps/site` (`@fundamental-engine/site`) | field-ui.com — Manual, Lab, Docs |
+| `apps/site` (`@fundamental-engine/site`) | fundamental-engine.com — Manual, Lab, Docs |
 
 ## Conventions
 

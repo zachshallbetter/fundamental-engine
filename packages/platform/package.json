@@ -1,11 +1,11 @@
 {
   "name": "@fundamental-engine/platform",
   "version": "0.3.1",
-  "description": "The platform-adjacent layer for field-ui — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives field-ui wishes existed, built on the ones it has.",
+  "description": "The platform-adjacent layer for Fundamental — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives Fundamental wishes existed, built on the ones it has.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://field-ui.com",
+  "homepage": "https://fundamental-engine.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
@@ -15,7 +15,7 @@
     "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
-    "field-ui",
+    "Fundamental",
     "dom",
     "measurement",
     "relationships",

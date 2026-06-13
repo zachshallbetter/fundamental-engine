@@ -1,11 +1,11 @@
 {
   "name": "@fundamental-engine/elements",
   "version": "0.3.1",
-  "description": "Web-component keystone for field-ui — the <forces-field> custom element + declarative data-body bodies.",
+  "description": "Web-component keystone for Fundamental — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
-  "homepage": "https://field-ui.com",
+  "homepage": "https://fundamental-engine.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
@@ -15,7 +15,7 @@
     "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
-    "field-ui",
+    "Fundamental",
     "web-components",
     "custom-elements",
     "particles",
