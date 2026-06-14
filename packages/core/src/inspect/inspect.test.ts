@@ -46,6 +46,6 @@ test('system report proves full coverage (every force passported + conformance-c
   assert.deepEqual(r.forcesMissingConformance, [], 'every force has a conformance experiment');
   assert.ok(r.contracts >= 11, 'foundational + agent + visual + recipe contracts');
   assert.ok(r.recipes >= 6);
-  assert.match(reportText(r), /# field-ui system report/);
+  assert.match(reportText(r), /# Fundamental system report/);
   assert.match(reportText(r), /✓ none/);
 });

@@ -47,10 +47,25 @@ export function makeFlowFocus(x: number, y: number, opts: FlowOptions = {}): Flo
  * (`gain` ≈ the field scale). Pure — same inputs, same vector.
  */
 export function flowBias(px: number, py: number, f: FlowFocus, gain = 0.6): Vec2 {
+  return flowBiasInto({ x: 0, y: 0 }, px, py, f, gain);
+}
+
+/**
+ * `flowBias` writing into a caller-owned `out` — identical vector, zero allocation. The renderer's
+ * hot paths (per-particle nudge + per-cell grid bend) call this with a shared scratch so an active
+ * flow focus doesn't allocate a `{x,y}` per particle per frame. `out` is returned for convenience.
+ */
+export function flowBiasInto(out: Vec2, px: number, py: number, f: FlowFocus, gain = 0.6): Vec2 {
   const dx = f.x - px;
   const dy = f.y - py;
   const d = Math.hypot(dx, dy);
-  if (d === 0 || d >= f.radius) return { x: 0, y: 0 };
+  if (d === 0 || d >= f.radius) {
+    out.x = 0;
+    out.y = 0;
+    return out;
+  }
   const fall = (1 - d / f.radius) * f.strength * gain;
-  return { x: (dx / d) * fall, y: (dy / d) * fall };
+  out.x = (dx / d) * fall;
+  out.y = (dy / d) * fall;
+  return out;
 }

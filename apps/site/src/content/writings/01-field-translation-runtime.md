@@ -1,23 +1,23 @@
 ---
-title: "field-ui: A Field Translation Runtime for Relational DOM Interfaces"
+title: "Fundamental: A Field Translation Runtime for Relational DOM Interfaces"
 description: "The paradigm: UI as a shared, inspectable field of meaning."
 summary: "The paradigm: UI as a shared, inspectable field of meaning."
 date: 2026-06-07
 category: research
-series: "field-ui research"
+series: "Fundamental research"
 order: 1
 author: "Zach Shallbetter"
 ---
 
-# field-ui: A Field Translation Runtime for Relational DOM Interfaces
+# Fundamental: A Field Translation Runtime for Relational DOM Interfaces
 
-> **Status: research draft (preprint, work in progress).** Paper 1 of the field-ui family — the
+> **Status: research draft (preprint, work in progress).** Paper 1 of the Fundamental family — the
 > flagship paradigm paper. Claims verified against the codebase and canonical docs as of 2026-06-07. See the
 > [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not canonical
 > product documentation.
 
 **Author:** Zach Shallbetter
-**Series:** field-ui Research Papers, Paper 1 of 8 (the flagship paradigm paper)
+**Series:** Fundamental Research Papers, Paper 1 of 8 (the flagship paradigm paper)
 **Companion papers (domain validators):** [Reading Field](/writings/02-reading-field) (reading);
 [Evidence Fields](/writings/03-evidence-fields) (AI trust); Motion Equivalence (accessibility);
 Host-Driven Runtime (architecture); Portable Field Recipes (authoring); Data as Field Participants
@@ -27,10 +27,10 @@ Host-Driven Runtime (architecture); Portable Field Recipes (authoring); Data as 
 
 ## Abstract
 
-We present **field-ui**, a platform-native relational field runtime for the Document Object Model
+We present **Fundamental**, a platform-native relational field runtime for the Document Object Model
 (DOM). Conventional web interface state is *local* and *binary*: an element is hovered or not,
 open or closed, selected or not, and each component owns its interactive lifecycle in isolation.
-field-ui replaces this model with a *shared field context* in which DOM elements, particles,
+Fundamental replaces this model with a *shared field context* in which DOM elements, particles,
 relationships, events, users, layout regions, and data records all participate as typed *agents*.
 The organizing principle is reciprocal: **elements bend the field; the field bends them back.** An
 element marked as a *body* exerts force on the matter around it; the field samples the resulting
@@ -68,7 +68,7 @@ logic. The relations are real — this card *depends on* that one; this result i
 its neighbors; this section has *already been read* — but they live nowhere in particular and are
 re-derived, inconsistently, wherever they happen to surface.
 
-field-ui starts from a different question. Instead of asking *"what animation should this component
+Fundamental starts from a different question. Instead of asking *"what animation should this component
 play?"* it asks *"why is this element emphasized? what is pulling attention? which relationship is
 active? what caused this state?"* The answer is to treat the interface not as a collection of
 isolated components with decorative transitions, but as **one shared, inspectable field of meaning**
@@ -77,7 +77,7 @@ in which those relations are first-class, measurable, and reciprocal.
 ### 1.2 The reframe: a relational field, not a particle background
 
 Particle backgrounds are a familiar web decoration: a canvas of dots reacts to the cursor and sits
-*on top of* the page. field-ui inverts this in two ways. First, the coupling is **two-way and bound
+*on top of* the page. Fundamental inverts this in two ways. First, the coupling is **two-way and bound
 to the layout** — a *DOM ⇄ field runtime* loop, not a *DOM ⇄ canvas* one. Real elements exert real
 force; the field writes real density back into them. Second, the canvas is demoted: it is *one
 render surface* among several (canvas, SVG overlays, CSS-variable feedback, diagnostic layers), not
@@ -89,7 +89,7 @@ field against plain data) from the *platform* (which binds it to the DOM).
 
 ### 1.3 Contributions
 
-This paper contributes the **system** behind field-ui:
+This paper contributes the **system** behind Fundamental:
 
 1. **A reciprocal model of interface state** (§3): three invariants — *reciprocity*, *conservation*,
    *synchronization* — under which elements and field continuously act on each other within one
@@ -122,43 +122,43 @@ or opt-in behavior (§9).
 
 ## 2. Background and related work
 
-field-ui sits at the intersection of several lines of work; we position it against each and develop
+Fundamental sits at the intersection of several lines of work; we position it against each and develop
 the conceptual lineage of the Natural Field Translation System in §6.5.
 
 **Physical metaphors and force-directed layout.** Force-directed graph drawing
 [eades1984; fruchterman1991] and its web embodiment in d3-force [bostock2011; d3force] use simulated
-attraction and repulsion to *position* nodes. field-ui shares the simulated-force substrate but
+attraction and repulsion to *position* nodes. Fundamental shares the simulated-force substrate but
 differs in intent and in coupling: forces here are not only a layout solver but a continuous
 *expressive medium* that writes state back into arbitrary semantic elements, and the bodies are the
 page's real DOM rather than an abstract node set. Self-laying-out layout is one capability among
 many, not the purpose.
 
-**Stigmergy and field-based coordination.** Several field-ui primitives — `diffuse`, `propagate`,
+**Stigmergy and field-based coordination.** Several Fundamental primitives — `diffuse`, `propagate`,
 `memory` — are scalar-field mechanisms with antecedents in stigmergy and pheromone-field models
 [grasse1959; dorigo]: agents deposit into a decaying grid and later read its gradient. We adopt the
 mechanism as an interface substrate (e.g. a reading trail that makes worn paths attract attention)
 rather than as an optimization technique.
 
 **Attention and salience.** Computational saliency [itti1998] models *where* the eye is drawn.
-field-ui treats attention as a *conserved, continuous* field over interface elements — *"selection
+Fundamental treats attention as a *conserved, continuous* field over interface elements — *"selection
 is a decision; attention is a field"* — with an explicit budget (§8.1). The relevant HCI literature
 on attention, interruption, and alert fatigue frames the motivating claims for the empirical papers
 (Papers 2–3).
 [TODO: cite attention/interruption literature]
 
 **Motion, "material" interfaces, and accessibility.** Motion-design systems give interface
-transitions a sense of physical material. field-ui pushes the metaphor from *transitions between
+transitions a sense of physical material. Fundamental pushes the metaphor from *transitions between
 states* to *a continuous medium the interface lives inside*, and treats reduced motion not as a
 degraded path but as the same field *differently revealed* — developed in Paper 4.
 [TODO: cite motion-design and prefers-reduced-motion / vestibular accessibility literature]
 
-**The rendering substrate.** field-ui is built on fundamental web platform primitives (Custom
+**The rendering substrate.** Fundamental is built on fundamental web platform primitives (Custom
 Elements, Shadow DOM, CSS custom properties, Canvas 2D, `ResizeObserver`, `IntersectionObserver`)
 and anticipates compositor-native bridges (`CSS.registerProperty`, scroll-driven animation, View
 Transitions) [csshoudini; scrollanim; webcomponents]. The core ships with *zero runtime
 dependencies*; framework integrations are adapters, not requirements.
 
-The distinguishing stance, across all of these, is **epistemic**: field-ui classifies every behavior
+The distinguishing stance, across all of these, is **epistemic**: Fundamental classifies every behavior
 by truth mode and ships an inspectable passport and conformance scenario for each force, so the
 system is auditable against its own claims (§6, Paper 5).
 
@@ -249,10 +249,10 @@ fieldflow as field-aligned steering — is summarized in §6.5 and given in full
 
 ### 4.1 A strictly layered, renderer-agnostic design
 
-field-ui is organized into packages whose dependency direction is strict and one-way:
+Fundamental is organized into packages whose dependency direction is strict and one-way:
 
 ```
-field-ui      renderer-agnostic field/force/particle/metric/diagnostic/conformance engine
+Fundamental      renderer-agnostic field/force/particle/metric/diagnostic/conformance engine
 @fundamental-engine/platform  DOM participation: measurement, state, feedback, relationships,
                     visual bindings, overlays, scheduling, linting
 @fundamental-engine/elements  <field-root> / <field-cell> custom elements + [data-body] authoring
@@ -263,7 +263,7 @@ elements → platform → core      react → platform → core      vanilla →
 ```
 
 The layering encodes a claim, not merely a code organization: *field behavior is independent of its
-presentation substrate.* `field-ui` computes field behavior against plain data and touches no
+presentation substrate.* `Fundamental` computes field behavior against plain data and touches no
 DOM globals; the browser environment adapter — `browserHost()`, viewport/scroll/`requestAnimationFrame`
 access, the canvas factory, DOM download helpers — lives in `@fundamental-engine/platform`. The core reaches
 the environment only through an injected `FieldHost` interface, so the same engine runs against
@@ -440,7 +440,7 @@ catalog:
 | Poetic | an expressive composite of stable primitives | `blackhole`, `star`, `nebula` |
 | Semantic | maps data/interface meaning into physics | attention, memory, relation fields |
 
-This taxonomy is the system's epistemic backbone: it makes field-ui *honest about which parts are
+This taxonomy is the system's epistemic backbone: it makes Fundamental *honest about which parts are
 physics, which are design, and which are expressive composites.* It is also load-bearing for
 correctness. The model deliberately refuses to unify the designed `attract` (a bounded, finite-range
 UI well, falloff `(1 − d/r)ⁿ`) with the physical `gravity` (softened inverse-square,
@@ -476,7 +476,7 @@ reference.
 ### 6.5 The Natural Field Translation System
 
 The catalog is not a flat list; it is organized by a conceptual layer that is the system's signature
-intellectual move. field-ui *does not copy physics into the interface — it translates* the four
+intellectual move. Fundamental *does not copy physics into the interface — it translates* the four
 fundamental fields of physics into interface grammar:
 
 - **Gravity → priority** (convergence, hierarchy, ranking, anchoring, attention wells)
@@ -485,7 +485,7 @@ fundamental fields of physics into interface grammar:
 - **Weak interaction → transformation** (decay, release, mutation, expiration, handoff)
 
 The argument is that *every interface already has* priority, polarity, binding, and transformation,
-and that physics already has a compact, well-worn language for exactly those relations; field-ui
+and that physics already has a compact, well-worn language for exactly those relations; Fundamental
 borrows the language, not the literal physics. The governing doctrine is a single discipline:
 
 > **Natural fields are not tokens; tokens are translations.**
@@ -509,7 +509,7 @@ not "we have physics-inspired UI effects" but: **Four fields. Many expressions. 
 ### 6.6 Taxonomy hygiene: lanes that never mix
 
 The translation system only stays honest if the vocabulary is kept in strict, non-overlapping lanes.
-field-ui separates:
+Fundamental separates:
 
 | Lane | What it holds | Examples |
 |---|---|---|
@@ -589,7 +589,7 @@ custom `field()` / `apply()` implementations with conformance.
 ## 8. The reverse half: emergent interface primitives
 
 The forward half of the loop (elements → field) is force application. The *reverse* half (field →
-elements) is where field-ui produces behaviors with no direct analogue in CSS or component state. All
+elements) is where Fundamental produces behaviors with no direct analogue in CSS or component state. All
 four primitives below are consequences of the same reciprocal loop, surfaced through the
 `FeedbackRegistry`.
 
@@ -647,7 +647,7 @@ These four are not a closed list; they are the most legible members of a larger 
 ### 8.5 Reduced-motion equivalence (overview)
 
 A field that expresses meaning through motion would be inaccessible if motion were the *source* of
-meaning. field-ui's stance is that **motion is one representation of state, not the meaning itself**,
+meaning. Fundamental's stance is that **motion is one representation of state, not the meaning itself**,
 so reduced motion is the *same field differently revealed* rather than a degraded fallback path.
 Under `prefers-reduced-motion` the runtime swaps travel for state: particles freeze or fade, sparks
 become static highlights, flow ribbons become static field lines, and heat trails become a soft wash
@@ -733,7 +733,7 @@ rhetorical.
 ## 10. Discussion
 
 **What the layering buys.** The empty-allowlist DOM boundary (§4.2) is more than hygiene: it means
-the *concept* of field-ui (a field over participants) is genuinely separable from *the web* as a
+the *concept* of Fundamental (a field over participants) is genuinely separable from *the web* as a
 render target. The same engine could drive a native canvas, a WebGPU compute backend, or a headless
 analysis. The platform layer is then "just" one — important, carefully disciplined — binding of that
 engine to one substrate.
@@ -745,7 +745,7 @@ rates without forced reflow, which is what makes "animating the DOM animates the
 rather than pathological.
 
 **What the epistemics buy.** Truth modes, passports, conformance, and lint are unusual for an
-interface library. Their payoff is that field-ui can make *auditable* claims: a reviewer can check
+interface library. Their payoff is that Fundamental can make *auditable* claims: a reviewer can check
 that magnetism does no work, that a recipe references only real tokens, that no overlay mutates
 physics, and that the core reaches no DOM global — by running tests, not by trusting prose. We argue
 this is the right posture for a system that asks designers to reason about *cause* ("why did this
@@ -762,7 +762,7 @@ question that Paper 3 is designed to answer.
 
 ## 11. Conclusion
 
-field-ui reframes interface state from local and binary to spatial, relational, and reciprocal:
+Fundamental reframes interface state from local and binary to spatial, relational, and reciprocal:
 *elements bend the field, and the field bends them back.* The system that realizes this reframe is a
 strictly layered, provably renderer-agnostic engine; a six-phase scheduler and six single-concern
 registries that keep the DOM⇄field loop consistent without layout thrashing; a force model that
