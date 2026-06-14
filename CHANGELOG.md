@@ -49,6 +49,11 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Rebrand stragglers in user-facing engine strings.** The `inspect` example recipe's `intent`, the
   system-report heading, and the canvas-context error/warn messages still said "field-ui"; renamed to
   "Fundamental". Copy-only — no API, recipe structure, or behavior change.
+- **The density heatmap no longer reacts to scroll.** It was suppressed while scrolling (draw only when
+  `scrollV < 6`), so the glow popped off the instant you scrolled and back on when you stopped — choppy.
+  The scroll coupling is removed entirely: the heatmap is a continuous ambient layer that draws every
+  frame when enabled. The original perf intent is served by the existing compute throttle (the texel
+  grid recomputes only every 3rd frame), so the per-frame cost is just the cached bilinear upscale.
 - **Engagement listeners no longer accumulate on a long-lived field.** `bindEngagement()` deduped via
   `data-fx-engaged` but, unlike the body/emitter reconciliation, never pruned `[data-hot]` elements that
   had left the DOM — so a persistent field (the page `<field-root>` with `transition:persist`) outliving

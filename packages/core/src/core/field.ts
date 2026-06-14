@@ -1052,11 +1052,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.fillRect(0, 0, W, H);
     }
     drawWaves();
-    // The heatmap is a full-viewport bilinear-upscale glow — the heaviest per-frame layer. It's
-    // ambient density you read at rest, not detail you track mid-scroll, so suppress it while the
-    // page is scrolling fast (eased env.scrollV). Scrolling never pays the heatmap's fill cost; the
-    // glow returns the moment the page settles. (Body charge/glow is CSS --load, unaffected.)
-    if (heatmap && (env.scrollV ?? 0) < 6) drawHeatmap();
+    // The heatmap is a continuous ambient layer — NOT coupled to scroll. It draws every frame
+    // whenever enabled. (An earlier scroll-suppression made it pop/fade out while scrolling, which
+    // read as choppy; the perf intent is served instead by the compute throttle — the texel grid is
+    // recomputed only every 3rd frame — so the per-frame cost is just the cached bilinear upscale.)
+    if (heatmap) drawHeatmap();
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
