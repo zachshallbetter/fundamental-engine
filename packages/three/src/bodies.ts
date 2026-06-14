@@ -33,6 +33,10 @@ export interface FieldBodySpec {
   /** the body's tint (`data-color`) — the `pigment` force dyes passing matter with it, so the
    *  swarm visibly carries this body's color to wherever it drifts next (conserved color transport). */
   color?: string;
+  /** species tag this body stamps on matter it emits (a `spawn` source) — for multi-ecology fields. */
+  species?: number;
+  /** restrict this body's forces to these species (a selective body); omit to act on all matter. */
+  affects?: readonly number[];
   /** opt into density/load feedback back onto the mesh (default `true`). */
   feedback?: boolean;
   /** the body's box half-size in field pixels — its footprint, not its range (default 20). */
@@ -100,6 +104,8 @@ class BodyImpl implements FieldBody {
     if (spec.range != null) attrs['data-range'] = String(spec.range);
     if (spec.spin != null) attrs['data-spin'] = String(spec.spin);
     if (spec.angle != null) attrs['data-angle'] = String(spec.angle);
+    if (spec.species != null) attrs['data-species'] = String(spec.species);
+    if (spec.affects != null && spec.affects.length) attrs['data-affects'] = spec.affects.join(',');
     if (spec.feedback ?? true) attrs['data-feedback'] = '';
     this.attrs = attrs; // the virtual element's getAttribute closes over this same object
 

@@ -54,6 +54,15 @@ test('the rect tracks the mesh as it moves', () => {
   assert.ok(after.left - before.left - 100 < 1e-6 && after.left > before.left, 'rect follows the mesh');
 });
 
+test('species + affects land as data-* attrs (matter tagging)', () => {
+  const reg = new FieldBodyRegistry(new PlaneProjection());
+  reg.add(new Object3D(), { tokens: 'spawn', species: 2 });
+  reg.add(new Object3D(), { tokens: 'attract', affects: [1, 2] });
+  const list = els(reg);
+  assert.equal(list[0]!.getAttribute('data-species'), '2', 'source stamps its species');
+  assert.equal(list[1]!.getAttribute('data-affects'), '1,2', 'selective body lists its species');
+});
+
 test('set() mutates the attrs the engine re-reads (reactive params, no re-scan)', () => {
   const reg = new FieldBodyRegistry(new PlaneProjection());
   const body = reg.add(new Object3D(), { tokens: 'attract', strength: 0.5, range: 300 });

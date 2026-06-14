@@ -15,9 +15,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   explicitly and a non-DOM host (e.g. `@fundamental-engine/three`'s `FieldLayer`) clearly opts out by
   passing its own sink. Behavior is identical — the default for `createField`/vanilla/`<field-root>`
   is unchanged. (#445)
-
-### Added
-
+- **Matter tagging — multiple ecologies in one field with selective forces.** A body's new
+  `data-affects` (comma-separated species) restricts its forces to that matter — particles whose
+  `species` isn't in the set are skipped entirely (no force, no density sample); omit it and the body
+  acts on all matter (back-compat, bit-for-bit). A `spawn` source's new `data-species` stamps its tag
+  on the matter it emits, so pollen, seeds, and spores can share one field, each pulled only by its
+  own attractors/sinks. `@fundamental-engine/three`'s `FieldBodySpec` gains `species` and `affects`.
+  (#444)
 - **Reactive body params — live `strength`/`range`/`angle`/`spin` without a `rescan()`.** A body's
   hot force params are now re-read from its element on the measure cadence, so changing `data-strength`
   on a DOM body (or calling `FieldBody.set({ strength })` in `@fundamental-engine/three`) takes effect
