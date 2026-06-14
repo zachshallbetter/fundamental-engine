@@ -5,10 +5,10 @@
 > (the sink/accretion behavior) is a submodel here, not a separate model. Every status label below was
 > verified against the code (`packages/core/src/agents`, `packages/core/src/forces`,
 > `packages/core/src/core/field.ts`, `packages/platform`) and follows the
-> [documentation standards](field-ui-documentation-standards.md) status rule: nothing is called
+> [documentation standards](documentation-standards.md) status rule: nothing is called
 > *shipped* unless code confirms it. Deeper references:
-> [system-contracts §5–§9](field-ui-system-contracts.md),
-> [interaction-and-relationship-model](field-ui-interaction-and-relationship-model.md),
+> [system-contracts §5–§9](system-contracts.md),
+> [interaction-and-relationship-model](interaction-and-relationship-model.md),
 > [forces-system §22](../engine-reference/forces-system.md).
 
 # Field Agent Consumption Model
@@ -46,7 +46,7 @@ modules and agent contracts (`AGENT_CONTRACTS`, same file):
 Two things the broader framing sometimes calls "agents" are **not** field agents — they are platform
 concerns, and the distinction matters:
 
-- **visual layer** — the [VisualBindingRegistry](field-ui-platform-architecture.md) pairs an expressive
+- **visual layer** — the [VisualBindingRegistry](platform-architecture.md) pairs an expressive
   visual (SVG/Canvas) with its semantic source for linting and inspection. It participates in
   accessibility, not physics. See [Text and the visual layer](#text-and-the-visual-layer).
 - **event sink** — not a distinct agent kind; it is the **event-host role** a body plays through
@@ -116,7 +116,7 @@ The concrete, fully shipped particle-level case. A `sink` body captures matter i
 | release | saturation → `supernova` releases exactly the held particles, then resets | `field.ts` | **shipped** |
 | discharge | an engagement-gated sink (`data-when="active"`) releases on the FALLING edge of attention — same conserved ritual, same events (#365) | `accretion.ts` `dischargeDisengaged` | **shipped** |
 
-Terminology, per the [status rule](field-ui-documentation-standards.md): **`sink` is the runtime
+Terminology, per the [status rule](documentation-standards.md): **`sink` is the runtime
 token.** `absorb` is **not** a token — only the `data-absorb` *attribute* exists. Treat `absorb` as
 concept/legacy language. `--load` is canonical; `--mass` is the alias.
 
@@ -202,7 +202,7 @@ sampled after the force pass (the same model as the `captured` `data-on` trigger
 
 Text is a special case of the same model, governed by a design law
 ([forces-system §11](../engine-reference/forces-system.md),
-[visual-language-and-geometry](field-ui-visual-language-and-geometry.md)):
+[visual-language-and-geometry](visual-language-and-geometry.md)):
 
 > Words are bodies the field decorates; punctuation is where matter assembles.
 
@@ -215,7 +215,7 @@ Text is a special case of the same model, governed by a design law
   punctuation and marks (a `.`, `—`, a logo glyph), where the silhouette is simple. (design law)
 - A vector/SVG/Canvas layer may **represent** the text, but it is **not** the source of meaning. Bind
   it declaratively with `data-field-visual-for` + `data-field-visual-role="representation"` and keep it
-  `aria-hidden` — the [VisualBindingRegistry](field-ui-platform-architecture.md) discovers, binds, and
+  `aria-hidden` — the [VisualBindingRegistry](platform-architecture.md) discovers, binds, and
   lints the pairing. **shipped** (binding + lint). Generating glyph geometry *from* text
   (outline extraction, text → SVG path) is **planned**, tracked as a frontier.
 

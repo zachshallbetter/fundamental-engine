@@ -1,13 +1,13 @@
 # Recipes as Portable Field Programs for Interface Behavior
 
-> **Status: research draft (preprint, work in progress).** Paper 6 of the field-ui family — the
+> **Status: research draft (preprint, work in progress).** Paper 6 of the Fundamental family — the
 > authoring-model paper. Claims verified against the codebase and canonical docs as of 2026-06-07.
 > See the [series index](README.md) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 
 **Author:** Zach Shallbetter
-**Series:** field-ui Research Papers, Paper 6 of 8
-**Companion paper (flagship):** [field-ui: A Field Translation Runtime for Relational DOM
+**Series:** Fundamental Research Papers, Paper 6 of 8
+**Companion paper (flagship):** [Fundamental: A Field Translation Runtime for Relational DOM
 Interfaces](01-field-translation-runtime.md). This paper goes deep where the flagship's §6.6 (taxonomy
 hygiene) and §7.3 (recipe runtime) were an overview; it cross-references rather than repeats.
 
@@ -20,7 +20,7 @@ relevance rises, a claim that is weakened by a contradicting source, a section t
 memory of having been read — is normally authored in imperative, one-off code. Such code drifts from
 its own description, resists inspection, and lets *concept* words leak into the *executable*
 vocabulary: a developer writes `drag` or `spring` or `orbit` as if the engine had such a force when it
-does not. We present **field-ui recipes**: a portable, serializable, **conformance-gated** schema that
+does not. We present **Fundamental recipes**: a portable, serializable, **conformance-gated** schema that
 makes relational behavior *authorable* by separating it into strict, non-overlapping lanes — concepts
 describe, runtime tokens execute, metrics measure, diagnostics explain, conditions activate, and a
 *required* reduced-motion equivalent guarantees the behavior is never motion-only. The contribution is
@@ -61,7 +61,7 @@ class toggles, and timers, owned by one component. Three pathologies follow.
    primitive caused a given effect. The behavior lives only in its execution.
 3. **Vocabulary leak.** Most corrosively, *concept* words leak into the *executable* vocabulary. A
    developer reaches for `drag`, `spring`, `orbit`, `reflect`, `entropy`, or `coherence` and wires
-   them up as if they were forces the engine implements. They are not: in field-ui, `drag` is the
+   them up as if they were forces the engine implements. They are not: in Fundamental, `drag` is the
    concept that the `viscosity` force realizes, `spring` is realized by `tether`, `reflect` by `wall`,
    and `entropy`/`coherence` are *metrics*, not forces. When the concept word becomes a callable token,
    the runtime vocabulary rots — the engine's real, auditable capabilities are buried under invented
@@ -74,7 +74,7 @@ lets any word become a force would undo that posture at the seam where authors a
 
 ### 1.2 The recipe answer
 
-A **recipe** is field-ui's reusable authoring unit: *a portable, serializable, inspectable field
+A **recipe** is Fundamental's reusable authoring unit: *a portable, serializable, inspectable field
 program* (Paper 1 §7.3). Rather than imperative code, a recipe is a declarative record with separated
 lanes — a human intent, an optional natural-field classification, the strict set of *runtime tokens*
 it composes, its bodies and relationships, its render layers, its metrics, its diagnostics, its
@@ -117,7 +117,7 @@ diagnostics are Paper 8's. We cross-reference and do not re-explain.
 
 **Design tokens and design systems.** Design-token systems factor visual decisions — color, spacing,
 type scale — into named, portable values shared across platforms, and design systems compose those
-tokens into reusable components. field-ui recipes share the *naming-and-portability* instinct but
+tokens into reusable components. Fundamental recipes share the *naming-and-portability* instinct but
 operate one level up the abstraction: a recipe names a *behavior*, not a value, and the thing being
 kept portable and consistent is a relational interaction rather than a visual constant. The
 conformance gate is the recipe analog of a token system's validation that a reference resolves to a
@@ -137,7 +137,7 @@ incompatible socket is — but recipes are textual, serializable records first; 
 future work (§8, R15). `[TODO: cite visual / blocks-based programming literature]`
 
 **Macro and preset systems.** Presets and macros expand a compact authored unit into a larger
-configuration. field-ui's cosmological *presets* (Paper 1 §6.4 — `blackhole` expands into
+configuration. Fundamental's cosmological *presets* (Paper 1 §6.4 — `blackhole` expands into
 `attract + swirl + sink + lens`) are exactly such an expansion over the force catalog, and recipes are
 the broader, schema-backed generalization: a recipe is a *named, validated, multi-lane composite*. The
 key difference from a macro is the gate: expansion alone does not guarantee the result references only
@@ -590,7 +590,7 @@ compositional expressiveness, not measured evidence of authoring ergonomics or u
 ## 9. Discussion
 
 **Why lane hygiene plus a gate matter for any behavior-authoring system.** The deeper lesson
-generalizes past field-ui. Any system that lets authors *compose* behavior from a primitive set faces
+generalizes past Fundamental. Any system that lets authors *compose* behavior from a primitive set faces
 the same temptation: a convenient word — `drag`, `spring`, `orbit`, `entropy` — gets wired up as if it
 were a primitive, and the executable vocabulary slowly fills with invented capabilities the engine does
 not actually have. We call this *vocabulary rot* or *token soup*: the symbol table stops corresponding
@@ -603,7 +603,7 @@ word that is not a real capability cannot become one. Lane hygiene makes the sep
 gate makes it *enforced*. Neither alone suffices — lanes without a gate are a convention authors will
 violate; a gate without lanes has nothing clean to validate.
 
-field-ui's recipes are one instantiation, but the pattern is portable to any token-and-composition
+Fundamental's recipes are one instantiation, but the pattern is portable to any token-and-composition
 authoring model: design-token systems, animation DSLs, node-graph editors, low-code platforms. The
 recurring payoff is the one the whole family argues for — a system whose honesty is *mechanical*. A
 reviewer can confirm that the authoring catalog references only real engine capabilities by running a
@@ -614,7 +614,7 @@ validator, not by trusting the documentation.
 ## 10. Conclusion
 
 Complex relational interface behavior need not be authored as drifting, opaque, vocabulary-leaking
-imperative code. field-ui makes it *authorable* through a portable, serializable, **conformance-gated**
+imperative code. Fundamental makes it *authorable* through a portable, serializable, **conformance-gated**
 recipe schema that separates the behavior into strict lanes: concepts describe, runtime tokens execute,
 metrics measure, diagnostics explain, conditions activate, and a required reduced-motion equivalent
 guarantees the behavior is never motion-only. The conformance gate, `validateRecipe`, mechanically
@@ -654,9 +654,9 @@ Every claim in this paper is checkable against the repository.
 - **The count gate:** `scripts/check-readme.mjs` (`pnpm check:readme`) — fails the build if the
   README's stated recipe count diverges from `core.FIELD_RECIPES.length`.
 
-The canonical design documents corroborate the framing: `docs/canonical/field-ui-authoring-and-recipes.md`
+The canonical design documents corroborate the framing: `docs/canonical/authoring-and-recipes.md`
 (§5 schema, §7 the 64-recipe catalog + tiers, §4 the intent compiler) and
-`docs/canonical/field-ui-natural-fields.md` ("Recipes by meaning").
+`docs/canonical/natural-fields.md` ("Recipes by meaning").
 
 ## Appendix B. Conversion notes (markdown → preprint)
 

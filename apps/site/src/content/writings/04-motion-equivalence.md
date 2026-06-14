@@ -627,12 +627,12 @@ Every accessibility claim in this paper is checkable against the repository. The
 
 The canonical design documents corroborate the framing: the Accessibility Contract, Feedback Contract,
 Visualization Contract, Visual Language Contract, and Platform-Lint Contract
-(`docs/canonical/field-ui-system-contracts.md` §§10, 11, 14, 19, 23); the Accessibility and Semantic
+(`docs/canonical/system-contracts.md` §§10, 11, 14, 19, 23); the Accessibility and Semantic
 Layer, the color accessibility rules, the Visual Contracts, and the Visual Binding/Overlay registries +
-Accessibility Preview (`docs/canonical/field-ui-visual-language-and-geometry.md` §§5.2, 16, 18, 18.1,
+Accessibility Preview (`docs/canonical/visual-language-and-geometry.md` §§5.2, 16, 18, 18.1,
 18.2); the `reduced` preset and narrative-reveal collapse
 (`docs/canonical/visualization-methods-taxonomy.md` §0, §13); and "focus creates state, not travel"
-(`docs/canonical/field-ui-interaction-and-relationship-model.md` §10).
+(`docs/canonical/interaction-and-relationship-model.md` §10).
 
 ## Appendix B. Conversion notes (markdown → preprint)
 

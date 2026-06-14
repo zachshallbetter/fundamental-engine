@@ -1,9 +1,9 @@
-# field-ui Documentation Index
+# Fundamental Documentation Index
 
-## What field-ui is
+## What Fundamental is
 
 ```txt
-field-ui is a platform-native relational field runtime for the DOM.
+Fundamental is a platform-native relational field runtime for the DOM.
 ```
 
 It lets semantic HTML, DOM elements, particles, relationships, measurements, visual layers, and user
@@ -12,7 +12,7 @@ back. The visible particle canvas is **one render surface**, not the whole syste
 
 ```txt
 @fundamental-engine/core      computes renderer-agnostic field, force, particle, metric, recipe, and diagnostic
-                    behavior. The engine. (The unscoped `field-ui` name is taken by an unrelated package.)
+                    behavior. The engine. (The unscoped `Fundamental` name is taken by an unrelated package.)
 @fundamental-engine/platform  binds field behavior to the DOM: the browser host, measurement, state, feedback,
                     relationships, visual bindings, overlays, recipes, data binding, lint, scheduling.
 @fundamental-engine/elements  native web components and the [data-body] HTML authoring contract.
@@ -37,19 +37,19 @@ The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-ar
 
 | Document | Role |
 |---|---|
-| [`field-ui-definition-document.md`](canonical/field-ui-definition-document.md) | Canonical concept and operating model |
-| [`field-ui-system-contracts.md`](canonical/field-ui-system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
-| [`field-ui-platform-architecture.md`](canonical/field-ui-platform-architecture.md) | `@fundamental-engine/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
-| [`field-ui-api-stability.md`](canonical/field-ui-api-stability.md) | The frozen `0.x` public API surface, the experimental surface, and the compatibility rules — enforced by `pnpm check:api` |
-| [`field-ui-natural-fields.md`](canonical/field-ui-natural-fields.md) | The Natural Field Translation System — the four fundamental fields translated into interface behavior |
-| [`field-ui-documentation-standards.md`](canonical/field-ui-documentation-standards.md) | How field-ui is described everywhere — the architecture statement, doctrine, status taxonomy, naming policy, and verify-against-code rule |
+| [`definition-document.md`](canonical/definition-document.md) | Canonical concept and operating model |
+| [`system-contracts.md`](canonical/system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
+| [`platform-architecture.md`](canonical/platform-architecture.md) | `@fundamental-engine/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
+| [`api-stability.md`](canonical/api-stability.md) | The frozen `0.x` public API surface, the experimental surface, and the compatibility rules — enforced by `pnpm check:api` |
+| [`natural-fields.md`](canonical/natural-fields.md) | The Natural Field Translation System — the four fundamental fields translated into interface behavior |
+| [`documentation-standards.md`](canonical/documentation-standards.md) | How Fundamental is described everywhere — the architecture statement, doctrine, status taxonomy, naming policy, and verify-against-code rule |
 | [`fundamental-field-behavior-table.md`](canonical/fundamental-field-behavior-table.md) | Field/force laws, electromagnetic split, `fieldflow`, and truth modes |
 | [`visualization-methods-taxonomy.md`](canonical/visualization-methods-taxonomy.md) | Render layers and diagnostics (all modes shipped: contours, potential, vectors, energy, topology, inspector, causality, prediction) |
-| [`field-ui-interaction-and-relationship-model.md`](canonical/field-ui-interaction-and-relationship-model.md) | Agents beyond particles; the relationship model; Reading Field |
-| [`field-ui-agent-consumption-model.md`](canonical/field-ui-agent-consumption-model.md) | The Field Agent Consumption Model: agents (particle/element/event/…), the influence-kind → consumer matrix with per-cell status, the Body Matter Interaction (sink/accretion) submodel, events, and text/vector semantics |
-| [`field-ui-visual-language-and-geometry.md`](canonical/field-ui-visual-language-and-geometry.md) | Typography, color, shape, visual-semantic pairing, overlays, export |
-| [`field-ui-authoring-and-recipes.md`](canonical/field-ui-authoring-and-recipes.md) | Authoring across native HTML / web component / React; intent compiler; recipe schema |
-| [`field-ui-testing-and-conformance.md`](canonical/field-ui-testing-and-conformance.md) | Test matrix, conformance gates, force passports, platform + scheduler + lint tests |
+| [`interaction-and-relationship-model.md`](canonical/interaction-and-relationship-model.md) | Agents beyond particles; the relationship model; Reading Field |
+| [`agent-consumption-model.md`](canonical/agent-consumption-model.md) | The Field Agent Consumption Model: agents (particle/element/event/…), the influence-kind → consumer matrix with per-cell status, the Body Matter Interaction (sink/accretion) submodel, events, and text/vector semantics |
+| [`visual-language-and-geometry.md`](canonical/visual-language-and-geometry.md) | Typography, color, shape, visual-semantic pairing, overlays, export |
+| [`authoring-and-recipes.md`](canonical/authoring-and-recipes.md) | Authoring across native HTML / web component / React; intent compiler; recipe schema |
+| [`testing-and-conformance.md`](canonical/testing-and-conformance.md) | Test matrix, conformance gates, force passports, platform + scheduler + lint tests |
 
 ## engine-reference/ — as-built force-engine record
 
@@ -84,16 +84,16 @@ the canonical docs and the code.
 
 When documents conflict, prefer:
 
-1. `canonical/field-ui-system-contracts.md` and `canonical/field-ui-platform-architecture.md` for implementation contracts.
-2. `canonical/field-ui-definition-document.md` for conceptual definitions.
+1. `canonical/system-contracts.md` and `canonical/platform-architecture.md` for implementation contracts.
+2. `canonical/definition-document.md` for conceptual definitions.
 3. `canonical/fundamental-field-behavior-table.md` for field behavior.
-4. `canonical/field-ui-testing-and-conformance.md` for validation and acceptance.
+4. `canonical/testing-and-conformance.md` for validation and acceptance.
 5. `engine-reference/*` for force formulas and engine internals.
 6. `planning-archive/*` for history and intent only.
 
 ## Naming policy
 
-Use `field-ui` for the project, packages, and docs. Use `field` for runtime concepts (field state,
+Use `Fundamental` for the project, packages, and docs. Use `field` for runtime concepts (field state,
 field root, field body, field event, field metric). New code uses `--field-*` CSS variables and
 `field:*` events; legacy aliases `--forces-*`, compact `--d`, and `forces:*` remain where
 compatibility requires them.

@@ -169,7 +169,7 @@ export function guardSourceBudget(sb: StaticBody, name = '<body>'): void {
   sb.cap = SOURCE_DEFAULT_CAP;
   if (contractChecksEnabled()) {
     console.warn(
-      `[field-ui:UNBUDGETED_SOURCE] ${name} runs the source force "${sb.classified.sources.join(' ')}" ` +
+      `[Fundamental:UNBUDGETED_SOURCE] ${name} runs the source force "${sb.classified.sources.join(' ')}" ` +
         `with none of data-life / data-cap / data-budget / data-sink. Applying the safe default budget ` +
         `(data-life="${SOURCE_DEFAULT_LIFE}", data-cap="${SOURCE_DEFAULT_CAP}") — declare one to make ` +
         `the source's budget explicit (workover v0.3 source rules).`,

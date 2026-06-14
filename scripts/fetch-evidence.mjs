@@ -24,7 +24,7 @@ const clean = (w) => ({
 const out = [];
 for (const q of QUESTIONS) {
   const url = `https://api.openalex.org/works?search=${encodeURIComponent(q)}&per_page=14&select=${SEL}&mailto=${MAILTO}`;
-  const r = await fetch(url, { headers: { "User-Agent": `field-ui-demo/0.1 (mailto:${MAILTO})` } });
+  const r = await fetch(url, { headers: { "User-Agent": `Fundamental-demo/0.1 (mailto:${MAILTO})` } });
   const j = await r.json();
   const works = (j.results || []).map(clean).filter((w) => w.title && w.year);
   out.push({ question: q, count: works.length, works });

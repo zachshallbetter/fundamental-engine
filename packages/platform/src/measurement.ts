@@ -1,5 +1,5 @@
 /**
- * MeasurementRegistry — frame-stable geometry. The native primitive field-ui wishes existed: read
+ * MeasurementRegistry — frame-stable geometry. The native primitive Fundamental wishes existed: read
  * every registered element's box once per frame and hand back an immutable snapshot, so the rest of
  * the system works from one consistent set of rectangles instead of each force calling
  * `getBoundingClientRect()` whenever it likes (which risks layout thrash).

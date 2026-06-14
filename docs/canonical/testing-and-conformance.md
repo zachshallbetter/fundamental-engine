@@ -1,17 +1,17 @@
 > **Status: canonical.**
-> The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Testing and Conformance
+# Fundamental Testing and Conformance
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contract requirements |
+| [`system-contracts.md`](system-contracts.md) | Contract requirements |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Force law requirements |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization tests |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Recipe tests |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Recipe tests |
 
 ## Purpose
 
@@ -412,10 +412,10 @@ it does not violate non-negotiables
 
 ## Migration Validation
 
-The `force/` to `field-ui/` migration is complete when:
+The `force/` to `Fundamental/` migration is complete when:
 
 ```txt
-project runs from field-ui/
+project runs from Fundamental/
 typecheck passes
 test suite passes
 Lab still runs
@@ -424,7 +424,7 @@ examples use new naming
 old public names still work as aliases
 CSS variables write both old and new names
 events support old and new names
-package metadata uses field-ui
+package metadata uses Fundamental
 no hardcoded force/ path remains except migration notes
 no accidental behavior changes occurred
 magnetism tests still prove Lorentz behavior

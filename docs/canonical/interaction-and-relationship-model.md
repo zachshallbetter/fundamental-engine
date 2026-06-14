@@ -1,23 +1,23 @@
 > **Status: canonical.**
-> Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Interaction and Relationship Model
+# Fundamental Interaction and Relationship Model
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Agent contracts |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Recipes |
+| [`definition-document.md`](definition-document.md) | Concept |
+| [`system-contracts.md`](system-contracts.md) | Agent contracts |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Recipes |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Relationship visualization |
 
 ## Purpose
 
-This document expands `field-ui` beyond particles.
+This document expands `Fundamental` beyond particles.
 
-`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
@@ -74,19 +74,19 @@ are the agent state those kinds carry.
 
 Traditional UI state is local.
 
-`field-ui` state is spatial, relational, and reciprocal.
+`Fundamental` state is spatial, relational, and reciprocal.
 
 Recommended positioning:
 
 ```txt
-field-ui treats the interface as a shared field context — one shared context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces — not a collection of isolated components.
+Fundamental treats the interface as a shared field context — one shared context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces — not a collection of isolated components.
 ```
 
 ## 4. Interaction as Continuity
 
 Most UI interaction is binary.
 
-`field-ui` can represent:
+`Fundamental` can represent:
 
 ```txt
 near
@@ -102,7 +102,7 @@ coherent
 Recommended phrase:
 
 ```txt
-field-ui gives interfaces a memory of approach, not just a record of clicks.
+Fundamental gives interfaces a memory of approach, not just a record of clicks.
 ```
 
 ## 5. Attention as a Field

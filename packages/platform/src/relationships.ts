@@ -3,7 +3,7 @@
  * relationships HTML/ARIA already express (`a[href#id]`, `label[for]`, `aria-controls` /
  * `-describedby` / `-labelledby` / `-flowto`, and `data-field-relation`/`-target`) into ONE typed
  * relationship graph, then lets authors add expressive ones on top. Native semantics are respected
- * first; field-ui does not invent a parallel graph for links the platform already declares.
+ * first; Fundamental does not invent a parallel graph for links the platform already declares.
  *
  * Output maps to core's `RelationshipAgent` so the field engine treats relationships as agents.
  */

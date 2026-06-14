@@ -1,5 +1,5 @@
 > **Status: as-built force-engine reference.**
-> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current Fundamental platform architecture — for that see [../canonical/platform-architecture.md](../canonical/platform-architecture.md) and [../canonical/system-contracts.md](../canonical/system-contracts.md).
 
 # Physics Workover
 

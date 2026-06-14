@@ -12,7 +12,7 @@
  *   • per-entry breakdown of any long frames found
  *
  * ── Usage ──────────────────────────────────────────────────────────────────
- * 1. Open the field-ui page you want to measure in Chrome (v123+ for LoAF).
+ * 1. Open the Fundamental page you want to measure in Chrome (v123+ for LoAF).
  * 2. Optionally start a scroll interaction so the reading-field path is active.
  * 3. Open DevTools → Console, paste this script, press Enter.
  * 4. The script runs for DURATION_MS (default 10 s), then prints the report.

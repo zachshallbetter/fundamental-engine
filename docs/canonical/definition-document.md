@@ -1,27 +1,27 @@
 > **Status: canonical.**
-> The canonical concept and operating model. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> The canonical concept and operating model. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Definition Document
+# Fundamental Definition Document
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map and authority order |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Canonical contracts |
+| [`system-contracts.md`](system-contracts.md) | Canonical contracts |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field laws and `fieldflow` |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Agents beyond particles |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | Agents beyond particles |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization and diagnostics |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring and recipes |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Testing and conformance |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring and recipes |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Testing and conformance |
 
 ## 1. Definition
 
-`field-ui` is an inspectable field language for interfaces.
+`Fundamental` is an inspectable field language for interfaces.
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 
-`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
 
 Core principle:
 
@@ -30,7 +30,7 @@ Elements bend the field.
 The field bends them back.
 ```
 
-`field-ui` is not a particle background.
+`Fundamental` is not a particle background.
 
 It is a relational behavior layer for the web.
 
@@ -42,10 +42,10 @@ Interface physics is the use of spatial, temporal, and relational forces to expr
 HTML = structure
 CSS = presentation
 JavaScript = behavior
-field-ui = relational behavior
+Fundamental = relational behavior
 ```
 
-`field-ui` maps semantic state to physical behavior and physical behavior to visual styling.
+`Fundamental` maps semantic state to physical behavior and physical behavior to visual styling.
 
 ```txt
 Data becomes force.
@@ -66,7 +66,7 @@ selected / not selected
 open / closed
 ```
 
-`field-ui` state is spatial, relational, and reciprocal.
+`Fundamental` state is spatial, relational, and reciprocal.
 
 ```txt
 near
@@ -95,9 +95,9 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `field-ui` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
-The package set: `field-ui`, `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `field-ui` specifically carries zero runtime dependencies.
+The package set: `Fundamental`, `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
 
 ### Platform layer
 
@@ -186,7 +186,7 @@ Particles are only one class of field participant.
 
 Users, elements, relationships, events, layout, and data can also be agents.
 
-See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md).
+See [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md).
 
 ## 7. Field vs Force
 
@@ -249,7 +249,7 @@ See [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md)
 
 ## 9. Field Grammar
 
-A `field-ui` scene is a sentence written in bodies, fields, forces, flows, metrics, renders, and feedback.
+A `Fundamental` scene is a sentence written in bodies, fields, forces, flows, metrics, renders, and feedback.
 
 ```txt
 Body = where influence originates
@@ -365,7 +365,7 @@ become paths
 pulse with activity
 ```
 
-See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md).
+See [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md).
 
 ## 15. Authoring Levels
 
@@ -375,7 +375,7 @@ See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-
 | Level 2 | developer | `data-body`, render modes, recipes |
 | Level 3 | engine author | custom `field()` / `apply()` / conformance |
 
-See [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md).
+See [`authoring-and-recipes.md`](authoring-and-recipes.md).
 
 ## 16. World Model Diagram
 
@@ -411,7 +411,7 @@ The runtime drives this loop through the `FrameScheduler` phases (`discover -> r
 
 ## 18. Final Definition
 
-`field-ui` is an inspectable field language for interfaces.
+`Fundamental` is an inspectable field language for interfaces.
 
 It is built from:
 

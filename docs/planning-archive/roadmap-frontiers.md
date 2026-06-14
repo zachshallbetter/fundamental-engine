@@ -1,21 +1,21 @@
 # Roadmap Frontiers
 
 > Status: planning / roadmap.  
-> This document describes forward-looking implementation frontiers for field-ui. It is not the current implementation contract. Current source-of-truth behavior lives in the package code, conformance tests, and canonical docs.
+> This document describes forward-looking implementation frontiers for Fundamental. It is not the current implementation contract. Current source-of-truth behavior lives in the package code, conformance tests, and canonical docs.
 >
 > Use this document to plan future work, sequence frontier investments, and preserve the product thesis without confusing proposed work for shipped behavior.
 >
 > **Status update (verified against the code).** Stages E and F have landed, and the frontier has
 > moved well past this roadmap's original framing:
-> **R1** runtime unification (Phase D, the `<field-root>` default), **R2** inspector ([#198](https://github.com/zachshallbetter/field-ui/pull/198)),
-> **R3** recipes / **R4** executable gallery ([#197](https://github.com/zachshallbetter/field-ui/pull/197)/[#199](https://github.com/zachshallbetter/field-ui/pull/199)/[#201](https://github.com/zachshallbetter/field-ui/pull/201)),
-> and the vocabulary-lane taxonomy pass ([#200](https://github.com/zachshallbetter/field-ui/pull/200)–[#204](https://github.com/zachshallbetter/field-ui/pull/204)) are shipped.
+> **R1** runtime unification (Phase D, the `<field-root>` default), **R2** inspector ([#198](https://github.com/zachshallbetter/fundamental-engine/pull/198)),
+> **R3** recipes / **R4** executable gallery ([#197](https://github.com/zachshallbetter/fundamental-engine/pull/197)/[#199](https://github.com/zachshallbetter/fundamental-engine/pull/199)/[#201](https://github.com/zachshallbetter/fundamental-engine/pull/201)),
+> and the vocabulary-lane taxonomy pass ([#200](https://github.com/zachshallbetter/fundamental-engine/pull/200)–[#204](https://github.com/zachshallbetter/fundamental-engine/pull/204)) are shipped.
 > Since then:
 > - **R5 bindData** — shipped (`packages/platform/src/bind-data.ts`).
 > - **R7 accessibility conformance** — largely shipped: reduced-motion on every recipe, `contracts/guards.ts`, `/docs/accessibility-preview`.
 > - **R9 conformance as a tool** — core exported (`runScenario`, `conformanceTests`, `EXPERIMENTS`); the productized record/replay + fuzzing extras remain.
 > - **R14 AI evidence fields** — mostly shipped: all eight recipes (evidence-field, trust-gradient, conflict-field, source-constellation, provenance-trail, citation-thread, disagreement-charge, risk-horizon) plus the Evidence Field study; only a packaged answer component remains.
-> - **R16 research/release** — mostly shipped: the research-paper family, `PUBLISHING.md`, the in-repo starter app, and the frozen `0.x` API ([#216](https://github.com/zachshallbetter/field-ui/pull/216)); the npm publish stays on a deliberate human gate.
+> - **R16 research/release** — mostly shipped: the research-paper family, `PUBLISHING.md`, the in-repo starter app, and the frozen `0.x` API ([#216](https://github.com/zachshallbetter/fundamental-engine/pull/216)); the npm publish stays on a deliberate human gate.
 >
 > The genuinely-open frontier is therefore **R6 (input agents), R8 (natural physics), R10 (render
 > frontiers), R11 (compositor bridge — partial), R12 (GPU compute), R13 (multi-root), and R15 (visual
@@ -23,15 +23,15 @@
 
 ## 0. Purpose
 
-field-ui has moved beyond a particle-field prototype.
+Fundamental has moved beyond a particle-field prototype.
 
 The current architecture is:
 
 ```txt
-field-ui   host-driven, renderer-agnostic field engine
-@field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
-@field-ui/elements   native HTML and web component authoring
-@field-ui/react   React adapter over the same contracts
+Fundamental   host-driven, renderer-agnostic field engine
+@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/elements   native HTML and web component authoring
+@fundamental-engine/react   React adapter over the same contracts
 site/docs/lab   proof surfaces, recipes, diagnostics, demos, and executable documentation
 ```
 
@@ -39,7 +39,7 @@ This roadmap describes what comes after that architecture.
 
 The central goal is not to add visual effects.
 
-The goal is to make field-ui a complete relational behavior runtime for interfaces: portable, inspectable, accessible, data-driven, recipe-driven, and scalable.
+The goal is to make Fundamental a complete relational behavior runtime for interfaces: portable, inspectable, accessible, data-driven, recipe-driven, and scalable.
 
 ## 1. Current doctrine
 
@@ -47,7 +47,7 @@ The following principles govern every frontier.
 
 ### 1.1 Core stays renderer-agnostic
 
-field-ui must not import browser or DOM globals.
+Fundamental must not import browser or DOM globals.
 
 Core owns:
 
@@ -64,8 +64,8 @@ browserHost() DOM export helpers measurement state feedback relationships visual
 The public browser setup should look like:
 
 ```ts
-import { createField } from "field-ui";
-import { browserHost } from "@field-ui/platform";
+import { createField } from "Fundamental";
+import { browserHost } from "@fundamental-engine/platform";
 
 const field = createField(canvas, {
   host: browserHost()
@@ -76,7 +76,7 @@ Elements and adapters may hide this setup for users.
 
 ### 1.2 Canvas is one render surface
 
-Do not describe field-ui as only:
+Do not describe Fundamental as only:
 
 ```txt
 one canvas
@@ -88,7 +88,7 @@ DOM <-> canvas binding
 Use:
 
 ```txt
-field-ui is a platform-native relational field runtime for the DOM.
+Fundamental is a platform-native relational field runtime for the DOM.
 ```
 
 Canvas is one render surface. SVG overlays, DOM feedback, diagnostics, and platform state are also render or feedback surfaces.
@@ -199,7 +199,7 @@ FrameScheduler owns phase order
 ### Acceptance criteria
 
 ```txt
-field-root uses @field-ui/platform by default
+field-root uses @fundamental-engine/platform by default
 legacy scanning path is removed or quarantined
 data-body still works
 data-intent still works
@@ -1035,7 +1035,7 @@ Large.
 
 ### Goal
 
-Prepare field-ui as both a public product and a research artifact.
+Prepare Fundamental as both a public product and a research artifact.
 
 ### Research package
 
@@ -1209,7 +1209,7 @@ Deferred (spectacle / scale): R10 render frontiers, R8 natural physics, R12 GPU 
 Reason:
 
 ```txt
-field-ui does not need more spectacle first.
+Fundamental does not need more spectacle first.
 It needs coherence, authorability, inspectability, and trust.
 ```
 

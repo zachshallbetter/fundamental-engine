@@ -86,7 +86,7 @@ if (problems.length) {
   console.error(`✗ public API surface check failed (${problems.length} problem(s)):`);
   for (const p of problems) console.error(`    ${p}`);
   console.error('\nThe frozen 0.x surface changed. If this is intentional, update scripts/api-surface.{ts,data.mjs}');
-  console.error('and docs/canonical/field-ui-api-stability.md with a migration note + a 0.MINOR bump.');
+  console.error('and docs/canonical/api-stability.md with a migration note + a 0.MINOR bump.');
   process.exit(1);
 }
 console.log(`✓ public API surface intact — ${total} frozen entries (${FROZEN_VALUES.length} values, ${FROZEN_TYPES.length} types, ${FROZEN_ELEMENTS.length} elements, the [${FROZEN_BODY_ATTR}] body contract).`);

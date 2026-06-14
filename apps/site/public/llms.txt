@@ -1,6 +1,6 @@
-# field-ui
+# Fundamental
 
-> field-ui is a platform-native relational field runtime for the DOM. The core (`@fundamental-engine/core`)
+> Fundamental is a platform-native relational field runtime for the DOM. The core (`@fundamental-engine/core`)
 > computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
 > scheduling; `@fundamental-engine/elements` exposes native HTML and web-component authoring; `@fundamental-engine/react`
@@ -19,6 +19,7 @@ render from the same file. Generated 2026-06-14 by apps/site/scripts/gen-llms.mj
 - [Start here — Web component](https://fundamental-engine.com/docs/guides/web-component): the <field-root> element in any framework or plain HTML
 - [Start here — TypeScript](https://fundamental-engine.com/docs/guides/typescript): the typed FieldField class from @fundamental-engine/vanilla — no framework, no custom-element registration
 - [Start here — React](https://fundamental-engine.com/docs/guides/react): the <FieldField> component and the useFieldField hook
+- [Start here — Three.js](https://fundamental-engine.com/docs/guides/three)
 - [Start here — Core engine](https://fundamental-engine.com/docs/guides/core): createField on a canvas you own, with an injected host
 - [Concepts — Concepts](https://fundamental-engine.com/docs/concepts): the mental model — bodies, the shared field context, reciprocity, the vocabulary lanes
 - [Concepts — Natural fields](https://fundamental-engine.com/docs/natural-fields): the Natural Field Translation System: gravity → priority, EM → polarity/signal, strong → binding, weak → transformation
@@ -59,21 +60,21 @@ The canonical documents are the project's authority on concepts, terminology, an
 They live in the repository, not on the site:
 
 - [Canonical documentation map](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/README.md): The documentation map for docs/canonical/ — one line per document and its role.
-- [Field Agent Consumption Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-agent-consumption-model.md): The Field Agent Consumption Model: the unified account of what a force acts on and how each target consumes the influence.
-- [field-ui API stability](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-api-stability.md): This document defines the frozen public API surface for field-ui 0.x and the compatibility rules that govern it: what is stable, what is experimental, how versions move, and how the alias window works.
-- [field-ui Authoring and Recipes](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-authoring-and-recipes.md): Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules.
-- [field-ui Definition Document](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-definition-document.md): The canonical concept and operating model.
-- [field-ui documentation standards](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-documentation-standards.md): This document governs how field-ui is described across the docs, the site, and the Lab: the canonical architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the "verify against…
-- [field-ui Interaction and Relationship Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
-- [field-ui Invisible Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-invisible-fields.md): The invisible-fields pattern: running the field with no drawn surface at all, so its measurements come back as typography, ink, and anchor.
-- [Natural Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-natural-fields.md): This document defines the Natural Field Translation System — how field-ui translates the four fundamental fields into interface behavior.
-- [field-ui platform architecture](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-platform-architecture.md): This document defines the current @fundamental-engine/platform architecture as of the runtime-platform unification phase (Phase D): the FrameScheduler, the six registries, lintPlatform(), the live <field-root> runtime…
-- [field-ui System Contracts](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-system-contracts.md): Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform.
-- [field-ui Testing and Conformance](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-testing-and-conformance.md): The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage.
-- [Time in the Field](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-time.md): How field-ui handles time: the three clocks (simulation, experiential, world), the temporal kernels, and the declared-timestamp contract (data-field-at).
-- [field-ui Visual Language and Geometry System](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-visual-language-and-geometry.md): Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics.
-- [Fundamental Field Behavior Table for field-ui](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
-- [Visualization Methods Taxonomy for field-ui](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/visualization-methods-taxonomy.md): Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction.
+- [Field Agent Consumption Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/agent-consumption-model.md): The Field Agent Consumption Model: the unified account of what a force acts on and how each target consumes the influence.
+- [Fundamental API stability](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/api-stability.md): This document defines the frozen public API surface for Fundamental 0.x and the compatibility rules that govern it: what is stable, what is experimental, how versions move, and how the alias window works.
+- [Fundamental Authoring and Recipes](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/authoring-and-recipes.md): Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules.
+- [Fundamental Definition Document](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/definition-document.md): The canonical concept and operating model.
+- [Fundamental documentation standards](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/documentation-standards.md): This document governs how Fundamental is described across the docs, the site, and the Lab: the canonical architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the "verify agai…
+- [Fundamental Field Behavior Table for Fundamental](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
+- [Fundamental Interaction and Relationship Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
+- [Fundamental Invisible Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/invisible-fields.md): The invisible-fields pattern: running the field with no drawn surface at all, so its measurements come back as typography, ink, and anchor.
+- [Natural Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/natural-fields.md): This document defines the Natural Field Translation System — how Fundamental translates the four fundamental fields into interface behavior.
+- [Fundamental platform architecture](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/platform-architecture.md): This document defines the current @fundamental-engine/platform architecture as of the runtime-platform unification phase (Phase D): the FrameScheduler, the six registries, lintPlatform(), the live <field-root> runtime…
+- [Fundamental System Contracts](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/system-contracts.md): Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform.
+- [Fundamental Testing and Conformance](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/testing-and-conformance.md): The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage.
+- [Time in the Field](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/time.md): How Fundamental handles time: the three clocks (simulation, experiential, world), the temporal kernels, and the declared-timestamp contract (data-field-at).
+- [Fundamental Visual Language and Geometry System](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/visual-language-and-geometry.md): Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics.
+- [Visualization Methods Taxonomy for Fundamental](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/visualization-methods-taxonomy.md): Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction.
 
 ## Examples
 

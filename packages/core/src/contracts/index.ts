@@ -1,5 +1,5 @@
 /**
- * field-ui contracts (Phase 4). The formal, inspectable contract layer over the engine:
+ * Fundamental contracts (Phase 4). The formal, inspectable contract layer over the engine:
  *  - `types.ts`   — named contract type definitions
  *  - `passport.ts` — every force's declarative, validated description
  *  - `guards.ts`  — dev-mode runtime enforcement (the Error Taxonomy)

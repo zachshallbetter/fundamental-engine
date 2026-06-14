@@ -1,4 +1,4 @@
-# field-ui: What It Is
+# Fundamental: What It Is
 
 > Elements bend the field. The field bends them back.
 
@@ -7,7 +7,7 @@
 > concept words map to them — `spring→tether`, `vortex→swirl`, `drag→viscosity`, `emitter→spawn`,
 > `reflect→wall`, `absorb→sink`, `phase`/`decay`→`morph`/`memory`. `mass` is a metric and `potential`
 > a diagnostic, not tokens; `fuse`/`fission`/`warp` are not implemented. See the lane discipline in
-> [field-ui-authoring-and-recipes.md](../canonical/field-ui-authoring-and-recipes.md) §5.
+> [authoring-and-recipes.md](../canonical/authoring-and-recipes.md) §5.
 
 Most interface effects are local.
 
@@ -15,7 +15,7 @@ A component changes state. A class changes. A transition plays. A card lifts. A 
 
 That model works, but it treats behavior as something each component owns by itself.
 
-field-ui starts from a different assumption:
+Fundamental starts from a different assumption:
 
 ```txt
 An interface is a shared field of meaning.
@@ -87,7 +87,7 @@ A normal animation system says:
 When state changes, animate from A to B.
 ```
 
-field-ui says:
+Fundamental says:
 
 ```txt
 State exists inside a field.
@@ -119,7 +119,7 @@ What should bind?
 What should flow?
 ```
 
-field-ui is not only about making interfaces move.
+Fundamental is not only about making interfaces move.
 
 It is about making interface behavior caused, measurable, inspectable, accessible, and composable.
 
@@ -142,10 +142,10 @@ The system is the shared field context that connects them.
 The current architecture is:
 
 ```txt
-field-ui   host-driven, renderer-agnostic field engine
-@field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
-@field-ui/elements   native HTML and web component authoring
-@field-ui/react   React adapter over the same contracts
+Fundamental   host-driven, renderer-agnostic field engine
+@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/elements   native HTML and web component authoring
+@fundamental-engine/react   React adapter over the same contracts
 ```
 
 The core computes field behavior.
@@ -217,7 +217,7 @@ They show motion. They show density. They show flow. They make invisible structu
 
 But particles are not the whole system.
 
-In field-ui, a particle is only the lightest kind of agent.
+In Fundamental, a particle is only the lightest kind of agent.
 
 Other agents can include:
 
@@ -317,7 +317,7 @@ Some things belong together. That is binding.
 
 Some things change, expire, resolve, or decay. That is transformation.
 
-field-ui gives those relations a runtime.
+Fundamental gives those relations a runtime.
 
 ## Natural fields are not tokens
 
@@ -479,7 +479,7 @@ A heading relates to a section. A citation relates to a source. A label relates 
 
 Most interfaces represent relationships passively.
 
-field-ui can make them active.
+Fundamental can make them active.
 
 A relationship can have:
 
@@ -585,7 +585,7 @@ Use for AI answers, research notes, legal claims, source-backed documents.
 
 Claims become bodies. Sources bind to claims. Contradictions create charge. Verified claims gain coherence.
 
-Recipes are how field-ui becomes authorable.
+Recipes are how Fundamental becomes authorable.
 
 They turn field theory into practical interface patterns.
 
@@ -756,8 +756,8 @@ The field is the behavior layer.
 Use the host-driven core when you own the canvas or renderer.
 
 ```ts
-import { createField } from "field-ui";
-import { browserHost } from "@field-ui/platform";
+import { createField } from "Fundamental";
+import { browserHost } from "@fundamental-engine/platform";
 
 const field = createField(canvas, {
   host: browserHost()
@@ -793,7 +793,7 @@ docs/lab = proof surfaces
 
 ## The pitch
 
-field-ui gives interfaces a missing layer.
+Fundamental gives interfaces a missing layer.
 
 HTML gives structure.
 
@@ -803,7 +803,7 @@ JavaScript gives behavior.
 
 Design systems give components and tokens.
 
-field-ui gives relational behavior.
+Fundamental gives relational behavior.
 
 It lets the interface describe:
 
@@ -823,7 +823,7 @@ causality
 
 That is the part most UI systems still fake with one-off state and decorative transitions.
 
-field-ui makes it part of the runtime.
+Fundamental makes it part of the runtime.
 
 The short version:
 
@@ -834,13 +834,13 @@ Four fields. Many expressions. One DOM runtime.
 The sharper version:
 
 ```txt
-field-ui turns interface state into relational physics.
+Fundamental turns interface state into relational physics.
 ```
 
 The most accurate version:
 
 ```txt
-field-ui turns semantic DOM, user attention, relationships, data, events, particles, visual layers, and feedback into a shared field runtime where behavior is caused, measurable, inspectable, accessible, and composable.
+Fundamental turns semantic DOM, user attention, relationships, data, events, particles, visual layers, and feedback into a shared field runtime where behavior is caused, measurable, inspectable, accessible, and composable.
 ```
 
 That is why it is different.

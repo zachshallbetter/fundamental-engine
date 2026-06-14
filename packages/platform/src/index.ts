@@ -1,7 +1,7 @@
 /**
  * @fundamental-engine/platform — the platform-adjacent layer: native-first registries that let the field
  * engine treat the DOM as a connected, measurable, semantic environment. Strict dependency
- * direction: this package depends on `field-ui` (core) for contracts; core never depends on it.
+ * direction: this package depends on `Fundamental` (core) for contracts; core never depends on it.
  *
  * Registries: MeasurementRegistry · StateRegistry · FeedbackRegistry · RelationshipRegistry ·
  * VisualBindingRegistry · OverlayRegistry, bound by createFieldPlatform.

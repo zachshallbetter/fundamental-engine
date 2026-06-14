@@ -3,7 +3,7 @@
 // scanning. The evidence reveal, the market sparkline draw-in, the library bar sweep, and
 // the memory stagger all gate on it; this module is the condition with a name.
 
-/** The family's reading-pace threshold (px/frame; see field-ui-time.md / scrollV's caveats). */
+/** The family's reading-pace threshold (px/frame; see time.md / scrollV's caveats). */
 export const READING_PACE_MAX = 2.0;
 
 /**

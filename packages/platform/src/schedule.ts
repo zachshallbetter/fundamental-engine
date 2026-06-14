@@ -110,7 +110,7 @@ export class FrameScheduler {
       frame: this.count,
       message: `"${op}" ran in the ${phase} phase; allowed only in: ${allowed.join(', ')}`,
     };
-    if (this.strict) throw new Error(`[field-ui/platform] ${v.message}`);
+    if (this.strict) throw new Error(`[Fundamental/platform] ${v.message}`);
     this.recorded.push(v);
   }
 

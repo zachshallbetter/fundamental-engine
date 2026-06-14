@@ -37,7 +37,7 @@ type LaneId = "open" | "shipped";
 // the canonical slot is fui:backlog:board:v1; the pre-helper key migrates forward on first
 // read (it stored JSON, so the helper's legacy migration covers it).
 const STORE_KEY = "backlog:board:v1";
-const LEGACY_STORE_KEYS = ["field-ui:backlog:board:v1"];
+const LEGACY_STORE_KEYS = ["Fundamental:backlog:board:v1"];
 const DRAG_THRESHOLD = 6; // px of travel before a mouse/pen pointerdown becomes a drag
 const EDGE = 60; // px from the viewport edge where auto-scroll engages
 const EDGE_SPEED = 16; // max px/frame of auto-scroll

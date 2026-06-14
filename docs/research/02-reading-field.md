@@ -1,12 +1,12 @@
 # Reading Field: Attention, Memory, and Relationship Awareness in Long-Form Web Documents
 
-> **Status: research draft (preprint, work in progress).** Paper 2 of the field-ui family — the
+> **Status: research draft (preprint, work in progress).** Paper 2 of the Fundamental family — the
 > reading / long-form document validator. Claims verified against the codebase and canonical docs as
 > of 2026-06-07. See the [series index](README.md) and *the caveat canon* therein. This is a preprint
 > draft, not canonical product documentation.
 
 **Author:** Zach Shallbetter
-**Series:** field-ui Research Papers, Paper 2 of 8 (the reading / long-form document case study)
+**Series:** Fundamental Research Papers, Paper 2 of 8 (the reading / long-form document case study)
 **Companion papers:** [Field Translation Runtime](01-field-translation-runtime.md) (the flagship
 paradigm paper, whose vocabulary this paper assumes); [Evidence Fields](03-evidence-fields.md) (AI
 trust and provenance). See the [series index](README.md).
@@ -123,7 +123,7 @@ than re-derive.
 
 ## 2. Background and related work
 
-The Reading Field sits at the intersection of several literatures. We position field-ui against each
+The Reading Field sits at the intersection of several literatures. We position Fundamental against each
 and, following the family's convention, mark every external citation that still needs a confirmed
 reference as `[TODO: cite]`, with stable keys that should be assembled into
 [`references.md`](references.md) (the *Reading on screen, navigation, and document orientation* section already reserves space
@@ -161,7 +161,7 @@ externalizing it helps re-finding is one of this paper's central hypotheses (§5
 [TODO: cite spatial/location memory for document position]
 
 **Attention and salience.** As in Paper 1 (§2), computational saliency models *where* the eye is
-drawn; field-ui instead treats attention as a *conserved, continuous field* over interface elements
+drawn; Fundamental instead treats attention as a *conserved, continuous field* over interface elements
 — *"selection is a decision; attention is a field"* (Paper 1, §8.1). In the reading case, attention is
 operationalized as viewport-centre proximity scaled by visibility, and its budgetary / conserved
 character (emphasis as zero-sum across sections) is inherited from the flagship model. The relevant
@@ -169,7 +169,7 @@ HCI work on attention, distraction, and reading interruption frames the *perceiv
 measure of §5.
 [TODO: cite attention/distraction/interruption in reading-while-using-an-interface]
 
-The distinguishing stance, across all of these, is the one Paper 1 makes general: field-ui does not
+The distinguishing stance, across all of these, is the one Paper 1 makes general: Fundamental does not
 add a navigation widget *beside* the document; it makes the document's own structure — sections,
 references, table of contents — and the reader's own attention into measured participants in one
 field, while keeping the semantic substrate intact and authoritative.
@@ -723,7 +723,7 @@ empirical setting in which Paper 4's reduced-motion conformance model can be *be
 
 ## 9. Conclusion
 
-We have specialized the field-ui paradigm to long-form reading and stated a single, falsifiable claim:
+We have specialized the Fundamental paradigm to long-form reading and stated a single, falsifiable claim:
 **a long-form document becomes easier to navigate and orient within when its sections, citations,
 references, and the reader's attention participate in a measured field of memory and relation —
 without sacrificing semantic HTML.** We gave a precise model — sections as bodies, viewport-centre
@@ -762,11 +762,11 @@ Every model claim in this paper is checkable against the repository as of the ve
   attention model, free of DOM dependencies: `packages/core/` (the empty-allowlist DOM-boundary test
   `packages/core/src/core/dom-boundary.test.ts`; Paper 1 §4.2).
 - **The Natural Field Translation classification** that places *gravity → priority* and *memory* as a
-  metric: `packages/core/src/config/manual.ts`; `docs/canonical/field-ui-natural-fields.md`.
+  metric: `packages/core/src/config/manual.ts`; `docs/canonical/natural-fields.md`.
 
-The corroborating canonical documents: `docs/canonical/field-ui-interaction-and-relationship-model.md`
+The corroborating canonical documents: `docs/canonical/interaction-and-relationship-model.md`
 (§5 Attention as a Field, §7 RelationshipAgent + platform binding, §11 User Movement as Memory, §22
-Reading and Editorial Experiences) and `docs/canonical/field-ui-natural-fields.md` (the Reading Field
+Reading and Editorial Experiences) and `docs/canonical/natural-fields.md` (the Reading Field
 recipe = gravity + memory + relationships). The study materials, answer keys, analysis code, and
 pre-registration are to be released with the study when it is run (§5.9).
 

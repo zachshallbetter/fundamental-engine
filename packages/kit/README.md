@@ -1,6 +1,6 @@
 # @fundamental-engine/kit
 
-**The whole [field-ui](https://fundamental-engine.com) suite in one install.** `@fundamental-engine/kit` is a
+**The whole [Fundamental](https://fundamental-engine.com) suite in one install.** `@fundamental-engine/kit` is a
 meta-package: it has no code of its own — it just depends on every published `@fundamental-engine/*` package, so
 a single install pulls the entire stack. Import from the specific package you need.
 

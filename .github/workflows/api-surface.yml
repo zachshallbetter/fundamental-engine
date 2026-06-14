@@ -76,7 +76,7 @@ jobs:
               const fmt = (lines) => lines.map((l) => `- \`${l}\``).join('\n');
               body = [
                 marker,
-                '**API surface delta** (frozen public contract — see `docs/canonical/field-ui-api-stability.md`):',
+                '**API surface delta** (frozen public contract — see `docs/canonical/api-stability.md`):',
                 added.length ? `\n**Added** (allowed in a patch):\n${fmt(added)}` : '',
                 removed.length
                   ? `\n**Removed / renamed** (BREAKING — needs a 0.MINOR bump + CHANGELOG migration note):\n${fmt(removed)}`

@@ -665,9 +665,9 @@ Every claim in this paper is checkable against the repository.
 - **The count gate:** `scripts/check-readme.mjs` (`pnpm check:readme`) — fails the build if the
   README's stated recipe count diverges from `core.FIELD_RECIPES.length`.
 
-The canonical design documents corroborate the framing: `docs/canonical/field-ui-authoring-and-recipes.md`
+The canonical design documents corroborate the framing: `docs/canonical/authoring-and-recipes.md`
 (§5 schema, §7 the 64-recipe catalog + tiers, §4 the intent compiler) and
-`docs/canonical/field-ui-natural-fields.md` ("Recipes by meaning").
+`docs/canonical/natural-fields.md` ("Recipes by meaning").
 
 ## Appendix B. Conversion notes (markdown → preprint)
 

@@ -29,7 +29,7 @@ are adapters, not requirements.
 
 ## The idea
 
-Most particle backgrounds are one-way: the canvas reacts to the cursor. field-ui is two-way, and it is bound to your layout. It is a **DOM ⇄ field runtime** loop, not DOM ⇄ canvas.
+Most particle backgrounds are one-way: the canvas reacts to the cursor. Fundamental is two-way, and it is bound to your layout. It is a **DOM ⇄ field runtime** loop, not DOM ⇄ canvas.
 
 1. **Elements to field.** The platform's MeasurementRegistry reads each body's `getBoundingClientRect()` once per frame (the read phase). The body exerts force on the matter near it.
 2. **Field to elements.** The field samples density around each body; the FeedbackRegistry writes it back as CSS variables (`--field-density`, with the compact `--d` and `--forces-density` as legacy aliases) and thresholded events. Your CSS reads them to drive weight, size, color, or position.
@@ -164,7 +164,7 @@ Browse and run all 64 at the [recipe gallery](https://fundamental-engine.com/doc
 
 **Verified, not eyeballed.** A conformance framework fires known particles into each force and checks the measured trajectory against the math. The same catalog drives the test suite and the visual Lab. The repository carries **600+ deterministic tests** (core, platform, scheduler, lint, and the site) and a global safety sweep that holds every force finite, bounded in velocity and heat, and conserved in count.
 
-**The public surface is frozen for `0.x`.** `pnpm check:api` fails the build if a stable export changes, `pnpm check:dist` verifies every package's entry points resolve, and `pnpm check:readme` keeps these READMEs true to the code. See [API stability](docs/canonical/field-ui-api-stability.md) for the frozen surface and the compatibility rules.
+**The public surface is frozen for `0.x`.** `pnpm check:api` fails the build if a stable export changes, `pnpm check:dist` verifies every package's entry points resolve, and `pnpm check:readme` keeps these READMEs true to the code. See [API stability](docs/canonical/api-stability.md) for the frozen surface and the compatibility rules.
 
 ## Packages
 
@@ -181,11 +181,11 @@ Want everything in one install? **`npm i fundamental-engine`** — the bare umbr
 
 The dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
 `vanilla → platform → core`. `@fundamental-engine/core` imports zero DOM (renderer-agnostic); the browser host
-adapter lives in `@fundamental-engine/platform`. See [`docs/canonical/field-ui-platform-architecture.md`](docs/canonical/field-ui-platform-architecture.md).
+adapter lives in `@fundamental-engine/platform`. See [`docs/canonical/platform-architecture.md`](docs/canonical/platform-architecture.md).
 
 ## Availability
 
-The packages are published to npm under the `@field-ui` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. `@fundamental-engine/kit` is an optional bundle that installs the whole suite at once. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
+The packages are published to npm under the `@Fundamental` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. `@fundamental-engine/kit` is an optional bundle that installs the whole suite at once. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
 
 ## Documentation
 
@@ -193,13 +193,13 @@ The packages are published to npm under the `@field-ui` scope, **with provenance
 - **Lab** at [fundamental-engine.com/lab](https://fundamental-engine.com/lab): fire particles into a force, watch the track, share the result through a URL.
 - **Recipe gallery** at [fundamental-engine.com/docs/gallery](https://fundamental-engine.com/docs/gallery) and the **inspector** at [fundamental-engine.com/docs/inspector](https://fundamental-engine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map (canonical architecture, engine reference, planning archive).
-- [`docs/canonical/field-ui-api-stability.md`](docs/canonical/field-ui-api-stability.md): the frozen `0.x` surface and compatibility rules.
+- [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md): the frozen `0.x` surface and compatibility rules.
 - [`docs/engine-reference/forces-system.md`](docs/engine-reference/forces-system.md): the full engine specification.
 - [`docs/engine-reference/forces-formulas.md`](docs/engine-reference/forces-formulas.md): per-force formulas and the attribute handbook.
 
 ## Develop
 
-field-ui is a pnpm monorepo. Development needs Node 22 or newer, because the test runner executes TypeScript directly.
+Fundamental is a pnpm monorepo. Development needs Node 22 or newer, because the test runner executes TypeScript directly.
 
 ```bash
 pnpm install
@@ -230,7 +230,7 @@ Issues and pull requests are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTIN
 
 ## Origins
 
-field-ui began as the homepage of [zachshallbetter.com](https://zachshallbetter.com) and outgrew it. This repository is the engine, its specification, and the prototype it was refactored from.
+Fundamental began as the homepage of [zachshallbetter.com](https://zachshallbetter.com) and outgrew it. This repository is the engine, its specification, and the prototype it was refactored from.
 
 ## License
 

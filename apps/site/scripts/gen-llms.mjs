@@ -154,9 +154,9 @@ const canonLines = canon.map((c) => line(c.h1, `${CANON_BLOB}/${c.file}`, c.desc
 
 const exampleLines = EXAMPLES.map((e) => line(e.name, `${SITE_URL}${e.href}`, e.hook));
 
-const llms = `# field-ui
+const llms = `# Fundamental
 
-> field-ui is a platform-native relational field runtime for the DOM. The core (\`@fundamental-engine/core\`)
+> Fundamental is a platform-native relational field runtime for the DOM. The core (\`@fundamental-engine/core\`)
 > computes renderer-agnostic field behavior; \`@fundamental-engine/platform\` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
 > scheduling; \`@fundamental-engine/elements\` exposes native HTML and web-component authoring; \`@fundamental-engine/react\`
@@ -200,7 +200,7 @@ ${exampleLines.join('\n')}
 // llms-full.txt
 // ---------------------------------------------------------------------------
 const SEP = '='.repeat(72);
-const fullHeader = `# field-ui — full canonical documentation
+const fullHeader = `# Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
 Generated: ${DATE} by apps/site/scripts/gen-llms.mjs

@@ -1,6 +1,6 @@
 /**
  * System report (testing-and-conformance, "agent report" / productization). Aggregates the whole
- * field-ui model into one inspectable object: how many contracts, force passports, conformance
+ * Fundamental model into one inspectable object: how many contracts, force passports, conformance
  * experiments, agent types, and recipes the build ships — and whether every force is both
  * passported and conformance-covered. A productization artifact: a build can print it, a CI can
  * assert on it, an Inspector can render it.

@@ -1,5 +1,5 @@
 /**
- * field-ui formal contracts (Phase 4 — system-contracts.md §1–§18).
+ * Fundamental formal contracts (Phase 4 — system-contracts.md §1–§18).
  *
  * The engine already *implements* its contracts (the `Force`, `Body`, `Env` shapes in
  * `core/types.ts`, the `ShadowRegistry`, the conformance framework). This module makes them

@@ -1,6 +1,6 @@
 /**
  * VisualBindingRegistry — bind an expressive visual layer (SVG, Canvas, WebGL) to its semantic DOM
- * source without duplicating meaning or harming accessibility. The native primitive field-ui wishes
+ * source without duplicating meaning or harming accessibility. The native primitive Fundamental wishes
  * existed: a declarative "this visual represents that semantic element; don't double-expose it".
  *
  * The semantic source stays real HTML; the visual is `aria-hidden` unless it carries independent

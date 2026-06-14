@@ -1,4 +1,4 @@
-// Generate the "project atoms" — one record per real piece of field-ui (forces, recipes, presets,
+// Generate the "project atoms" — one record per real piece of Fundamental (forces, recipes, presets,
 // metrics, truth modes, natural fields, packages). Bound to the home field's particles so every dot
 // IS a piece of the project. Richness varies on purpose (a force knows a lot about itself; a metric
 // is a one-liner) → each atom's `weight` (0..1) drives its particle's mass/size. Regenerate with

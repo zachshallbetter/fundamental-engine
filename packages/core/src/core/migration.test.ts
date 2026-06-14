@@ -1,5 +1,5 @@
 /**
- * Packaging conformance — the @fundamental-engine package family. After the field-ui →
+ * Packaging conformance — the @fundamental-engine package family. After the Fundamental →
  * fundamental-engine rename (a HARD rename: no compatibility shims, since there are no external
  * consumers yet), these tests pin the package metadata and the CSS-variable write-both contract
  * (source-level, since the live write-back needs a DOM/canvas the zero-dep harness can't reach).

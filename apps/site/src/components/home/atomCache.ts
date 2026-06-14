@@ -12,10 +12,10 @@ export interface Atom {
   data?: Record<string, unknown>;
 }
 
-const DB_NAME = "field-ui";
+const DB_NAME = "Fundamental";
 const STORE = "kv";
 const REC_KEY = "atoms";
-const LS_KEY = "field-ui:atoms";
+const LS_KEY = "Fundamental:atoms";
 
 interface Cached {
   url: string;

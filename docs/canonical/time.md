@@ -1,5 +1,5 @@
 > **Status: canonical.**
-> How field-ui handles time: the three clocks (simulation, experiential, world), the temporal
+> How Fundamental handles time: the three clocks (simulation, experiential, world), the temporal
 > kernels, and the declared-timestamp contract (`data-field-at`). Everything here is shipped
 > and verified against code except where marked; the kernels live in
 > `packages/core/src/core/temporal.ts`, the derivation in the platform metric pipeline, and
@@ -11,9 +11,9 @@
 
 | Document | Role |
 |---|---|
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | The metric lanes (`recency`, `memory`) and feedback variables |
-| [`field-ui-invisible-fields.md`](field-ui-invisible-fields.md) | The live channels the clocks feed |
-| [`field-ui-natural-fields.md`](field-ui-natural-fields.md) | Weak → transformation: the conceptual home of decay |
+| [`system-contracts.md`](system-contracts.md) | The metric lanes (`recency`, `memory`) and feedback variables |
+| [`invisible-fields.md`](invisible-fields.md) | The live channels the clocks feed |
+| [`natural-fields.md`](natural-fields.md) | Weak → transformation: the conceptual home of decay |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Truth modes (the kernels are *designed*, not physical) |
 | [`../engine-reference/physics-workover.md`](../engine-reference/physics-workover.md) | v0.4: real `dt` seconds + the fixed-step accumulator (simulation time's future) |
 
@@ -27,7 +27,7 @@ A field page experiences three kinds of time, and they must not be conflated:
 | **Experiential time** | the *reader's* time — what has been attended, for how long, how recently | the platform metric lanes: `attention` (eased now), `memory` (slow integral of attention), `recency` (decays from the last engagement) | shipped (the metric pipeline) |
 | **World time** | the *data's* time — when things happened or will happen | `data-field-at` timestamps + the temporal kernels | shipped (this document) |
 
-The lanes stay separate the way all field-ui lanes do: simulation time is physics, experiential
+The lanes stay separate the way all Fundamental lanes do: simulation time is physics, experiential
 time is *inferred* from interaction, world time is *declared* by the data. When both could
 apply, **declaration wins over inference** (§3).
 
@@ -91,7 +91,7 @@ the page owns the semantics*:
 - The kernels do not schedule anything — they map time to weight. Scheduling (polling
   cadence, reveal pacing) is the live-data plumbing (`apps/site/src/lib/live-data.ts`) and
   the reading-pace gate, documented in
-  [`field-ui-invisible-fields.md`](field-ui-invisible-fields.md) §5–6.
+  [`invisible-fields.md`](invisible-fields.md) §5–6.
 - Simulation `dt` is not wall time (until v0.4's fixed-step work); nothing in the engine
   consumes the kernels per-frame — pages and the platform pipeline do, at their own cadence.
 - Experiential `memory`/`recency` (inferred) and world-grounded `recency` (declared) are the

@@ -4,7 +4,7 @@
 > identified performance gaps and the `FieldPerf` design direction for closing them.
 > Related: [forces-system.md §13](forces-system.md#13-public-field-api-windowfield),
 > [forces-system.md §18](forces-system.md#18-accessibility-reduced-motion-performance),
-> [field-ui-api-stability.md](../canonical/field-ui-api-stability.md).
+> [api-stability.md](../canonical/api-stability.md).
 
 # Field runtime observable surface
 

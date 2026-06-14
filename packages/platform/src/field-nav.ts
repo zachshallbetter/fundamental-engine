@@ -1,5 +1,5 @@
 /**
- * `bindFieldNav` — the navigation-chrome idiom the field-ui site hand-spread across a dozen surfaces
+ * `bindFieldNav` — the navigation-chrome idiom the Fundamental site hand-spread across a dozen surfaces
  * (top nav, chapter rail, docs sidebar/outline/search, breadcrumbs, pagers, footer, filter rosters),
  * lifted into the platform. It runs a recipe SIGNALS-ONLY (`render: []`) over the `<a>` links inside a
  * root: every link becomes a body, the current link can be pinned as the "well" (`data-field-attention

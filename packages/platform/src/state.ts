@@ -1,6 +1,6 @@
 /**
  * StateRegistry — typed, observable element state that is NOT accessibility state. The native
- * primitive field-ui wishes existed: a place to hold numeric/boolean/vector2 channels (density,
+ * primitive Fundamental wishes existed: a place to hold numeric/boolean/vector2 channels (density,
  * attention, lit, pull) per element, separate from ARIA, that CSS and JS can both consume. This
  * registry only *holds* state; the FeedbackRegistry writes it to the DOM (read-phase vs write-phase).
  */

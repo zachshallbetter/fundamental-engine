@@ -1,6 +1,6 @@
 /**
  * createFieldPlatform — the coordinator that binds the platform registries to one shared
- * FrameScheduler. The native participation surface field-ui wishes the browser exposed.
+ * FrameScheduler. The native participation surface Fundamental wishes the browser exposed.
  *
  * The scheduler owns loop discipline: every frame walks discover → read → compute → state → write →
  * render in order (see schedule.ts). By default the platform wires the two phases the registries own

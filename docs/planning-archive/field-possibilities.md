@@ -1,7 +1,7 @@
 # field-possibilities
 
 > Status: planning / possibility space.  
-> This document describes what field-ui can become beyond the current implementation. It is not the source of truth for shipped behavior.
+> This document describes what Fundamental can become beyond the current implementation. It is not the source of truth for shipped behavior.
 >
 > Current implementation truth lives in the package code, conformance tests, diagnostics, and canonical docs. This document exists to keep the wider idea space coherent.
 >
@@ -13,7 +13,7 @@
 
 ## 0. Purpose
 
-field-ui is not a particle background.
+Fundamental is not a particle background.
 
 It is a platform-native relational field runtime for the DOM.
 
@@ -44,7 +44,7 @@ class changes style
 animation decorates transition
 ```
 
-field-ui introduces a different model:
+Fundamental introduces a different model:
 
 ```txt
 interface owns a shared field
@@ -73,10 +73,10 @@ The interface becomes a shared, inspectable field of meaning.
 The current architecture should guide every possibility.
 
 ```txt
-field-ui   host-driven, renderer-agnostic field engine
-@field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
-@field-ui/elements   native HTML and web component authoring
-@field-ui/react   React adapter over the same contracts
+Fundamental   host-driven, renderer-agnostic field engine
+@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/elements   native HTML and web component authoring
+@fundamental-engine/react   React adapter over the same contracts
 ```
 
 Canvas is one render surface.
@@ -543,7 +543,7 @@ Risk Horizon
 System Pulse
 ```
 
-The recipe set is the clearest way to make field-ui usable.
+The recipe set is the clearest way to make Fundamental usable.
 
 It turns field theory into product patterns.
 
@@ -630,7 +630,7 @@ Review Constellation
 
 The DOM is a tree, but interfaces are graphs.
 
-field-ui should continue moving toward relationship-native interface behavior.
+Fundamental should continue moving toward relationship-native interface behavior.
 
 Relationship sources:
 
@@ -793,7 +793,7 @@ Diagnostics are not developer-only extras.
 
 They are part of the trust model.
 
-A mature field-ui surface should be able to answer:
+A mature Fundamental surface should be able to answer:
 
 ```txt
 Why is this moving?
@@ -972,9 +972,9 @@ status
 
 ## 19. Platform possibilities
 
-The web platform already gives field-ui the raw materials.
+The web platform already gives Fundamental the raw materials.
 
-But field-ui also points toward missing platform primitives:
+But Fundamental also points toward missing platform primitives:
 
 ```txt
 native relationship graph
@@ -989,18 +989,18 @@ attention state
 field-aware DevTools
 ```
 
-field-ui can implement these today as a platform-adjacent layer.
+Fundamental can implement these today as a platform-adjacent layer.
 
 Long-term, it can also serve as a working argument for what the web platform itself could grow.
 
 ## 20. Research possibilities
 
-field-ui can become a research artifact.
+Fundamental can become a research artifact.
 
 Possible research frame:
 
 ```txt
-field-ui: A Field Translation Runtime for Relational DOM Interfaces
+Fundamental: A Field Translation Runtime for Relational DOM Interfaces
 ```
 
 Claims to evaluate:
@@ -1152,7 +1152,7 @@ The old model:
 UI as isolated components with decorative transitions.
 ```
 
-The field-ui model:
+The Fundamental model:
 
 ```txt
 UI as a shared, inspectable field of meaning.
@@ -1178,7 +1178,7 @@ visuals have semantic sources
 behavior can explain itself
 ```
 
-That is the point of field-ui.
+That is the point of Fundamental.
 
 Not a physics toy.
 

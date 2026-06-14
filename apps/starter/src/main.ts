@@ -1,5 +1,5 @@
 /**
- * The whole field-ui integration for this starter, in one file.
+ * The whole Fundamental integration for this starter, in one file.
  *
  * Three surfaces, one recipe (priority-well):
  *   1. Declarative — importing '@fundamental-engine/elements' upgrades <field-root>, which scans the page for

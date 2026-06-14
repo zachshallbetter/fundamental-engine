@@ -1,4 +1,4 @@
-# field-ui
+# Fundamental
 
 **The renderer-agnostic field engine.** `@fundamental-engine/core` computes the field: forces, particles, metrics,
 recipes, diagnostics, and conformance, against plain data, with **zero runtime dependencies** and
@@ -21,7 +21,7 @@ npm i @fundamental-engine/core
 The browser host lives in [`@fundamental-engine/platform`](../platform); most apps reach for a thin adapter
 ([`@fundamental-engine/elements`](../elements), [`@fundamental-engine/react`](../react), [`@fundamental-engine/vanilla`](../vanilla))
 instead of wiring the host themselves. The public surface is frozen for `0.x` (see
-[API stability](../../docs/canonical/field-ui-api-stability.md)).
+[API stability](../../docs/canonical/api-stability.md)).
 
 ## What's inside
 

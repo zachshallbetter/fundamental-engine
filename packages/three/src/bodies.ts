@@ -1,5 +1,5 @@
 /**
- * Meshes as bodies — the 3D form of field-ui's core idea ("every element is a body"). A
+ * Meshes as bodies — the 3D form of Fundamental's core idea ("every element is a body"). A
  * `THREE.Object3D` registers as a field body: it bends the field (bodies are force sources), the
  * swarm responds to it, and the field's local density bends *it* back through feedback. And because
  * a body **carries a data record**, a mesh can be a meaningful agent — a bloom carrying its genome,

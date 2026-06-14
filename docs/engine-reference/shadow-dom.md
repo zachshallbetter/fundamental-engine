@@ -1,7 +1,7 @@
 > **Status: as-built force-engine reference.**
-> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current Fundamental platform architecture — for that see [../canonical/platform-architecture.md](../canonical/platform-architecture.md) and [../canonical/system-contracts.md](../canonical/system-contracts.md).
 
-# Shadow DOM Participation Model for field-ui
+# Shadow DOM Participation Model for Fundamental
 
 > **Status: core model implemented.** The host-first, event-driven registration model
 > (§§1–7, 10, 11, 15, 16) now ships: the field listens for the composed `field:register-body`
@@ -24,7 +24,7 @@
 
 ## 1. Definition
 
-Shadow DOM support in field-ui means that encapsulated components can participate in the same reciprocal field as normal DOM elements without exposing their internal markup.
+Shadow DOM support in Fundamental means that encapsulated components can participate in the same reciprocal field as normal DOM elements without exposing their internal markup.
 
 A component may hide its structure, styles, and rendering details inside a shadow root, but if it participates in the field, it must expose a public physical body to the field engine.
 
@@ -55,7 +55,7 @@ I am a body. Here is my rectangle. Here are my forces. Write my field state here
 
 ## 3. Purpose
 
-The Shadow DOM participation model allows field-ui to work across:
+The Shadow DOM participation model allows Fundamental to work across:
 
 - plain HTML elements,
 - custom elements,
@@ -886,7 +886,7 @@ data-field targets a specific field data-scope global bypasses local cell data-s
 
 ## 30. Summary
 
-Shadow DOM participation in field-ui is a host-first, event-driven body registration model.
+Shadow DOM participation in Fundamental is a host-first, event-driven body registration model.
 
 The root engine does not inspect component internals.
 

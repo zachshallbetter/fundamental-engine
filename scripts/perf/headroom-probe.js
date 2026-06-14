@@ -5,14 +5,14 @@
  * duration upward until the page can no longer hold its native refresh rate.
  * The largest spin that still holds gives:
  *
- *     W ≈ budget − S_max   (per-frame compute cost of field-ui)
+ *     W ≈ budget − S_max   (per-frame compute cost of Fundamental)
  *     headroom ≈ budget − W − S_max  (free budget remaining)
  *
  * where `budget` is the inverse of the display refresh rate (8.33 ms at 120 Hz,
  * 16.67 ms at 60 Hz). This converts "zero dropped frames" into a concrete number.
  *
  * ── Usage ──────────────────────────────────────────────────────────────────
- * 1. Open the field-ui page you want to measure in Chrome.
+ * 1. Open the Fundamental page you want to measure in Chrome.
  * 2. Open DevTools → Console.
  * 3. Paste this entire script and press Enter.
  * 4. The probe runs for ~90 seconds, printing a live table as each spin level
@@ -29,7 +29,7 @@
  * The probe binary-searches over spin values from MIN_SPIN to MAX_SPIN ms.
  *
  * The busy-spin uses a tight Date.now() loop (not setTimeout) so it occupies
- * the main thread exactly — the same thread field-ui runs on.
+ * the main thread exactly — the same thread Fundamental runs on.
  *
  * ── Output fields ──────────────────────────────────────────────────────────
  * budget_ms      — detected refresh interval (1000 / fps)
@@ -152,7 +152,7 @@
     console.log('\n── headroom-probe result ──────────────────────────────────────');
     console.table(summary);
     console.log(
-      `\nInterpretation: field-ui uses ~${W_estimate} ms/frame on the main thread ` +
+      `\nInterpretation: Fundamental uses ~${W_estimate} ms/frame on the main thread ` +
       `(${(100 - parseFloat(headroomPct)).toFixed(1)} % of the ${budget.toFixed(2)}-ms budget). ` +
       `${headroomPct} % headroom remaining.`
     );

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "The first five minutes with field-ui — a plain Vite + HTML app that consumes the packages exactly as an outside project would: declarative <field-root>, programmatic applyRecipe(), data-driven bindData(), a reduced-motion fallback, and a live inspector readout.",
+  "description": "The first five minutes with Fundamental — a plain Vite + HTML app that consumes the packages exactly as an outside project would: declarative <field-root>, programmatic applyRecipe(), data-driven bindData(), a reduced-motion fallback, and a live inspector readout.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

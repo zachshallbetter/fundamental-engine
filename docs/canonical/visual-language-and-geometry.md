@@ -1,28 +1,28 @@
 > **Status: canonical.**
-> Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Visual Language and Geometry System
+# Fundamental Visual Language and Geometry System
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Core concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contracts |
+| [`definition-document.md`](definition-document.md) | Core concept |
+| [`system-contracts.md`](system-contracts.md) | Contracts |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render and diagnostic layers |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | User, relationship, and DOM agents |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring model |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | User, relationship, and DOM agents |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring model |
 
 ## Purpose
 
-This document defines how `field-ui` should treat visual form as part of the field system.
+This document defines how `Fundamental` should treat visual form as part of the field system.
 
 The field should not only move particles. It should be able to influence typography, color, shape, distance, pattern, emission, containers, surfaces, hierarchy, and semantic visual state.
 
-The visual system is native-platform-first, dependency-light, and framework-agnostic. The `field-ui` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
+The visual system is native-platform-first, dependency-light, and framework-agnostic. The `Fundamental` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
 
-These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `field-ui` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
+These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `Fundamental` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
 
 Implementation should use fundamental web APIs wherever possible:
 
@@ -107,7 +107,7 @@ Webfonts are vector systems with semantic text constraints.
 
 A font contains glyph outlines, spacing, kerning, hinting, OpenType features, Unicode mappings, ligatures, variable axes, and rendering metadata. Glyphs can be treated as vector geometry, but live text should remain semantic whenever possible.
 
-`field-ui` should support three typography layers.
+`Fundamental` should support three typography layers.
 
 ## 3.1 Live Text Layer
 
@@ -187,7 +187,7 @@ For longer text, hidden real text is preferred over large `aria-label` content.
 
 Editing a font file itself is a type-design workflow, not ordinary field rendering.
 
-`field-ui` should not require font-file modification for runtime effects.
+`Fundamental` should not require font-file modification for runtime effects.
 
 Runtime behavior should prefer:
 
@@ -773,7 +773,7 @@ Typography pattern:
 
 ## 17. Dependency-Free Implementation Rule
 
-Core `field-ui` should avoid dependencies.
+Core `Fundamental` should avoid dependencies.
 
 Use platform APIs first:
 

@@ -1,9 +1,9 @@
 > **Status: as-built engine + platform module map.**
 > Accurate for the source tree, force catalog, classes, services, render modes, and the
 > platform topology as of current `main`. For the authoritative *architecture* narrative see
-> [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md),
-> [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md), and
-> [../canonical/field-ui-agent-consumption-model.md](../canonical/field-ui-agent-consumption-model.md).
+> [../canonical/platform-architecture.md](../canonical/platform-architecture.md),
+> [../canonical/system-contracts.md](../canonical/system-contracts.md), and
+> [../canonical/agent-consumption-model.md](../canonical/agent-consumption-model.md).
 > The per-force formulas live in [forces-formulas.md](forces-formulas.md) and the catalog in
 > `packages/core/src/config/manual.ts` (pinned to the registry by a test).
 
@@ -183,8 +183,8 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 
 ## 3. The platform package (`@fundamental-engine/platform`)
 
-Native-first registries; the participation surface field-ui wishes the browser exposed. Depends
-on core, never the reverse. Full architecture: [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md).
+Native-first registries; the participation surface Fundamental wishes the browser exposed. Depends
+on core, never the reverse. Full architecture: [../canonical/platform-architecture.md](../canonical/platform-architecture.md).
 
 | Module | Registry / role |
 |---|---|
@@ -327,4 +327,4 @@ Shared per-frame environment (`core/types.ts`), filled by the engine: `dx/dy/dis
   must backtick every registered force; `core/dom-boundary.test.ts` keeps core renderer-agnostic;
   every force is checked to be both **passported** and **conformance-covered** (`inspect/report.ts`).
 - Run `pnpm --filter @fundamental-engine/core test` (Node's built-in `node:test`, zero framework). Full write-up:
-  [forces-tests.md](forces-tests.md) and [../canonical/field-ui-testing-and-conformance.md](../canonical/field-ui-testing-and-conformance.md).
+  [forces-tests.md](forces-tests.md) and [../canonical/testing-and-conformance.md](../canonical/testing-and-conformance.md).

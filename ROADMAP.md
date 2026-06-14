@@ -257,7 +257,7 @@ through a **web-component** keystone so it drops into anything.
 
 | Package | What | Tech |
 |---|---|---|
-| `packages/core` (`field-ui`) | the engine — catalog, contracts, FieldStore, forces | vanilla TS |
+| `packages/core` (`Fundamental`) | the engine — catalog, contracts, FieldStore, forces | vanilla TS |
 | `packages/vanilla` (`@fundamental-engine/vanilla`) | framework-free door — `FieldField` class + `mountField()`, no side effects | vanilla TS |
 | `packages/elements` (`@fundamental-engine/elements`) | `<forces-field>` + declarative `data-body` | web components (plain now; Lit when there's UI to template, e.g. the Lab) |
 | `apps/site` (`@fundamental-engine/site`) | fundamental-engine.com — the manual / landing / Lab | Astro (static) |
@@ -265,7 +265,7 @@ through a **web-component** keystone so it drops into anything.
 
 Why web components as the keystone: "every element is a body" is a web-components-
 shaped idea; a custom element works in React/Svelte/Astro/plain HTML unchanged →
-field-ui is a *platform*, not a framework library. The site shell (Astro) is a
+Fundamental is a *platform*, not a framework library. The site shell (Astro) is a
 separate, swappable choice and shares no code with the engine.
 
 ## Resolved decisions
@@ -276,7 +276,7 @@ separate, swappable choice and shares no code with the engine.
   forces carries a canonical color, cross-checked by a completeness test.
 - **Site shell** — Astro, chosen and built (static; it shares no code with the engine, so
   it stays cheap to revisit).
-- **Package names** — `field-ui` (core), `@fundamental-engine/elements`, `@fundamental-engine/react`.
+- **Package names** — `Fundamental` (core), `@fundamental-engine/elements`, `@fundamental-engine/react`.
 
 The only remaining gate is the deliberate, human-run **first publish** (npm + repo
 visibility) — see [`RELEASING.md`](RELEASING.md) and [`PUBLISHING.md`](PUBLISHING.md).

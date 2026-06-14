@@ -6,7 +6,7 @@ import FieldLabKit
 
 // MARK: - FieldLab
 //
-// The field-ui engine, native: every scene is one pillar of the model running live —
+// The Fundamental engine, native: every scene is one pillar of the model running live —
 // cards with mass, a conserved attention budget, causality that flows as matter, a
 // field with depth, sources and sinks, wormholes, thermodynamics, the full force
 // catalog, and the locked 64-recipe canon. Hover cards to engage; click to burst;

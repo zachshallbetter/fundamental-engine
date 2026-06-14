@@ -65,7 +65,7 @@ jobs:
 
       # Lock the frozen 0.x public API surface: every stable value/type still exported with the
       # right kind (typechecked) and every stable element/attribute contract intact. A break here
-      # means the public contract changed — see docs/canonical/field-ui-api-stability.md.
+      # means the public contract changed — see docs/canonical/api-stability.md.
       - name: Check API surface
         run: pnpm check:api
 

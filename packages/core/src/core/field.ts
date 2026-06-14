@@ -109,7 +109,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // @fundamental-engine/{elements,react,vanilla} entry points wire it for you.
   if (!opts.host) {
     throw new Error(
-      'field-ui: createField requires opts.host. Use @fundamental-engine/vanilla (createField/mountField) or ' +
+      'Fundamental: createField requires opts.host. Use @fundamental-engine/vanilla (createField/mountField) or ' +
         '@fundamental-engine/elements / @fundamental-engine/react, or pass browserHost() from @fundamental-engine/platform.',
     );
   }
