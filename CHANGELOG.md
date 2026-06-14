@@ -9,6 +9,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`cssFeedbackSink` — the feedback CSS adapter, named.** Feedback was already plain data
+  (`FeedbackChannels`) through an injectable sink, but the CSS write path (`--d`/`--field-density`/
+  `--load`/`--lit`) was unnamed engine-internal default. It's now exported so the DOM door installs it
+  explicitly and a non-DOM host (e.g. `@fundamental-engine/three`'s `FieldLayer`) clearly opts out by
+  passing its own sink. Behavior is identical — the default for `createField`/vanilla/`<field-root>`
+  is unchanged. (#445)
+
+### Added
+
 - **Reactive body params — live `strength`/`range`/`angle`/`spin` without a `rescan()`.** A body's
   hot force params are now re-read from its element on the measure cadence, so changing `data-strength`
   on a DOM body (or calling `FieldBody.set({ strength })` in `@fundamental-engine/three`) takes effect
