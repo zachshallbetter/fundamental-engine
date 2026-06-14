@@ -261,6 +261,12 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
       handle = null;
       document.removeEventListener('visibilitychange', onVisibility);
       unwireShadow();
+      // Registry teardown: the VisualBindingRegistry holds live MutationObservers (one per
+      // mirrored source) that the browser keeps firing — and keeps the registry, plus every
+      // observed element, alive long after this runtime is gone. setMirroring(false) disconnects
+      // and clears them all; the remaining registry maps hold no external refs and GC with the
+      // platform object once the host element drops its reference (disconnectedCallback / rebuild).
+      platform.visuals.setMirroring(false);
     },
   };
 }
