@@ -1,5 +1,5 @@
 ---
-title: "Welcome to field-ui writings"
+title: "Welcome to Fundamental writings"
 description: "A home for what we are building and thinking about — features, releases, and research — written in markdown."
 summary: "What this section is, and a quick tour of how it renders diagrams, math, and code."
 date: 2026-06-07
@@ -7,12 +7,12 @@ category: note
 author: "Zach Shallbetter"
 ---
 
-# Welcome to field-ui writings
+# Welcome to Fundamental writings
 
 This is **writings** — where we discuss what we are building and thinking about: new **features**,
 **releases**, and longer-form **research**. Everything here is plain markdown in a content datastore,
 so a new piece is one file. The first things going in are the [research papers](/writings) on the
-ideas behind field-ui.
+ideas behind Fundamental.
 
 It renders three things well, on purpose.
 

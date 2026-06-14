@@ -4,21 +4,21 @@ description: "A runtime architecture that targets DOM, Canvas, SVG, WebGL, nativ
 summary: "A runtime architecture that targets DOM, Canvas, SVG, WebGL, native, or headless."
 date: 2026-06-07
 category: research
-series: "field-ui research"
+series: "Fundamental research"
 order: 5
 author: "Zach Shallbetter"
 ---
 
 # A Host-Driven Field Runtime for Portable Interface Behavior
 
-> **Status: research draft (preprint, work in progress).** Paper 5 of the field-ui family — the
+> **Status: research draft (preprint, work in progress).** Paper 5 of the Fundamental family — the
 > systems-architecture paper. Claims verified against the codebase and canonical docs as of
 > 2026-06-07. See the [series index](/writings) and *the caveat canon* therein. This is a preprint
 > draft, not canonical product documentation.
 
 **Author:** Zach Shallbetter
-**Series:** field-ui Research Papers, Paper 5 of 8 (the runtime-architecture paper)
-**Companion paper (flagship):** [field-ui: A Field Translation Runtime for Relational DOM
+**Series:** Fundamental Research Papers, Paper 5 of 8 (the runtime-architecture paper)
+**Companion paper (flagship):** [Fundamental: A Field Translation Runtime for Relational DOM
 Interfaces](/writings/01-field-translation-runtime) — the paradigm, the reciprocal model, and the
 architecture in overview. This paper goes *deep* where the flagship was an overview; it does not
 restate the model.
@@ -32,7 +32,7 @@ interface does* reaches directly for `document`, `window`, `requestAnimationFram
 so the behavior cannot run headless, cannot be retargeted to a different renderer, and cannot be
 tested without a browser. A relational *field* model — particles, forces, and a continuously sampled
 density field — is especially exposed to this failure, because the obvious implementation is
-canvas-bound by construction. This paper presents the runtime architecture by which **field-ui**
+canvas-bound by construction. This paper presents the runtime architecture by which **Fundamental**
 avoids it: a renderer-agnostic *core* that computes field behavior against plain data, a browser
 *platform* that owns DOM participation, and a single injected **host boundary** (`FieldHost`) that is
 the only seam between them. The core's freedom from the render target is not asserted but *enforced*:
@@ -65,21 +65,21 @@ is no. The logic cannot be unit-tested without a DOM, cannot be moved to a diffe
 without rewriting it, and cannot be audited in isolation because it is interleaved with the very
 globals it manipulates.
 
-A *field* model raises the stakes. field-ui treats the interface as a shared relational field —
+A *field* model raises the stakes. Fundamental treats the interface as a shared relational field —
 elements exert force, particles move, and a density signal is written back to the DOM as CSS custom
 properties and thresholded events (the reciprocal loop developed in the flagship, §3). The naive
 implementation of such a model is a particle canvas: a `<canvas>` element, a 2D context, a render
 loop, and force math entangled with all three. That implementation would be *canvas-bound* — the
-field would be inseparable from one specific way of drawing it, and the claim that field-ui is "a
+field would be inseparable from one specific way of drawing it, and the claim that Fundamental is "a
 relational field runtime, of which the canvas is one render surface" (flagship §1.2) would be
 rhetorical rather than structural.
 
 ### 1.2 The host-driven answer
 
-field-ui's answer is to separate *what the field does* from *how the browser participates in it*, and
+Fundamental's answer is to separate *what the field does* from *how the browser participates in it*, and
 to let the two communicate through exactly one injected interface:
 
-- A renderer-agnostic **core** (`field-ui`) computes field, force, particle, metric,
+- A renderer-agnostic **core** (`Fundamental`) computes field, force, particle, metric,
   diagnostic, and conformance logic against plain data. It imports no DOM globals.
 - A browser **platform** (`@fundamental-engine/platform`) owns DOM participation: measurement, state, feedback,
   relationships, visual bindings, overlays, scheduling, and linting.
@@ -120,13 +120,13 @@ data binding (Paper 7), and diagnostics (Paper 8) — is deferred to its own pap
 
 ## 2. Background and related work
 
-field-ui's runtime architecture draws on several established lines of systems and UI work; we
+Fundamental's runtime architecture draws on several established lines of systems and UI work; we
 position it against each and mark external references as `[TODO: cite]` pending verification against
 the family bibliography.
 
 **Retained-mode vs immediate-mode UI.** The retained/immediate distinction frames how a system
 relates computation to drawing: a retained-mode toolkit keeps a persistent object model and redraws
-from it; an immediate-mode UI re-issues draw calls from application state each frame. field-ui is
+from it; an immediate-mode UI re-issues draw calls from application state each frame. Fundamental is
 neither, exactly — it keeps a persistent *field* (bodies, agents, relationships, a scalar grid)
 computed in the core, and treats every visible surface (canvas, SVG overlays, CSS feedback) as an
 *immediate* read of that persistent state. The separation of a persistent model from its rendering is
@@ -135,7 +135,7 @@ plural. `[TODO: cite retained-mode / immediate-mode UI literature]`
 
 **Renderer-agnostic and headless UI.** A renderer-agnostic engine computes against an abstract scene
 and binds to a backend (DOM, native, a test renderer) late; headless UI libraries provide behavior
-and state without prescribing markup or pixels. field-ui's core is renderer-agnostic in the strong
+and state without prescribing markup or pixels. Fundamental's core is renderer-agnostic in the strong
 sense — it is *mechanically prevented* from importing a render target — and its conformance harness is
 a headless consumer of the same engine. `[TODO: cite renderer-agnostic / headless UI frameworks]`
 
@@ -148,17 +148,17 @@ hexagonal architecture / ports and adapters]`
 
 **Reactive runtimes and the scheduling of reads and writes.** Modern UI runtimes schedule work to
 avoid layout thrash — batching DOM reads and writes so that a measurement never forces a reflow
-against a pending mutation. field-ui makes this scheduling discipline a first-class, *named* phase
+against a pending mutation. Fundamental makes this scheduling discipline a first-class, *named* phase
 contract (§4) and a lint rule, rather than an internal optimization. `[TODO: cite reactive runtime
 scheduling / read-write batching]`
 
 **Testability of UI logic.** A recurring argument in UI engineering is that behavior is testable in
-proportion to how cleanly it is separated from the renderer. field-ui takes the strong form of that
+proportion to how cleanly it is separated from the renderer. Fundamental takes the strong form of that
 position: the boundary that makes the core portable is the same boundary that makes it testable, and
 the conformance harness exercises the production physics headlessly (§5.3). `[TODO: cite testability
 of UI / separation of concerns]`
 
-The distinguishing stance, across all of these, is that field-ui treats the renderer-agnostic
+The distinguishing stance, across all of these, is that Fundamental treats the renderer-agnostic
 boundary and the participation contract as *auditable artifacts* — a test with an empty allowlist, a
 phase-discipline lint, a recipe validator, and a passport cross-check — not as conventions the
 authors promise to honor.
@@ -169,11 +169,11 @@ authors promise to honor.
 
 ### 3.1 Two packages, one direction
 
-field-ui's runtime is split across packages whose dependency direction is strict and one-way (the
+Fundamental's runtime is split across packages whose dependency direction is strict and one-way (the
 package hierarchy is given in `docs/canonical/field-ui-platform-architecture.md`):
 
 ```
-field-ui      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
+Fundamental      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
                     Computes field behavior against plain data. Imports no DOM globals.
 @fundamental-engine/platform  DOM participation: measurement, state, feedback, relationships, visual bindings,
                     overlays, scheduling, linting — plus the browser host adapter.
@@ -252,7 +252,7 @@ different object with the same shape. `createBrowserField()` is the convenience 
 
 The renderer-agnostic claim is not asserted; it is *enforced* by
 `packages/core/src/core/dom-boundary.test.ts`, the architectural keystone. The test walks every
-non-test source file in `field-ui` and fails if any of them contains a DOM-global *call-site*,
+non-test source file in `Fundamental` and fails if any of them contains a DOM-global *call-site*,
 matched as access/construction patterns so that ordinary prose ("scan the document", "debounce
 window") does not trip it:
 
@@ -301,7 +301,7 @@ so it does not break the empty-allowlist boundary — but it does mean the platf
 *all* DOM writes. We therefore do **not** claim "the platform owns all DOM writes." The canonical
 contracts state the same thing plainly:
 
-> `field-ui` is renderer-agnostic and imports no DOM globals (a legacy element write-back path
+> `Fundamental` is renderer-agnostic and imports no DOM globals (a legacy element write-back path
 > still lives in `core/field.ts`, pending migration).
 > — `field-ui-system-contracts.md` §24
 
@@ -314,7 +314,7 @@ without hand-waving.
 ## 4. The frame scheduler and six registries (the DOM-participation contract)
 
 The host boundary makes the core portable. The platform then needs its own discipline, because DOM
-participation done carelessly thrashes layout. field-ui makes participation a *contract*: an ordered
+participation done carelessly thrashes layout. Fundamental makes participation a *contract*: an ordered
 phase pipeline and six single-concern registries, each declaring the one phase it runs in. The
 flagship gives the overview (§5); here we go through the mechanism and the guarantees it buys.
 
@@ -394,7 +394,7 @@ Second, the `RelationshipRegistry` encodes the observation that *the DOM is a tr
 graphs.* Rather than invent a parallel graph, it normalizes the relationships the platform *already
 expresses* — `a[href#id]`, `label[for]`, `aria-controls` / `-describedby` / `-labelledby` /
 `-flowto`, and `data-field-relation` / `-target` — into one typed relationship graph mapped onto core
-`RelationshipAgent`s. Native semantics are respected first; field-ui does not duplicate links the HTML
+`RelationshipAgent`s. Native semantics are respected first; Fundamental does not duplicate links the HTML
 already declares.
 
 Third, the `OverlayRegistry` and `VisualBindingRegistry` enforce that *overlays reveal; they do not
@@ -631,7 +631,7 @@ The portability claim is bounded, and we state the bounds plainly.
   renderer such as a native or WebGL backend. The architecture makes such a backend a host-
   implementation task rather than an engine rewrite; that it has not yet been built is a fact, not a
   contradiction. The claim is "the engine is portable, and the boundary that makes it so is enforced,"
-  not "field-ui ships on N renderers."
+  not "Fundamental ships on N renderers."
 
 These limits do not weaken the central claim; they sharpen it. The contribution is an *enforced*
 separation and a *checkable* portability story, stated to exactly the precision the code supports.
@@ -667,12 +667,12 @@ that its constituent forces are individually conformant.
 ## 8. Discussion
 
 **Why host-driven separation matters for UI-behavior systems generally.** The lesson generalizes well
-past field-ui. Any system that computes *what an interface does* — animation engines, layout solvers,
+past Fundamental. Any system that computes *what an interface does* — animation engines, layout solvers,
 gesture recognizers, reactive runtimes, simulation-driven UIs — faces the same temptation to reach for
 `document`, `window`, and `requestAnimationFrame` inline, and the same three consequences when it does:
 the behavior cannot be tested without a browser, cannot be retargeted without a rewrite, and cannot be
 audited in isolation. A single injected host boundary dissolves all three at once. *Testability:* the
-behavior runs against a stub host, so it is unit-testable and, in field-ui's case, the production
+behavior runs against a stub host, so it is unit-testable and, in Fundamental's case, the production
 physics runs headlessly and deterministically. *Retargetability:* a new render surface is a new host
 implementation, not a fork of the engine. *Auditability:* with the environment behind one interface and
 the participation contract expressed as registries and lint rules, a reviewer can check that the core
@@ -701,7 +701,7 @@ provably independent of how it is drawn.
 
 ## 9. Conclusion
 
-field-ui stays portable by separating *what the field does* from *how the browser participates in it*,
+Fundamental stays portable by separating *what the field does* from *how the browser participates in it*,
 and connecting the two through exactly one injected host boundary. The renderer-agnostic core computes
 field, force, metric, and conformance logic against plain data and imports no DOM globals — a property
 not asserted but enforced by a boundary test that runs with an empty allowlist, so the core computes

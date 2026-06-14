@@ -1,4 +1,4 @@
-// Library Field runtime. field-ui as an INVISIBLE measurement layer over the month's
+// Library Field runtime. Fundamental as an INVISIBLE measurement layer over the month's
 // most-listened ListenBrainz recordings, laid out as a ranked bar ladder, with the queue
 // as a genuine field SINK:
 //   · each row's mass --w is its log-normalized listen count (server-computed, static);
