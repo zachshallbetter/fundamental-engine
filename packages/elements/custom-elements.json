@@ -811,6 +811,24 @@
             },
             {
               "kind": "method",
+              "name": "addAgent",
+              "return": {
+                "type": {
+                  "text": "AgentHandle"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "spec",
+                  "type": {
+                    "text": "AgentSpec"
+                  }
+                }
+              ],
+              "description": "add an engine-stepped agent; returns an inert no-op handle if the field hasn't started."
+            },
+            {
+              "kind": "method",
               "name": "atomAt",
               "return": {
                 "type": {
@@ -928,6 +946,30 @@
                 }
               ],
               "description": "sample the live field at `(x, y)` — the net force vector a still test particle would feel\n(zero before the field starts). The seam external visualizers consume to build field geometry."
+            },
+            {
+              "kind": "method",
+              "name": "sampleScalar",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "sample the smooth density scalar ∈ [0,1] at `(x, y)` (needs `heatmap`); 0 when off/not started."
             },
             {
               "kind": "method",
@@ -1746,6 +1788,28 @@
             },
             {
               "kind": "method",
+              "name": "addAgent",
+              "return": {
+                "type": {
+                  "text": "AgentHandle"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "spec",
+                  "type": {
+                    "text": "AgentSpec"
+                  }
+                }
+              ],
+              "description": "add an engine-stepped agent; returns an inert no-op handle if the field hasn't started.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
               "name": "atomAt",
               "return": {
                 "type": {
@@ -1887,6 +1951,34 @@
                 }
               ],
               "description": "sample the live field at `(x, y)` — the net force vector a still test particle would feel\n(zero before the field starts). The seam external visualizers consume to build field geometry.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "sampleScalar",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "sample the smooth density scalar ∈ [0,1] at `(x, y)` (needs `heatmap`); 0 when off/not started.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
