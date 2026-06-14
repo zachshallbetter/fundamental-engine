@@ -85,6 +85,17 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
          canvas, so the field flow shows by default with no separate blended overlay surface (the
          cheap path — a single composited layer); data-nav-flow keeps the nav toggle in sync. -->
     <field-root accent="#4da3ff" density="1.5" render="flow" heatmap data-nav-flow="on" data-nav-heatmap="on" transition:persist></field-root>
+    <script is:inline>
+      // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
+      // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so
+      // leaving waves on would keep the background animating for users who asked for none. Turn the
+      // waves off before the engine upgrades — this runs during parse, ahead of the deferred
+      // <field-root> boot, so it constructs waves-off — matching the layout's other reduced-motion
+      // opt-outs (the .field drift). Non-reduced-motion users keep the live wave currents.
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelector('field-root')?.setAttribute('waves', 'false');
+      }
+    </script>
     <div class="scrim" aria-hidden="true" transition:persist></div>
     <slot />
     <DataConsole />
