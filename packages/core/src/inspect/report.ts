@@ -47,7 +47,7 @@ export function systemReport(): SystemReport {
 export function reportText(r: SystemReport = systemReport()): string {
   const ok = (xs: string[]): string => (xs.length ? `⚠ ${xs.join(', ')}` : '✓ none');
   return [
-    '# field-ui system report',
+    '# Fundamental system report',
     '',
     `- Forces: **${r.forces}** (passports: ${r.passports}, conformance experiments: ${r.conformanceExperiments})`,
     `- Contracts: **${r.contracts}** (agent types: ${r.agentTypes})`,

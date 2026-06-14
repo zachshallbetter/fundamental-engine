@@ -76,7 +76,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let ctx: CanvasRenderingContext2D | null = null;
   if ((opts.render ?? 'dots') !== 'none') {
     ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('field-ui: 2D canvas context unavailable');
+    if (!ctx) throw new Error('Fundamental: 2D canvas context unavailable');
   }
 
   // Field Surfaces: the optional OVERLAY surface, drawn in front of page content. Core only draws to
@@ -1765,7 +1765,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (!ctx) {
           // context acquisition can genuinely fail (lost GPU process, too many contexts) —
           // warn and stay signals-only rather than crash the live simulation.
-          console.warn(`field-ui: setRender('${mode}') could not acquire a 2d context; staying in render 'none'`);
+          console.warn(`Fundamental: setRender('${mode}') could not acquire a 2d context; staying in render 'none'`);
           return;
         }
         if (overlayCanvas && !overlayCtx) {
