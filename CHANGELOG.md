@@ -26,6 +26,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **Engagement listeners no longer accumulate on a long-lived field.** `bindEngagement()` deduped via
+  `data-fx-engaged` but, unlike the body/emitter reconciliation, never pruned `[data-hot]` elements that
+  had left the DOM — so a persistent field (the page `<field-root>` with `transition:persist`) outliving
+  the elements swapped under it could retain detached nodes and their pointer/focus listeners across
+  rescans. Each rescan now drops disconnected engagements, releasing their four listeners and the array
+  ref. (Latent: didn't manifest in a 20-navigation heap probe, but closed for very long sessions.)
 - **Frame-rate-independent particle motion.** `env.dt` was a flat `1` regardless of framerate, so the
   per-frame sim ran 2–4× faster once the perf work lifted the homepage to 60–120fps. dt is now the real
   frame interval normalized to a 60fps baseline (≈1 at 60fps, clamped so a stall can't teleport matter);
