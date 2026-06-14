@@ -1,5 +1,5 @@
 // "The field is the project." Seed the persisted <field-root> with the 132 project atoms (so every
-// base particle carries a real piece of field-ui), then a two-stage inspect that stays out of the
+// base particle carries a real piece of Fundamental), then a two-stage inspect that stays out of the
 // way: hover and *settle* near a dot → the engine holds it still and lights it up (field.focusAt) →
 // *click* opens a pinned card with its record. No cursor-following tooltip.
 //

@@ -10,8 +10,8 @@ interface Props {
   ogImage?: string;
 }
 const {
-  title = 'field-ui — a reciprocal DOM-physics field',
-  description = "field-ui — elements bend the field; the field's density bends them back. A medium your interface lives inside, not a backdrop it sits on.",
+  title = 'Fundamental — a reciprocal DOM-physics field',
+  description = "Fundamental — elements bend the field; the field's density bends them back. A medium your interface lives inside, not a backdrop it sits on.",
   ogImage = '/og.jpg',
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://fundamental-engine.com').href;
@@ -38,7 +38,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta property="og:site_name" content="field-ui" />
+    <meta property="og:site_name" content="Fundamental" />
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -57,7 +57,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
       set:html={JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: 'field-ui',
+        name: 'Fundamental',
         url: 'https://fundamental-engine.com/',
         description:
           'A relational field runtime for the DOM — elements become bodies in an invisible physics field that bends them back.',
