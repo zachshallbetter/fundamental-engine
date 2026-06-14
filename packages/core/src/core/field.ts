@@ -1098,16 +1098,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const cr = r | 0;
       const cg = g | 0;
       const cb = b | 0;
-      // glow for hot matter via a cheap additive halo under the core (the canvas is
-      // composited 'lighter'), not per-particle shadowBlur — the same look without the
-      // 10×+ per-draw cost that spiked frames during interaction. Hot matter only, so the
-      // free swarm reads as crisp points of light rather than wide overlapping clouds.
-      if (h > 0.2) {
-        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.13 * h * boot})`;
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, size + 3 + 6 * h, 0, 6.28318);
-        ctx!.fill();
-      }
+      // A single tight, faint bloom under the crisp core (additive, 'lighter' composite) — just
+      // enough to soften the point into a star. NOT the old wide, heat-scaled halo (`size+3+6*h`):
+      // near an accretion sink every particle heats to h≈1, so that halo bloomed the whole cluster
+      // into big overlapping rings (the repeatedly-flagged "glow" — #434 follow-up). Heat now reads
+      // only through the brighter, slightly larger core (the `+ h*2` size and `+ h*0.5` alpha above),
+      // never a growing aura. Radius is fixed (size + ~1px), so points stay crisp at any heat.
+      ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.12 * alpha})`;
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, size + 1.2, 0, 6.28318);
+      ctx!.fill();
       ctx!.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
       ctx!.beginPath();
       ctx!.arc(p.x, p.y, size, 0, 6.28318);
