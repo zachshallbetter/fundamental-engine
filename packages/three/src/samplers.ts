@@ -101,27 +101,27 @@ export function vectorField(field: FieldSampler, opts: VectorFieldOptions): Fiel
   const group = new Group();
   group.add(mesh);
 
+  // persistent per-cell sample scratch (reused every update — no per-call array allocation).
+  // The grid position is recomputed from the flat index, so only the sampled vector is stored.
+  const vx = new Float64Array(count);
+  const vy = new Float64Array(count);
+
   const update = (): void => {
     let max = 1e-6;
-    const fx: number[] = [];
-    const fy: number[] = [];
-    const vx: number[] = [];
-    const vy: number[] = [];
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const px = (c + 0.5) * step;
-        const py = (r + 0.5) * step;
-        const v = field.sample(px, py);
+        const v = field.sample((c + 0.5) * step, (r + 0.5) * step);
         const m = Math.hypot(v.x, v.y);
         if (m > max) max = m;
-        fx.push(px);
-        fy.push(py);
-        vx.push(v.x);
-        vy.push(v.y);
+        const i = r * cols + c;
+        vx[i] = v.x;
+        vy[i] = v.y;
       }
     }
     for (let i = 0; i < count; i++) {
-      projection.toWorld(fx[i]!, fy[i]!, 0, 0, 0, _pos);
+      const px = ((i % cols) + 0.5) * step;
+      const py = (Math.floor(i / cols) + 0.5) * step;
+      projection.toWorld(px, py, 0, 0, 0, _pos);
       _pos.z = z;
       const rel = Math.sqrt(Math.hypot(vx[i]!, vy[i]!) / max); // sqrt compression so weak arrows read
       // field-y is down → world-y up, so the world direction is (vx, -vy)

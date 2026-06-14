@@ -264,6 +264,7 @@ export class FieldLayer implements FieldHandle {
     for (const a of this.agents.slice()) a.remove();
     this.field.destroy();
     this.pool.dispose();
+    this.bodies.clear(); // drop body↔mesh refs so a retained handle can't pin the registry
   }
 }
 

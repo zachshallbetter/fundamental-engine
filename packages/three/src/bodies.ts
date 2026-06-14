@@ -79,7 +79,7 @@ interface VirtualBodyElement {
     y: number;
     toJSON(): unknown;
   };
-  __body: BodyImpl;
+  __body?: BodyImpl;
 }
 
 class BodyImpl implements FieldBody {
@@ -223,5 +223,15 @@ export class FieldBodyRegistry {
   /** every registered body (read-only). */
   all(): readonly FieldBody[] {
     return this.bodies;
+  }
+
+  /** Drop every body and break the body↔element reference cycle (`el.__body`). Without this a
+   *  retained `FieldBody` handle keeps the whole registry — and every body's `Object3D` — alive
+   *  after the layer is destroyed. Also silences `onChange` so a late `remove()` can't re-scan a
+   *  torn-down field. Called from `FieldLayer.destroy()`. */
+  clear(): void {
+    for (const b of this.bodies) (b.el as { __body?: BodyImpl }).__body = undefined;
+    this.bodies.length = 0;
+    this.onChange = () => {};
   }
 }
