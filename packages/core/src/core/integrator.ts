@@ -186,6 +186,10 @@ export function step(input: StepInput): void {
       const inv = p.m !== 1 && p.m > 0 ? 1 / p.m : 1;
       for (const b of bodies) {
         if (!b.vis || b.tokens.length === 0) continue;
+        // matter tagging (#444): a selective body (data-affects) acts only on its species;
+        // matter outside the set is skipped entirely (no force, no density sample). Undefined
+        // affects ⇒ acts on all matter — the default, so untagged fields are bit-for-bit unchanged.
+        if (b.affects !== undefined && !b.affects.has(p.species ?? 0)) continue;
         // shaped sources (§ Stage C): reference the nearest point on the element's box, not
         // its centre, so matter shells the shape. Clamp is inlined (no allocation in the hot
         // loop); inside the box dx=dy=0 → no directional pull, the right no-op.

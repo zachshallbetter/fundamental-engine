@@ -450,7 +450,12 @@ export const spawn: Force = {
       const hx = b.ux * c - b.uy * s;
       const hy = b.ux * s + b.uy * c;
       const speed = 2 + (e.rng ?? Math.random)() * 2;
-      e.spawn({ x: b.cx, y: b.cy, vx: hx * speed, vy: hy * speed, age: life, heat: 0.6 });
+      // matter tagging (#444): stamp the source body's species on the matter it emits, so a
+      // tagged source feeds a tagged ecology (pollen vs seeds) in a shared field.
+      e.spawn({
+        x: b.cx, y: b.cy, vx: hx * speed, vy: hy * speed, age: life, heat: 0.6,
+        ...(b.species != null ? { species: b.species } : {}),
+      });
     }
   },
   meta: { desc: 'a source — emits matter along the heading, budgeted by a lifespan' },
