@@ -1,0 +1,249 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+
+const bridge = `import * as THREE from 'three';
+import { createFieldLayer, PlaneProjection } from '@fundamental-engine/three';
+
+const scene = new THREE.Scene();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+const layer = createFieldLayer({
+  projection: new PlaneProjection({ relief: 2 }), // the field on a plane, z lifted from heat
+  renderer,                                        // reads the device-pixel ratio
+  accent: '#4da3ff',
+});
+scene.add(layer.object);                           // a THREE.Points cloud
+
+renderer.setAnimationLoop(() => {
+  layer.tick();                  // the engine self-steps; tick() pulls the latest swarm
+  renderer.render(scene, camera);
+});`;
+
+const volume = `// Pass depth and the layer defaults to a VolumeProjection: bodies stay on the page
+// plane (z = 0) while free matter drifts through the volume and is pulled gently back.
+const layer = createFieldLayer({ depth: 300, renderer, accent: '#4da3ff' });`;
+
+const bodies = `const bloom = layer.addBody(blossomMesh, {
+  tokens: 'attract', strength: 0.8, range: 260,   // field px
+  species: 1,                                      // this is "pollen-1" matter…
+  data: genome,                                    // …carrying its genome
+  onFeedback: (ch) => (glow.material.opacity = ch.density ?? 0),
+});
+bloom.set({ strength: 0.3 });  // live — no re-create, no re-scan`;
+
+const tagging = `// Several ecologies share one field. A tagged body only acts on matter it cares about.
+layer.addBody(beeMesh,   { tokens: 'attract', affects: [1] });      // bees chase pollen-1 only
+layer.addBody(pollenMesh, { tokens: 'spawn',   species: 1 });        // pollen-1 source
+// matter whose species is outside a body's \`affects\` set feels no force from it, and
+// is skipped in its density sample — no cross-talk between the ecologies.`;
+
+const agents = `const bee = layer.addAgent(beeMesh, {
+  maxSpeed: 95,          // field px/frame — a hard clamp
+  species: 1,            // tagged bodies (affects) steer it selectively
+  faceVelocity: true,    // orient the mesh along its heading
+  hover: { amp: 0.12, freq: 3 },
+});
+// layer.tick() now also advances the engine that MOVES the bee — no hand-rolled motion loop.
+bee.remove();            // retire it; the pool shrinks back`;
+
+const scalar = `const layer = createFieldLayer({ heatmap: true, renderer }); // enable the scalar grid
+
+// in your creature's brain: climb the density gradient toward food
+const here  = layer.sampleScalar(x, y);
+const ahead = layer.sampleScalar(x + dx, y + dy);
+if (ahead > here) move(dx, dy);  // forage-by-gradient — meaningful even at a source`;
+
+const overlay = `import { createThreeField, threeBackend, PlaneProjection } from '@fundamental-engine/three';
+
+const projection = new PlaneProjection();
+const overlay = threeBackend({ projection });
+scene.add(overlay.object);
+
+const field = createThreeField({
+  viewport: () => ({ ...projection.size(), dpr: renderer.getPixelRatio() }),
+  overlayBackend: overlay,
+  overlay: 'streamlines',   // field-lines, grid, contours, force-vectors — drawn as scene geometry
+});`;
+
+const lifecycle = `// stop the engine, release host listeners, retire agents, drop body↔mesh refs,
+// and free the swarm's GPU buffers — call it when the scene goes away.
+layer.destroy();
+renderer.dispose();`;
+---
+
+<DocsLayout
+  title="Fundamental — Three.js guide"
+  description="Run the reciprocal field engine headless and render its swarm as a THREE.Points layer with @fundamental-engine/three: the particle bridge, plane vs volume projections, meshes as bodies, engine-stepped agents, the forage-by-gradient scalar, diagnostic overlays, and lifecycle."
+>
+  <header class="docs-hero">
+    <p class="kicker">Guides</p>
+    <h1>The <span class="accent">Three.js</span> door</h1>
+    <p class="lede">
+      <code>@fundamental-engine/three</code> runs the same reciprocal field engine that drives
+      <code>&lt;field-root&gt;</code> — headless, with no DOM canvas — and renders its conserved
+      particle swarm as a <code>THREE.Points</code> cloud in your own WebGL scene. The physics is
+      identical; only the renderer changes.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>One engine, a different surface.</b> The core computes the field against plain data and stays
+    renderer-agnostic. The DOM binds it through the <a href="/docs/platform">platform layer</a>;
+    this package binds it to a Three.js scene through a <code>FieldProjection</code> (the 2D ⇄ 3D
+    map) and a <code>FieldHost</code>. Every <a href="/docs/api/handle">FieldHandle</a> method —
+    <code>burst</code>, <code>flowTo</code>, <code>setFormation</code>, <code>seed</code> — drives
+    the 3D layer exactly as it drives the page field.
+  </div>
+
+  <section class="docs-sec">
+    <h2>Install</h2>
+    <div class="pkg">
+      <code class="install" data-copy="npm i @fundamental-engine/three three">npm i @fundamental-engine/three three</code>
+    </div>
+    <p>
+      <code>three</code> is a <strong>peer dependency</strong> — you bring your own version
+      (<strong>≥ 0.147</strong>, the tested floor). The package touches only long-stable three APIs,
+      so it works against modern three (built against 0.169) and is verified live at r147. On a
+      no-bundler page, pin the peer to the same revision your scene already uses so the library and
+      your page share one Three.js (see the <a href="https://www.npmjs.com/package/@fundamental-engine/three">package README</a> for the CDN recipe).
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The particle bridge</h2>
+    <p>
+      The engine runs in signals-only mode (<code>render: 'none'</code>) and exposes its particle
+      pool through <code>readParticles()</code>. <code>FieldLayer</code> pulls that each frame and
+      writes it onto a <code>THREE.Points</code> geometry through the projection. Create a layer,
+      add <code>layer.object</code> to your scene, and call <code>layer.tick()</code> in your render
+      loop — the engine self-steps, so <code>tick()</code> only pulls the latest swarm.
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: bridge }]} />
+    <p>
+      Want to see it first? The <a href="/three">live Three.js field</a> is this bridge running a
+      volumetric swarm you can push around with the pointer.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Flat plane or real volume</h2>
+    <p>
+      A <code>FieldProjection</code> maps the engine's CSS-pixel field space to 3D world space.
+      Two ship, both behind one interface, so the layer and overlays are unchanged by the choice:
+    </p>
+    <ul class="model">
+      <li>
+        <b>PlaneProjection</b> — the field on a quad; <code>z</code> is lifted stylistically from
+        per-particle <code>heat</code>. The right choice for a flat field.
+      </li>
+      <li>
+        <b>VolumeProjection</b> — maps the engine's real <strong>depth lane</strong>
+        (<code>z ∈ [0, depth)</code>, the opt-in z axis) onto a world depth range, for a genuinely
+        volumetric swarm.
+      </li>
+    </ul>
+    <p>Pass <code>depth</code> and the layer picks a <code>VolumeProjection</code> for you:</p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: volume }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Bodies — meshes that bend the field</h2>
+    <p>
+      A scene object can <em>be</em> a body (a force source). <code>layer.addBody(object3d, spec)</code>
+      registers it: it bends the field and the swarm responds, while
+      <code>density</code>/<code>load</code>/<code>lit</code> feedback flows back to the mesh (drive a
+      uniform or material from <code>onFeedback</code>). A body carries a <code>data</code> record (a
+      genome, an inventory), so a mesh can be a meaningful agent — not just a force. Params are
+      reactive: <code>body.set(...)</code> is read on the next measure cycle, no re-create.
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: bodies }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Matter tagging — many ecologies, one field</h2>
+    <p>
+      Tag a body with a <code>species</code> (the matter it emits or represents) and make it
+      <code>affects</code>-selective (the species it acts on). Matter outside a body's set feels no
+      force from it and is skipped in its density sample — so pollen, seeds, and spores can share one
+      field, each pulled only by its own bodies. Tags are read once at scan, allocation-free per
+      frame.
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: tagging }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Agents — creatures the engine moves</h2>
+    <p>
+      <code>layer.addAgent(object3d, opts)</code> makes a mesh a <strong>field agent</strong>: the
+      engine <em>steps it</em> — it lives in the particle pool, so it feels every force the swarm
+      feels (body forces <em>and</em> the particle-level <code>hunt</code>/<code>align</code>/<code>cohesion</code>)
+      — and drives the object's position each frame. This is the engine-stepped successor to the
+      self-integrating <code>FieldAgent</code>: you no longer hand-roll a motion loop.
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: agents }]} />
+    <div class="callout">
+      <b>maxSpeed clamps; the agent bounces.</b> An agent is held under <code>maxSpeed</code> (field
+      px/frame) and <strong>edge-bounces</strong> at the field bounds rather than wrapping toroidally,
+      so it stays inside the world. It's counted by <code>particleCount()</code> but excluded from
+      <code>readParticles()</code> — your mesh is the agent's body, so it isn't drawn into the swarm.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Reading the field — your own visuals</h2>
+    <p>
+      The package re-exports the engine's field samplers — <code>forceAt</code> and
+      <code>netField</code> — so you can drive your own 3D visuals (streamline tubes, vector grids,
+      density volumes) from the live field without a second import. For <strong>forage-by-gradient</strong>,
+      <code>layer.sampleScalar(x, y)</code> returns the smooth diffused density ∈ [0, 1]; unlike a
+      nearest-body readout, its gradient stays meaningful right at a source, so a creature can always
+      tell which way is "more". Enable the scalar grid with <code>heatmap: true</code> (it returns 0
+      when off):
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: scalar }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Diagnostic overlays</h2>
+    <p>
+      <code>threeBackend</code> implements the engine's structural drawing seam
+      (<code>RenderBackend</code>), so the diagnostic overlays — streamlines, field-lines, grid,
+      contours, force-vector arrows — draw as scene geometry. Inject it through the lower-level
+      <code>createThreeField</code> and add <code>overlay.object</code> to your scene:
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: overlay }]} />
+    <p class="note">
+      The line overlays render fully; numeric label sprites (the <code>data</code> reading) are a
+      tracked follow-up. See the <a href="/docs/diagnostics">diagnostic overlays</a> page for what
+      each mode shows.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Lifecycle &amp; cleanup</h2>
+    <p>
+      When the scene goes away, call <code>layer.destroy()</code>. It stops the engine, releases the
+      host's listeners, retires every agent, drops the body↔mesh references (so a retained body
+      handle can't pin the registry), and frees the swarm's GPU buffers. Then dispose your renderer
+      as usual.
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: lifecycle }]} />
+    <div class="callout">
+      <b>One destroy per layer.</b> A <code>FieldLayer</code> owns real resources — a running engine,
+      a <code>THREE.Points</code> geometry, growable overlay buffers, and (in the DOM build) registry
+      observers. <code>destroy()</code> tears all of them down; skipping it on a re-mounted or
+      route-swapped scene is the usual source of a slow leak. The page field's
+      <code>&lt;field-root&gt;</code> does the equivalent automatically on disconnect.
+    </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Next</h2>
+    <ul class="model">
+      <li>The <a href="/three">live Three.js field</a> — the bridge running a volumetric swarm.</li>
+      <li>The <a href="/docs/api/handle">FieldHandle reference</a> — every method the layer exposes, including <code>addAgent</code> and <code>sampleScalar</code>.</li>
+      <li>The <a href="/docs/concepts">concepts</a> — bodies, the shared field context, and the Field Agent Consumption Model the agents extend.</li>
+    </ul>
+  </section>
+</DocsLayout>

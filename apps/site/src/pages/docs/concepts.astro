@@ -292,4 +292,43 @@ const DEMOS = [
       co-located bodies, one primitive each. The engine never grows to add a preset.
     </div>
   </section>
+
+  <section class="docs-sec">
+    <h2>Engine-stepped agents, tagged matter, and the scalar field</h2>
+    <p>
+      Three engine capabilities turn the swarm from a backdrop into a population you can program.
+      They live in the core, so they work under any renderer — and the
+      <a href="/docs/guides/three">Three.js layer</a> binds a mesh over each one.
+    </p>
+    <ul class="model">
+      <li>
+        <b>Engine-stepped agents</b> — <code>addAgent(spec)</code> <ApiStamp name="addAgent" /> adds
+        a participant the integrator <em>moves</em> (vs an agent that samples the field and
+        integrates itself). It lives in the conserved pool, so it feels every force the swarm feels
+        — body forces and the particle-level <code>hunt</code>/<code>align</code>/<code>cohesion</code>
+        — and each step its <code>report(p)</code> fires so an external object (a mesh, a label) can
+        follow it. <code>maxSpeed</code> clamps it; it edge-bounces rather than wrapping; it's counted
+        by <code>particleCount()</code> but excluded from <code>readParticles()</code>.
+      </li>
+      <li>
+        <b>Matter tagging</b> — a body stamps the matter it emits with <code>data-species</code> and
+        acts selectively via <code>data-affects</code> (a species set). Matter outside the set feels
+        no force and is skipped in the density sample, so several ecologies — pollen, seeds, spores —
+        share one field with no cross-talk. Tags are read once at scan, allocation-free per frame.
+      </li>
+      <li>
+        <b>The scalar field</b> — <code>sampleScalar(x, y)</code> <ApiStamp name="sampleScalar" />
+        returns the smooth diffused density ∈ [0, 1] at a point (the heatmap grid, bilinear-sampled).
+        Its gradient stays meaningful right at a source — unlike a nearest-body readout — so a
+        creature can <em>forage by gradient</em>, always reading which way is "more". Enable it with
+        <code>createField(&#123; heatmap: true &#125;)</code>; it runs even under <code>render: 'none'</code>.
+      </li>
+    </ul>
+    <p class="note">
+      These extend the consumption model rather than adding forces: an agent is a particle the engine
+      drives, tagging scopes <em>which</em> matter a force sees, and the scalar is a read channel —
+      no new <code>data-body</code> verb. The <a href="/docs/api/handle">FieldHandle reference</a> has
+      the exact signatures.
+    </p>
+  </section>
 </DocsLayout>

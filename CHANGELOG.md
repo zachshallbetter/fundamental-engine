@@ -49,6 +49,11 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Rebrand stragglers in user-facing engine strings.** The `inspect` example recipe's `intent`, the
   system-report heading, and the canvas-context error/warn messages still said "field-ui"; renamed to
   "Fundamental". Copy-only — no API, recipe structure, or behavior change.
+- **The density heatmap no longer reacts to scroll.** It was suppressed while scrolling (draw only when
+  `scrollV < 6`), so the glow popped off the instant you scrolled and back on when you stopped — choppy.
+  The scroll coupling is removed entirely: the heatmap is a continuous ambient layer that draws every
+  frame when enabled. The original perf intent is served by the existing compute throttle (the texel
+  grid recomputes only every 3rd frame), so the per-frame cost is just the cached bilinear upscale.
 - **Engagement listeners no longer accumulate on a long-lived field.** `bindEngagement()` deduped via
   `data-fx-engaged` but, unlike the body/emitter reconciliation, never pruned `[data-hot]` elements that
   had left the DOM — so a persistent field (the page `<field-root>` with `transition:persist`) outliving
@@ -63,6 +68,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   it had replaced (`size + 3 + 6*h`) — both bloomed into large overlapping rings wherever the accretion
   sink heats a cluster (every particle there reaches `h≈1`). Particles now draw as a crisp core with a
   single fixed ~1px bloom; heat reads through the core's brightness and size, never a growing aura. (#434)
+- **Lifecycle teardown closes registry + observer leaks.** `platform` destroy now prunes stale registry
+  entries and disconnects its observers; `@fundamental-engine/three`'s layer tears down its body registry
+  on destroy and reuses overlay GPU buffers instead of reallocating them per frame. Repeated
+  field teardown/rescan no longer retains detached entries or leaks observers. (#463)
+
+### Performance
+
+- **Reuse draw/flow scratch instead of allocating per particle per frame.** The core draw and flow paths
+  allocated scratch (`flowBias`/`particleRGB`) per particle per frame; the hot loops now pass shared
+  module scratch via internal write-into variants — the public `flowBias`/`particleRGB` stay as thin
+  wrappers, math bit-for-bit unchanged. (#463)
 
 ## [0.4.0] — 2026-06-13
 

@@ -39,7 +39,7 @@ import {
 import { healWaves, tearBoundNear, tearBoundByForces, induceCharges } from './reservoir.ts';
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
 import { resolvePalette } from '../config/palettes.ts';
-import { clamp, hexToRgb, particleRGB, rgbToHex, sampleStops, type RGB } from './math.ts';
+import { clamp, hexToRgb, particleRGBInto, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { defaultFeedbackSink } from './feedback-sink.ts';
 import { thermoMetrics } from './thermo.ts';
@@ -59,12 +59,19 @@ import { canvas2dBackend, type RenderBackend, type Stroke } from './render-backe
 import { forceAt, netField } from './streamlines.ts';
 import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
-import { flowBias, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
+import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
 const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
+
+// Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
+// active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
+// Safe to share module-wide: each field's frame runs synchronously, and every read consumes the
+// scratch before the next write (no overlapping lifetimes, no cross-instance interleaving).
+const _flowB = { x: 0, y: 0 };
+const _rgb: RGB = [0, 0, 0];
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   // Signals-only mode (`render: 'none'`, §13.7 / #297): the full simulation + feedback pipeline
@@ -1052,11 +1059,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       ctx!.fillRect(0, 0, W, H);
     }
     drawWaves();
-    // The heatmap is a full-viewport bilinear-upscale glow — the heaviest per-frame layer. It's
-    // ambient density you read at rest, not detail you track mid-scroll, so suppress it while the
-    // page is scrolling fast (eased env.scrollV). Scrolling never pays the heatmap's fill cost; the
-    // glow returns the moment the page settles. (Body charge/glow is CSS --load, unaffected.)
-    if (heatmap && (env.scrollV ?? 0) < 6) drawHeatmap();
+    // The heatmap is a continuous ambient layer — NOT coupled to scroll. It draws every frame
+    // whenever enabled. (An earlier scroll-suppression made it pop/fade out while scrolling, which
+    // read as choppy; the perf intent is served instead by the compute throttle — the texel grid is
+    // recomputed only every 3rd frame — so the per-frame cost is just the cached bilinear upscale.)
+    if (heatmap) drawHeatmap();
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
@@ -1083,7 +1090,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
       const rs = d * d;
       const h = p.heat;
-      let [r, g, b] = particleRGB(rs, h, acc);
+      particleRGBInto(_rgb, rs, h, acc);
+      let r = _rgb[0];
+      let g = _rgb[1];
+      let b = _rgb[2];
       if (p.color) {
         // carried pigment (§20.8): a stained particle reads mostly as its own tint.
         const [pr, pg, pb] = hexToRgb(p.color);
@@ -1245,7 +1255,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
             let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
             // a live flow focus bends the rendered field lines toward the target (field.flowTo).
             if (flow) {
-              const b = flowBias(gx, gy, flow, 0.04);
+              const b = flowBiasInto(_flowB, gx, gy, flow, 0.04);
               fx += b.x;
               fy += b.y;
             }
@@ -1323,7 +1333,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       for (let gy = GRID / 2; gy < H; gy += GRID) {
         let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
         if (flow) {
-          const b = flowBias(gx, gy, flow, 0.04);
+          const b = flowBiasInto(_flowB, gx, gy, flow, 0.04);
           fx += b.x;
           fy += b.y;
         }
@@ -1502,7 +1512,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         for (let i = 0; i < STEPS; i++) {
           let { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
           if (flow) {
-            const b = flowBias(x, y, flow, 0.04);
+            const b = flowBiasInto(_flowB, x, y, flow, 0.04);
             fx += b.x;
             fy += b.y;
           }
@@ -1622,7 +1632,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (flow && env.dt) {
       for (const p of store.particles) {
         if (p.cap) continue;
-        const b = flowBias(p.x, p.y, flow, 0.6);
+        const b = flowBiasInto(_flowB, p.x, p.y, flow, 0.6);
         p.vx += b.x;
         p.vy += b.y;
       }
