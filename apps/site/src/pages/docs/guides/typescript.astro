@@ -25,13 +25,13 @@ const mount = `import { mountField, createField } from '@fundamental-engine/vani
 const field = mountField({ render: 'trails' });
 
 // or own the canvas entirely — this createField is browser-wired (host injected for you).
-// The lowest-level engine entry is field-ui's createField with an explicit host.
+// The lowest-level engine entry is @fundamental-engine/core's createField with an explicit host.
 const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' });`;
 ---
 
 <DocsLayout
-  title="field-ui — TypeScript guide"
-  description="Use field-ui from plain TypeScript with @fundamental-engine/vanilla: a typed FieldField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
+  title="Fundamental — TypeScript guide"
+  description="Use Fundamental from plain TypeScript with @fundamental-engine/vanilla: a typed FieldField class plus mountField() and createField(), with no custom-element registration and no framework dependency."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
@@ -79,7 +79,7 @@ const own = createField(document.querySelector('canvas'), { accent: '#2dd4bf' })
       <a href="/docs/api/handle">FieldHandle</a>; its <code>destroy()</code> also removes the
       canvas it made. <code>@fundamental-engine/vanilla</code> also re-exports a <b>browser-wired</b>
       <code>createField</code> (it injects <code>browserHost()</code> for you) for when you own the
-      canvas. The lowest-level engine entry is <code>field-ui</code>'s <code>createField</code>
+      canvas. The lowest-level engine entry is <code>@fundamental-engine/core</code>'s <code>createField</code>
       with an explicit host — see the <a href="/docs/guides/core">core engine</a> guide.
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: mount }]} />

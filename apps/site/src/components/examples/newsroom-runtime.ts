@@ -1,4 +1,4 @@
-// Newsroom Field runtime. field-ui as an INVISIBLE measurement layer over one day of
+// Newsroom Field runtime. Fundamental as an INVISIBLE measurement layer over one day of
 // Wikipedia's most-read articles, laid out as a newspaper front page (lead / deck / index —
 // placement is server-rendered from the ranking; the runtime never moves stories):
 //   · Field on/off — off, the ink flattens (CSS via [data-field]) while the placement stays;

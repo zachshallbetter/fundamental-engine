@@ -92,14 +92,14 @@ const SNIP_CSS = `.cat-title a {
 ---
 
 <ExampleShell
-  title="field-ui — Catalog"
+  title="Fundamental — Catalog"
   description="A real Open Library science-fiction shelf run as a field. Each book's rating count goes through the exact trust formula from the Evidence example — log-normalized counts become mass — and consensus shows in the spine: type weight, ink, and anchor, never a score badge. Hover a book and its shelf-mates light up. data-* in, --field-* out."
   current="catalog"
   mainClass="ex-catalog"
   mainAttrs={{ "data-field": "on", "data-weight": "consensus", "data-lens": "subject" }}
 >
   <header class="ev-hero">
-    <p class="ev-kicker">field-ui · invisible fields · catalog</p>
+    <p class="ev-kicker">Fundamental · invisible fields · catalog</p>
     <h1>Consensus on the <span class="accent">shelf</span>.</h1>
     <p class="ev-lede">
       A bookshelf is usually a ranking in disguise: sort by rating count, slap a score badge on
@@ -218,7 +218,7 @@ const SNIP_CSS = `.cat-title a {
     <h2 id="cat-how-h">How it's built</h2>
     <p class="ev-how-lede">
       Every book is ordinary semantic HTML — an <code>&lt;article&gt;</code> with a handful of
-      data attributes. field-ui reads them, runs a spatial field over the grid, and the trust
+      data attributes. Fundamental reads them, runs a spatial field over the grid, and the trust
       score is written once as <code>--w</code>; CSS turns it into type heft, ink, and the
       spine. No canvas. No particle swarm. Shelf-mate affinity is class toggles, not SVG.
       Two live channels ride on top: the page's hidden engine writes <code>--d</code> (local

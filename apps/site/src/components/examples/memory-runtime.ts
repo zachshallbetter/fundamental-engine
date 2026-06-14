@@ -1,4 +1,4 @@
-// Memory Field runtime. field-ui as an INVISIBLE measurement layer over Google ngrams word frequencies:
+// Memory Field runtime. Fundamental as an INVISIBLE measurement layer over Google ngrams word frequencies:
 //   · elapsed days slider decays retention w = retention(a, days_eff) — the core temporal
 //     kernel: a · exp(−since/τ(a)), τ = 4 + a·56 days — updating styles in real time;
 //   · click a card to REVIEW it (w springs back to anchor a, and decays relative to review time);

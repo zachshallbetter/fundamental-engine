@@ -1,4 +1,4 @@
-// Threads Field runtime. field-ui as an INVISIBLE measurement layer over one real Hacker
+// Threads Field runtime. Fundamental as an INVISIBLE measurement layer over one real Hacker
 // News discussion, with the reply tree as a BINDING structure:
 //   · every comment's mass is server-computed (log-normalized subtree size, carried as --w
 //     and data-strength); the runtime never reweights — a thread's shape is fixed history;

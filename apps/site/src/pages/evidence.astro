@@ -7,7 +7,7 @@ import { categoryColors } from "../lib/palette.ts";
 import { fmtDate, fmtInt } from "../lib/fmt.ts";
 import "../styles/docs.css";
 
-// The Evidence Field — field-ui as an invisible measurement layer over real research data.
+// The Evidence Field — Fundamental as an invisible measurement layer over real research data.
 // No particle swarm: the trust shows in the type. Each finding is a real OpenAlex work. The
 // controls (Field on/off, Weight by) make the transformation legible — off, the same data is a
 // plain list; change the weighting and the field re-settles. data-* in, --field-* out.
@@ -105,13 +105,13 @@ fetch('https://api.openalex.org/works'
 ---
 
 <ExampleShell
-  title="field-ui — Evidence"
-  description="The same research, run as a field. field-ui measures real OpenAlex citation data and writes trust back into the type — heavier, brighter, more anchored — with no particle swarm. Toggle the field off and it collapses to a plain list; that gap is what field-ui adds. data-* in, --field-* out."
+  title="Fundamental — Evidence"
+  description="The same research, run as a field. Fundamental measures real OpenAlex citation data and writes trust back into the type — heavier, brighter, more anchored — with no particle swarm. Toggle the field off and it collapses to a plain list; that gap is what Fundamental adds. data-* in, --field-* out."
   current="evidence"
   mainAttrs={{ "data-field": "on", "data-weight": "consensus", "data-lens": "field" }}
 >
     <header class="ev-hero">
-      <p class="ev-kicker">field-ui · invisible fields · evidence</p>
+      <p class="ev-kicker">Fundamental · invisible fields · evidence</p>
       <h1>Trust you can <span class="accent">feel</span>, not read.</h1>
       <p class="ev-lede">
         Research is typically served as a sorted column. Citation count compresses three things
@@ -288,7 +288,7 @@ fetch('https://api.openalex.org/works'
       <h2 id="ev-how-h">How it's built</h2>
       <p class="ev-how-lede">
         Every finding is ordinary semantic HTML — a <code>&lt;li&gt;</code> with a few data
-        attributes. field-ui reads them, runs a spatial field over the list, and writes measured
+        attributes. Fundamental reads them, runs a spatial field over the list, and writes measured
         state back as CSS custom properties each frame. No canvas. No particle swarm. No JS event
         listeners on individual elements. Four channels do the work: <code>--w</code> is the
         server-computed weight, <code>--cat</code> the lens color, <code>--d</code> the engine's

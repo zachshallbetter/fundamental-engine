@@ -1,4 +1,4 @@
-// Market Field runtime. field-ui as an INVISIBLE measurement layer over a CoinGecko snapshot,
+// Market Field runtime. Fundamental as an INVISIBLE measurement layer over a CoinGecko snapshot,
 // laid out as a cap-weighted mosaic — mass is AREA:
 //   · Field on/off — off, the mosaic collapses to an even grid (CSS via [data-field]); the scoped
 //     field is destroyed. On, the field runs and cap shows in tile area and type.

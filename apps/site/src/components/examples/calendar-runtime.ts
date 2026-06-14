@@ -1,4 +1,4 @@
-// Calendar Field runtime. field-ui as an INVISIBLE measurement layer over a real launch
+// Calendar Field runtime. Fundamental as an INVISIBLE measurement layer over a real launch
 // schedule, where the field's input is time itself — rendered in three calendar geometries:
 //   · DAY — a single day's agenda with an hour gutter; ‹ › arrows walk the data's range.
 //   · WEEK — seven columns from the snapshot's today, plus a narrow "later +" summary.

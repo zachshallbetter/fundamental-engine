@@ -6,7 +6,7 @@ import backlog from "../../data/examples/backlog.json";
 import "../../styles/docs.css"; /* .code-tabs styles for CodeTabs */
 import "../../styles/examples/backlog.css";
 
-// The Backlog Field — field-ui's own work stream run as a field. Each issue and pull request
+// The Backlog Field — Fundamental's own work stream run as a field. Each issue and pull request
 // is a body; activity (discussion) and freshness (recency of touch) blend into mass; refs[]
 // thread each item to the work it builds on; and the shipping cycle is a sink with a stated
 // capacity. No particle swarm: the field shows in the type.
@@ -156,18 +156,18 @@ function drop() { // pointerup — Esc/pointercancel aborts
 ---
 
 <ExampleShell
-  title="field-ui — Backlog"
-  description="field-ui's own issues and pull requests run as a field. Activity is mass — discussion pulls — references thread each item to the work it builds on, and the shipping cycle is a sink with visible capacity. No particle swarm; the field shows in the type."
+  title="Fundamental — Backlog"
+  description="Fundamental's own issues and pull requests run as a field. Activity is mass — discussion pulls — references thread each item to the work it builds on, and the shipping cycle is a sink with visible capacity. No particle swarm; the field shows in the type."
   current="backlog"
   mainClass="ex-backlog"
   mainAttrs={{ "data-field": "on", "data-weight": "activity" }}
 >
   <header class="ev-hero">
-    <p class="ev-kicker">field-ui · invisible fields · backlog</p>
+    <p class="ev-kicker">Fundamental · invisible fields · backlog</p>
     <h1>Work has <span class="accent">weight</span>.</h1>
     <p class="ev-lede">
       This one is the repo measuring itself: the {items.length} most recent work items from
-      <a href="https://github.com/zachshallbetter/fundamental-engine" rel="noopener">field-ui's own
+      <a href="https://github.com/zachshallbetter/fundamental-engine" rel="noopener">Fundamental's own
       repository</a> — the issues and pull requests that built the engine rendering this page.
       A tracker flattens them into identical rows; here each item is a <strong>body</strong>,
       and its mass is a blend of activity (discussion) and freshness (how recently it was
@@ -368,7 +368,7 @@ function drop() { // pointerup — Esc/pointercancel aborts
     <h2 id="wl-how-h">How it's built</h2>
     <p class="ev-how-lede">
       Every work item is an ordinary <code>&lt;li&gt;</code> with a few data attributes — the
-      GitHub API response, flattened into markup. field-ui runs an invisible field over the
+      GitHub API response, flattened into markup. Fundamental runs an invisible field over the
       list and the type carries the measurement: activity as weight, kind as color, references
       as hover threads. No canvas, no chart library. Two live channels ride on top: the page's
       hidden engine writes <code>--d</code> (local particle density) to every

@@ -7,7 +7,7 @@ import { fmtInt } from "../../lib/fmt.ts";
 import "../../styles/docs.css";
 import "../../styles/examples/newsroom.css";
 
-// The Newsroom Field — field-ui as an invisible measurement layer over one day of Wikipedia's
+// The Newsroom Field — Fundamental as an invisible measurement layer over one day of Wikipedia's
 // most-read articles. Pageviews are gravitational mass (what the world actually read anchors
 // the page); the day-over-day change polarizes — rising warms, falling cools, new entries stay
 // neutral. No particle swarm: the attention shows in the type.
@@ -103,14 +103,14 @@ return pct >= 0
 ---
 
 <ExampleShell
-  title="field-ui — Newsroom"
+  title="Fundamental — Newsroom"
   description="One day of Wikipedia's most-read articles run as a field. Pageviews are gravitational mass — what the world actually read anchors the page — and the day-over-day change polarizes: rising warms, falling cools. No particle swarm; the attention shows in the type."
   current="newsroom"
   mainClass="ex-newsroom"
   mainAttrs={{ "data-field": "on", "data-lens": "trend" }}
 >
   <header class="ev-hero">
-    <p class="ev-kicker">field-ui · invisible fields · newsroom</p>
+    <p class="ev-kicker">Fundamental · invisible fields · newsroom</p>
     <h1>Attention, <span class="accent">measured</span> — not claimed.</h1>
     <p class="ev-lede">
       A trending list asserts importance; a pageview count records it. These are the articles
@@ -267,7 +267,7 @@ return pct >= 0
     <h2 id="nw-how-h">How it's built</h2>
     <p class="ev-how-lede">
       Every article is an ordinary <code>&lt;li&gt;</code> with its raw counts in data
-      attributes. field-ui reads them, runs an invisible field over the front page, and the type
+      attributes. Fundamental reads them, runs an invisible field over the front page, and the type
       carries the measurement — pageviews as weight and placement, the day's swing as color. No
       canvas, no chart library. Four channels do the work: <code>--w</code> is the server-computed
       weight, <code>--cat</code> the lens color, <code>--d</code> the engine's live local density
