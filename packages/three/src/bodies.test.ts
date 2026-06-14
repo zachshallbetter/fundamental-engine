@@ -91,3 +91,22 @@ test('feedback routes to the body; remove unregisters', () => {
   body.remove();
   assert.equal((reg.root.querySelectorAll('[data-body]') as unknown as never[]).length, 0, 'removed');
 });
+
+test('clear() empties the registry and breaks the el.__body cycle (teardown hygiene)', () => {
+  const reg = new FieldBodyRegistry(new PlaneProjection());
+  let scans = 0;
+  reg.setOnChange(() => scans++);
+  const a = reg.add(new Object3D(), { tokens: 'attract' });
+  reg.add(new Object3D(), { tokens: 'gravity' });
+  const elA = (reg.root.querySelectorAll('[data-body]') as unknown as { __body?: unknown }[])[0]!;
+  assert.ok(elA.__body, 'the virtual element points back at its body before clear');
+  assert.equal(reg.all().length, 2);
+
+  reg.clear();
+  assert.equal(reg.all().length, 0, 'registry emptied');
+  assert.equal(elA.__body, undefined, 'el.__body cycle broken — a retained handle cannot pin the registry');
+
+  const before = scans;
+  a.remove(); // a retained handle calling remove() after teardown must not re-scan a torn-down field
+  assert.equal(scans, before, 'no late re-scan after clear');
+});

@@ -47,6 +47,13 @@ export class OverlayRegistry {
     this.overlays.delete(id);
   }
 
+  /** Drop overlays referencing a detached source element — they can never resolve again, and their
+   *  strong Element refs would otherwise pin removed subtrees alive. Run on a cadence by a frame loop. */
+  prune(): void {
+    for (const [id, o] of this.overlays)
+      if (o.sourceElements.some((el) => el.isConnected === false)) this.overlays.delete(id);
+  }
+
   all(): FieldOverlay[] {
     return [...this.overlays.values()];
   }

@@ -9,6 +9,8 @@ import assert from 'node:assert/strict';
 import { StateRegistry } from './state.ts';
 import { FeedbackRegistry } from './feedback.ts';
 import { RelationshipRegistry } from './relationships.ts';
+import { OverlayRegistry } from './overlays.ts';
+import { createFieldPlatform } from './platform.ts';
 
 type Fake = Element & { isConnected: boolean; style: { setProperty(k: string, v: string): void } };
 
@@ -106,4 +108,38 @@ test('StateRegistry: per-key delete leaves no empty husks; prune() sweeps discon
   dead.isConnected = false;
   s.prune();
   assert.equal(s.elements().length, 0, 'prune sweeps disconnected elements');
+});
+
+test('OverlayRegistry: prune drops overlays whose source element left the DOM', () => {
+  const reg = new OverlayRegistry();
+  const a = fakeEl();
+  const b = fakeEl();
+  reg.add({ type: 'relationship', sourceElements: [a, b] });
+  assert.equal(reg.all().length, 1);
+
+  b.isConnected = false;
+  reg.prune();
+  assert.equal(reg.all().length, 0, 'overlay with a detached endpoint is pruned');
+});
+
+test('createFieldPlatform: the write cadence sweeps state + overlays for detached elements', () => {
+  const VP = { x: 0, y: 0, width: 1000, height: 1000, scrollX: 0, scrollY: 0 };
+  const root = fakeEl() as unknown as Element;
+  const platform = createFieldPlatform(root);
+
+  // StateRegistry entries accumulate from the per-frame sink and nothing else prunes them.
+  const deadState = fakeEl();
+  platform.state.set(deadState, 'lit', 1);
+  // An overlay pins both endpoints with strong refs.
+  const a = fakeEl();
+  const b = fakeEl();
+  platform.overlays.add({ type: 'relationship', sourceElements: [a, b] });
+
+  deadState.isConnected = false;
+  b.isConnected = false;
+  // frame 0 satisfies (frame % 120 === 0) → both prunes fire on the write phase
+  platform.tick(0, VP);
+
+  assert.equal(platform.state.elements().length, 0, 'state pruned on the write cadence');
+  assert.equal(platform.overlays.all().length, 0, 'overlays pruned on the write cadence');
 });
