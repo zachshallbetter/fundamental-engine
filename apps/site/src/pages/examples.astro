@@ -809,7 +809,7 @@ const GROUPS = [
 
   function initExamplesNav(): () => void {
     const side = document.querySelector<HTMLElement>('.examples-side');
-    if (!side || reduceMotion()) return () => {};
+    if (!side || reduceMotion() || document.documentElement.dataset.field === 'off') return () => {}; // the one field switch
     const links = [...side.querySelectorAll<HTMLElement>('a[data-spy]')];
     const pairs = links
       .map((a) => ({ a, el: document.getElementById(a.dataset.spy || '') }))

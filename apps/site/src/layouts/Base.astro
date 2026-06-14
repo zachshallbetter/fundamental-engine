@@ -64,6 +64,16 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
         author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
       })}
     />
+    <!-- the one field switch: mirror the persisted preference to <html data-field> before paint, so
+         the field-root and every scoped platform gate on it with no flash. Default on. -->
+    <script is:inline>
+      try {
+        document.documentElement.dataset.field =
+          localStorage.getItem('fui:field') === 'off' ? 'off' : 'on';
+      } catch (e) {
+        document.documentElement.dataset.field = 'on';
+      }
+    </script>
     <!-- client-side navigation: no full reload, so the field below runs continuously -->
     <ClientRouter />
   </head>
@@ -125,11 +135,14 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
       // Boot when the main thread first goes idle, or after ~1.5s — whichever comes
       // first. Safari has no requestIdleCallback; a short fixed delay clears the
       // critical path there the same way.
+      // the one field switch: only boot the engine when the field is on (off → a static site)
       const boot = () => void import('@fundamental-engine/elements');
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(boot, { timeout: 1500 });
-      } else {
-        setTimeout(boot, 300);
+      if (document.documentElement.dataset.field !== 'off') {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(boot, { timeout: 1500 });
+        } else {
+          setTimeout(boot, 300);
+        }
       }
     </script>
 
@@ -159,6 +172,12 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
       }
       a {
         color: inherit;
+      }
+      /* the one field switch (off): hide the particle field-root entirely. The engine also skips
+         booting when off, so this is belt-and-suspenders + covers a live toggle before reload. The
+         .field colour gradient stays — it's ambiance, not the field. */
+      html[data-field='off'] field-root {
+        display: none !important;
       }
       .field {
         position: fixed;

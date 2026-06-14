@@ -48,9 +48,10 @@
     font-variation-settings 0.4s var(--ease, ease);
   will-change: transform, opacity;
 }
-/* counter to the mass text: engage the word (or the period) and the period flees */
-.hero-mass:hover + .hero-antimass,
-.hero-antimass:hover {
+/* counter to the mass text: engage the word (or the period) and the period flees. Gated on the one
+   field switch — with the field off the whole hero reads static (the word stops gathering too). */
+html[data-field='on'] .hero-mass:hover + .hero-antimass,
+html[data-field='on'] .hero-antimass:hover {
   --flee: 1;
 }
 @media (prefers-reduced-motion: reduce) {

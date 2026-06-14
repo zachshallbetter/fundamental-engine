@@ -487,7 +487,7 @@ function initDocsShell(shell: HTMLElement): () => void {
   const apply = (): void => {
     bits?.destroy();
     bits = null;
-    const active = on && !reduceMotion();
+    const active = on && !reduceMotion() && document.documentElement.dataset.field !== "off"; // the one field switch
     main.dataset.fieldDocs = active ? "on" : "off";
     toggle?.setAttribute("aria-checked", String(on));
     if (stateEl) stateEl.textContent = on ? "on" : "off";

@@ -46,6 +46,8 @@ export function applyNavField(
   recipeId: string,
   opts: { pin?: HTMLElement | null; markVisited?: boolean; extraMetrics?: string[] } = {},
 ): NavFieldHandle | null {
+  // the one field switch: off → no nav field anywhere this helper drives (docs, writings, home rail)
+  if (typeof document !== 'undefined' && document.documentElement.dataset.field === 'off') return null;
   const visited = opts.markVisited ? loadVisited() : null;
   return bindFieldNav(root, recipeId, {
     pin: opts.pin ?? null,
