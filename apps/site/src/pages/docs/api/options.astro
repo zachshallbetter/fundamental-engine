@@ -5,11 +5,7 @@ import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
 
-<<<<<<< HEAD
 // lowest-level: @fundamental-engine/core is renderer-agnostic, so createField requires an explicit host.
-=======
-// lowest-level: Fundamental is renderer-agnostic, so createField requires an explicit host.
->>>>>>> 7c71b58 (docs(site): finish the Fundamental rename across the site)
 const sig = `import { createField } from '@fundamental-engine/core';
 import { browserHost } from '@fundamental-engine/platform';
 
@@ -56,11 +52,7 @@ createField(canvas, { mass: true });`;
     <h2>Signature</h2>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: sig }]} />
     <div class="callout">
-<<<<<<< HEAD
       <b>A host is required.</b> <code>@fundamental-engine/core</code> is renderer-agnostic, so
-=======
-      <b>A host is required.</b> <code>Fundamental</code> is renderer-agnostic, so
->>>>>>> 7c71b58 (docs(site): finish the Fundamental rename across the site)
       <code>createField</code> takes a <code>host</code>. In the browser, use <code>createField</code>
       from <a href="/docs/guides/typescript"><code>@fundamental-engine/vanilla</code></a>
       <ApiStamp name="createField" pkg="@fundamental-engine/vanilla" /> (it wires
