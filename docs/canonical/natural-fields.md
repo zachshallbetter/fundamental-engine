@@ -1,17 +1,17 @@
 > **Status: canonical.**
-> This document defines the Natural Field Translation System — how field-ui translates the four
+> This document defines the Natural Field Translation System — how Fundamental translates the four
 > fundamental fields into interface behavior. The classification here is data
 > (`FORCE_KIND` / `FORCE_FIELD` / `NATURAL_FIELDS` in `packages/core/src/config/manual.ts`), so the
 > force manual, the Lab badges, and `/docs/natural-fields` all read it and cannot drift. It changes
 > no particle/engine behavior — only how each token is explained and organized. See
-> [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and
+> [platform-architecture.md](platform-architecture.md) and
 > [../engine-reference/forces-system.md](../engine-reference/forces-system.md).
 
 # Natural Fields
 
-**How field-ui translates the four fundamental fields into interface behavior.**
+**How Fundamental translates the four fundamental fields into interface behavior.**
 
-field-ui does not copy physics into the interface. It **translates** the four fundamental fields into
+Fundamental does not copy physics into the interface. It **translates** the four fundamental fields into
 interface behavior:
 
 - **Gravity** becomes priority.
@@ -21,7 +21,7 @@ interface behavior:
 
 The engine then exposes practical primitives that make those translations usable inside a DOM-native
 runtime. Every interface already has priority, polarity, binding, and transformation; physics already
-has a compact language for those relations. field-ui borrows the language, not the literal physics.
+has a compact language for those relations. Fundamental borrows the language, not the literal physics.
 
 > **Four fields. Many expressions. One DOM runtime.**
 
@@ -55,7 +55,7 @@ Natural field → interface translation → engine primitive → metric → diag
 ### Gravity — priority, convergence, hierarchy
 
 Gravity is the grammar of what matters. In physics it gathers mass, makes wells, and produces orbital
-structure. In field-ui it translates into priority, weight, attraction, hierarchy, settling, and
+structure. In Fundamental it translates into priority, weight, attraction, hierarchy, settling, and
 convergence. Reach for it for ranking, search relevance, centrality, anchoring, and attention wells.
 
 - Engine expressions: `gravity` (primitive); plus `mass`, `potential`, `prediction` as measurement.
@@ -64,7 +64,7 @@ convergence. Reach for it for ranking, search relevance, centrality, anchoring, 
 ### Electromagnetic — polarity, signal, field lines, flow
 
 The grammar of difference and signal. Electric fields push charged matter; magnetic fields bend moving
-charged matter. In field-ui this becomes polarity, opposition, signal, routing, field lines,
+charged matter. In Fundamental this becomes polarity, opposition, signal, routing, field lines,
 propagation, and guided flow — for contrast, state opposition, relationship currents, and plasma-like
 motion.
 
@@ -162,5 +162,5 @@ Interface-native recipes name the *meaning*, then map to a field:
 
 The system should not say "we have physics-inspired UI effects." It says: every interface has
 priority, polarity, binding, and transformation; physics already has a compact language for those
-relations; field-ui translates that language into DOM behavior. **Four fields. Many expressions. One
+relations; Fundamental translates that language into DOM behavior. **Four fields. Many expressions. One
 DOM runtime.**

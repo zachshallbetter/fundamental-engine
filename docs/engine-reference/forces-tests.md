@@ -1,5 +1,5 @@
 > **Status: as-built force-engine reference.**
-> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current Fundamental platform architecture — for that see [../canonical/platform-architecture.md](../canonical/platform-architecture.md) and [../canonical/system-contracts.md](../canonical/system-contracts.md).
 
 # Forces — Testing & Conformance
 
@@ -7,7 +7,7 @@
 > [`forces-system.md`](forces-system.md) (the spec). Section refs like §6 point there.
 > This is the **force-engine conformance reference**; for the platform runtime, scheduler,
 > lint, and site conformance see
-> [`../canonical/field-ui-testing-and-conformance.md`](../canonical/field-ui-testing-and-conformance.md).
+> [`../canonical/testing-and-conformance.md`](../canonical/testing-and-conformance.md).
 
 A physics engine is only as trustworthy as its proof that each force behaves. This
 document is that proof, in two registers: the **unit math** (each force's exact
@@ -21,11 +21,11 @@ goes into a known force; you watch its track, the surrounding field, and any rel
 particles; the measured behavior is checked against the prediction. If it matches, good.
 If not, tune the attributes and fire again.
 
-Scope: this document covers the **force engine** inside `field-ui` — the
+Scope: this document covers the **force engine** inside `Fundamental` — the
 renderer-agnostic field computation, where particles are one agent type in the shared
 field context. The conformance that binds the field runtime to the DOM (the platform
 scheduler's phases, the six registries, `lintPlatform()`, and site-level conformance)
-lives in [`../canonical/field-ui-testing-and-conformance.md`](../canonical/field-ui-testing-and-conformance.md).
+lives in [`../canonical/testing-and-conformance.md`](../canonical/testing-and-conformance.md).
 
 ---
 

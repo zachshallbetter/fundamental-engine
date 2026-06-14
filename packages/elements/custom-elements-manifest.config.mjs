@@ -1,6 +1,6 @@
 // Custom Elements Manifest config for @fundamental-engine/elements.
 //
-// Generates `custom-elements.json` — the machine-readable description of the field-ui custom
+// Generates `custom-elements.json` — the machine-readable description of the Fundamental custom
 // elements (`<field-root>` / `<field-cell>` and their deprecated `forces-*` aliases): their
 // attributes, properties, and methods. This is the standards-based counterpart to the shipped
 // `.d.ts` types, consumed by editors (VS Code custom-data / web-types), Storybook, and other

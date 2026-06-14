@@ -3,12 +3,12 @@
 > unification phase (Phase D): the FrameScheduler, the six registries, `lintPlatform()`, the live
 > `<field-root>` runtime, and the platform→core boundary. For force/field math see
 > [forces-system.md](../engine-reference/forces-system.md); for the data model and contracts see
-> [field-ui-definition-document.md](field-ui-definition-document.md) and
-> [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> [definition-document.md](definition-document.md) and
+> [system-contracts.md](system-contracts.md).
 
-# field-ui platform architecture
+# Fundamental platform architecture
 
-field-ui is a **platform-native relational field runtime for the DOM**. It lets semantic HTML, DOM
+Fundamental is a **platform-native relational field runtime for the DOM**. It lets semantic HTML, DOM
 elements, particles, relationships, measurements, visual layers, and user interaction participate in
 one shared field context. The visible particle canvas is **one render surface**, not the whole
 system.
@@ -16,7 +16,7 @@ system.
 ## Package hierarchy
 
 ```
-field-ui
+Fundamental
   renderer-agnostic field, force, particle, metric, diagnostic, and conformance logic.
   Computes field behavior against plain data. Touches no DOM globals (guarded by
   core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
@@ -44,7 +44,7 @@ apps/site · lab · docs
 ```
 
 Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
-`vanilla → platform → core`. `field-ui` is renderer-agnostic and imports **zero** DOM (enforced
+`vanilla → platform → core`. `Fundamental` is renderer-agnostic and imports **zero** DOM (enforced
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
 `browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/platform`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
@@ -127,7 +127,7 @@ the phases that ran and any violations.
      OWN text and computed size, binds it via `data-field-visual-for`, receives mirrored state).
      The caller supplies the parsed font — any `ContourFont`-shaped object; opentype.js satisfies
      it directly — so the primitive works with whatever face the author applied to the body, and
-     field-ui keeps its zero-dependency rule. The same primitive runs at build time (the site's
+     Fundamental keeps its zero-dependency rule. The same primitive runs at build time (the site's
      `gen-contours.mjs` commits its output). Automatic font-binary discovery from the element's
      CSS, complex-script shaping, and true offset contours (polygon offsetting) remain future
      work.
@@ -177,7 +177,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
 to `@fundamental-engine/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
-source file in `field-ui` is provably DOM-global-free, so the engine is portable to any renderer
+source file in `Fundamental` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
 ## Attaching the engine handle
@@ -235,5 +235,5 @@ spectacle.
 
 The same field body is authored three ways, all compiling to the same `[data-body]` contract:
 native HTML (`createField` + `[data-body]`), the web component (`<field-root>` + `[data-body]`), and
-React (`<FieldField>` + `[data-body]`). See [field-ui-authoring-and-recipes.md](field-ui-authoring-and-recipes.md)
+React (`<FieldField>` + `[data-body]`). See [authoring-and-recipes.md](authoring-and-recipes.md)
 and the live `/docs/authoring` page.

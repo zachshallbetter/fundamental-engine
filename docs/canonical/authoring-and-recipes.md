@@ -1,22 +1,22 @@
 > **Status: canonical.**
-> Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Authoring and Recipes
+# Fundamental Authoring and Recipes
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Recipe contract |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Interaction recipes |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Recipe tests |
+| [`definition-document.md`](definition-document.md) | Concept |
+| [`system-contracts.md`](system-contracts.md) | Recipe contract |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | Interaction recipes |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Recipe tests |
 
 ## Purpose
 
-This document defines how authors use `field-ui`. `field-ui` is a platform-native relational field
-runtime for the DOM: `field-ui` computes renderer-agnostic field behavior, `@fundamental-engine/platform`
+This document defines how authors use `Fundamental`. `Fundamental` is a platform-native relational field
+runtime for the DOM: `Fundamental` computes renderer-agnostic field behavior, `@fundamental-engine/platform`
 binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
 scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
 field context. Authors write the same `[data-body]` contract regardless of surface.

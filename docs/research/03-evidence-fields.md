@@ -1,13 +1,13 @@
 # Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces
 
-> **Status: research draft (preprint, work in progress).** Paper 3 of the field-ui family — a domain
+> **Status: research draft (preprint, work in progress).** Paper 3 of the Fundamental family — a domain
 > validator for evidence and trust in AI interfaces. Claims verified against the codebase and
 > canonical docs as of 2026-06-07. See the [series index](README.md) and *the caveat canon* therein.
 > This is a preprint draft, not canonical product documentation.
 
 **Author:** Zach Shallbetter
-**Series:** field-ui Research Papers, Paper 3 of 8
-**Companion papers:** [field-ui: A Field Translation Runtime for Relational DOM Interfaces](01-field-translation-runtime.md)
+**Series:** Fundamental Research Papers, Paper 3 of 8
+**Companion papers:** [Fundamental: A Field Translation Runtime for Relational DOM Interfaces](01-field-translation-runtime.md)
 (flagship paradigm paper); [Reading Field](02-reading-field.md) (reading attention and document memory).
 See the [series index](README.md).
 
@@ -23,7 +23,7 @@ whether a claim should be believed. Which source supports which claim? Where do 
 contradict? Which sentence is unsupported entirely? How was this claim revised? These are relational
 facts, and current interfaces flatten them into footnote markers and a single number.
 
-We argue that AI interfaces need a **relational evidence model**, and we show that field-ui — the
+We argue that AI interfaces need a **relational evidence model**, and we show that Fundamental — the
 platform-native relational field runtime introduced in Paper 1 — can represent claims, sources,
 support, contradiction, uncertainty, provenance, and revision as *inspectable field relationships*
 rather than as decorations. In the **Evidence Field** model, claims are bodies; confidence is
@@ -34,7 +34,7 @@ the entropy metric; provenance is a memory trail; and a correction is a memory o
 mapping is classified by *truth mode*, and almost all of them are *semantic truth* — meaning mapped
 to a field metric — not physics.
 
-We are deliberately more hedged than the flagship paper on two points. First, **field-ui visualizes
+We are deliberately more hedged than the flagship paper on two points. First, **Fundamental visualizes
 evidence; it does not adjudicate it.** The runtime surfaces the support, contradiction, and
 confidence that the *host* supplies; it has no fact-checking capability and makes no claim about
 whether a source is correct. Second, although the Evidence Field *recipe* and the data-binding
@@ -86,13 +86,13 @@ The interface, then, is being asked to communicate the *one thing the text itsel
 where the prose is and is not anchored in evidence — and it does so with a footnote marker and a bar.
 
 This is the gap the Evidence Field targets. The claim is narrow and we keep it narrow throughout:
-AI and source-backed interfaces need a *relational* evidence model, and field-ui can provide one in
+AI and source-backed interfaces need a *relational* evidence model, and Fundamental can provide one in
 which support, contradiction, confidence, and provenance are first-class, inspectable field
 relationships rather than inline ornaments.
 
 ### 1.3 The Evidence Field idea
 
-field-ui's organizing principle (Paper 1, §3) is reciprocal: *elements bend the field; the field
+Fundamental's organizing principle (Paper 1, §3) is reciprocal: *elements bend the field; the field
 bends them back.* Applied to evidence, the idea is this. Treat each **claim** in an answer as a
 *body*. Treat each **source** as a body. Treat **support** as a binding relationship between a
 source and a claim, and **contradiction** as an opposing one. Let the field then write back, onto
@@ -106,7 +106,7 @@ a reader would otherwise have to reconstruct from footnotes becomes a visible, i
 The decisive design constraint, repeated throughout this paper, is that **the field visualizes
 evidence the host supplies; it does not establish truth.** The system has no oracle. Whether a
 source actually supports a claim, and whether the claim is actually correct, are judgments the host
-application (or its model, or its human authors) must make and feed in. field-ui's contribution is
+application (or its model, or its human authors) must make and feed in. Fundamental's contribution is
 to make those supplied judgments *relational, legible, inspectable, and accessible* — not to make
 them.
 
@@ -115,7 +115,7 @@ them.
 This paper contributes:
 
 1. **A relational evidence model** (§3): a mapping from evidence semantics — claim, source, support,
-   contradiction, confidence, uncertainty, provenance, revision — onto field-ui bodies,
+   contradiction, confidence, uncertainty, provenance, revision — onto Fundamental bodies,
    relationships, and metrics, grounded in the shipped Evidence Field recipe family and classified by
    truth mode. The model's honesty constraint (visualize, do not adjudicate) is made concrete by the
    code: the platform *derives* coherence and entropy from relationship resolution, while a claim's
@@ -177,7 +177,7 @@ satisfy) cautions that explanation can produce *illusory* understanding and that
 can raise trust without improving decisions `[TODO: cite explanation-usefulness / explainable-AI-evaluation]`.
 We treat "explanation usefulness" as a measured construct in §5, not an assumed benefit.
 
-**Position against the baseline.** Against the badge-and-citation baseline, field-ui's stance is
+**Position against the baseline.** Against the badge-and-citation baseline, Fundamental's stance is
 *relational and inspectable*: evidence is a typed graph the reader can see and probe, not a per-span
 marker plus a scalar. This inherits the flagship system's epistemic posture (truth modes, passports,
 conformance; Paper 1, §6) and the explainability framing developed in Paper 8 — every visible
@@ -194,7 +194,7 @@ not to assert.
 Because every paragraph that follows discusses trust, we lead with the disclaimer and then never
 relax it:
 
-> **field-ui visualizes evidence; it does not adjudicate it.** The runtime surfaces support,
+> **Fundamental visualizes evidence; it does not adjudicate it.** The runtime surfaces support,
 > contradiction, confidence, and provenance *supplied by the host*. It performs no fact-checking,
 > verifies no source, and asserts no claim's correctness. "Evidence" here names a set of inspectable
 > relationships, not an automated judgment of truth.
@@ -212,14 +212,14 @@ and consistent.
 
 ### 3.2 The Natural Field Translation, applied to evidence
 
-Paper 1 (§6.5) describes the Natural Field Translation System: field-ui does not copy physics into
+Paper 1 (§6.5) describes the Natural Field Translation System: Fundamental does not copy physics into
 the interface, it *translates* the four fundamental fields into interface grammar — gravity →
 priority, electromagnetism → polarity and signal, strong interaction → binding, weak interaction →
 transformation. Evidence is a near-ideal domain for this translation, because an evidence graph
 *already has* priority (confidence), polarity (support vs. contradiction), binding (a source backing
 a claim), and transformation (revision and decay). The canonical natural-fields document already
 files the Evidence Field under *electromagnetic + strong*
-(`docs/canonical/field-ui-natural-fields.md`), and the shipped recipe agrees.
+(`docs/canonical/natural-fields.md`), and the shipped recipe agrees.
 
 The mapping, with each row's truth mode:
 
@@ -301,7 +301,7 @@ evidence vocabulary, all shipped and all validated:
 | **Conflict Field** | weak (+ electromagnetic) | contradiction, uncertainty, unstable state | `charge`, `repel`, `morph`, `diffuse` |
 
 Read together they belong to the canonical *Signal Path* theme — "citations, dependencies, evidence"
-(`field-ui-natural-fields.md`) — though at the token level the evidence recipes draw on `charge`,
+(`natural-fields.md`) — though at the token level the evidence recipes draw on `charge`,
 `link`, `cohesion`, `repel`, `memory`, `morph`, and `diffuse` rather than the Signal Path triad
 (`charge`/`propagate`/`fieldflow`) itself. Three are worth a
 line. **Trust Gradient** is where confidence and the *unsupported-claim* surface live — its metrics
@@ -346,7 +346,7 @@ Thresholded events complete the write-back: a claim crossing into high entropy c
 `entropy-warning`-class event (the canonical event vocabulary includes `forces:entropy-warning`),
 and a binding strengthening can emit a relationship event. These are debounced and inspectable, per
 the interaction model. The relationship graph itself is owned by the **`RelationshipRegistry`**
-(Paper 1, §5.2; `docs/canonical/field-ui-interaction-and-relationship-model.md`, §7), which resolves
+(Paper 1, §5.2; `docs/canonical/interaction-and-relationship-model.md`, §7), which resolves
 a `supports` or `contradicts` edge from native DOM signals (`href`, ARIA references,
 `data-field-relation`) into a typed graph mapped onto core `RelationshipAgent`s, with a
 `relation-target-missing` lint rule flagging any edge whose target is not a registered body.
@@ -650,7 +650,7 @@ interfaces today are weak**, and they are weak in a *structural* way that more p
 A confidence badge cannot express *which* claim is uncertain; an inline citation cannot express
 *whether* the source supports the span or *contradicts* a neighbor; neither can show that a sentence
 is supported by *nothing*. Those are relational facts, and a relational substrate is the natural
-place to put them. field-ui already has that substrate — typed relationships in the
+place to put them. Fundamental already has that substrate — typed relationships in the
 `RelationshipRegistry`, derived coherence/entropy metrics, a reverse write-back, and a conformance
 discipline that keeps the vocabulary honest — so the Evidence Field is less a new system than a
 *reading* of an existing one onto the domain where weak trust primitives hurt most.
@@ -660,7 +660,7 @@ risk of any trust display is that it manufactures confidence rather than calibra
 therefore refused to claim a benefit, designed the study so its primary outcome is *calibration* (not
 confidence), elevated the over-trust failure mode to a primary safety outcome, and built the
 signal-detection decomposition specifically to expose a display that increases reliance without
-increasing discrimination. The honest summary is that field-ui makes a relational evidence model
+increasing discrimination. The honest summary is that Fundamental makes a relational evidence model
 *expressible, inspectable, and accessible*, and that whether that model helps real readers make
 better-calibrated trust judgments is an open empirical question with a real chance of a negative
 answer — which is exactly why the study is worth running.
@@ -705,17 +705,17 @@ Every model claim in this paper is checkable against the repository.
   `packages/core/src/visual/tokens.ts`.
 - **The relationship graph** (`supports` / `contradicts` edges, native-signal resolution, the
   `relation-target-missing` lint): `packages/platform/src/relationships.ts`,
-  `packages/platform/src/lint.ts`, and `docs/canonical/field-ui-interaction-and-relationship-model.md`
+  `packages/platform/src/lint.ts`, and `docs/canonical/interaction-and-relationship-model.md`
   §7.
 - **The data-binding mechanism** used to wire records into the field:
   `packages/platform/src/bind-data.ts` and `packages/platform/src/apply-recipe.ts`.
 - **The data-bound Evidence Field study page** (demonstration, not experiment):
   `apps/site/src/pages/docs/studies/evidence-field.astro`.
 
-Canonical design corroboration: `docs/canonical/field-ui-natural-fields.md` (Evidence Field =
+Canonical design corroboration: `docs/canonical/natural-fields.md` (Evidence Field =
 electromagnetic + strong; Signal Path = `charge`/`propagate`/`fieldflow`; the electromagnetic rule),
-`docs/canonical/field-ui-interaction-and-relationship-model.md` §26 (AI interface use cases) and §7
-(`RelationshipAgent`), and `docs/canonical/field-ui-authoring-and-recipes.md` §5 (the recipe schema).
+`docs/canonical/interaction-and-relationship-model.md` §26 (AI interface use cases) and §7
+(`RelationshipAgent`), and `docs/canonical/authoring-and-recipes.md` §5 (the recipe schema).
 
 ## Appendix B. Conversion notes (markdown → preprint)
 

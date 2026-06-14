@@ -1,15 +1,15 @@
-# field-ui Research Papers — a paper family
+# Fundamental Research Papers — a paper family
 
 > **Status: research drafts (preprints, work in progress).**
 > These are technical-preprint drafts intended for arXiv-style release, not canonical product
-> documentation. They describe the concepts behind field-ui for an external research audience.
+> documentation. They describe the concepts behind Fundamental for an external research audience.
 > Every factual claim is checked against the code and the canonical docs as of the date noted in
 > each paper's header; where a behavior is aspirational or opt-in rather than shipped, the papers
 > say so explicitly (see *The caveat canon* below). When the code and a paper disagree, the code
 > wins — fix the paper.
 
 This folder holds a **small family of focused papers** on the ideas behind
-[field-ui](../../README.md), a platform-native relational field runtime for the DOM. The family is
+[Fundamental](../../README.md), a platform-native relational field runtime for the DOM. The family is
 deliberately split: one flagship paper *names the paradigm*, and the supporting papers *validate one
 specific claim each* (reading, evidence/trust, accessibility, runtime architecture, authoring, data
 binding, diagnostics). The system has at least eight distinct research claims; combining them into a
@@ -19,7 +19,7 @@ single paper would weaken every argument.
 
 > Interfaces are not only layouts of components. They are **relational fields of meaning.**
 
-- **Practical claim:** field-ui makes those fields *executable, inspectable, accessible, and
+- **Practical claim:** Fundamental makes those fields *executable, inspectable, accessible, and
   authorable* on top of semantic HTML.
 - **Research claim:** a field-based model can improve *orientation, trust, explainability, and
   interaction coherence* in complex web interfaces *without replacing native platform semantics*.
@@ -30,7 +30,7 @@ The first paper names the paradigm. The rest prove it in specific interface doma
 
 | # | File | Working title | Primary contribution | Needs first | Venue |
 |---|---|---|---|---|---|
-| 1 | [`01-field-translation-runtime.md`](01-field-translation-runtime.md) | **field-ui: A Field Translation Runtime for Relational DOM Interfaces** | A new interface paradigm: UI as a shared, inspectable field of meaning (+ model, architecture, taxonomy, NFTS, recipe runtime, accessibility, case studies). | recipe runtime, inspector, studies | HCI / interaction design / web systems / design tools |
+| 1 | [`01-field-translation-runtime.md`](01-field-translation-runtime.md) | **Fundamental: A Field Translation Runtime for Relational DOM Interfaces** | A new interface paradigm: UI as a shared, inspectable field of meaning (+ model, architecture, taxonomy, NFTS, recipe runtime, accessibility, case studies). | recipe runtime, inspector, studies | HCI / interaction design / web systems / design tools |
 | 2 | [`02-reading-field.md`](02-reading-field.md) | **Reading Field: Attention, Memory, and Relationship Awareness in Long-Form Web Documents** | A field-based model for reading attention and document memory that preserves semantic HTML. | Reading Field study | HCI / reading & document UX |
 | 3 | [`03-evidence-fields.md`](03-evidence-fields.md) | **Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces** | A field-based interaction model for evidence, confidence, contradiction, and provenance. | study *run* (`bindData()` + Evidence Field study page already ship) | HCI / AI interfaces / trust |
 | 4 | [`04-motion-equivalence.md`](04-motion-equivalence.md) | **Motion Is Not Meaning: Reduced-Motion Equivalence in Field-Based Interface Systems** | A conformance model for translating motion-heavy field behavior into static semantic equivalents. | a11y conformance | Accessibility / web standards |
@@ -112,7 +112,7 @@ contribution as a *design and protocol*, not a measured result (see the caveat c
   (e.g. `packages/core/src/core/integrator.ts`) as primary evidence. External literature lives in
   [`references.md`](references.md); a `[TODO: cite]` marker means a real reference still needs to be
   located and verified — never fabricate one.
-- **Naming.** Use `field-ui` for the project; `--field-*` / `field:*` for the current CSS-variable
+- **Naming.** Use `Fundamental` for the project; `--field-*` / `field:*` for the current CSS-variable
   and event families (the `--forces-*` / `forces:*` / `--d` aliases are mentioned only as
   compatibility notes). Use the canonical token names from `packages/core/src/config/manual.ts`.
 - **Verify-against-code rule.** Before a paper states that something is *shipped*, it is checked

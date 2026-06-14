@@ -170,7 +170,7 @@ authors promise to honor.
 ### 3.1 Two packages, one direction
 
 Fundamental's runtime is split across packages whose dependency direction is strict and one-way (the
-package hierarchy is given in `docs/canonical/field-ui-platform-architecture.md`):
+package hierarchy is given in `docs/canonical/platform-architecture.md`):
 
 ```
 Fundamental      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
@@ -303,7 +303,7 @@ contracts state the same thing plainly:
 
 > `Fundamental` is renderer-agnostic and imports no DOM globals (a legacy element write-back path
 > still lives in `core/field.ts`, pending migration).
-> — `field-ui-system-contracts.md` §24
+> — `system-contracts.md` §24
 
 Stating this boundary precisely is part of the contribution: the value of an *enforced* boundary is
 that it lets the paper say exactly how clean the separation is, and exactly where it is not yet clean,
@@ -750,9 +750,9 @@ Every architectural claim in this paper is checkable against the repository. The
   reclassified as a semantic metric: #223. The renderer-agnostic engine via injected `FieldHost`:
   #192.
 
-The canonical design documents corroborate the framing: `docs/canonical/field-ui-platform-
+The canonical design documents corroborate the framing: `docs/canonical/Fundamental-platform-
 architecture.md` (the package hierarchy, the `FrameScheduler`, the six registries, `lintPlatform`,
-Phase D), and `docs/canonical/field-ui-system-contracts.md` (§20 Platform Contract, §21 Registry
+Phase D), and `docs/canonical/system-contracts.md` (§20 Platform Contract, §21 Registry
 Contract, §22 Scheduler Contract, §23 Platform-Lint Contract, §24 the Phase-D runtime-unification note
 that states the legacy-write-back caveat).
 

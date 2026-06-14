@@ -1,4 +1,4 @@
-// Generate `data/recipes.json` — a deterministic, framework-agnostic JSON datafile of the field-ui
+// Generate `data/recipes.json` — a deterministic, framework-agnostic JSON datafile of the Fundamental
 // recipe catalog, derived from the single source of truth (packages/core/src/recipes/catalog.ts).
 //
 // The catalog lives in TypeScript (so it can carry types + a conformance fixture); this emits the

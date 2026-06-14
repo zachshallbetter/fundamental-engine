@@ -81,7 +81,7 @@ export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
   // relocate (§22.3): a [data-warp] element teleports its transform to its paired throat.
   relocated: { field: 'field:relocated' },
   // --- names reserved; NOT yet dispatched by the engine (planned agent-threshold events).
-  //     See docs/canonical/field-ui-agent-consumption-model.md (Events). ---
+  //     See docs/canonical/agent-consumption-model.md (Events). ---
   entered: { field: 'field:entered', metric: 'density' },
   exited: { field: 'field:exited', metric: 'density' },
   saturated: { field: 'field:saturated', metric: 'accreted' },

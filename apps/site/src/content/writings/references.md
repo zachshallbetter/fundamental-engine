@@ -22,12 +22,12 @@ author: "Zach Shallbetter"
 The papers treat the codebase and canonical docs as primary evidence, cited inline by path. Anchors:
 
 - `[fieldui-repo]` Fundamental monorepo — `packages/core`, `packages/platform`, `packages/{elements,react,vanilla}`.
-- `[fieldui-contracts]` `docs/canonical/field-ui-system-contracts.md` — the hard contracts.
-- `[fieldui-platform]` `docs/canonical/field-ui-platform-architecture.md` — scheduler + registries.
-- `[fieldui-natural]` `docs/canonical/field-ui-natural-fields.md` — the four-field translation system.
+- `[fieldui-contracts]` `docs/canonical/system-contracts.md` — the hard contracts.
+- `[fieldui-platform]` `docs/canonical/platform-architecture.md` — scheduler + registries.
+- `[fieldui-natural]` `docs/canonical/natural-fields.md` — the four-field translation system.
 - `[fieldui-fieldtable]` `docs/canonical/fundamental-field-behavior-table.md` — field/force laws.
-- `[fieldui-interaction]` `docs/canonical/field-ui-interaction-and-relationship-model.md` — agents, attention, reading, AI use cases.
-- `[fieldui-recipes]` `docs/canonical/field-ui-authoring-and-recipes.md` — the recipe schema + 64-recipe gallery.
+- `[fieldui-interaction]` `docs/canonical/interaction-and-relationship-model.md` — agents, attention, reading, AI use cases.
+- `[fieldui-recipes]` `docs/canonical/authoring-and-recipes.md` — the recipe schema + 64-recipe gallery.
 - `[fieldui-forces]` `docs/engine-reference/forces-system.md` — the as-built engine spec.
 - `[fieldui-formulas]` `docs/engine-reference/forces-formulas.md` — per-force math.
 - `[fieldui-physics]` `docs/engine-reference/physics-workover.md` — the physics-correctness pass.

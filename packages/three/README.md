@@ -47,7 +47,7 @@ onto your page's global `THREE`:
 ```sh
 echo "module.exports = window.THREE" > three-shim.cjs
 npx esbuild node_modules/@fundamental-engine/three/dist/index.js --bundle --format=iife \
-  --global-name=FieldUI --alias:three=./three-shim.cjs --outfile=vendor/field-ui-three.js
+  --global-name=FieldUI --alias:three=./three-shim.cjs --outfile=vendor/Fundamental-three.js
 ```
 
 ## The particle bridge

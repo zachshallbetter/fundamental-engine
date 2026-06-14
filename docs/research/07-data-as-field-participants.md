@@ -1,13 +1,13 @@
 # Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields
 
-> **Status: research draft (preprint, work in progress).** Paper 7 of the field-ui family — the
+> **Status: research draft (preprint, work in progress).** Paper 7 of the Fundamental family — the
 > data-binding validator. Claims verified against the codebase and canonical docs as of 2026-06-07.
 > See the [series index](README.md) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 
 **Author:** Zach Shallbetter
-**Series:** field-ui Research Papers, Paper 7 of 8
-**Companion paper (the flagship):** [field-ui: A Field Translation Runtime for Relational DOM
+**Series:** Fundamental Research Papers, Paper 7 of 8
+**Companion paper (the flagship):** [Fundamental: A Field Translation Runtime for Relational DOM
 Interfaces](01-field-translation-runtime.md). See the [series index](README.md).
 
 ---
@@ -66,7 +66,7 @@ view and rarely consistent across two views of the same data.
 
 ### 1.2 The binding answer
 
-field-ui already provides a runtime in which DOM elements participate in a shared relational field as
+Fundamental already provides a runtime in which DOM elements participate in a shared relational field as
 *bodies*, connect through a typed *relationship graph*, and carry measured *metrics* written back as
 CSS custom properties (Paper 1, §§3, 5; Paper 5 for the runtime). The data-binding model closes the
 last gap: it makes the *data* the source of those participants. Concretely, a binding maps
@@ -119,7 +119,7 @@ cite data-join / data-driven documents]
 
 **Graph and relational visualization.** Node-link and force-directed visualization render relational
 data by *position*: edges become layout constraints that a solver resolves into coordinates. The
-field-ui stance (Paper 1, §2) is that force is an *expressive medium* writing state back into
+Fundamental stance (Paper 1, §2) is that force is an *expressive medium* writing state back into
 arbitrary semantic elements, not only a layout solver; the binding inherits that stance, so a
 record's edges raise its neighbors' coherence or entropy rather than only repositioning them. [TODO:
 cite force-directed / relational visualization]
@@ -512,7 +512,7 @@ machinery, and the rendering is then a *consequence* of the field rather than a 
 truth. When the data changes, `update()` re-runs the map and the field transitions; nothing is
 re-derived by hand.
 
-This also clarifies what the field-ui paradigm is *for*. The flagship's threat-to-framing note (Paper
+This also clarifies what the Fundamental paradigm is *for*. The flagship's threat-to-framing note (Paper
 1, §10) is that the model pays off on content with latent relational structure and risks "spectacle
 over meaning" on flat content. Data binding is the sharpest test of that thesis, because it applies
 the field to data whose relational structure is *already real and already the user's task*. The four
@@ -567,7 +567,7 @@ Every mechanism claim in this paper is checkable against the repository:
   `search-field.astro`, `review-field.astro`, `system-weather.astro`, plus the shared
   `apps/site/src/lib/study.ts` (`mountBindStudy`).
 - **Package export:** `packages/platform/src/index.ts` re-exports `bind-data.ts`.
-- **Canonical corroboration:** `docs/canonical/field-ui-interaction-and-relationship-model.md` §15
+- **Canonical corroboration:** `docs/canonical/interaction-and-relationship-model.md` §15
   (`DataAgent` property→field mapping), §21 (Search), §26 (AI use cases).
 
 The mechanism landed in #210; the data-bound study pages in #213–#214; the confidence-provenance

@@ -1,16 +1,16 @@
 > **Status: canonical.**
-> Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# Visualization Methods Taxonomy for field-ui
+# Visualization Methods Taxonomy for Fundamental
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Visualization contract |
+| [`system-contracts.md`](system-contracts.md) | Visualization contract |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field vs force laws |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Visualization tests |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Visualization tests |
 
 ## Purpose
 
@@ -57,7 +57,7 @@ DOM state shows reciprocity.
 > topology, inspector, causality and prediction ship in `diagnostics/modes.ts` (`drawTopology`,
 > `drawInspector`, `causalityAt` + `drawCausality`, `ghostTrajectory` + `drawPrediction`). All of these
 > are exercised on the live `/docs/diagnostics` page. The canvas is one render surface among these
-> layers, not the whole system: `field-ui` computes renderer-agnostic field behavior and
+> layers, not the whole system: `Fundamental` computes renderer-agnostic field behavior and
 > `@fundamental-engine/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
 
 ## Render Modes Catalog
@@ -106,13 +106,13 @@ through `setRender()` / the core.
 
 The methods above answer *what* to draw. **Placement** answers *where* it composites relative to page
 content — an axis orthogonal to every visualization method. The visible particle canvas is one
-**surface**; field-ui defines three:
+**surface**; Fundamental defines three:
 
 | Surface | Placement | Drawn on | Status |
 |---|---|---|---|
 | **Underlay** | behind content (`z-index:0`) | the `<field-root>` canvas | shipped (the default) |
 | **Overlay** | in front of content (`pointer-events:none`, screen-blend, above content / below the nav) | a second light-DOM canvas the element owns | shipped |
-| **Typographic (invisible)** | in the content itself | nothing — the field's feedback variables (`--d`, `--load`, `--field-*`) styled by author CSS into type, ink, and anchor | shipped — see [field-ui-invisible-fields.md](field-ui-invisible-fields.md) |
+| **Typographic (invisible)** | in the content itself | nothing — the field's feedback variables (`--d`, `--load`, `--field-*`) styled by author CSS into type, ink, and anchor | shipped — see [invisible-fields.md](invisible-fields.md) |
 
 - **Immersive** = the same field drawn on *both* surfaces, so content sits **inside** the field. It is
   a composition, not a new primitive: set the underlay (`render`) and the overlay (`overlay`) together.
@@ -120,7 +120,7 @@ content — an axis orthogonal to every visualization method. The visible partic
   (`FieldHandle.setVisible(false)`) and/or a recipe runs render-less (`render: []`), and the page's
   own type *is* the render surface. The full pattern — two-field architecture, live channels,
   engagement contracts, data provenance — is canonical in
-  [field-ui-invisible-fields.md](field-ui-invisible-fields.md).
+  [invisible-fields.md](invisible-fields.md).
 - **Overlay-suitable methods** are the structure/vector visualizations that reveal field *shape*
   without occluding text: `streamlines`, `force-vectors`, `field-lines`, `grid` (the reference
   lattice displaced by the field — deformation), `temperature` / `energy` (iso-contour instances of

@@ -4,7 +4,7 @@ The seven `@fundamental-engine/*` packages publish to npm **with provenance** vi
 mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING.md).
 
 > The public surface is frozen for `0.x` — see
-> [API stability](docs/canonical/field-ui-api-stability.md). `pnpm check:api` (run in CI and the
+> [API stability](docs/canonical/api-stability.md). `pnpm check:api` (run in CI and the
 > release workflow) fails if a frozen symbol changes, so a release can't break the contract by accident.
 
 ## The packages
@@ -40,7 +40,7 @@ be retried without re-tagging: `gh run rerun <run-id> --failed`.
 
 - The GitHub repo is **public** — npm refuses provenance for private repos (`E422 … visibility:
   "private"`).
-- The `NPM_TOKEN` repo secret is a **granular** npm token with read+write to `@field-ui` and
+- The `NPM_TOKEN` repo secret is a **granular** npm token with read+write to `@Fundamental` and
   **"Bypass two-factor authentication" enabled**. A classic/publish token fails in CI with `EOTP`
   (the account is 2FA `auth-and-writes`, and CI can't answer an OTP prompt).
 - The workflow has `permissions: id-token: write` (for the provenance attestation).
@@ -62,6 +62,6 @@ All seven packages are versioned together (currently `0.2.2`). Bump them as one:
 pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
 ```
 
-Per the `0.x` rules in [API stability](docs/canonical/field-ui-api-stability.md), a breaking change to a
+Per the `0.x` rules in [API stability](docs/canonical/api-stability.md), a breaking change to a
 frozen symbol is a **minor** bump (`0.2 → 0.3`); additive and fix-only changes are patches. The private
 `site` / `starter` apps are versioned independently and not published.

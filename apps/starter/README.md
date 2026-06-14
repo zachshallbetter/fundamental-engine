@@ -1,6 +1,6 @@
-# field-ui starter
+# Fundamental starter
 
-The first five minutes with field-ui — a plain **Vite + HTML** app that consumes the packages the
+The first five minutes with Fundamental — a plain **Vite + HTML** app that consumes the packages the
 way any outside project would. No framework, no canvas code, no per-element wiring.
 
 ```bash
@@ -57,7 +57,7 @@ weight and badges remain; only the travel stops.
 
 ## Lanes
 
-field-ui keeps its vocabulary in strict lanes: **concepts describe · tokens execute · metrics measure
+Fundamental keeps its vocabulary in strict lanes: **concepts describe · tokens execute · metrics measure
 · diagnostics explain · conditions activate · recipes compose.** Only a recipe's runtime tokens
 (`attract`, `gravity`, …) ever become `data-body` behavior — concepts are never executed. This
 starter only ever writes real body tokens and reads real `--field-*` metrics.

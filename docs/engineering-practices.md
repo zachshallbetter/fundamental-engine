@@ -32,7 +32,7 @@ chip-bearing stage holds exactly one traced canvas, no carve-outs.
 
 ## 2. The house bug class: silent contract gaps
 
-field-ui's authoring model is declarative attribute pairs, and their failure mode is never
+Fundamental's authoring model is declarative attribute pairs, and their failure mode is never
 an error — it is a page that quietly shows nothing. We have shipped this class repeatedly:
 
 | Instance | The silent gap |
@@ -103,7 +103,7 @@ paid for:
   ago` / `snapshot · <date>`, `(local)` for client-diverged state, `+N since snapshot`).
 - Refresh cadence matches the source's real update rate. Polling a daily aggregate is
   theater; say so in the page's how-built section.
-- The status rule (`docs/canonical/field-ui-documentation-standards.md`) applies to code
+- The status rule (`docs/canonical/documentation-standards.md`) applies to code
   comments and PR prose too: nothing is "shipped" until code confirms it, and `main` moves
   fast enough that "planned" claims must be re-verified before acting on them.
 

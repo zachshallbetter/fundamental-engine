@@ -230,7 +230,7 @@ transformation. Evidence is a near-ideal domain for this translation, because an
 *already has* priority (confidence), polarity (support vs. contradiction), binding (a source backing
 a claim), and transformation (revision and decay). The canonical natural-fields document already
 files the Evidence Field under *electromagnetic + strong*
-(`docs/canonical/field-ui-natural-fields.md`), and the shipped recipe agrees.
+(`docs/canonical/natural-fields.md`), and the shipped recipe agrees.
 
 The mapping, with each row's truth mode:
 
@@ -312,7 +312,7 @@ evidence vocabulary, all shipped and all validated:
 | **Conflict Field** | weak (+ electromagnetic) | contradiction, uncertainty, unstable state | `charge`, `repel`, `morph`, `diffuse` |
 
 Read together they belong to the canonical *Signal Path* theme — "citations, dependencies, evidence"
-(`field-ui-natural-fields.md`) — though at the token level the evidence recipes draw on `charge`,
+(`natural-fields.md`) — though at the token level the evidence recipes draw on `charge`,
 `link`, `cohesion`, `repel`, `memory`, `morph`, and `diffuse` rather than the Signal Path triad
 (`charge`/`propagate`/`fieldflow`) itself. Three are worth a
 line. **Trust Gradient** is where confidence and the *unsupported-claim* surface live — its metrics
@@ -357,7 +357,7 @@ Thresholded events complete the write-back: a claim crossing into high entropy c
 `entropy-warning`-class event (the canonical event vocabulary includes `forces:entropy-warning`),
 and a binding strengthening can emit a relationship event. These are debounced and inspectable, per
 the interaction model. The relationship graph itself is owned by the **`RelationshipRegistry`**
-(Paper 1, §5.2; `docs/canonical/field-ui-interaction-and-relationship-model.md`, §7), which resolves
+(Paper 1, §5.2; `docs/canonical/interaction-and-relationship-model.md`, §7), which resolves
 a `supports` or `contradicts` edge from native DOM signals (`href`, ARIA references,
 `data-field-relation`) into a typed graph mapped onto core `RelationshipAgent`s, with a
 `relation-target-missing` lint rule flagging any edge whose target is not a registered body.
@@ -716,17 +716,17 @@ Every model claim in this paper is checkable against the repository.
   `packages/core/src/visual/tokens.ts`.
 - **The relationship graph** (`supports` / `contradicts` edges, native-signal resolution, the
   `relation-target-missing` lint): `packages/platform/src/relationships.ts`,
-  `packages/platform/src/lint.ts`, and `docs/canonical/field-ui-interaction-and-relationship-model.md`
+  `packages/platform/src/lint.ts`, and `docs/canonical/interaction-and-relationship-model.md`
   §7.
 - **The data-binding mechanism** used to wire records into the field:
   `packages/platform/src/bind-data.ts` and `packages/platform/src/apply-recipe.ts`.
 - **The data-bound Evidence Field study page** (demonstration, not experiment):
   `apps/site/src/pages/docs/studies/evidence-field.astro`.
 
-Canonical design corroboration: `docs/canonical/field-ui-natural-fields.md` (Evidence Field =
+Canonical design corroboration: `docs/canonical/natural-fields.md` (Evidence Field =
 electromagnetic + strong; Signal Path = `charge`/`propagate`/`fieldflow`; the electromagnetic rule),
-`docs/canonical/field-ui-interaction-and-relationship-model.md` §26 (AI interface use cases) and §7
-(`RelationshipAgent`), and `docs/canonical/field-ui-authoring-and-recipes.md` §5 (the recipe schema).
+`docs/canonical/interaction-and-relationship-model.md` §26 (AI interface use cases) and §7
+(`RelationshipAgent`), and `docs/canonical/authoring-and-recipes.md` §5 (the recipe schema).
 
 ## Appendix B. Conversion notes (markdown → preprint)
 

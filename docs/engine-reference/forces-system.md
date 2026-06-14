@@ -1,5 +1,5 @@
 > **Status: as-built force-engine reference.**
-> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current Fundamental platform architecture — for that see [../canonical/platform-architecture.md](../canonical/platform-architecture.md) and [../canonical/system-contracts.md](../canonical/system-contracts.md).
 
 # The Forces System — Full Definition
 
@@ -11,16 +11,16 @@
 > without re-reading the prototype.
 
 Status: **as-built** — the engine ships. The force math, conditions, formations,
-render modes, and two-way feedback described here are live in `field-ui` and
+render modes, and two-way feedback described here are live in `Fundamental` and
 exercised through the authoring surfaces (`<field-root>`, `mountField()`,
 `<FieldField>`). This document is the canonical reference for the **force engine**;
-it does **not** define the full field-ui platform architecture. DOM participation —
+it does **not** define the full Fundamental platform architecture. DOM participation —
 measurement, state, feedback writes, relationships, visual bindings, overlays,
 scheduling, and linting — now lives in `@fundamental-engine/platform`, which binds the
 renderer-agnostic core to the DOM (the platform runtime is the default for
 `<field-root>`). For that architecture see
-[../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md)
-and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+[../canonical/platform-architecture.md](../canonical/platform-architecture.md)
+and [../canonical/system-contracts.md](../canonical/system-contracts.md).
 This spec was originally extracted from the design-system prototype; the engine
 behavior it describes has since been built.
 
@@ -685,7 +685,7 @@ Runtime transitions via `setRender`:
 
 A simulation that runs with no drawn surface at all — feedback variables styled by author CSS as
 the only output — is the **invisible-fields** pattern; `render: 'none'` is its engine-level
-contract. See `docs/canonical/field-ui-invisible-fields.md` for the placement taxonomy
+contract. See `docs/canonical/invisible-fields.md` for the placement taxonomy
 (underlay / overlay / typographic) and the two-field page architecture this enables.
 
 ---
@@ -889,7 +889,7 @@ supply; they do not sample the engine.
 ## 19. Notes for adapting the engine
 
 > **As-built note.** This section describes how the *force engine* is mounted; it is
-> not the full platform architecture. In the shipped system, `field-ui`
+> not the full platform architecture. In the shipped system, `Fundamental`
 > computes renderer-agnostic field behavior (force math, conservation, conditions,
 > formations) and `@fundamental-engine/platform` binds it to the DOM — measurement, state,
 > feedback writes, relationships, visual bindings, overlays, scheduling (the explicit
@@ -1783,7 +1783,7 @@ influence kind is now realized for particles and (opt-in by attribute) for eleme
 impulse/constraint/feedback, plus capture (`data-dock`), relocate (`data-warp`, the
 `warp` atom), and emit (`data-emit`). The one still-planned cell is the element
 `trigger` class-toggle. The canonical, status-annotated account is
-[field-ui-agent-consumption-model.md](../canonical/field-ui-agent-consumption-model.md);
+[agent-consumption-model.md](../canonical/agent-consumption-model.md);
 this section is the engine-level record.
 
 ### 22.1 What's maintained (and what isn't)
@@ -1818,7 +1818,7 @@ three at once — sourcing force, being pushed by neighbors, and firing events.
 ### 22.3 Influence kinds → how each agent consumes them
 Every force emits one of a few influence kinds. The matrix is the spec; each cell
 carries its own status (✅ shipped · 🔭 planned). Verify against
-[field-ui-agent-consumption-model.md](../canonical/field-ui-agent-consumption-model.md).
+[agent-consumption-model.md](../canonical/agent-consumption-model.md).
 
 | Influence (from force) | Particle | Element | Event sink |
 |---|---|---|---|

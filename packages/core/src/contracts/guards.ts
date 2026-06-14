@@ -27,7 +27,7 @@ export type FieldUIErrorCode =
 export class FieldUIError extends Error {
   readonly code: FieldUIErrorCode;
   constructor(code: FieldUIErrorCode, message: string) {
-    super(`[field-ui:${code}] ${message}`);
+    super(`[Fundamental:${code}] ${message}`);
     this.name = 'FieldUIError';
     this.code = code;
   }

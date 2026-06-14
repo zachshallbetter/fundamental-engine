@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Temporal kernels (temporal.ts) — WORLD TIME made computable
 //
-// field-ui keeps three clocks: simulation time (env.t/dt), experiential time (the
+// Fundamental keeps three clocks: simulation time (env.t/dt), experiential time (the
 // platform metric pipeline), and world time — timestamps carried by the data itself.
 // These kernels are clock 3: pure, deterministic maps from world timestamps to a 0..1
 // weight. No Date() calls — the caller supplies nowMs. All arguments are epoch/duration

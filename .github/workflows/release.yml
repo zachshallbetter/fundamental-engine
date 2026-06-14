@@ -23,7 +23,7 @@ name: Release
 # match, pack — without writing to the registry.
 #
 # Prerequisite (one-time): a repository secret `NPM_TOKEN` — a granular npm access
-# token with read+write to the @field-ui packages, created so it bypasses 2FA for
+# token with read+write to the @Fundamental packages, created so it bypasses 2FA for
 # automation (CI cannot answer an interactive OTP prompt).
 #
 # The human rules around this workflow (when a tag may be pushed, partial-publish

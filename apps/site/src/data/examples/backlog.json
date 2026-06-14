@@ -155,7 +155,7 @@
     },
     {
       "number": 284,
-      "title": "feat(site): /evidence — the Evidence Field (field-ui, no particles, real OpenAlex data)",
+      "title": "feat(site): /evidence — the Evidence Field (Fundamental, no particles, real OpenAlex data)",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -197,7 +197,7 @@
     },
     {
       "number": 279,
-      "title": "feat(elements): Custom Elements Manifest for the field-ui web components",
+      "title": "feat(elements): Custom Elements Manifest for the Fundamental web components",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -624,7 +624,7 @@
     },
     {
       "number": 245,
-      "title": "docs(writings): add \"field-ui, explained simply\" — the plain-language tour",
+      "title": "docs(writings): add \"Fundamental, explained simply\" — the plain-language tour",
       "kind": "pr",
       "state": "merged",
       "labels": [],
@@ -666,7 +666,7 @@
     },
     {
       "number": 240,
-      "title": "feat(site): publish the field-ui research paper family at /research",
+      "title": "feat(site): publish the Fundamental research paper family at /research",
       "kind": "pr",
       "state": "merged",
       "labels": [],

@@ -1,14 +1,14 @@
 > **Status: as-built.**
 > The design of the fundamental-engine.com documentation and examples experience after the 2026-06
 > rebuild — what it does, why each piece exists, and where it lives. The conceptual canon for
-> the underlying pattern is [docs/canonical/field-ui-invisible-fields.md](canonical/field-ui-invisible-fields.md);
+> the underlying pattern is [docs/canonical/invisible-fields.md](canonical/invisible-fields.md);
 > the practices that produced it are [docs/engineering-practices.md](engineering-practices.md).
 
 # The site experience
 
 ## Thesis
 
-field-ui's documentation is its own best demo. A project whose pitch is "every element can
+Fundamental's documentation is its own best demo. A project whose pitch is "every element can
 participate in an invisible measuring field" should not document that idea in inert pages —
 the docs **run the system they describe**, measure their own integrity, and publish for both
 human and agent readers. Every feature below is shipped, restrained (docs are for *reading* —
@@ -70,14 +70,14 @@ index cards are themselves field bodies.
   line each.
 - **`/llms-full.txt`** — the full canonical documentation concatenated (~195 KiB).
 
-The agent consumption model is one of field-ui's founding documents; its own docs treating
+The agent consumption model is one of Fundamental's founding documents; its own docs treating
 agents as first-class readers is that model made literal. The `/docs` index links both.
 
 ## The examples (`/evidence` + `/evidence/<slug>`)
 
 The twelve-page invisible-fields family is the applied tier of the documentation — real
 data, live channels, provenance chips, each page's layout embodying its concept. Canon:
-[field-ui-invisible-fields.md §7](canonical/field-ui-invisible-fields.md). The docs link
+[invisible-fields.md §7](canonical/invisible-fields.md). The docs link
 into it (sidebar Examples group, the index map, SeeItLive); the family's how-built sections
 link back with CodeTabs.
 

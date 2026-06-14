@@ -26,7 +26,7 @@ export interface MountOptions extends FieldOptions {
 export function assertBrowser(): void {
   if (typeof document === 'undefined' || typeof window === 'undefined') {
     throw new Error(
-      'field-ui: the field runs in the browser only. Create it on the client (inside ' +
+      'Fundamental: the field runs in the browser only. Create it on the client (inside ' +
         'useEffect / onMount / a "client only" boundary), not during server-side rendering.'
     );
   }

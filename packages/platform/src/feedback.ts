@@ -1,6 +1,6 @@
 /**
  * FeedbackRegistry — the write-phase. Turns held state into DOM: CSS custom properties (continuous)
- * and thresholded, debounced events (discrete). The native primitive field-ui wishes existed —
+ * and thresholded, debounced events (discrete). The native primitive Fundamental wishes existed —
  * standard feedback channels with hysteresis instead of per-frame DOM events.
  *
  * Writes happen only in `flush()`, after measurement + simulation reads.

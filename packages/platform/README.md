@@ -1,6 +1,6 @@
 # @fundamental-engine/platform
 
-**The platform layer for [field-ui](../core)** — the native browser primitives the engine wishes
+**The platform layer for [Fundamental](../core)** — the native browser primitives the engine wishes
 existed, built on the ones it has. The core is renderer-agnostic; this package owns DOM participation:
 it supplies the browser host, the six registries that let the engine treat the DOM as a connected,
 measurable, semantic environment, the frame scheduler that keeps reads and writes from thrashing, and
@@ -15,7 +15,7 @@ npm i @fundamental-engine/platform
 ```
 
 The public surface is frozen for `0.x` (see
-[API stability](../../docs/canonical/field-ui-api-stability.md)).
+[API stability](../../docs/canonical/api-stability.md)).
 
 ## The browser host
 
@@ -95,11 +95,11 @@ orphan visuals, …) and returns structured diagnostics. The inspector reads it 
 
 Strict and one-way: **`platform → core`**. The core stays renderer-agnostic and never imports this
 package. During the migration window, writes mirror `--field-*` to `--forces-*` and `field:*` events to
-`forces:*`. See [`docs/canonical/field-ui-platform-architecture.md`](../../docs/canonical/field-ui-platform-architecture.md).
+`forces:*`. See [`docs/canonical/platform-architecture.md`](../../docs/canonical/platform-architecture.md).
 
 ## Related
 
-[`field-ui`](../core) · [`@fundamental-engine/elements`](../elements) · [`@fundamental-engine/react`](../react) ·
+[`Fundamental`](../core) · [`@fundamental-engine/elements`](../elements) · [`@fundamental-engine/react`](../react) ·
 [`@fundamental-engine/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
 
 ## License

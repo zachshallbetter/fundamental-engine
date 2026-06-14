@@ -14,7 +14,7 @@ install.) They follow [Semantic Versioning](https://semver.org):
 - **patch** (`0.2.x`) — bug fixes, internal changes, **and additive backward-compatible features**
   (a new force, a new `FieldOption`, a new `FieldHandle` method). Pre-1.0, additions land in a patch —
   this matches the canonical freeze contract
-  ([API stability](docs/canonical/field-ui-api-stability.md): the stable surface is additive-only
+  ([API stability](docs/canonical/api-stability.md): the stable surface is additive-only
   within a 0.MINOR line).
 - **minor** (`0.x.0`) — **the breaking position pre-1.0**: renaming, removing, or changing the
   signature/shape of a frozen symbol bumps `0.MINOR`, called out in the CHANGELOG under a
@@ -26,9 +26,9 @@ The engine's public surface is: the `@fundamental-engine/core` exports (`createF
 element attributes/methods, the `@fundamental-engine/vanilla` `FieldField` class and `mountField`, and the React
 adapter's props. The internal integrator, render code, and the site are not part of the public
 contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
-[API stability](docs/canonical/field-ui-api-stability.md).
+[API stability](docs/canonical/api-stability.md).
 
-> The packages are published to npm under the `@field-ui` scope, **with provenance** (a signed
+> The packages are published to npm under the `@Fundamental` scope, **with provenance** (a signed
 > Sigstore/SLSA attestation tying each tarball to this repo and the CI build). Each release is cut as a
 > **git tag** (`vX.Y.Z`); pushing the tag is what triggers the publish. Between tags, changes accumulate
 > under `## [Unreleased]` in the [CHANGELOG](CHANGELOG.md).
@@ -62,7 +62,7 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
 - **`release.yml`** — on a `v*` tag (or manual dispatch): runs the gate, then publishes all
   `@fundamental-engine/*` packages **with provenance**. Requirements (all in place): the GitHub repo is **public**
   (npm rejects provenance for private repos) and an `NPM_TOKEN` secret holds a granular npm token with
-  write to `@field-ui` and **2FA-bypass** enabled (CI cannot answer an interactive OTP).
+  write to `@Fundamental` and **2FA-bypass** enabled (CI cannot answer an interactive OTP).
 - **`pr-checks.yml`** — PR hygiene: a PR that changes `packages/` must add a CHANGELOG entry
   (the diff is checked, not the PR body), and every relative doc link must resolve
   (`pnpm check:links`). Its `conclusion-pr` job is a required check on `main`.
@@ -98,7 +98,7 @@ the gates above.
 - **Partial publish recovery:** `gh run rerun <run-id> --failed`. The publish is
   idempotent per-package (already-published versions are skipped). Do **not** delete or
   re-push the tag, and do not re-run the whole workflow from scratch.
-- **Token rotation:** create the new granular token (`@field-ui` write, 2FA-bypass) and
+- **Token rotation:** create the new granular token (`@Fundamental` write, 2FA-bypass) and
   update the `NPM_TOKEN` secret **before** revoking the old one — a window with no valid
   token makes the next release fail at auth. Verify with a `dry_run` dispatch of
   `release.yml`.

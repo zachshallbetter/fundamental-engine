@@ -5,7 +5,7 @@ import SeeItLive from '../../components/SeeItLive.astro';
 import { PHASES } from '@fundamental-engine/platform';
 
 // The platform layer as a public page — data-driven from @fundamental-engine/platform (PHASES) so the loop can't
-// drift. Companion to the canonical doc docs/canonical/field-ui-platform-architecture.md.
+// drift. Companion to the canonical doc docs/canonical/platform-architecture.md.
 
 const PHASE_DESC: Record<string, string> = {
   discover: 'register/unregister bodies, relationships, and visual bindings (structure changes)',
@@ -117,7 +117,7 @@ const LINT = [
   <div class="callout">
     <b>See it whole.</b> The <a href="/docs/reading-field">Reading Field</a> demo exercises all six
     registries on the scheduler over ordinary prose. The deep reference is the canonical
-    <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-ui-platform-architecture.md">platform-architecture</a>
+    <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/platform-architecture.md">platform-architecture</a>
     doc; the API surface is under <a href="/docs/api">API reference</a>.
   </div>
 </DocsLayout>

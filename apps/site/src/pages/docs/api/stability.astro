@@ -6,7 +6,7 @@ import {
 } from '../../../../../../scripts/api-surface.data.mjs';
 
 // This page renders the SAME data the lock enforces (scripts/api-surface.data.mjs), so it can't drift
-// from `pnpm check:api`. The canonical prose contract is docs/canonical/field-ui-api-stability.md.
+// from `pnpm check:api`. The canonical prose contract is docs/canonical/api-stability.md.
 const statusClass = (s: string) => `st st-${s}`;
 const frozenCount = FROZEN_VALUES.length + FROZEN_TYPES.length + FROZEN_ELEMENTS.length + 1;
 ---
@@ -111,7 +111,7 @@ const frozenCount = FROZEN_VALUES.length + FROZEN_TYPES.length + FROZEN_ELEMENTS
       <b>Enforced.</b> <code>scripts/api-surface.ts</code> (typechecked) locks every value and type;
       <code>scripts/check-api-surface.mjs</code> locks the element tags and the <code>data-body</code>
       contract; both run via <code>pnpm check:api</code> in CI. The full contract is in
-      <code>docs/canonical/field-ui-api-stability.md</code>; publish order is in <code>PUBLISHING.md</code>.
+      <code>docs/canonical/api-stability.md</code>; publish order is in <code>PUBLISHING.md</code>.
     </div>
   </section>
 </DocsLayout>

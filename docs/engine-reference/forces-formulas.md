@@ -1,9 +1,9 @@
 > **Status: as-built force-engine reference.**
-> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current field-ui platform architecture — for that see [../canonical/field-ui-platform-architecture.md](../canonical/field-ui-platform-architecture.md) and [../canonical/field-ui-system-contracts.md](../canonical/field-ui-system-contracts.md).
+> Accurate for force formulas, catalogs, and engine behavior. It does NOT define the full current Fundamental platform architecture — for that see [../canonical/platform-architecture.md](../canonical/platform-architecture.md) and [../canonical/system-contracts.md](../canonical/system-contracts.md).
 
 # The Forces & Fields — Reference Formulas & Attributes
 
-This document serves as the canonical reference for the physics formulas, DOM attribute APIs, and substrate math backing the reciprocal field system. It merges the active engine rules with the extended/cosmological vocabulary. The force engine is one layer of field-ui: field-ui computes this renderer-agnostic field behavior, while @fundamental-engine/platform binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling) and the canvas is one render surface among many. This reference covers the force/substrate math; the platform architecture lives in the canonical docs linked in the status banner above.
+This document serves as the canonical reference for the physics formulas, DOM attribute APIs, and substrate math backing the reciprocal field system. It merges the active engine rules with the extended/cosmological vocabulary. The force engine is one layer of Fundamental: Fundamental computes this renderer-agnostic field behavior, while @fundamental-engine/platform binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling) and the canvas is one render surface among many. This reference covers the force/substrate math; the platform architecture lives in the canonical docs linked in the status banner above.
 
 ---
 

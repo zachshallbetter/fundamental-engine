@@ -1,5 +1,5 @@
 /**
- * DOM-boundary guard. field-ui imports ZERO DOM globals — every source file is
+ * DOM-boundary guard. Fundamental imports ZERO DOM globals — every source file is
  * renderer-agnostic. The engine (`core/field.ts`) routes every DOM touchpoint through an injected
  * FieldHost; the browser adapter (`browserHost`) and the download helpers live in @fundamental-engine/platform.
  * The allowlist is empty: any DOM-global call-site anywhere in core fails this test.

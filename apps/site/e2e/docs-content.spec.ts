@@ -69,7 +69,7 @@ test.describe("docs content systems", () => {
     const llms = await page.request.get("/llms.txt");
     expect(llms.status()).toBe(200);
     const text = await llms.text();
-    expect(text.startsWith("# field-ui")).toBe(true);
+    expect(text.startsWith("# Fundamental")).toBe(true);
     expect(text).toContain("## Docs");
     expect(text).toContain("## Examples");
 
@@ -77,7 +77,7 @@ test.describe("docs content systems", () => {
     expect(full.status()).toBe(200);
     const fullText = await full.text();
     // a canon heading survives the concatenation
-    expect(fullText).toContain("# field-ui Invisible Fields");
+    expect(fullText).toContain("# Fundamental Invisible Fields");
   });
 
   test("/docs/concepts carries a SeeItLive box into the example family", async ({ page }) => {

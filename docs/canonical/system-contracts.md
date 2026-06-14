@@ -1,22 +1,22 @@
 > **Status: canonical.**
-> Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui System Contracts
+# Fundamental System Contracts
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Canonical definition |
+| [`definition-document.md`](definition-document.md) | Canonical definition |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field/force laws |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Agent model |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | Agent model |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render contracts |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Test contracts |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts |
 
 ## Purpose
 
-field-ui is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -278,7 +278,7 @@ element-scoped and numeric.) Formulas:
 `--d` rises). The platform metric pipeline reads `engaged` as
 `:hover | :focus | :focus-within | [data-active]` — setting `data-active` programmatically is
 the sanctioned way to mark an element "in hand" (a dragged card, a just-changed status). See
-[field-ui-invisible-fields.md](field-ui-invisible-fields.md) §3.
+[invisible-fields.md](invisible-fields.md) §3.
 
 ElementAgents should not directly mutate particle state unless they are also registered bodies.
 
@@ -577,7 +577,7 @@ Every visible behavior should be traceable to a field cause.
 
 ## 19. Visual Language Contract
 
-The visual language system is defined in [`field-ui-visual-language-and-geometry.md`](field-ui-visual-language-and-geometry.md).
+The visual language system is defined in [`visual-language-and-geometry.md`](visual-language-and-geometry.md).
 
 Rules:
 
@@ -615,7 +615,7 @@ The semantic layer should remain real HTML text.
 > **Implemented.** `@fundamental-engine/platform` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
-`@fundamental-engine/platform` binds the renderer-agnostic field computed by `field-ui` to the DOM. It owns DOM participation; core stays free of DOM side effects.
+`@fundamental-engine/platform` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:
 
@@ -623,7 +623,7 @@ The platform must:
 own measurement, state, feedback, relationships, visual bindings, and overlays
 schedule all DOM reads and writes through explicit phases
 register Shadow DOM bodies for physical participation
-keep field-ui renderer-agnostic (imports no DOM globals)
+keep Fundamental renderer-agnostic (imports no DOM globals)
 expose createFieldPlatform(root) to construct a runtime over a root
 expose lintPlatform() to validate registry usage
 ```
@@ -723,7 +723,7 @@ In the platform-runtime phase the layers are unified as follows:
 
 ```txt
 The platform runtime is the DEFAULT for <field-root>.
-field-ui is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
+Fundamental is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
 The platform owns DOM participation: measurement, feedback writes, shadow registration, relationships.
 The legacy core path still simulates and renders the canvas surface.
 The DOM boundary is guarded by a test allowlist; core must not reach into the DOM outside it.
@@ -740,7 +740,7 @@ The legacy path is quarantined, not removed: it remains the canvas simulate-and-
 
 ## Migration and Alias Contract
 
-During the `force/` to `field-ui/` migration, old and new public names must both resolve to the same behavior.
+During the `force/` to `Fundamental/` migration, old and new public names must both resolve to the same behavior.
 
 CSS write-back should emit both:
 

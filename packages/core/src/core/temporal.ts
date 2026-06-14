@@ -1,7 +1,7 @@
 /**
  * Temporal kernels — WORLD TIME made computable.
  *
- * field-ui keeps three clocks:
+ * Fundamental keeps three clocks:
  *
  *   1. **Simulation time** — `env.t` / `dt`, particle age: the integrator's clock.
  *   2. **Experiential time** — the platform metric pipeline's attention / memory / recency:

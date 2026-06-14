@@ -1,14 +1,14 @@
 > **Status: canonical.**
-> This document defines the **frozen public API surface for field-ui `0.x`** and the compatibility
+> This document defines the **frozen public API surface for Fundamental `0.x`** and the compatibility
 > rules that govern it: what is stable, what is experimental, how versions move, and how the alias
 > window works. It is enforced in code by `scripts/api-surface.ts` (typechecked) and
 > `scripts/check-api-surface.mjs` (runtime), both run by `pnpm check:api` in CI. The shared machine
 > data is [`scripts/api-surface.data.mjs`](../../scripts/api-surface.data.mjs); the live reference page
 > is [`/docs/api/stability`](../../apps/site/src/pages/docs/api/stability.astro). Related contracts:
-> [field-ui-system-contracts.md](field-ui-system-contracts.md),
-> [field-ui-platform-architecture.md](field-ui-platform-architecture.md).
+> [system-contracts.md](system-contracts.md),
+> [platform-architecture.md](platform-architecture.md).
 
-# field-ui API stability
+# Fundamental API stability
 
 The architecture has stopped being fluid. Recipes execute, data binds, the inspector reads the live
 runtime, the gallery runs, the starter installs, the studies are data-driven. Before adding more
@@ -124,6 +124,6 @@ migration note and a `0.MINOR` bump.
 
 ## Status
 
-The packages are **published to npm** under the `@field-ui` scope (`@fundamental-engine/core` and the four
+The packages are **published to npm** under the `@Fundamental` scope (`@fundamental-engine/core` and the four
 adapters). This freeze defines the `0.x` contract consumers build against; the publish steps and
 order are in [`PUBLISHING.md`](../../PUBLISHING.md).

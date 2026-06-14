@@ -7,17 +7,17 @@
 > and verified against code; the reference implementation is the example family at
 > `apps/site/src/pages/evidence*` (twelve pages, e2e-tested in `apps/site/e2e/`).
 
-# field-ui Invisible Fields
+# Fundamental Invisible Fields
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Surfaces & Placement (underlay / overlay) — this doc adds the third |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | The hard contracts (bodies, feedback, relationships) |
-| [`field-ui-platform-architecture.md`](field-ui-platform-architecture.md) | The platform runtime, registries, scheduler |
-| [`field-ui-agent-consumption-model.md`](field-ui-agent-consumption-model.md) | How consumers read one influence differently |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | The operating model ("substrate, not wallpaper") |
+| [`system-contracts.md`](system-contracts.md) | The hard contracts (bodies, feedback, relationships) |
+| [`platform-architecture.md`](platform-architecture.md) | The platform runtime, registries, scheduler |
+| [`agent-consumption-model.md`](agent-consumption-model.md) | How consumers read one influence differently |
+| [`definition-document.md`](definition-document.md) | The operating model ("substrate, not wallpaper") |
 
 ## 1. What an invisible field is
 

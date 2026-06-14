@@ -578,7 +578,7 @@ Every mechanism claim in this paper is checkable against the repository:
   `search-field.astro`, `review-field.astro`, `system-weather.astro`, plus the shared
   `apps/site/src/lib/study.ts` (`mountBindStudy`).
 - **Package export:** `packages/platform/src/index.ts` re-exports `bind-data.ts`.
-- **Canonical corroboration:** `docs/canonical/field-ui-interaction-and-relationship-model.md` §15
+- **Canonical corroboration:** `docs/canonical/interaction-and-relationship-model.md` §15
   (`DataAgent` property→field mapping), §21 (Search), §26 (AI use cases).
 
 The mechanism landed in #210; the data-bound study pages in #213–#214; the confidence-provenance

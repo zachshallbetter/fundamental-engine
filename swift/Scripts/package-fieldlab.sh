@@ -21,7 +21,7 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 <dict>
   <key>CFBundleName</key><string>FieldLab</string>
   <key>CFBundleDisplayName</key><string>FieldLab</string>
-  <key>CFBundleIdentifier</key><string>com.field-ui.fieldlab</string>
+  <key>CFBundleIdentifier</key><string>com.fundamental-engine.fieldlab</string>
   <key>CFBundleExecutable</key><string>FieldLab</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>0.1.0</string>

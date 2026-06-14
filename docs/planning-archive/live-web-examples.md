@@ -2,24 +2,24 @@
 
 > Status: planning / proposal.
 > A plan for "concept study" demos that reinterpret familiar page archetypes (article, PR, search,
-> dashboard) as field-ui surfaces. Not shipped behavior; the recipe names below all exist in the
+> dashboard) as Fundamental surfaces. Not shipped behavior; the recipe names below all exist in the
 > shipped 64-recipe catalog (`FIELD_RECIPES`). The first study, **Reading Field Study**, is built at
 > `/examples` / the docs.
 
 A reinterpretation of a familiar page would be one of the strongest demos because it makes the idea concrete immediately.
 
-The best version is not “take a popular website and add particles.” That would make field-ui look like an effect layer.
+The best version is not “take a popular website and add particles.” That would make Fundamental look like an effect layer.
 
 The better move is:
 
 - Take a familiar page people already understand.
 - Keep its semantic structure recognizable.
-- Apply field-ui as a relational behavior layer.
+- Apply Fundamental as a relational behavior layer.
 - Show how the page becomes more readable, inspectable, and alive without becoming less usable.
 
 Why this works
 
-A popular site already has familiar information architecture. Users know what a search page, product page, article page, profile page, dashboard, or inbox is supposed to do. If field-ui improves one of those pages, the value becomes obvious because the comparison is immediate.
+A popular site already has familiar information architecture. Users know what a search page, product page, article page, profile page, dashboard, or inbox is supposed to do. If Fundamental improves one of those pages, the value becomes obvious because the comparison is immediate.
 
 You are not asking people to understand a new demo world first. You are saying:
 
@@ -30,7 +30,7 @@ That is a strong pitch.
 
 The right kind of pages to reinterpret
 
-I would avoid copying brand visuals exactly. Use “inspired by” layouts, generic content, and clearly label them as conceptual studies. The point is not to clone a site. The point is to show how field-ui changes interface behavior.
+I would avoid copying brand visuals exactly. Use “inspired by” layouts, generic content, and clearly label them as conceptual studies. The point is not to clone a site. The point is to show how Fundamental changes interface behavior.
 
 The best targets are page types with rich relationships.
 
@@ -53,7 +53,7 @@ Recipes:
 - Source Constellation
 - Memory Trace
 
-Why it is strong: Search is already about invisible ranking. field-ui makes ranking spatial, legible, and inspectable.
+Why it is strong: Search is already about invisible ranking. Fundamental makes ranking spatial, legible, and inspectable.
 
 2. Wikipedia article page
 
@@ -72,7 +72,7 @@ Recipes:
 - Evidence Field
 - Relation Lens
 
-Why it is strong: Wikipedia is semantically rich but visually static. field-ui can make the relationships visible without corrupting the article.
+Why it is strong: Wikipedia is semantically rich but visually static. Fundamental can make the relationships visible without corrupting the article.
 
 3. GitHub pull request page
 
@@ -92,7 +92,7 @@ Recipes:
 - Change Shockwave
 - Completion Release
 
-Why it is strong: GitHub PRs already have relationships, status, review pressure, source change, and causality. field-ui makes those forces legible.
+Why it is strong: GitHub PRs already have relationships, status, review pressure, source change, and causality. Fundamental makes those forces legible.
 
 4. Amazon product page
 
@@ -111,7 +111,7 @@ Recipes:
 - Risk Horizon
 - Context Halo
 
-Why it is strong: Product pages are dense and persuasive. field-ui could make trust, relevance, and decision pressure more transparent.
+Why it is strong: Product pages are dense and persuasive. Fundamental could make trust, relevance, and decision pressure more transparent.
 
 5. Netflix / streaming detail page
 
@@ -129,7 +129,7 @@ Recipes:
 - Intent Magnet
 - Memory Trace
 
-Why it is strong: Recommendation systems already behave like hidden fields. field-ui makes the recommendation field visible and controllable.
+Why it is strong: Recommendation systems already behave like hidden fields. Fundamental makes the recommendation field visible and controllable.
 
 6. Notion / document editor page
 
@@ -167,7 +167,7 @@ Recipes:
 - Completion Release
 - Attention Weather
 
-Why it is strong: Email is a pressure field already. field-ui makes that pressure navigable.
+Why it is strong: Email is a pressure field already. Fundamental makes that pressure navigable.
 
 8. Stripe dashboard / finance dashboard
 
@@ -276,7 +276,7 @@ The page has:
 - source list
 - table of contents
 
-field-ui adds:
+Fundamental adds:
 - **Reading Field**:
   - Current section gains attention.
   - Read sections accumulate memory.
@@ -305,7 +305,7 @@ Generic page:
 - merge box
 - timeline
 
-field-ui adds:
+Fundamental adds:
 - **Review Constellation**: Reviewers, comments, and files bind into relationship clusters.
 - **Dependency Tension**: Blocked files and unresolved comments create tension.
 - **Change Shockwave**: A changed core file emits downstream impact.
@@ -313,7 +313,7 @@ field-ui adds:
 - **Completion Release**: When checks pass and comments resolve, pressure releases into a stable merge state.
 - **Platform Inspector**: Shows which comments, checks, and files caused the current state.
 
-This would be extremely compelling because developers already understand PR stress. field-ui makes the invisible state of review visible.
+This would be extremely compelling because developers already understand PR stress. Fundamental makes the invisible state of review visible.
 
 Example: Search results
 
@@ -325,7 +325,7 @@ Generic search page:
 - AI summary
 - related searches
 
-field-ui adds:
+Fundamental adds:
 - **Search Relevance Field**: High-confidence results form gravity wells.
 - **Trust Gradient**: Verified sources increase coherence. Weak results remain unstable.
 - **Polarity Filter**: Contradictory results separate.
@@ -334,7 +334,7 @@ field-ui adds:
 
 This makes search feel less like a ranked list and more like an evidence landscape.
 
-Why this would differentiate field-ui
+Why this would differentiate Fundamental
 
 Most demos of UI technology show something new in a blank playground.
 
@@ -346,7 +346,7 @@ The pitch becomes:
 
 We are not asking people to adopt a strange new visual style.
 We are showing that the interfaces they already use contain hidden fields.
-field-ui makes those fields visible, measurable, and usable.
+Fundamental makes those fields visible, measurable, and usable.
 
 Recommended “popular page studies” set
 
@@ -374,7 +374,7 @@ What the agent should build
 
 A good implementation brief:
 
-Create a set of field-ui concept studies based on familiar page archetypes, without copying brand assets or proprietary UI.
+Create a set of Fundamental concept studies based on familiar page archetypes, without copying brand assets or proprietary UI.
 Start with one study: Reading Field Study.
 Requirements:
 - Use semantic HTML first.

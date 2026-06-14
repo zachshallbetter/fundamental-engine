@@ -7,6 +7,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation rebrand: `field-ui` → Fundamental, completed.** The #428 code rebrand renamed the
+  published packages to `@fundamental-engine/*` but left the docs on the intermediate `field-ui` name.
+  This finishes it: ~845 prose/token occurrences swept (`field-ui` → Fundamental, `@field-ui/*` →
+  `@fundamental-engine/*`) across `CLAUDE.md`, `docs/canonical`, `docs/research`, `docs/engine-reference`,
+  `docs/planning-archive`, code comments, scripts, and the Swift port; the 13 canonical docs lose their
+  `field-ui-` filename prefix (e.g. `field-ui-natural-fields.md` → `natural-fields.md`) with every
+  reference updated. The original `forces-ui` / `@forces-ui` names, the CHANGELOG/MIGRATION history, and
+  the README lineage note are preserved as historical record. No runtime behavior change.
+
 ### Added
 
 - **`FieldHandle.addAgent` — engine-stepped agents (the creatures primitive, core).** An agent is a
@@ -448,7 +459,7 @@ metrics, and the transformation primitives, not re-building what exists.)
 The cycle that built the **invisible-fields family** — twelve real-data example pages whose
 render surface is the page's own type — and shipped the engine/platform capabilities the
 family proved out. The pattern is canonical in
-[`docs/canonical/field-ui-invisible-fields.md`](docs/canonical/field-ui-invisible-fields.md).
+[`docs/canonical/invisible-fields.md`](docs/canonical/invisible-fields.md).
 
 ### Added
 

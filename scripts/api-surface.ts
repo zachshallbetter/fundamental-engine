@@ -1,10 +1,10 @@
 /**
- * The HARD gate for the frozen public API surface (field-ui 0.x). This file is typechecked by
+ * The HARD gate for the frozen public API surface (Fundamental 0.x). This file is typechecked by
  * `pnpm check:api` (tsconfig.api.json). It imports every frozen VALUE and TYPE from its owning
  * package, so removing, renaming, or changing the kind of any frozen symbol becomes a COMPILE ERROR
  * right here — the freeze cannot be broken silently.
  *
- * The human-readable contract is docs/canonical/field-ui-api-stability.md; the shared data (for the
+ * The human-readable contract is docs/canonical/api-stability.md; the shared data (for the
  * runtime element/attribute lock and the docs page) is scripts/api-surface.data.mjs. Editing this
  * file changes the public contract — see the compatibility rules in that doc.
  *
@@ -34,5 +34,5 @@ void FROZEN_VALUES;
 export type __FrozenTypes = [FieldRecipe, FieldHost, FieldPlatform];
 
 // Field Surfaces (additive): lock the overlay-surface API onto the handle, so removing/renaming
-// `setOverlay` or `OverlayMode` becomes a compile error here too. See field-ui-api-stability.md.
+// `setOverlay` or `OverlayMode` becomes a compile error here too. See api-stability.md.
 export type __OverlayApi = [FieldHandle['setOverlay'], OverlayMode];

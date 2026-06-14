@@ -1,11 +1,11 @@
-# field-ui: Complete Concept Document
+# Fundamental: Complete Concept Document
 
 > Status: vision and concept document.  
-> This document defines the full conceptual arc of field-ui: the paradigm, architecture, natural-field model, authoring model, participation layer, diagnostics, recipes, accessibility rules, performance principles, and long-range product direction.
+> This document defines the full conceptual arc of Fundamental: the paradigm, architecture, natural-field model, authoring model, participation layer, diagnostics, recipes, accessibility rules, performance principles, and long-range product direction.
 >
 > It is not the only source of implementation truth. Current shipped behavior is verified by package code, conformance tests, diagnostics, and canonical docs.
 >
-> Use this document as the north-star explanation of what field-ui is and why it exists.
+> Use this document as the north-star explanation of what Fundamental is and why it exists.
 >
 > **Vocabulary note (concepts vs runtime tokens).** This is a concept document, so the prose uses
 > concept language freely. The strict runtime token set is the 34 forces in the
@@ -19,7 +19,7 @@
 
 ## 1. Thesis
 
-field-ui is a platform-native relational field runtime for the DOM.
+Fundamental is a platform-native relational field runtime for the DOM.
 
 Elements bend the field.
 
@@ -39,7 +39,7 @@ loading
 error
 ```
 
-field-ui treats interface behavior as relational field state.
+Fundamental treats interface behavior as relational field state.
 
 ```txt
 near
@@ -61,9 +61,9 @@ The interface is not only styled.
 
 It participates.
 
-## 2. What field-ui is not
+## 2. What Fundamental is not
 
-field-ui is not a particle background.
+Fundamental is not a particle background.
 
 It is not an animation library.
 
@@ -73,7 +73,7 @@ It is not a component framework.
 
 It is not a replacement for semantic HTML.
 
-field-ui is a relational behavior runtime.
+Fundamental is a relational behavior runtime.
 
 It gives interface meaning a field model.
 
@@ -108,7 +108,7 @@ some things should explain why they changed
 
 Traditional UI expresses those relations through layout, color, type, class names, and one-off logic.
 
-field-ui makes them explicit.
+Fundamental makes them explicit.
 
 It turns them into measurable, inspectable, accessible field behavior.
 
@@ -117,10 +117,10 @@ It turns them into measurable, inspectable, accessible field behavior.
 The current system is organized into packages and layers.
 
 ```txt
-field-ui   host-driven, renderer-agnostic field engine
-@field-ui/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
-@field-ui/elements   native HTML and web component authoring
-@field-ui/react   React adapter over the same contracts
+Fundamental   host-driven, renderer-agnostic field engine
+@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/elements   native HTML and web component authoring
+@fundamental-engine/react   React adapter over the same contracts
 site/docs/lab   proof surfaces, recipes, diagnostics, demos, and executable documentation
 ```
 
@@ -276,7 +276,7 @@ The field should never drift away from the interface it describes.
 
 ## 7. The FieldHost principle
 
-field-ui is host-driven.
+Fundamental is host-driven.
 
 It should not import browser or DOM globals.
 
@@ -285,15 +285,15 @@ Core may compute field behavior, integrate particles, run diagnostics, and draw 
 Browser setup should look like this:
 
 ```ts
-import { createField } from "field-ui";
-import { browserHost } from "@field-ui/platform";
+import { createField } from "Fundamental";
+import { browserHost } from "@fundamental-engine/platform";
 
 const field = createField(canvas, {
   host: browserHost()
 });
 ```
 
-@field-ui/elements and adapters can hide this setup for normal authors.
+@fundamental-engine/elements and adapters can hide this setup for normal authors.
 
 Core remains portable.
 
@@ -574,7 +574,7 @@ Gravity is the field of priority, convergence, weight, and hierarchy.
 
 In physics, gravity gathers mass, creates wells, and produces orbital structure.
 
-In field-ui, gravity translates into interface priority.
+In Fundamental, gravity translates into interface priority.
 
 Use gravity for:
 
@@ -614,7 +614,7 @@ Electromagnetic behavior is the field of polarity, signal, charge, radiation, fi
 
 In physics, electric fields push charged matter and magnetic fields bend moving charged matter.
 
-In field-ui, electromagnetism translates into polarity, opposition, signal, routing, field lines, propagation, and guided flow.
+In Fundamental, electromagnetism translates into polarity, opposition, signal, routing, field lines, propagation, and guided flow.
 
 Use electromagnetic behavior for:
 
@@ -665,7 +665,7 @@ Strong interaction is the field of binding, cohesion, locality, and structure.
 
 In physics, the strong interaction binds matter at tiny scales.
 
-In field-ui, strong behavior becomes the grammar of things that should stay together.
+In Fundamental, strong behavior becomes the grammar of things that should stay together.
 
 Use strong analogues for:
 
@@ -701,7 +701,7 @@ Weak interaction is the field of transformation, decay, release, mutation, and s
 
 In physics, weak interaction enables decay and transformation.
 
-In field-ui, weak behavior becomes the grammar of change.
+In Fundamental, weak behavior becomes the grammar of change.
 
 Use weak analogues for:
 
@@ -1395,8 +1395,8 @@ field.registerBody(element, {
 Core plus platform:
 
 ```ts
-import { createField } from "field-ui";
-import { browserHost } from "@field-ui/platform";
+import { createField } from "Fundamental";
+import { browserHost } from "@fundamental-engine/platform";
 
 const field = createField(canvas, {
   host: browserHost()
@@ -1841,12 +1841,12 @@ Do not add new spectacle before the system is explainable, inspectable, accessib
 
 ## 44. Research direction
 
-field-ui can become a research artifact.
+Fundamental can become a research artifact.
 
 Possible title:
 
 ```txt
-field-ui: A Field Translation Runtime for Relational DOM Interfaces
+Fundamental: A Field Translation Runtime for Relational DOM Interfaces
 ```
 
 Claims to evaluate:

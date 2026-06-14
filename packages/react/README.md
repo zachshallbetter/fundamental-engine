@@ -127,7 +127,7 @@ To apply a named recipe or bind data to the field, use `applyRecipe()` / `bindDa
 ## Aliases
 
 `ForcesField` / `useForcesField` and `ForcesFieldProps` are deprecated aliases of `FieldField` /
-`useFieldField` / `FieldFieldProps`, kept for the `forces-ui` → `field-ui` rename.
+`useFieldField` / `FieldFieldProps`, kept for the `forces-ui` → `Fundamental` rename.
 
 ## Related
 

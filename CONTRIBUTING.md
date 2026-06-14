@@ -1,4 +1,4 @@
-# Contributing to field-ui
+# Contributing to Fundamental
 
 Thanks for your interest. This guide covers the setup, the conventions that keep the
 codebase coherent, and the workflow for the most common change — adding a force.
@@ -17,7 +17,7 @@ The repo is a pnpm monorepo:
 
 | Package | What |
 |---|---|
-| `packages/core` (`field-ui`) | the engine — catalog, contracts, FieldStore, forces, conformance |
+| `packages/core` (`Fundamental`) | the engine — catalog, contracts, FieldStore, forces, conformance |
 | `packages/elements` (`@fundamental-engine/elements`) | `<field-root>` + the declarative `data-body` keystone |
 | `packages/react` (`@fundamental-engine/react`) | the React adapter |
 | `apps/site` (`@fundamental-engine/site`) | fundamental-engine.com — Manual, Lab, Docs |

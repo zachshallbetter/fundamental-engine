@@ -1,17 +1,17 @@
 > **Status: canonical.**
-> Field/force laws, the electromagnetic split, fieldflow, and truth modes. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Field/force laws, the electromagnetic split, fieldflow, and truth modes. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# Fundamental Field Behavior Table for field-ui
+# Fundamental Field Behavior Table for Fundamental
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contracts |
+| [`definition-document.md`](definition-document.md) | Concept |
+| [`system-contracts.md`](system-contracts.md) | Contracts |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Field rendering and diagnostics |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Tests |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Tests |
 
 ## Core Distinction
 
@@ -69,7 +69,7 @@ Feedback = how the field writes back to the DOM
 
 ## Fundamental Table
 
-| Field / interaction | Field structure | `field(b, x, y)` should return | `apply(b, p, env)` should do | Particle relationship to field lines | Render expectation | Correct field-ui role |
+| Field / interaction | Field structure | `field(b, x, y)` should return | `apply(b, p, env)` should do | Particle relationship to field lines | Render expectation | Correct Fundamental role |
 |---|---|---|---|---|---|---|
 | **Gravity** | radial monopole well around mass-energy | gravitational vector field `g(x,y)` pointing toward source mass | softened gravitational acceleration: `g = -GM r̂ / (r² + ε²)` and `F = m g` | particles generally accelerate along the field; sideways velocity can create orbits | radial wells, falling paths, orbital arcs, accretion | `gravity`, natural primitive |
 | **Electric / Charge** | signed radial monopole field | electric vector `E(x,y)` outward from positive, inward toward negative | Coulomb force: `F = qE` | positive particles move along `E`; negative particles move opposite; neutral particles ignore it | radial lines, attraction/repulsion, demixing | `charge`, natural primitive |

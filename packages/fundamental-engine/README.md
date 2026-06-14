@@ -1,7 +1,7 @@
 # fundamental-engine
 
-**An alias for [`@fundamental-engine/kit`](https://www.npmjs.com/package/@fundamental-engine/kit).** The bare `field-ui`
-name on npm belongs to an unrelated project, so the field-ui suite lives under the `@field-ui` scope.
+**An alias for [`@fundamental-engine/kit`](https://www.npmjs.com/package/@fundamental-engine/kit).** The bare `Fundamental`
+name on npm belongs to an unrelated project, so the Fundamental suite lives under the `@Fundamental` scope.
 This package exists only so that `fundamental-engine` resolves to the whole suite for anyone who
 reaches for it by name.
 

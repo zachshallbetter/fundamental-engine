@@ -1,6 +1,6 @@
 /**
  * DOM download helpers (Phase: frontier). Triggering a file download needs `document` (an anchor
- * click), so these live in `@fundamental-engine/platform`, not `field-ui`. The pure serializers stay in
+ * click), so these live in `@fundamental-engine/platform`, not `Fundamental`. The pure serializers stay in
  * core: `segmentsToSvg` (vector) and `canvasToPng` (a canvas's own `toDataURL`). Pair them here to
  * actually save a file.
  */

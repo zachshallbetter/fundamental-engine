@@ -1,4 +1,4 @@
-# field-ui — full canonical documentation
+# Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
 Generated: 2026-06-14 by apps/site/scripts/gen-llms.mjs
@@ -15,11 +15,11 @@ FILE: README.md
 > The documentation map for `docs/canonical/` — one line per document and its role. These
 > documents are the **authority**: read the relevant one before changing concepts, terminology,
 > or contracts. The status rule and framing policy live in
-> [field-ui-documentation-standards.md](field-ui-documentation-standards.md).
+> [documentation-standards.md](documentation-standards.md).
 
 # Canonical documentation map
 
-field-ui is a platform-native relational field runtime for the DOM. `field-ui` (core) computes
+Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` (core) computes
 renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM; `elements`/`react`
 are authoring surfaces. Canvas is one render surface, not the whole system.
 
@@ -28,21 +28,21 @@ are authoring surfaces. Canvas is one render surface, not the whole system.
 
 | Document | Role |
 |---|---|
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | The operating model — what field-ui *is* ("substrate, not wallpaper") |
-| [`field-ui-documentation-standards.md`](field-ui-documentation-standards.md) | How field-ui is described everywhere: the architecture statement, the status taxonomy, the naming policy, the verify-against-code rule |
-| [`field-ui-natural-fields.md`](field-ui-natural-fields.md) | The four Natural Fields (gravity→importance, electromagnetic→polarity, strong→binding, weak→transformation) — concepts, not tokens |
+| [`definition-document.md`](definition-document.md) | The operating model — what Fundamental *is* ("substrate, not wallpaper") |
+| [`documentation-standards.md`](documentation-standards.md) | How Fundamental is described everywhere: the architecture statement, the status taxonomy, the naming policy, the verify-against-code rule |
+| [`natural-fields.md`](natural-fields.md) | The four Natural Fields (gravity→importance, electromagnetic→polarity, strong→binding, weak→transformation) — concepts, not tokens |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | The six truth modes + the per-force behavior table |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | The hard contracts: bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, platform |
-| [`field-ui-platform-architecture.md`](field-ui-platform-architecture.md) | The platform layer: the six registries, the six-phase scheduler, the runtime (attachHandle, QualityGovernor), linting |
-| [`field-ui-agent-consumption-model.md`](field-ui-agent-consumption-model.md) | How consumers (particles, DOM elements, event sinks, visual layers) read one influence differently; Body Matter Interaction → Sink/Accretion |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | The agent model: element, relationship, user, layout, and data agents |
+| [`system-contracts.md`](system-contracts.md) | The hard contracts: bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, platform |
+| [`platform-architecture.md`](platform-architecture.md) | The platform layer: the six registries, the six-phase scheduler, the runtime (attachHandle, QualityGovernor), linting |
+| [`agent-consumption-model.md`](agent-consumption-model.md) | How consumers (particles, DOM elements, event sinks, visual layers) read one influence differently; Body Matter Interaction → Sink/Accretion |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | The agent model: element, relationship, user, layout, and data agents |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render + diagnostic methods, and **Surfaces & Placement** (underlay / overlay / typographic) |
-| [`field-ui-invisible-fields.md`](field-ui-invisible-fields.md) | The typographic (invisible) placement: two-field page architecture, live channels, engagement contracts, declared relationships, data provenance |
-| [`field-ui-time.md`](field-ui-time.md) | Time in the field: the three clocks (simulation / experiential / world), the temporal kernels, the `data-field-at` contract |
-| [`field-ui-visual-language-and-geometry.md`](field-ui-visual-language-and-geometry.md) | The visual language layer: metric→appearance mappings and geometry |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
-| [`field-ui-api-stability.md`](field-ui-api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
+| [`invisible-fields.md`](invisible-fields.md) | The typographic (invisible) placement: two-field page architecture, live channels, engagement contracts, declared relationships, data provenance |
+| [`time.md`](time.md) | Time in the field: the three clocks (simulation / experiential / world), the temporal kernels, the `data-field-at` contract |
+| [`visual-language-and-geometry.md`](visual-language-and-geometry.md) | The visual language layer: metric→appearance mappings and geometry |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
+| [`api-stability.md`](api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
 
 Deeper references live beside this directory: `docs/engine-reference/` (the engine spec —
 `forces-system.md` is the big one), `docs/research/` (the paper family, with its caveat canon in
@@ -50,7 +50,7 @@ its own README), and `docs/planning-archive/` (frozen history — do not cite as
 Planned work lives in `ROADMAP.md` / `BACKLOG.md` at the repo root and on the RC1 board.
 
 ========================================================================
-FILE: field-ui-agent-consumption-model.md
+FILE: agent-consumption-model.md
 ========================================================================
 
 > **Status: canonical.**
@@ -60,10 +60,10 @@ FILE: field-ui-agent-consumption-model.md
 > (the sink/accretion behavior) is a submodel here, not a separate model. Every status label below was
 > verified against the code (`packages/core/src/agents`, `packages/core/src/forces`,
 > `packages/core/src/core/field.ts`, `packages/platform`) and follows the
-> [documentation standards](field-ui-documentation-standards.md) status rule: nothing is called
+> [documentation standards](documentation-standards.md) status rule: nothing is called
 > *shipped* unless code confirms it. Deeper references:
-> [system-contracts §5–§9](field-ui-system-contracts.md),
-> [interaction-and-relationship-model](field-ui-interaction-and-relationship-model.md),
+> [system-contracts §5–§9](system-contracts.md),
+> [interaction-and-relationship-model](interaction-and-relationship-model.md),
 > [forces-system §22](../engine-reference/forces-system.md).
 
 # Field Agent Consumption Model
@@ -101,7 +101,7 @@ modules and agent contracts (`AGENT_CONTRACTS`, same file):
 Two things the broader framing sometimes calls "agents" are **not** field agents — they are platform
 concerns, and the distinction matters:
 
-- **visual layer** — the [VisualBindingRegistry](field-ui-platform-architecture.md) pairs an expressive
+- **visual layer** — the [VisualBindingRegistry](platform-architecture.md) pairs an expressive
   visual (SVG/Canvas) with its semantic source for linting and inspection. It participates in
   accessibility, not physics. See [Text and the visual layer](#text-and-the-visual-layer).
 - **event sink** — not a distinct agent kind; it is the **event-host role** a body plays through
@@ -171,7 +171,7 @@ The concrete, fully shipped particle-level case. A `sink` body captures matter i
 | release | saturation → `supernova` releases exactly the held particles, then resets | `field.ts` | **shipped** |
 | discharge | an engagement-gated sink (`data-when="active"`) releases on the FALLING edge of attention — same conserved ritual, same events (#365) | `accretion.ts` `dischargeDisengaged` | **shipped** |
 
-Terminology, per the [status rule](field-ui-documentation-standards.md): **`sink` is the runtime
+Terminology, per the [status rule](documentation-standards.md): **`sink` is the runtime
 token.** `absorb` is **not** a token — only the `data-absorb` *attribute* exists. Treat `absorb` as
 concept/legacy language. `--load` is canonical; `--mass` is the alias.
 
@@ -257,7 +257,7 @@ sampled after the force pass (the same model as the `captured` `data-on` trigger
 
 Text is a special case of the same model, governed by a design law
 ([forces-system §11](../engine-reference/forces-system.md),
-[visual-language-and-geometry](field-ui-visual-language-and-geometry.md)):
+[visual-language-and-geometry](visual-language-and-geometry.md)):
 
 > Words are bodies the field decorates; punctuation is where matter assembles.
 
@@ -270,7 +270,7 @@ Text is a special case of the same model, governed by a design law
   punctuation and marks (a `.`, `—`, a logo glyph), where the silhouette is simple. (design law)
 - A vector/SVG/Canvas layer may **represent** the text, but it is **not** the source of meaning. Bind
   it declaratively with `data-field-visual-for` + `data-field-visual-role="representation"` and keep it
-  `aria-hidden` — the [VisualBindingRegistry](field-ui-platform-architecture.md) discovers, binds, and
+  `aria-hidden` — the [VisualBindingRegistry](platform-architecture.md) discovers, binds, and
   lints the pairing. **shipped** (binding + lint). Generating glyph geometry *from* text
   (outline extraction, text → SVG path) is **planned**, tracked as a frontier.
 
@@ -296,20 +296,20 @@ Field Agent Consumption Model
 ```
 
 ========================================================================
-FILE: field-ui-api-stability.md
+FILE: api-stability.md
 ========================================================================
 
 > **Status: canonical.**
-> This document defines the **frozen public API surface for field-ui `0.x`** and the compatibility
+> This document defines the **frozen public API surface for Fundamental `0.x`** and the compatibility
 > rules that govern it: what is stable, what is experimental, how versions move, and how the alias
 > window works. It is enforced in code by `scripts/api-surface.ts` (typechecked) and
 > `scripts/check-api-surface.mjs` (runtime), both run by `pnpm check:api` in CI. The shared machine
 > data is [`scripts/api-surface.data.mjs`](../../scripts/api-surface.data.mjs); the live reference page
 > is [`/docs/api/stability`](../../apps/site/src/pages/docs/api/stability.astro). Related contracts:
-> [field-ui-system-contracts.md](field-ui-system-contracts.md),
-> [field-ui-platform-architecture.md](field-ui-platform-architecture.md).
+> [system-contracts.md](system-contracts.md),
+> [platform-architecture.md](platform-architecture.md).
 
-# field-ui API stability
+# Fundamental API stability
 
 The architecture has stopped being fluid. Recipes execute, data binds, the inspector reads the live
 runtime, the gallery runs, the starter installs, the studies are data-driven. Before adding more
@@ -425,33 +425,33 @@ migration note and a `0.MINOR` bump.
 
 ## Status
 
-The packages are **published to npm** under the `@field-ui` scope (`@fundamental-engine/core` and the four
+The packages are **published to npm** under the `@Fundamental` scope (`@fundamental-engine/core` and the four
 adapters). This freeze defines the `0.x` contract consumers build against; the publish steps and
 order are in [`PUBLISHING.md`](../../PUBLISHING.md).
 
 ========================================================================
-FILE: field-ui-authoring-and-recipes.md
+FILE: authoring-and-recipes.md
 ========================================================================
 
 > **Status: canonical.**
-> Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Authoring and Recipes
+# Fundamental Authoring and Recipes
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Recipe contract |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Interaction recipes |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Recipe tests |
+| [`definition-document.md`](definition-document.md) | Concept |
+| [`system-contracts.md`](system-contracts.md) | Recipe contract |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | Interaction recipes |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Recipe tests |
 
 ## Purpose
 
-This document defines how authors use `field-ui`. `field-ui` is a platform-native relational field
-runtime for the DOM: `field-ui` computes renderer-agnostic field behavior, `@fundamental-engine/platform`
+This document defines how authors use `Fundamental`. `Fundamental` is a platform-native relational field
+runtime for the DOM: `Fundamental` computes renderer-agnostic field behavior, `@fundamental-engine/platform`
 binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
 scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
 field context. Authors write the same `[data-body]` contract regardless of surface.
@@ -891,33 +891,33 @@ Change: stronger fieldflow increases velocity and lowers center density.
 ```
 
 ========================================================================
-FILE: field-ui-definition-document.md
+FILE: definition-document.md
 ========================================================================
 
 > **Status: canonical.**
-> The canonical concept and operating model. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> The canonical concept and operating model. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Definition Document
+# Fundamental Definition Document
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map and authority order |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Canonical contracts |
+| [`system-contracts.md`](system-contracts.md) | Canonical contracts |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field laws and `fieldflow` |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Agents beyond particles |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | Agents beyond particles |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization and diagnostics |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring and recipes |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Testing and conformance |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring and recipes |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Testing and conformance |
 
 ## 1. Definition
 
-`field-ui` is an inspectable field language for interfaces.
+`Fundamental` is an inspectable field language for interfaces.
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 
-`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
 
 Core principle:
 
@@ -926,7 +926,7 @@ Elements bend the field.
 The field bends them back.
 ```
 
-`field-ui` is not a particle background.
+`Fundamental` is not a particle background.
 
 It is a relational behavior layer for the web.
 
@@ -938,10 +938,10 @@ Interface physics is the use of spatial, temporal, and relational forces to expr
 HTML = structure
 CSS = presentation
 JavaScript = behavior
-field-ui = relational behavior
+Fundamental = relational behavior
 ```
 
-`field-ui` maps semantic state to physical behavior and physical behavior to visual styling.
+`Fundamental` maps semantic state to physical behavior and physical behavior to visual styling.
 
 ```txt
 Data becomes force.
@@ -962,7 +962,7 @@ selected / not selected
 open / closed
 ```
 
-`field-ui` state is spatial, relational, and reciprocal.
+`Fundamental` state is spatial, relational, and reciprocal.
 
 ```txt
 near
@@ -991,9 +991,9 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `field-ui` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
-The package set: `field-ui`, `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `field-ui` specifically carries zero runtime dependencies.
+The package set: `Fundamental`, `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
 
 ### Platform layer
 
@@ -1082,7 +1082,7 @@ Particles are only one class of field participant.
 
 Users, elements, relationships, events, layout, and data can also be agents.
 
-See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md).
+See [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md).
 
 ## 7. Field vs Force
 
@@ -1145,7 +1145,7 @@ See [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md)
 
 ## 9. Field Grammar
 
-A `field-ui` scene is a sentence written in bodies, fields, forces, flows, metrics, renders, and feedback.
+A `Fundamental` scene is a sentence written in bodies, fields, forces, flows, metrics, renders, and feedback.
 
 ```txt
 Body = where influence originates
@@ -1261,7 +1261,7 @@ become paths
 pulse with activity
 ```
 
-See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md).
+See [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md).
 
 ## 15. Authoring Levels
 
@@ -1271,7 +1271,7 @@ See [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-
 | Level 2 | developer | `data-body`, render modes, recipes |
 | Level 3 | engine author | custom `field()` / `apply()` / conformance |
 
-See [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md).
+See [`authoring-and-recipes.md`](authoring-and-recipes.md).
 
 ## 16. World Model Diagram
 
@@ -1307,7 +1307,7 @@ The runtime drives this loop through the `FrameScheduler` phases (`discover -> r
 
 ## 18. Final Definition
 
-`field-ui` is an inspectable field language for interfaces.
+`Fundamental` is an inspectable field language for interfaces.
 
 It is built from:
 
@@ -1339,19 +1339,19 @@ feedback returns the field to the DOM.
 ```
 
 ========================================================================
-FILE: field-ui-documentation-standards.md
+FILE: documentation-standards.md
 ========================================================================
 
 > **Status: canonical.**
-> This document governs how field-ui is described across the docs, the site, and the Lab: the canonical
+> This document governs how Fundamental is described across the docs, the site, and the Lab: the canonical
 > architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the
 > "verify against code" rule. It is the source of truth for *framing*; the deep topic references are
-> [field-ui-platform-architecture.md](field-ui-platform-architecture.md),
-> [field-ui-natural-fields.md](field-ui-natural-fields.md),
-> [field-ui-system-contracts.md](field-ui-system-contracts.md), and
-> [field-ui-definition-document.md](field-ui-definition-document.md).
+> [platform-architecture.md](platform-architecture.md),
+> [natural-fields.md](natural-fields.md),
+> [system-contracts.md](system-contracts.md), and
+> [definition-document.md](definition-document.md).
 
-# field-ui documentation standards
+# Fundamental documentation standards
 
 This began as a documentation truth-pass brief; the work it described has shipped, so it is recorded
 here as the governing standard rather than a to-do. When docs, pages, force/Lab labels, or examples
@@ -1360,9 +1360,9 @@ are written or revised, they follow the framing below.
 ## Canonical architecture statement
 
 ```
-field-ui is a platform-native relational field runtime for the DOM.
+Fundamental is a platform-native relational field runtime for the DOM.
 
-field-ui      computes renderer-agnostic field behavior.
+Fundamental      computes renderer-agnostic field behavior.
 @fundamental-engine/platform  binds field behavior to the DOM through measurement, state, feedback,
                     relationships, visual bindings, overlays, linting, and scheduling.
 @fundamental-engine/elements  exposes native HTML and web-component authoring.
@@ -1371,12 +1371,12 @@ field-ui      computes renderer-agnostic field behavior.
 Canvas is one render surface, not the whole system.
 ```
 
-field-ui creates **one shared field context** across DOM bodies, agents, relationships, measurements,
+Fundamental creates **one shared field context** across DOM bodies, agents, relationships, measurements,
 metrics, feedback, particles, and render surfaces. Canvas, SVG overlays, and DOM feedback are each a
 render surface; the platform layer is the DOM participation layer; the core engine stays
 renderer-agnostic.
 
-Do not describe field-ui as only "one canvas", "one particle field", "a particle background", or a
+Do not describe Fundamental as only "one canvas", "one particle field", "a particle background", or a
 "DOM ⇄ canvas binding". Those phrases are fine when specifically discussing the canvas render surface,
 but they must not define the whole product. The binding is **DOM ⇄ field runtime**.
 
@@ -1393,13 +1393,13 @@ Preserve: **Electric fields push. Magnetic fields bend. Fieldflow carries.** Do 
 
 ## Natural Field Translation System
 
-field-ui does not copy physics into the interface; it **translates** the four fundamental fields into
+Fundamental does not copy physics into the interface; it **translates** the four fundamental fields into
 interface behavior: gravity → priority, electromagnetic → polarity/signal, strong → binding, weak →
 transformation. **Natural fields are not tokens; tokens are translations.** Canonical forces
 (`attract`, `repel`, …) are designed verbs, not natural translations (`attract` ≠ gravity, `repel` ≠
 charge). The classification is data — `FORCE_KIND` / `FORCE_FIELD` / `NATURAL_FIELDS` in
 `packages/core/src/config/manual.ts` — and the full model is in
-[field-ui-natural-fields.md](field-ui-natural-fields.md). It changes no particle/engine behavior; it
+[natural-fields.md](natural-fields.md). It changes no particle/engine behavior; it
 only organizes how each token is explained.
 
 ## Current implementation truth
@@ -1408,7 +1408,7 @@ These are shipped and may be described in the present tense (verify specifics ag
 asserting anything new):
 
 ```
-field-ui · @fundamental-engine/platform · @fundamental-engine/elements · @fundamental-engine/react · @fundamental-engine/vanilla
+Fundamental · @fundamental-engine/platform · @fundamental-engine/elements · @fundamental-engine/react · @fundamental-engine/vanilla
 FrameScheduler (discover → read → compute → state → write → render)
 MeasurementRegistry · StateRegistry · FeedbackRegistry · RelationshipRegistry ·
   VisualBindingRegistry · OverlayRegistry · lintPlatform()
@@ -1420,7 +1420,7 @@ native HTML / web component / React authoring examples
 the Natural Field Translation System (four-field classification + /docs/natural-fields)
 ```
 
-`field-ui` imports **zero DOM** — the engine routes the environment through an injected
+`Fundamental` imports **zero DOM** — the engine routes the environment through an injected
 `FieldHost`; `browserHost()` lives in `@fundamental-engine/platform`, and `createField` requires a host (the
 framework entry points wire it). `core/dom-boundary.test.ts` enforces this with an empty allowlist.
 
@@ -1438,7 +1438,7 @@ Every markdown doc carries a status banner, and the folders mirror it:
 New code and docs use `--field-*` CSS variables and `field:*` events. The compact `--d` and the
 `--forces-*` / `forces:*` families remain as compatibility aliases (the FeedbackRegistry auto-mirrors
 `--field-*` → `--forces-*` and `field:*` → `forces:*`). Prefer `--field-density` in examples; mention
-`--d` / `--forces-*` only as aliases. Use `field-ui` for the project, packages, and docs.
+`--d` / `--forces-*` only as aliases. Use `Fundamental` for the project, packages, and docs.
 
 ## Status rule
 
@@ -1449,35 +1449,368 @@ before changing a status. Labels: shipped · experimental · planned · conceptu
 ## The frame
 
 ```
-The old story: field-ui is a particle field behind the DOM.
-The new story: field-ui is a platform-native relational field runtime for the DOM.
+The old story: Fundamental is a particle field behind the DOM.
+The new story: Fundamental is a platform-native relational field runtime for the DOM.
 Natural fields:  Four fields. Many expressions. One DOM runtime.
 ```
 
 ========================================================================
-FILE: field-ui-interaction-and-relationship-model.md
+FILE: fundamental-field-behavior-table.md
 ========================================================================
 
 > **Status: canonical.**
-> Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Field/force laws, the electromagnetic split, fieldflow, and truth modes. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Interaction and Relationship Model
+# Fundamental Field Behavior Table for Fundamental
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Agent contracts |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Recipes |
+| [`definition-document.md`](definition-document.md) | Concept |
+| [`system-contracts.md`](system-contracts.md) | Contracts |
+| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Field rendering and diagnostics |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Tests |
+
+## Core Distinction
+
+Every field-like force must separate:
+
+```txt
+field(b, x, y)
+```
+
+from:
+
+```txt
+apply(b, p, env)
+```
+
+`field()` returns invisible structure.
+
+`apply()` causes change.
+
+A field line is not always a particle path.
+
+## Field Grammar Reference
+
+```txt
+Body = where influence originates
+Field = invisible structure
+Force = how matter responds
+Flow = how matter is transported
+Metric = what the system measures
+Render = how the invisible becomes visible
+Feedback = how the field writes back to the DOM
+```
+
+## Truth Modes
+
+| Truth mode | Meaning | Examples |
+|---|---|---|
+| Physical truth | modeled after a recognizable physical law | `gravity`, `charge`, `magnetism` |
+| Designed truth | shaped for stable UI behavior | `attract`, `repel`, `spring` |
+| Hybrid truth | a designed primitive operating over natural geometry | `fieldflow` |
+| Diagnostic truth | reveals internal state | force vectors, heatmaps |
+| Poetic truth | expressive composite | `blackhole`, `nebula` |
+| Semantic truth | maps meaning into physics | attention, memory |
+
+> **Implemented.** These are the `TruthMode` union + `TRUTH_MODES` catalog in
+> `packages/core/src/contracts/passport.ts`. Forces classify as `physical` / `designed` / `hybrid`
+> (fieldflow); `diagnostic` / `poetic` / `semantic` classify visualizations, composite presets, and
+> the meaning→metric mappings respectively.
+
+> **Diagnostic truth is read-only.** All diagnostic render modes — including `causality` and
+> `prediction`, both shipped and live at `/docs/diagnostics` — only *visualize* field state. They
+> read the field and draw on a render surface; they never feed back into `apply()` or mutate physics.
+> Visualization and physics stay separate: a diagnostic overlay reveals internal structure without
+> changing how matter responds.
+
+## Fundamental Table
+
+| Field / interaction | Field structure | `field(b, x, y)` should return | `apply(b, p, env)` should do | Particle relationship to field lines | Render expectation | Correct Fundamental role |
+|---|---|---|---|---|---|---|
+| **Gravity** | radial monopole well around mass-energy | gravitational vector field `g(x,y)` pointing toward source mass | softened gravitational acceleration: `g = -GM r̂ / (r² + ε²)` and `F = m g` | particles generally accelerate along the field; sideways velocity can create orbits | radial wells, falling paths, orbital arcs, accretion | `gravity`, natural primitive |
+| **Electric / Charge** | signed radial monopole field | electric vector `E(x,y)` outward from positive, inward toward negative | Coulomb force: `F = qE` | positive particles move along `E`; negative particles move opposite; neutral particles ignore it | radial lines, attraction/repulsion, demixing | `charge`, natural primitive |
+| **Magnetic** | loop, dipole, or pole-pair field | magnetic vector `B(x,y)`, derived from pole position, geometry, orientation, strength, and feedback | Lorentz magnetic force: `F = q(v × B)` | particles do not naturally stream along magnetic field lines; force is perpendicular to velocity and field | field loops plus curved charged tracks | `magnetism`, natural primitive |
+| **Electromagnetic combined** | coupled electric and magnetic field | compound `{ E(x,y), B(x,y) }` | full Lorentz force: `F = q(E + v × B)` | electric pushes along/opposite `E`; magnetic bends across `B` | spirals, arcs, plasma motion when paired with `fieldflow` | future composite |
+| **Field-aligned transport** | reads existing net field geometry | reads `env.fieldAt(x,y)` or `netField(...)` | steers velocity onto the field line and accelerates along it | particles intentionally follow field lines | solar prominences, auroras, routed plasma | `fieldflow`, label `Flux` |
+| **Strong / Binding** | short-range confinement or string tension | local binding field or pair potential | binds, links, fuses, resists separation | not line-following | clusters, bonds, nuclei-like structures | `cohesion`, `link`, `fuse` |
+| **Weak / Transformation** | instability or probability field | scalar instability or none | decay, split, transmute, emit secondaries | not path-based | state mutation, splitting | `decay`, `fission` |
+
+## Electromagnetic Behavior Split
+
+| Behavior | Token | Owns field geometry? | Motion law | Does work? | Particle path relative to field lines |
+|---|---|---:|---|---:|---|
+| Electric charge | `charge` | yes | `F = qE` | yes | along `E` for positive, opposite for negative |
+| Magnetic Lorentz force | `magnetism` | yes | `F = q(v × B)` | no in ideal mode | across/around field lines |
+| Field-aligned transport | `fieldflow` | no, reads net field | steer + accelerate along `normalize(fieldAt(x,y))` | yes | along existing field lines |
+
+## Required Mental Model
+
+```txt
+Electric fields push.
+Magnetic fields bend.
+Fieldflow carries.
+```
+
+Do not make `magnetism.apply()` follow magnetic field lines.
+
+That behavior belongs to `fieldflow`.
+
+## Gravity
+
+> **Implemented.** `gravity.field()` now ships (`packages/core/src/forces/natural.ts`,
+> `bodyGravityField`): a radial inward field so gravity owns `field()`, renders as field lines, and
+> can be followed by `fieldflow`. `gravity.apply()` is unchanged — adding the field only makes the
+> structure visible/followable (a field line is not always a particle path). The passport's
+> `ownsField` is now `true`.
+
+### Field
+
+```txt
+r = (x - cx, y - cy)
+d = max(length(r), ε)
+r̂ = r / d
+g = -GM * r̂ / (d² + ε²)
+```
+
+### Apply
+
+```txt
+F = m * g
+a = F / m
+v += a * dt
+```
+
+Simplifies to:
+
+```txt
+a = g
+```
+
+## Charge
+
+### Field
+
+```txt
+r = (x - cx, y - cy)
+d = max(length(r), ε)
+r̂ = r / d
+E = kQ * r̂ / (d² + ε²)
+```
+
+Bounded UI-safe mode:
+
+```txt
+falloff = max(0, 1 - d / range)^n
+E = sign * strength * r̂ * falloff
+```
+
+### Apply
+
+```txt
+F = qE
+a = F / m
+v += a * dt
+```
+
+## Magnetism
+
+### Field
+
+For a simple visual loop:
+
+```txt
+r = (x - cx, y - cy)
+d = max(length(r), ε)
+r̂ = r / d
+tangent = (-r̂.y, r̂.x)
+falloff = max(0, 1 - d / range)^n
+B = tangent * strength * spin * falloff
+```
+
+For production, prefer pole-derived field geometry:
+
+```txt
+B = bodyDipole(body, x, y)
+```
+
+or:
+
+```txt
+B = polePair(body.poles, x, y)
+```
+
+The field should respond to:
+
+```txt
+pole position
+element geometry
+orientation
+strength
+range
+spin/polarity
+live charge feedback
+```
+
+### Apply
+
+```txt
+F = q(v × B)
+```
+
+For 2D canvas motion with out-of-plane magnetic strength:
+
+```txt
+Fx = -q * Bz * vy
+Fy =  q * Bz * vx
+a = F / m
+v += a * dt
+```
+
+### Required Tests
+
+```txt
+neutral particles ignore magnetism
+still charged particles receive no magnetic force
+moving charged particles curve
+force is perpendicular to velocity
+speed is preserved in ideal mode
+charge reversal flips curvature
+spin reversal flips curvature
+no effect beyond range
+```
+
+## Fieldflow / Flux
+
+`fieldflow` is field-aligned transport.
+
+It does not define a fundamental field. It reads the net field created by other bodies.
+
+### Apply
+
+```txt
+F_net = env.fieldAt(p.x, p.y)
+h = normalize(F_net)
+
+gain = strength * max(0, 1 - d / range)
+
+v = steerToward(v, h, steer * gain)
+v += h * accel * gain
+```
+
+Recommended tunable version:
+
+```txt
+h = normalize(env.fieldAt(p.x, p.y)) * direction
+targetVelocity = h * flowSpeed
+v += (targetVelocity - v) * flowSteer * gain
+v += h * flowAccel * gain
+```
+
+### Recommended Attributes
+
+```html
+<div
+  data-body="fieldflow"
+  data-strength="1"
+  data-range="0"
+  data-flow-steer="0.18"
+  data-flow-accel="0.08"
+  data-flow-speed="2.4"
+  data-flow-direction="1"
+  data-field-source="all"
+></div>
+```
+
+### Behavior
+
+```txt
+acts on neutral matter
+does work
+follows net field superposition
+routes matter between linked poles
+range 0 can mean global field-following formation
+creates solar prominence / aurora / plasma behavior
+```
+
+## Implementation Matrix
+
+| Token | Owns `field()`? | Uses `env.fieldAt()`? | Moves particles? | Moves along field lines? | Does work? | Main law / behavior |
+|---|---:|---:|---:|---:|---:|---|
+| `gravity` | yes | no | yes | mostly | yes | `g = -GM r̂ / (r² + ε²)` |
+| `charge` | yes | no | yes | sign-dependent | yes | `F = qE` |
+| `magnetism` | yes | no | yes | no | no ideal | `F = q(v × B)` |
+| `fieldflow` | no | yes | yes | yes | yes | steer + accelerate along `fieldAt` |
+| `cohesion` | optional/local | no | yes | n/a | yes | surface tension |
+| `pressure` | optional/scalar | no | yes | n/a | yes | density relaxation |
+| `link` | optional/local | no | yes | n/a | constraint | distance constraint |
+| `fuse` | local | no | state/count | n/a | releases heat | conservation |
+| `fission` | local | no | state/count | n/a | releases heat | budgeted split |
+| `decay` | optional scalar | no | state/count | n/a | not motion-first | timed transformation |
+| `spawn` | no | no | creates particles | n/a | source | budgeted source |
+
+## Force Passport Template
+
+Every force should include:
+
+```txt
+Token:
+Category:
+Truth mode:
+Owns field():
+Uses env.fieldAt():
+Moves particles:
+Does work:
+Conserves speed:
+Requires charge:
+Requires velocity:
+Affects neutral matter:
+Can be visualized as field lines:
+Can be visualized as force vectors:
+Best render modes:
+Conformance tests:
+Common composites:
+Design use:
+Physics note:
+```
+
+## Future Flux-Linkage Layer
+
+Flux-linkage is a future pairwise relationship metric.
+
+```txt
+Φ_AB = amount of field from body A that connects to or passes through body B
+```
+
+Do not implement flux-linkage before baseline `fieldflow`, field-line, and probe systems are stable.
+
+========================================================================
+FILE: interaction-and-relationship-model.md
+========================================================================
+
+> **Status: canonical.**
+> Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
+
+# Fundamental Interaction and Relationship Model
+
+## Related Documents
+
+| Document | Role |
+|---|---|
+| [`README.md`](./README.md) | Documentation map |
+| [`definition-document.md`](definition-document.md) | Concept |
+| [`system-contracts.md`](system-contracts.md) | Agent contracts |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Recipes |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Relationship visualization |
 
 ## Purpose
 
-This document expands `field-ui` beyond particles.
+This document expands `Fundamental` beyond particles.
 
-`field-ui` is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
@@ -1534,19 +1867,19 @@ are the agent state those kinds carry.
 
 Traditional UI state is local.
 
-`field-ui` state is spatial, relational, and reciprocal.
+`Fundamental` state is spatial, relational, and reciprocal.
 
 Recommended positioning:
 
 ```txt
-field-ui treats the interface as a shared field context — one shared context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces — not a collection of isolated components.
+Fundamental treats the interface as a shared field context — one shared context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces — not a collection of isolated components.
 ```
 
 ## 4. Interaction as Continuity
 
 Most UI interaction is binary.
 
-`field-ui` can represent:
+`Fundamental` can represent:
 
 ```txt
 near
@@ -1562,7 +1895,7 @@ coherent
 Recommended phrase:
 
 ```txt
-field-ui gives interfaces a memory of approach, not just a record of clicks.
+Fundamental gives interfaces a memory of approach, not just a record of clicks.
 ```
 
 ## 5. Attention as a Field
@@ -2046,7 +2379,7 @@ Several items below have shipped on the platform runtime (Phase D). The `Relatio
 ```
 
 ========================================================================
-FILE: field-ui-invisible-fields.md
+FILE: invisible-fields.md
 ========================================================================
 
 > **Status: canonical.**
@@ -2058,17 +2391,17 @@ FILE: field-ui-invisible-fields.md
 > and verified against code; the reference implementation is the example family at
 > `apps/site/src/pages/evidence*` (twelve pages, e2e-tested in `apps/site/e2e/`).
 
-# field-ui Invisible Fields
+# Fundamental Invisible Fields
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Surfaces & Placement (underlay / overlay) — this doc adds the third |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | The hard contracts (bodies, feedback, relationships) |
-| [`field-ui-platform-architecture.md`](field-ui-platform-architecture.md) | The platform runtime, registries, scheduler |
-| [`field-ui-agent-consumption-model.md`](field-ui-agent-consumption-model.md) | How consumers read one influence differently |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | The operating model ("substrate, not wallpaper") |
+| [`system-contracts.md`](system-contracts.md) | The hard contracts (bodies, feedback, relationships) |
+| [`platform-architecture.md`](platform-architecture.md) | The platform runtime, registries, scheduler |
+| [`agent-consumption-model.md`](agent-consumption-model.md) | How consumers read one influence differently |
+| [`definition-document.md`](definition-document.md) | The operating model ("substrate, not wallpaper") |
 
 ## 1. What an invisible field is
 
@@ -2285,23 +2618,23 @@ class as `lintSinkFeedback` (a sink that captures but never reports). A lane you
 engine will never write is now a lint, not a surprise.
 
 ========================================================================
-FILE: field-ui-natural-fields.md
+FILE: natural-fields.md
 ========================================================================
 
 > **Status: canonical.**
-> This document defines the Natural Field Translation System — how field-ui translates the four
+> This document defines the Natural Field Translation System — how Fundamental translates the four
 > fundamental fields into interface behavior. The classification here is data
 > (`FORCE_KIND` / `FORCE_FIELD` / `NATURAL_FIELDS` in `packages/core/src/config/manual.ts`), so the
 > force manual, the Lab badges, and `/docs/natural-fields` all read it and cannot drift. It changes
 > no particle/engine behavior — only how each token is explained and organized. See
-> [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and
+> [platform-architecture.md](platform-architecture.md) and
 > [../engine-reference/forces-system.md](../engine-reference/forces-system.md).
 
 # Natural Fields
 
-**How field-ui translates the four fundamental fields into interface behavior.**
+**How Fundamental translates the four fundamental fields into interface behavior.**
 
-field-ui does not copy physics into the interface. It **translates** the four fundamental fields into
+Fundamental does not copy physics into the interface. It **translates** the four fundamental fields into
 interface behavior:
 
 - **Gravity** becomes priority.
@@ -2311,7 +2644,7 @@ interface behavior:
 
 The engine then exposes practical primitives that make those translations usable inside a DOM-native
 runtime. Every interface already has priority, polarity, binding, and transformation; physics already
-has a compact language for those relations. field-ui borrows the language, not the literal physics.
+has a compact language for those relations. Fundamental borrows the language, not the literal physics.
 
 > **Four fields. Many expressions. One DOM runtime.**
 
@@ -2345,7 +2678,7 @@ Natural field → interface translation → engine primitive → metric → diag
 ### Gravity — priority, convergence, hierarchy
 
 Gravity is the grammar of what matters. In physics it gathers mass, makes wells, and produces orbital
-structure. In field-ui it translates into priority, weight, attraction, hierarchy, settling, and
+structure. In Fundamental it translates into priority, weight, attraction, hierarchy, settling, and
 convergence. Reach for it for ranking, search relevance, centrality, anchoring, and attention wells.
 
 - Engine expressions: `gravity` (primitive); plus `mass`, `potential`, `prediction` as measurement.
@@ -2354,7 +2687,7 @@ convergence. Reach for it for ranking, search relevance, centrality, anchoring, 
 ### Electromagnetic — polarity, signal, field lines, flow
 
 The grammar of difference and signal. Electric fields push charged matter; magnetic fields bend moving
-charged matter. In field-ui this becomes polarity, opposition, signal, routing, field lines,
+charged matter. In Fundamental this becomes polarity, opposition, signal, routing, field lines,
 propagation, and guided flow — for contrast, state opposition, relationship currents, and plasma-like
 motion.
 
@@ -2452,11 +2785,11 @@ Interface-native recipes name the *meaning*, then map to a field:
 
 The system should not say "we have physics-inspired UI effects." It says: every interface has
 priority, polarity, binding, and transformation; physics already has a compact language for those
-relations; field-ui translates that language into DOM behavior. **Four fields. Many expressions. One
+relations; Fundamental translates that language into DOM behavior. **Four fields. Many expressions. One
 DOM runtime.**
 
 ========================================================================
-FILE: field-ui-platform-architecture.md
+FILE: platform-architecture.md
 ========================================================================
 
 > **Status: canonical.**
@@ -2464,12 +2797,12 @@ FILE: field-ui-platform-architecture.md
 > unification phase (Phase D): the FrameScheduler, the six registries, `lintPlatform()`, the live
 > `<field-root>` runtime, and the platform→core boundary. For force/field math see
 > [forces-system.md](../engine-reference/forces-system.md); for the data model and contracts see
-> [field-ui-definition-document.md](field-ui-definition-document.md) and
-> [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> [definition-document.md](definition-document.md) and
+> [system-contracts.md](system-contracts.md).
 
-# field-ui platform architecture
+# Fundamental platform architecture
 
-field-ui is a **platform-native relational field runtime for the DOM**. It lets semantic HTML, DOM
+Fundamental is a **platform-native relational field runtime for the DOM**. It lets semantic HTML, DOM
 elements, particles, relationships, measurements, visual layers, and user interaction participate in
 one shared field context. The visible particle canvas is **one render surface**, not the whole
 system.
@@ -2477,7 +2810,7 @@ system.
 ## Package hierarchy
 
 ```
-field-ui
+Fundamental
   renderer-agnostic field, force, particle, metric, diagnostic, and conformance logic.
   Computes field behavior against plain data. Touches no DOM globals (guarded by
   core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
@@ -2505,7 +2838,7 @@ apps/site · lab · docs
 ```
 
 Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
-`vanilla → platform → core`. `field-ui` is renderer-agnostic and imports **zero** DOM (enforced
+`vanilla → platform → core`. `Fundamental` is renderer-agnostic and imports **zero** DOM (enforced
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
 `browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/platform`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
@@ -2588,7 +2921,7 @@ the phases that ran and any violations.
      OWN text and computed size, binds it via `data-field-visual-for`, receives mirrored state).
      The caller supplies the parsed font — any `ContourFont`-shaped object; opentype.js satisfies
      it directly — so the primitive works with whatever face the author applied to the body, and
-     field-ui keeps its zero-dependency rule. The same primitive runs at build time (the site's
+     Fundamental keeps its zero-dependency rule. The same primitive runs at build time (the site's
      `gen-contours.mjs` commits its output). Automatic font-binary discovery from the element's
      CSS, complex-script shaping, and true offset contours (polygon offsetting) remain future
      work.
@@ -2638,7 +2971,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
 to `@fundamental-engine/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
-source file in `field-ui` is provably DOM-global-free, so the engine is portable to any renderer
+source file in `Fundamental` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
 ## Attaching the engine handle
@@ -2696,32 +3029,32 @@ spectacle.
 
 The same field body is authored three ways, all compiling to the same `[data-body]` contract:
 native HTML (`createField` + `[data-body]`), the web component (`<field-root>` + `[data-body]`), and
-React (`<FieldField>` + `[data-body]`). See [field-ui-authoring-and-recipes.md](field-ui-authoring-and-recipes.md)
+React (`<FieldField>` + `[data-body]`). See [authoring-and-recipes.md](authoring-and-recipes.md)
 and the live `/docs/authoring` page.
 
 ========================================================================
-FILE: field-ui-system-contracts.md
+FILE: system-contracts.md
 ========================================================================
 
 > **Status: canonical.**
-> Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui System Contracts
+# Fundamental System Contracts
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Canonical definition |
+| [`definition-document.md`](definition-document.md) | Canonical definition |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field/force laws |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | Agent model |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | Agent model |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render contracts |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Test contracts |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts |
 
 ## Purpose
 
-field-ui is a platform-native relational field runtime for the DOM. `field-ui` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -2983,7 +3316,7 @@ element-scoped and numeric.) Formulas:
 `--d` rises). The platform metric pipeline reads `engaged` as
 `:hover | :focus | :focus-within | [data-active]` — setting `data-active` programmatically is
 the sanctioned way to mark an element "in hand" (a dragged card, a just-changed status). See
-[field-ui-invisible-fields.md](field-ui-invisible-fields.md) §3.
+[invisible-fields.md](invisible-fields.md) §3.
 
 ElementAgents should not directly mutate particle state unless they are also registered bodies.
 
@@ -3282,7 +3615,7 @@ Every visible behavior should be traceable to a field cause.
 
 ## 19. Visual Language Contract
 
-The visual language system is defined in [`field-ui-visual-language-and-geometry.md`](field-ui-visual-language-and-geometry.md).
+The visual language system is defined in [`visual-language-and-geometry.md`](visual-language-and-geometry.md).
 
 Rules:
 
@@ -3320,7 +3653,7 @@ The semantic layer should remain real HTML text.
 > **Implemented.** `@fundamental-engine/platform` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
-`@fundamental-engine/platform` binds the renderer-agnostic field computed by `field-ui` to the DOM. It owns DOM participation; core stays free of DOM side effects.
+`@fundamental-engine/platform` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:
 
@@ -3328,7 +3661,7 @@ The platform must:
 own measurement, state, feedback, relationships, visual bindings, and overlays
 schedule all DOM reads and writes through explicit phases
 register Shadow DOM bodies for physical participation
-keep field-ui renderer-agnostic (imports no DOM globals)
+keep Fundamental renderer-agnostic (imports no DOM globals)
 expose createFieldPlatform(root) to construct a runtime over a root
 expose lintPlatform() to validate registry usage
 ```
@@ -3428,7 +3761,7 @@ In the platform-runtime phase the layers are unified as follows:
 
 ```txt
 The platform runtime is the DEFAULT for <field-root>.
-field-ui is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
+Fundamental is renderer-agnostic and imports no DOM globals (a legacy element write-back path still lives in core/field.ts, pending migration).
 The platform owns DOM participation: measurement, feedback writes, shadow registration, relationships.
 The legacy core path still simulates and renders the canvas surface.
 The DOM boundary is guarded by a test allowlist; core must not reach into the DOM outside it.
@@ -3445,7 +3778,7 @@ The legacy path is quarantined, not removed: it remains the canvas simulate-and-
 
 ## Migration and Alias Contract
 
-During the `force/` to `field-ui/` migration, old and new public names must both resolve to the same behavior.
+During the `force/` to `Fundamental/` migration, old and new public names must both resolve to the same behavior.
 
 CSS write-back should emit both:
 
@@ -3487,23 +3820,23 @@ migration notes identify the removal version
 Do not remove old names in the same pass that introduces new names.
 
 ========================================================================
-FILE: field-ui-testing-and-conformance.md
+FILE: testing-and-conformance.md
 ========================================================================
 
 > **Status: canonical.**
-> The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Testing and Conformance
+# Fundamental Testing and Conformance
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contract requirements |
+| [`system-contracts.md`](system-contracts.md) | Contract requirements |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Force law requirements |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Visualization tests |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Recipe tests |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Recipe tests |
 
 ## Purpose
 
@@ -3904,10 +4237,10 @@ it does not violate non-negotiables
 
 ## Migration Validation
 
-The `force/` to `field-ui/` migration is complete when:
+The `force/` to `Fundamental/` migration is complete when:
 
 ```txt
-project runs from field-ui/
+project runs from Fundamental/
 typecheck passes
 test suite passes
 Lab still runs
@@ -3916,7 +4249,7 @@ examples use new naming
 old public names still work as aliases
 CSS variables write both old and new names
 events support old and new names
-package metadata uses field-ui
+package metadata uses Fundamental
 no hardcoded force/ path remains except migration notes
 no accidental behavior changes occurred
 magnetism tests still prove Lorentz behavior
@@ -3943,11 +4276,11 @@ A rename is not complete until the old and new names both work.
 ```
 
 ========================================================================
-FILE: field-ui-time.md
+FILE: time.md
 ========================================================================
 
 > **Status: canonical.**
-> How field-ui handles time: the three clocks (simulation, experiential, world), the temporal
+> How Fundamental handles time: the three clocks (simulation, experiential, world), the temporal
 > kernels, and the declared-timestamp contract (`data-field-at`). Everything here is shipped
 > and verified against code except where marked; the kernels live in
 > `packages/core/src/core/temporal.ts`, the derivation in the platform metric pipeline, and
@@ -3959,9 +4292,9 @@ FILE: field-ui-time.md
 
 | Document | Role |
 |---|---|
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | The metric lanes (`recency`, `memory`) and feedback variables |
-| [`field-ui-invisible-fields.md`](field-ui-invisible-fields.md) | The live channels the clocks feed |
-| [`field-ui-natural-fields.md`](field-ui-natural-fields.md) | Weak → transformation: the conceptual home of decay |
+| [`system-contracts.md`](system-contracts.md) | The metric lanes (`recency`, `memory`) and feedback variables |
+| [`invisible-fields.md`](invisible-fields.md) | The live channels the clocks feed |
+| [`natural-fields.md`](natural-fields.md) | Weak → transformation: the conceptual home of decay |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Truth modes (the kernels are *designed*, not physical) |
 | [`../engine-reference/physics-workover.md`](../engine-reference/physics-workover.md) | v0.4: real `dt` seconds + the fixed-step accumulator (simulation time's future) |
 
@@ -3975,7 +4308,7 @@ A field page experiences three kinds of time, and they must not be conflated:
 | **Experiential time** | the *reader's* time — what has been attended, for how long, how recently | the platform metric lanes: `attention` (eased now), `memory` (slow integral of attention), `recency` (decays from the last engagement) | shipped (the metric pipeline) |
 | **World time** | the *data's* time — when things happened or will happen | `data-field-at` timestamps + the temporal kernels | shipped (this document) |
 
-The lanes stay separate the way all field-ui lanes do: simulation time is physics, experiential
+The lanes stay separate the way all Fundamental lanes do: simulation time is physics, experiential
 time is *inferred* from interaction, world time is *declared* by the data. When both could
 apply, **declaration wins over inference** (§3).
 
@@ -4039,7 +4372,7 @@ the page owns the semantics*:
 - The kernels do not schedule anything — they map time to weight. Scheduling (polling
   cadence, reveal pacing) is the live-data plumbing (`apps/site/src/lib/live-data.ts`) and
   the reading-pace gate, documented in
-  [`field-ui-invisible-fields.md`](field-ui-invisible-fields.md) §5–6.
+  [`invisible-fields.md`](invisible-fields.md) §5–6.
 - Simulation `dt` is not wall time (until v0.4's fixed-step work); nothing in the engine
   consumes the kernels per-frame — pages and the platform pipeline do, at their own cadence.
 - Experiential `memory`/`recency` (inferred) and world-grounded `recency` (declared) are the
@@ -4047,34 +4380,34 @@ the page owns the semantics*:
   (`--temperature` etc.) are a different thing entirely (workover v0.3) and share no naming.
 
 ========================================================================
-FILE: field-ui-visual-language-and-geometry.md
+FILE: visual-language-and-geometry.md
 ========================================================================
 
 > **Status: canonical.**
-> Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# field-ui Visual Language and Geometry System
+# Fundamental Visual Language and Geometry System
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Core concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contracts |
+| [`definition-document.md`](definition-document.md) | Core concept |
+| [`system-contracts.md`](system-contracts.md) | Contracts |
 | [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Render and diagnostic layers |
-| [`field-ui-interaction-and-relationship-model.md`](field-ui-interaction-and-relationship-model.md) | User, relationship, and DOM agents |
-| [`field-ui-authoring-and-recipes.md`](field-ui-authoring-and-recipes.md) | Authoring model |
+| [`interaction-and-relationship-model.md`](interaction-and-relationship-model.md) | User, relationship, and DOM agents |
+| [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring model |
 
 ## Purpose
 
-This document defines how `field-ui` should treat visual form as part of the field system.
+This document defines how `Fundamental` should treat visual form as part of the field system.
 
 The field should not only move particles. It should be able to influence typography, color, shape, distance, pattern, emission, containers, surfaces, hierarchy, and semantic visual state.
 
-The visual system is native-platform-first, dependency-light, and framework-agnostic. The `field-ui` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
+The visual system is native-platform-first, dependency-light, and framework-agnostic. The `Fundamental` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
 
-These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `field-ui` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
+These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `Fundamental` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
 
 Implementation should use fundamental web APIs wherever possible:
 
@@ -4159,7 +4492,7 @@ Webfonts are vector systems with semantic text constraints.
 
 A font contains glyph outlines, spacing, kerning, hinting, OpenType features, Unicode mappings, ligatures, variable axes, and rendering metadata. Glyphs can be treated as vector geometry, but live text should remain semantic whenever possible.
 
-`field-ui` should support three typography layers.
+`Fundamental` should support three typography layers.
 
 ## 3.1 Live Text Layer
 
@@ -4239,7 +4572,7 @@ For longer text, hidden real text is preferred over large `aria-label` content.
 
 Editing a font file itself is a type-design workflow, not ordinary field rendering.
 
-`field-ui` should not require font-file modification for runtime effects.
+`Fundamental` should not require font-file modification for runtime effects.
 
 Runtime behavior should prefer:
 
@@ -4825,7 +5158,7 @@ Typography pattern:
 
 ## 17. Dependency-Free Implementation Rule
 
-Core `field-ui` should avoid dependencies.
+Core `Fundamental` should avoid dependencies.
 
 Use platform APIs first:
 
@@ -5032,355 +5365,22 @@ Appearance must not corrupt the field.
 ```
 
 ========================================================================
-FILE: fundamental-field-behavior-table.md
-========================================================================
-
-> **Status: canonical.**
-> Field/force laws, the electromagnetic split, fieldflow, and truth modes. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
-
-# Fundamental Field Behavior Table for field-ui
-
-## Related Documents
-
-| Document | Role |
-|---|---|
-| [`README.md`](./README.md) | Documentation map |
-| [`field-ui-definition-document.md`](field-ui-definition-document.md) | Concept |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Contracts |
-| [`visualization-methods-taxonomy.md`](visualization-methods-taxonomy.md) | Field rendering and diagnostics |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Tests |
-
-## Core Distinction
-
-Every field-like force must separate:
-
-```txt
-field(b, x, y)
-```
-
-from:
-
-```txt
-apply(b, p, env)
-```
-
-`field()` returns invisible structure.
-
-`apply()` causes change.
-
-A field line is not always a particle path.
-
-## Field Grammar Reference
-
-```txt
-Body = where influence originates
-Field = invisible structure
-Force = how matter responds
-Flow = how matter is transported
-Metric = what the system measures
-Render = how the invisible becomes visible
-Feedback = how the field writes back to the DOM
-```
-
-## Truth Modes
-
-| Truth mode | Meaning | Examples |
-|---|---|---|
-| Physical truth | modeled after a recognizable physical law | `gravity`, `charge`, `magnetism` |
-| Designed truth | shaped for stable UI behavior | `attract`, `repel`, `spring` |
-| Hybrid truth | a designed primitive operating over natural geometry | `fieldflow` |
-| Diagnostic truth | reveals internal state | force vectors, heatmaps |
-| Poetic truth | expressive composite | `blackhole`, `nebula` |
-| Semantic truth | maps meaning into physics | attention, memory |
-
-> **Implemented.** These are the `TruthMode` union + `TRUTH_MODES` catalog in
-> `packages/core/src/contracts/passport.ts`. Forces classify as `physical` / `designed` / `hybrid`
-> (fieldflow); `diagnostic` / `poetic` / `semantic` classify visualizations, composite presets, and
-> the meaning→metric mappings respectively.
-
-> **Diagnostic truth is read-only.** All diagnostic render modes — including `causality` and
-> `prediction`, both shipped and live at `/docs/diagnostics` — only *visualize* field state. They
-> read the field and draw on a render surface; they never feed back into `apply()` or mutate physics.
-> Visualization and physics stay separate: a diagnostic overlay reveals internal structure without
-> changing how matter responds.
-
-## Fundamental Table
-
-| Field / interaction | Field structure | `field(b, x, y)` should return | `apply(b, p, env)` should do | Particle relationship to field lines | Render expectation | Correct field-ui role |
-|---|---|---|---|---|---|---|
-| **Gravity** | radial monopole well around mass-energy | gravitational vector field `g(x,y)` pointing toward source mass | softened gravitational acceleration: `g = -GM r̂ / (r² + ε²)` and `F = m g` | particles generally accelerate along the field; sideways velocity can create orbits | radial wells, falling paths, orbital arcs, accretion | `gravity`, natural primitive |
-| **Electric / Charge** | signed radial monopole field | electric vector `E(x,y)` outward from positive, inward toward negative | Coulomb force: `F = qE` | positive particles move along `E`; negative particles move opposite; neutral particles ignore it | radial lines, attraction/repulsion, demixing | `charge`, natural primitive |
-| **Magnetic** | loop, dipole, or pole-pair field | magnetic vector `B(x,y)`, derived from pole position, geometry, orientation, strength, and feedback | Lorentz magnetic force: `F = q(v × B)` | particles do not naturally stream along magnetic field lines; force is perpendicular to velocity and field | field loops plus curved charged tracks | `magnetism`, natural primitive |
-| **Electromagnetic combined** | coupled electric and magnetic field | compound `{ E(x,y), B(x,y) }` | full Lorentz force: `F = q(E + v × B)` | electric pushes along/opposite `E`; magnetic bends across `B` | spirals, arcs, plasma motion when paired with `fieldflow` | future composite |
-| **Field-aligned transport** | reads existing net field geometry | reads `env.fieldAt(x,y)` or `netField(...)` | steers velocity onto the field line and accelerates along it | particles intentionally follow field lines | solar prominences, auroras, routed plasma | `fieldflow`, label `Flux` |
-| **Strong / Binding** | short-range confinement or string tension | local binding field or pair potential | binds, links, fuses, resists separation | not line-following | clusters, bonds, nuclei-like structures | `cohesion`, `link`, `fuse` |
-| **Weak / Transformation** | instability or probability field | scalar instability or none | decay, split, transmute, emit secondaries | not path-based | state mutation, splitting | `decay`, `fission` |
-
-## Electromagnetic Behavior Split
-
-| Behavior | Token | Owns field geometry? | Motion law | Does work? | Particle path relative to field lines |
-|---|---|---:|---|---:|---|
-| Electric charge | `charge` | yes | `F = qE` | yes | along `E` for positive, opposite for negative |
-| Magnetic Lorentz force | `magnetism` | yes | `F = q(v × B)` | no in ideal mode | across/around field lines |
-| Field-aligned transport | `fieldflow` | no, reads net field | steer + accelerate along `normalize(fieldAt(x,y))` | yes | along existing field lines |
-
-## Required Mental Model
-
-```txt
-Electric fields push.
-Magnetic fields bend.
-Fieldflow carries.
-```
-
-Do not make `magnetism.apply()` follow magnetic field lines.
-
-That behavior belongs to `fieldflow`.
-
-## Gravity
-
-> **Implemented.** `gravity.field()` now ships (`packages/core/src/forces/natural.ts`,
-> `bodyGravityField`): a radial inward field so gravity owns `field()`, renders as field lines, and
-> can be followed by `fieldflow`. `gravity.apply()` is unchanged — adding the field only makes the
-> structure visible/followable (a field line is not always a particle path). The passport's
-> `ownsField` is now `true`.
-
-### Field
-
-```txt
-r = (x - cx, y - cy)
-d = max(length(r), ε)
-r̂ = r / d
-g = -GM * r̂ / (d² + ε²)
-```
-
-### Apply
-
-```txt
-F = m * g
-a = F / m
-v += a * dt
-```
-
-Simplifies to:
-
-```txt
-a = g
-```
-
-## Charge
-
-### Field
-
-```txt
-r = (x - cx, y - cy)
-d = max(length(r), ε)
-r̂ = r / d
-E = kQ * r̂ / (d² + ε²)
-```
-
-Bounded UI-safe mode:
-
-```txt
-falloff = max(0, 1 - d / range)^n
-E = sign * strength * r̂ * falloff
-```
-
-### Apply
-
-```txt
-F = qE
-a = F / m
-v += a * dt
-```
-
-## Magnetism
-
-### Field
-
-For a simple visual loop:
-
-```txt
-r = (x - cx, y - cy)
-d = max(length(r), ε)
-r̂ = r / d
-tangent = (-r̂.y, r̂.x)
-falloff = max(0, 1 - d / range)^n
-B = tangent * strength * spin * falloff
-```
-
-For production, prefer pole-derived field geometry:
-
-```txt
-B = bodyDipole(body, x, y)
-```
-
-or:
-
-```txt
-B = polePair(body.poles, x, y)
-```
-
-The field should respond to:
-
-```txt
-pole position
-element geometry
-orientation
-strength
-range
-spin/polarity
-live charge feedback
-```
-
-### Apply
-
-```txt
-F = q(v × B)
-```
-
-For 2D canvas motion with out-of-plane magnetic strength:
-
-```txt
-Fx = -q * Bz * vy
-Fy =  q * Bz * vx
-a = F / m
-v += a * dt
-```
-
-### Required Tests
-
-```txt
-neutral particles ignore magnetism
-still charged particles receive no magnetic force
-moving charged particles curve
-force is perpendicular to velocity
-speed is preserved in ideal mode
-charge reversal flips curvature
-spin reversal flips curvature
-no effect beyond range
-```
-
-## Fieldflow / Flux
-
-`fieldflow` is field-aligned transport.
-
-It does not define a fundamental field. It reads the net field created by other bodies.
-
-### Apply
-
-```txt
-F_net = env.fieldAt(p.x, p.y)
-h = normalize(F_net)
-
-gain = strength * max(0, 1 - d / range)
-
-v = steerToward(v, h, steer * gain)
-v += h * accel * gain
-```
-
-Recommended tunable version:
-
-```txt
-h = normalize(env.fieldAt(p.x, p.y)) * direction
-targetVelocity = h * flowSpeed
-v += (targetVelocity - v) * flowSteer * gain
-v += h * flowAccel * gain
-```
-
-### Recommended Attributes
-
-```html
-<div
-  data-body="fieldflow"
-  data-strength="1"
-  data-range="0"
-  data-flow-steer="0.18"
-  data-flow-accel="0.08"
-  data-flow-speed="2.4"
-  data-flow-direction="1"
-  data-field-source="all"
-></div>
-```
-
-### Behavior
-
-```txt
-acts on neutral matter
-does work
-follows net field superposition
-routes matter between linked poles
-range 0 can mean global field-following formation
-creates solar prominence / aurora / plasma behavior
-```
-
-## Implementation Matrix
-
-| Token | Owns `field()`? | Uses `env.fieldAt()`? | Moves particles? | Moves along field lines? | Does work? | Main law / behavior |
-|---|---:|---:|---:|---:|---:|---|
-| `gravity` | yes | no | yes | mostly | yes | `g = -GM r̂ / (r² + ε²)` |
-| `charge` | yes | no | yes | sign-dependent | yes | `F = qE` |
-| `magnetism` | yes | no | yes | no | no ideal | `F = q(v × B)` |
-| `fieldflow` | no | yes | yes | yes | yes | steer + accelerate along `fieldAt` |
-| `cohesion` | optional/local | no | yes | n/a | yes | surface tension |
-| `pressure` | optional/scalar | no | yes | n/a | yes | density relaxation |
-| `link` | optional/local | no | yes | n/a | constraint | distance constraint |
-| `fuse` | local | no | state/count | n/a | releases heat | conservation |
-| `fission` | local | no | state/count | n/a | releases heat | budgeted split |
-| `decay` | optional scalar | no | state/count | n/a | not motion-first | timed transformation |
-| `spawn` | no | no | creates particles | n/a | source | budgeted source |
-
-## Force Passport Template
-
-Every force should include:
-
-```txt
-Token:
-Category:
-Truth mode:
-Owns field():
-Uses env.fieldAt():
-Moves particles:
-Does work:
-Conserves speed:
-Requires charge:
-Requires velocity:
-Affects neutral matter:
-Can be visualized as field lines:
-Can be visualized as force vectors:
-Best render modes:
-Conformance tests:
-Common composites:
-Design use:
-Physics note:
-```
-
-## Future Flux-Linkage Layer
-
-Flux-linkage is a future pairwise relationship metric.
-
-```txt
-Φ_AB = amount of field from body A that connects to or passes through body B
-```
-
-Do not implement flux-linkage before baseline `fieldflow`, field-line, and probe systems are stable.
-
-========================================================================
 FILE: visualization-methods-taxonomy.md
 ========================================================================
 
 > **Status: canonical.**
-> Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction. Current as of the platform-runtime phase (Phase D). See [field-ui-platform-architecture.md](field-ui-platform-architecture.md) and [field-ui-system-contracts.md](field-ui-system-contracts.md).
+> Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction. Current as of the platform-runtime phase (Phase D). See [platform-architecture.md](platform-architecture.md) and [system-contracts.md](system-contracts.md).
 
-# Visualization Methods Taxonomy for field-ui
+# Visualization Methods Taxonomy for Fundamental
 
 ## Related Documents
 
 | Document | Role |
 |---|---|
 | [`README.md`](./README.md) | Documentation map |
-| [`field-ui-system-contracts.md`](field-ui-system-contracts.md) | Visualization contract |
+| [`system-contracts.md`](system-contracts.md) | Visualization contract |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | Field vs force laws |
-| [`field-ui-testing-and-conformance.md`](field-ui-testing-and-conformance.md) | Visualization tests |
+| [`testing-and-conformance.md`](testing-and-conformance.md) | Visualization tests |
 
 ## Purpose
 
@@ -5427,7 +5427,7 @@ DOM state shows reciprocity.
 > topology, inspector, causality and prediction ship in `diagnostics/modes.ts` (`drawTopology`,
 > `drawInspector`, `causalityAt` + `drawCausality`, `ghostTrajectory` + `drawPrediction`). All of these
 > are exercised on the live `/docs/diagnostics` page. The canvas is one render surface among these
-> layers, not the whole system: `field-ui` computes renderer-agnostic field behavior and
+> layers, not the whole system: `Fundamental` computes renderer-agnostic field behavior and
 > `@fundamental-engine/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
 
 ## Render Modes Catalog
@@ -5476,13 +5476,13 @@ through `setRender()` / the core.
 
 The methods above answer *what* to draw. **Placement** answers *where* it composites relative to page
 content — an axis orthogonal to every visualization method. The visible particle canvas is one
-**surface**; field-ui defines three:
+**surface**; Fundamental defines three:
 
 | Surface | Placement | Drawn on | Status |
 |---|---|---|---|
 | **Underlay** | behind content (`z-index:0`) | the `<field-root>` canvas | shipped (the default) |
 | **Overlay** | in front of content (`pointer-events:none`, screen-blend, above content / below the nav) | a second light-DOM canvas the element owns | shipped |
-| **Typographic (invisible)** | in the content itself | nothing — the field's feedback variables (`--d`, `--load`, `--field-*`) styled by author CSS into type, ink, and anchor | shipped — see [field-ui-invisible-fields.md](field-ui-invisible-fields.md) |
+| **Typographic (invisible)** | in the content itself | nothing — the field's feedback variables (`--d`, `--load`, `--field-*`) styled by author CSS into type, ink, and anchor | shipped — see [invisible-fields.md](invisible-fields.md) |
 
 - **Immersive** = the same field drawn on *both* surfaces, so content sits **inside** the field. It is
   a composition, not a new primitive: set the underlay (`render`) and the overlay (`overlay`) together.
@@ -5490,7 +5490,7 @@ content — an axis orthogonal to every visualization method. The visible partic
   (`FieldHandle.setVisible(false)`) and/or a recipe runs render-less (`render: []`), and the page's
   own type *is* the render surface. The full pattern — two-field architecture, live channels,
   engagement contracts, data provenance — is canonical in
-  [field-ui-invisible-fields.md](field-ui-invisible-fields.md).
+  [invisible-fields.md](invisible-fields.md).
 - **Overlay-suitable methods** are the structure/vector visualizations that reveal field *shape*
   without occluding text: `streamlines`, `force-vectors`, `field-lines`, `grid` (the reference
   lattice displaced by the field — deformation), `temperature` / `energy` (iso-contour instances of

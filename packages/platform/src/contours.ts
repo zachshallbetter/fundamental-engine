@@ -4,7 +4,7 @@
  * the generated vector layer shows what that absorption means, the semantic text remains the source
  * of meaning.
  *
- * field-ui ships no font parser (the zero-dependency rule): the caller supplies the parsed font —
+ * Fundamental ships no font parser (the zero-dependency rule): the caller supplies the parsed font —
  * any object structurally matching `ContourFont`, which opentype.js's `Font` satisfies directly:
  *
  *   import { load } from 'opentype.js';
