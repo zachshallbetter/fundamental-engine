@@ -704,7 +704,7 @@ const TIER_PRODUCT: readonly FieldRecipe[] = [
   {
     id: 'field-tutorial',
     name: 'Field Tutorial',
-    intent: 'teach field-ui by revealing DOM, bodies, fields, metrics, feedback, and overlays',
+    intent: 'teach Fundamental by revealing DOM, bodies, fields, metrics, feedback, and overlays',
     primitives: ['attract'],
     bodies: [{ body: 'attract', strength: 0.6, range: 300, feedback: true }],
     render: ['particles', 'field-lines', 'dots'],

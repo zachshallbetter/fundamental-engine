@@ -30,6 +30,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **Rebrand stragglers in user-facing engine strings.** The `inspect` example recipe's `intent`, the
+  system-report heading, and the canvas-context error/warn messages still said "field-ui"; renamed to
+  "Fundamental". Copy-only — no API, recipe structure, or behavior change.
 - **Engagement listeners no longer accumulate on a long-lived field.** `bindEngagement()` deduped via
   `data-fx-engaged` but, unlike the body/emitter reconciliation, never pruned `[data-hot]` elements that
   had left the DOM — so a persistent field (the page `<field-root>` with `transition:persist`) outliving
