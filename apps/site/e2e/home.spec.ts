@@ -90,8 +90,14 @@ for (const route of ["/", "/eli5"] as const) {
       await skipUnless(page, "[data-agitate]", "agitate button");
       const btn = page.locator("[data-agitate]").first();
       await btn.scrollIntoViewIfNeeded();
-      await btn.click();
-      await expect(page.locator(".shock")).toHaveCount(1);
+      // HomeRuntime wires the [data-agitate] click handler on its (deferred) boot, and the shock
+      // ring is transient (~700ms). A single click before boot is a silent no-op — the source of
+      // the chromium flake. Retry the click until a ring fires, so we race neither the boot nor
+      // the ring's lifetime.
+      await expect(async () => {
+        await btn.click();
+        await expect(page.locator(".shock")).not.toHaveCount(0, { timeout: 1000 });
+      }).toPass({ timeout: 15_000 });
     });
 
     test("the natural-field picker drives the overlay while in view and releases on leave", async ({
@@ -241,7 +247,9 @@ for (const route of ["/", "/eli5"] as const) {
       // find a seeded particle with the engine's own picker, then drive a real pointer to it
       const hit = await page.evaluate(async () => {
         const fr = document.querySelector("field-root") as any;
-        for (let tries = 0; tries < 40; tries++) {
+        // atoms seed async (cache-first); a cold browser with no IndexedDB cache seeds from
+        // scratch, so give the scan up to ~20s rather than 10s before giving up.
+        for (let tries = 0; tries < 80; tries++) {
           for (let y = 140; y < 700; y += 60) {
             for (let x = 80; x < 900; x += 60) {
               const a = fr.atomAt?.(x, y);

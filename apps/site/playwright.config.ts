@@ -8,6 +8,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // The field pages are heavy (canvas + particle runtime + self-hosted fonts). Under parallel
+  // worker contention the FIRST hit to a route on each worker — a cold browser launching onto a
+  // cold page — can take 30–45s on the chromium runner, while warm runs finish in ~2s. The
+  // default 30s test timeout sat right in that cold-start band, so chromium flaked (and "passed
+  // on rerun" when the retry hit a warm page). 60s clears the cold-start band without weakening
+  // any assertion. webkit/mobile are unaffected (they were already under budget).
+  timeout: 60_000,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: "http://localhost:4399",
