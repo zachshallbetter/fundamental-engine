@@ -9,6 +9,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.addAgent` — engine-stepped agents (the creatures primitive, core).** An agent is a
+  mesh-bound participant the integrator *moves*: it lives in the particle pool, so it feels every
+  force the swarm feels — body forces AND the particle-level ones (`hunt`/`align`/`cohesion`) — and
+  each step its `report(p)` fires so an external transform follows it. `maxSpeed` caps it, `species`
+  lets tagged bodies (`affects`) steer it selectively, it edge-bounces (not wraps), and
+  `readParticles` excludes it. Unlike the self-integrating `FieldAgent` (where the caller integrates),
+  the engine owns the motion — the lever that lets particle-level forces act on creatures.
+  `@fundamental-engine/three` gains `layer.addAgent(object3d, { maxSpeed, species, hover,
+  faceVelocity })`, the aligned successor to `FieldAgent`. Mirrored on vanilla / `<field-root>`. (#438)
 - **`cssFeedbackSink` — the feedback CSS adapter, named.** Feedback was already plain data
   (`FeedbackChannels`) through an injectable sink, but the CSS write path (`--d`/`--field-density`/
   `--load`/`--lit`) was unnamed engine-internal default. It's now exported so the DOM door installs it
@@ -27,6 +36,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   on a DOM body (or calling `FieldBody.set({ strength })` in `@fundamental-engine/three`) takes effect
   within a frame. Only attributes actually present override, so preset/intent bodies are untouched.
   `@fundamental-engine/three`'s `FieldBody` gains `set({ strength, range, angle, spin })`. (#442)
+- **`FieldHandle.sampleScalar(x, y)` — smooth, gradient-capable density sampling.** Returns the
+  diffused density scalar ∈ [0,1] (the heatmap grid, bilinear-sampled) at a point, so its gradient
+  stays meaningful *at* a source — what forage-by-gradient needs (a nearest-body readout flattens
+  there). Requires the heatmap layer (`createField({ heatmap: true })` / `setHeatmap(true)`); returns
+  `0` when off; updated each frame including under `render: 'none'`. Mirrored on
+  `@fundamental-engine/vanilla`, `<field-root>`, and `@fundamental-engine/three`'s `FieldLayer`.
+  Additive. (#440)
 
 ### Fixed
 

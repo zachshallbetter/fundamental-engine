@@ -1697,6 +1697,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       setFormation('ambient');
     }
   }, 1200);
+  // Never let this ambient idle-detection timer pin the host alive on its own: Node keeps the
+  // process running while an un-unref'd interval is pending (browsers ignore unref). destroy()
+  // still clears it for prompt teardown — this just guarantees a field that outlives its destroy()
+  // (e.g. a headless test that forgets to tear down) can't hang process exit.
+  (idleTimer as { unref?: () => void }).unref?.();
 
   const onResize = (): void => resize();
   resize();
@@ -1869,23 +1874,38 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     particleCount: () => store.size,
     readParticles: (out) => {
       const ps = store.particles;
-      const n = Math.min(store.size, Math.floor(out.length / 5)); // stride 5
-      for (let i = 0; i < n; i++) {
+      const capN = Math.floor(out.length / 5); // stride 5
+      let w = 0;
+      for (let i = 0; i < ps.length && w < capN; i++) {
         const p = ps[i]!;
-        const o = i * 5;
+        if (p.report !== undefined) continue; // agents draw as their own object, not a swarm dot
+        const o = w * 5;
         out[o] = p.x;
         out[o + 1] = p.y;
         out[o + 2] = p.z ?? 0; // optional z lane (z-axis.md); 0 in a flat field
         out[o + 3] = p.heat;
         out[o + 4] = p.size;
+        w++;
       }
-      return n;
+      return w;
+    },
+    addAgent: (spec) => {
+      const p = newParticle({ x: spec.x, y: spec.y, z: spec.z, species: spec.species });
+      p.vx = 0;
+      p.vy = 0;
+      if (spec.z === undefined && cfg.depth <= 0) p.z = 0;
+      if (spec.mass !== undefined) p.m = spec.mass;
+      p.maxSpeed = spec.maxSpeed;
+      p.report = spec.report;
+      store.add(p);
+      return { particle: p, remove: () => store.remove(p) };
     },
     energy: () => energyReport(store.particles),
     sample: (x, y) => {
       const { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
       return { x: fx, y: fy };
     },
+    sampleScalar: (x, y) => (heatmap ? heatmap.norm(x, y) : 0),
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;
