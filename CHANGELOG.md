@@ -18,6 +18,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   reference updated. The original `forces-ui` / `@forces-ui` names, the CHANGELOG/MIGRATION history, and
   the README lineage note are preserved as historical record. No runtime behavior change.
 
+### Fixed
+
+- **Stale `@forces-ui` / `forces-ui` alias claims removed.** #428's hard rename removed the `@forces-ui/*`
+  compat packages and the `ForcesField` / `useForcesField` API aliases (the test suite asserts their
+  absence), but several docs still described them as live: `platform-architecture.md`
+  ("compatibility alias packages re-export…"), `forces-engine.md` ("`@forces-ui/*` are deprecated
+  aliases"), the React package's `## Aliases` README section, and CI/release/`check-packaging` comments.
+  These claimed shipped surfaces that no longer exist; corrected to reflect the hard rename. The
+  `migration.test.ts` guards that pin the old scopes/exports as *absent* are kept (they enforce the
+  rename); CHANGELOG/MIGRATION history is unchanged. Docs-only — no behavior change.
+
 ### Added
 
 - **`FieldHandle.addAgent` — engine-stepped agents (the creatures primitive, core).** An agent is a

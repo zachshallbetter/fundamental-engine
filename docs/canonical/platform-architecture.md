@@ -48,8 +48,7 @@ Dependency direction is strict and uniform: `elements → platform → core`, `r
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
 `browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/platform`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
-you. Compatibility alias packages (`@forces-ui/*`, `forces-ui`) re-export the renamed
-families during the migration window.
+you.
 
 ## The FrameScheduler
 
