@@ -35,7 +35,7 @@ const dest = [
     const mine = ++footGen;
     footField?.destroy();
     footField = null;
-    if (footReduce()) return;
+    if (footReduce() || document.documentElement.dataset.field === 'off') return; // the one field switch
     const nav = document.querySelector<HTMLElement>('.sf-links');
     const links = nav ? [...nav.querySelectorAll<HTMLElement>('a[href^="/"]')] : [];
     if (!nav || !links.length) return;

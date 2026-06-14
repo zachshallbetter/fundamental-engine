@@ -25,6 +25,43 @@
   transition: letter-spacing 0.2s var(--ease, ease), color 0.2s var(--ease, ease);
 }
 
+/* the period after "mass" is anti-mass — it does the exact opposite of the heavy word. Where "mass"
+   gathers weight, optical size, and bloom (--d) and swells as it accretes matter (--load), the period
+   sheds weight, lifts off the baseline, fades, and tumbles away. Engaging the word drives it
+   (`.hero-mass:hover + …`); it is also a `repel` body, so in the field it pushes matter out where the
+   word pulls it in. */
+.hero-antimass {
+  --flee: 0;
+  --cat: #ff9d5c;
+  display: inline-block;
+  color: color-mix(in srgb, var(--cat) calc(28% + var(--flee) * 45%), var(--text));
+  font-variation-settings: 'wght' calc(440 - var(--flee) * 200);
+  opacity: calc(1 - var(--flee) * 0.55);
+  transform: translate(calc(var(--flee) * 0.45em), calc(var(--flee) * -0.6em))
+    scale(calc(1 - var(--flee) * 0.22)) rotate(calc(var(--flee) * -10deg));
+  transform-origin: 50% 85%;
+  cursor: default;
+  transition:
+    transform 0.4s var(--ease, ease),
+    opacity 0.4s var(--ease, ease),
+    color 0.25s var(--ease, ease),
+    font-variation-settings 0.4s var(--ease, ease);
+  will-change: transform, opacity;
+}
+/* counter to the mass text: engage the word (or the period) and the period flees. Gated on the one
+   field switch — with the field off the whole hero reads static (the word stops gathering too). */
+html[data-field='on'] .hero-mass:hover + .hero-antimass,
+html[data-field='on'] .hero-antimass:hover {
+  --flee: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-antimass {
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
 /* shared landing section rhythm */
 .lp {
   position: relative;
