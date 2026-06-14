@@ -1697,6 +1697,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       setFormation('ambient');
     }
   }, 1200);
+  // Never let this ambient idle-detection timer pin the host alive on its own: Node keeps the
+  // process running while an un-unref'd interval is pending (browsers ignore unref). destroy()
+  // still clears it for prompt teardown — this just guarantees a field that outlives its destroy()
+  // (e.g. a headless test that forgets to tear down) can't hang process exit.
+  (idleTimer as { unref?: () => void }).unref?.();
 
   const onResize = (): void => resize();
   resize();
