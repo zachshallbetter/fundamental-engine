@@ -32,14 +32,14 @@ const { kinetic, thermal, total, count } = field.energy();
 ---
 
 <DocsLayout
-  title="field-ui — Performance"
-  description="How field-ui performs: a six-phase scheduler that separates DOM reads from writes to avoid layout thrash, ~130 particles at default density, a range-culled integrator hot path, a render path with zero canvas shadowBlur, and automatic pausing when the tab is backgrounded."
+  title="Fundamental — Performance"
+  description="How Fundamental performs: a six-phase scheduler that separates DOM reads from writes to avoid layout thrash, ~130 particles at default density, a range-culled integrator hot path, a render path with zero canvas shadowBlur, and automatic pausing when the tab is backgrounded."
 >
   <header class="docs-hero">
     <p class="kicker">Performance</p>
     <h1>Cheap by <span class="accent">design</span></h1>
     <p class="lede">
-      field-ui separates DOM participation from engine computation. The platform runs a six-phase
+      Fundamental separates DOM participation from engine computation. The platform runs a six-phase
       scheduler over ~130 particles at default density, and the core stays off the main thread's way.
     </p>
   </header>

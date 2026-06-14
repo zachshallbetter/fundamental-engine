@@ -1,5 +1,5 @@
 // The writings datastore — an Astro content collection (Astro 5 glob loader).
-// `/writings` is the home for field-ui writing: research, releases, features, notes.
+// `/writings` is the home for Fundamental writing: research, releases, features, notes.
 // Markdown lives in src/content/writings/*.md; each file's frontmatter is typed below.
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';

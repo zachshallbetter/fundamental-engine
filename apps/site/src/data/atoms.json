@@ -1235,7 +1235,7 @@
       "href": "/recipes/field-tutorial",
       "weight": 0.375,
       "data": {
-        "intent": "teach field-ui by revealing DOM, bodies, fields, metrics, feedback, and overlays",
+        "intent": "teach Fundamental by revealing DOM, bodies, fields, metrics, feedback, and overlays",
         "tier": "applied",
         "primitives": [
           "attract"

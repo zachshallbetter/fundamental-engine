@@ -45,14 +45,14 @@ const DEMOS = [
 ---
 
 <DocsLayout
-  title="field-ui — Concepts"
-  description="The mental model behind field-ui: bodies, the shared field context, the two-way DOM ⇄ field runtime loop, the platform layer (measurement, state, feedback, relationships, overlays) on a six-phase scheduler, reciprocity via --field-density, and the orthogonal axes."
+  title="Fundamental — Concepts"
+  description="The mental model behind Fundamental: bodies, the shared field context, the two-way DOM ⇄ field runtime loop, the platform layer (measurement, state, feedback, relationships, overlays) on a six-phase scheduler, reciprocity via --field-density, and the orthogonal axes."
 >
   <header class="docs-hero">
     <p class="kicker">Concepts</p>
     <h1>How the field <span class="accent">thinks</span>.</h1>
     <p class="lede">
-      field-ui is a relational field runtime for the DOM. Elements are bodies in one
+      Fundamental is a relational field runtime for the DOM. Elements are bodies in one
       <strong>shared field context</strong> — they bend the field; its density bends them back. A
       renderer-agnostic core computes the field; a platform layer binds it to the DOM. The visible
       canvas is one render surface, not the whole system.
@@ -101,7 +101,7 @@ const DEMOS = [
   <section class="docs-sec">
     <h2>The platform layer</h2>
     <p>
-      <code>field-ui</code> (the core) computes the field against plain data and stays renderer-agnostic.
+      <code>@fundamental-engine/core</code> (the core) computes the field against plain data and stays renderer-agnostic.
       <code>@fundamental-engine/platform</code> binds it to the DOM through six registries — <strong>measurement</strong>
       (frame-stable geometry), <strong>state</strong> (typed element state), <strong>feedback</strong>
       (CSS variables + thresholded events), <strong>relationships</strong> (the native href/aria/data
@@ -121,7 +121,7 @@ const DEMOS = [
     <h2>The DOM ⇄ field runtime binding</h2>
     <p>
       The rarest property of the system is a <strong>two-way binding between layout and a
-      physics runtime</strong>. field-ui is <em>not</em> a particle background: those are one-way (a
+      physics runtime</strong>. Fundamental is <em>not</em> a particle background: those are one-way (a
       canvas reacts to the mouse). Here the DOM <em>is</em> the runtime's geometry, and the runtime
       writes back into layout and type — a shared field context, not a decorative layer. Two flows, on
       the scheduler's read and write phases:
@@ -222,7 +222,7 @@ const DEMOS = [
   <section class="docs-sec">
     <h2>The natural model: four fields</h2>
     <p>
-      field-ui does not copy physics into the interface — it <strong>translates</strong> the four
+      Fundamental does not copy physics into the interface — it <strong>translates</strong> the four
       fundamental fields into interface behavior. Every interface already has priority, polarity,
       binding, and transformation:
     </p>
@@ -276,7 +276,7 @@ const DEMOS = [
       field can drive real app behaviour, not just pixels.
     </p>
     <p class="note">
-      field-ui calls this the <strong>Field Agent Consumption Model</strong>. A single DOM body can
+      Fundamental calls this the <strong>Field Agent Consumption Model</strong>. A single DOM body can
       play several roles at once — force source, density receiver, force target, and event host. Its
       capture-hold-release behaviour (the <code>sink</code> token, <code>data-absorb</code>,
       <code>data-max</code>, <code>--load</code>) is the <em>Body Matter Interaction</em> submodel —

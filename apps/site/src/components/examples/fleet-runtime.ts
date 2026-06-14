@@ -1,4 +1,4 @@
-// Fleet Field runtime. field-ui as an INVISIBLE measurement layer over GitHub's real
+// Fleet Field runtime. Fundamental as an INVISIBLE measurement layer over GitHub's real
 // status page:
 //   · Field on/off — off, the page collapses to the checklist (CSS via [data-field]); the
 //     scoped field is destroyed and highlights are cleared. On, history shows in the type.

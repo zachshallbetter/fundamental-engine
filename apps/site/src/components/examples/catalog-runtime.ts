@@ -1,4 +1,4 @@
-// Catalog Field runtime. field-ui as an INVISIBLE measurement layer over a real Open Library shelf:
+// Catalog Field runtime. Fundamental as an INVISIBLE measurement layer over a real Open Library shelf:
 //   · Weight by consensus / anticipation / longevity — recompute each book's mass from the chosen
 //     count (the same log-normalized formula as /evidence), then FLIP re-sort the grid.
 //   · Color by subject / off — the first-subject palette lens, or a single accent.

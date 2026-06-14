@@ -5,7 +5,7 @@ import CodeTabs from '../../../components/CodeTabs.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
 
-// lowest-level: field-ui is renderer-agnostic, so createField requires an explicit host.
+// lowest-level: @fundamental-engine/core is renderer-agnostic, so createField requires an explicit host.
 const sig = `import { createField } from '@fundamental-engine/core';
 import { browserHost } from '@fundamental-engine/platform';
 
@@ -33,7 +33,7 @@ createField(canvas, { mass: true });`;
 ---
 
 <DocsLayout
-  title="field-ui — createField & options"
+  title="Fundamental — createField & options"
   description="createField(canvas, { host, ...options }) starts the engine on a canvas and returns the FieldHandle. A host is required (the core is renderer-agnostic); @fundamental-engine/vanilla wires the browser host for you. Every FieldOptions field: accent, density, waves, render, mass, palette, attention, causality — with types and defaults."
 >
   <header class="docs-hero">
@@ -52,7 +52,7 @@ createField(canvas, { mass: true });`;
     <h2>Signature</h2>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: sig }]} />
     <div class="callout">
-      <b>A host is required.</b> <code>field-ui</code> is renderer-agnostic, so
+      <b>A host is required.</b> <code>@fundamental-engine/core</code> is renderer-agnostic, so
       <code>createField</code> takes a <code>host</code>. In the browser, use <code>createField</code>
       from <a href="/docs/guides/typescript"><code>@fundamental-engine/vanilla</code></a>
       <ApiStamp name="createField" pkg="@fundamental-engine/vanilla" /> (it wires

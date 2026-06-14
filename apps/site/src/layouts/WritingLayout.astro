@@ -70,7 +70,7 @@ const articleLd = {
 };
 ---
 
-<Base title={`${title} · field-ui writings`} description={description}>
+<Base title={`${title} · Fundamental writings`} description={description}>
   <script type="application/ld+json" is:inline set:html={JSON.stringify(articleLd)} />
   <SiteNav current="writings" />
   <div class="docs-shell">
@@ -150,7 +150,7 @@ const articleLd = {
   // Navigation Current (signals-only, reduced-motion-guarded).
   import '../components/WritingsRuntime.ts';
 
-  // Render Mermaid client-side with a field-ui dark theme. Dynamic import so mermaid only
+  // Render Mermaid client-side with a Fundamental dark theme. Dynamic import so mermaid only
   // loads on pages that actually contain a diagram — and only once a diagram is NEAR the
   // viewport (the chunk graph is ~850 KB with its KaTeX dependency; articles usually keep
   // their diagrams below the fold). Re-armed after view-transition navigations.

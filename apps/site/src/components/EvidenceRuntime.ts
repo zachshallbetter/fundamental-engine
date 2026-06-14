@@ -1,4 +1,4 @@
-// Evidence Field runtime. field-ui as an INVISIBLE measurement layer over real OpenAlex findings,
+// Evidence Field runtime. Fundamental as an INVISIBLE measurement layer over real OpenAlex findings,
 // with controls that make the transformation legible:
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]); the scoped
 //     field is destroyed and threads are cleared. On, the field runs and trust shows in the type.

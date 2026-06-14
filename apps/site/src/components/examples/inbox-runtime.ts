@@ -1,4 +1,4 @@
-// Inbox Field runtime. field-ui as an INVISIBLE measurement layer over real unanswered
+// Inbox Field runtime. Fundamental as an INVISIBLE measurement layer over real unanswered
 // Stack Overflow questions, with attention as a CONSERVED budget — and a PLACE:
 //   · every ask's urgency u = a lens-weighted blend of its recency / votes / views
 //     (server-computed, carried as data-rec / data-vot / data-vie; recency is the core

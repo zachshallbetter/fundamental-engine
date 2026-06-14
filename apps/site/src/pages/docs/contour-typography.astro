@@ -43,7 +43,7 @@ const ringCss = `/* the rings read the MIRRORED body state — no wiring beyond 
 ---
 
 <DocsLayout
-  title="Contour typography — field-ui docs"
+  title="Contour typography — Fundamental docs"
   description="Text as a contour object: live text with a stroked outline, or build-time glyph outlines bound to the semantic source — with the field's sink state driving the rings."
 >
   <h1>Contour typography</h1>
@@ -68,7 +68,7 @@ const ringCss = `/* the rings read the MIRRORED body state — no wiring beyond 
     <h2>The vector form — generated glyph outlines</h2>
     <p>
       For true contour behavior the glyphs become vector paths — from <em>any font the author
-      applies to the body</em>. The platform primitive is font-agnostic: field-ui ships no parser
+      applies to the body</em>. The platform primitive is font-agnostic: Fundamental ships no parser
       (the zero-dependency rule); you hand <code>contourSvgFor</code> a parsed font — anything
       matching the <code>ContourFont</code> shape, which opentype.js satisfies directly — and it
       lays out the element's own text at its computed size, generates the ring SVG, and binds it:

@@ -6,7 +6,7 @@ import market from "../../data/examples/market.json";
 import "../../styles/docs.css";
 import "../../styles/examples/market.css";
 
-// The Market Field — field-ui as an invisible measurement layer over a real CoinGecko snapshot.
+// The Market Field — Fundamental as an invisible measurement layer over a real CoinGecko snapshot.
 // Market cap is gravitational mass (heavier assets anchor the page); the day's move polarizes —
 // direction is color, magnitude is intensity. No particle swarm: the field shows in the type.
 
@@ -162,14 +162,14 @@ recomputeWeights(); // --w — the scoped
 ---
 
 <ExampleShell
-  title="field-ui — Market"
+  title="Fundamental — Market"
   description="A real CoinGecko snapshot run as a field. Market cap is gravitational mass — heavier assets anchor the page — and the day's move polarizes: direction is color, magnitude is intensity. No particle swarm; the field shows in the type."
   current="market"
   mainClass="ex-market"
   mainAttrs={{ "data-field": "on", "data-lens": "24h", "data-weight": "cap" }}
 >
   <header class="ev-hero">
-    <p class="ev-kicker">field-ui · invisible fields · market</p>
+    <p class="ev-kicker">Fundamental · invisible fields · market</p>
     <h1>The tape, <span class="accent">felt</span>.</h1>
     <p class="ev-lede">
       A market table treats a $1.2T asset and a $4B asset as the same row height, the same ink. The
@@ -285,7 +285,7 @@ recomputeWeights(); // --w — the scoped
   <section class="ev-how" aria-labelledby="mk-how-h">
     <h2 id="mk-how-h">How it's built</h2>
     <p class="ev-how-lede">
-      Every asset is an ordinary <code>&lt;li&gt;</code> with a few data attributes. field-ui reads
+      Every asset is an ordinary <code>&lt;li&gt;</code> with a few data attributes. Fundamental reads
       them, runs an invisible field over the mosaic, and the tiles carry the measurement — cap as
       area and ink, the move as color. No canvas, no chart library beyond one inline
       <code>&lt;path&gt;</code> per tile. Four channels do the work: <code>--w</code> is the

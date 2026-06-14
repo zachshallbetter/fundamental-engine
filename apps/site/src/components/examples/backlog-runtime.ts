@@ -1,4 +1,4 @@
-// Backlog Field runtime. field-ui as an INVISIBLE measurement layer over the repo's own
+// Backlog Field runtime. Fundamental as an INVISIBLE measurement layer over the repo's own
 // work stream:
 //   · Field on/off — off, the page collapses to a plain tracker (CSS via [data-field]); the
 //     scoped field is destroyed and threads are cleared. On, the field runs and activity

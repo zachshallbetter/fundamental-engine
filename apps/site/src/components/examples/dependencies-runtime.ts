@@ -1,4 +1,4 @@
-// Dependencies Field runtime. field-ui as an INVISIBLE measurement layer over the monorepo's
+// Dependencies Field runtime. Fundamental as an INVISIBLE measurement layer over the monorepo's
 // real dependency surface:
 //   · Field on/off — off, the page collapses to a flat manifest (CSS via [data-field]); the
 //     scoped field is destroyed and the spill is cleared. On, downloads show in the type.
