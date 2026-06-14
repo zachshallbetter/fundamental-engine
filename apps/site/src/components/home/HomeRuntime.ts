@@ -83,45 +83,12 @@ export function initHomeRuntime(): () => void {
     );
   });
 
-  // Hero accretion (Body Matter Interaction): the hero bodies — "mass" and both CTAs — are sink
-  // vessels that gather the field's matter and charge (the engine writes --load back onto them; the
-  // glow grows). As the page scrolls them up toward the viewport top they reach the edge and RELEASE
-  // it in a burst — a discrete supernova-style ejection at the body's position. Each body fires once
-  // per pass and re-arms after it falls back below the line, so scrolling up and down recharges and
-  // re-explodes. rAF-gated so the scroll listener never reads layout more than once a frame.
-  {
-    const heroBodies = [...document.querySelectorAll<HTMLElement>("[data-hero-body]")];
-    if (heroBodies.length && field) {
-      const RELEASE_LINE = 96; // px from the viewport top — "close to the top"
-      const armed = new Set<HTMLElement>(heroBodies); // all start armed (they're below the line)
-      let ticking = false;
-      const check = () => {
-        ticking = false;
-        for (const el of heroBodies) {
-          const r = el.getBoundingClientRect();
-          if (r.bottom <= 0) continue; // fully scrolled past — leave it disarmed until it returns
-          const near = r.top <= RELEASE_LINE;
-          if (near && armed.has(el)) {
-            const cx = r.left + r.width / 2;
-            const cy = Math.max(r.top + r.height / 2, 12);
-            field.burst?.(cx, cy, el.dataset.color || "#4da3ff"); // release in a burst
-            armed.delete(el);
-          } else if (!near && !armed.has(el)) {
-            armed.add(el); // back below the line → re-arm to charge and fire again
-          }
-        }
-      };
-      window.addEventListener(
-        "scroll",
-        () => {
-          if (ticking) return;
-          ticking = true;
-          requestAnimationFrame(check);
-        },
-        { passive: true, signal: sig },
-      );
-    }
-  }
+  // Hero absorb-and-release is now driven entirely by the body contract (the public API): the CTAs
+  // are attention-gated `sink attract` vessels (data-when="active" in Button.astro), so they absorb
+  // the field's matter while hovered/focused — charging their --load glow — and the engine discharges
+  // it in a supernova burst on the falling edge of engagement. "mass" swirls (data-body="swirl")
+  // rather than accreting. No page-specific scroll-burst wiring — an external consumer gets the same
+  // behaviour from the attributes alone.
 
   // drag any [data-drag] body within its stage — pointer + keyboard
   document.querySelectorAll<HTMLElement>("[data-drag]").forEach((el) => {

@@ -85,14 +85,13 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     <ManualHero kicker="field-ui · a relational field runtime for the DOM">
       <h1 slot="title">Elements have <span
           class="hero-mass"
-          data-hero-body
           data-hot
           data-feedback
-          data-body="sink attract"
+          data-body="swirl"
           data-shaped
-          data-strength="1.2"
+          data-strength="1.1"
           data-range="300"
-          data-absorb="60"
+          data-spin="1"
           data-color="#4da3ff"
           style="--cat:#4da3ff;">mass</span>.</h1>
       <p slot="standfirst" class="standfirst">
@@ -108,8 +107,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         that enforces it — physically.</strong> You can’t style everything as urgent.
       </p>
       <Fragment slot="cta">
-        <Button href="#engine" variant="primary" data-hero-body data-color="#4da3ff">See it work →</Button>
-        <Button href="#install" data-hero-body data-color="#a78bfa">Install →</Button>
+        <Button href="#engine" variant="primary" data-color="#4da3ff">See it work →</Button>
+        <Button href="#install" data-color="#a78bfa">Install →</Button>
       </Fragment>
       <div slot="meta" class="meta">
         <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>
