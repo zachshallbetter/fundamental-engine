@@ -682,6 +682,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // engagement: hover/focus a [data-hot] element → it activates (b.on, lighting
   // the spine + on-state forces) and overrides the accent with its data-color (§9).
   function bindEngagement(): void {
+    // Reconcile across rescans (mirrors the emitter prune above): a persistent field outlives the
+    // [data-hot] elements swapped under it (Astro nav, dynamic content), so drop engagements whose
+    // element has left the DOM — release their listeners + the strong ref the `engaged` array holds,
+    // so a long-lived field can't accumulate detached nodes. New elements are bound below; the
+    // `fxEngaged` guard keeps live ones from double-binding.
+    if (engaged.length) {
+      engaged = engaged.filter((e) => {
+        if (e.el.isConnected) return true;
+        e.el.removeEventListener('pointerenter', e.enter);
+        e.el.removeEventListener('pointerleave', e.leave);
+        e.el.removeEventListener('focus', e.enter);
+        e.el.removeEventListener('blur', e.leave);
+        delete e.el.dataset.fxEngaged;
+        return false;
+      });
+    }
     host.root.querySelectorAll('[data-hot]').forEach((node) => {
       const el = node as HTMLElement;
       if (el.dataset.fxEngaged === '1') return;
