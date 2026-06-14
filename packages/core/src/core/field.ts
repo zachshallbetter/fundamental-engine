@@ -347,6 +347,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       cap: null,
       ...(seed.age != null ? { age: seed.age } : {}), // mortal matter (a [S] source)
       ...(seed.color != null ? { color: seed.color } : {}),
+      ...(seed.species != null ? { species: seed.species } : {}), // matter tagging (#444)
     };
   }
 

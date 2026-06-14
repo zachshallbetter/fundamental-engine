@@ -121,6 +121,13 @@ export interface Body {
    *  box, not its centre, so matter gathers in a shell around the shape (field-systems
    *  Stage C). Undefined ⇒ point source (the default). */
   shaped?: boolean;
+  /** `data-species` — the species tag this body stamps on matter it *emits* (a `spawn` source),
+   *  so multiple ecologies (pollen vs seeds vs spores) can share one field. Undefined ⇒ 0. */
+  species?: number;
+  /** `data-affects` — the species this body's forces act on (a selective body). Undefined ⇒ acts
+   *  on ALL matter (the default, back-compat); set ⇒ matter whose `species` is not in the set is
+   *  skipped entirely (no force, no density sample). Parsed from a comma-separated list. */
+  affects?: ReadonlySet<number>;
   fmin: number;
   fmax: number;
   opsz: string;
