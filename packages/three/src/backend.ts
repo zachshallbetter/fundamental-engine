@@ -18,6 +18,7 @@
 import {
   AdditiveBlending,
   BufferGeometry,
+  DynamicDrawUsage,
   Float32BufferAttribute,
   Group,
   LineBasicMaterial,
@@ -79,6 +80,38 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
 
   const metrics = metricsContext();
 
+  // persistent, growable GPU buffers — written in place each frame (DynamicDrawUsage) rather than
+  // reallocating four Float32Arrays + four Float32BufferAttributes per overlay frame, which orphaned
+  // the prior GPU buffers for the GC and forced a fresh upload every frame. Mirrors ParticlePool's
+  // growth model: grow with headroom only when a frame needs more room, reuse otherwise.
+  let linePosData: Float32Array = new Float32Array(0);
+  let lineColData: Float32Array = new Float32Array(0);
+  let rectPosData: Float32Array = new Float32Array(0);
+  let rectColData: Float32Array = new Float32Array(0);
+
+  function dynAttr(data: Float32Array): Float32BufferAttribute {
+    const attr = new Float32BufferAttribute(data, 3);
+    attr.setUsage(DynamicDrawUsage);
+    return attr;
+  }
+  lineGeom.setAttribute('position', dynAttr(linePosData));
+  lineGeom.setAttribute('color', dynAttr(lineColData));
+  rectGeom.setAttribute('position', dynAttr(rectPosData));
+  rectGeom.setAttribute('color', dynAttr(rectColData));
+
+  /** copy a frame's accumulator into its persistent GPU buffer, growing (with headroom) only when
+   *  the frame needs more room than the buffer holds. Returns the buffer to keep (the same one in
+   *  steady state). The stale tail beyond `src.length` is never drawn — setDrawRange bounds it. */
+  function sync(geom: BufferGeometry, name: 'position' | 'color', src: number[], data: Float32Array): Float32Array {
+    if (src.length > data.length) {
+      data = new Float32Array(Math.ceil(src.length * 1.5)); // amortized grow; rare after warm-up
+      geom.setAttribute(name, dynAttr(data));
+    }
+    data.set(src);
+    (geom.getAttribute(name) as Float32BufferAttribute).needsUpdate = true;
+    return data;
+  }
+
   /** map a CSS-pixel point to the overlay plane and push xyz onto `arr` (overlay owns its own z). */
   function pushPoint(arr: number[], x: number, y: number): void {
     projection.toWorld(x, y, 0, 0, 0, _v); // z/heat/size irrelevant — the overlay draws at a fixed plane
@@ -90,11 +123,11 @@ export function threeBackend(opts: ThreeBackendOptions): ThreeBackend {
   }
 
   function flush(): void {
-    lineGeom.setAttribute('position', new Float32BufferAttribute(Float32Array.from(linePos), 3));
-    lineGeom.setAttribute('color', new Float32BufferAttribute(Float32Array.from(lineCol), 3));
+    linePosData = sync(lineGeom, 'position', linePos, linePosData);
+    lineColData = sync(lineGeom, 'color', lineCol, lineColData);
     lineGeom.setDrawRange(0, linePos.length / 3);
-    rectGeom.setAttribute('position', new Float32BufferAttribute(Float32Array.from(rectPos), 3));
-    rectGeom.setAttribute('color', new Float32BufferAttribute(Float32Array.from(rectCol), 3));
+    rectPosData = sync(rectGeom, 'position', rectPos, rectPosData);
+    rectColData = sync(rectGeom, 'color', rectCol, rectColData);
     rectGeom.setDrawRange(0, rectPos.length / 3);
   }
 

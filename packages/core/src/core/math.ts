@@ -29,13 +29,23 @@ export const WARM: RGB = [255, 122, 69];
  * then blended toward the travelling `accent` by `heat` (§20.8 / the prototype).
  */
 export function particleRGB(rs: number, heat: number, accent: RGB): RGB {
+  return particleRGBInto([0, 0, 0], rs, heat, accent);
+}
+
+/** `particleRGB` writing into a caller-owned `out` — identical color, zero allocation. The draw
+ *  loop calls this with a shared scratch so it doesn't allocate an `[r,g,b]` per particle per
+ *  frame. `out` is returned for convenience. */
+export function particleRGBInto(out: RGB, rs: number, heat: number, accent: RGB): RGB {
   let r = COOL[0] + (WARM[0] - COOL[0]) * rs;
   let g = COOL[1] + (WARM[1] - COOL[1]) * rs;
   let b = COOL[2] + (WARM[2] - COOL[2]) * rs;
   r += (accent[0] - r) * heat;
   g += (accent[1] - g) * heat;
   b += (accent[2] - b) * heat;
-  return [r, g, b];
+  out[0] = r;
+  out[1] = g;
+  out[2] = b;
+  return out;
 }
 
 /** `[r, g, b]` → `#rrggbb`. */

@@ -63,6 +63,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   it had replaced (`size + 3 + 6*h`) — both bloomed into large overlapping rings wherever the accretion
   sink heats a cluster (every particle there reaches `h≈1`). Particles now draw as a crisp core with a
   single fixed ~1px bloom; heat reads through the core's brightness and size, never a growing aura. (#434)
+- **Lifecycle teardown closes registry + observer leaks.** `platform` destroy now prunes stale registry
+  entries and disconnects its observers; `@fundamental-engine/three`'s layer tears down its body registry
+  on destroy and reuses overlay GPU buffers instead of reallocating them per frame. Repeated
+  field teardown/rescan no longer retains detached entries or leaks observers. (#463)
+
+### Performance
+
+- **Reuse draw/flow scratch instead of allocating per particle per frame.** The core draw and flow paths
+  allocated scratch (`flowBias`/`particleRGB`) per particle per frame; the hot loops now pass shared
+  module scratch via internal write-into variants — the public `flowBias`/`particleRGB` stay as thin
+  wrappers, math bit-for-bit unchanged. (#463)
 
 ## [0.4.0] — 2026-06-13
 
