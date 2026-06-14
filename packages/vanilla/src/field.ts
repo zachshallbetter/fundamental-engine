@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@fundamental-engine/core';
 import { createBrowserField } from '@fundamental-engine/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
@@ -102,6 +102,10 @@ export class FieldField implements FieldHandle {
   }
   seed(atoms: readonly AtomPayload[]): void {
     this.field.seed(atoms);
+  }
+  /** add an engine-stepped agent (a mesh-bound participant the integrator moves). */
+  addAgent(spec: AgentSpec): AgentHandle {
+    return this.field.addAgent(spec);
   }
   atomAt(x: number, y: number): AtomPayload | null {
     return this.field.atomAt(x, y);

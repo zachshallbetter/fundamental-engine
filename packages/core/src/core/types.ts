@@ -72,6 +72,15 @@ export interface Particle {
   color?: string;
   /** an opaque data record bound to this particle by `FieldHandle.seed` (e.g. a "project atom"). */
   atom?: AtomPayload;
+  // ── agent lane (FieldHandle.addAgent) ────────────────────────────────────
+  /** top speed in field px/frame — the integrator clamps |v| to this each step. Agents only. */
+  maxSpeed?: number;
+  /** an agent's per-step report: called with this particle after it integrates, so an external
+   *  transform (a mesh) can follow it. Its presence marks the particle an AGENT — the integrator
+   *  skips ambient wander and edge-bounces instead of toroidally wrapping it, and `readParticles`
+   *  omits it (an agent draws as its own object, not a swarm dot). It still feels every force the
+   *  swarm feels (body forces AND particle-level `hunt`/`align`/`cohesion`) — that's the point. */
+  report?: (p: Particle) => void;
 }
 
 /**
@@ -493,6 +502,31 @@ export interface FeedbackChannels {
 /** Receives a body's feedback channels in place of direct DOM writes (Phase D3). */
 export type FeedbackSink = (el: HTMLElement, channels: FeedbackChannels) => void;
 
+/** Spec for an engine-stepped agent (`FieldHandle.addAgent`). */
+export interface AgentSpec {
+  /** initial position in field-pixel space. */
+  x: number;
+  y: number;
+  /** initial depth (optional; a `depth > 0` field moves it, else it stays on the plane). */
+  z?: number;
+  /** inertial mass — heavier agents accelerate less under a force (a = F/m). Default 1. */
+  mass?: number;
+  /** top speed in field px/frame; the integrator clamps |v| to it each step. Default uncapped. */
+  maxSpeed?: number;
+  /** species tag — lets tagged bodies (`data-affects`) and `hunt` act on this agent selectively. */
+  species?: number;
+  /** called every step with the agent's live particle after it integrates — drive a mesh from here. */
+  report: (p: Particle) => void;
+}
+
+/** Handle for an agent added via `FieldHandle.addAgent`. */
+export interface AgentHandle {
+  /** the live pool entry — read `x/y/z/vx/vy/heat`; write `x/y` to teleport, `vx/vy` to nudge. */
+  readonly particle: Particle;
+  /** retire the agent (remove it from the pool). */
+  remove(): void;
+}
+
 /** The handle returned by `createField` — the public field API (§13). */
 export interface FieldHandle {
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
@@ -544,6 +578,18 @@ export interface FieldHandle {
    * more central matter. Re-applied across resize/density rebuilds. Pick them back with `atomAt`.
    */
   seed(atoms: readonly AtomPayload[]): void;
+  /**
+   * Add an **agent** — a mesh-bound participant the engine *moves*. Unlike `sample()` (where a caller
+   * integrates a mesh itself), an agent lives in the particle pool, so the integrator steps it and it
+   * feels every force the swarm feels — body forces AND the particle-level ones (`hunt`/`align`/
+   * `cohesion`/`diffuse`). Each step its `report(p)` fires with the agent's live state so an external
+   * transform (a `THREE.Object3D`) can follow it; `maxSpeed` caps it; `species` lets tagged bodies
+   * (`data-affects`) act on it selectively. Returns a handle — `remove()` retires it; `particle` is
+   * the live pool entry (read `x/y/z/vx/vy`, write to teleport). Agents are edge-bounced (not wrapped)
+   * and excluded from `readParticles`. The creatures primitive `@fundamental-engine/three`'s
+   * `layer.addAgent` binds over.
+   */
+  addAgent(spec: AgentSpec): AgentHandle;
   /** The seeded record on the nearest particle to (x, y) within ~24px, or null. For hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null;
   /**
