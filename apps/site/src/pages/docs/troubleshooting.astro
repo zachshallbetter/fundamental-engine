@@ -26,6 +26,14 @@ const feedback = `<!-- 1. opt the element in -->
     font-variation-settings: 'wght' calc(380 + var(--field-density, 0) * 420);
   }
 </style>`;
+
+const cleanup = `// <field-root> — automatic: it tears down on disconnect / attribute rebuild
+el.remove();                 // registries pruned, observers disconnected, timers cleared
+
+// createField / FieldLayer — you own the handle, so you call destroy()
+const field = createField(canvas, opts);
+// …later, when the view goes away:
+field.destroy();             // stops the loop, releases listeners, frees GPU + timers`;
 ---
 
 <DocsLayout
@@ -113,6 +121,36 @@ const feedback = `<!-- 1. opt the element in -->
       plain markup, so they server-render fine; only the field's reaction is deferred to the
       client.
     </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The field keeps running after I remove it</h2>
+    <p>
+      A field owns real resources — a running loop, event listeners, an idle timer, and (depending on
+      the surface) a canvas, GPU buffers, and registry observers. How they're released depends on how
+      you mounted it:
+    </p>
+    <ul class="model">
+      <li>
+        <b><code>&lt;field-root&gt;</code> / <code>&lt;field-cell&gt;</code></b> — automatic. The
+        element tears itself down on disconnect (and rebuilds cleanly on an attribute change): the
+        loop stops, the platform registries are pruned, and the visual-binding observers disconnect.
+        Just remove the element.
+      </li>
+      <li>
+        <b><code>createField()</code> / the Three.js <code>FieldLayer</code></b> — you hold the
+        handle, so you call <code>destroy()</code> when the view goes away. It stops the loop,
+        releases the host's listeners, clears the idle timer, retires agents, and frees the swarm's
+        GPU buffers. Skipping it on a re-mounted or route-swapped view is the usual cause of a slow
+        leak.
+      </li>
+    </ul>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: cleanup }]} />
+    <div class="callout">
+      <b>Long-lived pages stay flat.</b> The registries prune entries for elements that leave the DOM
+      on a low cadence, so a single-page app that mounts and unmounts bodies for hours doesn't
+      accumulate stale state. You don't manage that — it's the runtime's hygiene.
+    </div>
   </section>
 
   <section class="docs-sec">

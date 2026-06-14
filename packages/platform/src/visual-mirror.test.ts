@@ -76,6 +76,21 @@ test('mirrorNow re-copies after the source advances (the observer path, driven b
   assert.equal(styleOf(svg)['--load'], '0.750');
 });
 
+test('scan prunes a binding whose SOURCE element left the DOM (no observer pinned to a detached source)', () => {
+  const reg = new VisualBindingRegistry();
+  const source = styledEl({}, {});
+  const svg = styledEl({ 'data-field-visual-role': 'representation' });
+  reg.bind({ visual: svg, source, role: 'representation' });
+  reg.setMirroring(true);
+  assert.equal(reg.size, 1);
+
+  // source removed while the visual stays mounted — the old prune (visual-only) would miss this.
+  (source as unknown as { isConnected: boolean }).isConnected = false;
+  reg.scan({ querySelectorAll: () => [] } as unknown as ParentNode, () => null);
+  assert.equal(reg.get(svg), undefined, 'binding dropped when its source detaches');
+  assert.equal(reg.size, 0, 'no lingering binding pinning the removed source');
+});
+
 test('empty source channels are not written; the channel list is the contract', () => {
   const reg = new VisualBindingRegistry();
   const source = styledEl({}, {}); // nothing written yet — a quiet field

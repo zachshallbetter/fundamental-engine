@@ -1,4 +1,4 @@
-import { PALETTE, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -222,6 +222,10 @@ export class FieldField extends HTMLElementBase {
   seed(atoms: readonly AtomPayload[]): void {
     this.field?.seed(atoms);
   }
+  /** add an engine-stepped agent; returns an inert no-op handle if the field hasn't started. */
+  addAgent(spec: AgentSpec): AgentHandle {
+    return this.field?.addAgent(spec) ?? { particle: {} as never, remove: () => {} };
+  }
   /** the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null {
     return this.field?.atomAt(x, y) ?? null;
@@ -251,6 +255,10 @@ export class FieldField extends HTMLElementBase {
    *  (zero before the field starts). The seam external visualizers consume to build field geometry. */
   sample(x: number, y: number): { x: number; y: number } {
     return this.field?.sample(x, y) ?? { x: 0, y: 0 };
+  }
+  /** sample the smooth density scalar ∈ [0,1] at `(x, y)` (needs `heatmap`); 0 when off/not started. */
+  sampleScalar(x: number, y: number): number {
+    return this.field?.sampleScalar(x, y) ?? 0;
   }
 
   connectedCallback(): void {

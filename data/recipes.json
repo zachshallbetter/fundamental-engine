@@ -1906,7 +1906,7 @@
     {
       "id": "field-tutorial",
       "name": "Field Tutorial",
-      "intent": "teach field-ui by revealing DOM, bodies, fields, metrics, feedback, and overlays",
+      "intent": "teach Fundamental by revealing DOM, bodies, fields, metrics, feedback, and overlays",
       "primitives": [
         "attract"
       ],

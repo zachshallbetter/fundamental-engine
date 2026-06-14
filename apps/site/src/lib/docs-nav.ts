@@ -46,6 +46,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/guides/web-component', label: 'Web component', ready: true },
       { href: '/docs/guides/typescript', label: 'TypeScript', ready: true },
       { href: '/docs/guides/react', label: 'React', ready: true },
+      { href: '/docs/guides/three', label: 'Three.js', ready: true },
       { href: '/docs/guides/core', label: 'Core engine', ready: true },
     ],
   },

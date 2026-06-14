@@ -318,6 +318,19 @@ export function step(input: StepInput): void {
       p.vz! *= k;
     }
 
+    // agent speed cap (FieldHandle.addAgent): clamp |v| to the agent's own top speed, after the
+    // global c cap so an agent is bounded by whichever is tighter. undefined ⇒ skip (the swarm).
+    if (p.maxSpeed !== undefined) {
+      const ms2 = p.maxSpeed * p.maxSpeed;
+      const as2 = p.vx * p.vx + p.vy * p.vy + p.vz! * p.vz!;
+      if (as2 > ms2) {
+        const k = p.maxSpeed / Math.sqrt(as2);
+        p.vx *= k;
+        p.vy *= k;
+        p.vz! *= k;
+      }
+    }
+
     // integrate, then damp (§2.2). The z lane integrates identically — inert at 0.
     p.x += p.vx * dt;
     p.y += p.vy * dt;
@@ -326,21 +339,24 @@ export function step(input: StepInput): void {
     p.vy *= FRICTION;
     p.vz! *= FRICTION;
 
-    // wander (after damping, so it stays lively): a periodic brownian jitter
-    // every 40 frames, plus a smooth curl-noise eddy (§7).
-    if (env.frameN % 40 === 0 && form.wander > 0) {
-      const wsc = 0.05 * form.wander;
-      p.vx += ((env.rng ?? Math.random)() - 0.5) * wsc;
-      p.vy += ((env.rng ?? Math.random)() - 0.5) * wsc;
-      // the brownian kick gains a z leg in a volume — through the same injectable rng (#371)
-      if (D > 0) p.vz! += ((env.rng ?? Math.random)() - 0.5) * wsc;
-    }
-    if (form.wander > 0.05) {
-      const cn =
-        (Math.sin(p.x * 0.0032 + env.t * 0.12) + Math.cos(p.y * 0.0034 - env.t * 0.15)) *
-        Math.PI;
-      p.vx += Math.cos(cn) * 0.013 * form.wander;
-      p.vy += Math.sin(cn) * 0.013 * form.wander;
+    // wander (after damping, so it stays lively): a periodic brownian jitter every 40 frames, plus
+    // a smooth curl-noise eddy (§7). Agents (report defined) opt out — their motion is force- and
+    // steering-driven, not the ambient swarm drift.
+    if (p.report === undefined) {
+      if (env.frameN % 40 === 0 && form.wander > 0) {
+        const wsc = 0.05 * form.wander;
+        p.vx += ((env.rng ?? Math.random)() - 0.5) * wsc;
+        p.vy += ((env.rng ?? Math.random)() - 0.5) * wsc;
+        // the brownian kick gains a z leg in a volume — through the same injectable rng (#371)
+        if (D > 0) p.vz! += ((env.rng ?? Math.random)() - 0.5) * wsc;
+      }
+      if (form.wander > 0.05) {
+        const cn =
+          (Math.sin(p.x * 0.0032 + env.t * 0.12) + Math.cos(p.y * 0.0034 - env.t * 0.15)) *
+          Math.PI;
+        p.vx += Math.cos(cn) * 0.013 * form.wander;
+        p.vy += Math.sin(cn) * 0.013 * form.wander;
+      }
     }
 
     p.heat *= HEAT_DECAY;
@@ -353,14 +369,29 @@ export function step(input: StepInput): void {
       if (p.age <= 0) (dead ??= []).push(p);
     }
 
-    // toroidal wrap at the edges (z wraps only in a depth > 0 volume).
-    if (p.x < -EDGE) p.x = W + EDGE;
-    else if (p.x > W + EDGE) p.x = -EDGE;
-    if (p.y < -EDGE) p.y = H + EDGE;
-    else if (p.y > H + EDGE) p.y = -EDGE;
-    if (D > 0) {
-      if (p.z! < -EDGE) p.z = D + EDGE;
-      else if (p.z! > D + EDGE) p.z = -EDGE;
+    if (p.report === undefined) {
+      // toroidal wrap at the edges (z wraps only in a depth > 0 volume). Swarm matter only —
+      // teleporting a creature across the field reads wrong.
+      if (p.x < -EDGE) p.x = W + EDGE;
+      else if (p.x > W + EDGE) p.x = -EDGE;
+      if (p.y < -EDGE) p.y = H + EDGE;
+      else if (p.y > H + EDGE) p.y = -EDGE;
+      if (D > 0) {
+        if (p.z! < -EDGE) p.z = D + EDGE;
+        else if (p.z! > D + EDGE) p.z = -EDGE;
+      }
+    } else {
+      // agents bounce off the field edge instead of wrapping (a creature stays in the world).
+      if (p.x < 0) { p.x = 0; p.vx = Math.abs(p.vx); }
+      else if (p.x > W) { p.x = W; p.vx = -Math.abs(p.vx); }
+      if (p.y < 0) { p.y = 0; p.vy = Math.abs(p.vy); }
+      else if (p.y > H) { p.y = H; p.vy = -Math.abs(p.vy); }
+      if (D > 0) {
+        if (p.z! < 0) { p.z = 0; p.vz = Math.abs(p.vz!); }
+        else if (p.z! > D) { p.z = D; p.vz = -Math.abs(p.vz!); }
+      }
+      // the agent integrated this step — let its bound transform (a mesh) follow.
+      p.report(p);
     }
   }
 

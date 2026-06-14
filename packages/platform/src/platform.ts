@@ -60,6 +60,18 @@ export function createFieldPlatform(root: Element, opts: PlatformOptions = {}): 
   scheduler.on('read', (ctx) => measure.measure(ctx.now, ctx.viewport));
   scheduler.on('write', (ctx) => feedback.flush(state, ctx.now));
 
+  // staleness sweep: the StateRegistry and OverlayRegistry both hold strong Element refs with no
+  // natural prune moment — the feedback sink writes --lit/--d/--load onto every body every frame,
+  // and overlays pin their source elements — yet nothing deletes an entry when its element leaves
+  // the DOM. Run their prune on a low cadence (every 120th frame ≈ 2s) to release detached
+  // elements for GC. Iterating an empty registry is free, so the sweep is cheap when idle.
+  scheduler.on('write', (ctx) => {
+    if (ctx.frame % 120 === 0) {
+      state.prune();
+      overlays.prune();
+    }
+  });
+
   return {
     root,
     measure,
