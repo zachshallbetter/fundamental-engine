@@ -30,8 +30,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   per-frame sim ran 2–4× faster once the perf work lifted the homepage to 60–120fps. dt is now the real
   frame interval normalized to a 60fps baseline (≈1 at 60fps, clamped so a stall can't teleport matter);
   position alone is dt-scaled, forces/friction stay per-frame by design. Mirrored to the Swift port. (#434)
-- **Particle glow reverted to crisp points.** #416's three-disc soft glow summed into large bright blobs
-  where matter clustered at a sink; restored the original crisp core + hot-only additive halo. (#434)
+- **Particle glow is now crisp points.** #416's three-disc soft glow — *and* the older heat-scaled halo
+  it had replaced (`size + 3 + 6*h`) — both bloomed into large overlapping rings wherever the accretion
+  sink heats a cluster (every particle there reaches `h≈1`). Particles now draw as a crisp core with a
+  single fixed ~1px bloom; heat reads through the core's brightness and size, never a growing aura. (#434)
 
 ## [0.4.0] — 2026-06-13
 
