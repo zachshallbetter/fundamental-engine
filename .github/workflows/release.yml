@@ -137,7 +137,7 @@ jobs:
       # pnpm rewrites workspace:* deps to real versions and skips any package whose
       # version is already on the registry, so re-running a tag is safe. The public
       # @fundamental-engine/* packages plus the unscoped `fundamental-engine` umbrella are
-      # targeted (apps are private; the @forces-ui/* aliases are intentionally excluded).
+      # targeted (apps are private).
       - name: Publish with provenance
         run: pnpm --filter "@fundamental-engine/*" --filter "fundamental-engine" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
         env:

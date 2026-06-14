@@ -14,7 +14,7 @@ them together, and the catalogs (forces, classes, services, render modes, format
 conditions, presets, recipes) it ships.
 
 Two packages do the engine work (three thin authoring surfaces — `@fundamental-engine/{elements,react,vanilla}`
-— wrap them; `@forces-ui/*` are deprecated aliases):
+— wrap them):
 
 - **`@fundamental-engine/core`** — `packages/core/src/`. The renderer + force math + the conserved
   simulation, plus the contracts, diagnostics, recipes, semantic/visual layers, and inspection.

@@ -50,9 +50,8 @@ jobs:
       - name: Test
         run: pnpm test
 
-      # Entry-point file existence + live import for every published package (including the
-      # deprecated @forces-ui/* compat shims). Catches build-output / exports-map / `files`
-      # mistakes that the type system can't see.
+      # Entry-point file existence + live import for every published package. Catches
+      # build-output / exports-map / `files` mistakes that the type system can't see.
       - name: Smoke-check dist
         run: pnpm check:dist
 

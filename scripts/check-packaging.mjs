@@ -2,7 +2,7 @@
 /**
  * Packaging correctness gate. Run after `pnpm build`.
  *
- * For each published @fundamental-engine/* package and @forces-ui/* source-compat shim:
+ * For each published @fundamental-engine/* package:
  *   1. publint  — exports map, types conditions, file presence in dist
  *   2. attw     — TypeScript resolution under all module/bundler conditions
  *

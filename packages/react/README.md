@@ -124,11 +124,6 @@ To apply a named recipe or bind data to the field, use `applyRecipe()` / `bindDa
 [`@fundamental-engine/platform`](../platform) against a ref'd container. Browse all 64 recipes at
 [`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
-## Aliases
-
-`ForcesField` / `useForcesField` and `ForcesFieldProps` are deprecated aliases of `FieldField` /
-`useFieldField` / `FieldFieldProps`, kept for the `forces-ui` → `Fundamental` rename.
-
 ## Related
 
 [`@fundamental-engine/core`](../core) · [`@fundamental-engine/platform`](../platform) · [`@fundamental-engine/elements`](../elements)
