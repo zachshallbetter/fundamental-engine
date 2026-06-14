@@ -188,9 +188,11 @@ export class VisualBindingRegistry {
    * and disconnected visuals are pruned. `resolve` defaults to a document-backed resolver.
    */
   scan(root: ParentNode, resolve: (ref: string) => Element | null = defaultResolver(root)): VisualBindingScanResult {
-    // navigation hygiene: drop bindings whose visual left the DOM (and stop mirroring them)
-    for (const [el] of this.bindings)
-      if (el.isConnected === false) {
+    // navigation hygiene: drop bindings whose visual OR source left the DOM (and stop mirroring
+    // them). Pruning only on the visual leaves a MutationObserver pinned to a removed source —
+    // holding that detached source subtree alive for as long as the visual stays mounted.
+    for (const [el, b] of this.bindings)
+      if (el.isConnected === false || b.semanticSource?.isConnected === false) {
         this.unwatch(el);
         this.bindings.delete(el);
       }

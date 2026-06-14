@@ -120,11 +120,49 @@ const field = createThreeField({
 
 The line overlays render fully; numeric label sprites (the `data` reading) are a tracked follow-up.
 
+## Bodies — meshes that bend the field
+
+A scene object can *be* a body (a force source). `layer.addBody(object3d, spec)` registers it: it
+bends the field and the swarm responds, while `density`/`load`/`lit` feedback flows back to the mesh
+(drive a uniform from `onFeedback`). A body **carries a `data` record** (a genome, an inventory), so a
+mesh can be a meaningful agent, not just a force — and it can be **tagged** (`species`) and **selective**
+(`affects`) so several ecologies share one field.
+
+```ts
+const bloom = layer.addBody(blossomMesh, {
+  tokens: 'attract', strength: 0.8, range: 260, // field px
+  species: 1,                                    // this is "pollen-1" matter…
+  data: genome,                                  // …carrying its genome
+  onFeedback: (ch) => glow.material.opacity = ch.density ?? 0,
+});
+bloom.set({ strength: 0.3 }); // live — no re-create
+```
+
+## Agents — creatures the engine moves
+
+`layer.addAgent(object3d, opts)` makes a mesh a **field agent**: the engine *steps it* (it lives in the
+particle pool, so it feels every force the swarm feels — body forces and the particle-level
+`hunt`/`align`/`cohesion`) and drives the object's position each frame. This is the engine-stepped
+successor to `FieldAgent` (which samples + integrates itself).
+
+```ts
+const bee = layer.addAgent(beeMesh, {
+  maxSpeed: 95,          // field px/frame
+  species: 1,            // tagged bodies (affects) steer it selectively
+  faceVelocity: true,
+  hover: { amp: 0.12, freq: 3 },
+});
+// layer.tick() now also advances the engine that moves the bee — no hand-rolled motion loop.
+bee.remove();
+```
+
 ## Building your own field visuals
 
 The package re-exports the engine's field samplers — `forceAt` and `netField` — so you can drive
 your own 3D visuals (streamline tubes, vector grids, density volumes) from the live field without a
-second import.
+second import. For **forage-by-gradient**, `layer.sampleScalar(x, y)` returns the smooth diffused
+density ∈ [0,1] (enable it with `createFieldLayer({ heatmap: true })`); its gradient — unlike a
+nearest-body readout — stays meaningful right at a source.
 
 ## License
 

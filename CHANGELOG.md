@@ -9,6 +9,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.addAgent` — engine-stepped agents (the creatures primitive, core).** An agent is a
+  mesh-bound participant the integrator *moves*: it lives in the particle pool, so it feels every
+  force the swarm feels — body forces AND the particle-level ones (`hunt`/`align`/`cohesion`) — and
+  each step its `report(p)` fires so an external transform follows it. `maxSpeed` caps it, `species`
+  lets tagged bodies (`affects`) steer it selectively, it edge-bounces (not wraps), and
+  `readParticles` excludes it. Unlike the self-integrating `FieldAgent` (where the caller integrates),
+  the engine owns the motion — the lever that lets particle-level forces act on creatures.
+  `@fundamental-engine/three` gains `layer.addAgent(object3d, { maxSpeed, species, hover,
+  faceVelocity })`, the aligned successor to `FieldAgent`. Mirrored on vanilla / `<field-root>`. (#438)
 - **`cssFeedbackSink` — the feedback CSS adapter, named.** Feedback was already plain data
   (`FeedbackChannels`) through an injectable sink, but the CSS write path (`--d`/`--field-density`/
   `--load`/`--lit`) was unnamed engine-internal default. It's now exported so the DOM door installs it
@@ -27,12 +36,24 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   on a DOM body (or calling `FieldBody.set({ strength })` in `@fundamental-engine/three`) takes effect
   within a frame. Only attributes actually present override, so preset/intent bodies are untouched.
   `@fundamental-engine/three`'s `FieldBody` gains `set({ strength, range, angle, spin })`. (#442)
+- **`FieldHandle.sampleScalar(x, y)` — smooth, gradient-capable density sampling.** Returns the
+  diffused density scalar ∈ [0,1] (the heatmap grid, bilinear-sampled) at a point, so its gradient
+  stays meaningful *at* a source — what forage-by-gradient needs (a nearest-body readout flattens
+  there). Requires the heatmap layer (`createField({ heatmap: true })` / `setHeatmap(true)`); returns
+  `0` when off; updated each frame including under `render: 'none'`. Mirrored on
+  `@fundamental-engine/vanilla`, `<field-root>`, and `@fundamental-engine/three`'s `FieldLayer`.
+  Additive. (#440)
 
 ### Fixed
 
 - **Rebrand stragglers in user-facing engine strings.** The `inspect` example recipe's `intent`, the
   system-report heading, and the canvas-context error/warn messages still said "field-ui"; renamed to
   "Fundamental". Copy-only — no API, recipe structure, or behavior change.
+- **The density heatmap no longer reacts to scroll.** It was suppressed while scrolling (draw only when
+  `scrollV < 6`), so the glow popped off the instant you scrolled and back on when you stopped — choppy.
+  The scroll coupling is removed entirely: the heatmap is a continuous ambient layer that draws every
+  frame when enabled. The original perf intent is served by the existing compute throttle (the texel
+  grid recomputes only every 3rd frame), so the per-frame cost is just the cached bilinear upscale.
 - **Engagement listeners no longer accumulate on a long-lived field.** `bindEngagement()` deduped via
   `data-fx-engaged` but, unlike the body/emitter reconciliation, never pruned `[data-hot]` elements that
   had left the DOM — so a persistent field (the page `<field-root>` with `transition:persist`) outliving
@@ -47,6 +68,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   it had replaced (`size + 3 + 6*h`) — both bloomed into large overlapping rings wherever the accretion
   sink heats a cluster (every particle there reaches `h≈1`). Particles now draw as a crisp core with a
   single fixed ~1px bloom; heat reads through the core's brightness and size, never a growing aura. (#434)
+- **Lifecycle teardown closes registry + observer leaks.** `platform` destroy now prunes stale registry
+  entries and disconnects its observers; `@fundamental-engine/three`'s layer tears down its body registry
+  on destroy and reuses overlay GPU buffers instead of reallocating them per frame. Repeated
+  field teardown/rescan no longer retains detached entries or leaks observers. (#463)
+
+### Performance
+
+- **Reuse draw/flow scratch instead of allocating per particle per frame.** The core draw and flow paths
+  allocated scratch (`flowBias`/`particleRGB`) per particle per frame; the hot loops now pass shared
+  module scratch via internal write-into variants — the public `flowBias`/`particleRGB` stay as thin
+  wrappers, math bit-for-bit unchanged. (#463)
 
 ## [0.4.0] — 2026-06-13
 

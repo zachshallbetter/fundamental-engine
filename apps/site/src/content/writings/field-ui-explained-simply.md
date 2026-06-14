@@ -1,15 +1,15 @@
 ---
-title: "field-ui, explained simply"
-description: "A plain-language tour of field-ui — from invisible magnets to the deep end, and an honest look at when you'd actually want it."
+title: "Fundamental, explained simply"
+description: "A plain-language tour of Fundamental — from invisible magnets to the deep end, and an honest look at when you'd actually want it."
 summary: "What it is, what it can do, how it borrows from real physics, and why it's different — in plain language, from magnets to the deep end."
 date: 2026-06-07
 category: note
 author: "Zach Shallbetter"
 ---
 
-# field-ui, explained simply
+# Fundamental, explained simply
 
-Most of what's written about field-ui is precise and technical — contracts, passports, conformance.
+Most of what's written about Fundamental is precise and technical — contracts, passports, conformance.
 This is the other thing: the friendly tour. No jargon, no prerequisites. If you've ever wondered what
 this project actually *is* and why it might matter, start here.
 
@@ -17,7 +17,7 @@ this project actually *is* and why it might matter, start here.
 
 You know how a **magnet** has an invisible push-and-pull around it, even though you can't see it?
 
-A normal webpage is flat. The words and boxes sit still; they don't feel anything. **field-ui sprinkles
+A normal webpage is flat. The words and boxes sit still; they don't feel anything. **Fundamental sprinkles
 invisible magnets onto a page.** Now a word can say *"come here"* and the little floating bits of matter
 drift toward it. A button can say *"keep back."* Some things spin matter in circles; some swallow it like
 a tiny black hole.
@@ -59,12 +59,12 @@ and feel, not just markup someone typed.
 
 ## How it's like real physics (and where it isn't)
 
-field-ui isn't pretending. For several of its magnets it uses the **actual laws of the universe**:
+Fundamental isn't pretending. For several of its magnets it uses the **actual laws of the universe**:
 gravity that pulls harder up close, electric charge where opposites attract, magnets that only bend
 things that are *moving* (and only sideways), heat that makes matter jiggle, waves that ripple outward.
 It even respects *"nothing from nothing"* — you can't conjure matter from thin air.
 
-The universe has exactly four fundamental forces, and field-ui borrows all four as **ideas**:
+The universe has exactly four fundamental forces, and Fundamental borrows all four as **ideas**:
 
 | Real force | Becomes, in an interface |
 |---|---|
@@ -80,7 +80,7 @@ g = -\,\frac{G\,M\,\hat{r}}{d^2 + \varepsilon^2}, \qquad F = m\,g
 $$
 
 But — and this is important — it is **not** trying to be perfect physics. In the real world energy is
-never lost; field-ui *lets it leak away on purpose*, like a gentle brake, so the page stays calm and
+never lost; Fundamental *lets it leak away on purpose*, like a gentle brake, so the page stays calm and
 readable instead of bouncing forever. The trick that holds the whole thing together is **honesty about
 which is which**:
 
@@ -163,12 +163,12 @@ export function Headline() {
 ## So why would you actually use it?
 
 Honest answer first: **often you wouldn't.** For a landing page, a login, a checkout — normal CSS and
-React are perfect, and field-ui would be overkill. The team will tell you that themselves.
+React are perfect, and Fundamental would be overkill. The team will tell you that themselves.
 
 What it does that *nothing else* does is treat interface state as **shared, relational, and physical**
 instead of local and decorative. In every other tool — CSS transitions, animation libraries, particle
 backgrounds, even graph-layout libraries — *"this is important," "these relate," "you already read this,"
-"this answer is shaky"* are things you encode by hand, inconsistently, in a dozen places. In field-ui
+"this answer is shaky"* are things you encode by hand, inconsistently, in a dozen places. In Fundamental
 they're forces in one shared medium, so they're consistent, they interact, and you can feel them. And
 because the whole thing is **inspectable and honest** — it explains every move and labels what's real vs.
 tuned vs. pretend — it's the rare kind of "magic" that hands you the receipts.

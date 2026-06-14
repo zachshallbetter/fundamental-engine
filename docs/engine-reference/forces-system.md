@@ -1889,6 +1889,40 @@ Cross-tier interaction is where this gets honest (tie-in to §21):
 > an influence. This is the structural reason the field reads as one medium the whole
 > interface lives inside — not a backdrop the interface sits on top of.
 
+### 22.8 Engine-stepped agents — `FieldHandle.addAgent`
+The §22.2 table gives a heavy element a DOM consumer (`data-move`). A non-DOM host (a
+Three.js scene, a `<canvas>` widget) needs the same thing for a *renderer-owned object*:
+a participant the engine **moves**, reporting its state back to drive an external
+transform. `addAgent({ x, y, z?, mass?, maxSpeed?, species?, report })` is that consumer.
+An agent is **a particle with a report hook** — it lives in the pool, so it feels every
+force the swarm feels: not only body forces but the **particle-level** ones (`hunt`,
+`align`, `cohesion`, `diffuse`) that act *between* particles. That is the lever: those
+forces only act on the field's own matter, so a creature unlocks them only by *being*
+field matter. Each step the integrator calls `report(p)` with the live particle; `maxSpeed`
+clamps it; it **edge-bounces** rather than toroidally wrapping (a creature stays in the
+world), skips ambient formation wander (force/steer-driven), and is **excluded from
+`readParticles`** (it draws as its own object, not a swarm dot). Distinct from the
+self-integrating `FieldAgent` sampler in `@fundamental-engine/three`, where the *caller*
+integrates: with `addAgent` the **engine owns the motion**. The conserved swarm is
+bit-for-bit unchanged — every agent branch is gated on the report hook's presence.
+
+### 22.9 Matter tagging — selective forces across one field
+A body may declare a **species set it acts on** (`data-affects`, e.g. `"1"` or `"1,2"`);
+matter whose `species` is outside the set is skipped entirely (no impulse, no density
+sample). Omit `data-affects` and the body acts on all matter — the back-compatible
+default, bit-for-bit. A `spawn` source stamps its emitted matter with `data-species`, and
+seeded particles / agents carry an explicit `species`. So **several ecologies coexist in
+one field** — pollen, seeds, spores — each pulled only by its own attractors and sinks,
+without separate engine instances. (Generalizes the `hunt` force's two-species tag, §20.3,
+to a filter every force honors.)
+
+### 22.10 Sampling the density scalar — `FieldHandle.sampleScalar`
+`sample(x,y)` returns the force *vector*; `sampleScalar(x,y)` returns the smooth **density
+scalar** ∈ [0,1] — the heatmap grid (§H1), bilinear-sampled. Because the grid is diffused,
+its gradient stays meaningful *at* a source, where a nearest-body readout flattens to zero —
+the property forage-by-gradient needs. Requires the heatmap layer (`createField({ heatmap:
+true })`); read-only, updated each frame including under `render: 'none'`.
+
 ---
 
 ## 23. Micro-reactions — energy transfer made visible

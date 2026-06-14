@@ -22,7 +22,9 @@
  */
 
 export { FieldLayer, createFieldLayer, createThreeField } from './layer.ts';
-export type { FieldLayerOptions, ThreeFieldOptions } from './layer.ts';
+export type { FieldLayerOptions, ThreeFieldOptions, MeshAgentOptions, MeshAgentHandle } from './layer.ts';
+// AgentSpec/AgentHandle (the raw FieldHandle.addAgent form) re-exported for full-control callers.
+export type { AgentSpec, AgentHandle } from '@fundamental-engine/core';
 export { threeHost } from './host.ts';
 export type { ThreeHostOptions } from './host.ts';
 export { threeBackend } from './backend.ts';

@@ -72,6 +72,15 @@ export interface Particle {
   color?: string;
   /** an opaque data record bound to this particle by `FieldHandle.seed` (e.g. a "project atom"). */
   atom?: AtomPayload;
+  // ── agent lane (FieldHandle.addAgent) ────────────────────────────────────
+  /** top speed in field px/frame — the integrator clamps |v| to this each step. Agents only. */
+  maxSpeed?: number;
+  /** an agent's per-step report: called with this particle after it integrates, so an external
+   *  transform (a mesh) can follow it. Its presence marks the particle an AGENT — the integrator
+   *  skips ambient wander and edge-bounces instead of toroidally wrapping it, and `readParticles`
+   *  omits it (an agent draws as its own object, not a swarm dot). It still feels every force the
+   *  swarm feels (body forces AND particle-level `hunt`/`align`/`cohesion`) — that's the point. */
+  report?: (p: Particle) => void;
 }
 
 /**
@@ -493,6 +502,31 @@ export interface FeedbackChannels {
 /** Receives a body's feedback channels in place of direct DOM writes (Phase D3). */
 export type FeedbackSink = (el: HTMLElement, channels: FeedbackChannels) => void;
 
+/** Spec for an engine-stepped agent (`FieldHandle.addAgent`). */
+export interface AgentSpec {
+  /** initial position in field-pixel space. */
+  x: number;
+  y: number;
+  /** initial depth (optional; a `depth > 0` field moves it, else it stays on the plane). */
+  z?: number;
+  /** inertial mass — heavier agents accelerate less under a force (a = F/m). Default 1. */
+  mass?: number;
+  /** top speed in field px/frame; the integrator clamps |v| to it each step. Default uncapped. */
+  maxSpeed?: number;
+  /** species tag — lets tagged bodies (`data-affects`) and `hunt` act on this agent selectively. */
+  species?: number;
+  /** called every step with the agent's live particle after it integrates — drive a mesh from here. */
+  report: (p: Particle) => void;
+}
+
+/** Handle for an agent added via `FieldHandle.addAgent`. */
+export interface AgentHandle {
+  /** the live pool entry — read `x/y/z/vx/vy/heat`; write `x/y` to teleport, `vx/vy` to nudge. */
+  readonly particle: Particle;
+  /** retire the agent (remove it from the pool). */
+  remove(): void;
+}
+
 /** The handle returned by `createField` — the public field API (§13). */
 export interface FieldHandle {
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
@@ -544,6 +578,18 @@ export interface FieldHandle {
    * more central matter. Re-applied across resize/density rebuilds. Pick them back with `atomAt`.
    */
   seed(atoms: readonly AtomPayload[]): void;
+  /**
+   * Add an **agent** — a mesh-bound participant the engine *moves*. Unlike `sample()` (where a caller
+   * integrates a mesh itself), an agent lives in the particle pool, so the integrator steps it and it
+   * feels every force the swarm feels — body forces AND the particle-level ones (`hunt`/`align`/
+   * `cohesion`/`diffuse`). Each step its `report(p)` fires with the agent's live state so an external
+   * transform (a `THREE.Object3D`) can follow it; `maxSpeed` caps it; `species` lets tagged bodies
+   * (`data-affects`) act on it selectively. Returns a handle — `remove()` retires it; `particle` is
+   * the live pool entry (read `x/y/z/vx/vy`, write to teleport). Agents are edge-bounced (not wrapped)
+   * and excluded from `readParticles`. The creatures primitive `@fundamental-engine/three`'s
+   * `layer.addAgent` binds over.
+   */
+  addAgent(spec: AgentSpec): AgentHandle;
   /** The seeded record on the nearest particle to (x, y) within ~24px, or null. For hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null;
   /**
@@ -578,6 +624,26 @@ export interface FieldHandle {
    * `forceAt(bodies, forces, env, x, y)`.
    */
   sample(x: number, y: number): Vec2;
+  /**
+   * Sample the live **density scalar** at a point ∈ [0,1]: the smooth, diffused field of where matter
+   * has gathered — distinct from `sample()` (the force vector) and from a body's own `--d`. Unlike a
+   * nearest-body readout, this is a true bilinear grid (the heatmap), so its gradient stays meaningful
+   * right at a source — the thing forage-by-gradient needs. Requires the heatmap layer
+   * (`createField({ heatmap: true })` or `setHeatmap(true)`); returns `0` when it is off. Read-only;
+   * updated each frame even under `render: 'none'`. Finite-difference it for the gradient.
+   */
+  sampleScalar(x: number, y: number): number;
+  /**
+   * Sample the **smooth density scalar** at a point — the diffused heatmap grid, normalized to
+   * `[0, 1]`. Unlike a nearest-body readout (which flattens to a flat top right at a source), this
+   * is the per-frame particle-density field after a diffuse pass, so it has a real, non-zero
+   * **gradient everywhere** — finite-difference it to climb toward where matter actually gathers
+   * (forage-by-gradient). Bilinear, samplable at any resolution. Requires the heatmap layer to be on
+   * (`createField({ heatmap: true })` or `setHeatmap(true)`); returns `0` when it is off. Maintained
+   * even under `render: 'none'`, so it works headless. (`@fundamental-engine/three`'s `FieldLayer`
+   * enables it so agents can forage out of the box.)
+   */
+  sampleScalar(x: number, y: number): number;
   /**
    * Copy live particle state into a caller-owned buffer and return the number of particles
    * written. Stride 5, packed `[x, y, z, heat, size, …]` in CSS-pixel field coordinates — the

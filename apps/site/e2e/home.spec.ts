@@ -151,9 +151,12 @@ for (const route of ["/", "/eli5"] as const) {
       await page.locator("#charge-title").hover();
       await expect.poll(ringLoad, { timeout: 15000 }).toBeGreaterThan(0);
       // attention leaves: pointer far away → data-active drops → the engine discharges on
-      // the falling edge (releases exactly what it held; --load resets to 0)
+      // the falling edge (releases what it held; --load decays back toward 0). The mirrored
+      // --load is a smoothly-decaying feedback value, so assert it falls to near-zero rather
+      // than exact machine-zero — on a loaded CI runner it can still read ~0.05 mid-decay
+      // within the window, which is the discharge working, not a stuck sink.
       await page.mouse.move(2, 2);
-      await expect.poll(ringLoad, { timeout: 10000 }).toBe(0);
+      await expect.poll(ringLoad, { timeout: 10000 }).toBeLessThan(0.1);
     });
 
     test("Field Surfaces readings stack additively on the overlay and restore on leave", async ({

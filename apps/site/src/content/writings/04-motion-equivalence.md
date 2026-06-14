@@ -4,21 +4,21 @@ description: "A conformance model for translating motion-heavy behavior into sta
 summary: "A conformance model for translating motion-heavy behavior into static semantic equivalents."
 date: 2026-06-07
 category: research
-series: "field-ui research"
+series: "Fundamental research"
 order: 4
 author: "Zach Shallbetter"
 ---
 
 # Motion Is Not Meaning: Reduced-Motion Equivalence in Field-Based Interface Systems
 
-> **Status: research draft (preprint, work in progress).** Paper 4 of the field-ui family — the
+> **Status: research draft (preprint, work in progress).** Paper 4 of the Fundamental family — the
 > accessibility validator. Claims verified against the codebase and canonical docs as of 2026-06-07.
 > See the [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 
 **Author:** Zach Shallbetter
-**Series:** field-ui Research Papers, Paper 4 of 8 (accessibility / reduced-motion equivalence)
-**Companion papers:** the flagship paradigm paper, [field-ui: A Field Translation Runtime for
+**Series:** Fundamental Research Papers, Paper 4 of 8 (accessibility / reduced-motion equivalence)
+**Companion papers:** the flagship paradigm paper, [Fundamental: A Field Translation Runtime for
 Relational DOM Interfaces](/writings/01-field-translation-runtime), establishes the model, the six-registry
 platform, and the truth-mode vocabulary this paper assumes; see also [Reading Field](/writings/02-reading-field)
 (the empirical reading study), [Evidence Fields](/writings/03-evidence-fields) (trust and provenance). See
@@ -35,7 +35,7 @@ If motion is dialed back to be safe, it risks being dismissed as decoration that
 the first place. The usual escape — a separate "reduced" code path — drifts from the real interface
 over time and is rarely tested against it.
 
-This paper develops field-ui's resolution of that dilemma into a checkable property. The single claim
+This paper develops Fundamental's resolution of that dilemma into a checkable property. The single claim
 is: **expressive field behavior can remain accessible when motion is treated as one *representation*
 of field state, not the *source* of meaning — and that equivalence can be made a testable conformance
 property rather than a hand-waved fallback.** We give (a) a formal equivalence model that traces
@@ -56,7 +56,7 @@ accessibility preview — and what is proposed. We claim no empirical result; th
 
 Motion in an interface is rarely neutral. A transition that travels can show *where a thing came
 from*; a pulse can show *what is active*; a flowing ribbon can show *which way a relationship points*.
-field-ui leans into this: its reciprocal loop (Paper 1, §3) writes field state — attention, heat,
+Fundamental leans into this: its reciprocal loop (Paper 1, §3) writes field state — attention, heat,
 memory, relationship strength — back onto the DOM, and a natural way to render those continuous scalars
 is through movement.
 
@@ -70,7 +70,7 @@ the motion off without turning the meaning off with it.
 
 The mirror-image failure is just as real. An interface that uses motion *only* decoratively — motion
 that carries no state, that could be removed with no loss — invites the conclusion that the whole
-expressive layer is decoration. For a system like field-ui, which asks designers to reason about
+expressive layer is decoration. For a system like Fundamental, which asks designers to reason about
 *cause* ("why is this emphasized? what is pulling attention?"), being read as a particle toy is an
 existential risk, not a cosmetic one. The flagship paper names this directly as a threat to the
 framing: "the risk of 'spectacle over meaning' is real" (Paper 1, §10).
@@ -86,9 +86,9 @@ smaller version of the interface — it is a different, lossy one. The accessibi
 project names the failure mode explicitly: `MISSING_REDUCED_MOTION`, "no accessible fallback"
 (`packages/core/src/contracts/guards.ts`).
 
-### 1.3 The field-ui stance: the same field, differently revealed
+### 1.3 The Fundamental stance: the same field, differently revealed
 
-field-ui takes a different stance, stated in the flagship as the overview this paper expands
+Fundamental takes a different stance, stated in the flagship as the overview this paper expands
 (Paper 1, §8.5): **motion is one representation of state, not the meaning itself.** Under that stance,
 reduced motion is not a degraded fallback path but *the same field differently revealed.* The
 underlying field — attention, memory, relationship, heat — is computed identically whether or not
@@ -134,7 +134,7 @@ design, never a finding.
 
 **`prefers-reduced-motion` and platform motion signals.** The web platform exposes a user preference
 for reduced motion as a CSS/JS media query, intended for readers for whom motion is a barrier rather
-than an enhancement. field-ui reads it through an injected host capability —
+than an enhancement. Fundamental reads it through an injected host capability —
 `reducedMotion()` on the `FieldHost` interface, documented as "whether the user prefers reduced motion
 (freezes the sim)" (`packages/core/src/core/host.ts`) and implemented in the browser host via
 `matchMedia('(prefers-reduced-motion: reduce)')` (`packages/platform/src/browser-host.ts`). The
@@ -151,7 +151,7 @@ guidance] [TODO: cite vestibular-disorder accessibility literature]
 
 **Color is not the only carrier of meaning.** A long-standing accessibility principle holds that color
 must never be the sole means of conveying information, because color perception varies across readers.
-field-ui generalizes the principle from color to *any single expressive channel* — color, glow, and
+Fundamental generalizes the principle from color to *any single expressive channel* — color, glow, and
 critically motion — and encodes it as a rule: "Color is not the only carrier of meaning. Motion is
 optional. Reduced motion preserves state without travel" (visual-language §16; §5.2). We treat
 "motion is not the only carrier" as the exact analogue of "color is not the only carrier," and apply
@@ -160,19 +160,19 @@ color-is-not-the-only-means / redundant-coding guidance]
 
 **Animation as information versus decoration.** A separate line of work distinguishes *functional*
 animation (motion that communicates causality, continuity, or hierarchy) from *decorative* animation
-(motion that does not). field-ui's truth-mode taxonomy (Paper 1, §6.3) gives this distinction teeth at
+(motion that does not). Fundamental's truth-mode taxonomy (Paper 1, §6.3) gives this distinction teeth at
 the level of *forces*; this paper extends it to the level of *rendering*, asking of each motion: does
 it carry state that has no other carrier? If yes, the static equivalent must carry that state too; if
 no, it may simply be removed. [TODO: cite functional-vs-decorative animation literature]
 
 **The degraded-fallback antipattern.** Practitioner accounts of accessibility regressions repeatedly
 describe a second, simplified path that diverges from the primary one and is under-tested. We position
-field-ui against this directly: the contribution is not "field-ui has a reduced-motion fallback" — many
+Fundamental against this directly: the contribution is not "Fundamental has a reduced-motion fallback" — many
 systems do — but that the fallback is *derived from the same state* and is *checkable against the
 primary surface*, which is what a degraded second path is not. [TODO: cite accessibility
 fallback-divergence / dual-codebase drift]
 
-The distinguishing stance, as in the rest of the family, is *epistemic*: field-ui makes the
+The distinguishing stance, as in the rest of the family, is *epistemic*: Fundamental makes the
 accessibility property auditable — a guard that throws, lint that warns, a schema field that is
 required, a preview that renders the reduced surface — so the claim "meaning survives without motion"
 can be checked rather than asserted.
@@ -192,7 +192,7 @@ semantic source  →  visual–semantic binding  →  motion behavior   (motion 
 
 ### 3.1 Semantic source: live DOM is canonical
 
-The meaning lives in the DOM, not in any rendering of it. A field-ui page is *ordinary semantic
+The meaning lives in the DOM, not in any rendering of it. A Fundamental page is *ordinary semantic
 HTML*: the Reading Field study is "an ordinary article — sections, headings, citations, a table of
 contents" wired to the platform (Paper 1, §5.4). The accessibility canon makes the source's primacy a
 rule: "Live semantic text remains in the DOM. Vectorized text must be paired with hidden or equivalent
@@ -218,7 +218,7 @@ registry encodes two rules in code, not prose:
 - A visual that does *not* carry independent meaning **should** be `aria-hidden`, so screen readers do
   not read the decorative layer.
 
-The canonical statement is the native primitive field-ui wishes existed: "this visual represents that
+The canonical statement is the native primitive Fundamental wishes existed: "this visual represents that
 semantic element; don't double-expose it" (file header). The binding is the seam where the expressive
 layer is *attached* to meaning rather than *substituting* for it — which is what lets the expressive
 layer be freely transformed (including reduced to static) without endangering the meaning underneath.
@@ -542,7 +542,7 @@ that the sentence is *true of the rendered surface*. Tightening it toward a stru
 declaration (state keys preserved, redundant carriers named) is future work and a precondition for
 fully automating §4.4.
 
-**Generalization.** The model is developed and grounded on the surfaces field-ui ships well — long
+**Generalization.** The model is developed and grounded on the surfaces Fundamental ships well — long
 documents, evidence panels, dashboards (Paper 1, §8.6) — where state is relational and has natural
 static renderings (contours, highlights, field lines). On surfaces whose meaning is *intrinsically*
 temporal (a genuine animation of a process unfolding over time), "freeze the motion, keep the state"
@@ -554,7 +554,7 @@ equivalence is achievable; it does not assert it everywhere.
 
 ## 7. Discussion
 
-**Why this matters for field-ui.** The two failure modes of §1.1 are the two ways an expressive field
+**Why this matters for Fundamental.** The two failure modes of §1.1 are the two ways an expressive field
 system dies: dismissed as decorative, or rejected as inaccessible. Treating motion as one
 representation of state defuses both at once. Because the static equivalent renders the *same*
 computed field, the motion is demonstrably *not* decoration — removing it provably loses nothing the
@@ -583,7 +583,7 @@ discipline, pointed at reduced motion.
 ## 8. Conclusion
 
 Motion-rich interfaces face a real double bind: expressive enough to matter is expressive enough to
-exclude, yet safe enough to include can look like decoration that never mattered. field-ui's stance —
+exclude, yet safe enough to include can look like decoration that never mattered. Fundamental's stance —
 *motion is one representation of state, not the source of meaning* — dissolves the bind by making
 reduced motion the same field differently revealed: the field keeps computing, only the easing drops,
 and every travelling effect has a static equivalent that renders the same state. The contribution of

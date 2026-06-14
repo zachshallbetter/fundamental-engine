@@ -18,8 +18,8 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ThreadLink } from '@fundamental-engine/core';
-import { Group } from 'three';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ThreadLink } from '@fundamental-engine/core';
+import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
 import { PlaneProjection, VolumeProjection, type FieldProjection } from './project.ts';
@@ -30,6 +30,32 @@ import { FieldBodyRegistry, type FieldBody, type FieldBodySpec } from './bodies.
  *  `render: 'none'`, which acquires no 2D context). */
 function stubCanvas(): HTMLCanvasElement {
   return typeof document !== 'undefined' ? document.createElement('canvas') : ({} as HTMLCanvasElement);
+}
+
+const _v = new Vector3();
+
+/** Options for `FieldLayer.addAgent(object3d, opts)` — an engine-stepped, mesh-bound agent. */
+export interface MeshAgentOptions {
+  /** top speed in field px/frame (default 80). */
+  maxSpeed?: number;
+  /** inertial mass — heavier agents accelerate less (default 1). */
+  mass?: number;
+  /** species tag, so tagged bodies (`affects`) and `hunt` act on it selectively. */
+  species?: number;
+  /** aim the object along its travel direction each frame (default true). */
+  faceVelocity?: boolean;
+  /** an optional world-y hover bob layered on the projected position. */
+  hover?: { amp: number; freq: number };
+}
+
+/** Handle for a mesh agent added via `FieldLayer.addAgent(object3d, …)`. */
+export interface MeshAgentHandle {
+  /** the scene object the engine drives. */
+  readonly object: Object3D;
+  /** the underlying core agent (`particle`, `remove()`). */
+  readonly agent: AgentHandle;
+  /** retire the agent and stop driving the object. */
+  remove(): void;
 }
 
 export interface FieldLayerOptions extends Omit<FieldOptions, 'host' | 'render'> {
@@ -56,6 +82,8 @@ export class FieldLayer implements FieldHandle {
   readonly pool: ParticlePool;
   /** the active 2D↔3D mapping. */
   readonly projection: FieldProjection;
+  /** the engine-stepped mesh agents — `layer.addAgent(...)`; all retired on `destroy()`. */
+  private readonly agents: MeshAgentHandle[] = [];
   /** the mesh-bodies registered on this field — `layer.addBody(...)` is the ergonomic entry. */
   readonly bodies: FieldBodyRegistry;
   private readonly field: FieldHandle;
@@ -94,6 +122,55 @@ export class FieldLayer implements FieldHandle {
    */
   addBody(object: Object3D, spec: FieldBodySpec): FieldBody {
     return this.bodies.add(object, spec);
+  }
+
+  /**
+   * Add an **agent**: a scene object the engine *moves*. The integrator steps it (it feels every
+   * force the swarm feels — body forces and the particle-level `hunt`/`align`/`cohesion`) and drives
+   * the object's position through the projection each frame; `maxSpeed` caps it, `faceVelocity` aims
+   * it, `hover` adds a bob. Returns a handle (`object`, the core `agent`, `remove()`). The aligned,
+   * engine-stepped successor to the self-integrating `FieldAgent` — the creatures primitive.
+   *
+   * The raw `addAgent(spec)` (the `FieldHandle` form) is also accepted for full-control callers.
+   */
+  addAgent(object: Object3D, opts?: MeshAgentOptions): MeshAgentHandle;
+  addAgent(spec: AgentSpec): AgentHandle;
+  addAgent(a: Object3D | AgentSpec, opts: MeshAgentOptions = {}): MeshAgentHandle | AgentHandle {
+    if (!(a as { isObject3D?: boolean }).isObject3D) return this.field.addAgent(a as AgentSpec);
+    const object = a as Object3D;
+    object.getWorldPosition(_v);
+    const start = this.projection.toField(_v);
+    const face = opts.faceVelocity ?? true;
+    const hover = opts.hover;
+    const look = new Vector3();
+    let n = 0;
+    const agent = this.field.addAgent({
+      x: start.x,
+      y: start.y,
+      species: opts.species,
+      mass: opts.mass,
+      maxSpeed: opts.maxSpeed ?? 80,
+      report: (p) => {
+        this.projection.toWorld(p.x, p.y, p.z ?? 0, 0, 0, object.position);
+        if (hover) object.position.y += Math.sin(n++ * 0.1 * hover.freq) * hover.amp;
+        if (face && p.vx * p.vx + p.vy * p.vy > 1e-3) {
+          this.projection.toWorld(p.x + p.vx * 0.1, p.y + p.vy * 0.1, p.z ?? 0, 0, 0, look);
+          look.y = object.position.y;
+          object.lookAt(look);
+        }
+      },
+    });
+    const handle: MeshAgentHandle = {
+      object,
+      agent,
+      remove: () => {
+        agent.remove();
+        const i = this.agents.indexOf(handle);
+        if (i >= 0) this.agents.splice(i, 1);
+      },
+    };
+    this.agents.push(handle);
+    return handle;
   }
 
   /** sync the swarm geometry from the engine's current particle state; returns the live count. */
@@ -171,6 +248,10 @@ export class FieldLayer implements FieldHandle {
   sample(x: number, y: number): { x: number; y: number } {
     return this.field.sample(x, y);
   }
+  /** smooth density scalar ∈ [0,1] at `(x, y)` — pass `createFieldLayer({ heatmap: true })` to enable. */
+  sampleScalar(x: number, y: number): number {
+    return this.field.sampleScalar(x, y);
+  }
   scrollV(): number {
     return this.field.scrollV();
   }
@@ -178,10 +259,12 @@ export class FieldLayer implements FieldHandle {
     this.field.setBackground(mode);
   }
 
-  /** stop the engine, release host listeners, and free the swarm's GPU resources. */
+  /** stop the engine, release host listeners, retire agents, and free the swarm's GPU resources. */
   destroy(): void {
+    for (const a of this.agents.slice()) a.remove();
     this.field.destroy();
     this.pool.dispose();
+    this.bodies.clear(); // drop body↔mesh refs so a retained handle can't pin the registry
   }
 }
 
