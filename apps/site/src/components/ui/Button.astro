@@ -3,10 +3,14 @@
 // Emits the manual.css `.btn` / `.btn.primary` / `.btn.ghost` classes — customize on declaration.
 //
 // Mass by default: a button is a focal control, so it's a body — a `sink attract` VESSEL. attract
-// gathers the page field's matter, sink captures it; engaged on hover/focus (data-hot), reporting
-// its load/density back (data-feedback → --d / --load). `data-shaped` makes the forces reference the
-// button's BOX, not its centre, so matter gathers in a shell around the control and accretes into it
-// rather than collapsing to a single central point. The field thesis applied to its own controls.
+// gathers the page field's matter, sink captures it. The vessel is ATTENTION-GATED (`data-when="active"`):
+// it stays inert at rest and only acts while engaged (hover/focus via data-hot), so the control absorbs
+// matter as you reach for it and RELEASES it in a burst when attention leaves (the engine's
+// `dischargeDisengaged` supernova) — absorb-and-release on interaction, not a permanent resting
+// accretion. It reports its load/density back (data-feedback → --d / --load → the charge glow).
+// `data-shaped` makes the forces reference the button's BOX, not its centre, so matter gathers in a
+// shell around the control. The field thesis applied to its own controls — driven purely by data-*
+// attributes (the public body contract), the way any consumer would.
 // Pass mass={false} to opt out; any explicit data-* on the instance overrides (rest is spread last).
 interface Props {
   href?: string;
@@ -27,10 +31,12 @@ const bodyAttrs = mass
       "data-shaped": "",
       "data-hot": "",
       "data-feedback": "",
-      // gather harder and over a wider catchment so the vessel actually fills — and a modest
-      // capacity (data-max) so the accreted matter reads as a high --load (a visible charge),
-      // not a trickle against the default 60. It plateaus below saturation; the dramatic release
-      // is the scroll burst, not a constant auto-supernova.
+      // attention-gated: only gathers/captures while engaged (hover/focus), so the button is calm
+      // at rest and absorbs as you reach for it. On the falling edge of engagement the sink
+      // discharges what it captured in a burst (dischargeDisengaged) — absorb on hover, release on
+      // leave. A modest capacity keeps the accreted matter reading as a high --load (a visible
+      // charge glow) within a single hover.
+      "data-when": "active",
       "data-strength": "0.8",
       "data-range": "175",
       "data-absorb": "95",
