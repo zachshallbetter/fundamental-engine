@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type SurfacePlan } from '@fundamental-engine/core';
 import { createBrowserField } from '@fundamental-engine/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
@@ -75,6 +75,14 @@ export class FieldField implements FieldHandle {
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void {
     this.field.setHeatmap(on);
+  }
+  /** set the whole surface state (underlay/overlay/heatmap) in one declarative call. */
+  setSurfaces(plan: SurfacePlan): void {
+    this.field.setSurfaces(plan);
+  }
+  /** the current surface state; the inverse of setSurfaces. */
+  getSurfaces(): Required<SurfacePlan> {
+    return this.field.getSurfaces();
   }
   /** switch the underlay render mode (§20.6) live. */
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {

@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type SurfacePlan } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -202,6 +202,14 @@ export class FieldField extends HTMLElementBase {
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void {
     this.field?.setHeatmap(on);
+  }
+  /** set the whole surface state (underlay/overlay/heatmap) in one declarative call. */
+  setSurfaces(plan: SurfacePlan): void {
+    this.field?.setSurfaces(plan);
+  }
+  /** the current surface state; the inverse of setSurfaces. */
+  getSurfaces(): Required<SurfacePlan> {
+    return this.field?.getSurfaces() ?? { underlay: 'dots', overlay: 'off', heatmap: false };
   }
   /** switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297). */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void {

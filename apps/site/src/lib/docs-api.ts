@@ -39,6 +39,7 @@ export const HANDLE: MethodRow[] = [
   { sig: 'setAttention(on)', desc: 'Toggle conserved attention live (one finite strength budget).' },
   { sig: 'setCausality(on)', desc: 'Toggle cross-boundary causality live (density spills to neighbours).' },
   { sig: 'setHeatmap(on)', desc: 'Toggle the density heatmap layer live (a glow of where matter pools).' },
+  { sig: 'setSurfaces(plan) / getSurfaces()', desc: 'One declarative verb for the whole surface state: setSurfaces({ underlay, overlay, heatmap }) — matter behind content, readings in front, the accumulation layer. Full-state, so an omitted key resets to its default (dots / off / false); idempotent and restorable. getSurfaces() is the inverse; setSurfaces(getSurfaces()) is a no-op. The single-surface verbs remain for surgical pokes. Shipped-but-unfrozen.' },
   { sig: 'setRender(mode)', desc: 'Switch the underlay render mode (behind content): dots / trails / links / metaballs / voronoi / streamlines / flow.' },
   { sig: 'setOverlay(mode | mode[])', desc: 'Field Surfaces: render overlay reading(s) in front of content — one reading or an additive stack (the readings compose). The vocabulary: streamlines / force-vectors / field-lines / grid / temperature / energy / path / data, or off. Pairs with setRender.' },
   { sig: 'setBackground(mode)', desc: "Switch the substrate live: 'transparent' clears to transparent so the underlay composites over light content; 'opaque' restores the near-black substrate. Additive." },
