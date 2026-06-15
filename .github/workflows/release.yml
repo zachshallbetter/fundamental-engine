@@ -200,9 +200,40 @@ jobs:
           done
           exit $FAIL
 
+  github_release:
+    name: github release
+    needs: publish
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release object (the top-level grant is read-only)
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_TAG }} # the tag's tree, so the CHANGELOG matches the version
+          persist-credentials: false
+      - name: Create the GitHub Release from the tag + CHANGELOG
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="$RELEASE_TAG"
+          VERSION="${TAG#v}"
+          # Idempotent: pushing a tag publishes to npm, but the GitHub Release object is separate —
+          # create it here so the Releases page stays in lockstep. Do nothing if it already exists.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "GitHub Release $TAG already exists — nothing to do"
+            exit 0
+          fi
+          # This version's CHANGELOG section: everything between its heading and the next `## [`.
+          NOTES=$(awk -v v="## [$VERSION]" 'index($0,v)==1{f=1;next} f&&/^## \[/{exit} f{print}' CHANGELOG.md)
+          [ -z "$NOTES" ] && NOTES="See the CHANGELOG for ${VERSION}."
+          printf '%s\n' "$NOTES" > /tmp/release-notes.md
+          gh release create "$TAG" --verify-tag --latest --title "$TAG" --notes-file /tmp/release-notes.md
+          echo "created GitHub Release $TAG"
+
   conclusion:
     name: conclusion
-    needs: [gate, publish, post_publish]
+    needs: [gate, publish, post_publish, github_release]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
