@@ -36,6 +36,12 @@ export type AgentKind = 'particle' | 'element' | 'event';
  * and the integrator divides by it. Mutate `vx/vy/heat/x/y` from a force.
  */
 export interface Particle {
+  /** Stable per-particle identity, assigned once at creation and unique for this particle's life in
+   *  the pool (a recycled slot gets a fresh id). Lets a host track a specific particle across frames —
+   *  a seeded entity (a wind-borne seed, a tagged mote) read back through `readParticleIds`, with the
+   *  host owning any opaque payload keyed by id. Optional only for back-compat with hand-built
+   *  fixtures; the engine always sets it. */
+  id?: number;
   x: number;
   y: number;
   vx: number;
@@ -702,6 +708,15 @@ export interface FieldHandle {
    * tally; `@fundamental-engine/three`'s particle bridge is the first consumer.
    */
   readParticles(out: Float32Array): number;
+  /**
+   * Copy each live particle's **stable id** into a caller-owned `Uint32Array`, returning the count
+   * written. Parallel to {@link readParticles} — same pool order, same agent exclusion — so the id at
+   * `ids[i]` belongs to the particle whose state is at stride offset `i*5` there. Identity is the
+   * piece pooled particles otherwise lack: a host that `seed`s entities (wind-borne seeds, tagged
+   * motes) reads their ids back each frame to track which is which and key its own opaque payload off
+   * them (the engine carries the identity, not the payload). Zero-allocation, read-only.
+   */
+  readParticleIds(out: Uint32Array): number;
   /**
    * The engine's eased page-scroll velocity for the current frame — the same EMA value the
    * `scrolling` condition gate uses: `(prev × 0.7) + (|scrollDelta| × 0.3)` per frame.

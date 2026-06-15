@@ -99,6 +99,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     opts.overlayBackend ?? (overlayCanvas && overlayCtx ? canvas2dBackend(overlayCanvas, overlayCtx) : null);
 
   const store = new FieldStore();
+  let nextParticleId = 1; // monotonic stable particle identity (readParticleIds); never reused
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
   const reg = createRegistry();
 
@@ -350,6 +351,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function newParticle(seed: Partial<Particle> = {}): Particle {
     const size = seed.size ?? 0.7 + rng() * 1.8;
     return {
+      id: seed.id ?? nextParticleId++,
       x: seed.x ?? rng() * W,
       y: seed.y ?? rng() * H,
       vx: seed.vx ?? (rng() - 0.5) * 0.25,
@@ -1913,6 +1915,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         out[o + 3] = p.heat;
         out[o + 4] = p.size;
         w++;
+      }
+      return w;
+    },
+    readParticleIds: (out) => {
+      // parallel to readParticles (same pool order, same agent skip), so out[i] is the stable id of
+      // the particle written at stride offset i*5 there — the host maps id → its own opaque payload.
+      const ps = store.particles;
+      let w = 0;
+      for (let i = 0; i < ps.length && w < out.length; i++) {
+        const p = ps[i]!;
+        if (p.report !== undefined) continue; // agents excluded, exactly like readParticles
+        out[w++] = p.id ?? 0;
       }
       return w;
     },
