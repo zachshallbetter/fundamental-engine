@@ -76,6 +76,10 @@ export class FieldField implements FieldHandle {
   setHeatmap(on: boolean): void {
     this.field.setHeatmap(on);
   }
+  /** lower/raise the backing-store DPR ceiling at runtime (the dominant fill-rate lever). */
+  setDprCap(cap: number): void {
+    this.field.setDprCap(cap);
+  }
   /** set the whole surface state (underlay/overlay/heatmap) in one declarative call. */
   setSurfaces(plan: SurfacePlan): void {
     this.field.setSurfaces(plan);

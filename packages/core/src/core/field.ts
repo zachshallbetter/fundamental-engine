@@ -141,6 +141,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
     overlay: opts.overlay ?? 'off', // Field Surfaces: overlay-surface visualization mode, opt-in
+    dprCap: opts.dprCap && opts.dprCap > 0 ? opts.dprCap : 2, // backing-store DPR ceiling (#410); the
+    // dominant fill-rate lever — the ambient field is soft, so ~1.5 buys ~1.8× headroom on retina.
     // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
     // to the 2D engine; > 0 opens a shallow depth the matter drifts through, opt-in.
     depth: opts.depth && opts.depth > 0 ? opts.depth : 0,
@@ -800,7 +802,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // backing store stays 0×0 while W/H — the simulation space — keep tracking the viewport.
   function sizeSurfaces(dprRaw: number): void {
     if (!ctx) return;
-    const dpr = Math.min(dprRaw || 1, 2);
+    const dpr = Math.min(dprRaw || 1, cfg.dprCap);
     canvas.width = Math.floor(W * dpr);
     canvas.height = Math.floor(H * dpr);
     canvas.style.width = W + 'px';
@@ -1847,6 +1849,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       handle.setHeatmap(plan.heatmap ?? false);
     },
     getSurfaces: () => ({ underlay: cfg.render, overlay: cfg.overlay, heatmap: cfg.heatmap }),
+    setDprCap: (cap) => {
+      cfg.dprCap = cap > 0 ? cap : 2;
+      if (ctx) sizeSurfaces(host.viewport().dpr); // re-size the backing store to the new ceiling now
+    },
     threads: setThreads,
     burst: (x, y, hex) => {
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
