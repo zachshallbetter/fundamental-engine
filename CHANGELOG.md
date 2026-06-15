@@ -7,6 +7,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`FieldHandle.grid(name)` — host-authorable scalar grids (core).** The engine's field-buffer
+  primitive (the uniform scalar grid `diffuse` / `memory` / `propagate` run on) is now a public
+  surface, so an application can lay down and read its own fields the simulation composes with: a scent
+  map, a wear/desire-path layer, a goal-attractor field. `grid(name)` returns a `ScalarGrid` with
+  `deposit(x,y,amount)` / `sample(x,y)` / `gradient(x,y)` (forage-by-gradient on an authored field) plus
+  the new `decay(rate)` / `clear()`. It is created on first access (allocating nothing until then), kept
+  viewport-sized, and advanced once per frame by the mode inferred from its name (`wave…` = wave scheme,
+  `memory…` = slow decay, else diffuse). A force of the same name shares the buffer, so a host can read
+  what a force writes (and vice versa); a distinct name keeps an authored field independent. Mirrored on
+  vanilla / elements / three; additive to the (unfrozen) handle and to `ScalarGrid`.
+
 ### Fixed
 
 - **React adapter forwards the full `FieldOptions`.** `<FieldField>` and `useFieldField` destructured

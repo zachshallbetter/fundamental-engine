@@ -1917,6 +1917,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     sampleScalar: (x, y) => (heatmap ? heatmap.norm(x, y) : 0),
     sampleGradient: (x, y) => (heatmap ? heatmap.gradient(x, y) : { x: 0, y: 0 }),
+    grid: (name) => env.grid(name),
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;

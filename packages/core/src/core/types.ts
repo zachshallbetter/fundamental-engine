@@ -220,9 +220,17 @@ export interface Formation {
 
 /** A persistent scalar grid backing field-buffer forces (§20.1 class [C]). */
 export interface ScalarGrid {
+  /** Bilinear-sampled value at a pixel point. */
   sample(x: number, y: number): number;
+  /** Add `amount` to the nearest cell (the host or a force deposits here). */
   deposit(x: number, y: number, amount: number): void;
+  /** Central-difference gradient ∇ (points up-slope), in 1/px. */
   gradient(x: number, y: number): Vec2;
+  /** Fade every cell toward zero by `rate` ∈ [0,1] (`1` = clear) — a host-authored decay applied
+   *  on top of the grid's own per-frame mode stepping. */
+  decay(rate: number): void;
+  /** Zero the whole grid. */
+  clear(): void;
 }
 
 /**
@@ -655,6 +663,19 @@ export interface FieldHandle {
    * or the field is empty. Pure, read-only, maintained even under `render: 'none'`.
    */
   sampleGradient(x: number, y: number): Vec2;
+  /**
+   * Open a named **scalar grid** — the engine's field-buffer primitive (the same one `diffuse` /
+   * `memory` / `propagate` run on), promoted to a host-authorable surface. Use it to lay down and
+   * read application fields the simulation can then compose with: a scent map, a wear/desire-path
+   * layer, a goal-attractor field. `deposit(x,y,amount)` adds matter; `sample(x,y)` reads it back
+   * bilinearly; `gradient(x,y)` gives its up-slope direction (forage-by-gradient); `decay(rate)` /
+   * `clear()` fade it. The grid is created on first access (allocating nothing until then), kept
+   * viewport-sized, and advanced once per frame by its mode — inferred from the name: `wave…` runs
+   * the wave scheme, `memory…` decays slowly, everything else diffuses. A force of the same name
+   * shares the same buffer, so a host can read what a force writes (and vice versa); pick a distinct
+   * name (e.g. `'scent'`) to keep an authored field independent. Read-write, lives in field px.
+   */
+  grid(name: string): ScalarGrid;
   /**
    * Copy live particle state into a caller-owned buffer and return the number of particles
    * written. Stride 5, packed `[x, y, z, heat, size, …]` in CSS-pixel field coordinates — the

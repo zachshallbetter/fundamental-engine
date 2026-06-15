@@ -230,7 +230,7 @@ function probeEnv(over: Partial<Env> = {}): Env {
     supernova: () => {},
     spawn: () => {},
     neighbors: () => [],
-    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }) }),
+    grid: () => ({ sample: () => 0, deposit: () => {}, gradient: () => ({ x: 0, y: 0 }), decay: () => {}, clear: () => {} }),
     ...over,
   };
 }
@@ -281,6 +281,8 @@ export function followsGradient(gx: number, gy: number): Expectation {
         sample: () => 0.5,
         deposit: (x, y, a) => deposits.push([x, y, a]),
         gradient: () => ({ x: gx, y: gy }),
+        decay: () => {},
+        clear: () => {},
       };
       const sp = r.scenario.particles[0]!;
       const p = cloneParticle(sp);

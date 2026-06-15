@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid } from '@fundamental-engine/core';
 import { createBrowserField } from '@fundamental-engine/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
@@ -137,6 +137,10 @@ export class FieldField implements FieldHandle {
   /** sample the density gradient ∇ at `(x, y)` — up-density direction (needs `heatmap: true`); `{0,0}` when off. */
   sampleGradient(x: number, y: number): { x: number; y: number } {
     return this.field.sampleGradient(x, y);
+  }
+  /** open a named host-authorable scalar grid (deposit/sample/gradient/decay) — a scent/wear/goal field. */
+  grid(name: string): ScalarGrid {
+    return this.field.grid(name);
   }
   scrollV(): number {
     return this.field.scrollV();
