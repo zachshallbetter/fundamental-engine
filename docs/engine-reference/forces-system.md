@@ -1923,6 +1923,14 @@ its gradient stays meaningful *at* a source, where a nearest-body readout flatte
 the property forage-by-gradient needs. Requires the heatmap layer (`createField({ heatmap:
 true })`); read-only, updated each frame including under `render: 'none'`.
 
+`sampleGradient(x,y)` returns that gradient directly — the `{x,y}` **direction and steepness**
+(in 1/px) of *increasing* density — instead of leaving callers to finite-difference `sampleScalar`
+(which, sampled too close in, re-introduces the very flattening it exists to avoid). It is the
+analytic companion off the same diffused grid (central difference, normalized by the eased peak),
+non-degenerate at a source; add it to a heading to climb toward matter, negate it to flee crowding.
+Requires the heatmap layer; returns `{ x: 0, y: 0 }` when off or empty. Mirrored on
+vanilla / elements / three.
+
 ---
 
 ## 23. Micro-reactions — energy transfer made visible

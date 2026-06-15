@@ -645,6 +645,17 @@ export interface FieldHandle {
    */
   sampleScalar(x: number, y: number): number;
   /**
+   * Sample the **gradient ∇** of the density field at a point — the `{ x, y }` direction (and
+   * steepness, in 1/px) of *increasing* matter density. The analytic companion to `sampleScalar`:
+   * computed from the same diffused heatmap grid, so it stays non-degenerate at a source (a real
+   * uphill slope where a nearest-body density — or `sampleScalar` finite-differenced too close in —
+   * flattens to zero). This is what reliable forage-/flee-by-gradient steers by: add it to a heading
+   * to climb toward matter, negate it to flee crowding. Requires the heatmap layer
+   * (`createField({ heatmap: true })` or `setHeatmap(true)`); returns `{ x: 0, y: 0 }` when it is off
+   * or the field is empty. Pure, read-only, maintained even under `render: 'none'`.
+   */
+  sampleGradient(x: number, y: number): Vec2;
+  /**
    * Copy live particle state into a caller-owned buffer and return the number of particles
    * written. Stride 5, packed `[x, y, z, heat, size, …]` in CSS-pixel field coordinates — the
    * layout maps straight onto a renderer's vertex buffer (e.g. a `THREE.BufferAttribute`), so an

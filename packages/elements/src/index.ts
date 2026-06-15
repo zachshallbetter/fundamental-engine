@@ -260,6 +260,10 @@ export class FieldField extends HTMLElementBase {
   sampleScalar(x: number, y: number): number {
     return this.field?.sampleScalar(x, y) ?? 0;
   }
+  /** sample the density gradient ∇ at `(x, y)` — up-density direction (needs `heatmap`); `{0,0}` when off/not started. */
+  sampleGradient(x: number, y: number): { x: number; y: number } {
+    return this.field?.sampleGradient(x, y) ?? { x: 0, y: 0 };
+  }
 
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
