@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, Env, FieldHandle, FieldOptions, Formation, OverlayInput, OverlayMode, Particle } from './types.ts';
+import type { AtomPayload, Body, Env, FeedbackChannels, FieldHandle, FieldOptions, Formation, OverlayInput, OverlayMode, Particle } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -113,6 +113,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (set) for (const cb of set) (cb as (e: FieldEventMap[K]) => void)(payload);
   }
   const sinkPeak = new WeakMap<Body, number>(); // matter held at the rising edge, for the release count
+  const programmaticBodies: Body[] = []; // bodies added via addBody(); merged into `bodies` each scan
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
   registerExtendedForces(reg); // designed extended forces: lens, … (§20.3), opt-in
@@ -410,6 +411,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     } else {
       bodies = scanned;
     }
+    // programmatic bodies (addBody) aren't discoverable by the scan — carry them across the rebuild.
+    if (programmaticBodies.length > 0) bodies = bodies.concat(programmaticBodies);
     measureBodies(bodies, W, H);
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
@@ -969,14 +972,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // (feedback-sink.ts), which performs the same direct writes the engine always made:
       // `--d`/`--field-density`, `--field-heatmap-density`, `--load`/`--mass`,
       // plus the measured `--entropy`/`--coherence`/`--temperature`.
-      cfg.feedbackSink(writeEl, {
+      const channels = {
         density: b.d,
         heatmapDensity,
         load,
         entropy: m.entropy,
         coherence: m.coherence,
         temperature: m.temperature,
-      });
+      };
+      cfg.feedbackSink(writeEl, channels);
+      // per-body feedback (addBody): demux this body's channels to its own callback.
+      b.onFeedback?.(channels);
     }
   }
 
@@ -1940,6 +1946,58 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       p.report = spec.report;
       store.add(p);
       return { particle: p, remove: () => store.remove(p) };
+    },
+    addBody: (spec) => {
+      // A programmatic body has no DOM. A minimal rect-backed element answers the body contract the
+      // measurer + reactive-param refresh read (getAttribute / dataset / getBoundingClientRect), so we
+      // reuse the exact bodyFromElement path the scan uses — no fake document, no querySelectorAll root.
+      const attrs: Record<string, string> = {
+        'data-body': Array.isArray(spec.tokens) ? spec.tokens.join(' ') : String(spec.tokens),
+      };
+      if (spec.strength != null) attrs['data-strength'] = String(spec.strength);
+      if (spec.range != null) attrs['data-range'] = String(spec.range);
+      if (spec.spin != null) attrs['data-spin'] = String(spec.spin);
+      if (spec.angle != null) attrs['data-angle'] = String(spec.angle);
+      if (spec.color != null) attrs['data-color'] = spec.color;
+      const toRect = (): DOMRect => {
+        const r = spec.rect();
+        return {
+          left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height,
+          width: r.width, height: r.height, x: r.left, y: r.top, toJSON: () => ({}),
+        } as DOMRect;
+      };
+      const el = {
+        tagName: 'DIV', id: '', className: '',
+        dataset: spec.color != null ? { color: spec.color } : ({} as Record<string, string>),
+        getAttribute: (n: string) => attrs[n] ?? null,
+        hasAttribute: (n: string) => n in attrs,
+        getBoundingClientRect: toRect,
+        dispatchEvent: () => true,
+        setAttribute: () => {},
+        removeAttribute: () => {},
+        // the feedback sink writes CSS vars here; a no-op style absorbs them (the value is delivered
+        // to onFeedback / the handle's channels, not the DOM).
+        style: { setProperty: () => {}, removeProperty: () => {}, getPropertyValue: () => '' } as unknown as CSSStyleDeclaration,
+      } as unknown as HTMLElement;
+      const body = bodyFromElement(el);
+      body.rect = toRect;
+      body.data = spec.data;
+      body.feedback = true; // programmatic bodies always compute channels (the CSS write hits the
+      // harmless stub element; the value flows to onFeedback + the handle's live channels).
+      const channels: FeedbackChannels = {};
+      body.onFeedback = (ch) => { Object.assign(channels, ch); spec.onFeedback?.(ch); };
+      programmaticBodies.push(body);
+      bodies = bodies.concat(body); // live this frame, before the next scan re-merges it
+      measureBodies([body], W, H); // init cx/cy so the first sample/force is correct
+      return {
+        data: spec.data,
+        get channels() { return channels; },
+        remove: () => {
+          const i = programmaticBodies.indexOf(body);
+          if (i >= 0) programmaticBodies.splice(i, 1);
+          bodies = bodies.filter((x) => x !== body);
+        },
+      };
     },
     energy: () => energyReport(store.particles),
     sample: (x, y) => {

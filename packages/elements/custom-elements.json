@@ -829,6 +829,24 @@
             },
             {
               "kind": "method",
+              "name": "addBody",
+              "return": {
+                "type": {
+                  "text": "BodyHandle"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "spec",
+                  "type": {
+                    "text": "BodySpec"
+                  }
+                }
+              ],
+              "description": "add a programmatic body (no DOM) from a spec; a no-op handle until the field starts."
+            },
+            {
+              "kind": "method",
               "name": "atomAt",
               "return": {
                 "type": {
@@ -1806,6 +1824,28 @@
                 }
               ],
               "description": "add an engine-stepped agent; returns an inert no-op handle if the field hasn't started.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "addBody",
+              "return": {
+                "type": {
+                  "text": "BodyHandle"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "spec",
+                  "type": {
+                    "text": "BodySpec"
+                  }
+                }
+              ],
+              "description": "add a programmatic body (no DOM) from a spec; a no-op handle until the field starts.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

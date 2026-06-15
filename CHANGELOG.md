@@ -7,6 +7,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`FieldHandle.addBody(spec)` — first-class programmatic bodies (core).** The only sanctioned way to
+  make a body was the `[data-body]` DOM scan, so a non-DOM host (`@fundamental-engine/three`, a native
+  view) had to duck-type a fake element + a fake `querySelectorAll` root (#393/#418). `addBody(spec)` is
+  the real API: `{ tokens, strength?, range?, spin?, angle?, color?, rect, data?, onFeedback? }`, where
+  `rect()` is sampled each frame for the body's box in field px. Two riders from the Field Agent
+  Consumption Model: the body **carries a `data` record** (the Body-level analog of a particle's atom)
+  and takes **per-body feedback** (`onFeedback` — its channels demultiplexed from the global sink). It
+  persists across `rescan()`. Returns a `BodyHandle` (`data`, live `channels`, `remove()`). Mirrored on
+  vanilla / elements / three (overloaded with three's mesh form). Additive. (#419 — three's
+  `FieldBodyRegistry` collapse onto `addBody` is the remaining follow-up.)
+
 ## [0.5.0] — 2026-06-14
 
 ### Fixed

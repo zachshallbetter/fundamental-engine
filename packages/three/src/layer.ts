@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -120,8 +120,12 @@ export class FieldLayer implements FieldHandle {
    * agent (a bloom with its genome, a hive accruing honey), not just a force. Returns a handle whose
    * `.data`, `.channels`, and `.remove()` you use; the body tracks the mesh as it moves.
    */
-  addBody(object: Object3D, spec: FieldBodySpec): FieldBody {
-    return this.bodies.add(object, spec);
+  addBody(object: Object3D, spec: FieldBodySpec): FieldBody;
+  addBody(spec: BodySpec): BodyHandle;
+  addBody(a: Object3D | BodySpec, spec?: FieldBodySpec): FieldBody | BodyHandle {
+    // the core FieldHandle form (a plain spec, no mesh): delegate straight to the engine.
+    if (spec === undefined) return this.field.addBody(a as BodySpec);
+    return this.bodies.add(a as Object3D, spec);
   }
 
   /**

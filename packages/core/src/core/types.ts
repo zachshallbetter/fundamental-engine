@@ -209,8 +209,17 @@ export interface Body {
   targets?: readonly { x: number; y: number }[];
   /** custom rectangle provider for a shadow-DOM body whose physical box is not the host
    *  box (closed roots, internal cores). The measurer prefers this over the host's own
-   *  `getBoundingClientRect` (shadow-dom.md §10/§16). */
+   *  `getBoundingClientRect` (shadow-dom.md §10/§16). Also the position source for a
+   *  programmatic body (`addBody`), which has no real element. */
   rect?: () => DOMRect;
+  /** a host-attached data record carried by a programmatic body (`addBody`) — the Body-level
+   *  analog of `Particle.atom`, extending the Field Agent Consumption Model (sources carry
+   *  records, not just matter). Opaque to the engine; surfaced on the `BodyHandle`. */
+  data?: unknown;
+  /** per-body feedback for a programmatic body (`addBody`): receives this body's channels each
+   *  frame, demultiplexed from the global sink, so a non-DOM host reads one body's readout
+   *  directly instead of off a CSS variable. */
+  onFeedback?: (channels: FeedbackChannels) => void;
   /** element that receives the field's CSS-variable write-back, when it differs from the
    *  body's element (shadow-dom.md §11). Defaults to `el`. */
   writeTarget?: HTMLElement;
@@ -542,6 +551,39 @@ export interface AgentHandle {
   remove(): void;
 }
 
+/** Spec for a programmatic body — see {@link FieldHandle.addBody}. */
+export interface BodySpec {
+  /** the force ids this body emits (space-joined string or array), e.g. `'attract swirl'`. */
+  tokens: string | readonly string[];
+  /** overall force magnitude (scales every token). */
+  strength?: number;
+  /** radius of influence, in field px. */
+  range?: number;
+  /** rotation sign/scale for `swirl`/`lens` (default 1). */
+  spin?: number;
+  /** heading in degrees, for directional forces (`stream`, `jet`, …). */
+  angle?: number;
+  /** tint for `pigment` color transport. */
+  color?: string;
+  /** the body's box in field-pixel space, sampled each frame — the position source (a non-DOM
+   *  host projects its mesh/view position through here). */
+  rect: () => { left: number; top: number; width: number; height: number };
+  /** an arbitrary record carried with the body, surfaced on the handle (opaque to the engine). */
+  data?: unknown;
+  /** receives this body's feedback channels each frame (demultiplexed from the global sink). */
+  onFeedback?: (channels: FeedbackChannels) => void;
+}
+
+/** The handle to a programmatic body created by {@link FieldHandle.addBody}. */
+export interface BodyHandle {
+  /** the carried record (`BodySpec.data`). */
+  data: unknown;
+  /** this body's latest feedback channels — updated in place each frame. */
+  readonly channels: FeedbackChannels;
+  /** remove the body from the field. */
+  remove(): void;
+}
+
 /** The handle returned by `createField` — the public field API (§13). */
 export interface FieldHandle {
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
@@ -605,6 +647,18 @@ export interface FieldHandle {
    * `layer.addAgent` binds over.
    */
   addAgent(spec: AgentSpec): AgentHandle;
+  /**
+   * Add a **programmatic body** — a source the engine measures and runs forces from, created from a
+   * spec instead of a scanned `[data-body]` element. The sanctioned alternative to the DOM scan for a
+   * non-DOM host (a Three.js mesh, a native view): no fake document, no `querySelectorAll` duck-typing.
+   * `tokens` (space-joined or array) + `strength` / `range` / `spin` / `angle` / `color` define the
+   * emitter; `rect()` is sampled each frame for its box in field-pixel space (project a mesh's world
+   * position through here). The body **carries a data record** (`data`, surfaced on the handle — the
+   * Body-level analog of a particle's atom) and can take **per-body feedback** (`onFeedback`, this
+   * body's channels each frame, demultiplexed from the global sink). It persists across `rescan()`.
+   * Returns a {@link BodyHandle} — `data`, the live `channels`, and `remove()`.
+   */
+  addBody(spec: BodySpec): BodyHandle;
   /** The seeded record on the nearest particle to (x, y) within ~24px, or null. For hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null;
   /**

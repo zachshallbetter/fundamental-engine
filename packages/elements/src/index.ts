@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -235,6 +235,10 @@ export class FieldField extends HTMLElementBase {
   /** add an engine-stepped agent; returns an inert no-op handle if the field hasn't started. */
   addAgent(spec: AgentSpec): AgentHandle {
     return this.field?.addAgent(spec) ?? { particle: {} as never, remove: () => {} };
+  }
+  /** add a programmatic body (no DOM) from a spec; a no-op handle until the field starts. */
+  addBody(spec: BodySpec): BodyHandle {
+    return this.field?.addBody(spec) ?? { data: spec.data, channels: {}, remove: () => {} };
   }
   /** the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null {
