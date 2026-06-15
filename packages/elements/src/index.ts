@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -35,6 +35,16 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {boolean} causality - Enables the causality demo behaviour.
  * @attr {string} background - Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.
  */
+
+/** A no-op scalar grid returned by `grid()` before the element's field has started. */
+const NULL_GRID: ScalarGrid = {
+  sample: () => 0,
+  deposit: () => {},
+  gradient: () => ({ x: 0, y: 0 }),
+  decay: () => {},
+  clear: () => {},
+};
+
 export class FieldField extends HTMLElementBase {
   static readonly observedAttributes = [
     'accent',
@@ -263,6 +273,10 @@ export class FieldField extends HTMLElementBase {
   /** sample the density gradient ∇ at `(x, y)` — up-density direction (needs `heatmap`); `{0,0}` when off/not started. */
   sampleGradient(x: number, y: number): { x: number; y: number } {
     return this.field?.sampleGradient(x, y) ?? { x: 0, y: 0 };
+  }
+  /** open a named host-authorable scalar grid (deposit/sample/gradient/decay); a no-op grid until the field starts. */
+  grid(name: string): ScalarGrid {
+    return this.field?.grid(name) ?? NULL_GRID;
   }
 
   connectedCallback(): void {

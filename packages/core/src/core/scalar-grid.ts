@@ -135,6 +135,14 @@ export class ScalarGridImpl implements ScalarGrid {
     this.nxt = prev;
   }
 
+  /** Fade every cell toward zero by `rate` ∈ [0,1] (`1` clears) — a host-authored decay on top of
+   *  the grid's own per-frame mode stepping. Touches the current buffer only. */
+  decay(rate: number): void {
+    const k = rate <= 0 ? 1 : rate >= 1 ? 0 : 1 - rate;
+    if (k === 1) return;
+    for (let i = 0; i < this.cur.length; i++) this.cur[i]! *= k;
+  }
+
   /** Zero every cell in all internal buffers (cur, nxt, prev). */
   clear(): void {
     this.cur.fill(0);

@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ThreadLink } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -255,6 +255,10 @@ export class FieldLayer implements FieldHandle {
   /** density gradient ∇ at `(x, y)` — up-density direction in field px; needs `{ heatmap: true }`, `{0,0}` when off. */
   sampleGradient(x: number, y: number): { x: number; y: number } {
     return this.field.sampleGradient(x, y);
+  }
+  /** open a named host-authorable scalar grid (deposit/sample/gradient/decay) in field px — a scent/wear/goal field. */
+  grid(name: string): ScalarGrid {
+    return this.field.grid(name);
   }
   scrollV(): number {
     return this.field.scrollV();

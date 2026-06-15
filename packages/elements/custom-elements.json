@@ -356,7 +356,7 @@
       "declarations": [
         {
           "kind": "class",
-          "description": "`<field-root>` — the reciprocal field as a custom element.\n\nDrop it once on a page; it renders a full-viewport canvas behind the content\nand scans the document for `[data-body]` / `[data-preset]` elements, turning\neach into a body in the field (§2.1).\n\nThe point of shipping a **custom element**: it works in React, Svelte, Astro,\nVue, or plain HTML unchanged — \"every element is a body\" as a native, portable\nprimitive, with no framework lock-in for consumers.\n\nPlain `HTMLElement` (the field is just a canvas — no templating). Lit earns its\nplace when there's UI to template, e.g. the Lab controls (§14).",
+          "description": "",
           "name": "FieldField",
           "members": [
             {
@@ -997,6 +997,24 @@
             },
             {
               "kind": "method",
+              "name": "grid",
+              "return": {
+                "type": {
+                  "text": "ScalarGrid"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "open a named host-authorable scalar grid (deposit/sample/gradient/decay); a no-op grid until the field starts."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -1013,84 +1031,43 @@
           ],
           "attributes": [
             {
-              "name": "accent",
-              "type": {
-                "text": "string"
-              },
-              "description": "Accent color (hex) the field draws particles and overlay in."
+              "name": "accent"
             },
             {
-              "name": "density",
-              "type": {
-                "text": "number"
-              },
-              "description": "Particle-density multiplier (default `1`; `0.5` halves the count)."
+              "name": "density"
             },
             {
-              "name": "waves",
-              "type": {
-                "text": "number"
-              },
-              "description": "Intensity of the resting wave currents (the ambient drift)."
+              "name": "waves"
             },
             {
-              "name": "render",
-              "type": {
-                "text": "string"
-              },
-              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn."
+              "name": "render"
             },
             {
-              "name": "overlay",
-              "type": {
-                "text": "string"
-              },
-              "description": "Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order)."
+              "name": "overlay"
             },
             {
-              "name": "palette",
-              "type": {
-                "text": "string"
-              },
-              "description": "Named color palette for the field."
+              "name": "palette"
             },
             {
-              "name": "mass",
-              "type": {
-                "text": "number"
-              },
-              "description": "Global mass scaling applied to bodies."
+              "name": "mass"
             },
             {
-              "name": "attention",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Enables the conserved-attention behaviour (one finite budget, redistributed)."
+              "name": "attention"
             },
             {
-              "name": "causality",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Enables the causality demo behaviour."
+              "name": "causality"
             },
             {
               "name": "heatmap"
             },
             {
-              "name": "background",
-              "type": {
-                "text": "string"
-              },
-              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate."
+              "name": "background"
             }
           ],
           "superclass": {
             "name": "HTMLElementBase",
             "module": "/src/base.ts"
           },
-          "summary": "The page-singleton reciprocal field — a full-viewport canvas that turns\n`[data-body]` / `[data-preset]` elements into bodies. Registered as `<field-root>`\n(canonical) and `<field-field>`.",
           "tagName": "field-field",
           "customElement": true
         },
@@ -1107,10 +1084,6 @@
           "attributes": [
             {
               "name": "accent",
-              "type": {
-                "text": "string"
-              },
-              "description": "Accent color (hex) the field draws particles and overlay in.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1118,10 +1091,6 @@
             },
             {
               "name": "density",
-              "type": {
-                "text": "number"
-              },
-              "description": "Particle-density multiplier (default `1`; `0.5` halves the count).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1129,10 +1098,6 @@
             },
             {
               "name": "waves",
-              "type": {
-                "text": "number"
-              },
-              "description": "Intensity of the resting wave currents (the ambient drift).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1140,10 +1105,6 @@
             },
             {
               "name": "render",
-              "type": {
-                "text": "string"
-              },
-              "description": "Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1151,10 +1112,6 @@
             },
             {
               "name": "overlay",
-              "type": {
-                "text": "string"
-              },
-              "description": "Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1162,10 +1119,6 @@
             },
             {
               "name": "palette",
-              "type": {
-                "text": "string"
-              },
-              "description": "Named color palette for the field.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1173,10 +1126,6 @@
             },
             {
               "name": "mass",
-              "type": {
-                "text": "number"
-              },
-              "description": "Global mass scaling applied to bodies.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1184,10 +1133,6 @@
             },
             {
               "name": "attention",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Enables the conserved-attention behaviour (one finite budget, redistributed).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1195,10 +1140,6 @@
             },
             {
               "name": "causality",
-              "type": {
-                "text": "boolean"
-              },
-              "description": "Enables the causality demo behaviour.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1213,10 +1154,6 @@
             },
             {
               "name": "background",
-              "type": {
-                "text": "string"
-              },
-              "description": "Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2031,6 +1968,28 @@
                 }
               ],
               "description": "sample the density gradient ∇ at `(x, y)` — up-density direction (needs `heatmap`); `{0,0}` when off/not started.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "grid",
+              "return": {
+                "type": {
+                  "text": "ScalarGrid"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "open a named host-authorable scalar grid (deposit/sample/gradient/decay); a no-op grid until the field starts.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
