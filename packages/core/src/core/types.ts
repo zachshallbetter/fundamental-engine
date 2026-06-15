@@ -413,6 +413,17 @@ export type OverlayMode =
 /** One reading, or an additive stack of readings, for `setOverlay` / `FieldOptions.overlay`. */
 export type OverlayInput = OverlayMode | readonly OverlayMode[];
 
+/** A full surface-state description for {@link FieldHandle.setSurfaces} — matter, readings, and the
+ *  accumulation layer as one plan. An omitted key means its default. */
+export interface SurfacePlan {
+  /** the matter surface BEHIND content — the render mode; default `'dots'`. */
+  underlay?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none';
+  /** the readings surface IN FRONT of content — one mode or an additive stack; default none (`'off'`). */
+  overlay?: OverlayInput;
+  /** the density accumulation layer; default `false`. */
+  heatmap?: boolean;
+}
+
 export interface FieldOptions {
   /** travelling accent color (§9). */
   accent?: string;
@@ -602,6 +613,18 @@ export interface FieldHandle {
   setCausality(on: boolean): void;
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void;
+  /**
+   * Set the **whole surface state** in one declarative call — the field draws on three surfaces and
+   * this is the one verb that names them as one concept: `underlay` (matter behind content, the
+   * render mode), `overlay` (readings in front, an additive stack), `heatmap` (the density
+   * accumulation layer). The plan is the entire truth: an **omitted key resets to its default**
+   * (`'dots'` / none / `false`), exactly like a recipe — so it's idempotent, snapshot-able, and
+   * restorable. The single-surface verbs (`setRender`/`setOverlay`/`setHeatmap`) remain for surgical
+   * pokes. Pair with `getSurfaces()` for round-trip save/restore. (#385)
+   */
+  setSurfaces(plan: SurfacePlan): void;
+  /** The current surface state — the inverse of `setSurfaces`. `setSurfaces(getSurfaces())` is a no-op. */
+  getSurfaces(): Required<SurfacePlan>;
   /**
    * Switch the underlay render mode (§20.6) live — the surface behind content. `'none'` is the
    * signals-only mode (§13.7 / #297): drawing stops from the next frame while the simulation and

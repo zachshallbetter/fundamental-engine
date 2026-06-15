@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, SurfacePlan } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -206,6 +206,14 @@ export class FieldLayer implements FieldHandle {
   }
   setHeatmap(on: boolean): void {
     this.field.setHeatmap(on);
+  }
+  /** set the whole surface state (underlay/overlay/heatmap) in one declarative call. */
+  setSurfaces(plan: SurfacePlan): void {
+    this.field.setSurfaces(plan);
+  }
+  /** the current surface state; the inverse of setSurfaces. */
+  getSurfaces(): Required<SurfacePlan> {
+    return this.field.getSurfaces();
   }
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);

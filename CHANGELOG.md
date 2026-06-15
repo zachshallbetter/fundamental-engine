@@ -9,6 +9,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.setSurfaces(plan)` + `getSurfaces()` — one declarative verb for the surfaces (core).**
+  The field draws on three surfaces, controlled by three differently-shaped verbs (`setRender` exclusive,
+  `setOverlay` additive, `setHeatmap` toggle) whose names taught them as three features rather than one
+  concept. `setSurfaces({ underlay, overlay, heatmap })` is the single declarative description — matter
+  behind content, readings in front, the accumulation layer. **Full-state semantics:** an omitted key
+  resets to its default (`'dots'` / none / `false`), exactly like a recipe, so it's idempotent,
+  snapshot-able, and restorable. `getSurfaces()` returns the current state (the inverse —
+  `setSurfaces(getSurfaces())` is a no-op). The three single-surface verbs remain documented plumbing
+  for surgical pokes. Mirrored on vanilla / elements / three; additive. (#385)
+
+### Added
+
 - **`FieldHandle.addBody(spec)` — first-class programmatic bodies (core).** The only sanctioned way to
   make a body was the `[data-body]` DOM scan, so a non-DOM host (`@fundamental-engine/three`, a native
   view) had to duck-type a fake element + a fake `querySelectorAll` root (#393/#418). `addBody(spec)` is

@@ -1763,7 +1763,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   onScroll();
   raf = host.raf(frame);
 
-  return {
+  const handle: FieldHandle = {
     scan,
     rescan: scan,
     setAccent: (hex) => {
@@ -1838,6 +1838,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
     },
+    setSurfaces: (plan) => {
+      // One declarative verb for the whole surface state — the plan IS the truth, so an omitted key
+      // resets to its default (matter `dots`, no readings, no accumulation). Idempotent and
+      // restorable; the three single-surface verbs remain for surgical pokes. (#385)
+      handle.setRender(plan.underlay ?? 'dots');
+      handle.setOverlay(plan.overlay ?? 'off');
+      handle.setHeatmap(plan.heatmap ?? false);
+    },
+    getSurfaces: () => ({ underlay: cfg.render, overlay: cfg.overlay, heatmap: cfg.heatmap }),
     threads: setThreads,
     burst: (x, y, hex) => {
       // discrete one-shot: shove + heat nearby matter, optionally tint it (§11).
@@ -2053,4 +2062,6 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       store.clear();
     },
   };
+
+  return handle;
 }

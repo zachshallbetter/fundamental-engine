@@ -667,6 +667,34 @@
             },
             {
               "kind": "method",
+              "name": "setSurfaces",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "plan",
+                  "type": {
+                    "text": "SurfacePlan"
+                  }
+                }
+              ],
+              "description": "set the whole surface state (underlay/overlay/heatmap) in one declarative call."
+            },
+            {
+              "kind": "method",
+              "name": "getSurfaces",
+              "return": {
+                "type": {
+                  "text": "Required<SurfacePlan>"
+                }
+              },
+              "description": "the current surface state; the inverse of setSurfaces."
+            },
+            {
+              "kind": "method",
               "name": "setRender",
               "return": {
                 "type": {
@@ -1630,6 +1658,42 @@
                 }
               ],
               "description": "toggle the density heatmap layer (field-systems H1) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setSurfaces",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "plan",
+                  "type": {
+                    "text": "SurfacePlan"
+                  }
+                }
+              ],
+              "description": "set the whole surface state (underlay/overlay/heatmap) in one declarative call.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "getSurfaces",
+              "return": {
+                "type": {
+                  "text": "Required<SurfacePlan>"
+                }
+              },
+              "description": "the current surface state; the inverse of setSurfaces.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
