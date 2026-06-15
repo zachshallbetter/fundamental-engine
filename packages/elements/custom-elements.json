@@ -1015,6 +1015,30 @@
             },
             {
               "kind": "method",
+              "name": "on",
+              "return": {
+                "type": {
+                  "text": "() => void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "type",
+                  "type": {
+                    "text": "K"
+                  }
+                },
+                {
+                  "name": "cb",
+                  "type": {
+                    "text": "(e: FieldEventMap[K]) => void"
+                  }
+                }
+              ],
+              "description": "subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -1990,6 +2014,34 @@
                 }
               ],
               "description": "open a named host-authorable scalar grid (deposit/sample/gradient/decay); a no-op grid until the field starts.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "on",
+              "return": {
+                "type": {
+                  "text": "() => void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "type",
+                  "type": {
+                    "text": "K"
+                  }
+                },
+                {
+                  "name": "cb",
+                  "type": {
+                    "text": "(e: FieldEventMap[K]) => void"
+                  }
+                }
+              ],
+              "description": "subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

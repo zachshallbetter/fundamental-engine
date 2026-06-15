@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -259,6 +259,10 @@ export class FieldLayer implements FieldHandle {
   /** open a named host-authorable scalar grid (deposit/sample/gradient/decay) in field px — a scent/wear/goal field. */
   grid(name: string): ScalarGrid {
     return this.field.grid(name);
+  }
+  /** subscribe to a discrete field event (absorb/release/settle); returns an unsubscribe fn. */
+  on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
+    return this.field.on(type, cb);
   }
   scrollV(): number {
     return this.field.scrollV();

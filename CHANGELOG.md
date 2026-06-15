@@ -9,6 +9,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.on(type, cb)` — a host-agnostic discrete event bus (core).** The engine emitted
+  continuous feedback channels (`density`/`load`/…) but no discrete *occurrences*, so a non-DOM host
+  (3D/native/headless) had to poll state every frame to know when something happened. `on(type, cb)`
+  delivers occurrences as plain-data push (no DOM, distinct from the `data-on` CustomEvent bindings),
+  returning an unsubscribe. First events: **`absorb`** / **`release`** — a `sink` body captured / let
+  go of matter (the rising / falling edge of accretion), `{ body, count }`. Detection is lazy — a type
+  with no listener costs nothing. (`contact`, `settle`, and per-particle `enter`·`exit` are the next
+  slice, #441.) Mirrored on vanilla / elements / three; additive to the (unfrozen) handle.
+
+### Added
+
 - **`FieldHandle.grid(name)` — host-authorable scalar grids (core).** The engine's field-buffer
   primitive (the uniform scalar grid `diffuse` / `memory` / `propagate` run on) is now a public
   surface, so an application can lay down and read its own fields the simulation composes with: a scent

@@ -5,6 +5,22 @@
  * comma-separated). Rising-edge debounced: fires once on cross, re-arms on reset.
  */
 
+import type { Body } from './types.ts';
+
+// ── host-agnostic discrete event bus (the read side, occurrences not state) ──────────────────
+// Plain-data push delivery a non-DOM host (3D/native/headless) can subscribe to with
+// `FieldHandle.on(type, cb)` — react to occurrences instead of polling the continuous feedback
+// channels every frame. Distinct from the `data-on` CustomEvent bindings above (DOM-only).
+
+/** The discrete occurrences the field emits, keyed by type → payload. */
+export interface FieldEventMap {
+  /** a `sink` body captured matter — fired on the rising edge of accreting. */
+  absorb: { body: Body; count: number };
+  /** a `sink` body released what it held — fired on the falling edge / supernova. */
+  release: { body: Body; count: number };
+}
+export type FieldEventType = keyof FieldEventMap;
+
 export interface EventBinding {
   trigger: string;
   event: string;

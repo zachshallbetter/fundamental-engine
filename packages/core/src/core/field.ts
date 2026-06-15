@@ -48,7 +48,7 @@ import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
 import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
 import { withinCapture, stepDock, dockTransform, type DockState } from './dock.ts';
-import { parseEventBindings, triggerActive, type EventBinding } from './events.ts';
+import { parseEventBindings, triggerActive, type EventBinding, type FieldEventMap, type FieldEventType } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
@@ -101,6 +101,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const store = new FieldStore();
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
   const reg = createRegistry();
+
+  // host-agnostic discrete event bus (the read side): plain-data push for occurrences a non-DOM
+  // host reacts to (a sink caught/released matter, the swarm settled) — no DOM, no polling. Cheap
+  // when unused: detection passes guard on `busHas(type)` so zero listeners cost nothing.
+  const busListeners = new Map<FieldEventType, Set<(e: never) => void>>();
+  const busHas = (type: FieldEventType): boolean => (busListeners.get(type)?.size ?? 0) > 0;
+  function busEmit<K extends FieldEventType>(type: K, payload: FieldEventMap[K]): void {
+    const set = busListeners.get(type);
+    if (set) for (const cb of set) (cb as (e: FieldEventMap[K]) => void)(payload);
+  }
+  const sinkPeak = new WeakMap<Body, number>(); // matter held at the rising edge, for the release count
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
   registerExtendedForces(reg); // designed extended forces: lens, … (§20.3), opt-in
@@ -298,6 +309,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (b.el.dataset.fxCap === '1') {
         b.el.dataset.fxCap = '0';
         fireCaptureEvent(b.el, 'released', { accreted: 0, load: 0 });
+        if (busHas('release')) busEmit('release', { body: b, count: released.length });
+        sinkPeak.delete(b);
       }
     },
     // class-[S] sources emit through here, capped by a hard pool ceiling (the
@@ -562,9 +575,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (edge.fire === 'captured') {
         b.el.dataset.fxCap = '1';
         fireCaptureEvent(b.el, 'captured', { accreted: b.accreted, load: sinkLoad(b) });
+        if (busHas('absorb')) busEmit('absorb', { body: b, count: b.accreted });
+        sinkPeak.set(b, b.accreted);
       } else if (edge.fire === 'released') {
         b.el.dataset.fxCap = '0';
         fireCaptureEvent(b.el, 'released', { accreted: 0, load: 0 });
+        if (busHas('release')) busEmit('release', { body: b, count: sinkPeak.get(b) ?? 0 });
+        sinkPeak.delete(b);
       }
     }
   }
@@ -1918,6 +1935,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     sampleScalar: (x, y) => (heatmap ? heatmap.norm(x, y) : 0),
     sampleGradient: (x, y) => (heatmap ? heatmap.gradient(x, y) : { x: 0, y: 0 }),
     grid: (name) => env.grid(name),
+    on: <K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void) => {
+      let set = busListeners.get(type);
+      if (!set) { set = new Set(); busListeners.set(type, set); }
+      set.add(cb as (e: never) => void);
+      return () => void set!.delete(cb as (e: never) => void);
+    },
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;
