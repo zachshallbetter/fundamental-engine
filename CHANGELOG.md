@@ -7,6 +7,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-06-14
+
 ### Fixed
 
 - **`@fundamental-engine/three` samplers — EMA-smoothed vector field + core field-line tracing.**
