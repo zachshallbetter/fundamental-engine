@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -34,6 +34,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {boolean} attention - Enables the conserved-attention behaviour (one finite budget, redistributed).
  * @attr {boolean} causality - Enables the causality demo behaviour.
  * @attr {string} background - Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.
+ * @attr {number} depth - Optional z-volume (default `0`, the flat field). `> 0` opens a shallow depth the matter drifts through, projected as a size/alpha recession. Construction-time — changing it rebuilds.
  */
 
 /** A no-op scalar grid returned by `grid()` before the element's field has started. */
@@ -46,10 +47,42 @@ const NULL_GRID: ScalarGrid = {
 };
 
 export class FieldField extends HTMLElementBase {
+  /**
+   * The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —
+   * the single source of truth for the option object built in `start()`, so a new forwarded
+   * `FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`
+   * (raw passthrough so a `palette` with no `accent` adopts the palette stop) and
+   * `overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.
+   *
+   * `observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads
+   * it statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it
+   * to this table (every `attr` here must be observed), so the two lists can't drift apart.
+   */
+  private static readonly OPTIONS: ReadonlyArray<{
+    key: keyof FieldOptions;
+    attr: string;
+    read: (el: FieldField) => unknown;
+  }> = [
+    { key: 'density', attr: 'density', read: (el) => el.density },
+    { key: 'waves', attr: 'waves', read: (el) => el.waves },
+    { key: 'depth', attr: 'depth', read: (el) => el.depth },
+    { key: 'background', attr: 'background', read: (el) => el.background },
+    { key: 'render', attr: 'render', read: (el) => el.renderMode },
+    { key: 'overlay', attr: 'overlay', read: (el) => el.overlay },
+    { key: 'palette', attr: 'palette', read: (el) => el.palette },
+    { key: 'mass', attr: 'mass', read: (el) => el.mass },
+    { key: 'attention', attr: 'attention', read: (el) => el.attention },
+    { key: 'causality', attr: 'causality', read: (el) => el.causality },
+    { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap },
+    { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap },
+  ];
+
+  // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
   static readonly observedAttributes = [
     'accent',
     'density',
     'waves',
+    'depth',
     'render',
     'overlay',
     'palette',
@@ -170,6 +203,11 @@ export class FieldField extends HTMLElementBase {
   get dprCap(): number | undefined {
     const v = Number(this.getAttribute('dpr-cap'));
     return v > 0 ? v : undefined;
+  }
+  /** `depth` — optional z-volume; undefined (engine default 0, the flat field) if absent/invalid. */
+  get depth(): number | undefined {
+    const v = Number(this.getAttribute('depth'));
+    return Number.isFinite(v) && v > 0 ? v : undefined;
   }
 
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
@@ -406,23 +444,16 @@ export class FieldField extends HTMLElementBase {
       document.body.appendChild(oc);
       this.overlayCanvas = oc;
     }
-    this.field = createBrowserField(this.canvas, {
+    const opts: FieldOptions = {
       // pass the raw attribute so a `palette` with no `accent` adopts the palette's first stop
       accent: this.getAttribute('accent') ?? undefined,
-      density: this.density,
-      waves: this.waves,
-      background: this.background,
-      render: this.renderMode,
       overlayCanvas: this.overlayCanvas,
-      overlay: this.overlay,
-      palette: this.palette,
-      mass: this.mass,
-      attention: this.attention,
-      causality: this.causality,
-      heatmap: this.heatmap,
-      dprCap: this.dprCap,
       feedbackSink,
-    });
+    };
+    // the rest of the engine options come from the one declarative table (above), so a new
+    // FieldOption can never be silently dropped here the way `depth` once was.
+    for (const o of FieldField.OPTIONS) (opts as Record<string, unknown>)[o.key] = o.read(this);
+    this.field = createBrowserField(this.canvas, opts);
     // attach the handle so the platform write phase can read scrollV → --field-scroll-v
     // and the quality governor can monitor frame duration
     this.platformRuntime?.attachHandle(this.field);

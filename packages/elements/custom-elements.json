@@ -361,6 +361,18 @@
           "members": [
             {
               "kind": "field",
+              "name": "OPTIONS",
+              "type": {
+                "text": "ReadonlyArray<{\n    key: keyof FieldOptions;\n    attr: string;\n    read: (el: FieldField) => unknown;\n  }>"
+              },
+              "privacy": "private",
+              "static": true,
+              "readonly": true,
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, ]",
+              "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart."
+            },
+            {
+              "kind": "field",
               "name": "canvas",
               "type": {
                 "text": "HTMLCanvasElement"
@@ -526,6 +538,15 @@
                 "text": "number | undefined"
               },
               "description": "`dpr-cap` — backing-store DPR ceiling (#410); undefined (engine default 2) if absent/invalid.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "depth",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`depth` — optional z-volume; undefined (engine default 0, the flat field) if absent/invalid.",
               "readonly": true
             },
             {
@@ -1181,6 +1202,9 @@
               "name": "waves"
             },
             {
+              "name": "depth"
+            },
+            {
               "name": "render"
             },
             {
@@ -1216,6 +1240,13 @@
           "customElement": true
         },
         {
+          "kind": "variable",
+          "name": "feedbackSink",
+          "type": {
+            "text": "FeedbackSink | undefined"
+          }
+        },
+        {
           "kind": "class",
           "description": "`<field-root>` — the recommended tag for the singleton field. The registry rejects registering one\nconstructor under two tag names, so this is a thin subclass of FieldField with identical\nbehaviour, attributes, and body contract.",
           "name": "FieldRoot",
@@ -1242,6 +1273,13 @@
             },
             {
               "name": "waves",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "depth",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1312,6 +1350,22 @@
             }
           ],
           "members": [
+            {
+              "kind": "field",
+              "name": "OPTIONS",
+              "type": {
+                "text": "ReadonlyArray<{\n    key: keyof FieldOptions;\n    attr: string;\n    read: (el: FieldField) => unknown;\n  }>"
+              },
+              "privacy": "private",
+              "static": true,
+              "readonly": true,
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, ]",
+              "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
             {
               "kind": "field",
               "name": "canvas",
@@ -1551,6 +1605,19 @@
                 "text": "number | undefined"
               },
               "description": "`dpr-cap` — backing-store DPR ceiling (#410); undefined (engine default 2) if absent/invalid.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "depth",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`depth` — optional z-volume; undefined (engine default 0, the flat field) if absent/invalid.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
