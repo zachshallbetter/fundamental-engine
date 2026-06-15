@@ -106,6 +106,24 @@ debug overlays
 topology analysis
 ```
 
+### 2.1 External field channels (`addField`)
+
+A host may register its own scalar field as a named **channel** the engine samples on the same read
+path as its built-in field functions:
+
+```ts
+addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle
+sampleField(name: string, x: number, y: number): number
+```
+
+This is the open **input** analog of the render surfaces (`setRender`/`setOverlay` are bundled *output*
+layers; `addField` is an on-demand *input* channel) — the same shape as the `grid(name)` host-authorable
+buffer, but for a field the host already owns (terrain height, soil moisture, a temperature map). A
+channel sampler obeys the field-function contract above (side-effect free, stable for a fixed state); it
+is **pull-based** — called on demand, never cached — so it must stay cheap. The `FieldChannelHandle`
+swaps the sampler live or removes the channel. Reading a channel as a force *potential* is a separate,
+opt-in coupling — `addField` is the read substrate, not yet a cause.
+
 ## 3. Force Contract
 
 A force is cause.
