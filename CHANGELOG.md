@@ -7,6 +7,21 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **React adapter forwards the full `FieldOptions`.** `<FieldField>` and `useFieldField` destructured
+  only 10 of the engine options and silently dropped `depth`, `heatmap`, `overlayBackend`, `rng`, `now`,
+  and `feedbackSink` — so `<FieldField heatmap depth={120} />` did nothing. All `FieldOptions` are now
+  forwarded to `createBrowserField` in both the component and the hook (declarative ones drive
+  recreation via the dep list; the determinism/feedback seams forward but stay out of deps). (#468)
+
+### Added
+
+- **Adapter type re-exports.** `@fundamental-engine/{vanilla,react}` now re-export `AgentSpec`,
+  `AgentHandle`, `AtomPayload`, `FeedbackSink`, and `FeedbackChannels` (and vanilla re-exports the
+  `cssFeedbackSink` value), so consumers using `field.addAgent(...)` / `field.atomAt(...)` / a custom
+  feedback sink don't have to import the types from `@fundamental-engine/core` separately. (#469)
+
 ### Added
 
 - **`FieldHandle.sampleGradient(x, y)` — the analytic gradient of the density field (core).** The

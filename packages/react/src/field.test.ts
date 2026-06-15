@@ -120,6 +120,22 @@ test('overlay:"off" with overlayCanvas does not throw', async () => {
   });
 });
 
+test('the options <FieldField> previously dropped now construct, and the handle carries the full surface', async () => {
+  // <FieldField> / useFieldField forward the whole FieldOptions set; the platform path they
+  // delegate to must accept the once-dropped options (heatmap/depth/rng/now), and the handle
+  // a consumer gets via onReady / fieldRef must expose the newer read methods.
+  const { makeCanvas } = installDOM();
+  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const main = makeCanvas();
+  assert.doesNotThrow(() => {
+    const h = createBrowserField(main, { heatmap: true, depth: 60, rng: Math.random, now: () => 0 });
+    for (const m of ['addAgent', 'sample', 'sampleScalar', 'sampleGradient', 'readParticles']) {
+      assert.equal(typeof (h as unknown as Record<string, unknown>)[m], 'function', `handle exposes ${m}`);
+    }
+    h.destroy();
+  });
+});
+
 test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)', async () => {
   const { makeCanvas } = installDOM();
   const { createBrowserField } = await import('@fundamental-engine/platform');
