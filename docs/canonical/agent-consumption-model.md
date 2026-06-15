@@ -239,3 +239,5 @@ Field Agent Consumption Model
     source · attract/repel/shape · capture (sink) · hold · release · expose feedback     (shipped)
     dock an element (data-dock) · emit a node (data-emit) · relocate/teleport (data-warp) (shipped)
 ```
+
+> **Body-carried data (addBody).** A programmatic body created with `FieldHandle.addBody(spec)` carries an opaque `data` record — the Body-level analog of a particle's `atom`. It extends this model from *matter that carries records* to *sources that carry records*: an emitter is itself an addressable agent with attached data and per-body feedback (`onFeedback`), surfaced on its `BodyHandle`.
