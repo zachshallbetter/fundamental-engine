@@ -28,7 +28,14 @@ export type {
   Force,
   Formation,
   Vec2,
+  AgentSpec,
+  AgentHandle,
+  AtomPayload,
+  FeedbackSink,
+  FeedbackChannels,
 } from '@fundamental-engine/core';
+// the feedback CSS adapter, for a host that wants the default DOM write path explicitly.
+export { cssFeedbackSink } from '@fundamental-engine/core';
 
 // The catalog data a vanilla UI commonly reads — the force list, formations, `data-when`
 // gates, and the palette — so a force picker or legend needs no second install.

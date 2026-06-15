@@ -36,14 +36,20 @@ export function FieldField({
   onReady,
   accent,
   density,
+  depth,
   waves,
   background,
   render,
   overlay,
+  overlayBackend,
   mass,
   palette,
   attention,
   causality,
+  heatmap,
+  rng,
+  now,
+  feedbackSink,
 }: FieldFieldProps): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onReadyRef = useRef(onReady);
@@ -67,9 +73,10 @@ export function FieldField({
     }
 
     const field = createBrowserField(canvas, {
-      accent, density, waves, background, render,
-      overlay, overlayCanvas: overlayCanvasRef.current ?? undefined,
-      mass, palette, attention, causality,
+      accent, density, depth, waves, background, render,
+      overlay, overlayCanvas: overlayCanvasRef.current ?? undefined, overlayBackend,
+      mass, palette, attention, causality, heatmap,
+      rng, now, feedbackSink,
     });
     onReadyRef.current?.(field);
     return () => {
@@ -78,8 +85,10 @@ export function FieldField({
       overlayCanvasRef.current?.remove();
       overlayCanvasRef.current = null;
     };
-    // re-create only when an engine option actually changes
-  }, [accent, density, waves, background, render, overlay, mass, palette, attention, causality]);
+    // re-create only when a declarative engine option actually changes. The determinism/feedback
+    // seams (rng/now/feedbackSink/overlayBackend) are config-set-once — forwarded above, but kept
+    // out of the dep list so an inline value passed each render doesn't thrash the field.
+  }, [accent, density, depth, waves, background, render, overlay, mass, palette, attention, causality, heatmap]);
 
   return (
     <canvas ref={canvasRef} aria-hidden="true" className={className} style={{ ...FIXED, ...style }} />
@@ -98,7 +107,10 @@ export function useFieldField(opts: FieldOptions = {}): {
   const fieldRef = useRef<FieldHandle | null>(null);
   /** Field Surfaces: the front overlay surface this hook owns, lazily created. */
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { accent, density, waves, background, render, overlay, mass, palette, attention, causality } = opts;
+  const {
+    accent, density, depth, waves, background, render, overlay, overlayBackend,
+    mass, palette, attention, causality, heatmap, rng, now, feedbackSink,
+  } = opts;
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -114,9 +126,10 @@ export function useFieldField(opts: FieldOptions = {}): {
     }
 
     const field = createBrowserField(canvas, {
-      accent, density, waves, background, render,
-      overlay, overlayCanvas: overlayCanvasRef.current ?? undefined,
-      mass, palette, attention, causality,
+      accent, density, depth, waves, background, render,
+      overlay, overlayCanvas: overlayCanvasRef.current ?? undefined, overlayBackend,
+      mass, palette, attention, causality, heatmap,
+      rng, now, feedbackSink,
     });
     fieldRef.current = field;
     return () => {
@@ -126,6 +139,20 @@ export function useFieldField(opts: FieldOptions = {}): {
       overlayCanvasRef.current?.remove();
       overlayCanvasRef.current = null;
     };
-  }, [accent, density, waves, background, render, overlay, mass, palette, attention, causality]);
+    // declarative options drive recreation; the seams (rng/now/feedbackSink/overlayBackend) forward but stay out of deps.
+  }, [accent, density, depth, waves, background, render, overlay, mass, palette, attention, causality, heatmap]);
   return { canvasRef, fieldRef };
 }
+
+// Re-export the core types a React consumer needs off the handle (addAgent / atomAt / feedback),
+// so they don't have to reach into @fundamental-engine/core separately.
+export type {
+  FieldHandle,
+  FieldOptions,
+  Vec2,
+  AgentSpec,
+  AgentHandle,
+  AtomPayload,
+  FeedbackSink,
+  FeedbackChannels,
+} from '@fundamental-engine/core';
