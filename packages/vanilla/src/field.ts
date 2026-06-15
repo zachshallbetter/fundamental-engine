@@ -134,6 +134,10 @@ export class FieldField implements FieldHandle {
   sampleScalar(x: number, y: number): number {
     return this.field.sampleScalar(x, y);
   }
+  /** sample the density gradient ∇ at `(x, y)` — up-density direction (needs `heatmap: true`); `{0,0}` when off. */
+  sampleGradient(x: number, y: number): { x: number; y: number } {
+    return this.field.sampleGradient(x, y);
+  }
   scrollV(): number {
     return this.field.scrollV();
   }

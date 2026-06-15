@@ -11,7 +11,7 @@
  */
 import { ScalarGridImpl } from './scalar-grid.ts';
 import { clamp } from './math.ts';
-import type { Particle } from './types.ts';
+import type { Particle, Vec2 } from './types.ts';
 
 const CELL = 24; // grid resolution in px — coarse, so the per-frame deposit + render is cheap
 const DECAY = 0.12; // per-frame fade: high enough that the map tracks the CURRENT density
@@ -57,5 +57,15 @@ export class Heatmap {
   /** Normalized density ∈ [0, 1] at a point — for the glow render and DOM write-back. */
   norm(x: number, y: number): number {
     return clamp(this.grid.sample(x, y) / this.peak, 0, 1);
+  }
+
+  /** Gradient ∇ of the NORMALIZED density field at a point (points up-density), in 1/px — the
+   *  analytic companion to {@link norm}. Stays non-degenerate at a source because the grid is
+   *  diffused (a real slope where a nearest-body density would flatten to zero). Unnormalized by
+   *  the [0,1] clamp so it keeps pointing uphill even at saturation; { x: 0, y: 0 } on an empty field. */
+  gradient(x: number, y: number): Vec2 {
+    if (this.peak <= 0) return { x: 0, y: 0 };
+    const g = this.grid.gradient(x, y);
+    return { x: g.x / this.peak, y: g.y / this.peak };
   }
 }

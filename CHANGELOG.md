@@ -7,6 +7,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`FieldHandle.sampleGradient(x, y)` — the analytic gradient of the density field (core).** The
+  companion `sampleScalar` shipped without a gradient, so callers finite-differenced it — and sampled
+  too close in, that re-introduces the exact flattening-at-a-source the scalar exists to avoid (the
+  failure that forced foragers back onto explicit seek points). `sampleGradient` returns the `{x, y}`
+  direction + steepness (1/px) of increasing density straight off the same diffused heatmap grid
+  (central difference, normalized by the eased peak), so it stays non-degenerate at a source: add it to
+  a heading to climb toward matter, negate it to flee crowding. Requires the heatmap layer
+  (`createField({ heatmap: true })` / `setHeatmap(true)`); returns `{ x: 0, y: 0 }` when off or empty.
+  Pure, read-only, maintained under `render: 'none'`. Mirrored on vanilla / elements / three; additive
+  to the (unfrozen) handle. (Swift port tracked under #423.)
+
 ### Changed
 
 - **Documentation rebrand: `field-ui` → Fundamental, completed.** The #428 code rebrand renamed the

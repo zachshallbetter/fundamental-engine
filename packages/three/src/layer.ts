@@ -252,6 +252,10 @@ export class FieldLayer implements FieldHandle {
   sampleScalar(x: number, y: number): number {
     return this.field.sampleScalar(x, y);
   }
+  /** density gradient ∇ at `(x, y)` — up-density direction in field px; needs `{ heatmap: true }`, `{0,0}` when off. */
+  sampleGradient(x: number, y: number): { x: number; y: number } {
+    return this.field.sampleGradient(x, y);
+  }
   scrollV(): number {
     return this.field.scrollV();
   }

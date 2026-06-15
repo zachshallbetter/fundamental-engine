@@ -81,3 +81,36 @@ test('sampleScalar reads denser where matter has gathered (heatmap on, render no
     field.destroy();
   }
 });
+
+test('sampleGradient is { x: 0, y: 0 } when the heatmap layer is off', () => {
+  const { host } = drivableHost([]);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    assert.deepEqual(field.sampleGradient(500, 400), { x: 0, y: 0 }, 'no heatmap → zero gradient');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('sampleGradient points up-density toward a source and stays non-degenerate (the foraging cue)', () => {
+  const well = virtualBody({ 'data-body': 'attract', 'data-strength': '2.2', 'data-range': '800' }, {
+    x: 500, y: 400, w: 40, h: 40,
+  });
+  const { host, step } = drivableHost([well]);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none', heatmap: true });
+  try {
+    field.scan(); // register + measure the attract well
+    step(300); // gather matter and accumulate + diffuse the heatmap
+
+    // On the density slope to the RIGHT of the well, the gradient must (a) be non-zero — the
+    // non-degeneracy a nearest-body density loses at a source — and (b) point back toward the
+    // well (up-density). This is exactly the cue forage-by-gradient steers by.
+    const g = field.sampleGradient(560, 400);
+    const mag = Math.hypot(g.x, g.y);
+    assert.ok(mag > 0, `gradient is non-degenerate on the slope: |∇|=${mag.toExponential(2)}`);
+    const towardWell = g.x * (500 - 560) + g.y * (400 - 400); // dot with the direction to the well
+    assert.ok(towardWell > 0, `points up-density toward the well: ∇·(toWell)=${towardWell.toExponential(2)}`);
+  } finally {
+    field.destroy();
+  }
+});
