@@ -21,6 +21,7 @@ import {
   TubeGeometry,
   Vector3,
 } from 'three';
+import { traceFieldLine } from '@fundamental-engine/core';
 import type { FieldProjection } from './project.ts';
 
 /** Anything with the engine's `sample` — a `FieldLayer`, a `FieldHandle`, or a test stub. */
@@ -44,20 +45,15 @@ export function traceStreamline(
   seed: { x: number; y: number },
   opts: { width: number; height: number; maxSteps?: number; stepLen?: number; minMag?: number },
 ): { x: number; y: number }[] {
-  const { width, height, maxSteps = 80, stepLen = 8, minMag = 1e-6 } = opts;
-  const pts: { x: number; y: number }[] = [{ x: seed.x, y: seed.y }];
-  let x = seed.x;
-  let y = seed.y;
-  for (let i = 0; i < maxSteps; i++) {
-    const v = field.sample(x, y);
-    const m = Math.hypot(v.x, v.y);
-    if (m < minMag) break;
-    x += (v.x / m) * stepLen;
-    y += (v.y / m) * stepLen;
-    if (x < 0 || y < 0 || x > width || y > height) break;
-    pts.push({ x, y });
-  }
-  return pts;
+  const { width, height, maxSteps = 80, stepLen = 8 } = opts;
+  // Delegate to the core tracer rather than re-walking the field forward-only: traceFieldLine is
+  // bidirectional (the seed sits mid-line), closes loops, and carries a turn budget so a vortex
+  // can't wind the whole step budget into one circle — the qualities the old local walk lacked.
+  return traceFieldLine((x, y) => field.sample(x, y), seed.x, seed.y, {
+    step: stepLen,
+    maxSteps,
+    bounds: { w: width, h: height },
+  });
 }
 
 export interface VectorFieldOptions {
@@ -105,19 +101,26 @@ export function vectorField(field: FieldSampler, opts: VectorFieldOptions): Fiel
   // The grid position is recomputed from the flat index, so only the sampled vector is stored.
   const vx = new Float64Array(count);
   const vy = new Float64Array(count);
+  // EMA-smoothed peak (the core "pulsing lesson", field.ts §streamlines): normalizing by the raw
+  // per-frame max makes every arrow jitter as a transient (a dragged body, an animated strength)
+  // shifts the peak frame to frame. Ease the peak up fast so a real spike normalizes promptly, and
+  // down slowly so the field reads as a calm pulse rather than a flicker.
+  let peak = 1e-6;
 
   const update = (): void => {
-    let max = 1e-6;
+    let frameMax = 1e-6;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const v = field.sample((c + 0.5) * step, (r + 0.5) * step);
         const m = Math.hypot(v.x, v.y);
-        if (m > max) max = m;
+        if (m > frameMax) frameMax = m;
         const i = r * cols + c;
         vx[i] = v.x;
         vy[i] = v.y;
       }
     }
+    peak += (frameMax - peak) * (frameMax > peak ? 0.5 : 0.05);
+    const max = peak;
     for (let i = 0; i < count; i++) {
       const px = ((i % cols) + 0.5) * step;
       const py = (Math.floor(i / cols) + 0.5) * step;

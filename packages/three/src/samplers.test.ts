@@ -17,6 +17,16 @@ test('a uniform field traces a straight line to the edge', () => {
   assert.ok(Math.abs(line[line.length - 1]!.y - 300) < 1e-6, 'y unchanged');
 });
 
+test('the line is bidirectional through the seed (core traceFieldLine delegation, #421)', () => {
+  const right: FieldSampler = { sample: () => ({ x: 1, y: 0 }) }; // constant +x
+  const seed = { x: 500, y: 300 };
+  const line = traceStreamline(right, seed, { ...bounds, stepLen: 10, maxSteps: 200 });
+  // the core tracer is bidirectional — the seed sits mid-line, with points upstream AND downstream
+  // (the old forward-only walk only ever stepped downstream).
+  assert.ok(line.some((p) => p.x < seed.x - 50), 'extends upstream of the seed');
+  assert.ok(line.some((p) => p.x > seed.x + 50), 'extends downstream of the seed');
+});
+
 test('a stalled (zero) field yields just the seed', () => {
   const dead: FieldSampler = { sample: () => ({ x: 0, y: 0 }) };
   const line = traceStreamline(dead, { x: 500, y: 300 }, bounds);

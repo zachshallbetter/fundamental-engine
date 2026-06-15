@@ -7,6 +7,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`@fundamental-engine/three` samplers — EMA-smoothed vector field + core field-line tracing.**
+  `vectorField` normalized its arrows by the raw per-frame peak magnitude, so every arrow jittered as a
+  transient (a dragged body, an animated strength) shifted the peak frame to frame; it now eases the
+  peak (up fast, down slow — the core "pulsing lesson"), so the field reads as a calm pulse (#422).
+  `traceStreamline` (the streamline-tube path) re-walked the field forward-only; it now delegates to
+  core's `traceFieldLine` — bidirectional (the seed sits mid-line), loop-closing, with a turn budget so
+  a vortex can't wind the whole step budget into one circle (#421).
+
 ### Added
 
 - **`FieldHandle.readParticleIds(out)` + `Particle.id` — stable per-particle identity (core).** Pooled
