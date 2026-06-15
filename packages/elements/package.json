@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/elements",
-  "version": "0.6.0",
+  "version": "0.5.0",
   "description": "Web-component keystone for Fundamental — the <forces-field> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
