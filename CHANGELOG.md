@@ -5,7 +5,7 @@ All notable changes are documented here, following
 The packages are published to npm under the `@fundamental-engine` scope; each release is also cut as
 a git tag (see [RELEASING.md](RELEASING.md)).
 
-## [Unreleased]
+## [0.6.0] — 2026-06-14
 
 ### Added
 
