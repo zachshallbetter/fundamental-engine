@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, FieldChannelHandle, SurfacePlan } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, FieldChannelHandle } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -211,14 +211,6 @@ export class FieldLayer implements FieldHandle {
   setDprCap(cap: number): void {
     this.field.setDprCap(cap);
   }
-  /** set the whole surface state (underlay/overlay/heatmap) in one declarative call. */
-  setSurfaces(plan: SurfacePlan): void {
-    this.field.setSurfaces(plan);
-  }
-  /** the current surface state; the inverse of setSurfaces. */
-  getSurfaces(): Required<SurfacePlan> {
-    return this.field.getSurfaces();
-  }
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);
   }
@@ -261,10 +253,6 @@ export class FieldLayer implements FieldHandle {
   /** copy each live particle's stable id into a Uint32Array, parallel to readParticles. */
   readParticleIds(out: Uint32Array): number {
     return this.field.readParticleIds(out);
-  }
-  /** copy each live particle's tint into a Uint8Array as [r,g,b], parallel to readParticles. */
-  readParticleColors(out: Uint8Array): number {
-    return this.field.readParticleColors(out);
   }
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();

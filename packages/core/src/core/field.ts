@@ -100,8 +100,6 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   const store = new FieldStore();
   let nextParticleId = 1; // monotonic stable particle identity (readParticleIds); never reused
-  const colorMemo = new Map<string, RGB>(); // hex → rgb, parsed once per distinct color (readParticleColors)
-  const WHITE_RGB: RGB = [255, 255, 255]; // the default tint for an uncolored particle
   const grids = new Map<string, ScalarGridImpl>(); // §20.1 class [C] field buffers, lazy
   const reg = createRegistry();
 
@@ -1843,15 +1841,6 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
     },
-    setSurfaces: (plan) => {
-      // One declarative verb for the whole surface state — the plan IS the truth, so an omitted key
-      // resets to its default (matter `dots`, no readings, no accumulation). Idempotent and
-      // restorable; the three single-surface verbs remain for surgical pokes. (#385)
-      handle.setRender(plan.underlay ?? 'dots');
-      handle.setOverlay(plan.overlay ?? 'off');
-      handle.setHeatmap(plan.heatmap ?? false);
-    },
-    getSurfaces: () => ({ underlay: cfg.render, overlay: cfg.overlay, heatmap: cfg.heatmap }),
     setDprCap: (cap) => {
       cfg.dprCap = cap > 0 ? cap : 2;
       if (ctx) sizeSurfaces(host.viewport().dpr); // re-size the backing store to the new ceiling now
@@ -1951,28 +1940,6 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         const p = ps[i]!;
         if (p.report !== undefined) continue; // agents excluded, exactly like readParticles
         out[w++] = p.id ?? 0;
-      }
-      return w;
-    },
-    readParticleColors: (out) => {
-      // parallel to readParticles (same order, same agent skip): out[i*3 .. i*3+2] is the [r,g,b]
-      // tint (0-255) of the particle at stride offset i*5 there — the pigment color (Particle.color,
-      // conserved color transport) the swarm renderer blends with heat. White when uncolored. The
-      // hex is parsed once per distinct color (memoized) to keep this zero-allocation on the hot path.
-      const ps = store.particles;
-      let w = 0;
-      for (let i = 0; i < ps.length && w * 3 + 2 < out.length; i++) {
-        const p = ps[i]!;
-        if (p.report !== undefined) continue;
-        let c = WHITE_RGB;
-        if (p.color) {
-          c = colorMemo.get(p.color) ?? colorMemo.set(p.color, hexToRgb(p.color)).get(p.color)!;
-        }
-        const o = w * 3;
-        out[o] = c[0];
-        out[o + 1] = c[1];
-        out[o + 2] = c[2];
-        w++;
       }
       return w;
     },
