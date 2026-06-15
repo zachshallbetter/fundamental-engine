@@ -1006,6 +1006,24 @@
             },
             {
               "kind": "method",
+              "name": "readParticleColors",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "out",
+                  "type": {
+                    "text": "Uint8Array"
+                  }
+                }
+              ],
+              "description": "copy each live particle's tint into a Uint8Array as [r,g,b], parallel to readParticles."
+            },
+            {
+              "kind": "method",
               "name": "energy",
               "return": {
                 "type": {
@@ -2110,6 +2128,28 @@
                 }
               ],
               "description": "copy each live particle's stable id into a Uint32Array, parallel to readParticles.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "readParticleColors",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "out",
+                  "type": {
+                    "text": "Uint8Array"
+                  }
+                }
+              ],
+              "description": "copy each live particle's tint into a Uint8Array as [r,g,b], parallel to readParticles.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

@@ -9,6 +9,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.readParticleColors(out)` — the carried pigment tint, read-out (core).** `pigment`
+  tints passing matter (`Particle.color`, conserved color transport) and mesh-bodies carry a tint, but
+  `readParticles` packs only stride-5 `[x, y, z, heat, size]`, so the color never reached an external
+  swarm renderer. `readParticleColors(out)` fills a caller `Uint8Array` with packed `[r, g, b]` (0–255)
+  parallel to `readParticles` (same order, same agent exclusion) — white for uncolored matter. The hex
+  is parsed once per distinct color (memoized), so it stays zero-allocation on the hot path. A
+  companion that leaves the stride-5 geometry read-out unchanged. Mirrored on vanilla / elements /
+  three; additive. (#424 — three's `ParticlePool` `aColor` shader + the `/pollinate` demo are the
+  visual follow-up.)
+
+### Added
+
 - **`FieldOptions.dprCap` + `FieldHandle.setDprCap(cap)` — a configurable render-resolution ceiling
   (core).** The field rendered at full `devicePixelRatio` (hard-capped at 2), the dominant fill-rate
   cost on retina — and the ambient field is soft, so it doesn't need 2× crispness. `dprCap` (default 2)

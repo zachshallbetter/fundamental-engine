@@ -804,6 +804,16 @@ export interface FieldHandle {
    */
   readParticleIds(out: Uint32Array): number;
   /**
+   * Copy each live particle's **tint** into a caller-owned `Uint8Array` as packed `[r, g, b]`
+   * (0–255), returning the count written. Parallel to {@link readParticles} — same pool order, same
+   * agent exclusion — so the color at `out[i*3 .. i*3+2]` belongs to the particle whose state is at
+   * stride offset `i*5` there. This is the carried pigment color (`pigment` force / `Particle.color`,
+   * conserved color transport) an external swarm renderer blends with heat; white for an uncolored
+   * particle. The hex is parsed once per distinct color (memoized), so it's zero-allocation on the
+   * hot path. (Companion to `readParticles`, leaving the stride-5 geometry read-out unchanged.)
+   */
+  readParticleColors(out: Uint8Array): number;
+  /**
    * The engine's eased page-scroll velocity for the current frame — the same EMA value the
    * `scrolling` condition gate uses: `(prev × 0.7) + (|scrollDelta| × 0.3)` per frame.
    * Units are pixels per frame at the native rAF cadence (~1 at 60 fps per pixel/s of scroll).

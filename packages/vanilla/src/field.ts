@@ -143,6 +143,10 @@ export class FieldField implements FieldHandle {
   readParticleIds(out: Uint32Array): number {
     return this.field.readParticleIds(out);
   }
+  /** copy each live particle's tint into a Uint8Array as [r,g,b], parallel to readParticles. */
+  readParticleColors(out: Uint8Array): number {
+    return this.field.readParticleColors(out);
+  }
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();
   }

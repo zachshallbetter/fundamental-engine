@@ -283,6 +283,10 @@ export class FieldField extends HTMLElementBase {
   readParticleIds(out: Uint32Array): number {
     return this.field?.readParticleIds(out) ?? 0;
   }
+  /** copy each live particle's tint into a Uint8Array as [r,g,b], parallel to readParticles. */
+  readParticleColors(out: Uint8Array): number {
+    return this.field?.readParticleColors(out) ?? 0;
+  }
   /** kinetic/thermal/total energy snapshot for the current frame. */
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field?.energy() ?? { kinetic: 0, thermal: 0, total: 0, count: 0 };
