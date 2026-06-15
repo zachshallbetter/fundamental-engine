@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap } from '@fundamental-engine/core';
 import { createBrowserField } from '@fundamental-engine/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
@@ -141,6 +141,10 @@ export class FieldField implements FieldHandle {
   /** open a named host-authorable scalar grid (deposit/sample/gradient/decay) — a scent/wear/goal field. */
   grid(name: string): ScalarGrid {
     return this.field.grid(name);
+  }
+  /** subscribe to a discrete field event (absorb/release/settle); returns an unsubscribe fn. */
+  on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
+    return this.field.on(type, cb);
   }
   scrollV(): number {
     return this.field.scrollV();

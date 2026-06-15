@@ -1,0 +1,99 @@
+/**
+ * `FieldHandle.on(type, cb)` — the host-agnostic discrete event bus. Pins: a `sink` body emits
+ * `absorb` (with a positive count) as it captures matter and `release` on its falling edge; `on`
+ * returns a working unsubscribe. Driven through a frame-capturing host so per-frame detection runs.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createField } from './field.ts';
+import type { FieldHost } from './host.ts';
+
+function virtualBody(attrs: Record<string, string>, r: { x: number; y: number; w: number; h: number }) {
+  return {
+    dataset: {} as Record<string, string>,
+    getAttribute: (n: string) => attrs[n] ?? null,
+    hasAttribute: (n: string) => n in attrs,
+    dispatchEvent: () => true, // the sink's DOM capture event is a no-op here; we assert the bus
+    removeAttribute: () => {},
+    setAttribute: () => {},
+    style: {} as Record<string, string>,
+    getBoundingClientRect: () => ({
+      left: r.x - r.w / 2, top: r.y - r.h / 2, right: r.x + r.w / 2, bottom: r.y + r.h / 2,
+      width: r.w, height: r.h, x: r.x - r.w / 2, y: r.y - r.h / 2, toJSON: () => ({}),
+    }),
+  };
+}
+
+function drivableHost(bodyEls: unknown[]): { host: FieldHost; step: (frames: number) => void } {
+  const off = (): void => {};
+  let cb: ((now: number) => void) | null = null;
+  let id = 0;
+  let now = 0;
+  const host: FieldHost = {
+    root: {
+      querySelectorAll: (sel: string) => (sel.startsWith('[data-body]') ? bodyEls : []),
+      querySelector: () => null,
+    } as unknown as ParentNode,
+    viewport: () => ({ width: 1000, height: 800, dpr: 1 }),
+    scrollY: () => 0,
+    scrollHeight: () => 1000,
+    reducedMotion: () => false,
+    hidden: () => false,
+    raf: (fn) => { cb = fn as (now: number) => void; return ++id; },
+    cancelRaf: off,
+    createCanvas: () => ({}) as unknown as HTMLCanvasElement,
+    onResize: () => off,
+    onScroll: () => off,
+    onVisibility: () => off,
+    onInput: () => off,
+    onBodyEvent: () => off,
+  };
+  const step = (frames: number): void => {
+    for (let i = 0; i < frames; i++) { now += 16; cb?.(now); }
+  };
+  return { host, step };
+}
+
+test('a sink emits absorb with a positive count, and on() returns a working unsubscribe', () => {
+  const sink = virtualBody(
+    { 'data-body': 'sink attract', 'data-strength': '1.6', 'data-range': '900', 'data-absorb': '120' },
+    { x: 500, y: 400, w: 40, h: 40 },
+  );
+  const { host, step } = drivableHost([sink]);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    let absorbs = 0;
+    let lastCount = 0;
+    const off = field.on('absorb', (e) => { absorbs++; lastCount = e.count; });
+    field.scan();
+    step(400); // pull matter in + capture it
+    assert.ok(absorbs >= 1, `absorb fired as the sink captured matter: ${absorbs}`);
+    assert.ok(lastCount > 0, `absorb carried a positive count: ${lastCount}`);
+
+    off(); // unsubscribe
+    const before = absorbs;
+    step(400);
+    assert.equal(absorbs, before, 'no more absorb events after unsubscribe');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('release fires when a saturated sink lets go (count carried from the captured peak)', () => {
+  // a small-capacity sink saturates and supernovas, releasing what it held — the falling edge.
+  const sink = virtualBody(
+    { 'data-body': 'sink attract', 'data-strength': '1.8', 'data-range': '900', 'data-absorb': '140', 'data-max': '8' },
+    { x: 500, y: 400, w: 40, h: 40 },
+  );
+  const { host, step } = drivableHost([sink]);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    let releases = 0;
+    field.on('release', () => { releases++; });
+    field.scan();
+    step(900); // capture to saturation → supernova → release
+    assert.ok(releases >= 1, `release fired on the sink's falling edge: ${releases}`);
+  } finally {
+    field.destroy();
+  }
+});

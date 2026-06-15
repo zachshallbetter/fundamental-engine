@@ -12,6 +12,7 @@
 import type { FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
 import type { ClassifiedTokens } from '../config/forces.config.ts';
+import type { FieldEventType, FieldEventMap } from './events.ts';
 
 export interface Vec2 {
   x: number;
@@ -676,6 +677,15 @@ export interface FieldHandle {
    * name (e.g. `'scent'`) to keep an authored field independent. Read-write, lives in field px.
    */
   grid(name: string): ScalarGrid;
+  /**
+   * Subscribe to a discrete **field event** — the engine's host-agnostic push bus, for reacting to
+   * *occurrences* instead of polling the continuous feedback channels each frame. Returns an
+   * unsubscribe function. Plain data, no DOM (distinct from the `data-on` CustomEvent bindings a DOM
+   * host uses). Events: `absorb` / `release` — a `sink` body captured / let go of matter (the rising
+   * / falling edge of accretion), `{ body, count }`. Detection is lazy: a type with no listener costs
+   * nothing. (`contact`, `settle`, and per-particle `enter`·`exit` are the next slice — see #441.)
+   */
+  on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void;
   /**
    * Copy live particle state into a caller-owned buffer and return the number of particles
    * written. Stride 5, packed `[x, y, z, heat, size, …]` in CSS-pixel field coordinates — the

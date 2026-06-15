@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -277,6 +277,10 @@ export class FieldField extends HTMLElementBase {
   /** open a named host-authorable scalar grid (deposit/sample/gradient/decay); a no-op grid until the field starts. */
   grid(name: string): ScalarGrid {
     return this.field?.grid(name) ?? NULL_GRID;
+  }
+  /** subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts. */
+  on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
+    return this.field?.on(type, cb) ?? (() => {});
   }
 
   connectedCallback(): void {
