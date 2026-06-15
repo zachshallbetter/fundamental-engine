@@ -9,6 +9,20 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.addField(name, sampler)` + `sampleField(name, x, y)` — open input-channel registry
+  (core).** The render surfaces (`setRender`/`setOverlay`) are bundled *output* layers; this is their
+  *input* mirror: register an external scalar field — terrain height, soil moisture, a heat map — as a
+  pull-based sampler `(x, y) => number` and read it back through `sampleField`, so a consumer queries
+  **one** field instead of bolting a parallel grid alongside it. Returns a `FieldChannelHandle` to swap
+  the sampler live or remove the channel. Pull-based (never cached). Force coupling — a force reading a
+  channel as a potential — is a separate, opt-in follow-up; this is the read substrate. Mirrored on
+  vanilla / elements / three; additive.
+- **`BodyHandle.set({ strength, range, angle, spin, color })` — reactive params for programmatic
+  bodies (core).** `addBody`'s handle gained the live setter the three `FieldBody` already had: mutate a
+  body's force params within a frame on the measure cadence, with no `rescan()` and no remove + re-add
+  (a fading lure, a fox getting hungrier). `color` re-tints the carried pigment; a *structural* change
+  (different `tokens`) still needs remove + `addBody`. Additive.
+
 - **`FieldHandle.readParticleColors(out)` — the carried pigment tint, read-out (core).** `pigment`
   tints passing matter (`Particle.color`, conserved color transport) and mesh-bodies carry a tint, but
   `readParticles` packs only stride-5 `[x, y, z, heat, size]`, so the color never reached an external

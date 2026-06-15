@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type SurfacePlan } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type SurfacePlan } from '@fundamental-engine/core';
 import { createBrowserField } from '@fundamental-engine/platform';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
@@ -122,6 +122,14 @@ export class FieldField implements FieldHandle {
   /** add a programmatic body (no DOM) from a spec — carries data + per-body feedback; survives rescan. */
   addBody(spec: BodySpec): BodyHandle {
     return this.field.addBody(spec);
+  }
+  /** register a named external scalar field channel the engine samples on its read path. */
+  addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle {
+    return this.field.addField(name, sampler);
+  }
+  /** sample a registered field channel at (x, y); 0 for an unknown channel. */
+  sampleField(name: string, x: number, y: number): number {
+    return this.field.sampleField(name, x, y);
   }
   atomAt(x: number, y: number): AtomPayload | null {
     return this.field.atomAt(x, y);

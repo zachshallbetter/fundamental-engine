@@ -596,7 +596,26 @@ export interface BodyHandle {
   data: unknown;
   /** this body's latest feedback channels — updated in place each frame. */
   readonly channels: FeedbackChannels;
+  /**
+   * Mutate this body's force params live — applied within a frame on the measure cadence, with **no
+   * `rescan()`** (the reactive-param path DOM and three bodies already use). For a fading lure, a fox
+   * getting hungrier, a wind gust strengthening: cheaper and steadier than remove + re-add. `angle` is
+   * in degrees. Only the keys you pass change; `color` re-tints the carried pigment. A *structural*
+   * change (different `tokens`) still needs remove + `addBody` — tokens are classified once, not reactive.
+   */
+  set(params: { strength?: number; range?: number; angle?: number; spin?: number; color?: string }): void;
   /** remove the body from the field. */
+  remove(): void;
+}
+
+/** A registered **field channel** (`FieldHandle.addField`) — an external scalar field sampled on the
+ *  engine's read path. The open *input* analog of the render surfaces. */
+export interface FieldChannelHandle {
+  /** the channel name (the key passed to `addField`). */
+  readonly name: string;
+  /** swap the sampler live (e.g. a season changes the moisture map). */
+  set(sampler: (x: number, y: number) => number): void;
+  /** unregister the channel; `sampleField(name, …)` returns 0 afterward. */
   remove(): void;
 }
 
@@ -691,6 +710,19 @@ export interface FieldHandle {
    * Returns a {@link BodyHandle} — `data`, the live `channels`, and `remove()`.
    */
   addBody(spec: BodySpec): BodyHandle;
+  /**
+   * Register a named **field channel** — an external scalar field the engine samples on its own read
+   * path. The open *input* analog of the render surfaces (`setRender`/`setOverlay` are bundled output
+   * surfaces; `addField` is an on-demand input channel): instead of bolting a parallel grid alongside
+   * the field, hand the engine a sampler `(x, y) => number` (terrain height, soil moisture, a heat map)
+   * and read it back through `sampleField(name, x, y)`, so a consumer queries **one** field, not two.
+   * The sampler is pull-based — called on demand, never cached — so keep it cheap. The returned
+   * {@link FieldChannelHandle} swaps the sampler live or removes the channel. (Force coupling — a force
+   * reading a channel as a potential — is a separate, opt-in step; this is the read substrate.)
+   */
+  addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle;
+  /** Sample a registered field channel at `(x, y)`. Returns 0 for an unregistered channel. */
+  sampleField(name: string, x: number, y: number): number;
   /** The seeded record on the nearest particle to (x, y) within ~24px, or null. For hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null;
   /**
