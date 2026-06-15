@@ -915,6 +915,24 @@
             },
             {
               "kind": "method",
+              "name": "readParticleIds",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "out",
+                  "type": {
+                    "text": "Uint32Array"
+                  }
+                }
+              ],
+              "description": "copy each live particle's stable id into a Uint32Array, parallel to readParticles."
+            },
+            {
+              "kind": "method",
               "name": "energy",
               "return": {
                 "type": {
@@ -1894,6 +1912,28 @@
                 }
               ],
               "description": "copy live particle state into `out` (stride 5: x, y, z, heat, size); returns the count written\n(0 before the field starts) — the render-agnostic swarm read-out an alternative surface draws.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "readParticleIds",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "out",
+                  "type": {
+                    "text": "Uint32Array"
+                  }
+                }
+              ],
+              "description": "copy each live particle's stable id into a Uint32Array, parallel to readParticles.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

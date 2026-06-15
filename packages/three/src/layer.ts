@@ -242,6 +242,10 @@ export class FieldLayer implements FieldHandle {
   readParticles(out: Float32Array): number {
     return this.field.readParticles(out);
   }
+  /** copy each live particle's stable id into a Uint32Array, parallel to readParticles. */
+  readParticleIds(out: Uint32Array): number {
+    return this.field.readParticleIds(out);
+  }
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();
   }

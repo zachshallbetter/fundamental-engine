@@ -9,6 +9,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldHandle.readParticleIds(out)` + `Particle.id` — stable per-particle identity (core).** Pooled
+  particles were anonymous, so a host couldn't track a specific one across frames (a wind-borne seed,
+  a tagged mote) or keep payload attached to it through readback. Each particle now carries a stable
+  monotonic `id`, and `readParticleIds(out)` copies them into a caller `Uint32Array` parallel to
+  `readParticles` (same order, same agent exclusion) — so `ids[i]` is the identity of the particle at
+  stride offset `i*5`. The engine carries the identity; the host keeps its own opaque payload keyed by
+  id (spec FieldUI-Engine-Features §1.3). Zero-allocation, read-only. Mirrored on vanilla / elements /
+  three; additive — `Particle.id` is optional for back-compat (the engine always sets it).
+
+### Added
+
 - **`FieldHandle.on(type, cb)` — a host-agnostic discrete event bus (core).** The engine emitted
   continuous feedback channels (`density`/`load`/…) but no discrete *occurrences*, so a non-DOM host
   (3D/native/headless) had to poll state every frame to know when something happened. `on(type, cb)`

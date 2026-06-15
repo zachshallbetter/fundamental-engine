@@ -257,6 +257,10 @@ export class FieldField extends HTMLElementBase {
   readParticles(out: Float32Array): number {
     return this.field?.readParticles(out) ?? 0;
   }
+  /** copy each live particle's stable id into a Uint32Array, parallel to readParticles. */
+  readParticleIds(out: Uint32Array): number {
+    return this.field?.readParticleIds(out) ?? 0;
+  }
   /** kinetic/thermal/total energy snapshot for the current frame. */
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field?.energy() ?? { kinetic: 0, thermal: 0, total: 0, count: 0 };
