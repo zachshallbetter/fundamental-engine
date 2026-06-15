@@ -18,8 +18,9 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = [
-  // primary @fundamental-engine/* (published via CI)
-  'core', 'platform', 'vanilla', 'elements', 'react', 'kit',
+  // the six PUBLISHED @fundamental-engine/* packages (via CI). `kit` + the `fundamental-engine`
+  // umbrella are retired (private, never published), so they're not packaging-checked here.
+  'core', 'platform', 'vanilla', 'elements', 'react', 'three',
 ];
 
 let failed = 0;

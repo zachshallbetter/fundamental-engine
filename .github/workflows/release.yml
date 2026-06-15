@@ -16,7 +16,8 @@ name: Release
 #   conclusion    — asserts every job above SUCCEEDED (skipped ≠ success).
 #
 # Trigger: push a version tag, e.g.
-#   pnpm --filter "@fundamental-engine/*" exec npm version 0.2.4 --no-git-tag-version  # bump the seven together
+#   pnpm --filter "@fundamental-engine/*" exec npm version 0.2.4 --no-git-tag-version  # bump them together
+#   (the six PUBLISHED packages — kit + the fundamental-engine umbrella are retired/private, never published)
 #   git commit -am "release: 0.2.4" && git tag v0.2.4 && git push --tags
 #
 # Rehearsal: workflow_dispatch with dry_run=true runs the entire path — gate, version
@@ -139,7 +140,10 @@ jobs:
       # @fundamental-engine/* packages plus the unscoped `fundamental-engine` umbrella are
       # targeted (apps are private).
       - name: Publish with provenance
-        run: pnpm --filter "@fundamental-engine/*" --filter "fundamental-engine" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
+        # The published set is EXPLICIT — the six engine + adapter packages. A blanket
+        # `@fundamental-engine/*` filter once resurrected the retired `kit` + `fundamental-engine`
+        # umbrella packages onto npm; listing them by name is the guard. (Both are also `private`.)
+        run: pnpm --filter "@fundamental-engine/core" --filter "@fundamental-engine/platform" --filter "@fundamental-engine/elements" --filter "@fundamental-engine/vanilla" --filter "@fundamental-engine/react" --filter "@fundamental-engine/three" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
@@ -164,7 +168,7 @@ jobs:
           mkdir /tmp/smoke && cd /tmp/smoke
           npm init -y > /dev/null
           for i in $(seq 1 10); do
-            if npm install "@fundamental-engine/vanilla@$VERSION" "@fundamental-engine/kit@$VERSION" "fundamental-engine@$VERSION"; then
+            if npm install "@fundamental-engine/vanilla@$VERSION" "@fundamental-engine/three@$VERSION"; then
               break
             fi
             if [ "$i" = 10 ]; then
@@ -188,8 +192,7 @@ jobs:
           npm audit signatures
           FAIL=0
           for p in @fundamental-engine/core @fundamental-engine/platform @fundamental-engine/elements \
-                   @fundamental-engine/vanilla @fundamental-engine/react @fundamental-engine/three \
-                   @fundamental-engine/kit fundamental-engine; do
+                   @fundamental-engine/vanilla @fundamental-engine/react @fundamental-engine/three; do
             ATT=$(npm view "$p@$VERSION" dist.attestations.url 2>/dev/null || true)
             if [ -z "$ATT" ]; then
               echo "::error::$p@$VERSION has no provenance attestation"

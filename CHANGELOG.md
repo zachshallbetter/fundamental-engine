@@ -7,6 +7,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **Release publishes an explicit six-package set; `kit` + the `fundamental-engine` umbrella are
+  retired.** The release workflow used a blanket `--filter "@fundamental-engine/*"` that could
+  resurrect the retired `kit` and `fundamental-engine` umbrella packages onto npm. The publish (and the
+  post-publish smoke + provenance checks, and `check:packaging`) now name exactly the six published
+  packages — `core`, `platform`, `elements`, `vanilla`, `react`, `three` — and both retired packages
+  are marked `private` so a stray publish can't catch them. Internal/CI only; no published-package
+  behavior change.
+
 ### Added
 
 - **`FieldHandle.readParticleColors(out)` — the carried pigment tint, read-out (core).** `pigment`
