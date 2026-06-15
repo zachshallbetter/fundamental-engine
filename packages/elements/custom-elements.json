@@ -520,6 +520,15 @@
               "readonly": true
             },
             {
+              "kind": "field",
+              "name": "dprCap",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`dpr-cap` — backing-store DPR ceiling (#410); undefined (engine default 2) if absent/invalid.",
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "scan",
               "return": {
@@ -664,6 +673,24 @@
                 }
               ],
               "description": "toggle the density heatmap layer (field-systems H1) live."
+            },
+            {
+              "kind": "method",
+              "name": "setDprCap",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "cap",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "lower/raise the backing-store DPR ceiling at runtime (the dominant fill-rate lever)."
             },
             {
               "kind": "method",
@@ -1149,6 +1176,9 @@
               "name": "heatmap"
             },
             {
+              "name": "dpr-cap"
+            },
+            {
               "name": "background"
             }
           ],
@@ -1235,6 +1265,13 @@
             },
             {
               "name": "heatmap",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "dpr-cap",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1482,6 +1519,19 @@
               }
             },
             {
+              "kind": "field",
+              "name": "dprCap",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`dpr-cap` — backing-store DPR ceiling (#410); undefined (engine default 2) if absent/invalid.",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
               "kind": "method",
               "name": "scan",
               "return": {
@@ -1658,6 +1708,28 @@
                 }
               ],
               "description": "toggle the density heatmap layer (field-systems H1) live.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setDprCap",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "cap",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "lower/raise the backing-store DPR ceiling at runtime (the dominant fill-rate lever).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

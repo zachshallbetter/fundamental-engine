@@ -472,6 +472,11 @@ export interface FieldOptions {
   /** density heatmap (field-systems H1): a scalar buffer of where matter pools, drawn as a
    *  glow underlay and sampled to bodies as `--field-heatmap-density`. Default false. */
   heatmap?: boolean;
+  /** backing-store device-pixel-ratio ceiling (#410); default 2. The dominant fill-rate lever —
+   *  the ambient field is soft, so capping at ~1.5 buys ~1.8× headroom on retina for a small
+   *  softening. The effective DPR is `min(devicePixelRatio, dprCap)`. Runtime-settable via
+   *  `setDprCap`. */
+  dprCap?: number;
   /**
    * Field Surfaces (overlay placement): a caller-provided canvas for the OVERLAY surface, drawn in
    * front of page content. Core sizes its backing store (matching the main canvas dpr) and draws the
@@ -613,6 +618,10 @@ export interface FieldHandle {
   setCausality(on: boolean): void;
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void;
+  /** Lower (or raise) the backing-store **device-pixel-ratio ceiling** at runtime — the dominant
+   *  fill-rate lever (#410). The ambient field is soft, so a cap of ~1.5 buys ~1.8× headroom on a
+   *  retina display for a small softening. Re-sizes the surfaces immediately. Default 2. */
+  setDprCap(cap: number): void;
   /**
    * Set the **whole surface state** in one declarative call — the field draws on three surfaces and
    * this is the one verb that names them as one concept: `underlay` (matter behind content, the

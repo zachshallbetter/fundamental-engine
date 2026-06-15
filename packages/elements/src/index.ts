@@ -57,6 +57,7 @@ export class FieldField extends HTMLElementBase {
     'attention',
     'causality',
     'heatmap',
+    'dpr-cap',
     'background',
   ];
 
@@ -165,6 +166,11 @@ export class FieldField extends HTMLElementBase {
   get heatmap(): boolean {
     return this.hasAttribute('heatmap') && this.getAttribute('heatmap') !== 'false';
   }
+  /** `dpr-cap` — backing-store DPR ceiling (#410); undefined (engine default 2) if absent/invalid. */
+  get dprCap(): number | undefined {
+    const v = Number(this.getAttribute('dpr-cap'));
+    return v > 0 ? v : undefined;
+  }
 
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
   /** re-scan the document for `[data-body]` bodies after a DOM change. */
@@ -202,6 +208,10 @@ export class FieldField extends HTMLElementBase {
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void {
     this.field?.setHeatmap(on);
+  }
+  /** lower/raise the backing-store DPR ceiling at runtime (the dominant fill-rate lever). */
+  setDprCap(cap: number): void {
+    this.field?.setDprCap(cap);
   }
   /** set the whole surface state (underlay/overlay/heatmap) in one declarative call. */
   setSurfaces(plan: SurfacePlan): void {
@@ -359,6 +369,9 @@ export class FieldField extends HTMLElementBase {
       case 'heatmap':
         this.field.setHeatmap(this.heatmap);
         break;
+      case 'dpr-cap':
+        this.field.setDprCap(this.dprCap ?? 2);
+        break;
       case 'background':
         this.field.setBackground(this.background);
         break;
@@ -407,6 +420,7 @@ export class FieldField extends HTMLElementBase {
       attention: this.attention,
       causality: this.causality,
       heatmap: this.heatmap,
+      dprCap: this.dprCap,
       feedbackSink,
     });
     // attach the handle so the platform write phase can read scrollV → --field-scroll-v

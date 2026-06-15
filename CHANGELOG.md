@@ -9,6 +9,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FieldOptions.dprCap` + `FieldHandle.setDprCap(cap)` — a configurable render-resolution ceiling
+  (core).** The field rendered at full `devicePixelRatio` (hard-capped at 2), the dominant fill-rate
+  cost on retina — and the ambient field is soft, so it doesn't need 2× crispness. `dprCap` (default 2)
+  caps the backing-store DPR: the effective DPR is `min(devicePixelRatio, dprCap)`, so ~1.5 buys ~1.8×
+  fill headroom for a small softening. Settable at creation (`createField({ dprCap })`), at runtime
+  (`setDprCap`, re-sizes immediately), and as `<field-root dpr-cap>` (live). Mirrored on vanilla /
+  elements / react; additive. (#410)
+
+### Added
+
 - **`FieldHandle.setSurfaces(plan)` + `getSurfaces()` — one declarative verb for the surfaces (core).**
   The field draws on three surfaces, controlled by three differently-shaped verbs (`setRender` exclusive,
   `setOverlay` additive, `setHeatmap` toggle) whose names taught them as three features rather than one
