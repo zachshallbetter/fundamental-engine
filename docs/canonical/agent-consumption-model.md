@@ -241,3 +241,5 @@ Field Agent Consumption Model
 ```
 
 > **Body-carried data (addBody).** A programmatic body created with `FieldHandle.addBody(spec)` carries an opaque `data` record — the Body-level analog of a particle's `atom`. It extends this model from *matter that carries records* to *sources that carry records*: an emitter is itself an addressable agent with attached data and per-body feedback (`onFeedback`), surfaced on its `BodyHandle`.
+>
+> **El-less bodies and the callback consumer.** A programmatic body has no DOM element. The model's element-agent has a *DOM consumer* (the engine writes `--d`/`--load`/`--field-*` onto the element, author CSS reads them); an `addBody` body has a **callback consumer** instead — its feedback channels arrive at `onFeedback(channels)` (and the live `BodyHandle.channels`), the non-DOM consumer for a non-DOM host (a Three.js mesh, a native view). Its force params are **reactive**: `BodyHandle.set({ strength, range, angle, spin, color })` mutates them on the measure cadence with no rescan — the same live-param path a scanned `[data-body]` gets from a `data-*` change, surfaced on the handle.

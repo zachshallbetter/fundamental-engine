@@ -149,6 +149,15 @@ field.setOverlay('field-lines');   // overlay (in front of content); 'off' clear
 field.setOverlay(['grid', 'path', 'temperature']); // readings are ADDITIVE — a stack composes
 ```
 
+**The input mirror — field channels.** Surfaces are *output*: the engine draws onto them. Their open
+*input* analog is a **field channel** — `addField(name, sampler)` registers an external scalar field
+(terrain, moisture, a heat map) the engine samples on its own read path, read back with
+`sampleField(name, x, y)`. A surface is a place the field draws; a channel is a field the engine reads.
+Channels obey the field-function contract and are pull-based — see
+[system-contracts.md §2.1](system-contracts.md). (The surface *set* is deliberately the three
+placements above, not an open registry; the open extension point on the output side is a registrable
+render/overlay mode, tracked separately.)
+
 Readings are **additive**: `setOverlay` takes one reading or a stack (an array; space-separated in
 the `overlay` attribute), drawn in order on the one front surface — so matter (underlay) + the
 heatmap layer + several overlay readings compose into a single legible picture of the same field.
