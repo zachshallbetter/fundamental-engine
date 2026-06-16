@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, SurfacePlan } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, FieldChannelHandle, SurfacePlan } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -279,6 +279,14 @@ export class FieldLayer implements FieldHandle {
   /** density gradient ∇ at `(x, y)` — up-density direction in field px; needs `{ heatmap: true }`, `{0,0}` when off. */
   sampleGradient(x: number, y: number): { x: number; y: number } {
     return this.field.sampleGradient(x, y);
+  }
+  /** register a named external scalar field channel (terrain height, soil moisture) the engine samples. */
+  addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle {
+    return this.field.addField(name, sampler);
+  }
+  /** sample a registered field channel at (x, y); 0 for an unknown channel. */
+  sampleField(name: string, x: number, y: number): number {
+    return this.field.sampleField(name, x, y);
   }
   /** open a named host-authorable scalar grid (deposit/sample/gradient/decay) in field px — a scent/wear/goal field. */
   grid(name: string): ScalarGrid {

@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type SurfacePlan } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type SurfacePlan } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -256,7 +256,15 @@ export class FieldField extends HTMLElementBase {
   }
   /** add a programmatic body (no DOM) from a spec; a no-op handle until the field starts. */
   addBody(spec: BodySpec): BodyHandle {
-    return this.field?.addBody(spec) ?? { data: spec.data, channels: {}, remove: () => {} };
+    return this.field?.addBody(spec) ?? { data: spec.data, channels: {}, set: () => {}, remove: () => {} };
+  }
+  /** register a named external scalar field channel the engine samples; inert handle until the field starts. */
+  addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle {
+    return this.field?.addField(name, sampler) ?? { name, set: () => {}, remove: () => {} };
+  }
+  /** sample a registered field channel at (x, y); 0 for an unknown channel or before the field starts. */
+  sampleField(name: string, x: number, y: number): number {
+    return this.field?.sampleField(name, x, y) ?? 0;
   }
   /** the seeded record on the nearest particle to (x, y), or null — for hover-to-inspect. */
   atomAt(x: number, y: number): AtomPayload | null {

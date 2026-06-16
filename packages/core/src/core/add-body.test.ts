@@ -90,3 +90,39 @@ test('addBody: per-body feedback delivers this body density on its own callback'
     field.destroy();
   }
 });
+
+test('body.set: a live strength change takes effect on the measure cadence, no rescan', () => {
+  const { host, step } = drivableHost();
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    field.scan();
+    const well = field.addBody({ tokens: 'attract', strength: 0.5, range: 900, rect: rectAt(500, 400) });
+    step(12);
+    const weak = field.sample(560, 400);
+    well.set({ strength: 4 }); // mutate live — no remove + re-add, no rescan
+    step(12); // the measure cadence re-reads data-strength
+    const strong = field.sample(560, 400);
+    assert.ok(
+      Math.abs(strong.x) > Math.abs(weak.x) * 1.5,
+      `pull strengthens after set(): ${weak.x.toExponential(2)} -> ${strong.x.toExponential(2)}`,
+    );
+  } finally {
+    field.destroy();
+  }
+});
+
+test('addField: a registered channel is sampled back; set() swaps it, remove() clears it', () => {
+  const { host } = drivableHost();
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    const moisture = field.addField('moisture', (x, y) => x * 0.01 + y);
+    assert.equal(field.sampleField('moisture', 100, 5), 6, 'samples the registered channel');
+    assert.equal(field.sampleField('unknown', 1, 1), 0, 'unknown channel reads 0');
+    moisture.set(() => 42); // swap the sampler live
+    assert.equal(field.sampleField('moisture', 0, 0), 42, 'set() swaps the sampler');
+    moisture.remove();
+    assert.equal(field.sampleField('moisture', 0, 0), 0, 'remove() unregisters the channel');
+  } finally {
+    field.destroy();
+  }
+});

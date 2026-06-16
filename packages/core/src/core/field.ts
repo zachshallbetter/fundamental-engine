@@ -116,6 +116,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
   const sinkPeak = new WeakMap<Body, number>(); // matter held at the rising edge, for the release count
   const programmaticBodies: Body[] = []; // bodies added via addBody(); merged into `bodies` each scan
+  const fieldChannels = new Map<string, (x: number, y: number) => number>(); // addField() input channels
   registerCoreForces(reg); // the canonical nine (§6)
   registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
   registerExtendedForces(reg); // designed extended forces: lens, … (§20.3), opt-in
@@ -2031,12 +2032,38 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       return {
         data: spec.data,
         get channels() { return channels; },
+        set: (params) => {
+          // mutate the attrs the synthetic element exposes; refreshBodyParams (measure cadence) picks
+          // up strength/range/spin/angle next frame — the same reactive path DOM + three bodies use.
+          if (params.strength != null) attrs['data-strength'] = String(params.strength);
+          if (params.range != null) attrs['data-range'] = String(params.range);
+          if (params.spin != null) attrs['data-spin'] = String(params.spin);
+          if (params.angle != null) attrs['data-angle'] = String(params.angle);
+          // color/tint isn't on the refresh path — set it directly (the scanner reads tint once).
+          if (params.color != null) {
+            attrs['data-color'] = params.color;
+            (el.dataset as Record<string, string>).color = params.color;
+            body.tint = params.color;
+          }
+        },
         remove: () => {
           const i = programmaticBodies.indexOf(body);
           if (i >= 0) programmaticBodies.splice(i, 1);
           bodies = bodies.filter((x) => x !== body);
         },
       };
+    },
+    addField: (name, sampler) => {
+      fieldChannels.set(name, sampler);
+      return {
+        name,
+        set: (next) => { fieldChannels.set(name, next); },
+        remove: () => { fieldChannels.delete(name); },
+      };
+    },
+    sampleField: (name, x, y) => {
+      const s = fieldChannels.get(name);
+      return s ? s(x, y) : 0;
     },
     energy: () => energyReport(store.particles),
     sample: (x, y) => {

@@ -902,6 +902,60 @@
             },
             {
               "kind": "method",
+              "name": "addField",
+              "return": {
+                "type": {
+                  "text": "FieldChannelHandle"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "sampler",
+                  "type": {
+                    "text": "(x: number, y: number) => number"
+                  }
+                }
+              ],
+              "description": "register a named external scalar field channel the engine samples; inert handle until the field starts."
+            },
+            {
+              "kind": "method",
+              "name": "sampleField",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "sample a registered field channel at (x, y); 0 for an unknown channel or before the field starts."
+            },
+            {
+              "kind": "method",
               "name": "atomAt",
               "return": {
                 "type": {
@@ -2000,6 +2054,68 @@
                 }
               ],
               "description": "add a programmatic body (no DOM) from a spec; a no-op handle until the field starts.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "addField",
+              "return": {
+                "type": {
+                  "text": "FieldChannelHandle"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "sampler",
+                  "type": {
+                    "text": "(x: number, y: number) => number"
+                  }
+                }
+              ],
+              "description": "register a named external scalar field channel the engine samples; inert handle until the field starts.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "sampleField",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "x",
+                  "type": {
+                    "text": "number"
+                  }
+                },
+                {
+                  "name": "y",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "sample a registered field channel at (x, y); 0 for an unknown channel or before the field starts.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

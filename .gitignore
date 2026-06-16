@@ -27,3 +27,5 @@ playwright-report/
 
 # Swift Package Manager build artifacts
 swift/.build/
+.graphifyignore
+graphify-out
