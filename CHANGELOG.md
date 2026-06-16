@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`<field-root>` now forwards `FieldOptions.depth` (elements).** `<field-root depth="40">` was a
+  no-op — `depth` had no attribute, getter, or forwarding, though core/react/vanilla/three all support
+  it. Added the attribute + getter + forwarding, and table-drove `start()`'s option object from one
+  `OPTIONS` source so an option can't be silently dropped again; a drift-guard test pins
+  `observedAttributes` to that table.
+
 ### Added
 
 - **`FieldHandle.addField(name, sampler)` + `sampleField(name, x, y)` — open input-channel registry
