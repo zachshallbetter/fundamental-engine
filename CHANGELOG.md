@@ -23,18 +23,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   (a fading lure, a fox getting hungrier). `color` re-tints the carried pigment; a *structural* change
   (different `tokens`) still needs remove + `addBody`. Additive.
 
-- **`FieldHandle.readParticleColors(out)` — the carried pigment tint, read-out (core).** `pigment`
-  tints passing matter (`Particle.color`, conserved color transport) and mesh-bodies carry a tint, but
-  `readParticles` packs only stride-5 `[x, y, z, heat, size]`, so the color never reached an external
-  swarm renderer. `readParticleColors(out)` fills a caller `Uint8Array` with packed `[r, g, b]` (0–255)
-  parallel to `readParticles` (same order, same agent exclusion) — white for uncolored matter. The hex
-  is parsed once per distinct color (memoized), so it stays zero-allocation on the hot path. A
-  companion that leaves the stride-5 geometry read-out unchanged. Mirrored on vanilla / elements /
-  three; additive. (#424 — three's `ParticlePool` `aColor` shader + the `/pollinate` demo are the
-  visual follow-up.)
-
 ### Added
-
 - **`FieldOptions.dprCap` + `FieldHandle.setDprCap(cap)` — a configurable render-resolution ceiling
   (core).** The field rendered at full `devicePixelRatio` (hard-capped at 2), the dominant fill-rate
   cost on retina — and the ambient field is soft, so it doesn't need 2× crispness. `dprCap` (default 2)
@@ -42,18 +31,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   fill headroom for a small softening. Settable at creation (`createField({ dprCap })`), at runtime
   (`setDprCap`, re-sizes immediately), and as `<field-root dpr-cap>` (live). Mirrored on vanilla /
   elements / react; additive. (#410)
-
-### Added
-
-- **`FieldHandle.setSurfaces(plan)` + `getSurfaces()` — one declarative verb for the surfaces (core).**
-  The field draws on three surfaces, controlled by three differently-shaped verbs (`setRender` exclusive,
-  `setOverlay` additive, `setHeatmap` toggle) whose names taught them as three features rather than one
-  concept. `setSurfaces({ underlay, overlay, heatmap })` is the single declarative description — matter
-  behind content, readings in front, the accumulation layer. **Full-state semantics:** an omitted key
-  resets to its default (`'dots'` / none / `false`), exactly like a recipe, so it's idempotent,
-  snapshot-able, and restorable. `getSurfaces()` returns the current state (the inverse —
-  `setSurfaces(getSurfaces())` is a no-op). The three single-surface verbs remain documented plumbing
-  for surgical pokes. Mirrored on vanilla / elements / three; additive. (#385)
 
 ### Added
 

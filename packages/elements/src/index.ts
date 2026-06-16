@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type SurfacePlan } from '@fundamental-engine/core';
+import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/platform';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -213,14 +213,6 @@ export class FieldField extends HTMLElementBase {
   setDprCap(cap: number): void {
     this.field?.setDprCap(cap);
   }
-  /** set the whole surface state (underlay/overlay/heatmap) in one declarative call. */
-  setSurfaces(plan: SurfacePlan): void {
-    this.field?.setSurfaces(plan);
-  }
-  /** the current surface state; the inverse of setSurfaces. */
-  getSurfaces(): Required<SurfacePlan> {
-    return this.field?.getSurfaces() ?? { underlay: 'dots', overlay: 'off', heatmap: false };
-  }
   /** switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297). */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void {
     this.field?.setRender(mode);
@@ -290,10 +282,6 @@ export class FieldField extends HTMLElementBase {
   /** copy each live particle's stable id into a Uint32Array, parallel to readParticles. */
   readParticleIds(out: Uint32Array): number {
     return this.field?.readParticleIds(out) ?? 0;
-  }
-  /** copy each live particle's tint into a Uint8Array as [r,g,b], parallel to readParticles. */
-  readParticleColors(out: Uint8Array): number {
-    return this.field?.readParticleColors(out) ?? 0;
   }
   /** kinetic/thermal/total energy snapshot for the current frame. */
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
