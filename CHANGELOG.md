@@ -7,13 +7,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
-### Fixed
-
-- **`<field-root>` now forwards `FieldOptions.depth` (elements).** `<field-root depth="40">` was a
-  no-op — `depth` had no attribute, getter, or forwarding, though core/react/vanilla/three all support
-  it. Added the attribute + getter + forwarding, and table-drove `start()`'s option object from one
-  `OPTIONS` source so an option can't be silently dropped again; a drift-guard test pins
-  `observedAttributes` to that table.
+## [0.5.1] — 2026-06-17
 
 ### Added
 
@@ -30,8 +24,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   body's force params within a frame on the measure cadence, with no `rescan()` and no remove + re-add
   (a fading lure, a fox getting hungrier). `color` re-tints the carried pigment; a *structural* change
   (different `tokens`) still needs remove + `addBody`. Additive.
-
-### Added
 - **`FieldOptions.dprCap` + `FieldHandle.setDprCap(cap)` — a configurable render-resolution ceiling
   (core).** The field rendered at full `devicePixelRatio` (hard-capped at 2), the dominant fill-rate
   cost on retina — and the ambient field is soft, so it doesn't need 2× crispness. `dprCap` (default 2)
@@ -39,9 +31,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   fill headroom for a small softening. Settable at creation (`createField({ dprCap })`), at runtime
   (`setDprCap`, re-sizes immediately), and as `<field-root dpr-cap>` (live). Mirrored on vanilla /
   elements / react; additive. (#410)
-
-### Added
-
 - **`FieldHandle.addBody(spec)` — first-class programmatic bodies (core).** The only sanctioned way to
   make a body was the `[data-body]` DOM scan, so a non-DOM host (`@fundamental-engine/three`, a native
   view) had to duck-type a fake element + a fake `querySelectorAll` root (#393/#418). `addBody(spec)` is
@@ -52,6 +41,26 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   persists across `rescan()`. Returns a `BodyHandle` (`data`, live `channels`, `remove()`). Mirrored on
   vanilla / elements / three (overloaded with three's mesh form). Additive. (#419 — three's
   `FieldBodyRegistry` collapse onto `addBody` is the remaining follow-up.)
+
+### Fixed
+
+- **`<field-root>` now forwards `FieldOptions.depth` (elements).** `<field-root depth="40">` was a
+  no-op — `depth` had no attribute, getter, or forwarding, though core/react/vanilla/three all support
+  it. Added the attribute + getter + forwarding, and table-drove `start()`'s option object from one
+  `OPTIONS` source so an option can't be silently dropped again; a drift-guard test pins
+  `observedAttributes` to that table.
+- **`@fundamental-engine/elements` npm metadata corrected.** The package description and README named
+  the pre-rename `<forces-field>` / `<forces-cell>` tags, which aren't registered (the rename left no
+  aliases). Corrected to `<field-root>` (also registered as `<field-field>`) and `<field-cell>`.
+
+### Removed
+
+- **`setSurfaces` / `getSurfaces` / `SurfacePlan` and `readParticleColors` — pulled before shipping.**
+  A design review found both were the rigidity they were meant to solve: `setSurfaces` is a fixed-key
+  struct where an open `registerOverlay` registry belongs (the output mirror of `addField`), and
+  `readParticleColors` is a half-feature with no consumer. Both were unreleased, so this is **not** a
+  breaking change. `setRender`/`setOverlay`/`setHeatmap` and `readParticles`/`readParticleIds` are
+  unchanged.
 
 ## [0.5.0] — 2026-06-14
 

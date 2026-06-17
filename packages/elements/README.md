@@ -29,7 +29,7 @@ Import the package once to register the elements, then mark up the field and you
 
 `<field-root>` mounts a fixed, full-viewport canvas behind your page and runs the engine on it. The
 field reacts to every `[data-body]` element on the page (the *field-reacts* law). It is decorative, so
-it is marked `aria-hidden` automatically. The deprecated `<forces-field>` tag still works as an alias.
+it is marked `aria-hidden` automatically. It is also registered as `<field-field>`.
 
 ## Marking bodies — the `data-body` vocabulary
 
@@ -93,7 +93,7 @@ const field = mountField({ render: 'trails', accent: '#2dd4bf' });
 
 `<field-cell>` is a self-contained, container-sized field surface for embedded demos (one force or
 formation inside a frame), separate from the page-wide `<field-root>`. It runs a deliberately
-simplified in-frame model, not the canonical engine math. The deprecated `<forces-cell>` is its alias.
+simplified in-frame model, not the canonical engine math.
 
 ## Framework use
 
