@@ -69,6 +69,7 @@ export const DOCS_NAV: DocGroup[] = [
     items: [
       { href: '/docs/authoring', label: 'Authoring across surfaces', ready: true },
       { href: '/docs/recipes', label: 'Recipe model', ready: true },
+      { href: '/docs/field-channels', label: 'Field channels', ready: true },
       { href: '/docs/platform', label: 'Platform layer', ready: true },
       { href: '/docs/performance', label: 'Performance', ready: true },
       { href: '/docs/accessibility', label: 'Accessibility', ready: true },

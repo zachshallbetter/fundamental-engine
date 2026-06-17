@@ -10,7 +10,7 @@ Every element can become a body in an invisible physics field via the `data-body
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-15 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-16 by apps/site/scripts/gen-llms.mjs.
 
 ## Docs
 
@@ -28,6 +28,7 @@ render from the same file. Generated 2026-06-15 by apps/site/scripts/gen-llms.mj
 - [Concepts — Reading Field](https://fundamental-engine.com/docs/reading-field): the flagship platform demo — a content page that measures attention and remembers it
 - [Build — Authoring across surfaces](https://fundamental-engine.com/docs/authoring): three authoring surfaces, one [data-body] contract
 - [Build — Recipe model](https://fundamental-engine.com/docs/recipes): the FieldRecipe model — tokens, concepts, metrics, diagnostics, and conditions in separate lanes
+- [Build — Field channels](https://fundamental-engine.com/docs/field-channels)
 - [Build — Platform layer](https://fundamental-engine.com/docs/platform): the DOM participation layer — six registries on the six-phase frame scheduler, plus lintPlatform()
 - [Build — Performance](https://fundamental-engine.com/docs/performance): the scheduler, the integrator hot path, density, and backgrounded-tab behavior
 - [Build — Accessibility](https://fundamental-engine.com/docs/accessibility): decorative-by-default render layers, reduced motion without loss of meaning

@@ -1,7 +1,7 @@
 # Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-15 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-16 by apps/site/scripts/gen-llms.mjs
 Files: 16
 
 These are the project's canonical documents — the authority on concepts, terminology, and
@@ -296,6 +296,8 @@ Field Agent Consumption Model
 ```
 
 > **Body-carried data (addBody).** A programmatic body created with `FieldHandle.addBody(spec)` carries an opaque `data` record — the Body-level analog of a particle's `atom`. It extends this model from *matter that carries records* to *sources that carry records*: an emitter is itself an addressable agent with attached data and per-body feedback (`onFeedback`), surfaced on its `BodyHandle`.
+>
+> **El-less bodies and the callback consumer.** A programmatic body has no DOM element. The model's element-agent has a *DOM consumer* (the engine writes `--d`/`--load`/`--field-*` onto the element, author CSS reads them); an `addBody` body has a **callback consumer** instead — its feedback channels arrive at `onFeedback(channels)` (and the live `BodyHandle.channels`), the non-DOM consumer for a non-DOM host (a Three.js mesh, a native view). Its force params are **reactive**: `BodyHandle.set({ strength, range, angle, spin, color })` mutates them on the measure cadence with no rescan — the same live-param path a scanned `[data-body]` gets from a `data-*` change, surfaced on the handle.
 
 ========================================================================
 FILE: api-stability.md
@@ -3145,6 +3147,24 @@ debug overlays
 topology analysis
 ```
 
+### 2.1 External field channels (`addField`)
+
+A host may register its own scalar field as a named **channel** the engine samples on the same read
+path as its built-in field functions:
+
+```ts
+addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle
+sampleField(name: string, x: number, y: number): number
+```
+
+This is the open **input** analog of the render surfaces (`setRender`/`setOverlay` are bundled *output*
+layers; `addField` is an on-demand *input* channel) — the same shape as the `grid(name)` host-authorable
+buffer, but for a field the host already owns (terrain height, soil moisture, a temperature map). A
+channel sampler obeys the field-function contract above (side-effect free, stable for a fixed state); it
+is **pull-based** — called on demand, never cached — so it must stay cheap. The `FieldChannelHandle`
+swaps the sampler live or removes the channel. Reading a channel as a force *potential* is a separate,
+opt-in coupling — `addField` is the read substrate, not yet a cause.
+
 ## 3. Force Contract
 
 A force is cause.
@@ -5519,6 +5539,15 @@ field.setRender('dots');           // underlay (behind content)
 field.setOverlay('field-lines');   // overlay (in front of content); 'off' clears the surface
 field.setOverlay(['grid', 'path', 'temperature']); // readings are ADDITIVE — a stack composes
 ```
+
+**The input mirror — field channels.** Surfaces are *output*: the engine draws onto them. Their open
+*input* analog is a **field channel** — `addField(name, sampler)` registers an external scalar field
+(terrain, moisture, a heat map) the engine samples on its own read path, read back with
+`sampleField(name, x, y)`. A surface is a place the field draws; a channel is a field the engine reads.
+Channels obey the field-function contract and are pull-based — see
+[system-contracts.md §2.1](system-contracts.md). (The surface *set* is deliberately the three
+placements above, not an open registry; the open extension point on the output side is a registrable
+render/overlay mode, tracked separately.)
 
 Readings are **additive**: `setOverlay` takes one reading or a stack (an array; space-separated in
 the `overlay` attribute), drawn in order on the one front surface — so matter (underlay) + the

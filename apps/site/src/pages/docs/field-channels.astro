@@ -1,0 +1,136 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+
+const register = `import { createField } from '@fundamental-engine/core';
+const field = createField(canvas, { host });
+
+// Register an external scalar field as a named CHANNEL — your data, sampled on the
+// engine's own read path. The sampler takes field-pixel coords and returns a number.
+const moisture = field.addField('moisture', (x, y) => soil.wetnessAt(x, y));
+
+// Read it back anywhere — through the field, not a second structure beside it.
+const wet = field.sampleField('moisture', px, py);   // 0 for an unregistered name`;
+
+const habitat = `// Habitat (a Three.js garden on this engine) registers its soil model as channels,
+// then samples terrain through the field instead of reaching into World.getTile() alongside it.
+const tileAt = (fx, fy) => world.getTile(toTileX(fx), toTileY(fy));   // field px → garden tile
+layer.addField('moisture', (fx, fy) => tileAt(fx, fy)?.moisture ?? 0);
+layer.addField('height',   (fx, fy) => tileAt(fx, fy)?.height   ?? 0);
+
+// A bunny prefers the lusher tile — terrain now feeds the agent's decision on the field's path.
+const best = candidates.reduce((a, b) =>
+  layer.sampleField('moisture', b.x, b.y) > layer.sampleField('moisture', a.x, a.y) ? b : a);`;
+
+const handle = `const heat = field.addField('heat', summerMap);  // FieldChannelHandle
+heat.set(winterMap);   // swap the sampler live — a season changes the map
+heat.remove();         // unregister; sampleField('heat', …) returns 0 again`;
+---
+
+<DocsLayout
+  title="Fundamental — Field channels"
+  description="addField(name, sampler) registers an external scalar field — terrain, moisture, a heat map — as a named channel the engine samples on its own read path, so a consumer queries one field instead of bolting a parallel grid alongside it. The open input mirror of the render surfaces."
+>
+  <header class="docs-hero">
+    <p class="kicker">Build</p>
+    <h1>Field <span class="accent">channels</span></h1>
+    <p class="lede">
+      A field is more than its own forces. <code>addField(name, sampler)</code> lets you register an
+      <strong>external scalar field</strong> you already own — terrain height, soil moisture, a
+      temperature map — as a named <strong>channel</strong> the engine samples on the same read path
+      as its built-in field functions. So a consumer queries <strong>one</strong> field, instead of
+      bolting a parallel grid alongside it and keeping the two in sync by hand.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>The input mirror of the surfaces.</b> The render surfaces are bundled <em>output</em> layers —
+    <a href="/docs/api/handle"><code>setRender</code></a> draws the underlay,
+    <code>setOverlay</code> the overlay. A channel is the open <em>input</em> analog: you hand the
+    field a sampler and it becomes part of what the field can read. Same shape as the host-authorable
+    <a href="/docs/api/handle"><code>grid(name)</code></a> buffer, but for a field you already
+    compute yourself.
+  </div>
+
+  <section class="docs-sec">
+    <h2>Register and sample</h2>
+    <p>
+      <code>addField(name, sampler)</code> takes a name and a pull-based function
+      <code>(x, y) =&gt; number</code> in field-pixel space. Read it back with
+      <code>sampleField(name, x, y)</code> — an unregistered name reads <code>0</code>, so a sampler
+      is always safe to call. Both are on the <code>FieldHandle</code>, mirrored through
+      <code>@fundamental-engine/vanilla</code>, <code>&lt;field-root&gt;</code>, and the
+      <a href="/docs/guides/three">Three.js layer</a>.
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: register }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Pull, not push — you keep ownership</h2>
+    <p>
+      A channel sampler is <strong>pull-based</strong>: the engine calls it on demand and never caches
+      the result, so the data stays yours and always current — change your terrain and the next
+      <code>sampleField</code> sees it, with nothing to invalidate. Keep the sampler cheap; it can be
+      called many times a frame. It must obey the field-function contract — side-effect free and
+      stable for a fixed state (the same contract the built-in <code>field lines</code>,
+      <code>streamlines</code>, and heatmaps rely on).
+    </p>
+    <p>
+      This is the same ownership split the engine draws everywhere: it owns the particle pool and
+      moves it; <em>you</em> own your terrain and the engine only reads it. Reading a channel as a
+      force <em>potential</em> — letting matter drift down its gradient — is a separate, opt-in step.
+      <code>addField</code> is the read substrate, not yet a cause.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Worked example: terrain on the field's path</h2>
+    <p>
+      Habitat — a simulation garden running this engine through
+      <code>@fundamental-engine/three</code> — has a rich soil model (three-horizon moisture, ground
+      height) that used to live in a parallel grid the field read through by hand. Registered as
+      channels, terrain becomes part of the field's own sampling path, and any agent can consult it
+      the same way it samples force or density:
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: habitat }]} />
+    <p>
+      The win isn't the read itself — it's the <strong>single path</strong>. Force, density, and now
+      terrain all answer to <code>sample*</code> calls on one field, so a consumer never has to thread
+      a second structure through every function that already has the field in hand.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>The handle — swap and remove</h2>
+    <p>
+      <code>addField</code> returns a <code>FieldChannelHandle</code>: <code>set(sampler)</code> swaps
+      the function live (a season changes the map; a layer toggles), and <code>remove()</code>
+      unregisters the channel so <code>sampleField</code> falls back to <code>0</code>.
+    </p>
+    <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: handle }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Channels, grids, and surfaces</h2>
+    <p>Three open primitives, one principle — name it, and the field extends to hold it:</p>
+    <ul class="model">
+      <li>
+        <b>Channels</b> (<code>addField</code>) — an <em>input</em> field you compute and own; the
+        engine samples it. Pull-based, never cached.
+      </li>
+      <li>
+        <b>Grids</b> (<a href="/docs/api/handle"><code>grid(name)</code></a>) — a host-authorable
+        engine buffer (the same primitive <code>diffuse</code>/<code>memory</code> run on): you
+        <code>deposit</code> into it and the engine advances it each frame. A scent map, a wear layer.
+      </li>
+      <li>
+        <b>Surfaces</b> (<code>setRender</code> / <code>setOverlay</code>) — <em>output</em> layers
+        the engine draws onto a canvas. The visible counterpart to the channels you read.
+      </li>
+    </ul>
+    <p>
+      For the hard contract a channel sampler obeys, see
+      <a href="/docs/api/handle">the FieldHandle reference</a>.
+    </p>
+  </section>
+</DocsLayout>

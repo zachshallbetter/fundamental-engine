@@ -108,4 +108,16 @@ const lift: Force = {
       forces with <a href="/docs/api/presets">presets</a> for bigger effects.
     </div>
   </section>
+
+  <section class="docs-sec">
+    <h2>Bring your own field</h2>
+    <p>
+      The field can read data you already own. <code>field.addField(name, (x, y) =&gt; …)</code>
+      registers an external scalar field — terrain, moisture, a heat map — as a named channel the
+      engine samples on its own read path, read back with <code>field.sampleField(name, x, y)</code>.
+      It's the open <strong>input</strong> mirror of the render surfaces, so a consumer queries one
+      field instead of bolting a parallel grid alongside it. See the
+      <a href="/docs/field-channels">field channels guide</a>.
+    </p>
+  </section>
 </DocsLayout>
