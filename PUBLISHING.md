@@ -56,7 +56,7 @@ pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --
 
 ## Versioning
 
-All seven packages are versioned together (currently `0.2.2`). Bump them as one:
+All eight packages are versioned together (currently `0.5.0`). Bump them as one:
 
 ```sh
 pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
