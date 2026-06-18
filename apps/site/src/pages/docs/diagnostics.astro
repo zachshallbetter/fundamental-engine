@@ -115,7 +115,7 @@ const table = RENDER_MODES;
     ghostTrajectory,
     drawPrediction,
   } from '@fundamental-engine/core';
-  import { downloadCanvasPng, downloadText } from '@fundamental-engine/platform';
+  import { downloadCanvasPng, downloadText } from '@fundamental-engine/dom';
 
   const canvas = document.getElementById('diag-canvas') as HTMLCanvasElement | null;
   const ctx = canvas?.getContext('2d');

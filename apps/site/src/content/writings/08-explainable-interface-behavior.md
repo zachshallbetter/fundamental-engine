@@ -347,7 +347,7 @@ Two design choices keep the Inspector honest about *itself*:
 ### 5.2 `applyRecipe.inspect()` and real relationship resolution
 
 A recipe (Paper 6) applied to live content exposes `inspect()`
-(`packages/platform/src/apply-recipe.ts`), returning per-element metrics plus relationship counts. The
+(`packages/dom/src/apply-recipe.ts`), returning per-element metrics plus relationship counts. The
 load-bearing recent change is #222 (`fix(platform): compute real relationship resolution — stop
 hardcoding relResolved = relTotal`). Before it, resolution was assumed; after it, the runtime *resolves*
 each declared relationship against the DOM and distinguishes:
@@ -367,7 +367,7 @@ named it. (The same fix is what lets Paper 7's data-bound studies report honest 
 
 ### 5.3 Lint surfaces quiet failures
 
-`lintPlatform()` (`packages/platform/src/lint.ts`) is the platform's self-audit. A field layer *fails
+`lintPlatform()` (`packages/dom/src/lint.ts`) is the platform's self-audit. A field layer *fails
 quietly*: a relation points at a missing id, a visual duplicates text the screen reader already reads,
 an element is styled from state it was never registered for. None of these is a type error; all are
 data pathologies. The lint rules surface them as warnings:
@@ -546,10 +546,10 @@ Every diagnostic claim in this paper is checkable against the repository.
 - **The Platform Inspector:** `apps/site/src/pages/docs/inspector.astro` (live registry readout,
   recipe inspector, reciprocity panel; shipped #198, recipe inspector #211) and the live
   `apps/site/src/pages/docs/diagnostics.astro` page.
-- **The platform self-audit:** `packages/platform/src/lint.ts` (`lintPlatform` and the per-rule pure
+- **The platform self-audit:** `packages/dom/src/lint.ts` (`lintPlatform` and the per-rule pure
   functions).
-- **Relationship resolution including unresolved endpoints:** `packages/platform/src/apply-recipe.ts`
-  (`inspect()` → `AppliedRecipeInspection`) and `packages/platform/src/relationships.ts`
+- **Relationship resolution including unresolved endpoints:** `packages/dom/src/apply-recipe.ts`
+  (`inspect()` → `AppliedRecipeInspection`) and `packages/dom/src/relationships.ts`
   (`unresolvedAll`, `scanRelationships`); the real-resolution fix is #222.
 - **Per-force passports:** `packages/core/src/contracts/passport.ts` (`ForcePassport`, `PASSPORTS`,
   `validatePassports`) and the system report `packages/core/src/inspect/report.ts` (`systemReport`).

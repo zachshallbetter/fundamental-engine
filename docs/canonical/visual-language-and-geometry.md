@@ -22,7 +22,7 @@ The field should not only move particles. It should be able to influence typogra
 
 The visual system is native-platform-first, dependency-light, and framework-agnostic. The `Fundamental` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
 
-These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `Fundamental` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
+These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/dom`: canvas render modes, SVG overlays, and diagnostic overlays. `Fundamental` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
 
 Implementation should use fundamental web APIs wherever possible:
 
@@ -723,7 +723,7 @@ Suggested order:
 
 Some experiences may place particles above DOM, but the default should protect readability.
 
-These layers are not a single canvas. The canvas render surface owns the field washes, scalar fields, field lines, particles, and topology; SVG overlays own path-accurate relationship lines and crisp diagnostic marks; and diagnostic overlays own the inspector and debug views. The `@fundamental-engine/platform` `OverlayRegistry` registers and orders the SVG and diagnostic overlays, while the `FrameScheduler` keeps each layer on its phase (`discover -> read -> compute -> state -> write -> render`) so render surfaces never measure or mutate physics mid-frame.
+These layers are not a single canvas. The canvas render surface owns the field washes, scalar fields, field lines, particles, and topology; SVG overlays own path-accurate relationship lines and crisp diagnostic marks; and diagnostic overlays own the inspector and debug views. The `@fundamental-engine/dom` `OverlayRegistry` registers and orders the SVG and diagnostic overlays, while the `FrameScheduler` keeps each layer on its phase (`discover -> read -> compute -> state -> write -> render`) so render surfaces never measure or mutate physics mid-frame.
 
 The full set of render and diagnostic modes ships and is browsable at `/docs/diagnostics`: `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`, `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, and `prediction`. None of these are planned; they are all live render surfaces over the shared field context.
 
@@ -839,7 +839,7 @@ Performance: CSS only
 
 ## 18.1 Visual Binding and Overlay Registries
 
-The `@fundamental-engine/platform` runtime makes the visual contract above operational. Two registries on the `FrameScheduler` own the visual-to-semantic boundary.
+The `@fundamental-engine/dom` runtime makes the visual contract above operational. Two registries on the `FrameScheduler` own the visual-to-semantic boundary.
 
 `VisualBindingRegistry` pairs each visual layer with the semantic body it expresses. A binding declares its source metrics, its target properties, and the semantic element it must stay paired with, so an expressive canvas or SVG layer is never the sole carrier of meaning. The platform lint surfaces two relevant rules here:
 

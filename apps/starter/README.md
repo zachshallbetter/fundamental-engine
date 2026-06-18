@@ -10,7 +10,7 @@ pnpm --filter @fundamental-engine/starter build    # bundles the workspace packa
 ```
 
 > In this monorepo the dependencies are `workspace:*`. Outside the repo they are ordinary installs:
-> `npm install @fundamental-engine/core @fundamental-engine/elements @fundamental-engine/platform`.
+> `npm install @fundamental-engine/core @fundamental-engine/elements @fundamental-engine/dom`.
 
 ## What it shows
 
@@ -29,7 +29,7 @@ One recipe — [`priority-well`](https://fundamental-engine.com/docs/gallery#pri
 
    ```ts
    import { recipeById } from '@fundamental-engine/core';
-   import { applyRecipe } from '@fundamental-engine/platform';
+   import { applyRecipe } from '@fundamental-engine/dom';
    const applied = applyRecipe(root, recipeById('priority-well')!, { bodies });
    applied.inspect(); // { frame, measurements, relationships, lint }
    ```
@@ -39,7 +39,7 @@ One recipe — [`priority-well`](https://fundamental-engine.com/docs/gallery#pri
    out rather than popping.
 
    ```ts
-   import { bindData } from '@fundamental-engine/platform';
+   import { bindData } from '@fundamental-engine/dom';
    const binding = bindData(root, tasks, (t) => ({
      id: t.id,
      body: { tokens: ['attract'], strength: 0.4 + t.priority },

@@ -489,7 +489,7 @@ activate."* Only the `primitives` lane becomes `data-body` behavior; each body c
 table, a reduced-motion note), so the reduced-motion path is a real output plan, not just prose. The
 test suite verifies, for all 64, that compiled tokens are all real, that feedback covers the metrics,
 that a reduced-motion output path is produced, and that *no concept word ever appears as a token*. The
-DOM-applying counterpart `applyRecipe` lives in `@fundamental-engine/platform` and is Paper 5's subject.
+DOM-applying counterpart `applyRecipe` lives in `@fundamental-engine/dom` and is Paper 5's subject.
 
 **Authoring across surfaces.** `recipeToMarkup` and `recipeAuthoring` emit a recipe's copy-paste
 authoring as native-HTML `[data-body]` markup, a `<field-root>` web-component snippet, and a React

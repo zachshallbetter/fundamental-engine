@@ -12,7 +12,7 @@
  */
 import '@fundamental-engine/elements'; // side effect: registers <field-root>, <field-cell>, <field-field>
 import { recipeById, compileRecipe } from '@fundamental-engine/core';
-import { applyRecipe, bindData } from '@fundamental-engine/platform';
+import { applyRecipe, bindData } from '@fundamental-engine/dom';
 
 const RECIPE_ID = 'priority-well';
 const recipe = recipeById(RECIPE_ID);

@@ -42,7 +42,7 @@ const LIVE = ['attention-weather'];
 
 <script>
   import { mountBindStudy } from '../../../lib/study.ts';
-  import { bindData } from '@fundamental-engine/platform';
+  import { bindData } from '@fundamental-engine/dom';
 
   interface Card { id: string; label: string; value: string; heat: number; pressure: number; anomaly?: boolean; }
   const cards: Card[] = [

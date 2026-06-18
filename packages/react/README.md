@@ -121,12 +121,12 @@ Router, render it from a Client Component (`'use client'`).
 ## Recipes & data binding
 
 To apply a named recipe or bind data to the field, use `applyRecipe()` / `bindData()` from
-[`@fundamental-engine/platform`](../platform) against a ref'd container. Browse all 64 recipes at
+[`@fundamental-engine/dom`](../platform) against a ref'd container. Browse all 64 recipes at
 [`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
 ## Related
 
-[`@fundamental-engine/core`](../core) · [`@fundamental-engine/platform`](../platform) · [`@fundamental-engine/elements`](../elements)
+[`@fundamental-engine/core`](../core) · [`@fundamental-engine/dom`](../platform) · [`@fundamental-engine/elements`](../elements)
 · [`@fundamental-engine/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
 
 ## License

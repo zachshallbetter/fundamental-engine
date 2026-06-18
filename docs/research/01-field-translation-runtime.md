@@ -242,7 +242,7 @@ Fundamental is organized into packages whose dependency direction is strict and 
 
 ```
 Fundamental      renderer-agnostic field/force/particle/metric/diagnostic/conformance engine
-@fundamental-engine/platform  DOM participation: measurement, state, feedback, relationships,
+@fundamental-engine/dom  DOM participation: measurement, state, feedback, relationships,
                     visual bindings, overlays, scheduling, linting
 @fundamental-engine/elements  <field-root> / <field-cell> custom elements + [data-body] authoring
 @fundamental-engine/react     <FieldField> component + useFieldField hook
@@ -254,7 +254,7 @@ elements → platform → core      react → platform → core      vanilla →
 The layering encodes a claim, not merely a code organization: *field behavior is independent of its
 presentation substrate.* `Fundamental` computes field behavior against plain data and touches no
 DOM globals; the browser environment adapter — `browserHost()`, viewport/scroll/`requestAnimationFrame`
-access, the canvas factory, DOM download helpers — lives in `@fundamental-engine/platform`. The core reaches
+access, the canvas factory, DOM download helpers — lives in `@fundamental-engine/dom`. The core reaches
 the environment only through an injected `FieldHost` interface, so the same engine runs against
 Canvas, WebGL, WebGPU, a native target, or a headless harness by supplying a different host.
 
@@ -773,7 +773,7 @@ Every architectural claim in this paper is checkable against the repository. The
 anchors:
 
 - Renderer-agnostic core: `packages/core/src/core/dom-boundary.test.ts` (empty allowlist).
-- The scheduler and registries: `packages/platform/src/schedule.ts`, `platform.ts`,
+- The scheduler and registries: `packages/dom/src/schedule.ts`, `platform.ts`,
   `measurement.ts`, `state.ts`, `feedback.ts`, `relationships.ts`, `visual-bindings.ts`,
   `overlays.ts`, `lint.ts`.
 - The force contract and passports: `packages/core/src/core/registry.ts`,

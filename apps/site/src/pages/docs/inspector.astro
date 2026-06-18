@@ -10,7 +10,7 @@ import {
   SEMANTIC_CONTRACTS,
   FIELD_RECIPES,
 } from '@fundamental-engine/core';
-import { PHASES } from '@fundamental-engine/platform';
+import { PHASES } from '@fundamental-engine/dom';
 
 // The Inspector reads the system's own self-description: the system report, every contract, and the
 // force passports — plus the LIVE platform runtime (the running <field-root>'s registries, read each
@@ -229,7 +229,7 @@ const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
   // only (measure.last(), never measure() — no off-phase reads), so the inspector never perturbs the
   // runtime it observes. This is the production Phase-D platform, so the numbers are real. Respects
   // reduced motion (one static read).
-  import { lintPlatform, type FieldPlatform } from '@fundamental-engine/platform';
+  import { lintPlatform, type FieldPlatform } from '@fundamental-engine/dom';
 
   const reduceP = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const statusEl = document.querySelector<HTMLElement>('[data-lp-status]');
@@ -303,7 +303,7 @@ const recipeOptions = FIELD_RECIPES.map((r) => ({ id: r.id, name: r.name }));
   // Recipe inspector: compile a chosen recipe (compileRecipe) + run it (applyRecipe), exposing the
   // plan and live metrics — "why is this moving" made answerable from the recipe object.
   import { compileRecipe, recipeById } from '@fundamental-engine/core';
-  import { applyRecipe, type AppliedRecipe } from '@fundamental-engine/platform';
+  import { applyRecipe, type AppliedRecipe } from '@fundamental-engine/dom';
 
   const pick = document.querySelector<HTMLSelectElement>('[data-ri-pick]');
   const reducedRi = document.querySelector<HTMLInputElement>('[data-ri-reduced]');

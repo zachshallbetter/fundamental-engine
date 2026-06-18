@@ -20,7 +20,7 @@ import {
 } from './api-surface.data.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DIR = { '@fundamental-engine/core': 'core', '@fundamental-engine/platform': 'platform', '@fundamental-engine/elements': 'elements', '@fundamental-engine/react': 'react', '@fundamental-engine/vanilla': 'vanilla' };
+const DIR = { '@fundamental-engine/core': 'core', '@fundamental-engine/dom': 'platform', '@fundamental-engine/elements': 'elements', '@fundamental-engine/react': 'react', '@fundamental-engine/vanilla': 'vanilla' };
 const distOf = (pkg) => join(root, 'packages', DIR[pkg], 'dist', 'index.js');
 const srcOf = (pkg) => join(root, 'packages', DIR[pkg], 'src');
 

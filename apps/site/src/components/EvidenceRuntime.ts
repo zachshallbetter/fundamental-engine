@@ -12,7 +12,7 @@
 //     move slowly, so re-polling would be theater. Works the API misses keep snapshot values.
 // The scoped field runs with render: [] — particles compute (metrics flow) but are never drawn.
 import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, threadOverlay, withFlip, type ThreadOverlay } from "@fundamental-engine/platform";
+import { applyRecipe, threadOverlay, withFlip, type ThreadOverlay } from "@fundamental-engine/dom";
 import { EVIDENCE, type Signal, type Lens } from "../lib/copy.ts";
 import { wireLiveChip, politeLoop } from "../lib/live-data.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";

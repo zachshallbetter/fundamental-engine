@@ -14,7 +14,7 @@
 //     keep their snapshot values; advisories and publish dates stay snapshot by design.
 // The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
 import { logNormalizeBetween, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, threadOverlay, withFlip } from "@fundamental-engine/platform";
+import { applyRecipe, threadOverlay, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls.ts";
 import { wireLiveChip, politeLoop } from "../../lib/live-data.ts";
 import { pageRuntime } from "../../lib/page-runtime.ts";

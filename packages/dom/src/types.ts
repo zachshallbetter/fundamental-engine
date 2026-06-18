@@ -1,5 +1,5 @@
 /**
- * @fundamental-engine/platform — shared contracts for the platform-adjacent registries. These describe the
+ * @fundamental-engine/dom — shared contracts for the platform-adjacent registries. These describe the
  * native primitives Fundamental wishes the browser had (frame-stable geometry, typed element state,
  * relationships, visual-semantic pairing) built on the ones it has. Pure data shapes; no DOM here.
  */

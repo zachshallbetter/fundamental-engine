@@ -26,12 +26,12 @@ importers:
       '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@fundamental-engine/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
       '@fundamental-engine/elements':
         specifier: workspace:*
         version: link:../../packages/elements
-      '@fundamental-engine/platform':
-        specifier: workspace:*
-        version: link:../../packages/platform
       '@fundamental-engine/three':
         specifier: workspace:*
         version: link:../../packages/three
@@ -72,12 +72,12 @@ importers:
       '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@fundamental-engine/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom
       '@fundamental-engine/elements':
         specifier: workspace:*
         version: link:../../packages/elements
-      '@fundamental-engine/platform':
-        specifier: workspace:*
-        version: link:../../packages/platform
     devDependencies:
       typescript:
         specifier: ^5.9.3
@@ -92,14 +92,24 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/dom:
+    dependencies:
+      '@fundamental-engine/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/elements:
     dependencies:
       '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
-      '@fundamental-engine/platform':
+      '@fundamental-engine/dom':
         specifier: workspace:*
-        version: link:../platform
+        version: link:../dom
       '@fundamental-engine/vanilla':
         specifier: workspace:*
         version: link:../vanilla
@@ -119,12 +129,12 @@ importers:
       '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
+      '@fundamental-engine/dom':
+        specifier: workspace:*
+        version: link:../dom
       '@fundamental-engine/elements':
         specifier: workspace:*
         version: link:../elements
-      '@fundamental-engine/platform':
-        specifier: workspace:*
-        version: link:../platform
       '@fundamental-engine/react':
         specifier: workspace:*
         version: link:../react
@@ -134,9 +144,9 @@ importers:
 
   packages/platform:
     dependencies:
-      '@fundamental-engine/core':
+      '@fundamental-engine/dom':
         specifier: workspace:*
-        version: link:../core
+        version: link:../dom
     devDependencies:
       typescript:
         specifier: ^5.9.3
@@ -147,9 +157,9 @@ importers:
       '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
-      '@fundamental-engine/platform':
+      '@fundamental-engine/dom':
         specifier: workspace:*
-        version: link:../platform
+        version: link:../dom
     devDependencies:
       '@types/react':
         specifier: ^19.0.0
@@ -182,9 +192,9 @@ importers:
       '@fundamental-engine/core':
         specifier: workspace:*
         version: link:../core
-      '@fundamental-engine/platform':
+      '@fundamental-engine/dom':
         specifier: workspace:*
-        version: link:../platform
+        version: link:../dom
     devDependencies:
       typescript:
         specifier: ^5.9.3

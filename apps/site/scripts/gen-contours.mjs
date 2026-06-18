@@ -19,7 +19,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
-import { contourPathData } from '@fundamental-engine/platform';
+import { contourPathData } from '@fundamental-engine/dom';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const FONT = join(here, 'assets/bricolage-grotesque-variable.ttf');

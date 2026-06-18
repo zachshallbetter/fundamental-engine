@@ -216,8 +216,8 @@ const SOURCES = {
 
   // ── Dependencies — the monorepo's real npm deps + advisories ────────────────────────
   async dependencies() {
-    const pkgDirs = ['packages/core', 'packages/platform', 'packages/elements', 'packages/vanilla', 'packages/react', 'apps/site'];
-    const internal = new Set(['@fundamental-engine/core', '@fundamental-engine/platform', '@fundamental-engine/elements', '@fundamental-engine/vanilla', '@fundamental-engine/react', '@fundamental-engine/kit']);
+    const pkgDirs = ['packages/core', 'packages/dom', 'packages/elements', 'packages/vanilla', 'packages/react', 'apps/site'];
+    const internal = new Set(['@fundamental-engine/core', '@fundamental-engine/dom', '@fundamental-engine/elements', '@fundamental-engine/vanilla', '@fundamental-engine/react', '@fundamental-engine/kit']);
     const usedBy = new Map(); // external dep → [workspace pkgs]
     for (const dir of pkgDirs) {
       const pj = JSON.parse(readFileSync(resolve(ROOT, '../../', dir, 'package.json'), 'utf8'));

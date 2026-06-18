@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "paths": {
       "@fundamental-engine/core": ["../packages/core/dist/index.d.ts"],
-      "@fundamental-engine/platform": ["../packages/platform/dist/index.d.ts"],
+      "@fundamental-engine/dom": ["../packages/dom/dist/index.d.ts"],
       "@fundamental-engine/elements": ["../packages/elements/dist/index.d.ts"],
       "@fundamental-engine/react": ["../packages/react/dist/index.d.ts"],
       "@fundamental-engine/vanilla": ["../packages/vanilla/dist/index.d.ts"]

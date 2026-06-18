@@ -1,7 +1,7 @@
 # Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-16 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-18 by apps/site/scripts/gen-llms.mjs
 Files: 16
 
 These are the project's canonical documents — the authority on concepts, terminology, and
@@ -20,7 +20,7 @@ FILE: README.md
 # Canonical documentation map
 
 Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` (core) computes
-renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM; `elements`/`react`
+renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM; `elements`/`react`
 are authoring surfaces. Canvas is one render surface, not the whole system.
 
 > Concepts describe. Tokens execute. Metrics measure. Diagnostics explain. Conditions activate.
@@ -59,7 +59,7 @@ FILE: agent-consumption-model.md
 > owns a **consumer** that turns one influence into its own kind of change. Body Matter Interaction
 > (the sink/accretion behavior) is a submodel here, not a separate model. Every status label below was
 > verified against the code (`packages/core/src/agents`, `packages/core/src/forces`,
-> `packages/core/src/core/field.ts`, `packages/platform`) and follows the
+> `packages/core/src/core/field.ts`, `packages/dom`) and follows the
 > [documentation standards](documentation-standards.md) status rule: nothing is called
 > *shipped* unless code confirms it. Deeper references:
 > [system-contracts §5–§9](system-contracts.md),
@@ -326,7 +326,7 @@ of the `0.x` line. The freeze is mechanically enforced — `pnpm check:api` fail
 symbol is removed, renamed, moved between packages, or changes kind.
 
 > Package npm names: core is published as **`@fundamental-engine/core`**; the rest are
-> `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The umbrella
+> `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The umbrella
 > **`@fundamental-engine/kit`** installs the whole suite in one dependency (`fundamental-engine` is a thin alias
 > for it); these are convenience meta-packages, not part of the frozen API surface.
 
@@ -338,11 +338,11 @@ symbol is removed, renamed, moved between packages, or changes kind.
 | --- | --- | --- | --- |
 | `createField` | `@fundamental-engine/core` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
 | `createField` | `@fundamental-engine/vanilla` | value | The host-bundled convenience door (= `createBrowserField`); auto-supplies `browserHost()`. |
-| `browserHost` | `@fundamental-engine/platform` | value | The canonical DOM `FieldHost` for `createField`. |
+| `browserHost` | `@fundamental-engine/dom` | value | The canonical DOM `FieldHost` for `createField`. |
 | `browserHost` | `@fundamental-engine/vanilla` | value | Re-export of the platform host for the no-framework path. |
-| `createFieldPlatform` | `@fundamental-engine/platform` | value | Wires the six native-first registries on a root. |
-| `applyRecipe` | `@fundamental-engine/platform` | value | Applies a recipe to a live platform. |
-| `bindData` | `@fundamental-engine/platform` | value | Binds records → bodies; data drives the field. |
+| `createFieldPlatform` | `@fundamental-engine/dom` | value | Wires the six native-first registries on a root. |
+| `applyRecipe` | `@fundamental-engine/dom` | value | Applies a recipe to a live platform. |
+| `bindData` | `@fundamental-engine/dom` | value | Binds records → bodies; data drives the field. |
 | `compileRecipe` | `@fundamental-engine/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
 
 `createField` has **two doors on purpose**: the core primitive is renderer-agnostic and host-required;
@@ -355,7 +355,7 @@ Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 | --- | --- | --- |
 | `FieldRecipe` | `@fundamental-engine/core` | The recipe schema. |
 | `FieldHost` | `@fundamental-engine/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
-| `FieldPlatform` | `@fundamental-engine/platform` | The surface `createFieldPlatform` returns. |
+| `FieldPlatform` | `@fundamental-engine/dom` | The surface `createFieldPlatform` returns. |
 
 ### Elements and the body contract
 
@@ -455,7 +455,7 @@ FILE: authoring-and-recipes.md
 ## Purpose
 
 This document defines how authors use `Fundamental`. `Fundamental` is a platform-native relational field
-runtime for the DOM: `Fundamental` computes renderer-agnostic field behavior, `@fundamental-engine/platform`
+runtime for the DOM: `Fundamental` computes renderer-agnostic field behavior, `@fundamental-engine/dom`
 binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
 scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
 field context. Authors write the same `[data-body]` contract regardless of surface.
@@ -921,7 +921,7 @@ FILE: definition-document.md
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 
-`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
 
 Core principle:
 
@@ -995,9 +995,9 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/dom` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
-The package set: `Fundamental`, `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
+The package set: `Fundamental`, `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
 
 ### Platform layer
 
@@ -1367,7 +1367,7 @@ are written or revised, they follow the framing below.
 Fundamental is a platform-native relational field runtime for the DOM.
 
 Fundamental      computes renderer-agnostic field behavior.
-@fundamental-engine/platform  binds field behavior to the DOM through measurement, state, feedback,
+@fundamental-engine/dom  binds field behavior to the DOM through measurement, state, feedback,
                     relationships, visual bindings, overlays, linting, and scheduling.
 @fundamental-engine/elements  exposes native HTML and web-component authoring.
 @fundamental-engine/react     adapts the same contracts for React.
@@ -1412,7 +1412,7 @@ These are shipped and may be described in the present tense (verify specifics ag
 asserting anything new):
 
 ```
-Fundamental · @fundamental-engine/platform · @fundamental-engine/elements · @fundamental-engine/react · @fundamental-engine/vanilla
+Fundamental · @fundamental-engine/dom · @fundamental-engine/elements · @fundamental-engine/react · @fundamental-engine/vanilla
 FrameScheduler (discover → read → compute → state → write → render)
 MeasurementRegistry · StateRegistry · FeedbackRegistry · RelationshipRegistry ·
   VisualBindingRegistry · OverlayRegistry · lintPlatform()
@@ -1425,7 +1425,7 @@ the Natural Field Translation System (four-field classification + /docs/natural-
 ```
 
 `Fundamental` imports **zero DOM** — the engine routes the environment through an injected
-`FieldHost`; `browserHost()` lives in `@fundamental-engine/platform`, and `createField` requires a host (the
+`FieldHost`; `browserHost()` lives in `@fundamental-engine/dom`, and `createField` requires a host (the
 framework entry points wire it). `core/dom-boundary.test.ts` enforces this with an empty allowlist.
 
 ## Document-status taxonomy
@@ -1814,7 +1814,7 @@ FILE: interaction-and-relationship-model.md
 
 This document expands `Fundamental` beyond particles.
 
-`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
@@ -2431,7 +2431,7 @@ Two shipped mechanisms produce it:
   hides the element with CSS (`display: none`) gets a signals-only engine for free.
 - **Recipe, render-less** — `applyRecipe(root, { ...recipe, render: [] }, { bodies })` runs the
   platform's metric pipeline over explicit bodies with no engine canvas at all
-  (`packages/platform/src/apply-recipe.ts`).
+  (`packages/dom/src/apply-recipe.ts`).
 
 Formalizing the first mechanism as a named engine mode is filed as
 [#297](https://github.com/zachshallbetter/fundamental-engine/issues/297).
@@ -2603,7 +2603,7 @@ chrome):
 
 **What it earned the platform.** The navigation-chrome idiom — run a recipe `render: []` over the
 `<a href>` links, pin the current, mark the visited, return a teardown — lifted out of the site into
-**`bindFieldNav`** (`@fundamental-engine/platform`), the same way the example family earned FLIP and
+**`bindFieldNav`** (`@fundamental-engine/dom`), the same way the example family earned FLIP and
 `allocateAttention` above.
 
 **The honesty it forced.** On a small nav (a two-link pager, a breadcrumb) "signals-only" is mostly
@@ -2797,7 +2797,7 @@ FILE: platform-architecture.md
 ========================================================================
 
 > **Status: canonical.**
-> This document defines the current `@fundamental-engine/platform` architecture as of the runtime-platform
+> This document defines the current `@fundamental-engine/dom` architecture as of the runtime-platform
 > unification phase (Phase D): the FrameScheduler, the six registries, `lintPlatform()`, the live
 > `<field-root>` runtime, and the platform→core boundary. For force/field math see
 > [forces-system.md](../engine-reference/forces-system.md); for the data model and contracts see
@@ -2820,7 +2820,7 @@ Fundamental
   core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
   export.ts are the two allowlisted, quarantined exceptions).
 
-@fundamental-engine/platform
+@fundamental-engine/dom
   DOM participation: measurement, state, feedback, relationships, visual bindings, overlays,
   scheduling, and linting. Depends on core for contracts; core never depends on it.
 
@@ -2844,7 +2844,7 @@ apps/site · lab · docs
 Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
 `vanilla → platform → core`. `Fundamental` is renderer-agnostic and imports **zero** DOM (enforced
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
-`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/platform`.
+`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/dom`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
 you.
 
@@ -2973,7 +2973,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 **Frontier — done:** `core/field.ts` (the engine + canvas render loop) no longer touches any DOM
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
-to `@fundamental-engine/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
+to `@fundamental-engine/dom`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
 source file in `Fundamental` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
@@ -2994,7 +2994,7 @@ wires the two post-hoc. Once a handle is attached:
 
 ## The QualityGovernor
 
-`QualityGovernor` (`packages/platform/src/governor.ts`) detects sustained frame-budget overruns
+`QualityGovernor` (`packages/dom/src/governor.ts`) detects sustained frame-budget overruns
 and emits a coarse tier signal. The split is deliberate: the governor detects, the caller
 responds.
 
@@ -3057,7 +3057,7 @@ FILE: system-contracts.md
 
 ## Purpose
 
-Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -3671,10 +3671,10 @@ The semantic layer should remain real HTML text.
 
 ## 20. Platform Contract
 
-> **Implemented.** `@fundamental-engine/platform` ships `createFieldPlatform(root)` plus the six registries, the
+> **Implemented.** `@fundamental-engine/dom` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
-`@fundamental-engine/platform` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
+`@fundamental-engine/dom` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:
 
@@ -3697,7 +3697,7 @@ The platform must not move force-engine math into the DOM layer. Core computes f
 
 ## 21. Registry Contract
 
-> **Implemented.** Six registries ship in `@fundamental-engine/platform`: `MeasurementRegistry`,
+> **Implemented.** Six registries ship in `@fundamental-engine/dom`: `MeasurementRegistry`,
 > `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`,
 > `OverlayRegistry`.
 
@@ -3726,7 +3726,7 @@ Overlays must reference real links.
 
 ## 22. Scheduler Contract
 
-> **Implemented.** `FrameScheduler` in `@fundamental-engine/platform` runs the explicit phase pipeline below.
+> **Implemented.** `FrameScheduler` in `@fundamental-engine/dom` runs the explicit phase pipeline below.
 
 The scheduler runs registries in a fixed phase order each frame. Reads never interleave with writes.
 
@@ -3758,7 +3758,7 @@ Render-phase handlers are caller-supplied; the platform wires none by default.
 
 ## 23. Platform-Lint Contract
 
-> **Implemented.** `lintPlatform()` in `@fundamental-engine/platform` enforces the rules below.
+> **Implemented.** `lintPlatform()` in `@fundamental-engine/dom` enforces the rules below.
 
 Platform lint validates that registries are used correctly before behavior depends on them.
 
@@ -4166,7 +4166,7 @@ fatal
 
 ## 15. Platform Tests
 
-`@fundamental-engine/platform` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
+`@fundamental-engine/dom` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
 (Phase D) it is the default runtime for `<field-root>`: the platform owns DOM participation
 (measurement, feedback writes, shadow registration, relationships) while the legacy `core/field.ts`
 still simulates and renders the canvas. `createFieldPlatform(root)` wires the six registries onto the
@@ -4428,7 +4428,7 @@ The field should not only move particles. It should be able to influence typogra
 
 The visual system is native-platform-first, dependency-light, and framework-agnostic. The `Fundamental` package specifically carries zero runtime dependencies; visual layers prefer native web APIs and treat any external adapter as opt-in and outside core.
 
-These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/platform`: canvas render modes, SVG overlays, and diagnostic overlays. `Fundamental` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
+These visual layers are render surfaces bound to the field runtime by `@fundamental-engine/dom`: canvas render modes, SVG overlays, and diagnostic overlays. `Fundamental` computes renderer-agnostic field behavior; the platform binds that behavior to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Canvas is one render surface, not the whole system. Every visual layer here is a semantic-safe, accessibility-aware render surface over a shared field context.
 
 Implementation should use fundamental web APIs wherever possible:
 
@@ -5129,7 +5129,7 @@ Suggested order:
 
 Some experiences may place particles above DOM, but the default should protect readability.
 
-These layers are not a single canvas. The canvas render surface owns the field washes, scalar fields, field lines, particles, and topology; SVG overlays own path-accurate relationship lines and crisp diagnostic marks; and diagnostic overlays own the inspector and debug views. The `@fundamental-engine/platform` `OverlayRegistry` registers and orders the SVG and diagnostic overlays, while the `FrameScheduler` keeps each layer on its phase (`discover -> read -> compute -> state -> write -> render`) so render surfaces never measure or mutate physics mid-frame.
+These layers are not a single canvas. The canvas render surface owns the field washes, scalar fields, field lines, particles, and topology; SVG overlays own path-accurate relationship lines and crisp diagnostic marks; and diagnostic overlays own the inspector and debug views. The `@fundamental-engine/dom` `OverlayRegistry` registers and orders the SVG and diagnostic overlays, while the `FrameScheduler` keeps each layer on its phase (`discover -> read -> compute -> state -> write -> render`) so render surfaces never measure or mutate physics mid-frame.
 
 The full set of render and diagnostic modes ships and is browsable at `/docs/diagnostics`: `dots`, `trails`, `links`, `streamlines`, `metaballs`, `voronoi`, `field-lines`, `heatmap`, `force-vectors`, `contours`, `potential`, `energy`, `topology`, `inspector`, `causality`, and `prediction`. None of these are planned; they are all live render surfaces over the shared field context.
 
@@ -5245,7 +5245,7 @@ Performance: CSS only
 
 ## 18.1 Visual Binding and Overlay Registries
 
-The `@fundamental-engine/platform` runtime makes the visual contract above operational. Two registries on the `FrameScheduler` own the visual-to-semantic boundary.
+The `@fundamental-engine/dom` runtime makes the visual contract above operational. Two registries on the `FrameScheduler` own the visual-to-semantic boundary.
 
 `VisualBindingRegistry` pairs each visual layer with the semantic body it expresses. A binding declares its source metrics, its target properties, and the semantic element it must stay paired with, so an expressive canvas or SVG layer is never the sole carrier of meaning. The platform lint surfaces two relevant rules here:
 
@@ -5449,7 +5449,7 @@ DOM state shows reciprocity.
 > `drawInspector`, `causalityAt` + `drawCausality`, `ghostTrajectory` + `drawPrediction`). All of these
 > are exercised on the live `/docs/diagnostics` page. The canvas is one render surface among these
 > layers, not the whole system: `Fundamental` computes renderer-agnostic field behavior and
-> `@fundamental-engine/platform` binds it to the DOM, while these overlays draw it onto the canvas surface.
+> `@fundamental-engine/dom` binds it to the DOM, while these overlays draw it onto the canvas surface.
 
 ## Render Modes Catalog
 

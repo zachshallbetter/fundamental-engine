@@ -11,7 +11,7 @@
 > **R3** recipes / **R4** executable gallery ([#197](https://github.com/zachshallbetter/fundamental-engine/pull/197)/[#199](https://github.com/zachshallbetter/fundamental-engine/pull/199)/[#201](https://github.com/zachshallbetter/fundamental-engine/pull/201)),
 > and the vocabulary-lane taxonomy pass ([#200](https://github.com/zachshallbetter/fundamental-engine/pull/200)–[#204](https://github.com/zachshallbetter/fundamental-engine/pull/204)) are shipped.
 > Since then:
-> - **R5 bindData** — shipped (`packages/platform/src/bind-data.ts`).
+> - **R5 bindData** — shipped (`packages/dom/src/bind-data.ts`).
 > - **R7 accessibility conformance** — largely shipped: reduced-motion on every recipe, `contracts/guards.ts`, `/docs/accessibility-preview`.
 > - **R9 conformance as a tool** — core exported (`runScenario`, `conformanceTests`, `EXPERIMENTS`); the productized record/replay + fuzzing extras remain.
 > - **R14 AI evidence fields** — mostly shipped: all eight recipes (evidence-field, trust-gradient, conflict-field, source-constellation, provenance-trail, citation-thread, disagreement-charge, risk-horizon) plus the Evidence Field study; only a packaged answer component remains.
@@ -29,7 +29,7 @@ The current architecture is:
 
 ```txt
 Fundamental   host-driven, renderer-agnostic field engine
-@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/dom   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @fundamental-engine/elements   native HTML and web component authoring
 @fundamental-engine/react   React adapter over the same contracts
 site/docs/lab   proof surfaces, recipes, diagnostics, demos, and executable documentation
@@ -65,7 +65,7 @@ The public browser setup should look like:
 
 ```ts
 import { createField } from "Fundamental";
-import { browserHost } from "@fundamental-engine/platform";
+import { browserHost } from "@fundamental-engine/dom";
 
 const field = createField(canvas, {
   host: browserHost()
@@ -199,7 +199,7 @@ FrameScheduler owns phase order
 ### Acceptance criteria
 
 ```txt
-field-root uses @fundamental-engine/platform by default
+field-root uses @fundamental-engine/dom by default
 legacy scanning path is removed or quarantined
 data-body still works
 data-intent still works

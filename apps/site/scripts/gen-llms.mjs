@@ -157,7 +157,7 @@ const exampleLines = EXAMPLES.map((e) => line(e.name, `${SITE_URL}${e.href}`, e.
 const llms = `# Fundamental
 
 > Fundamental is a platform-native relational field runtime for the DOM. The core (\`@fundamental-engine/core\`)
-> computes renderer-agnostic field behavior; \`@fundamental-engine/platform\` binds field behavior to the DOM
+> computes renderer-agnostic field behavior; \`@fundamental-engine/dom\` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
 > scheduling; \`@fundamental-engine/elements\` exposes native HTML and web-component authoring; \`@fundamental-engine/react\`
 > adapts the same contracts for React. Canvas is one render surface, not the whole system.

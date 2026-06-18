@@ -211,7 +211,7 @@ relax it:
 > relationships, not an automated judgment of truth.
 
 This is not only rhetoric; it is enforced by the code. The platform metric library
-(`packages/platform/src/metrics.ts`) is explicit about provenance: `coherence` and `entropy` are
+(`packages/dom/src/metrics.ts`) is explicit about provenance: `coherence` and `entropy` are
 *derived* from how relationships resolve (the ratio of resolved to total edges, minus the
 conflicting ratio), but `confidence` is **supplied** by the host through `data-field-<metric>` and —
 since #220 — has **no computed fallback at all**: the engine never infers confidence from relationship
@@ -329,7 +329,7 @@ The reverse half of the loop — field → element — is where the model become
 (Paper 1, §8). For evidence, the load-bearing write-backs are two derived scalars,
 `--field-coherence` and `--field-entropy`, both of which are real platform output variables
 (`packages/core/src/visual/tokens.ts`, `FIELD_OUTPUT_VARS`). The platform computes them per frame
-from each claim's relationship neighborhood (`computeMetrics` in `packages/platform/src/metrics.ts`):
+from each claim's relationship neighborhood (`computeMetrics` in `packages/dom/src/metrics.ts`):
 
 ```
 resolvedRatio = relResolved / relTotal
@@ -377,10 +377,10 @@ planning notes.
   `packages/core/src/recipes/catalog.ts`, gated by `validateRecipe`
   (`packages/core/src/recipes/schema.ts`).
 - The **coherence/entropy metric derivation** and the supplied-vs-derived metric discipline ship in
-  `packages/platform/src/metrics.ts`, with `--field-coherence` / `--field-entropy` as real output
+  `packages/dom/src/metrics.ts`, with `--field-coherence` / `--field-entropy` as real output
   variables.
 - **`bindData()`** — the data-binding mechanism that wires real claim/source records into the field —
-  ships in `@fundamental-engine/platform` (`packages/platform/src/bind-data.ts`, with `apply-recipe.ts` and a
+  ships in `@fundamental-engine/dom` (`packages/dom/src/bind-data.ts`, with `apply-recipe.ts` and a
   test suite). Records become bodies, mapped metrics become state, and mapped relationships become
   graph edges, with deterministic id-diffed updates and decay-on-remove. (Its mechanics are the
   subject of Paper 7; we use it here only as the evidence wiring.)
@@ -711,15 +711,15 @@ Every model claim in this paper is checkable against the repository.
 - **Recipe schema and conformance gate** (`validateRecipe`, the strict primitives/render/diagnostic
   checks, the required accessibility equivalent): `packages/core/src/recipes/schema.ts`.
 - **The metric library** — the supplied-vs-derived boundary, and the coherence/entropy derivation
-  that grounds "visualize, don't adjudicate": `packages/platform/src/metrics.ts`.
+  that grounds "visualize, don't adjudicate": `packages/dom/src/metrics.ts`.
 - **Output variables** (`--field-coherence`, `--field-entropy` in `FIELD_OUTPUT_VARS`):
   `packages/core/src/visual/tokens.ts`.
 - **The relationship graph** (`supports` / `contradicts` edges, native-signal resolution, the
-  `relation-target-missing` lint): `packages/platform/src/relationships.ts`,
-  `packages/platform/src/lint.ts`, and `docs/canonical/interaction-and-relationship-model.md`
+  `relation-target-missing` lint): `packages/dom/src/relationships.ts`,
+  `packages/dom/src/lint.ts`, and `docs/canonical/interaction-and-relationship-model.md`
   §7.
 - **The data-binding mechanism** used to wire records into the field:
-  `packages/platform/src/bind-data.ts` and `packages/platform/src/apply-recipe.ts`.
+  `packages/dom/src/bind-data.ts` and `packages/dom/src/apply-recipe.ts`.
 - **The data-bound Evidence Field study page** (demonstration, not experiment):
   `apps/site/src/pages/docs/studies/evidence-field.astro`.
 

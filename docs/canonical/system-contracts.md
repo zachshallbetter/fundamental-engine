@@ -16,7 +16,7 @@
 
 ## Purpose
 
-Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -630,10 +630,10 @@ The semantic layer should remain real HTML text.
 
 ## 20. Platform Contract
 
-> **Implemented.** `@fundamental-engine/platform` ships `createFieldPlatform(root)` plus the six registries, the
+> **Implemented.** `@fundamental-engine/dom` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
-`@fundamental-engine/platform` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
+`@fundamental-engine/dom` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:
 
@@ -656,7 +656,7 @@ The platform must not move force-engine math into the DOM layer. Core computes f
 
 ## 21. Registry Contract
 
-> **Implemented.** Six registries ship in `@fundamental-engine/platform`: `MeasurementRegistry`,
+> **Implemented.** Six registries ship in `@fundamental-engine/dom`: `MeasurementRegistry`,
 > `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`,
 > `OverlayRegistry`.
 
@@ -685,7 +685,7 @@ Overlays must reference real links.
 
 ## 22. Scheduler Contract
 
-> **Implemented.** `FrameScheduler` in `@fundamental-engine/platform` runs the explicit phase pipeline below.
+> **Implemented.** `FrameScheduler` in `@fundamental-engine/dom` runs the explicit phase pipeline below.
 
 The scheduler runs registries in a fixed phase order each frame. Reads never interleave with writes.
 
@@ -717,7 +717,7 @@ Render-phase handlers are caller-supplied; the platform wires none by default.
 
 ## 23. Platform-Lint Contract
 
-> **Implemented.** `lintPlatform()` in `@fundamental-engine/platform` enforces the rules below.
+> **Implemented.** `lintPlatform()` in `@fundamental-engine/dom` enforces the rules below.
 
 Platform lint validates that registries are used correctly before behavior depends on them.
 

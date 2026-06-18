@@ -2,7 +2,7 @@
  * Experimental platform-backed runtime for `<field-root>` (Phase D: runtime platform unification).
  *
  * D1 establishes the *path*, not the migration: when the experimental flag is on, the element starts
- * a `@fundamental-engine/platform` runtime alongside the legacy `createField` engine. For now it only measures
+ * a `@fundamental-engine/dom` runtime alongside the legacy `createField` engine. For now it only measures
  * the scan root each frame on the six-phase scheduler — a foothold the later phases fill in (D2 moves
  * body scanning onto MeasurementRegistry, D3 feedback onto FeedbackRegistry, D4 shadow, D5
  * relationships). Default is OFF, so behavior is unchanged until D6 flips it.
@@ -10,7 +10,7 @@
  * The legacy engine still owns everything visible in D1; the platform adds nothing observable, which
  * is exactly the parity guarantee: flag on and flag off render identically.
  */
-import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@fundamental-engine/platform';
+import { createFieldPlatform, QualityGovernor, type FieldPlatform } from '@fundamental-engine/dom';
 import type { FieldHandle } from '@fundamental-engine/core';
 import {
   bodyElements,

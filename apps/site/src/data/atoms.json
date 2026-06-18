@@ -2205,13 +2205,13 @@
     },
     {
       "kind": "package",
-      "id": "pkg:@fundamental-engine/platform",
-      "label": "@fundamental-engine/platform",
+      "id": "pkg:@fundamental-engine/dom",
+      "label": "@fundamental-engine/dom",
       "color": "#38bdf8",
       "href": "/docs",
       "weight": 0.25,
       "data": {
-        "name": "@fundamental-engine/platform",
+        "name": "@fundamental-engine/dom",
         "role": "binds the engine to the DOM"
       }
     },

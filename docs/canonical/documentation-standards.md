@@ -19,7 +19,7 @@ are written or revised, they follow the framing below.
 Fundamental is a platform-native relational field runtime for the DOM.
 
 Fundamental      computes renderer-agnostic field behavior.
-@fundamental-engine/platform  binds field behavior to the DOM through measurement, state, feedback,
+@fundamental-engine/dom  binds field behavior to the DOM through measurement, state, feedback,
                     relationships, visual bindings, overlays, linting, and scheduling.
 @fundamental-engine/elements  exposes native HTML and web-component authoring.
 @fundamental-engine/react     adapts the same contracts for React.
@@ -64,7 +64,7 @@ These are shipped and may be described in the present tense (verify specifics ag
 asserting anything new):
 
 ```
-Fundamental · @fundamental-engine/platform · @fundamental-engine/elements · @fundamental-engine/react · @fundamental-engine/vanilla
+Fundamental · @fundamental-engine/dom · @fundamental-engine/elements · @fundamental-engine/react · @fundamental-engine/vanilla
 FrameScheduler (discover → read → compute → state → write → render)
 MeasurementRegistry · StateRegistry · FeedbackRegistry · RelationshipRegistry ·
   VisualBindingRegistry · OverlayRegistry · lintPlatform()
@@ -77,7 +77,7 @@ the Natural Field Translation System (four-field classification + /docs/natural-
 ```
 
 `Fundamental` imports **zero DOM** — the engine routes the environment through an injected
-`FieldHost`; `browserHost()` lives in `@fundamental-engine/platform`, and `createField` requires a host (the
+`FieldHost`; `browserHost()` lives in `@fundamental-engine/dom`, and `createField` requires a host (the
 framework entry points wire it). `core/dom-boundary.test.ts` enforces this with an empty allowlist.
 
 ## Document-status taxonomy

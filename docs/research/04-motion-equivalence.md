@@ -126,7 +126,7 @@ for reduced motion as a CSS/JS media query, intended for readers for whom motion
 than an enhancement. Fundamental reads it through an injected host capability —
 `reducedMotion()` on the `FieldHost` interface, documented as "whether the user prefers reduced motion
 (freezes the sim)" (`packages/core/src/core/host.ts`) and implemented in the browser host via
-`matchMedia('(prefers-reduced-motion: reduce)')` (`packages/platform/src/browser-host.ts`). The
+`matchMedia('(prefers-reduced-motion: reduce)')` (`packages/dom/src/browser-host.ts`). The
 standard's framing — motion is a *preference dimension*, not a binary on/off of the interface — is the
 seed of this paper's model. [TODO: cite prefers-reduced-motion media-query specification]
 
@@ -196,7 +196,7 @@ plain HTML with every visual layer stripped.
 
 An expressive visual layer — an SVG overlay, a canvas render surface, a WebGL field — is bound to the
 semantic element it represents through the platform's `VisualBindingRegistry`
-(`packages/platform/src/visual-bindings.ts`). A binding declares a `visual`, an optional
+(`packages/dom/src/visual-bindings.ts`). A binding declares a `visual`, an optional
 `semanticSource`, and a `role` (`decorative | representation | debug | relationship | measurement`),
 and carries an accessibility record: whether the visual is `aria-hidden`, whether its role *requires*
 a semantic source, and whether it would expose duplicate semantics to assistive technology. The
@@ -285,7 +285,7 @@ together.
 
 ### 4.1 Shipped: the accessibility lint rules
 
-The platform's `lintPlatform()` (`packages/platform/src/lint.ts`) aggregates pure, read-only rules
+The platform's `lintPlatform()` (`packages/dom/src/lint.ts`) aggregates pure, read-only rules
 over the registries; three of them are accessibility seams. Lint *reads — it never mutates state,
 physics, or the DOM* (file header), so running it is side-effect free.
 
@@ -388,7 +388,7 @@ The proposed **equivalence-conformance check** would, given a composition and it
 
 1. Render the composition twice — full motion and reduced motion (`reducedMotion: true`), reusing the
    path the recipe applier already exposes (`applyRecipe(..., { reducedMotion })`,
-   `packages/platform/src/apply-recipe.ts`; exercised by `FieldLoopDemo.astro`).
+   `packages/dom/src/apply-recipe.ts`; exercised by `FieldLoopDemo.astro`).
 2. Enumerate the meaning-bearing state for each measured body — the `StateRegistry` values written
    back as `--field-*` variables, plus the typed relationships — in *both* renders.
 3. Assert *state equivalence*: every meaning-bearing value present under full motion is present, and
@@ -413,7 +413,7 @@ To be precise, in the family's house style:
 **Shipped** (verifiable in the registries, the schema, the contracts catalog, and the tests):
 
 - The accessibility lint rules `visual-orphan`, `visual-not-hidden`, `feedback-non-css-var` in
-  `lintPlatform()` (`packages/platform/src/lint.ts`, `visual-bindings.ts`), and the core visual-lint
+  `lintPlatform()` (`packages/dom/src/lint.ts`, `visual-bindings.ts`), and the core visual-lint
   rules `color-only-meaning`, `glyph-only-text`, `missing-reduced-motion`
   (`packages/core/src/visual/lint.ts`).
 - The recipe schema's **required** `accessibility.reducedMotion` and `accessibility.meaningWithoutMotion`
@@ -423,7 +423,7 @@ To be precise, in the family's house style:
   (`packages/core/src/agents/user-agent.ts`), both with the a11y test set
   (`packages/core/src/contracts/a11y.test.ts`).
 - The `reducedMotion()` host capability that freezes the simulation
-  (`packages/core/src/core/host.ts`, `packages/platform/src/browser-host.ts`).
+  (`packages/core/src/core/host.ts`, `packages/dom/src/browser-host.ts`).
 - The accessibility preview (`apps/site/src/pages/docs/accessibility-preview.astro`), the reduced-motion
   path of the Reading Field (`apps/site/src/pages/docs/reading-field.astro`), and the static narrative
   collapse (visualization-methods-taxonomy §13: under `prefers-reduced-motion` the narrative "collapses
@@ -592,9 +592,9 @@ field system can prove it.
 
 Every accessibility claim in this paper is checkable against the repository. The load-bearing anchors:
 
-- **Lint rules:** `packages/platform/src/lint.ts` (`lintVisuals`, `lintFeedbackVars`,
-  `lintPlatform`), `packages/platform/src/visual-bindings.ts` (`VisualBindingRegistry.lint()`,
-  `orphan-representation` / `visual-not-hidden`), `packages/platform/src/overlays.ts`,
+- **Lint rules:** `packages/dom/src/lint.ts` (`lintVisuals`, `lintFeedbackVars`,
+  `lintPlatform`), `packages/dom/src/visual-bindings.ts` (`VisualBindingRegistry.lint()`,
+  `orphan-representation` / `visual-not-hidden`), `packages/dom/src/overlays.ts`,
   `packages/core/src/visual/lint.ts` (`color-only-meaning`, `glyph-only-text`,
   `missing-reduced-motion`).
 - **Recipe-schema accessibility field:** `packages/core/src/recipes/schema.ts` (`AccessibilityRecipe`,
@@ -604,7 +604,7 @@ Every accessibility claim in this paper is checkable against the repository. The
   `packages/core/src/contracts/guards.ts` (`assertReducedMotionFallback`, `MISSING_REDUCED_MOTION`),
   `packages/core/src/agents/user-agent.ts` (`userFieldSource` wake-gating),
   `packages/core/src/visual/channels.ts` (`emission` reduced-motion flattening),
-  `packages/core/src/core/host.ts` / `packages/platform/src/browser-host.ts` (`reducedMotion()`),
+  `packages/core/src/core/host.ts` / `packages/dom/src/browser-host.ts` (`reducedMotion()`),
   `packages/core/src/contracts/index.ts` (Accessibility Contract in `CONTRACTS`).
 - **Tests:** `packages/core/src/contracts/a11y.test.ts` (fallback required; meaning survives without
   motion; color/glyph not sole carriers; events thresholded; contract published).

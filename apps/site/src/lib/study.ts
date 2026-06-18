@@ -8,7 +8,7 @@
  * `data-study-status`.
  */
 import { recipeById } from '@fundamental-engine/core';
-import { applyRecipe, type AppliedRecipe, type DataBinding } from '@fundamental-engine/platform';
+import { applyRecipe, type AppliedRecipe, type DataBinding } from '@fundamental-engine/dom';
 
 export interface StudyGroup {
   root: HTMLElement;

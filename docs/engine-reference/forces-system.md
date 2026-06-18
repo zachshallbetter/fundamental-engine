@@ -16,7 +16,7 @@ exercised through the authoring surfaces (`<field-root>`, `mountField()`,
 `<FieldField>`). This document is the canonical reference for the **force engine**;
 it does **not** define the full Fundamental platform architecture. DOM participation —
 measurement, state, feedback writes, relationships, visual bindings, overlays,
-scheduling, and linting — now lives in `@fundamental-engine/platform`, which binds the
+scheduling, and linting — now lives in `@fundamental-engine/dom`, which binds the
 renderer-agnostic core to the DOM (the platform runtime is the default for
 `<field-root>`). For that architecture see
 [../canonical/platform-architecture.md](../canonical/platform-architecture.md)
@@ -891,7 +891,7 @@ supply; they do not sample the engine.
 > **As-built note.** This section describes how the *force engine* is mounted; it is
 > not the full platform architecture. In the shipped system, `Fundamental`
 > computes renderer-agnostic field behavior (force math, conservation, conditions,
-> formations) and `@fundamental-engine/platform` binds it to the DOM — measurement, state,
+> formations) and `@fundamental-engine/dom` binds it to the DOM — measurement, state,
 > feedback writes, relationships, visual bindings, overlays, scheduling (the explicit
 > discover → read → compute → state → write → render phases), and linting. The
 > platform runtime is the **default** for `<field-root>`. For the complete

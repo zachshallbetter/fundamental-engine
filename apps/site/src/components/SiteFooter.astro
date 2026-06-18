@@ -48,7 +48,7 @@ const dest = [
     try {
       const [{ recipeById }, { applyRecipe }] = await Promise.all([
         import('@fundamental-engine/core'),
-        import('@fundamental-engine/platform'),
+        import('@fundamental-engine/dom'),
       ]);
       if (mine !== footGen) return;
       const base = recipeById('wayfinding-field');

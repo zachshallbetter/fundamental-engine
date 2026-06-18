@@ -9,7 +9,7 @@ export interface OptionRow {
   desc: string;
 }
 export const OPTIONS: OptionRow[] = [
-  { name: 'host', type: 'FieldHost', def: 'required', desc: 'The environment seam (viewport, scroll, rAF, canvas). createField throws without it — pass browserHost() from @fundamental-engine/platform, or use @fundamental-engine/vanilla / the web component, which wire it for you.' },
+  { name: 'host', type: 'FieldHost', def: 'required', desc: 'The environment seam (viewport, scroll, rAF, canvas). createField throws without it — pass browserHost() from @fundamental-engine/dom, or use @fundamental-engine/vanilla / the web component, which wire it for you.' },
   { name: 'accent', type: 'string', def: "palette's first stop", desc: 'The travelling accent color (a hex string).' },
   { name: 'density', type: 'number', def: '1', desc: 'Particle-count multiplier.' },
   { name: 'waves', type: 'boolean', def: 'true', desc: 'Draw the background Currents (the wave layers).' },

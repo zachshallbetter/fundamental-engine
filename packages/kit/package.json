@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@fundamental-engine/core": "workspace:*",
-    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/dom": "workspace:*",
     "@fundamental-engine/elements": "workspace:*",
     "@fundamental-engine/react": "workspace:*",
     "@fundamental-engine/vanilla": "workspace:*"

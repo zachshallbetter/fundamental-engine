@@ -143,7 +143,7 @@ The current architecture is:
 
 ```txt
 Fundamental   host-driven, renderer-agnostic field engine
-@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/dom   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @fundamental-engine/elements   native HTML and web component authoring
 @fundamental-engine/react   React adapter over the same contracts
 ```
@@ -757,7 +757,7 @@ Use the host-driven core when you own the canvas or renderer.
 
 ```ts
 import { createField } from "Fundamental";
-import { browserHost } from "@fundamental-engine/platform";
+import { browserHost } from "@fundamental-engine/dom";
 
 const field = createField(canvas, {
   host: browserHost()

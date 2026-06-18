@@ -18,7 +18,7 @@
  */
 
 import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
-import { createBrowserField } from '@fundamental-engine/platform';
+import { createBrowserField } from '@fundamental-engine/dom';
 import { makeFieldCanvas, assertBrowser } from './mount.ts';
 
 export interface FieldFieldInit extends FieldOptions {

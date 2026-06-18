@@ -8,7 +8,7 @@
  * any object structurally matching `ContourFont`, which opentype.js's `Font` satisfies directly:
  *
  *   import { load } from 'opentype.js';
- *   import { contourSvgFor } from '@fundamental-engine/platform';
+ *   import { contourSvgFor } from '@fundamental-engine/dom';
  *   const font = await load('/fonts/your-font.woff');   // WHATEVER face the element uses
  *   const handle = contourSvgFor(document.querySelector('#hero-title'), font, { rings: 3 });
  *   // → an aria-hidden SVG bound via data-field-visual-for, inserted after the element;

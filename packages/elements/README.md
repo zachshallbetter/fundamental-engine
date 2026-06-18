@@ -105,14 +105,14 @@ when you want one field across a whole page regardless of framework.
 ## Recipes & data binding
 
 To apply a named recipe over your markup (or bind data to it) rather than wire bodies by hand, use
-`applyRecipe()` / `bindData()` from [`@fundamental-engine/platform`](../platform); browse all 64 recipes at
+`applyRecipe()` / `bindData()` from [`@fundamental-engine/dom`](../platform); browse all 64 recipes at
 [`/docs/gallery`](https://fundamental-engine.com/docs/gallery). The starter app in
 [`apps/starter`](../../apps/starter) shows the declarative element, `applyRecipe`, and `bindData`
 together.
 
 ## Related
 
-[`@fundamental-engine/core`](../core) · [`@fundamental-engine/platform`](../platform) · [`@fundamental-engine/react`](../react) ·
+[`@fundamental-engine/core`](../core) · [`@fundamental-engine/dom`](../platform) · [`@fundamental-engine/react`](../react) ·
 [`@fundamental-engine/vanilla`](../vanilla) · the [documentation map](../../docs/README.md).
 
 ## License

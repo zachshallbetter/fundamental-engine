@@ -13,7 +13,7 @@
 // The scoped field runs with render: [] plus the "attention" metric, so the platform pipeline
 // writes --field-attention per card — the ink CSS reads it alongside the engine's live --d.
 import { DAY_MS, recipeById, retention, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/platform";
+import { applyRecipe } from "@fundamental-engine/dom";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { persisted } from "../../lib/persisted.ts";
 import { wireFieldToggle } from "../../lib/controls.ts";

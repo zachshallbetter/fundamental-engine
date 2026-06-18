@@ -1,7 +1,7 @@
 {
-  "name": "@fundamental-engine/platform",
+  "name": "@fundamental-engine/dom",
   "version": "0.5.1",
-  "description": "DEPRECATED — renamed to @fundamental-engine/dom. A thin alias that re-exports it so existing installs keep working; switch your imports to @fundamental-engine/dom.",
+  "description": "The platform-adjacent layer for Fundamental — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives Fundamental wishes existed, built on the ones it has.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
@@ -9,14 +9,20 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
-    "directory": "packages/platform"
+    "directory": "packages/dom"
   },
   "bugs": {
     "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
   },
   "keywords": [
     "Fundamental",
-    "deprecated"
+    "dom",
+    "measurement",
+    "relationships",
+    "state",
+    "feedback",
+    "overlays",
+    "web"
   ],
   "sideEffects": false,
   "files": [
@@ -45,7 +51,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@fundamental-engine/dom": "workspace:*"
+    "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

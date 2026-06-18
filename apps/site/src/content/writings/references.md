@@ -21,7 +21,7 @@ author: "Zach Shallbetter"
 
 The papers treat the codebase and canonical docs as primary evidence, cited inline by path. Anchors:
 
-- `[fieldui-repo]` Fundamental monorepo — `packages/core`, `packages/platform`, `packages/{elements,react,vanilla}`.
+- `[fieldui-repo]` Fundamental monorepo — `packages/core`, `packages/dom`, `packages/{elements,react,vanilla}`.
 - `[fieldui-contracts]` `docs/canonical/system-contracts.md` — the hard contracts.
 - `[fieldui-platform]` `docs/canonical/platform-architecture.md` — scheduler + registries.
 - `[fieldui-natural]` `docs/canonical/natural-fields.md` — the four-field translation system.
@@ -34,8 +34,8 @@ The papers treat the codebase and canonical docs as primary evidence, cited inli
 
 Key shipped-code anchors cited by the papers: `packages/core/src/core/dom-boundary.test.ts` (empty
 allowlist), `packages/core/src/core/integrator.ts`, `packages/core/src/contracts/passport.ts`,
-`packages/core/src/config/manual.ts`, `packages/platform/src/schedule.ts`,
-`packages/platform/src/metrics.ts`, `packages/platform/src/bind-data.ts`,
+`packages/core/src/config/manual.ts`, `packages/dom/src/schedule.ts`,
+`packages/dom/src/metrics.ts`, `packages/dom/src/bind-data.ts`,
 `packages/core/src/recipes/{catalog,schema}.ts`, `apps/site/src/pages/docs/reading-field.astro`,
 `apps/site/src/pages/docs/studies/evidence-field.astro`.
 

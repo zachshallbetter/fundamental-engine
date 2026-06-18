@@ -74,7 +74,7 @@ The current architecture should guide every possibility.
 
 ```txt
 Fundamental   host-driven, renderer-agnostic field engine
-@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/dom   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @fundamental-engine/elements   native HTML and web component authoring
 @fundamental-engine/react   React adapter over the same contracts
 ```

@@ -3,7 +3,7 @@
  * artifact: an SVG of vector segments (field lines, contours, relationship overlays), or a PNG data
  * URL of the canvas. Both are DOM-global-free — `segmentsToSvg` is pure, and `canvasToPng` calls the
  * passed canvas's own `toDataURL`. The download helpers (which need `document`) live in
- * `@fundamental-engine/platform` (`downloadUrl` / `downloadText` / `downloadCanvasPng`).
+ * `@fundamental-engine/dom` (`downloadUrl` / `downloadText` / `downloadCanvasPng`).
  */
 import type { Segment } from './diagnostics/render.ts';
 
