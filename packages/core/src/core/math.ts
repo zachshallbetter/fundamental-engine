@@ -21,8 +21,8 @@ export function hexToRgb(hex: string): RGB {
 }
 
 /** The resting (cool) and energized (warm) ends of the free-particle ramp (§20.8). */
-export const COOL: RGB = [200, 224, 255];
-export const WARM: RGB = [255, 122, 69];
+export const COOL: RGB = [255, 224, 200];
+export const WARM: RGB = [255, 110, 80];
 
 /**
  * Free-particle color: cool centre → warm edge by `rs` (= normalized dist²),
