@@ -17,6 +17,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   body matched by none. Dev-only/heuristic — no-ops under SSR/tests/cross-origin sheets, and lenient
   (strips pseudo-selectors) so it under-reports rather than false-positives. Wired into `lintPlatform`.
 
+### Changed
+
+- **Warm default palette (core).** The free-particle heat ramp (`COOL`/`WARM` in `math.ts`) and the
+  Currents' wave baseline (`WAVE_RGB` in `field.ts`) shift from the cool blue/teal/purple baseline to a
+  warm one (`COOL [255,224,200]` / `WARM [255,110,80]`; waves `#ff8a5c`/`#f0628e`/`#ffc46b`). The
+  energized **accent** is unchanged and still overridable per field (`accent` / `palette` / `setAccent`),
+  so the look is warm ambient matter under cool-accent highlights. This is the engine's default identity
+  now; the wave baseline and ramp ends remain hardcoded (no per-field override yet — tracked separately).
+  The Swift port is brought to parity in a follow-up so the planes don't diverge.
+
 ### Fixed
 
 - **Post-0.7.0 integrity sweep.** The release workflow's post-publish smoke + provenance checks no
