@@ -3,8 +3,8 @@ import Foundation
 import CoreGraphics
 import QuartzCore
 import simd
-import FieldUICore
-import FieldUIVanilla
+import FundamentalCore
+import FundamentalVanilla
 
 // MARK: - Bench
 //
@@ -89,7 +89,7 @@ public enum Bench {
             s.render = mode
             rows.append(run(scene: s, label: "matter: \(mode.rawValue)", frames: frames))
         }
-        let readings: [FieldUICore.OverlayMode] = [.streamlines, .forceVectors, .fieldLines,
+        let readings: [FundamentalCore.OverlayMode] = [.streamlines, .forceVectors, .fieldLines,
                                                    .grid, .temperature, .energy, .path, .data]
         for reading in readings {
             var s = LabScenes.mass

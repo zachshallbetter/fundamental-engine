@@ -1,6 +1,6 @@
 import Foundation
 import simd
-import FieldUICore
+import FundamentalCore
 
 // MARK: - FieldLab scenes
 //
@@ -65,7 +65,7 @@ public struct LabScene {
     public var cards: [CardSpec]
     public var formation: String = "ambient"
     public var render: RenderMode = .dots
-    public var overlay: [FieldUICore.OverlayMode] = []
+    public var overlay: [FundamentalCore.OverlayMode] = []
     public var attention = false
     public var causality = false
     public var heatmap = false

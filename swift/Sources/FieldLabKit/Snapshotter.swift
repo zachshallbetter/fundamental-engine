@@ -5,8 +5,8 @@ import QuartzCore
 import ImageIO
 import UniformTypeIdentifiers
 import simd
-import FieldUICore
-import FieldUIVanilla
+import FundamentalCore
+import FundamentalVanilla
 
 // MARK: - Snapshotter
 //

@@ -6,8 +6,8 @@
 
 import Foundation
 import FieldLabKit
-import FieldUICore
-import FieldUIVanilla
+import FundamentalCore
+import FundamentalVanilla
 
 #if os(macOS)
 // --probe-source: does the source actually produce real, counted particles, and does the

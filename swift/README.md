@@ -11,12 +11,12 @@ where the two diverge it is a bug (or listed under [Parity](#parity) below).
 
 | Swift target      | npm equivalent       | What it is |
 |-------------------|----------------------|------------|
-| `FieldUICore`     | `@fundamental-engine/core`     | The pure physics: particles, bodies, forces, the integrator, formations, reactions. Zero platform imports. |
-| `FieldUIPlatform` | `@fundamental-engine/dom` | The six-phase frame scheduler (`discover → read → compute → state → write → render`) and the registries (measurement, state, feedback, relationships, visual bindings, overlays). |
-| `FieldUIVanilla`  | `@fundamental-engine/vanilla`  | The universal imperative API: `FieldField`, `mountField`. One import, every Apple platform — the host (UIKit / AppKit / RealityKit) is selected internally at compile time. |
-| `FieldUISwiftUI`  | `@fundamental-engine/react`    | The declarative adapter: `FieldView`, `.fieldBody()`, `.fieldBurst()`, the `fieldHandle` environment value. |
+| `FundamentalCore`     | `@fundamental-engine/core`     | The pure physics: particles, bodies, forces, the integrator, formations, reactions. Zero platform imports. |
+| `FundamentalPlatform` | `@fundamental-engine/dom` | The six-phase frame scheduler (`discover → read → compute → state → write → render`) and the registries (measurement, state, feedback, relationships, visual bindings, overlays). |
+| `FundamentalVanilla`  | `@fundamental-engine/vanilla`  | The universal imperative API: `FieldField`, `mountField`. One import, every Apple platform — the host (UIKit / AppKit / RealityKit) is selected internally at compile time. |
+| `FundamentalSwiftUI`  | `@fundamental-engine/react`    | The declarative adapter: `FieldView`, `.fieldBody()`, `.fieldBurst()`, the `fieldHandle` environment value. |
 
-Anything platform-specific lives in `FieldUIVanilla/Hosts/` as an internal implementation
+Anything platform-specific lives in `FundamentalVanilla/Hosts/` as an internal implementation
 detail. Consumers never import UIKit/AppKit/RealityKit through this API.
 
 ## Usage
@@ -24,7 +24,7 @@ detail. Consumers never import UIKit/AppKit/RealityKit through this API.
 ### Vanilla (the universal imperative API)
 
 ```swift
-import FieldUIVanilla
+import FundamentalVanilla
 
 // managed mount — mirrors `new FieldField()` / `mountField()`
 let field = FieldField(in: myView)            // myView: UIView or NSView
@@ -44,7 +44,7 @@ let field = FieldField(host: myHost, renderer: myRenderer)
 ### SwiftUI
 
 ```swift
-import FieldUISwiftUI
+import FundamentalSwiftUI
 
 ZStack {
     FieldView(options: .init(accent: "#4da3ff", render: .dots))
