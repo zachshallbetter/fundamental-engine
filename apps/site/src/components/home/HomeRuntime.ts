@@ -16,7 +16,7 @@
 // always be upgraded by the time they fire.
 
 import { recipeById } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/platform";
+import { applyRecipe } from "@fundamental-engine/dom";
 
 type FieldEl = HTMLElement & {
   rescan?: () => void;

@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/vanilla",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "description": "Framework-free TypeScript wrapper for Fundamental — the reciprocal DOM-physics field as a typed FieldField class + mountField(), with no custom-element registration and no framework dependency.",
   "type": "module",
   "license": "MIT",

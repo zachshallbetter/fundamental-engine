@@ -1,6 +1,6 @@
 {
   "name": "fundamental-engine",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "description": "Alias for @fundamental-engine/kit — one install for the whole Fundamental suite. Prefer @fundamental-engine/kit, or install the individual @fundamental-engine/* packages directly. (The engine itself is @fundamental-engine/core.)",
   "type": "module",
   "license": "MIT",
@@ -30,5 +30,6 @@
   },
   "dependencies": {
     "@fundamental-engine/kit": "workspace:*"
-  }
+  },
+  "private": true
 }
