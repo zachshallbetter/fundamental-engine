@@ -7,6 +7,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`lintFeedbackWritesUnread` — the producer half of the feedback-contract lint (dom).** Closes the
+  recurring "charged but reads nothing" bug class (#411): a `data-feedback` body gets `--d`/`--load`/
+  `--field-*` written every frame, but if no style rule reads them it changes invisibly. The existing
+  `lintFeedbackVarReads` caught the inverse (reads-without-writes); this catches writes-without-reads by
+  walking the document's accessible stylesheets for var consumers and warning for any `data-feedback`
+  body matched by none. Dev-only/heuristic — no-ops under SSR/tests/cross-origin sheets, and lenient
+  (strips pseudo-selectors) so it under-reports rather than false-positives. Wired into `lintPlatform`.
+
 ### Fixed
 
 - **Post-0.7.0 integrity sweep.** The release workflow's post-publish smoke + provenance checks no

@@ -18,6 +18,7 @@ import {
   lintFeedbackVars,
   lintSinkFeedback,
   lintFeedbackVarReads,
+  lintFeedbackWritesUnread,
   lintInertFeedback,
   lintSchedulerViolations,
   lintPlatform,
@@ -208,4 +209,36 @@ test('a clean platform lints with no warnings', () => {
   platform.feedback.bind(el, { attention: '--field-attention' });
   const w = lintPlatform(platform, { root: { querySelectorAll: () => [] } as unknown as ParentNode });
   assert.deepEqual(w, []);
+});
+
+test('lintFeedbackWritesUnread flags a data-feedback body no style rule reads (the producer-side gap)', () => {
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  // one stylesheet rule reads --field-density (the consumer side of the contract).
+  (globalThis as { document?: unknown }).document = {
+    styleSheets: [{ cssRules: [{ selectorText: '.consumed', cssText: '.consumed{opacity:var(--field-density)}' }] }],
+  };
+  const mk = (matchSel: string | null) =>
+    ({ getAttribute: () => '', matches: (sel: string) => sel === matchSel }) as unknown as Element;
+  const consumed = mk('.consumed'); // a rule reads its vars → fine
+  const unread = mk(null); // nothing reads its vars → flagged
+  const root = { querySelectorAll: () => [consumed, unread] } as unknown as ParentNode;
+  try {
+    const w = lintFeedbackWritesUnread(root);
+    assert.equal(w.length, 1, 'only the unread body is flagged');
+    assert.equal(w[0]!.code, 'feedback-writes-unread');
+    assert.equal(w[0]!.element, unread);
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+});
+
+test('lintFeedbackWritesUnread no-ops without a document (SSR / tests / cross-origin)', () => {
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  delete (globalThis as { document?: unknown }).document;
+  try {
+    const root = { querySelectorAll: () => { throw new Error('must not scan without a document'); } } as unknown as ParentNode;
+    assert.deepEqual(lintFeedbackWritesUnread(root), []);
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
 });
