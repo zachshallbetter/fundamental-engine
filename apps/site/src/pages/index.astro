@@ -77,12 +77,12 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
 ---
 
 <Base
-  title="Fundamental — a relational field runtime for the DOM"
+  title="Fundamental — a renderer-agnostic relational field engine"
   description="Most UI frameworks let you declare importance; Fundamental is the first that enforces it — physically. Add a data-* attribute and the runtime measures the element and writes importance, attention, and relationships back as --field-* CSS variables you style with — so your interface shows what matters, what's connected, and where focus is going, without hand-coding badges, spinners, or one-off animation. Framework-agnostic (vanilla · web component · React); the core engine has zero runtime dependencies. 0.x preview."
 >
   <SiteNav current="home" />
   <div id="main" class="manual-shell">
-    <ManualHero kicker="Fundamental · a relational field runtime for the DOM">
+    <ManualHero kicker="Fundamental · a renderer-agnostic relational field engine">
       <h1 slot="title">Elements have <span
           class="hero-mass"
           data-hot
@@ -106,7 +106,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         data alike — better than any system built for either. Fundamental returns what your
         markup already carries as live <code>--field-*</code> variables you style with:
         every element a body in one field, where what matters pulls, what’s related binds,
-        and what you attend to charges.
+        and what you attend to charges. The DOM is the first surface — not the only one:
+        the same zero-DOM core runs in a WebGL scene and natively on Apple platforms.
       </p>
       <p slot="thesis" class="thesis">
         <strong>Most UI frameworks let you declare importance. Fundamental is the first
@@ -156,6 +157,40 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         <p class="lp-note">
           The full package map and an install-to-reacting-headline walkthrough live in the
           <a href="/docs">docs</a>.
+        </p>
+      </div>
+    </section>
+
+    <!-- One engine, many surfaces — the renderer-agnostic story (Web · Native · your renderer). -->
+    <section class="lp lp-surfaces" id="surfaces">
+      <div class="wrap">
+        <span class="concept-no">Surfaces</span>
+        <h2>One engine, many surfaces.</h2>
+        <p class="lp-lede">
+          The core computes the field against plain data and imports zero DOM. A thin host binds it to
+          a surface — so the same physics runs three ways:
+        </p>
+        <ul class="model">
+          <li>
+            <b>Web</b> — <code>@fundamental-engine/dom</code> binds the engine to the page: every
+            <code>[data-body]</code> element a body, feedback returned as <code>--field-*</code>
+            variables. The primary surface — and what this page runs on.
+          </li>
+          <li>
+            <b>Native</b> — a Swift port runs the same field on Apple platforms (Metal / SwiftUI), free
+            of the browser’s compositing ceiling. The <a href="/docs/implementations">Field Lab</a> is
+            its showcase: a native app to explore every force live.
+          </li>
+          <li>
+            <b>Your renderer</b> — <code>@fundamental-engine/three</code> drives a
+            <code>THREE.Points</code> swarm in your own WebGL scene; the read primitives
+            (<code>sample</code>, <code>readParticles</code>, <code>addField</code>) bind the engine to
+            anything that draws.
+          </li>
+        </ul>
+        <p class="lp-note">
+          How the surfaces relate — and what’s at parity across them — in
+          <a href="/docs/implementations">Implementations</a>.
         </p>
       </div>
     </section>
