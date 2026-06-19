@@ -94,7 +94,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
     <!-- render="flow" → the particles AND the streamline arrows drawn together in the ONE underlay
          canvas, so the field flow shows by default with no separate blended overlay surface (the
          cheap path — a single composited layer); data-nav-flow keeps the nav toggle in sync. -->
-    <field-root accent="#4da3ff" density="1.5" render="flow" heatmap data-nav-flow="on" data-nav-heatmap="on" transition:persist></field-root>
+    <field-root accent="#4da3ff" density="1.5" render="flow" heatmap waves="false" data-nav-flow="on" data-nav-heatmap="on" transition:persist></field-root>
     <script is:inline>
       // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
       // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so
