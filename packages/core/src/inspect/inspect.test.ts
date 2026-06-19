@@ -41,7 +41,7 @@ test('budget inspector flags over-budget counts only', () => {
 
 test('system report proves full coverage (every force passported + conformance-covered)', () => {
   const r = systemReport();
-  assert.ok(r.forces >= 35, `at least 35 forces (got ${r.forces})`);
+  assert.equal(r.forces, 36, `exactly 36 forces in the catalog (got ${r.forces})`);
   assert.deepEqual(r.forcesMissingPassport, [], 'every force has a passport');
   assert.deepEqual(r.forcesMissingConformance, [], 'every force has a conformance experiment');
   assert.ok(r.contracts >= 11, 'foundational + agent + visual + recipe contracts');

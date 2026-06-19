@@ -688,8 +688,9 @@ export interface FieldHandle {
    */
   addBody(spec: BodySpec): BodyHandle;
   /**
-   * Register a named **field channel** — an external scalar field the engine samples on its own read
-   * path. The open *input* analog of the render surfaces (`setRender`/`setOverlay` are bundled output
+   * Register a named **field channel** — a read-back substrate the host samples via `sampleField`; the
+   * engine does not (yet) couple it into forces. The open *input* analog of the render surfaces
+   * (`setRender`/`setOverlay` are bundled output
    * surfaces; `addField` is an on-demand input channel): instead of bolting a parallel grid alongside
    * the field, hand the engine a sampler `(x, y) => number` (terrain height, soil moisture, a heat map)
    * and read it back through `sampleField(name, x, y)`, so a consumer queries **one** field, not two.

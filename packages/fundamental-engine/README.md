@@ -1,21 +1,22 @@
 # fundamental-engine
 
-**An alias for [`@fundamental-engine/kit`](https://www.npmjs.com/package/@fundamental-engine/kit).** The bare `Fundamental`
+> **Retired in 0.7.0 — not published.** Install the specific `@fundamental-engine/*` package you need
+> (e.g. `@fundamental-engine/vanilla`, `@fundamental-engine/elements`, `@fundamental-engine/react`).
+
+**An alias for the [Fundamental](https://fundamental-engine.com) suite.** The bare `Fundamental`
 name on npm belongs to an unrelated project, so the Fundamental suite lives under the `@Fundamental` scope.
-This package exists only so that `fundamental-engine` resolves to the whole suite for anyone who
-reaches for it by name.
+This package existed only so that `fundamental-engine` resolved to the whole suite for anyone who
+reached for it by name.
 
 ## Install
 
+The umbrella package is no longer published. Install the packages you need directly:
+
 ```sh
-npm i fundamental-engine
+npm i @fundamental-engine/vanilla   # or /elements, /react, /core + /dom
 ```
 
-This pulls in [`@fundamental-engine/kit`](https://www.npmjs.com/package/@fundamental-engine/kit), which depends on every
-`@fundamental-engine/*` package. Then import from the specific package you need (see the
-[kit README](https://www.npmjs.com/package/@fundamental-engine/kit)).
-
-**Prefer the direct names:**
+**The direct names:**
 
 - The engine is **[`@fundamental-engine/core`](https://www.npmjs.com/package/@fundamental-engine/core)**.
 - The whole suite is **[`@fundamental-engine/kit`](https://www.npmjs.com/package/@fundamental-engine/kit)**.

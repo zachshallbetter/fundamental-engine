@@ -111,6 +111,50 @@ test('body.set: a live strength change takes effect on the measure cadence, no r
   }
 });
 
+test('body.set: range / angle / spin take effect on the measure cadence (reactive path)', () => {
+  const { host, step } = drivableHost();
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    field.scan();
+    // a short-range well: nothing reaches far out, then widen it and the far point feels the pull.
+    const well = field.addBody({ tokens: 'attract', strength: 2.4, range: 80, rect: rectAt(500, 400) });
+    step(12);
+    const farBefore = field.sample(900, 400); // well outside the 80px range
+    well.set({ range: 900 }); // widen — refreshBodyParams re-reads data-range on the measure cadence
+    step(12);
+    const farAfter = field.sample(900, 400);
+    assert.ok(
+      Math.abs(farAfter.x) > Math.abs(farBefore.x) + 1e-9,
+      `widening range reaches the far point: ${farBefore.x.toExponential(2)} -> ${farAfter.x.toExponential(2)}`,
+    );
+
+    // angle + spin mutate without throwing through the same reactive path.
+    assert.doesNotThrow(() => well.set({ angle: Math.PI / 2, spin: -1.5 }), 'angle + spin set() are accepted');
+    step(12);
+  } finally {
+    field.destroy();
+  }
+});
+
+test('body.set: a color change carries the tint (set({color}) is accepted, no throw)', () => {
+  const { host, step } = drivableHost();
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    field.scan();
+    const well = field.addBody({ tokens: 'attract', strength: 2.4, range: 900, rect: rectAt(500, 400), color: '#112233' });
+    step(12);
+    // The color/tint branch in addBody's handle writes body.tint + the synthetic el.dataset.color
+    // directly (off the refreshBodyParams cadence). It is not surfaced on the public BodyHandle, so we
+    // assert the path is exercised without throwing and the body keeps behaving (still pulling matter).
+    assert.doesNotThrow(() => well.set({ color: '#ff8800' }), 'set({color}) recolors the body without throwing');
+    step(12);
+    const f = field.sample(560, 400);
+    assert.ok(f.x < 0, `the body still pulls after a tint change: ${f.x.toExponential(2)}`);
+  } finally {
+    field.destroy();
+  }
+});
+
 test('addField: a registered channel is sampled back; set() swaps it, remove() clears it', () => {
   const { host } = drivableHost();
   const field = createField({} as HTMLCanvasElement, { host, render: 'none' });

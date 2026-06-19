@@ -22,6 +22,25 @@ test('option-attrs-observed: every forwarded option attr is in observedAttribute
   }
 });
 
+// The forward-direction guard: every FieldOptions key <field-root> forwards must have an OPTIONS row.
+// This is the reverse of the test above and is what would have caught the original `depth` drop — a
+// FieldOptions key silently missing from the OPTIONS table (forwarded by nobody). accent /
+// overlayCanvas / feedbackSink are special-cased in start() and intentionally NOT in OPTIONS.
+const FORWARDED_OPTION_KEYS = [
+  'density', 'waves', 'depth', 'background', 'render', 'overlay',
+  'palette', 'mass', 'attention', 'causality', 'heatmap', 'dprCap',
+] as const;
+
+test('every forwardable FieldOptions key has an OPTIONS row (reverse drift guard)', () => {
+  const keys = new Set(OPTIONS.map((o) => o.key));
+  for (const key of FORWARDED_OPTION_KEYS) {
+    assert.ok(
+      keys.has(key),
+      `FieldOptions key "${key}" is forwarded by <field-root> but missing from the OPTIONS table (it would never be re-applied — the bug that silently dropped depth)`,
+    );
+  }
+});
+
 test('depth is both forwarded and observed (regression: <field-root depth> was a no-op)', () => {
   assert.ok(
     OPTIONS.some((o) => o.key === 'depth' && o.attr === 'depth'),

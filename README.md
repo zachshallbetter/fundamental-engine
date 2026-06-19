@@ -90,7 +90,7 @@ Reach for `useFieldField(options)` when you want the field handle instead of the
 <button data-body="repel" data-range="240">Keep clear</button>
 ```
 
-Drop `<field-root>` once (the `<forces-field>` alias still works). It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
+Drop `<field-root>` once. It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
 
 ## Author bodies in markup
 

@@ -102,6 +102,9 @@ jobs:
           for pkg in packages/*/package.json; do
             NAME=$(node -p "require('./$pkg').name")
             case "$NAME" in @fundamental-engine/*|fundamental-engine) ;; *) continue ;; esac
+            # retired umbrellas (kit / fundamental-engine) are private and unpublished — skip them.
+            PRIV=$(node -p "require('./$pkg').private || false")
+            [ "$PRIV" = "true" ] && continue
             PKGVER=$(node -p "require('./$pkg').version")
             if [ "$PKGVER" != "$VERSION" ]; then
               echo "::error::$NAME is $PKGVER but the tag is $RELEASE_TAG — bump the seven together first."
@@ -166,7 +169,7 @@ jobs:
           mkdir /tmp/smoke && cd /tmp/smoke
           npm init -y > /dev/null
           for i in $(seq 1 10); do
-            if npm install "@fundamental-engine/vanilla@$VERSION" "@fundamental-engine/kit@$VERSION" "fundamental-engine@$VERSION"; then
+            if npm install "@fundamental-engine/vanilla@$VERSION" "@fundamental-engine/dom@$VERSION"; then
               break
             fi
             if [ "$i" = 10 ]; then
@@ -189,9 +192,9 @@ jobs:
           cd /tmp/smoke
           npm audit signatures
           FAIL=0
-          for p in @fundamental-engine/core @fundamental-engine/platform @fundamental-engine/elements \
-                   @fundamental-engine/vanilla @fundamental-engine/react @fundamental-engine/three \
-                   @fundamental-engine/kit fundamental-engine; do
+          for p in @fundamental-engine/core @fundamental-engine/dom @fundamental-engine/platform \
+                   @fundamental-engine/elements @fundamental-engine/vanilla @fundamental-engine/react \
+                   @fundamental-engine/three; do
             ATT=$(npm view "$p@$VERSION" dist.attestations.url 2>/dev/null || true)
             if [ -z "$ATT" ]; then
               echo "::error::$p@$VERSION has no provenance attestation"
