@@ -199,6 +199,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // on a cadence and DRAW from this cache every frame (so the arrows never flicker or step).
   let slSamples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] | null = null;
   let slQuiescent: { gx: number; gy: number }[] = [];
+  // Same cadence cache for the OVERLAY arrows (drawOverlayArrows) — the in-front Field-Surfaces
+  // reading. Its grid is the same body-induced force field, so it had the same per-frame regrid
+  // waste the underlay shed in #406; resample on the cadence, draw from this cache every frame.
+  let olSamples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] | null = null;
   // hard pool ceiling for class-[S] sources (§20.1) — generous above the ~130·density
   // base field so emission is never starved, but bounded so the sim can't grow forever.
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
@@ -1357,35 +1361,45 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function drawOverlayArrows(out: RenderBackend, structure: boolean, absolute: boolean): void {
     const GRID = 44;
     const acc = hexToRgb(cfg.accent);
-    const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
-    let frameMax = 0;
-    for (let gx = GRID / 2; gx < W; gx += GRID) {
-      for (let gy = GRID / 2; gy < H; gy += GRID) {
-        let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
-        if (flow) {
-          const b = flowBiasInto(_flowB, gx, gy, flow, 0.04);
-          fx += b.x;
-          fy += b.y;
+    // RESAMPLE the field on a cadence, not every frame (mirrors the underlay slSamples cache, #406).
+    // The overlay grid is the same body-induced force field — it only shifts on the measure cadence
+    // (every 6th frame) or while a flow focus animates — so a per-frame regrid (≈grid×bodies force
+    // evals) was the same wasted work the underlay shed, surfacing as scroll jank when a Field-
+    // Surfaces reading is live. Resample every 3rd frame (or empty cache / live flow); the EMA scale
+    // updates with it. DRAW from the cache every frame below, so the arrows never flicker or step.
+    if (olSamples === null || flow || frameN % 3 === 0) {
+      const samples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] = [];
+      let frameMax = 0;
+      for (let gx = GRID / 2; gx < W; gx += GRID) {
+        for (let gy = GRID / 2; gy < H; gy += GRID) {
+          let { fx, fy } = forceAt(bodies, reg.forces, env, gx, gy);
+          if (flow) {
+            const b = flowBiasInto(_flowB, gx, gy, flow, 0.04);
+            fx += b.x;
+            fy += b.y;
+          }
+          const mag = Math.hypot(fx, fy);
+          if (!(mag > 1e-9)) continue; // skip dead zones / NaN
+          samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
+          if (mag > frameMax) frameMax = mag;
         }
-        const mag = Math.hypot(fx, fy);
-        if (!(mag > 1e-9)) continue; // skip dead zones / NaN
-        samples.push({ gx, gy, ux: fx / mag, uy: fy / mag, mag });
-        if (mag > frameMax) frameMax = mag;
       }
+      // Same EMA approach as the underlay streamlines (see slMaxSmoothed) — independent state so
+      // the overlay scale never couples to the underlay's field strength. Updated with the resample.
+      if (olMaxSmoothed === 0) olMaxSmoothed = frameMax;
+      else olMaxSmoothed = frameMax > olMaxSmoothed
+        ? olMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
+        : olMaxSmoothed * 0.9 + frameMax * 0.1;  // decay slowly so quiet frames don't flash
+      olSamples = samples;
     }
-    // Same EMA approach as the underlay streamlines (see slMaxSmoothed) — independent state so
-    // the overlay scale never couples to the underlay's field strength.
-    if (olMaxSmoothed === 0) olMaxSmoothed = frameMax;
-    else olMaxSmoothed = frameMax > olMaxSmoothed
-      ? olMaxSmoothed * 0.7 + frameMax * 0.3   // track rises promptly
-      : olMaxSmoothed * 0.9 + frameMax * 0.1;  // decay slowly so quiet frames don't flash
     if (olMaxSmoothed <= 0) return;
     // one backend call per arrow: shaft + two head strokes packed as three segments. Alpha varies
     // per arrow (it encodes magnitude), so arrows can't share one batch without quantizing — the
-    // call count matches the previous per-arrow beginPath/stroke exactly.
+    // call count matches the previous per-arrow beginPath/stroke exactly. `acc` is read every frame
+    // (outside the resample) so a live setAccent recolors the cached arrows immediately.
     const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0, width: 1.2 };
     const seg = new Float64Array(12);
-    for (const s of samples) {
+    for (const s of olSamples!) {
       const rel = absolute ? clamp(s.mag / olMaxSmoothed, 0, 1) : Math.sqrt(s.mag / olMaxSmoothed);
       const len = GRID * 0.5 * (0.25 + 0.75 * rel);
       const ex = s.gx + s.ux * len;

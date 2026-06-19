@@ -27,6 +27,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   now; the wave baseline and ramp ends remain hardcoded (no per-field override yet — tracked separately).
   The Swift port is brought to parity in a follow-up so the planes don't diverge.
 
+- **Overlay arrows resample on a cadence (core perf).** `drawOverlayArrows` (the in-front
+  `streamlines`/`force-vectors` Field-Surfaces reading) rebuilt its whole force-vector grid every
+  frame — the same per-frame regrid waste the underlay shed in #406. It now resamples every 3rd frame
+  (or when its cache is empty / a flow focus is live) and draws from the cache every frame, so the
+  arrows never flicker or step. Matches the underlay `slSamples` pattern; `accent` is still read every
+  frame so `setAccent` recolors immediately. (#412)
+
 ### Fixed
 
 - **Post-0.7.0 integrity sweep.** The release workflow's post-publish smoke + provenance checks no
