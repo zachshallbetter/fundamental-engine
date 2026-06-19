@@ -136,20 +136,33 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         <span class="concept-no">Install</span>
         <h2>Add it to the stack you already have.</h2>
         <p class="lp-lede">
-          Most projects want <code>@fundamental-engine/vanilla</code> — framework-free and
-          host-bundled, so <code>createField</code> works with no wiring. React users
-          want <code>@fundamental-engine/react</code>. The core engine has zero runtime dependencies.
+          Install one package — the <strong>surface</strong> for your environment. It pulls the engine
+          (<code>core</code> + the DOM binding) in for you; you never assemble those yourself.
         </p>
         <div class="lp-pkgs">
           <div class="lp-pkg">
             <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
-            <span><b>Recommended</b> — framework-free, host-bundled (<code>createField</code> works with no wiring).</span>
+            <span><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class. <b>Start here if unsure.</b> <a href="/docs/guides/typescript">Guide →</a></span>
           </div>
           <div class="lp-pkg">
             <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
-            <span>The <code>&lt;FieldField&gt;</code> React component + <code>useFieldField</code> hook.</span>
+            <span><b>React</b> — the <code>&lt;FieldField&gt;</code> component + <code>useFieldField</code> hook. <a href="/docs/guides/react">Guide →</a></span>
+          </div>
+          <div class="lp-pkg">
+            <code class="install" data-copy="npm i @fundamental-engine/elements">npm i @fundamental-engine/elements</code>
+            <span><b>Any framework or plain HTML</b> — the <code>&lt;field-root&gt;</code> web component. <a href="/docs/guides/web-component">Guide →</a></span>
+          </div>
+          <div class="lp-pkg">
+            <code class="install" data-copy="npm i @fundamental-engine/three">npm i @fundamental-engine/three</code>
+            <span><b>Three.js / WebGL</b> — the swarm as a <code>THREE.Points</code> layer. <a href="/docs/guides/three">Guide →</a></span>
           </div>
         </div>
+        <p class="lp-note">
+          Own the canvas / building your own renderer? <code>@fundamental-engine/core</code> is the
+          renderer-agnostic engine — you supply a host (<a href="/docs/guides/core">Core guide</a>). You
+          don’t install <code>@fundamental-engine/dom</code> directly — it’s the DOM engine-room the web
+          surfaces already pull in.
+        </p>
         <p class="lp-note">
           No build step? Import from a CDN (playground / prototyping only):
           <code>import {'{'} createField {'}'} from 'https://esm.sh/@fundamental-engine/vanilla'</code>
