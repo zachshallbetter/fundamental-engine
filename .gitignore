@@ -7,6 +7,14 @@ coverage
 .vscode
 *.tsbuildinfo
 
+# Apple signing material — NEVER commit private keys / certs / profiles
+*.p12
+*.cer
+*.p8
+*.mobileprovision
+*.keychain-db
+DeveloperID*
+
 # Astro generated cache
 .astro/
 .vercel/
