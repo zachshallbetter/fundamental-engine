@@ -125,7 +125,7 @@ const dest = [
 
 <script>
   // Field toggles — four buttons drive the persisted <field-root>:
-  //   1. Flow: dots ⇄ streamlines (the render mode)
+  //   1. Flow: additive streamline overlay (on/off via setOverlay — particles always stay)
   //   2. Heatmap: density glow underlay
   //   3. Field lines: per-stage traced overlays (home page only)
   //   4. Power: the one field switch (on/off, persisted, reloads)
@@ -137,6 +137,7 @@ const dest = [
 
   type FieldEl = HTMLElement & {
     setRender(m: string): void;
+    setOverlay(m: string): void;
     setHeatmap(on: boolean): void;
   };
   const fieldEl = () => document.querySelector('field-root') as FieldEl | null;
@@ -144,12 +145,11 @@ const dest = [
   const FIELD_KEY = 'fui:field';
   const fieldOn = () => document.documentElement.dataset.field !== 'off';
 
-  // 1) Global field flow: dots ⇄ flow/streamlines, read back from the persisted field.
+  // 1) Global field flow: additive streamline overlay, read back from the persisted field.
   function syncStreamBtn() {
     const btn = document.getElementById('sn-stream-toggle');
     if (!btn) return;
-    const field = fieldEl();
-    const on = field?.dataset.navFlow === 'on';
+    const on = fieldEl()?.dataset.navFlow === 'on';
     btn.setAttribute('aria-pressed', String(on));
     btn.title = on ? 'Hide field flow' : 'Show field flow';
   }
@@ -183,9 +183,8 @@ const dest = [
     if (!t) return;
     if (t.closest('#sn-stream-toggle')) {
       const field = fieldEl();
-      const on = field?.dataset.navFlow === 'on';
-      const next = !on;
-      field?.setRender(next ? 'flow' : 'dots');
+      const next = field?.dataset.navFlow !== 'on';
+      field?.setOverlay(next ? 'streamlines' : 'off'); // additive — particles stay underneath
       if (field) field.dataset.navFlow = next ? 'on' : 'off';
       syncStreamBtn();
     } else if (t.closest('#sn-heatmap-toggle')) {
