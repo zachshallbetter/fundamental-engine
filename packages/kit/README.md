@@ -1,16 +1,21 @@
 # @fundamental-engine/kit
 
-**The whole [Fundamental](https://fundamental-engine.com) suite in one install.** `@fundamental-engine/kit` is a
-meta-package: it has no code of its own — it just depends on every published `@fundamental-engine/*` package, so
-a single install pulls the entire stack. Import from the specific package you need.
+> **Retired in 0.7.0 — not published.** Install the specific `@fundamental-engine/*` package you need
+> (e.g. `@fundamental-engine/vanilla`, `@fundamental-engine/elements`, `@fundamental-engine/react`).
+
+**The whole [Fundamental](https://fundamental-engine.com) suite in one install.** `@fundamental-engine/kit` was a
+meta-package: it had no code of its own — it just depended on every `@fundamental-engine/*` package, so
+a single install pulled the entire stack. Import from the specific package you need.
 
 ## Install
 
+The umbrella package is no longer published. Install the packages you need directly:
+
 ```sh
-npm i @fundamental-engine/kit
+npm i @fundamental-engine/vanilla   # or /elements, /react, /core + /dom
 ```
 
-That brings in all five:
+The full suite:
 
 | Package | Use it for |
 |---|---|

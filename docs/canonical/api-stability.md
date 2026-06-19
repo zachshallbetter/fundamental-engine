@@ -68,8 +68,9 @@ Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 | `data-body` (attribute) | core `BODY_SELECTOR` | **The body contract.** "Every element is a body" via the `data-body` attribute on ordinary elements. |
 
 **There is no `<field-body>` element.** Bodies are an attribute on ordinary elements, not a tag, and
-none will be introduced as the body mechanism. The custom elements are the field-`*` names;
-`<forces-field>` / `<forces-cell>` are deprecated aliases (see the alias window).
+none will be introduced as the body mechanism. The custom elements are `<field-root>` (also registered
+as `<field-field>`) and `<field-cell>`; the pre-rename `<forces-field>`/`<forces-cell>` tags are **not**
+registered (the rename left no element aliases).
 
 ## The experimental surface (not frozen)
 
@@ -104,11 +105,14 @@ of the contract until they are added to the table above.
    `bindData`/`FieldPlatform`/`browserHost` → platform; `field-root`/`field-cell` → elements).
 5. **Bodies are an attribute contract.** `[data-body]` on ordinary elements is the frozen authoring
    surface; there is no body element.
-6. **`forces-*` → `field-*` alias window (deprecated, removal-gated).** `<forces-field>`/`<forces-cell>`,
-   `ForcesField`/`ForcesCell`/`ForcesController`, `useForcesField`, `forces:*` events, `--forces-*`
-   CSS vars, and the `compat-*` packages keep working behavior-identically through `0.x` and carry
-   `@deprecated` guidance, but are **excluded from the additive-only guarantee** and scheduled for
-   removal on a minor bump with a CHANGELOG entry.
+6. **The `forces-*` compatibility layer was removed — there is no alias window.** The
+   `forces-ui → field-ui → Fundamental` rename was a **hard** rename: the `<forces-field>`/`<forces-cell>`
+   tags, the `ForcesField`/`ForcesController`/`useForcesField` exports, the `--forces-*` CSS vars, and the
+   `compat-*` packages are **gone** (the test suite asserts their absence). The only survivors are the
+   `forces:*` **event names** (e.g. `forces:captured`/`forces:released`), which still fire for
+   compatibility. The one *current* deprecated alias is the **package** rename
+   `@fundamental-engine/platform → @fundamental-engine/dom` (above) — a thin re-export of `dom`,
+   excluded from the additive-only guarantee and scheduled for removal on a later minor.
 7. **The experimental surface carries no guarantee.** Diagnostics/agent/render-mode exports that happen
    to ship today are *shipped-but-unfrozen* until explicitly added to the stable table.
 

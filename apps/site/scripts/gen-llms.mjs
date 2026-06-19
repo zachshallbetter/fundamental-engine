@@ -75,7 +75,7 @@ const DOC_DESC = {
   '/docs/api/metrics': 'every --field-* custom property the field writes back — ranges, cadence, and when to use each',
   '/docs/api/types': 'the exported TypeScript contracts, core and platform',
   '/docs/api/stability': 'the frozen 0.x surface and compatibility rules — rendered from the same data CI enforces',
-  '/docs/api/forces': 'all 35 forces: per-frame law, attributes read, and an example each',
+  '/docs/api/forces': 'all 36 forces: per-frame law, attributes read, and an example each',
   '/docs/api/presets': 'composites (blackhole, galaxy, tornado, …) that expand to primitive bodies',
   '/docs/api/catalog': 'conditions, formations, render modes, and palettes — the orthogonal axes',
   '/docs/studies/reading-field': 'a long-form article reinterpreted as a field (attention + memory + citations)',

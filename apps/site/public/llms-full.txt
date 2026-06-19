@@ -1,7 +1,7 @@
 # Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-18 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-19 by apps/site/scripts/gen-llms.mjs
 Files: 16
 
 These are the project's canonical documents — the authority on concepts, terminology, and
@@ -326,9 +326,16 @@ of the `0.x` line. The freeze is mechanically enforced — `pnpm check:api` fail
 symbol is removed, renamed, moved between packages, or changes kind.
 
 > Package npm names: core is published as **`@fundamental-engine/core`**; the rest are
-> `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The umbrella
-> **`@fundamental-engine/kit`** installs the whole suite in one dependency (`fundamental-engine` is a thin alias
-> for it); these are convenience meta-packages, not part of the frozen API surface.
+> `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`,
+> `@fundamental-engine/three`. The `@fundamental-engine/kit` / `fundamental-engine` umbrella packages were
+> **retired in 0.7.0** — install the specific package you need.
+>
+> **0.7.0 migration — `@fundamental-engine/platform` → `@fundamental-engine/dom`.** The DOM-binding
+> package was renamed (it *is* the DOM layer); the frozen symbols `browserHost`, `createFieldPlatform`,
+> `applyRecipe`, `bindData`, and the `FieldPlatform` type now live in `@fundamental-engine/dom`. This is
+> the one sanctioned cross-package move of the `0.x` line, gated by the minor bump. `@fundamental-engine/platform`
+> stays published as a **deprecated alias** that re-exports `dom`, so existing imports keep working;
+> migrate to `dom` and the alias will be removed in a later release.
 
 ## The stable surface (`0.x`)
 
@@ -366,8 +373,9 @@ Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 | `data-body` (attribute) | core `BODY_SELECTOR` | **The body contract.** "Every element is a body" via the `data-body` attribute on ordinary elements. |
 
 **There is no `<field-body>` element.** Bodies are an attribute on ordinary elements, not a tag, and
-none will be introduced as the body mechanism. The custom elements are the field-`*` names;
-`<forces-field>` / `<forces-cell>` are deprecated aliases (see the alias window).
+none will be introduced as the body mechanism. The custom elements are `<field-root>` (also registered
+as `<field-field>`) and `<field-cell>`; the pre-rename `<forces-field>`/`<forces-cell>` tags are **not**
+registered (the rename left no element aliases).
 
 ## The experimental surface (not frozen)
 
@@ -402,11 +410,14 @@ of the contract until they are added to the table above.
    `bindData`/`FieldPlatform`/`browserHost` → platform; `field-root`/`field-cell` → elements).
 5. **Bodies are an attribute contract.** `[data-body]` on ordinary elements is the frozen authoring
    surface; there is no body element.
-6. **`forces-*` → `field-*` alias window (deprecated, removal-gated).** `<forces-field>`/`<forces-cell>`,
-   `ForcesField`/`ForcesCell`/`ForcesController`, `useForcesField`, `forces:*` events, `--forces-*`
-   CSS vars, and the `compat-*` packages keep working behavior-identically through `0.x` and carry
-   `@deprecated` guidance, but are **excluded from the additive-only guarantee** and scheduled for
-   removal on a minor bump with a CHANGELOG entry.
+6. **The `forces-*` compatibility layer was removed — there is no alias window.** The
+   `forces-ui → field-ui → Fundamental` rename was a **hard** rename: the `<forces-field>`/`<forces-cell>`
+   tags, the `ForcesField`/`ForcesController`/`useForcesField` exports, the `--forces-*` CSS vars, and the
+   `compat-*` packages are **gone** (the test suite asserts their absence). The only survivors are the
+   `forces:*` **event names** (e.g. `forces:captured`/`forces:released`), which still fire for
+   compatibility. The one *current* deprecated alias is the **package** rename
+   `@fundamental-engine/platform → @fundamental-engine/dom` (above) — a thin re-export of `dom`,
+   excluded from the additive-only guarantee and scheduled for removal on a later minor.
 7. **The experimental surface carries no guarantee.** Diagnostics/agent/render-mode exports that happen
    to ship today are *shipped-but-unfrozen* until explicitly added to the stable table.
 

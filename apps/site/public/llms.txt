@@ -10,7 +10,7 @@ Every element can become a body in an invisible physics field via the `data-body
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-18 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-19 by apps/site/scripts/gen-llms.mjs.
 
 ## Docs
 
@@ -40,7 +40,7 @@ render from the same file. Generated 2026-06-18 by apps/site/scripts/gen-llms.mj
 - [Reference — Metrics](https://fundamental-engine.com/docs/api/metrics): every --field-* custom property the field writes back — ranges, cadence, and when to use each
 - [Reference — Types](https://fundamental-engine.com/docs/api/types): the exported TypeScript contracts, core and platform
 - [Reference — API stability](https://fundamental-engine.com/docs/api/stability): the frozen 0.x surface and compatibility rules — rendered from the same data CI enforces
-- [Reference — Forces](https://fundamental-engine.com/docs/api/forces): all 35 forces: per-frame law, attributes read, and an example each
+- [Reference — Forces](https://fundamental-engine.com/docs/api/forces): all 36 forces: per-frame law, attributes read, and an example each
 - [Reference — Presets](https://fundamental-engine.com/docs/api/presets): composites (blackhole, galaxy, tornado, …) that expand to primitive bodies
 - [Reference — Conditions & formations](https://fundamental-engine.com/docs/api/catalog): conditions, formations, render modes, and palettes — the orthogonal axes
 - [Field studies — Reading Field Study](https://fundamental-engine.com/docs/studies/reading-field): a long-form article reinterpreted as a field (attention + memory + citations)

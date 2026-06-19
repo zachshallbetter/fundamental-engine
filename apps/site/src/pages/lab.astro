@@ -12,7 +12,7 @@ import '../styles/lab.css';
 // catalog (the same EXPERIMENTS the test suite runs) — frame by frame. Every force
 // in the catalog has a conformance experiment, so all of them fire here.
 
-// every force that has a conformance experiment (the detector can run it — all 35 do)
+// every force that has a conformance experiment (the detector can run it — all 36 do)
 const HAS_EXP = new Set(EXPERIMENTS.map((e) => e.scenario.force));
 const families = [
   { key: 'canonical', label: 'Canonical' },
@@ -280,7 +280,7 @@ const FILTER_COLOR: Record<string, string> = {
     // selected force's scenario body. `angle` is shown in degrees and converted to radians
     // in buildScenario. Which knobs appear is driven by the catalog `attrs` (so each force
     // shows only the knobs that matter), plus box/absorbR auto-added when the body has them,
-    // plus the injected particle's vx/vy/count. This covers all 35 forces with no per-force
+    // plus the injected particle's vx/vy/count. This covers all 36 forces with no per-force
     // table to drift.
     const ATTR: Any = {
       strength: (b: Any) => { const v = b.strength ?? 1, mx = Math.max(0.5, v * 3); return { key: 'strength', label: 'strength', sym: 'S', val: v, def: v, min: 0, max: mx, step: mx / 100 }; },

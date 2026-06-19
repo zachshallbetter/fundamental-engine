@@ -7,6 +7,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Post-0.7.0 integrity sweep.** The release workflow's post-publish smoke + provenance checks no
+  longer install the retired `kit`/`fundamental-engine` umbrellas (that mismatch is why the 0.7.0 run
+  reported failure even though all 7 packages published); the version-match gate now skips private
+  packages. Doc corrections: `api-stability.md` no longer promises a `forces-*` alias window that the
+  hard rename removed (only `forces:*` events survive); the root README + `RELEASING.md` + the retired
+  umbrella READMEs drop install instructions for unpublished packages; `elements` README `dom` links
+  point at `../dom`; stale "35 forces" counts fixed (authoritative is 36); the `addField` JSDoc no
+  longer implies the engine consumes channels internally. Test hardening: `BodyHandle.set` color +
+  range/angle/spin coverage, and a reverse option-drift guard that would have caught the original
+  `depth` drop.
+
 ## [0.7.0] — 2026-06-17
 
 ### Breaking

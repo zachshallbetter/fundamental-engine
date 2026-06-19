@@ -53,7 +53,7 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
    `@fundamental-engine/*` package with provenance. Watch it: `gh run watch` (or the Actions tab). It re-reads the
    `NPM_TOKEN` secret each run, so a failed publish can be retried with `gh run rerun <id> --failed`.
 6. **Create the GitHub release** for the tag, pasting the CHANGELOG section.
-7. **Smoke-test** a clean install (`npm i @fundamental-engine/kit` in a fresh directory) and confirm the scoped
+7. **Smoke-test** a clean install (`npm i @fundamental-engine/vanilla` in a fresh directory) and confirm the scoped
    packages resolve the core dependency.
 
 ## What CI does
