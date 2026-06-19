@@ -1,0 +1,74 @@
+# Build, sign, notarize, and publish the FieldLab macOS app as a downloadable .dmg.
+#
+# Decoupled from the npm release (release.yml): triggered manually, or by a `fieldlab-v*` tag.
+# The .dmg is attached to a GitHub Release so the site can link a stable download URL.
+#
+# Required repository secrets (one-time, from your Apple Developer account):
+#   APPLE_DEV_ID_CERT_P12_BASE64  base64 of your exported "Developer ID Application" cert (.p12)
+#                                 →  base64 -i DeveloperID.p12 | pbcopy
+#   APPLE_DEV_ID_CERT_PASSWORD    the password you set when exporting the .p12
+#   APPLE_SIGN_IDENTITY           e.g. "Developer ID Application: Your Name (TEAMID)"
+#   APPLE_NOTARY_APPLE_ID         your Apple ID email
+#   APPLE_NOTARY_PASSWORD         an app-specific password (appleid.apple.com → App-Specific Passwords)
+#   APPLE_TEAM_ID                 your 10-char Team ID
+name: FieldLab release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to stamp (e.g. 0.5.1)'
+        required: true
+        default: '0.5.1'
+  push:
+    tags: ['fieldlab-v*']
+
+permissions:
+  contents: write # attach the .dmg to a release
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "version=${GITHUB_REF_NAME#fieldlab-v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Import Developer ID certificate
+        env:
+          CERT_P12: ${{ secrets.APPLE_DEV_ID_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.APPLE_DEV_ID_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/fieldlab.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"          # ephemeral, never leaves the runner
+          echo "$CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+
+      - name: Build · sign · notarize · staple
+        env:
+          FIELDLAB_VERSION: ${{ steps.ver.outputs.version }}
+          SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
+          NOTARY_APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
+          NOTARY_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: swift/Scripts/release-fieldlab.sh
+
+      - name: Attach .dmg to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'push' && github.ref_name || format('fieldlab-v{0}', steps.ver.outputs.version) }}
+          name: Field Lab ${{ steps.ver.outputs.version }}
+          files: swift/dist/FieldLab-*.dmg
+          fail_on_unmatched_files: true

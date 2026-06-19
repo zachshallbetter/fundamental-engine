@@ -51,9 +51,59 @@ const dest = [
         ))
       }
       <span class="sn-toggles">
-        {/* The one field switch — turns the whole field layer (the particle field-root AND the
-            signals-only wayfinding fields) on or off, site-wide. Persisted; default on. Replaces the
-            former per-overlay toggles. */}
+        {/* Global field flow — switch the whole background field between particles and streamline arrows */}
+        <button
+          id="sn-stream-toggle"
+          class="sn-field-btn"
+          type="button"
+          aria-label="Toggle field-flow arrows"
+          title="Show field flow"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M1 4.5 Q5 2.5 9 4.5 T15 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <path d="M1 8 Q5 6 9 8 T15 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <path d="M1 11.5 Q5 9.5 9 11.5 T15 11.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <polyline points="13,6.5 15,8 13,9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+          </svg>
+        </button>
+        {/* Density heatmap — a glow underlay of where matter pools, sampled back to bodies */}
+        <button
+          id="sn-heatmap-toggle"
+          class="sn-field-btn"
+          type="button"
+          aria-label="Toggle density heatmap"
+          title="Show density heatmap"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="2.2" fill="currentColor" />
+            <circle cx="8" cy="8" r="4.2" stroke="currentColor" stroke-width="1.2" opacity="0.6" />
+            <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1" opacity="0.35" />
+          </svg>
+        </button>
+        {/* Per-stage field lines (home): show/hide the traced overlays */}
+        {
+          current === 'home' && (
+            <button
+              id="sn-field-toggle"
+              class="sn-field-btn"
+              type="button"
+              aria-label="Toggle field lines"
+              title="Hide field lines"
+              aria-pressed="true"
+            >
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="1.7" fill="currentColor" />
+                <path d="M8 2.4 A5.6 5.6 0 0 1 13.6 8" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" />
+                <polyline points="11.8,6.2 13.6,8 11.7,9.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                <path d="M8 13.6 A5.6 5.6 0 0 1 2.4 8" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" />
+                <polyline points="4.2,9.8 2.4,8 4.3,6.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              </svg>
+            </button>
+          )
+        }
+        {/* The one field switch — turns the whole field layer on or off, site-wide. Persisted; default on. */}
         <button
           id="sn-field-power"
           class="sn-field-btn"
@@ -74,15 +124,52 @@ const dest = [
 </header>
 
 <script>
-  // The one field switch. A single persisted preference — `fui:field` in localStorage, mirrored to
-  // <html data-field="on|off"> by an early head script in Base.astro — gates the WHOLE field layer
-  // site-wide: the particle <field-root> boots only when on, and every signals-only wayfinding
-  // binding (this nav, docs, writings, footer, examples, the home rail) checks the same flag. Off is
-  // a static site. Toggling flips the preference and reloads so the gate applies cleanly everywhere
-  // (the field-root + the dozen scoped platforms all read the flag at boot). Default on.
+  // Field toggles — four buttons drive the persisted <field-root>:
+  //   1. Flow: dots ⇄ streamlines (the render mode)
+  //   2. Heatmap: density glow underlay
+  //   3. Field lines: per-stage traced overlays (home page only)
+  //   4. Power: the one field switch (on/off, persisted, reloads)
+  //
+  // The field-root survives client-side navigation (transition:persist) while the nav
+  // buttons are re-rendered fresh on every page — so the source of truth is the
+  // persisted field-root element itself (data-nav-flow / data-nav-heatmap), and the
+  // freshly rendered buttons re-sync from the field's real state on every astro:page-load.
+
+  type FieldEl = HTMLElement & {
+    setRender(m: string): void;
+    setHeatmap(on: boolean): void;
+  };
+  const fieldEl = () => document.querySelector('field-root') as FieldEl | null;
+
   const FIELD_KEY = 'fui:field';
   const fieldOn = () => document.documentElement.dataset.field !== 'off';
 
+  // 1) Global field flow: dots ⇄ flow/streamlines, read back from the persisted field.
+  function syncStreamBtn() {
+    const btn = document.getElementById('sn-stream-toggle');
+    if (!btn) return;
+    const field = fieldEl();
+    const on = field?.dataset.navFlow === 'on';
+    btn.setAttribute('aria-pressed', String(on));
+    btn.title = on ? 'Hide field flow' : 'Show field flow';
+  }
+  // 2) Density heatmap: the glow underlay, read back from the persisted field.
+  function syncHeatmapBtn() {
+    const btn = document.getElementById('sn-heatmap-toggle');
+    if (!btn) return;
+    const on = fieldEl()?.dataset.navHeatmap === 'on';
+    btn.setAttribute('aria-pressed', String(on));
+    btn.title = on ? 'Hide density heatmap' : 'Show density heatmap';
+  }
+  // 3) Per-stage field lines (home): show/hide the traced overlays.
+  function syncFieldBtn() {
+    const btn = document.getElementById('sn-field-toggle');
+    if (!btn) return;
+    const shown = !document.documentElement.classList.contains('hide-field-lines');
+    btn.setAttribute('aria-pressed', String(shown));
+    btn.title = shown ? 'Hide field lines' : 'Show field lines';
+  }
+  // 4) Power: the one field switch.
   function syncFieldPower() {
     const btn = document.getElementById('sn-field-power');
     if (!btn) return;
@@ -93,19 +180,43 @@ const dest = [
 
   document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement | null;
-    if (!t || !t.closest('#sn-field-power')) return;
-    const next = !fieldOn();
-    try {
-      localStorage.setItem(FIELD_KEY, next ? 'on' : 'off');
-    } catch {
-      /* storage unavailable — fall through to the in-page attribute toggle */
+    if (!t) return;
+    if (t.closest('#sn-stream-toggle')) {
+      const field = fieldEl();
+      const on = field?.dataset.navFlow === 'on';
+      const next = !on;
+      field?.setRender(next ? 'flow' : 'dots');
+      if (field) field.dataset.navFlow = next ? 'on' : 'off';
+      syncStreamBtn();
+    } else if (t.closest('#sn-heatmap-toggle')) {
+      const field = fieldEl();
+      const next = field?.dataset.navHeatmap !== 'on';
+      field?.setHeatmap(next);
+      if (field) field.dataset.navHeatmap = next ? 'on' : 'off';
+      syncHeatmapBtn();
+    } else if (t.closest('#sn-field-toggle')) {
+      document.documentElement.classList.toggle('hide-field-lines');
+      syncFieldBtn();
+    } else if (t.closest('#sn-field-power')) {
+      const next = !fieldOn();
+      try {
+        localStorage.setItem(FIELD_KEY, next ? 'on' : 'off');
+      } catch {
+        /* storage unavailable */
+      }
+      document.documentElement.dataset.field = next ? 'on' : 'off';
+      location.reload();
     }
-    document.documentElement.dataset.field = next ? 'on' : 'off';
-    location.reload(); // apply the gate across the field-root + every scoped platform
   });
 
-  document.addEventListener('astro:page-load', syncFieldPower);
-  syncFieldPower();
+  function syncAll() {
+    syncStreamBtn();
+    syncHeatmapBtn();
+    syncFieldBtn();
+    syncFieldPower();
+  }
+  document.addEventListener('astro:page-load', syncAll);
+  syncAll();
 </script>
 
 <script>
