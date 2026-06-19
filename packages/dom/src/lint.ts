@@ -27,6 +27,7 @@ export type LintCode =
   | 'measurement-off-phase'
   | 'sink-without-feedback'
   | 'feedback-vars-unwritten'
+  | 'feedback-writes-unread'
   | 'feedback-lane-inert';
 
 export interface PlatformLintWarning {
@@ -95,6 +96,53 @@ export function lintFeedbackVarReads(root: ParentNode): PlatformLintWarning[] {
         severity: 'warning',
         element: el,
         message: `inline style reads ${read}…) but the body carries no data-feedback — that channel is never written for it`,
+      });
+  });
+  return out;
+}
+
+/**
+ * The producer side of the feedback contract: a `data-feedback` body gets `--d`/`--load`/`--field-*`
+ * written onto it every frame, but if **no** style rule reads those vars the body changes invisibly —
+ * the recurring "charged but reads nothing" bug (`.btn`, `.hero-mass`). This is the inverse of
+ * `lintFeedbackVarReads` (reads-without-writes). **Dev-only, heuristic, browser-coupled:** it walks the
+ * document's accessible stylesheets for rules that read a feedback var (the *consumers*) and warns for
+ * any `data-feedback` body that neither reads one inline nor matches such a rule. It no-ops where
+ * stylesheets aren't reachable (SSR / tests / cross-origin sheets), so it can only under-report there,
+ * never false-positive. Pseudo-classes/elements are stripped from consumer selectors before matching,
+ * keeping the heuristic lenient (it would rather miss a warning than fire a wrong one).
+ */
+export function lintFeedbackWritesUnread(root: ParentNode): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  if (typeof document === 'undefined') return out;
+  // collect the selectors of rules that read a feedback var — the consumer side of the contract.
+  const consumerSelectors: string[] = [];
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList | undefined;
+    try { rules = sheet.cssRules; } catch { continue; } // cross-origin sheet → unreadable, skip
+    for (const rule of Array.from(rules ?? [])) {
+      const r = rule as CSSStyleRule;
+      if (r.selectorText && r.cssText && FEEDBACK_VAR_READS.some((v) => r.cssText.includes(v)))
+        consumerSelectors.push(r.selectorText);
+    }
+  }
+  root.querySelectorAll('[data-body][data-feedback]').forEach((el) => {
+    const style = el.getAttribute('style') ?? '';
+    if (FEEDBACK_VAR_READS.some((v) => style.includes(v))) return; // reads one inline — consumed
+    const consumed = consumerSelectors.some((sel) =>
+      sel.split(',').some((part) => {
+        const clean = part.trim().replace(/::?[\w-]+(\([^)]*\))?/g, ''); // drop :hover / ::before etc.
+        if (!clean) return false;
+        try { return el.matches(clean); } catch { return false; }
+      }),
+    );
+    if (!consumed)
+      out.push({
+        code: 'feedback-writes-unread',
+        severity: 'warning',
+        element: el,
+        message:
+          'data-feedback body is written --d/--load/--field-* every frame but no style rule reads them — it changes invisibly (style against var(--field-density), var(--d)…)',
       });
   });
   return out;
@@ -202,6 +250,7 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
     ...lintRelationTargets(root, resolve),
     ...lintSinkFeedback(root),
     ...lintFeedbackVarReads(root),
+    ...lintFeedbackWritesUnread(root),
     ...lintStateRegistration(platform.state, platform.measure),
     ...lintOverlayLinks(platform.overlays, platform.relationships),
     ...lintFeedbackVars(platform.feedback),
