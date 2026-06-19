@@ -23,7 +23,7 @@ per-view code. This paper presents the **data-binding model** that lets applicat
 become a field substrate. The central claim is narrow and concrete: when records map to **bodies**,
 record links map to **graph edges**, and record state maps to **metrics and feedback**, a list, a
 dashboard, or a result set behaves as a *relational field* — not a flat collection. We describe the
-shipped mechanism, `bindData()` (`packages/platform/src/bind-data.ts`), as it actually exists: a
+shipped mechanism, `bindData()` (`packages/dom/src/bind-data.ts`), as it actually exists: a
 per-record *mapper* that yields body tokens, metric values, and typed relationships; deterministic
 **id-diffed** updates (add / update / remove); and **decay on removal**, so a departing record eases
 out of the field rather than popping. We show that `bindData()` composes with the recipe runtime
@@ -150,7 +150,7 @@ function bindData<T>(
 ): DataBinding<T>;
 ```
 
-(`packages/platform/src/bind-data.ts`.) It returns a handle with `update(records)`, `ids()`,
+(`packages/dom/src/bind-data.ts`.) It returns a handle with `update(records)`, `ids()`,
 `applied()`, `inspect()`, and `destroy()`. The mapper is the heart of the model: it is the
 host-authored function `(record, index) => MappedRecord` that performs the three mappings below. Every
 mapping in this section is exactly what the mapper's return type permits and what the binding does
@@ -221,7 +221,7 @@ data.
 A subtlety the runtime handles, and the binding inherits, is **unresolved targets**. A declared edge
 whose target id-ref resolves to no element is *tracked, not dropped*: the relationship scanner returns
 both a `resolved` set and an `unresolved` set, and the registry keeps the unresolved declarations so
-inspection can name each missing endpoint (`packages/platform/src/relationships.ts`). This matters for
+inspection can name each missing endpoint (`packages/dom/src/relationships.ts`). This matters for
 data binding specifically, because the data may declare an edge to a record that has not yet arrived
 or has just left. The recipe runtime then counts an unresolved edge toward an element's *total*
 relationships but not its *resolved* set, so a citation pointing at nothing *lowers* resolution and
@@ -235,7 +235,7 @@ The third mapping is the mapper's `metrics?: Record<string, number>`. For each e
 writes `data-field-<metric>` on the record's element. These attributes are the input lane the recipe
 runtime reads: in `applyRecipe`'s compute phase, any `data-field-<metric>` present on a body is read
 as a *supplied* metric value, clamped to `[0, 1]`, and — critically — *supplied values win* over
-computed ones (`packages/platform/src/metrics.ts`, `computeMetrics`; `apply-recipe.ts`). The runtime
+computed ones (`packages/dom/src/metrics.ts`, `computeMetrics`; `apply-recipe.ts`). The runtime
 then folds the metric into the element's state and the feedback layer flushes it to a `--field-<metric>`
 custom property, which the page's CSS consumes. So a record's `{ confidence: 0.8 }` becomes
 `data-field-confidence="0.8"` becomes `--field-confidence: 0.8` becomes, in the demo CSS, a trust
@@ -427,7 +427,7 @@ weather: hot or overloaded metrics gain weight and warmth, calm regions stay qui
 
 ### 6.5 What ships, and what does not
 
-What ships is the **mechanism** (`bindData()`, `packages/platform/src/bind-data.ts`, landed in #210)
+What ships is the **mechanism** (`bindData()`, `packages/dom/src/bind-data.ts`, landed in #210)
 and these **four demonstrations**, each verifiable in the repository and each built data-first. What
 does *not* ship is any **controlled user study**: per the caveat canon (item 6), no user-study results
 exist in this family yet, and none are claimed here. The studies are concept demonstrations of the
@@ -550,23 +550,23 @@ collection.
 
 Every mechanism claim in this paper is checkable against the repository:
 
-- **The binding mechanism:** `packages/platform/src/bind-data.ts` — the `bindData()` function, the
+- **The binding mechanism:** `packages/dom/src/bind-data.ts` — the `bindData()` function, the
   `MappedBody` / `MappedRelationship` / `MappedRecord` / `RecordMapper` types, the pure `diffIds()`,
   `applyMapped()` (body tokens, metric attributes, relationship anchors), and the
   add/update/decay-on-remove render loop.
-- **Recipes over bound data:** `packages/platform/src/apply-recipe.ts` — the `annotateBodies: false`
+- **Recipes over bound data:** `packages/dom/src/apply-recipe.ts` — the `annotateBodies: false`
   path (keep caller-owned tokens while binding the recipe's metrics), supplied-metric handling in the
   compute/state phases, the absent-metric clear, the reduced-motion static surface, and the
   resolved/unresolved relationship inspection.
-- **Metric provenance:** `packages/platform/src/metrics.ts` — `METRIC_KINDS`, the SUPPLIED-ONLY
+- **Metric provenance:** `packages/dom/src/metrics.ts` — `METRIC_KINDS`, the SUPPLIED-ONLY
   `confidence` lane, the `risk` placeholder, and the "supplied values win" rule.
-- **Relationship discovery and unresolved targets:** `packages/platform/src/relationships.ts` —
+- **Relationship discovery and unresolved targets:** `packages/dom/src/relationships.ts` —
   `scanRelationships()` (resolved vs unresolved), `UnresolvedRelationship`, and the
   `RelationshipRegistry`'s tracking of declared-but-unresolved edges.
 - **The four data-bound study pages:** `apps/site/src/pages/docs/studies/evidence-field.astro`,
   `search-field.astro`, `review-field.astro`, `system-weather.astro`, plus the shared
   `apps/site/src/lib/study.ts` (`mountBindStudy`).
-- **Package export:** `packages/platform/src/index.ts` re-exports `bind-data.ts`.
+- **Package export:** `packages/dom/src/index.ts` re-exports `bind-data.ts`.
 - **Canonical corroboration:** `docs/canonical/interaction-and-relationship-model.md` §15
   (`DataAgent` property→field mapping), §21 (Search), §26 (AI use cases).
 

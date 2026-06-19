@@ -320,7 +320,7 @@ fatal
 
 ## 15. Platform Tests
 
-`@fundamental-engine/platform` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
+`@fundamental-engine/dom` binds the renderer-agnostic core to the DOM. As of the platform-runtime phase
 (Phase D) it is the default runtime for `<field-root>`: the platform owns DOM participation
 (measurement, feedback writes, shadow registration, relationships) while the legacy `core/field.ts`
 still simulates and renders the canvas. `createFieldPlatform(root)` wires the six registries onto the

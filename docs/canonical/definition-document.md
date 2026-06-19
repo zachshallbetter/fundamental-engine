@@ -21,7 +21,7 @@
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 
-`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/platform` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
 
 Core principle:
 
@@ -95,9 +95,9 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/platform` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/dom` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
-The package set: `Fundamental`, `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
+The package set: `Fundamental`, `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`, plus `compat-*` alias packages for the prior names. The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
 
 ### Platform layer
 

@@ -7,7 +7,7 @@ import ApiStamp from '../../../components/ApiStamp.astro';
 
 // lowest-level: @fundamental-engine/core is renderer-agnostic, so createField requires an explicit host.
 const sig = `import { createField } from '@fundamental-engine/core';
-import { browserHost } from '@fundamental-engine/platform';
+import { browserHost } from '@fundamental-engine/dom';
 
 const field = createField(canvas, { host: browserHost(), ...options });   // → FieldHandle
 
@@ -56,9 +56,9 @@ createField(canvas, { mass: true });`;
       <code>createField</code> takes a <code>host</code>. In the browser, use <code>createField</code>
       from <a href="/docs/guides/typescript"><code>@fundamental-engine/vanilla</code></a>
       <ApiStamp name="createField" pkg="@fundamental-engine/vanilla" /> (it wires
-      <code>browserHost()</code> <ApiStamp name="browserHost" pkg="@fundamental-engine/platform" /> for you)
+      <code>browserHost()</code> <ApiStamp name="browserHost" pkg="@fundamental-engine/dom" /> for you)
       or pass <code>host: browserHost()</code> from
-      <a href="/docs/platform"><code>@fundamental-engine/platform</code></a>. The snippets below omit it for brevity.
+      <a href="/docs/platform"><code>@fundamental-engine/dom</code></a>. The snippets below omit it for brevity.
     </div>
   </section>
 

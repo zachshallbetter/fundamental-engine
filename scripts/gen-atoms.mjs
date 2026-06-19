@@ -74,7 +74,7 @@ const atoms = [
   // the published packages.
   ...[
     ["@fundamental-engine/core", "the renderer-agnostic engine"],
-    ["@fundamental-engine/platform", "binds the engine to the DOM"],
+    ["@fundamental-engine/dom", "binds the engine to the DOM"],
     ["@fundamental-engine/elements", "the <field-root> / <field-cell> elements"],
     ["@fundamental-engine/react", "the React adapter"],
     ["@fundamental-engine/vanilla", "the framework-free door"],

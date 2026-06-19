@@ -1,0 +1,59 @@
+{
+  "name": "@fundamental-engine/dom",
+  "version": "0.7.0",
+  "description": "The platform-adjacent layer for Fundamental — native-first registries for measurement, semantic state, feedback, relationships, visual-semantic bindings, and overlays. The browser primitives Fundamental wishes existed, built on the ones it has.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
+  "homepage": "https://fundamental-engine.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachshallbetter/fundamental-engine.git",
+    "directory": "packages/dom"
+  },
+  "bugs": {
+    "url": "https://github.com/zachshallbetter/fundamental-engine/issues"
+  },
+  "keywords": [
+    "Fundamental",
+    "dom",
+    "measurement",
+    "relationships",
+    "state",
+    "feedback",
+    "overlays",
+    "web"
+  ],
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@fundamental-engine/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

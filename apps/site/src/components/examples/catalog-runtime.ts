@@ -13,7 +13,7 @@
 //     values, silently. Any failure keeps the snapshot.
 // The scoped field runs render-less (applyRecipe renderless) — bodies compute (metrics flow) but nothing is drawn.
 import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, withFlip } from "@fundamental-engine/platform";
+import { applyRecipe, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { fmtInt } from "../../lib/fmt";
 import { wireLiveChip, politeLoop } from "../../lib/live-data";

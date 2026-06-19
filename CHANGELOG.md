@@ -7,6 +7,22 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-06-17
+
+### Breaking
+
+- **`@fundamental-engine/platform` → `@fundamental-engine/dom`.** The package is the DOM-binding layer
+  (`browserHost`, the six registries, the frame scheduler, `lintPlatform`, `bindData`) — `dom` is the
+  honest name. `packages/platform` moved to `packages/dom`; all internal references updated.
+  **Migration:** change `@fundamental-engine/platform` → `@fundamental-engine/dom` in your imports.
+  `@fundamental-engine/platform` continues to publish as a thin **deprecated alias** that re-exports
+  `dom` (with a console deprecation notice), so existing imports keep working for now — but it will be
+  removed in a future release. Pin to `~0.7` and migrate when convenient.
+- **Umbrella packages retired.** `@fundamental-engine/kit` and `fundamental-engine` are no longer
+  published. Install the specific `@fundamental-engine/*` package(s) you need (`core` is the engine;
+  `dom` / `elements` / `react` / `vanilla` / `three` are the surfaces). They added an indirection
+  without earning it, and the unpublish/republish churn around them caused real incidents.
+
 ### Fixed
 
 - **Force-availability accuracy (docs/comments).** Corrected the misleading `// … opt-in` comments on

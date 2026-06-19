@@ -81,7 +81,7 @@ to let the two communicate through exactly one injected interface:
 
 - A renderer-agnostic **core** (`Fundamental`) computes field, force, particle, metric,
   diagnostic, and conformance logic against plain data. It imports no DOM globals.
-- A browser **platform** (`@fundamental-engine/platform`) owns DOM participation: measurement, state, feedback,
+- A browser **platform** (`@fundamental-engine/dom`) owns DOM participation: measurement, state, feedback,
   relationships, visual bindings, overlays, scheduling, and linting.
 - A single **host boundary** — the `FieldHost` interface — is the only path by which the core reaches
   the environment (viewport, scroll, rAF, reduced-motion, visibility, scan root, events, a canvas
@@ -175,7 +175,7 @@ package hierarchy is given in `docs/canonical/platform-architecture.md`):
 ```
 Fundamental      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
                     Computes field behavior against plain data. Imports no DOM globals.
-@fundamental-engine/platform  DOM participation: measurement, state, feedback, relationships, visual bindings,
+@fundamental-engine/dom  DOM participation: measurement, state, feedback, relationships, visual bindings,
                     overlays, scheduling, linting — plus the browser host adapter.
 @fundamental-engine/elements  <field-root> / <field-cell> custom elements + the [data-body] authoring contract.
 @fundamental-engine/react     <FieldField> component + useFieldField hook.
@@ -225,7 +225,7 @@ The engine's entry point, `createField(canvas, opts)`, makes the dependency mand
 ### 3.3 `browserHost()`: one implementation among possible many
 
 The platform supplies the browser implementation, `browserHost()`
-(`packages/platform/src/browser-host.ts`). It is the single place `window`, `document`,
+(`packages/dom/src/browser-host.ts`). It is the single place `window`, `document`,
 `requestAnimationFrame`, and `matchMedia` are wired to the engine's needs:
 
 ```ts
@@ -321,7 +321,7 @@ flagship gives the overview (§5); here we go through the mechanism and the guar
 ### 4.1 Six ordered phases
 
 The platform runs one shared loop whose phases are fixed and ordered
-(`packages/platform/src/schedule.ts`):
+(`packages/dom/src/schedule.ts`):
 
 ```
 discover → read → compute → state → write → render
@@ -369,7 +369,7 @@ field rides the browser's layout instead of fighting it.
 ### 4.3 Six single-concern registries
 
 Each registry owns exactly one kind of DOM participation and one phase
-(`packages/platform/src/{measurement,state,feedback,relationships,visual-bindings,overlays}.ts`):
+(`packages/dom/src/{measurement,state,feedback,relationships,visual-bindings,overlays}.ts`):
 
 | Registry | Concern | Phase | Key discipline |
 |---|---|---|---|
@@ -432,7 +432,7 @@ number hardcoded to look perfect.
 A field layer fails *quietly* — a relation points at a missing id, a decorative visual duplicates text
 a screen reader already reads, an element is styled from state it was never registered for. None of
 these are type errors; all are data pathologies. `lintPlatform(platform)`
-(`packages/platform/src/lint.ts`) aggregates pure, read-only guardrail rules that surface them:
+(`packages/dom/src/lint.ts`) aggregates pure, read-only guardrail rules that surface them:
 
 ```
 relation-target-missing      a [data-field-relation] points at a missing/unresolvable body
@@ -466,7 +466,7 @@ portable, auditable behavior format.
 
 ### 5.1 `applyRecipe`: a recipe compiled onto the platform
 
-`applyRecipe(root, recipe, options)` (`packages/platform/src/apply-recipe.ts`) is the DOM counterpart
+`applyRecipe(root, recipe, options)` (`packages/dom/src/apply-recipe.ts`) is the DOM counterpart
 to the core's `compileRecipe`. It turns a `FieldRecipe` record into a running field program on a
 scoped `createFieldPlatform(root)` — the registry/feedback layer, *not* a particle canvas — so it runs
 on ordinary content the way the Reading Field studies do. The sequence is:
@@ -551,7 +551,7 @@ because the thing being proven is the renderer-agnostic core.
 ### 5.4 Supplied-vs-derived discipline: confidence is never fabricated
 
 A portable, auditable behavior format is worthless if the metrics it computes invent evidence. The
-platform metric library (`packages/platform/src/metrics.ts`) draws a hard line between metrics it may
+platform metric library (`packages/dom/src/metrics.ts`) draws a hard line between metrics it may
 *compute* and metrics it may only *receive*:
 
 - **Computed** generically from observation: `attention`, `memory`, `recency` (proximity +
@@ -727,24 +727,24 @@ paradigm itself.
 Every architectural claim in this paper is checkable against the repository. The load-bearing anchors:
 
 - **The host boundary.** The `FieldHost` interface: `packages/core/src/core/host.ts`. The browser
-  adapter: `packages/platform/src/browser-host.ts` (`browserHost()`). The mandatory-host entry point:
+  adapter: `packages/dom/src/browser-host.ts` (`browserHost()`). The mandatory-host entry point:
   `packages/core/src/core/field.ts` (`createField` throws without `opts.host`).
 - **The proof.** The empty-allowlist boundary test: `packages/core/src/core/dom-boundary.test.ts`
   (`const ALLOW = new Set<string>()`). The legacy element write-back path it documents:
   `packages/core/src/core/field.ts` (the `--field-density` / `transform` / `data-*` writes and the
   `feedbackSink` seam).
-- **The scheduler and registries.** `packages/platform/src/schedule.ts` (`FrameScheduler`, `PHASES`,
+- **The scheduler and registries.** `packages/dom/src/schedule.ts` (`FrameScheduler`, `PHASES`,
   `READ_PHASES`, `readGuard`, `assertPhase`), `platform.ts` (`createFieldPlatform`), and the six
   registries `measurement.ts`, `state.ts`, `feedback.ts`, `relationships.ts` (with `scanRelationships`
   and the resolved/unresolved split), `visual-bindings.ts`, `overlays.ts`.
-- **The self-audit.** `packages/platform/src/lint.ts` (`lintPlatform` and its seven pure rules).
-- **The recipe runtime and conformance.** `packages/platform/src/apply-recipe.ts` (`applyRecipe`),
+- **The self-audit.** `packages/dom/src/lint.ts` (`lintPlatform` and its seven pure rules).
+- **The recipe runtime and conformance.** `packages/dom/src/apply-recipe.ts` (`applyRecipe`),
   `packages/core/src/recipes/schema.ts` (`validateRecipe`, the `OTHER_LANE` cross-lane guard),
   `packages/core/src/recipes/catalog.ts` (the 64 recipes as a conformance fixture),
   `packages/core/src/contracts/passport.ts` (`PASSPORTS`, `validatePassports`),
   `packages/core/src/contracts/passport.test.ts` (the cross-check test), and
   `packages/core/src/conformance/run.ts` (the headless physics harness).
-- **The metric discipline.** `packages/platform/src/metrics.ts` (computed vs supplied-only;
+- **The metric discipline.** `packages/dom/src/metrics.ts` (computed vs supplied-only;
   `confidence` optional; the removed `confidence = resolvedRatio` default).
 - **The merged fixes.** Confidence supplied-only: #220. Real relationship resolution: #222. Memory
   reclassified as a semantic metric: #223. The renderer-agnostic engine via injected `FieldHost`:

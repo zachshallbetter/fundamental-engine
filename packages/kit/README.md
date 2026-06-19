@@ -15,7 +15,7 @@ That brings in all five:
 | Package | Use it for |
 |---|---|
 | [`@fundamental-engine/core`](https://www.npmjs.com/package/@fundamental-engine/core) | the renderer-agnostic engine (you own the canvas/host) |
-| [`@fundamental-engine/platform`](https://www.npmjs.com/package/@fundamental-engine/platform) | the DOM host, registries, and frame scheduler |
+| [`@fundamental-engine/dom`](https://www.npmjs.com/package/@fundamental-engine/dom) | the DOM host, registries, and frame scheduler |
 | [`@fundamental-engine/elements`](https://www.npmjs.com/package/@fundamental-engine/elements) | the `<field-root>` / `<field-cell>` web components (any stack or plain HTML) |
 | [`@fundamental-engine/react`](https://www.npmjs.com/package/@fundamental-engine/react) | the `<FieldField>` component + `useFieldField()` hook (React is a peer dependency) |
 | [`@fundamental-engine/vanilla`](https://www.npmjs.com/package/@fundamental-engine/vanilla) | the framework-free `FieldField` class + `mountField()` |
@@ -36,7 +36,7 @@ import { FieldField } from '@fundamental-engine/vanilla';
 
 // own the canvas yourself
 import { createField } from '@fundamental-engine/core';
-import { browserHost } from '@fundamental-engine/platform';
+import { browserHost } from '@fundamental-engine/dom';
 ```
 
 Prefer installing only the packages you use? Skip the kit and `npm i @fundamental-engine/core` (and whichever

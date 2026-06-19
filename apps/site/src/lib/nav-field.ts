@@ -3,7 +3,7 @@
 // "seen / where have I been" memory) and route normalization. `applyNavField` is a thin adapter that
 // feeds the visit log to `bindFieldNav` as a `visited` predicate, so every site runtime keeps its
 // existing call shape.
-import { bindFieldNav, type FieldNavHandle } from "@fundamental-engine/platform";
+import { bindFieldNav, type FieldNavHandle } from "@fundamental-engine/dom";
 
 export type NavFieldHandle = FieldNavHandle;
 

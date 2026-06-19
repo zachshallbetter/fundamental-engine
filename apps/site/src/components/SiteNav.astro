@@ -245,7 +245,7 @@ const dest = [
     try {
       const [{ recipeById }, { applyRecipe }] = await Promise.all([
         import('@fundamental-engine/core'),
-        import('@fundamental-engine/platform'),
+        import('@fundamental-engine/dom'),
       ]);
       if (mine !== navGen) return; // a newer start / a teardown superseded this async boot
       const base = recipeById('wayfinding-field');

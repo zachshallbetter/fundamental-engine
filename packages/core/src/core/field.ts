@@ -121,12 +121,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   registerNaturalForces(reg); // 8 natural primitives: gravity, charge, magnetism, thermal, … (§20.10)
   registerExtendedForces(reg); // 19 designed extended forces: lens, crystallize, link, morph, … (§20.3)
   // the environment seam: all DOM access goes through this injected host — core imports zero DOM.
-  // In the browser, pass `browserHost()` from @fundamental-engine/platform (or use createBrowserField); the
+  // In the browser, pass `browserHost()` from @fundamental-engine/dom (or use createBrowserField); the
   // @fundamental-engine/{elements,react,vanilla} entry points wire it for you.
   if (!opts.host) {
     throw new Error(
       'Fundamental: createField requires opts.host. Use @fundamental-engine/vanilla (createField/mountField) or ' +
-        '@fundamental-engine/elements / @fundamental-engine/react, or pass browserHost() from @fundamental-engine/platform.',
+        '@fundamental-engine/elements / @fundamental-engine/react, or pass browserHost() from @fundamental-engine/dom.',
     );
   }
   const host: FieldHost = opts.host;

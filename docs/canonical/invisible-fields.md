@@ -43,7 +43,7 @@ Two shipped mechanisms produce it:
   hides the element with CSS (`display: none`) gets a signals-only engine for free.
 - **Recipe, render-less** — `applyRecipe(root, { ...recipe, render: [] }, { bodies })` runs the
   platform's metric pipeline over explicit bodies with no engine canvas at all
-  (`packages/platform/src/apply-recipe.ts`).
+  (`packages/dom/src/apply-recipe.ts`).
 
 Formalizing the first mechanism as a named engine mode is filed as
 [#297](https://github.com/zachshallbetter/fundamental-engine/issues/297).
@@ -215,7 +215,7 @@ chrome):
 
 **What it earned the platform.** The navigation-chrome idiom — run a recipe `render: []` over the
 `<a href>` links, pin the current, mark the visited, return a teardown — lifted out of the site into
-**`bindFieldNav`** (`@fundamental-engine/platform`), the same way the example family earned FLIP and
+**`bindFieldNav`** (`@fundamental-engine/dom`), the same way the example family earned FLIP and
 `allocateAttention` above.
 
 **The honesty it forced.** On a small nav (a two-link pager, a breadcrumb) "signals-only" is mostly

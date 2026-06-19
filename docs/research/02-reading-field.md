@@ -755,7 +755,7 @@ Every model claim in this paper is checkable against the repository as of the ve
   memory map, thresholded `field:lit`/`field:dim` with hysteresis, reduced-motion handling, and the
   `window.__readingField` verification surface.
 - **The platform registries (measurement, state, feedback, relationships) and the six-phase scheduler** the demo exercises:
-  `packages/platform/src/schedule.ts`, `platform.ts`, `measurement.ts`, `state.ts`, `feedback.ts`,
+  `packages/dom/src/schedule.ts`, `platform.ts`, `measurement.ts`, `state.ts`, `feedback.ts`,
   `relationships.ts`, `overlays.ts`, `lint.ts` (the `relation-target-missing` rule). The six-phase
   scheduler and six registries are documented in Paper 1 §5.
 - **The renderer-agnostic core** that computes the field behavior, including the memory metric and the

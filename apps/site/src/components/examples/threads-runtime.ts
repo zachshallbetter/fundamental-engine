@@ -20,7 +20,7 @@
 //     scoped field is destroyed.
 // The scoped field runs with render: [] — bodies compute (metrics flow) but nothing is drawn.
 import { recipeById } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/platform";
+import { applyRecipe } from "@fundamental-engine/dom";
 import { pageRuntime } from "../../lib/page-runtime.ts";
 import { wireSegments, wireFieldToggle } from "../../lib/controls.ts";
 

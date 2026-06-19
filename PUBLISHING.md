@@ -12,7 +12,7 @@ mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING
 | npm name | role |
 |---|---|
 | `@fundamental-engine/core` | the engine (no workspace deps) |
-| `@fundamental-engine/platform` | depends on core |
+| `@fundamental-engine/dom` | depends on core |
 | `@fundamental-engine/vanilla` | depends on core + platform |
 | `@fundamental-engine/react` | depends on core + platform |
 | `@fundamental-engine/elements` | depends on core + platform + vanilla |

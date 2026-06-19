@@ -57,7 +57,7 @@ const env = `interface Env {
   spark(x, y, power, color?): void;               // micro-reaction
 }`;
 
-const platform = `// @fundamental-engine/platform — DOM participation (createFieldPlatform(root))
+const platform = `// @fundamental-engine/dom — DOM participation (createFieldPlatform(root))
 // Phase = the SCHEDULER phase (a runtime loop step) — not a particle or transition phase.
 type Phase = 'discover' | 'read' | 'compute' | 'state' | 'write' | 'render';
 
@@ -118,7 +118,7 @@ interface FieldPlatform {
   <section class="docs-sec">
     <h2>Platform types</h2>
     <p>
-      The core types above are renderer-agnostic. <code>@fundamental-engine/platform</code> adds the DOM
+      The core types above are renderer-agnostic. <code>@fundamental-engine/dom</code> adds the DOM
       participation layer: <code>createFieldPlatform(root)</code> returns a <code>FieldPlatform</code>
       binding the six registries to the <code>FrameScheduler</code>. See
       <a href="/docs/api">the platform overview</a>.

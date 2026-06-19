@@ -21,9 +21,16 @@ of the `0.x` line. The freeze is mechanically enforced — `pnpm check:api` fail
 symbol is removed, renamed, moved between packages, or changes kind.
 
 > Package npm names: core is published as **`@fundamental-engine/core`**; the rest are
-> `@fundamental-engine/platform`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The umbrella
-> **`@fundamental-engine/kit`** installs the whole suite in one dependency (`fundamental-engine` is a thin alias
-> for it); these are convenience meta-packages, not part of the frozen API surface.
+> `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`,
+> `@fundamental-engine/three`. The `@fundamental-engine/kit` / `fundamental-engine` umbrella packages were
+> **retired in 0.7.0** — install the specific package you need.
+>
+> **0.7.0 migration — `@fundamental-engine/platform` → `@fundamental-engine/dom`.** The DOM-binding
+> package was renamed (it *is* the DOM layer); the frozen symbols `browserHost`, `createFieldPlatform`,
+> `applyRecipe`, `bindData`, and the `FieldPlatform` type now live in `@fundamental-engine/dom`. This is
+> the one sanctioned cross-package move of the `0.x` line, gated by the minor bump. `@fundamental-engine/platform`
+> stays published as a **deprecated alias** that re-exports `dom`, so existing imports keep working;
+> migrate to `dom` and the alias will be removed in a later release.
 
 ## The stable surface (`0.x`)
 
@@ -33,11 +40,11 @@ symbol is removed, renamed, moved between packages, or changes kind.
 | --- | --- | --- | --- |
 | `createField` | `@fundamental-engine/core` | value | The renderer-agnostic primitive. **Requires `opts.host`** and throws without it. |
 | `createField` | `@fundamental-engine/vanilla` | value | The host-bundled convenience door (= `createBrowserField`); auto-supplies `browserHost()`. |
-| `browserHost` | `@fundamental-engine/platform` | value | The canonical DOM `FieldHost` for `createField`. |
+| `browserHost` | `@fundamental-engine/dom` | value | The canonical DOM `FieldHost` for `createField`. |
 | `browserHost` | `@fundamental-engine/vanilla` | value | Re-export of the platform host for the no-framework path. |
-| `createFieldPlatform` | `@fundamental-engine/platform` | value | Wires the six native-first registries on a root. |
-| `applyRecipe` | `@fundamental-engine/platform` | value | Applies a recipe to a live platform. |
-| `bindData` | `@fundamental-engine/platform` | value | Binds records → bodies; data drives the field. |
+| `createFieldPlatform` | `@fundamental-engine/dom` | value | Wires the six native-first registries on a root. |
+| `applyRecipe` | `@fundamental-engine/dom` | value | Applies a recipe to a live platform. |
+| `bindData` | `@fundamental-engine/dom` | value | Binds records → bodies; data drives the field. |
 | `compileRecipe` | `@fundamental-engine/core` | value | Pure `FieldRecipe` → compiled plan (no DOM). |
 
 `createField` has **two doors on purpose**: the core primitive is renderer-agnostic and host-required;
@@ -50,7 +57,7 @@ Both are frozen; the vanilla door must keep auto-supplying `browserHost()`.
 | --- | --- | --- |
 | `FieldRecipe` | `@fundamental-engine/core` | The recipe schema. |
 | `FieldHost` | `@fundamental-engine/core` | The renderer-agnostic host contract `createField` requires; `browserHost` implements it. |
-| `FieldPlatform` | `@fundamental-engine/platform` | The surface `createFieldPlatform` returns. |
+| `FieldPlatform` | `@fundamental-engine/dom` | The surface `createFieldPlatform` returns. |
 
 ### Elements and the body contract
 

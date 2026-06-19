@@ -118,7 +118,7 @@ The current system is organized into packages and layers.
 
 ```txt
 Fundamental   host-driven, renderer-agnostic field engine
-@fundamental-engine/platform   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/dom   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
 @fundamental-engine/elements   native HTML and web component authoring
 @fundamental-engine/react   React adapter over the same contracts
 site/docs/lab   proof surfaces, recipes, diagnostics, demos, and executable documentation
@@ -286,7 +286,7 @@ Browser setup should look like this:
 
 ```ts
 import { createField } from "Fundamental";
-import { browserHost } from "@fundamental-engine/platform";
+import { browserHost } from "@fundamental-engine/dom";
 
 const field = createField(canvas, {
   host: browserHost()
@@ -1396,7 +1396,7 @@ Core plus platform:
 
 ```ts
 import { createField } from "Fundamental";
-import { browserHost } from "@fundamental-engine/platform";
+import { browserHost } from "@fundamental-engine/dom";
 
 const field = createField(canvas, {
   host: browserHost()

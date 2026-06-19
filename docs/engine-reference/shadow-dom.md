@@ -16,7 +16,7 @@
 > **proposed**. Summary in [`field-concept.md`](../planning-archive/field-concept.md) §24–26.
 
 > **Phase D note (platform runtime).** Shadow-DOM host registration is now handled by
-> `@fundamental-engine/platform`: the platform owns DOM participation, so a registered host's `getRect`
+> `@fundamental-engine/dom`: the platform owns DOM participation, so a registered host's `getRect`
 > flows into the `MeasurementRegistry` and feedback writes are issued through the
 > `FeedbackRegistry`. The legacy `core/shadow.ts` path remains and behaves as documented below,
 > but on a default `<field-root>` the platform runtime is what binds these bodies to the field

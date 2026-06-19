@@ -138,8 +138,10 @@ jobs:
       # version is already on the registry, so re-running a tag is safe. The public
       # @fundamental-engine/* packages plus the unscoped `fundamental-engine` umbrella are
       # targeted (apps are private).
+      # The retired umbrellas (@fundamental-engine/kit + fundamental-engine) are `private: true`
+      # as of 0.7.0, so pnpm publish skips them — no filter exclusion needed.
       - name: Publish with provenance
-        run: pnpm --filter "@fundamental-engine/*" --filter "fundamental-engine" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: pnpm --filter "@fundamental-engine/*" publish --access public --no-git-checks --provenance ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

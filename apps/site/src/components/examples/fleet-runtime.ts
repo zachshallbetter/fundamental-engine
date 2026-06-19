@@ -14,7 +14,7 @@
 //     retires itself; the chip falls back to the snapshot date. Never throws.
 // The scoped field runs render-less (applyRecipe renderless) — particles compute (metrics flow) but are never drawn.
 import { logNormalize, recipeById, weightToStrength } from "@fundamental-engine/core";
-import { applyRecipe, withFlip } from "@fundamental-engine/platform";
+import { applyRecipe, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { pageRuntime } from "../../lib/page-runtime";
 import { atReadingPace } from "../../lib/reading-pace";

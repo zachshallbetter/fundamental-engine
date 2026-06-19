@@ -429,7 +429,7 @@
               "type": {
                 "text": "FieldPlatform | undefined"
               },
-              "description": "The live `@fundamental-engine/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "description": "The live `@fundamental-engine/dom` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
               "readonly": true
             },
             {
@@ -1448,7 +1448,7 @@
               "type": {
                 "text": "FieldPlatform | undefined"
               },
-              "description": "The live `@fundamental-engine/platform` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
+              "description": "The live `@fundamental-engine/dom` instance backing this field (Phase D default), or `undefined` on\nthe legacy path. Read-only introspection for tools like the Inspector — the registries here are\nthe real running state (measurements, state, feedback bindings, relationships, overlays, lint).\nRead with `measure.last()` etc.; don't call `measure.measure()` off the read phase.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",

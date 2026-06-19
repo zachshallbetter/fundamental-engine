@@ -45,7 +45,7 @@ export function Page() {
   );
 }`;
 
-const platformExample = `import { createFieldPlatform } from '@fundamental-engine/platform';
+const platformExample = `import { createFieldPlatform } from '@fundamental-engine/dom';
 
 // the substrate beneath every surface: measure → state → write, on one scheduler
 const platform = createFieldPlatform(document.querySelector('article'));
@@ -134,7 +134,7 @@ const CONTRACT = [
     The surfaces above author <em>bodies</em>. When you need the page itself to participate — to
     measure elements, hold state, and write feedback on a disciplined loop — reach for
     <code>createFieldPlatform()</code> <ApiStamp name="createFieldPlatform" /> from
-    <code>@fundamental-engine/platform</code> directly. It is framework-agnostic; the same code runs under any
+    <code>@fundamental-engine/dom</code> directly. It is framework-agnostic; the same code runs under any
     surface.
   </p>
   <CodeTabs

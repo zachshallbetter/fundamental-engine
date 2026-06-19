@@ -1,7 +1,7 @@
 /**
  * Recipe compiler (authoring-and-recipes §5). Turns a portable `FieldRecipe` from validated catalog
  * data into a runtime plan — the bridge from "recipe as record" to "recipe as program". Pure +
- * node-testable; the DOM-applying counterpart is `applyRecipe` in `@fundamental-engine/platform`.
+ * node-testable; the DOM-applying counterpart is `applyRecipe` in `@fundamental-engine/dom`.
  *
  * The lane split is preserved on purpose:
  *   concepts describe · tokens execute · metrics measure · diagnostics explain · conditions activate.

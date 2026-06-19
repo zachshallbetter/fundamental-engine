@@ -5,7 +5,7 @@ How versions are cut and published. The mechanical detail lives in
 
 ## Versioning policy
 
-The eight published packages — `@fundamental-engine/core`, `@fundamental-engine/platform`, `@fundamental-engine/elements`,
+The eight published packages — `@fundamental-engine/core`, `@fundamental-engine/dom`, `@fundamental-engine/elements`,
 `@fundamental-engine/react`, `@fundamental-engine/vanilla`, `@fundamental-engine/three`, and the meta-packages `@fundamental-engine/kit` /
 `fundamental-engine` — are versioned **together**. (`@fundamental-engine/three` declares `three` as a peer
 dependency and is deliberately *not* part of `@fundamental-engine/kit`, so the kit never forces a Three.js

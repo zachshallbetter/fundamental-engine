@@ -18,7 +18,7 @@ export type { MountOptions } from './mount.ts';
 // The engine entry, wired to the browser host (core is renderer-agnostic and requires a host).
 // `createBrowserField` = `createField` + `browserHost()`; re-exported here as `createField` so the
 // framework-free door stays a one-liner. `browserHost` is re-exported for custom wiring.
-export { createBrowserField as createField, browserHost } from '@fundamental-engine/platform';
+export { createBrowserField as createField, browserHost } from '@fundamental-engine/dom';
 export type {
   FieldHandle,
   FieldOptions,

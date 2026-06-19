@@ -15,7 +15,7 @@ whole system.
 Mark any element as a body with one attribute and it starts to pull, push, swirl, or hold the matter
 around it. Where the field gathers, it writes that density back into the element as weight, glow, and
 motion. A renderer-agnostic core (`@fundamental-engine/core`) computes the field; a platform layer
-(`@fundamental-engine/platform`) binds it to the DOM through measurement, state, feedback, relationships, visual
+(`@fundamental-engine/dom`) binds it to the DOM through measurement, state, feedback, relationships, visual
 bindings, overlays, and a frame scheduler. The interface lives inside one medium instead of sitting on
 top of an effect.
 
@@ -144,7 +144,7 @@ A **recipe** is a portable field program: it names an intent and composes existi
 
 ```ts
 import { recipeById, compileRecipe } from '@fundamental-engine/core';            // pure: recipe → plan (no DOM)
-import { applyRecipe, bindData } from '@fundamental-engine/platform';      // DOM: run it / bind data to it
+import { applyRecipe, bindData } from '@fundamental-engine/dom';      // DOM: run it / bind data to it
 
 const applied = applyRecipe(root, recipeById('reading-field')!); // run a recipe over a region
 applied.inspect();                                               // { frame, measurements, relationships, lint }
@@ -171,21 +171,24 @@ Browse and run all 64 at the [recipe gallery](https://fundamental-engine.com/doc
 | Package | What it is |
 |---|---|
 | [`@fundamental-engine/core`](packages/core) | the renderer-agnostic engine: catalog, contracts, `FieldStore`, integrator, the force set, recipes (`compileRecipe`), diagnostics, conformance |
-| [`@fundamental-engine/platform`](packages/platform) | DOM participation: `browserHost()`, the FrameScheduler, the six registries (measurement, state, feedback, relationships, visual bindings, overlays), `applyRecipe()` / `bindData()`, and `lintPlatform()` |
+| [`@fundamental-engine/dom`](packages/dom) | DOM participation: `browserHost()`, the FrameScheduler, the six registries (measurement, state, feedback, relationships, visual bindings, overlays), `applyRecipe()` / `bindData()`, and `lintPlatform()` |
+| [`@fundamental-engine/platform`](packages/platform) | **deprecated alias** of `@fundamental-engine/dom` — re-exports it (with a deprecation notice) so existing imports keep working; migrate to `dom` |
 | [`@fundamental-engine/vanilla`](packages/vanilla) | the framework-free door: the `FieldField` class, `mountField()`, and a host-bundled `createField()`, no custom element |
-| [`@fundamental-engine/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<forces-field>` / `<forces-cell>` aliases too) |
+| [`@fundamental-engine/elements`](packages/elements) | the `<field-root>` and `<field-cell>` custom elements (`<field-root>` is also registered as `<field-field>`) |
 | [`@fundamental-engine/react`](packages/react) | the `<FieldField>` component and the `useFieldField()` hook |
 | [`@fundamental-engine/three`](packages/three) | bind the engine to a Three.js scene: `createFieldLayer()` (the particle bridge → `THREE.Points`), `PlaneProjection` / `VolumeProjection`, `threeHost()`, `threeBackend()`. `three` is a peer dependency |
 
-Want everything in one install? **`npm i fundamental-engine`** — the bare umbrella package pulls in the whole suite (via [`@fundamental-engine/kit`](packages/kit)); then import from the specific package you need.
+Install the specific package you need — `@fundamental-engine/vanilla` (the recommended door),
+`@fundamental-engine/react`, `@fundamental-engine/elements`, or `@fundamental-engine/core`. (The
+`@fundamental-engine/kit` / `fundamental-engine` umbrella packages were **retired in 0.7.0**.)
 
-The dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
-`vanilla → platform → core`. `@fundamental-engine/core` imports zero DOM (renderer-agnostic); the browser host
-adapter lives in `@fundamental-engine/platform`. See [`docs/canonical/platform-architecture.md`](docs/canonical/platform-architecture.md).
+The dependency direction is strict and uniform: `elements → dom → core`, `react → dom → core`,
+`vanilla → dom → core`. `@fundamental-engine/core` imports zero DOM (renderer-agnostic); the browser host
+adapter lives in `@fundamental-engine/dom`. See [`docs/canonical/platform-architecture.md`](docs/canonical/platform-architecture.md).
 
 ## Availability
 
-The packages are published to npm under the `@Fundamental` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. `@fundamental-engine/kit` is an optional bundle that installs the whole suite at once. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
+The packages are published to npm under the `@Fundamental` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
 
 ## Documentation
 
@@ -220,7 +223,7 @@ The build is `tsc`. There is no bundler; the library ships unbundled ESM. The si
 - **Nothing is created from nothing.** The default field conserves particle count. Sources and sinks break conservation only when they are explicitly budgeted.
 - **Designed and natural, side by side.** Canonical forces stay bounded and legible for interface work. Natural primitives carry real laws for cosmology and material systems. A composite picks the register it needs.
 - **Native-platform-first, dependency-light.** The core recreates what it needs on the platform and ships with zero runtime dependencies; the only development dependency is TypeScript. Framework integrations are adapters, not requirements. Any new dependency has to justify itself as a real exception.
-- **Core stays renderer-agnostic.** `@fundamental-engine/core` (core) computes field behavior against plain data and touches no DOM globals (guarded by a boundary test); `@fundamental-engine/platform` owns DOM participation. Canvas is one render surface, not the whole system.
+- **Core stays renderer-agnostic.** `@fundamental-engine/core` (core) computes field behavior against plain data and touches no DOM globals (guarded by a boundary test); `@fundamental-engine/dom` owns DOM participation. Canvas is one render surface, not the whole system.
 - **Lanes stay separate.** Concepts describe, tokens execute, metrics measure, diagnostics explain, conditions activate, recipes compose. A word lives in exactly one lane, and recipes never invent engine behavior.
 - **Framework-agnostic.** The custom element makes "every element is a body" a portable primitive that behaves the same in React, Svelte, Astro, Vue, or plain HTML.
 

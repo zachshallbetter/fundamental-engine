@@ -501,7 +501,7 @@ export interface FieldOptions {
   /**
    * The environment seam (frontier): the {@link FieldHost} the engine drives the DOM through. REQUIRED
    * by `createField` (core imports zero DOM). In the browser, use `browserHost()` from
-   * `@fundamental-engine/platform`, or the `@fundamental-engine/{vanilla,elements,react}` entry points that wire it for
+   * `@fundamental-engine/dom`, or the `@fundamental-engine/{vanilla,elements,react}` entry points that wire it for
    * you; inject a custom host for a headless renderer / different document / tests.
    */
   host?: FieldHost;

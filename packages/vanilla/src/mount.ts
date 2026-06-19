@@ -11,7 +11,7 @@
  */
 
 import { FIELD_CANVAS_CSS, type FieldHandle, type FieldOptions } from '@fundamental-engine/core';
-import { createBrowserField } from '@fundamental-engine/platform';
+import { createBrowserField } from '@fundamental-engine/dom';
 
 export interface MountOptions extends FieldOptions {
   /** where to append the canvas; defaults to `document.body`. */

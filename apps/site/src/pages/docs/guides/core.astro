@@ -3,10 +3,10 @@ import DocsLayout from '../../../layouts/DocsLayout.astro';
 import CodeTabs from '../../../components/CodeTabs.astro';
 
 const create = `// @fundamental-engine/core is renderer-agnostic — createField requires an explicit host.
-// In the browser, browserHost() (from @fundamental-engine/platform) is the host. Pass a custom
+// In the browser, browserHost() (from @fundamental-engine/dom) is the host. Pass a custom
 // host to drive a headless or alternative renderer.
 import { createField } from '@fundamental-engine/core';
-import { browserHost } from '@fundamental-engine/platform';
+import { browserHost } from '@fundamental-engine/dom';
 
 const canvas = document.querySelector('canvas');
 const field = createField(canvas, {
@@ -43,7 +43,7 @@ const lift: Force = {
 
 <DocsLayout
   title="Fundamental — Core engine guide"
-  description="Drive the Fundamental engine directly: createField() on a canvas you own, returning the FieldHandle. The renderer-agnostic core takes an injected host (browserHost from @fundamental-engine/platform, or use @fundamental-engine/vanilla which wires it). For a managed canvas and a typed class, see the TypeScript guide."
+  description="Drive the Fundamental engine directly: createField() on a canvas you own, returning the FieldHandle. The renderer-agnostic core takes an injected host (browserHost from @fundamental-engine/dom, or use @fundamental-engine/vanilla which wires it). For a managed canvas and a typed class, see the TypeScript guide."
 >
   <header class="docs-hero">
     <p class="kicker">Guides</p>
@@ -59,7 +59,7 @@ const lift: Force = {
     <b>Where this fits.</b> Use <code>@fundamental-engine/core</code> when you own the render surface and want
     renderer-agnostic field math. When you want DOM participation — measurement, feedback,
     relationships, visual bindings, and overlays on a frame scheduler — reach for
-    <a href="/docs/api">@fundamental-engine/platform</a>. Canvas is one render surface, not the whole system.
+    <a href="/docs/api">@fundamental-engine/dom</a>. Canvas is one render surface, not the whole system.
   </div>
 
   <section class="docs-sec">

@@ -5,7 +5,7 @@
  *
  *   1. **Simulation time** — `env.t` / `dt`, particle age: the integrator's clock.
  *   2. **Experiential time** — the platform metric pipeline's attention / memory / recency:
- *      eased integrals of interaction (`@fundamental-engine/platform` `metrics.ts`).
+ *      eased integrals of interaction (`@fundamental-engine/dom` `metrics.ts`).
  *   3. **World time** — timestamps carried by the data itself: a launch's T−0, an issue's
  *      `updatedAt`, a question's `askedAt`, a fact's last review.
  *
@@ -19,7 +19,7 @@
  * The shapes are lifted, exactly, from the shipped example family (the extraction ratchet:
  * four hand-rolls → one primitive): `imminence` from the calendar page's 1 Hz clock,
  * `retention` from the memory page's forgetting curve, `freshness` as the canonical form of
- * the backlog/inbox recency lanes. `data-field-at` (see `@fundamental-engine/platform`) feeds
+ * the backlog/inbox recency lanes. `data-field-at` (see `@fundamental-engine/dom`) feeds
  * `freshness` to ground the metric pipeline's recency lane in declared world time.
  */
 

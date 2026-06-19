@@ -16,7 +16,7 @@
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
 import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions, type OverlayInput } from '@fundamental-engine/core';
-import { createBrowserField } from '@fundamental-engine/platform';
+import { createBrowserField } from '@fundamental-engine/dom';
 
 export interface FieldFieldProps extends FieldOptions {
   className?: string;

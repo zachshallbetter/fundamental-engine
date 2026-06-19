@@ -1,7 +1,7 @@
 /**
  * DOM-boundary guard. Fundamental imports ZERO DOM globals — every source file is
  * renderer-agnostic. The engine (`core/field.ts`) routes every DOM touchpoint through an injected
- * FieldHost; the browser adapter (`browserHost`) and the download helpers live in @fundamental-engine/platform.
+ * FieldHost; the browser adapter (`browserHost`) and the download helpers live in @fundamental-engine/dom.
  * The allowlist is empty: any DOM-global call-site anywhere in core fails this test.
  *
  * This test scans every other core source file for DOM-global *call-sites* (matched as access /
@@ -17,7 +17,7 @@ import { dirname, join, relative, sep } from 'node:path';
 const SRC = join(dirname(fileURLToPath(import.meta.url)), '..'); // packages/core/src
 
 // no allowlist: core imports zero DOM globals. The browser adapter (browserHost) and the download
-// helpers now live in @fundamental-engine/platform. If a DOM call-site appears anywhere in core, this fails.
+// helpers now live in @fundamental-engine/dom. If a DOM call-site appears anywhere in core, this fails.
 const ALLOW = new Set<string>();
 
 // DOM-global call-sites — access/construction patterns that won't appear in ordinary prose.

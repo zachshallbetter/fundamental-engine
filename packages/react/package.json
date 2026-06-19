@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/react",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "description": "React adapter for Fundamental — a reciprocal DOM-physics field as a <FieldField> component + useFieldField hook.",
   "type": "module",
   "license": "MIT",
@@ -50,7 +50,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/dom": "workspace:*",
     "@fundamental-engine/core": "workspace:*"
   },
   "peerDependencies": {

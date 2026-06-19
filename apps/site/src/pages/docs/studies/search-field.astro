@@ -44,7 +44,7 @@ const LIVE = ['trust-gradient'];
 
 <script>
   import { mountBindStudy } from '../../../lib/study.ts';
-  import { bindData } from '@fundamental-engine/platform';
+  import { bindData } from '@fundamental-engine/dom';
 
   interface Result { id: string; title: string; host: string; confidence: number; recency: number; polarity: 'support' | 'neutral' | 'contradict'; }
   const results: Result[] = [

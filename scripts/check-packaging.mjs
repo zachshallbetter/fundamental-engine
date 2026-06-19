@@ -18,8 +18,10 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = [
-  // primary @fundamental-engine/* (published via CI)
-  'core', 'platform', 'vanilla', 'elements', 'react', 'kit',
+  // the published @fundamental-engine/* set (publish via CI). `dom` is the DOM-binding
+  // layer; `platform` is the deprecated alias re-exporting it. The kit / fundamental-engine
+  // umbrellas were retired (private) at 0.7.0.
+  'core', 'dom', 'platform', 'vanilla', 'elements', 'react', 'three',
 ];
 
 let failed = 0;

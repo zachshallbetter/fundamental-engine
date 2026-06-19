@@ -13,7 +13,7 @@ back. The visible particle canvas is **one render surface**, not the whole syste
 ```txt
 @fundamental-engine/core      computes renderer-agnostic field, force, particle, metric, recipe, and diagnostic
                     behavior. The engine. (The unscoped `Fundamental` name is taken by an unrelated package.)
-@fundamental-engine/platform  binds field behavior to the DOM: the browser host, measurement, state, feedback,
+@fundamental-engine/dom  binds field behavior to the DOM: the browser host, measurement, state, feedback,
                     relationships, visual bindings, overlays, recipes, data binding, lint, scheduling.
 @fundamental-engine/elements  native web components and the [data-body] HTML authoring contract.
 @fundamental-engine/react     the React adapter over the same contracts.
@@ -39,7 +39,7 @@ The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-ar
 |---|---|
 | [`definition-document.md`](canonical/definition-document.md) | Canonical concept and operating model |
 | [`system-contracts.md`](canonical/system-contracts.md) | Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform |
-| [`platform-architecture.md`](canonical/platform-architecture.md) | `@fundamental-engine/platform`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
+| [`platform-architecture.md`](canonical/platform-architecture.md) | `@fundamental-engine/dom`: the FrameScheduler, the six registries, `lintPlatform()`, the live runtime (Phase D) |
 | [`api-stability.md`](canonical/api-stability.md) | The frozen `0.x` public API surface, the experimental surface, and the compatibility rules — enforced by `pnpm check:api` |
 | [`natural-fields.md`](canonical/natural-fields.md) | The Natural Field Translation System — the four fundamental fields translated into interface behavior |
 | [`documentation-standards.md`](canonical/documentation-standards.md) | How Fundamental is described everywhere — the architecture statement, doctrine, status taxonomy, naming policy, and verify-against-code rule |

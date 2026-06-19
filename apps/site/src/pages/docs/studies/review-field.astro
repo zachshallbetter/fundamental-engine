@@ -87,7 +87,7 @@ const coherent = checks.filter((c) => c.ok).length / checks.length;
 
 <script>
   import { mountBindStudy } from '../../../lib/study.ts';
-  import { bindData } from '@fundamental-engine/platform';
+  import { bindData } from '@fundamental-engine/dom';
 
   interface File { id: string; name: string; delta: string; heat: number; tension: number; blocked?: boolean; }
   interface Reviewer { id: string; name: string; attention: number; }

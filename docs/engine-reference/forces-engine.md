@@ -21,7 +21,7 @@ Two packages do the engine work (three thin authoring surfaces — `@fundamental
   **Zero runtime dependencies** and renderer-agnostic: the `core/dom-boundary.test.ts` guard keeps an
   **empty allowlist** — no file in core may reference a DOM global. `field.ts` reaches the page only
   through the injected `FieldHost`; `export.ts` serializes a caller-supplied canvas.
-- **`@fundamental-engine/platform`** — `packages/platform/src/`. The DOM participation layer: native-first
+- **`@fundamental-engine/dom`** — `packages/dom/src/`. The DOM participation layer: native-first
   registries (measurement, state, feedback, relationship, visual-binding, overlay) sequenced by
   one `FrameScheduler`. **Strict dependency direction:** platform depends on core for contracts;
   core never depends on platform.
@@ -34,7 +34,7 @@ Section refs (§) point into [forces-system.md](forces-system.md) and the canoni
 
 `createField(canvas, opts)` (`core/field.ts`) needs a `FieldHost` (`core/host.ts`) — the seam
 that abstracts every DOM-global (viewport, scroll, rAF, reduced-motion, scan root). In the
-browser the host is `browserHost()` from `@fundamental-engine/platform` (or the `createBrowserField`
+browser the host is `browserHost()` from `@fundamental-engine/dom` (or the `createBrowserField`
 convenience). Under the platform runtime (Phase D, the default for `<field-root>`) the DOM-facing
 work is owned by the platform and sequenced by its `FrameScheduler`'s six phases:
 
@@ -181,7 +181,7 @@ Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platf
 
 ---
 
-## 3. The platform package (`@fundamental-engine/platform`)
+## 3. The platform package (`@fundamental-engine/dom`)
 
 Native-first registries; the participation surface Fundamental wishes the browser exposed. Depends
 on core, never the reverse. Full architecture: [../canonical/platform-architecture.md](../canonical/platform-architecture.md).

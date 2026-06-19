@@ -19,7 +19,7 @@ a refactor       -> executed against the pinned suite as its parity harness
 
 Concretely: the example pages' invariants became `apps/site/e2e/` (chromium + webkit +
 mobile); the homepage audit became `home.spec.ts`; the silent-feedback bug class became
-`sink-without-feedback` / `feedback-vars-unwritten` in `packages/platform/src/lint.ts`; and
+`sink-without-feedback` / `feedback-vars-unwritten` in `packages/dom/src/lint.ts`; and
 the #228 write-path migration shipped with **zero observable change** because the suite it
 was tested against was built from real bugs first. Protect this ratchet — it is worth more
 than any individual fix.

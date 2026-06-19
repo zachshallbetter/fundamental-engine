@@ -82,7 +82,7 @@ test('re-exports FieldField and useFieldField', async () => {
 
 test('createBrowserField accepts an overlayCanvas + overlay mode without throwing', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const { createBrowserField } = await import('@fundamental-engine/dom');
   const main = makeCanvas();
   const oc = makeCanvas();
   assert.doesNotThrow(() => {
@@ -97,7 +97,7 @@ test('createBrowserField accepts an overlayCanvas + overlay mode without throwin
 
 test('createBrowserField accepts an overlay stack (array of modes) without throwing', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const { createBrowserField } = await import('@fundamental-engine/dom');
   const main = makeCanvas();
   const oc = makeCanvas();
   assert.doesNotThrow(() => {
@@ -111,7 +111,7 @@ test('createBrowserField accepts an overlay stack (array of modes) without throw
 
 test('overlay:"off" with overlayCanvas does not throw', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const { createBrowserField } = await import('@fundamental-engine/dom');
   const main = makeCanvas();
   const oc = makeCanvas();
   assert.doesNotThrow(() => {
@@ -125,7 +125,7 @@ test('the options <FieldField> previously dropped now construct, and the handle 
   // delegate to must accept the once-dropped options (heatmap/depth/rng/now), and the handle
   // a consumer gets via onReady / fieldRef must expose the newer read methods.
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const { createBrowserField } = await import('@fundamental-engine/dom');
   const main = makeCanvas();
   assert.doesNotThrow(() => {
     const h = createBrowserField(main, { heatmap: true, depth: 60, rng: Math.random, now: () => 0 });
@@ -138,7 +138,7 @@ test('the options <FieldField> previously dropped now construct, and the handle 
 
 test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const { createBrowserField } = await import('@fundamental-engine/dom');
   const main = makeCanvas();
   const oc = makeCanvas();
   const h = createBrowserField(main, { overlay: 'off', overlayCanvas: oc });
@@ -154,7 +154,7 @@ test('setOverlay() accepts all overlay modes without throwing (Field Surfaces)',
 
 test('setOverlay() accepts an additive stack of readings without throwing', async () => {
   const { makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const { createBrowserField } = await import('@fundamental-engine/dom');
   const main = makeCanvas();
   const oc = makeCanvas();
   const h = createBrowserField(main, { overlayCanvas: oc });
@@ -166,7 +166,7 @@ test('setOverlay() accepts an additive stack of readings without throwing', asyn
 
 test('overlay canvas is removable after field destroy (cleanup invariant)', async () => {
   const { body, makeCanvas } = installDOM();
-  const { createBrowserField } = await import('@fundamental-engine/platform');
+  const { createBrowserField } = await import('@fundamental-engine/dom');
   const main = makeCanvas();
   // simulate the component appending an overlay canvas to body before creating the field
   const oc = makeCanvas();

@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@fundamental-engine/elements": "workspace:*",
-    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/dom": "workspace:*",
     "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {

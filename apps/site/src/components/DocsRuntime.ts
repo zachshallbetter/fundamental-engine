@@ -19,7 +19,7 @@
 // Everything the field writes is felt, not loud, and ALL of it is gated behind
 // prefers-reduced-motion and the persisted sidebar toggle (main[data-field-docs="off"]).
 import { recipeById } from "@fundamental-engine/core";
-import { applyRecipe } from "@fundamental-engine/platform";
+import { applyRecipe } from "@fundamental-engine/dom";
 import { DOCS_NAV, ROUTE_FAMILIES, groupColorFor } from "../lib/docs-nav.ts";
 import { pageRuntime } from "../lib/page-runtime.ts";
 import { persisted } from "../lib/persisted.ts";

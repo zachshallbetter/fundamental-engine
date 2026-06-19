@@ -13,8 +13,8 @@
  */
 import { createField as coreCreateField, compileRecipe } from '@fundamental-engine/core';
 import type { FieldRecipe, FieldHost, FieldHandle, OverlayMode } from '@fundamental-engine/core';
-import { browserHost, createFieldPlatform, applyRecipe, bindData } from '@fundamental-engine/platform';
-import type { FieldPlatform } from '@fundamental-engine/platform';
+import { browserHost, createFieldPlatform, applyRecipe, bindData } from '@fundamental-engine/dom';
+import type { FieldPlatform } from '@fundamental-engine/dom';
 import { createField as vanillaCreateField, browserHost as vanillaBrowserHost } from '@fundamental-engine/vanilla';
 
 // Reference every frozen VALUE so its removal/rename is a compile error here.

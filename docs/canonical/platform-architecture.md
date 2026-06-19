@@ -1,5 +1,5 @@
 > **Status: canonical.**
-> This document defines the current `@fundamental-engine/platform` architecture as of the runtime-platform
+> This document defines the current `@fundamental-engine/dom` architecture as of the runtime-platform
 > unification phase (Phase D): the FrameScheduler, the six registries, `lintPlatform()`, the live
 > `<field-root>` runtime, and the platform→core boundary. For force/field math see
 > [forces-system.md](../engine-reference/forces-system.md); for the data model and contracts see
@@ -22,7 +22,7 @@ Fundamental
   core/dom-boundary.test.ts; the canvas renderer in core/field.ts and the download helper in
   export.ts are the two allowlisted, quarantined exceptions).
 
-@fundamental-engine/platform
+@fundamental-engine/dom
   DOM participation: measurement, state, feedback, relationships, visual bindings, overlays,
   scheduling, and linting. Depends on core for contracts; core never depends on it.
 
@@ -46,7 +46,7 @@ apps/site · lab · docs
 Dependency direction is strict and uniform: `elements → platform → core`, `react → platform → core`,
 `vanilla → platform → core`. `Fundamental` is renderer-agnostic and imports **zero** DOM (enforced
 by `core/dom-boundary.test.ts` with an empty allowlist); the browser environment adapter —
-`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/platform`.
+`browserHost()`, `createBrowserField()`, and the DOM download helpers — lives in `@fundamental-engine/dom`.
 `createField(canvas, opts)` requires `opts.host`; the framework entry points wire `browserHost()` for
 you.
 
@@ -175,7 +175,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
 **Frontier — done:** `core/field.ts` (the engine + canvas render loop) no longer touches any DOM
 globals. It routes every environment touchpoint (viewport, scroll, rAF, reduced-motion, visibility,
 scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM download helpers moved
-to `@fundamental-engine/platform`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
+to `@fundamental-engine/dom`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
 source file in `Fundamental` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
@@ -196,7 +196,7 @@ wires the two post-hoc. Once a handle is attached:
 
 ## The QualityGovernor
 
-`QualityGovernor` (`packages/platform/src/governor.ts`) detects sustained frame-budget overruns
+`QualityGovernor` (`packages/dom/src/governor.ts`) detects sustained frame-budget overruns
 and emits a coarse tier signal. The split is deliberate: the governor detects, the caller
 responds.
 

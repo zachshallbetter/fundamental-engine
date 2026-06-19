@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/elements",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "description": "Web-component keystone for Fundamental — the <field-root> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
@@ -53,7 +53,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@fundamental-engine/platform": "workspace:*",
+    "@fundamental-engine/dom": "workspace:*",
     "@fundamental-engine/vanilla": "workspace:*",
     "@fundamental-engine/core": "workspace:*"
   },
