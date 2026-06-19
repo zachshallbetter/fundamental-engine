@@ -64,16 +64,7 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
         author: { '@type': 'Person', name: 'Zach Shallbetter', url: 'https://zachshallbetter.com' },
       })}
     />
-    <!-- the one field switch: mirror the persisted preference to <html data-field> before paint, so
-         the field-root and every scoped platform gate on it with no flash. Default on. -->
-    <script is:inline>
-      try {
-        document.documentElement.dataset.field =
-          localStorage.getItem('fui:field') === 'off' ? 'off' : 'on';
-      } catch (e) {
-        document.documentElement.dataset.field = 'on';
-      }
-    </script>
+
     <!-- client-side navigation: no full reload, so the field below runs continuously -->
     <ClientRouter />
   </head>
@@ -91,10 +82,11 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
     <!-- waves off → the bare free-particle field: the matter itself, reacting to the page's
          bodies, rather than the carrier-wave background. density 3 → ~3× the base ~130 particles,
          so the field reads as a dense medium the bodies gather and absorb. -->
-    <!-- render="flow" → the particles AND the streamline arrows drawn together in the ONE underlay
-         canvas, so the field flow shows by default with no separate blended overlay surface (the
-         cheap path — a single composited layer); data-nav-flow keeps the nav toggle in sync. -->
-    <field-root accent="#4da3ff" density="1.5" render="flow" heatmap waves="false" data-nav-flow="on" data-nav-heatmap="on" transition:persist></field-root>
+    <!-- dots (default render) → the particles are always visible. Flow arrows are toggled via
+         setOverlay('streamlines') as an additive layer on top — never hiding particles.
+         The heatmap glow underlay starts on. data-nav-* markers keep the nav toggles in sync
+         across client-side navigation (transition:persist keeps the element alive). -->
+    <field-root accent="#4da3ff" density="1.5" heatmap waves="false" data-nav-flow="off" data-nav-heatmap="on" transition:persist></field-root>
     <script is:inline>
       // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
       // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so

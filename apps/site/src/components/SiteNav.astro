@@ -103,32 +103,17 @@ const dest = [
             </button>
           )
         }
-        {/* The one field switch — turns the whole field layer on or off, site-wide. Persisted; default on. */}
-        <button
-          id="sn-field-power"
-          class="sn-field-btn"
-          type="button"
-          aria-label="Toggle the field"
-          title="Turn the field off"
-          aria-pressed="true"
-        >
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="8" cy="8" r="1.6" fill="currentColor" />
-            <circle cx="8" cy="8" r="3.1" stroke="currentColor" stroke-width="1.2" opacity="0.85" />
-            <circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.1" opacity="0.5" />
-          </svg>
-        </button>
+
       </span>
     </nav>
   </div>
 </header>
 
 <script>
-  // Field toggles — four buttons drive the persisted <field-root>:
-  //   1. Flow: dots ⇄ streamlines (the render mode)
+  // Field toggles — three buttons drive the persisted <field-root>:
+  //   1. Flow: additive streamline overlay (on/off via setOverlay — particles always stay)
   //   2. Heatmap: density glow underlay
   //   3. Field lines: per-stage traced overlays (home page only)
-  //   4. Power: the one field switch (on/off, persisted, reloads)
   //
   // The field-root survives client-side navigation (transition:persist) while the nav
   // buttons are re-rendered fresh on every page — so the source of truth is the
@@ -137,19 +122,18 @@ const dest = [
 
   type FieldEl = HTMLElement & {
     setRender(m: string): void;
+    setOverlay(m: string): void;
     setHeatmap(on: boolean): void;
   };
   const fieldEl = () => document.querySelector('field-root') as FieldEl | null;
 
-  const FIELD_KEY = 'fui:field';
-  const fieldOn = () => document.documentElement.dataset.field !== 'off';
 
-  // 1) Global field flow: dots ⇄ flow/streamlines, read back from the persisted field.
+
+  // 1) Global field flow: additive streamline overlay, read back from the persisted field.
   function syncStreamBtn() {
     const btn = document.getElementById('sn-stream-toggle');
     if (!btn) return;
-    const field = fieldEl();
-    const on = field?.dataset.navFlow === 'on';
+    const on = fieldEl()?.dataset.navFlow === 'on';
     btn.setAttribute('aria-pressed', String(on));
     btn.title = on ? 'Hide field flow' : 'Show field flow';
   }
@@ -169,23 +153,15 @@ const dest = [
     btn.setAttribute('aria-pressed', String(shown));
     btn.title = shown ? 'Hide field lines' : 'Show field lines';
   }
-  // 4) Power: the one field switch.
-  function syncFieldPower() {
-    const btn = document.getElementById('sn-field-power');
-    if (!btn) return;
-    const on = fieldOn();
-    btn.setAttribute('aria-pressed', String(on));
-    btn.title = on ? 'Turn the field off' : 'Turn the field on';
-  }
+
 
   document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement | null;
     if (!t) return;
     if (t.closest('#sn-stream-toggle')) {
       const field = fieldEl();
-      const on = field?.dataset.navFlow === 'on';
-      const next = !on;
-      field?.setRender(next ? 'flow' : 'dots');
+      const next = field?.dataset.navFlow !== 'on';
+      field?.setOverlay(next ? 'streamlines' : 'off'); // additive — particles stay underneath
       if (field) field.dataset.navFlow = next ? 'on' : 'off';
       syncStreamBtn();
     } else if (t.closest('#sn-heatmap-toggle')) {
@@ -197,15 +173,6 @@ const dest = [
     } else if (t.closest('#sn-field-toggle')) {
       document.documentElement.classList.toggle('hide-field-lines');
       syncFieldBtn();
-    } else if (t.closest('#sn-field-power')) {
-      const next = !fieldOn();
-      try {
-        localStorage.setItem(FIELD_KEY, next ? 'on' : 'off');
-      } catch {
-        /* storage unavailable */
-      }
-      document.documentElement.dataset.field = next ? 'on' : 'off';
-      location.reload();
     }
   });
 
@@ -213,7 +180,6 @@ const dest = [
     syncStreamBtn();
     syncHeatmapBtn();
     syncFieldBtn();
-    syncFieldPower();
   }
   document.addEventListener('astro:page-load', syncAll);
   syncAll();

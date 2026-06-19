@@ -1,0 +1,86 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Fundamental — Implementations"
+  description="One renderer-agnostic field engine, three surfaces: the Web (@fundamental-engine/dom, the DOM binding), Native (a Swift port + the Field Lab app), and your own renderer (@fundamental-engine/three, or the read primitives). What each is, how to get it, and what's at parity."
+>
+  <header class="docs-hero">
+    <p class="kicker">Reference</p>
+    <h1>One engine, many <span class="accent">surfaces</span></h1>
+    <p class="lede">
+      Fundamental’s core (<code>@fundamental-engine/core</code>) computes the field against plain data
+      and imports <strong>zero DOM</strong> — it’s renderer-agnostic. A thin host binds it to a surface.
+      Three are real today: the <strong>Web</strong>, <strong>Native</strong> (Swift), and
+      <strong>your own renderer</strong>.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>The core is the contract; surfaces are bindings.</b> The same physics, force catalog, and
+    conserved particle count run on every surface — only the host and the draw change. A bug fixed in
+    the engine is fixed on all planes (the project ships engine fixes across them deliberately).
+  </div>
+
+  <section class="docs-sec">
+    <h2>Web — the primary surface</h2>
+    <p>
+      <code>@fundamental-engine/dom</code> binds the engine to the page through <code>browserHost()</code>
+      and the six registries (measurement, state, feedback, relationships, visual bindings, overlays):
+      every <code>[data-body]</code> element becomes a body, and the field returns as <code>--field-*</code>
+      CSS variables you style with. The authoring surfaces — <a href="/docs/guides/web-component">the
+      <code>&lt;field-root&gt;</code> web component</a>, <a href="/docs/guides/react">React</a>,
+      <a href="/docs/guides/typescript">vanilla / TypeScript</a> — all wrap it. This is the surface the whole site runs on.
+    </p>
+    <p><b>Get it:</b> <code>npm i @fundamental-engine/vanilla</code> (the recommended door). Status: <b>stable, 0.x frozen.</b></p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Native — Swift, and the Field Lab</h2>
+    <p>
+      A <strong>Swift port</strong> runs the same field on Apple platforms (macOS / iOS / visionOS) with
+      native rendering (Metal / SwiftUI), free of the browser’s full-viewport compositing ceiling — so a
+      dense field reads smoother than the web Lab. Its showcase is the <strong>Field Lab</strong>: a
+      native app where every engine pillar is a live, interactive scene.
+    </p>
+    <div class="callout">
+      <b>Parity — honest status.</b> The Swift port is a port, and the web plane moves first. The newest
+      primitives — <code>addField</code> / <code>sampleField</code> (field channels), reactive
+      <code>BodyHandle.set</code>, and <code>depth</code> forwarding — shipped on the web in 0.5.1 / 0.7.0
+      and are <strong>not yet ported</strong>. The core force set and the interactive scenes are there;
+      treat the native plane as a fast-moving preview until parity is called out here.
+    </div>
+    <p>
+      <b>Get it:</b> the notarized <code>.dmg</code> download is coming; until then, build it from source —
+      <code>swift run FieldLab</code> in <code>swift/</code> (a packaging script,
+      <code>swift/Scripts/release-fieldlab.sh</code>, produces the app bundle). Status: <b>preview.</b>
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Your renderer — bring your own draw</h2>
+    <p>
+      <code>@fundamental-engine/three</code> runs the engine headless and renders its swarm as a
+      <code>THREE.Points</code> layer in <em>your</em> WebGL scene (<a href="/docs/guides/three">the
+      Three.js guide</a>). More generally, the engine exposes renderer-agnostic <strong>read
+      primitives</strong> — <code>sample</code>, <code>sampleScalar</code>, <code>readParticles</code>,
+      and the <a href="/docs/field-channels">field channels</a> (<code>addField</code>) — so you can bind
+      the field to anything that draws, on your own loop. <a href="https://github.com/zachshallbetter/habitat">Habitat</a>
+      (a simulation garden) is this surface in production.
+    </p>
+    <p><b>Get it:</b> <code>npm i @fundamental-engine/three three</code>. Status: <b>stable, 0.x frozen.</b></p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>At a glance</h2>
+    <table>
+      <thead><tr><th>Surface</th><th>Host / binding</th><th>Get it</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><b>Web</b></td><td><code>@fundamental-engine/dom</code> → <code>--field-*</code></td><td><code>npm i @fundamental-engine/vanilla</code></td><td>stable</td></tr>
+        <tr><td><b>Native</b></td><td>Swift port (Metal / SwiftUI) → the Field Lab</td><td>build from source (<code>.dmg</code> soon)</td><td>preview · behind on newest primitives</td></tr>
+        <tr><td><b>Your renderer</b></td><td><code>@fundamental-engine/three</code> / the read primitives</td><td><code>npm i @fundamental-engine/three</code></td><td>stable</td></tr>
+      </tbody>
+    </table>
+  </section>
+</DocsLayout>

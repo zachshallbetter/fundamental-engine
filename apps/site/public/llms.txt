@@ -22,6 +22,7 @@ render from the same file. Generated 2026-06-19 by apps/site/scripts/gen-llms.mj
 - [Start here — Three.js](https://fundamental-engine.com/docs/guides/three)
 - [Start here — Core engine](https://fundamental-engine.com/docs/guides/core): createField on a canvas you own, with an injected host
 - [Concepts — Concepts](https://fundamental-engine.com/docs/concepts): the mental model — bodies, the shared field context, reciprocity, the vocabulary lanes
+- [Concepts — Implementations](https://fundamental-engine.com/docs/implementations)
 - [Concepts — Natural fields](https://fundamental-engine.com/docs/natural-fields): the Natural Field Translation System: gravity → priority, EM → polarity/signal, strong → binding, weak → transformation
 - [Concepts — Contour typography](https://fundamental-engine.com/docs/contour-typography)
 - [Concepts — Narrative walkthrough](https://fundamental-engine.com/docs/narrative): one ordinary element revealed as a field participant, layer by layer

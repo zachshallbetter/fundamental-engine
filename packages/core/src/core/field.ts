@@ -64,7 +64,7 @@ import type { FieldHost } from './host.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
-const WAVE_RGB = ['#4da3ff', '#2dd4bf', '#a78bfa'].map(hexToRgb);
+const WAVE_RGB = ['#ff8a5c', '#f0628e', '#ffc46b'].map(hexToRgb);
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
