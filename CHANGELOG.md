@@ -7,6 +7,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Force-availability accuracy (docs/comments).** Corrected the misleading `// … opt-in` comments on
+  `registerNaturalForces`/`registerExtendedForces` in `field.ts` — all **36** forces are registered on
+  every field (the natural and extended sets are *not* opt-in; activate any per-body via its
+  `data-body` token). Fixed stale "34"/"35" force counts in the core guide and force-glyph styles.
+
 ## [0.5.1] — 2026-06-17
 
 ### Added

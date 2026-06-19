@@ -29,7 +29,7 @@ field.scan();`;
 const custom = `import type { Force } from '@fundamental-engine/core';
 
 // Every force is one object: a token + an apply(body, particle, env).
-// This is the exact contract all 34 built-ins implement.
+// This is the exact contract all 36 built-ins implement.
 const lift: Force = {
   token: 'lift',
   label: 'Lift',
@@ -96,7 +96,7 @@ const lift: Force = {
     <p>
       A force is one small object — a <code>token</code> and an
       <code>apply(body, particle, env)</code> that nudges a particle's velocity. Every one of the
-      34 built-ins implements this exact contract, and the engine never special-cases any of them,
+      36 built-ins implements this exact contract, and the engine never special-cases any of them,
       which is why they compose. The shape:
     </p>
     <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: custom }]} />

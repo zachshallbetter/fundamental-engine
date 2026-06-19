@@ -115,9 +115,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const sinkPeak = new WeakMap<Body, number>(); // matter held at the rising edge, for the release count
   const programmaticBodies: Body[] = []; // bodies added via addBody(); merged into `bodies` each scan
   const fieldChannels = new Map<string, (x: number, y: number) => number>(); // addField() input channels
+  // All 36 forces are registered on every field — there is no opt-in. Any of them activates per-body
+  // through its `data-body` token (e.g. `data-body="lens crystallize"`); an unused force costs nothing.
   registerCoreForces(reg); // the canonical nine (§6)
-  registerNaturalForces(reg); // natural primitives: gravity + charge (§20.10), opt-in
-  registerExtendedForces(reg); // designed extended forces: lens, … (§20.3), opt-in
+  registerNaturalForces(reg); // 8 natural primitives: gravity, charge, magnetism, thermal, … (§20.10)
+  registerExtendedForces(reg); // 19 designed extended forces: lens, crystallize, link, morph, … (§20.3)
   // the environment seam: all DOM access goes through this injected host — core imports zero DOM.
   // In the browser, pass `browserHost()` from @fundamental-engine/platform (or use createBrowserField); the
   // @fundamental-engine/{elements,react,vanilla} entry points wire it for you.
