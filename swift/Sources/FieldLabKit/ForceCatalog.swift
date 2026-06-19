@@ -1,6 +1,6 @@
 import Foundation
 import simd
-import FieldUICore
+import FundamentalCore
 
 // MARK: - The force catalog
 //
@@ -40,7 +40,7 @@ public enum ForceCatalog {
         tokens: [String]? = nil, strength: Float = 1.2, range: Float = 300,
         spin: Float = 1, angle: Float = -.pi / 2, engaged: Bool = false,
         formation: String = "ambient", render: RenderMode = .dots,
-        overlay: [FieldUICore.OverlayMode] = [], density: Float = 2.5
+        overlay: [FundamentalCore.OverlayMode] = [], density: Float = 2.5
     ) -> ForceEntry {
         var s = LabScene(
             id: "force-\(token)", name: label, blurb: blurb,
@@ -60,7 +60,7 @@ public enum ForceCatalog {
         _ token: String, label: String, group: String, blurb: String,
         left: CardSpec, right: CardSpec,
         formation: String = "ambient", render: RenderMode = .dots,
-        overlay: [FieldUICore.OverlayMode] = []
+        overlay: [FundamentalCore.OverlayMode] = []
     ) -> ForceEntry {
         var s = LabScene(id: "force-\(token)", name: label, blurb: blurb, cards: [left, right])
         s.formation = formation

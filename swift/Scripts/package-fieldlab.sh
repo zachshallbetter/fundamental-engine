@@ -11,8 +11,8 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp .build/release/FieldLab "$APP/Contents/MacOS/FieldLab"
 # the SPM resource bundle carries the locked 64-recipe canon (Bundle.module)
-cp -R .build/release/FieldUI_FieldUICore.bundle "$APP/Contents/MacOS/"
-cp -R .build/release/FieldUI_FieldUICore.bundle "$APP/Contents/Resources/"
+cp -R .build/release/Fundamental_FundamentalCore.bundle "$APP/Contents/MacOS/"
+cp -R .build/release/Fundamental_FundamentalCore.bundle "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>

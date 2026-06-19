@@ -1,6 +1,6 @@
 import Foundation
 import simd
-import FieldUICore
+import FundamentalCore
 
 /// A FieldHost driven by hand — the snapshot pipeline's clock. `fire(at:)` advances one
 /// frame synchronously; bodies are authored (no view tree), geometry is fixed.

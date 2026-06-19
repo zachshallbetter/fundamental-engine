@@ -1,7 +1,7 @@
 #if os(macOS)
 import SwiftUI
-import FieldUICore
-import FieldUIVanilla
+import FundamentalCore
+import FundamentalVanilla
 import FieldLabKit
 
 // MARK: - FieldLab
@@ -15,7 +15,7 @@ import FieldLabKit
 @main
 struct FieldLabApp: App {
     var body: some SwiftUI.Scene {
-        WindowGroup("FieldLab") {
+        WindowGroup("Fundamental Lab") {
             LabRootView()
                 .frame(minWidth: 1180, minHeight: 740)
                 .preferredColorScheme(.dark)
@@ -45,7 +45,7 @@ struct LabRootView: View {
     @State private var selection: LabSelection = .tour(LabScenes.tour[0].id)
     @State private var formation = "ambient"
     @State private var renderMode: RenderMode = .dots
-    @State private var overlays: Set<FieldUICore.OverlayMode> = []
+    @State private var overlays: Set<FundamentalCore.OverlayMode> = []
     @State private var accent = Color(red: 0.30, green: 0.64, blue: 1.0)
     @State private var density: Double = 2
     @State private var waves = false
@@ -524,7 +524,7 @@ struct LabRootView: View {
         .onChange(of: binding.wrappedValue) { _, _ in pin(key) }
     }
 
-    private func readingToggle(_ mode: FieldUICore.OverlayMode, _ label: String,
+    private func readingToggle(_ mode: FundamentalCore.OverlayMode, _ label: String,
                                _ symbol: String, _ meaning: String) -> some View {
         Toggle(isOn: Binding(
             get: { overlays.contains(mode) },
@@ -610,7 +610,7 @@ struct FieldCanvasRepresentable: NSViewRepresentable {
     let scene: LabScene
     let formation: String
     let renderMode: RenderMode
-    let overlays: [FieldUICore.OverlayMode]
+    let overlays: [FundamentalCore.OverlayMode]
     let accent: Color
     let density: Float
     let waves: Bool
