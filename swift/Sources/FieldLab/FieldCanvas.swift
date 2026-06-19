@@ -1,8 +1,8 @@
 #if os(macOS)
 import AppKit
 import simd
-import FieldUICore
-import FieldUIVanilla
+import FundamentalCore
+import FundamentalVanilla
 import FieldLabKit
 
 // MARK: - BodyCardView
