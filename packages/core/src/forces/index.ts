@@ -185,7 +185,9 @@ export const wall: Force = {
       p.vy = -p.vy * 0.85;
     }
     if (speed > 0.7) {
-      e.spark(p.x, p.y, Math.min(2.4, speed), FORCE_BY.wall.color);
+      // spark in the wall's OWN colour when it carries one (data-color) — a tagged container throws
+      // its tag's sparks, tying the impact flash to the tag-tint; falls back to the canonical wall hue.
+      e.spark(p.x, p.y, Math.min(2.4, speed), b.tint ?? FORCE_BY.wall.color);
       p.heat = Math.max(p.heat, Math.min(0.85, speed * 0.4));
     }
   },

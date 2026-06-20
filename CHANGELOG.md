@@ -19,6 +19,11 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`wall` sparks in the body's own colour (core).** A kinematic `wall` already throws a spark on a hard
+  impact (§6.4); it now sparks in the body's `data-color` tint when it carries one (falling back to the
+  canonical wall hue), so a tagged container's impact flash matches its tag-tint. One-line change to the
+  `wall` force; existing spark/bounce tests unchanged.
+
 - **Tag-tint — particles wear their nearest tag's colour (core).** Every body that carries a colour
   (`data-color`) now stains the swarm toward its tint at render time, by proximity — a *pervasive*
   companion to the overlap-only `pigment` force, so a particle near a tagged body reflects its hue even
