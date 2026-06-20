@@ -9,6 +9,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Tag-tint — particles wear their nearest tag's colour (core).** Every body that carries a colour
+  (`data-color`) now stains the swarm toward its tint at render time, by proximity — a *pervasive*
+  companion to the overlap-only `pigment` force, so a particle near a tagged body reflects its hue even
+  on a sparse field (nearest-strongest wins, linear falloff to ~1.4× the force range; pigment still
+  layers on top for advected streaks). Automatic — no markup beyond `data-color`.
+- **Scroll-position heatmap fade (core).** The density heatmap now fades out as the page scrolls past
+  the hero (≈ the first viewport) — a smooth, MONOTONIC function of scroll position, so unlike the
+  earlier velocity-based suppression it never pops/flickers. Below the hero the whole layer is skipped
+  (no texel recompute, no upscale), confining the at-rest heatmap cost (#409) to where it's focused.
+
 - **`lintFeedbackWritesUnread` — the producer half of the feedback-contract lint (dom).** Closes the
   recurring "charged but reads nothing" bug class (#411): a `data-feedback` body gets `--d`/`--load`/
   `--field-*` written every frame, but if no style rule reads them it changes invisibly. The existing
