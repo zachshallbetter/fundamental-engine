@@ -28,6 +28,19 @@ const { chapters } = Astro.props;
 </nav>
 
 <style>
+  /* Reveal-on-scroll: a clean hero, then the rail fades in once it's behind you. HomeRuntime adds
+     `rail-managed` when JS runs and toggles `revealed` past the hero — so with JS off / reduced data
+     the rail simply stays visible (progressive enhancement). */
+  .chapter-rail.rail-managed {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .chapter-rail.rail-managed.revealed {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   /* Wayfinding Current wake (signals-only). HomeRuntime applies the `wayfinding-current` recipe over
      these links; the engine accretes --field-memory on the chapters you dwell on and decays it as you
      move on. This left-edge tick grows + brightens with that memory — the "where have I been" trail.
