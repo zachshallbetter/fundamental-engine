@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Performance
+
+- **Tag-tint RGB is cached on the measure cadence (core, #515).** The render-time tag-tint precompute
+  re-parsed every coloured body's hex (`hexToRgb`) and rebuilt its array *every frame*; it now caches the
+  parsed RGB + reach² on the 6th-frame measure cadence (where colour/range actually change). Body
+  positions are read live each frame, so the tint still tracks scroll (the #508 fix) — only the per-frame
+  string-parse churn is gone.
+
 ## [0.8.0] — 2026-06-20
 
 ### Added
