@@ -52,6 +52,12 @@ async function medianFps(page: Page, durationMs: number): Promise<number> {
 
 test.describe("homepage perf guard (#414)", () => {
   test("idle median fps stays above the floor", async ({ page }, testInfo) => {
+    // Chromium-only. Headless WebKit software-rasterizes the full-viewport field to ~2–3fps — the
+    // fill-rate trap (CLAUDE.md: "headless exaggerates fill … don't kill a feature on a headless fill
+    // number alone"). That number is noise, not a regression signal, and would flake the gate. The
+    // floor is calibrated against chromium headless (≈60 idle), so the guard runs there; the mobile
+    // project is chromium-engined and also representative.
+    test.skip(testInfo.project.name === "webkit", "headless webkit fill-rate trap — floor is calibrated for chromium");
     await bootHome(page);
     // let boot/seed settle so we measure steady state, not the first-paint burst
     await page.waitForTimeout(800);
