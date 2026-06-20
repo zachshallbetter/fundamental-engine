@@ -138,8 +138,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         <span class="concept-no">Install</span>
         <h2>Add it to the stack you already have.</h2>
         <p class="lp-lede">
-          Install one package — the <strong>surface</strong> for your environment. It pulls the engine
-          (<code>core</code> + the DOM binding) in for you; you never assemble those yourself.
+          One package per framework — pick the one for your stack and you’re done. Each bundles the
+          engine (<code>core</code> + the DOM binding) for you; there’s nothing to wire together.
         </p>
         <div class="lp-pkgs">
           <!-- the 'start here' card spans the row and is a live accretion vessel: `sink attract` gathers
@@ -147,7 +147,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
           <div class="lp-pkg lp-pkg--hero" data-body="sink attract pigment" data-feedback data-absorb="44" data-max="90" data-strength="0.7" data-range="300" data-color="#ff8a5c" style="--cat:#ff8a5c">
             <span class="lp-pkg-tag">Start here</span>
             <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
-            <span class="lp-pkg-desc"><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class, the one-call door. This card is itself a live field body: it accretes the swarm and fills as it gathers. <a href="/docs/guides/typescript">Guide →</a></span>
+            <span class="lp-pkg-desc"><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class; one call mounts a field. This card is itself a live field body: it accretes the swarm and fills as it gathers. <a href="/docs/guides/typescript">Guide →</a></span>
           </div>
           <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#f0628e" data-strength="0.55" data-range="170" style="--cat:#f0628e">
             <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
@@ -165,8 +165,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         <p class="lp-note">
           Own the canvas / building your own renderer? <code>@fundamental-engine/core</code> is the
           renderer-agnostic engine — you supply a host (<a href="/docs/guides/core">Core guide</a>). You
-          don’t install <code>@fundamental-engine/dom</code> directly — it’s the DOM engine-room the web
-          surfaces already pull in.
+          don’t install <code>@fundamental-engine/dom</code> directly — the packages above already
+          bundle it for you.
         </p>
         <p class="lp-note">
           No build step? Import from a CDN (playground / prototyping only):
@@ -297,15 +297,16 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     <section class="lp lp-ai">
       <div class="wrap">
         <span class="concept-no">The wedge</span>
-        <h2>Trust UI for AI output.</h2>
+        <h2>Make model output you can read at a glance.</h2>
         <p class="lp-lede">
-          Show support, contradiction, confidence, and provenance for model output as an
-          inspectable field — the same deterministic field math behind the Evidence and
-          Search studies, aimed at where it’s most urgent.
+          A model hands you answers; it rarely shows how sure it is. Make each claim a body in the
+          field, and confidence becomes weight, agreement becomes proximity, and contradictions pull
+          apart — so a shaky answer <em>looks</em> shaky and its sources are one hop away, before anyone
+          acts on it. The same deterministic field math drives the Evidence and Search studies.
         </p>
         <div class="lp-cta-row">
-          <Button href="/evidence" variant="primary">See the AI trust example →</Button>
-          <Button href="/evidence">Explore the studies →</Button>
+          <Button href="/evidence" variant="primary">See it on real data →</Button>
+          <Button href="/docs/studies/evidence-field">How it works →</Button>
         </div>
       </div>
     </section>
