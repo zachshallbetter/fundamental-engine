@@ -1,7 +1,7 @@
 # Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-19 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-20 by apps/site/scripts/gen-llms.mjs
 Files: 16
 
 These are the project's canonical documents — the authority on concepts, terminology, and

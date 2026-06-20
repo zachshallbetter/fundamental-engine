@@ -35,6 +35,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {boolean} causality - Enables the causality demo behaviour.
  * @attr {string} background - Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.
  * @attr {number} depth - Optional z-volume (default `0`, the flat field). `> 0` opens a shallow depth the matter drifts through, projected as a size/alpha recession. Construction-time — changing it rebuilds.
+ * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
  */
 
 /** A no-op scalar grid returned by `grid()` before the element's field has started. */
@@ -75,6 +76,7 @@ export class FieldField extends HTMLElementBase {
     { key: 'causality', attr: 'causality', read: (el) => el.causality },
     { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap },
     { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap },
+    { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -91,6 +93,7 @@ export class FieldField extends HTMLElementBase {
     'causality',
     'heatmap',
     'dpr-cap',
+    'grid-warp',
     'background',
   ];
 
@@ -208,6 +211,12 @@ export class FieldField extends HTMLElementBase {
   get depth(): number | undefined {
     const v = Number(this.getAttribute('depth'));
     return Number.isFinite(v) && v > 0 ? v : undefined;
+  }
+  /** `grid-warp` — `grid` overlay distortion multiplier; undefined (engine default 1) if absent/invalid.
+   *  `0` is valid (a flat, undistorted lattice). */
+  get gridWarp(): number | undefined {
+    const v = Number(this.getAttribute('grid-warp'));
+    return Number.isFinite(v) && v >= 0 ? v : undefined;
   }
 
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────

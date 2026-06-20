@@ -30,6 +30,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`gridWarp` — distortion multiplier for the `grid` overlay (core).** The `grid` overlay (the
+  reference lattice displaced by the field) deflects each node by a deliberately-legible amount; the new
+  `gridWarp` FieldOption scales that deflection so the deformation reads more strongly (`1` default;
+  `2`–`3` exaggerates it for demos; `0` flattens the lattice). Exposed as `<field-root grid-warp>` and
+  documented in the options reference. Additive — the frozen API surface is unchanged.
+
 - **`wall` sparks in the body's own colour (core).** A kinematic `wall` already throws a spark on a hard
   impact (§6.4); it now sparks in the body's `data-color` tint when it carries one (falling back to the
   canonical wall hue), so a tagged container's impact flash matches its tag-tint. One-line change to the

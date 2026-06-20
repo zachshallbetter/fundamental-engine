@@ -476,6 +476,14 @@ export interface FieldOptions {
   overlayCanvas?: HTMLCanvasElement;
   /** initial overlay visualization mode (Field Surfaces); default `'off'`. */
   overlay?: OverlayInput;
+  /**
+   * Distortion multiplier for the `grid` overlay (the reference lattice displaced by the field).
+   * The lattice deflects each node by up to a fixed, deliberately-legible amount at the strongest
+   * sample; `gridWarp` scales that deflection so the deformation reads more strongly. `1` (default)
+   * is the calibrated "legible, never chaotic" amount; `2`–`3` exaggerates it to make the effect
+   * obvious in a demo; `0` flattens the lattice to an undistorted grid. Only affects the `grid`
+   * overlay mode. */
+  gridWarp?: number;
   /** the drawing backend for the overlay surface (#373) — defaults to the Canvas 2D
    *  implementation over `overlayCanvas`. The structural seam a WebGL/WebGPU surface
    *  implements; see render-backend.ts. */

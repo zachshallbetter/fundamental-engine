@@ -144,6 +144,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
     overlay: opts.overlay ?? 'off', // Field Surfaces: overlay-surface visualization mode, opt-in
+    // distortion multiplier for the `grid` overlay's lattice deflection (1 = calibrated default; 0 flat).
+    gridWarp: opts.gridWarp != null && opts.gridWarp >= 0 ? opts.gridWarp : 1,
     dprCap: opts.dprCap && opts.dprCap > 0 ? opts.dprCap : 2, // backing-store DPR ceiling (#410); the
     // dominant fill-rate lever — the ambient field is soft, so ~1.5 buys ~1.8× headroom on retina.
     // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
@@ -1487,7 +1489,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // space itself made visible, bending where the field is strong. Reads deformation.
   function drawOverlayGrid(out: RenderBackend): void {
     const STEP = 56;
-    const MAXD = 11; // px displacement at the strongest sample — legible, never chaotic
+    const MAXD = 11 * cfg.gridWarp; // px displacement at the strongest sample — legible, never
+    // chaotic at the default gridWarp=1; the multiplier exaggerates the deformation for demos.
     const cols = Math.floor(W / STEP) + 2;
     const rows = Math.floor(H / STEP) + 2;
     const dx = new Float32Array(cols * rows);
