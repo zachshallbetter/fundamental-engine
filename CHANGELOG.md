@@ -7,62 +7,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
-### Fixed
-
-- **`<field-root dpr-cap>` rejects non-finite values (elements).** The `dprCap` getter now guards with
-  `Number.isFinite` like `density`/`depth`, so `dpr-cap="Infinity"`/`"NaN"` fall back to the engine
-  default instead of feeding a bad backing-store DPR downstream.
-- **Removed the non-functional `root` option from `FieldLayerOptions` (three).** The `FieldLayer` class
-  scans its mesh-body registry, so the DOM `[data-body]` scan root was silently discarded (`void root`).
-  It's gone from the type; the lower-level `createThreeField({ root })` builder still honours it.
-- **Corrected the `ParticlePool` staging-buffer stride comment (three)** — it read "stride-4 `[x,y,heat,size]`"
-  but the buffer is stride-5 `[x, y, z, heat, size]`, matching `readParticles`.
-
-### Internal
-
-- **`check:dist` now smoke-tests all 7 published packages** — it had drifted to the pre-0.7.0 set and was
-  omitting `dom` and `three` (validating only the deprecated `platform` alias).
-- **`check:links` now validates cross-file `#fragment` anchors** against the target doc's headings
-  (GitHub slug rules), catching the section-rename → rotted-link class. Same-file ToC anchors stay out of
-  scope (they follow the site renderer's slug convention, not GitHub's).
-- **Site home-runtime hygiene:** the drag `pointermove`/`pointerup` listeners now bind to the page
-  AbortSignal (no orphan on navigate-mid-drag), and the gallery readout reads the engine's inline
-  `--field-density` write instead of calling `getComputedStyle` every animation frame.
-
-### Site
-
-- **A `/changelog` page — "what's new", on the site.** Recently-shipped highlights over the full,
-  versioned log, rendered at build time straight from this `CHANGELOG.md` (single source of truth). A
-  version badge in the nav links to it.
-- **Homepage content pass.** Sharpened the copy to explain the point over the spectacle (the AI-trust
-  section, the install story), de-jargoned the install language, and added the `0.x preview` maturity
-  signal to `/eli5`. Tightened the narrative by cutting three Gallery beats that re-demoed earlier
-  chapters (the live experience keeps its full length; only the redundancy is gone).
-- **Wayfinding — every concept leads to its reference.** Each manual chapter now links to its canonical
-  doc, and all 36 forces deep-link to their exact entry in the force catalog. Added a "pick your
-  package" decision path to the docs and two worked accessibility examples (reduced-motion CSS, the
-  `aria-hidden` visual-binding pattern).
-
-### Documentation
-
-- **Docs accuracy sweep.** Audited all 86 docs + package READMEs against the code. Corrected the force
-  count to **36** where docs drifted (9 canonical + 19 extended + 8 natural; `forces-engine.md`,
-  `research/01`); fixed package READMEs (`react`/`vanilla` `../platform` links → `../dom`, `three` CDN
-  example `@0.3.1` → `@0.7.0`); reconciled `RELEASING.md`/`PUBLISHING.md` to **six** published packages at
-  **0.7.0**; removed a false `compat-*` package claim; split the shipped `warp` atom from the spec-only
-  `wormhole` preset; fixed the `pheromone`→`diffuse` token name; repaired broken `docs/...` cross-paths;
-  committed the load-bearing RC/1.0 gate spec and removed stale `docs/planning/` duplicates; added a
-  table of contents to `forces-system.md`.
-
-### Fixed
-
-- **Bodies track scroll between re-measures — no more swarm "pause" on scroll (core).** Body centres are
-  re-measured (`getBoundingClientRect`) only every 6th frame, but the page scrolls continuously under the
-  fixed field — so during a scroll each attractor's force-centre snapped in 6-frame steps and the swarm
-  read as pausing/stuttering. The cached centres are now translated by the per-frame scroll delta between
-  measures (`b.cy -= dScroll`), which carries the shaped box too (it's centred on `cy`); `measureBodies`
-  still refreshes from the real rects on its cadence, so there's no drift. Verified: sampled body force at
-  a fixed point changes every frame through a scroll (plateau fraction 0, was ~0.83).
+## [0.8.0] — 2026-06-20
 
 ### Added
 
@@ -114,6 +59,25 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **`<field-root dpr-cap>` rejects non-finite values (elements).** The `dprCap` getter now guards with
+  `Number.isFinite` like `density`/`depth`, so `dpr-cap="Infinity"`/`"NaN"` fall back to the engine
+  default instead of feeding a bad backing-store DPR downstream.
+- **Removed the non-functional `root` option from `FieldLayerOptions` (three).** The `FieldLayer` class
+  scans its mesh-body registry, so the DOM `[data-body]` scan root was silently discarded (`void root`).
+  It's gone from the type; the lower-level `createThreeField({ root })` builder still honours it.
+- **Corrected the `ParticlePool` staging-buffer stride comment (three)** — it read "stride-4 `[x,y,heat,size]`"
+  but the buffer is stride-5 `[x, y, z, heat, size]`, matching `readParticles`.
+
+
+- **Bodies track scroll between re-measures — no more swarm "pause" on scroll (core).** Body centres are
+  re-measured (`getBoundingClientRect`) only every 6th frame, but the page scrolls continuously under the
+  fixed field — so during a scroll each attractor's force-centre snapped in 6-frame steps and the swarm
+  read as pausing/stuttering. The cached centres are now translated by the per-frame scroll delta between
+  measures (`b.cy -= dScroll`), which carries the shaped box too (it's centred on `cy`); `measureBodies`
+  still refreshes from the real rects on its cadence, so there's no drift. Verified: sampled body force at
+  a fixed point changes every frame through a scroll (plateau fraction 0, was ~0.83).
+
+
 - **Post-0.7.0 integrity sweep.** The release workflow's post-publish smoke + provenance checks no
   longer install the retired `kit`/`fundamental-engine` umbrellas (that mismatch is why the 0.7.0 run
   reported failure even though all 7 packages published); the version-match gate now skips private
@@ -124,6 +88,42 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   longer implies the engine consumes channels internally. Test hardening: `BodyHandle.set` color +
   range/angle/spin coverage, and a reverse option-drift guard that would have caught the original
   `depth` drop.
+
+### Internal
+
+- **`check:dist` now smoke-tests all 7 published packages** — it had drifted to the pre-0.7.0 set and was
+  omitting `dom` and `three` (validating only the deprecated `platform` alias).
+- **`check:links` now validates cross-file `#fragment` anchors** against the target doc's headings
+  (GitHub slug rules), catching the section-rename → rotted-link class. Same-file ToC anchors stay out of
+  scope (they follow the site renderer's slug convention, not GitHub's).
+- **Site home-runtime hygiene:** the drag `pointermove`/`pointerup` listeners now bind to the page
+  AbortSignal (no orphan on navigate-mid-drag), and the gallery readout reads the engine's inline
+  `--field-density` write instead of calling `getComputedStyle` every animation frame.
+
+### Site
+
+- **A `/changelog` page — "what's new", on the site.** Recently-shipped highlights over the full,
+  versioned log, rendered at build time straight from this `CHANGELOG.md` (single source of truth). A
+  version badge in the nav links to it.
+- **Homepage content pass.** Sharpened the copy to explain the point over the spectacle (the AI-trust
+  section, the install story), de-jargoned the install language, and added the `0.x preview` maturity
+  signal to `/eli5`. Tightened the narrative by cutting three Gallery beats that re-demoed earlier
+  chapters (the live experience keeps its full length; only the redundancy is gone).
+- **Wayfinding — every concept leads to its reference.** Each manual chapter now links to its canonical
+  doc, and all 36 forces deep-link to their exact entry in the force catalog. Added a "pick your
+  package" decision path to the docs and two worked accessibility examples (reduced-motion CSS, the
+  `aria-hidden` visual-binding pattern).
+
+### Documentation
+
+- **Docs accuracy sweep.** Audited all 86 docs + package READMEs against the code. Corrected the force
+  count to **36** where docs drifted (9 canonical + 19 extended + 8 natural; `forces-engine.md`,
+  `research/01`); fixed package READMEs (`react`/`vanilla` `../platform` links → `../dom`, `three` CDN
+  example `@0.3.1` → `@0.7.0`); reconciled `RELEASING.md`/`PUBLISHING.md` to **six** published packages at
+  **0.7.0**; removed a false `compat-*` package claim; split the shipped `warp` atom from the spec-only
+  `wormhole` preset; fixed the `pheromone`→`diffuse` token name; repaired broken `docs/...` cross-paths;
+  committed the load-bearing RC/1.0 gate spec and removed stale `docs/planning/` duplicates; added a
+  table of contents to `forces-system.md`.
 
 ## [0.7.0] — 2026-06-17
 

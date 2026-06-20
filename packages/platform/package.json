@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/platform",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "DEPRECATED — renamed to @fundamental-engine/dom. A thin alias that re-exports it so existing installs keep working; switch your imports to @fundamental-engine/dom.",
   "type": "module",
   "license": "MIT",
