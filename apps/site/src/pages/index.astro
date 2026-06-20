@@ -140,21 +140,24 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
           (<code>core</code> + the DOM binding) in for you; you never assemble those yourself.
         </p>
         <div class="lp-pkgs">
-          <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#ff8a5c" data-strength="0.6" data-range="180" style="--cat:#ff8a5c">
+          <!-- the 'start here' card spans the row and is a live accretion vessel: `sink attract` gathers
+               the field's matter, `--load` fills it from the base, and it supernovas + resets on saturation. -->
+          <div class="lp-pkg lp-pkg--hero" data-body="sink attract pigment" data-feedback data-absorb="44" data-max="90" data-strength="0.7" data-range="300" data-color="#ff8a5c" style="--cat:#ff8a5c">
+            <span class="lp-pkg-tag">Start here</span>
             <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
-            <span><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class. <b>Start here if unsure.</b> <a href="/docs/guides/typescript">Guide →</a></span>
+            <span class="lp-pkg-desc"><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class, the one-call door. This card is itself a live field body: it accretes the swarm and fills as it gathers. <a href="/docs/guides/typescript">Guide →</a></span>
           </div>
-          <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#f0628e" data-strength="0.6" data-range="180" style="--cat:#f0628e">
+          <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#f0628e" data-strength="0.55" data-range="170" style="--cat:#f0628e">
             <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
-            <span><b>React</b> — the <code>&lt;FieldField&gt;</code> component + <code>useFieldField</code> hook. <a href="/docs/guides/react">Guide →</a></span>
+            <span class="lp-pkg-desc"><b>React</b> — the <code>&lt;FieldField&gt;</code> component + <code>useFieldField</code> hook. <a href="/docs/guides/react">Guide →</a></span>
           </div>
-          <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#c084fc" data-strength="0.6" data-range="180" style="--cat:#c084fc">
+          <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#c084fc" data-strength="0.55" data-range="170" style="--cat:#c084fc">
             <code class="install" data-copy="npm i @fundamental-engine/elements">npm i @fundamental-engine/elements</code>
-            <span><b>Any framework or plain HTML</b> — the <code>&lt;field-root&gt;</code> web component. <a href="/docs/guides/web-component">Guide →</a></span>
+            <span class="lp-pkg-desc"><b>Any framework or plain HTML</b> — the <code>&lt;field-root&gt;</code> web component. <a href="/docs/guides/web-component">Guide →</a></span>
           </div>
-          <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#ffce6b" data-strength="0.6" data-range="180" style="--cat:#ffce6b">
+          <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#ffce6b" data-strength="0.55" data-range="170" style="--cat:#ffce6b">
             <code class="install" data-copy="npm i @fundamental-engine/three">npm i @fundamental-engine/three</code>
-            <span><b>Three.js / WebGL</b> — the swarm as a <code>THREE.Points</code> layer. <a href="/docs/guides/three">Guide →</a></span>
+            <span class="lp-pkg-desc"><b>Three.js / WebGL</b> — the swarm as a <code>THREE.Points</code> layer. <a href="/docs/guides/three">Guide →</a></span>
           </div>
         </div>
         <p class="lp-note">
