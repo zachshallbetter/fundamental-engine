@@ -19,8 +19,9 @@ import { dirname, join, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = [
-  // primary @fundamental-engine/* (published via CI)
-  'core', 'platform', 'vanilla', 'elements', 'react',
+  // every published @fundamental-engine/* package (via CI). `dom` is the canonical DOM binding
+  // since 0.7.0; `platform` is its retained deprecated alias; `three` is the WebGL surface.
+  'core', 'dom', 'platform', 'vanilla', 'elements', 'react', 'three',
 ];
 
 /** Collect every relative file path the package.json points at as an entry point. */

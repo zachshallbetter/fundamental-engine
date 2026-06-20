@@ -133,8 +133,10 @@ export function initHomeRuntime(): () => void {
           el.removeEventListener("pointermove", move);
           el.removeEventListener("pointerup", up);
         };
-        el.addEventListener("pointermove", move);
-        el.addEventListener("pointerup", up);
+        // tie to the same AbortSignal as the outer listeners so a navigation mid-drag (sig.abort())
+        // tears these down too — otherwise move/up orphan if the pointer never lifts before nav.
+        el.addEventListener("pointermove", move, { signal: sig });
+        el.addEventListener("pointerup", up, { signal: sig });
       },
       { signal: sig },
     );

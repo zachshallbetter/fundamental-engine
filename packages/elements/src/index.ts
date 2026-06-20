@@ -205,7 +205,7 @@ export class FieldField extends HTMLElementBase {
   /** `dpr-cap` — backing-store DPR ceiling (#410); undefined (engine default 2) if absent/invalid. */
   get dprCap(): number | undefined {
     const v = Number(this.getAttribute('dpr-cap'));
-    return v > 0 ? v : undefined;
+    return Number.isFinite(v) && v > 0 ? v : undefined;
   }
   /** `depth` — optional z-volume; undefined (engine default 0, the flat field) if absent/invalid. */
   get depth(): number | undefined {

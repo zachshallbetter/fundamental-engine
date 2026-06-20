@@ -89,7 +89,7 @@ export class ParticlePool {
   readonly material: ShaderMaterial;
   readonly capacity: number;
   private readonly projection: FieldProjection;
-  /** stride-4 staging buffer `readParticles` fills: `[x, y, heat, size, …]`. */
+  /** stride-5 staging buffer `readParticles` fills: `[x, y, z, heat, size, …]`. */
   private readonly packed: Float32Array;
   private readonly position: Float32BufferAttribute;
   private readonly aHeat: Float32BufferAttribute;
