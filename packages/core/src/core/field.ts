@@ -1032,6 +1032,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let hmImg: ImageData | null = null; // reused buffer — no per-frame allocation
   function drawHeatmap(): void {
     if (!heatmap) return;
+    // Fade the ambient glow out as the page scrolls past the hero (≈ the first viewport). Unlike the
+    // earlier velocity-based suppression (which popped in/out and read as choppy), this is a smooth,
+    // MONOTONIC function of scroll POSITION — full through the top of the page, gone by ~1.15 viewports
+    // — so it never flickers; and below the hero the whole layer is skipped (the #409 at-rest upscale
+    // cost the heatmap is otherwise paying every frame for a glow you can't focus on mid-page).
+    const hmFade = H > 0 ? clamp((1.15 - lastScrollY / H) / 0.85, 0, 1) : 1;
+    if (hmFade <= 0.01) return;
     const cell = heatmap.cell;
     const cols = Math.max(1, Math.ceil(W / cell));
     const rows = Math.max(1, Math.ceil(H / cell));
@@ -1066,7 +1073,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     ctx!.globalCompositeOperation = 'lighter';
     ctx!.imageSmoothingEnabled = true;
+    ctx!.globalAlpha = hmFade; // fade with scroll position (computed above)
     ctx!.drawImage(hmCanvas, 0, 0, W, H); // bilinear upscale → smooth glow
+    ctx!.globalAlpha = 1;
     ctx!.globalCompositeOperation = 'source-over';
   }
 
@@ -1110,6 +1119,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const cx = W / 2;
     const cy = H * 0.4;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
+    // Tag-tint: every body carrying a colour stains the swarm toward its tint by proximity — a
+    // pervasive, render-time companion to the overlap-only `pigment` force, so a particle near a
+    // tagged body wears its tag's hue even on a sparse field. Few coloured bodies, precomputed once
+    // here; nearest-strongest wins per particle so the hues don't muddy. Reach is a touch past the
+    // force range so the colour reads before matter actually arrives.
+    const tintBodies: { x: number; y: number; r2: number; rgb: RGB }[] = [];
+    for (const tb of bodies) {
+      if (!tb.tint) continue;
+      const reach = (tb.range || 200) * 1.4;
+      tintBodies.push({ x: tb.cx, y: tb.cy, r2: reach * reach, rgb: hexToRgb(tb.tint) });
+    }
     if (showMatter) for (const p of store.particles) {
       // captured matter is held in orbit by the sink — drawn dim and small (the accretion's orbital
       // work), distinct from the free swarm. It stays visible: the body gathers and holds a real
@@ -1128,6 +1148,27 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       let r = _rgb[0];
       let g = _rgb[1];
       let b = _rgb[2];
+      if (tintBodies.length) {
+        let bw = 0;
+        let brgb: RGB | null = null;
+        for (const tb of tintBodies) {
+          const dx = p.x - tb.x;
+          const dy = p.y - tb.y;
+          const dd2 = dx * dx + dy * dy;
+          if (dd2 >= tb.r2) continue;
+          const w = 1 - Math.sqrt(dd2 / tb.r2); // linear falloff, 1 at centre → 0 at reach
+          if (w > bw) {
+            bw = w;
+            brgb = tb.rgb;
+          }
+        }
+        if (brgb) {
+          const k = bw * 0.7; // tint strength at the body centre
+          r += (brgb[0] - r) * k;
+          g += (brgb[1] - g) * k;
+          b += (brgb[2] - b) * k;
+        }
+      }
       if (p.color) {
         // carried pigment (§20.8): a stained particle reads mostly as its own tint.
         const [pr, pg, pb] = hexToRgb(p.color);
