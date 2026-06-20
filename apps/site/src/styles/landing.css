@@ -137,43 +137,100 @@ html[data-field='on'] .hero-antimass:hover {
   color: var(--accent);
 }
 
-/* install block — four surface cards, two-up, filling the wrap (no 760px cinch) */
+/* install block — a 'start here' hero accretion card spanning the row, then a 3-up of surface cards.
+   Solid design-system surfaces (--bg-card / --shadow / --r-lg), each a live field body that CONSUMES
+   its feedback vars: the borders + the top hairline brighten with --field-density as matter gathers,
+   and the hero FILLS with --load as its sink accretes (Body Matter Interaction). */
 .lp-pkgs {
   margin: 1.9rem 0 0;
   display: grid;
-  gap: 1.4rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
 }
 @media (max-width: 760px) {
   .lp-pkgs {
     grid-template-columns: 1fr;
-    gap: 1.1rem;
   }
 }
 .lp-pkg {
+  --field-density: 0;
+  --load: 0;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.7rem;
-  align-items: stretch;
-  padding: 1.15rem 1.25rem 1.25rem;
-  border: 1px solid var(--line, rgba(255, 255, 255, 0.07));
-  border-left: 2px solid var(--cat, var(--accent));
-  border-radius: 14px;
-  /* a faint wash of the surface's own colour + the field's feedback density glow */
-  background: color-mix(in srgb, var(--cat, var(--accent)) 6%, transparent);
-  transition: border-color 0.25s ease, background 0.25s ease;
+  padding: 1.2rem 1.3rem 1.3rem;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  /* the silent-contract CONSUMER: the border leans to the tag colour with local field density */
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) calc(16% + var(--field-density) * 60%), var(--line));
+  transition:
+    border-color 0.35s var(--ease),
+    box-shadow 0.35s var(--ease),
+    transform 0.35s var(--ease);
 }
-/* the body opted into feedback — brighten with local field density as matter gathers at the wall */
-.lp-pkg[data-feedback] {
-  border-color: color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--field-density, 0) * 55%), var(--line, rgba(255, 255, 255, 0.07)));
+/* a top hairline in the tag colour, brightening as matter pools against the card */
+.lp-pkg::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--cat, var(--accent));
+  opacity: calc(0.35 + var(--field-density) * 0.65);
+  transition: opacity 0.35s var(--ease);
 }
-.lp-pkg > span {
+.lp-pkg:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.lp-pkg > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* hero: the 'start here' vanilla card spans the row and is an accretion vessel — it fills with --load
+   from the base as its sink gathers matter, then supernovas + resets (Sink / Accretion). */
+.lp-pkg--hero {
+  grid-column: 1 / -1;
+  padding: 1.5rem 1.6rem 1.6rem;
+  box-shadow: var(--shadow-lg);
+}
+.lp-pkg--hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--cat) calc(var(--load) * 26%), transparent),
+    transparent 55%
+  );
+  transition: opacity 0.5s var(--ease);
+}
+
+.lp-pkg-tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cat, var(--accent));
+  padding: 0.22rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--cat) 40%, var(--line));
+  border-radius: var(--r-pill);
+}
+.lp-pkg-desc {
   font-size: 0.86rem;
   line-height: 1.5;
   color: var(--text-3);
 }
 .lp-pkg .install {
   --accent: var(--cat, var(--accent));
+  align-self: stretch;
 }
 .lp-pkg code:not(.install) {
   font-family: var(--mono);
