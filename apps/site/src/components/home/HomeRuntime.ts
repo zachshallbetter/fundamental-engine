@@ -295,6 +295,7 @@ export function initHomeRuntime(): () => void {
   const chapters = [...document.querySelectorAll<HTMLElement>(".chapter")];
   const links = [...document.querySelectorAll<HTMLElement>(".chapter-rail a")];
   const rail = document.querySelector<HTMLElement>(".chapter-rail");
+  rail?.classList.add("rail-managed"); // JS present → manage the reveal (no-JS leaves the rail visible)
   const onScroll = () => {
     let active = chapters[0] && chapters[0].id;
     for (const ch of chapters)
@@ -307,6 +308,8 @@ export function initHomeRuntime(): () => void {
       if (on) a.setAttribute("data-field-attention", "1");
       else a.removeAttribute("data-field-attention");
     });
+    // reveal the rail once the hero is behind us — a clean hero, then the wayfinding TOC fades in
+    rail?.classList.toggle("revealed", scrollY > innerHeight * 0.6);
   };
   window.addEventListener("scroll", onScroll, { passive: true, signal: sig });
   onScroll();

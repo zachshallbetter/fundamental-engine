@@ -7,7 +7,22 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Bodies track scroll between re-measures — no more swarm "pause" on scroll (core).** Body centres are
+  re-measured (`getBoundingClientRect`) only every 6th frame, but the page scrolls continuously under the
+  fixed field — so during a scroll each attractor's force-centre snapped in 6-frame steps and the swarm
+  read as pausing/stuttering. The cached centres are now translated by the per-frame scroll delta between
+  measures (`b.cy -= dScroll`), which carries the shaped box too (it's centred on `cy`); `measureBodies`
+  still refreshes from the real rects on its cadence, so there's no drift. Verified: sampled body force at
+  a fixed point changes every frame through a scroll (plateau fraction 0, was ~0.83).
+
 ### Added
+
+- **`wall` sparks in the body's own colour (core).** A kinematic `wall` already throws a spark on a hard
+  impact (§6.4); it now sparks in the body's `data-color` tint when it carries one (falling back to the
+  canonical wall hue), so a tagged container's impact flash matches its tag-tint. One-line change to the
+  `wall` force; existing spark/bounce tests unchanged.
 
 - **Tag-tint — particles wear their nearest tag's colour (core).** Every body that carries a colour
   (`data-color`) now stains the swarm toward its tint at render time, by proximity — a *pervasive*
