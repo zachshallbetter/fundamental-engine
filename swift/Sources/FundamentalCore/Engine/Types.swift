@@ -93,6 +93,9 @@ public final class Body {
     public var tokens: [String]
     /// Memoized token classification (filled lazily by the integrator).
     public var classified: ClassifiedTokens?
+    /// Per-frame position source for a view-less **programmatic** body (`FieldHandle.addBody`). When
+    /// set, the read phase samples it each frame into `box` (the non-DOM analog of `host.worldBox`).
+    public var rect: (() -> Box)?
 
     // ── field parameters ────────────────────────────────────────────────────
     public var strength: Float
