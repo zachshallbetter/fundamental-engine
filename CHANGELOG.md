@@ -7,7 +7,32 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Bodies track scroll between re-measures — no more swarm "pause" on scroll (core).** Body centres are
+  re-measured (`getBoundingClientRect`) only every 6th frame, but the page scrolls continuously under the
+  fixed field — so during a scroll each attractor's force-centre snapped in 6-frame steps and the swarm
+  read as pausing/stuttering. The cached centres are now translated by the per-frame scroll delta between
+  measures (`b.cy -= dScroll`), which carries the shaped box too (it's centred on `cy`); `measureBodies`
+  still refreshes from the real rects on its cadence, so there's no drift. Verified: sampled body force at
+  a fixed point changes every frame through a scroll (plateau fraction 0, was ~0.83).
+
 ### Added
+
+- **`wall` sparks in the body's own colour (core).** A kinematic `wall` already throws a spark on a hard
+  impact (§6.4); it now sparks in the body's `data-color` tint when it carries one (falling back to the
+  canonical wall hue), so a tagged container's impact flash matches its tag-tint. One-line change to the
+  `wall` force; existing spark/bounce tests unchanged.
+
+- **Tag-tint — particles wear their nearest tag's colour (core).** Every body that carries a colour
+  (`data-color`) now stains the swarm toward its tint at render time, by proximity — a *pervasive*
+  companion to the overlap-only `pigment` force, so a particle near a tagged body reflects its hue even
+  on a sparse field (nearest-strongest wins, linear falloff to ~1.4× the force range; pigment still
+  layers on top for advected streaks). Automatic — no markup beyond `data-color`.
+- **Scroll-position heatmap fade (core).** The density heatmap now fades out as the page scrolls past
+  the hero (≈ the first viewport) — a smooth, MONOTONIC function of scroll position, so unlike the
+  earlier velocity-based suppression it never pops/flickers. Below the hero the whole layer is skipped
+  (no texel recompute, no upscale), confining the at-rest heatmap cost (#409) to where it's focused.
 
 - **`lintFeedbackWritesUnread` — the producer half of the feedback-contract lint (dom).** Closes the
   recurring "charged but reads nothing" bug class (#411): a `data-feedback` body gets `--d`/`--load`/
