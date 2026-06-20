@@ -279,5 +279,37 @@ struct MetalRendererTests {
         #expect(field.sampleField("moisture", 0, 0) == 0)
         field.destroy()
     }
+
+    @Test("addBody — a programmatic body exerts force, survives scan, and removes clean")
+    func addBodySeam() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host)
+        let baseCount = field.particleCount() // 130 free particles, no bodies yet
+        let c = Vec3(187, 406, 0)             // ~centre of the 375×812 volume
+        func meanDistanceToC() -> Float {
+            var buf = [Float](repeating: 0, count: field.particleCount() * 5)
+            let n = field.readParticles(into: &buf)
+            var sum: Float = 0
+            for i in 0..<n {
+                let dx = buf[i * 5] - c.x, dy = buf[i * 5 + 1] - c.y
+                sum += (dx * dx + dy * dy).squareRoot()
+            }
+            return n > 0 ? sum / Float(n) : 0
+        }
+        let before = meanDistanceToC()
+        let h = field.addBody(BodySpec(tokens: ["attract"], strength: 8, range: 800) {
+            Box(center: c, halfExtents: Vec3(8, 8, 0))
+        })
+        for i in 0..<90 { host.fire(at: TimeInterval(i) / 60) }
+        #expect(meanDistanceToC() < before)          // the attract actually pulled the swarm inward
+        let withBody = field.particleCount()         // free pool + the body's bound matter
+        #expect(withBody >= baseCount)
+        field.scan()
+        #expect(field.particleCount() == withBody)   // the view-less programmatic body survived the rescan
+        h.remove()
+        field.scan()
+        #expect(field.particleCount() >= baseCount)  // removed cleanly; the free pool persists, no crash
+        field.destroy()
+    }
 }
 #endif

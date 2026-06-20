@@ -92,6 +92,52 @@ public struct FieldOptions {
 
 // MARK: - FieldHandle  (§13)
 
+/// Spec for a **programmatic** body (`FieldHandle.addBody`) — a force source with no backing view.
+/// Mirrors the JS `BodySpec`. `rect` is the position source, sampled each frame (a non-DOM host
+/// projects its mesh/view position through here); `angle` is in degrees.
+public struct BodySpec {
+    public var tokens: [String]
+    public var strength: Float
+    public var range: Float
+    public var spin: Float
+    public var angle: Float?
+    public var color: String?
+    public var data: (any Sendable)?
+    public var rect: () -> Box
+    public init(tokens: [String], strength: Float = 1, range: Float = 100, spin: Float = 1,
+                angle: Float? = nil, color: String? = nil, data: (any Sendable)? = nil,
+                rect: @escaping () -> Box) {
+        self.tokens = tokens; self.strength = strength; self.range = range; self.spin = spin
+        self.angle = angle; self.color = color; self.data = data; self.rect = rect
+    }
+}
+
+/// Live force params a `BodyHandle.set` can mutate (only the keys you pass change). `angle` in degrees.
+public struct BodyParams {
+    public var strength: Float?, range: Float?, angle: Float?, spin: Float?, color: String?
+}
+
+/// Handle to a programmatic body (`FieldHandle.addBody`). Mutate its params live (on the measure
+/// cadence, no rescan) or remove it. Mirrors JS `BodyHandle`. Value type over the engine's mutate
+/// closures (no retain cycle / no core→vanilla layering break).
+public struct BodyHandle {
+    /// The carried record (`BodySpec.data`).
+    public let data: (any Sendable)?
+    private let setImpl: (BodyParams) -> Void
+    private let removeImpl: () -> Void
+    public init(data: (any Sendable)?, set: @escaping (BodyParams) -> Void, remove: @escaping () -> Void) {
+        self.data = data; self.setImpl = set; self.removeImpl = remove
+    }
+    /// Mutate this body's force params live; a *structural* change (different `tokens`) still needs
+    /// remove + `addBody`. `color` re-tints the carried pigment.
+    public func set(strength: Float? = nil, range: Float? = nil, angle: Float? = nil,
+                    spin: Float? = nil, color: String? = nil) {
+        setImpl(BodyParams(strength: strength, range: range, angle: angle, spin: spin, color: color))
+    }
+    /// Remove the body from the field.
+    public func remove() { removeImpl() }
+}
+
 /// Handle to a registered field channel (`FieldHandle.addField`). Swap the sampler live or remove it.
 /// Mirrors the JS `FieldChannelHandle`. Value type wrapping the engine's mutate closures (no retain
 /// cycle): the engine hands it weak-self closures over its channel map.
@@ -168,6 +214,12 @@ public protocol FieldHandle: AnyObject {
     func addField(_ name: String, _ sampler: @escaping (Float, Float) -> Float) -> FieldChannelHandle
     /// Sample a registered channel at `(x, y)`; `0` if no channel by that name. Mirrors JS `sampleField`.
     func sampleField(_ name: String, _ x: Float, _ y: Float) -> Float
+
+    // ── programmatic bodies ───────────────────────────────────────────────
+    /// Add a force source with no backing view — a body driven by code, positioned each frame by the
+    /// spec's `rect` closure (a non-DOM host projects its mesh position through it). Survives `scan()`.
+    /// Returns a handle to mutate its params live or remove it. Mirrors JS `addBody`.
+    func addBody(_ spec: BodySpec) -> BodyHandle
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)

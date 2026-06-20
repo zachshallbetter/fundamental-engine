@@ -28,6 +28,7 @@ final class FieldEngine: FieldHandle {
 
     // Simulation state
     private var bodies: [Body] = []
+    private var programmaticBodies: [Body] = [] // addBody() sources — re-merged after every scan()
     private var formTarget: Formation
     private var accent: RGB
     /// The travelling-accent journey (§9): palette stops the accent traverses with scroll.
@@ -252,6 +253,10 @@ final class FieldEngine: FieldHandle {
             if let view = b.view, let box = host.worldBox(of: view) {
                 b.box = box
                 b.isVisible = boxVisible(box, in: vol)
+            } else if let rect = b.rect { // programmatic body (addBody): sample its position closure
+                let box = rect()
+                b.box = box
+                b.isVisible = boxVisible(box, in: vol)
             }
             if let pair = b.pairBody {
                 b.warpTarget = pair.center
@@ -392,7 +397,7 @@ final class FieldEngine: FieldHandle {
     // MARK: FieldHandle
 
     func scan() {
-        bodies = host.scanBodies()
+        bodies = host.scanBodies() + programmaticBodies // view-less programmatic bodies survive a rescan
     }
 
     func rescan() { scan() }
@@ -428,6 +433,35 @@ final class FieldEngine: FieldHandle {
 
     func sampleField(_ name: String, _ x: Float, _ y: Float) -> Float {
         fieldChannels[name]?(x, y) ?? 0
+    }
+
+    func addBody(_ spec: BodySpec) -> BodyHandle {
+        let heading: Vec3 = spec.angle.map { let r = $0 * .pi / 180; return Vec3(cos(r), sin(r), 0) }
+            ?? Vec3(0, -1, 0)
+        let body = Body(tokens: spec.tokens, strength: spec.strength, range: spec.range,
+                        spin: spec.spin, heading: heading, feedback: true)
+        body.tint = spec.color
+        body.rect = spec.rect
+        body.box = spec.rect() // initial position so the first sample/force is correct
+        body.isVisible = boxVisible(body.box, in: host.volume)
+        programmaticBodies.append(body)
+        bodies.append(body) // live this frame, before the next scan() re-merges it
+        return BodyHandle(
+            data: spec.data,
+            set: { [weak body] p in
+                guard let body else { return }
+                if let s = p.strength { body.strength = s }
+                if let r = p.range { body.range = r }
+                if let sp = p.spin { body.spin = sp }
+                if let a = p.angle { let r = a * .pi / 180; body.heading = Vec3(cos(r), sin(r), 0) }
+                if let c = p.color { body.tint = c }
+            },
+            remove: { [weak self, weak body] in
+                guard let self, let body else { return }
+                self.programmaticBodies.removeAll { $0 === body }
+                self.bodies.removeAll { $0 === body }
+            }
+        )
     }
 
     func setAccent(_ hex: String) {
