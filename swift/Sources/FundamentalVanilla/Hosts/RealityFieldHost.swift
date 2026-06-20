@@ -77,8 +77,13 @@ final class RealityFieldHost: FieldHost {
     }
 
     private func walk(entity: Entity, into bodies: inout [Body]) {
-        if let comp = entity.components[FieldBodyComponent.self] {
-            bodies.append(comp.body)
+        // Bind through an explicit `(any Component)?`: across RealityKit SDK versions the
+        // `components[T.self]` subscript resolves to either `T?` or `(any Component)?` (the latter,
+        // on the CI runner's SDK, has no `.body`). The annotation upcasts implicitly on the first and
+        // is identity on the second, so the downcast then reads `.body` warning-free on both.
+        let component: (any Component)? = entity.components[FieldBodyComponent.self]
+        if let field = component as? FieldBodyComponent {
+            bodies.append(field.body)
         }
         for child in entity.children { walk(entity: child, into: &bodies) }
     }

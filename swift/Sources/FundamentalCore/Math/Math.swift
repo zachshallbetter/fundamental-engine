@@ -25,10 +25,10 @@ public func lerp(_ a: Float, _ b: Float, _ t: Float) -> Float {
 
 // MARK: - Color
 
-/// Cool (resting) particle color (§20.8).
-public let COOL: RGB = RGB(200, 224, 255)
-/// Warm (energized) particle color (§20.8).
-public let WARM: RGB = RGB(255, 122, 69)
+/// Cool (resting) particle color (§20.8). Warm-default identity — parity with the JS core.
+public let COOL: RGB = RGB(255, 224, 200)
+/// Warm (energized) particle color (§20.8). Warm-default identity — parity with the JS core.
+public let WARM: RGB = RGB(255, 110, 80)
 /// Fallback accent blue.
 public let DEFAULT_ACCENT: RGB = RGB(77, 163, 255)
 
