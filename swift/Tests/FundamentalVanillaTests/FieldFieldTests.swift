@@ -245,5 +245,39 @@ struct MetalRendererTests {
         #expect(segs.count == 1)
         #expect(abs(segs[0].alpha - linkAlpha(d: 30, r: 70)) < 1e-6)
     }
+
+    // MARK: FieldHandle read/input seam (#423)
+
+    @Test("readParticles fills a stride-5 buffer and returns the count written")
+    func readParticlesSeam() {
+        let field = FieldField(host: HeadlessFieldHost())
+        var buf = [Float](repeating: -1, count: 130 * 5)
+        #expect(field.readParticles(into: &buf) == 130)         // base pool
+        #expect(buf[0..<5].allSatisfy { $0.isFinite })
+        var small = [Float](repeating: 0, count: 10 * 5)
+        #expect(field.readParticles(into: &small) == 10)        // capped to the buffer
+        field.destroy()
+    }
+
+    @Test("sampleScalar/Gradient are zero with the heatmap off")
+    func sampleScalarOff() {
+        let field = FieldField(host: HeadlessFieldHost())
+        #expect(field.sampleScalar(at: Vec3(187, 406, 0)) == 0)
+        #expect(field.sampleGradient(at: Vec3(187, 406, 0)) == .zero)
+        field.destroy()
+    }
+
+    @Test("addField registers a channel; set swaps it; remove clears it")
+    func fieldChannelSeam() {
+        let field = FieldField(host: HeadlessFieldHost())
+        let ch = field.addField("moisture") { x, y in x + y }
+        #expect(field.sampleField("moisture", 3, 4) == 7)
+        #expect(field.sampleField("absent", 0, 0) == 0)
+        ch.set { _, _ in 42 }
+        #expect(field.sampleField("moisture", 0, 0) == 42)
+        ch.remove()
+        #expect(field.sampleField("moisture", 0, 0) == 0)
+        field.destroy()
+    }
 }
 #endif
