@@ -5,11 +5,11 @@ How versions are cut and published. The mechanical detail lives in
 
 ## Versioning policy
 
-The eight published packages — `@fundamental-engine/core`, `@fundamental-engine/dom`, `@fundamental-engine/elements`,
-`@fundamental-engine/react`, `@fundamental-engine/vanilla`, `@fundamental-engine/three`, and the meta-packages `@fundamental-engine/kit` /
-`fundamental-engine` — are versioned **together**. (`@fundamental-engine/three` declares `three` as a peer
-dependency and is deliberately *not* part of `@fundamental-engine/kit`, so the kit never forces a Three.js
-install.) They follow [Semantic Versioning](https://semver.org):
+The six published packages — `@fundamental-engine/core`, `@fundamental-engine/dom`, `@fundamental-engine/elements`,
+`@fundamental-engine/react`, `@fundamental-engine/vanilla`, `@fundamental-engine/three` — are versioned
+**together**. (The umbrella meta-packages `@fundamental-engine/kit` / `fundamental-engine` were retired in
+0.7.0 and are no longer published — they are kept `private` in the workspace. `@fundamental-engine/three`
+declares `three` as a peer dependency.) They follow [Semantic Versioning](https://semver.org):
 
 - **patch** (`0.2.x`) — bug fixes, internal changes, **and additive backward-compatible features**
   (a new force, a new `FieldOption`, a new `FieldHandle` method). Pre-1.0, additions land in a patch —
@@ -38,7 +38,7 @@ contract. It is frozen for `0.x` and gated by `pnpm check:api` — see
 1. **Green `main`.** CI (typecheck · test · build · checks) must be passing.
 2. **Update the CHANGELOG.** Add a versioned, dated heading (`## [x.y.z] — YYYY-MM-DD`) following
    [Keep a Changelog](https://keepachangelog.com).
-3. **Bump all seven packages together** (keep them at the same version):
+3. **Bump all six packages together** (keep them at the same version):
    ```sh
    pnpm --filter "@fundamental-engine/*" exec npm version <patch|minor|major> --no-git-tag-version
    ```
@@ -90,7 +90,7 @@ the gates above.
   without provenance" is a recorded fact, not a silent degradation.
 - **Never bump one package alone.** Always
   `pnpm --filter "@fundamental-engine/*" exec npm version <bump> --no-git-tag-version` — the release
-  gate fails the tag if any of the seven is out of step.
+  gate fails the tag if any of the six is out of step.
 - **Never widen a failing gate to make it pass.** If `check:api` fails, the public
   contract changed: fix the change or cut a deliberate 0.MINOR with a migration note —
   never edit the baseline to silence it. If e2e fails on one browser, fix the race; don't

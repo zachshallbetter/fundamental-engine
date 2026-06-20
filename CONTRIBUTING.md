@@ -26,8 +26,8 @@ The repo is a pnpm monorepo:
 
 These are load-bearing — please keep to them:
 
-- **The spec is the contract.** `docs/forces-system.md` is law; code conforms to it.
-  `docs/forces-tests.md` defines how forces are verified.
+- **The spec is the contract.** `docs/engine-reference/forces-system.md` is law; code conforms to it.
+  `docs/engine-reference/forces-tests.md` defines how forces are verified.
 - **Zero runtime dependencies in the core.** TypeScript is fine; a runtime dependency
   needs a strong justification. The React adapter's one peer dep (React) is the only
   approved framework dependency.

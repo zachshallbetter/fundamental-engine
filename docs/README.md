@@ -31,7 +31,8 @@ Every document carries a status banner at the top. The four statuses:
 - **legacy / superseded** — preserved for design history; not authoritative.
 - **planning / roadmap** — forward-looking only; does not describe planned work as shipped.
 
-The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning-archive/`.
+The folders mirror the statuses: `canonical/`, `engine-reference/`, `planning/` (active forward-looking
+specs), and `planning-archive/` (frozen design history).
 
 ## canonical/ — current architecture, contracts, and product framing
 
@@ -66,6 +67,15 @@ formulas, catalogs, and engine behavior, but do **not** define the whole platfor
 | [`forces-fields-plan.md`](engine-reference/forces-fields-plan.md) | As-built field-line / heatmap record |
 | [`physics-workover.md`](engine-reference/physics-workover.md) | Physics correctness pass |
 | [`shadow-dom.md`](engine-reference/shadow-dom.md) | Shadow-DOM participation model (now owned by the platform) |
+
+## planning/ — active forward-looking specs
+
+Current planning material. Forward-looking; does not describe planned work as shipped.
+
+| Document | Role |
+|---|---|
+| [`fundamental-release-gate-spec.md`](planning/fundamental-release-gate-spec.md) | The RC/1.0 release-gate program — two gates (freezability + survivor), the source spec behind the RC issues (#316–334) |
+| [`fundamental-three-integration.md`](planning/fundamental-three-integration.md) | Three.js renderer integration plan |
 
 ## planning-archive/ — design history & planning records
 

@@ -26,7 +26,7 @@ one Three.js:
 ```html
 <script type="module">
   // ?deps pins the peer; match it to your page's three version
-  import * as FieldUI from "https://esm.sh/@fundamental-engine/three@0.3.1?deps=three@0.147.0";
+  import * as FieldUI from "https://esm.sh/@fundamental-engine/three@0.7.0?deps=three@0.147.0";
   window.FieldUI = FieldUI;                          // hand it to classic scripts
   window.dispatchEvent(new Event("fieldui-ready"));  // module scripts are deferred — signal readiness
 </script>

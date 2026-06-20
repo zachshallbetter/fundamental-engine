@@ -70,7 +70,7 @@ These forces are fully implemented in `packages/core/src/forces/index.ts` and dr
 
 These forces split into designed behaviors, physical primitives, and virtual cosmology presets. Most of this vocabulary now ships; the few genuinely spec-only items are called out explicitly below.
 
-> **Status.** Most of this vocabulary now ships; the as-built set and exact tokens live in §1, [`forces-system.md`](forces-system.md) §20, and the catalog. Names here are the shipped tokens: the pheromone field ships as `diffuse`, `diffuse` and `memory` are class [C] natural primitives, and the budgeted class-[S] source ships as `spawn`. Still spec-only: the relocation atom `warp` and the `wormhole` preset it composes. The registered presets are `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`; `supernova` below is the sink-release *event*, not a `data-preset`.
+> **Status.** Most of this vocabulary now ships; the as-built set and exact tokens live in §1, [`forces-system.md`](forces-system.md) §20, and the catalog. Names here are the shipped tokens: the pheromone field ships as `diffuse`, `diffuse` and `memory` are class [C] natural primitives, and the budgeted class-[S] source ships as `spawn`. The relocation atom `warp` now ships (it is in the 36-force catalog, with a conformance experiment). Still spec-only: the `wormhole` preset it composes. The registered presets are `blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`, `fountain`; `supernova` below is the sink-release *event*, not a `data-preset`.
 
 ### 2.1 Extended Designed Forces
 
@@ -117,7 +117,7 @@ Cosmology presets use co-located virtual bodies of basic forces to represent ast
   - *Formula:*
     $$\text{if}\ d < r_s:\ p.\text{pos} = b.\text{center} + \hat{u}_{\text{out}} \cdot r_s;\ v = \hat{u}_{\text{out}} \cdot \text{spd}$$
     $$\text{else}:\ v -= (GM/d^2) \cdot \hat{u}$$
-- **Wormhole (`wormhole`)** — *proposed; `warp` not yet built*
+- **Wormhole (`wormhole`)** — *proposed preset; composes the shipped `warp` atom*
   - *Class:* [A · paired]
   - *Composition:* `attract` + `warp` (throat A) $\leftrightarrow$ `warp` + `repel` (throat B)
   - *Formula (Warp throat relocation):*
