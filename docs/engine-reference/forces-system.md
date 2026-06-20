@@ -35,6 +35,36 @@ Source of authority:
 
 ---
 
+## Contents
+
+- [1. The idea](#1-the-idea)
+- [2. The substrate (engine fundamentals)](#2-the-substrate-engine-fundamentals)
+- [3. Data model](#3-data-model)
+- [4. The force registry contract](#4-the-force-registry-contract)
+- [5. Conditions (`data-when` gates)](#5-conditions-data-when-gates)
+- [6. The nine forces](#6-the-nine-forces)
+- [7. Formations (global field arrangements)](#7-formations-global-field-arrangements)
+- [8. Two-way density feedback](#8-two-way-density-feedback)
+- [9. The accent journey](#9-the-accent-journey)
+- [10. Threads (wiring a set)](#10-threads-wiring-a-set)
+- [11. Lifecycle events](#11-lifecycle-events)
+- [12. Declaring a body (authoring API)](#12-declaring-a-body-authoring-api)
+- [13. Public field API (`FieldHandle`)](#13-public-field-api-fieldhandle)
+- [14. The Lab (interactive sandbox)](#14-the-lab-interactive-sandbox)
+- [15. Disciplines ↔ forces (the practice matrix)](#15-disciplines-↔-forces-the-practice-matrix)
+- [16. The Field Manual (the canonical narrative)](#16-the-field-manual-the-canonical-narrative)
+- [17. The Design System (where the forces live)](#17-the-design-system-where-the-forces-live)
+- [18. Accessibility, reduced motion, performance](#18-accessibility-reduced-motion-performance)
+- [19. Notes for adapting the engine](#19-notes-for-adapting-the-engine)
+- [20. Extended force set — implemented](#20-extended-force-set--implemented)
+- [21. Mass & momentum — audit and first-class proposal](#21-mass--momentum--audit-and-first-class-proposal)
+- [22. Force targets — particles, elements & events](#22-force-targets--particles-elements--events)
+- [23. Micro-reactions — energy transfer made visible](#23-micro-reactions--energy-transfer-made-visible)
+- [24. Currents — the carrier waves](#24-currents--the-carrier-waves)
+- [25. Additive concepts from the design system](#25-additive-concepts-from-the-design-system)
+
+---
+
 ## 1. The idea
 
 > The page's **elements** bend the field; the field's **density** bends the
