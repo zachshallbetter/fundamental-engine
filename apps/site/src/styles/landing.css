@@ -137,24 +137,43 @@ html[data-field='on'] .hero-antimass:hover {
   color: var(--accent);
 }
 
-/* install block */
+/* install block — four surface cards, two-up, filling the wrap (no 760px cinch) */
 .lp-pkgs {
-  margin: 1.6rem 0 0;
+  margin: 1.9rem 0 0;
   display: grid;
-  gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  max-width: 760px;
+  gap: 1.4rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 760px) {
+  .lp-pkgs {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+  }
 }
 .lp-pkg {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  align-items: flex-start;
+  gap: 0.7rem;
+  align-items: stretch;
+  padding: 1.15rem 1.25rem 1.25rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.07));
+  border-left: 2px solid var(--cat, var(--accent));
+  border-radius: 14px;
+  /* a faint wash of the surface's own colour + the field's feedback density glow */
+  background: color-mix(in srgb, var(--cat, var(--accent)) 6%, transparent);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+/* the body opted into feedback — brighten with local field density as matter gathers at the wall */
+.lp-pkg[data-feedback] {
+  border-color: color-mix(in srgb, var(--cat, var(--accent)) calc(18% + var(--field-density, 0) * 55%), var(--line, rgba(255, 255, 255, 0.07)));
 }
 .lp-pkg > span {
-  font-size: 0.84rem;
-  line-height: 1.45;
+  font-size: 0.86rem;
+  line-height: 1.5;
   color: var(--text-3);
+}
+.lp-pkg .install {
+  --accent: var(--cat, var(--accent));
 }
 .lp-pkg code:not(.install) {
   font-family: var(--mono);
