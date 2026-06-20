@@ -2,7 +2,7 @@
 > This document maps everything the field runtime currently makes observable from outside the
 > engine — organized by layer, with notes on how each surface is accessed. It also records the
 > identified performance gaps and the `FieldPerf` design direction for closing them.
-> Related: [forces-system.md §13](forces-system.md#13-public-field-api-windowfield),
+> Related: [forces-system.md §13](forces-system.md#13-public-field-api-fieldhandle),
 > [forces-system.md §18](forces-system.md#18-accessibility-reduced-motion-performance),
 > [api-stability.md](../canonical/api-stability.md).
 

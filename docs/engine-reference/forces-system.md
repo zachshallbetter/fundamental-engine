@@ -35,6 +35,36 @@ Source of authority:
 
 ---
 
+## Contents
+
+- [1. The idea](#1-the-idea)
+- [2. The substrate (engine fundamentals)](#2-the-substrate-engine-fundamentals)
+- [3. Data model](#3-data-model)
+- [4. The force registry contract](#4-the-force-registry-contract)
+- [5. Conditions (`data-when` gates)](#5-conditions-data-when-gates)
+- [6. The nine forces](#6-the-nine-forces)
+- [7. Formations (global field arrangements)](#7-formations-global-field-arrangements)
+- [8. Two-way density feedback](#8-two-way-density-feedback)
+- [9. The accent journey](#9-the-accent-journey)
+- [10. Threads (wiring a set)](#10-threads-wiring-a-set)
+- [11. Lifecycle events](#11-lifecycle-events)
+- [12. Declaring a body (authoring API)](#12-declaring-a-body-authoring-api)
+- [13. Public field API (`FieldHandle`)](#13-public-field-api-fieldhandle)
+- [14. The Lab (interactive sandbox)](#14-the-lab-interactive-sandbox)
+- [15. Disciplines ↔ forces (the practice matrix)](#15-disciplines-↔-forces-the-practice-matrix)
+- [16. The Field Manual (the canonical narrative)](#16-the-field-manual-the-canonical-narrative)
+- [17. The Design System (where the forces live)](#17-the-design-system-where-the-forces-live)
+- [18. Accessibility, reduced motion, performance](#18-accessibility-reduced-motion-performance)
+- [19. Notes for adapting the engine](#19-notes-for-adapting-the-engine)
+- [20. Extended force set — implemented](#20-extended-force-set--implemented)
+- [21. Mass & momentum — audit and first-class proposal](#21-mass--momentum--audit-and-first-class-proposal)
+- [22. Force targets — particles, elements & events](#22-force-targets--particles-elements--events)
+- [23. Micro-reactions — energy transfer made visible](#23-micro-reactions--energy-transfer-made-visible)
+- [24. Currents — the carrier waves](#24-currents--the-carrier-waves)
+- [25. Additive concepts from the design system](#25-additive-concepts-from-the-design-system)
+
+---
+
 ## 1. The idea
 
 > The page's **elements** bend the field; the field's **density** bends the
@@ -785,11 +815,6 @@ formation as it scrolls into view (the field "reorganizes under you"); a chapter
 rail highlights the current chapter; `[data-drag]` chips and `[data-agitate]`
 buttons drive the live demos (§12); the accretion `.meter` reads `--load`.
 
-> ⚠️ **Copy discrepancy to fix.** The manual hero states "**Forces** — eight,
-> composable," but the manual itself documents **nine** (concepts 04–12) and
-> `DS_FORCES` is canonically **nine**. Treat **nine** as correct and correct the
-> hero copy.
-
 **Agitate vs. a force.** The manual draws a sharp line worth preserving in the
 implementation: a **force** is a steady, continuous influence a body exerts every
 frame; **agitate** (`__field.burst()`) is a *discrete one-shot* — it shoves and
@@ -1019,7 +1044,7 @@ aging/despawn sink for [S]. Class [A] forces and all of §20.4–§20.5 were dro
 | Pressure | `pressure` | B | `#5eead4` | Software architecture | incompressible fill — even density, splashes |
 | Link | `link` | B | `#94a3b8` | Software architecture | Verlet ropes, chains, cloth, soft structures |
 | Hunt | `hunt` | B+E | `#ef4444` / `#22d3ee` | AI / systems | a living ecosystem — chases, population cycles |
-| Pheromone | `pheromone` | C | `#a3e635` | AI / Creative tech | self-growing transport networks (Physarum) |
+| Pheromone | `diffuse` | C | `#a3e635` | AI / Creative tech | self-growing transport networks (Physarum) |
 | Memory | `memory` | C | `#c084fc` | Experience design | paths wear in — the field remembers where matter went |
 | Morph | `morph` | D | `#e879f9` | Creative tech / Design | matter becomes a shape: logo, **mark/punctuation**, map, **chart** — *not* words (§11) |
 | Pigment | `pigment` | E | *(carried)* | Commerce / brand | conserved color transport — sections stain the field |
@@ -1149,7 +1174,7 @@ populations evolve Lotka–Volterra:  Ṗ = αP − βPQ ,  Q̇ = δPQ − γQ
 ```
 Attrs: `data-species`, `data-strength`, `data-range`. Particle needs `species`.
 
-**Pheromone — `pheromone` [C].** Deposit to a decaying grid; steer up its gradient.
+**Pheromone — `diffuse` [C].** Deposit to a decaying grid; steer up its gradient.
 ```
 deposit:  T(x) += δ ;   steer:  v += ∇T(x)·k_follow
 grid/frame:  T ← (T · decay) ⊛ blur                         decay ≈ 0.97

@@ -13,7 +13,7 @@ registration, no framework dependency, no import side effects.
 npm i @fundamental-engine/vanilla
 ```
 
-The only dependency is the zero-dependency core plus [`@fundamental-engine/dom`](../platform) (which supplies
+The only dependency is the zero-dependency core plus [`@fundamental-engine/dom`](../dom) (which supplies
 the browser host). Reach for this from plain TypeScript, or any stack where you want to drive the field
 by hand.
 
@@ -116,12 +116,12 @@ import { FORCES, FORMATIONS } from '@fundamental-engine/vanilla';
 ## Recipes & data binding
 
 To apply a named recipe over your markup or bind data to the field, use `applyRecipe()` / `bindData()`
-from [`@fundamental-engine/dom`](../platform); browse all 64 recipes at
+from [`@fundamental-engine/dom`](../dom); browse all 64 recipes at
 [`/docs/gallery`](https://fundamental-engine.com/docs/gallery).
 
 ## Related
 
-[`@fundamental-engine/core`](../core) · [`@fundamental-engine/dom`](../platform) · [`@fundamental-engine/elements`](../elements)
+[`@fundamental-engine/core`](../core) · [`@fundamental-engine/dom`](../dom) · [`@fundamental-engine/elements`](../elements)
 · [`@fundamental-engine/react`](../react) · the [documentation map](../../docs/README.md).
 
 ## License

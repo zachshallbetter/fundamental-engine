@@ -7,6 +7,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Documentation
+
+- **Docs accuracy sweep.** Audited all 86 docs + package READMEs against the code. Corrected the force
+  count to **36** where docs drifted (9 canonical + 19 extended + 8 natural; `forces-engine.md`,
+  `research/01`); fixed package READMEs (`react`/`vanilla` `../platform` links → `../dom`, `three` CDN
+  example `@0.3.1` → `@0.7.0`); reconciled `RELEASING.md`/`PUBLISHING.md` to **six** published packages at
+  **0.7.0**; removed a false `compat-*` package claim; split the shipped `warp` atom from the spec-only
+  `wormhole` preset; fixed the `pheromone`→`diffuse` token name; repaired broken `docs/...` cross-paths;
+  committed the load-bearing RC/1.0 gate spec and removed stale `docs/planning/` duplicates; added a
+  table of contents to `forces-system.md`.
+
 ### Fixed
 
 - **Bodies track scroll between re-measures — no more swarm "pause" on scroll (core).** Body centres are

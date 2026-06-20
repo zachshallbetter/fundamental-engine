@@ -1,5 +1,10 @@
 # Backlog
 
+> **Source of truth has moved.** Active, dispatchable work now lives on the **RC1 board**
+> ([user Project #24](https://github.com/users/zachshallbetter/projects/24), managed via the
+> `github-projects` skill). This file is a manually-maintained historical queue and may lag `main` —
+> verify any item against the board and `CHANGELOG.md` before acting on it.
+
 The running, granular queue. Strategic context lives in
 [`docs/planning-archive/roadmap-frontiers.md`](docs/planning-archive/roadmap-frontiers.md); shipped work moves to
 [`CHANGELOG.md`](CHANGELOG.md).

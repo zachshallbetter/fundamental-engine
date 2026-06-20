@@ -2,12 +2,12 @@
 
 It began as a plain global-script DOM prototype with one `rAF` loop: brilliant, but
 untyped, monolithic, and bound to one page. The goal is a clean, typed, modular,
-framework-agnostic engine that realizes the spec (`docs/forces-system.md`) without
+framework-agnostic engine that realizes the spec (`docs/engine-reference/forces-system.md`) without
 losing the feel.
 
 Guiding principles:
 
-- **The spec is the contract.** `docs/forces-system.md` is law; code conforms to it.
+- **The spec is the contract.** `docs/engine-reference/forces-system.md` is law; code conforms to it.
 - **Grow primitives rarely.** New ideas are composites or emergent behavior (§20.0).
 - **One source of truth.** `src/config/forces.config.ts` — never re-declare catalog data.
 - **Framework-agnostic core.** Zero UI-framework deps in the engine; adapters are separate.
