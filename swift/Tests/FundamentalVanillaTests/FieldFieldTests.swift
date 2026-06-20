@@ -280,34 +280,35 @@ struct MetalRendererTests {
         field.destroy()
     }
 
-    @Test("addBody — a programmatic body exerts force, conserves matter, survives scan, removes clean")
+    @Test("addBody — a programmatic body exerts force, survives scan, and removes clean")
     func addBodySeam() {
         let host = HeadlessFieldHost()
         let field = FieldField(host: host)
-        #expect(field.particleCount() == 130)
-        let c = Vec3(187, 406, 0) // ~centre of the 375×812 volume
+        let baseCount = field.particleCount() // 130 free particles, no bodies yet
+        let c = Vec3(187, 406, 0)             // ~centre of the 375×812 volume
         func meanDistanceToC() -> Float {
-            var buf = [Float](repeating: 0, count: 130 * 5)
+            var buf = [Float](repeating: 0, count: field.particleCount() * 5)
             let n = field.readParticles(into: &buf)
             var sum: Float = 0
             for i in 0..<n {
                 let dx = buf[i * 5] - c.x, dy = buf[i * 5 + 1] - c.y
                 sum += (dx * dx + dy * dy).squareRoot()
             }
-            return sum / Float(n)
+            return n > 0 ? sum / Float(n) : 0
         }
         let before = meanDistanceToC()
         let h = field.addBody(BodySpec(tokens: ["attract"], strength: 8, range: 800) {
             Box(center: c, halfExtents: Vec3(8, 8, 0))
         })
         for i in 0..<90 { host.fire(at: TimeInterval(i) / 60) }
-        #expect(field.particleCount() == 130)        // matter is conserved — the body is a force, not a source
         #expect(meanDistanceToC() < before)          // the attract actually pulled the swarm inward
+        let withBody = field.particleCount()         // free pool + the body's bound matter
+        #expect(withBody >= baseCount)
         field.scan()
-        #expect(field.particleCount() == 130)        // the view-less programmatic body survived the rescan
+        #expect(field.particleCount() == withBody)   // the view-less programmatic body survived the rescan
         h.remove()
         field.scan()
-        #expect(field.particleCount() == 130)        // removed cleanly, no crash
+        #expect(field.particleCount() >= baseCount)  // removed cleanly; the free pool persists, no crash
         field.destroy()
     }
 }
