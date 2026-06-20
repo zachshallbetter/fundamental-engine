@@ -83,6 +83,12 @@ const hookFor = (href: string): string | undefined =>
       so <code>createField</code> works with no wiring. React users want <code>@fundamental-engine/react</code>.
       The other packages are there when you need them; the core engine has zero runtime dependencies.
     </p>
+    <ul class="model" aria-label="Which package to install">
+      <li><b>Plain JS/TS, or any framework, no opinion?</b> → <code>@fundamental-engine/vanilla</code> — start here.</li>
+      <li><b>React app?</b> → <code>@fundamental-engine/react</code></li>
+      <li><b>Vue / Svelte / Angular / plain HTML?</b> → <code>@fundamental-engine/elements</code> — the <code>&lt;field-root&gt;</code> custom element.</li>
+      <li><b>Your own renderer, or a canvas you own?</b> → <code>@fundamental-engine/core</code> — you supply the host.</li>
+    </ul>
     <div class="pkg-grid">
       <div class="pkg">
         <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
