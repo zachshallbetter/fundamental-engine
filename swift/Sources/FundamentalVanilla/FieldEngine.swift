@@ -396,6 +396,26 @@ final class FieldEngine: FieldHandle {
 
     func rescan() { scan() }
 
+    func readParticles(into out: inout [Float]) -> Int {
+        let capN = out.count / 5 // stride 5: x, y, z, heat, size
+        var w = 0
+        for p in store.particles {
+            if w >= capN { break }
+            let o = w * 5
+            out[o]     = p.position.x
+            out[o + 1] = p.position.y
+            out[o + 2] = p.position.z // optional z lane; 0 in a flat field
+            out[o + 3] = p.heat
+            out[o + 4] = p.size
+            w += 1
+        }
+        return w
+    }
+
+    func sampleScalar(at p: Vec3) -> Float { heatmap?.norm(at: p) ?? 0 }
+
+    func sampleGradient(at p: Vec3) -> Vec3 { heatmap?.gradient(at: p) ?? .zero }
+
     func setAccent(_ hex: String) {
         options.accent = hex
         accent = hexToRgb(hex)

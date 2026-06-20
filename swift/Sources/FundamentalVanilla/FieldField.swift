@@ -146,6 +146,9 @@ public final class FieldField: FieldHandle {
     public func clearFocus()                              { handle.clearFocus() }
 
     public func particleCount() -> Int                    { handle.particleCount() }
+    public func readParticles(into out: inout [Float]) -> Int { handle.readParticles(into: &out) }
+    public func sampleScalar(at p: Vec3) -> Float         { handle.sampleScalar(at: p) }
+    public func sampleGradient(at p: Vec3) -> Vec3        { handle.sampleGradient(at: p) }
     public func energy() -> EnergyReport                  { handle.energy() }
     public func scrollV() -> Float                        { handle.scrollV() }
 

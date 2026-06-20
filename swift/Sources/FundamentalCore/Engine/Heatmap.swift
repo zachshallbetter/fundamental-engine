@@ -44,4 +44,11 @@ public final class Heatmap {
     public func norm(at p: Vec3) -> Float {
         clamp(grid.sample(at: p) / peak, 0, 1)
     }
+
+    /// Gradient of the normalized density field at a point — points up-slope (toward denser matter);
+    /// `.zero` before any matter accumulates. `norm` is `sample / peak`, so its gradient is the raw
+    /// grid gradient scaled by `1 / peak`.
+    public func gradient(at p: Vec3) -> Vec3 {
+        peak > 0 ? grid.gradient(at: p) / peak : .zero
+    }
 }

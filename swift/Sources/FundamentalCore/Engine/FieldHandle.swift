@@ -131,6 +131,16 @@ public protocol FieldHandle: AnyObject {
     func particleCount() -> Int
     func energy() -> EnergyReport
     func scrollV() -> Float
+    /// Copy live particle state into a caller-owned buffer (stride 5: `x, y, z, heat, size`); returns
+    /// the count written = `min(particleCount(), out.count / 5)`. Zero-alloc read-out an alternative
+    /// renderer (a SceneKit / Metal swarm) draws from — mirrors JS `FieldHandle.readParticles`.
+    func readParticles(into out: inout [Float]) -> Int
+    /// The smooth diffused density scalar ∈ [0,1] at a point — the heatmap grid bilinearly sampled,
+    /// or 0 when the heatmap layer is off. Mirrors JS `sampleScalar`.
+    func sampleScalar(at p: Vec3) -> Float
+    /// The gradient of that density field at a point (points up-slope, toward denser matter), or
+    /// `.zero` when the heatmap is off — the forage-by-gradient read-out. Mirrors JS `sampleGradient`.
+    func sampleGradient(at p: Vec3) -> Vec3
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)
