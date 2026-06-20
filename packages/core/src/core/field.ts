@@ -205,6 +205,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // reading. Its grid is the same body-induced force field, so it had the same per-frame regrid
   // waste the underlay shed in #406; resample on the cadence, draw from this cache every frame.
   let olSamples: { gx: number; gy: number; ux: number; uy: number; mag: number }[] | null = null;
+  // Tag-tint cache (#515): the parsed RGB + reach² of each coloured body, rebuilt only on the
+  // measure cadence (colour/range change there, not per frame). The body ref is kept so the
+  // per-particle loop reads cx/cy FRESH each frame — those are scroll-compensated every frame
+  // (#508), so caching positions would re-introduce the swarm-pause-on-scroll lag for the tint.
+  let tintCache: { b: Body; r2: number; rgb: RGB }[] | null = null;
   // hard pool ceiling for class-[S] sources (§20.1) — generous above the ~130·density
   // base field so emission is never starved, but bounded so the sim can't grow forever.
   const spawnCeiling = Math.round(130 * cfg.density) * 4;
@@ -1126,12 +1131,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // tagged body wears its tag's hue even on a sparse field. Few coloured bodies, precomputed once
     // here; nearest-strongest wins per particle so the hues don't muddy. Reach is a touch past the
     // force range so the colour reads before matter actually arrives.
-    const tintBodies: { x: number; y: number; r2: number; rgb: RGB }[] = [];
-    for (const tb of bodies) {
-      if (!tb.tint) continue;
-      const reach = (tb.range || 200) * 1.4;
-      tintBodies.push({ x: tb.cx, y: tb.cy, r2: reach * reach, rgb: hexToRgb(tb.tint) });
+    // Rebuild the RGB cache only on the measure cadence (every 6th frame) or first frame — hexToRgb is
+    // the churn (#515). Positions are NOT cached: the loop below reads each body's live cx/cy.
+    if (tintCache === null || frameN % 6 === 0) {
+      tintCache = [];
+      for (const tb of bodies) {
+        if (!tb.tint) continue;
+        const reach = (tb.range || 200) * 1.4;
+        tintCache.push({ b: tb, r2: reach * reach, rgb: hexToRgb(tb.tint) });
+      }
     }
+    const tintBodies = tintCache;
     if (showMatter) for (const p of store.particles) {
       // captured matter is held in orbit by the sink — drawn dim and small (the accretion's orbital
       // work), distinct from the free swarm. It stays visible: the body gathers and holds a real
@@ -1154,8 +1164,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         let bw = 0;
         let brgb: RGB | null = null;
         for (const tb of tintBodies) {
-          const dx = p.x - tb.x;
-          const dy = p.y - tb.y;
+          const dx = p.x - tb.b.cx; // live position — scroll-compensated every frame (#508)
+          const dy = p.y - tb.b.cy;
           const dd2 = dx * dx + dy * dy;
           if (dd2 >= tb.r2) continue;
           const w = 1 - Math.sqrt(dd2 / tb.r2); // linear falloff, 1 at centre → 0 at reach
