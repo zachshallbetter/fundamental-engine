@@ -7,6 +7,20 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Site
+
+- **A `/changelog` page — "what's new", on the site.** Recently-shipped highlights over the full,
+  versioned log, rendered at build time straight from this `CHANGELOG.md` (single source of truth). A
+  version badge in the nav links to it.
+- **Homepage content pass.** Sharpened the copy to explain the point over the spectacle (the AI-trust
+  section, the install story), de-jargoned the install language, and added the `0.x preview` maturity
+  signal to `/eli5`. Tightened the narrative by cutting three Gallery beats that re-demoed earlier
+  chapters (the live experience keeps its full length; only the redundancy is gone).
+- **Wayfinding — every concept leads to its reference.** Each manual chapter now links to its canonical
+  doc, and all 36 forces deep-link to their exact entry in the force catalog. Added a "pick your
+  package" decision path to the docs and two worked accessibility examples (reduced-motion CSS, the
+  `aria-hidden` visual-binding pattern).
+
 ### Documentation
 
 - **Docs accuracy sweep.** Audited all 86 docs + package READMEs against the code. Corrected the force
