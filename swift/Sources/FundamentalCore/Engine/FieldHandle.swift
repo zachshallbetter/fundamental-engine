@@ -92,6 +92,25 @@ public struct FieldOptions {
 
 // MARK: - FieldHandle  (§13)
 
+/// Handle to a registered field channel (`FieldHandle.addField`). Swap the sampler live or remove it.
+/// Mirrors the JS `FieldChannelHandle`. Value type wrapping the engine's mutate closures (no retain
+/// cycle): the engine hands it weak-self closures over its channel map.
+public struct FieldChannelHandle {
+    /// The channel name (the key passed to `addField`).
+    public let name: String
+    private let setImpl: (@escaping (Float, Float) -> Float) -> Void
+    private let removeImpl: () -> Void
+    public init(name: String,
+                set: @escaping (@escaping (Float, Float) -> Float) -> Void,
+                remove: @escaping () -> Void) {
+        self.name = name; self.setImpl = set; self.removeImpl = remove
+    }
+    /// Swap the sampler live (e.g. a season changes the moisture map).
+    public func set(_ sampler: @escaping (Float, Float) -> Float) { setImpl(sampler) }
+    /// Unregister the channel; `sampleField(name, …)` returns 0 afterward.
+    public func remove() { removeImpl() }
+}
+
 /// The public field API — the handle returned by `createField`.
 /// All spatial parameters are 3D; on 2D platforms pass z = 0.
 public protocol FieldHandle: AnyObject {
@@ -141,6 +160,14 @@ public protocol FieldHandle: AnyObject {
     /// The gradient of that density field at a point (points up-slope, toward denser matter), or
     /// `.zero` when the heatmap is off — the forage-by-gradient read-out. Mirrors JS `sampleGradient`.
     func sampleGradient(at p: Vec3) -> Vec3
+
+    // ── open inputs (field channels) ──────────────────────────────────────
+    /// Register an external scalar field channel — the open *input* analog of the render surfaces
+    /// (a moisture map, a season, a heat source). Returns a handle to swap the sampler live or remove
+    /// it. Mirrors JS `addField`.
+    func addField(_ name: String, _ sampler: @escaping (Float, Float) -> Float) -> FieldChannelHandle
+    /// Sample a registered channel at `(x, y)`; `0` if no channel by that name. Mirrors JS `sampleField`.
+    func sampleField(_ name: String, _ x: Float, _ y: Float) -> Float
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)

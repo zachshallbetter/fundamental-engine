@@ -55,6 +55,7 @@ final class FieldEngine: FieldHandle {
     private var threadLinks: [ThreadLink] = []
     private var grids: [String: ScalarGridImpl] = [:]
     private var heatmap: Heatmap?
+    private var fieldChannels: [String: (Float, Float) -> Float] = [:] // addField() open inputs
 
     init(host: any FieldHost, options: FieldOptions, registry: Registry = .standard()) {
         self.host = host
@@ -415,6 +416,19 @@ final class FieldEngine: FieldHandle {
     func sampleScalar(at p: Vec3) -> Float { heatmap?.norm(at: p) ?? 0 }
 
     func sampleGradient(at p: Vec3) -> Vec3 { heatmap?.gradient(at: p) ?? .zero }
+
+    func addField(_ name: String, _ sampler: @escaping (Float, Float) -> Float) -> FieldChannelHandle {
+        fieldChannels[name] = sampler
+        return FieldChannelHandle(
+            name: name,
+            set: { [weak self] next in self?.fieldChannels[name] = next },
+            remove: { [weak self] in self?.fieldChannels[name] = nil }
+        )
+    }
+
+    func sampleField(_ name: String, _ x: Float, _ y: Float) -> Float {
+        fieldChannels[name]?(x, y) ?? 0
+    }
 
     func setAccent(_ hex: String) {
         options.accent = hex

@@ -149,6 +149,8 @@ public final class FieldField: FieldHandle {
     public func readParticles(into out: inout [Float]) -> Int { handle.readParticles(into: &out) }
     public func sampleScalar(at p: Vec3) -> Float         { handle.sampleScalar(at: p) }
     public func sampleGradient(at p: Vec3) -> Vec3        { handle.sampleGradient(at: p) }
+    public func addField(_ name: String, _ sampler: @escaping (Float, Float) -> Float) -> FieldChannelHandle { handle.addField(name, sampler) }
+    public func sampleField(_ name: String, _ x: Float, _ y: Float) -> Float { handle.sampleField(name, x, y) }
     public func energy() -> EnergyReport                  { handle.energy() }
     public func scrollV() -> Float                        { handle.scrollV() }
 
