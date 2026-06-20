@@ -65,8 +65,6 @@ export interface FieldLayerOptions extends Omit<FieldOptions, 'host' | 'render'>
   renderer?: WebGLRenderer;
   /** explicit device-pixel ratio override. */
   dpr?: number;
-  /** `[data-body]` scan root; omit for a field with no DOM bodies. */
-  root?: ParentNode;
   /** a canvas to satisfy the engine signature; one is created for you when omitted. */
   canvas?: HTMLCanvasElement;
   /** max particles the GPU buffers hold; defaults to ~1.25× the seeded pool. */
@@ -99,11 +97,10 @@ export class FieldLayer implements FieldHandle {
     // the host scans the body registry; mesh-bodies are added via layer.addBody(...)
     const host = threeHost({ viewport, root: this.bodies.root });
 
-    const { projection, renderer, dpr, root, canvas, capacity, style, ...fieldOpts } = opts;
+    const { projection, renderer, dpr, canvas, capacity, style, ...fieldOpts } = opts;
     void projection;
     void renderer;
     void dpr;
-    void root;
     // route body feedback (density/load/lit) to the meshes instead of CSS custom properties
     this.field = createField(canvas ?? stubCanvas(), { ...fieldOpts, host, render: 'none', feedbackSink: this.bodies.sink });
     this.bodies.setOnChange(() => this.field.scan());

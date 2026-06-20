@@ -159,11 +159,15 @@ function initReadout(): () => void {
   let alive = true;
   const read = () => {
     if (!alive) return;
-    const cs = getComputedStyle(body);
-    const d =
-      parseFloat(cs.getPropertyValue("--field-density")) ||
-      parseFloat(cs.getPropertyValue("--d")) ||
-      0;
+    // `data-feedback` writes --field-density to the element's INLINE style each frame, so read it
+    // there directly — getComputedStyle() in a per-frame rAF loop forces a style recalc every tick.
+    // Fall back to the computed value only if the inline write isn't present (keeps it correct).
+    let raw = body.style.getPropertyValue("--field-density") || body.style.getPropertyValue("--d");
+    if (!raw) {
+      const cs = getComputedStyle(body);
+      raw = cs.getPropertyValue("--field-density") || cs.getPropertyValue("--d");
+    }
+    const d = parseFloat(raw) || 0;
     if (out) out.textContent = d.toFixed(2);
     body.style.setProperty("--d", String(d)); // drive the inline bar + weight from the same value
     raf = requestAnimationFrame(read);
