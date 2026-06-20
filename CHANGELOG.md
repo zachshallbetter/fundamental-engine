@@ -7,6 +7,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Bodies track scroll between re-measures — no more swarm "pause" on scroll (core).** Body centres are
+  re-measured (`getBoundingClientRect`) only every 6th frame, but the page scrolls continuously under the
+  fixed field — so during a scroll each attractor's force-centre snapped in 6-frame steps and the swarm
+  read as pausing/stuttering. The cached centres are now translated by the per-frame scroll delta between
+  measures (`b.cy -= dScroll`), which carries the shaped box too (it's centred on `cy`); `measureBodies`
+  still refreshes from the real rects on its cadence, so there's no drift. Verified: sampled body force at
+  a fixed point changes every frame through a scroll (plateau fraction 0, was ~0.83).
+
 ### Added
 
 - **Tag-tint — particles wear their nearest tag's colour (core).** Every body that carries a colour

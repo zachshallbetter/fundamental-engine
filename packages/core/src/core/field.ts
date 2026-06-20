@@ -1666,9 +1666,18 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
 
     const scrollY = host.scrollY();
+    const dScroll = scrollY - lastScrollY;
     // eased page-scroll speed for the `scrolling` data-when gate (§5).
-    env.scrollV = (env.scrollV ?? 0) * 0.7 + Math.abs(scrollY - lastScrollY) * 0.3;
+    env.scrollV = (env.scrollV ?? 0) * 0.7 + Math.abs(dScroll) * 0.3;
     lastScrollY = scrollY;
+    // Scroll-compensate the cached body centres between the every-6th-frame re-measures. The page
+    // scrolls continuously under the fixed field, so each body's viewport position shifts every frame
+    // even though getBoundingClientRect only runs on the measure cadence — without this the attractors
+    // snap in 6-frame steps during scroll and the swarm reads as "pausing". Cheap and drift-free: the
+    // elements don't move in the document between measures, so the only delta is scroll, and
+    // measureBodies refreshes from the real rects on its own cadence. cy carries the shaped box too
+    // (it is centred on cy ± hh).
+    if (dScroll !== 0) for (const b of bodies) b.cy -= dScroll;
     for (const w of waves) {
       const target = scrollY * (0.025 + w.depth * 0.08); // wave parallax (§24)
       w.offsetY += (target - w.offsetY) * 0.04;
