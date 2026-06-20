@@ -26,6 +26,7 @@ const a = attrsFor(f.token);
       <h2>{f.example}</h2>
       <p>{cap(f.desc)}.</p>
       <div class="formula" style={`--c:${f.color}`}>{f.formula}</div>
+      <a class="force-ref" href={`/docs/api/forces#force-${f.token}`}><code>{f.token}</code> in the force catalog →</a>
     </div>
     <div class="stage">
       <span class="stage-label">{f.token} — drag me</span>
