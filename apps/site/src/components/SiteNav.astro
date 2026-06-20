@@ -82,6 +82,19 @@ const dest = [
             <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1" opacity="0.35" />
           </svg>
         </button>
+        {/* Field grid — the reference lattice displaced by the field: deformation around mass */}
+        <button
+          id="sn-grid-toggle"
+          class="sn-field-btn"
+          type="button"
+          aria-label="Toggle field grid"
+          title="Show field grid"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M1 5.5 Q8 3.6 15 5.5 M1 10.5 Q8 12.4 15 10.5 M5.5 1 Q3.6 8 5.5 15 M10.5 1 Q12.4 8 10.5 15" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.85" />
+          </svg>
+        </button>
         {/* Per-stage field lines (home): show/hide the traced overlays */}
         {
           current === 'home' && (
@@ -122,10 +135,22 @@ const dest = [
 
   type FieldEl = HTMLElement & {
     setRender(m: string): void;
-    setOverlay(m: string): void;
+    setOverlay(m: string | string[]): void;
     setHeatmap(on: boolean): void;
   };
   const fieldEl = () => document.querySelector('field-root') as FieldEl | null;
+
+  // Overlays are an ADDITIVE stack (the engine composes them), so flow + grid coexist. Compose the
+  // surface from each overlay toggle's persisted state on the field rather than letting one replace
+  // the other.
+  function applyOverlays() {
+    const field = fieldEl();
+    if (!field) return;
+    const stack: string[] = [];
+    if (field.dataset.navFlow === 'on') stack.push('streamlines');
+    if (field.dataset.navGrid === 'on') stack.push('grid');
+    field.setOverlay(stack.length ? stack : 'off');
+  }
 
 
 
@@ -136,6 +161,14 @@ const dest = [
     const on = fieldEl()?.dataset.navFlow === 'on';
     btn.setAttribute('aria-pressed', String(on));
     btn.title = on ? 'Hide field flow' : 'Show field flow';
+  }
+  // 1b) Field grid: the deformation lattice overlay, read back from the persisted field.
+  function syncGridBtn() {
+    const btn = document.getElementById('sn-grid-toggle');
+    if (!btn) return;
+    const on = fieldEl()?.dataset.navGrid === 'on';
+    btn.setAttribute('aria-pressed', String(on));
+    btn.title = on ? 'Hide field grid' : 'Show field grid';
   }
   // 2) Density heatmap: the glow underlay, read back from the persisted field.
   function syncHeatmapBtn() {
@@ -161,9 +194,15 @@ const dest = [
     if (t.closest('#sn-stream-toggle')) {
       const field = fieldEl();
       const next = field?.dataset.navFlow !== 'on';
-      field?.setOverlay(next ? 'streamlines' : 'off'); // additive — particles stay underneath
       if (field) field.dataset.navFlow = next ? 'on' : 'off';
+      applyOverlays(); // recompose the additive stack (flow + grid coexist)
       syncStreamBtn();
+    } else if (t.closest('#sn-grid-toggle')) {
+      const field = fieldEl();
+      const next = field?.dataset.navGrid !== 'on';
+      if (field) field.dataset.navGrid = next ? 'on' : 'off';
+      applyOverlays();
+      syncGridBtn();
     } else if (t.closest('#sn-heatmap-toggle')) {
       const field = fieldEl();
       const next = field?.dataset.navHeatmap !== 'on';
@@ -178,6 +217,7 @@ const dest = [
 
   function syncAll() {
     syncStreamBtn();
+    syncGridBtn();
     syncHeatmapBtn();
     syncFieldBtn();
   }
