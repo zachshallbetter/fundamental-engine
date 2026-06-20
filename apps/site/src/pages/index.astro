@@ -12,7 +12,6 @@ import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro"
 import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
-import CellGallery from "../components/CellGallery.astro";
 import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@fundamental-engine/core";
 import { RENDER_MODES, OVERLAY_MODES } from "../lib/docs-api.ts";
 import contours from "../data/contours.json";
@@ -57,23 +56,6 @@ const chapters = [
   { id: "ch-system", no: "VII", label: "System" },
   { id: "ch-gallery", no: "VIII", label: "Gallery" },
 ];
-
-// The seven forces the in-frame <field-cell> poster engine can render (cell-force.ts).
-const CELL_CAPTIONS: Record<string, string> = {
-  attract: "pulls matter in",
-  repel: "pushes it away",
-  swirl: "orbits it around",
-  gravity: "a true 1/d² fall-in",
-  stream: "a uniform current",
-  buoyancy: "a steady lift",
-  tether: "a spring to a rest shell",
-};
-const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy", "tether"].map(
-  (t) => {
-    const f = MANUAL_FORCES.find((x) => x.token === t);
-    return { force: t, label: f?.label ?? t, color: f?.color, caption: CELL_CAPTIONS[t] };
-  },
-);
 ---
 
 <Base
@@ -138,8 +120,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         <span class="concept-no">Install</span>
         <h2>Add it to the stack you already have.</h2>
         <p class="lp-lede">
-          Install one package — the <strong>surface</strong> for your environment. It pulls the engine
-          (<code>core</code> + the DOM binding) in for you; you never assemble those yourself.
+          One package per framework — pick the one for your stack and you’re done. Each bundles the
+          engine (<code>core</code> + the DOM binding) for you; there’s nothing to wire together.
         </p>
         <div class="lp-pkgs">
           <!-- the 'start here' card spans the row and is a live accretion vessel: `sink attract` gathers
@@ -147,7 +129,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
           <div class="lp-pkg lp-pkg--hero" data-body="sink attract pigment" data-feedback data-absorb="44" data-max="90" data-strength="0.7" data-range="300" data-color="#ff8a5c" style="--cat:#ff8a5c">
             <span class="lp-pkg-tag">Start here</span>
             <code class="install" data-copy="npm i @fundamental-engine/vanilla">npm i @fundamental-engine/vanilla</code>
-            <span class="lp-pkg-desc"><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class, the one-call door. This card is itself a live field body: it accretes the swarm and fills as it gathers. <a href="/docs/guides/typescript">Guide →</a></span>
+            <span class="lp-pkg-desc"><b>Plain TS / JS</b>, no framework — the typed <code>FieldField</code> class; one call mounts a field. This card is itself a live field body: it accretes the swarm and fills as it gathers. <a href="/docs/guides/typescript">Guide →</a></span>
           </div>
           <div class="lp-pkg" data-body="wall pigment" data-feedback data-color="#f0628e" data-strength="0.55" data-range="170" style="--cat:#f0628e">
             <code class="install" data-copy="npm i @fundamental-engine/react">npm i @fundamental-engine/react</code>
@@ -165,8 +147,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
         <p class="lp-note">
           Own the canvas / building your own renderer? <code>@fundamental-engine/core</code> is the
           renderer-agnostic engine — you supply a host (<a href="/docs/guides/core">Core guide</a>). You
-          don’t install <code>@fundamental-engine/dom</code> directly — it’s the DOM engine-room the web
-          surfaces already pull in.
+          don’t install <code>@fundamental-engine/dom</code> directly — the packages above already
+          bundle it for you.
         </p>
         <p class="lp-note">
           No build step? Import from a CDN (playground / prototyping only):
@@ -297,15 +279,16 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     <section class="lp lp-ai">
       <div class="wrap">
         <span class="concept-no">The wedge</span>
-        <h2>Trust UI for AI output.</h2>
+        <h2>Make model output you can read at a glance.</h2>
         <p class="lp-lede">
-          Show support, contradiction, confidence, and provenance for model output as an
-          inspectable field — the same deterministic field math behind the Evidence and
-          Search studies, aimed at where it’s most urgent.
+          A model hands you answers; it rarely shows how sure it is. Make each claim a body in the
+          field, and confidence becomes weight, agreement becomes proximity, and contradictions pull
+          apart — so a shaky answer <em>looks</em> shaky and its sources are one hop away, before anyone
+          acts on it. The same deterministic field math drives the Evidence and Search studies.
         </p>
         <div class="lp-cta-row">
-          <Button href="/evidence" variant="primary">See the AI trust example →</Button>
-          <Button href="/evidence">Explore the studies →</Button>
+          <Button href="/evidence" variant="primary">See it on real data →</Button>
+          <Button href="/docs/studies/evidence-field">How it works →</Button>
         </div>
       </div>
     </section>
@@ -328,7 +311,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     <ChapterRail chapters={chapters} />
 
     <!-- I · Substrate -->
-    <ChapterHeader no="I" id="ch-substrate" title="Substrate">What the field is made of — and how it locks to the page.</ChapterHeader>
+    <ChapterHeader no="I" id="ch-substrate" title="Substrate">What the field is made of — and how it locks to the page. See the <a href="/docs/platform">platform layer</a>.</ChapterHeader>
 
     <aside class="atom-note">
       <p>
@@ -475,13 +458,14 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     <!-- III · Forces (canonical nine) -->
     <ChapterHeader no="III" id="ch-forces" title="Forces">What a single body can do to the matter around it — designed UI verbs,
           stable and bounded. A designed verb is not a natural field: an attractor
-          is not gravity, a repeller is not charge.</ChapterHeader>
+          is not gravity, a repeller is not charge. See the full <a href="/docs/api/forces">force catalog</a>.</ChapterHeader>
 
     <Concept reverse data-form="wells">
       <span class="concept-no"
             ><i class="fg fg-attract" style="--fc:#4da3ff"></i>{String((n += 1)).padStart(2, "0")} — Attraction</span
           >
           <h2>A body can pull the field into orbit.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-attract"><code>attract</code> in the force catalog →</a>
           <p>
             An <strong>attractor</strong> defines a gravity well. The pull grows as
             distance falls, and a tangential component bends incoming particles into
@@ -522,6 +506,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             ><i class="fg fg-repel" style="--fc:#ff9d5c"></i>{String((n += 1)).padStart(2, "0")} — Repulsion</span
           >
           <h2>A body can push the field away.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-repel"><code>repel</code> in the force catalog →</a>
           <p>
             A <strong>repeller</strong> is an inverted well — the force points <strong
               >outward</strong
@@ -561,6 +546,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             ><i class="fg fg-wall" style="--fc:#c4b5fd"></i>{String((n += 1)).padStart(2, "0")} — Reflection</span
           >
           <h2>A body can be a wall.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-wall"><code>wall</code> in the force catalog →</a>
           <p>
             A <strong>wall</strong> is an axis-aligned box. A crossing particle has
             its perpendicular velocity reversed and scaled by elasticity, then is
@@ -592,6 +578,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             ><i class="fg fg-swirl" style="--fc:#2dd4bf"></i>{String((n += 1)).padStart(2, "0")} — Swirl</span
           >
           <h2>A body can spin the field.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-swirl"><code>swirl</code> in the force catalog →</a>
           <p>
             A <strong>swirl</strong> applies a dominantly <strong
               >tangential</strong
@@ -638,6 +625,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             ><i class="fg fg-stream" style="--fc:#7dd3fc"></i>{String((n += 1)).padStart(2, "0")} — Stream</span
           >
           <h2>A body can blow a current.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-stream"><code>stream</code> in the force catalog →</a>
           <p>
             A <strong>stream</strong> emits a constant force along a heading — a fan,
             a jet, a prevailing wind. The swarm combs into parallel flow.
@@ -676,6 +664,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             ><i class="fg fg-tether" style="--fc:#86e57f"></i>{String((n += 1)).padStart(2, "0")} — Tether</span
           >
           <h2>A body can tether the field at a fixed distance.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-tether"><code>tether</code> in the force catalog →</a>
           <p>
             A <strong>tether</strong> has a <strong>rest length</strong>. Matter
             that crowds in is pushed out; matter that strays is reeled in — the
@@ -715,6 +704,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             ><i class="fg fg-viscosity" style="--fc:#8da2c0"></i>{String((n += 1)).padStart(2, "0")} — Viscosity</span
           >
           <h2>A body can thicken the medium.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-viscosity"><code>viscosity</code> in the force catalog →</a>
           <p>
             A <strong>viscosity</strong> body neither pulls nor pushes — it <strong
               >bleeds momentum</strong
@@ -754,6 +744,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             release</span
           >
           <h2>A body can hold matter — and give it back.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-sink"><code>sink</code> in the force catalog →</a>
           <p>
             A <strong>sink</strong> captures particles at its core. They aren’t deleted
             — they’re
@@ -799,6 +790,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             ><i class="fg fg-jet" style="--fc:#a78bfa"></i>{String((n += 1)).padStart(2, "0")} — Emission</span
           >
           <h2>A body can be a fountain.</h2>
+          <a class="force-ref" href="/docs/api/forces#force-jet"><code>jet</code> in the force catalog →</a>
           <p>
             A <strong>jet</strong> draws surrounding matter into its nozzle and relaunches
             it as a hot jet — the field is <strong
@@ -837,7 +829,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     </Concept>
 
     <!-- IV · Designed-extended -->
-    <ChapterHeader no="IV" id="ch-extended" title="Designed-extended">Further designed forces, and the modifiers that wrap a sibling.</ChapterHeader>
+    <ChapterHeader no="IV" id="ch-extended" title="Designed-extended">Further designed forces, and the modifiers that wrap a sibling. See the full <a href="/docs/api/forces">force catalog</a>.</ChapterHeader>
     {
       extended.map((f: ManualEntry, i) => {
         n += 1;
@@ -846,7 +838,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     }
 
     <!-- V · Presets -->
-    <ChapterHeader no="V" id="ch-presets" title="Presets">Cosmology as composition — named arrangements of the primitives.</ChapterHeader>
+    <ChapterHeader no="V" id="ch-presets" title="Presets">Cosmology as composition — named arrangements of the primitives. See the <a href="/docs/api/presets">preset reference</a>.</ChapterHeader>
     {
       MANUAL_PRESETS.map((p: ManualPreset, i) => {
         n += 1;
@@ -856,7 +848,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     }
 
     <!-- VI · Conditions -->
-    <ChapterHeader no="VI" id="ch-conditions" title="Conditions">When a force decides to act, and on which matter.</ChapterHeader>
+    <ChapterHeader no="VI" id="ch-conditions" title="Conditions">When a force decides to act, and on which matter. See <a href="/docs/authoring">authoring &amp; conditions</a>.</ChapterHeader>
     <Concept data-form="scatter">
       <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Conditional</span
@@ -898,7 +890,7 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
     </Concept>
 
     <!-- VII · System -->
-    <ChapterHeader no="VII" id="ch-system" title="System">What emerges when the parts interact.</ChapterHeader>
+    <ChapterHeader no="VII" id="ch-system" title="System">What emerges when the parts interact. See the <a href="/docs/concepts">concepts</a> and <a href="/docs/reading-field">reading the field</a>.</ChapterHeader>
     <Concept reverse>
       <span class="concept-no"
             >{String((n += 1)).padStart(2, "0")} — Reciprocity</span
@@ -1255,44 +1247,8 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
 
     <!-- VIII · Gallery — a working bench exploring more of what the field can do (curate later). -->
     <ChapterHeader no="VIII" id="ch-gallery" title="Gallery"
-      >Live examples that explore more of what the field can do — a working bench, to curate.</ChapterHeader
+      >Live examples that explore more of what the field can do — a working bench, to curate. Browse the <a href="/docs/showcase">showcase</a> and <a href="/docs/recipes">recipes</a>.</ChapterHeader
     >
-
-    <Concept data-form="accretion">
-      <span class="concept-no">Gallery · capture → hold → release <em class="truth truth-physical">physical</em></span>
-      <h2>A body takes matter in — and gives it back.</h2>
-      <p>
-        Drag the vessel through the swarm: it <strong>captures</strong> nearby particles,
-        <strong>holds</strong> them as it fills, and <strong>releases</strong> the exact count on
-        supernova. These are the real <code>field:captured</code> / <code>field:released</code>
-        events the engine dispatches — counted live, off the running field.
-      </p>
-      <p class="note">Capture, hold, release — nothing conjured, nothing deleted. Matter just changes hands.</p>
-      <Fragment slot="stage">
-        <div class="lifecycle" data-lifecycle>
-          <span class="stage-label">drag the vessel; fill it; pop it</span>
-          <div
-            class="body-core"
-            id="gal-sink"
-            data-drag
-            data-body="sink attract"
-            data-absorb="74"
-            data-max="10"
-            data-feedback
-            data-strength="0.95"
-            data-range="240"
-            style="--cc:#34d399; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);"
-          >vessel</div>
-          <div class="meter" style="--cc:#34d399;"><i></i></div>
-          <button class="agitate" type="button" data-agitate="#gal-sink">supernova</button>
-          <div class="cap-readout">
-            <span class="cap-stat"><b data-cap-count>0</b> captured</span>
-            <span class="cap-stat"><b data-rel-count>0</b> released</span>
-          </div>
-          <ul class="cap-log" data-cap-log aria-live="polite"></ul>
-        </div>
-      </Fragment>
-    </Concept>
 
     <Concept reverse>
       <span class="concept-no">Gallery · the contract, live <em class="truth truth-hybrid">hybrid</em></span>
@@ -1404,43 +1360,6 @@ const CELL_FORCES = ["attract", "repel", "swirl", "gravity", "stream", "buoyancy
             </svg>
           </div>
           <span class="hintline">dwell to charge it — look away (pointer off) and it lets go</span>
-        </div>
-      </Fragment>
-    </Concept>
-
-    <Concept>
-      <span class="concept-no">Gallery · the force vocabulary <em class="truth truth-designed">designed</em></span>
-      <h2>Seven forces, side by side.</h2>
-      <p>
-        Each frame is its own little field — a live <code>&lt;field-cell&gt;</code> rendering a
-        single force over its own particle pool, paused when off-screen. Move your cursor through one
-        to push the matter. This is a slice of the catalog’s {MANUAL_FORCES.length} forces; the rest
-        compose on the page field above. Designed verbs, each bounded and legible — an attractor is
-        not gravity; a repeller is not charge.
-      </p>
-      <CellGallery cells={CELL_FORCES} height={120} />
-    </Concept>
-
-    <Concept>
-      <span class="concept-no">Gallery · formations <em class="truth truth-designed">designed</em></span>
-      <h2>The whole field can change its mind.</h2>
-      <p>
-        A <strong>formation</strong> is a global arrangement the matter falls into —
-        <code>field.setFormation(name)</code>. Pick one and the entire page field re-organizes:
-        resting drift, gravity wells, directional lanes, scattered energy, or everything gathering in.
-      </p>
-      <p class="note">Active only while this panel is in view, then it restores to <code>ambient</code>.</p>
-      <Fragment slot="stage">
-        <div class="rendertour" data-formationtour>
-          <span class="stage-label">field.setFormation(name)</span>
-          <div class="rt-modes" role="group" aria-label="Pick a formation">
-            <button type="button" data-formation="ambient" aria-pressed="true">ambient</button>
-            <button type="button" data-formation="wells" aria-pressed="false">wells</button>
-            <button type="button" data-formation="lanes" aria-pressed="false">lanes</button>
-            <button type="button" data-formation="scatter" aria-pressed="false">scatter</button>
-            <button type="button" data-formation="accretion" aria-pressed="false">accretion</button>
-          </div>
-          <span class="hintline">the matter re-arranges across the whole page</span>
         </div>
       </Fragment>
     </Concept>

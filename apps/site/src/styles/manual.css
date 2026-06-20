@@ -330,6 +330,22 @@
 .formula .v {
   color: var(--c, var(--accent));
 }
+/* per-concept reference link — leads from a force beat to its exact catalog entry. */
+.force-ref {
+  display: inline-block;
+  margin: 0.2rem 0 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-3, var(--text-4));
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  transition: color 140ms var(--ease, ease);
+}
+.force-ref:hover {
+  color: var(--text);
+}
+.force-ref code {
+  font-size: 0.86em;
+}
 
 .tags {
   display: flex;

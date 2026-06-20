@@ -1,5 +1,27 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+
+// Worked example: if you drive your OWN motion from --field-density, gate it the way the engine
+// gates its simulation — so reduced-motion users get the calm, still field with no lost meaning.
+const reducedMotion = `/* the field writes --field-density on a body; you can read it in CSS */
+.headline {
+  /* density gives a little weight + lift — a motion you authored, not the engine's */
+  transform: translateY(calc(var(--field-density, 0) * -2px));
+  transition: transform 140ms var(--ease, ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* meaning lives in state, not motion — drop the transition, keep nothing essential here */
+  .headline { transition: none; transform: none; }
+}`;
+
+// Worked example: bind a decorative visual to its semantic source so AT skips it.
+const ariaBinding = `<!-- the canvas/overlay is decorative; the <h2> carries the meaning -->
+<h2 id="sales">Q3 sales</h2>
+<canvas data-field-visual data-field-source="#sales" aria-hidden="true"></canvas>
+<!-- VisualBindingRegistry keeps the visual aria-hidden unless it carries independent
+     meaning; lint() flags an orphan source or an un-hidden decorative layer. -->`;
 ---
 
 <DocsLayout
@@ -32,6 +54,11 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
       the simulation freezes to a single calm frame, and the CSS backdrop animation is disabled. The
       field is present but still.
     </p>
+    <p>
+      That covers the engine's own motion. If <em>you</em> drive animation from a feedback variable,
+      gate it the same way — the value is still there under reduced motion, so nothing is lost:
+    </p>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: reducedMotion }]} />
   </section>
 
   <section class="docs-sec">
@@ -53,5 +80,10 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
       <li><b>Respect the user's setting.</b> If you add your own <code>--field-density</code>-driven motion, gate it behind <code>prefers-reduced-motion</code> too. Meaning lives in state, not motion — reduced motion loses none of it.</li>
       <li><b>Words glow, they are never drawn.</b> The engine never assembles particles into letterforms — text stays real and selectable.</li>
     </ul>
+    <p>
+      Binding a decorative visual to the element that carries its meaning, so assistive tech skips
+      the canvas and reads the source:
+    </p>
+    <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: ariaBinding }]} />
   </section>
 </DocsLayout>

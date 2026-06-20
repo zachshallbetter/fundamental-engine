@@ -1,0 +1,216 @@
+---
+import Base from "../layouts/Base.astro";
+import SiteNav from "../components/SiteNav.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { parseChangelog, currentVersion, HIGHLIGHTS } from "../lib/changelog";
+
+const versions = parseChangelog();
+const version = currentVersion();
+---
+
+<Base
+  title="Fundamental — Changelog"
+  description="What's new in Fundamental — recently shipped highlights plus the full, versioned changelog, rendered from the repository's CHANGELOG.md (the single source of truth)."
+>
+  <SiteNav />
+  <main class="cl-shell">
+    <header class="cl-hero">
+      <p class="cl-kicker">Changelog · <span class="cl-cur">v{version}</span></p>
+      <h1>What's <span class="accent">new</span>.</h1>
+      <p class="cl-lede">
+        Fundamental is a <strong>0.x preview</strong> and moves fast. Here's what recently shipped,
+        then the full versioned log — generated straight from the repository's
+        <code>CHANGELOG.md</code>, so it's always current.
+      </p>
+    </header>
+
+    {
+      HIGHLIGHTS.length > 0 && (
+        <section class="cl-highlights" aria-label="Recently shipped">
+          <h2 class="cl-h2">Recently shipped</h2>
+          <div class="cl-cards">
+            {HIGHLIGHTS.map((h) => (
+              <article class="cl-card">
+                <h3>{h.title}</h3>
+                <p>{h.blurb}</p>
+                {h.href && <a class="cl-card-link" href={h.href}>Learn more →</a>}
+              </article>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="cl-log" aria-label="Full changelog">
+      <h2 class="cl-h2">Full log</h2>
+      {
+        versions.map((v) => (
+          <article class="cl-version" id={`v-${v.version.replace(/[^\w.]/g, "-")}`}>
+            <div class="cl-vhead">
+              <h3 class={v.unreleased ? "cl-vno cl-unreleased" : "cl-vno"}>{v.version}</h3>
+              {v.date && <time class="cl-date">{v.date}</time>}
+            </div>
+            {v.sections.map((s) => (
+              <div class="cl-sec">
+                <h4 class="cl-sno">{s.title}</h4>
+                <ul class="cl-items">
+                  {s.items.map((it) => (
+                    <li set:html={it} />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </article>
+        ))
+      }
+    </section>
+  </main>
+  <SiteFooter />
+</Base>
+
+<style>
+  .cl-shell {
+    position: relative;
+    z-index: 2;
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 7.5rem 1.5rem 5rem;
+  }
+  .cl-hero {
+    margin-bottom: 3rem;
+  }
+  .cl-kicker {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    margin: 0 0 0.8rem;
+  }
+  .cl-cur {
+    color: var(--accent);
+  }
+  .cl-hero h1 {
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+  }
+  .cl-lede {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-2);
+    max-width: 44rem;
+  }
+  .cl-h2 {
+    font-size: 0.82rem;
+    font-family: var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.6rem;
+    margin: 0 0 1.6rem;
+  }
+  .cl-highlights {
+    margin-bottom: 4rem;
+  }
+  .cl-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  .cl-card {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg, 14px);
+    background: var(--bg-card, rgba(255, 255, 255, 0.02));
+    padding: 1.2rem 1.3rem;
+  }
+  .cl-card h3 {
+    font-size: 1.02rem;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .cl-card p {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-2);
+    margin: 0;
+  }
+  .cl-card-link {
+    display: inline-block;
+    margin-top: 0.7rem;
+    font-size: 0.84rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .cl-card-link:hover {
+    text-decoration: underline;
+  }
+  .cl-version {
+    padding: 1.6rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .cl-version:first-of-type {
+    border-top: none;
+  }
+  .cl-vhead {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .cl-vno {
+    font-size: 1.5rem;
+    font-family: var(--mono);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .cl-unreleased {
+    color: var(--accent);
+  }
+  .cl-date {
+    font-size: 0.82rem;
+    color: var(--text-4);
+    font-family: var(--mono);
+  }
+  .cl-sec {
+    margin: 0 0 1.1rem;
+  }
+  .cl-sno {
+    font-size: 0.78rem;
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 0 0 0.5rem;
+  }
+  .cl-items {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .cl-items li {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+  .cl-items :global(code) {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.05em 0.35em;
+    border-radius: 5px;
+  }
+  .cl-items :global(a) {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .cl-items :global(a):hover {
+    text-decoration: underline;
+  }
+  .cl-items :global(strong) {
+    color: var(--text-1, var(--text));
+  }
+</style>
