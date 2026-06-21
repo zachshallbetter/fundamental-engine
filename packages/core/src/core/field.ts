@@ -82,7 +82,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // acquires it lazily (and sizes the store then) — so a field created with 'none' allocates no
   // render surface at all unless asked to draw.
   let ctx: CanvasRenderingContext2D | null = null;
-  if ((opts.render ?? 'dots') !== 'none') {
+  if ((opts.render ?? 'none') !== 'none') {
     ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Fundamental: 2D canvas context unavailable');
   }
@@ -137,7 +137,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const cfg = {
     accent: opts.accent ?? resolvePalette(opts.palette)[0] ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
-    render: opts.render ?? 'dots',
+    render: opts.render ?? 'none', // signals-first default (#538): a bare field runs the sim + feedback but draws nothing until asked. Pass render:'dots' for the particle surface.
     waves: opts.waves ?? true, // draw the background Currents (§24); opt-out for the bare field
     background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on

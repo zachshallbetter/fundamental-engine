@@ -7,6 +7,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING (pre-1.0): `render` now defaults to `'none'` (signals-first) — #538.** A field created
+  without an explicit `render` (`createField(canvas)`, `new FieldField()`, `<field-root>`) now runs the
+  full simulation + feedback pipeline but **draws nothing** — it exists purely as signals (`--d`,
+  `--load`, `--lit`, capture events, `scrollV()`). The particle surface is opt-in: pass `render: 'dots'`
+  (or `<field-root render="dots">`). This makes the default experience the *behavior* layer the engine
+  is actually for, instead of a particle background — a field stops feeling like "particles" and starts
+  feeling like a tool. **Migration:** anywhere you relied on the implicit particle field, add
+  `render: 'dots'` / `render="dots"`. Unaffected: `<field-cell>` (its own demo pool, still draws),
+  recipes (set their own render), and any call already passing `render`. The site homepage and the
+  starter app pin `render="dots"` explicitly (they *are* the field showcase).
+
 ### Added
 
 - **Dev no-op diagnostics — `devWarnNoOp` (core, #543).** A method that returns a neutral value because
