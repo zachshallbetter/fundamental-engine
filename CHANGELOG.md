@@ -7,6 +7,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Consumer-side feedback-contract lint — `lintFeedbackReadsUnwritten` (dom, #516).** Completes the
+  silent-contract lint family: a CSS *rule* that reads a feedback var (`var(--field-*)`/`--load`/`--d`)
+  and matches a `[data-body]` element with **no** `data-feedback` — a field body styled from a channel
+  it never opted into, so the style sits at its fallback forever. The stylesheet-level mirror of the
+  inline-only `lintFeedbackVarReads` and the inverse of `lintFeedbackWritesUnread`; scoped to
+  `[data-body]` to stay high-signal. Wired into `lintPlatform` (runs on the homepage), dev-only/no-op
+  under SSR.
+
 ### Performance
 
 - **Tag-tint RGB is cached on the measure cadence (core, #515).** The render-time tag-tint precompute

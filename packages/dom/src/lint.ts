@@ -28,6 +28,7 @@ export type LintCode =
   | 'sink-without-feedback'
   | 'feedback-vars-unwritten'
   | 'feedback-writes-unread'
+  | 'feedback-reads-unwritten'
   | 'feedback-lane-inert';
 
 export interface PlatformLintWarning {
@@ -148,6 +149,46 @@ export function lintFeedbackWritesUnread(root: ParentNode): PlatformLintWarning[
   return out;
 }
 
+/**
+ * The consumer side at the STYLESHEET level — the stylesheet companion to `lintFeedbackVarReads`
+ * (which only sees *inline* styles) and the mirror of `lintFeedbackWritesUnread`: a CSS rule reads a
+ * feedback var (`var(--field-*)`/`var(--load)`/`var(--d)`) and matches a `[data-body]` element that has
+ * **no** `data-feedback` — a field body styled from a channel it never opted into, so the style sits at
+ * its `var(…, fallback)` forever. Scoped to `[data-body]` (not every matched element) to stay high-signal
+ * and avoid flagging intentional generic fallbacks. **Dev-only, heuristic, browser-coupled:** no-ops
+ * where stylesheets are unreachable (SSR / tests / cross-origin), so it can only under-report.
+ */
+export function lintFeedbackReadsUnwritten(root: ParentNode): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  if (typeof document === 'undefined') return out;
+  const seen = new Set<Element>();
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList | undefined;
+    try { rules = sheet.cssRules; } catch { continue; } // cross-origin sheet → unreadable, skip
+    for (const rule of Array.from(rules ?? [])) {
+      const r = rule as CSSStyleRule;
+      if (!r.selectorText || !r.cssText || !FEEDBACK_VAR_READS.some((v) => r.cssText.includes(v))) continue;
+      for (const part of r.selectorText.split(',')) {
+        const clean = part.trim().replace(/::?[\w-]+(\([^)]*\))?/g, ''); // drop :hover / ::before etc.
+        if (!clean) continue;
+        let matched: ArrayLike<Element>;
+        try { matched = root.querySelectorAll(clean); } catch { continue; }
+        for (const el of Array.from(matched)) {
+          if (seen.has(el) || !el.hasAttribute('data-body') || el.hasAttribute('data-feedback')) continue;
+          seen.add(el);
+          out.push({
+            code: 'feedback-reads-unwritten',
+            severity: 'warning',
+            element: el,
+            message: `a style rule (${r.selectorText}) styles this body from a feedback var, but it has no data-feedback — that channel is never written for it, so the style stays at its fallback`,
+          });
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /** An element styled from field state it was never registered to measure is feedback with no source. Pure. */
 export function lintStateRegistration(state: StateRegistry, measure: MeasurementRegistry): PlatformLintWarning[] {
   const out: PlatformLintWarning[] = [];
@@ -251,6 +292,7 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
     ...lintSinkFeedback(root),
     ...lintFeedbackVarReads(root),
     ...lintFeedbackWritesUnread(root),
+    ...lintFeedbackReadsUnwritten(root),
     ...lintStateRegistration(platform.state, platform.measure),
     ...lintOverlayLinks(platform.overlays, platform.relationships),
     ...lintFeedbackVars(platform.feedback),
