@@ -19,6 +19,7 @@ import {
   lintSinkFeedback,
   lintFeedbackVarReads,
   lintFeedbackWritesUnread,
+  lintFeedbackReadsUnwritten,
   lintInertFeedback,
   lintSchedulerViolations,
   lintPlatform,
@@ -238,6 +239,39 @@ test('lintFeedbackWritesUnread no-ops without a document (SSR / tests / cross-or
   try {
     const root = { querySelectorAll: () => { throw new Error('must not scan without a document'); } } as unknown as ParentNode;
     assert.deepEqual(lintFeedbackWritesUnread(root), []);
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+});
+
+test('lintFeedbackReadsUnwritten flags a data-body styled from a feedback var with no data-feedback (consumer-side gap)', () => {
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  (globalThis as { document?: unknown }).document = {
+    styleSheets: [{ cssRules: [{ selectorText: '.mass:hover', cssText: '.mass:hover{font-weight:var(--field-density)}' }] }],
+  };
+  // a [data-body] without data-feedback that the rule (cleaned to `.mass`) matches → flagged.
+  const body = { hasAttribute: (a: string) => a === 'data-body' } as unknown as Element;
+  const okBody = { hasAttribute: (a: string) => a === 'data-body' || a === 'data-feedback' } as unknown as Element;
+  try {
+    let root = { querySelectorAll: (sel: string) => (sel === '.mass' ? [body] : []) } as unknown as ParentNode;
+    const w = lintFeedbackReadsUnwritten(root);
+    assert.equal(w.length, 1, 'the un-opted body is flagged');
+    assert.equal(w[0]!.code, 'feedback-reads-unwritten');
+    assert.equal(w[0]!.element, body);
+    // a matched body that DID opt into data-feedback is fine.
+    root = { querySelectorAll: () => [okBody] } as unknown as ParentNode;
+    assert.deepEqual(lintFeedbackReadsUnwritten(root), []);
+  } finally {
+    (globalThis as { document?: unknown }).document = prevDoc;
+  }
+});
+
+test('lintFeedbackReadsUnwritten no-ops without a document (SSR / tests / cross-origin)', () => {
+  const prevDoc = (globalThis as { document?: unknown }).document;
+  delete (globalThis as { document?: unknown }).document;
+  try {
+    const root = { querySelectorAll: () => { throw new Error('must not scan without a document'); } } as unknown as ParentNode;
+    assert.deepEqual(lintFeedbackReadsUnwritten(root), []);
   } finally {
     (globalThis as { document?: unknown }).document = prevDoc;
   }
