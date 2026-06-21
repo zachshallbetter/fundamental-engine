@@ -18,7 +18,7 @@ export const FROZEN_VALUES = [
   { pkg: '@fundamental-engine/dom', name: 'createFieldPlatform', note: 'wires the six native-first registries on a root.' },
   { pkg: '@fundamental-engine/dom', name: 'applyRecipe', note: 'applies a recipe to a live platform (compileRecipe lives in core).' },
   { pkg: '@fundamental-engine/dom', name: 'bindData', note: 'binds records → bodies; data drives the field.' },
-  { pkg: '@fundamental-engine/vanilla', name: 'createField', note: 'host-bundled convenience = createBrowserField (auto-supplies browserHost).' },
+  { pkg: '@fundamental-engine/vanilla', name: 'createField', note: 'the one imperative door — resolves the host from opts.host -> bounds (contained) -> browserHost (default). Frozen contract preserved: createField(canvas) with no host still auto-supplies browserHost; bounds/host are additive options.' },
   { pkg: '@fundamental-engine/vanilla', name: 'browserHost', note: 're-export of the platform host for the no-framework path.' },
 ];
 

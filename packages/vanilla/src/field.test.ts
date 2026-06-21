@@ -312,6 +312,36 @@ test("createField with render:'none' never acquires a context or sizes the backi
   assert.equal(canvas.getContextCalls, 0);
 });
 
+// ── host resolution: the one createField entry (#537) ────────────────────────
+
+test('createField with an explicit host drives it instead of forcing browserHost', () => {
+  const { makeCanvas } = installDOM(); // window stub is 1280×800 — a custom host must override it
+  const canvas = makeCanvas();
+  const noop = (): void => {};
+  // a minimal FieldHost with a DISTINCTIVE viewport, so the backing store proves which host won.
+  const host = {
+    root: { querySelectorAll: () => [] } as unknown as ParentNode,
+    viewport: () => ({ width: 640, height: 480, dpr: 1 }),
+    scrollY: () => 0,
+    scrollHeight: () => 1000,
+    reducedMotion: () => false,
+    hidden: () => false,
+    raf: () => 1, // never invoked
+    cancelRaf: noop,
+    createCanvas: () => makeCanvas(),
+    onResize: () => noop,
+    onScroll: () => noop,
+    onVisibility: () => noop,
+    onInput: () => noop,
+    onBodyEvent: () => noop,
+  };
+  const h = createField(canvas, { render: 'dots', host });
+  // sized to the CUSTOM host's viewport (640×480), not the window stub (1280×800).
+  assert.equal(canvas.width, 640);
+  assert.equal(canvas.height, 480);
+  h.destroy();
+});
+
 test("setRender from 'none' to a drawing mode acquires the context lazily and sizes the store once", () => {
   const { makeCanvas } = installDOM();
   const canvas = makeCanvas();
