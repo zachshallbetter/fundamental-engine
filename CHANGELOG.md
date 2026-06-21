@@ -22,6 +22,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Dev no-op diagnostics — `devWarnNoOp` (core, #543).** A method that returns a neutral value because
+  a prerequisite is missing now explains itself in dev instead of failing silently: `sampleScalar` /
+  `sampleGradient` called with the heatmap layer off (where they return `0` / `{0,0}`) emit a one-shot,
+  deduped `console.warn` naming the fix (`{ heatmap: true }` / `setHeatmap(true)`). Gated by the same
+  contract-checks flag as the guards (no-op + dead-code-eliminable under `NODE_ENV=production`), deduped
+  by message so a per-frame call warns once, and never throws — the no-op stays legal, it's just no longer
+  mysterious. The first slice of the silent-no-op diagnostic family; more call sites follow.
 - **Contained, card-scoped fields — `containerHost` + `bounds` (#540).** A field can now render scoped to
   an element instead of the window — the structural gap that made every embed feel like a full-window
   particle background. `new FieldField({ bounds: cardEl })` (or `createField(canvas, { host: containerHost(el) })`)
