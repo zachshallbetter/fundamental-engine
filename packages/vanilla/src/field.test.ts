@@ -293,6 +293,23 @@ test('createField options: render, density, waves, palette, mass, attention, cau
   assert.equal(canvas.getContextCalls, 1);
 });
 
+// ── signals-first default: render omitted ⇒ 'none' (#538) ────────────────────
+
+test('createField with NO render defaults to signals-only — no context acquired (#538)', () => {
+  const { makeCanvas } = installDOM();
+  const canvas = makeCanvas();
+  // the default flip: a bare field runs the sim + feedback but draws nothing until asked.
+  const h = createField(canvas);
+  assert.equal(canvas.getContextCalls, 0, 'default render is none — no 2d context');
+  assert.equal(canvas.width, 0, 'backing store left unsized');
+  assert.equal(canvas.height, 0);
+  // and it is still a live field: setRender opts INTO the particle surface, acquiring the context then.
+  h.setRender('dots');
+  assert.equal(canvas.getContextCalls, 1, "render:'dots' acquires the context on demand");
+  assert.equal(canvas.width, 1280); // sized to the stub viewport at the transition
+  h.destroy();
+});
+
 // ── signals-only mode: render 'none' (§13.7 / #297) ──────────────────────────
 
 test("createField with render:'none' never acquires a context or sizes the backing store", () => {

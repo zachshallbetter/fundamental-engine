@@ -435,16 +435,16 @@ export interface FieldOptions {
    *  no `mix-blend-mode` workaround needed. Trails light-paint and fade to transparent rather
    *  than to black. Purely additive — the default is unchanged. */
   background?: 'opaque' | 'transparent';
-  /** render mode (§20.6): 'dots' (default), 'trails' (light-painting), 'links'
-   *  (constellation), 'metaballs' (a liquid iso-surface, not dots), 'streamlines'
-   *  (draw the force field itself — diagnostic, REPLACES the dots), 'flow' (the dots
-   *  AND the streamlines drawn together in the one underlay canvas — particles
-   *  drifting along the visible flow, with no separate front surface and no
-   *  `mix-blend`, so it stays a single cheap layer), 'none' (the signals-only engine,
-   *  §13.7 / #297: the full simulation + feedback pipeline runs, but no canvas
-   *  context is acquired, no backing store is sized, and nothing is ever drawn —
-   *  the field exists purely as signals: `--d`, `--load`, `--lit`, capture
-   *  events, `scrollV()`). */
+  /** render mode (§20.6): 'none' (the DEFAULT since #538 — the signals-only engine,
+   *  §13.7 / #297: the full simulation + feedback pipeline runs, but no canvas context
+   *  is acquired, no backing store is sized, and nothing is ever drawn — the field
+   *  exists purely as signals: `--d`, `--load`, `--lit`, capture events, `scrollV()`).
+   *  Opt into a drawing surface explicitly: 'dots' (the particle surface), 'trails'
+   *  (light-painting), 'links' (constellation), 'metaballs' (a liquid iso-surface, not
+   *  dots), 'streamlines' (draw the force field itself — diagnostic, REPLACES the dots),
+   *  'flow' (the dots AND the streamlines drawn together in the one underlay canvas —
+   *  particles drifting along the visible flow, with no separate front surface and no
+   *  `mix-blend`, so it stays a single cheap layer). */
   render?: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none';
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
    *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
