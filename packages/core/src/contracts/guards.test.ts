@@ -17,6 +17,8 @@ import {
   assertReducedMotionFallback,
   assertVisualizationPure,
   checkForceContract,
+  devWarnNoOp,
+  resetNoOpWarnings,
 } from './guards.ts';
 import { passportFor } from './passport.ts';
 
@@ -92,4 +94,39 @@ test('guards no-op when checks are disabled (the production path)', () => {
   assert.doesNotThrow(() => assertParticleFinite(particle({ x: NaN })));
   assert.doesNotThrow(() => assertBodyMeasurable(undefined));
   setContractChecks(true); // restore for any later tests
+});
+
+test('devWarnNoOp: warns once per message in dev, deduped, and never throws (#543)', () => {
+  const orig = console.warn;
+  const seen: string[] = [];
+  console.warn = (msg?: unknown) => void seen.push(String(msg));
+  try {
+    setContractChecks(true);
+    resetNoOpWarnings();
+    // first call for a message warns; a per-frame repeat is deduped to silence.
+    devWarnNoOp('NOOP_NO_HEATMAP', 'sampleScalar() returned 0 because the heatmap layer is off.');
+    devWarnNoOp('NOOP_NO_HEATMAP', 'sampleScalar() returned 0 because the heatmap layer is off.');
+    assert.equal(seen.length, 1, 'deduped to one warning');
+    assert.match(seen[0], /\[Fundamental:NOOP_NO_HEATMAP\]/);
+    // a DIFFERENT message is its own warning.
+    devWarnNoOp('NOOP_NO_HEATMAP', 'sampleGradient() returned { x: 0, y: 0 } because the heatmap layer is off.');
+    assert.equal(seen.length, 2);
+  } finally {
+    console.warn = orig;
+  }
+});
+
+test('devWarnNoOp: silent on the production path (checks disabled)', () => {
+  const orig = console.warn;
+  let count = 0;
+  console.warn = () => void count++;
+  try {
+    setContractChecks(false);
+    resetNoOpWarnings();
+    devWarnNoOp('NOOP_NO_HEATMAP', 'should not appear in production.');
+    assert.equal(count, 0, 'no warning when contract checks are off');
+  } finally {
+    console.warn = orig;
+    setContractChecks(true); // restore for any later tests
+  }
 });

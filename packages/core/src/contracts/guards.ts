@@ -54,6 +54,36 @@ function fail(code: FieldUIErrorCode, message: string): never {
   throw new FieldUIError(code, message);
 }
 
+// ── dev diagnostics: non-throwing no-op warnings (#543) ───────────────────────────────────────
+
+/** Diagnostic codes for SILENT no-ops — a call that returned a neutral value (0, {0,0}, nothing)
+ *  because a prerequisite was missing. Advisory, not a contract violation: the call is legal, it
+ *  just couldn't do anything. */
+export type FieldUINoOpCode =
+  | 'NOOP_NO_HEATMAP'; // a heatmap-dependent read ran with the heatmap layer off
+
+const warnedOnce = new Set<string>();
+
+/**
+ * Dev-only, deduped `console.warn` for a SILENT no-op: a method that returned a neutral value
+ * because a prerequisite is missing, so an embedder learns *why* nothing happened instead of
+ * debugging a mysterious zero. No-op in production (gated by the same `CHECKS` flag the guards use,
+ * so a bundler that defines `NODE_ENV` dead-code-eliminates it). Deduped by message, so a call made
+ * every frame warns at most once. Never throws — the no-op is legal; this only explains it.
+ */
+export function devWarnNoOp(code: FieldUINoOpCode, message: string): void {
+  if (!CHECKS) return;
+  const key = `${code}:${message}`;
+  if (warnedOnce.has(key)) return;
+  warnedOnce.add(key);
+  console.warn(`[Fundamental:${code}] ${message}`);
+}
+
+/** Clear the no-op warning dedup set — for tests that assert the warn fires. */
+export function resetNoOpWarnings(): void {
+  warnedOnce.clear();
+}
+
 // ── guards ──────────────────────────────────────────────────────────────────────────────────
 
 /** A particle's numeric state must stay finite (no NaN/Infinity). */
