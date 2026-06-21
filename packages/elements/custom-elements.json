@@ -390,6 +390,16 @@
             },
             {
               "kind": "field",
+              "name": "reflecting",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "description": "guard: true while an imperative setter is reflecting its value back to an attribute, so the\nresulting attributeChangedCallback skips re-applying it (no double-apply / feedback loop) — #541."
+            },
+            {
+              "kind": "field",
               "name": "overlayCanvas",
               "type": {
                 "text": "HTMLCanvasElement | undefined"
@@ -557,6 +567,49 @@
               },
               "description": "`grid-warp` — `grid` overlay distortion multiplier; undefined (engine default 1) if absent/invalid.\n`0` is valid (a flat, undistorted lattice).",
               "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "formation",
+              "type": {
+                "text": "string | undefined"
+              },
+              "description": "`formation` — the global formation (§7), applied live; undefined if absent. Unlike the other\nattributes this is post-construction (set via `setFormation`), but it round-trips: the attribute\ndrives the field and `setFormation` reflects back to it (#541).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "handle",
+              "type": {
+                "text": "FieldHandle | undefined"
+              },
+              "description": "the live `FieldHandle` this element drives, or `undefined` before mount / after teardown (#542).\nEvery method below is forwarded for convenience, but `.handle` is the escape hatch for the full\nsurface and for passing the field to `bindData` / `applyRecipe` (both from `@fundamental-engine/dom`):\n`import { bindData } from '@fundamental-engine/dom'; bindData(el.handle, rows, spec);`",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "reflect",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "attr",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "string | null"
+                  }
+                }
+              ],
+              "description": "reflect an imperative setter's value back to its attribute, so attribute-based debugging shows the\nLIVE state (the bug from #541 was a stale `render=\"none\"` after `setRender`). Guarded so the\nresulting attributeChangedCallback does not re-apply it. Pass `null` to remove the attribute."
             },
             {
               "kind": "method",
@@ -1186,6 +1239,34 @@
             },
             {
               "kind": "method",
+              "name": "scrollV",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "description": "the page's scroll velocity the engine tracks (drives `--field-scroll-v`); 0 before mount."
+            },
+            {
+              "kind": "method",
+              "name": "setVisible",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "pause/resume drawing (the simulation keeps running) — the element also does this automatically\nfrom its IntersectionObserver, so a manual call is for explicit control."
+            },
+            {
+              "kind": "method",
               "name": "start",
               "privacy": "private",
               "return": {
@@ -1242,6 +1323,9 @@
             },
             {
               "name": "background"
+            },
+            {
+              "name": "formation"
             }
           ],
           "superclass": {
@@ -1366,6 +1450,13 @@
                 "name": "FieldField",
                 "module": "src/index.ts"
               }
+            },
+            {
+              "name": "formation",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
             }
           ],
           "members": [
@@ -1405,6 +1496,20 @@
                 "text": "FieldHandle | undefined"
               },
               "privacy": "private",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "reflecting",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "description": "guard: true while an imperative setter is reflecting its value back to an attribute, so the\nresulting attributeChangedCallback skips re-applying it (no double-apply / feedback loop) — #541.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -1651,6 +1756,61 @@
               },
               "description": "`grid-warp` — `grid` overlay distortion multiplier; undefined (engine default 1) if absent/invalid.\n`0` is valid (a flat, undistorted lattice).",
               "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "formation",
+              "type": {
+                "text": "string | undefined"
+              },
+              "description": "`formation` — the global formation (§7), applied live; undefined if absent. Unlike the other\nattributes this is post-construction (set via `setFormation`), but it round-trips: the attribute\ndrives the field and `setFormation` reflects back to it (#541).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "handle",
+              "type": {
+                "text": "FieldHandle | undefined"
+              },
+              "description": "the live `FieldHandle` this element drives, or `undefined` before mount / after teardown (#542).\nEvery method below is forwarded for convenience, but `.handle` is the escape hatch for the full\nsurface and for passing the field to `bindData` / `applyRecipe` (both from `@fundamental-engine/dom`):\n`import { bindData } from '@fundamental-engine/dom'; bindData(el.handle, rows, spec);`",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "reflect",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "attr",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "string | null"
+                  }
+                }
+              ],
+              "description": "reflect an imperative setter's value back to its attribute, so attribute-based debugging shows the\nLIVE state (the bug from #541 was a stale `render=\"none\"` after `setRender`). Guarded so the\nresulting attributeChangedCallback does not re-apply it. Pass `null` to remove the attribute.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
@@ -2409,6 +2569,42 @@
                 }
               ],
               "description": "subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "scrollV",
+              "return": {
+                "type": {
+                  "text": "number"
+                }
+              },
+              "description": "the page's scroll velocity the engine tracks (drives `--field-scroll-v`); 0 before mount.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setVisible",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "on",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "pause/resume drawing (the simulation keeps running) — the element also does this automatically\nfrom its IntersectionObserver, so a manual call is for explicit control.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
