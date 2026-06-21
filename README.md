@@ -38,6 +38,15 @@ The geometry is re-read every frame on a six-phase scheduler (`discover → read
 
 ## Quick start
 
+> **Signals-first by default.** A field created without a `render` mode draws **nothing** — it runs the
+> full simulation and writes its results as signals: the `--field-*` / `--d` CSS variables, capture
+> events, and `scrollV()`. That's the field as a *behavior layer*, the thing it's actually for. Opt into
+> a visible surface with `render: 'dots'` (the particles), `'trails'`, `'streamlines'`, etc. The examples
+> below pass `render: 'dots'` so you can see the field; drop it to drive your UI purely from the signals.
+>
+> **Window or component.** By default a field spans the window; pass `bounds` (vanilla) to scope it to a
+> single element instead — `new FieldField({ render: 'dots', bounds: cardEl })`.
+
 ### Vanilla TypeScript — the default door
 
 ```ts
@@ -68,7 +77,7 @@ import { FieldField } from '@fundamental-engine/react';
 export default function Page() {
   return (
     <>
-      <FieldField density={1} />
+      <FieldField render="dots" density={1} />
       <h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
     </>
   );
@@ -84,13 +93,13 @@ Reach for `useFieldField(options)` when you want the field handle instead of the
   import '@fundamental-engine/elements';
 </script>
 
-<field-root></field-root>
+<field-root render="dots"></field-root>
 
 <h1 data-body="attract" data-strength="1.2" data-feedback>Mass</h1>
 <button data-body="repel" data-range="240">Keep clear</button>
 ```
 
-Drop `<field-root>` once. It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change.
+Drop `<field-root>` once. It scans the document for `[data-body]` and `[data-preset]` elements and turns each into a body. The same markup works in Astro, Svelte, Vue, or static HTML with no change. `render="dots"` draws the particles; **omit `render` and the field is signals-only** — it still drives every `[data-body]` through the `--field-*` variables and events, it just doesn't paint a canvas.
 
 ## Author bodies in markup
 
