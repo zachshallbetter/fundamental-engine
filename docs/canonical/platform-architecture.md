@@ -179,6 +179,50 @@ to `@fundamental-engine/dom`. `core/dom-boundary.test.ts` now runs with an **emp
 source file in `Fundamental` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
 
+## The host seam — `FieldHost`, the swappable environment SPI
+
+"Where, and in what coordinate space, does the field live?" is **one first-class, swappable abstraction**:
+the `FieldHost` (`packages/core/src/core/host.ts`). The engine never reads `window` / `document` /
+`requestAnimationFrame` directly — every environment touchpoint goes through the injected host, so a
+window-scoped field, a card-scoped field, a WebGL scene, and a headless test harness are *configurations
+of one contract*, not separate code paths. `createField(canvas, { host })` selects it; the convenience
+doors wire a host for you (`createBrowserField` / `<field-root>` use `browserHost()`; the vanilla
+`createField` resolves `host` → `bounds` → `browserHost()`, #537).
+
+**Keep the lanes separate — three different seams, three different words:**
+
+| Seam | What it swaps | Examples |
+|---|---|---|
+| **`FieldHost`** (this) | the **environment**: viewport, scroll, rAF, visibility, scan root, events | `browserHost`, `containerHost`, `threeHost` |
+| **Field Surface** (`setRender`/`setOverlay`) | the **visualization placement**: underlay vs overlay | `dots`, `streamlines`, `grid` |
+| **`RenderBackend`** (#373) | the **drawing target**: how primitives are rasterized | Canvas2D, an external WebGL backend |
+
+A `FieldHost` is **not** a "surface" — *Field Surfaces* is the visualization-placement lane
+(`visualization-methods-taxonomy.md`). The environment seam is and stays `FieldHost`.
+
+**The implementers** — every one satisfies the same contract; none forks the entry:
+
+| Host | Package | Viewport origin | Status |
+|---|---|---|---|
+| `browserHost()` | `@fundamental-engine/dom` | the window (`0,0`) | shipped |
+| `containerHost(el)` | `@fundamental-engine/dom` | the element's `left,top` (#540) | shipped |
+| `threeHost(opts)` | `@fundamental-engine/three` | the WebGL drawing buffer | shipped — drives `core.createField` directly, no fork |
+| *worker host* | — | an `OffscreenCanvas` | **planned (#531)** — the one surface not yet built |
+| native (Swift) | `swift/` | the view's bounds | a separate language port implementing the same contract conceptually (#423) |
+
+**The contract** (`FieldHost`): `root` (the scanned subtree), `viewport()` → `{ width, height, dpr,
+originX?, originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
+thread/move readouts subtract it), `scrollY()`, `scrollHeight()`, `reducedMotion()`, `hidden()`,
+`raf(cb)` / `cancelRaf(id)`, `createCanvas()` (the heatmap buffer), and the subscriptions
+`onResize` / `onScroll` / `onVisibility` / `onInput` / `onBodyEvent`. Authoring a new host = implementing
+those against your environment; the engine needs nothing else.
+
+**The boundary holds.** `FieldHost` is pure types in core (zero DOM); the implementations live in the
+environment packages (`@fundamental-engine/dom`, `@fundamental-engine/three`), so the `core ↛ dom ↛
+surfaces` direction stays intact and CI-enforced (`core/dom-boundary.test.ts`, empty allowlist). The
+worker host (#531) is the next implementer; it adds an `OffscreenCanvas` configuration of this same
+contract, not a new entry.
+
 ## Attaching the engine handle
 
 The platform runtime starts before the engine handle exists: `startPlatformRuntime(root)` begins
