@@ -18,8 +18,9 @@
  */
 
 import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
-import { createBrowserField } from '@fundamental-engine/dom';
-import { makeFieldCanvas, assertBrowser } from './mount.ts';
+import { createField } from '@fundamental-engine/core';
+import { createBrowserField, containerHost } from '@fundamental-engine/dom';
+import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
 export interface FieldFieldInit extends FieldOptions {
   /** drive a `<canvas>` you own; when omitted, a managed full-viewport canvas is created
@@ -27,6 +28,10 @@ export interface FieldFieldInit extends FieldOptions {
   canvas?: HTMLCanvasElement;
   /** where to append the managed canvas; ignored when you pass your own `canvas`. */
   target?: HTMLElement;
+  /** render a CONTAINED field scoped to this element instead of the window (#540): the field, its
+   *  bodies (scanned within `bounds`), and its canvas all live in the element's local coordinate
+   *  space. The managed canvas is absolutely positioned inside it. The card-sized / component path. */
+  bounds?: HTMLElement;
 }
 
 export class FieldField implements FieldHandle {
@@ -38,10 +43,17 @@ export class FieldField implements FieldHandle {
 
   constructor(init: FieldFieldInit = {}) {
     assertBrowser(); // browser-only: fail loudly during SSR instead of a cryptic crash
-    const { canvas, target, ...opts } = init;
+    const { canvas, target, bounds, ...opts } = init;
     this.managed = !canvas;
-    this.canvas = canvas ?? makeFieldCanvas(target);
-    this.field = createBrowserField(this.canvas, opts);
+    if (bounds) {
+      // contained: canvas absolutely inside `bounds`, engine driven by a container-scoped host so the
+      // field lives in the element's local space (not the window).
+      this.canvas = canvas ?? makeContainedCanvas(bounds);
+      this.field = createField(this.canvas, { ...opts, host: containerHost(bounds) });
+    } else {
+      this.canvas = canvas ?? makeFieldCanvas(target);
+      this.field = createBrowserField(this.canvas, opts);
+    }
   }
 
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
