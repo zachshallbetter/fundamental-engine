@@ -161,6 +161,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let bodies: Body[] = [];
   let W = 0;
   let H = 0;
+  // field-space origin from the host viewport (#540) — 0,0 for a window host, the container's
+  // left/top for a contained host. measureBodies + the move/thread readouts subtract it.
+  let originX = 0;
+  let originY = 0;
+  // a contained field (host viewport returns an origin): its bodies live in container-local space,
+  // which is INVARIANT under page scroll (the container + its contents move together). So it refreshes
+  // the origin each frame and skips the window-only per-frame scroll shift below.
+  let contained = false;
   // cached page scroll extent — reading scrollHeight forces a synchronous reflow, so
   // we cache it (refreshed on resize + sampled occasionally) rather than per frame.
   let maxScroll = 1;
@@ -429,7 +437,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     // programmatic bodies (addBody) aren't discoverable by the scan — carry them across the rebuild.
     if (programmaticBodies.length > 0) bodies = bodies.concat(programmaticBodies);
-    measureBodies(bodies, W, H);
+    measureBodies(bodies, W, H, originX, originY);
     bindEngagement();
     // Reconcile movers: carry forward offset + dock state for elements that persist across
     // rescans (shadow-DOM re-register, Astro nav re-mounts, explicit rescan()). An element that
@@ -627,7 +635,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // self-laying-out repulsion (Concept 3) sees where everything actually sits this frame.
     const centers = movers.map((mv) => {
       const r = mv.el.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      return { x: r.left - originX + r.width / 2, y: r.top - originY + r.height / 2 }; // container-local (#540)
     });
     for (let i = 0; i < movers.length; i++) {
       const mv = movers[i]!;
@@ -786,10 +794,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (const th of threadLinks) {
       const ra = th.a.getBoundingClientRect();
       const rb = th.b.getBoundingClientRect();
-      const ax = ra.left + ra.width / 2;
-      const ay = ra.top + ra.height / 2;
-      const bx = rb.left + rb.width / 2;
-      const by = rb.top + rb.height / 2;
+      const ax = ra.left - originX + ra.width / 2; // container-local (#540)
+      const ay = ra.top - originY + ra.height / 2;
+      const bx = rb.left - originX + rb.width / 2;
+      const by = rb.top - originY + rb.height / 2;
       const [cr, cg, cb] = th.c;
       ctx!.strokeStyle = `rgba(${cr},${cg},${cb},0.22)`;
       ctx!.lineWidth = 1;
@@ -830,6 +838,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const vp = host.viewport();
     W = vp.width;
     H = vp.height;
+    originX = vp.originX ?? 0;
+    originY = vp.originY ?? 0;
+    contained = vp.originX != null || vp.originY != null;
     sizeSurfaces(vp.dpr);
     env.W = W;
     env.H = H;
@@ -1678,6 +1689,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (boot < 1) boot = Math.min(1, boot + 0.012);
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
 
+    // a contained field re-reads its origin each frame (the container's viewport position shifts as the
+    // page scrolls); cheap — one getBoundingClientRect for the container, only when contained.
+    if (contained) {
+      const vp = host.viewport();
+      originX = vp.originX ?? 0;
+      originY = vp.originY ?? 0;
+    }
     const scrollY = host.scrollY();
     const dScroll = scrollY - lastScrollY;
     // eased page-scroll speed for the `scrolling` data-when gate (§5).
@@ -1689,14 +1707,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // snap in 6-frame steps during scroll and the swarm reads as "pausing". Cheap and drift-free: the
     // elements don't move in the document between measures, so the only delta is scroll, and
     // measureBodies refreshes from the real rects on its own cadence. cy carries the shaped box too
-    // (it is centred on cy ± hh).
-    if (dScroll !== 0) for (const b of bodies) b.cy -= dScroll;
+    // (it is centred on cy ± hh). Window fields only: a contained field's local positions are
+    // scroll-invariant (container + contents move together), so this shift would corrupt them (#540).
+    if (dScroll !== 0 && !contained) for (const b of bodies) b.cy -= dScroll;
     for (const w of waves) {
       const target = scrollY * (0.025 + w.depth * 0.08); // wave parallax (§24)
       w.offsetY += (target - w.offsetY) * 0.04;
     }
     if (bodies.length && frameN % 6 === 0) {
-      measureBodies(bodies, W, H);
+      measureBodies(bodies, W, H, originX, originY);
       // attention-gated discharge (#365): an engagement-gated sink releases on the falling
       // edge of engagement — the same conserved supernova ritual as saturation.
       dischargeDisengaged(bodies, env.supernova);
@@ -2074,7 +2093,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       body.onFeedback = (ch) => { Object.assign(channels, ch); spec.onFeedback?.(ch); };
       programmaticBodies.push(body);
       bodies = bodies.concat(body); // live this frame, before the next scan re-merges it
-      measureBodies([body], W, H); // init cx/cy so the first sample/force is correct
+      measureBodies([body], W, H, originX, originY); // init cx/cy so the first sample/force is correct
       return {
         data: spec.data,
         get channels() { return channels; },

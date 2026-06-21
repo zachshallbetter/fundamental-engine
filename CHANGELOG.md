@@ -9,6 +9,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Contained, card-scoped fields — `containerHost` + `bounds` (#540).** A field can now render scoped to
+  an element instead of the window — the structural gap that made every embed feel like a full-window
+  particle background. `new FieldField({ bounds: cardEl })` (or `createField(canvas, { host: containerHost(el) })`)
+  puts the field, its bodies (scanned within the element), and its canvas in the element's local coordinate
+  space. Mechanism: `HostViewport` gains an optional `originX/originY`; the scanner and the thread/move
+  readouts subtract it, and a contained field re-reads its origin each frame + skips the window-only scroll
+  shift (its local positions are scroll-invariant). Additive — `originX/originY` default to 0, so window
+  fields stay byte-identical (668 core tests unchanged). The first concrete `FieldSurface` toward #539.
+
+### Added
+
 - **Consumer-side feedback-contract lint — `lintFeedbackReadsUnwritten` (dom, #516).** Completes the
   silent-contract lint family: a CSS *rule* that reads a feedback var (`var(--field-*)`/`--load`/`--d`)
   and matches a `[data-body]` element with **no** `data-feedback` — a field body styled from a channel

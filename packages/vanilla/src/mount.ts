@@ -44,6 +44,17 @@ export function makeFieldCanvas(target: HTMLElement = document.body): HTMLCanvas
   return canvas;
 }
 
+/** A canvas filling a CONTAINED field's element (#540): absolutely positioned inside `bounds` rather
+ *  than fixed to the viewport. Establishes a positioning context on `bounds` if it has none. */
+export function makeContainedCanvas(bounds: HTMLElement): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.setAttribute('aria-hidden', 'true');
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+  if (getComputedStyle(bounds).position === 'static') bounds.style.position = 'relative';
+  bounds.appendChild(canvas);
+  return canvas;
+}
+
 /** Mount and start the field; returns the handle. `destroy()` also removes the canvas. */
 export function mountField(opts: MountOptions = {}): FieldHandle {
   assertBrowser();

@@ -13,6 +13,13 @@ export interface HostViewport {
   width: number;
   height: number;
   dpr: number;
+  /** field-space origin in the host's measurement coords — the top-left the field is drawn from.
+   *  `0,0` for a window-scoped host (the default); a CONTAINED host (`containerHost`) returns its
+   *  element's `left,top` so the field, its bodies, and its canvas all live in container-local space.
+   *  `measureBodies` and the thread/move readouts subtract it. Optional → 0 keeps every window host
+   *  and test byte-identical. */
+  originX?: number;
+  originY?: number;
 }
 
 export interface FieldHost {
