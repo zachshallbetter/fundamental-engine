@@ -18,8 +18,7 @@
  */
 
 import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
-import { createField } from '@fundamental-engine/core';
-import { createBrowserField, containerHost } from '@fundamental-engine/dom';
+import { createField } from './create-field.ts';
 import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
 export interface FieldFieldInit extends FieldOptions {
@@ -45,15 +44,10 @@ export class FieldField implements FieldHandle {
     assertBrowser(); // browser-only: fail loudly during SSR instead of a cryptic crash
     const { canvas, target, bounds, ...opts } = init;
     this.managed = !canvas;
-    if (bounds) {
-      // contained: canvas absolutely inside `bounds`, engine driven by a container-scoped host so the
-      // field lives in the element's local space (not the window).
-      this.canvas = canvas ?? makeContainedCanvas(bounds);
-      this.field = createField(this.canvas, { ...opts, host: containerHost(bounds) });
-    } else {
-      this.canvas = canvas ?? makeFieldCanvas(target);
-      this.field = createBrowserField(this.canvas, opts);
-    }
+    // The managed canvas differs by mode (absolutely-positioned inside `bounds`, else full-viewport);
+    // host resolution (container vs browser) is delegated to the one `createField` entry.
+    this.canvas = canvas ?? (bounds ? makeContainedCanvas(bounds) : makeFieldCanvas(target));
+    this.field = createField(this.canvas, bounds ? { ...opts, bounds } : opts);
   }
 
   /** (re)scan the document for `[data-body]` bodies after a layout change. */

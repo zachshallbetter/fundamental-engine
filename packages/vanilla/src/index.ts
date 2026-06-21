@@ -15,10 +15,13 @@ export type { FieldFieldInit } from './field.ts';
 export { mountField, makeFieldCanvas } from './mount.ts';
 export type { MountOptions } from './mount.ts';
 
-// The engine entry, wired to the browser host (core is renderer-agnostic and requires a host).
-// `createBrowserField` = `createField` + `browserHost()`; re-exported here as `createField` so the
-// framework-free door stays a one-liner. `browserHost` is re-exported for custom wiring.
-export { createBrowserField as createField, browserHost } from '@fundamental-engine/dom';
+// The one imperative engine entry (core is renderer-agnostic and requires a host). `createField`
+// resolves the host from `opts.host` → `bounds` (contained) → `browserHost()` (default), so the
+// framework-free door stays a one-liner while reaching the contained/custom-host modes. `browserHost`
+// is re-exported for explicit custom wiring.
+export { createField } from './create-field.ts';
+export type { CreateFieldOptions } from './create-field.ts';
+export { browserHost } from '@fundamental-engine/dom';
 export type {
   FieldHandle,
   FieldOptions,

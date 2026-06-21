@@ -17,6 +17,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   readouts subtract it, and a contained field re-reads its origin each frame + skips the window-only scroll
   shift (its local positions are scroll-invariant). Additive — `originX/originY` default to 0, so window
   fields stay byte-identical (668 core tests unchanged). The first concrete `FieldSurface` toward #539.
+- **One imperative `createField` door — host resolution (#537).** `@fundamental-engine/vanilla`'s
+  `createField(canvas, opts)` is now a single entry that resolves the host from `opts.host` → `opts.bounds`
+  (contained, via `containerHost`) → `browserHost()` (default), so the contained and custom-host modes no
+  longer require reaching for `createBrowserField`/`containerHost` by hand — the three-`createField`
+  footgun that confused embedders. `FieldField` routes through the same entry. The frozen contract is
+  preserved exactly: `createField(canvas)` with no host still auto-supplies `browserHost`; `bounds` and
+  `host` are additive options. New type: `CreateFieldOptions`.
 
 ### Added
 
