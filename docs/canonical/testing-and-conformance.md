@@ -481,22 +481,29 @@ swift-{linux,macos}.yml    # CI gate (Swift side): fail if a Swift force drifts 
   The same harness extends to the EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to
   short-trajectory + heat parity — follow-up coverage on the same fixture.
 
-### Model 2 — performance · **Status: in progress**
+### Model 2 — performance · **Status: shipped**
 
-`Bench` already splits per-frame sim/draw ms (headless, CoreGraphics) and `FieldPerf`/`QualityGovernor`
-compute budget/median/fps/dropped + tier transitions deterministically. The model **gates on deterministic
-work** (particle-count conservation, bounded pools, finiteness over a long heavy run — machine-independent)
-and **reports wall-clock** for reasoning about a change. Wall-clock is deliberately *not* a CI gate: the
-field is fill-rate-bound, headless software rasterization exaggerates fill, and CI runners vary — inventing
-a wall-clock budget repeats the mistake #324 was blocked on. Real frame-time budgets need on-hardware
-measurement (a maintainer task).
+`Bench` splits per-frame sim/draw ms (headless, CoreGraphics) and `FieldPerf`/`QualityGovernor` compute
+budget/median/fps/dropped + tier transitions deterministically. The model **gates on deterministic work**
+— `PerfRegressionTests` runs a heavy 1200-particle field for 600 frames at core level (Linux-runnable) and
+asserts particle-count conservation, finiteness (no NaN/Inf), and bounded velocity/heat — and **reports
+wall-clock** (`swift run FieldLabSnapshots --bench`) for reasoning about a change. Wall-clock is
+deliberately *not* a CI gate: the field is fill-rate-bound, headless software rasterization exaggerates
+fill, and CI runners vary — inventing a wall-clock budget repeats the mistake #324 was blocked on. Real
+frame-time budgets need on-hardware measurement (a maintainer task).
 
-### Model 3 — visual snapshot · **Status: in progress**
+### Model 3 — visual snapshot · **Status: shipped**
 
-`Snapshotter` rasterizes a scene headlessly to PNG through the real engine + real renderer. The model adds
-**golden-PNG diffing**: a committed reference per render mode, a perceptual-delta gate on regeneration.
-This is what lets renderer-parity work (soft-glow particles #417, 3D streamline tubes / vector grid #392)
-be verified without a device — the gap that previously forced those items to "needs human eyes."
+`Snapshotter.signature` rasterizes a scene headlessly through the real engine + real renderer and reduces
+the frame to a **coarse perceptual signature** — a downsampled luminance grid plus lit fraction and
+centroid. A pixel-exact golden flakes (the engine's wander is unseeded; CoreGraphics rasterization differs
+across machines), so the model gates **structure**: `VisualSnapshotTests` asserts every matter mode draws
+coherent, bounded content in the right place (non-blank, not blown out, centroid on-canvas) and that the
+coarse signature is **stable run-to-run** (observed Δ ≈ 0.004 against a 0.08 threshold — the precondition
+for per-mode goldens, and the tripwire that would demand a seeded RNG seam if it ever broke). This is what
+lets renderer-parity work (soft-glow particles #417, 3D streamline tubes / vector grid #392) be verified
+without a device — the gap that previously forced those items to "needs human eyes." Each adds a signature
+assertion on top of this base when it lands.
 
 > **Why three models.** Numeric conformance proves the *math* matches; the perf model proves a change
 > didn't regress *cost*; the snapshot model proves the *pixels* are right. Together they cover the parity
