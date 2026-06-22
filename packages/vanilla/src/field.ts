@@ -86,6 +86,10 @@ export class FieldField implements FieldHandle {
   setDprCap(cap: number): void {
     this.field.setDprCap(cap);
   }
+  /** apply an adaptive quality tier 0–3 (#413) — caps DPR, drops the heatmap at 2+; 0 restores. */
+  setQualityTier(tier: number): void {
+    this.field.setQualityTier(tier);
+  }
   /** switch the underlay render mode (§20.6) live. */
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);

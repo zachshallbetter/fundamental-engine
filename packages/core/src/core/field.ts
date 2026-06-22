@@ -870,10 +870,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // Size the drawing surfaces' backing stores to the current W×H (dpr-scaled). Split out of
   // resize() so the lazy `setRender('none' → drawing)` path can run exactly this once. With no
   // context (a field created with `render: 'none'`, §13.7 / #297) it is a no-op: the canvas
+  // adaptive quality tier (#413): the QualityGovernor's 0–3 signal, applied to the engine's own
+  // levers. A tier caps the backing-store DPR (the dominant fill lever) and, at 2+, skips the heaviest
+  // ambient layer (the heatmap glow). Reversible — tier 0 restores the configured quality. Driven by
+  // `setQualityTier`; the platform runtime forwards the governor's tier.
+  let qualityTier = 0;
+  const TIER_DPR = [Infinity, 1.5, 1.25, 1]; // effective DPR ceiling per tier, capping cfg.dprCap further
+
   // backing store stays 0×0 while W/H — the simulation space — keep tracking the viewport.
   function sizeSurfaces(dprRaw: number): void {
     if (!ctx) return;
-    const dpr = Math.min(dprRaw || 1, cfg.dprCap);
+    const dpr = Math.min(dprRaw || 1, cfg.dprCap, TIER_DPR[qualityTier] ?? Infinity);
     canvas.width = Math.floor(W * dpr);
     canvas.height = Math.floor(H * dpr);
     canvas.style.width = W + 'px';
@@ -1173,7 +1180,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // whenever enabled. (An earlier scroll-suppression made it pop/fade out while scrolling, which
     // read as choppy; the perf intent is served instead by the compute throttle — the texel grid is
     // recomputed only every 3rd frame — so the per-frame cost is just the cached bilinear upscale.)
-    if (heatmap) drawHeatmap();
+    if (heatmap && qualityTier < 2) drawHeatmap(); // #413: drop the heaviest ambient layer at tier 2+
     drawBound();
 
     // free particles — cool centre → warm edge, blended toward accent (§20.8).
@@ -1994,6 +2001,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     setDprCap: (cap) => {
       cfg.dprCap = cap > 0 ? cap : 2;
       if (ctx) sizeSurfaces(host.viewport().dpr); // re-size the backing store to the new ceiling now
+    },
+    setQualityTier: (tier) => {
+      const next = Math.max(0, Math.min(3, Math.floor(tier || 0)));
+      if (next === qualityTier) return;
+      qualityTier = next;
+      if (ctx) sizeSurfaces(host.viewport().dpr); // re-apply the tier's effective DPR ceiling now
     },
     threads: setThreads,
     burst: (x, y, hex) => {

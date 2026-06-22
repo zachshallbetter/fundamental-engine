@@ -50,3 +50,15 @@ test('the default ceiling is 2 (a 3× display caps at 2×)', () => {
     assert.equal(w(), 2000, `3× display → capped at 2× (${w()})`);
   } finally { field.destroy(); }
 });
+
+test('setQualityTier caps the effective DPR per tier and restores reversibly (#413)', () => {
+  const { canvas, w } = trackedCanvas();
+  const field = createField(canvas, { host: host(2), render: 'dots' }); // dprCap default 2 → 2000
+  try {
+    assert.equal(w(), 2000, 'tier 0: configured DPR (2×)');
+    field.setQualityTier(1); assert.equal(w(), Math.floor(1000 * 1.5), 'tier 1 → 1.5×');
+    field.setQualityTier(2); assert.equal(w(), Math.floor(1000 * 1.25), 'tier 2 → 1.25×');
+    field.setQualityTier(3); assert.equal(w(), 1000, 'tier 3 → 1×');
+    field.setQualityTier(0); assert.equal(w(), 2000, 'tier 0 restores full quality');
+  } finally { field.destroy(); }
+});
