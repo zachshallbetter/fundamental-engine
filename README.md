@@ -1,16 +1,16 @@
-# Field UI
+# Fundamental
 
 **A platform-native relational field runtime for the DOM.** Semantic HTML, DOM elements, particles,
 relationships, measurements, and feedback all participate in one shared field context. Elements bend
 the field; the field bends them back. The visible particle canvas is one render surface, not the
-whole system.
+whole system — and by default the field draws nothing at all.
 
-[![Live demo: fundamental-engine.com](https://img.shields.io/badge/demo-field--ui.com-4da3ff)](https://fundamental-engine.com)
+[![Live demo: fundamental-engine.com](https://img.shields.io/badge/demo-fundamental--engine.com-4da3ff)](https://fundamental-engine.com)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Core runtime dependencies: 0](https://img.shields.io/badge/core%20runtime%20deps-0-2dd4bf)
 ![TypeScript: strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
-![Tests: 600+ passing](https://img.shields.io/badge/tests-600%2B%20passing-2dd4bf)
-![API: frozen 0.x](https://img.shields.io/badge/API-frozen%200.x-4da3ff)
+![Tests: 900+ passing](https://img.shields.io/badge/tests-900%2B%20passing-2dd4bf)
+![API: frozen + additive](https://img.shields.io/badge/API-frozen%20%2B%20additive-4da3ff)
 
 Mark any element as a body with one attribute and it starts to pull, push, swirl, or hold the matter
 around it. Where the field gathers, it writes that density back into the element as weight, glow, and
@@ -25,7 +25,7 @@ are adapters, not requirements.
 
 > **See it live.** The whole system runs over the engine at **[fundamental-engine.com](https://fundamental-engine.com)**, with a physics [Lab](https://fundamental-engine.com/lab) where you fire particles into a force and watch the math hold.
 
-> **Now `@fundamental-engine`.** This project was `forces-ui`, then `field-ui`; it is now **Fundamental** — *fundamental forces acting across a field*. The engine's primitive is unchanged: `<field-root>`, `FieldHandle`, `createField`, and the `--field-*` CSS variables stay. The old `@field-ui/*` / `@forces-ui/*` packages are deprecated and point here.
+> **Now `@fundamental-engine`.** This project was `forces-ui`, then `field-ui`; it is now **Fundamental** — *fundamental forces acting across a field*. The engine's primitive is unchanged: `<field-root>`, `FieldHandle`, `createField`, and the `--field-*` CSS variables stay.
 
 ## The idea
 
@@ -39,10 +39,11 @@ The geometry is re-read every frame on a six-phase scheduler (`discover → read
 ## Quick start
 
 > **Signals-first by default.** A field created without a `render` mode draws **nothing** — it runs the
-> full simulation and writes its results as signals: the `--field-*` / `--d` CSS variables, capture
-> events, and `scrollV()`. That's the field as a *behavior layer*, the thing it's actually for. Opt into
-> a visible surface with `render: 'dots'` (the particles), `'trails'`, `'streamlines'`, etc. The examples
-> below pass `render: 'dots'` so you can see the field; drop it to drive your UI purely from the signals.
+> full simulation and writes its results as signals: the `--field-*` / `--d` CSS variables, capture and
+> proximity events, and `scrollV()`. That's the field as a *behavior layer*, the thing it's actually for.
+> Opt into a visible surface with `render: 'dots'` (the particles), `'trails'`, `'streamlines'`, etc. The
+> examples below pass `render: 'dots'` so you can see the field; drop it to drive your UI purely from the
+> signals.
 >
 > **Window or component.** By default a field spans the window; pass `bounds` (vanilla) to scope it to a
 > single element instead — `new FieldField({ render: 'dots', bounds: cardEl })`.
@@ -84,7 +85,8 @@ export default function Page() {
 }
 ```
 
-Reach for `useFieldField(options)` when you want the field handle instead of the component.
+Reach for `useFieldField(options)` when you want the field handle instead of the component. Both clean up
+on unmount automatically — see the [lifecycle contract](docs/canonical/lifecycle-contract.md).
 
 ### Web component (any stack, or plain HTML)
 
@@ -119,6 +121,23 @@ A body is any element with a `data-body` attribute. The value is one or more for
 | `data-preset` | expand a named composite (`blackhole`, `galaxy`, …) |
 
 Engaging an element (hover, focus, tap) widens its range and amplifies its strength, so the field answers interaction.
+
+## The handle
+
+`createField` / `new FieldField` / `<field-root>` all return (or wrap) the same `FieldHandle` — the
+imperative surface for driving and reading a live field:
+
+- **Drive it.** `setRender` / `setOverlay` (the two render *surfaces* — underlay + overlay), `setFormation`,
+  `setAccent`, `setPalette`, `flowTo(x, y)` / `clearFlow`, `burst`, `scan` / `rescan`, `destroy`.
+- **Read it.** `particleCount()`, `readParticles(out)` (the render-agnostic swarm read-out),
+  `scrollV()`, `version` (which engine build this field is on — `FIELD_VERSION`).
+- **Listen.** `on(type, cb)` returns an unsubscribe. Discrete events: `absorb` / `release` (a `sink`
+  capturing matter) and the proximity triggers `enter` / `exit` / `met` (a body crossing another body's
+  range — the gameplay "entered radius" signal).
+- **Theme it.** `theme` (`'warm'` default, `'cool'`, `'mono'`) sets the heat ramp + wave baseline;
+  `gradientCool` / `gradientWarm` / `waveBaseline` override individual lanes.
+- **Adapt under load.** `setQualityTier(tier)` drops the effective DPR on a budget (the field is
+  fill-rate-bound, not particle-bound); `<field-root>` applies it automatically.
 
 ## What's in the box
 
@@ -171,9 +190,9 @@ Browse and run all 64 at the [recipe gallery](https://fundamental-engine.com/doc
 
 **The field is readable, not a black box.** The [inspector](https://fundamental-engine.com/docs/inspector) reads the live platform each frame (the six-phase spine, registry counts, the typed relationship graph, and lint warnings) without mutating it.
 
-**Verified, not eyeballed.** A conformance framework fires known particles into each force and checks the measured trajectory against the math. The same catalog drives the test suite and the visual Lab. The repository carries **600+ deterministic tests** (core, platform, scheduler, lint, and the site) and a global safety sweep that holds every force finite, bounded in velocity and heat, and conserved in count.
+**Verified, not eyeballed.** A conformance framework fires known particles into each force and checks the measured trajectory against the math. The same catalog drives the test suite and the visual Lab. The repository carries **900+ deterministic tests** (core, platform, scheduler, lint, and the site) and a global safety sweep that holds every force finite, bounded in velocity and heat, and conserved in count. The release-readiness gates are pinned too: a [lifecycle contract](docs/canonical/lifecycle-contract.md) (create→register→measure→unmount, tested per surface), a [support matrix](docs/canonical/support-matrix.md) (browsers / DPR / reduced-motion / SSR, each row backed by a test), and a contract-coverage guard that fails CI if any public option or metric ships untested.
 
-**The public surface is frozen for `0.x`.** `pnpm check:api` fails the build if a stable export changes, `pnpm check:dist` verifies every package's entry points resolve, and `pnpm check:readme` keeps these READMEs true to the code. See [API stability](docs/canonical/api-stability.md) for the frozen surface and the compatibility rules.
+**The public surface is frozen and additive-only.** `pnpm check:api` fails the build if a stable export changes, `pnpm check:dist` verifies every package's entry points resolve, and `pnpm check:readme` keeps these READMEs true to the code. New options and methods may be **added**; nothing stable is renamed or removed without a major. See [API stability](docs/canonical/api-stability.md) and the [1.0 surface record](docs/planning/1.0-surface.md) for the full tiering.
 
 ## Packages
 
@@ -197,7 +216,7 @@ adapter lives in `@fundamental-engine/dom`. See [`docs/canonical/platform-archit
 
 ## Availability
 
-The packages are published to npm under the `@Fundamental` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface shown above is frozen for `0.x`.
+The packages are published to npm under the `@fundamental-engine` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface is frozen and additive-only; the support and versioning policy is in [`SUPPORT.md`](SUPPORT.md).
 
 ## Documentation
 
@@ -205,7 +224,9 @@ The packages are published to npm under the `@Fundamental` scope, **with provena
 - **Lab** at [fundamental-engine.com/lab](https://fundamental-engine.com/lab): fire particles into a force, watch the track, share the result through a URL.
 - **Recipe gallery** at [fundamental-engine.com/docs/gallery](https://fundamental-engine.com/docs/gallery) and the **inspector** at [fundamental-engine.com/docs/inspector](https://fundamental-engine.com/docs/inspector).
 - [`docs/README.md`](docs/README.md): the full documentation map (canonical architecture, engine reference, planning archive).
-- [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md): the frozen `0.x` surface and compatibility rules.
+- [`docs/canonical/api-stability.md`](docs/canonical/api-stability.md) · [`docs/planning/1.0-surface.md`](docs/planning/1.0-surface.md): the frozen + additive surface and its tiering.
+- [`docs/migration-0.x-to-1.0.md`](docs/migration-0.x-to-1.0.md): the 0.x → 1.0 upgrade checklist (the one behavior change, plus the all-additive rest).
+- [`docs/canonical/lifecycle-contract.md`](docs/canonical/lifecycle-contract.md) · [`docs/canonical/support-matrix.md`](docs/canonical/support-matrix.md): the lifecycle, browser/DPR/reduced-motion/SSR support, and accessibility records.
 - [`docs/engine-reference/forces-system.md`](docs/engine-reference/forces-system.md): the full engine specification.
 - [`docs/engine-reference/forces-formulas.md`](docs/engine-reference/forces-formulas.md): per-force formulas and the attribute handbook.
 
@@ -219,8 +240,11 @@ pnpm -r typecheck   # tsc across packages
 pnpm -r test        # node:test, no test framework
 pnpm -r build       # the packages (tsc) and the site (Astro)
 pnpm check:dist     # every package's entry points resolve and import cleanly
-pnpm check:api      # the frozen 0.x public surface is intact
-pnpm check:readme   # the READMEs stay true to the code
+pnpm check:api      # the frozen public surface is intact (additive-only)
+pnpm check:readme   # the READMEs stay true to the code (catalog counts, package names)
+pnpm check:recipes  # the recipe catalog is well-formed
+pnpm check:cem      # the custom-elements manifest is current
+pnpm check:links    # internal doc links resolve
 pnpm dev            # run the site locally
 ```
 
@@ -238,7 +262,7 @@ The build is `tsc`. There is no bundler; the library ships unbundled ESM. The si
 
 ## Contributing
 
-Issues and pull requests are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow and conventions, and report anything sensitive through [`SECURITY.md`](SECURITY.md).
+Issues and pull requests are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow and conventions, report anything sensitive through [`SECURITY.md`](SECURITY.md), and see [`SUPPORT.md`](SUPPORT.md) for the support and versioning policy.
 
 ## Origins
 
