@@ -35,6 +35,9 @@ importers:
       '@fundamental-engine/three':
         specifier: workspace:*
         version: link:../../packages/three
+      '@fundamental-engine/vanilla':
+        specifier: workspace:*
+        version: link:../../packages/vanilla
       astro:
         specifier: ^5
         version: 5.18.2(@types/node@24.13.1)(rollup@4.61.0)(typescript@5.9.3)

@@ -1,0 +1,105 @@
+---
+// ReactiveList — the "this is what it's for" showcase (#553): a real, copy-pasteable reactive
+// component, NOT a particle demo. A contained, signals-only field (`new FieldField({ bounds, render:
+// 'none' })`, #540/#538) runs over an ordinary list; each row is a `[data-body]` that gathers the
+// invisible matter, and the field writes its local density back as `--field-density` (`--d`). The CSS
+// reads that to give important rows weight, lift, and glow — and hovering a row engages it
+// (`data-active`), so it draws matter toward itself and its neighbours visibly respond. No canvas, no
+// particles on screen: the field is pure behaviour, the only render surface is the list's own type.
+interface Item { label: string; meta: string; weight: number } // weight 0..1 → data-strength
+interface Props { items?: Item[] }
+const items: Item[] = Astro.props.items ?? [
+  { label: 'Production incident — checkout 500s', meta: 'now · on-call', weight: 1 },
+  { label: 'Design review: onboarding flow', meta: '2pm · 4 people', weight: 0.62 },
+  { label: 'PR #318 — signals-first default', meta: 'review requested', weight: 0.78 },
+  { label: 'Weekly metrics digest', meta: 'fyi', weight: 0.3 },
+  { label: 'Renew TLS certificate', meta: 'in 9 days', weight: 0.5 },
+  { label: 'Coffee chat with Sam', meta: 'sometime', weight: 0.18 },
+];
+---
+
+<figure class="reactive-list">
+  <ul class="rl-rows" data-reactive-list>
+    {items.map((it) => (
+      <li
+        class="rl-row"
+        data-body="attract"
+        data-feedback
+        data-strength={it.weight.toFixed(2)}
+        data-range="180"
+        tabindex="0"
+      >
+        <span class="rl-label">{it.label}</span>
+        <span class="rl-meta">{it.meta}</span>
+      </li>
+    ))}
+  </ul>
+  <figcaption>
+    A plain list — no canvas, no particles. A contained, signals-only field gives each row weight from
+    its <code>--field-density</code>; hover or focus a row and the field gathers toward it.
+  </figcaption>
+</figure>
+
+<script>
+  import { FieldField } from '@fundamental-engine/vanilla';
+  import { pageRuntime } from '../lib/page-runtime';
+
+  // One contained, signals-only field per list. The matter gathers at the rows (attract bodies); the
+  // field writes --field-density (--d) back to each [data-feedback] row, and the CSS turns that into
+  // weight/lift/glow. Engagement (hover/focus → data-active) makes a row pull harder, live.
+  pageRuntime('[data-reactive-list]', () => {
+    const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fields: Array<{ destroy(): void }> = [];
+    const acs: AbortController[] = [];
+    for (const list of document.querySelectorAll<HTMLElement>('[data-reactive-list]')) {
+      // render:'none' → no canvas is ever drawn; the field exists purely as the --field-* signals.
+      const field = new FieldField({ bounds: list, render: 'none', density: 1.4 });
+      fields.push(field);
+      if (reduced) continue; // reduced motion: weights still apply (signals are live), no engagement drift
+      const ac = new AbortController();
+      acs.push(ac);
+      for (const row of list.querySelectorAll<HTMLElement>('.rl-row')) {
+        const engage = () => row.setAttribute('data-active', '1');
+        const release = () => row.setAttribute('data-active', '0');
+        row.addEventListener('pointerenter', engage, { signal: ac.signal });
+        row.addEventListener('pointerleave', release, { signal: ac.signal });
+        row.addEventListener('focus', engage, { signal: ac.signal });
+        row.addEventListener('blur', release, { signal: ac.signal });
+      }
+    }
+    return () => {
+      for (const ac of acs) ac.abort();
+      for (const f of fields) f.destroy();
+    };
+  });
+</script>
+
+<style>
+  .reactive-list {
+    margin: 1.4rem 0;
+    padding: 1.1rem;
+    border: 1px solid var(--line, #2a2a35);
+    border-radius: 14px;
+    background: color-mix(in srgb, #0e121b 78%, transparent);
+  }
+  .rl-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+  .rl-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+    padding: calc(0.55rem + var(--d, 0) * 0.5rem) 0.9rem; /* heavier rows take more space */
+    border: 1px solid color-mix(in srgb, var(--accent, #4da3ff) calc(var(--d, 0) * 55%), var(--line, #2a2a35));
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent, #4da3ff) calc(var(--d, 0) * 14%), transparent);
+    /* the field's density becomes the row's presence: weight, lift, and a soft glow */
+    transform: translateX(calc(var(--d, 0) * 6px));
+    box-shadow: 0 0 calc(var(--d, 0) * 26px) color-mix(in srgb, var(--accent, #4da3ff) calc(var(--d, 0) * 45%), transparent);
+    color: var(--text, #e8e8ef);
+    transition: transform 0.45s ease, padding 0.45s ease, background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease;
+    cursor: default;
+  }
+  .rl-label { font-size: 1.02rem; font-weight: calc(400 + var(--d, 0) * 360); }
+  .rl-meta { font: 0.74rem ui-monospace, SFMono-Regular, monospace; color: var(--muted, #9aa3b2); white-space: nowrap; }
+  .reactive-list figcaption { margin-top: 0.9rem; font-size: 0.82rem; color: var(--muted, #9aa3b2); line-height: 1.5; }
+  .reactive-list figcaption code { color: var(--accent, #4da3ff); font-size: 0.92em; }
+  .rl-row:focus-visible { outline: 2px solid var(--accent, #4da3ff); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .rl-row { transition: none; } }
+</style>
