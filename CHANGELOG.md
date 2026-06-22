@@ -9,6 +9,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Cross-plane conformance harness — Swift parity is now machine-checked (#526).** `pnpm gen:golden`
+  fires the canonical deterministic forces through the f64 JS engine and writes their frame-0 force
+  deltas to a golden fixture; the f32 Swift `GoldenConformanceTests` must reproduce every one within
+  tolerance (120 cases: 6 forces × 4 variants × 5 probes). Two CI gates close the loop — `pnpm
+  check:golden` fails if the golden drifts from the JS math, and the Swift CI legs fail if a Swift force
+  drifts from the golden. The first autonomous, no-device verification model for the native port; the
+  same harness extends to the EM/grid/RNG/extended forces.
 - **Support matrix + accessibility record, CI-pinned (RC hardening — #322, #325).** A stated
   browsers / DPR / reduced-motion / SSR support matrix and accessibility posture
   (`docs/canonical/support-matrix.md`), each row backed by a test: `core/reduced-motion.test.ts`

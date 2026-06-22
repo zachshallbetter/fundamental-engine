@@ -74,6 +74,14 @@ everywhere) runs the whole simulation in the z = 0 plane, and every formula redu
 the JS math exactly — same falloffs, same constants, same behavior. The conformance rule:
 at z = 0, a Swift field and a JS field given the same inputs produce the same motion.
 
+This is **machine-checked across planes** (#526): `pnpm gen:golden` fires the canonical
+forces through the f64 JS engine and writes the frame-0 force deltas to
+`Tests/FundamentalCoreTests/Fixtures/conformance-golden.json`; `GoldenConformanceTests`
+then makes the f32 Swift engine reproduce every one within tolerance. The JS CI gate
+(`pnpm check:golden`) fails if the golden drifts from the JS math; the Swift CI legs fail
+if a Swift force drifts from the golden. A divergence is a Swift bug — fix the force, never
+loosen the tolerance.
+
 Three ways to open the third axis:
 
 ```swift
@@ -222,7 +230,7 @@ swift run -c release FieldLabSnapshots --bench         # sim vs draw ms per conf
 ```sh
 cd swift
 swift build                  # macOS
-swift test                   # 113 tests: unit + headless full-loop integration
+swift test                   # 128 tests: unit + headless integration + cross-plane conformance
 
 # cross-platform checks
 swift build --triple arm64-apple-ios17.0-simulator \
