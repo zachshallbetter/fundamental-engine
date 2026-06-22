@@ -232,14 +232,18 @@ export function startPlatformRuntime(root: Element): PlatformRuntime {
     // Tier 2/3 degradation (the governor's built-in consumer): throttle the platform's own tick
     // — measurement, feedback writes, relationship discovery — to every 2nd / 4th frame. The
     // engine keeps simulating at full rate; only the platform's DOM read/write cadence drops.
-    // Engine-side responses (render simplification, particle caps) are the embedder's to wire
-    // via the field:quality-tier event.
+    // Engine-side responses (DPR cap + heatmap drop) are now applied automatically via
+    // handle.setQualityTier on each tier change (#413); the field:quality-tier event still fires
+    // so an embedder can layer additional responses on top.
     const stride = governor.tier >= 3 ? 4 : governor.tier === 2 ? 2 : 1;
     if (frame % stride === 0) platform.tick(t, { width: window.innerWidth, height: window.innerHeight });
 
     if (duration > 0 && duration < DISCONTINUITY_MS && handle) {
       const newTier = governor.feed(duration);
       if (newTier !== undefined) {
+        // #413: apply the engine-side quality response automatically (DPR cap + heatmap at 2+),
+        // then still emit the event so an embedder can layer its own responses on top.
+        handle.setQualityTier(newTier);
         root.dispatchEvent(new CustomEvent('field:quality-tier', {
           bubbles: true, composed: true,
           detail: { tier: newTier, durationMs: Math.round(duration) },

@@ -822,6 +822,24 @@
             },
             {
               "kind": "method",
+              "name": "setQualityTier",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "tier",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "apply an adaptive quality tier 0–3 (#413) — the platform runtime forwards the governor's tier."
+            },
+            {
+              "kind": "method",
               "name": "setRender",
               "return": {
                 "type": {
@@ -2184,6 +2202,28 @@
                 }
               ],
               "description": "lower/raise the backing-store DPR ceiling at runtime (the dominant fill-rate lever).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setQualityTier",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "tier",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ],
+              "description": "apply an adaptive quality tier 0–3 (#413) — the platform runtime forwards the governor's tier.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
