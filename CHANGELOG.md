@@ -7,6 +7,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Support matrix + accessibility record, CI-pinned (RC hardening — #322, #325).** A stated
+  browsers / DPR / reduced-motion / SSR support matrix and accessibility posture
+  (`docs/canonical/support-matrix.md`), each row backed by a test: `core/reduced-motion.test.ts`
+  (integration provably freezes — `dt = 0`, no travel — when the host reports reduced motion, and
+  provably animates otherwise), `core/ssr.test.ts` (the engine imports, constructs, runs, and tears down
+  with `document`/`window` absent — `render:'none'` is the SSR-natural mode), alongside the existing
+  DPR-cap and Accessibility-Contract tests. The field stays `aria-hidden` (decorative; AT walks past it);
+  the AT-pass log records the automated invariants and leaves the live screen-reader spot-check as a
+  maintainer sign-off.
+
 ### Removed
 
 - **Deleted the retired `@fundamental-engine/kit` + `fundamental-engine` umbrella packages.** They were
