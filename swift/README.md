@@ -230,16 +230,28 @@ swift run -c release FieldLabSnapshots --bench         # sim vs draw ms per conf
 ```sh
 cd swift
 swift build                  # macOS
-swift test                   # 128 tests: unit + headless integration + cross-plane conformance
+swift test                   # 129 tests: unit + headless integration + cross-plane conformance + perf gate
 
 # cross-platform checks
 swift build --triple arm64-apple-ios17.0-simulator \
   --sdk $(xcrun --sdk iphonesimulator --show-sdk-path)
 swift build --triple arm64-apple-xros1.0-simulator \
   --sdk $(xcrun --sdk xrsimulator --show-sdk-path)
+
+# performance: measure (reported) vs gate (deterministic)
+swift run -c release FieldLabSnapshots --bench   # sim/draw ms per scene/mode/reading — Bench.standardSweep
 ```
 
 The test suite runs the *whole* engine headlessly — `HeadlessFieldHost` drives frames
 synchronously, so the integration tests assert real behavior: an `attract` body charges
 up (`d` rises) from gathered matter, friction bleeds burst energy back out, a volumetric
 field spreads matter through z while a flat one provably stays planar.
+
+**Performance has two halves.** `--bench` *measures* wall-clock (sim vs draw ms) for reasoning
+about a change — reported, never CI-gated, because the field is fill-rate-bound and headless
+rasterization exaggerates fill (real frame-time budgets need on-hardware measurement). What CI
+*does* gate is the deterministic, machine-independent half: `PerfRegressionTests` runs a heavy
+1200-particle field for 600 frames and asserts the work stays bounded — particle count conserved
+(no leak / unbounded spawn), every value finite (no NaN/Inf blowup), velocity and heat in range.
+That's the perf-bug class that actually ships — a runaway allocation or a divergent integrator —
+caught without a clock. See [`docs/canonical/testing-and-conformance.md`](../docs/canonical/testing-and-conformance.md) §20.
