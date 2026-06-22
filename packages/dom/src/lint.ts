@@ -29,7 +29,8 @@ export type LintCode =
   | 'feedback-vars-unwritten'
   | 'feedback-writes-unread'
   | 'feedback-reads-unwritten'
-  | 'feedback-lane-inert';
+  | 'feedback-lane-inert'
+  | 'compositing-fill-trap';
 
 export interface PlatformLintWarning {
   code: LintCode;
@@ -283,12 +284,44 @@ export interface LintOptions {
   resolve?: Resolver;
 }
 
+/**
+ * The DPR2 / mix-blend fill trap (#405, #532) — the hardest-won perf lesson, made a guard. A
+ * full-viewport `mix-blend-mode` canvas re-composites the WHOLE screen every frame the layer below
+ * animates, **even when it's empty**. So it must stay `display:none` until it actively draws. This flags
+ * a mounted full-viewport mix-blend canvas whose backing store is unsized (`0×0` → not drawing) yet
+ * isn't `display:none` — paying the full-screen re-blend for nothing. Inline-style only (pure, no
+ * `getComputedStyle`), matching the rest of lint.
+ */
+export function lintCompositingPerf(root: ParentNode): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  root.querySelectorAll('canvas').forEach((el) => {
+    const c = el as HTMLCanvasElement;
+    const s = c.style;
+    const blend = s.mixBlendMode;
+    if (!blend || blend === 'normal') return; // only mix-blend canvases pay the per-frame re-blend
+    const fullViewport =
+      s.position === 'fixed' &&
+      (s.inset === '0' || s.inset === '0px' || (s.width === '100%' && s.height === '100%'));
+    if (!fullViewport) return;
+    if (s.display === 'none') return; // correctly gated out of the compositing tree — no cost
+    if (c.width !== 0 && c.height !== 0) return; // has a sized backing store → assume it's actively drawing
+    out.push({
+      code: 'compositing-fill-trap',
+      severity: 'warning',
+      element: c,
+      message: `a full-viewport mix-blend-mode="${blend}" canvas is mounted with an unsized backing store (0×0) but not display:none — it re-composites the whole screen every frame for nothing (#405). Set display:none until it actively draws.`,
+    });
+  });
+  return out;
+}
+
 /** Run every platform lint rule over a FieldPlatform and return the aggregated warnings. */
 export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): PlatformLintWarning[] {
   const root = opts.root ?? platform.root;
   const resolve: Resolver = opts.resolve ?? ((id) => (typeof document !== 'undefined' ? document.getElementById(id) : null));
   return [
     ...lintRelationTargets(root, resolve),
+    ...lintCompositingPerf(root),
     ...lintSinkFeedback(root),
     ...lintFeedbackVarReads(root),
     ...lintFeedbackWritesUnread(root),

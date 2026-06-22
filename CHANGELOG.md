@@ -28,8 +28,24 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   recipes (set their own render), and any call already passing `render`. The site homepage and the
   starter app pin `render="dots"` explicitly (they *are* the field showcase).
 
+### Performance
+
+- **Hot-path allocation sweep (#530).** Eliminated the clearest steady-state per-frame allocations in
+  the draw loop: **twelve `hexToRgb(cfg.accent)` re-parses per frame** (one per draw/overlay pass) now
+  read the already-cached live accent (`curAccent`) — zero parse, zero alloc, and slightly more precise
+  (no hex round-trip); and the self-laying-out repulsion no longer allocates `centers.filter(j !== i)`
+  every frame per mover (was **O(movers²) arrays/frame** on a cluster) — `repelForce` takes a `skip`
+  index instead. Behaviour is unchanged (pinned by a skip-vs-filter equivalence test). The GC-pressure
+  *budget* as a CI gate (the issue's secondary ask) needs allocation-measurement infra — a follow-up.
+
 ### Added
 
+- **Compositing perf-lint — the mix-blend fill trap as a guard (`lintCompositingPerf`, dom, #532).**
+  The hardest-won fill-rate lesson is now a dev-time lint: a full-viewport `mix-blend-mode` canvas
+  re-composites the **whole screen every frame** the layer below animates, *even when empty* (#405) — so
+  it must stay `display:none` until it draws. The rule flags a mounted full-viewport mix-blend canvas
+  whose backing store is unsized (`0×0` → not drawing) yet isn't `display:none`. Pure, inline-style only,
+  wired into `lintPlatform`. (The adaptive-DPR half of #532 shipped as `setQualityTier` in #413.)
 - **Adaptive quality tiers — `setQualityTier` + automatic governor response (#413).** The
   `QualityGovernor` already detected sustained frame-budget overruns and emitted a tier (0–3), but the
   *engine-side* response was a documented gap — the embedder had to wire it. Now `FieldHandle.setQualityTier(0–3)`
