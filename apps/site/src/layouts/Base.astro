@@ -82,11 +82,12 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
     <!-- waves off → the bare free-particle field: the matter itself, reacting to the page's
          bodies, rather than the carrier-wave background. density 3 → ~3× the base ~130 particles,
          so the field reads as a dense medium the bodies gather and absorb. -->
-    <!-- dots (default render) → the particles are always visible. Flow arrows are toggled via
-         setOverlay('streamlines') as an additive layer on top — never hiding particles.
-         The heatmap glow underlay starts on. data-nav-* markers keep the nav toggles in sync
-         across client-side navigation (transition:persist keeps the element alive). -->
-    <field-root accent="#4da3ff" density="2.4" waves="false" grid-warp="3" data-nav-flow="off" data-nav-heatmap="off" transition:persist></field-root>
+    <!-- render="dots" → the particles are always visible. The engine default is now signals-only
+         ('none', #538); the homepage opts into the particle surface explicitly because it IS the
+         field showcase. Flow arrows are toggled via setOverlay('streamlines') as an additive layer
+         on top — never hiding particles. The heatmap glow underlay starts on. data-nav-* markers keep
+         the nav toggles in sync across client-side navigation (transition:persist keeps it alive). -->
+    <field-root render="dots" accent="#4da3ff" density="2.4" waves="false" grid-warp="3" data-nav-flow="off" data-nav-heatmap="off" transition:persist></field-root>
     <script is:inline>
       // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
       // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so

@@ -27,6 +27,12 @@ drawn**. The only output is the feedback the platform writes back to the DOM (CS
 thresholded events), and the only render surface is the page's own type and ink, styled by CSS
 that reads those variables.
 
+> **As of [#538](https://github.com/zachshallbetter/fundamental-engine/issues/538), this is the default.**
+> The engine's `render` mode defaults to `'none'`, so a field created without an explicit render mode IS
+> an invisible field — full simulation + feedback, no canvas. You opt *into* a drawn surface
+> (`render: 'dots'`, …), not out of it. The two mechanisms below remain the ways to get a signals-only
+> field while a drawn one exists elsewhere (draw-skip a visible field; run a render-less recipe).
+
 This is the third **placement** in the Surfaces & Placement taxonomy:
 
 | Surface | Placement | Drawn on | Status |

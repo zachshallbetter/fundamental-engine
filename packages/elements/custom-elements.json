@@ -475,7 +475,7 @@
               "type": {
                 "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
               },
-              "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
+              "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible surface.",
               "readonly": true
             },
             {
@@ -1624,7 +1624,7 @@
               "type": {
                 "text": "'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'"
               },
-              "description": "render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297).",
+              "description": "render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,\nnever draw (#297). Set `render=\"dots\"` (or another drawing mode) to get a visible surface.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",

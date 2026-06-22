@@ -27,7 +27,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} accent - Accent color (hex) the field draws particles and overlay in.
  * @attr {number} density - Particle-density multiplier (default `1`; `0.5` halves the count).
  * @attr {number} waves - Intensity of the resting wave currents (the ambient drift).
- * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. `none` is the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn.
+ * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn. Set `render="dots"` for the particle surface.
  * @attr {string} overlay - Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).
  * @attr {string} palette - Named color palette for the field.
  * @attr {number} mass - Global mass scaling applied to bodies.
@@ -148,12 +148,13 @@ export class FieldField extends HTMLElementBase {
     return this.getAttribute('waves') !== 'false';
   }
 
-  /** render mode (§20.6); `none` = the signals-only engine — simulate + feed back, never draw (#297). */
+  /** render mode (§20.6); the DEFAULT is `none` (#538) — the signals-only engine: simulate + feed back,
+   *  never draw (#297). Set `render="dots"` (or another drawing mode) to get a visible surface. */
   get renderMode(): 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none' {
     const v = this.getAttribute('render');
-    return v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' || v === 'flow' || v === 'none'
+    return v === 'dots' || v === 'trails' || v === 'links' || v === 'metaballs' || v === 'voronoi' || v === 'streamlines' || v === 'flow'
       ? v
-      : 'dots';
+      : 'none';
   }
 
   /** substrate background: `transparent` (present and not `"false"`) clears to transparent so the

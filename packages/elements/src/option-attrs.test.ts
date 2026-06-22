@@ -48,3 +48,19 @@ test('depth is both forwarded and observed (regression: <field-root depth> was a
   );
   assert.ok(FieldField.observedAttributes.includes('depth'), 'depth must be an observed attribute');
 });
+
+// The renderMode getter is pure (reads getAttribute) — exercise it via the prototype with a stub
+// `this`, no DOM needed. Pins the signals-first default (#538): no/unknown render ⇒ 'none'.
+const renderModeGet = Object.getOwnPropertyDescriptor(FieldField.prototype, 'renderMode')!.get!;
+const renderModeFor = (attr: string | null): string => renderModeGet.call({ getAttribute: () => attr });
+
+test('renderMode defaults to signals-only "none" when the attribute is absent (#538)', () => {
+  assert.equal(renderModeFor(null), 'none', 'no render attribute ⇒ signals-first default');
+  assert.equal(renderModeFor('nonsense'), 'none', 'an unrecognized value falls back to none, not dots');
+});
+
+test('renderMode passes through every recognized drawing mode', () => {
+  for (const m of ['dots', 'trails', 'links', 'metaballs', 'voronoi', 'streamlines', 'flow', 'none']) {
+    assert.equal(renderModeFor(m), m, `render="${m}" passes through`);
+  }
+});

@@ -61,6 +61,7 @@ import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
+import { devWarnNoOp } from '../contracts/guards.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -81,7 +82,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // acquires it lazily (and sizes the store then) — so a field created with 'none' allocates no
   // render surface at all unless asked to draw.
   let ctx: CanvasRenderingContext2D | null = null;
-  if ((opts.render ?? 'dots') !== 'none') {
+  if ((opts.render ?? 'none') !== 'none') {
     ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Fundamental: 2D canvas context unavailable');
   }
@@ -136,7 +137,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const cfg = {
     accent: opts.accent ?? resolvePalette(opts.palette)[0] ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
-    render: opts.render ?? 'dots',
+    render: opts.render ?? 'none', // signals-first default (#538): a bare field runs the sim + feedback but draws nothing until asked. Pass render:'dots' for the particle surface.
     waves: opts.waves ?? true, // draw the background Currents (§24); opt-out for the bare field
     background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
@@ -2135,8 +2136,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
       return { x: fx, y: fy };
     },
-    sampleScalar: (x, y) => (heatmap ? heatmap.norm(x, y) : 0),
-    sampleGradient: (x, y) => (heatmap ? heatmap.gradient(x, y) : { x: 0, y: 0 }),
+    sampleScalar: (x, y) => {
+      if (heatmap) return heatmap.norm(x, y);
+      devWarnNoOp('NOOP_NO_HEATMAP', 'sampleScalar() returned 0 because the heatmap layer is off — construct with { heatmap: true } or call setHeatmap(true).');
+      return 0;
+    },
+    sampleGradient: (x, y) => {
+      if (heatmap) return heatmap.gradient(x, y);
+      devWarnNoOp('NOOP_NO_HEATMAP', 'sampleGradient() returned { x: 0, y: 0 } because the heatmap layer is off — construct with { heatmap: true } or call setHeatmap(true).');
+      return { x: 0, y: 0 };
+    },
     grid: (name) => env.grid(name),
     on: <K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void) => {
       let set = busListeners.get(type);
