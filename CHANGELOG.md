@@ -9,6 +9,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Swift performance model — deterministic perf gate + wall-clock measurement.** `PerfRegressionTests`
+  runs a heavy 1200-particle field for 600 frames and asserts the work stays bounded — particle count
+  conserved (no leak / unbounded spawn), every value finite (no NaN/Inf), velocity and heat in range —
+  a machine-independent gate for the perf-bug class that actually ships (runaway allocation, divergent
+  integrator). Wall-clock is *measured* (`swift run FieldLabSnapshots --bench`) but deliberately not
+  CI-gated: the field is fill-rate-bound and headless rasterization exaggerates fill, so real frame-time
+  budgets need on-hardware measurement (the #324 lesson). Second model of the native verification spine.
 - **Cross-plane conformance harness — Swift parity is now machine-checked (#526).** `pnpm gen:golden`
   fires the canonical deterministic forces through the f64 JS engine and writes their frame-0 force
   deltas to a golden fixture; the f32 Swift `GoldenConformanceTests` must reproduce every one within
