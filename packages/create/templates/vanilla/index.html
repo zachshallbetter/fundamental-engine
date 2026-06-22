@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fundamental — vanilla starter</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Elements have mass.</h1>
+      <p class="sub">A contained, signals-only field. No canvas — the list reacts through CSS variables.</p>
+
+      <!-- The field is scoped to this list (bounds). Each row is a body; the field writes
+           --field-density (--d) back, and the CSS below turns that into weight + glow. -->
+      <ul class="inbox" data-field>
+        <li data-body="attract" data-feedback data-strength="1.0" data-range="180">Production incident</li>
+        <li data-body="attract" data-feedback data-strength="0.62" data-range="180">Design review</li>
+        <li data-body="attract" data-feedback data-strength="0.78" data-range="180">PR #318 — signals-first</li>
+        <li data-body="attract" data-feedback data-strength="0.30" data-range="180">Weekly digest</li>
+        <li data-body="attract" data-feedback data-strength="0.18" data-range="180">Coffee with Sam</li>
+      </ul>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
