@@ -116,6 +116,42 @@ const hookFor = (href: string): string | undefined =>
     </p>
   </section>
 
+  <section class="docs-sec">
+    <h2>Reactive, not ambient</h2>
+    <p>
+      Fundamental is a <b>behaviour layer</b>, not a background effect. A field reads each
+      <code>[data-body]</code>'s position every frame and writes the local field back as
+      <code>--field-*</code> CSS variables your styles consume — so it reacts to <em>your</em> layout
+      and engagement, not to the cursor over a decorative canvas. Since
+      <a href="https://github.com/zachshallbetter/fundamental-engine/issues/538">#538</a> it is
+      <b>signals-first</b>: a field draws nothing by default — it runs the simulation and emits signals,
+      and you opt <em>into</em> a visible surface (<code>render: 'dots'</code>, or the warped grid) when
+      you want one. The particles are one optional surface; the signals are the point.
+    </p>
+
+    <h3>One <code>createField</code> — which door?</h3>
+    <p>
+      There is <b>one</b> <code>createField</code>. The <code>@fundamental-engine/core</code> export is the
+      renderer-agnostic primitive and <b>requires <code>opts.host</code></b>; the
+      <code>@fundamental-engine/vanilla</code> export is the same function with <code>browserHost()</code>
+      bundled for you (and a <code>bounds</code> option). Same function, host supplied or not — not three
+      different APIs. Pick the door that matches your stack:
+    </p>
+    <ul class="model" aria-label="Which entry point">
+      <li><b>Plain TS/JS, any framework</b> → <code>new FieldField(opts)</code> or <code>createField(canvas, opts)</code> (vanilla) — host auto-supplied, signals-first.</li>
+      <li><b>Scope the field to a component</b> → <code>new FieldField({'{'} bounds: el {'}'})</code> — the field lives in the element, not the window.</li>
+      <li><b>HTML / Vue / Svelte / Angular</b> → <code>&lt;field-root&gt;</code> — add <code>render="dots"</code> for particles, omit it for signals-only.</li>
+      <li><b>React</b> → <code>&lt;FieldField&gt;</code> / <code>useFieldField()</code>.</li>
+      <li><b>Your own renderer, or a canvas you own</b> → <code>createField(canvas, {'{'} host {'}'})</code> (core) — <b>requires a host</b>.</li>
+      <li><b>Declared metrics on real bodies, no canvas</b> → <code>applyRecipe(root, recipe, {'{'} bodies {'}'})</code> (dom) — the signals-only metric pipeline; bind data with <code>bindData</code>.</li>
+    </ul>
+    <p class="pkg-note">
+      Copyable, end to end: <a href="/docs/reactive-component">a reactive component (no particles)</a> for
+      the contained, signals-only path, and <a href="/docs/tutorial">your first field</a> for the
+      window path.
+    </p>
+  </section>
+
   <section class="docs-sec" data-map>
     <h2>The map</h2>
     <p>
