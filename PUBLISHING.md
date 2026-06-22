@@ -16,8 +16,6 @@ mechanics; the policy (versioning, when to cut) is in [`RELEASING.md`](RELEASING
 | `@fundamental-engine/vanilla` | depends on core + platform |
 | `@fundamental-engine/react` | depends on core + platform |
 | `@fundamental-engine/elements` | depends on core + platform + vanilla |
-| `@fundamental-engine/kit` | umbrella meta-package — depends on all five |
-| `fundamental-engine` | thin alias — depends on kit |
 
 All carry `publishConfig.access: public`, so the scoped names publish publicly. `pnpm` rewrites
 `workspace:*` to the real version at pack time and publishes in dependency order automatically — never

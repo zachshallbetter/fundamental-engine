@@ -130,30 +130,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/fundamental-engine:
-    dependencies:
-      '@fundamental-engine/kit':
-        specifier: workspace:*
-        version: link:../kit
-
-  packages/kit:
-    dependencies:
-      '@fundamental-engine/core':
-        specifier: workspace:*
-        version: link:../core
-      '@fundamental-engine/dom':
-        specifier: workspace:*
-        version: link:../dom
-      '@fundamental-engine/elements':
-        specifier: workspace:*
-        version: link:../elements
-      '@fundamental-engine/react':
-        specifier: workspace:*
-        version: link:../react
-      '@fundamental-engine/vanilla':
-        specifier: workspace:*
-        version: link:../vanilla
-
   packages/platform:
     dependencies:
       '@fundamental-engine/dom':

@@ -18,7 +18,6 @@ back. The visible particle canvas is **one render surface**, not the whole syste
 @fundamental-engine/elements  native web components and the [data-body] HTML authoring contract.
 @fundamental-engine/react     the React adapter over the same contracts.
 @fundamental-engine/vanilla   the FieldField class for plain TypeScript.
-@fundamental-engine/kit       umbrella meta-package — one install for the whole suite (fundamental-engine aliases it).
 ```
 
 ## Document statuses
