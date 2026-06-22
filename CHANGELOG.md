@@ -17,7 +17,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   relationship layer + its longitudinal warmth with zero DOM, the way `readParticles` is the swarm.
   Removing an endpoint body drops its edges; the `EdgeHandle` mutates (`set`) / removes it. Additive,
   shipped-but-unfrozen; mirrored through vanilla `FieldField` + three `FieldLayer`; runs headless.
-
+- **SwiftUI `.fieldBody()` is live — nodes are real engine bodies (FundamentalSwiftUI).** The modifier was
+  a stub (its `onAppear` predated body registration); it now bridges to `FieldHandle.addBody`, so a view
+  becomes a programmatic body whose force well tracks its frame each tick and is removed on disappear.
+  `FieldView` gained a content closure (`FieldView { … }`, mirroring React's `<FieldField>`) that scopes
+  the running field + a shared named coordinate space (`FundamentalField.coordinateSpace`) to its
+  children, so `.fieldBody(tokens:…)` couples to the field with no per-app glue. Covered by a frame→Box
+  conversion test + a real-field register/track/remove lifecycle test.
 - **Particle shape — matter isn't only dots (Swift; cross-plane contract).** A new `particleShape`
   field option: `.dot` (default, the fast Metal-batched circle), `.star(points:innerRatio:)`,
   `.polygon(sides:rotation:)`, or `.custom(vertices:)` — any unit vector polygon. The shape rides the
