@@ -160,13 +160,30 @@ const llms = `# Fundamental
 > computes renderer-agnostic field behavior; \`@fundamental-engine/dom\` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
 > scheduling; \`@fundamental-engine/elements\` exposes native HTML and web-component authoring; \`@fundamental-engine/react\`
-> adapts the same contracts for React. Canvas is one render surface, not the whole system.
+> adapts the same contracts for React. Canvas is one render surface, not the whole system: a field is
+> **signals-first** — by default it draws nothing and writes \`--field-*\` CSS variables your styles read.
 
 Every element can become a body in an invisible physics field via the \`data-body\` attribute:
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like \`--field-density\`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from \`scripts/api-surface.data.mjs\` — the docs' provenance stamps
 render from the same file. Generated ${DATE} by apps/site/scripts/gen-llms.mjs.
+
+## Start here — don't guess
+
+The mental model is unusual, so confident wrong guesses are common. Before reaching for an API, know:
+
+- **A field is a behavior layer, not a particle background.** It writes \`--field-*\` variables onto
+  \`[data-body]\` elements; your CSS reads them. Particles are one optional render surface.
+- **\`render\` defaults to \`'none'\` (signals-first).** A field draws nothing until you opt in
+  (\`render: 'dots'\`). "Nothing showing" is the default, not a bug — the signals are already live.
+- **There is one \`createField\`.** Core's requires \`opts.host\`; \`@fundamental-engine/vanilla\`'s is the
+  same function with the browser host bundled (+ a \`bounds\` option for a contained field). Use vanilla.
+- **Read the \`--field-*\` variables and the \`field.on(…)\` events** for state — not \`readParticles()\`.
+- **The surface is small and frozen.** If an option or method is not in the docs / \`api-surface.data.mjs\`,
+  it does not exist — do not invent it.
+
+Full list with the corrections: [Common mistakes — don't guess](${CANON_BLOB}/common-mistakes.md).
 
 ## Docs
 

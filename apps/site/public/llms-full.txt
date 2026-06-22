@@ -1,8 +1,8 @@
 # Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-20 by apps/site/scripts/gen-llms.mjs
-Files: 16
+Generated: 2026-06-22 by apps/site/scripts/gen-llms.mjs
+Files: 17
 
 These are the project's canonical documents — the authority on concepts, terminology, and
 contracts — concatenated in filename order. The live site map is https://fundamental-engine.com/llms.txt.
@@ -904,6 +904,82 @@ Change: stronger fieldflow increases velocity and lowers center density.
 9. Explain This Field output
 10. Field Diff
 ```
+
+========================================================================
+FILE: common-mistakes.md
+========================================================================
+
+# Common mistakes — don't guess
+
+> **Status: reference.** The first-contact mistakes an agent or developer makes about Fundamental — and
+> the correct answer. If you are about to guess at the API or the behavior, check here first; the truth
+> is cheaper than a wrong guess.
+
+Fundamental's surface is small but its mental model is unusual, so confident wrong guesses are common.
+Each item below is a mistake we have actually seen, paired with the fact and where to verify it.
+
+## 1. "It's a particle background."
+
+**No — it is a behavior layer.** A field reads each `[data-body]` element's position every frame and
+writes the local field back as `--field-*` CSS variables (`--field-density` / its alias `--d`, `--load`,
+`--lit`) your own styles consume. It reacts to *your* layout and engagement, not to a cursor over a
+decorative canvas. Particles are **one optional render surface**, not the system. See
+[invisible-fields.md](invisible-fields.md).
+
+## 2. "`render` defaults to particles."
+
+**No — since [#538](https://github.com/zachshallbetter/fundamental-engine/issues/538) `render` defaults
+to `'none'` (signals-first).** A field created without an explicit `render` runs the full simulation and
+emits signals but **draws nothing**. Opt into a visible surface explicitly: `render: 'dots'` (particles),
+`'trails'`, `'streamlines'`, or the warped `grid` overlay. If "nothing is showing," that is the default —
+add `render: 'dots'`, or read the `--field-*` variables (which are already live).
+
+## 3. "There are three different `createField`s."
+
+**No — there is one `createField`.** The `@fundamental-engine/core` export is the renderer-agnostic
+primitive and **requires `opts.host`**. The `@fundamental-engine/vanilla` export is the *same function*
+with `browserHost()` bundled for you (plus a `bounds` option). Use the vanilla door
+(`createField(canvas, opts)` or `new FieldField(opts)`) unless you are wiring your own renderer. You do
+not need to find a different package because one "needs a host" — that is the core primitive; reach for
+vanilla.
+
+## 4. "To scope the field to a component I have to roll my own."
+
+**No — pass `bounds`.** `new FieldField({ bounds: el })`
+([#540](https://github.com/zachshallbetter/fundamental-engine/issues/540)) runs a *contained* field whose
+bodies and coordinates live inside the element, not the window. Contained is a vanilla option, **not** an
+attribute on `<field-root>` (the web component is window-scoped) and **not** `<field-cell>` (that is a
+standalone per-force demo pool).
+
+## 5. "I'll poll the particles to read the field state."
+
+**Read the signals, not the particles.** The field's output is the `--field-*` CSS variables on
+`[data-feedback]` bodies and the discrete event bus (`field.on('absorb' | 'release' | 'settle', …)`).
+For sampled scalars use `field.sampleScalar(x, y)` / `sampleGradient(x, y)` (these need
+`heatmap: true` — they warn in dev if it is off). `readParticles()` exists for renderers, not for reading
+state.
+
+## 6. "`attract` is gravity; `absorb` is a token."
+
+**Mind the naming lanes.** Natural Fields (Gravity→importance, Electromagnetic→polarity, Strong→binding,
+Weak→transformation) are **concepts**, not tokens. The runtime tokens are `attract`, `gravity`, `charge`,
+`sink`, `cohesion`, … — and `attract` is a *designed UI well*, deliberately **not** gravity. `absorb` is
+concept language; the token is `sink`. Concepts describe, tokens execute — never mix them. See the naming
+canon in [definition-document.md](definition-document.md).
+
+## 7. "I can infer the API from the name."
+
+**Don't infer — the surface is small and documented.** Entry points and the which-`createField` map are
+on the [docs overview](https://fundamental-engine.com/docs); every option is in
+[/docs/api/options](https://fundamental-engine.com/docs/api/options); the frozen 0.x surface is
+`scripts/api-surface.data.mjs` (CI-enforced). If a method or option is not in those, it does not exist —
+do not invent it.
+
+## 8. "Reduced motion breaks it."
+
+**No — reduced motion loses motion, not meaning.** The simulation and the `--field-*` signals still
+track under `prefers-reduced-motion`; only the CSS easing and the drawn surface drop. Style your reactive
+states so they read without animation. See [accessibility](https://fundamental-engine.com/docs/accessibility).
 
 ========================================================================
 FILE: definition-document.md
@@ -2426,6 +2502,12 @@ drawn**. The only output is the feedback the platform writes back to the DOM (CS
 thresholded events), and the only render surface is the page's own type and ink, styled by CSS
 that reads those variables.
 
+> **As of [#538](https://github.com/zachshallbetter/fundamental-engine/issues/538), this is the default.**
+> The engine's `render` mode defaults to `'none'`, so a field created without an explicit render mode IS
+> an invisible field — full simulation + feedback, no canvas. You opt *into* a drawn surface
+> (`render: 'dots'`, …), not out of it. The two mechanisms below remain the ways to get a signals-only
+> field while a drawn one exists elsewhere (draw-skip a visible field; run a render-less recipe).
+
 This is the third **placement** in the Surfaces & Placement taxonomy:
 
 | Surface | Placement | Drawn on | Status |
@@ -2987,6 +3069,50 @@ scan root, events) through an injected `FieldHost`; `browserHost()` and the DOM 
 to `@fundamental-engine/dom`. `core/dom-boundary.test.ts` now runs with an **empty allowlist** — every
 source file in `Fundamental` is provably DOM-global-free, so the engine is portable to any renderer
 (Canvas, WebGL, WebGPU, native, headless) via a custom host.
+
+## The host seam — `FieldHost`, the swappable environment SPI
+
+"Where, and in what coordinate space, does the field live?" is **one first-class, swappable abstraction**:
+the `FieldHost` (`packages/core/src/core/host.ts`). The engine never reads `window` / `document` /
+`requestAnimationFrame` directly — every environment touchpoint goes through the injected host, so a
+window-scoped field, a card-scoped field, a WebGL scene, and a headless test harness are *configurations
+of one contract*, not separate code paths. `createField(canvas, { host })` selects it; the convenience
+doors wire a host for you (`createBrowserField` / `<field-root>` use `browserHost()`; the vanilla
+`createField` resolves `host` → `bounds` → `browserHost()`, #537).
+
+**Keep the lanes separate — three different seams, three different words:**
+
+| Seam | What it swaps | Examples |
+|---|---|---|
+| **`FieldHost`** (this) | the **environment**: viewport, scroll, rAF, visibility, scan root, events | `browserHost`, `containerHost`, `threeHost` |
+| **Field Surface** (`setRender`/`setOverlay`) | the **visualization placement**: underlay vs overlay | `dots`, `streamlines`, `grid` |
+| **`RenderBackend`** (#373) | the **drawing target**: how primitives are rasterized | Canvas2D, an external WebGL backend |
+
+A `FieldHost` is **not** a "surface" — *Field Surfaces* is the visualization-placement lane
+(`visualization-methods-taxonomy.md`). The environment seam is and stays `FieldHost`.
+
+**The implementers** — every one satisfies the same contract; none forks the entry:
+
+| Host | Package | Viewport origin | Status |
+|---|---|---|---|
+| `browserHost()` | `@fundamental-engine/dom` | the window (`0,0`) | shipped |
+| `containerHost(el)` | `@fundamental-engine/dom` | the element's `left,top` (#540) | shipped |
+| `threeHost(opts)` | `@fundamental-engine/three` | the WebGL drawing buffer | shipped — drives `core.createField` directly, no fork |
+| *worker host* | — | an `OffscreenCanvas` | **planned (#531)** — the one surface not yet built |
+| native (Swift) | `swift/` | the view's bounds | a separate language port implementing the same contract conceptually (#423) |
+
+**The contract** (`FieldHost`): `root` (the scanned subtree), `viewport()` → `{ width, height, dpr,
+originX?, originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
+thread/move readouts subtract it), `scrollY()`, `scrollHeight()`, `reducedMotion()`, `hidden()`,
+`raf(cb)` / `cancelRaf(id)`, `createCanvas()` (the heatmap buffer), and the subscriptions
+`onResize` / `onScroll` / `onVisibility` / `onInput` / `onBodyEvent`. Authoring a new host = implementing
+those against your environment; the engine needs nothing else.
+
+**The boundary holds.** `FieldHost` is pure types in core (zero DOM); the implementations live in the
+environment packages (`@fundamental-engine/dom`, `@fundamental-engine/three`), so the `core ↛ dom ↛
+surfaces` direction stays intact and CI-enforced (`core/dom-boundary.test.ts`, empty allowlist). The
+worker host (#531) is the next implementer; it adds an `OffscreenCanvas` configuration of this same
+contract, not a new entry.
 
 ## Attaching the engine handle
 
