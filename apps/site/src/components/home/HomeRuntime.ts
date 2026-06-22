@@ -316,6 +316,36 @@ export function initHomeRuntime(): () => void {
   window.addEventListener("scroll", onScroll, { passive: true, signal: sig });
   onScroll();
 
+  // ── Hero signature: the warped grid (the spacetime-curvature image). The page field's `grid`
+  // overlay — the reference lattice deflected by [data-body] mass, with the "mass" headline a gravity
+  // well — is bold across the hero and fades out as the hero scrolls away, so it never competes with
+  // the body text below. It owns the overlay only in the hero zone: other controllers (nav toggles,
+  // the render-tour panel, the force picker) take the overlay over as their sections scroll in, and
+  // the fade is gated to the grid so it never dims THEIR readings. The overlay surface is the single
+  // light-DOM `canvas[data-field-overlay]`.
+  const heroGrid = () => {
+    if (sig.aborted) return;
+    const oc = document.querySelector<HTMLElement>("canvas[data-field-overlay]");
+    const isGrid = field?.getAttribute("overlay") === "grid";
+    // fade 1→0 across the first 0.6 viewport — but ONLY while the grid is the active overlay, so a
+    // panel's own readings (streamlines, force-vectors) stay at full opacity once it owns the surface.
+    const fade = Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.6)));
+    if (oc) oc.style.opacity = isGrid ? String(fade) : "1";
+    // while the hero is in view, keep the grid as the resting overlay (the last writer at the top wins,
+    // re-asserting over the on-load settle to 'off'); only call when it has drifted, to stay idle-quiet.
+    if (scrollY < innerHeight * 0.5 && field && field.getAttribute("overlay") !== "grid") {
+      field.setOverlay?.("grid");
+    }
+  };
+  window.addEventListener("scroll", heroGrid, { passive: true, signal: sig });
+  heroGrid();
+  // the engine boots deferred (idle / ~1.5s) and other controllers settle the overlay on load, so
+  // re-assert once the element is defined + a couple of delayed ticks to land after that settling.
+  if ("customElements" in window)
+    customElements.whenDefined("field-root").then(() => requestAnimationFrame(heroGrid));
+  setTimeout(heroGrid, 600);
+  setTimeout(heroGrid, 1700);
+
   // the signals-only Wayfinding Current binding over the rail links (render: [] — nothing drawn)
   const railReduceMotion =
     typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
