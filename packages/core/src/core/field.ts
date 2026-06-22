@@ -1565,10 +1565,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // `grid` — a reference lattice whose vertices are displaced along the felt field; the page's
   // space itself made visible, bending where the field is strong. Reads deformation.
   function drawOverlayGrid(out: RenderBackend): void {
-    const STEP = 28; // a dense lattice — twice the line count of the original 56px cell, so the warped
-    // grid reads as fine spacetime fabric, not a coarse mesh.
-    const MAXD = 14 * cfg.gridWarp; // px displacement at the strongest sample. The denser lattice can
-    // carry a stronger pull per cell without tangling, so the base multiplier is up from 11.
+    const STEP = 48; // roomy cells so each mass can dimple the lattice into a deep, legible bowl; the
+    // CLAMP below keeps even a deep bowl foldless (denser than the field-line default still reads fine).
+    const MAXD = 22 * cfg.gridWarp; // px displacement the field asks for at the strongest sample; the
+    // CLAMP below is what actually keeps it legible, so gridWarp drives how fast that ceiling is reached.
+    const CLAMP = STEP * 0.46; // a vertex can move at most ~half a cell, so adjacent lines bend hard but
+    // can NEVER cross — the displaced grid always reads as deep curved space, never a tangle.
     const cols = Math.floor(W / STEP) + 2;
     const rows = Math.floor(H / STEP) + 2;
     const dx = new Float32Array(cols * rows);
@@ -1603,10 +1605,40 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // cool flat space sits at ~30% of the configured intensity; the hottest cells reach it in full.
       return { r: c[0]!, g: c[1]!, b: c[2]!, alpha: Math.min(1, cfg.gridIntensity * (0.3 + 0.85 * rel)), width: rel > 0.55 ? 1.4 : 1 };
     };
+    // Build the raw displacement vector per vertex (direction × normalized strength × throw), then box-
+    // blur it once so neighbouring vertices move together — a rubber sheet dimpling, not per-vertex
+    // jitter. Blurring the displacement (not the field) is what turns the knot at each mass into a smooth
+    // bowl: the inward pull is averaged with its calmer neighbours, so nothing collapses to a point.
+    const wx = new Float32Array(cols * rows);
+    const wy = new Float32Array(cols * rows);
+    for (let i = 0; i < cols * rows; i++) {
+      const rel = relAt(i);
+      wx[i] = dx[i]! * rel * MAXD;
+      wy[i] = dy[i]! * rel * MAXD;
+    }
+    const bx = new Float32Array(cols * rows);
+    const by = new Float32Array(cols * rows);
+    for (let gy = 0; gy < rows; gy++) {
+      for (let gx = 0; gx < cols; gx++) {
+        let sx = 0, sy = 0, n = 0;
+        for (let oy = -1; oy <= 1; oy++) {
+          for (let ox = -1; ox <= 1; ox++) {
+            const x = gx + ox, y = gy + oy;
+            if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+            const j = y * cols + x;
+            sx += wx[j]!; sy += wy[j]!; n++;
+          }
+        }
+        const i = gy * cols + gx;
+        bx[i] = sx / n; by[i] = sy / n;
+      }
+    }
     const px = (gx: number, gy: number): [number, number] => {
       const i = gy * cols + gx;
-      const rel = relAt(i);
-      return [gx * STEP + dx[i]! * rel * MAXD, gy * STEP + dy[i]! * rel * MAXD];
+      let ux = bx[i]!, uy = by[i]!;
+      const m = Math.hypot(ux, uy);
+      if (m > CLAMP) { ux = (ux / m) * CLAMP; uy = (uy / m) * CLAMP; } // half-cell ceiling: never fold.
+      return [gx * STEP + ux, gy * STEP + uy];
     };
     // Smooth the warped lines into curves: Catmull-Rom through the displaced vertices (the curve passes
     // through every original point, so the warp magnitude is preserved) — the lattice reads as bent
