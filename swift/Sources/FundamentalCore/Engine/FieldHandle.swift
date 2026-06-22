@@ -61,6 +61,10 @@ public struct FieldOptions {
     public var causality: Bool
     public var heatmap: Bool
     public var overlay: OverlayInput
+    /// How matter is drawn — `.dot` (default), `.star(...)`, `.polygon(...)`, or `.custom(...)`. The
+    /// shape rides the physics: each particle's size + heat scale it. Only affects the matter render
+    /// modes (`dots` / `trails` / `links`).
+    public var particleShape: ParticleShape
     public var feedbackSink: FeedbackSink?
 
     public init(
@@ -74,6 +78,7 @@ public struct FieldOptions {
         causality: Bool = false,
         heatmap: Bool = false,
         overlay: OverlayInput = .single(.off),
+        particleShape: ParticleShape = .dot,
         feedbackSink: FeedbackSink? = nil
     ) {
         self.accent = accent
@@ -86,6 +91,7 @@ public struct FieldOptions {
         self.causality = causality
         self.heatmap = heatmap
         self.overlay = overlay
+        self.particleShape = particleShape
         self.feedbackSink = feedbackSink
     }
 }
