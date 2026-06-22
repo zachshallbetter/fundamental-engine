@@ -39,6 +39,7 @@ import {
 import { healWaves, tearBoundNear, tearBoundByForces, induceCharges } from './reservoir.ts';
 import { FORMATION_BY, PALETTE, type FormationId } from '../config/forces.config.ts';
 import { resolvePalette } from '../config/palettes.ts';
+import { THEMES, DEFAULT_THEME } from '../config/themes.ts';
 import { clamp, hexToRgb, particleRGBInto, rgbToHex, sampleStops, type RGB } from './math.ts';
 import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { defaultFeedbackSink } from './feedback-sink.ts';
@@ -64,9 +65,6 @@ import type { FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
-
-// the Currents' cool baseline palette — a subset of the force palette (§24.4).
-const WAVE_RGB = ['#ff8a5c', '#f0628e', '#ffc46b'].map(hexToRgb);
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
@@ -172,6 +170,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const teardowns: Array<() => void> = []; // host event unsubscribers, called on destroy
   const reduceMotion = host.reducedMotion();
 
+  // ambient theme (#529): a named preset for the heat ramp + wave baseline; `warm` (default) reproduces
+  // the shipped palette. Individual lanes (gradientCool/gradientWarm/waveBaseline) override the preset.
+  const theme = THEMES[opts.theme ?? DEFAULT_THEME] ?? THEMES[DEFAULT_THEME]!;
+
   const cfg = {
     accent: opts.accent ?? resolvePalette(opts.palette)[0] ?? PALETTE[0] ?? '#4da3ff',
     density: opts.density && opts.density > 0 ? opts.density : 1,
@@ -188,6 +190,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // stroke opacity for the `grid` overlay lines. 0.16 = the calibrated faint diagnostic (default,
     // never overpowers content); raise it (≈0.5) to make the warped lattice a deliberate centerpiece.
     gridIntensity: opts.gridIntensity != null && opts.gridIntensity >= 0 ? Math.min(opts.gridIntensity, 1) : 0.16,
+    // theme palette (#529): the heat-ramp ends + wave baseline, resolved from the preset + overrides.
+    gradientCool: opts.gradientCool ? hexToRgb(opts.gradientCool) : theme.cool,
+    gradientWarm: opts.gradientWarm ? hexToRgb(opts.gradientWarm) : theme.warm,
+    waveBaseline: (opts.waveBaseline ?? theme.wave).map(hexToRgb),
     dprCap: opts.dprCap && opts.dprCap > 0 ? opts.dprCap : 2, // backing-store DPR ceiling (#410); the
     // dominant fill-rate lever — the ambient field is soft, so ~1.5 buys ~1.8× headroom on retina.
     // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
@@ -461,7 +467,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (let i = 0; i < n; i++) store.add(newParticle());
     applySeed();
     // the Currents (§24) are opt-out: with waves off, the field is just the free particles.
-    waves = cfg.waves ? buildWaves(WAVE_RGB) : [];
+    waves = cfg.waves ? buildWaves(cfg.waveBaseline) : [];
     bound = cfg.waves ? buildBound(waves.length, cfg.density, rng) : [];
     boundTarget = bound.length;
   }
@@ -1209,7 +1215,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const d = Math.min(1, Math.hypot(p.x - cx, p.y - cy) / maxD);
       const rs = d * d;
       const h = p.heat;
-      particleRGBInto(_rgb, rs, h, acc);
+      particleRGBInto(_rgb, rs, h, acc, cfg.gradientCool, cfg.gradientWarm);
       let r = _rgb[0];
       let g = _rgb[1];
       let b = _rgb[2];

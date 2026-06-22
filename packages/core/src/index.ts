@@ -13,6 +13,7 @@ export * from './version.ts';
 export * from './config/forces.config.ts';
 export * from './config/manual.ts';
 export * from './config/palettes.ts';
+export * from './config/themes.ts';
 export * from './config/tokens.ts';
 export * from './core/math.ts';
 export * from './core/geometry.ts';
