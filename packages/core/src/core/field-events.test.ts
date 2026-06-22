@@ -97,3 +97,36 @@ test('release fires when a saturated sink lets go (count carried from the captur
     field.destroy();
   }
 });
+
+test('enter/exit fire as a body crosses another body’s range; met fires on box contact (#441)', () => {
+  const aPos = { x: 500, y: 400, w: 40, h: 40 };
+  const bPos = { x: 950, y: 400, w: 40, h: 40 }; // starts far outside A's range
+  const a = virtualBody({ 'data-body': 'attract', 'data-strength': '1', 'data-range': '240' }, aPos);
+  const b = virtualBody({ 'data-body': 'attract', 'data-strength': '1', 'data-range': '240' }, bPos);
+  const { host, step } = drivableHost([a, b]);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    let enters = 0, exits = 0, mets = 0;
+    field.on('enter', () => { enters++; });
+    field.on('exit', () => { exits++; });
+    field.on('met', () => { mets++; });
+    field.scan();
+    step(12); // at rest, ~450px apart → no proximity events
+    assert.equal(enters, 0, 'no enter while the bodies are apart');
+
+    bPos.x = 560; // within A's 240 range (≈60px), boxes still apart (60 > 40)
+    step(12);
+    assert.ok(enters >= 1, 'enter fired as B crossed into range');
+    assert.equal(mets, 0, 'not met yet — boxes are still apart');
+
+    bPos.x = 525; // boxes now touch (25 < hw+hw = 40)
+    step(12);
+    assert.ok(mets >= 1, 'met fired on box contact');
+
+    bPos.x = 950; // back outside the range
+    step(12);
+    assert.ok(exits >= 1, 'exit fired as B left the range');
+  } finally {
+    field.destroy();
+  }
+});
