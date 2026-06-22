@@ -323,20 +323,42 @@ export function initHomeRuntime(): () => void {
   // the render-tour panel, the force picker) take the overlay over as their sections scroll in, and
   // the fade is gated to the grid so it never dims THEIR readings. The overlay surface is the single
   // light-DOM `canvas[data-field-overlay]`.
+  // The grid is a hero flourish, not a persistent scroll companion. Once the reader scrolls past the
+  // hero we RETIRE it — flip the nav grid toggle off so the control reflects reality and the reader can
+  // opt it back on — and stop auto-asserting it (a manual re-enable then sticks at full opacity).
+  let gridRetired = false;
+  let heroSeen = false; // guard: only retire after the hero has actually been at the top, so a boot
+  // scroll-race (restored scroll position before the engine settles) can't retire it sight-unseen.
   const heroGrid = () => {
     if (sig.aborted) return;
     const oc = document.querySelector<HTMLElement>("canvas[data-field-overlay]");
-    const isGrid = field?.getAttribute("overlay") === "grid";
-    // fade HERO_GRID_MAX→0 across the first 0.6 viewport — but ONLY while the grid is the active
-    // overlay, so a panel's own readings (streamlines, force-vectors) stay at full opacity once it owns
-    // the surface. The ceiling is held below 1 so the screen-blend lattice never overwhelms the hero
-    // copy it sits in front of (the grid is a fixed z-5 mix-blend:screen canvas over the content).
+    if (scrollY < innerHeight * 0.3) heroSeen = true;
+
+    // retire on scroll-away: turn the grid toggle off (once), recompose the overlay without it, and
+    // sync the nav button so it shows 'off' and invites a re-enable.
+    if (heroSeen && !gridRetired && scrollY > innerHeight * 0.55 && field?.dataset.navGrid === "on") {
+      gridRetired = true;
+      field.dataset.navGrid = "off";
+      const stack: string[] = [];
+      if (field.dataset.navFlow === "on") stack.push("streamlines"); // keep any other active overlay
+      field.setOverlay?.(stack.length ? stack : "off");
+      const gridBtn = document.getElementById("sn-grid-toggle");
+      if (gridBtn) {
+        gridBtn.setAttribute("aria-pressed", "false");
+        gridBtn.title = "Show field grid";
+      }
+    }
+
+    const isGrid = (field?.getAttribute("overlay") ?? "").includes("grid");
+    // fade HERO_GRID_MAX→0 across the first 0.6 viewport — but ONLY while the grid is the active hero
+    // overlay (not retired, not a panel's own reading). Once retired, a manual re-enable shows at full
+    // opacity. The ceiling is held below 1 so the screen-blend lattice never overwhelms the hero copy.
     const HERO_GRID_MAX = 0.68;
     const fade = HERO_GRID_MAX * Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.6)));
-    if (oc) oc.style.opacity = isGrid ? String(fade) : "1";
-    // while the hero is in view, keep the grid as the resting overlay (the last writer at the top wins,
-    // re-asserting over the on-load settle to 'off'); only call when it has drifted, to stay idle-quiet.
-    if (scrollY < innerHeight * 0.5 && field && field.getAttribute("overlay") !== "grid") {
+    if (oc) oc.style.opacity = isGrid && !gridRetired ? String(fade) : "1";
+    // while the hero is in view AND the grid hasn't been retired, keep it as the resting overlay
+    // (re-asserting over the on-load settle to 'off'); only call when it has drifted, to stay idle-quiet.
+    if (!gridRetired && scrollY < innerHeight * 0.5 && field && field.getAttribute("overlay") !== "grid") {
       field.setOverlay?.("grid");
     }
   };
