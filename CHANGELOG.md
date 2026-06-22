@@ -22,6 +22,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`npm create @fundamental-engine` scaffold (#546).** A new `@fundamental-engine/create` package: one
+  command spins up a starter — `npm create @fundamental-engine my-app` (interactive) or with
+  `-- --template vanilla|react|web-component`. All three are **signals-first** and explicit about
+  `render` (so they behave the same whichever engine version resolves); the default `vanilla` template is
+  a *contained, signals-only* reactive list (`FieldField` + `bounds`, `render: 'none'`) — the field as
+  behaviour, no particle canvas. Zero-dependency CLI; the templates ship in the package.
 - **`gridIntensity` — the warped grid as a visual centerpiece (#552).** The `grid` overlay's stroke
   opacity is now an option (`gridIntensity`, `<field-root grid-intensity>`); default `0.16` keeps the
   faint diagnostic unchanged, raise it (≈`0.5`) and the lattice reads as a deliberate surface. Pairs with
