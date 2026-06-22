@@ -289,14 +289,13 @@ const dest = [
     z-index: 60;
     display: flex;
     justify-content: center;
+    /* No panel: the nav sits directly over the field. A whisper-thin top scrim keeps the links
+       legible against bright particles/grid without reading as a bar (no blur, no border). */
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--bg, #04050a) 72%, transparent),
-      color-mix(in srgb, var(--bg, #04050a) 24%, transparent)
+      color-mix(in srgb, var(--bg, #04050a) 38%, transparent),
+      transparent 90%
     );
-    backdrop-filter: blur(12px) saturate(1.15);
-    -webkit-backdrop-filter: blur(12px) saturate(1.15);
-    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
   }
   .sn-inner {
     width: 100%;

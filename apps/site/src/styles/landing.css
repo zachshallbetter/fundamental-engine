@@ -67,8 +67,22 @@ html[data-field='on'] .hero-antimass:hover {
   position: relative;
   z-index: 2;
   padding: clamp(3.5rem, 9vh, 6.5rem) 0;
-  border-top: 1px solid var(--line);
   scroll-margin-top: 84px;
+}
+/* Section break: a soft centred hairline that fades out at the edges instead of a hard full-bleed
+   rule — it reads as a seam in the field, not a divider drawn on top of it. */
+.lp::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--line), transparent);
+  opacity: 0.55;
+}
+.lp:first-of-type::before {
+  display: none;
 }
 .lp h2 {
   margin: 0.8rem 0 0;
