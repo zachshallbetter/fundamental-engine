@@ -18,6 +18,12 @@ export interface FieldEventMap {
   absorb: { body: Body; count: number };
   /** a `sink` body released what it held — fired on the falling edge / supernova. */
   release: { body: Body; count: number };
+  /** another body crossed INTO this body's `range` (#441) — the gameplay "entered radius" trigger. */
+  enter: { body: Body; other: Body };
+  /** another body crossed OUT of this body's `range` (#441). */
+  exit: { body: Body; other: Body };
+  /** two bodies came into contact — their boxes touched/overlapped (#441), once on the rising edge. */
+  met: { a: Body; b: Body };
 }
 export type FieldEventType = keyof FieldEventMap;
 

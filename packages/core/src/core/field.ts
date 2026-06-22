@@ -115,6 +115,43 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     if (set) for (const cb of set) (cb as (e: FieldEventMap[K]) => void)(payload);
   }
   const sinkPeak = new WeakMap<Body, number>(); // matter held at the rising edge, for the release count
+  // #441 body-proximity events. Object-identity membership (survives rescan; removed bodies pruned).
+  const insideOf = new Map<Body, Set<Body>>(); // enter/exit: bodies currently within a body's range
+  const metWith = new Map<Body, Set<Body>>(); // met: bodies currently in box-contact (symmetric, deduped a<b)
+  function detectProximityEvents(bs: Body[]): void {
+    const wantEE = busHas('enter') || busHas('exit');
+    const wantMet = busHas('met');
+    if (!wantEE && !wantMet) return; // lazy: zero listeners → zero cost
+    for (let i = 0; i < bs.length; i++) {
+      const a = bs[i]!;
+      if (wantEE) {
+        let inside = insideOf.get(a);
+        if (!inside) insideOf.set(a, (inside = new Set()));
+        const r2 = a.range * a.range;
+        for (let j = 0; j < bs.length; j++) {
+          if (i === j) continue;
+          const o = bs[j]!;
+          const dx = o.cx - a.cx, dy = o.cy - a.cy;
+          const isIn = dx * dx + dy * dy < r2;
+          if (isIn && !inside.has(o)) { inside.add(o); if (busHas('enter')) busEmit('enter', { body: a, other: o }); }
+          else if (!isIn && inside.has(o)) { inside.delete(o); if (busHas('exit')) busEmit('exit', { body: a, other: o }); }
+        }
+      }
+      if (wantMet) {
+        let met = metWith.get(a);
+        if (!met) metWith.set(a, (met = new Set()));
+        for (let j = i + 1; j < bs.length; j++) {
+          const b = bs[j]!;
+          const touch = Math.abs(b.cx - a.cx) < a.hw + b.hw && Math.abs(b.cy - a.cy) < a.hh + b.hh;
+          if (touch && !met.has(b)) { met.add(b); busEmit('met', { a, b }); }
+          else if (!touch && met.has(b)) met.delete(b);
+        }
+      }
+    }
+    // prune tracking for bodies no longer present (rescan removed them) so they neither leak nor re-fire
+    const present = new Set(bs);
+    for (const m of [insideOf, metWith]) for (const k of m.keys()) if (!present.has(k)) m.delete(k);
+  }
   const programmaticBodies: Body[] = []; // bodies added via addBody(); merged into `bodies` each scan
   const fieldChannels = new Map<string, (x: number, y: number) => number>(); // addField() input channels
   // All 36 forces are registered on every field — there is no opt-in. Any of them activates per-body
@@ -1723,6 +1760,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
     if (bodies.length && frameN % 6 === 0) {
       measureBodies(bodies, W, H, originX, originY);
+      detectProximityEvents(bodies); // #441 enter/exit/met — on the measure cadence, lazy
       // attention-gated discharge (#365): an engagement-gated sink releases on the falling
       // edge of engagement — the same conserved supernova ritual as saturation.
       dischargeDisengaged(bodies, env.supernova);

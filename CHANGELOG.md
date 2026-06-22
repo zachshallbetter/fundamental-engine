@@ -22,6 +22,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Discrete proximity events — `enter` / `exit` / `met` (core, #441).** The discrete event bus
+  (`field.on(type, cb)`) gains the gameplay triggers from FieldKit gap #4: `enter` / `exit` fire as
+  another body crosses INTO / OUT OF a body's `range` (`{ body, other }`), and `met` fires once when
+  two bodies' boxes touch (`{ a, b }`) — so a bee-agent entering a bloom or a predator meeting prey is a
+  callback, not per-frame distance polling. Body-level, object-identity tracking (survives rescan), runs
+  on the measure cadence, and **lazy** (a type with no listener costs nothing). Available on
+  vanilla / `<field-root>` / three / React via the generic `on`.
 - **`FIELD_VERSION` + `field.version` — the running engine version (#547).** The engine now exposes
   its version: `import { FIELD_VERSION } from '@fundamental-engine/core'`, and every field handle has a
   `version` property (mirrored on `FieldField`, `<field-root>`, and the React handle) — so a consumer or
