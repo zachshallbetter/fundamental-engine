@@ -17,6 +17,8 @@
     "check:recipes": "node --experimental-strip-types scripts/export-recipes.mjs && git diff --exit-code data/recipes.json",
     "gen:cem": "pnpm --filter @fundamental-engine/elements exec cem analyze",
     "check:cem": "pnpm gen:cem && git diff --exit-code packages/elements/custom-elements.json",
+    "gen:golden": "node --experimental-strip-types scripts/gen-conformance-golden.mjs",
+    "check:golden": "pnpm gen:golden && git diff --exit-code swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json",
     "gen:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json",
     "check:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json && git diff --exit-code apps/site/src/data/atoms.json",
     "dev": "pnpm --filter @fundamental-engine/site dev",
