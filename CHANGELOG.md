@@ -22,6 +22,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`FIELD_VERSION` + `field.version` — the running engine version (#547).** The engine now exposes
+  its version: `import { FIELD_VERSION } from '@fundamental-engine/core'`, and every field handle has a
+  `version` property (mirrored on `FieldField`, `<field-root>`, and the React handle) — so a consumer or
+  an introspecting agent can read which build it is on, including a CDN/bundled copy at runtime. A drift
+  guard (`version.test.ts`) keeps `FIELD_VERSION` locked to `packages/core/package.json`. Additive to the
+  (unfrozen) handle. (CDN snippet pinning lands with the next npm publish.)
 - **`npm create @fundamental-engine` scaffold (#546).** A new `@fundamental-engine/create` package: one
   command spins up a starter — `npm create @fundamental-engine my-app` (interactive) or with
   `-- --template vanilla|react|web-component`. All three are **signals-first** and explicit about

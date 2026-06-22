@@ -624,6 +624,8 @@ export interface FieldChannelHandle {
 
 /** The handle returned by `createField` — the public field API (§13). */
 export interface FieldHandle {
+  /** the running engine version (`FIELD_VERSION`) — which build this field is on. */
+  readonly version: string;
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
   scan(): void;
   /** alias of `scan`. */
