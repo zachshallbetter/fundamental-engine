@@ -95,10 +95,14 @@ export class FieldField extends HTMLElementBase {
     'dpr-cap',
     'grid-warp',
     'background',
+    'formation',
   ];
 
   private readonly canvas: HTMLCanvasElement;
   private field?: FieldHandle;
+  /** guard: true while an imperative setter is reflecting its value back to an attribute, so the
+   *  resulting attributeChangedCallback skips re-applying it (no double-apply / feedback loop) — #541. */
+  private reflecting = false;
   /** Field Surfaces: the optional front overlay surface (light-DOM, above content). */
   private overlayCanvas?: HTMLCanvasElement;
   /** element-level visibility: pages can hide the field (display:none) — skip draw work then. */
@@ -219,8 +223,30 @@ export class FieldField extends HTMLElementBase {
     const v = Number(this.getAttribute('grid-warp'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
   }
+  /** `formation` — the global formation (§7), applied live; undefined if absent. Unlike the other
+   *  attributes this is post-construction (set via `setFormation`), but it round-trips: the attribute
+   *  drives the field and `setFormation` reflects back to it (#541). */
+  get formation(): string | undefined {
+    return this.getAttribute('formation') ?? undefined;
+  }
 
   // ── the FieldHandle surface, proxied onto the element (§13) ────────────────
+  /** the live `FieldHandle` this element drives, or `undefined` before mount / after teardown (#542).
+   *  Every method below is forwarded for convenience, but `.handle` is the escape hatch for the full
+   *  surface and for passing the field to `bindData` / `applyRecipe` (both from `@fundamental-engine/dom`):
+   *  `import { bindData } from '@fundamental-engine/dom'; bindData(el.handle, rows, spec);` */
+  get handle(): FieldHandle | undefined {
+    return this.field;
+  }
+  /** reflect an imperative setter's value back to its attribute, so attribute-based debugging shows the
+   *  LIVE state (the bug from #541 was a stale `render="none"` after `setRender`). Guarded so the
+   *  resulting attributeChangedCallback does not re-apply it. Pass `null` to remove the attribute. */
+  private reflect(attr: string, value: string | null): void {
+    this.reflecting = true;
+    if (value === null) this.removeAttribute(attr);
+    else this.setAttribute(attr, value);
+    this.reflecting = false;
+  }
   /** re-scan the document for `[data-body]` bodies after a DOM change. */
   scan(): void {
     this.field?.scan();
@@ -232,30 +258,38 @@ export class FieldField extends HTMLElementBase {
   /** recolor the travelling accent (§9). */
   setAccent(hex: string): void {
     this.field?.setAccent(hex);
+    this.reflect('accent', hex);
   }
   /** swap the accent color template live (§9). */
   setPalette(palette: string | readonly string[]): void {
     this.field?.setPalette(palette);
+    // only a named palette has an attribute form; a custom hex-stop array is driven imperatively.
+    if (typeof palette === 'string') this.reflect('palette', palette);
   }
   /** switch the global formation (§7). */
   setFormation(name: string): void {
     this.field?.setFormation(name);
+    this.reflect('formation', name);
   }
   /** toggle conserved attention (§2.4) live. */
   setAttention(on: boolean): void {
     this.field?.setAttention(on);
+    this.reflect('attention', on ? 'true' : 'false');
   }
   /** toggle cross-boundary causality (Concept 4) live. */
   setCausality(on: boolean): void {
     this.field?.setCausality(on);
+    this.reflect('causality', on ? 'true' : 'false');
   }
   /** switch the substrate background live: `transparent` composites the underlay over light content. */
   setBackground(mode: 'opaque' | 'transparent'): void {
     this.field?.setBackground(mode);
+    this.reflect('background', mode);
   }
   /** toggle the density heatmap layer (field-systems H1) live. */
   setHeatmap(on: boolean): void {
     this.field?.setHeatmap(on);
+    this.reflect('heatmap', on ? 'true' : 'false');
   }
   /** lower/raise the backing-store DPR ceiling at runtime (the dominant fill-rate lever). */
   setDprCap(cap: number): void {
@@ -264,11 +298,16 @@ export class FieldField extends HTMLElementBase {
   /** switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297). */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void {
     this.field?.setRender(mode);
+    this.reflect('render', mode);
   }
   /** render field readings on the overlay surface (Field Surfaces — in front of content); one mode or an additive stack. */
   setOverlay(mode: OverlayInput): void {
     this.field?.setOverlay(mode);
     syncOverlaySurface(this.overlayCanvas, mode);
+    // serialize to the attribute form the `overlay` getter parses: a space-separated stack, or remove
+    // it for 'off'/empty (the getter returns 'off' when no known token is present).
+    const serial = mode === 'off' ? null : typeof mode === 'string' ? mode : mode.join(' ') || null;
+    this.reflect('overlay', serial);
   }
   /** wire glowing connector lines between a set, or clear with null (§10). */
   threads(list: ThreadLink[] | null): void {
@@ -356,6 +395,15 @@ export class FieldField extends HTMLElementBase {
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
     return this.field?.on(type, cb) ?? (() => {});
   }
+  /** the page's scroll velocity the engine tracks (drives `--field-scroll-v`); 0 before mount. */
+  scrollV(): number {
+    return this.field?.scrollV() ?? 0;
+  }
+  /** pause/resume drawing (the simulation keeps running) — the element also does this automatically
+   *  from its IntersectionObserver, so a manual call is for explicit control. */
+  setVisible(on: boolean): void {
+    this.field?.setVisible(on);
+  }
 
   connectedCallback(): void {
     // the field is decorative ambiance — hide it from assistive tech (§18 a11y).
@@ -393,7 +441,9 @@ export class FieldField extends HTMLElementBase {
    * `this.field` guard skips — the first mount reads every attribute itself.
    */
   attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {
-    if (!this.field || oldVal === newVal) return;
+    // skip when an imperative setter is reflecting its own value back here (#541) — the field was
+    // already updated by that setter; re-applying would be a redundant double-apply.
+    if (!this.field || oldVal === newVal || this.reflecting) return;
     switch (name) {
       case 'accent':
         this.field.setAccent(this.accent);
@@ -422,6 +472,9 @@ export class FieldField extends HTMLElementBase {
         break;
       case 'background':
         this.field.setBackground(this.background);
+        break;
+      case 'formation':
+        if (this.formation) this.field.setFormation(this.formation);
         break;
       default: // density / waves / mass are construction-time → rebuild
         this.field.destroy();
@@ -464,6 +517,9 @@ export class FieldField extends HTMLElementBase {
     // FieldOption can never be silently dropped here the way `depth` once was.
     for (const o of FieldField.OPTIONS) (opts as Record<string, unknown>)[o.key] = o.read(this);
     this.field = createBrowserField(this.canvas, opts);
+    // formation is post-construction (not a FieldOption), so apply the initial attribute here so
+    // `<field-root formation="wells">` works at mount, not only via setFormation (#541).
+    if (this.formation) this.field.setFormation(this.formation);
     // attach the handle so the platform write phase can read scrollV → --field-scroll-v
     // and the quality governor can monitor frame duration
     this.platformRuntime?.attachHandle(this.field);
