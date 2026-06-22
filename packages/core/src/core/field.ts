@@ -147,6 +147,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     overlay: opts.overlay ?? 'off', // Field Surfaces: overlay-surface visualization mode, opt-in
     // distortion multiplier for the `grid` overlay's lattice deflection (1 = calibrated default; 0 flat).
     gridWarp: opts.gridWarp != null && opts.gridWarp >= 0 ? opts.gridWarp : 1,
+    // stroke opacity for the `grid` overlay lines. 0.16 = the calibrated faint diagnostic (default,
+    // never overpowers content); raise it (≈0.5) to make the warped lattice a deliberate centerpiece.
+    gridIntensity: opts.gridIntensity != null && opts.gridIntensity >= 0 ? Math.min(opts.gridIntensity, 1) : 0.16,
     dprCap: opts.dprCap && opts.dprCap > 0 ? opts.dprCap : 2, // backing-store DPR ceiling (#410); the
     // dominant fill-rate lever — the ambient field is soft, so ~1.5 buys ~1.8× headroom on retina.
     // optional z volume (z-axis.md): 0 — the default — is the flat field, byte-identical
@@ -1533,7 +1536,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
     }
     const acc = hexToRgb(cfg.accent);
-    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0.16, width: 1 };
+    // a bolder lattice also wants a slightly heavier line so it reads as structure, not threads;
+    // at the faint diagnostic default (0.16) this stays width 1 — byte-identical to before.
+    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: cfg.gridIntensity, width: cfg.gridIntensity > 0.3 ? 1.2 : 1 };
     const px = (gx: number, gy: number): [number, number] => {
       const i = gy * cols + gx;
       const rel = maxMag > 0 ? Math.sqrt(mags[i]! / maxMag) : 0;

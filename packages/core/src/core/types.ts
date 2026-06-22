@@ -484,6 +484,12 @@ export interface FieldOptions {
    * obvious in a demo; `0` flattens the lattice to an undistorted grid. Only affects the `grid`
    * overlay mode. */
   gridWarp?: number;
+  /**
+   * Stroke opacity ∈ [0,1] for the `grid` overlay lines. `0.16` (default) is the calibrated faint
+   * diagnostic that never overpowers content; raise it (≈`0.5`) to make the warped lattice a
+   * deliberate visual centerpiece (the spacetime-curvature hero). Pairs with `gridWarp` (how much the
+   * lattice deflects) — intensity is how strongly it reads. Only affects the `grid` overlay mode. */
+  gridIntensity?: number;
   /** the drawing backend for the overlay surface (#373) — defaults to the Canvas 2D
    *  implementation over `overlayCanvas`. The structural seam a WebGL/WebGPU surface
    *  implements; see render-backend.ts. */
