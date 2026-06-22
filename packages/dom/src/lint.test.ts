@@ -13,6 +13,7 @@ import { FrameScheduler } from './schedule.ts';
 import { createFieldPlatform } from './platform.ts';
 import {
   lintRelationTargets,
+  lintCompositingPerf,
   lintStateRegistration,
   lintOverlayLinks,
   lintFeedbackVars,
@@ -275,4 +276,29 @@ test('lintFeedbackReadsUnwritten no-ops without a document (SSR / tests / cross-
   } finally {
     (globalThis as { document?: unknown }).document = prevDoc;
   }
+});
+
+// ── compositing perf: the DPR2 / mix-blend fill trap (#405, #532) ─────────────────────────────
+type StyleBag = Record<string, string>;
+function fakeCanvas(style: StyleBag, backing: { width: number; height: number }) {
+  return { tagName: 'CANVAS', style, width: backing.width, height: backing.height } as unknown as HTMLCanvasElement;
+}
+function canvasRoot(canvases: unknown[]): ParentNode {
+  return { querySelectorAll: (sel: string) => (sel === 'canvas' ? canvases : []) } as unknown as ParentNode;
+}
+
+test('lintCompositingPerf flags a mounted, unsized, not-hidden full-viewport mix-blend canvas (#405/#532)', () => {
+  const trap = fakeCanvas({ mixBlendMode: 'screen', position: 'fixed', inset: '0', display: '' }, { width: 0, height: 0 });
+  const w = lintCompositingPerf(canvasRoot([trap]));
+  assert.equal(w.length, 1);
+  assert.equal(w[0]!.code, 'compositing-fill-trap');
+  assert.equal(w[0]!.element, trap);
+});
+
+test('lintCompositingPerf stays quiet when display:none, when sized (drawing), or non-blend', () => {
+  const hidden = fakeCanvas({ mixBlendMode: 'screen', position: 'fixed', inset: '0', display: 'none' }, { width: 0, height: 0 });
+  const drawing = fakeCanvas({ mixBlendMode: 'screen', position: 'fixed', inset: '0', display: '' }, { width: 1440, height: 900 });
+  const plain = fakeCanvas({ mixBlendMode: '', position: 'fixed', inset: '0', display: '' }, { width: 0, height: 0 });
+  const inFlow = fakeCanvas({ mixBlendMode: 'screen', position: 'static', display: '' }, { width: 0, height: 0 });
+  assert.deepEqual(lintCompositingPerf(canvasRoot([hidden, drawing, plain, inFlow])), []);
 });
