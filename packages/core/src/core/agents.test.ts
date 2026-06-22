@@ -52,6 +52,15 @@ test('repelForce is finite even at full overlap (softened)', () => {
   assert.equal(f.y, 0);
 });
 
+test('repelForce skip index matches filtering that index out — no per-frame filter alloc (#530)', () => {
+  const self = { x: 0, y: 0 };
+  const others = [{ x: 100, y: 0 }, { x: 0, y: 90 }, { x: -120, y: 0 }];
+  const viaSkip = repelForce(self, others, 1); // skip index 1
+  const viaFilter = repelForce(self, [others[0]!, others[2]!]); // the old allocating path
+  assert.equal(viaSkip.x.toFixed(9), viaFilter.x.toFixed(9));
+  assert.equal(viaSkip.y.toFixed(9), viaFilter.y.toFixed(9));
+});
+
 test('densityPush points down the density gradient (Concept 3)', () => {
   // density rises with x → gradient is +x → the push is −x (toward emptier space)
   const ramp = (x: number): number => x;
