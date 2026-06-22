@@ -30,6 +30,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Compositing perf-lint — the mix-blend fill trap as a guard (`lintCompositingPerf`, dom, #532).**
+  The hardest-won fill-rate lesson is now a dev-time lint: a full-viewport `mix-blend-mode` canvas
+  re-composites the **whole screen every frame** the layer below animates, *even when empty* (#405) — so
+  it must stay `display:none` until it draws. The rule flags a mounted full-viewport mix-blend canvas
+  whose backing store is unsized (`0×0` → not drawing) yet isn't `display:none`. Pure, inline-style only,
+  wired into `lintPlatform`. (The adaptive-DPR half of #532 shipped as `setQualityTier` in #413.)
 - **Adaptive quality tiers — `setQualityTier` + automatic governor response (#413).** The
   `QualityGovernor` already detected sustained frame-budget overruns and emitted a tier (0–3), but the
   *engine-side* response was a documented gap — the embedder had to wire it. Now `FieldHandle.setQualityTier(0–3)`
