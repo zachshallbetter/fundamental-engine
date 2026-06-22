@@ -69,3 +69,15 @@ test('charge projects an electric dipole field', () => {
   const { fx, fy } = forceAt([b], allForces, env(), 360, 300);
   assert.ok(Math.hypot(fx, fy) > 0);
 });
+
+test('forceAt honours data-shaped: a wide body warps from its box edge, not its centre', () => {
+  // a wide, thin shaped body — its box spans x ∈ [200, 600]. The probe sits just outside the right edge.
+  const wide = { ...body('attract', 400, 300), hw: 200, hh: 14, range: 100, shaped: true };
+  const flat = { ...wide, shaped: false };
+  // from the CENTRE (x=400) the probe at 650 is 250 px away → beyond range 100 → a point body is culled.
+  assert.deepEqual(forceAt([flat], forces, env(), 650, 300), { fx: 0, fy: 0 }, 'centre-referenced body is out of range');
+  // from the nearest BOX edge (x=600) it is only 50 px → inside range; attract pulls back toward the edge.
+  const s = forceAt([wide], forces, env(), 650, 300);
+  assert.ok(s.fx < 0, `shaped body pulls toward its near edge (the grid warps by the whole outline): ${s.fx}`);
+  assert.ok(Math.abs(s.fy) < 1e-6, 'the pull is horizontal on the box mid-line');
+});

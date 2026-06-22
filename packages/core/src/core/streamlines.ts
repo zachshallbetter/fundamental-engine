@@ -32,8 +32,23 @@ export function forceAt(
   let fyField = 0;
   for (const b of bodies) {
     if (!b.vis || b.tokens.length === 0) continue;
-    const dx = b.cx - x;
-    const dy = b.cy - y;
+    // mirror the integrator's shaped reference (§ Stage C): a shaped body warps the field from the
+    // nearest point on its BOX, not its centre — so the grid / streamlines bend around an element's
+    // whole outline (a button, a wide headline), not a single point. Clamp inlined (no alloc); inside
+    // the box dx=dy=0 → no directional pull, the right no-op.
+    let dx: number;
+    let dy: number;
+    if (b.shaped) {
+      const lx = b.cx - b.hw;
+      const rx = b.cx + b.hw;
+      const ty = b.cy - b.hh;
+      const by = b.cy + b.hh;
+      dx = (x < lx ? lx : x > rx ? rx : x) - x;
+      dy = (y < ty ? ty : y > by ? by : y) - y;
+    } else {
+      dx = b.cx - x;
+      dy = b.cy - y;
+    }
     const d2 = dx * dx + dy * dy;
     if (b.range > 0 && d2 >= b.range * b.range * 2.56) continue; // same cull as the integrator
     const d = Math.sqrt(d2);

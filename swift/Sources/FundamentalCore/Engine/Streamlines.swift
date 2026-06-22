@@ -19,7 +19,10 @@ public func forceAt(bodies: [Body], forces: ForceRegistry, env: Env, at point: V
     var fieldSum = Vec3.zero // field() contributions, accumulated apart from the apply probe
     for b in bodies {
         if !b.isVisible || b.tokens.isEmpty { continue }
-        let delta = b.center - point
+        // mirror the integrator's shaped reference (Stage C): a shaped body warps the field from the
+        // nearest point on its BOX, not its centre — so the grid / streamlines bend around an element's
+        // whole outline (a button, a wide headline), not a single point. Inside the box delta=0 → no pull.
+        let delta = b.shaped ? (nearestOnBox(point, b.box) - point) : (b.center - point)
         let d2 = simd_length_squared(delta)
         if b.range > 0 && d2 >= b.range * b.range * 2.56 { continue } // same cull as the integrator
         let d = sqrt(d2)
