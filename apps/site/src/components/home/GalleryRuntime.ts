@@ -198,7 +198,8 @@ function initRenderTour(): () => void {
   // resting underlay = the page-wide field flow (the nav toggle, data-nav-flow → the 'flow' render).
   // When this panel isn't driving its own matter mode, fall back to THAT, not a hard 'dots' — so
   // scrolling past the panel doesn't silently kill the global flow. The overlay surface is this
-  // panel's own in-front readings only, so it simply clears to off when no reading is active.
+  // panel's own in-front readings only, so it simply clears to off when no reading is active (the
+  // hero grid is owned by HomeRuntime's hero-zone controller, not this panel's resting state).
   const restingRender = () =>
     field?.dataset.navFlow === "on" ? "flow" : "dots";
   const run = () => {

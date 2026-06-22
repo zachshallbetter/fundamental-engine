@@ -36,6 +36,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} background - Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.
  * @attr {number} depth - Optional z-volume (default `0`, the flat field). `> 0` opens a shallow depth the matter drifts through, projected as a size/alpha recession. Construction-time — changing it rebuilds.
  * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
+ * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
  */
 
 /** A no-op scalar grid returned by `grid()` before the element's field has started. */
@@ -77,6 +78,7 @@ export class FieldField extends HTMLElementBase {
     { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap },
     { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap },
     { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp },
+    { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -94,6 +96,7 @@ export class FieldField extends HTMLElementBase {
     'heatmap',
     'dpr-cap',
     'grid-warp',
+    'grid-intensity',
     'background',
     'formation',
   ];
@@ -221,6 +224,12 @@ export class FieldField extends HTMLElementBase {
    *  `0` is valid (a flat, undistorted lattice). */
   get gridWarp(): number | undefined {
     const v = Number(this.getAttribute('grid-warp'));
+    return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
+  /** `grid-intensity` — `grid` overlay stroke opacity ∈ [0,1]; undefined (engine default 0.16, the faint
+   *  diagnostic) if absent/invalid. Raise it (≈0.5) to make the warped lattice a visual centerpiece. */
+  get gridIntensity(): number | undefined {
+    const v = Number(this.getAttribute('grid-intensity'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
   }
   /** `formation` — the global formation (§7), applied live; undefined if absent. Unlike the other
@@ -502,6 +511,9 @@ export class FieldField extends HTMLElementBase {
     if (!this.overlayCanvas && typeof document !== 'undefined') {
       const oc = document.createElement('canvas');
       oc.setAttribute('aria-hidden', 'true');
+      // marked so a consumer can target the overlay surface (e.g. a scroll-driven opacity fade) without
+      // reaching into the shadow internals — it's the only canvas Fundamental adds to the light DOM.
+      oc.setAttribute('data-field-overlay', '');
       oc.style.cssText =
         'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;mix-blend-mode:screen';
       document.body.appendChild(oc);
