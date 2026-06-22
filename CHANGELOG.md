@@ -7,6 +7,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-06-22
+
 ### Added
 
 - **Swift performance model — deterministic perf gate + wall-clock measurement.** `PerfRegressionTests`
@@ -171,9 +173,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   positions are read live each frame, so the tint still tracks scroll (the #508 fix) — only the per-frame
   string-parse churn is gone.
 
-## [0.8.0] — 2026-06-20
-
-### Added
+### Added (earlier in 0.8.0)
 
 - **`gridWarp` — distortion multiplier for the `grid` overlay (core).** The `grid` overlay (the
   reference lattice displaced by the field) deflects each node by a deliberately-legible amount; the new
@@ -288,6 +288,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   `wormhole` preset; fixed the `pheromone`→`diffuse` token name; repaired broken `docs/...` cross-paths;
   committed the load-bearing RC/1.0 gate spec and removed stale `docs/planning/` duplicates; added a
   table of contents to `forces-system.md`.
+- **Site API reference completeness for the 0.8 surface.** Added the four 0.8 surface entries that were
+  missing from the live API reference (`apps/site/src/lib/docs-api.ts`): the options `gridIntensity`
+  (#552) and `bounds` (contained fields, #540), and the handle members `setQualityTier` (#413) and
+  `version` (#547) — so the documented surface matches the shipped one.
 
 ## [0.7.0] — 2026-06-17
 
