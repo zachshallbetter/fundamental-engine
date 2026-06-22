@@ -93,13 +93,16 @@ const chapters = [
         the same zero-DOM core runs in a WebGL scene and natively on Apple platforms.
       </p>
       <p slot="thesis" class="thesis"
-        data-body="attract pigment" data-shaped data-strength="0.85" data-range="300" data-color="#f0628e" style="--cat:#f0628e">
+        data-body="attract swirl pigment" data-strength="0.45" data-range="280" data-spin="1.1" data-color="#f0628e" style="--cat:#f0628e">
         <strong>Most UI frameworks let you declare importance. Fundamental is the first
         that enforces it — physically.</strong> You can’t style everything as urgent.
       </p>
       <Fragment slot="cta">
-        <Button href="#engine" variant="primary" data-color="#4da3ff">See it work →</Button>
-        <Button href="#install" data-color="#a78bfa">Install →</Button>
+        {/* Resting mass: ungate the default attention-gated vessel (data-when="") and lead with a
+            continuous attract so the CTAs pull the field at rest — they read as live, moving call-to-
+            actions, not inert until hovered. Engagement still amplifies on hover. */}
+        <Button href="#engine" variant="primary" data-color="#4da3ff" data-body="attract pigment" data-when="" data-strength="0.95" data-range="230">See it work →</Button>
+        <Button href="#install" data-color="#a78bfa" data-body="attract pigment" data-when="" data-strength="0.8" data-range="210">Install →</Button>
       </Fragment>
       <div slot="meta" class="meta">
         <span><b>Category</b> &nbsp;add a data-* attribute, get --field-* back</span>

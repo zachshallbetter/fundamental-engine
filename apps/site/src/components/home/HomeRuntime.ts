@@ -327,9 +327,12 @@ export function initHomeRuntime(): () => void {
     if (sig.aborted) return;
     const oc = document.querySelector<HTMLElement>("canvas[data-field-overlay]");
     const isGrid = field?.getAttribute("overlay") === "grid";
-    // fade 1→0 across the first 0.6 viewport — but ONLY while the grid is the active overlay, so a
-    // panel's own readings (streamlines, force-vectors) stay at full opacity once it owns the surface.
-    const fade = Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.6)));
+    // fade HERO_GRID_MAX→0 across the first 0.6 viewport — but ONLY while the grid is the active
+    // overlay, so a panel's own readings (streamlines, force-vectors) stay at full opacity once it owns
+    // the surface. The ceiling is held below 1 so the screen-blend lattice never overwhelms the hero
+    // copy it sits in front of (the grid is a fixed z-5 mix-blend:screen canvas over the content).
+    const HERO_GRID_MAX = 0.68;
+    const fade = HERO_GRID_MAX * Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.6)));
     if (oc) oc.style.opacity = isGrid ? String(fade) : "1";
     // while the hero is in view, keep the grid as the resting overlay (the last writer at the top wins,
     // re-asserting over the on-load settle to 'off'); only call when it has drifted, to stay idle-quiet.
