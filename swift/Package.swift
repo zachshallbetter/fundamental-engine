@@ -47,7 +47,8 @@ let coreTargets: [Target] = [
     .testTarget(
         name: "FundamentalCoreTests",
         dependencies: ["FundamentalCore"],
-        path: "Tests/FundamentalCoreTests"
+        path: "Tests/FundamentalCoreTests",
+        resources: [.copy("Fixtures")] // cross-plane golden vectors (conformance-golden.json, #526)
     ),
     .testTarget(
         name: "FundamentalPlatformTests",
