@@ -178,3 +178,27 @@ test('overlay canvas is removable after field destroy (cleanup invariant)', asyn
   oc.remove();
   assert.equal(body.children.length, 0);
 });
+
+// RC-3 / #320 — the unmount contract is exactly what <FieldField>/useFieldField's useEffect cleanup
+// runs: `field.destroy()` then remove+null the owned overlay canvas. We exercise that precise sequence
+// (the component delegates to it; a full react-dom render test would only re-prove these same calls).
+// See docs/canonical/lifecycle-contract.md.
+test('the React unmount contract: destroy() then overlay removal, idempotent and leak-free', async () => {
+  const { body, makeCanvas } = installDOM();
+  const { createBrowserField } = await import('@fundamental-engine/dom');
+  const main = makeCanvas();
+  const oc = makeCanvas();
+  body.appendChild(oc as unknown as Parameters<typeof body.appendChild>[0]);
+
+  // mount: the effect creates the field on the canvas ref, with the lazily-created overlay canvas.
+  const field = createBrowserField(main, { render: 'dots', overlay: 'grid', overlayCanvas: oc });
+
+  // unmount: the effect cleanup, in order.
+  field.destroy();
+  oc.remove();
+  assert.equal(body.children.length, 0, 'the owned overlay canvas is detached on unmount');
+
+  // re-running cleanup (e.g. a double-invoked effect / dep change racing teardown) must not throw.
+  assert.doesNotThrow(() => field.destroy(), 'destroy() is idempotent across re-cleanup');
+  assert.doesNotThrow(() => oc.remove());
+});

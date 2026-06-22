@@ -373,3 +373,45 @@ test("setRender from 'none' to a drawing mode acquires the context lazily and si
   assert.equal(canvas.getContextCalls, 1);
   h.destroy();
 });
+
+// ── RC-6 / #323 contract coverage: the theming + grid construction options ──
+// These additive options (#498/#529 theming, the grid overlay) construct and leave the field live.
+// The contract-coverage guard (packages/core/src/contract-coverage.test.ts) fails if any goes untested.
+
+test('createField accepts the full theming option set (theme + gradient/wave overrides)', () => {
+  const { makeCanvas } = installDOM();
+  assert.doesNotThrow(() => {
+    const h = createField(makeCanvas(), {
+      render: 'dots',
+      theme: 'cool',
+      gradientCool: '#0a1024', // cool gradient endpoint (single hex)
+      gradientWarm: '#522814', // warm gradient endpoint (single hex)
+      waveBaseline: ['#4da3ff', '#ff7847'], // wave palette (array of hex)
+    });
+    // still a live handle after a fully-themed construction.
+    assert.equal(typeof h.particleCount(), 'number');
+    h.destroy();
+  });
+});
+
+test('createField accepts the grid overlay shaping options (gridWarp + gridIntensity)', () => {
+  const { makeCanvas } = installDOM();
+  assert.doesNotThrow(() => {
+    // gridIntensity is clamped to [0,1]; gridWarp scales the displacement. Out-of-range is tolerated.
+    const h = createField(makeCanvas(), { render: 'dots', gridWarp: 2, gridIntensity: 0.5 });
+    h.destroy();
+    const clamped = createField(makeCanvas(), { render: 'dots', gridWarp: -1, gridIntensity: 9 });
+    clamped.destroy();
+  });
+});
+
+test('particleCount() is the public metric: a non-negative number, before and after scan', () => {
+  const { makeCanvas } = installDOM();
+  const h = createField(makeCanvas(), { render: 'dots', density: 2 });
+  const n = h.particleCount();
+  assert.equal(typeof n, 'number');
+  assert.ok(n >= 0, 'particleCount() is non-negative');
+  h.scan();
+  assert.ok(h.particleCount() >= 0, 'still a valid count after a rescan');
+  h.destroy();
+});

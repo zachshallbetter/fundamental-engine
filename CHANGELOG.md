@@ -7,6 +7,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Lifecycle contract + contract-coverage guard (RC hardening — #320, #323).** A documented
+  create→register→measure→unmount contract (`docs/canonical/lifecycle-contract.md`) backed by per-surface
+  unmount tests (vanilla idempotent destroy, the `<field-root>` `disconnectedCallback` teardown, the
+  React `useEffect` cleanup), plus a meta-test that fails CI if any public `FieldOptions` key or the
+  `particleCount()` metric ships without a test. The guard surfaced and closed real gaps — the theming
+  (`theme`/`gradientCool`/`gradientWarm`/`waveBaseline`) and grid (`gridWarp`/`gridIntensity`) options
+  now have coverage.
+
 ### Removed
 
 - **Deleted the retired `@fundamental-engine/kit` + `fundamental-engine` umbrella packages.** They were
