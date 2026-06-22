@@ -19,7 +19,8 @@
     "@fundamental-engine/three": "workspace:*",
     "astro": "^5",
     "mermaid": "^11.15.0",
-    "three": "^0.169.0"
+    "three": "^0.169.0",
+    "@fundamental-engine/vanilla": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
