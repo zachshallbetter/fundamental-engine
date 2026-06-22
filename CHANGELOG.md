@@ -30,6 +30,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Adaptive quality tiers — `setQualityTier` + automatic governor response (#413).** The
+  `QualityGovernor` already detected sustained frame-budget overruns and emitted a tier (0–3), but the
+  *engine-side* response was a documented gap — the embedder had to wire it. Now `FieldHandle.setQualityTier(0–3)`
+  maps the tier to the engine's own levers (caps the effective backing-store DPR — 1.5 / 1.25 / 1 — the
+  dominant fill lever, and skips the heaviest ambient layer, the heatmap glow, at tier 2+), reversibly.
+  The `<field-root>` platform runtime now **forwards the governor's tier automatically**, so a struggling
+  field self-simplifies and recovers without any wiring; the `field:quality-tier` event still fires for
+  custom responses. Mirrored on vanilla / `<field-root>` / three / React.
 - **Discrete proximity events — `enter` / `exit` / `met` (core, #441).** The discrete event bus
   (`field.on(type, cb)`) gains the gameplay triggers from FieldKit gap #4: `enter` / `exit` fire as
   another body crosses INTO / OUT OF a body's `range` (`{ body, other }`), and `met` fires once when

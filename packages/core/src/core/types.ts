@@ -656,6 +656,12 @@ export interface FieldHandle {
    *  fill-rate lever (#410). The ambient field is soft, so a cap of ~1.5 buys ~1.8× headroom on a
    *  retina display for a small softening. Re-sizes the surfaces immediately. Default 2. */
   setDprCap(cap: number): void;
+  /** Apply an adaptive **quality tier** `0–3` (#413) — the QualityGovernor's signal, mapped to the
+   *  engine's own levers: a tier caps the effective backing-store DPR (1 → 1.5 → 1.25 → 1) and, at
+   *  `2+`, skips the heaviest ambient layer (the heatmap glow). Reversible — `0` restores the configured
+   *  quality. The platform runtime forwards the governor's tier automatically; call it directly for a
+   *  custom quality policy. */
+  setQualityTier(tier: number): void;
   /**
    * Switch the underlay render mode (§20.6) live — the surface behind content. `'none'` is the
    * signals-only mode (§13.7 / #297): drawing stops from the next frame while the simulation and

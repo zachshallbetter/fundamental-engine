@@ -208,6 +208,10 @@ export class FieldLayer implements FieldHandle {
   setDprCap(cap: number): void {
     this.field.setDprCap(cap);
   }
+  /** apply an adaptive quality tier 0–3 (#413). */
+  setQualityTier(tier: number): void {
+    this.field.setQualityTier(tier);
+  }
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);
   }

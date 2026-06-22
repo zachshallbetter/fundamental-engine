@@ -333,6 +333,10 @@ export class FieldField extends HTMLElementBase {
   setDprCap(cap: number): void {
     this.field?.setDprCap(cap);
   }
+  /** apply an adaptive quality tier 0–3 (#413) — the platform runtime forwards the governor's tier. */
+  setQualityTier(tier: number): void {
+    this.field?.setQualityTier(tier);
+  }
   /** switch the underlay render mode (§20.6) live; `none` = signals-only — stop drawing, keep the signals (#297). */
   setRender(mode: 'dots' | 'trails' | 'links' | 'metaballs' | 'voronoi' | 'streamlines' | 'flow' | 'none'): void {
     this.field?.setRender(mode);
