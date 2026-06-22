@@ -72,12 +72,14 @@ const LIVE = ['evidence-field'];
   const status = document.querySelector<HTMLElement>('[data-ev-status]');
   if (root) {
     const SRC = ['src-1', 'src-2', 'src-3', 'src-4'];
+    // Neutral example claims (#331): demonstrate the claim/contradiction field without asserting
+    // Fundamental's own benefits as results — the demo shows the mechanism, not a marketing hypothesis.
     const texts = [
-      'Relational field behavior improves orientation in long documents.',
-      'Reduced-motion equivalence preserves meaning without motion.',
-      'Diagnostic visibility increases author trust.',
-      'Field priority reduces alert fatigue in dashboards.',
-      'Source binding improves recall of which evidence supports a claim.',
+      'Four-day weeks raise output in knowledge work.',
+      'The trial met its primary safety endpoint.',
+      'Remote teams ship features faster than co-located ones.',
+      'The regional carbon tax lowered emissions.',
+      'Open-plan offices reduce focused work.',
     ];
     let seq = 0;
     const rnd = () => Math.round(Math.random() * 100) / 100;
