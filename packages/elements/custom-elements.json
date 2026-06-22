@@ -1247,6 +1247,15 @@
               "description": "subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts."
             },
             {
+              "kind": "field",
+              "name": "version",
+              "type": {
+                "text": "string"
+              },
+              "description": "the running engine version (`FIELD_VERSION`) — available before mount too.",
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "scrollV",
               "return": {
@@ -2601,6 +2610,19 @@
                 }
               ],
               "description": "subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "version",
+              "type": {
+                "text": "string"
+              },
+              "description": "the running engine version (`FIELD_VERSION`) — available before mount too.",
+              "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

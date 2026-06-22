@@ -1,4 +1,4 @@
-import { PALETTE, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -403,6 +403,10 @@ export class FieldField extends HTMLElementBase {
   /** subscribe to a discrete field event (absorb/release/settle); a no-op unsubscribe until the field starts. */
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
     return this.field?.on(type, cb) ?? (() => {});
+  }
+  /** the running engine version (`FIELD_VERSION`) — available before mount too. */
+  get version(): string {
+    return this.field?.version ?? FIELD_VERSION;
   }
   /** the page's scroll velocity the engine tracks (drives `--field-scroll-v`); 0 before mount. */
   scrollV(): number {

@@ -172,6 +172,10 @@ export class FieldField implements FieldHandle {
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
     return this.field.on(type, cb);
   }
+  /** the running engine version (`FIELD_VERSION`). */
+  get version(): string {
+    return this.field.version;
+  }
   scrollV(): number {
     return this.field.scrollV();
   }

@@ -62,6 +62,7 @@ import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
+import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -2158,6 +2159,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       set.add(cb as (e: never) => void);
       return () => void set!.delete(cb as (e: never) => void);
     },
+    version: FIELD_VERSION,
     scrollV: () => env.scrollV ?? 0,
     setVisible: (on) => {
       canvasVisible = on;

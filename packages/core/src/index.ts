@@ -9,6 +9,7 @@
  */
 
 export * from './core/types.ts';
+export * from './version.ts';
 export * from './config/forces.config.ts';
 export * from './config/manual.ts';
 export * from './config/palettes.ts';
