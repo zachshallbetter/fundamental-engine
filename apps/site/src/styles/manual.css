@@ -73,7 +73,7 @@
   max-width: 85%;
   font-size: clamp(1.1rem, 1.7vw, 1.4rem);
   line-height: 1.5;
-  color: var(--text-2);
+  color: var(--text);
   font-weight: 300;
 }
 .manual-hero .thesis {
@@ -81,7 +81,7 @@
   max-width: 85%;
   font-size: clamp(1rem, 1.5vw, 1.25rem);
   line-height: 1.5;
-  color: var(--text-3);
+  color: var(--text-2);
   border-left: 2px solid var(--accent);
   padding-left: 1.1rem;
 }
@@ -98,10 +98,10 @@
   font-size: 0.66rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-4);
+  color: var(--text-3);
 }
 .manual-hero .meta b {
-  color: var(--text-3);
+  color: var(--text-2);
   font-weight: 400;
 }
 

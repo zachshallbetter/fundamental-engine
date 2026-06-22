@@ -43,15 +43,19 @@ const bodyAttrs = mass
       "data-max": "40",
     }
   : {};
+// Merge into ONE object before spreading so instance data-* genuinely override the defaults. Spreading
+// `{...bodyAttrs} {...rest}` separately emits the attribute twice, and the HTML spec keeps the FIRST
+// occurrence — so the defaults silently won and the "instance overrides" contract above was a no-op.
+const attrs = { ...bodyAttrs, ...rest };
 ---
 
 {
   href ? (
-    <a class={className} href={href} {...bodyAttrs} {...rest}>
+    <a class={className} href={href} {...attrs}>
       <slot />
     </a>
   ) : (
-    <button class={className} type="button" {...bodyAttrs} {...rest}>
+    <button class={className} type="button" {...attrs}>
       <slot />
     </button>
   )
