@@ -20,9 +20,9 @@ test('canonical packages carry the @fundamental-engine scope', () => {
   assert.equal(readPkg('packages/react').name, '@fundamental-engine/react');
   assert.equal(readPkg('packages/vanilla').name, '@fundamental-engine/vanilla');
   assert.equal(readPkg('packages/three').name, '@fundamental-engine/three');
+  assert.equal(readPkg('packages/dom').name, '@fundamental-engine/dom');
   assert.equal(readPkg('apps/site').name, '@fundamental-engine/site');
-  // the bare one-install umbrella (was @field-ui/field-ui)
-  assert.equal(readPkg('packages/fundamental-engine').name, 'fundamental-engine');
+  // the kit + fundamental-engine umbrellas were retired (deleted in this change); the family is the 7 real packages.
   assert.equal(readPkg('.').name, 'fundamental-engine-monorepo');
 });
 

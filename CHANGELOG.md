@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Removed
+
+- **Deleted the retired `@fundamental-engine/kit` + `fundamental-engine` umbrella packages.** They were
+  retired (private, 0 LOC) at 0.7.0 and are now removed from the workspace entirely — the published set
+  is the 6 real packages (`core`, `dom`, `elements`, `react`, `vanilla`, `three`) plus the deprecated
+  `platform` alias. Also fixed `check:readme`'s package list (it was missing `dom` and still listed the
+  umbrellas). No published-surface change (the umbrellas never shipped). `platform` removal is deferred
+  to 1.0 (it's a published alias — see the packaging decision in #537).
 ### Changed
 
 - **BREAKING (pre-1.0): `render` now defaults to `'none'` (signals-first) — #538.** A field created
