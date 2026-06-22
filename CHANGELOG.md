@@ -7,6 +7,23 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Grid overlay — heatmap colouring, double density, smooth curves (core).** The `grid` overlay (the
+  warped spacetime lattice) now (1) tints each line by how hard the field warps it there — cool accent in
+  flat space, through warm orange, to white-hot at the mass wells, with opacity rising the same way; (2)
+  doubles the lattice density (28px cell, was 56) so it reads as fine fabric; and (3) draws the warped
+  lines as Catmull-Rom curves instead of faceted segments. Same-temperature segments merge into single
+  polylines, so the colouring costs a handful of extra strokes, not one per cell.
+
+### Fixed
+
+- **`forceAt` honours `data-shaped` — the grid / streamlines warp by a body's whole box, not its centre
+  (core, JS + Swift).** The field sampler always measured from the body centre, while the integrator
+  (particles) clamps to the element's box for shaped bodies — so a shaped element (a button, a wide
+  headline) shelled particles around its outline but only dented the grid at a single point. `forceAt`
+  now mirrors the integrator's nearest-box-point reference on both planes. Covered by a new test.
+
 ## [0.8.0] — 2026-06-22
 
 ### Added

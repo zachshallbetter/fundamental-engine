@@ -1565,9 +1565,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // `grid` — a reference lattice whose vertices are displaced along the felt field; the page's
   // space itself made visible, bending where the field is strong. Reads deformation.
   function drawOverlayGrid(out: RenderBackend): void {
-    const STEP = 56;
-    const MAXD = 11 * cfg.gridWarp; // px displacement at the strongest sample — legible, never
-    // chaotic at the default gridWarp=1; the multiplier exaggerates the deformation for demos.
+    const STEP = 28; // a dense lattice — twice the line count of the original 56px cell, so the warped
+    // grid reads as fine spacetime fabric, not a coarse mesh.
+    const MAXD = 14 * cfg.gridWarp; // px displacement at the strongest sample. The denser lattice can
+    // carry a stronger pull per cell without tangling, so the base multiplier is up from 11.
     const cols = Math.floor(W / STEP) + 2;
     const rows = Math.floor(H / STEP) + 2;
     const dx = new Float32Array(cols * rows);
@@ -1587,25 +1588,80 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
     }
-    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
-    // a bolder lattice also wants a slightly heavier line so it reads as structure, not threads;
-    // at the faint diagnostic default (0.16) this stays width 1 — byte-identical to before.
-    const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: cfg.gridIntensity, width: cfg.gridIntensity > 0.3 ? 1.2 : 1 };
+    // Heatmap-coloured lattice: each segment is tinted by how hard the field warps it there — cool
+    // accent where space is flat, through warm orange, to white-hot at the strongest deflection (the
+    // mass wells). Opacity rises with the deflection too, so flat space is a faint base lattice and the
+    // warped regions blaze — the spacetime-curvature image made literal. Consecutive same-band segments
+    // are merged into one polyline, so the colouring costs a handful of extra strokes, not one per cell.
+    const HEAT: RGB[] = [curAccent, [255, 150, 70], [255, 240, 220]]; // curAccent (#530): cached accent RGB
+    const BANDS = 8;
+    const relAt = (i: number): number => (maxMag > 0 ? Math.sqrt(mags[i]! / maxMag) : 0);
+    const bandAt = (i: number): number => Math.round(relAt(i) * BANDS);
+    const strokeFor = (b: number): Stroke => {
+      const rel = b / BANDS;
+      const c = sampleStops(HEAT, rel);
+      // cool flat space sits at ~30% of the configured intensity; the hottest cells reach it in full.
+      return { r: c[0]!, g: c[1]!, b: c[2]!, alpha: Math.min(1, cfg.gridIntensity * (0.3 + 0.85 * rel)), width: rel > 0.55 ? 1.4 : 1 };
+    };
     const px = (gx: number, gy: number): [number, number] => {
       const i = gy * cols + gx;
-      const rel = maxMag > 0 ? Math.sqrt(mags[i]! / maxMag) : 0;
+      const rel = relAt(i);
       return [gx * STEP + dx[i]! * rel * MAXD, gy * STEP + dy[i]! * rel * MAXD];
     };
-    const row: number[] = [];
+    // Smooth the warped lines into curves: Catmull-Rom through the displaced vertices (the curve passes
+    // through every original point, so the warp magnitude is preserved) — the lattice reads as bent
+    // space, not faceted segments. Single-segment runs (n < 3) are already straight, returned as-is.
+    const SUB = 4;
+    const smooth = (p: number[]): number[] => {
+      const n = p.length >> 1;
+      if (n < 3) return p;
+      const o: number[] = [p[0]!, p[1]!];
+      for (let i = 0; i < n - 1; i++) {
+        const a = (i > 0 ? i - 1 : 0) << 1;
+        const b = i << 1;
+        const c = (i + 1) << 1;
+        const e = (i + 2 < n ? i + 2 : n - 1) << 1;
+        const x0 = p[a]!, y0 = p[a + 1]!, x1 = p[b]!, y1 = p[b + 1]!, x2 = p[c]!, y2 = p[c + 1]!, x3 = p[e]!, y3 = p[e + 1]!;
+        for (let s = 1; s <= SUB; s++) {
+          const t = s / SUB, t2 = t * t, t3 = t2 * t;
+          o.push(
+            0.5 * (2 * x1 + (-x0 + x2) * t + (2 * x0 - 5 * x1 + 4 * x2 - x3) * t2 + (-x0 + 3 * x1 - 3 * x2 + x3) * t3),
+            0.5 * (2 * y1 + (-y0 + y2) * t + (2 * y0 - 5 * y1 + 4 * y2 - y3) * t2 + (-y0 + 3 * y1 - 3 * y2 + y3) * t3),
+          );
+        }
+      }
+      return o;
+    };
+    // a segment is as hot as its hottest endpoint, so a line passing a well lights up across the well.
+    const hSeg = (gy: number, gx: number): number => Math.max(bandAt(gy * cols + gx), bandAt(gy * cols + gx + 1));
+    const vSeg = (gx: number, gy: number): number => Math.max(bandAt(gy * cols + gx), bandAt((gy + 1) * cols + gx));
     for (let gy = 0; gy < rows; gy++) {
-      row.length = 0;
-      for (let gx = 0; gx < cols; gx++) row.push(...px(gx, gy));
-      out.polyline(row, stroke);
+      let band = hSeg(gy, 0);
+      let pts: number[] = [...px(0, gy), ...px(1, gy)];
+      for (let gx = 1; gx < cols - 1; gx++) {
+        const sb = hSeg(gy, gx);
+        if (sb === band) pts.push(...px(gx + 1, gy));
+        else {
+          out.polyline(smooth(pts), strokeFor(band));
+          pts = [...px(gx, gy), ...px(gx + 1, gy)];
+          band = sb;
+        }
+      }
+      out.polyline(smooth(pts), strokeFor(band));
     }
     for (let gx = 0; gx < cols; gx++) {
-      row.length = 0;
-      for (let gy = 0; gy < rows; gy++) row.push(...px(gx, gy));
-      out.polyline(row, stroke);
+      let band = vSeg(gx, 0);
+      let pts: number[] = [...px(gx, 0), ...px(gx, 1)];
+      for (let gy = 1; gy < rows - 1; gy++) {
+        const sb = vSeg(gx, gy);
+        if (sb === band) pts.push(...px(gx, gy + 1));
+        else {
+          out.polyline(smooth(pts), strokeFor(band));
+          pts = [...px(gx, gy), ...px(gx, gy + 1)];
+          band = sb;
+        }
+      }
+      out.polyline(smooth(pts), strokeFor(band));
     }
   }
 
