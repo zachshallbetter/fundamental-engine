@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fundamental — web-component starter</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <!-- One field for the page. No `render` attribute → signals-first (#538): it runs the simulation
+         and writes --field-* variables, but draws no canvas. Add render="dots" to see the particles. -->
+    <field-root></field-root>
+
+    <main>
+      <!-- Bodies: the field gathers toward them and writes --field-density (--d) back; the CSS reads it. -->
+      <h1 data-body="attract" data-feedback data-strength="1" data-range="320">Elements have mass.</h1>
+      <p class="sub" data-body="attract" data-feedback data-strength="0.4" data-range="240">
+        Hover the items — the field reacts to engagement, no particles drawn.
+      </p>
+      <ul class="row">
+        <li data-body="attract" data-feedback data-strength="0.7" data-range="160">Signal</li>
+        <li data-body="attract" data-feedback data-strength="0.5" data-range="160">Relation</li>
+        <li data-body="attract" data-feedback data-strength="0.3" data-range="160">Change</li>
+      </ul>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
