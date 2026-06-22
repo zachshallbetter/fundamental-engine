@@ -1,0 +1,71 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import ReactiveList from '../../components/ReactiveList.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
+
+const html = `<ul class="inbox" data-reactive-list>
+  <li data-body="attract" data-feedback data-strength="1.0" data-range="180">Production incident</li>
+  <li data-body="attract" data-feedback data-strength="0.62" data-range="180">Design review</li>
+  <li data-body="attract" data-feedback data-strength="0.30" data-range="180">Weekly digest</li>
+</ul>`;
+
+const ts = `import { FieldField } from '@fundamental-engine/vanilla';
+
+const list = document.querySelector('[data-reactive-list]');
+
+// A CONTAINED, signals-only field: it runs the full simulation over the rows but
+// draws nothing (render: 'none'). The only output is the --field-* CSS variables.
+const field = new FieldField({ bounds: list, render: 'none', density: 1.4 });
+
+// engagement is just an attribute the field reads — hover/focus a row and it
+// gathers the (invisible) matter toward itself; neighbours feel the shift.
+for (const row of list.querySelectorAll('li')) {
+  row.addEventListener('pointerenter', () => row.dataset.active = '1');
+  row.addEventListener('pointerleave', () => row.dataset.active = '0');
+}`;
+
+const css = `/* the field wrote --field-density (alias --d) onto each [data-feedback] row.
+   read it to turn density into presence — weight, lift, glow. No canvas involved. */
+.inbox li {
+  font-weight: calc(400 + var(--d, 0) * 360);
+  transform: translateX(calc(var(--d, 0) * 6px));
+  box-shadow: 0 0 calc(var(--d, 0) * 26px) rgba(77, 163, 255, calc(var(--d, 0) * 0.45));
+  transition: all 0.45s ease;
+}`;
+---
+
+<DocsLayout
+  title="A reactive component (no particles)"
+  description="The field as a behaviour layer on a real interface: a contained, signals-only field gives an ordinary list weight and reactivity through --field-* CSS variables, with no canvas and no particles drawn."
+>
+  <h1>A reactive component — no particles</h1>
+  <p class="lede">
+    The field is a <strong>behaviour layer</strong>, not a particle background. Here it runs
+    <em>contained</em> inside one list and <em>signals-only</em> — nothing is drawn. The only thing
+    you see is an ordinary list whose rows gain weight, lift, and glow from the field, and respond
+    when you engage them. This is what you'd actually build.
+  </p>
+
+  <ReactiveList />
+
+  <p>
+    Hover or tab through the rows. Each is a <code>[data-body]</code>; the contained field gathers its
+    invisible matter toward them and writes the local density back as <code>--field-density</code>
+    (<code>--d</code>). Important rows are visibly heavier; engaging one pulls the field toward it.
+    There is no <code>&lt;canvas&gt;</code> on this page — the field is pure signal.
+  </p>
+
+  <h2>Copy it into your app</h2>
+  <p>Three parts: the markup, the field, and the CSS that reads what the field writes.</p>
+  <CodeTabs variants={[
+    { label: 'HTML', code: html, lang: 'html' },
+    { label: 'TypeScript', code: ts, lang: 'ts' },
+    { label: 'CSS', code: css, lang: 'css' },
+  ]} />
+
+  <p>
+    <code>render: 'none'</code> is the default since <a href="https://github.com/zachshallbetter/fundamental-engine/issues/538">#538</a> —
+    a field draws nothing until you ask it to. <code>bounds</code> scopes the field to one element
+    instead of the window. Together they make the field a component, not a backdrop.
+  </p>
+</DocsLayout>

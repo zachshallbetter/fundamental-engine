@@ -43,6 +43,7 @@ export const DOCS_NAV: DocGroup[] = [
     items: [
       { href: '/docs', label: 'Overview', ready: true },
       { href: '/docs/tutorial', label: 'Your first field', ready: true },
+      { href: '/docs/reactive-component', label: 'A reactive component', ready: true },
       { href: '/docs/guides/web-component', label: 'Web component', ready: true },
       { href: '/docs/guides/typescript', label: 'TypeScript', ready: true },
       { href: '/docs/guides/react', label: 'React', ready: true },
