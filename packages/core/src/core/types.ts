@@ -452,6 +452,16 @@ export interface FieldOptions {
   /** color template for the travelling accent (§9): a built-in name
    *  (`'ours'` · `'heatmap'` · `'infrared'` · `'spectrum'`) or custom hex stops. */
   palette?: string | readonly string[];
+  /** ambient THEME (#529) — a named preset (`'warm'` (default) · `'cool'` · `'mono'`) for the
+   *  free-particle heat ramp + the background-wave baseline. `accent`/`palette` drive the travelling
+   *  accent; `theme` drives the resting palette. Override individual lanes with the three below. */
+  theme?: string;
+  /** the resting (cool) end of the free-particle heat ramp, as hex — overrides the theme's. */
+  gradientCool?: string;
+  /** the energized (warm) end of the free-particle heat ramp, as hex — overrides the theme's. */
+  gradientWarm?: string;
+  /** the background-wave baseline colors, as hex stops — overrides the theme's wave palette. */
+  waveBaseline?: readonly string[];
   /** conserved attention (§2.4): one finite strength budget — engaging a body
    *  pulls force off every other. Default false; rest-neutral until engaged. */
   attention?: boolean;
