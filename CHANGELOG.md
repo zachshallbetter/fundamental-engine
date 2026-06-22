@@ -9,12 +9,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
-- **Grid overlay — heatmap colouring, double density, smooth curves (core).** The `grid` overlay (the
+- **Grid overlay — heatmap colouring, foldless warp, smooth curves (core).** The `grid` overlay (the
   warped spacetime lattice) now (1) tints each line by how hard the field warps it there — cool accent in
   flat space, through warm orange, to white-hot at the mass wells, with opacity rising the same way; (2)
-  doubles the lattice density (28px cell, was 56) so it reads as fine fabric; and (3) draws the warped
-  lines as Catmull-Rom curves instead of faceted segments. Same-temperature segments merge into single
-  polylines, so the colouring costs a handful of extra strokes, not one per cell.
+  warps as a coherent rubber sheet — the displacement field is box-blurred and each vertex is clamped to
+  ~half a cell, so masses dimple the lattice into deep but **foldless** bowls instead of a tangle of
+  crossing lines (the throw can no longer exceed the cell pitch, the cause of the moiré); and (3) draws the
+  warped lines as Catmull-Rom curves instead of faceted segments. Same-temperature segments merge into
+  single polylines, so the colouring costs a handful of extra strokes, not one per cell.
 
 ### Fixed
 
