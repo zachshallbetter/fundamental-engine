@@ -449,3 +449,55 @@ Migration acceptance rule:
 ```txt
 A rename is not complete until the old and new names both work.
 ```
+
+## 20. Cross-plane parity (JS ↔ Swift)
+
+The engine ships on two planes: the JS/TS core (`packages/core`) and the Swift port (`swift/`). The
+**conformance rule** is that at `depth: 0` a Swift field and a JS field, given the same inputs, produce
+the same motion. Because the planes are hand-ported, parity must be *verified*, not trusted — historically
+it wasn't, and divergences (palette ramps #497, the scroll body-centre fix #509) surfaced as hand-fixed
+one-offs. The **autonomous verification spine** makes parity machine-checked with no device or human in the
+loop. It has three models, built on the JS conformance runner (`packages/core/src/conformance/`, seeded
+**mulberry32** PRNG) and the Swift headless primitives (`Bench`, `Snapshotter`, `FieldPerf`,
+`QualityGovernor`):
+
+### Model 1 — numeric conformance · **Status: shipped (#526)**
+
+The JS f64 engine emits **golden vectors**; the Swift f32 engine must reproduce them.
+
+```txt
+pnpm gen:golden            # JS fires the canonical forces at probe particles, writes frame-0
+                           #   force deltas → swift/Tests/.../Fixtures/conformance-golden.json
+swift test                 # GoldenConformanceTests: Swift reproduces every dv within tolerance
+pnpm check:golden          # CI gate (JS side): fail if the golden drifts from the JS math
+swift-{linux,macos}.yml    # CI gate (Swift side): fail if a Swift force drifts from the golden
+```
+
+- **Granularity is one apply, not a trajectory** — Swift core is f32, JS is f64, so a single force
+  application keeps drift sub-tolerance (`2e-4 + 1e-3·|dv|`) while still catching a wrong coefficient,
+  missing leg, or sign flip. Integration over many frames diverges by design and is *not* asserted bit-wise.
+- **A divergence is a Swift bug.** Fix the force; never loosen the tolerance to hide it.
+- **Coverage:** the canonical deterministic forces (attract, repel, swirl, stream, tether, viscosity).
+  The same harness extends to the EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to
+  short-trajectory + heat parity — follow-up coverage on the same fixture.
+
+### Model 2 — performance · **Status: in progress**
+
+`Bench` already splits per-frame sim/draw ms (headless, CoreGraphics) and `FieldPerf`/`QualityGovernor`
+compute budget/median/fps/dropped + tier transitions deterministically. The model **gates on deterministic
+work** (particle-count conservation, bounded pools, finiteness over a long heavy run — machine-independent)
+and **reports wall-clock** for reasoning about a change. Wall-clock is deliberately *not* a CI gate: the
+field is fill-rate-bound, headless software rasterization exaggerates fill, and CI runners vary — inventing
+a wall-clock budget repeats the mistake #324 was blocked on. Real frame-time budgets need on-hardware
+measurement (a maintainer task).
+
+### Model 3 — visual snapshot · **Status: in progress**
+
+`Snapshotter` rasterizes a scene headlessly to PNG through the real engine + real renderer. The model adds
+**golden-PNG diffing**: a committed reference per render mode, a perceptual-delta gate on regeneration.
+This is what lets renderer-parity work (soft-glow particles #417, 3D streamline tubes / vector grid #392)
+be verified without a device — the gap that previously forced those items to "needs human eyes."
+
+> **Why three models.** Numeric conformance proves the *math* matches; the perf model proves a change
+> didn't regress *cost*; the snapshot model proves the *pixels* are right. Together they cover the parity
+> surface that green unit tests on each plane, in isolation, cannot.
