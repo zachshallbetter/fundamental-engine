@@ -1,3 +1,4 @@
+import Foundation // cos/sin — from Darwin on Apple, Glibc on Linux (the simd shim doesn't provide them)
 #if canImport(simd)
 import simd
 #endif
