@@ -22,6 +22,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`gridIntensity` — the warped grid as a visual centerpiece (#552).** The `grid` overlay's stroke
+  opacity is now an option (`gridIntensity`, `<field-root grid-intensity>`); default `0.16` keeps the
+  faint diagnostic unchanged, raise it (≈`0.5`) and the lattice reads as a deliberate surface. Pairs with
+  `gridWarp` (how far the lattice deflects). Powers the homepage hero: `overlay="grid"` warped by the
+  "mass" headline (a gravity well co-located with its swirl — a spinning mass that dips *and* drags the
+  lattice, the spacetime-curvature image), bold across the hero and faded out below it by a scroll-zone
+  controller, with particles drifting through. The overlay surface is also marked `data-field-overlay`
+  (the single light-DOM canvas Fundamental adds) so a consumer can target it — e.g. for that scroll fade.
 - **`<field-root>` consumer-surface completeness (#541, #542).** Two CAPMPrep-driven fixes to the web
   component's discoverability: (1) **imperative setters reflect to their attribute** — after
   `el.setRender("links")`, `el.getAttribute("render") === "links"` (it used to show a stale value and

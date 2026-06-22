@@ -197,17 +197,15 @@ function initRenderTour(): () => void {
   const active = new Set<string>();
   // resting underlay = the page-wide field flow (the nav toggle, data-nav-flow → the 'flow' render).
   // When this panel isn't driving its own matter mode, fall back to THAT, not a hard 'dots' — so
-  // scrolling past the panel doesn't silently kill the global flow.
+  // scrolling past the panel doesn't silently kill the global flow. The overlay surface is this
+  // panel's own in-front readings only, so it simply clears to off when no reading is active (the
+  // hero grid is owned by HomeRuntime's hero-zone controller, not this panel's resting state).
   const restingRender = () =>
     field?.dataset.navFlow === "on" ? "flow" : "dots";
-  // resting OVERLAY = the warped grid (the hero's signature): the reference lattice deflected by the
-  // field, so [data-body] mass visibly wells the grid (the spacetime-curvature image). The render-tour
-  // panel layers its own in-front readings ON TOP while in view; on leave it falls back to the grid.
-  const restingOverlay = "grid";
   const run = () => {
     field?.setRender?.(inView && mode ? mode.dataset.render || "dots" : restingRender());
     const stack = inView ? [...active] : [];
-    field?.setOverlay?.(stack.length ? stack : restingOverlay);
+    field?.setOverlay?.(stack.length ? stack : "off");
   };
   const say = (b: HTMLButtonElement) => {
     const name = b.dataset.render ?? b.dataset.overlayMode;

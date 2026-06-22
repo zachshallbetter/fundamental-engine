@@ -368,7 +368,7 @@
               "privacy": "private",
               "static": true,
               "readonly": true,
-              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, ]",
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, ]",
               "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart."
             },
             {
@@ -566,6 +566,15 @@
                 "text": "number | undefined"
               },
               "description": "`grid-warp` — `grid` overlay distortion multiplier; undefined (engine default 1) if absent/invalid.\n`0` is valid (a flat, undistorted lattice).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "gridIntensity",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`grid-intensity` — `grid` overlay stroke opacity ∈ [0,1]; undefined (engine default 0.16, the faint\ndiagnostic) if absent/invalid. Raise it (≈0.5) to make the warped lattice a visual centerpiece.",
               "readonly": true
             },
             {
@@ -1322,6 +1331,9 @@
               "name": "grid-warp"
             },
             {
+              "name": "grid-intensity"
+            },
+            {
               "name": "background"
             },
             {
@@ -1445,6 +1457,13 @@
               }
             },
             {
+              "name": "grid-intensity",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
               "name": "background",
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1469,7 +1488,7 @@
               "privacy": "private",
               "static": true,
               "readonly": true,
-              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, ]",
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, ]",
               "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart.",
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1755,6 +1774,19 @@
                 "text": "number | undefined"
               },
               "description": "`grid-warp` — `grid` overlay distortion multiplier; undefined (engine default 1) if absent/invalid.\n`0` is valid (a flat, undistorted lattice).",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "gridIntensity",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "`grid-intensity` — `grid` overlay stroke opacity ∈ [0,1]; undefined (engine default 0.16, the faint\ndiagnostic) if absent/invalid. Raise it (≈0.5) to make the warped lattice a visual centerpiece.",
               "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",

@@ -84,10 +84,11 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
          so the field reads as a dense medium the bodies gather and absorb. -->
     <!-- render="dots" → the particles are always visible. The engine default is now signals-only
          ('none', #538); the homepage opts into the particle surface explicitly because it IS the
-         field showcase. Flow arrows are toggled via setOverlay('streamlines') as an additive layer
-         on top — never hiding particles. The heatmap glow underlay starts on. data-nav-* markers keep
+         field showcase. overlay="grid" + grid-warp + grid-intensity → the signature hero: the
+         reference lattice warped by [data-body] mass (the spacetime-curvature image), bold enough to
+         read as a centerpiece, faded out below the hero by the scroll handler. data-nav-* markers keep
          the nav toggles in sync across client-side navigation (transition:persist keeps it alive). -->
-    <field-root render="dots" overlay="grid" accent="#4da3ff" density="2.4" waves="false" grid-warp="3" data-nav-flow="off" data-nav-heatmap="off" transition:persist></field-root>
+    <field-root render="dots" overlay="grid" grid-warp="3" grid-intensity="0.5" accent="#4da3ff" density="2.4" waves="false" data-nav-flow="off" data-nav-grid="on" data-nav-heatmap="off" transition:persist></field-root>
     <script is:inline>
       // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
       // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so
