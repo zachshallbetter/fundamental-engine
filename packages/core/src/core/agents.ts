@@ -49,11 +49,13 @@ export function elementMass(area: number): number {
  * `Σ C·(c − cⱼ)/|c − cⱼ|²` — so a cluster spreads out. Softened near coincidence so
  * fully-overlapping elements don't blow up. `others` are the other element centres.
  */
-export function repelForce(self: Vec2, others: readonly Vec2[], C = 1600, soft = 26): Vec2 {
+export function repelForce(self: Vec2, others: readonly Vec2[], skip = -1, C = 1600, soft = 26): Vec2 {
   let fx = 0;
   let fy = 0;
   const s2 = soft * soft;
-  for (const o of others) {
+  for (let i = 0; i < others.length; i++) {
+    if (i === skip) continue; // exclude self by index — saves a per-frame `others.filter(j !== i)` alloc (#530)
+    const o = others[i]!;
     const dx = self.x - o.x;
     const dy = self.y - o.y;
     const d2 = dx * dx + dy * dy + s2; // softened |c − cⱼ|²

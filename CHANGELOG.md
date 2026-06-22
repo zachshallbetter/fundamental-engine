@@ -28,6 +28,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   recipes (set their own render), and any call already passing `render`. The site homepage and the
   starter app pin `render="dots"` explicitly (they *are* the field showcase).
 
+### Performance
+
+- **Hot-path allocation sweep (#530).** Eliminated the clearest steady-state per-frame allocations in
+  the draw loop: **twelve `hexToRgb(cfg.accent)` re-parses per frame** (one per draw/overlay pass) now
+  read the already-cached live accent (`curAccent`) — zero parse, zero alloc, and slightly more precise
+  (no hex round-trip); and the self-laying-out repulsion no longer allocates `centers.filter(j !== i)`
+  every frame per mover (was **O(movers²) arrays/frame** on a cluster) — `repelForce` takes a `skip`
+  index instead. Behaviour is unchanged (pinned by a skip-vs-filter equivalence test). The GC-pressure
+  *budget* as a CI gate (the issue's secondary ask) needs allocation-measurement infra — a follow-up.
+
 ### Added
 
 - **Discrete proximity events — `enter` / `exit` / `met` (core, #441).** The discrete event bus

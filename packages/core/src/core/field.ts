@@ -737,8 +737,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // Concept 3 — self-laying-out: this element pushes off the others and drifts off
       // dense field regions, so a cluster spreads and re-settles (e.g. on resize).
       if (mv.layout) {
-        const others = centers.filter((_, j) => j !== i);
-        const rep = repelForce({ x: cx, y: cy }, others);
+        // #530: pass the shared centers + this index instead of allocating `centers.filter(j !== i)`
+        // every frame per mover (was O(movers²) arrays/frame on a self-laying-out cluster).
+        const rep = repelForce({ x: cx, y: cy }, centers, i);
         const press = densityPush((sx, sy) => store.near(sx, sy, 40).length, cx, cy, 16, 6);
         fx += rep.x + press.x;
         fy += rep.y + press.y;
@@ -1123,7 +1124,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // ~20 Hz refresh is imperceptible — and it keeps the per-frame heatmap cost to just the upscale.
     if (hmImg === null || frameN % 3 === 0) {
       if (hmImg === null) hmImg = hmCtx.createImageData(cols, rows);
-      const acc = hexToRgb(cfg.accent);
+      const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
       const data = hmImg.data;
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -1181,7 +1182,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // keep it (their overlays read against the particles).
     const showMatter = cfg.render !== 'metaballs' && cfg.render !== 'streamlines';
     ctx!.globalCompositeOperation = 'lighter';
-    const acc = hexToRgb(cfg.accent);
+    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     const cx = W / 2;
     const cy = H * 0.4;
     const maxD = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) || 1;
@@ -1276,7 +1277,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
     if (cfg.render === 'links') {
       ctx!.globalCompositeOperation = 'lighter';
-      const acc = hexToRgb(cfg.accent);
+      const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
       const R = 90;
       ctx!.lineWidth = 0.6;
       for (const p of store.particles) {
@@ -1311,7 +1312,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (p.cap) continue;
         splatDensity(mball, cols, rows, STEP, p.x, p.y, RAD, 1);
       }
-      const acc = hexToRgb(cfg.accent);
+      const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
       ctx!.globalCompositeOperation = 'lighter';
       ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.5 * boot})`;
       ctx!.lineWidth = 1.4;
@@ -1362,7 +1363,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           vor[gy * cols + gx] = owner;
         }
       }
-      const acc = hexToRgb(cfg.accent);
+      const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
       ctx!.globalCompositeOperation = 'lighter';
       ctx!.strokeStyle = `rgba(${acc[0]},${acc[1]},${acc[2]},${0.32 * boot})`;
       ctx!.lineWidth = 1;
@@ -1381,7 +1382,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // particles plus the flow they ride, in this one underlay canvas (no second surface, no blend).
     if (cfg.render === 'streamlines' || cfg.render === 'flow') {
       const GRID = 46;
-      const acc = hexToRgb(cfg.accent);
+      const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
       ctx!.lineWidth = 1;
       ctx!.lineCap = 'round';
       // RESAMPLE the field on a cadence, not every frame. The arrows trace the body-induced force
@@ -1472,7 +1473,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // unused by the current dispatch (both arrow modes read the felt field).
   function drawOverlayArrows(out: RenderBackend, structure: boolean, absolute: boolean): void {
     const GRID = 44;
-    const acc = hexToRgb(cfg.accent);
+    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     // RESAMPLE the field on a cadence, not every frame (mirrors the underlay slSamples cache, #406).
     // The overlay grid is the same body-induced force field — it only shifts on the measure cadence
     // (every 6th frame) or while a flow focus animates — so a per-frame regrid (≈grid×bodies force
@@ -1540,7 +1541,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       bounds: { w: W, h: H },
       loopDist: 8,
     });
-    const acc = hexToRgb(cfg.accent);
+    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     // one polyline per traced curve through the backend seam (#373) — same shared stroke style.
     const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0.42, width: 1.1 };
     for (const line of lines) {
@@ -1579,7 +1580,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
     }
-    const acc = hexToRgb(cfg.accent);
+    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     // a bolder lattice also wants a slightly heavier line so it reads as structure, not threads;
     // at the faint diagnostic default (0.16) this stays width 1 — byte-identical to before.
     const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: cfg.gridIntensity, width: cfg.gridIntensity > 0.3 ? 1.2 : 1 };
@@ -1624,7 +1625,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     let max = 0;
     for (let i = 0; i < oscalar.length; i++) if (oscalar[i]! > max) max = oscalar[i]!;
     if (max <= 0) return;
-    const acc = hexToRgb(cfg.accent);
+    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     const LEVELS = [0.25, 0.5, 0.78]; // nested iso-rings: faint outer shell → bright core
     const packed: number[] = [];
     for (let li = 0; li < LEVELS.length; li++) {
@@ -1661,7 +1662,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const SEED = 104; // seed lattice spacing (px)
     const STEPPX = 9; // integration step (px)
     const STEPS = 24; // max steps per path
-    const acc = hexToRgb(cfg.accent);
+    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     const stroke: Stroke = { r: acc[0]!, g: acc[1]!, b: acc[2]!, alpha: 0, width: 1.1 };
     const seg = new Float64Array(4);
     for (let sx = SEED / 2; sx < W; sx += SEED) {
@@ -1695,7 +1696,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // (§8, the same number the platform mirrors to `--d`) printed beside the body. Feedback bodies
   // lead (they asked to be measured); non-feedback bodies are skipped — no reading, no chip.
   function drawOverlayData(out: RenderBackend): void {
-    const acc = hexToRgb(cfg.accent);
+    const acc = curAccent; // #530: the cached live accent RGB (was hexToRgb(cfg.accent) — a per-frame parse)
     for (const b of bodies) {
       if (!b.vis || !b.feedback) continue;
       const label = `d ${b.d.toFixed(2)}`;
