@@ -61,6 +61,7 @@ import { traceFieldLines } from './fieldlines.ts';
 import { fieldLineSeeds } from './fieldline-seeds.ts';
 import { flowBiasInto, makeFlowFocus, type FlowFocus, type FlowOptions } from './flow.ts';
 import type { FieldHost } from './host.ts';
+import { devWarnNoOp } from '../contracts/guards.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 
 // the Currents' cool baseline palette — a subset of the force palette (§24.4).
@@ -2135,8 +2136,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const { fx, fy } = forceAt(bodies, reg.forces, env, x, y);
       return { x: fx, y: fy };
     },
-    sampleScalar: (x, y) => (heatmap ? heatmap.norm(x, y) : 0),
-    sampleGradient: (x, y) => (heatmap ? heatmap.gradient(x, y) : { x: 0, y: 0 }),
+    sampleScalar: (x, y) => {
+      if (heatmap) return heatmap.norm(x, y);
+      devWarnNoOp('NOOP_NO_HEATMAP', 'sampleScalar() returned 0 because the heatmap layer is off — construct with { heatmap: true } or call setHeatmap(true).');
+      return 0;
+    },
+    sampleGradient: (x, y) => {
+      if (heatmap) return heatmap.gradient(x, y);
+      devWarnNoOp('NOOP_NO_HEATMAP', 'sampleGradient() returned { x: 0, y: 0 } because the heatmap layer is off — construct with { heatmap: true } or call setHeatmap(true).');
+      return { x: 0, y: 0 };
+    },
     grid: (name) => env.grid(name),
     on: <K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void) => {
       let set = busListeners.get(type);
