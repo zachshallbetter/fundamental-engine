@@ -30,6 +30,10 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {string} render - Underlay render mode (Field Surfaces, behind content): `dots` | `trails` | `links` | `metaballs` | `voronoi` | `streamlines` | `none`. The DEFAULT is `none` (#538) — the signals-only engine (#297): the simulation and feedback signals run, but no canvas context is acquired and nothing is ever drawn. Set `render="dots"` for the particle surface.
  * @attr {string} overlay - Overlay readings (Field Surfaces, in front of content): `off` | `streamlines` | `force-vectors` | `field-lines` | `grid` | `temperature` | `energy` | `path` | `data` — or a space-separated stack (readings are additive, drawn in order).
  * @attr {string} palette - Named color palette for the field.
+ * @attr {string} theme - Ambient theme preset (#529): `warm` (default) | `cool` | `mono` — the heat ramp + wave baseline.
+ * @attr {string} gradient-cool - Hex for the cool end of the heat ramp; overrides the theme (#529).
+ * @attr {string} gradient-warm - Hex for the warm end of the heat ramp; overrides the theme (#529).
+ * @attr {string} wave-baseline - Space-separated hex stops for the wave baseline; overrides the theme (#529).
  * @attr {number} mass - Global mass scaling applied to bodies.
  * @attr {boolean} attention - Enables the conserved-attention behaviour (one finite budget, redistributed).
  * @attr {boolean} causality - Enables the causality demo behaviour.
@@ -79,6 +83,10 @@ export class FieldField extends HTMLElementBase {
     { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap },
     { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp },
     { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity },
+    { key: 'theme', attr: 'theme', read: (el) => el.theme },
+    { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool },
+    { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm },
+    { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -97,6 +105,10 @@ export class FieldField extends HTMLElementBase {
     'dpr-cap',
     'grid-warp',
     'grid-intensity',
+    'theme',
+    'gradient-cool',
+    'gradient-warm',
+    'wave-baseline',
     'background',
     'formation',
   ];
@@ -231,6 +243,23 @@ export class FieldField extends HTMLElementBase {
   get gridIntensity(): number | undefined {
     const v = Number(this.getAttribute('grid-intensity'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
+  /** `theme` — ambient palette preset (`warm` (default) | `cool` | `mono`); undefined if absent (#529). */
+  get theme(): string | undefined {
+    return this.getAttribute('theme') ?? undefined;
+  }
+  /** `gradient-cool` — hex for the cool end of the heat ramp; overrides the theme (#529). */
+  get gradientCool(): string | undefined {
+    return this.getAttribute('gradient-cool') ?? undefined;
+  }
+  /** `gradient-warm` — hex for the warm end of the heat ramp; overrides the theme (#529). */
+  get gradientWarm(): string | undefined {
+    return this.getAttribute('gradient-warm') ?? undefined;
+  }
+  /** `wave-baseline` — space-separated hex stops for the wave baseline; overrides the theme (#529). */
+  get waveBaseline(): readonly string[] | undefined {
+    const list = (this.getAttribute('wave-baseline') ?? '').split(/\s+/).filter(Boolean);
+    return list.length ? list : undefined;
   }
   /** `formation` — the global formation (§7), applied live; undefined if absent. Unlike the other
    *  attributes this is post-construction (set via `setFormation`), but it round-trips: the attribute

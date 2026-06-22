@@ -28,17 +28,18 @@ export const WARM: RGB = [255, 110, 80];
  * Free-particle color: cool centre → warm edge by `rs` (= normalized dist²),
  * then blended toward the travelling `accent` by `heat` (§20.8 / the prototype).
  */
-export function particleRGB(rs: number, heat: number, accent: RGB): RGB {
-  return particleRGBInto([0, 0, 0], rs, heat, accent);
+export function particleRGB(rs: number, heat: number, accent: RGB, cool: RGB = COOL, warm: RGB = WARM): RGB {
+  return particleRGBInto([0, 0, 0], rs, heat, accent, cool, warm);
 }
 
 /** `particleRGB` writing into a caller-owned `out` — identical color, zero allocation. The draw
  *  loop calls this with a shared scratch so it doesn't allocate an `[r,g,b]` per particle per
- *  frame. `out` is returned for convenience. */
-export function particleRGBInto(out: RGB, rs: number, heat: number, accent: RGB): RGB {
-  let r = COOL[0] + (WARM[0] - COOL[0]) * rs;
-  let g = COOL[1] + (WARM[1] - COOL[1]) * rs;
-  let b = COOL[2] + (WARM[2] - COOL[2]) * rs;
+ *  frame. `out` is returned for convenience. The `cool`/`warm` ends of the heat ramp default to the
+ *  module constants, so the hot path is unchanged unless a theme overrides them (#529). */
+export function particleRGBInto(out: RGB, rs: number, heat: number, accent: RGB, cool: RGB = COOL, warm: RGB = WARM): RGB {
+  let r = cool[0] + (warm[0] - cool[0]) * rs;
+  let g = cool[1] + (warm[1] - cool[1]) * rs;
+  let b = cool[2] + (warm[2] - cool[2]) * rs;
   r += (accent[0] - r) * heat;
   g += (accent[1] - g) * heat;
   b += (accent[2] - b) * heat;

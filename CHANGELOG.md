@@ -30,6 +30,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **First-class theming — the ambient palette as `FieldOptions` (#529, supersedes #498).** The
+  free-particle heat ramp (`COOL`/`WARM`) and the background-wave baseline (`WAVE_RGB`) were hardcoded
+  module constants — theming meant forking core. Now they're a **theme contract**: `theme` picks a named
+  preset (`'warm'` (default) · `'cool'` · `'mono'`) and `gradientCool` / `gradientWarm` / `waveBaseline`
+  override individual lanes (all `FieldOptions`, mirrored as `<field-root theme|gradient-cool|gradient-warm|wave-baseline>`).
+  Exports `THEMES` + `FieldTheme`. **Additive, frozen surface intact** — `theme: 'warm'` reproduces the
+  shipped palette byte-for-byte (the hot-path `particleRGBInto` defaults to the same constants).
 - **`FIELD_VERSION` + `field.version` — the running engine version (#547).** The engine now exposes
   its version: `import { FIELD_VERSION } from '@fundamental-engine/core'`, and every field handle has a
   `version` property (mirrored on `FieldField`, `<field-root>`, and the React handle) — so a consumer or
