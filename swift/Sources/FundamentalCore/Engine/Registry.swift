@@ -85,6 +85,8 @@ public struct RenderFrame {
     public let flow: FlowFocus?
     /// Resolved glowing-connector segments (§10), drawn over the field with travelling pulses.
     public let threads: [ThreadSegment]
+    /// How matter is drawn — `.dot` by default; renderers stamp this shape per particle (matter modes).
+    public let particleShape: ParticleShape
 
     public init(particles: [Particle], bodies: [Body], accent: RGB, mode: RenderMode,
                 projection: any FieldProjection, volume: FieldVolume,
@@ -92,9 +94,11 @@ public struct RenderFrame {
                 sparks: [Spark] = [], heatmap: Heatmap? = nil, overlays: [OverlayMode] = [],
                 forceSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
                 fieldSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
-                flow: FlowFocus? = nil, threads: [ThreadSegment] = []) {
+                flow: FlowFocus? = nil, threads: [ThreadSegment] = [],
+                particleShape: ParticleShape = .dot) {
         self.flow = flow
         self.threads = threads
+        self.particleShape = particleShape
         self.particles = particles
         self.bodies = bodies
         self.accent = accent
