@@ -101,6 +101,10 @@ public struct FieldOptions {
 /// Spec for a **programmatic** body (`FieldHandle.addBody`) — a force source with no backing view.
 /// Mirrors the JS `BodySpec`. `rect` is the position source, sampled each frame (a non-DOM host
 /// projects its mesh/view position through here); `angle` is in degrees.
+///
+/// `onFeedback` receives the per-body `FeedbackChannels` snapshot each simulation frame —
+/// the Swift counterpart of the JS `addBody` `onFeedback` callback (#headless-host). When omitted,
+/// use `sampleScalar(at:)` / `sampleGradient(at:)` to pull per-position readings instead.
 public struct BodySpec {
     public var tokens: [String]
     public var strength: Float
@@ -110,11 +114,15 @@ public struct BodySpec {
     public var color: String?
     public var data: (any Sendable)?
     public var rect: () -> Box
+    /// Called each frame with this body's field readings. Mirrors JS `BodySpec.onFeedback`.
+    public var onFeedback: ((FeedbackChannels) -> Void)?
     public init(tokens: [String], strength: Float = 1, range: Float = 100, spin: Float = 1,
                 angle: Float? = nil, color: String? = nil, data: (any Sendable)? = nil,
-                rect: @escaping () -> Box) {
+                rect: @escaping () -> Box,
+                onFeedback: ((FeedbackChannels) -> Void)? = nil) {
         self.tokens = tokens; self.strength = strength; self.range = range; self.spin = spin
         self.angle = angle; self.color = color; self.data = data; self.rect = rect
+        self.onFeedback = onFeedback
     }
 }
 
@@ -131,8 +139,14 @@ public struct BodyHandle {
     public let data: (any Sendable)?
     private let setImpl: (BodyParams) -> Void
     private let removeImpl: () -> Void
-    public init(data: (any Sendable)?, set: @escaping (BodyParams) -> Void, remove: @escaping () -> Void) {
+    /// Engine-internal: lets the engine resolve this handle back to its backing body for
+    /// `addEdge`. Returns `AnyObject?` so external callers can't cast it to the private
+    /// `Body` type — effectively opaque to consumers outside the engine.
+    public let bodyRef: () -> AnyObject?
+    public init(data: (any Sendable)?, set: @escaping (BodyParams) -> Void,
+                remove: @escaping () -> Void, bodyRef: @escaping () -> AnyObject? = { nil }) {
         self.data = data; self.setImpl = set; self.removeImpl = remove
+        self.bodyRef = bodyRef
     }
     /// Mutate this body's force params live; a *structural* change (different `tokens`) still needs
     /// remove + `addBody`. `color` re-tints the carried pigment.
@@ -141,6 +155,43 @@ public struct BodyHandle {
         setImpl(BodyParams(strength: strength, range: range, angle: angle, spin: spin, color: color))
     }
     /// Remove the body from the field.
+    public func remove() { removeImpl() }
+}
+
+/// Direction of a declared relationship edge (`FieldHandle.addEdge`).
+public enum EdgeDirection: Sendable {
+    case fromTo
+    case toFrom
+    case bidirectional
+}
+
+/// A snapshot of a relationship edge at the moment `readEdges()` is called.
+/// Mirrors JS `readEdges()` record. All values are immutable snapshots.
+public struct EdgeRecord: Sendable {
+    public let from: (any Sendable)?    // source body's `data` field, verbatim
+    public let to: (any Sendable)?      // target body's `data` field, verbatim
+    public let type: String
+    public let strength: Float          // 0..1; climbs ~1.5/s while active, decays ~0.3/s idle
+    public let memory: Float            // 0..1; slow longitudinal accretion, holds while idle
+    public let active: Bool             // source body density > 0.08 this tick
+    public let direction: EdgeDirection
+    public init(from: (any Sendable)?, to: (any Sendable)?, type: String,
+                strength: Float, memory: Float, active: Bool, direction: EdgeDirection) {
+        self.from = from; self.to = to; self.type = type
+        self.strength = strength; self.memory = memory; self.active = active
+        self.direction = direction
+    }
+}
+
+/// Live handle to a registered relationship edge. Mirrors JS `EdgeHandle`.
+public struct EdgeHandle: Sendable {
+    private let setImpl: @Sendable (Float?, String?) -> Void
+    private let removeImpl: @Sendable () -> Void
+    public init(set: @escaping @Sendable (Float?, String?) -> Void,
+                remove: @escaping @Sendable () -> Void) {
+        self.setImpl = set; self.removeImpl = remove
+    }
+    public func set(strength: Float? = nil, type: String? = nil) { setImpl(strength, type) }
     public func remove() { removeImpl() }
 }
 
@@ -226,6 +277,17 @@ public protocol FieldHandle: AnyObject {
     /// spec's `rect` closure (a non-DOM host projects its mesh position through it). Survives `scan()`.
     /// Returns a handle to mutate its params live or remove it. Mirrors JS `addBody`.
     func addBody(_ spec: BodySpec) -> BodyHandle
+
+    // ── relationship edges  (§addEdge) ────────────────────────────────────
+    /// Declare a directed relationship between two programmatic bodies. The edge's `strength`
+    /// rises while the source body is salient (density > 0.08) and decays while idle; `memory`
+    /// accumulates longitudinally. Neither body needs a view. Mirrors JS `addEdge` (#603).
+    /// Removing either endpoint body automatically removes the edge.
+    @discardableResult
+    func addEdge(_ from: BodyHandle, _ to: BodyHandle,
+                 type: String, strength: Float, direction: EdgeDirection) -> EdgeHandle
+    /// Snapshot all live edges. Mirrors JS `readEdges()`.
+    func readEdges() -> [EdgeRecord]
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)

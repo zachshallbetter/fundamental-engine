@@ -143,6 +143,50 @@ struct FieldFieldTests {
         field.destroy()
     }
 
+    @Test("addEdge — strength rises while source is salient, readEdges echoes data records")
+    func addEdge() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host, options: .init(render: .none_, attention: true))
+        // two bodies: A is strong (salient), B is weak
+        let bodyA = field.addBody(BodySpec(tokens: ["attract"], strength: 2.5, range: 250,
+            data: "node-A", rect: { Box(center: Vec3(100, 200, 0), halfExtents: Vec3(30, 30, 0)) }))
+        let bodyB = field.addBody(BodySpec(tokens: ["attract"], strength: 0.1, range: 100,
+            data: "node-B", rect: { Box(center: Vec3(300, 200, 0), halfExtents: Vec3(30, 30, 0)) }))
+        field.addEdge(bodyA, bodyB, type: "co-session", strength: 0.2, direction: .bidirectional)
+        // run the field long enough for A to become salient
+        for i in 0..<120 { host.fire(at: TimeInterval(i) / 60) }
+        let edges = field.readEdges()
+        #expect(edges.count == 1, "one edge registered")
+        let e = edges[0]
+        #expect(e.type == "co-session")
+        #expect((e.from as? String) == "node-A")
+        #expect((e.to as? String) == "node-B")
+        #expect(e.strength > 0.2, "strength climbed while A was salient")
+        field.destroy()
+    }
+
+    @Test("addBody onFeedback fires for view-less programmatic bodies")
+    func addBodyOnFeedback() {
+        let host = HeadlessFieldHost()
+        let field = FieldField(host: host, options: .init(render: .none_, heatmap: true))
+        var feedbackCount = 0
+        let body = Vec3(187, 200, 0)
+        let _ = field.addBody(BodySpec(
+            tokens: ["attract"],
+            strength: 2,
+            range: 200,
+            rect: { Box(center: body, halfExtents: Vec3(40, 40, 0)) },
+            onFeedback: { ch in
+                feedbackCount += 1
+                // density should become non-zero once matter gathers
+                _ = ch.density
+            }
+        ))
+        for i in 0..<60 { host.fire(at: TimeInterval(i) / 60) }
+        #expect(feedbackCount == 60, "onFeedback fired once per frame for the programmatic body")
+        field.destroy()
+    }
+
     @Test("destroy cancels the frame loop")
     func destroyCancels() {
         let host = HeadlessFieldHost()

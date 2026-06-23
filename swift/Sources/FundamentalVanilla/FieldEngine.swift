@@ -58,6 +58,34 @@ final class FieldEngine: FieldHandle {
     private var heatmap: Heatmap?
     private var fieldChannels: [String: (Float, Float) -> Float] = [:] // addField() open inputs
 
+    // MARK: - Relationship edges (addEdge / readEdges)
+
+    private final class RelationshipEdge {
+        weak var from: Body?
+        weak var to: Body?
+        let fromData: (any Sendable)?   // body's spec.data, captured at addEdge time
+        let toData: (any Sendable)?
+        var type: String
+        var direction: EdgeDirection
+        var strength: Float
+        var memory: Float
+        var active: Bool = false
+
+        init(from: Body, fromData: (any Sendable)?, to: Body, toData: (any Sendable)?,
+             type: String, strength: Float, direction: EdgeDirection) {
+            self.from = from; self.fromData = fromData
+            self.to = to; self.toData = toData
+            self.type = type; self.strength = strength; self.direction = direction
+            self.memory = 0
+        }
+    }
+
+    private var edges: [RelationshipEdge] = []
+
+    // Map from BodyHandle identity to Body — needed for addEdge to resolve handles to bodies.
+    private var bodyHandleMap: [ObjectIdentifier: WeakBody] = [:]
+    private struct WeakBody { weak var body: Body? }
+
     init(host: any FieldHost, options: FieldOptions, registry: Registry = .standard()) {
         self.host = host
         self.options = options
@@ -334,6 +362,22 @@ final class FieldEngine: FieldHandle {
             for b in bodies where b.feedback { emitFeedback(b, lit: nil) }
         }
 
+        // edge dynamics — strength rises while source is salient, decays idle; memory accretes.
+        if !edges.isEmpty {
+            let dt = Float(env.dt)
+            for e in edges {
+                guard let src = e.from else { continue }
+                e.active = src.d > 0.08
+                if e.active {
+                    e.strength = min(1, e.strength + 1.5 * dt)
+                    e.memory   = min(1, e.memory   + 0.2 * dt)
+                } else {
+                    e.strength = max(0, e.strength - 0.3 * dt)
+                    // memory holds — no decay on idle
+                }
+            }
+        }
+
         // hold the focused particle still (the dwell affordance).
         if let focused {
             focused.velocity = .zero
@@ -362,7 +406,9 @@ final class FieldEngine: FieldHandle {
     /// Route a body's per-frame channels to the configured sink (Phase D3 seam) — the
     /// Swift counterpart of the CSS-variable write-back.
     private func emitFeedback(_ b: Body, lit: Float?) {
-        guard let sink = options.feedbackSink, let view = b.view else { return }
+        let hasSink = options.feedbackSink != nil && b.view != nil
+        let hasCallback = b.feedbackCallback != nil
+        guard hasSink || hasCallback else { return }
         var ch = FeedbackChannels()
         ch.density = b.d
         ch.load = sinkLoad(b)
@@ -375,7 +421,8 @@ final class FieldEngine: FieldHandle {
         if options.heatmap, let hm = heatmap {
             ch.heatmapDensity = hm.norm(at: b.center)
         }
-        sink(view, ch)
+        if let sink = options.feedbackSink, let view = b.view { sink(view, ch) }
+        b.feedbackCallback?(ch)
     }
 
     private func activeOverlays() -> [OverlayMode] {
@@ -443,8 +490,9 @@ final class FieldEngine: FieldHandle {
                         spin: spec.spin, heading: heading, feedback: true)
         body.tint = spec.color
         body.rect = spec.rect
-        body.box = spec.rect() // initial position so the first sample/force is correct
+        body.box = spec.rect()
         body.isVisible = boxVisible(body.box, in: host.volume)
+        body.feedbackCallback = spec.onFeedback
         programmaticBodies.append(body)
         bodies.append(body) // live this frame, before the next scan() re-merges it
         return BodyHandle(
@@ -461,8 +509,42 @@ final class FieldEngine: FieldHandle {
                 guard let self, let body else { return }
                 self.programmaticBodies.removeAll { $0 === body }
                 self.bodies.removeAll { $0 === body }
+                // drop any edges whose endpoint was this body
+                self.edges.removeAll { $0.from === body || $0.to === body }
+            },
+            bodyRef: { [weak body] in body }
+        )
+    }
+
+    func addEdge(_ from: BodyHandle, _ to: BodyHandle,
+                 type: String, strength: Float, direction: EdgeDirection) -> EdgeHandle {
+        guard let fromBody = from.bodyRef() as? Body,
+              let toBody = to.bodyRef() as? Body else { return EdgeHandle(set: { _, _ in }, remove: {}) }
+        let edge = RelationshipEdge(from: fromBody, fromData: from.data,
+                                    to: toBody, toData: to.data,
+                                    type: type, strength: strength, direction: direction)
+        edges.append(edge)
+        return EdgeHandle(
+            set: { [weak edge] newStrength, newType in
+                guard let edge else { return }
+                if let s = newStrength { edge.strength = s }
+                if let t = newType { edge.type = t }
+            },
+            remove: { [weak self, weak edge] in
+                guard let self, let edge else { return }
+                self.edges.removeAll { $0 === edge }
             }
         )
+    }
+
+    func readEdges() -> [EdgeRecord] {
+        // purge stale edges (either endpoint was removed)
+        edges.removeAll { $0.from == nil || $0.to == nil }
+        return edges.map { e in
+            EdgeRecord(from: e.fromData, to: e.toData,
+                       type: e.type, strength: e.strength,
+                       memory: e.memory, active: e.active, direction: e.direction)
+        }
     }
 
     func setAccent(_ hex: String) {

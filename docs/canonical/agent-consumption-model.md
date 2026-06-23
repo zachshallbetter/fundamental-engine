@@ -243,3 +243,102 @@ Field Agent Consumption Model
 > **Body-carried data (addBody).** A programmatic body created with `FieldHandle.addBody(spec)` carries an opaque `data` record — the Body-level analog of a particle's `atom`. It extends this model from *matter that carries records* to *sources that carry records*: an emitter is itself an addressable agent with attached data and per-body feedback (`onFeedback`), surfaced on its `BodyHandle`.
 >
 > **El-less bodies and the callback consumer.** A programmatic body has no DOM element. The model's element-agent has a *DOM consumer* (the engine writes `--d`/`--load`/`--field-*` onto the element, author CSS reads them); an `addBody` body has a **callback consumer** instead — its feedback channels arrive at `onFeedback(channels)` (and the live `BodyHandle.channels`), the non-DOM consumer for a non-DOM host (a Three.js mesh, a native view). Its force params are **reactive**: `BodyHandle.set({ strength, range, angle, spin, color })` mutates them on the measure cadence with no rescan — the same live-param path a scanned `[data-body]` gets from a `data-*` change, surfaced on the handle.
+
+---
+
+## Headless runtime
+
+*Status: shipping — `headlessHost` (#602) and `addEdge` (#603) are in the merge queue.*
+
+The engine runs outside the DOM — in a Node.js service, a native sidecar, an OS-level agent, a test — using the same physics and signals surface. No browser, no `canvas`, no `requestAnimationFrame`. The two pieces that gate this:
+
+### `headlessHost` — a DOM-free `FieldHost`
+
+```ts
+import { createField, headlessHost } from '@fundamental-engine/core';
+
+const host = headlessHost({ width: 1920, height: 1080 });
+const field = createField(undefined, { host, render: 'none' });
+
+// caller drives the clock:
+host.tick();                   // one frame at ~16.6 ms cadence
+host.tick(performanceNow);     // or explicit ms timestamp
+host.resize(w, h);             // when workspace bounds change
+```
+
+`render: 'none'` is signals-first mode (#538, now the engine default): full simulation, no drawing, all feedback channels live. `headlessHost` stubs every DOM dependency — `root` scans empty (all bodies come via `addBody`), `createCanvas` throws, all `on*` subscriptions are no-ops. **Swift:** `OSFieldHost` in Jellybean is the direct equivalent (`OSFieldHost.tick(at:)` drives the clock).
+
+### `addBody` + `onFeedback` — entities as bodies
+
+```ts
+const body = field.addBody({
+  tokens: ['attract'],
+  strength: 1.4,          // drive from the entity's live importance
+  range: 300,
+  data: { kind: 'window', id: 'figma-1' },  // echoed back in readEdges()
+  rect: () => screenRectOf('figma-1'),        // sampled every frame
+  onFeedback: (ch) => {
+    // per-body channels: density, load, lit, entropy, coherence, temperature
+  },
+});
+
+body.set({ strength: 2.0 });  // live, no rescan
+body.channels;                // latest snapshot (also pushed to onFeedback)
+body.remove();
+```
+
+**Swift parity:** `BodySpec.onFeedback` was added alongside the TS version — programmatic bodies now receive `FeedbackChannels` per frame even when `view == nil`. `BodyHandle.set(strength:)` exists in both runtimes.
+
+### `addEdge` / `readEdges` — relationships with memory
+
+A relationship is not a physics coupling (v1 caveat: strengthening A↔B does not yet make A's salience physically pull B's matter — that transfer is a deliberate follow-up). It is a **dynamics layer** over the body graph: strength responds to salience on fast timescales; memory accretes longitudinally.
+
+```ts
+const edge = field.addEdge(meetingBody, fileBody, {
+  type: 'opened-during',
+  strength: 0.5,
+  direction: 'bidirectional',    // 'from-to' | 'to-from' | 'bidirectional'
+});
+
+edge.set({ strength: 0.8, type: 'references' });
+edge.remove();
+
+field.readEdges();
+// ReadonlyArray<{
+//   from: unknown,     // source body's `data` record, verbatim
+//   to: unknown,
+//   type: string,
+//   strength: number,  // 0..1; rises ~1.5/s while source salient, decays ~0.3/s idle
+//   memory: number,    // 0..1; slow longitudinal "warmth" — the accretion signal
+//   active: boolean,   // source density > 0.08 this tick
+// }>
+```
+
+Removing either endpoint body drops the edge automatically. Edges survive `scan()` (they're programmatic, not DOM-derived). **Swift parity:** `FieldHandle.addEdge`/`readEdges` added alongside the TS API; the same dynamics (dt-scaled strength/memory updates) run in `FieldEngine.swift`.
+
+### The agent tick loop
+
+```ts
+const host = headlessHost({ width, height });
+const field = createField(undefined, { host, render: 'none' });
+const bodies = new Map<string, BodyHandle>();
+
+function tick(osState) {
+  // 1. reconcile entities → bodies
+  for (const e of osState.entities) {
+    const b = bodies.get(e.id) ?? bodies.set(e.id, field.addBody({
+      tokens: [e.importanceToken], data: e, rect: () => e.rect,
+    })).get(e.id)!;
+    b.set({ strength: e.importance * (e.frontmost ? 2 : 1) });
+  }
+  // 2. reconcile relationships → edges (addEdge / edge.remove as they appear/vanish)
+  // 3. advance the field
+  host.tick();
+  // 4. read the situational model back
+  const salience = [...bodies].map(([id, b]) => ({ id, ...b.channels }));
+  const graph = field.readEdges();   // strength + memory per relationship
+  return { salience, graph };
+}
+```
+
+**Availability:** `headlessHost` and `addEdge` are in PRs #602/#603 in the merge queue; not yet in the npm `@fundamental-engine/*` 0.8.0 release. To build against them today: `pnpm --filter @fundamental-engine/core build` and link the workspace build. The next tagged release will include both. Swift implementations are in `FundamentalCore`/`FundamentalVanilla` on `feat/headless-host`.

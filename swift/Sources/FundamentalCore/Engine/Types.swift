@@ -107,6 +107,9 @@ public final class Body {
     public var heading: Vec3
     public var when: String
     public var feedback: Bool
+    /// Per-frame callback for view-less programmatic bodies — the Swift counterpart of
+    /// JS `BodySpec.onFeedback`. Fires from `emitFeedback` even when `view` is nil.
+    public var feedbackCallback: ((FeedbackChannels) -> Void)?
     public var tint: String?
     /// Shaped source: forces reference the nearest point on the box, not its centre.
     public var shaped: Bool
