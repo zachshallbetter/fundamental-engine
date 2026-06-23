@@ -9,6 +9,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`addEdge()` — programmatic relationships between bodies (core; vanilla + three).** The non-DOM
+  counterpart of `addBody`: `field.addEdge(a, b, opts?)` relates two `addBody` handles with a live
+  `RelationshipAgent` that **strengthens while its source body is salient** (gathering matter) and decays
+  while idle, accumulating `memory`. `readEdges()` returns the live graph (`{ from, to, type, strength,
+  memory, active }`) for a non-visual consumer — an agent modelling `file ↔ meeting ↔ app` gets the
+  relationship layer + its longitudinal warmth with zero DOM, the way `readParticles` is the swarm.
+  Removing an endpoint body drops its edges; the `EdgeHandle` mutates (`set`) / removes it. Additive,
+  shipped-but-unfrozen; mirrored through vanilla `FieldField` + three `FieldLayer`; runs headless.
+
 - **Particle shape — matter isn't only dots (Swift; cross-plane contract).** A new `particleShape`
   field option: `.dot` (default, the fast Metal-batched circle), `.star(points:innerRatio:)`,
   `.polygon(sides:rotation:)`, or `.custom(vertices:)` — any unit vector polygon. The shape rides the

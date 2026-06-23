@@ -621,6 +621,30 @@ export interface BodyHandle {
   remove(): void;
 }
 
+/** The handle to a programmatic relationship created by {@link FieldHandle.addEdge}. */
+export interface EdgeHandle {
+  /** mutate the edge live: `strength` ∈ [0,1] (the active coupling), `type` (the relationship kind). */
+  set(params: { strength?: number; type?: string }): void;
+  /** remove the edge from the field. */
+  remove(): void;
+}
+
+/** A live view of a programmatic edge, returned by {@link FieldHandle.readEdges}. */
+export interface EdgeView {
+  /** the `data` record of the source body (the first `addBody` handle passed to `addEdge`). */
+  from: unknown;
+  /** the `data` record of the target body. */
+  to: unknown;
+  /** the relationship kind (`'related'` by default). */
+  type: string;
+  /** active coupling strength ∈ [0,1] — strengthens while the source is salient, decays while idle. */
+  strength: number;
+  /** slow-moving accumulated familiarity ∈ [0,1] — the longitudinal "warmth" of the relationship. */
+  memory: number;
+  /** whether the relationship was exercised this tick (its source body was salient). */
+  active: boolean;
+}
+
 /** A registered **field channel** (`FieldHandle.addField`) — an external scalar field sampled on the
  *  engine's read path. The open *input* analog of the render surfaces. */
 export interface FieldChannelHandle {
@@ -719,6 +743,20 @@ export interface FieldHandle {
    * Returns a {@link BodyHandle} — `data`, the live `channels`, and `remove()`.
    */
   addBody(spec: BodySpec): BodyHandle;
+  /**
+   * Relate two programmatic bodies — the non-DOM counterpart of the relationship graph (`addEdge` is to
+   * relationships what `addBody` is to bodies). `a` and `b` are handles returned by `addBody` on this
+   * field. The edge carries a live `RelationshipAgent`: it **strengthens while its source body is
+   * salient** (gathering matter) and decays while idle, accumulating `memory` — so a non-visual consumer
+   * (an agent modelling file ↔ meeting ↔ app) gets the relationship layer + its longitudinal warmth, with
+   * no DOM. Read it back with {@link readEdges}. Returns an {@link EdgeHandle} to mutate/remove it.
+   * Shipped-but-unfrozen.
+   */
+  addEdge(a: BodyHandle, b: BodyHandle, opts?: { type?: string; strength?: number; direction?: 'from-to' | 'to-from' | 'bidirectional' }): EdgeHandle;
+  /** A live snapshot of the programmatic edges (`addEdge`) — the relationship read-out for a non-visual
+   *  consumer: each edge's endpoint `data`, type, live `strength`/`memory`, and whether it's active this
+   *  tick. Pure, read-only. Shipped-but-unfrozen. */
+  readEdges(): ReadonlyArray<EdgeView>;
   /**
    * Register a named **field channel** — a read-back substrate the host samples via `sampleField`; the
    * engine does not (yet) couple it into forces. The open *input* analog of the render surfaces

@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle } from '@fundamental-engine/core';
 import { createField } from './create-field.ts';
 import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
@@ -124,6 +124,14 @@ export class FieldField implements FieldHandle {
   /** add a programmatic body (no DOM) from a spec — carries data + per-body feedback; survives rescan. */
   addBody(spec: BodySpec): BodyHandle {
     return this.field.addBody(spec);
+  }
+  /** relate two programmatic bodies — the non-DOM relationship counterpart of addBody. */
+  addEdge(a: BodyHandle, b: BodyHandle, opts?: { type?: string; strength?: number; direction?: 'from-to' | 'to-from' | 'bidirectional' }): EdgeHandle {
+    return this.field.addEdge(a, b, opts);
+  }
+  /** the live programmatic-edge read-out — each edge's endpoint data, type, strength, memory, active. */
+  readEdges(): ReadonlyArray<EdgeView> {
+    return this.field.readEdges();
   }
   /** register a named external scalar field channel the engine samples on its read path. */
   addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle {
