@@ -11,7 +11,7 @@ Every element can become a body in an invisible physics field via the `data-body
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-22 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-23 by apps/site/scripts/gen-llms.mjs.
 
 ## Start here — don't guess
 
@@ -89,8 +89,10 @@ They live in the repository, not on the site:
 - [Fundamental Field Behavior Table for Fundamental](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
 - [Fundamental Interaction and Relationship Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
 - [Fundamental Invisible Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/invisible-fields.md): The invisible-fields pattern: running the field with no drawn surface at all, so its measurements come back as typography, ink, and anchor.
+- [Lifecycle contract — register · measure · unmount](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/lifecycle-contract.md)
 - [Natural Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/natural-fields.md): This document defines the Natural Field Translation System — how Fundamental translates the four fundamental fields into interface behavior.
 - [Fundamental platform architecture](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/platform-architecture.md): This document defines the current @fundamental-engine/dom architecture as of the runtime-platform unification phase (Phase D): the FrameScheduler, the six registries, lintPlatform(), the live <field-root> runtime, and…
+- [Support matrix](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/support-matrix.md)
 - [Fundamental System Contracts](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/system-contracts.md): Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform.
 - [Fundamental Testing and Conformance](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/testing-and-conformance.md): The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage.
 - [Time in the Field](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/time.md): How Fundamental handles time: the three clocks (simulation, experiential, world), the temporal kernels, and the declared-timestamp contract (data-field-at).

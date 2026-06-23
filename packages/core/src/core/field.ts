@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, Env, FeedbackChannels, FieldHandle, FieldOptions, Formation, OverlayInput, OverlayMode, Particle } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, Formation, OverlayInput, OverlayMode, Particle } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -45,6 +45,7 @@ import { feedbackTarget, feedbackWeight } from './feedback.ts';
 import { defaultFeedbackSink } from './feedback-sink.ts';
 import { thermoMetrics } from './thermo.ts';
 import { attentionMuls } from './attention.ts';
+import { updateRelationship, type RelationshipAgent } from '../agents/relationship.ts';
 import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
 import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
@@ -151,6 +152,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     for (const m of [insideOf, metWith]) for (const k of m.keys()) if (!present.has(k)) m.delete(k);
   }
   const programmaticBodies: Body[] = []; // bodies added via addBody(); merged into `bodies` each scan
+  // programmatic edges (addEdge): relationships between two addBody bodies, with no DOM. Each carries a
+  // pure RelationshipAgent stepped every frame (strengthen-with-use / decay / memory). handleToBody lets
+  // addEdge resolve the two bodies from the handles addBody returned.
+  const handleToBody = new WeakMap<BodyHandle, Body>();
+  interface ProgEdge { agent: RelationshipAgent; from: Body; to: Body; fromData: unknown; toData: unknown }
+  const programmaticEdges: ProgEdge[] = [];
+  let edgeSeq = 0;
   const fieldChannels = new Map<string, (x: number, y: number) => number>(); // addField() input channels
   // All 36 forces are registered on every field — there is no opt-in. Any of them activates per-body
   // through its `data-body` token (e.g. `data-body="lens crystallize"`); an unused force costs nothing.
@@ -1869,6 +1877,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // edge of engagement — the same conserved supernova ritual as saturation.
       dischargeDisengaged(bodies, env.supernova);
     }
+    // Step programmatic edges (addEdge): a relationship is "active" while its source body is salient
+    // (gathering matter, d > 0.08) — it then strengthens + accumulates memory, and decays while idle.
+    // env.dt is frame-normalized (≈1 at 60fps); the dynamics rates are per-second, so convert (÷60).
+    if (programmaticEdges.length && env.dt) {
+      const dtS = env.dt / 60;
+      for (const e of programmaticEdges) updateRelationship(e.agent, e.from.d > 0.08, 0, dtS);
+    }
 
     // spine: ease the wave-bend toward the flow focus (if set) or the engaged element (§24). A live
     // flow focus (field.flowTo) takes priority, so the streamline spine curves to the moving target.
@@ -2249,7 +2264,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       programmaticBodies.push(body);
       bodies = bodies.concat(body); // live this frame, before the next scan re-merges it
       measureBodies([body], W, H, originX, originY); // init cx/cy so the first sample/force is correct
-      return {
+      const handle: BodyHandle = {
         data: spec.data,
         get channels() { return channels; },
         set: (params) => {
@@ -2270,9 +2285,54 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           const i = programmaticBodies.indexOf(body);
           if (i >= 0) programmaticBodies.splice(i, 1);
           bodies = bodies.filter((x) => x !== body);
+          // drop any programmatic edges that touched this body (#601).
+          for (let k = programmaticEdges.length - 1; k >= 0; k--) {
+            const pe = programmaticEdges[k]!;
+            if (pe.from === body || pe.to === body) programmaticEdges.splice(k, 1);
+          }
+        },
+      };
+      handleToBody.set(handle, body);
+      return handle;
+    },
+    addEdge: (a, b, opts) => {
+      // a relationship between two programmatic bodies (the addBody handles). No DOM — the edge keys on
+      // the body identities; it feeds the same pure RelationshipAgent dynamics the DOM graph uses.
+      const from = handleToBody.get(a);
+      const to = handleToBody.get(b);
+      if (!from || !to) throw new Error('addEdge: both arguments must be handles returned by addBody on this field.');
+      const agent: RelationshipAgent = {
+        id: `e${edgeSeq++}`,
+        from: '', // body ids are internal; readEdges exposes the carried data instead
+        to: '',
+        type: opts?.type ?? 'related',
+        strength: opts?.strength ?? 0.5,
+        tension: 0,
+        memory: 0,
+        active: false,
+      };
+      const edge: ProgEdge = { agent, from, to, fromData: a.data, toData: b.data };
+      programmaticEdges.push(edge);
+      return {
+        set: (params) => {
+          if (params.strength != null) agent.strength = params.strength < 0 ? 0 : params.strength > 1 ? 1 : params.strength;
+          if (params.type != null) agent.type = params.type;
+        },
+        remove: () => {
+          const i = programmaticEdges.indexOf(edge);
+          if (i >= 0) programmaticEdges.splice(i, 1);
         },
       };
     },
+    readEdges: () =>
+      programmaticEdges.map((e) => ({
+        from: e.fromData,
+        to: e.toData,
+        type: e.agent.type,
+        strength: e.agent.strength,
+        memory: e.agent.memory,
+        active: e.agent.active,
+      })),
     addField: (name, sampler) => {
       fieldChannels.set(name, sampler);
       return {

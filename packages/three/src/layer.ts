@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, FieldChannelHandle } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -280,6 +280,14 @@ export class FieldLayer implements FieldHandle {
   /** open a named host-authorable scalar grid (deposit/sample/gradient/decay) in field px — a scent/wear/goal field. */
   grid(name: string): ScalarGrid {
     return this.field.grid(name);
+  }
+  /** relate two programmatic bodies (the `FieldHandle.addEdge` form) — delegated to the engine. */
+  addEdge(a: BodyHandle, b: BodyHandle, opts?: { type?: string; strength?: number; direction?: 'from-to' | 'to-from' | 'bidirectional' }): EdgeHandle {
+    return this.field.addEdge(a, b, opts);
+  }
+  /** the live programmatic-edge read-out — delegated to the engine. */
+  readEdges(): ReadonlyArray<EdgeView> {
+    return this.field.readEdges();
   }
   /** subscribe to a discrete field event (absorb/release/settle); returns an unsubscribe fn. */
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {

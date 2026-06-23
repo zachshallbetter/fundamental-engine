@@ -1,8 +1,8 @@
 # Fundamental — full canonical documentation
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-22 by apps/site/scripts/gen-llms.mjs
-Files: 17
+Generated: 2026-06-23 by apps/site/scripts/gen-llms.mjs
+Files: 19
 
 These are the project's canonical documents — the authority on concepts, terminology, and
 contracts — concatenated in filename order. The live site map is https://fundamental-engine.com/llms.txt.
@@ -2715,6 +2715,70 @@ class as `lintSinkFeedback` (a sink that captures but never reports). A lane you
 engine will never write is now a lint, not a surprise.
 
 ========================================================================
+FILE: lifecycle-contract.md
+========================================================================
+
+# Lifecycle contract — register · measure · unmount
+
+> **Status: shipped.** The create→register→measure→unmount contract is identical across the three
+> authoring surfaces because all three create the **same** core `FieldHandle` (vanilla `createField` /
+> `<field-root>` / React `<FieldField>`). This document is the RC-3 contract record (closes #320); the
+> per-surface tests below pin it.
+
+Every surface follows the same four-beat life:
+
+| Beat | What happens | Who triggers it |
+|---|---|---|
+| **create** | a `FieldHandle` is built on a canvas (`createField` / `createBrowserField`) | the surface, on mount |
+| **register** | the field discovers `[data-body]` elements (the *field-reacts* law) via `scan()` | automatic on create; re-run with `scan()`/`rescan()` after DOM changes |
+| **measure** | bodies are re-measured on a cadence (every 6th frame) and feedback vars written | the rAF loop, automatically |
+| **unmount** | `destroy()` cancels the rAF, removes listeners, releases the canvas/overlay | the surface, on teardown |
+
+`destroy()` is **idempotent** — calling it twice is a no-op, never a throw (core invariant, pinned by
+`vanilla/field.test.ts`). After `destroy()` the handle holds no rAF, no pointer listeners, and no
+IntersectionObserver; a field created with `render:'none'` never acquired a 2D context, and `destroy()`
+must not need one either.
+
+## Per surface
+
+### Vanilla — `createField` / `new FieldField` (`@fundamental-engine/vanilla`)
+- **create:** `createField(canvas, opts)` resolves host → bounds → `browserHost` (#537). `mountField()`
+  appends a managed, click-through canvas; `new FieldField({ bounds })` scopes the field to a container.
+- **register / measure:** automatic. Call `scan()` after you add bodies; `rescan()` forces a re-measure.
+- **unmount:** **you call `destroy()`.** If `mountField`/`FieldField` created the canvas, `destroy()`
+  removes it; if you passed your own canvas, `destroy()` leaves it in the DOM.
+- *Pinned by:* `vanilla/field.test.ts` (create/destroy, idempotent destroy, managed-canvas append+remove,
+  no-context-on-`render:'none'`, destroy-without-context).
+
+### Web component — `<field-root>` (`@fundamental-engine/elements`)
+- **create:** `connectedCallback` → `start()` builds the field from the current attributes and starts an
+  `IntersectionObserver` (so a `display:none` field keeps simulating but skips draw).
+- **register / measure:** automatic; live attribute changes route through `attributeChangedCallback`
+  (color/render/toggle attrs through setters, construction-time `density`/`waves`/`mass` rebuild).
+- **unmount:** **`disconnectedCallback` does it for you** — disconnects the observer, `field.destroy()`,
+  removes the owned overlay canvas, `platformRuntime.destroy()`, and clears every handle to `undefined`.
+- *Pinned by:* `elements/lifecycle.test.ts` (the disconnect/unmount contract) + `option-attrs.test.ts`.
+
+### React — `<FieldField>` / `useFieldField` (`@fundamental-engine/react`)
+- **create:** a `useEffect` creates the field via `createBrowserField` once the canvas ref is set, and
+  lazily creates the overlay canvas when an `overlay` mode is requested. `onReady(field)` hands you the
+  handle.
+- **register / measure:** automatic. Call `field.scan()` from `onReady` after rendering new bodies.
+- **unmount:** **the effect's cleanup does it for you** — `field.destroy()`, then removes and nulls the
+  overlay canvas the component owns. The field is **re-created** only when a declarative engine option in
+  the dep list actually changes; the determinism seams (`rng`/`now`/`feedbackSink`/`overlayBackend`) are
+  config-set-once and deliberately kept out of the dep list so an inline value passed each render doesn't
+  thrash the field. **This is the resolution of the historical register/unmount ambiguity: cleanup is the
+  effect return, re-create is dep-list-gated.**
+- *Pinned by:* `react/field.test.ts` (the create→destroy→overlay-removal unmount contract; the full
+  option set constructs and the handle carries the full surface).
+
+## The one rule for consumers
+
+**You own `destroy()` only on the vanilla surface.** The web component (`disconnectedCallback`) and React
+(`useEffect` cleanup) call it for you on unmount — never call `destroy()` on a field a framework manages.
+
+========================================================================
 FILE: natural-fields.md
 ========================================================================
 
@@ -2925,10 +2989,6 @@ Fundamental
 
 @fundamental-engine/vanilla
   the FieldField class for plain TypeScript apps.
-
-@fundamental-engine/kit
-  umbrella meta-package — installs the whole suite (core + platform + the three adapters) in one
-  dependency. No code of its own; import from the specific package. fundamental-engine is a thin alias.
 
 apps/site · lab · docs
   product surfaces, executable documentation, diagnostics, examples, and previews.
@@ -3171,6 +3231,83 @@ The same field body is authored three ways, all compiling to the same `[data-bod
 native HTML (`createField` + `[data-body]`), the web component (`<field-root>` + `[data-body]`), and
 React (`<FieldField>` + `[data-body]`). See [authoring-and-recipes.md](authoring-and-recipes.md)
 and the live `/docs/authoring` page.
+
+========================================================================
+FILE: support-matrix.md
+========================================================================
+
+# Support matrix
+
+> **Status: shipped + CI-pinned.** This is the RC-5 support declaration (closes #322) and the RC-8
+> accessibility record (closes #325). Each row names the behavior *and* the test/check that exercises it
+> — the matrix is enforced, not aspirational.
+
+## Browsers
+
+| Engine | Support | Notes |
+|---|---|---|
+| Chromium (Chrome, Edge, Brave, …) | ✅ supported | the e2e suite runs here (`apps/site/e2e/`, Playwright) |
+| Firefox | ✅ supported | evergreen; same standards surface (Canvas 2D, custom elements, CSS vars) |
+| WebKit (Safari, iOS Safari) | ✅ supported | evergreen; `mix-blend-mode` overlay honored |
+| IE / legacy Edge | ❌ not supported | requires custom elements v1 + ES2020; no polyfills shipped |
+
+The engine targets **evergreen browsers** — Canvas 2D, custom elements v1, CSS custom properties,
+`IntersectionObserver`, `matchMedia`. No transpile-to-ES5, no DOM polyfills.
+
+## Device pixel ratio (DPR)
+
+The field renders at the device DPR, **capped** to keep fill-rate bounded (the field is fill-rate-bound,
+not particle-bound). `dprCap` (option / `dpr-cap` attribute, default 2) sets the ceiling; the adaptive
+quality tiers (`setQualityTier`, applied automatically by `<field-root>`) drop the effective DPR under
+load (`TIER_DPR = [∞, 1.5, 1.25, 1]`). *Pinned by:* `core/dpr-cap.test.ts`, the quality-tier tests.
+
+## Reduced motion
+
+`prefers-reduced-motion: reduce` is honored end-to-end via `host.reducedMotion()`:
+
+- **Engine** — integration freezes (`dt = 0`): no particle travel, no boot animation, no sparks, draw
+  quarter-rated. *Pinned by:* `core/reduced-motion.test.ts` (particles provably don't move under reduce,
+  and provably do without it).
+- **Recipes / examples** — `applyRecipe` renders the static, meaning-preserving fallback instead of
+  driving the field; emission alpha flattens, travel drops, focus is kept. *Pinned by:*
+  `contracts/a11y.test.ts` ("meaning survives without motion").
+
+## SSR / hydration
+
+`@fundamental-engine/core` imports **zero DOM** (enforced by `core/dom-boundary.test.ts`); every
+environment touch goes through the injected `FieldHost`. So the packages **import and construct on the
+server** — `document`/`window` absent — and the field only reaches for the DOM client-side, through
+`browserHost()`. The SSR-natural mode is `render: 'none'` (no context, no backing store, pure signals);
+the particle surface is opt-in after hydration. *Pinned by:* `core/ssr.test.ts` (DOM globals absent → the
+public surface still constructs, runs, and tears down).
+
+## Accessibility (RC-8)
+
+The field is **decorative ambiance**, and its accessibility posture follows from that one fact:
+
+- **Hidden from assistive tech.** `<field-root>`/`<field-cell>` set `aria-hidden="true"` on connect (and
+  on the overlay canvas), so a screen reader announces nothing for the field. Semantic HTML stays the
+  source of meaning; the field is a behavior + visualization layer on top.
+- **Motion is never the sole carrier of meaning.** The reduced-motion fallback is *required* and guarded;
+  color/glyph are not the sole carriers (the visual lint enforces it). *Pinned by:* `contracts/a11y.test.ts`
+  (the Accessibility Contract, its reduced-motion-fallback guard, the color/glyph lint, event
+  thresholding).
+- **No motion-induced reflow or focus theft.** The field canvas is `position: fixed`, click-through
+  (`pointer-events: none`), and outside the tab order.
+
+### AT-pass log
+
+The automated accessibility invariants above run in CI on every change. The manual assistive-tech
+spot-check (the human half of RC-8) is logged here:
+
+| Date | Tool | Surface | Result |
+|---|---|---|---|
+| automated | CI (`a11y.test.ts`, `reduced-motion.test.ts`) | engine + recipes | ✅ reduced-motion fallback, semantic-truth, no motion-only meaning |
+| _pending_ | VoiceOver / NVDA | fundamental-engine.com homepage + `/eli5` | _maintainer spot-check — confirm the field is skipped and content is fully navigable_ |
+
+> The decorative field being `aria-hidden` means a conforming screen reader walks straight past it to the
+> page's real content — the expected pass is "the field is announced as nothing." The pending row is a
+> maintainer sign-off (a live VO/NVDA pass), the same hands-on gate as the perf fact sheet.
 
 ========================================================================
 FILE: system-contracts.md
@@ -4432,6 +4569,58 @@ Migration acceptance rule:
 ```txt
 A rename is not complete until the old and new names both work.
 ```
+
+## 20. Cross-plane parity (JS ↔ Swift)
+
+The engine ships on two planes: the JS/TS core (`packages/core`) and the Swift port (`swift/`). The
+**conformance rule** is that at `depth: 0` a Swift field and a JS field, given the same inputs, produce
+the same motion. Because the planes are hand-ported, parity must be *verified*, not trusted — historically
+it wasn't, and divergences (palette ramps #497, the scroll body-centre fix #509) surfaced as hand-fixed
+one-offs. The **autonomous verification spine** makes parity machine-checked with no device or human in the
+loop. It has three models, built on the JS conformance runner (`packages/core/src/conformance/`, seeded
+**mulberry32** PRNG) and the Swift headless primitives (`Bench`, `Snapshotter`, `FieldPerf`,
+`QualityGovernor`):
+
+### Model 1 — numeric conformance · **Status: shipped (#526)**
+
+The JS f64 engine emits **golden vectors**; the Swift f32 engine must reproduce them.
+
+```txt
+pnpm gen:golden            # JS fires the canonical forces at probe particles, writes frame-0
+                           #   force deltas → swift/Tests/.../Fixtures/conformance-golden.json
+swift test                 # GoldenConformanceTests: Swift reproduces every dv within tolerance
+pnpm check:golden          # CI gate (JS side): fail if the golden drifts from the JS math
+swift-{linux,macos}.yml    # CI gate (Swift side): fail if a Swift force drifts from the golden
+```
+
+- **Granularity is one apply, not a trajectory** — Swift core is f32, JS is f64, so a single force
+  application keeps drift sub-tolerance (`2e-4 + 1e-3·|dv|`) while still catching a wrong coefficient,
+  missing leg, or sign flip. Integration over many frames diverges by design and is *not* asserted bit-wise.
+- **A divergence is a Swift bug.** Fix the force; never loosen the tolerance to hide it.
+- **Coverage:** the canonical deterministic forces (attract, repel, swirl, stream, tether, viscosity).
+  The same harness extends to the EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to
+  short-trajectory + heat parity — follow-up coverage on the same fixture.
+
+### Model 2 — performance · **Status: in progress**
+
+`Bench` already splits per-frame sim/draw ms (headless, CoreGraphics) and `FieldPerf`/`QualityGovernor`
+compute budget/median/fps/dropped + tier transitions deterministically. The model **gates on deterministic
+work** (particle-count conservation, bounded pools, finiteness over a long heavy run — machine-independent)
+and **reports wall-clock** for reasoning about a change. Wall-clock is deliberately *not* a CI gate: the
+field is fill-rate-bound, headless software rasterization exaggerates fill, and CI runners vary — inventing
+a wall-clock budget repeats the mistake #324 was blocked on. Real frame-time budgets need on-hardware
+measurement (a maintainer task).
+
+### Model 3 — visual snapshot · **Status: in progress**
+
+`Snapshotter` rasterizes a scene headlessly to PNG through the real engine + real renderer. The model adds
+**golden-PNG diffing**: a committed reference per render mode, a perceptual-delta gate on regeneration.
+This is what lets renderer-parity work (soft-glow particles #417, 3D streamline tubes / vector grid #392)
+be verified without a device — the gap that previously forced those items to "needs human eyes."
+
+> **Why three models.** Numeric conformance proves the *math* matches; the perf model proves a change
+> didn't regress *cost*; the snapshot model proves the *pixels* are right. Together they cover the parity
+> surface that green unit tests on each plane, in isolation, cannot.
 
 ========================================================================
 FILE: time.md
