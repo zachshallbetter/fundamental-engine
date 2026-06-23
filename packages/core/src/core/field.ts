@@ -1595,7 +1595,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // mass wells). Opacity rises with the deflection too, so flat space is a faint base lattice and the
     // warped regions blaze — the spacetime-curvature image made literal. Consecutive same-band segments
     // are merged into one polyline, so the colouring costs a handful of extra strokes, not one per cell.
-    const HEAT: RGB[] = [curAccent, [255, 150, 70], [255, 240, 220]]; // curAccent (#530): cached accent RGB
+    // neon ramp: accent blue (flat space) → electric violet → neon magenta → hot neon pink (the wells).
+    // curAccent (#530) is the cached accent RGB — the cool stop the warped regions heat away from.
+    const HEAT: RGB[] = [curAccent, [120, 110, 255], [240, 70, 255], [255, 50, 130]];
     const BANDS = 8;
     const relAt = (i: number): number => (maxMag > 0 ? Math.sqrt(mags[i]! / maxMag) : 0);
     const bandAt = (i: number): number => Math.round(relAt(i) * BANDS);
