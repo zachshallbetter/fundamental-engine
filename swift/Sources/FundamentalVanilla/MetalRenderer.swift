@@ -322,9 +322,12 @@ public final class HybridFieldRenderer: FieldRenderer {
     }
 
     public func render(frame: RenderFrame) {
-        let metalCoversMatter = frame.mode == .dots || frame.mode == .trails || frame.mode == .links
+        // Metal draws the default circle for its three matter modes; a custom particleShape routes matter
+        // to the CoreGraphics path instead (which stamps the polygon) — no Metal shader work, dots stay fast.
+        let metalCoversMatter = (frame.mode == .dots || frame.mode == .trails || frame.mode == .links)
+            && frame.particleShape.isDot
         cg.surface.skipAmbient = true              // waves/shimmer/sparks are always Metal's
-        cg.surface.skipMatter = metalCoversMatter  // matter is Metal's in its three modes
+        cg.surface.skipMatter = metalCoversMatter  // matter is Metal's only for the default-dot modes
         metal.render(frame: frame)
         cg.render(frame: frame)
     }

@@ -124,6 +124,8 @@ public final class FieldSurfaceLayer: CALayer {
     private func drawDots(_ frame: RenderFrame, in ctx: CGContext) {
         var buckets: [UInt32: CGMutablePath] = [:]
         var colors: [UInt32: (RGB, Float)] = [:]
+        // .dot keeps the fast addEllipse; a custom shape stamps its unit polygon scaled by the radius.
+        let shape = frame.particleShape.vertices
         for p in frame.particles {
             let (x, y) = frame.projection.project(p.position)
             let depth = frame.projection.depthHint(p.position)
@@ -139,8 +141,18 @@ public final class FieldSurfaceLayer: CALayer {
                 colors[k] = (rgb, alpha)
                 return p
             }()
-            path.addEllipse(in: CGRect(x: CGFloat(x) - radius, y: CGFloat(y) - radius,
-                                       width: radius * 2, height: radius * 2))
+            if let verts = shape, verts.count >= 3 {
+                path.move(to: CGPoint(x: CGFloat(x) + CGFloat(verts[0].x) * radius,
+                                      y: CGFloat(y) + CGFloat(verts[0].y) * radius))
+                for j in 1..<verts.count {
+                    path.addLine(to: CGPoint(x: CGFloat(x) + CGFloat(verts[j].x) * radius,
+                                             y: CGFloat(y) + CGFloat(verts[j].y) * radius))
+                }
+                path.closeSubpath()
+            } else {
+                path.addEllipse(in: CGRect(x: CGFloat(x) - radius, y: CGFloat(y) - radius,
+                                           width: radius * 2, height: radius * 2))
+            }
         }
         for (k, path) in buckets {
             let (rgb, alpha) = colors[k]!
