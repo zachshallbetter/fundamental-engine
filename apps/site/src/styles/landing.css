@@ -176,7 +176,11 @@ html[data-field='on'] .hero-antimass:hover {
   align-items: flex-start;
   gap: 0.7rem;
   padding: 1.2rem 1.3rem 1.3rem;
-  background: var(--bg-card);
+  /* frosted glass over the live field: the warped grid + swarm blur softly behind each card instead of
+     slicing through it, and the pane tints toward the card's accent as matter gathers (--field-density). */
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-md);
@@ -245,6 +249,19 @@ html[data-field='on'] .hero-antimass:hover {
 .lp-pkg .install {
   --accent: var(--cat, var(--accent));
   align-self: stretch;
+  max-width: 100%;
+  font-size: 0.72rem;
+  padding: 0.7rem 0.9rem;
+  white-space: nowrap; /* keep the command on one clean line instead of breaking it into a cramped stack */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.lp-pkg .install::-webkit-scrollbar {
+  display: none;
+}
+.lp-pkg .install::after {
+  font-size: 0.55rem;
+  opacity: 0.55;
 }
 .lp-pkg code:not(.install) {
   font-family: var(--mono);

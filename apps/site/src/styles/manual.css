@@ -832,9 +832,19 @@ a.btn.primary:hover {
     inset 0 0 calc(var(--d) * 14px) color-mix(in srgb, var(--accent) calc(var(--d) * 20%), transparent);
   transform: scale(calc(1 + var(--load) * 0.025));
 }
+/* The secondary control is FROSTED GLASS over the live field: it blurs the particles + warped grid
+   behind it, and the glass itself tints with the accent as the field charges it (--load). So the
+   control reads as a pane held in the field, lit from within as matter gathers — not a flat outline. */
 a.btn:not(.primary),
 button.btn:not(.primary) {
-  border-color: color-mix(in srgb, var(--accent) calc(18% + var(--load) * 72%), var(--line-2));
+  background: color-mix(in srgb, var(--accent) calc(6% + var(--load) * 20%), rgba(255, 255, 255, 0.028));
+  backdrop-filter: blur(13px) saturate(1.5);
+  -webkit-backdrop-filter: blur(13px) saturate(1.5);
+  border-color: color-mix(in srgb, var(--accent) calc(22% + var(--load) * 70%), var(--line-2));
+}
+a.btn:not(.primary):hover,
+button.btn:not(.primary):hover {
+  background: color-mix(in srgb, var(--accent) calc(14% + var(--load) * 22%), rgba(255, 255, 255, 0.04));
 }
 @media (prefers-reduced-motion: reduce) {
   /* the glow still reflects the resting charge, it just doesn't pulse with capture/release churn */
