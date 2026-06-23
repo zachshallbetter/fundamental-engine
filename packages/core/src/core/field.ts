@@ -1635,12 +1635,17 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         bx[i] = sx / n; by[i] = sy / n;
       }
     }
+    const FADE = STEP * 1.5; // taper the warp to zero within ~1.5 cells of each viewport edge, so the
+    // lattice always frames the screen instead of pulling away from the edges under a strong inward warp.
     const px = (gx: number, gy: number): [number, number] => {
       const i = gy * cols + gx;
       let ux = bx[i]!, uy = by[i]!;
       const m = Math.hypot(ux, uy);
       if (m > CLAMP) { ux = (ux / m) * CLAMP; uy = (uy / m) * CLAMP; } // half-cell ceiling: never fold.
-      return [gx * STEP + ux, gy * STEP + uy];
+      const px0 = gx * STEP, py0 = gy * STEP;
+      const e = Math.min(px0, W - px0, py0, H - py0); // distance to the nearest viewport edge
+      const k = e <= 0 ? 0 : e < FADE ? e / FADE : 1; // pin the boundary (k=0), ease to full warp inward
+      return [px0 + ux * k, py0 + uy * k];
     };
     // Smooth the warped lines into curves: Catmull-Rom through the displaced vertices (the curve passes
     // through every original point, so the warp magnitude is preserved) — the lattice reads as bent

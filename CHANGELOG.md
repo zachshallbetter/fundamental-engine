@@ -28,6 +28,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Fixed
 
+- **Grid overlay frames the viewport — no edge pull-away (core).** The warped lattice tapers its
+  displacement to zero within ~1.5 cells of each viewport edge, so the boundary lines stay pinned to the
+  screen edges and ease into the full warp inward — a strong inward warp can no longer bare the edges.
 - **`forceAt` honours `data-shaped` — the grid / streamlines warp by a body's whole box, not its centre
   (core, JS + Swift).** The field sampler always measured from the body centre, while the integrator
   (particles) clamps to the element's box for shaped bodies — so a shaped element (a button, a wide
