@@ -9,6 +9,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Particle shape — matter isn't only dots (Swift; cross-plane contract).** A new `particleShape`
+  field option: `.dot` (default, the fast Metal-batched circle), `.star(points:innerRatio:)`,
+  `.polygon(sides:rotation:)`, or `.custom(vertices:)` — any unit vector polygon. The shape rides the
+  physics (each particle's size + heat scale it), and a non-dot shape routes through the CoreGraphics
+  path while default dots stay Metal-fast, so it works on-device with no shader work. The contract
+  (`ParticleShape`, renderer-agnostic vertex data on `FieldOptions`/`RenderFrame`) is shared so the JS
+  canvas / WebGL planes can adopt the same option. Covered by shape-resolution tests.
 - **Grid overlay — heatmap colouring, foldless warp, smooth curves (core).** The `grid` overlay (the
   warped spacetime lattice) now (1) tints each line by how hard the field warps it there — a neon ramp
   from cool accent in flat space, through electric violet and neon magenta, to hot neon pink at the mass
