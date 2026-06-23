@@ -17,8 +17,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   (`ParticleShape`, renderer-agnostic vertex data on `FieldOptions`/`RenderFrame`) is shared so the JS
   canvas / WebGL planes can adopt the same option. Covered by shape-resolution tests.
 - **Grid overlay — heatmap colouring, foldless warp, smooth curves (core).** The `grid` overlay (the
-  warped spacetime lattice) now (1) tints each line by how hard the field warps it there — cool accent in
-  flat space, through warm orange, to white-hot at the mass wells, with opacity rising the same way; (2)
+  warped spacetime lattice) now (1) tints each line by how hard the field warps it there — a neon ramp
+  from cool accent in flat space, through electric violet and neon magenta, to hot neon pink at the mass
+  wells, with opacity rising the same way; (2)
   warps as a coherent rubber sheet — the displacement field is box-blurred and each vertex is clamped to
   ~half a cell, so masses dimple the lattice into deep but **foldless** bowls instead of a tangle of
   crossing lines (the throw can no longer exceed the cell pitch, the cause of the moiré); and (3) draws the
