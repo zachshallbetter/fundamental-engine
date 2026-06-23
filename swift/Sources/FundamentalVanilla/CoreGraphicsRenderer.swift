@@ -126,12 +126,13 @@ public final class FieldSurfaceLayer: CALayer {
         var colors: [UInt32: (RGB, Float)] = [:]
         // .dot keeps the fast addEllipse; a custom shape stamps its unit polygon scaled by the radius.
         let shape = frame.particleShape.vertices
+        let glow = frame.particleGlow   // scales how much heat inflates + brightens each particle
         for p in frame.particles {
             let (x, y) = frame.projection.project(p.position)
             let depth = frame.projection.depthHint(p.position)
-            let radius = CGFloat(p.size * (1 + p.heat * 0.8) * (1 - depth * 0.5))
+            let radius = CGFloat(p.size * (1 + p.heat * 0.8 * glow) * (1 - depth * 0.5))
             let rgb = particleColor(p, frame)
-            let alpha = clamp((0.55 + p.heat * 0.4) * (1 - depth * 0.6), 0, 1)
+            let alpha = clamp((0.55 + p.heat * 0.4 * glow) * (1 - depth * 0.6), 0, 1)
             // quantize to 16 levels/channel + 16 alpha steps → a stable, small bucket set
             let k = ((UInt32(rgb.x) >> 4) << 12) | ((UInt32(rgb.y) >> 4) << 8)
                   | ((UInt32(rgb.z) >> 4) << 4) | UInt32(alpha * 15)

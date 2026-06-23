@@ -87,6 +87,9 @@ public struct RenderFrame {
     public let threads: [ThreadSegment]
     /// How matter is drawn — `.dot` by default; renderers stamp this shape per particle (matter modes).
     public let particleShape: ParticleShape
+    /// Heat→bloom scale (default 1.0). Renderers multiply the heat term of size + alpha by this, so a
+    /// low value keeps matter near attractors uniform instead of inflated/bright. See `FieldOptions`.
+    public let particleGlow: Float
 
     public init(particles: [Particle], bodies: [Body], accent: RGB, mode: RenderMode,
                 projection: any FieldProjection, volume: FieldVolume,
@@ -95,10 +98,11 @@ public struct RenderFrame {
                 forceSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
                 fieldSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
                 flow: FlowFocus? = nil, threads: [ThreadSegment] = [],
-                particleShape: ParticleShape = .dot) {
+                particleShape: ParticleShape = .dot, particleGlow: Float = 1.0) {
         self.flow = flow
         self.threads = threads
         self.particleShape = particleShape
+        self.particleGlow = particleGlow
         self.particles = particles
         self.bodies = bodies
         self.accent = accent

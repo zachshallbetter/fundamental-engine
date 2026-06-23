@@ -196,7 +196,7 @@ final class FieldEngine: FieldHandle {
 
     private func newParticle(at position: Vec3? = nil) -> Particle {
         let vol = host.volume
-        let size = 0.7 + Float.random(in: 0..<1) * 1.8
+        let size = (0.7 + Float.random(in: 0..<1) * 1.8) * options.particleSize
         let p = Particle(
             position: position ?? Vec3(
                 Float.random(in: 0..<1) * vol.width,
@@ -227,7 +227,7 @@ final class FieldEngine: FieldHandle {
             p.atom = atom
             if let w = atom.weight {
                 let k = 0.6 + clamp(w, 0, 1) * 1.4
-                p.size = (0.7 + 1.8 * 0.5) * k
+                p.size = (0.7 + 1.8 * 0.5) * k * options.particleSize
                 if options.firstClassMass { p.mass = p.size }
             }
         }
@@ -398,7 +398,8 @@ final class FieldEngine: FieldHandle {
                 forceSampler: { forceAt(bodies: bodiesRef, forces: forcesRef, env: envRef, at: $0) },
                 fieldSampler: { netField(bodies: bodiesRef, forces: forcesRef, at: $0) },
                 flow: flow, threads: resolvedThreads(),
-                particleShape: options.particleShape
+                particleShape: options.particleShape,
+                particleGlow: options.particleGlow
             ))
         }
     }
@@ -512,7 +513,12 @@ final class FieldEngine: FieldHandle {
                 // drop any edges whose endpoint was this body
                 self.edges.removeAll { $0.from === body || $0.to === body }
             },
-            bodyRef: { [weak body] in body }
+            bodyRef: { [weak body] in body },
+            load: { [weak body] in guard let body else { return 0 }; return sinkLoad(body) },
+            drain: { [weak body] in
+                guard let body else { return 0 }
+                let v = body.accreted; body.accreted = 0; return v
+            }
         )
     }
 

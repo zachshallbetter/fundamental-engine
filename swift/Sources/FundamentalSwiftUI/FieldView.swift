@@ -88,8 +88,12 @@ private struct BuildSignature: Equatable {
     let waves: Bool
     let mass: Bool
     let depth: Float
+    let particleSize: Float
+    let particleGlow: Float
     init(_ o: FieldOptions, _ depth: Float) {
         density = o.density; waves = o.waves; mass = o.firstClassMass; self.depth = depth
+        particleSize = o.particleSize
+        particleGlow = o.particleGlow
     }
 }
 

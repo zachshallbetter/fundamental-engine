@@ -52,11 +52,11 @@ public typealias FeedbackSink = (_ view: AnyObject, _ channels: FeedbackChannels
 
 public struct FieldOptions {
     public var accent: String?
+    public var palette: [String]?
     public var density: Float?
     public var waves: Bool
     public var render: RenderMode
     public var firstClassMass: Bool
-    public var palette: [String]?
     public var attention: Bool
     public var causality: Bool
     public var heatmap: Bool
@@ -65,20 +65,29 @@ public struct FieldOptions {
     /// shape rides the physics: each particle's size + heat scale it. Only affects the matter render
     /// modes (`dots` / `trails` / `links`).
     public var particleShape: ParticleShape
+    /// Global size multiplier applied at spawn time (default 1.0 = unchanged). Use values > 1 for
+    /// celebration / win screens where you want clearly visible, large stars rather than ambient dust.
+    public var particleSize: Float
+    /// Scales how much a particle's *heat* (proximity to an engaged body) inflates and brightens it at
+    /// draw time (default 1.0 = full). Lower it (e.g. 0.4) to keep matter calm and uniform near
+    /// attractors — particles still respond physically, they just don't bloom. 0 = no heat glow at all.
+    public var particleGlow: Float
     public var feedbackSink: FeedbackSink?
 
     public init(
         accent: String? = nil,
+        palette: [String]? = nil,
         density: Float? = nil,
         waves: Bool = true,
         render: RenderMode = .dots,
         firstClassMass: Bool = false,
-        palette: [String]? = nil,
         attention: Bool = false,
         causality: Bool = false,
         heatmap: Bool = false,
         overlay: OverlayInput = .single(.off),
         particleShape: ParticleShape = .dot,
+        particleSize: Float = 1.0,
+        particleGlow: Float = 1.0,
         feedbackSink: FeedbackSink? = nil
     ) {
         self.accent = accent
@@ -92,6 +101,8 @@ public struct FieldOptions {
         self.heatmap = heatmap
         self.overlay = overlay
         self.particleShape = particleShape
+        self.particleSize = particleSize
+        self.particleGlow = particleGlow
         self.feedbackSink = feedbackSink
     }
 }
@@ -143,10 +154,15 @@ public struct BodyHandle {
     /// `addEdge`. Returns `AnyObject?` so external callers can't cast it to the private
     /// `Body` type — effectively opaque to consumers outside the engine.
     public let bodyRef: () -> AnyObject?
+    private let loadImpl: () -> Float
+    private let drainImpl: () -> Float
     public init(data: (any Sendable)?, set: @escaping (BodyParams) -> Void,
-                remove: @escaping () -> Void, bodyRef: @escaping () -> AnyObject? = { nil }) {
+                remove: @escaping () -> Void, bodyRef: @escaping () -> AnyObject? = { nil },
+                load: @escaping () -> Float = { 0 },
+                drain: @escaping () -> Float = { 0 }) {
         self.data = data; self.setImpl = set; self.removeImpl = remove
         self.bodyRef = bodyRef
+        self.loadImpl = load; self.drainImpl = drain
     }
     /// Mutate this body's force params live; a *structural* change (different `tokens`) still needs
     /// remove + `addBody`. `color` re-tints the carried pigment.
@@ -156,6 +172,12 @@ public struct BodyHandle {
     }
     /// Remove the body from the field.
     public func remove() { removeImpl() }
+    /// Current sink load: absorbed particles / capacity, ∈ [0, 1]. Zero if the body has no `sink` token.
+    public var load: Float { loadImpl() }
+    /// Drain all stored accretion and return the raw absorbed count (0–capacity). The body begins
+    /// accumulating again immediately. Use the count to scale a burst: `max(1, Int(drain() * 0.2) + 1)`.
+    @discardableResult
+    public func drain() -> Float { drainImpl() }
 }
 
 /// Direction of a declared relationship edge (`FieldHandle.addEdge`).
