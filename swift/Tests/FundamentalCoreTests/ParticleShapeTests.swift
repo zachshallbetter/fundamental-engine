@@ -1,8 +1,10 @@
 import Testing
-#if canImport(simd)
-import simd
-#endif
+import Foundation
 import FundamentalCore
+
+// `simd_length` is an Apple-platform C function; use a plain Pythagorean length so tests
+// compile on Linux where the simd C bridge isn't available.
+private func len(_ v: SIMD2<Float>) -> Float { Foundation.sqrt(v.x * v.x + v.y * v.y) }
 
 @Suite("ParticleShape")
 struct ParticleShapeTests {
@@ -23,8 +25,8 @@ struct ParticleShapeTests {
         #expect(abs(v[0].x) < 1e-5)
         #expect(abs(v[0].y + 1) < 1e-5)
         // even indices ride the outer radius (1), odd indices the inner radius (innerRatio).
-        #expect(abs(simd_length(v[2]) - 1) < 1e-5)
-        #expect(abs(simd_length(v[1]) - 0.5) < 1e-5)
+        #expect(abs(len(v[2]) - 1) < 1e-5)
+        #expect(abs(len(v[1]) - 0.5) < 1e-5)
     }
 
     @Test("polygon yields N unit-circle vertices")
@@ -32,7 +34,7 @@ struct ParticleShapeTests {
         #expect(ParticleShape.polygon(sides: 3).vertices?.count == 3)
         let hex = try! #require(ParticleShape.polygon(sides: 6).vertices)
         #expect(hex.count == 6)
-        for vertex in hex { #expect(abs(simd_length(vertex) - 1) < 1e-5) }
+        for vertex in hex { #expect(abs(len(vertex) - 1) < 1e-5) }
     }
 
     @Test("custom carries the given vertices verbatim")
