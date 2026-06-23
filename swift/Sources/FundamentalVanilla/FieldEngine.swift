@@ -353,7 +353,8 @@ final class FieldEngine: FieldHandle {
                 overlays: activeOverlays(),
                 forceSampler: { forceAt(bodies: bodiesRef, forces: forcesRef, env: envRef, at: $0) },
                 fieldSampler: { netField(bodies: bodiesRef, forces: forcesRef, at: $0) },
-                flow: flow, threads: resolvedThreads()
+                flow: flow, threads: resolvedThreads(),
+                particleShape: options.particleShape
             ))
         }
     }
