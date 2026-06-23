@@ -27,6 +27,7 @@
   aria-label="Data console"
   aria-hidden="true"
   transition:persist
+  data-lint-count=""
 >
   <!-- Drag-to-resize handle -->
   <div id="dc-resize" class="dc-resize" title="Drag to resize" aria-hidden="true"></div>
@@ -733,6 +734,23 @@ function readPlatform() {
     dd('dc-pl', warns.length ? String(warns.length) : '✓', warns.length > 0 ? 'warn' : 'ok');
   } catch { dd('dc-pl', '—'); }
 }
+
+// ── Background lint poll (RC-8 E2E gate) ──────────────────────────────
+// Run lintPlatform on a low-frequency interval independently of the console
+// being open, so E2E tests can read the count from data-lint-count without
+// needing to open the console UI. 2 s cadence — lightweight since lint only
+// reads the DOM and registries, never mutates.
+const LINT_INTERVAL_MS = 2000;
+function pollLint() {
+  const fr = document.querySelector('field-root') as (HTMLElement & { platform?: FieldPlatform }) | null;
+  const p = fr?.platform;
+  if (!p) return;
+  try {
+    const warns = lintPlatform(p);
+    panel.setAttribute('data-lint-count', String(warns.length));
+  } catch { /* platform not yet booted */ }
+}
+setInterval(pollLint, LINT_INTERVAL_MS);
 
 // ── Main update ────────────────────────────────────────────────────────
 function tick(now: number) {
