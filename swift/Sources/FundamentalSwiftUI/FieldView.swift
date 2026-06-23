@@ -17,38 +17,65 @@ public extension EnvironmentValues {
     }
 }
 
+// MARK: - Field coordinate space
+
+/// The frame of reference a `FieldView` shares with the `.fieldBody()` nodes inside it.
+public enum FundamentalField {
+    /// The named coordinate space a `FieldView` establishes for its content. `.fieldBody()` reports each
+    /// view's frame in this space, so a body's force well sits exactly under its view. A `FieldView`
+    /// with a content closure sets it automatically — you only need the name to relate frames yourself.
+    public static let coordinateSpace = "fundamental-engine.field"
+}
+
 // MARK: - FieldView
 
-/// A SwiftUI view that mounts and manages a field.
-/// Drop it into any SwiftUI hierarchy — it creates its own render surface,
-/// runs the engine, and tears it down automatically.
-///
-/// The Swift equivalent of `<ForcesField>` in @fundamental-engine/react.
+/// A SwiftUI view that mounts and manages a field, and — with a content closure — scopes that field to
+/// its children so they can become bodies with `.fieldBody(...)`. It creates its own render surface,
+/// runs the engine, and tears it down automatically. The Swift equivalent of `<FieldField>` in
+/// @fundamental-engine/react.
 ///
 /// ```swift
-/// ZStack {
-///     FieldView(options: .init(accent: "#4da3ff", render: .dots))
-///     ContentView()
-///         .fieldBody(tokens: ["attract"], range: 120)
+/// // Background + powered nodes: wrap content, and `.fieldBody()` inside couples to this field.
+/// FieldView(options: .init(accent: "#4da3ff", render: .dots)) {
+///     LearnView()
+///         .fieldBody(tokens: ["attract", "glow"], range: 120)
 /// }
+///
+/// // Pure decorative background (no body coupling): omit the content closure.
+/// FieldView(options: .init(render: .dots))
 /// ```
-public struct FieldView: View {
+public struct FieldView<Content: View>: View {
     private let options: FieldOptions
     private let depth: Float
+    @ViewBuilder private let content: () -> Content
     @State private var field: FieldField?
 
-    /// `depth` gives the field a shallow z volume (pt) on flat platforms; 0 — the
-    /// default — is the flat field. See `FieldField.init(in:options:depth:)`.
-    public init(options: FieldOptions = .init(), depth: Float = 0) {
+    /// `depth` gives the field a shallow z volume (pt) on flat platforms; 0 — the default — is the flat
+    /// field. The `content` becomes the field's body scope: any `.fieldBody(...)` inside couples to it.
+    public init(options: FieldOptions = .init(), depth: Float = 0,
+                @ViewBuilder content: @escaping () -> Content) {
         self.options = options
         self.depth = depth
+        self.content = content
     }
 
     public var body: some View {
-        FieldRepresentable(options: options, depth: depth, field: $field)
-            .ignoresSafeArea()
-            .environment(\.fieldHandle, field)
-            .accessibilityHidden(true)   // decorative field (§18 a11y)
+        ZStack {
+            FieldRepresentable(options: options, depth: depth, field: $field)
+                .ignoresSafeArea()
+                .accessibilityHidden(true)   // the field itself is decorative (§18 a11y); content is not
+            content()
+        }
+        // hand the running field + a shared frame of reference down to every `.fieldBody()` inside.
+        .environment(\.fieldHandle, field)
+        .coordinateSpace(.named(FundamentalField.coordinateSpace))
+    }
+}
+
+/// Background-only field — no body coupling, so no content closure needed (the original `FieldView()`).
+public extension FieldView where Content == EmptyView {
+    init(options: FieldOptions = .init(), depth: Float = 0) {
+        self.init(options: options, depth: depth) { EmptyView() }
     }
 }
 
@@ -164,7 +191,10 @@ struct FieldRepresentable: View {
 
 // MARK: - .fieldBody() modifier
 
-/// Registers a view as a field body — the SwiftUI equivalent of `data-body` in HTML.
+/// Registers a view as a field body — the SwiftUI equivalent of `data-body` in HTML. Use inside a
+/// `FieldView { … }` content closure, which scopes the field + coordinate space. The body is a real
+/// programmatic engine body (`addBody`); its force well tracks this view's frame live and is removed
+/// when the view disappears.
 ///
 /// ```swift
 /// Text("Hello")
@@ -187,8 +217,6 @@ struct FieldBodyModifier: ViewModifier {
     let range: Float
     let feedback: Bool
 
-    @Environment(\.fieldHandle) private var fieldHandle
-
     func body(content: Content) -> some View {
         content
             .background(
@@ -198,7 +226,9 @@ struct FieldBodyModifier: ViewModifier {
     }
 }
 
-/// A zero-size view that registers itself as a field body using its geometry reader position.
+/// Reports the view's frame (in the field's coordinate space) and registers a programmatic body with
+/// the running engine via `addBody`, keeping the body's position synced to the view, and removing it on
+/// disappear. The frame travels through a preference so registration happens once the geometry is known.
 struct FieldBodyAnchor: View {
     let tokens: [String]
     let strength: Float
@@ -206,17 +236,59 @@ struct FieldBodyAnchor: View {
     let feedback: Bool
 
     @Environment(\.fieldHandle) private var handle
+    @State private var registration = FieldBodyRegistration()
 
     var body: some View {
-        GeometryReader { geo in
-            Color.clear
-                .onAppear {
-                    // Register with the running engine — wired once FieldEngine
-                    // exposes a registerBody(_ body: Body) entry point.
-                    _ = geo.frame(in: .global)
-                }
-        }
+        Color.clear
+            .background(GeometryReader { geo in
+                Color.clear.preference(
+                    key: FieldBodyFrameKey.self,
+                    value: geo.frame(in: .named(FundamentalField.coordinateSpace))
+                )
+            })
+            .onPreferenceChange(FieldBodyFrameKey.self) { frame in
+                registration.sync(field: handle, tokens: tokens, strength: strength, range: range, frame: frame)
+            }
+            .onChange(of: strength) { registration.update(strength: strength, range: range) }
+            .onChange(of: range) { registration.update(strength: strength, range: range) }
+            .onDisappear { registration.remove() }
     }
+}
+
+private struct FieldBodyFrameKey: PreferenceKey {
+    static let defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
+}
+
+/// Owns a programmatic body's lifetime: the `BodyHandle` from `addBody` + the latest frame the engine's
+/// `rect()` closure samples every tick. A reference type so that closure sees live position updates.
+/// Main-thread confined — the engine ticks on the host's display link, the same run loop as SwiftUI.
+final class FieldBodyRegistration {
+    private var handle: BodyHandle?
+    private var box = Box(center: .zero, halfExtents: .zero)
+
+    /// A frame in the field's coordinate space (points) → an engine `Box` (centre + half-extents). The
+    /// SwiftUI mirror of the host's `worldBox(of:)`. Pure + testable.
+    static func box(from frame: CGRect) -> Box {
+        Box(center: Vec3(Float(frame.midX), Float(frame.midY), 0),
+            halfExtents: Vec3(Float(frame.width / 2), Float(frame.height / 2), 0))
+    }
+
+    /// Register on the first known frame, then track the view's position on every change.
+    func sync(field: (any FieldHandle)?, tokens: [String], strength: Float, range: Float, frame: CGRect) {
+        box = Self.box(from: frame)
+        guard handle == nil, let field, !tokens.isEmpty else { return }
+        handle = field.addBody(BodySpec(
+            tokens: tokens, strength: strength, range: range,
+            rect: { [weak self] in self?.box ?? Box(center: .zero, halfExtents: .zero) }
+        ))
+    }
+
+    func update(strength: Float, range: Float) { handle?.set(strength: strength, range: range) }
+    func remove() { handle?.remove(); handle = nil }
+
+    var isRegistered: Bool { handle != nil }
+    var currentBox: Box { box }
 }
 
 // MARK: - Convenience modifiers
