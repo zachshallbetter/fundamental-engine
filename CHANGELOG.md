@@ -9,6 +9,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **RC-6 option-seam tests — `gridWarp`, `gridIntensity`, `overlayBackend`, `feedbackSink` (core).** Ten new tests pin every previously-uncovered `FieldOptions` constructor seam: `gridWarp` (flat / amplified / negative-fallback), `gridIntensity` (zero / max / clamped), `overlayBackend` (injected backend receives `size()`, replaces the default canvas2d backend), and `feedbackSink` (custom sink accepted; absent sink falls back to the default). Closes the RC-6 contract-coverage gap.
 - **`addEdge()` — programmatic relationships between bodies (core; vanilla + three).** The non-DOM
   counterpart of `addBody`: `field.addEdge(a, b, opts?)` relates two `addBody` handles with a live
   `RelationshipAgent` that **strengthens while its source body is salient** (gathering matter) and decays
