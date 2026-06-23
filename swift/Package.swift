@@ -97,6 +97,11 @@ let appleTargets: [Target] = [
         dependencies: ["FundamentalVanilla"],
         path: "Tests/FundamentalVanillaTests"
     ),
+    .testTarget(
+        name: "FundamentalSwiftUITests",
+        dependencies: ["FundamentalSwiftUI"],
+        path: "Tests/FundamentalSwiftUITests"
+    ),
 ]
 
 let package = Package(
