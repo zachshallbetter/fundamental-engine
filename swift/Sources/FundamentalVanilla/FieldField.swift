@@ -152,6 +152,13 @@ public final class FieldField: FieldHandle {
     public func addField(_ name: String, _ sampler: @escaping (Float, Float) -> Float) -> FieldChannelHandle { handle.addField(name, sampler) }
     public func sampleField(_ name: String, _ x: Float, _ y: Float) -> Float { handle.sampleField(name, x, y) }
     public func addBody(_ spec: BodySpec) -> BodyHandle { handle.addBody(spec) }
+    @discardableResult
+    public func addEdge(_ from: BodyHandle, _ to: BodyHandle,
+                        type: String, strength: Float = 0.5,
+                        direction: EdgeDirection = .bidirectional) -> EdgeHandle {
+        handle.addEdge(from, to, type: type, strength: strength, direction: direction)
+    }
+    public func readEdges() -> [EdgeRecord]               { handle.readEdges() }
     public func energy() -> EnergyReport                  { handle.energy() }
     public func scrollV() -> Float                        { handle.scrollV() }
 

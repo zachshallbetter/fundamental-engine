@@ -216,11 +216,12 @@ public final class MetalFieldRenderer: FieldRenderer {
     }
 
     private func pushDots(_ frame: RenderFrame) {
+        let glow = frame.particleGlow   // scales how much heat inflates + brightens each particle
         for p in frame.particles {
             let (x, y) = frame.projection.project(p.position)
             let depth = frame.projection.depthHint(p.position)
-            let radius = p.size * (1 + p.heat * 0.8) * (1 - depth * 0.5)
-            pushCircle(x, y, radius, particleColor(p, frame), (0.55 + p.heat * 0.4) * (1 - depth * 0.6))
+            let radius = p.size * (1 + p.heat * 0.8 * glow) * (1 - depth * 0.5)
+            pushCircle(x, y, radius, particleColor(p, frame), (0.55 + p.heat * 0.4 * glow) * (1 - depth * 0.6))
         }
     }
 
