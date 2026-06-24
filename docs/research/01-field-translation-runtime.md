@@ -273,7 +273,7 @@ converts "renderer-agnostic" from a design aspiration into a continuously checke
 ### 4.3 Scale
 
 For a sense of proportion: the core is on the order of 80 source modules (~12.6k non-test lines) plus
-~55 test modules; the platform is ~16 source modules (~1.6k non-test lines) plus its tests. The system implements 34
+~55 test modules; the platform is ~16 source modules (~1.6k non-test lines) plus its tests. The system implements 36
 forces, 8 cosmological presets, 5 global formations, 16+ render/diagnostic modes, 6 platform
 registries, and a 6-phase scheduler, with 560+ deterministic tests across the five packages (core,
 platform, elements, vanilla, plus the scheduler/lint suites within platform). (Exact counts drift with the code; these are orders of magnitude as of the verification
@@ -543,7 +543,7 @@ the same platform registries:*
 
 - **Native HTML** — the platform runtime attaches to any element with `data-body`; the same markup
   works unchanged in Astro, Svelte, Vue, or static HTML.
-- **Web component** — `<field-root>` (with `<forces-field>` as a compatibility alias) wraps content
+- **Web component** — `<field-root>` (with `<forces-field>` as a **deprecated** compatibility alias; prefer `<field-root>` in new code) wraps content
   and scans for bodies; the platform runtime is the default.
 - **React** — `<FieldField>` renders the same contract and maps props to `data-*` tokens;
   `useFieldField(options)` returns the field handle directly.
@@ -670,6 +670,19 @@ Three case studies anchor the family:
 Together these show the same runtime spanning reading, trust, and operations, each on a familiar
 interface archetype rather than a bespoke demo.
 
+### 8.5 Signals-first mode: the field as pure computation layer
+
+The logical extreme of this principle is the **signals-first mode**: `render="none"` (now the engine
+default, #538) runs the full simulation — forces, registries, feedback, all six scheduler phases —
+and writes all semantic signals to the DOM (`data-field-density`, `data-field-attention`,
+`data-field-temperature`, and the corresponding CSS custom properties) *while drawing nothing at
+all.* The field becomes a pure computation layer: attention measured, memory accreted, relationships
+tracked, all without a single particle on screen. Visual representation then becomes explicitly
+opt-in (`render="particles"`, `render="contours"`, etc.) rather than the default. This is not a
+degraded path — it is a first-class consumer posture. A data-driven agent, a server-side renderer,
+or any non-visual surface reads the same field state as the visual user sees animated; the physics
+is the common substrate, representation is a choice above it.
+
 ---
 
 ## 9. Implementation status and limitations
@@ -683,10 +696,11 @@ aspirational behavior and then state the model's deliberate limitations.
 the package exports): the five packages; the `FrameScheduler` and all six registries plus
 `lintPlatform()`; the platform runtime as the default for `<field-root>` (Phase D) with the
 guarded renderer-agnostic core; all 36 forces and all 16+ render/diagnostic modes (including
-`topology`, `inspector`, `causality`, `prediction`); the `field.flowTo()`/`clearFlow()` controlled
-flow API; the Reading Field demo, accessibility preview, narrative reveal, and PNG/SVG diagnostic
-export; the native-HTML / web-component / React authoring surfaces; and the Natural Field Translation
-classification.
+`topology`, `inspector`, `causality`, `prediction`); signals-first mode (`render="none"` as the
+engine default, #538 — full simulation with no visual output); the `field.flowTo()`/`clearFlow()`
+controlled flow API; the Reading Field demo, accessibility preview, narrative reveal, and PNG/SVG
+diagnostic export; the native-HTML / web-component / React authoring surfaces; and the Natural Field
+Translation classification.
 
 **Aspirational or opt-in**, and labeled as such throughout: first-class inertial mass (opt-in; see
 below); several "weak-field" transformations (phase, fission) that are conceptual rather than
