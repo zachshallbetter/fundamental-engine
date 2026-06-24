@@ -22,6 +22,9 @@ export type { MountOptions } from './mount.ts';
 export { createField } from './create-field.ts';
 export type { CreateFieldOptions } from './create-field.ts';
 export { browserHost } from '@fundamental-engine/dom';
+// headlessHost — the DOM-free host for non-visual consumers (agent / native / Node), beside createField.
+export { headlessHost } from '@fundamental-engine/core';
+export type { HeadlessHost, HeadlessHostOptions } from '@fundamental-engine/core';
 export type {
   FieldHandle,
   FieldOptions,

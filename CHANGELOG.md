@@ -18,6 +18,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   relationship layer + its longitudinal warmth with zero DOM, the way `readParticles` is the swarm.
   Removing an endpoint body drops its edges; the `EdgeHandle` mutates (`set`) / removes it. Additive,
   shipped-but-unfrozen; mirrored through vanilla `FieldField` + three `FieldLayer`; runs headless.
+- **`headlessHost()` — a DOM-free reference host for non-visual consumers (core, #600).** Where
+  `browserHost()` binds the engine to `window`/`document`/rAF, `headlessHost({ width, height })` binds it
+  to nothing: an abstract volume, a no-op scan root (bodies come via `addBody`), no canvas, and a manual
+  `tick()` loop the caller drives instead of requestAnimationFrame (`resize()` re-volumes it). Paired with
+  `render: 'none'`, the field runs the full simulation + writes its signals and draws nothing — read them
+  per-body via `addBody`'s `onFeedback` or globally via `sampleScalar`/`readParticles`. The substrate an
+  agent, a native sidecar, or a Node service reads the field through, with zero DOM. Re-exported from
+  `@fundamental-engine/vanilla` beside `createField` (which now accepts no canvas in this mode).
 - **SwiftUI `.fieldBody()` is live — nodes are real engine bodies (FundamentalSwiftUI).** The modifier was
   a stub (its `onAppear` predated body registration); it now bridges to `FieldHandle.addBody`, so a view
   becomes a programmatic body whose force well tracks its frame each tick and is removed on disappear.
