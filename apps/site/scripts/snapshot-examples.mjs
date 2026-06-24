@@ -7,7 +7,7 @@
 //
 // Mind the rate limits (Launch Library is 15 req/hour) — this script makes ONE request per
 // source where possible.
-import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync, readdirSync, appendFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -172,10 +172,14 @@ const SOURCES = {
 
   // ── Threads — one real HN discussion, full comment tree ─────────────────────────────
   async threads() {
-    const search = await get(
-      'https://hn.algolia.com/api/v1/search?tags=story&numericFilters=points%3E400,num_comments%3E200&hitsPerPage=8',
-    );
-    const story = search.hits.sort((a, b) => b.num_comments - a.num_comments)[0];
+    // HN Algolia dropped points/num_comments from numericFilters (`invalid numeric attribute`), which
+    // 400'd this source and — via the old hard exit 1 — silently discarded every snapshot for weeks.
+    // The front_page tag is already the high-engagement set; rank by comment volume in code.
+    const search = await get('https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30');
+    const byComments = (a, b) => (b.num_comments ?? 0) - (a.num_comments ?? 0);
+    const story =
+      search.hits.filter((h) => (h.num_comments ?? 0) >= 80).sort(byComments)[0] ??
+      search.hits.sort(byComments)[0];
     const tree = await get(`https://hn.algolia.com/api/v1/items/${story.objectID}`);
     const flat = [];
     const walk = (node, parent, depth) => {
@@ -422,6 +426,8 @@ const SOURCES = {
 
 const picked = process.argv.slice(2);
 const run = picked.length ? picked : Object.keys(SOURCES);
+const failed = [];
+let ok = 0;
 for (const slug of run) {
   if (!SOURCES[slug]) {
     console.error(`unknown source: ${slug}`);
@@ -429,8 +435,23 @@ for (const slug of run) {
   }
   try {
     await SOURCES[slug]();
+    ok++;
   } catch (e) {
     console.error(`✗ ${slug}: ${e.message}`);
-    process.exitCode = 1;
+    failed.push(slug);
   }
+}
+// A single broken upstream API must NOT discard every other source's fresh snapshot. The old hard
+// `exit 1` failed the workflow before its commit step could run, so ONE 400 (HN dropping a filter)
+// froze the calendar + everything else for weeks. Keep the good refreshes, surface the failures, and
+// only fail the run when EVERYTHING failed (a real outage with nothing to commit).
+if (failed.length) {
+  console.error(`\n⚠ ${failed.length}/${run.length} source(s) failed — kept their prior snapshot: ${failed.join(', ')}`);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(
+      process.env.GITHUB_STEP_SUMMARY,
+      `### ⚠ snapshot sources failed (kept prior data)\n${failed.map((s) => `- \`${s}\``).join('\n')}\n`,
+    );
+  }
+  if (ok === 0) process.exitCode = 1;
 }
