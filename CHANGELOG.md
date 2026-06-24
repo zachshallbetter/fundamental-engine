@@ -10,6 +10,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 ### Added
 
 - **RC-6 option-seam tests — `gridWarp`, `gridIntensity`, `overlayBackend`, `feedbackSink` (core).** Ten new tests pin every previously-uncovered `FieldOptions` constructor seam: `gridWarp` (flat / amplified / negative-fallback), `gridIntensity` (zero / max / clamped), `overlayBackend` (injected backend receives `size()`, replaces the default canvas2d backend), and `feedbackSink` (custom sink accepted; absent sink falls back to the default). Closes the RC-6 contract-coverage gap.
+- **Swift visual snapshot model — render output gated without a device.** `Snapshotter.signature`
+  reduces a headless render to a coarse perceptual signature (downsampled luminance grid + lit fraction +
+  centroid); `VisualSnapshotTests` asserts every matter render mode draws coherent, bounded content in the
+  right place, and that the signature is stable run-to-run (observed Δ ≈ 0.004 vs a 0.08 threshold — the
+  precondition for per-mode goldens). A pixel-exact golden would flake (unseeded wander + cross-machine
+  rasterization), so the model gates structure, not pixels. Completes the native verification spine and is
+  what lets the renderer-parity work (#417, #392) be verified without human eyes.
 - **`addEdge()` — programmatic relationships between bodies (core; vanilla + three).** The non-DOM
   counterpart of `addBody`: `field.addEdge(a, b, opts?)` relates two `addBody` handles with a live
   `RelationshipAgent` that **strengthens while its source body is salient** (gathering matter) and decays
@@ -60,18 +67,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   (particles) clamps to the element's box for shaped bodies — so a shaped element (a button, a wide
   headline) shelled particles around its outline but only dented the grid at a single point. `forceAt`
   now mirrors the integrator's nearest-box-point reference on both planes. Covered by a new test.
-
-## [0.8.0] — 2026-06-22
-
-### Added
-
-- **Swift performance model — deterministic perf gate + wall-clock measurement.** `PerfRegressionTests`
-  runs a heavy 1200-particle field for 600 frames and asserts the work stays bounded — particle count
-  conserved (no leak / unbounded spawn), every value finite (no NaN/Inf), velocity and heat in range —
-  a machine-independent gate for the perf-bug class that actually ships (runaway allocation, divergent
-  integrator). Wall-clock is *measured* (`swift run FieldLabSnapshots --bench`) but deliberately not
-  CI-gated: the field is fill-rate-bound and headless rasterization exaggerates fill, so real frame-time
-  budgets need on-hardware measurement (the #324 lesson). Second model of the native verification spine.
 - **Cross-plane conformance harness — Swift parity is now machine-checked (#526).** `pnpm gen:golden`
   fires the canonical deterministic forces through the f64 JS engine and writes their frame-0 force
   deltas to a golden fixture; the f32 Swift `GoldenConformanceTests` must reproduce every one within

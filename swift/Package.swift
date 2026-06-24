@@ -97,6 +97,12 @@ let appleTargets: [Target] = [
         dependencies: ["FundamentalVanilla"],
         path: "Tests/FundamentalVanillaTests"
     ),
+    // Visual snapshot model (#417/#392): the headless render reduced to a coarse perceptual signature.
+    .testTarget(
+        name: "FieldLabKitTests",
+        dependencies: ["FieldLabKit", "FundamentalCore", "FundamentalVanilla"],
+        path: "Tests/FieldLabKitTests"
+    ),
     .testTarget(
         name: "FundamentalSwiftUITests",
         dependencies: ["FundamentalSwiftUI"],
