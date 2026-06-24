@@ -35,5 +35,6 @@ playwright-report/
 
 # Swift Package Manager build artifacts
 swift/.build/
+swift/build/      # Xcode / FieldLab .dmg build output (114M, never tracked)
 .graphifyignore
 graphify-out
