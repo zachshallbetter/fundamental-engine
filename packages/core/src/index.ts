@@ -44,6 +44,8 @@ export * from './core/render-modes.ts';
 export * from './core/heatmap.ts';
 export * from './core/surface.ts';
 export * from './core/host.ts';
+// headlessHost — the DOM-free reference host for non-visual consumers (agents, native sidecars, tests).
+export * from './core/host-headless.ts';
 // RenderBackend (#373): the structural drawing seam alongside FieldHost. Exported so an external
 // surface (WebGL/WebGPU/Three.js — see @fundamental-engine/three) can implement the contract by name and
 // inject it via `createField({ overlayBackend })`.
