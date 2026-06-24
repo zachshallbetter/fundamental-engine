@@ -25,7 +25,7 @@ const atom = (kind, id, label, color, href, data) => ({ kind, id, label, color, 
 const atoms = [
   // 35 forces — the richest atoms.
   ...MANUAL_FORCES.map((f) =>
-    atom("force", `force:${f.token}`, f.label, f.color || "#4da3ff", `/docs/forces#${f.token}`, {
+    atom("force", `force:${f.token}`, f.label, f.color || "#4da3ff", `/docs/api/forces#force-${f.token}`, {
       token: f.token, family: f.family, formula: f.formula, desc: f.desc,
       summary: f.summary, effect: f.effect, example: f.example, symbol: f.symbol,
     }),
@@ -38,7 +38,7 @@ const atoms = [
   ),
   // 8 presets.
   ...MANUAL_PRESETS.map((p) =>
-    atom("preset", `preset:${p.token ?? p.name}`, p.label || p.name, KIND_COLOR.preset, "/docs/presets", {
+    atom("preset", `preset:${p.token ?? p.name}`, p.label || p.name, KIND_COLOR.preset, `/docs/api/presets#preset-${p.name}`, {
       name: p.token ?? p.name, desc: p.desc, bodies: p.bodies?.length,
     }),
   ),
