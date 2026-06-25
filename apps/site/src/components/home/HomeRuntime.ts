@@ -375,18 +375,18 @@ export function initHomeRuntime(): () => void {
   setTimeout(heroGrid, 600);
   setTimeout(heroGrid, 1700);
 
-  // the signals-only Wayfinding Current binding over the rail links (render: [] — nothing drawn)
+  // the signals-only Wayfinding Current binding over the rail links (renderless — nothing drawn)
   const railReduceMotion =
     typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (rail && links.length && !railReduceMotion) {
     try {
       const base = recipeById("wayfinding-current");
       if (base) {
-        const railField = applyRecipe(
-          rail,
-          { ...base, render: [] as never[] },
-          { bodies: links, annotateBodies: false },
-        );
+        const railField = applyRecipe(rail, base, {
+          renderless: true,
+          bodies: links,
+          annotateBodies: false,
+        });
         obs.push({ disconnect: () => railField.destroy() });
       }
     } catch {

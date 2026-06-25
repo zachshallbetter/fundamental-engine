@@ -1,15 +1,18 @@
 // recipe-preview.ts — run a recipe LIVE inside a container, lazily and safely.
 //
-// Each `[data-recipe-preview="<id>"]` element gets the real recipe executed via `applyRecipe()` (a
-// scoped FieldPlatform — it creates the recipe's demo bodies, binds metrics → `--field-*`, and ticks
-// them). To keep a 64-card hub from running 64 rAF loops at once, previews mount only when scrolled
-// into view, `destroy()` when they leave, and a global cap bounds how many run concurrently. Reduced
-// motion renders the recipe's static `meaningWithoutMotion` output and starts no loop.
+// Each `[data-recipe-preview="<id>"]` element gets the real recipe executed via `applyRecipe()`.
+// Critically, each preview also gets its OWN contained FieldHandle (a canvas + createField with
+// containerHost), so the recipe's particle simulation + render plan (dots, streamlines, heatmap)
+// actually run — not just the signals/metrics layer. Without a field, applyRecipe would only write
+// --field-* CSS variables but draw nothing.
 //
-// Reused: `recipeById` (Fundamental) + `applyRecipe` (@fundamental-engine/dom). Returns a teardown for the
-// Astro `before-swap` lifecycle.
+// To keep a 64-card hub from running 64 rAF loops at once, previews mount only when scrolled into
+// view, destroy() when they leave, and a global cap bounds how many run concurrently. Reduced motion
+// renders the recipe's static `meaningWithoutMotion` output and starts no loop.
 import { recipeById } from "@fundamental-engine/core";
 import { applyRecipe, type AppliedRecipe } from "@fundamental-engine/dom";
+import { createField } from "@fundamental-engine/vanilla";
+import type { FieldHandle } from "@fundamental-engine/core";
 
 interface PreviewOptions {
   selector?: string;
@@ -19,7 +22,7 @@ interface PreviewOptions {
   onInspect?: (el: HTMLElement, applied: AppliedRecipe) => void;
 }
 
-type Slot = HTMLElement & { _applied?: AppliedRecipe };
+type Slot = HTMLElement & { _applied?: AppliedRecipe; _field?: FieldHandle; _canvas?: HTMLCanvasElement };
 
 export function initRecipePreviews(opts: PreviewOptions = {}): () => void {
   const sel = opts.selector ?? "[data-recipe-preview]";
@@ -39,16 +42,47 @@ export function initRecipePreviews(opts: PreviewOptions = {}): () => void {
     if (!recipe) return;
     el.innerHTML = "";
     el.dataset.recipeMounted = "1";
-    el._applied = applyRecipe(el, recipe, { reducedMotion: reduced, drive });
+
+    // Create a contained particle field for this preview card — without a real FieldHandle,
+    // applyRecipe only runs the feedback/metrics layer and the recipe draws nothing.
+    let field: FieldHandle | undefined;
+    if (drive && !reduced) {
+      const canvas = document.createElement("canvas");
+      canvas.style.cssText =
+        "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;";
+      el.style.position = "relative";
+      el.appendChild(canvas);
+      el._canvas = canvas;
+      try {
+        field = createField(canvas, {
+          bounds: el,
+          render: "dots",
+          density: 0.6,
+        });
+        el._field = field;
+      } catch {
+        // if the field fails to start (e.g. no WebGL), fall back to signals-only
+        canvas.remove();
+        el._canvas = undefined;
+      }
+    }
+
+    el._applied = applyRecipe(el, recipe, { reducedMotion: reduced, drive, field });
     if (drive) live.add(el);
   };
+
   const unmount = (el: Slot): void => {
     el._applied?.destroy();
     el._applied = undefined;
+    el._field?.destroy();
+    el._field = undefined;
+    el._canvas?.remove();
+    el._canvas = undefined;
     el.innerHTML = "";
     delete el.dataset.recipeMounted;
     live.delete(el);
   };
+
   // fill freed slots from the queue of in-view-but-not-yet-running previews.
   const pump = (): void => {
     for (const el of visible) {
