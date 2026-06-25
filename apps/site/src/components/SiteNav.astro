@@ -137,9 +137,9 @@ const dest = [
   // freshly rendered buttons re-sync from the field's real state on every astro:page-load.
 
   type FieldEl = HTMLElement & {
-    setRender(m: string): void;
-    setOverlay(m: string | string[]): void;
-    setHeatmap(on: boolean): void;
+    setRender?: (m: string) => void;
+    setOverlay?: (m: string | string[]) => void;
+    setHeatmap?: (on: boolean) => void;
   };
   const fieldEl = () => document.querySelector('field-root') as FieldEl | null;
 
@@ -152,7 +152,7 @@ const dest = [
     const stack: string[] = [];
     if (field.dataset.navFlow === 'on') stack.push('streamlines');
     if (field.dataset.navGrid === 'on') stack.push('grid');
-    field.setOverlay(stack.length ? stack : 'off');
+    field.setOverlay?.(stack.length ? stack : 'off');
   }
 
 
@@ -209,7 +209,7 @@ const dest = [
     } else if (t.closest('#sn-heatmap-toggle')) {
       const field = fieldEl();
       const next = field?.dataset.navHeatmap !== 'on';
-      field?.setHeatmap(next);
+      field?.setHeatmap?.(next);
       if (field) field.dataset.navHeatmap = next ? 'on' : 'off';
       syncHeatmapBtn();
     } else if (t.closest('#sn-field-toggle')) {
@@ -259,8 +259,8 @@ const dest = [
       if (mine !== navGen) return; // a newer start / a teardown superseded this async boot
       const base = recipeById('wayfinding-field');
       if (!base) return;
-      // signals-only: run the simulation + feedback, draw no canvas
-      navField = applyRecipe(nav, { ...base, render: [] as never[] }, {
+      navField = applyRecipe(nav, base, {
+        renderless: true,
         bodies: links,
         annotateBodies: false, // don't write data-body — keep these out of the global field-root scan
       });
