@@ -143,6 +143,7 @@ private func applyLiveOptions(_ f: FieldField, _ o: FieldOptions) {
     f.setHeatmap(o.heatmap)
     f.setWaveStyle(o.waveStyle)
     f.setWaveCenter(o.waveCenter)
+    f.setSeparation(o.separation)
 }
 
 /// UIViewRepresentable / NSViewRepresentable bridge that creates the FieldField

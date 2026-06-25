@@ -1,6 +1,6 @@
 # Fundamental
 
-> Fundamental is a platform-native relational field runtime for the DOM. The core (`@fundamental-engine/core`)
+> Fundamental is a platform-native relational field runtime for the DOM, created by Zach Shallbetter (zachshallbetter.com). The core (`@fundamental-engine/core`)
 > computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
 > scheduling; `@fundamental-engine/elements` exposes native HTML and web-component authoring; `@fundamental-engine/react`

@@ -14,7 +14,7 @@ const dest = [
   <div class="sf-inner">
     <div class="sf-brand">
       <span class="sf-name">Fundamental</span>
-      <span class="sf-note">A reciprocal DOM-physics field · v{version} · frozen, additive-only API</span>
+      <span class="sf-note">A reciprocal DOM-physics field · v{version} · Created by <a href="https://zachshallbetter.com" target="_blank" rel="noopener noreferrer" class="sf-author">Zach Shallbetter</a></span>
     </div>
     <nav class="sf-links" aria-label="Footer">
       {dest.map((d) => <a href={d.href}>{d.label}</a>)}
@@ -113,6 +113,15 @@ const dest = [
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-3, rgba(200, 212, 230, 0.46));
+  }
+  .sf-author {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+  }
+  .sf-author:hover {
+    color: var(--accent, #4da3ff);
   }
   .sf-links {
     display: flex;

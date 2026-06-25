@@ -1,5 +1,7 @@
 # Fundamental — full canonical documentation
 
+Created by Zach Shallbetter (zachshallbetter.com).
+
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
 Generated: 2026-06-25 by apps/site/scripts/gen-llms.mjs
 Files: 19

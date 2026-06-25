@@ -107,7 +107,15 @@ const articleLd = {
           <span class={`w-badge w-${category}`}>{category}</span>
           {series && <span class="w-series">{series}</span>}
           {fmtDate && <time datetime={date?.toISOString()}>{fmtDate}</time>}
-          {author && <span class="w-author">{author}</span>}
+          {author && (
+            <span class="w-author">
+              {author === 'Zach Shallbetter' ? (
+                <a href="https://zachshallbetter.com" target="_blank" rel="noopener noreferrer" class="w-author-link">{author}</a>
+              ) : (
+                author
+              )}
+            </span>
+          )}
         </div>
       </header>
 
