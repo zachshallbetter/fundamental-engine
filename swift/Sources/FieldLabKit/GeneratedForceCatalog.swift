@@ -3,7 +3,7 @@
 // Source of truth: packages/core/src/contracts/passport.ts + packages/core/src/config/forces.config.ts
 
 /// A force entry from the canonical catalog (auto-generated).
-public struct GeneratedForceEntry: Identifiable, Codable {
+public struct CatalogForceEntry: Identifiable, Codable {
     public var id: String { token }
     public let token: String
     public let label: String
@@ -14,41 +14,41 @@ public struct GeneratedForceEntry: Identifiable, Codable {
 }
 
 /// All 36 forces in the canonical catalog, single-sourced from the JS engine.
-public let GENERATED_FORCE_CATALOG: [GeneratedForceEntry] = [
-    GeneratedForceEntry(token: "attract", label: "Attract", family: "canonical", cls: "A", truthMode: "designed", color: "#4da3ff"),
-    GeneratedForceEntry(token: "repel", label: "Repel", family: "canonical", cls: "A", truthMode: "designed", color: "#ff9d5c"),
-    GeneratedForceEntry(token: "swirl", label: "Swirl", family: "canonical", cls: "A", truthMode: "designed", color: "#2dd4bf"),
-    GeneratedForceEntry(token: "stream", label: "Stream", family: "canonical", cls: "A", truthMode: "designed", color: "#7dd3fc"),
-    GeneratedForceEntry(token: "viscosity", label: "Viscosity", family: "canonical", cls: "A", truthMode: "designed", color: "#8da2c0"),
-    GeneratedForceEntry(token: "jet", label: "Jet", family: "canonical", cls: "A", truthMode: "designed", color: "#a78bfa"),
-    GeneratedForceEntry(token: "tether", label: "Tether", family: "canonical", cls: "A", truthMode: "designed", color: "#86e57f"),
-    GeneratedForceEntry(token: "wall", label: "Wall", family: "canonical", cls: "A", truthMode: "designed", color: "#c4b5fd"),
-    GeneratedForceEntry(token: "sink", label: "Sink", family: "canonical", cls: "A", truthMode: "designed", color: "#ff6e9c"),
-    GeneratedForceEntry(token: "gravity", label: "Gravity", family: "natural", cls: "A", truthMode: "physical", color: "#ffce6b"),
-    GeneratedForceEntry(token: "charge", label: "Charge", family: "natural", cls: "A", truthMode: "physical", color: "#f472b6"),
-    GeneratedForceEntry(token: "magnetism", label: "Magnetism", family: "natural", cls: "A", truthMode: "physical", color: "#60a5fa"),
-    GeneratedForceEntry(token: "thermal", label: "Thermal", family: "natural", cls: "A", truthMode: "physical", color: "#fb7185"),
-    GeneratedForceEntry(token: "collide", label: "Collide", family: "natural", cls: "B", truthMode: "physical", color: "#e2e8f0"),
-    GeneratedForceEntry(token: "diffuse", label: "Diffuse", family: "natural", cls: "C", truthMode: "physical", color: "#34d399"),
-    GeneratedForceEntry(token: "propagate", label: "Propagate", family: "natural", cls: "C", truthMode: "physical", color: "#22d3ee"),
-    GeneratedForceEntry(token: "memory", label: "Memory", family: "natural", cls: "C", truthMode: "semantic", color: "#c084fc"),
-    GeneratedForceEntry(token: "fieldflow", label: "Fieldflow", family: "extended", cls: "A", truthMode: "hybrid", color: "#818cf8"),
-    GeneratedForceEntry(token: "lens", label: "Lens", family: "extended", cls: "A", truthMode: "designed", color: "#93c5fd"),
-    GeneratedForceEntry(token: "gate", label: "Gate", family: "extended", cls: "A", truthMode: "designed", color: "#fbbf24"),
-    GeneratedForceEntry(token: "buoyancy", label: "Buoyancy", family: "extended", cls: "A", truthMode: "designed", color: "#67e8f9"),
-    GeneratedForceEntry(token: "shear", label: "Shear", family: "extended", cls: "A", truthMode: "designed", color: "#a3e635"),
-    GeneratedForceEntry(token: "crystallize", label: "Crystallize", family: "extended", cls: "A", truthMode: "designed", color: "#bae6fd"),
-    GeneratedForceEntry(token: "align", label: "Align", family: "extended", cls: "B", truthMode: "designed", color: "#5eead4"),
-    GeneratedForceEntry(token: "wind", label: "Wind", family: "extended", cls: "A", truthMode: "designed", color: "#a5f3fc"),
-    GeneratedForceEntry(token: "cohesion", label: "Cohesion", family: "extended", cls: "B", truthMode: "designed", color: "#38bdf8"),
-    GeneratedForceEntry(token: "pressure", label: "Pressure", family: "extended", cls: "B", truthMode: "designed", color: "#f97316"),
-    GeneratedForceEntry(token: "hunt", label: "Hunt", family: "extended", cls: "B", truthMode: "designed", color: "#f87171"),
-    GeneratedForceEntry(token: "spawn", label: "Spawn", family: "extended", cls: "S", truthMode: "designed", color: "#fde047"),
-    GeneratedForceEntry(token: "link", label: "Link", family: "extended", cls: "B", truthMode: "designed", color: "#84cc16"),
-    GeneratedForceEntry(token: "morph", label: "Morph", family: "extended", cls: "D", truthMode: "designed", color: "#e879f9"),
-    GeneratedForceEntry(token: "resonate", label: "Resonate", family: "extended", cls: "modifier", truthMode: "designed", color: "#f0abfc"),
-    GeneratedForceEntry(token: "spotlight", label: "Spotlight", family: "extended", cls: "modifier", truthMode: "designed", color: "#fef08a"),
-    GeneratedForceEntry(token: "screen", label: "Screen", family: "extended", cls: "modifier", truthMode: "designed", color: "#94a3b8"),
-    GeneratedForceEntry(token: "pigment", label: "Pigment", family: "extended", cls: "A", truthMode: "designed", color: "#fb923c"),
-    GeneratedForceEntry(token: "warp", label: "Warp", family: "extended", cls: "A", truthMode: "designed", color: "#c4b5fd")
+public let GENERATED_FORCE_CATALOG: [CatalogForceEntry] = [
+    CatalogForceEntry(token: "attract", label: "Attract", family: "canonical", cls: "A", truthMode: "designed", color: "#4da3ff"),
+    CatalogForceEntry(token: "repel", label: "Repel", family: "canonical", cls: "A", truthMode: "designed", color: "#ff9d5c"),
+    CatalogForceEntry(token: "swirl", label: "Swirl", family: "canonical", cls: "A", truthMode: "designed", color: "#2dd4bf"),
+    CatalogForceEntry(token: "stream", label: "Stream", family: "canonical", cls: "A", truthMode: "designed", color: "#7dd3fc"),
+    CatalogForceEntry(token: "viscosity", label: "Viscosity", family: "canonical", cls: "A", truthMode: "designed", color: "#8da2c0"),
+    CatalogForceEntry(token: "jet", label: "Jet", family: "canonical", cls: "A", truthMode: "designed", color: "#a78bfa"),
+    CatalogForceEntry(token: "tether", label: "Tether", family: "canonical", cls: "A", truthMode: "designed", color: "#86e57f"),
+    CatalogForceEntry(token: "wall", label: "Wall", family: "canonical", cls: "A", truthMode: "designed", color: "#c4b5fd"),
+    CatalogForceEntry(token: "sink", label: "Sink", family: "canonical", cls: "A", truthMode: "designed", color: "#ff6e9c"),
+    CatalogForceEntry(token: "gravity", label: "Gravity", family: "natural", cls: "A", truthMode: "physical", color: "#ffce6b"),
+    CatalogForceEntry(token: "charge", label: "Charge", family: "natural", cls: "A", truthMode: "physical", color: "#f472b6"),
+    CatalogForceEntry(token: "magnetism", label: "Magnetism", family: "natural", cls: "A", truthMode: "physical", color: "#60a5fa"),
+    CatalogForceEntry(token: "thermal", label: "Thermal", family: "natural", cls: "A", truthMode: "physical", color: "#fb7185"),
+    CatalogForceEntry(token: "collide", label: "Collide", family: "natural", cls: "B", truthMode: "physical", color: "#e2e8f0"),
+    CatalogForceEntry(token: "diffuse", label: "Diffuse", family: "natural", cls: "C", truthMode: "physical", color: "#34d399"),
+    CatalogForceEntry(token: "propagate", label: "Propagate", family: "natural", cls: "C", truthMode: "physical", color: "#22d3ee"),
+    CatalogForceEntry(token: "memory", label: "Memory", family: "natural", cls: "C", truthMode: "semantic", color: "#c084fc"),
+    CatalogForceEntry(token: "fieldflow", label: "Fieldflow", family: "extended", cls: "A", truthMode: "hybrid", color: "#818cf8"),
+    CatalogForceEntry(token: "lens", label: "Lens", family: "extended", cls: "A", truthMode: "designed", color: "#93c5fd"),
+    CatalogForceEntry(token: "gate", label: "Gate", family: "extended", cls: "A", truthMode: "designed", color: "#fbbf24"),
+    CatalogForceEntry(token: "buoyancy", label: "Buoyancy", family: "extended", cls: "A", truthMode: "designed", color: "#67e8f9"),
+    CatalogForceEntry(token: "shear", label: "Shear", family: "extended", cls: "A", truthMode: "designed", color: "#a3e635"),
+    CatalogForceEntry(token: "crystallize", label: "Crystallize", family: "extended", cls: "A", truthMode: "designed", color: "#bae6fd"),
+    CatalogForceEntry(token: "align", label: "Align", family: "extended", cls: "B", truthMode: "designed", color: "#5eead4"),
+    CatalogForceEntry(token: "wind", label: "Wind", family: "extended", cls: "A", truthMode: "designed", color: "#a5f3fc"),
+    CatalogForceEntry(token: "cohesion", label: "Cohesion", family: "extended", cls: "B", truthMode: "designed", color: "#38bdf8"),
+    CatalogForceEntry(token: "pressure", label: "Pressure", family: "extended", cls: "B", truthMode: "designed", color: "#f97316"),
+    CatalogForceEntry(token: "hunt", label: "Hunt", family: "extended", cls: "B", truthMode: "designed", color: "#f87171"),
+    CatalogForceEntry(token: "spawn", label: "Spawn", family: "extended", cls: "S", truthMode: "designed", color: "#fde047"),
+    CatalogForceEntry(token: "link", label: "Link", family: "extended", cls: "B", truthMode: "designed", color: "#84cc16"),
+    CatalogForceEntry(token: "morph", label: "Morph", family: "extended", cls: "D", truthMode: "designed", color: "#e879f9"),
+    CatalogForceEntry(token: "resonate", label: "Resonate", family: "extended", cls: "modifier", truthMode: "designed", color: "#f0abfc"),
+    CatalogForceEntry(token: "spotlight", label: "Spotlight", family: "extended", cls: "modifier", truthMode: "designed", color: "#fef08a"),
+    CatalogForceEntry(token: "screen", label: "Screen", family: "extended", cls: "modifier", truthMode: "designed", color: "#94a3b8"),
+    CatalogForceEntry(token: "pigment", label: "Pigment", family: "extended", cls: "A", truthMode: "designed", color: "#fb923c"),
+    CatalogForceEntry(token: "warp", label: "Warp", family: "extended", cls: "A", truthMode: "designed", color: "#c4b5fd")
 ]
