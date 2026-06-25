@@ -2111,6 +2111,17 @@ Today `field.js` hardcodes `waveColors = ['#4da3ff', '#2dd4bf', '#a78bfa']` — 
 > the single field palette — traveling with the accent and warming wherever a force
 > injects energy. Same palette as everything else, just at rest.
 
+### 24.5 Orbits and Stability
+A common misconception is trying to produce stable particle orbits using a combination of point forces (e.g. `["attract", "swirl"]`). In practice, the engine's built-in particle friction (defaulting to a decay of 0.95 per frame) drains kinetic energy faster than these forces can balance it, causing particles to either spiral inward to a clump or disperse outward.
+
+The correct, robust primitive for orbital motion is **concentric circular currents** (`waveStyle: 'circular'`). The wave integrator explicitly applies two corrective physical forces to particles near the orbital waves:
+1. **Centripetal Radial Pull**: Gently restores the particle to the orbital wave's radius $r_w(\theta)$, counteracting both friction and outward centrifugal drift.
+2. **Tangential Drive**: Accelerates the particle along the circle, sustaining its orbital velocity.
+
+**Critical Requirements:**
+* **`waves` option must be active** (`waves: true` / `<field-root waves>`): Disabling the waves layer bypasses the current integrator entirely, killing all orbital currents.
+* **Anchor body**: The center of the orbits defaults to any body tagged with the `"star"` or `"vortex"` token. Ensure your central element is registered as a body with one of these tokens.
+
 ---
 
 ## 25. Additive concepts from the design system
