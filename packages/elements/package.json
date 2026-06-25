@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/elements",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Web-component keystone for Fundamental — the <field-root> custom element + declarative data-body bodies.",
   "type": "module",
   "license": "MIT",
