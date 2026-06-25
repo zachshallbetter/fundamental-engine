@@ -264,9 +264,9 @@ const FILTER_COLOR: Record<string, string> = {
     type Any = Record<string, any>;
     const forces = allForces();
     const byForce: Any = {};
-    for (const e of EXPERIMENTS as Any[]) byForce[e.scenario.force] = e;
+    for (const e of EXPERIMENTS as unknown as Any[]) byForce[e.scenario.force] = e;
     const META: Any = {};
-    for (const f of MANUAL_FORCES as Any[]) META[f.token] = f;
+    for (const f of MANUAL_FORCES as unknown as Any[]) META[f.token] = f;
 
     const $ = (id: string) => document.getElementById(id);
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -318,7 +318,7 @@ const FILTER_COLOR: Record<string, string> = {
       if (W.__labTimer) { clearInterval(W.__labTimer); W.__labTimer = 0; }
       const ctx = canvas.getContext('2d')!;
       // a minimal env for the optional field-vector probe (forceAt samples the field at a point)
-      const fenv: Any = {
+      const fenv: any = {
         dx: 0, dy: 0, dist: 1,
         form: { driftX: 0, wander: 0, orbit: 0, spread: 0, conv: 0 },
         W: 1200, H: 800, t: 0, frameN: 0, dt: 1, c: 12, G: 1,
@@ -329,8 +329,8 @@ const FILTER_COLOR: Record<string, string> = {
 
       let cur = 'attract';
       let overrides: Any = {};
-      let result: Any = null;
-      let checks: Any[] = [];
+      let result: any = null;
+      let checks: any[] = [];
       let frame = 0;
       let mode: 'once' | 'loop' | 'unlocked' = 'once';
       const MODE_LABEL: Any = { once: '↦ Once', loop: '↻ Loop', unlocked: '∞ Free' };
@@ -339,7 +339,7 @@ const FILTER_COLOR: Record<string, string> = {
       let pickView: 'icon' | 'symbol' | 'name' = 'icon';
       let tab: 'expect' | 'tune' = 'expect';
       let ghostOn = true;
-      let ghostTraj: Any = null; // previous setting's trajectory (same force)
+      let ghostTraj: any = null; // previous setting's trajectory (same force)
       let ghostForce = '';
       let fieldOn = false; // optional force-field vector overlay
 
@@ -469,7 +469,7 @@ const FILTER_COLOR: Record<string, string> = {
       // optional: a faint arrow-grid sampling the force field across the whole chamber,
       // not just along the particle path (toggled by the Field button). forceAt probes the
       // field at each world point; pair/grid forces have no point-field so it reads ~0.
-      function drawField(b: Any) {
+      function drawField(b: any) {
         const w = canvas!.clientWidth, h = canvas!.clientHeight, col = color(), stepPx = 34;
         // Sample first, then scale arrows RELATIVE to the field's own max magnitude — so a
         // force shows whatever its absolute scale (the dipole field() of magnetism/charge is
@@ -904,7 +904,7 @@ const FILTER_COLOR: Record<string, string> = {
         const ff = $('aboutFormula')!; ff.textContent = m.formula; ff.style.display = calibrated() ? '' : 'none';
         ($('chamberForce') as HTMLElement).textContent = m.label;
       }
-      const forceNoJS = (token: string) => (MANUAL_FORCES as Any[]).findIndex((f) => f.token === token) + 1;
+      const forceNoJS = (token: string) => (MANUAL_FORCES as unknown as Any[]).findIndex((f) => f.token === token) + 1;
 
       function showTab(t: 'expect' | 'tune') {
         tab = t;
