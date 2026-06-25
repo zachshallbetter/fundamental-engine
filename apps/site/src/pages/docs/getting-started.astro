@@ -1,0 +1,75 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+---
+<DocsLayout
+  title="Getting started — 5 minutes to your first field"
+  description="Install Fundamental, create a field, see particles move, and read the signals. No framework required."
+>
+  <h1>Getting started</h1>
+  <p>
+    Five minutes: install → canvas → field → particles → read the signals.
+    No framework, no build step beyond what you already have.
+  </p>
+
+  <h2>1. Install</h2>
+  <pre><code>npm install @fundamental-engine/vanilla</code></pre>
+
+  <h2>2. Add a canvas to your HTML</h2>
+  <pre><code>&lt;canvas id="field"&gt;&lt;/canvas&gt;
+
+&lt;style&gt;
+  #field { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+&lt;/style&gt;</code></pre>
+
+  <h2>3. Start the field</h2>
+  <pre><code>import { createField, browserHost } from '@fundamental-engine/vanilla';
+
+const canvas = document.getElementById('field');
+
+const field = createField(canvas, {
+  host: browserHost(document.body),
+  render: 'dots',   // draw particles — the default is 'none' (signals only)
+  density: 0.8,
+});</code></pre>
+  <p>
+    That's it. Particles begin flowing immediately. Any element with
+    <code>data-body="attract"</code> pulls matter toward it; the page's content becomes
+    part of the field.
+  </p>
+
+  <h2>4. Make an element a body</h2>
+  <pre><code>&lt;h1 data-body="attract" data-strength="0.8" data-range="280"&gt;
+  Hello world
+&lt;/h1&gt;</code></pre>
+  <p>
+    Bodies bend the field. <code>attract</code> gathers matter; <code>repel</code> pushes
+    it away. Strength (0–1) scales the pull; range (px) sets how far it reaches.
+    See the <a href="/docs/api/attributes">data-* attribute reference</a> for all tokens.
+  </p>
+
+  <h2>5. Read the signals (no drawing required)</h2>
+  <pre><code>// Add data-feedback to any element to receive live CSS vars:
+//   --field-density     0..1 — matter gathered here
+//   --field-attention   0..1 — weighted by recency + proximity
+//   --field-temperature 0..1 — thermal energy around this body
+&lt;div data-body="attract" data-feedback id="hero"&gt;Watch me&lt;/div&gt;</code></pre>
+  <pre><code>// Use them in CSS — no JavaScript polling needed
+#hero {
+  opacity: calc(0.4 + var(--field-density, 0) * 0.6);
+  scale: calc(1 + var(--field-attention, 0) * 0.08);
+}</code></pre>
+  <p>
+    The field writes <code>--field-*</code> variables directly on elements with
+    <code>data-feedback</code>. CSS reads them — zero JS event listeners required for
+    basic reactivity.
+  </p>
+
+  <h2>Next steps</h2>
+  <ul>
+    <li><a href="/docs/tutorial">Full step-by-step tutorial</a> — all three authoring surfaces (web component, React, vanilla)</li>
+    <li><a href="/docs/api/options">FieldOptions reference</a> — density, formation, render modes, overlays, and more</li>
+    <li><a href="/docs/api/handle">FieldHandle reference</a> — <code>addBody</code>, <code>readParticles</code>, <code>addEdge</code>, <code>sampleScalar</code></li>
+    <li><a href="/docs/concepts">Concepts</a> — bodies, reciprocity, and why the field is a substrate</li>
+    <li><a href="/lab">Interactive FieldLab</a> — try every force live without writing any code</li>
+  </ul>
+</DocsLayout>

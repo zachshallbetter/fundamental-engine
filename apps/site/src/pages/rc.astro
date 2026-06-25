@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+
+const checks = [
+  { name: 'typecheck + build + test (all packages)',         gate: 'engine gate',     status: 'pass' },
+  { name: 'API surface frozen — 14 entries (check:api)',     gate: 'check:api',       status: 'pass' },
+  { name: 'Package dist validation (check:dist)',            gate: 'check:dist',      status: 'pass' },
+  { name: 'README coverage (check:readme)',                  gate: 'check:readme',    status: 'pass' },
+  { name: 'Recipe catalog — 64 recipes (check:recipes)',     gate: 'check:recipes',   status: 'pass' },
+  { name: 'Custom Elements Manifest (check:cem)',            gate: 'check:cem',       status: 'pass' },
+  { name: 'E2E — Chromium + mobile (Playwright)',            gate: 'e2e',             status: 'pass' },
+  { name: 'Swift macOS build + tests',                       gate: 'swift-macos CI',  status: 'pass' },
+  { name: 'Swift iOS Simulator build + tests',               gate: 'swift-apple CI',  status: 'pass' },
+  { name: '36-force golden conformance JS ↔ Swift',         gate: 'gen:force-catalog', status: 'pass' },
+  { name: 'Perf budgets — on-hardware canvas/DPR baselines', gate: '#324',            status: 'pending' },
+] as const;
+
+const pass = checks.filter(c => c.status === 'pass').length;
+const total = checks.length;
+---
+<Base title="RC1 — Production readiness · Fundamental">
+  <main style="max-width:740px;margin:0 auto;padding:56px 24px 80px;font-family:var(--font-mono,monospace)">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+      <h1 style="margin:0;font-size:1.6rem;letter-spacing:-.02em">RC1 — Production readiness</h1>
+      <span style={`font-size:.85rem;padding:2px 10px;border-radius:99px;font-weight:600;${pass===total?'background:#dcfce7;color:#15803d':'background:#fef9c3;color:#854d0e'}`}>
+        {pass}/{total} gates passing
+      </span>
+    </div>
+    <p style="color:#64748b;margin:0 0 40px">
+      All gates must be green before tagging v1.0.0. CI enforces every automated gate on every PR.
+    </p>
+
+    <ul style="list-style:none;padding:0;margin:0;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+      {checks.map((c, i) => (
+        <li style={`display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;padding:14px 20px;${i<checks.length-1?'border-bottom:1px solid #e2e8f0':''};${c.status==='pass'?'':'background:#fffbeb'}`}>
+          <span style={`font-size:1rem;${c.status==='pass'?'color:#22c55e':'color:#f59e0b'}`} aria-label={c.status}>
+            {c.status === 'pass' ? '✓' : '⏳'}
+          </span>
+          <span style="font-size:.875rem">{c.name}</span>
+          <span style="font-size:.75rem;color:#94a3b8;white-space:nowrap">{c.gate}</span>
+        </li>
+      ))}
+    </ul>
+
+    {pass < total && (
+      <p style="margin-top:24px;color:#92400e;font-size:.875rem">
+        <strong>One pending gate:</strong> perf budgets (#324) need an on-hardware canvas/DPR baseline run
+        before they can be automated. All other gates pass in CI.
+      </p>
+    )}
+
+    <p style="margin-top:32px;color:#94a3b8;font-size:.75rem">
+      Page is static — reflects the gate list at build time, not a live CI query.
+      Check <a href="https://github.com/zachshallbetter/fundamental-engine/actions" style="color:inherit">GitHub Actions</a> for current run state.
+    </p>
+  </main>
+</Base>
