@@ -2057,10 +2057,18 @@ Engine facts (`field.js`): 5 layers at depth fractions `[0.24, 0.40, 0.55, 0.70,
 0.85]`, amplitude `22 + i·15`, frequency `0.0012 + i·0.0008`, alternating direction,
 scroll parallax `offsetY = scrollY·(0.025 + depth·0.08)`, a boot growth sweep.
 
+Supports two styles:
+- **`linear`**: Parallel horizontal carrier lines.
+- **`circular`**: Concentric closed loop orbits circling the `waveCenter` (e.g. `<field-root wave-style="circular">`).
+
+The orbits' center is dynamically resolved per frame:
+1. **Dynamic body tracking**: If a body carrying the `"star"` or `"vortex"` token exists in the field, its coordinates are used.
+2. **Custom coordinate**: A custom `{ x, y }` position or closure coordinate-provider.
+3. **Viewport center**: Defaults to the exact center of the field workspace.
+
 ### 24.2 Four roles (why they're first-class)
 1. **Current — a flow source.** Near a line, free particles pick up drift along the
-   slope (§2.3): a persistent, curved `stream`/`shear` that follows the waveform. The
-   resting field's motion originates here.
+   slope (§2.3). In circular mode, they receive centripetal pull and tangential acceleration, carrying them in stable, perpetual orbits.
 2. **Reservoir — the conservation buffer.** Currents hold **bound** particles and
    exchange them with the **free** pool — detach on disturbance, wave-heal on calm
    (§2.4). They are where count-conservation is bookkept: the field's *bank*.
