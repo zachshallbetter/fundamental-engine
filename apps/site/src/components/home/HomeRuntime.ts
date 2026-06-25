@@ -353,8 +353,12 @@ export function initHomeRuntime(): () => void {
     // fade HERO_GRID_MAX→0 across the first 0.6 viewport — but ONLY while the grid is the active hero
     // overlay (not retired, not a panel's own reading). Once retired, a manual re-enable shows at full
     // opacity. The ceiling is held below 1 so the screen-blend lattice never overwhelms the hero copy.
-    const HERO_GRID_MAX = 0.68;
-    const fade = HERO_GRID_MAX * Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.6)));
+    // Smoothstep (t²(3−2t)) instead of linear so the fade opens softly and closes with a gentle ease-in,
+    // rather than starting at full brightness and dropping linearly from the first pixel of scroll.
+    const HERO_GRID_MAX = 0.72;
+    const t = Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.6)));
+    const smoothT = t * t * (3 - 2 * t);
+    const fade = HERO_GRID_MAX * smoothT;
     if (oc) oc.style.opacity = isGrid && !gridRetired ? String(fade) : "1";
     // while the hero is in view AND the grid hasn't been retired, keep it as the resting overlay
     // (re-asserting over the on-load settle to 'off'); only call when it has drifted, to stay idle-quiet.

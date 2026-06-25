@@ -191,15 +191,17 @@ html[data-field='on'] .hero-antimass:hover {
     box-shadow 0.35s var(--ease),
     transform 0.35s var(--ease);
 }
-/* a top hairline in the tag colour, brightening as matter pools against the card */
+/* a top hairline in the tag colour, brightening as matter pools against the card.
+   Starts near-invisible (0.12) so the density response is dramatic rather than a
+   mild brightening from an already-visible baseline. */
 .lp-pkg::after {
   content: '';
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
   background: var(--cat, var(--accent));
-  opacity: calc(0.35 + var(--field-density) * 0.65);
-  transition: opacity 0.35s var(--ease);
+  opacity: calc(0.12 + var(--field-density) * 0.88);
+  transition: opacity 0.4s var(--ease);
 }
 .lp-pkg:hover {
   transform: translateY(-2px);
@@ -211,11 +213,19 @@ html[data-field='on'] .hero-antimass:hover {
 }
 
 /* hero: the 'start here' vanilla card spans the row and is an accretion vessel — it fills with --load
-   from the base as its sink gathers matter, then supernovas + resets (Sink / Accretion). */
+   from the base as its sink gathers matter, then supernovas + resets (Sink / Accretion).
+   The box-shadow swells into a warm glow as --load rises so the card visibly charges. */
 .lp-pkg--hero {
   grid-column: 1 / -1;
   padding: 1.5rem 1.6rem 1.6rem;
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 calc(var(--load) * 48px) calc(var(--load) * -6px)
+      color-mix(in srgb, var(--cat, var(--accent)) calc(var(--load) * 55%), transparent);
+  transition:
+    border-color 0.35s var(--ease),
+    box-shadow 0.4s var(--ease),
+    transform 0.35s var(--ease);
 }
 .lp-pkg--hero::before {
   content: '';
@@ -225,10 +235,10 @@ html[data-field='on'] .hero-antimass:hover {
   pointer-events: none;
   background: linear-gradient(
     0deg,
-    color-mix(in srgb, var(--cat) calc(var(--load) * 26%), transparent),
-    transparent 55%
+    color-mix(in srgb, var(--cat) calc(var(--load) * 40%), transparent),
+    transparent 70%
   );
-  transition: opacity 0.5s var(--ease);
+  transition: background 0.4s var(--ease);
 }
 
 .lp-pkg-tag {
