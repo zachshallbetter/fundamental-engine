@@ -9,6 +9,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Pluggable `lintPlatform` rules (dom).** `lintPlatform` now accepts inline rules
+  (`opts.rules`) and a global registry (`registerLintRule` / unregister fn) so teams can enforce
+  project-specific field conventions alongside the built-in checks.
+- **`mountXRay(field, container, opts?)` (dom).** Keystroke-triggered inspection overlay (default
+  `?`) showing live particle count, kinetic/thermal energy, and force vector under the cursor.
+  Press `?` on any field page to reveal field internals; press again or `Escape` to close.
+  Corner position and hotkey are configurable; returns a teardown fn.
 - **RC-6 option-seam tests — `gridWarp`, `gridIntensity`, `overlayBackend`, `feedbackSink` (core).** Ten new tests pin every previously-uncovered `FieldOptions` constructor seam: `gridWarp` (flat / amplified / negative-fallback), `gridIntensity` (zero / max / clamped), `overlayBackend` (injected backend receives `size()`, replaces the default canvas2d backend), and `feedbackSink` (custom sink accepted; absent sink falls back to the default). Closes the RC-6 contract-coverage gap.
 - **Swift visual snapshot model — render output gated without a device.** `Snapshotter.signature`
   reduces a headless render to a coarse perceptual signature (downsampled luminance grid + lit fraction +
