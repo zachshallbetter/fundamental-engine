@@ -192,6 +192,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     waveCenter: opts.waveCenter ?? null,
     background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
+    separation: opts.separation != null && opts.separation >= 0 ? opts.separation : 0,
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
@@ -2040,7 +2041,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
 
     updateWarpTargets(); // refresh warp relocate targets from paired bodies (§22.3) before the step
-    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves, waveStyle: cfg.waveStyle, waveCenter: resolvedWaveCenter });
+    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves, waveStyle: cfg.waveStyle, waveCenter: resolvedWaveCenter, separation: cfg.separation });
     // hover-focus (field.focusAt): hold the focused particle still and light it up — the dwell
     // affordance ("it stops and does something") before a click opens its record.
     if (focusP) {
@@ -2163,6 +2164,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     },
     setWaveCenter: (center) => {
       cfg.waveCenter = center;
+    },
+    setSeparation: (strength) => {
+      cfg.separation = strength >= 0 ? strength : 0;
     },
     setAttention: (on) => {
       cfg.attention = on;

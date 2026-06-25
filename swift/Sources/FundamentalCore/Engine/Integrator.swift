@@ -28,10 +28,12 @@ public struct StepInput {
     public var waves: [Wave]?
     public var waveStyle: WaveStyle
     public var waveCenter: Vec3?
+    public var separation: Float
 
     public init(store: FieldStore, bodies: [Body], env: Env, forces: ForceRegistry,
                 conditions: ConditionRegistry = [:], waves: [Wave]? = nil,
-                waveStyle: WaveStyle = .linear, waveCenter: Vec3? = nil) {
+                waveStyle: WaveStyle = .linear, waveCenter: Vec3? = nil,
+                separation: Float = 0.0) {
         self.store = store
         self.bodies = bodies
         self.env = env
@@ -40,6 +42,7 @@ public struct StepInput {
         self.waves = waves
         self.waveStyle = waveStyle
         self.waveCenter = waveCenter
+        self.separation = separation
     }
 }
 
@@ -285,6 +288,20 @@ public func step(_ input: StepInput) {
                         if let f = forces[tok], !f.hasModify { applyForce(f, b, p, env, inv) }
                     }
                     b.strength = origS
+                }
+            }
+        }
+
+        // short-range particle-to-particle separation to prevent clumping
+        if input.separation > 0 {
+            let ns = env.neighbors(p, 12)
+            for n in ns {
+                let delta = p.position - n.position
+                let d = simd_length(delta)
+                let dist = d < 0.1 ? 0.1 : d
+                if dist < 12 {
+                    let force = ((12 - dist) / 12) * input.separation * 0.12
+                    p.velocity += (delta / dist) * force
                 }
             }
         }

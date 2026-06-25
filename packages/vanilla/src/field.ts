@@ -76,6 +76,9 @@ export class FieldField implements FieldHandle {
   setWaveCenter(center: { x: number; y: number } | (() => { x: number; y: number }) | null): void {
     this.field.setWaveCenter(center);
   }
+  setSeparation(strength: number): void {
+    this.field.setSeparation(strength);
+  }
   setAttention(on: boolean): void {
     this.field.setAttention(on);
   }

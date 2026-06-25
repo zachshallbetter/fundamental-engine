@@ -5,7 +5,7 @@
    in instrument.css; this file is the Lab's own chrome.
    Tinting hook: --fc (the active force color), set on `.lab`.
    ============================================================ */
-.lab { position: relative; z-index: 2; width: 100%; max-width: 1500px; margin: 0 auto; padding: 32px 28px 56px; --fc: var(--accent); }
+.lab { position: relative; z-index: 2; width: 100%; max-width: 1500px; margin: 0 auto; padding: calc(58px + 32px) 28px 56px; --fc: var(--accent); }
 body:has(.lab) { align-items: flex-start; }
 /* the [hidden] attribute must win over the display rules below (we toggle panels with it) */
 .lab [hidden] { display: none !important; }
@@ -20,7 +20,7 @@ body:has(.lab) { align-items: flex-start; }
 .lab-grid { display: grid; grid-template-columns: 264px minmax(0, 1fr) 392px; gap: 18px; align-items: start; }
 
 /* force picker (the periodic table lives in instrument.css) */
-.lab-picker { position: sticky; top: 18px; max-height: calc(100svh - 36px); overflow-y: auto; scrollbar-width: thin; }
+.lab-picker { position: sticky; top: calc(58px + 18px); max-height: calc(100svh - 58px - 36px); overflow-y: auto; scrollbar-width: thin; }
 
 /* ════ CENTER — chamber, timeline, transport ════ */
 .lab-center { display: grid; gap: 14px; }
@@ -111,7 +111,7 @@ body:has(.lab) { align-items: flex-start; }
 .sweep-note b { color: var(--text-3); font-weight: 500; }
 
 /* ════ READOUT — verdict, force card, expectations, tune ════ */
-.lab-readout { position: sticky; top: 18px; display: grid; gap: 14px; }
+.lab-readout { position: sticky; top: calc(58px + 18px); display: grid; gap: 14px; }
 .force-about .about-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem; }
 .about-sym {
   width: 42px; height: 42px; flex: none; border-radius: var(--r-md); display: grid; place-items: center; color: var(--fc);

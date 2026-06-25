@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { EXPERIMENTS, MANUAL_FORCES, classifyForce } from '@fundamental-engine/core';
 import '../styles/force-glyphs.css';
@@ -59,6 +60,7 @@ const FILTER_COLOR: Record<string, string> = {
   title="Fundamental — the Lab (physics detector)"
   description="Fire known particles into a force with known attributes and watch what happens — their tracks, the field structure, the measured behaviour checked against what the math predicts, frame by frame. The Lab is a conformance instrument."
 >
+  <SiteNav current="lab" />
   <main class="lab" id="main">
     <h1 class="lab-title">the lab — force conformance explorer</h1>
     <a class="lab-back" href="/design">← Forces Design System</a>
@@ -479,7 +481,7 @@ const FILTER_COLOR: Record<string, string> = {
         for (let sx = stepPx / 2; sx < w; sx += stepPx)
           for (let sy = stepPx / 2; sy < h; sy += stepPx) {
             const wx = (sx - view.ox) / view.scale, wy = (sy - view.oy) / view.scale;
-            const { fx, fy } = forceAt([b], forces, fenv, wx, wy);
+            const { fx, fy } = forceAt([b as any], forces, fenv, wx, wy);
             const mag = Math.hypot(fx, fy);
             if (mag < 1e-9) continue;
             samples.push({ sx, sy, ux: fx / mag, uy: fy / mag, mag });
@@ -630,7 +632,7 @@ const FILTER_COLOR: Record<string, string> = {
 
       function paintChecklist() {
         const active = checks.filter((c) => c.active);
-        const live = active.map((c) => ({ ...c, satisfied: c.passFrame >= 0 && frame >= c.passFrame, fails: c.passFrame < 0 && frame >= 0 }));
+        const live = active.map((c) => ({ ...c, satisfied: c.passFrame >= 0 && frame >= c.passFrame, fails: c.passFrame < 0 && frame >= 0 } as any));
         const passedNow = live.filter((c) => c.satisfied).length;
         const anyFail = live.some((c) => c.passFrame < 0 && frame >= (result.trajectory.length - 1));
         const allPass = passedNow === active.length && active.length > 0;

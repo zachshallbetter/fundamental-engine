@@ -29,6 +29,7 @@ export interface StepInput {
   waves?: readonly Wave[];
   waveStyle?: 'linear' | 'circular';
   waveCenter?: { x: number; y: number } | null;
+  separation?: number;
 }
 
 function passes(conds: ConditionRegistry, b: Body, p: Particle, env: Env): boolean {
@@ -73,7 +74,7 @@ function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void
 }
 
 export function step(input: StepInput): void {
-  const { store, bodies, env, forces, conditions, waves } = input;
+  const { store, bodies, env, forces, conditions, waves, separation } = input;
   const dt = env.dt;
   if (dt === 0) return;
   const { W, H, form } = env;
@@ -336,6 +337,23 @@ export function step(input: StepInput): void {
             if (f && !f.modify) applyForce(f, b, p, env, inv);
           }
           b.strength = origS;
+        }
+      }
+    }
+
+    // short-range particle-to-particle separation to prevent clumping
+    if (separation && separation > 0) {
+      const ns = env.neighbors(p, 12);
+      for (const n of ns) {
+        const dx = p.x - n.x;
+        const dy = p.y - n.y;
+        const dz = (p.z ?? 0) - (n.z ?? 0);
+        const dist = Math.hypot(dx, dy, dz) || 0.1;
+        if (dist < 12) {
+          const force = ((12 - dist) / 12) * separation * 0.12;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+          if (p.vz !== undefined) p.vz! += (dz / dist) * force;
         }
       }
     }

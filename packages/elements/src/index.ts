@@ -89,6 +89,7 @@ export class FieldField extends HTMLElementBase {
     { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline },
     { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle },
     { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter },
+    { key: 'separation', attr: 'separation', read: (el) => el.separation },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -113,6 +114,7 @@ export class FieldField extends HTMLElementBase {
     'wave-baseline',
     'wave-style',
     'wave-center',
+    'separation',
     'background',
     'formation',
   ];
@@ -248,6 +250,11 @@ export class FieldField extends HTMLElementBase {
     const v = Number(this.getAttribute('grid-intensity'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
   }
+  /** `separation` — particle-to-particle separation force strength ∈ [0,1]; undefined if absent/invalid. */
+  get separation(): number | undefined {
+    const v = Number(this.getAttribute('separation'));
+    return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
   /** `theme` — ambient palette preset (`warm` (default) | `cool` | `mono`); undefined if absent (#529). */
   get theme(): string | undefined {
     return this.getAttribute('theme') ?? undefined;
@@ -341,6 +348,11 @@ export class FieldField extends HTMLElementBase {
     } else if (typeof center === 'object') {
       this.reflect('wave-center', `${center.x} ${center.y}`);
     }
+  }
+  /** set particle-to-particle separation/repulsion force strength. */
+  setSeparation(strength: number): void {
+    this.field?.setSeparation(strength);
+    this.reflect('separation', String(strength));
   }
   /** toggle conserved attention (§2.4) live. */
   setAttention(on: boolean): void {
@@ -548,6 +560,9 @@ export class FieldField extends HTMLElementBase {
         break;
       case 'dpr-cap':
         this.field.setDprCap(this.dprCap ?? 2);
+        break;
+      case 'separation':
+        this.field.setSeparation(this.separation ?? 0);
         break;
       case 'background':
         this.field.setBackground(this.background);

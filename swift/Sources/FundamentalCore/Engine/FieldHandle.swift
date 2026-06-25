@@ -74,6 +74,7 @@ public struct FieldOptions {
     public var causality: Bool
     public var heatmap: Bool
     public var overlay: OverlayInput
+    public var separation: Float
     /// How matter is drawn — `.dot` (default), `.star(...)`, `.polygon(...)`, or `.custom(...)`. The
     /// shape rides the physics: each particle's size + heat scale it. Only affects the matter render
     /// modes (`dots` / `trails` / `links`).
@@ -103,6 +104,7 @@ public struct FieldOptions {
         particleShape: ParticleShape = .dot,
         particleSize: Float = 1.0,
         particleGlow: Float = 1.0,
+        separation: Float = 0.0,
         feedbackSink: FeedbackSink? = nil
     ) {
         self.accent = accent
@@ -120,6 +122,7 @@ public struct FieldOptions {
         self.particleShape = particleShape
         self.particleSize = particleSize
         self.particleGlow = particleGlow
+        self.separation = separation
         self.feedbackSink = feedbackSink
     }
 }
@@ -267,6 +270,7 @@ public protocol FieldHandle: AnyObject {
     func setOverlay(_ input: OverlayInput)
     func setWaveStyle(_ style: WaveStyle)
     func setWaveCenter(_ center: WaveCenter?)
+    func setSeparation(_ strength: Float)
 
     // ── simulation toggles ────────────────────────────────────────────────
     func setFormation(_ name: String)

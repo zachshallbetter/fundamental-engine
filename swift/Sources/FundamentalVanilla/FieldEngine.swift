@@ -329,7 +329,8 @@ final class FieldEngine: FieldHandle {
         step(StepInput(store: store, bodies: bodies, env: env,
                        forces: registry.forces, conditions: registry.conditions,
                        waves: waves.isEmpty ? nil : waves,
-                       waveStyle: options.waveStyle, waveCenter: resolvedCenter))
+                       waveStyle: options.waveStyle, waveCenter: resolvedCenter,
+                       separation: options.separation))
 
         // flow focus: pull free matter toward the target (gain 0.6, the JS particle gain).
         if let flow {
@@ -607,6 +608,7 @@ final class FieldEngine: FieldHandle {
 
     func setWaveStyle(_ style: WaveStyle) { options.waveStyle = style }
     func setWaveCenter(_ center: WaveCenter?) { options.waveCenter = center }
+    func setSeparation(_ strength: Float) { options.separation = strength }
 
     func setAttention(_ on: Bool) { options.attention = on }
     func setCausality(_ on: Bool) { options.causality = on }

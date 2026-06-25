@@ -453,6 +453,8 @@ export interface FieldOptions {
   /** first-class mass (§21.3): when true, particle mass ∝ size and body forces
    *  accelerate by `a = F/m` (heavier matter moves less). Default false (unit mass). */
   mass?: boolean;
+  /** strength of particle-to-particle separation/repulsion force (0 to 1, default 0). */
+  separation?: number;
   /** color template for the travelling accent (§9): a built-in name
    *  (`'ours'` · `'heatmap'` · `'infrared'` · `'spectrum'`) or custom hex stops. */
   palette?: string | readonly string[];
@@ -678,6 +680,8 @@ export interface FieldHandle {
   setWaveStyle(style: 'linear' | 'circular'): void;
   /** set the custom wave center coordinate (or function). */
   setWaveCenter(center: { x: number; y: number } | (() => { x: number; y: number }) | null): void;
+  /** set particle-to-particle separation/repulsion force strength. */
+  setSeparation(strength: number): void;
   /** toggle conserved attention (§2.4) live — one finite strength budget. */
   setAttention(on: boolean): void;
   /** toggle cross-boundary causality (Concept 4) live — density spills to neighbours. */
