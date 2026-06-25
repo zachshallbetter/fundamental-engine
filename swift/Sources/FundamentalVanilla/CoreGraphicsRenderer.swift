@@ -278,31 +278,69 @@ public final class FieldSurfaceLayer: CALayer {
     private func drawWaves(_ frame: RenderFrame, in ctx: CGContext) {
         let W = frame.volume.width
         let H = frame.volume.height
-        for w in frame.waves {
-            stroke(ctx, w.color, 0.05 + w.depth * 0.1)
-            var first = true
-            var x: Float = 0
-            while x <= W {
-                let y = waveYat(w, x: x, time: frame.time, H: H)
-                if first {
-                    ctx.move(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
-                    first = false
-                } else {
-                    ctx.addLine(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
+        if frame.waveStyle == .circular {
+            let center = frame.waveCenter ?? Vec3(W / 2, H / 2, 0)
+            let maxRadius = min(W, H) * 0.48
+            for w in frame.waves {
+                stroke(ctx, w.color, 0.05 + w.depth * 0.1)
+                var first = true
+                var theta: Float = 0
+                let thetaStep: Float = 0.08
+                while theta <= 2 * .pi + 0.01 {
+                    let r = waveRAt(w, theta: theta, time: frame.time, maxRadius: maxRadius)
+                    let x = center.x + cos(theta) * r
+                    let y = center.y + sin(theta) * r
+                    if first {
+                        ctx.move(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
+                        first = false
+                    } else {
+                        ctx.addLine(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
+                    }
+                    theta += thetaStep
                 }
-                x += 14
+                ctx.strokePath()
             }
-            ctx.strokePath()
-        }
-        // the bound shimmer riding the lines
-        for b in frame.bound {
-            guard frame.waves.indices.contains(b.wi) else { continue }
-            let w = frame.waves[b.wi]
-            let x = b.progress * W
-            let y = waveYat(w, x: x, time: frame.time, H: H) + b.phase * 32
-            fill(ctx, w.color, b.glow ? 0.5 : 0.25)
-            let r = CGFloat(b.size)
-            ctx.fillEllipse(in: CGRect(x: CGFloat(x) - r, y: CGFloat(y) - r, width: r * 2, height: r * 2))
+
+            // the bound shimmer riding the circular lines
+            for b in frame.bound {
+                guard frame.waves.indices.contains(b.wi) else { continue }
+                let w = frame.waves[b.wi]
+                let theta = b.progress * 2 * .pi
+                let r = waveRAt(w, theta: theta, time: frame.time, maxRadius: maxRadius) + b.phase * 32
+                let x = center.x + cos(theta) * r
+                let y = center.y + sin(theta) * r
+                fill(ctx, w.color, b.glow ? 0.5 : 0.25)
+                let radius = CGFloat(b.size)
+                ctx.fillEllipse(in: CGRect(x: CGFloat(x) - radius, y: CGFloat(y) - radius, width: radius * 2, height: radius * 2))
+            }
+        } else {
+            for w in frame.waves {
+                stroke(ctx, w.color, 0.05 + w.depth * 0.1)
+                var first = true
+                var x: Float = 0
+                while x <= W {
+                    let y = waveYat(w, x: x, time: frame.time, H: H)
+                    if first {
+                        ctx.move(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
+                        first = false
+                    } else {
+                        ctx.addLine(to: CGPoint(x: CGFloat(x), y: CGFloat(y)))
+                    }
+                    x += 14
+                }
+                ctx.strokePath()
+            }
+
+            // the bound shimmer riding the linear lines
+            for b in frame.bound {
+                guard frame.waves.indices.contains(b.wi) else { continue }
+                let w = frame.waves[b.wi]
+                let x = b.progress * W
+                let y = waveYat(w, x: x, time: frame.time, H: H) + b.phase * 32
+                fill(ctx, w.color, b.glow ? 0.5 : 0.25)
+                let r = CGFloat(b.size)
+                ctx.fillEllipse(in: CGRect(x: CGFloat(x) - r, y: CGFloat(y) - r, width: r * 2, height: r * 2))
+            }
         }
     }
 

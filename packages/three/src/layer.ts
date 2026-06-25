@@ -195,6 +195,12 @@ export class FieldLayer implements FieldHandle {
   setFormation(name: string): void {
     this.field.setFormation(name);
   }
+  setWaveStyle(style: 'linear' | 'circular'): void {
+    this.field.setWaveStyle(style);
+  }
+  setWaveCenter(center: { x: number; y: number } | (() => { x: number; y: number }) | null): void {
+    this.field.setWaveCenter(center);
+  }
   setAttention(on: boolean): void {
     this.field.setAttention(on);
   }

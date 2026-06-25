@@ -129,6 +129,8 @@ public final class FieldField: FieldHandle {
         if mode != .none_ { attachManagedSurfaces() }
     }
     public func setOverlay(_ input: OverlayInput)         { handle.setOverlay(input) }
+    public func setWaveStyle(_ style: WaveStyle)          { handle.setWaveStyle(style) }
+    public func setWaveCenter(_ center: WaveCenter?)      { handle.setWaveCenter(center) }
     public func setFormation(_ name: String)              { handle.setFormation(name) }
     public func setAttention(_ on: Bool)                  { handle.setAttention(on) }
     public func setCausality(_ on: Bool)                  { handle.setCausality(on) }

@@ -37,5 +37,17 @@ playwright-report/
 swift/.build/
 swift/build/
 swift/.swiftpm/xcode/
+*.xcuserdata/
+*.xcuserstate
+
+# Turborepo
+.turbo/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 .graphifyignore
 graphify-out

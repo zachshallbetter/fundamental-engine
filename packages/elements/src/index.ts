@@ -87,6 +87,8 @@ export class FieldField extends HTMLElementBase {
     { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool },
     { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm },
     { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline },
+    { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle },
+    { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -109,6 +111,8 @@ export class FieldField extends HTMLElementBase {
     'gradient-cool',
     'gradient-warm',
     'wave-baseline',
+    'wave-style',
+    'wave-center',
     'background',
     'formation',
   ];
@@ -261,6 +265,21 @@ export class FieldField extends HTMLElementBase {
     const list = (this.getAttribute('wave-baseline') ?? '').split(/\s+/).filter(Boolean);
     return list.length ? list : undefined;
   }
+  /** `wave-style` — wave layout style: `'linear'` | `'circular'` */
+  get waveStyle(): 'linear' | 'circular' {
+    const v = this.getAttribute('wave-style');
+    return v === 'circular' ? 'circular' : 'linear';
+  }
+  /** `wave-center` — coordinates string space-separated e.g. "200 300" */
+  get waveCenter(): { x: number; y: number } | null {
+    const v = this.getAttribute('wave-center');
+    if (!v) return null;
+    const parts = v.trim().split(/\s+/).map(Number);
+    if (parts.length === 2 && Number.isFinite(parts[0]) && Number.isFinite(parts[1])) {
+      return { x: parts[0]!, y: parts[1]! };
+    }
+    return null;
+  }
   /** `formation` — the global formation (§7), applied live; undefined if absent. Unlike the other
    *  attributes this is post-construction (set via `setFormation`), but it round-trips: the attribute
    *  drives the field and `setFormation` reflects back to it (#541). */
@@ -308,6 +327,20 @@ export class FieldField extends HTMLElementBase {
   setFormation(name: string): void {
     this.field?.setFormation(name);
     this.reflect('formation', name);
+  }
+  /** switch the wave current layout style. */
+  setWaveStyle(style: 'linear' | 'circular'): void {
+    this.field?.setWaveStyle(style);
+    this.reflect('wave-style', style);
+  }
+  /** set the custom wave center coordinate (or function). */
+  setWaveCenter(center: { x: number; y: number } | (() => { x: number; y: number }) | null): void {
+    this.field?.setWaveCenter(center);
+    if (!center) {
+      this.reflect('wave-center', null);
+    } else if (typeof center === 'object') {
+      this.reflect('wave-center', `${center.x} ${center.y}`);
+    }
   }
   /** toggle conserved attention (§2.4) live. */
   setAttention(on: boolean): void {

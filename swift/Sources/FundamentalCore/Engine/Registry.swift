@@ -69,6 +69,8 @@ public struct RenderFrame {
     public let time: Float
     /// The carrier waves (§2.3), empty when waves are off.
     public let waves: [Wave]
+    public var waveStyle: WaveStyle = .linear
+    public var waveCenter: Vec3? = nil
     /// The bound shimmer riding the waves (§2.4).
     public let bound: [BoundParticle]
     /// Live sparks (§23).
@@ -93,7 +95,8 @@ public struct RenderFrame {
 
     public init(particles: [Particle], bodies: [Body], accent: RGB, mode: RenderMode,
                 projection: any FieldProjection, volume: FieldVolume,
-                time: Float = 0, waves: [Wave] = [], bound: [BoundParticle] = [],
+                time: Float = 0, waves: [Wave] = [], waveStyle: WaveStyle = .linear,
+                waveCenter: Vec3? = nil, bound: [BoundParticle] = [],
                 sparks: [Spark] = [], heatmap: Heatmap? = nil, overlays: [OverlayMode] = [],
                 forceSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
                 fieldSampler: @escaping (Vec3) -> Vec3 = { _ in .zero },
@@ -111,6 +114,8 @@ public struct RenderFrame {
         self.volume = volume
         self.time = time
         self.waves = waves
+        self.waveStyle = waveStyle
+        self.waveCenter = waveCenter
         self.bound = bound
         self.sparks = sparks
         self.heatmap = heatmap

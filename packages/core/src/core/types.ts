@@ -429,6 +429,10 @@ export interface FieldOptions {
   /** draw the background Currents (§24); default true. Set false for the bare
    *  free-particle field with no carrier waves. */
   waves?: boolean;
+  /** wave layout style: `'linear'` (default horizontal lines) or `'circular'` (concentric orbits around a center). */
+  waveStyle?: 'linear' | 'circular';
+  /** wave center coordinate for circular waves. If omitted, tracks the star body or defaults to viewport center. */
+  waveCenter?: { x: number; y: number } | (() => { x: number; y: number }) | null;
   /** substrate background: `'opaque'` (default) paints the near-black substrate each frame;
    *  `'transparent'` clears to transparent instead, so the underlay can sit OVER light content
    *  (a 3D scene, an image, a light page) without blanking it out. The bright matter survives;
@@ -670,6 +674,10 @@ export interface FieldHandle {
   setPalette(palette: string | readonly string[]): void;
   /** switch the global formation (§7). */
   setFormation(name: string): void;
+  /** switch the wave current layout style. */
+  setWaveStyle(style: 'linear' | 'circular'): void;
+  /** set the custom wave center coordinate (or function). */
+  setWaveCenter(center: { x: number; y: number } | (() => { x: number; y: number }) | null): void;
   /** toggle conserved attention (§2.4) live — one finite strength budget. */
   setAttention(on: boolean): void;
   /** toggle cross-boundary causality (Concept 4) live — density spills to neighbours. */
