@@ -449,4 +449,16 @@ const dest = [
       display: none;
     }
   }
+
+  /* very narrow viewports (<420px): hide the version pill so the wordmark + scrollable
+     strip fit without the inner row itself overflowing. */
+  @media (max-width: 420px) {
+    .sn-version {
+      display: none;
+    }
+    .sn-inner {
+      gap: 0.6rem;
+      padding: 0 0.75rem;
+    }
+  }
 </style>

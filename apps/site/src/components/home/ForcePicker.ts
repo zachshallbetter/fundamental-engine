@@ -49,6 +49,8 @@ export function initForcePicker(): () => void {
       source.setAttribute("data-strength", c.strength || "1");
       source.setAttribute("data-range", c.range || "1300");
       source.setAttribute("data-color", c.color || "#6366f1");
+      if (c.spin) source.setAttribute("data-spin", c.spin);
+      else source.removeAttribute("data-spin");
       source.style.setProperty("--fc", c.color || "#6366f1");
       source.classList.add("on");
       field?.setAttribute("accent", c.color || "#6366f1"); // tint both surfaces to the field's color
