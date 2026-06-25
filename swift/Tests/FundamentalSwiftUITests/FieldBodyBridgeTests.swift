@@ -56,5 +56,70 @@ struct FieldBodyBridgeTests {
         #expect(!reg.isRegistered)
         field.destroy()
     }
+
+    @Test("wires onFeedback to the engine and receives callbacks")
+    @MainActor
+    func wiresOnFeedback() {
+        let host = TestFieldHost()
+        let field = FieldField(host: host)
+        let reg = FieldBodyRegistration()
+
+        var feedbackCount = 0
+        var lastDensity: Float? = nil
+
+        reg.sync(field: field, tokens: ["attract"], strength: 1, range: 100,
+                 onFeedback: { channels in
+                     feedbackCount += 1
+                     lastDensity = channels.density
+                 },
+                 frame: CGRect(x: 100, y: 50, width: 40, height: 20))
+
+        #expect(reg.isRegistered)
+
+        // tick the engine a few times
+        for i in 0..<5 {
+            host.fire(at: TimeInterval(i) / 60)
+        }
+
+        #expect(feedbackCount > 0)
+        #expect(lastDensity != nil)
+
+        reg.remove()
+        field.destroy()
+    }
     #endif
 }
+
+#if canImport(AppKit)
+final class TestFieldHost: FieldHost {
+    var volume = FieldVolume(width: 375, height: 812, depth: 0)
+    var scrollY: Float = 0
+    var scrollHeight: Float = 0
+    var prefersReducedMotion = false
+    var isHidden = false
+    var projection: any FieldProjection = FlatProjection()
+
+    private var frameCallback: ((TimeInterval) -> Void)?
+
+    func scheduleFrame(_ callback: @escaping (TimeInterval) -> Void) -> AnyObject {
+        frameCallback = callback
+        return NSObject()
+    }
+
+    func cancelFrame(_ token: AnyObject) {
+        frameCallback = nil
+    }
+
+    func onResize(_ cb: @escaping () -> Void) -> () -> Void { { } }
+    func onScroll(_ cb: @escaping () -> Void) -> () -> Void { { } }
+    func onVisibility(_ cb: @escaping () -> Void) -> () -> Void { { } }
+    func onInput(_ cb: @escaping () -> Void) -> () -> Void { { } }
+
+    func scanBodies() -> [Body] { [] }
+    func worldBox(of view: AnyObject) -> Box? { nil }
+
+    func fire(at time: TimeInterval) {
+        frameCallback?(time)
+    }
+}
+#endif
