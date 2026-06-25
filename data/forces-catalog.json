@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "generatedFrom": [
+    "packages/core/src/contracts/passport.ts",
+    "packages/core/src/config/forces.config.ts"
+  ],
+  "forces": [
+    {
+      "token": "attract",
+      "label": "Attract",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#4da3ff"
+    },
+    {
+      "token": "repel",
+      "label": "Repel",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#ff9d5c"
+    },
+    {
+      "token": "swirl",
+      "label": "Swirl",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#2dd4bf"
+    },
+    {
+      "token": "stream",
+      "label": "Stream",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#7dd3fc"
+    },
+    {
+      "token": "viscosity",
+      "label": "Viscosity",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#8da2c0"
+    },
+    {
+      "token": "jet",
+      "label": "Jet",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#a78bfa"
+    },
+    {
+      "token": "tether",
+      "label": "Tether",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#86e57f"
+    },
+    {
+      "token": "wall",
+      "label": "Wall",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#c4b5fd"
+    },
+    {
+      "token": "sink",
+      "label": "Sink",
+      "family": "canonical",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#ff6e9c"
+    },
+    {
+      "token": "gravity",
+      "label": "Gravity",
+      "family": "natural",
+      "class": "A",
+      "truthMode": "physical",
+      "color": "#ffce6b"
+    },
+    {
+      "token": "charge",
+      "label": "Charge",
+      "family": "natural",
+      "class": "A",
+      "truthMode": "physical",
+      "color": "#f472b6"
+    },
+    {
+      "token": "magnetism",
+      "label": "Magnetism",
+      "family": "natural",
+      "class": "A",
+      "truthMode": "physical",
+      "color": "#60a5fa"
+    },
+    {
+      "token": "thermal",
+      "label": "Thermal",
+      "family": "natural",
+      "class": "A",
+      "truthMode": "physical",
+      "color": "#fb7185"
+    },
+    {
+      "token": "collide",
+      "label": "Collide",
+      "family": "natural",
+      "class": "B",
+      "truthMode": "physical",
+      "color": "#e2e8f0"
+    },
+    {
+      "token": "diffuse",
+      "label": "Diffuse",
+      "family": "natural",
+      "class": "C",
+      "truthMode": "physical",
+      "color": "#34d399"
+    },
+    {
+      "token": "propagate",
+      "label": "Propagate",
+      "family": "natural",
+      "class": "C",
+      "truthMode": "physical",
+      "color": "#22d3ee"
+    },
+    {
+      "token": "memory",
+      "label": "Memory",
+      "family": "natural",
+      "class": "C",
+      "truthMode": "semantic",
+      "color": "#c084fc"
+    },
+    {
+      "token": "fieldflow",
+      "label": "Fieldflow",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "hybrid",
+      "color": "#818cf8"
+    },
+    {
+      "token": "lens",
+      "label": "Lens",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#93c5fd"
+    },
+    {
+      "token": "gate",
+      "label": "Gate",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#fbbf24"
+    },
+    {
+      "token": "buoyancy",
+      "label": "Buoyancy",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#67e8f9"
+    },
+    {
+      "token": "shear",
+      "label": "Shear",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#a3e635"
+    },
+    {
+      "token": "crystallize",
+      "label": "Crystallize",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#bae6fd"
+    },
+    {
+      "token": "align",
+      "label": "Align",
+      "family": "extended",
+      "class": "B",
+      "truthMode": "designed",
+      "color": "#5eead4"
+    },
+    {
+      "token": "wind",
+      "label": "Wind",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#a5f3fc"
+    },
+    {
+      "token": "cohesion",
+      "label": "Cohesion",
+      "family": "extended",
+      "class": "B",
+      "truthMode": "designed",
+      "color": "#38bdf8"
+    },
+    {
+      "token": "pressure",
+      "label": "Pressure",
+      "family": "extended",
+      "class": "B",
+      "truthMode": "designed",
+      "color": "#f97316"
+    },
+    {
+      "token": "hunt",
+      "label": "Hunt",
+      "family": "extended",
+      "class": "B",
+      "truthMode": "designed",
+      "color": "#f87171"
+    },
+    {
+      "token": "spawn",
+      "label": "Spawn",
+      "family": "extended",
+      "class": "S",
+      "truthMode": "designed",
+      "color": "#fde047"
+    },
+    {
+      "token": "link",
+      "label": "Link",
+      "family": "extended",
+      "class": "B",
+      "truthMode": "designed",
+      "color": "#84cc16"
+    },
+    {
+      "token": "morph",
+      "label": "Morph",
+      "family": "extended",
+      "class": "D",
+      "truthMode": "designed",
+      "color": "#e879f9"
+    },
+    {
+      "token": "resonate",
+      "label": "Resonate",
+      "family": "extended",
+      "class": "modifier",
+      "truthMode": "designed",
+      "color": "#f0abfc"
+    },
+    {
+      "token": "spotlight",
+      "label": "Spotlight",
+      "family": "extended",
+      "class": "modifier",
+      "truthMode": "designed",
+      "color": "#fef08a"
+    },
+    {
+      "token": "screen",
+      "label": "Screen",
+      "family": "extended",
+      "class": "modifier",
+      "truthMode": "designed",
+      "color": "#94a3b8"
+    },
+    {
+      "token": "pigment",
+      "label": "Pigment",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#fb923c"
+    },
+    {
+      "token": "warp",
+      "label": "Warp",
+      "family": "extended",
+      "class": "A",
+      "truthMode": "designed",
+      "color": "#c4b5fd"
+    }
+  ]
+}

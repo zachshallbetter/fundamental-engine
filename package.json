@@ -21,6 +21,7 @@
     "check:golden": "pnpm gen:golden && git diff --exit-code swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json",
     "gen:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json",
     "check:atoms": "node scripts/gen-atoms.mjs > apps/site/src/data/atoms.json && git diff --exit-code apps/site/src/data/atoms.json",
+    "gen:force-catalog": "node scripts/gen-force-catalog.mjs",
     "dev": "pnpm --filter @fundamental-engine/site dev",
     "build:site": "pnpm --filter @fundamental-engine/site build",
     "docs:dev": "pnpm --filter @fundamental-engine/docs dev",
