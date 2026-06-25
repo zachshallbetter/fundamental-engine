@@ -368,7 +368,7 @@
               "privacy": "private",
               "static": true,
               "readonly": true,
-              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, ]",
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle }, { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter }, ]",
               "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart."
             },
             {
@@ -615,6 +615,24 @@
             },
             {
               "kind": "field",
+              "name": "waveStyle",
+              "type": {
+                "text": "'linear' | 'circular'"
+              },
+              "description": "`wave-style` — wave layout style: `'linear'` | `'circular'`",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "waveCenter",
+              "type": {
+                "text": "{ x: number; y: number } | null"
+              },
+              "description": "`wave-center` — coordinates string space-separated e.g. \"200 300\"",
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "formation",
               "type": {
                 "text": "string | undefined"
@@ -729,6 +747,42 @@
                 }
               ],
               "description": "switch the global formation (§7)."
+            },
+            {
+              "kind": "method",
+              "name": "setWaveStyle",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "style",
+                  "type": {
+                    "text": "'linear' | 'circular'"
+                  }
+                }
+              ],
+              "description": "switch the wave current layout style."
+            },
+            {
+              "kind": "method",
+              "name": "setWaveCenter",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "center",
+                  "type": {
+                    "text": "{ x: number; y: number } | (() => { x: number; y: number }) | null"
+                  }
+                }
+              ],
+              "description": "set the custom wave center coordinate (or function)."
             },
             {
               "kind": "method",
@@ -1409,6 +1463,12 @@
               "name": "wave-baseline"
             },
             {
+              "name": "wave-style"
+            },
+            {
+              "name": "wave-center"
+            },
+            {
               "name": "background"
             },
             {
@@ -1567,6 +1627,20 @@
               }
             },
             {
+              "name": "wave-style",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "name": "wave-center",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
               "name": "background",
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1591,7 +1665,7 @@
               "privacy": "private",
               "static": true,
               "readonly": true,
-              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, ]",
+              "default": "[ { key: 'density', attr: 'density', read: (el) => el.density }, { key: 'waves', attr: 'waves', read: (el) => el.waves }, { key: 'depth', attr: 'depth', read: (el) => el.depth }, { key: 'background', attr: 'background', read: (el) => el.background }, { key: 'render', attr: 'render', read: (el) => el.renderMode }, { key: 'overlay', attr: 'overlay', read: (el) => el.overlay }, { key: 'palette', attr: 'palette', read: (el) => el.palette }, { key: 'mass', attr: 'mass', read: (el) => el.mass }, { key: 'attention', attr: 'attention', read: (el) => el.attention }, { key: 'causality', attr: 'causality', read: (el) => el.causality }, { key: 'heatmap', attr: 'heatmap', read: (el) => el.heatmap }, { key: 'dprCap', attr: 'dpr-cap', read: (el) => el.dprCap }, { key: 'gridWarp', attr: 'grid-warp', read: (el) => el.gridWarp }, { key: 'gridIntensity', attr: 'grid-intensity', read: (el) => el.gridIntensity }, { key: 'theme', attr: 'theme', read: (el) => el.theme }, { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool }, { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm }, { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline }, { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle }, { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter }, ]",
               "description": "The engine options `<field-root>` forwards to `createBrowserField`, as ONE declarative table —\nthe single source of truth for the option object built in `start()`, so a new forwarded\n`FieldOption` can never be silently dropped from forwarding the way `depth` once was. `accent`\n(raw passthrough so a `palette` with no `accent` adopts the palette stop) and\n`overlayCanvas`/`feedbackSink` (managed internally) are special-cased in `start()` and absent here.\n\n`observedAttributes` stays an explicit literal below — the Custom-Elements-Manifest analyzer reads\nit statically and can't enumerate a computed array — but the `option-attrs-observed` test pins it\nto this table (every `attr` here must be observed), so the two lists can't drift apart.",
               "inheritedFrom": {
                 "name": "FieldField",
@@ -1950,6 +2024,32 @@
             },
             {
               "kind": "field",
+              "name": "waveStyle",
+              "type": {
+                "text": "'linear' | 'circular'"
+              },
+              "description": "`wave-style` — wave layout style: `'linear'` | `'circular'`",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "waveCenter",
+              "type": {
+                "text": "{ x: number; y: number } | null"
+              },
+              "description": "`wave-center` — coordinates string space-separated e.g. \"200 300\"",
+              "readonly": true,
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
               "name": "formation",
               "type": {
                 "text": "string | undefined"
@@ -2092,6 +2192,50 @@
                 }
               ],
               "description": "switch the global formation (§7).",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setWaveStyle",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "style",
+                  "type": {
+                    "text": "'linear' | 'circular'"
+                  }
+                }
+              ],
+              "description": "switch the wave current layout style.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setWaveCenter",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "center",
+                  "type": {
+                    "text": "{ x: number; y: number } | (() => { x: number; y: number }) | null"
+                  }
+                }
+              ],
+              "description": "set the custom wave center coordinate (or function).",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"
