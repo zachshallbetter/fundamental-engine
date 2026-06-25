@@ -277,11 +277,29 @@ export interface PlatformLike {
   scheduler: FrameScheduler;
 }
 
+/** A pluggable lint rule. Pure: reads only, never mutates the platform or DOM. */
+export interface LintRule {
+  readonly id: string;
+  run(root: ParentNode, warnings: PlatformLintWarning[]): void;
+}
+
+const _customRules = new Map<string, LintRule>();
+
+/** Register a custom lint rule globally. Returns an unregister function.
+ *  The rule runs alongside built-ins on every lintPlatform() call.
+ */
+export function registerLintRule(rule: LintRule): () => void {
+  _customRules.set(rule.id, rule);
+  return () => { _customRules.delete(rule.id); };
+}
+
 export interface LintOptions {
   /** the subtree to scan for relation targets (defaults to the platform root). */
   root?: ParentNode;
   /** id resolver for relation targets (defaults to document.getElementById). */
   resolve?: Resolver;
+  /** inline rules to run alongside built-ins for this call only. */
+  rules?: LintRule[];
 }
 
 /**
@@ -319,7 +337,7 @@ export function lintCompositingPerf(root: ParentNode): PlatformLintWarning[] {
 export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): PlatformLintWarning[] {
   const root = opts.root ?? platform.root;
   const resolve: Resolver = opts.resolve ?? ((id) => (typeof document !== 'undefined' ? document.getElementById(id) : null));
-  return [
+  const warnings: PlatformLintWarning[] = [
     ...lintRelationTargets(root, resolve),
     ...lintCompositingPerf(root),
     ...lintSinkFeedback(root),
@@ -333,4 +351,10 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
     ...lintVisuals(platform.visuals),
     ...lintSchedulerViolations(platform.scheduler),
   ];
+
+  // pluggable rules — inline (opts.rules) + globally registered
+  const extraRules = [...(opts?.rules ?? []), ..._customRules.values()];
+  for (const rule of extraRules) rule.run(root, warnings);
+
+  return warnings;
 }
