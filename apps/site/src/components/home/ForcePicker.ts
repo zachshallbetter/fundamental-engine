@@ -58,9 +58,15 @@ export function initForcePicker(): () => void {
       field?.setAttribute("overlay", c.overlay || "off"); // OVER: live field structure, in front of content
     } else {
       source.removeAttribute("data-body");
+      source.removeAttribute("data-spin");
       source.classList.remove("on");
       field?.setAttribute("render", restingRender());
-      field?.setAttribute("overlay", "off");
+      // only clear the overlay if we currently own it — avoid clobbering the render-tour
+      // or any other controller that took over the overlay surface while we were off-screen.
+      const ourOverlay = current?.dataset.overlay ?? "";
+      const liveOverlay = field?.getAttribute("overlay") ?? "";
+      if (!liveOverlay || liveOverlay === ourOverlay || liveOverlay === "off")
+        field?.setAttribute("overlay", "off");
     }
     rescan();
   };
@@ -94,6 +100,7 @@ export function initForcePicker(): () => void {
     ac.abort();
     io.disconnect();
     source.removeAttribute("data-body");
+    source.removeAttribute("data-spin");
     source.classList.remove("on");
     field?.setAttribute("render", restingRender());
     field?.setAttribute("overlay", "off");
