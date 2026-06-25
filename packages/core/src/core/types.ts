@@ -14,6 +14,18 @@ import type { FieldHost } from './host.ts';
 import type { ClassifiedTokens } from '../config/forces.config.ts';
 import type { FieldEventType, FieldEventMap } from './events.ts';
 
+/** Wire-format version for the readParticles() output buffer.
+ *  Version 0 — current layout, stride 5: [x, y, z, heat, size] per particle (all Float32).
+ *  A renderer should assert PARTICLE_WIRE_VERSION === 0 before consuming readParticles output.
+ *  Bumped on any stride or channel-order change; old renderers must update.
+ */
+export const PARTICLE_WIRE_VERSION = 0 as const;
+
+/** Elements per particle in the readParticles() Float32Array.
+ *  Layout: [x, y, z, heat, size]. Index: particle[i] starts at i * PARTICLE_STRIDE.
+ */
+export const PARTICLE_STRIDE = 5 as const;
+
 export interface Vec2 {
   x: number;
   y: number;
@@ -895,6 +907,17 @@ export interface FieldHandle {
    * them (the engine carries the identity, not the payload). Zero-allocation, read-only.
    */
   readParticleIds(out: Uint32Array): number;
+  /** Read multiple named channels from live particles into caller-owned buffers (column-wise:
+   *  all particles' first channel, then second, etc.). Returns the particle count written.
+   *  Channels: 'x' | 'y' | 'z' | 'vx' | 'vy' | 'heat' | 'size' | 'm' | 'id' | 'age' | 'charge'.
+   *  Unknown channels write 0. Mirrors readParticles() agent-exclusion behaviour.
+   */
+  readParticleChannels(channels: readonly string[], out: readonly Float32Array[]): number;
+  /** Register a named custom overlay function. Called each frame when `name` is in the
+   *  active overlay stack (via setOverlay). Returns an unregister function.
+   *  drawFn receives the active RenderBackend, current Env, and canvas W/H.
+   */
+  registerOverlay(name: string, drawFn: (backend: import('./render-backend.ts').RenderBackend, env: Env, W: number, H: number) => void): () => void;
   /**
    * The engine's eased page-scroll velocity for the current frame — the same EMA value the
    * `scrolling` condition gate uses: `(prev × 0.7) + (|scrollDelta| × 0.3)` per frame.

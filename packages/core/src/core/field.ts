@@ -161,6 +161,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   const programmaticEdges: ProgEdge[] = [];
   let edgeSeq = 0;
   const fieldChannels = new Map<string, (x: number, y: number) => number>(); // addField() input channels
+  // custom overlay functions registered via registerOverlay(); keyed by name, dispatched from renderOverlay()
+  const customOverlays = new Map<string, (backend: RenderBackend, env: Env, W: number, H: number) => void>();
   // All 36 forces are registered on every field — there is no opt-in. Any of them activates per-body
   // through its `data-body` token (e.g. `data-body="lens crystallize"`); an unused force costs nothing.
   registerCoreForces(reg); // the canonical nine (§6)
@@ -1922,6 +1924,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       else if (mode === 'energy') drawOverlayContours(out, (p) => 0.5 * p.m * (p.vx * p.vx + p.vy * p.vy), 0.42);
       else if (mode === 'path') drawOverlayPaths(out);
       else if (mode === 'data') drawOverlayData(out);
+      // custom overlays registered via registerOverlay()
+      const customFn = customOverlays.get(mode);
+      if (customFn) customFn(out, env, W, H);
     }
   }
 
@@ -2332,6 +2337,31 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         out[w++] = p.id ?? 0;
       }
       return w;
+    },
+    readParticleChannels: (channels, out) => {
+      const ps = store.particles;
+      let written = 0;
+      for (let i = 0; i < ps.length; i++) {
+        const p = ps[i]!;
+        if ('report' in p && p.report !== undefined) continue;
+        if (written >= Math.min(...out.map(b => b.length))) break;
+        for (let ci = 0; ci < channels.length; ci++) {
+          if (ci >= out.length) break;
+          const ch = channels[ci]!;
+          out[ci]![written] =
+            ch === 'x' ? p.x : ch === 'y' ? p.y : ch === 'z' ? (p.z ?? 0) :
+            ch === 'vx' ? p.vx : ch === 'vy' ? p.vy :
+            ch === 'heat' ? p.heat : ch === 'size' ? p.size :
+            ch === 'm' ? p.m : ch === 'id' ? (p.id ?? 0) :
+            ch === 'age' ? (p.age ?? 0) : ch === 'charge' ? (p.charge ?? 0) : 0;
+        }
+        written++;
+      }
+      return written;
+    },
+    registerOverlay: (name, drawFn) => {
+      customOverlays.set(name, drawFn);
+      return () => { customOverlays.delete(name); };
     },
     addAgent: (spec) => {
       const p = newParticle({ x: spec.x, y: spec.y, z: spec.z, species: spec.species });

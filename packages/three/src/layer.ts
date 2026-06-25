@@ -264,6 +264,14 @@ export class FieldLayer implements FieldHandle {
   readParticleIds(out: Uint32Array): number {
     return this.field.readParticleIds(out);
   }
+  /** read multiple named channels from live particles into caller-owned buffers (column-wise). */
+  readParticleChannels(channels: readonly string[], out: readonly Float32Array[]): number {
+    return this.field.readParticleChannels(channels, out);
+  }
+  /** register a named custom overlay function; returns an unregister fn. */
+  registerOverlay(name: string, drawFn: Parameters<typeof this.field.registerOverlay>[1]): () => void {
+    return this.field.registerOverlay(name, drawFn);
+  }
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field.energy();
   }
