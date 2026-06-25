@@ -165,7 +165,9 @@ $$\text{heat}_{t+1} = \text{heat}_t \cdot 0.972$$
 ---
 
 ### 3.2 Background Currents (Carrier Waves)
-The background consists of $5$ layered standing waveforms that drift free particles and transport bound particles.
+The background consists of $5$ layered standing waveforms that drift free particles and transport bound particles. They support two modes: **Linear** (default parallel horizontal waves) and **Circular** (concentric closed orbits).
+
+#### Linear Waves (`waveStyle: 'linear'`)
 
 * **Wave Y-Coordinate Calculation (`waveYat`):**
   At horizontal coordinate $x$ and time $t$ (seconds), the height $y_w$ of wave $w$ is:
@@ -181,10 +183,32 @@ The background consists of $5$ layered standing waveforms that drift free partic
   The slope of the wave represents its spatial derivative, driving vertical velocity:
   $$\text{slope}_w = \cos(x \cdot w.\text{freq} + w.\text{phase} + t \cdot w.\text{speed} \cdot 1000 \cdot \text{waveSpeed}) \cdot w.\text{amp} \cdot w.\text{freq} \cdot \text{amplitude}$$
 
-* **Free Particle Drift (Wave Current):**
+* **Free Particle Drift (Linear Wave Current):**
   For each free particle, identify the closest wave $w$ in the viewport. If the vertical distance $\text{nd} = |y_w - p.y| < 70\ \text{px}$, apply velocities:
   $$p.vx += w.\text{dir} \cdot 0.035 \cdot \left(1 - \frac{\text{nd}}{70}\right)$$
   $$p.vy += \text{slope}_w \cdot 0.1 \cdot \left(1 - \frac{\text{nd}}{70}\right)$$
+
+#### Circular Waves (`waveStyle: 'circular'`)
+Concentric closed orbits circling around a central coordinate $(\text{cx}, \text{cy})$ resolved dynamically (defaulting to the first body tagged with `star`/`vortex`, or the viewport center).
+
+* **Radial Wave Distance Calculation (`waveRAt`):**
+  At angle $\theta \in [0, 2\pi]$ and time $t$, the undulating wave radius $r_w(\theta)$ is:
+  $$r_w(\theta) = w.\text{baseFrac} \cdot R_{\text{max}} + \sin(N \cdot \theta + w.\text{phase} + t \cdot w.\text{speed} \cdot 1000 \cdot \text{waveSpeed}) \cdot w.\text{amp} \cdot \text{amplitude}$$
+  where $R_{\text{max}} = 0.48 \cdot \min(W, H)$ and $N = \max(1, \text{round}(w.\text{freq} \cdot 2500))$ is clamped to integer values to guarantee the loops close seamlessly.
+
+* **Wave Slope / Derivative (`waveSlope`):**
+  The angular rate of radius change is:
+  $$\text{slope}_w = \cos(N \cdot \theta + w.\text{phase} + t \cdot w.\text{speed} \cdot 1000 \cdot \text{waveSpeed}) \cdot w.\text{amp} \cdot N \cdot \text{amplitude}$$
+
+* **Free Particle Drift (Circular Wave Current):**
+  Calculate particle angle $\theta = \text{atan2}(p.y - cy, p.x - cx)$ and distance $d_{\text{center}}$ to center. For the closest wave $w$, if radial gap $\text{nd} = |r_w(\theta) - d_{\text{center}}| < 70\ \text{px}$, apply centripetal correction and tangential drive:
+  $$\text{pull} = (r_w(\theta) - d_{\text{center}}) \cdot 0.05 \cdot \left(1 - \frac{\text{nd}}{70}\right)$$
+  $$\text{drive} = w.\text{dir} \cdot 0.05 \cdot \left(1 - \frac{\text{nd}}{70}\right)$$
+  Converting back to Cartesian velocity updates:
+  $$p.vx += \cos(\theta) \cdot \text{pull} - \sin(\theta) \cdot \text{drive}$$
+  $$p.vy += \sin(\theta) \cdot \text{pull} + \cos(\theta) \cdot \text{drive}$$
+  $$p.vx *= 0.98$$
+  $$p.vy *= 0.98$$
 
 ---
 

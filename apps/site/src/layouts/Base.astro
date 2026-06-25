@@ -16,6 +16,7 @@ const {
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://fundamental-engine.com').href;
 const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.com').href;
+const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || Astro.url.pathname.endsWith('/eli5/');
 ---
 
 <!doctype html>
@@ -79,16 +80,19 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
          transition:persist keeps the engine running across client-side navigation —
          the field is one continuous medium, never reset between pages. -->
     <div class="field" aria-hidden="true" transition:persist></div>
-    <!-- waves off → the bare free-particle field: the matter itself, reacting to the page's
-         bodies, rather than the carrier-wave background. density 3 → ~3× the base ~130 particles,
-         so the field reads as a dense medium the bodies gather and absorb. -->
-    <!-- render="dots" → the particles are always visible. The engine default is now signals-only
-         ('none', #538); the homepage opts into the particle surface explicitly because it IS the
-         field showcase. overlay="grid" + grid-warp + grid-intensity → the signature hero: the
-         reference lattice warped by [data-body] mass (the spacetime-curvature image), bold enough to
-         read as a centerpiece, faded out below the hero by the scroll handler. data-nav-* markers keep
-         the nav toggles in sync across client-side navigation (transition:persist keeps it alive). -->
-    <field-root render="dots" overlay="grid" grid-warp="3" grid-intensity="0.5" accent="#4da3ff" density="2.4" waves="false" data-nav-flow="off" data-nav-grid="on" data-nav-heatmap="off" transition:persist></field-root>
+    <field-root
+      render="dots"
+      overlay={isHome ? "grid" : "off"}
+      grid-warp="3"
+      grid-intensity="0.5"
+      accent="#4da3ff"
+      density="2.4"
+      waves="false"
+      data-nav-flow="off"
+      data-nav-grid={isHome ? "on" : "off"}
+      data-nav-heatmap="off"
+      transition:persist
+    ></field-root>
     <script is:inline>
       // Reduced motion: the carrier-wave renderer advances its geometry from wall-clock time even
       // when particle motion is frozen (the engine sets env.dt = 0 under prefers-reduced-motion), so
@@ -120,10 +124,23 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
       // engagement). Optional chaining keeps it a no-op until the element upgrades.
       document.addEventListener('astro:after-swap', () => {
         const field = document.querySelector('field-root') as
-          | (HTMLElement & { rescan?: () => void; setFormation?: (n: string) => void })
+          | (HTMLElement & { rescan?: () => void; setFormation?: (n: string) => void; setOverlay?: (o: string | string[]) => void })
           | null;
         field?.rescan?.();
         field?.setFormation?.('ambient'); // settle to the resting state on arrival
+
+        // Dynamically toggle grid overlay based on page type
+        if (field) {
+          const isHome = !!document.querySelector('.manual-shell');
+          if (isHome) {
+            field.dataset.navGrid = 'on';
+            field.setOverlay?.('grid');
+          } else {
+            field.dataset.navGrid = 'off';
+            field.dataset.navFlow = 'off';
+            field.setOverlay?.('off');
+          }
+        }
       });
 
       // Boot when the main thread first goes idle, or after ~1.5s — whichever comes

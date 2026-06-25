@@ -118,3 +118,46 @@ export function waveSlope(w: Wave, x: number, time: number, waveSpeed = 1, ampli
     Math.cos(x * w.freq + w.phase + time * w.speed * 1000 * waveSpeed) * w.amp * w.freq * amplitude
   );
 }
+
+/** The circular wave's undulating radius at angle `theta` (radians) and `time` seconds. */
+export function waveRAt(
+  w: Wave,
+  theta: number,
+  time: number,
+  maxRadius: number,
+  waveSpeed = 1,
+  amplitude = 1
+): number {
+  const baseR = w.baseFrac * maxRadius + w.offsetY;
+  // Ensure an integer number of ripples so the circular path is closed (seamless)
+  const N = Math.max(1, Math.round(w.freq * 2500));
+  return baseR + Math.sin(N * theta + w.phase + time * w.speed * 1000 * waveSpeed) * w.amp * amplitude;
+}
+
+/** Calculate shortest distance and coordinates from a particle (px, py) to a wave. */
+export function waveDistance(
+  w: Wave,
+  px: number,
+  py: number,
+  time: number,
+  W: number,
+  H: number,
+  style: 'linear' | 'circular',
+  center: { x: number; y: number },
+  waveSpeed = 1,
+  amplitude = 1,
+  pull?: WavePull
+): { dist: number; rWave: number; r: number; theta: number } {
+  if (style === 'circular') {
+    const dx = px - center.x;
+    const dy = py - center.y;
+    const r = Math.sqrt(dx * dx + dy * dy) || 1e-3;
+    const theta = Math.atan2(dy, dx);
+    const maxRadius = Math.min(W, H) * 0.48;
+    const rWave = waveRAt(w, theta, time, maxRadius, waveSpeed, amplitude);
+    return { dist: Math.abs(r - rWave), rWave, r, theta };
+  } else {
+    const yWave = waveYat(w, px, time, H, waveSpeed, amplitude, pull);
+    return { dist: Math.abs(py - yWave), rWave: yWave, r: py, theta: 0 };
+  }
+}

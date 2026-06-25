@@ -10,7 +10,7 @@
 import type { Body, ConditionRegistry, Env, Force, ForceRegistry, Particle } from './types.ts';
 import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
-import { waveYat, waveSlope, type Wave } from './currents.ts';
+import { waveYat, waveSlope, waveDistance, type Wave } from './currents.ts';
 import { netField } from './streamlines.ts';
 import { screenFactor } from './math.ts';
 import { classifyBodyTokens, type ClassifiedTokens } from '../config/forces.config.ts';
@@ -27,6 +27,9 @@ export interface StepInput {
   conditions: ConditionRegistry;
   /** the carrier waves — free particles drift along their slope (§2.3). */
   waves?: readonly Wave[];
+  waveStyle?: 'linear' | 'circular';
+  waveCenter?: { x: number; y: number } | null;
+  separation?: number;
 }
 
 function passes(conds: ConditionRegistry, b: Body, p: Particle, env: Env): boolean {
@@ -71,7 +74,7 @@ function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void
 }
 
 export function step(input: StepInput): void {
-  const { store, bodies, env, forces, conditions, waves } = input;
+  const { store, bodies, env, forces, conditions, waves, separation } = input;
   const dt = env.dt;
   if (dt === 0) return;
   const { W, H, form } = env;
@@ -127,18 +130,51 @@ export function step(input: StepInput): void {
 
     // wave current (§2.3): near a wave line, drift along its slope like debris.
     if (hasWaves) {
-      let near: Wave | null = null;
-      let nd = 1e9;
-      for (const w of waves!) {
-        const d = Math.abs(waveYat(w, p.x, env.t, H) - p.y);
-        if (d < nd) {
-          nd = d;
-          near = w;
+      if (input.waveStyle === 'circular') {
+        let near: Wave | null = null;
+        let nd = 1e9;
+        let nearR = 0;
+        let nearRWave = 0;
+        let nearTheta = 0;
+        const c = input.waveCenter || { x: W / 2, y: H / 2 };
+        for (const w of waves!) {
+          const res = waveDistance(w, p.x, p.y, env.t, W, H, 'circular', c);
+          if (res.dist < nd) {
+            nd = res.dist;
+            near = w;
+            nearR = res.r;
+            nearRWave = res.rWave;
+            nearTheta = res.theta;
+          }
         }
-      }
-      if (near && nd < 70) {
-        p.vx += near.dir * 0.035 * (1 - nd / 70);
-        p.vy += waveSlope(near, p.x, env.t) * 0.1 * (1 - nd / 70);
+        if (near && nd < 70) {
+          const factor = 1 - nd / 70;
+          // Tangential drift
+          const tx = -Math.sin(nearTheta) * near.dir;
+          const ty = Math.cos(nearTheta) * near.dir;
+          p.vx += tx * 0.035 * factor;
+          p.vy += ty * 0.035 * factor;
+
+          // Radial pull towards the wave radius
+          const rx = Math.cos(nearTheta) * Math.sign(nearRWave - nearR);
+          const ry = Math.sin(nearTheta) * Math.sign(nearRWave - nearR);
+          p.vx += rx * 0.05 * factor;
+          p.vy += ry * 0.05 * factor;
+        }
+      } else {
+        let near: Wave | null = null;
+        let nd = 1e9;
+        for (const w of waves!) {
+          const d = Math.abs(waveYat(w, p.x, env.t, H) - p.y);
+          if (d < nd) {
+            nd = d;
+            near = w;
+          }
+        }
+        if (near && nd < 70) {
+          p.vx += near.dir * 0.035 * (1 - nd / 70);
+          p.vy += waveSlope(near, p.x, env.t) * 0.1 * (1 - nd / 70);
+        }
       }
     }
 
@@ -301,6 +337,23 @@ export function step(input: StepInput): void {
             if (f && !f.modify) applyForce(f, b, p, env, inv);
           }
           b.strength = origS;
+        }
+      }
+    }
+
+    // short-range particle-to-particle separation to prevent clumping
+    if (separation && separation > 0) {
+      const ns = env.neighbors(p, 12);
+      for (const n of ns) {
+        const dx = p.x - n.x;
+        const dy = p.y - n.y;
+        const dz = (p.z ?? 0) - (n.z ?? 0);
+        const dist = Math.hypot(dx, dy, dz) || 0.1;
+        if (dist < 12) {
+          const force = ((12 - dist) / 12) * separation * 0.12;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+          if (p.vz !== undefined) p.vz! += (dz / dist) * force;
         }
       }
     }

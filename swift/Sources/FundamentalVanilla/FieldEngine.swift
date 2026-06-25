@@ -305,11 +305,32 @@ final class FieldEngine: FieldHandle {
         // charge induction (§20.10): charge/magnetism bodies polarize neutral matter.
         induceCharges(bodies: bodies, particles: store.particles)
 
+        // resolve waveCenter:
+        var resolvedCenter: Vec3? = nil
+        if options.waveStyle == .circular {
+            if let centerOption = options.waveCenter {
+                switch centerOption {
+                case .coordinate(let coord):
+                    resolvedCenter = coord
+                case .provider(let provider):
+                    resolvedCenter = provider()
+                }
+            } else {
+                if let starBody = bodies.first(where: { $0.tokens.contains("star") || $0.tokens.contains("vortex") }) {
+                    resolvedCenter = starBody.center
+                } else {
+                    resolvedCenter = Vec3(vol.width / 2, vol.height / 2, 0)
+                }
+            }
+        }
+
         // simulate
         store.reindex()
         step(StepInput(store: store, bodies: bodies, env: env,
                        forces: registry.forces, conditions: registry.conditions,
-                       waves: waves.isEmpty ? nil : waves))
+                       waves: waves.isEmpty ? nil : waves,
+                       waveStyle: options.waveStyle, waveCenter: resolvedCenter,
+                       separation: options.separation))
 
         // flow focus: pull free matter toward the target (gain 0.6, the JS particle gain).
         if let flow {
@@ -392,7 +413,8 @@ final class FieldEngine: FieldHandle {
             renderer.render(frame: RenderFrame(
                 particles: store.particles, bodies: bodies, accent: accent,
                 mode: options.render, projection: host.projection, volume: vol,
-                time: env.t, waves: waves, bound: bound, sparks: sparks,
+                time: env.t, waves: waves, waveStyle: options.waveStyle, waveCenter: resolvedCenter,
+                bound: bound, sparks: sparks,
                 heatmap: options.heatmap ? heatmap : nil,
                 overlays: activeOverlays(),
                 forceSampler: { forceAt(bodies: bodiesRef, forces: forcesRef, env: envRef, at: $0) },
@@ -583,6 +605,10 @@ final class FieldEngine: FieldHandle {
     func setFormation(_ name: String) {
         if let def = formation(named: name) { formTarget = def.preset }
     }
+
+    func setWaveStyle(_ style: WaveStyle) { options.waveStyle = style }
+    func setWaveCenter(_ center: WaveCenter?) { options.waveCenter = center }
+    func setSeparation(_ strength: Float) { options.separation = strength }
 
     func setAttention(_ on: Bool) { options.attention = on }
     func setCausality(_ on: Bool) { options.causality = on }

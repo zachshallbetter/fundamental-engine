@@ -438,3 +438,35 @@ struct ReactionTests {
         #expect(thermalSigma(-5) == 0)
     }
 }
+
+// MARK: - Currents
+
+@Suite("CircularCurrents")
+struct CircularCurrentsTests {
+    @Test("waveRAt calculates radial distance at theta")
+    func waveRAtTest() {
+        let w = Wave(baseFrac: 0.5, amp: 10, freq: 0, phase: .pi / 2, speed: 0,
+                     color: .zero, depth: 0, dir: 1, offsetY: 0)
+        // N = max(1, round(0 * 2500)) = 1
+        // waveRAt = (0.5 * 100) + sin(1 * 0 + pi/2) * 10 = 50 + 1 * 10 = 60
+        let r = waveRAt(w, theta: 0, time: 0, maxRadius: 100)
+        #expect(abs(r - 60) < 0.001)
+    }
+
+    @Test("waveDistance calculates polar distance")
+    func waveDistanceTest() {
+        let w = Wave(baseFrac: 0.5, amp: 10, freq: 0, phase: .pi / 2, speed: 0,
+                     color: .zero, depth: 0, dir: 1, offsetY: 0)
+        let center = Vec3(100, 100, 0)
+        let px: Float = 100 + 70 // 70px right of center -> theta = 0, distance to center = 70.
+        let py: Float = 100
+        // W=200, H=200 -> maxRadius = 200 * 0.48 = 96
+        // baseR = 0.5 * 96 = 48
+        // rWave = 48 + sin(0 + pi/2) * 10 = 58
+        // distance from 70 to 58 is 12.
+        let res = waveDistance(w, px: px, py: py, time: 0, W: 200, H: 200, style: .circular, center: center)
+        #expect(abs(res.dist - 12) < 0.001)
+        #expect(abs(res.theta - 0) < 0.001)
+    }
+}
+

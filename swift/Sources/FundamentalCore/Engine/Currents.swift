@@ -114,3 +114,36 @@ public func waveSlope(_ w: Wave, x: Float, time: Float,
                       waveSpeed: Float = 1, amplitude: Float = 1) -> Float {
     cos(x * w.freq + w.phase + time * w.speed * 1000 * waveSpeed) * w.amp * w.freq * amplitude
 }
+
+/// The circular wave's undulating radius at angle `theta` (radians) and `time` seconds.
+public func waveRAt(_ w: Wave, theta: Float, time: Float, maxRadius: Float,
+                    waveSpeed: Float = 1, amplitude: Float = 1) -> Float {
+    let baseR = w.baseFrac * maxRadius + w.offsetY
+    let N = max(1, Int((w.freq * 2500).rounded()))
+    return baseR + sin(Float(N) * theta + w.phase + time * w.speed * 1000 * waveSpeed) * w.amp * amplitude
+}
+
+public struct WaveDistanceResult {
+    public var dist: Float
+    public var rWave: Float
+    public var r: Float
+    public var theta: Float
+}
+
+/// Calculate shortest distance and coordinates from a particle (px, py) to a wave.
+public func waveDistance(_ w: Wave, px: Float, py: Float, time: Float, W: Float, H: Float,
+                         style: WaveStyle, center: Vec3,
+                         waveSpeed: Float = 1, amplitude: Float = 1, pull: WavePull? = nil) -> WaveDistanceResult {
+    if style == .circular {
+        let dx = px - center.x
+        let dy = py - center.y
+        let r = sqrt(dx * dx + dy * dy) == 0 ? 1e-3 : sqrt(dx * dx + dy * dy)
+        let theta = atan2(dy, dx)
+        let maxRadius = min(W, H) * 0.48
+        let rWave = waveRAt(w, theta: theta, time: time, maxRadius: maxRadius, waveSpeed: waveSpeed, amplitude: amplitude)
+        return WaveDistanceResult(dist: abs(r - rWave), rWave: rWave, r: r, theta: theta)
+    } else {
+        let yWave = waveYat(w, x: px, time: time, H: H, waveSpeed: waveSpeed, amplitude: amplitude, pull: pull)
+        return WaveDistanceResult(dist: abs(py - yWave), rWave: yWave, r: py, theta: 0)
+    }
+}

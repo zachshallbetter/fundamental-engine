@@ -156,7 +156,7 @@ const exampleLines = EXAMPLES.map((e) => line(e.name, `${SITE_URL}${e.href}`, e.
 
 const llms = `# Fundamental
 
-> Fundamental is a platform-native relational field runtime for the DOM. The core (\`@fundamental-engine/core\`)
+> Fundamental is a platform-native relational field runtime for the DOM, created by Zach Shallbetter (zachshallbetter.com). The core (\`@fundamental-engine/core\`)
 > computes renderer-agnostic field behavior; \`@fundamental-engine/dom\` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
 > scheduling; \`@fundamental-engine/elements\` exposes native HTML and web-component authoring; \`@fundamental-engine/react\`
@@ -218,6 +218,8 @@ ${exampleLines.join('\n')}
 // ---------------------------------------------------------------------------
 const SEP = '='.repeat(72);
 const fullHeader = `# Fundamental — full canonical documentation
+
+Created by Zach Shallbetter (zachshallbetter.com).
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
 Generated: ${DATE} by apps/site/scripts/gen-llms.mjs

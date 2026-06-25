@@ -32,6 +32,7 @@ import {
   buildWaves,
   buildBound,
   waveYat,
+  waveRAt,
   type Wave,
   type BoundParticle,
   type WavePull,
@@ -187,8 +188,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     density: opts.density && opts.density > 0 ? opts.density : 1,
     render: opts.render ?? 'none', // signals-first default (#538): a bare field runs the sim + feedback but draws nothing until asked. Pass render:'dots' for the particle surface.
     waves: opts.waves ?? true, // draw the background Currents (§24); opt-out for the bare field
+    waveStyle: opts.waveStyle ?? 'linear',
+    waveCenter: opts.waveCenter ?? null,
     background: opts.background ?? 'opaque', // 'transparent' → clear to transparent, underlay over light content
     mass: opts.mass ?? false, // first-class mass (§21.3): m ∝ size when on
+    separation: opts.separation != null && opts.separation >= 0 ? opts.separation : 0,
     attention: opts.attention ?? false, // conserved attention (§2.4), opt-in
     causality: opts.causality ?? false, // cross-boundary causality (Concept 4), opt-in
     heatmap: opts.heatmap ?? false, // density heatmap layer (field-systems H1), opt-in
@@ -242,6 +246,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
+  let resolvedWaveCenter: { x: number; y: number } | null = null;
   // the injected sources (#371): every random draw and wall-clock read in the engine flows
   // through these two, so a seeded rng + fixed clock make a run reproducible end to end.
   const rng = opts.rng ?? Math.random;
@@ -921,70 +926,158 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   function drawWaves(): void {
     const time = env.t;
     const STEP = 16;
-    for (const w of waves) {
-      const [cr, cg, cb] = w.color;
-      ctx!.beginPath();
-      ctx!.moveTo(0, waveYat(w, 0, time, H, 1, 1, pull));
-      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H, 1, 1, pull));
-      ctx!.lineTo(W, H);
-      ctx!.lineTo(0, H);
-      ctx!.closePath();
-      const ty = w.baseFrac * H + w.offsetY - w.amp;
-      const grad = ctx!.createLinearGradient(0, ty, 0, ty + 320);
-      grad.addColorStop(0, `rgba(${cr},${cg},${cb},${(0.11 + w.depth * 0.05) * boot})`);
-      grad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
-      ctx!.fillStyle = grad;
-      ctx!.fill();
+    if (cfg.waveStyle === 'circular') {
+      const c = resolvedWaveCenter || { x: W / 2, y: H / 2 };
+      const maxRadius = Math.min(W, H) * 0.48;
+      for (const w of waves) {
+        const [cr, cg, cb] = w.color;
+        ctx!.beginPath();
+        const dTheta = 0.08;
+        let first = true;
+        for (let theta = 0; theta <= 2 * Math.PI + 0.01; theta += dTheta) {
+          const r = waveRAt(w, theta, time, maxRadius);
+          const x = c.x + Math.cos(theta) * r;
+          const y = c.y + Math.sin(theta) * r;
+          if (first) {
+            ctx!.moveTo(x, y);
+            first = false;
+          } else {
+            ctx!.lineTo(x, y);
+          }
+        }
+        ctx!.closePath();
+
+        const baseR = w.baseFrac * maxRadius + w.offsetY;
+        const grad = ctx!.createRadialGradient(c.x, c.y, Math.max(0, baseR - w.amp), c.x, c.y, baseR + w.amp + 80);
+        grad.addColorStop(0, `rgba(${cr},${cg},${cb},${(0.08 + w.depth * 0.04) * boot})`);
+        grad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+        ctx!.fillStyle = grad;
+        ctx!.fill();
+      }
+
+      ctx!.globalCompositeOperation = 'lighter';
+      for (const w of waves) {
+        const [cr, cg, cb] = w.color;
+        ctx!.beginPath();
+        const dTheta = 0.08;
+        let first = true;
+        for (let theta = 0; theta <= 2 * Math.PI + 0.01; theta += dTheta) {
+          const r = waveRAt(w, theta, time, maxRadius);
+          const x = c.x + Math.cos(theta) * r;
+          const y = c.y + Math.sin(theta) * r;
+          if (first) {
+            ctx!.moveTo(x, y);
+            first = false;
+          } else {
+            ctx!.lineTo(x, y);
+          }
+        }
+        ctx!.closePath();
+        ctx!.lineWidth = 5;
+        ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.05 + w.depth * 0.04) * boot})`;
+        ctx!.stroke();
+        ctx!.lineWidth = 1.2;
+        ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.3 + w.depth * 0.22) * boot})`;
+        ctx!.stroke();
+      }
+      ctx!.globalCompositeOperation = 'source-over';
+    } else {
+      for (const w of waves) {
+        const [cr, cg, cb] = w.color;
+        ctx!.beginPath();
+        ctx!.moveTo(0, waveYat(w, 0, time, H, 1, 1, pull));
+        for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H, 1, 1, pull));
+        ctx!.lineTo(W, H);
+        ctx!.lineTo(0, H);
+        ctx!.closePath();
+        const ty = w.baseFrac * H + w.offsetY - w.amp;
+        const grad = ctx!.createLinearGradient(0, ty, 0, ty + 320);
+        grad.addColorStop(0, `rgba(${cr},${cg},${cb},${(0.11 + w.depth * 0.05) * boot})`);
+        grad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+        ctx!.fillStyle = grad;
+        ctx!.fill();
+      }
+      ctx!.globalCompositeOperation = 'lighter';
+      for (const w of waves) {
+        const [cr, cg, cb] = w.color;
+        ctx!.beginPath();
+        ctx!.moveTo(0, waveYat(w, 0, time, H, 1, 1, pull));
+        for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H, 1, 1, pull));
+        ctx!.lineWidth = 5;
+        ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.05 + w.depth * 0.04) * boot})`;
+        ctx!.stroke();
+        ctx!.lineWidth = 1.2;
+        ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.3 + w.depth * 0.22) * boot})`;
+        ctx!.stroke();
+      }
+      ctx!.globalCompositeOperation = 'source-over';
     }
-    ctx!.globalCompositeOperation = 'lighter';
-    for (const w of waves) {
-      const [cr, cg, cb] = w.color;
-      ctx!.beginPath();
-      ctx!.moveTo(0, waveYat(w, 0, time, H, 1, 1, pull));
-      for (let x = 0; x <= W; x += STEP) ctx!.lineTo(x, waveYat(w, x, time, H, 1, 1, pull));
-      // glow via a wide faint underlay then a crisp line (both additive) — not
-      // shadowBlur, which made each of the five long strokes cost several ×.
-      ctx!.lineWidth = 5;
-      ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.05 + w.depth * 0.04) * boot})`;
-      ctx!.stroke();
-      ctx!.lineWidth = 1.2;
-      ctx!.strokeStyle = `rgba(${cr},${cg},${cb},${(0.3 + w.depth * 0.22) * boot})`;
-      ctx!.stroke();
-    }
-    ctx!.globalCompositeOperation = 'source-over';
   }
 
   function drawBound(): void {
     ctx!.globalCompositeOperation = 'lighter';
     const time = env.t;
     let i = 0;
-    for (const p of bound) {
-      const w = waves[p.wi];
-      if (!w) {
-        i++;
-        continue;
-      }
-      if (env.dt) {
-        p.progress += p.speed;
-        if (p.progress > 1) p.progress -= 1;
-        else if (p.progress < 0) p.progress += 1;
-      }
-      const x = p.progress * W;
-      const y = waveYat(w, x, time, H, 1, 1, pull) + p.phase * 32;
-      const [cr, cg, cb] = w.color;
-      const tw = p.glow ? 0.6 + 0.4 * Math.sin(time * 2.2 + i) : 0.85;
-      if (p.glow) {
-        // additive halo instead of shadowBlur (the canvas is composited 'lighter')
-        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.16 * tw * boot})`;
+    if (cfg.waveStyle === 'circular') {
+      const c = resolvedWaveCenter || { x: W / 2, y: H / 2 };
+      const maxRadius = Math.min(W, H) * 0.48;
+      for (const p of bound) {
+        const w = waves[p.wi];
+        if (!w) {
+          i++;
+          continue;
+        }
+        if (env.dt) {
+          p.progress += p.speed;
+          if (p.progress > 1) p.progress -= 1;
+          else if (p.progress < 0) p.progress += 1;
+        }
+        const theta = p.progress * 2 * Math.PI;
+        const r = waveRAt(w, theta, time, maxRadius) + p.phase * 32;
+        const x = c.x + Math.cos(theta) * r;
+        const y = c.y + Math.sin(theta) * r;
+        const [cr, cg, cb] = w.color;
+        const tw = p.glow ? 0.6 + 0.4 * Math.sin(time * 2.2 + i) : 0.85;
+        if (p.glow) {
+          ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.16 * tw * boot})`;
+          ctx!.beginPath();
+          ctx!.arc(x, y, p.size + 2.5, 0, 6.28318);
+          ctx!.fill();
+        }
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${tw * boot})`;
         ctx!.beginPath();
-        ctx!.arc(x, y, p.size + 2.5, 0, 6.28318);
+        ctx!.arc(x, y, p.size, 0, 6.28318);
         ctx!.fill();
+        i++;
       }
-      ctx!.fillStyle = `rgba(${cr},${cg},${cb},${tw * boot})`;
-      ctx!.beginPath();
-      ctx!.arc(x, y, p.size, 0, 6.28318);
-      ctx!.fill();
-      i++;
+    } else {
+      for (const p of bound) {
+        const w = waves[p.wi];
+        if (!w) {
+          i++;
+          continue;
+        }
+        if (env.dt) {
+          p.progress += p.speed;
+          if (p.progress > 1) p.progress -= 1;
+          else if (p.progress < 0) p.progress += 1;
+        }
+        const x = p.progress * W;
+        const y = waveYat(w, x, time, H, 1, 1, pull) + p.phase * 32;
+        const [cr, cg, cb] = w.color;
+        const tw = p.glow ? 0.6 + 0.4 * Math.sin(time * 2.2 + i) : 0.85;
+        if (p.glow) {
+          ctx!.fillStyle = `rgba(${cr},${cg},${cb},${0.16 * tw * boot})`;
+          ctx!.beginPath();
+          ctx!.arc(x, y, p.size + 2.5, 0, 6.28318);
+          ctx!.fill();
+        }
+        ctx!.fillStyle = `rgba(${cr},${cg},${cb},${tw * boot})`;
+        ctx!.beginPath();
+        ctx!.arc(x, y, p.size, 0, 6.28318);
+        ctx!.fill();
+        i++;
+      }
     }
     ctx!.globalCompositeOperation = 'source-over';
   }
@@ -1932,8 +2025,23 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         p.vy += b.y;
       }
     }
+    if (cfg.waveStyle === 'circular') {
+      if (cfg.waveCenter) {
+        resolvedWaveCenter = typeof cfg.waveCenter === 'function' ? cfg.waveCenter() : cfg.waveCenter;
+      } else {
+        const star = bodies.find((b) => b.tokens.includes('star') || b.tokens.includes('vortex'));
+        if (star) {
+          resolvedWaveCenter = { x: star.cx, y: star.cy };
+        } else {
+          resolvedWaveCenter = { x: W / 2, y: H / 2 };
+        }
+      }
+    } else {
+      resolvedWaveCenter = null;
+    }
+
     updateWarpTargets(); // refresh warp relocate targets from paired bodies (§22.3) before the step
-    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves });
+    step({ store, bodies, env, forces: reg.forces, conditions: reg.conditions, waves, waveStyle: cfg.waveStyle, waveCenter: resolvedWaveCenter, separation: cfg.separation });
     // hover-focus (field.focusAt): hold the focused particle still and light it up — the dwell
     // affordance ("it stops and does something") before a click opens its record.
     if (focusP) {
@@ -2051,6 +2159,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       }
     },
     setFormation,
+    setWaveStyle: (style) => {
+      cfg.waveStyle = style;
+    },
+    setWaveCenter: (center) => {
+      cfg.waveCenter = center;
+    },
+    setSeparation: (strength) => {
+      cfg.separation = strength >= 0 ? strength : 0;
+    },
     setAttention: (on) => {
       cfg.attention = on;
       if (!on) for (const b of bodies) b.attn = 1; // release the budget → neutral

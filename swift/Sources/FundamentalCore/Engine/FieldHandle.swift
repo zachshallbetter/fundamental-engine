@@ -6,6 +6,17 @@ import Foundation
 
 // MARK: - FieldOptions
 
+/// Wave current layout style.
+public enum WaveStyle: String {
+    case linear, circular
+}
+
+/// Wave center options for circular style waves.
+public enum WaveCenter {
+    case coordinate(Vec3)
+    case provider(() -> Vec3)
+}
+
 /// Render modes for the field underlay (§20.6).
 public enum RenderMode: String {
     case dots, trails, links, metaballs, voronoi, streamlines, none_
@@ -55,12 +66,15 @@ public struct FieldOptions {
     public var palette: [String]?
     public var density: Float?
     public var waves: Bool
+    public var waveStyle: WaveStyle
+    public var waveCenter: WaveCenter?
     public var render: RenderMode
     public var firstClassMass: Bool
     public var attention: Bool
     public var causality: Bool
     public var heatmap: Bool
     public var overlay: OverlayInput
+    public var separation: Float
     /// How matter is drawn — `.dot` (default), `.star(...)`, `.polygon(...)`, or `.custom(...)`. The
     /// shape rides the physics: each particle's size + heat scale it. Only affects the matter render
     /// modes (`dots` / `trails` / `links`).
@@ -79,6 +93,8 @@ public struct FieldOptions {
         palette: [String]? = nil,
         density: Float? = nil,
         waves: Bool = true,
+        waveStyle: WaveStyle = .linear,
+        waveCenter: WaveCenter? = nil,
         render: RenderMode = .dots,
         firstClassMass: Bool = false,
         attention: Bool = false,
@@ -88,11 +104,14 @@ public struct FieldOptions {
         particleShape: ParticleShape = .dot,
         particleSize: Float = 1.0,
         particleGlow: Float = 1.0,
+        separation: Float = 0.0,
         feedbackSink: FeedbackSink? = nil
     ) {
         self.accent = accent
         self.density = density
         self.waves = waves
+        self.waveStyle = waveStyle
+        self.waveCenter = waveCenter
         self.render = render
         self.firstClassMass = firstClassMass
         self.palette = palette
@@ -103,6 +122,7 @@ public struct FieldOptions {
         self.particleShape = particleShape
         self.particleSize = particleSize
         self.particleGlow = particleGlow
+        self.separation = separation
         self.feedbackSink = feedbackSink
     }
 }
@@ -248,6 +268,9 @@ public protocol FieldHandle: AnyObject {
     func setPalette(_ palette: [String])
     func setRender(_ mode: RenderMode)
     func setOverlay(_ input: OverlayInput)
+    func setWaveStyle(_ style: WaveStyle)
+    func setWaveCenter(_ center: WaveCenter?)
+    func setSeparation(_ strength: Float)
 
     // ── simulation toggles ────────────────────────────────────────────────
     func setFormation(_ name: String)

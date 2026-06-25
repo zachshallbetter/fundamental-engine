@@ -27,6 +27,33 @@ public enum FundamentalField {
     public static let coordinateSpace = "fundamental-engine.field"
 }
 
+// MARK: - FieldCenter preference key
+//
+// Lets child views report their position as the circular wave center directly to
+// the enclosing FieldView — avoiding the one-frame race that exists when relying
+// on "star"/"vortex" body auto-detection (fieldBody's background GeometryReader
+// fires after layout, so the engine may tick before the body is registered).
+//
+// Usage — in any view inside a FieldView content closure:
+//   Color.clear
+//       .frame(width: 1, height: 1)
+//       .background(GeometryReader { geo in
+//           Color.clear.preference(
+//               key: FieldCenterPreferenceKey.self,
+//               value: geo.frame(in: .named(FundamentalField.coordinateSpace)).center
+//           )
+//       })
+//
+// The FieldView collects this preference, converts it to WaveCenter.coordinate,
+// and calls setWaveCenter on the running engine immediately — no extra @State or
+// computed FieldOptions needed in the caller.
+public struct FieldCenterPreferenceKey: PreferenceKey {
+    public static let defaultValue: CGPoint? = nil
+    public static func reduce(value: inout CGPoint?, nextValue: () -> CGPoint?) {
+        value = nextValue() ?? value
+    }
+}
+
 // MARK: - FieldView
 
 /// A SwiftUI view that mounts and manages a field, and — with a content closure — scopes that field to
@@ -69,6 +96,13 @@ public struct FieldView<Content: View>: View {
         // hand the running field + a shared frame of reference down to every `.fieldBody()` inside.
         .environment(\.fieldHandle, field)
         .coordinateSpace(.named(FundamentalField.coordinateSpace))
+        // FieldCenterPreferenceKey: child views may report a CGPoint in the field
+        // coordinate space; we forward it to setWaveCenter immediately so the engine
+        // centers circular wave currents on that point without a @State or timing race.
+        .onPreferenceChange(FieldCenterPreferenceKey.self) { pt in
+            guard let pt, let f = field else { return }
+            f.setWaveCenter(.coordinate(Vec3(Float(pt.x), Float(pt.y), 0)))
+        }
     }
 }
 
@@ -86,14 +120,14 @@ public extension FieldView where Content == EmptyView {
 private struct BuildSignature: Equatable {
     let density: Float?
     let waves: Bool
+    let waveStyle: WaveStyle
     let mass: Bool
     let depth: Float
     let particleSize: Float
     let particleGlow: Float
     init(_ o: FieldOptions, _ depth: Float) {
-        density = o.density; waves = o.waves; mass = o.firstClassMass; self.depth = depth
-        particleSize = o.particleSize
-        particleGlow = o.particleGlow
+        density = o.density; waves = o.waves; waveStyle = o.waveStyle; mass = o.firstClassMass
+        self.depth = depth; particleSize = o.particleSize; particleGlow = o.particleGlow
     }
 }
 
@@ -107,6 +141,9 @@ private func applyLiveOptions(_ f: FieldField, _ o: FieldOptions) {
     f.setAttention(o.attention)
     f.setCausality(o.causality)
     f.setHeatmap(o.heatmap)
+    f.setWaveStyle(o.waveStyle)
+    f.setWaveCenter(o.waveCenter)
+    f.setSeparation(o.separation)
 }
 
 /// UIViewRepresentable / NSViewRepresentable bridge that creates the FieldField

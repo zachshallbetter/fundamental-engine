@@ -70,7 +70,15 @@ export class FieldField implements FieldHandle {
   setFormation(name: string): void {
     this.field.setFormation(name);
   }
-  /** toggle conserved attention (§2.4) live — one finite strength budget. */
+  setWaveStyle(style: 'linear' | 'circular'): void {
+    this.field.setWaveStyle(style);
+  }
+  setWaveCenter(center: { x: number; y: number } | (() => { x: number; y: number }) | null): void {
+    this.field.setWaveCenter(center);
+  }
+  setSeparation(strength: number): void {
+    this.field.setSeparation(strength);
+  }
   setAttention(on: boolean): void {
     this.field.setAttention(on);
   }

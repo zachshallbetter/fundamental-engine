@@ -1,6 +1,6 @@
 # Fundamental
 
-> Fundamental is a platform-native relational field runtime for the DOM. The core (`@fundamental-engine/core`)
+> Fundamental is a platform-native relational field runtime for the DOM, created by Zach Shallbetter (zachshallbetter.com). The core (`@fundamental-engine/core`)
 > computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds field behavior to the DOM
 > through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
 > scheduling; `@fundamental-engine/elements` exposes native HTML and web-component authoring; `@fundamental-engine/react`
@@ -11,7 +11,7 @@ Every element can become a body in an invisible physics field via the `data-body
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-23 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-25 by apps/site/scripts/gen-llms.mjs.
 
 ## Start here — don't guess
 
@@ -32,6 +32,7 @@ Full list with the corrections: [Common mistakes — don't guess](https://github
 ## Docs
 
 - [Start here — Overview](https://fundamental-engine.com/docs): the documentation map — install, the IA, the examples, and the agent endpoints
+- [Start here — Getting started](https://fundamental-engine.com/docs/getting-started)
 - [Start here — Your first field](https://fundamental-engine.com/docs/tutorial): step-by-step: npm install to a glowing, reacting headline
 - [Start here — A reactive component](https://fundamental-engine.com/docs/reactive-component)
 - [Start here — Web component](https://fundamental-engine.com/docs/guides/web-component): the <field-root> element in any framework or plain HTML

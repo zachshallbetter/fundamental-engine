@@ -26,15 +26,23 @@ public struct StepInput {
     public var conditions: ConditionRegistry
     /// The carrier waves — free particles drift along their slope (§2.3).
     public var waves: [Wave]?
+    public var waveStyle: WaveStyle
+    public var waveCenter: Vec3?
+    public var separation: Float
 
     public init(store: FieldStore, bodies: [Body], env: Env, forces: ForceRegistry,
-                conditions: ConditionRegistry = [:], waves: [Wave]? = nil) {
+                conditions: ConditionRegistry = [:], waves: [Wave]? = nil,
+                waveStyle: WaveStyle = .linear, waveCenter: Vec3? = nil,
+                separation: Float = 0.0) {
         self.store = store
         self.bodies = bodies
         self.env = env
         self.forces = forces
         self.conditions = conditions
         self.waves = waves
+        self.waveStyle = waveStyle
+        self.waveCenter = waveCenter
+        self.separation = separation
     }
 }
 
@@ -113,18 +121,52 @@ public func step(_ input: StepInput) {
 
         // wave current (§2.3): near a wave line, drift along its slope like debris.
         if hasWaves, let waves {
-            var near: Wave? = nil
-            var nd: Float = 1e9
-            for w in waves {
-                let d = abs(waveYat(w, x: p.position.x, time: env.t, H: H) - p.position.y)
-                if d < nd {
-                    nd = d
-                    near = w
+            if input.waveStyle == .circular {
+                let c = input.waveCenter ?? Vec3(W / 2, H / 2, 0)
+                var near: Wave? = nil
+                var nd: Float = 1e9
+                var nearR: Float = 0
+                var nearRWave: Float = 0
+                var nearTheta: Float = 0
+                for w in waves {
+                    let res = waveDistance(w, px: p.position.x, py: p.position.y, time: env.t, W: W, H: H, style: .circular, center: c)
+                    if res.dist < nd {
+                        nd = res.dist
+                        near = w
+                        nearR = res.r
+                        nearRWave = res.rWave
+                        nearTheta = res.theta
+                    }
                 }
-            }
-            if let near, nd < 70 {
-                p.velocity.x += near.dir * 0.035 * (1 - nd / 70)
-                p.velocity.y += waveSlope(near, x: p.position.x, time: env.t) * 0.1 * (1 - nd / 70)
+                if let near, nd < 70 {
+                    let factor = 1 - nd / 70
+                    // Tangential drift
+                    let tx = -sin(nearTheta) * near.dir
+                    let ty = cos(nearTheta) * near.dir
+                    p.velocity.x += tx * 0.035 * factor
+                    p.velocity.y += ty * 0.035 * factor
+
+                    // Radial pull
+                    let pullSign: Float = (nearRWave - nearR) >= 0 ? 1 : -1
+                    let rx = cos(nearTheta) * pullSign
+                    let ry = sin(nearTheta) * pullSign
+                    p.velocity.x += rx * 0.05 * factor
+                    p.velocity.y += ry * 0.05 * factor
+                }
+            } else {
+                var near: Wave? = nil
+                var nd: Float = 1e9
+                for w in waves {
+                    let d = abs(waveYat(w, x: p.position.x, time: env.t, H: H) - p.position.y)
+                    if d < nd {
+                        nd = d
+                        near = w
+                    }
+                }
+                if let near, nd < 70 {
+                    p.velocity.x += near.dir * 0.035 * (1 - nd / 70)
+                    p.velocity.y += waveSlope(near, x: p.position.x, time: env.t) * 0.1 * (1 - nd / 70)
+                }
             }
         }
 
@@ -246,6 +288,20 @@ public func step(_ input: StepInput) {
                         if let f = forces[tok], !f.hasModify { applyForce(f, b, p, env, inv) }
                     }
                     b.strength = origS
+                }
+            }
+        }
+
+        // short-range particle-to-particle separation to prevent clumping
+        if input.separation > 0 {
+            let ns = env.neighbors(p, 12)
+            for n in ns {
+                let delta = p.position - n.position
+                let d = simd_length(delta)
+                let dist = d < 0.1 ? 0.1 : d
+                if dist < 12 {
+                    let force = ((12 - dist) / 12) * input.separation * 0.12
+                    p.velocity += (delta / dist) * force
                 }
             }
         }

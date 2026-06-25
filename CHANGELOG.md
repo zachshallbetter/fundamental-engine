@@ -9,6 +9,7 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Circular wave currents — `waveStyle: 'circular'` + `waveCenter` (core, elements, vanilla, react, three).** The wave current system now supports two layouts: `'linear'` (default — horizontal bands, unchanged) and `'circular'` (concentric rings radiating from a center point). `waveCenter: { x, y }` sets the origin; it defaults to the viewport center and is updated live via the `wave-center` attribute on `<field-root>` (a space-separated `"x y"` string). The `field-root` exposes both as observable attributes (`wave-style`, `wave-center`) and reflects them through to `createField` options. SwiftUI port propagates `waveStyle`/`waveCenter` through live option updates via a new `FieldCenterPreferenceKey` for reliable layout-pass centering.
 - **Pluggable `lintPlatform` rules (dom).** `lintPlatform` now accepts inline rules
   (`opts.rules`) and a global registry (`registerLintRule` / unregister fn) so teams can enforce
   project-specific field conventions alongside the built-in checks.

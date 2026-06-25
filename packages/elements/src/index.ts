@@ -87,6 +87,9 @@ export class FieldField extends HTMLElementBase {
     { key: 'gradientCool', attr: 'gradient-cool', read: (el) => el.gradientCool },
     { key: 'gradientWarm', attr: 'gradient-warm', read: (el) => el.gradientWarm },
     { key: 'waveBaseline', attr: 'wave-baseline', read: (el) => el.waveBaseline },
+    { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle },
+    { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter },
+    { key: 'separation', attr: 'separation', read: (el) => el.separation },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -109,6 +112,9 @@ export class FieldField extends HTMLElementBase {
     'gradient-cool',
     'gradient-warm',
     'wave-baseline',
+    'wave-style',
+    'wave-center',
+    'separation',
     'background',
     'formation',
   ];
@@ -244,6 +250,11 @@ export class FieldField extends HTMLElementBase {
     const v = Number(this.getAttribute('grid-intensity'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
   }
+  /** `separation` — particle-to-particle separation force strength ∈ [0,1]; undefined if absent/invalid. */
+  get separation(): number | undefined {
+    const v = Number(this.getAttribute('separation'));
+    return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
   /** `theme` — ambient palette preset (`warm` (default) | `cool` | `mono`); undefined if absent (#529). */
   get theme(): string | undefined {
     return this.getAttribute('theme') ?? undefined;
@@ -260,6 +271,21 @@ export class FieldField extends HTMLElementBase {
   get waveBaseline(): readonly string[] | undefined {
     const list = (this.getAttribute('wave-baseline') ?? '').split(/\s+/).filter(Boolean);
     return list.length ? list : undefined;
+  }
+  /** `wave-style` — wave layout style: `'linear'` | `'circular'` */
+  get waveStyle(): 'linear' | 'circular' {
+    const v = this.getAttribute('wave-style');
+    return v === 'circular' ? 'circular' : 'linear';
+  }
+  /** `wave-center` — coordinates string space-separated e.g. "200 300" */
+  get waveCenter(): { x: number; y: number } | null {
+    const v = this.getAttribute('wave-center');
+    if (!v) return null;
+    const parts = v.trim().split(/\s+/).map(Number);
+    if (parts.length === 2 && Number.isFinite(parts[0]) && Number.isFinite(parts[1])) {
+      return { x: parts[0]!, y: parts[1]! };
+    }
+    return null;
   }
   /** `formation` — the global formation (§7), applied live; undefined if absent. Unlike the other
    *  attributes this is post-construction (set via `setFormation`), but it round-trips: the attribute
@@ -308,6 +334,25 @@ export class FieldField extends HTMLElementBase {
   setFormation(name: string): void {
     this.field?.setFormation(name);
     this.reflect('formation', name);
+  }
+  /** switch the wave current layout style. */
+  setWaveStyle(style: 'linear' | 'circular'): void {
+    this.field?.setWaveStyle(style);
+    this.reflect('wave-style', style);
+  }
+  /** set the custom wave center coordinate (or function). */
+  setWaveCenter(center: { x: number; y: number } | (() => { x: number; y: number }) | null): void {
+    this.field?.setWaveCenter(center);
+    if (!center) {
+      this.reflect('wave-center', null);
+    } else if (typeof center === 'object') {
+      this.reflect('wave-center', `${center.x} ${center.y}`);
+    }
+  }
+  /** set particle-to-particle separation/repulsion force strength. */
+  setSeparation(strength: number): void {
+    this.field?.setSeparation(strength);
+    this.reflect('separation', String(strength));
   }
   /** toggle conserved attention (§2.4) live. */
   setAttention(on: boolean): void {
@@ -515,6 +560,9 @@ export class FieldField extends HTMLElementBase {
         break;
       case 'dpr-cap':
         this.field.setDprCap(this.dprCap ?? 2);
+        break;
+      case 'separation':
+        this.field.setSeparation(this.separation ?? 0);
         break;
       case 'background':
         this.field.setBackground(this.background);

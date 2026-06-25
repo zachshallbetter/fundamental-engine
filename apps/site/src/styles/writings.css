@@ -69,6 +69,15 @@
 .writing-meta time, .writing-meta .w-series, .writing-meta .w-author { letter-spacing: 0.01em; }
 .writing-meta .w-series::before { content: '— '; opacity: 0.6; }
 .writing-meta .w-author::before { content: '· '; opacity: 0.6; }
+.writing-meta .w-author-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+.writing-meta .w-author-link:hover {
+  color: var(--w-accent);
+}
 
 /* ── long-form prose ─────────────────────────────────────────────────────── */
 .writing-body { color: var(--w-ink); line-height: 1.7; max-width: 46rem; }
