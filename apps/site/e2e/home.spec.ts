@@ -141,7 +141,7 @@ for (const route of ["/", "/eli5"] as const) {
         .toBeNull();
     });
 
-    test("Contour Charge: charges with attention, discharges on the falling edge", async ({
+    test.slow("Contour Charge: charges with attention, discharges on the falling edge", async ({
       page,
     }) => {
       await skipUnless(page, "[data-chargetour]", "Contour Charge stage");

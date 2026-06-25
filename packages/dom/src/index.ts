@@ -37,6 +37,7 @@ export * from './text-bodies.ts';
 export * from './contours.ts';
 export * from './thread-overlay.ts';
 export * from './perf.ts';
+export * from './x-ray.ts';
 
 /** Start the core engine on a canvas with the default browser host — `createField` + `browserHost()`. */
 export function createBrowserField(canvas: HTMLCanvasElement, opts: Omit<FieldOptions, 'host'> = {}): FieldHandle {
