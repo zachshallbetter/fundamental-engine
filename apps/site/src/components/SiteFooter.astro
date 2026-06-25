@@ -53,7 +53,8 @@ const dest = [
       if (mine !== footGen) return;
       const base = recipeById('wayfinding-field');
       if (!base) return;
-      footField = applyRecipe(nav, { ...base, render: [] as never[] }, {
+      footField = applyRecipe(nav, base, {
+        renderless: true,
         bodies: links,
         annotateBodies: false,
       });
