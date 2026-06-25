@@ -29,6 +29,13 @@ const familyFiles = (): string[] => {
   return files;
 };
 
+/** nav + home layer — the three files fixed in #624; same renderless anti-pattern guard */
+const navHomeFiles = (): string[] => [
+  join(SRC, "components/SiteNav.astro"),
+  join(SRC, "components/SiteFooter.astro"),
+  join(SRC, "components/home/HomeRuntime.ts"),
+];
+
 /** source minus comment lines — migrations and docs may NAME the old patterns */
 const codeOf = (path: string): string =>
   readFileSync(path, "utf8")
@@ -85,4 +92,13 @@ test("the lens palette has ONE home — lib/palette.ts", () => {
 
 test("scoped fields use applyRecipe's renderless option, not the render:[] spread", () => {
   assert.deepEqual(offenders(/render:\s*\[\]\s*as\s*never/, familyFiles(), new Map()), []);
+});
+
+test("nav/home layer: scoped fields use renderless, not the render:[] spread (fixed in #624)", () => {
+  assert.deepEqual(offenders(/render:\s*\[\]\s*as\s*never/, navHomeFiles(), new Map()), []);
+});
+
+test("nav/home layer: field-root method calls use optional chaining (pre-upgrade safety)", () => {
+  // setOverlay/setHeatmap/setRender must be called with ?. so a pre-upgrade HTMLElement doesn't throw
+  assert.deepEqual(offenders(/\.(setOverlay|setHeatmap|setRender)\((?!\?)/, navHomeFiles(), new Map()), []);
 });
