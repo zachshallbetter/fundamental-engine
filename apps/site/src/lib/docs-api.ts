@@ -31,6 +31,7 @@ export const OPTIONS: OptionRow[] = [
   { name: 'attention', type: 'boolean', def: 'false', desc: 'Conserved attention — one finite strength budget; engaging a body starves the others.' },
   { name: 'causality', type: 'boolean', def: 'false', desc: 'Cross-boundary causality — a saturated body spills density to its neighbours.' },
   { name: 'heatmap', type: 'boolean', def: 'false', desc: 'Density heatmap — a glow layer of where matter pools, sampled back to bodies as --field-heatmap-density.' },
+  { name: 'separation', type: 'number', def: '0', desc: 'Strength of short-range particle-to-particle separation/repulsion force ∈ [0,1] to break up clumps in high-density areas. <field-root separation>.' },
   { name: 'overlayCanvas', type: 'HTMLCanvasElement', def: 'undefined', desc: 'Field Surfaces: a caller-provided canvas for the overlay surface (drawn in front of content). The web component creates/manages this for you; pass it only when calling createField directly.' },
   { name: 'feedbackSink', type: 'FeedbackSink', def: 'undefined', desc: 'Advanced: route per-body density/feedback writes to the platform FeedbackRegistry instead of letting the engine write the DOM (Phase D3).' },
 ];
@@ -47,6 +48,7 @@ export const HANDLE: MethodRow[] = [
   { sig: 'setFormation(name)', desc: 'Switch the global formation.' },
   { sig: 'setWaveStyle(style)', desc: "Switch the wave current layout style live ('linear' | 'circular')." },
   { sig: 'setWaveCenter(center)', desc: 'Set the custom wave center coordinate ({x, y} or function) live.' },
+  { sig: 'setSeparation(strength)', desc: 'Set particle-to-particle separation/repulsion force strength live.' },
   { sig: 'setAttention(on)', desc: 'Toggle conserved attention live (one finite strength budget).' },
   { sig: 'setCausality(on)', desc: 'Toggle cross-boundary causality live (density spills to neighbours).' },
   { sig: 'setHeatmap(on)', desc: 'Toggle the density heatmap layer live (a glow of where matter pools).' },
