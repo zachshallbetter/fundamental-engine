@@ -86,14 +86,14 @@ public extension FieldView where Content == EmptyView {
 private struct BuildSignature: Equatable {
     let density: Float?
     let waves: Bool
+    let waveStyle: WaveStyle
     let mass: Bool
     let depth: Float
     let particleSize: Float
     let particleGlow: Float
     init(_ o: FieldOptions, _ depth: Float) {
-        density = o.density; waves = o.waves; mass = o.firstClassMass; self.depth = depth
-        particleSize = o.particleSize
-        particleGlow = o.particleGlow
+        density = o.density; waves = o.waves; waveStyle = o.waveStyle; mass = o.firstClassMass
+        self.depth = depth; particleSize = o.particleSize; particleGlow = o.particleGlow
     }
 }
 
@@ -107,6 +107,8 @@ private func applyLiveOptions(_ f: FieldField, _ o: FieldOptions) {
     f.setAttention(o.attention)
     f.setCausality(o.causality)
     f.setHeatmap(o.heatmap)
+    f.setWaveStyle(o.waveStyle)
+    f.setWaveCenter(o.waveCenter)
 }
 
 /// UIViewRepresentable / NSViewRepresentable bridge that creates the FieldField
