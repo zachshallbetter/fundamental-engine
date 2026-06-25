@@ -10,8 +10,16 @@ import FundamentalCore
 // pipeline (cards become authored bodies), so what you see in a snapshot is exactly
 // what the app runs.
 
+// MARK: - Codable extensions for FundamentalCore types
+
+// RenderMode and OverlayMode are String-backed enums defined in FundamentalCore.
+// Conforming to Codable here (in FieldLabKit) allows scene serialisation without
+// touching the core package. The raw String value round-trips naturally.
+extension RenderMode: Codable {}
+extension OverlayMode: Codable {}
+
 /// One card in a scene — a UI element that participates as a field body.
-public struct CardSpec {
+public struct CardSpec: Codable {
     public var label: String
     /// Normalized center (0…1 across the canvas).
     public var x: Float
@@ -54,7 +62,7 @@ public struct CardSpec {
 }
 
 /// A complete FieldLab scene: cards + field configuration + the story it tells.
-public struct LabScene {
+public struct LabScene: Codable {
     public var id: String
     public var name: String
     /// The one-sentence claim this scene proves.
@@ -77,12 +85,47 @@ public struct LabScene {
     public var accent = "#4da3ff"
     public var density: Float = 2
 
+    /// Primary init — scene narrative + cards; field defaults applied as stored-property
+    /// initialisers above (formation, render, overlay, …).
     public init(id: String, name: String, blurb: String, story: String = "", cards: [CardSpec]) {
         self.id = id
         self.name = name
         self.blurb = blurb
         self.story = story
         self.cards = cards
+    }
+
+    /// Full-field init for RecipeStore round-trips and tests — every field explicit.
+    /// `overlay` and `accent` are optional here so callers may pass `nil` for defaults.
+    public init(
+        id: String, name: String, blurb: String, story: String = "",
+        cards: [CardSpec],
+        formation: String = "ambient",
+        render: RenderMode = .dots,
+        overlay: [FundamentalCore.OverlayMode]? = nil,
+        density: Float = 2,
+        attention: Bool = false,
+        causality: Bool = false,
+        heatmap: Bool = false,
+        waves: Bool = false,
+        depth: Float = 0,
+        accent: String? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.blurb = blurb
+        self.story = story
+        self.cards = cards
+        self.formation = formation
+        self.render = render
+        self.overlay = overlay ?? []
+        self.density = density
+        self.attention = attention
+        self.causality = causality
+        self.heatmap = heatmap
+        self.waves = waves
+        self.depth = depth
+        self.accent = accent ?? "#4da3ff"
     }
 
     public func options() -> FieldOptions {
