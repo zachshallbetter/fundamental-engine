@@ -7,6 +7,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Wire-format contract — `PARTICLE_STRIDE` (5) and `PARTICLE_WIRE_VERSION` (0) (core).** Typed
+  constants documenting the `readParticles()` buffer layout so renderers can assert the contract rather
+  than embedding the magic number.
+- **`readParticleChannels(channels, out)` (core).** Column-wise multi-channel particle read into
+  caller-owned `Float32Array` buffers — avoids repeated full-stride copies when a consumer needs only
+  position or heat.
+- **`registerOverlay(name, drawFn)` (core).** Register a custom named overlay into the existing
+  `setOverlay` stack; returns an unregister function for clean teardown.
+
 ## [0.8.1] — 2026-06-25
 
 ### Added
