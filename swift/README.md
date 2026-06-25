@@ -183,7 +183,7 @@ different Swift idioms):
 - The frame governor + experiential metrics pipeline (`governor.ts`, `metrics.ts`)
 - The agents directory (element/user/event agents — element-as-agent motion)
 - Inspect/diagnostics tooling, the conformance harness, semantic/visual registries
-- SwiftUI `.fieldBody()` registers geometry but isn't wired into scan yet
+- SwiftUI `.fieldBody()` is fully wired (registers as a programmatic body, tracks view geometry, and supports `onFeedback` callbacks)
 
 ## FieldLab — the showcase
 

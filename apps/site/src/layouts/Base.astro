@@ -222,9 +222,11 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
         left: 1rem;
         z-index: 999;
         padding: 0.5rem 1.1rem;
-        background: var(--bg-surface, #0a0d14);
+        background: rgba(10, 13, 20, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         color: var(--accent, #4da3ff);
-        border: 1px solid var(--accent, #4da3ff);
+        border: 1px solid rgba(77, 163, 255, 0.35);
         border-radius: var(--r-sm, 6px);
         font-family: var(--mono);
         font-size: 0.75rem;
@@ -232,12 +234,26 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://fundamental-engine.co
         text-transform: uppercase;
         text-decoration: none;
         white-space: nowrap;
-        transition: top 0.15s;
+        transition: top 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, border-color 0.2s;
       }
       .skip-link:focus-visible {
         top: 1rem;
         outline: 2px solid var(--accent, #4da3ff);
         outline-offset: 2px;
+      }
+
+      @keyframes focus-glow {
+        0%, 100% {
+          box-shadow: 0 0 4px rgba(77, 163, 255, 0.2);
+        }
+        50% {
+          box-shadow: 0 0 12px rgba(77, 163, 255, 0.6);
+        }
+      }
+
+      /* Keyboard accessibility: apply the focus-glow pulse to active focus states */
+      :focus-visible {
+        animation: focus-glow 2s infinite ease-in-out;
       }
 
       /* Nav links (SiteNav .sn-dest a, .sn-mark) */

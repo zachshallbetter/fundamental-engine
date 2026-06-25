@@ -91,6 +91,7 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 
 - [ ] **`bindData()`** — map records → bodies with id-diffed add/remove/reorder (matter
       flows via the conserved lifecycle); a `useForcesData` React hook.
+- [x] **SwiftUI `onFeedback`** — wire up `.fieldBody()` modifier to pass `onFeedback` callbacks to the engine.
 
 ## Platform — extractions the examples earned
 

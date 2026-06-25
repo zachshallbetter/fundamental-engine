@@ -209,9 +209,16 @@ public extension View {
         tokens: [String],
         strength: Float = 1,
         range: Float = 100,
-        feedback: Bool = false
+        feedback: Bool = false,
+        onFeedback: ((FeedbackChannels) -> Void)? = nil
     ) -> some View {
-        modifier(FieldBodyModifier(tokens: tokens, strength: strength, range: range, feedback: feedback))
+        modifier(FieldBodyModifier(
+            tokens: tokens,
+            strength: strength,
+            range: range,
+            feedback: feedback,
+            onFeedback: onFeedback
+        ))
     }
 }
 
@@ -220,12 +227,19 @@ struct FieldBodyModifier: ViewModifier {
     let strength: Float
     let range: Float
     let feedback: Bool
+    let onFeedback: ((FeedbackChannels) -> Void)?
 
     func body(content: Content) -> some View {
         content
             .background(
-                FieldBodyAnchor(tokens: tokens, strength: strength, range: range, feedback: feedback)
-                    .allowsHitTesting(false)
+                FieldBodyAnchor(
+                    tokens: tokens,
+                    strength: strength,
+                    range: range,
+                    feedback: feedback,
+                    onFeedback: onFeedback
+                )
+                .allowsHitTesting(false)
             )
     }
 }
@@ -238,6 +252,7 @@ struct FieldBodyAnchor: View {
     let strength: Float
     let range: Float
     let feedback: Bool
+    let onFeedback: ((FeedbackChannels) -> Void)?
 
     @Environment(\.fieldHandle) private var handle
     @State private var registration = FieldBodyRegistration()
@@ -251,7 +266,14 @@ struct FieldBodyAnchor: View {
                 )
             })
             .onPreferenceChange(FieldBodyFrameKey.self) { frame in
-                registration.sync(field: handle, tokens: tokens, strength: strength, range: range, frame: frame)
+                registration.sync(
+                    field: handle,
+                    tokens: tokens,
+                    strength: strength,
+                    range: range,
+                    onFeedback: onFeedback,
+                    frame: frame
+                )
             }
             .onChange(of: strength) { registration.update(strength: strength, range: range) }
             .onChange(of: range) { registration.update(strength: strength, range: range) }
@@ -279,12 +301,20 @@ final class FieldBodyRegistration {
     }
 
     /// Register on the first known frame, then track the view's position on every change.
-    func sync(field: (any FieldHandle)?, tokens: [String], strength: Float, range: Float, frame: CGRect) {
+    func sync(
+        field: (any FieldHandle)?,
+        tokens: [String],
+        strength: Float,
+        range: Float,
+        onFeedback: ((FeedbackChannels) -> Void)? = nil,
+        frame: CGRect
+    ) {
         box = Self.box(from: frame)
         guard handle == nil, let field, !tokens.isEmpty else { return }
         handle = field.addBody(BodySpec(
             tokens: tokens, strength: strength, range: range,
-            rect: { [weak self] in self?.box ?? Box(center: .zero, halfExtents: .zero) }
+            rect: { [weak self] in self?.box ?? Box(center: .zero, halfExtents: .zero) },
+            onFeedback: onFeedback
         ))
     }
 
