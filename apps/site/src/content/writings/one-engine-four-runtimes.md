@@ -46,12 +46,14 @@ export interface FieldHost {
 }
 ```
 
-`createField(canvas, opts)` builds the renderer-agnostic engine, then drives it entirely through
-whatever host you give it. The interface is pure types — no globals — which is precisely why
+[`createField(canvas, opts)`](/docs/api/handle) builds the renderer-agnostic engine, then drives it
+entirely through whatever host you give it. The interface is pure types — no globals — which is precisely why
 `field.ts` can import zero DOM and still know how to ask "how big is the surface?"
 
 A new runtime, then, is not a new engine. **A new runtime is a new `FieldHost`.** That is the whole
-trick, and the rest of this essay is just the four hosts that already exist.
+trick, and the rest of this essay is just the four hosts that already exist. The [host-driven runtime
+paper](/writings/05-host-driven-runtime) is the formal version of this argument; the
+[platform docs](/docs/platform) are the practitioner's map of the seam.
 
 ## The boundary is real, not aspirational
 
@@ -112,11 +114,12 @@ What you get back is the field's state — density, attention, coherence, pressu
 reader that isn't a screen: an agent treating the field as a salience substrate, a Node service, a
 deterministic test, a native sidecar.
 
-And here is where it connects to the rest of the system. The engine default is `render: 'none'` —
-signals-first. A field created without a render mode runs the entire simulation and draws nothing,
-writing its signals out for whatever wants to sample them. `headlessHost()` is simply that idea taken
-to its limit. **If the field can run drawing nothing, it can run with no screen at all.** Invisible-
-first on the web and document-free in a Node process are the same fact viewed from two distances.
+And here is where it connects to the rest of the system. The engine default is
+[`render: 'none'`](/writings/render-none-the-invisible-field) — signals-first. A field created without
+a render mode runs the entire simulation and draws nothing, writing its signals out for whatever wants
+to sample them. `headlessHost()` is simply that idea taken to its limit. **If the field can run drawing
+nothing, it can run with no screen at all.** Invisible-first on the web and document-free in a Node
+process are the same fact viewed from two distances.
 
 ## Runtime four: native Swift
 
@@ -152,4 +155,15 @@ same age, and pretending otherwise would set you up for surprise.
 
 What the architecture guarantees is the thing that actually matters: a force resolves the same way
 everywhere, because there is one place it is resolved. The hosts are how it reaches each surface. The
-core is why it is the same field every time.
+core is why it is the same field every time — and why the
+[interface is a field, not a screen](/writings/the-interface-is-a-field-not-a-screen) no matter what
+surface it lands on.
+
+## Related reading
+
+- [The Interface is a Field, Not a Screen](/writings/the-interface-is-a-field-not-a-screen) — the manifesto; the portable core is what lets the field outlive any one surface.
+- [render: 'none' — The Invisible Field Is the Baseline](/writings/render-none-the-invisible-field) — signals-first is the bridge from the web to a screen-free runtime.
+- [Host-driven runtime](/writings/05-host-driven-runtime) — the formal architecture paper this essay narrates.
+- [Portable field recipes](/writings/06-portable-field-recipes) — what stays the same when the same engine moves between runtimes.
+- [Platform docs](/docs/platform) — the `FieldHost` seam and dependency direction, practitioner's version.
+- [Getting started](/docs/getting-started) — `createField` and the web host you meet first.

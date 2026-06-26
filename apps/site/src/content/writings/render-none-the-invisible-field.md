@@ -20,8 +20,8 @@ all. You don't remove the visuals to get the calm version. You add them — `ren
 the loud one.
 
 That sounds like a small default flip. It isn't. It's the difference between a decoration and a
-computation layer, and it answers the one question the field paradigm always invites: *isn't this
-just a fancy particle background?*
+computation layer, and it answers the one question [the field paradigm](/writings/the-interface-is-a-field-not-a-screen)
+always invites: *isn't this just a fancy particle background?*
 
 No. And here is the structural reason why.
 
@@ -49,7 +49,7 @@ field is not off. It is invisible.
 <field-root render="dots"></field-root>
 ```
 
-A button still knows it's sitting in a gravity well. A section still accrues reading memory. A
+A button still knows it's sitting in a gravity well. A section still [accrues reading memory](/docs/reading-field). A
 heading still pulls. None of that needs a canvas. The canvas was never where the meaning lived.
 
 ## The turn: the field is a signals layer first
@@ -73,14 +73,14 @@ the product and treat the meaning as a side effect of rendering it.
 *from*. The reduced-motion path isn't a second implementation bolted on late — it's the baseline,
 and the visuals are the enhancement. The accessibility rule of the whole system — *no field behavior
 may be the only source of meaning* — is far easier to keep when the meaning was never trapped in the
-pixels to begin with.
+pixels to begin with. (The deeper version of this argument is [motion equivalence](/writings/04-motion-equivalence).)
 
-**Performance you don't pay for what you don't draw.** A field is famously fill-rate-bound, not
-particle-bound — the expensive part of a visible field is the full-viewport canvas compositing, not
+**Performance you don't pay for what you don't draw.** A field is [famously fill-rate-bound, not
+particle-bound](/writings/the-field-is-fill-rate-bound) — the expensive part of a visible field is the full-viewport canvas compositing, not
 the force math. `render: 'none'` simply doesn't have that cost. You can wire a page to the field —
 attention, memory, relationships, live CSS response — with no canvas in the tree at all.
 
-**Honest portability.** The logical extreme of signals-first is no DOM at all. The core imports zero
+**Honest portability.** The logical extreme of signals-first is [no DOM at all](/writings/one-engine-four-runtimes). The core imports zero
 DOM (a boundary test enforces it with an empty allowlist), and `headlessHost()` runs the whole field
 with no `document` present. Same state, no screen. Invisible-first isn't a setting on the way to the
 "real" visual mode — it's the mode the architecture was already built around.
@@ -90,7 +90,7 @@ with no `document` present. Same state, no screen. Invisible-first isn't a setti
 A signals-first default has its own failure mode, and a system that hid its costs would be exactly
 the kind of dishonest interface this whole project is meant to replace.
 
-The trap is the **silent contract gap.** The engine faithfully writes `--load`, `--field-density`,
+The trap is the [**silent contract gap**](/writings/the-silent-contract-gap). The engine faithfully writes `--load`, `--field-density`,
 `--field-attention` onto every body, every frame. But nothing forces a CSS consumer to *read* them.
 So a body can be reacting hard — its density swinging, its attention spiking — and look completely
 inert, because no rule downstream consumes the variable. The field isn't broken; it's reacting
@@ -111,3 +111,12 @@ A dashboard wants urgency to have weight. None of that is a light show. All of i
 resistance, and turns the spectacle into the deliberate, opt-in exception it should always have been.
 
 The invisible field is the baseline. The pixels are the choice.
+
+## Related reading
+
+- [The Interface is a Field, Not a Screen](/writings/the-interface-is-a-field-not-a-screen) — the manifesto this default is the operational proof of.
+- [The Silent Contract Gap](/writings/the-silent-contract-gap) — the failure mode signals-first amplifies, and how to close the loop.
+- [The Field Is Fill-Rate-Bound](/writings/the-field-is-fill-rate-bound) — why no draw means no cost.
+- [One Engine, Four Runtimes](/writings/one-engine-four-runtimes) — headless is `render: 'none'` taken to its limit.
+- [Host-driven runtime](/writings/05-host-driven-runtime) — the architecture paper behind zero-DOM portability.
+- [`render` and `setRender`](/docs/api/options) — the option and handle method that flip the default.

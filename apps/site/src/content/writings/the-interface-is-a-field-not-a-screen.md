@@ -61,7 +61,7 @@ section accrues memory because it was read. A card heats because the system arou
 pressure. The motion, where there is motion, is a *consequence* of the behavior, not a costume worn
 over it.
 
-And drawing is now optional. As of the signals-first change, the engine default is `render: 'none'`.
+And drawing is now optional. As of the [signals-first change](/writings/render-none-the-invisible-field), the engine default is `render: 'none'`.
 A field created without an explicit render mode runs the *entire* simulation — measures bodies,
 resolves forces, accumulates attention, writes feedback to the DOM — and draws nothing. The invisible
 field is the baseline. You opt *into* pixels (`render: 'dots'`); you don't fall back from them. If the
@@ -81,7 +81,7 @@ lanes on purpose.
 
 ## The four natural fields as interface grammar
 
-The conceptual layer is a compression system — four families that the whole catalog of runtime forces
+The conceptual layer is a [compression system](/writings/your-design-system-already-has-four-forces) — four families that the whole catalog of runtime forces
 translates down into:
 
 - **Gravity → priority, convergence, hierarchy.** What matters pulls.
@@ -123,7 +123,7 @@ does not know or care what it is running inside.
 
 This used to be a promise. It now ships. `@fundamental-engine/three` renders the same field through
 Three.js, and `headlessHost()` runs the whole simulation with no `document` present at all — same
-state, no screen. Both landed in 0.8.1. DOM, WebGL, and headless are three hosts over one engine.
+state, no screen. Both landed in 0.8.1. DOM, WebGL, and headless are [three hosts over one engine](/writings/one-engine-four-runtimes).
 
 The full lineup is one core and five adapters: `@fundamental-engine/core`, plus `dom`, `elements`,
 `react`, `vanilla`, and `three`.
@@ -137,10 +137,10 @@ it rides on.
 
 ## Worked examples
 
-**A normal content page as a Reading Field.** Sections gain mass by importance and accrue memory as
+**A normal content page as a [Reading Field](/docs/reading-field).** Sections gain mass by importance and accrue memory as
 they are read. The reader feels a document that remembers them.
 
-**AI evidence as an Evidence Field.** A claim and its citations are bound by strong-force cohesion
+**AI evidence as an [Evidence Field](/evidence).** A claim and its citations are bound by strong-force cohesion
 proportional to how well the source supports the claim. The interface stops merely *linking* to
 evidence and starts *behaving* according to its strength.
 
@@ -181,9 +181,9 @@ This is where an honest manifesto earns its keep.
 
 - **It is more to learn.** A field grammar is a new mental model. "This card is a body with mass that
   heats under pressure" is not how most of us were taught to build UI.
-- **It is more to run.** A field is fill-rate-bound, not particle-bound — the expensive part of a
+- **It is more to run.** A field is [fill-rate-bound, not particle-bound](/writings/the-field-is-fill-rate-bound) — the expensive part of a
   *visible* field is full-viewport canvas compositing, not the force math. A full-viewport
-  `mix-blend-mode` canvas re-blends the whole screen every frame even when it is transparent. Keep
+  [`mix-blend-mode` canvas re-blends the whole screen](/writings/the-empty-canvas-that-costs-every-frame) every frame even when it is transparent. Keep
   such canvases out of the tree unless they are actively drawn. `render: 'none'` exists in part so you
   do not pay this cost by default.
 - **It can be over-engineering.** Plenty of interfaces do not need a field. A settings page is fine as
@@ -191,7 +191,7 @@ This is where an honest manifesto earns its keep.
   reflexively.
 - **Accessibility is more work, not less.** The "no behavior is the only source of meaning" rule is a
   standing tax. You pay it on every body, deliberately.
-- **There is a silent contract gap.** The engine faithfully writes `--load`, `--field-*`, and `--d`
+- **There is a [silent contract gap](/writings/the-silent-contract-gap).** The engine faithfully writes `--load`, `--field-*`, and `--d`
   onto bodies every frame — but nothing forces a CSS consumer to *read* them. A body can be reacting
   hard and look completely inert because no rule downstream consumes the variable. The field is not
   broken; it is reacting invisibly, which is exactly what you asked for and exactly what bites you.
@@ -210,3 +210,12 @@ about as a system, measure as a field, and explain as behavior.
 ---
 
 Four fields. Many expressions. One DOM runtime.
+
+## Related reading
+
+- [render: 'none' — The Invisible Field Is the Baseline](/writings/render-none-the-invisible-field) — where the invisible-forces idea becomes the engine default.
+- [Your Design System Already Has Four Forces](/writings/your-design-system-already-has-four-forces) — the designer on-ramp to the four natural fields.
+- [One Engine, Four Runtimes](/writings/one-engine-four-runtimes) — how a zero-DOM core ports to WebGL and headless.
+- [The Field Translation Runtime](/writings/01-field-translation-runtime) — the formal paper behind this manifesto.
+- [Evidence Fields](/writings/03-evidence-fields) — the AI-trust case where binding strength carries meaning.
+- [Concepts](/docs/concepts) — the naming canon: concepts, tokens, metrics, diagnostics, recipes.

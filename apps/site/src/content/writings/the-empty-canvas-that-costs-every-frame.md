@@ -22,10 +22,10 @@ The problem was an empty canvas.
 
 ## The setup
 
-Fundamental's field can draw on two surfaces. There's the underlay — a canvas behind your content —
-and there's an overlay canvas in front, used for effects that need to sit on top of the page. The
-overlay composites with `mix-blend-mode` so its light adds to whatever it covers instead of painting
-a flat layer over it.
+Fundamental's [field](/writings/the-interface-is-a-field-not-a-screen) can draw on two surfaces.
+There's the underlay — a canvas behind your content — and there's an overlay canvas in front, used
+for effects that need to sit on top of the page. The overlay composites with `mix-blend-mode` so its
+light adds to whatever it covers instead of painting a flat layer over it.
 
 That overlay canvas was in the DOM. Full-viewport. `mix-blend-mode` set. And most of the time it was
 drawing nothing — fully transparent, not a single particle on it.
@@ -90,8 +90,8 @@ it*. They are different budgets with different owners. Painting is your code cal
 API. Compositing is the GPU assembling layers into the final frame, and `mix-blend-mode` makes a
 layer's compositing cost scale with the activity beneath it, not with its own content.
 
-This is also why the field is fill-rate-bound and not particle-bound. The force simulation —
-measuring bodies, resolving 36 forces, accumulating attention — runs fine. Bodies are only
+This is also why [the field is fill-rate-bound and not particle-bound](/writings/the-field-is-fill-rate-bound).
+The force simulation — measuring bodies, resolving 36 forces, accumulating attention — runs fine. Bodies are only
 re-measured every sixth frame, so the math isn't even running at full cadence. What pins the
 framerate is pixels: how many the GPU has to touch and re-touch to assemble each frame. A
 full-screen mix-blend re-blend touches all of them.
@@ -103,7 +103,7 @@ the GPU, the driver, the browser's compositing strategy, and the display's DPR. 
 Retina laptop may be a shrug on a desktop with a discrete card, and brutal on a thermally-throttled
 phone.
 
-And there is one trap that will lie to you while you measure: **headless rendering**. Playwright and
+And there is one trap that will lie to you while you [measure](/docs/performance): **headless rendering**. Playwright and
 other headless runners rasterize in software. Software rasterization makes every fill and every
 blend read dramatically worse than a real GPU would. A headless framerate number is useful for
 catching a regression's *direction* — slower is slower — but it is not a verdict on the *magnitude*,
@@ -116,4 +116,14 @@ rasterizer cast the deciding vote.
 
 The empty canvas taught us the rule we now reach for first: when the field is slow, look at the
 canvas, the DPR, and the compositing tree before you touch a single line of the physics. The
-bottleneck is almost never where the work *looks* like it is.
+bottleneck is almost never where the work *looks* like it is. It also taught us the cleaner default:
+a field that [draws nothing by default](/writings/render-none-the-invisible-field) never pays this
+tax at all — you opt into a render surface only when something is worth drawing.
+
+## Related reading
+
+- [The Field Is Fill-Rate-Bound](/writings/the-field-is-fill-rate-bound) — the broader war story this trap is one chapter of.
+- [render: 'none' — The Invisible Field Is the Baseline](/writings/render-none-the-invisible-field) — drawing nothing is the cleanest way to never pay the composite.
+- [The Interface is a Field, Not a Screen](/writings/the-interface-is-a-field-not-a-screen) — the manifesto that frames why the field exists at all.
+- [Performance](/docs/performance) — the profiling guidance behind these numbers.
+- [Diagnostics](/docs/diagnostics) — how to see what the field is actually doing each frame.

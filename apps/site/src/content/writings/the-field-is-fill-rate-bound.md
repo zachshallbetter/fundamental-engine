@@ -31,14 +31,14 @@ underlay or the overlay — restored it on its own.
 That is the whole diagnosis in two facts. A field is **fill-rate-bound, not particle-bound.** The
 cost that was eating the frame wasn't the force solver or the integration loop. It was the compositor
 blending full-screen canvases at DPR 2 — four physical pixels per CSS pixel, across the entire
-viewport, every frame.
+viewport, every frame. This is also the strongest case for [the invisible field as baseline](/writings/render-none-the-invisible-field): a field that draws nothing pays no fill cost at all.
 
 Particle math scales with particle count. Compositing scales with *area times pixel density* — and
 it doesn't care how many particles you drew into that area, or whether you drew any at all.
 
 ## The DPR2 / mix-blend trap
 
-The sharpest version of this is the one that looks free and isn't.
+The sharpest version of this is the one that looks free and isn't — and it has [its own war story](/writings/the-empty-canvas-that-costs-every-frame).
 
 A full-viewport `mix-blend-mode` canvas costs you every frame the layer beneath it animates — **even
 when the canvas is empty and fully transparent.** Blend modes aren't a per-pixel-you-drew operation.
@@ -61,7 +61,7 @@ The instinct when a field is slow is to optimize the force loop — spatial hash
 a cheaper integrator. That instinct is almost always wrong, and the density test is why: if cutting
 the particle count by two-thirds buys you nothing, the math was never the cost.
 
-So profile by isolation, and isolate the *layers*, not the algorithm:
+So profile by isolation, and isolate the *layers*, not the algorithm. The [performance guide](/docs/performance) treats this as the first principle, and the [diagnostics tools](/docs/diagnostics) let you watch the cost live:
 
 - Halve the DPR. If the frame rate jumps, you're fill-bound — stop looking at the solver.
 - Hide each full-viewport canvas in turn. If hiding one restores the frame, that layer's compositing
@@ -116,4 +116,13 @@ homepage (profile by isolation) has a partner: profile on the hardware your user
 treat the software-rasterized number as a worst case, not the truth.
 
 The field was never particle-bound. It was fill-rate-bound the whole time — and the frame rate only
-came back once we stopped optimizing the math and started looking at the pixels.
+came back once we stopped optimizing the math and started looking at the pixels. That is part of [what the field costs](/writings/the-interface-is-a-field-not-a-screen): a behavior layer on the DOM you have to budget like any other.
+
+## Related reading
+
+- [The Empty Canvas That Costs Every Frame](/writings/the-empty-canvas-that-costs-every-frame) — the DPR2 / mix-blend trap in full, its sibling perf piece.
+- [render: 'none' — The Invisible Field Is the Baseline](/writings/render-none-the-invisible-field) — no draw means no fill cost; the signals-first default.
+- [The Interface is a Field, Not a Screen](/writings/the-interface-is-a-field-not-a-screen) — the manifesto, and why a behavior layer has a frame budget.
+- [One Engine, Four Runtimes](/writings/one-engine-four-runtimes) — the zero-DOM core that pushes all pixel work through an injected host.
+- [Performance](/docs/performance) — the profile-by-isolation guidance as docs.
+- [Diagnostics](/docs/diagnostics) — inspect compositing and per-layer cost live.

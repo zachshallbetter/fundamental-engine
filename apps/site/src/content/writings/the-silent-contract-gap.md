@@ -21,7 +21,7 @@ It comes from a contract that has a writer, a reader, and no enforcement that th
 ## The shape of it
 
 Fundamental's feedback loop runs across two languages. The engine — TypeScript — computes a body's
-state and writes it onto the element as CSS custom properties: `--load`, `--d`, `--field-density`,
+state and writes it onto the element as [CSS custom properties](/docs/field-channels): `--load`, `--d`, `--field-density`,
 `--field-attention`, and the rest. CSS — a different language, owned by a different file, often a
 different person — reads those properties and turns them into something you can see.
 
@@ -53,7 +53,7 @@ Not subtly wrong — dead. So you go hunting in the wrong place. You instrument 
 check that the body registered. You log `particleCount()`. Everything is healthy, because everything
 *is* healthy. The engine is doing its job perfectly and writing the answer to a channel no rule
 reads. The field isn't broken. It's reacting invisibly — which, if you squint, is exactly what
-`render: 'none'` promises. You just didn't mean it here.
+[`render: 'none'`](/writings/render-none-the-invisible-field) promises. You just didn't mean it here.
 
 This exact gap shipped more than once. It hit `.btn`. It hit `.hero-mass`. It was the original sin
 behind the `data-feedback` lint rule. A body that declared it wanted feedback, got feedback, and
@@ -61,7 +61,7 @@ showed nothing — because the consumer half of the contract was never written.
 
 ## Why signals-first makes it *more* likely
 
-The engine default is `render: 'none'`. A field runs the full simulation and draws nothing unless
+The engine default is [`render: 'none'`](/writings/render-none-the-invisible-field). A field runs the full simulation and draws nothing unless
 you opt into pixels. That's the right default — but it removes the one thing that used to catch this
 class of bug for free.
 
@@ -130,8 +130,9 @@ habit:
 **When a body is supposed to visibly react, confirm the CSS actually reads the var.** Not "the
 engine writes it" — you can see that in devtools and it tells you nothing about whether anyone's
 listening. Open the computed style of the thing that should move. Find the rule. Watch the value it
-consumes change as the body changes. If you can't point at the reader, you don't have a feature; you
-have a channel broadcasting to no one.
+consumes change as the body changes — this is what the [diagnostics](/docs/diagnostics) and [inspector](/docs/inspector)
+surfaces are for: they make the invisible reaction legible. If you can't point at the reader, you
+don't have a feature; you have a channel broadcasting to no one.
 
 This is the price of building reactive systems on CSS custom properties — anywhere, not just here.
 The variable is a shared name with no schema, no import, no compiler keeping the two ends in sync. It
@@ -140,3 +141,13 @@ treat every channel as a contract with two signatures, and to never count one si
 you've seen the other side sign.
 
 The engine doesn't throw when the loop is open. That's exactly why you have to close it yourself.
+The deeper bet — that [the interface is a field, not a screen](/writings/the-interface-is-a-field-not-a-screen) —
+only pays off when every channel you broadcast has someone reading it back.
+
+## Related reading
+
+- [render: 'none' — The Invisible Field Is the Baseline](/writings/render-none-the-invisible-field) — the default that removes the canvas witness and makes this gap more likely.
+- [The Interface is a Field, Not a Screen](/writings/the-interface-is-a-field-not-a-screen) — the reciprocal-DOM thesis these channels serve.
+- [Explainable Interface Behavior](/writings/08-explainable-interface-behavior) — the diagnostics paper: how a field accounts for what it's doing.
+- [Field channels reference](/docs/field-channels) — the `--field-*` / `--load` / `--d` channels, named and specified.
+- [Diagnostics](/docs/diagnostics) and [Inspector](/docs/inspector) — the surfaces that make an invisible reaction visible.

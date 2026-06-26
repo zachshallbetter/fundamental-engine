@@ -25,7 +25,7 @@ You've been faking them by hand. The engine just makes them explicit.
 ## The four you already use
 
 Physics has a compact language for exactly these relationships. Fundamental borrows the language,
-not the literal physics, and maps it onto interface meaning. Four fields:
+not the literal physics, and maps it onto interface meaning. [Four fields](/docs/natural-fields):
 
 **Gravity is importance.** What matters pulls. A primary button, a hero headline, the one number
 on the dashboard that decides whether today was good — they all sit at the bottom of a well, and
@@ -62,7 +62,7 @@ Fundamental gives the relationship a place to live. You declare an element a bod
 
 Now "this matters" is a fact the runtime holds, not a coincidence of styling. The field computes
 the consequences — how this body bends the space around it, how nearby bodies respond — and writes
-that state back onto the DOM as live signals your CSS can read. The importance becomes a value, not
+that state back onto the DOM [as live signals your CSS can read](/docs/field-channels). The importance becomes a value, not
 a vibe.
 
 That's the whole reframe. The four dynamics go from *implied by your tokens* to *declared and
@@ -74,7 +74,7 @@ hand on every screen.
 This is where Fundamental gets pedantic on purpose, and the pedantry is worth understanding because
 it's what keeps the system from collapsing into "physics-flavored effects."
 
-**Natural fields are not tokens; tokens are translations.** The four fields are conceptual — they
+**Natural fields are not tokens; tokens are translations.** The four fields are [conceptual](/docs/concepts) — they
 describe what's going on. The engine's actual primitives are the translations of those concepts
 into runnable verbs. Gravity-the-field is the *idea* of importance; `gravity`-the-token is one
 implemented expression of it. The concept describes; the token executes. They never share a word
@@ -107,7 +107,7 @@ There's a subtler cost too. The engine faithfully computes all four dynamics and
 your bodies as live signals every frame — but nothing forces your CSS to actually *read* them. So a
 body can be reacting hard, its importance swinging, its belonging shifting, and look completely
 inert on screen because no rule downstream consumed the signal. The field isn't broken; it's
-reacting invisibly, which is great until it's the bug you can't see. Making the four forces explicit
+[reacting invisibly](/writings/the-silent-contract-gap), which is great until it's the bug you can't see. Making the four forces explicit
 also makes them your responsibility to express. Linting catches half of that gap. Discipline catches
 the rest.
 
@@ -123,8 +123,17 @@ Fundamental fills.
 The pitch isn't "add physics to your UI." It's quieter and more honest than that. Every interface
 already has importance, polarity, belonging, and change. You've been hand-building those four
 relationships out of unrelated parts for as long as you've been designing. Physics already has a
-clean language for them; Fundamental translates that language into DOM behavior so the relationships
+clean language for them; Fundamental [translates that language into DOM behavior](/writings/the-interface-is-a-field-not-a-screen) so the relationships
 can finally be declared instead of merely implied.
 
 Four fields. Many expressions. One DOM runtime. You already have the forces. The engine just lets
 you say so.
+
+## Related reading
+
+- [The Interface is a Field, Not a Screen](/writings/the-interface-is-a-field-not-a-screen) — the full thesis behind making relationships first-class.
+- [render: 'none' — The Invisible Field Is the Baseline](/writings/render-none-the-invisible-field) — why the four forces run even when nothing is drawn.
+- [The Silent Contract Gap](/writings/the-silent-contract-gap) — the bug class when your CSS never reads the signals the field writes.
+- [The Field Translation Runtime](/writings/01-field-translation-runtime) — the flagship paper on translating physics into interface meaning.
+- [Fundamental Explained Simply](/writings/fundamental-explained-simply) — the plain-language companion for non-physicists.
+- [Natural Fields](/docs/natural-fields) — the canon for the four fields and their token translations.
