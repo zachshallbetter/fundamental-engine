@@ -94,6 +94,12 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/api/forces', label: 'Forces', ready: true },
       { href: '/docs/api/presets', label: 'Presets', ready: true },
       { href: '/docs/api/catalog', label: 'Conditions & formations', ready: true },
+      {
+        href: 'https://github.com/zachshallbetter/Fundamental/blob/main/SUPPORT.md',
+        label: 'Support',
+        ready: true,
+        external: true,
+      },
     ],
   },
   {
