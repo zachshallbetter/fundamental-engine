@@ -196,9 +196,10 @@ This is where an honest manifesto earns its keep.
   hard and look completely inert because no rule downstream consumes the variable. The field is not
   broken; it is reacting invisibly, which is exactly what you asked for and exactly what bites you.
   Linting catches one half of the gap; discipline catches the other.
-- **It is early.** The packages ship — 0.8.1 is published on npm. But this is a young paradigm with no
-  user study behind it yet. The claims here are architectural, not the verdict of research. Treat them
-  as a thesis being built in the open.
+- **It is early.** The packages ship — 0.8.1 is published on npm, and the
+  [road to RC1](/writings/the-road-to-rc1) tracks what still gates 1.0. But this is a young paradigm
+  with no user study behind it yet. The claims here are architectural, not the verdict of research.
+  Treat them as a thesis being built in the open.
 
 ## What changes
 
