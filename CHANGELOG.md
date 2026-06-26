@@ -7,6 +7,27 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **Wire-format contract — `PARTICLE_STRIDE` (5) and `PARTICLE_WIRE_VERSION` (0) (core).** Typed
+  constants documenting the `readParticles()` buffer layout so renderers can assert the contract rather
+  than embedding the magic number.
+- **`readParticleChannels(channels, out)` (core).** Column-wise multi-channel particle read into
+  caller-owned `Float32Array` buffers — avoids repeated full-stride copies when a consumer needs only
+  position or heat.
+- **`registerOverlay(name, drawFn)` (core).** Register a custom named overlay into the existing
+  `setOverlay` stack; returns an unregister function for clean teardown.
+- **Off-main-thread render (C3) — Worker + OffscreenCanvas (dom).** `attachOffthreadRender(field, canvas)`
+  transfers a canvas to a dedicated Worker and drives particle rendering off the main thread via
+  `readParticles()` + postMessage each frame. Falls back gracefully on browsers without
+  `OffscreenCanvas`. The main-thread render path is completely untouched — this is an additive opt-in.
+- **Auto-update-branch CI** — a new `auto-update-branch.yml` workflow fires on every push to main
+  and calls `gh pr update-branch` on all open PRs that are BEHIND or DIRTY, eliminating the manual
+  update-branch cycle that stalls parallel agent PRs in the strict merge queue.
+- **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
+  iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
+  filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+
 ## [0.8.1] — 2026-06-25
 
 ### Added
