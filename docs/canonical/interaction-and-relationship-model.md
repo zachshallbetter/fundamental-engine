@@ -293,18 +293,21 @@ Suggested outputs:
 Events:
 
 ```txt
-forces:entered
-forces:exited
-forces:lit
-forces:dim
-forces:saturated
-forces:captured
-forces:released
-forces:attention-shifted
-forces:relationship-strengthened
-forces:memory-threshold
-forces:entropy-warning
+field:entered
+field:exited
+field:lit
+field:dim
+field:saturated
+field:captured
+field:released
+field:attention-shifted
+field:relationship-strengthened
+field:memory-threshold
+field:entropy-warning
 ```
+
+The canonical names are `field:*` (per `FIELD_EVENTS` in `packages/core/src/agents/event-agent.ts`).
+The legacy `forces:*` names still fire from `core/field.ts` as compatibility aliases.
 
 Rule:
 
@@ -571,12 +574,12 @@ Every visible behavior should be traceable to a field cause.
 Several items below have shipped on the platform runtime (Phase D). The `RelationshipAgent` model is backed by the `RelationshipRegistry`; the reading/editorial use case ships as the Reading Field demo (section 22). Remaining items stay as authoring priorities and experiments.
 
 ```txt
-1. Formal FieldAgent model
-2. ElementAgent responder variables beyond density
+1. Formal FieldAgent model — shipped (agents/index.ts)
+2. ElementAgent responder variables beyond density — shipped (element-agent.ts)
 3. RelationshipAgent model — shipped (RelationshipRegistry)
 4. Attention budget
-5. UserAgent model for pointer/focus/selection
-6. Thresholded field events
+5. UserAgent model for pointer/focus/selection — shipped (user-agent.ts)
+6. Thresholded field events — shipped
 7. Relationship heatmaps
 8. Navigation/search recipes
 9. Form state recipes

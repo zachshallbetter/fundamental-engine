@@ -11,7 +11,7 @@
  *    via `createThreeField({ overlayBackend })`.
  *
  * `three` is a peer dependency — you bring your own version. The `FieldProjection` seam keeps the
- * coordinate model swappable: `PlaneProjection` ships now; a volumetric mode slots in later.
+ * coordinate model swappable: both `PlaneProjection` (flat) and `VolumeProjection` (depth > 0) ship.
  *
  * ```ts
  * import { createFieldLayer, PlaneProjection } from '@fundamental-engine/three';

@@ -32,7 +32,7 @@ The first paper names the paradigm. The rest prove it in specific interface doma
 |---|---|---|---|---|---|
 | 1 | [`01-field-translation-runtime.md`](01-field-translation-runtime.md) | **Fundamental: A Field Translation Runtime for Relational DOM Interfaces** | A new interface paradigm: UI as a shared, inspectable field of meaning (+ model, architecture, taxonomy, NFTS, recipe runtime, accessibility, case studies). | recipe runtime, inspector, studies | HCI / interaction design / web systems / design tools |
 | 2 | [`02-reading-field.md`](02-reading-field.md) | **Reading Field: Attention, Memory, and Relationship Awareness in Long-Form Web Documents** | A field-based model for reading attention and document memory that preserves semantic HTML. | Reading Field study | HCI / reading & document UX |
-| 3 | [`03-evidence-fields.md`](03-evidence-fields.md) | **Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces** | A field-based interaction model for evidence, confidence, contradiction, and provenance. | study *run* (`bindData()` + Evidence Field study page already ship) | HCI / AI interfaces / trust |
+| 3 | [`03-evidence-fields.md`](03-evidence-fields.md) | **Evidence Fields: Visualizing Support, Contradiction, Confidence, and Provenance in AI Interfaces** | A field-based interaction model for evidence, confidence, contradiction, and provenance. | study page ships (`bindData()` + Evidence Field study page); controlled study not yet run | HCI / AI interfaces / trust |
 | 4 | [`04-motion-equivalence.md`](04-motion-equivalence.md) | **Motion Is Not Meaning: Reduced-Motion Equivalence in Field-Based Interface Systems** | A conformance model for translating motion-heavy field behavior into static semantic equivalents. | a11y conformance | Accessibility / web standards |
 | 5 | [`05-host-driven-runtime.md`](05-host-driven-runtime.md) | **A Host-Driven Field Runtime for Portable Interface Behavior** | A runtime architecture for field-based UI behavior that targets DOM, Canvas, SVG, WebGL, native, or headless — including the recipe runtime, force-passport, and conformance-gate methodology. | zero-DOM-globals core + platform runtime | Web systems / engineering |
 | 6 | [`06-portable-field-recipes.md`](06-portable-field-recipes.md) | **Recipes as Portable Field Programs for Interface Behavior** | A structured authoring model for composing relational field behavior without corrupting runtime vocabulary. | executable recipes | Design systems / authoring tools |
@@ -91,7 +91,7 @@ contribution as a *design and protocol*, not a measured result (see the caveat c
 |---|---|---|
 | Field Translation Runtime | Paradigm + architecture | recipe runtime, inspector, studies |
 | Reading Field | Long-form document attention/memory | Reading Field study |
-| Evidence Field | AI trust and provenance | study run (`bindData()` + study page already ship) |
+| Evidence Field | AI trust and provenance | study page ships (`bindData()` + Evidence Field study page); controlled study not yet run |
 | Motion Equivalence | Accessibility model | a11y conformance |
 | Host-Driven Runtime | Systems architecture | zero-DOM core + platform runtime |
 | Portable Field Recipes | Authoring model | executable recipes |
@@ -113,8 +113,9 @@ contribution as a *design and protocol*, not a measured result (see the caveat c
   [`references.md`](references.md); a `[TODO: cite]` marker means a real reference still needs to be
   located and verified — never fabricate one.
 - **Naming.** Use `Fundamental` for the project; `--field-*` / `field:*` for the current CSS-variable
-  and event families (the `--forces-*` / `forces:*` / `--d` aliases are mentioned only as
-  compatibility notes). Use the canonical token names from `packages/core/src/config/manual.ts`.
+  and event families (the `forces:*` event aliases and the compact `--d` CSS alias are mentioned
+  only as compatibility notes; the legacy `--forces-*` CSS variables have been removed). Use the
+  canonical token names from `packages/core/src/config/manual.ts`.
 - **Verify-against-code rule.** Before a paper states that something is *shipped*, it is checked
   against the force registry, the manual config, the render-mode catalog, the tests, and the package
   exports — mirroring the project's own documentation standard.

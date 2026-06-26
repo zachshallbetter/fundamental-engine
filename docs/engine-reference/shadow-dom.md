@@ -348,8 +348,8 @@ through the same path.
 
 The field writes state back to the registered element or write target using CSS custom properties.
 
-`--field-density` is the primary density variable (with `--d` and `--forces-density` as legacy/compat
-aliases). The platform `FeedbackRegistry` also auto-mirrors `--field-*` to `--forces-*`.
+`--field-density` is the primary density variable (with `--d` as the compact alias). The legacy
+`--forces-*` CSS variables have been removed.
 
 Minimum variables:
 

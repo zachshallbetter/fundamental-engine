@@ -68,7 +68,7 @@ index cards are themselves field bodies.
 - **`/llms.txt`** — the llmstxt.org index: the canonical architecture statement, then every
   docs route, every canon doc (GitHub blob links), and the twelve examples, one annotated
   line each.
-- **`/llms-full.txt`** — the full canonical documentation concatenated (~195 KiB).
+- **`/llms-full.txt`** — the full canonical documentation concatenated (~245 KiB).
 
 The agent consumption model is one of Fundamental's founding documents; its own docs treating
 agents as first-class readers is that model made literal. The `/docs` index links both.

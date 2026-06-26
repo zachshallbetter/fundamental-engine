@@ -80,10 +80,10 @@ the phases that ran and any violations.
 2. **StateRegistry** — typed, observable element state (numeric / boolean / string / vector2). This
    is internal truth, distinct from ARIA. CSS and JS both consume it; only feedback writes it.
 3. **FeedbackRegistry** — the write phase. Turns held state into CSS custom properties (continuous)
-   and thresholded, debounced events (discrete, with hysteresis). Mirrors `--field-*` → `--forces-*`
-   and `field:*` → `forces:*` during the alias window. Do not let other modules write CSS variables
-   directly. `cssWritesLastFrame()` reports the actual `style.setProperty` calls made during the
-   last `flush()` — a mirrored `--field-*`/`--forces-*` pair counts as 2 — which is the real
+   and thresholded, debounced events (discrete, with hysteresis). The `--forces-*` CSS-variable
+   mirroring has been removed; the `field:*` → `forces:*` **event** aliases still fire for
+   compatibility. Do not let other modules write CSS variables directly. `cssWritesLastFrame()`
+   reports the actual `style.setProperty` calls made during the last `flush()` — the real
    per-frame DOM write cost (off-screen elements with active bindings still generate mutations).
    It is distinct from `boundVars().length`, which counts registrations, not writes; the
    DataConsole's write-cost metric reads it.
@@ -105,7 +105,7 @@ the phases that ran and any violations.
    **State mirroring (the Bound Visual Sink tier).** CSS custom properties don't cross to siblings,
    so the registry mirrors them: with `setMirroring(true)` — the `createFieldPlatform` default —
    every `representation`/`measurement` visual receives its source's feedback channels
-   (`MIRRORED_CHANNELS`: `--d`/`--field-density`/`--forces-density`, `--load`/`--mass`, `--lit`,
+   (`MIRRORED_CHANNELS`: `--d`/`--field-density`, `--load`/`--mass`, `--lit`,
    `--entropy`/`--coherence`/`--temperature`, `--field-heatmap-density`) copied onto its own inline
    style — an `aria-hidden` SVG beside a sink heading thickens its contours from `var(--load)`
    exactly as authored. Change-gated via a MutationObserver on the source's style attribute: a quiet
@@ -157,7 +157,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
   sink contract is the engine's **only** feedback write path: when no platform sink is configured
   (raw `createField`, `@fundamental-engine/vanilla`, recipe-scoped engines), the engine installs an internal
   default sink (`core/feedback-sink.ts`) whose direct writes are byte-identical to the historical
-  behavior — same variables (`--d`/`--forces-density`/`--field-density`, the heatmap mirror pair,
+  behavior — same variables (`--d`/`--field-density`, the heatmap mirror pair,
   `--load`/`--mass`, `--lit`), same three-decimal formatting, same `field:lit`/`field:dim`
   hysteresis. There is no direct-write branch left in the engine loop.
 - **D4** — Shadow-DOM host registration handled by the platform (the host's `getRect` flows into

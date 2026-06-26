@@ -1,9 +1,9 @@
 # `@fundamental-engine/three` — Three.js integration spec
 
-> Status: **Level A shipped on `three-port`**, rebased onto `origin/main` to consume the optional z
-> lane (#362). A new authoring-surface package `@fundamental-engine/three` with **both flat (`PlaneProjection`)
-> and genuinely volumetric (`VolumeProjection`)** coordinate models, the **particle bridge** as the
-> first deliverable. Author: Zach Shallbetter. Home on the RC1 board (user project #24).
+> Status: **Shipped (main, v0.8.1).** An authoring-surface package `@fundamental-engine/three` with
+> **both flat (`PlaneProjection`) and genuinely volumetric (`VolumeProjection`)** coordinate models,
+> built on the optional z lane (#362), with the **particle bridge** as the first deliverable. Author:
+> Zach Shallbetter. Home on the RC1 board (user project #24).
 
 ## Why this is tractable
 
@@ -38,7 +38,7 @@ contract additively in a later core slice. Until then, the swarm needs path B.
 
 ### B · Particle bridge (the swarm, via `readParticles`)
 
-`FieldHandle.readParticles(out)` (added on this branch) copies live particle state into a
+`FieldHandle.readParticles(out)` copies live particle state into a
 caller-owned `Float32Array` (stride 5: `x, y, z, heat, size`), zero-alloc. The `z` is the engine's
 **optional depth lane** (z-axis.md, #362) — `0` in a flat field, real depth when the field was created
 with `depth > 0`. A renderer fills a `THREE.BufferAttribute` from it each frame. This is the fast path
@@ -94,7 +94,7 @@ The engine self-steps on the host's rAF; `layer.tick()` only reads the latest sw
 geometry, so it is safe from any render loop at any cadence. `FieldLayer` implements `FieldHandle`,
 so `burst`/`flowTo`/`setFormation`/`seed` drive the 3D layer unchanged.
 
-## Done on this branch
+## What ships in `packages/three`
 
 1. **core (additive):** `FieldHandle.readParticles(out)` — **stride 5 `[x, y, z, heat, size]`**,
    carrying the optional z lane (#362) — + impl + tests (incl. a `depth > 0` z-population check);
@@ -109,18 +109,14 @@ so `burst`/`flowTo`/`setFormation`/`seed` drive the 3D layer unchanged.
 
 - **B-overlay polish:** label sprites for `threeBackend.text()` (the `data` reading's numeric chips;
   `measureText` already honored). Currently the line overlays render; chip plates draw unlabeled. (#391)
-- **Native 3D visuals:** streamline **tubes** (`TubeGeometry` along `traceFieldLine`), instanced
-  vector-field arrows, density volume — all from `forceAt`/`netField` (re-exported). (#392)
-- **Level C — meshes as bodies:** a `threeHost` variant where `Object3D`s register as field bodies
-  (measurement via `projection.toField`, feedback to `material.uniforms`). (#393)
+- **Native 3D visuals (partially shipped):** `vectorField` + `streamlineTubes` already ship in
+  `samplers.ts` (built on `forceAt`/`netField`, re-exported); a density volume remains. (#392)
 - **Underlay through `RenderBackend`:** when core's matter-mode slice lands (gradient/point
   primitives), the swarm can also route through `threeBackend`, retiring the separate bridge if
   desired.
-- **Wiring:** add `three` to `scripts/check-readme.mjs` (PKG_DIRS/PUBLISHABLE) + root README + the
-  publish list once it's a published package; example page in `apps/` with a screenshot.
 
-## Verification gate (this branch, green)
+## Verification gate
 
-`pnpm typecheck · build · test · check:api · check:dist · check:readme · check:recipes`. The new
-package ships its own `node --test` suite. `check:cem` regenerates the elements manifest (the new
-`readParticles` accessor) — green after commit.
+`pnpm typecheck · build · test · check:api · check:dist · check:readme · check:recipes`. The
+package ships its own `node --test` suite. `check:cem` regenerates the elements manifest (the
+`readParticles` accessor).

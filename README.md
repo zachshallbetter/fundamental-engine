@@ -32,7 +32,7 @@ are adapters, not requirements.
 Most particle backgrounds are one-way: the canvas reacts to the cursor. Fundamental is two-way, and it is bound to your layout. It is a **DOM ⇄ field runtime** loop, not DOM ⇄ canvas.
 
 1. **Elements to field.** The platform's MeasurementRegistry reads each body's `getBoundingClientRect()` once per frame (the read phase). The body exerts force on the matter near it.
-2. **Field to elements.** The field samples density around each body; the FeedbackRegistry writes it back as CSS variables (`--field-density`, with the compact `--d` and `--forces-density` as legacy aliases) and thresholded events. Your CSS reads them to drive weight, size, color, or position.
+2. **Field to elements.** The field samples density around each body; the FeedbackRegistry writes it back as CSS variables (`--field-density`, with the compact `--d` as its alias) and thresholded events. Your CSS reads them to drive weight, size, color, or position.
 
 The geometry is re-read every frame on a six-phase scheduler (`discover → read → compute → state → write → render`), so the invisible forces stay locked to the visible boxes through scroll, resize, and reflow, and reads never thrash against writes. Animating the DOM animates the simulation for free.
 
@@ -157,7 +157,7 @@ Forces also carry a four-field classification (gravity / electromagnetic / stron
 
 **5 formations** bias the whole field at once: `ambient`, `wells`, `lanes`, `scatter`, `accretion`.
 
-**Reciprocal write-back.** Density returns to the elements through `--field-density` (local density; compact `--d` and `--forces-density` remain as aliases), `--load` (a sink's accretion fill), and `--lit` (cross-boundary spillover). Richer behaviors build on that loop:
+**Reciprocal write-back.** Density returns to the elements through `--field-density` (local density; compact `--d` remains as its alias), `--load` (a sink's accretion fill), and `--lit` (cross-boundary spillover). Richer behaviors build on that loop:
 
 - **Conserved attention.** One finite force budget across the page. Engaging a word pulls force off the others.
 - **Cross-boundary causality.** A saturated body spills density to its neighbours, weighted by nearness.

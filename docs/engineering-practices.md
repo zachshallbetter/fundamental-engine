@@ -134,6 +134,12 @@ CI runs the same gate plus the e2e matrix on PRs; `snapshots.yml` refreshes exam
 weekly. Releases go through a tag → `release.yml` only (provenance requires CI; a failed
 partial publish is retried with `gh run rerun --failed` — it is idempotent per-package).
 
+> **`pnpm test` includes the contract-coverage guard** (`packages/core/src/contract-coverage.test.ts`),
+> and it is load-bearing in CI. When you add a public `FieldOption` or a metric, a test that names
+> it must accompany the change — or the symbol must be added to the guard's `EXEMPT` set. A new
+> contract symbol with neither a test nor an exemption fails the build; this is the positive-check
+> half of the silent-contract-gap defense (§2).
+
 ## 7. Scope honesty
 
 Epics get assessments, not cramming. A grounded plan comment on the issue (what exists, what

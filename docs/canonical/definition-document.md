@@ -95,7 +95,7 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/dom` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/dom` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); the engine loop has no direct CSS-variable write branch left — feedback flows through the registries (or the internal default sink). The one remaining element write-back in `core/field.ts` is the layout-mode transform write for `data-move="layout"` bodies. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
 The package set: `Fundamental`, `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The hard rename left no `compat-*` alias packages for the prior names — they are gone, and the test suite asserts their absence (see [api-stability.md](api-stability.md) §6). The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
 
@@ -118,7 +118,7 @@ VisualBindingRegistry  binds field metrics to hidden visual elements
 OverlayRegistry        manages overlay surfaces over linked bodies
 ```
 
-`FeedbackRegistry` auto-mirrors `--field-*` to the legacy `--forces-*` vars and `field:*` events to `forces:*`. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
+The `--forces-*` CSS-variable mirroring has been removed; `FeedbackRegistry` writes `--field-*` vars directly, and the `field:*` → `forces:*` event aliases still fire for compatibility. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
 
 The Reading Field demo (`/docs/reading-field`) exercises all six scheduler phases across four registries (measurement, state, feedback, relationships) in a normal content page: sections are bodies, viewport proximity drives attention, accumulation becomes memory, the table of contents reflects state, citations form relationships, and reduced motion preserves meaning.
 
@@ -392,7 +392,7 @@ Scalar grids
    -> DOM bodies
 ```
 
-The runtime drives this loop through the `FrameScheduler` phases (`discover -> read -> compute -> state -> write -> render`); the `FeedbackRegistry` performs the write step, with `--field-density` as the primary feedback var (`--d` and `--forces-density` are legacy/compat aliases).
+The runtime drives this loop through the `FrameScheduler` phases (`discover -> read -> compute -> state -> write -> render`); the `FeedbackRegistry` performs the write step, with `--d` as the primary feedback var and `--field-density` as its expressive long form (`--forces-density` has been removed).
 
 ## 17. Design Philosophy
 

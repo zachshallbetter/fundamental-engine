@@ -75,8 +75,10 @@ fuzzing, the CPU/GPU parity path, advanced overlays.
 
 ## Engine — forces
 
-- [ ] **`warp` `[A · paired]`** + a `Body.pair` field (scanner resolves `data-pair`); the
-      `wormhole` preset then composes for free. (Physics workover v0.5.)
+- [x] **`warp` `[A · paired]`** + a `Body.pair` field (scanner resolves `data-pair`).
+      Shipped (`extended.ts`). (Physics workover v0.5.)
+- [ ] **`wormhole` preset** — compose the shipped `warp` pair into a named preset in
+      `config/presets.ts` (the only piece of the warp item still open).
 - [ ] **Transmutation** — `fuse` `[B]` (2 → 1, mass-conserving sink), `fission` / `decay`
       `[S]` (1 → 2, budgeted source). (Physics workover v0.5; conservation tests required.)
 

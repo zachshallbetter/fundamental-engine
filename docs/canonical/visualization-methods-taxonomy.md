@@ -62,11 +62,20 @@ DOM state shows reciprocity.
 
 ## Render Modes Catalog
 
-The engine ships **16** render modes (`RENDER_MODES` in `packages/core/src/visual/visualization.ts`),
-split into matter/structure modes and diagnostic modes. All are shipped; set one with
-`field.setRender(mode)` (or the `render` option). The `<field-root>` `render` *attribute* exposes a
-subset (`dots` / `trails` / `links` / `streamlines` / `metaballs` / `voronoi`); the rest are reached
-through `setRender()` / the core.
+The engine ships a **16-mode** catalog (`RENDER_MODES` in `packages/core/src/visual/visualization.ts`),
+split into matter/structure modes and diagnostic modes. All are shipped, but they reach the screen by
+two different paths:
+
+- **Underlay modes via `setRender(mode)`** — `FieldHandle.setRender` (and the `render` option) accepts
+  the seven underlay modes `dots` / `trails` / `links` / `metaballs` / `voronoi` / `streamlines` /
+  `flow` (plus `none`). The `<field-root>` `render` *attribute* exposes the same set.
+- **Diagnostic modes via the diagnostics API** — `force-vectors`, `contours`, `potential`, `energy`,
+  `topology`, `inspector`, `causality`, and `prediction` are drawn through the diagnostics renderers
+  (`drawTopology`, `drawInspector`, `drawCausality`, `drawPrediction`, etc. in `diagnostics/`), not
+  through `setRender`.
+
+Note that `flow` is a `setRender`-only composite (it draws `dots` + `streamlines` together) and is
+**not** a standalone entry in the 16-mode `RENDER_MODES` catalog — see the catalog table below.
 
 | Render mode | Type | Shows |
 |---|---|---|
@@ -86,6 +95,16 @@ through `setRender()` / the core.
 | `inspector` | diagnostic | bodies, agents, metrics, contracts |
 | `causality` | diagnostic | contribution sources |
 | `prediction` | diagnostic | ghost trajectory |
+
+**Composite (`setRender`-only, not a catalog entry):**
+
+| Render value | Type | Shows |
+|---|---|---|
+| `flow` | composite | `dots` + `streamlines` drawn together |
+
+`flow` is a valid `setRender` / `render`-option value but is **not** one of the 16 `RENDER_MODES`
+catalog entries — it is a composite that draws the `dots` and `streamlines` modes together. The
+catalog count stays **16**; `flow` is documented here as the composite.
 
 ## Visualization Presets
 

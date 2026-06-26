@@ -1,9 +1,16 @@
 # Explainable Interface Behavior Through Field Diagnostics
 
 > **Status: research draft (preprint, work in progress).** Paper 8 of 8 in the Fundamental family — the
-> diagnostics paper. Claims verified against the codebase and canonical docs as of 2026-06-07. See the
+> diagnostics paper. Claims verified against the codebase and canonical docs as of 2026-06-26. See the
 > [series index](README.md) and *the caveat canon* therein. This is a preprint draft, not canonical
 > product documentation.
+>
+> **Post-verification note (0.8.1).** Two diagnostic/authoring tools landed after the original draft and
+> extend the self-explanation surface of §5: `mountXRay()` (`@fundamental-engine/dom`), a keystroke-toggled
+> field-inspection overlay that surfaces the live runtime over any page, and `registerLintRule()`
+> (`@fundamental-engine/dom`), which makes `lintPlatform()`'s rule set pluggable — a consumer can register
+> a custom read-only guardrail rule alongside the built-in ones (§5.3). Both keep the reveal-never-mutate
+> invariant of §4: they read runtime state and never write to the physics they report on.
 
 **Author:** Zach Shallbetter
 **Series:** Fundamental Research Papers, Paper 8 of 8
