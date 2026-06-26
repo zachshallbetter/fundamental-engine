@@ -29,6 +29,8 @@ enum LabSelection: Hashable {
     case tour(String)
     case force(String)
     case recipe(String)
+    /// A user-created scene saved via RecipeStore.
+    case myRecipe(String)
 }
 
 // MARK: - Root
@@ -48,6 +50,10 @@ struct LabRootView: View {
     @State private var overlays: Set<FundamentalCore.OverlayMode> = []
     @State private var accent = Color(red: 0.30, green: 0.64, blue: 1.0)
     @State private var density: Double = 2
+    // Recipe studio state
+    @ObservedObject private var recipeStore = RecipeStore.shared
+    @State private var showSaveRecipeSheet = false
+    @State private var saveRecipeName = ""
     @State private var waves = false
     // Body Matter Interaction — how bodies and matter exchange (the engine truths)
     @State private var firstClassMass = false
@@ -83,6 +89,8 @@ struct LabRootView: View {
             return ForceCatalog.entry(token: token)?.scene ?? LabScenes.mass
         case .recipe(let id):
             return LabScenes.recipe(id) ?? LabScenes.mass
+        case .myRecipe(let id):
+            return recipeStore.recipes.first { $0.id == id } ?? LabScenes.mass
         }
     }
 
@@ -180,6 +188,34 @@ struct LabRootView: View {
                         .tag(LabSelection.recipe(r.id))
                 }
             }
+            if !recipeStore.recipes.isEmpty {
+                Section("My Recipes") {
+                    ForEach(recipeStore.recipes, id: \.id) { scene in
+                        SidebarRow(symbol: "bookmark.fill", title: scene.name, subtitle: scene.blurb)
+                            .tag(LabSelection.myRecipe(scene.id))
+                            .contextMenu {
+                                Button("Export JSON") {
+                                    if let json = recipeStore.exportJSON(scene) {
+                                        NSPasteboard.general.clearContents()
+                                        NSPasteboard.general.setString(json, forType: .string)
+                                    }
+                                }
+                                Button("Export Swift") {
+                                    let snippet = recipeStore.exportSwiftSnippet(scene)
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(snippet, forType: .string)
+                                }
+                                Divider()
+                                Button("Delete", role: .destructive) {
+                                    recipeStore.delete(scene)
+                                    if case .myRecipe(let id) = selection, id == scene.id {
+                                        selection = .tour(LabScenes.tour[0].id)
+                                    }
+                                }
+                            }
+                    }
+                }
+            }
         }
         .listStyle(.sidebar)
         .navigationSplitViewColumnWidth(min: 230, ideal: 270)
@@ -221,6 +257,18 @@ struct LabRootView: View {
                 pipelineExplainer
             }
         }
+        ToolbarItem(placement: .secondaryAction) {
+            Button {
+                saveRecipeName = currentScene.name
+                showSaveRecipeSheet = true
+            } label: {
+                Label("Save as Recipe", systemImage: "bookmark.badge.plus")
+            }
+            .help("Save the current scene as a custom recipe")
+            .sheet(isPresented: $showSaveRecipeSheet) {
+                saveRecipeSheet
+            }
+        }
         ToolbarItem(placement: .primaryAction) {
             Button {
                 showInspector.toggle()
@@ -229,6 +277,34 @@ struct LabRootView: View {
             }
             .help("Show or hide the field inspector")
         }
+    }
+
+    private var saveRecipeSheet: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Save as Recipe")
+                .font(.headline)
+            TextField("Recipe name", text: $saveRecipeName)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 260)
+            HStack {
+                Button("Cancel") {
+                    showSaveRecipeSheet = false
+                }
+                .keyboardShortcut(.cancelAction)
+                Spacer()
+                Button("Save") {
+                    var saved = currentScene
+                    saved.id = "custom-\(UUID().uuidString)"
+                    saved.name = saveRecipeName.isEmpty ? currentScene.name : saveRecipeName
+                    recipeStore.save(saved)
+                    showSaveRecipeSheet = false
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(saveRecipeName.isEmpty)
+            }
+        }
+        .padding(20)
+        .frame(minWidth: 300)
     }
 
     /// The whole model in four steps — what every scene in this app is an instance of.
