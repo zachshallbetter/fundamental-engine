@@ -17,6 +17,10 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   position or heat.
 - **`registerOverlay(name, drawFn)` (core).** Register a custom named overlay into the existing
   `setOverlay` stack; returns an unregister function for clean teardown.
+- **Off-main-thread render (C3) — Worker + OffscreenCanvas (dom).** `attachOffthreadRender(field, canvas)`
+  transfers a canvas to a dedicated Worker and drives particle rendering off the main thread via
+  `readParticles()` + postMessage each frame. Falls back gracefully on browsers without
+  `OffscreenCanvas`. The main-thread render path is completely untouched — this is an additive opt-in.
 
 ## [0.8.1] — 2026-06-25
 
