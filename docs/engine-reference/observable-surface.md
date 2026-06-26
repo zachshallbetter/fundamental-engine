@@ -40,16 +40,47 @@ Each `Particle` in the pool carries:
 `AtomPayload` is `{ weight?: number; [key: string]: unknown }` — arbitrary semantic fields
 bound via `handle.seed()` and retrieved via `handle.atomAt(x, y)`.
 
-> **Encapsulation:** `store.particles` is not exposed on `FieldHandle`. The only way to
-> observe individual particle state from outside is `atomAt` (nearest seeded record) and the
-> aggregate `energy()` snapshot. Direct array access requires a custom `FieldHost`.
+> **Encapsulation:** `store.particles` (the live `Particle[]` pool) is not exposed on
+> `FieldHandle`. Individual particle state is observable from outside through three channels:
+> `atomAt` (nearest seeded record), the aggregate `energy()` snapshot, and — since 0.8.1 — the
+> zero-copy wire-format read-out API (`readParticles`, `readParticleIds`,
+> `readParticleChannels`; see "Wire-format read-out" below). Direct access to the live pool
+> object still requires a custom `FieldHost`.
+
+### Wire-format read-out
+
+Since 0.8.1, `FieldHandle` exposes a zero-copy read-out of the live particle pool. The caller
+allocates a typed array and the engine fills it in place — no per-frame garbage, suitable for
+rAF-cadence reads, Worker transfer, and native sidecars.
+
+```ts
+handle.readParticles(out: Float32Array)              // packed records, PARTICLE_STRIDE floats each
+handle.readParticleIds(out: Uint32Array)             // stable per-particle ids
+handle.readParticleChannels(channels, out: Float32Array)  // selected channels only
+```
+
+`readParticles` packs each particle into `PARTICLE_STRIDE` floats; size `out` as at least
+`particleCount() × PARTICLE_STRIDE`. `readParticleChannels` writes only the named channels,
+in order, one stride-of-`channels.length` per particle — cheaper when you only need a subset.
+
+The wire-format constants are exported from `@fundamental-engine/core`:
+
+```ts
+import { PARTICLE_STRIDE, PARTICLE_WIRE_VERSION } from '@fundamental-engine/core';
+// PARTICLE_STRIDE = 5
+// PARTICLE_WIRE_VERSION = 0
+```
+
+`PARTICLE_WIRE_VERSION` lets a consumer assert the layout it was compiled against still matches
+the running engine before reading.
 
 ---
 
 ## Per-body / element metrics
 
-Written to the DOM every frame as CSS custom properties (both `--field-*` and `--forces-*`
-aliases) and `data-field-{metric}` band attributes (`low` / `mid` / `high`):
+Written to the DOM every frame as CSS custom properties (the `--field-*` family; the legacy
+`--forces-*` CSS variables have been removed) and `data-field-{metric}` band attributes
+(`low` / `mid` / `high`):
 
 | Metric | CSS var | Description |
 |---|---|---|
@@ -223,6 +254,40 @@ instead.
 
 ---
 
+## Platform extensions / render bridges
+
+Beyond the engine's own observation channels, the platform layer adds bridges that relocate
+where the field runs or renders.
+
+### Off-main-thread render (`@fundamental-engine/dom`)
+
+```ts
+import { attachOffthreadRender } from '@fundamental-engine/dom';
+
+const bridge = attachOffthreadRender(field, canvas);
+// → OffthreadBridgeResult
+```
+
+The C3 off-main-thread render bridge (`packages/dom/src/worker/offthread-bridge.ts`) transfers
+the canvas to a Worker via `OffscreenCanvas` so drawing runs off the main thread. It degrades
+gracefully: when `OffscreenCanvas` is unavailable it returns `{ supported: false }` and the
+caller keeps its on-thread render.
+
+### Non-DOM observation (`@fundamental-engine/core`)
+
+```ts
+import { headlessHost } from '@fundamental-engine/core';
+
+const host = headlessHost({ width: 1280, height: 720 });
+```
+
+`headlessHost` (re-exported from `./core/host-headless.ts`) is a reference `FieldHost` for
+non-DOM environments — agents, native sidecars, and test harnesses. It provides a manual-tick
+`raf` (you drive the loop) and a no-op scan root, so the full sim runs and is observable
+(including via the wire-format read-out above) without a browser.
+
+---
+
 ## Frame loop internals (not exposed)
 
 The following are engine-internal and have no accessor on `FieldHandle`. They are documented
@@ -235,7 +300,7 @@ here so the gap is explicit:
 | `env.dt` | Integration step — `1` normally, `0` under reduced-motion | `window.matchMedia('(prefers-reduced-motion: reduce)').matches` |
 | `env.scrollV` | Eased scroll speed | Derivable from `window.scrollY` delta |
 | `store.size` | Live particle count | **`handle.particleCount()`** — the accessor added for this |
-| `store.particles[]` | Full particle pool | **`handle.energy()`** — the only computed summary exposed |
+| `store.particles[]` | Full particle pool | **`handle.energy()`** (aggregate summary) + **`handle.readParticles()` / `readParticleIds()` / `readParticleChannels()`** (zero-copy wire-format read-out, see below) |
 
 There is no `frameDuration` measurement. The engine does not record how long a frame takes —
 see the `FieldPerf` design direction below.

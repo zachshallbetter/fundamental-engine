@@ -217,7 +217,9 @@ Text is a special case of the same model, governed by a design law
   it declaratively with `data-field-visual-for` + `data-field-visual-role="representation"` and keep it
   `aria-hidden` — the [VisualBindingRegistry](platform-architecture.md) discovers, binds, and
   lints the pairing. **shipped** (binding + lint). Generating glyph geometry *from* text
-  (outline extraction, text → SVG path) is **planned**, tracked as a frontier.
+  (outline extraction, text → SVG path) **ships** as the font-agnostic Contour Sink primitive
+  (`contours.ts`: `contourPathData` / `contourSvgFor`, any parsed font); only automatic CSS
+  font-binary discovery and complex-script shaping remain future work.
 
 ```html
 <h1 id="title" data-body="sink attract" data-absorb="72" data-max="36" data-feedback>Contour Field</h1>
@@ -248,7 +250,7 @@ Field Agent Consumption Model
 
 ## Headless runtime
 
-*Status: shipping — `headlessHost` (#602) and `addEdge` (#603) are in the merge queue.*
+*Status: shipped (0.8.1).*
 
 The engine runs outside the DOM — in a Node.js service, a native sidecar, an OS-level agent, a test — using the same physics and signals surface. No browser, no `canvas`, no `requestAnimationFrame`. The two pieces that gate this:
 
@@ -341,4 +343,4 @@ function tick(osState) {
 }
 ```
 
-**Availability:** `headlessHost` and `addEdge` are in PRs #602/#603 in the merge queue; not yet in the npm `@fundamental-engine/*` 0.8.0 release. To build against them today: `pnpm --filter @fundamental-engine/core build` and link the workspace build. The next tagged release will include both. Swift implementations are in `FundamentalCore`/`FundamentalVanilla` on `feat/headless-host`.
+**Availability:** Status: shipped (0.8.1). `headlessHost` (#602) and `addEdge` (#603) are in the npm `@fundamental-engine/*` 0.8.1 release. The Swift implementations shipped alongside, in `FundamentalCore`/`FundamentalVanilla`.

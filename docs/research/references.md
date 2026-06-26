@@ -44,7 +44,9 @@ best-known details and a `[verify]` flag.
 - `[dorigo]` M. Dorigo, ant-colony / pheromone-field optimization. **[TODO: locate canonical ref]**
 
 ### Reading on screen, navigation, and document orientation (Paper 2)
-- `[reading-on-screen]` screen vs. paper reading; spatial/kinesthetic cues; comprehension and orientation. **[TODO: locate]** (candidates: Mangen et al.; Ackerman & Goldsmith.)
+> **These `[TODO: locate]` slots block submission of Papers 2/3/4.** Each names what is needed (and, where a strong candidate is already known, names it to verify). Do not fabricate a citation; confirm or replace each candidate before submission.
+
+- `[reading-on-screen]` screen vs. paper reading; spatial/kinesthetic cues; comprehension and orientation. **[TODO: locate]** (candidates to verify: Mangen et al.; Ackerman & Goldsmith.)
 - `[wayfinding-orientation]` "where am I / where can I go / where have I been" wayfinding in hypertext and long documents. **[TODO: locate]**
 - `[toc-overview-navigation]` table-of-contents / overview+detail / fisheye / progress indicators. **[TODO: locate]** (candidate: Furnas, "Generalized fisheye views," CHI 1986 — **[verify]**.)
 - `[information-scent]` P. Pirolli, S. Card, "Information foraging," *Psychological Review* 106(4), 1999. **[verify]**

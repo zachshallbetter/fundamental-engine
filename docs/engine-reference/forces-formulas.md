@@ -266,7 +266,7 @@ This is the bidirectional DOM $\leftrightarrow$ field runtime loop. In the platf
   $$b.\text{count} = \sum_p \max(0, 1 - \text{dist}(p,b)/r_s) \quad \text{for}\ \text{dist} < r_s\ (r_s = d_{\max} \cdot 0.5)$$
   $$\text{target} = \text{clamp}(b.\text{count}/20 + (\text{on}\ ?\ 0.45 : 0), 0, 1)$$
   $$b.\text{d} += (\text{target} - b.\text{d}) \cdot 0.08$$
-  $$\text{CSS:}\ \text{element.style.setProperty}('--field-density', b.\text{d})\ \ (\text{mirrored to compat aliases}\ \texttt{--d},\ \texttt{--forces-density})$$
+  $$\text{CSS:}\ \text{element.style.setProperty}('--field-density', b.\text{d})\ \ (\text{mirrored to compact alias}\ \texttt{--d})$$
   $$\text{Time Constant:}\ \tau = -1 / (60 \cdot \ln(1 - 0.08)) \approx 0.20\ \text{seconds}$$
 
 ---
@@ -308,7 +308,7 @@ These guidelines ensure visual consistency and typography legibility. They prese
 * **Symptom:** Text words or case study headings are assembled from, or morphed out of, loose particles. The typography becomes noisy, jagged, and illegible.
 * **Root Cause:** Direct morphing or glyph assembly (`data-glyph`) applied to prose words.
 * **Correct Pattern:** Words must remain solid, vector-drawn typographic elements. The field must *decorate* and interact with the text box, not form the text itself. Reserve particle shape-assembly strictly for simple punctuation and marks (e.g., `.`, `—`, `·`, brackets, logos) where the silhouette remains simple and legible.
-* **Typographic Interaction:** To make words feel alive, alter their typographic properties using the eased local density variable written back by the engine. The primary token is `--field-density` (`--d` and `--forces-density` are legacy/compat aliases the FeedbackRegistry keeps mirrored):
+* **Typographic Interaction:** To make words feel alive, alter their typographic properties using the eased local density variable written back by the engine. The primary token is `--field-density` (`--d` is the compact alias the FeedbackRegistry keeps mirrored; the legacy `--forces-density` CSS variable has been removed):
   ```css
   .liveword {
     /* Drive weight from local density */
@@ -322,7 +322,7 @@ These guidelines ensure visual consistency and typography legibility. They prese
 
 #### 5.1.2 Static Metaphors (One-Way Fields)
 * **Symptom:** Particles react to mouse cursor movement, but layout cards and text headers do not react to the particle concentration. The canvas feels like a passive backdrop screensaver.
-* **Root Cause:** Neglecting to declare the `data-feedback` attribute on elements, or failing to bind the `--field-density` CSS variable (primary; `--d`/`--forces-density` are compat aliases) to typographic/layout properties.
+* **Root Cause:** Neglecting to declare the `data-feedback` attribute on elements, or failing to bind the `--field-density` CSS variable (primary; `--d` is the compact alias) to typographic/layout properties.
 * **Correct Pattern:** Every engageable DOM element must opt into the reciprocal loop. When particles gather, the element must visually swell, glow, or shift weights to close the interaction loop.
 
 #### 5.1.3 Over-Agitation & Lack of Restraint (Visual Fatigue)

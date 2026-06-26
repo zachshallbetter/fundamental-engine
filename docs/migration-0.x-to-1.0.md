@@ -27,8 +27,9 @@ render), and any call already passing `render`.
 
 ## 2. The umbrella packages are gone
 
-`@fundamental-engine/kit` and the `fundamental-engine` umbrella were retired in 0.7.0 and removed
-entirely. Install the specific package(s) you use:
+`@fundamental-engine/kit` and the `fundamental-engine` umbrella were retired in 0.7.0 — they no
+longer publish (hollow stub dirs may remain as pnpm artifacts). Install the specific package(s) you
+use:
 
 ```diff
 - npm i fundamental-engine            # or @fundamental-engine/kit

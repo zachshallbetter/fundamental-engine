@@ -188,7 +188,7 @@ Ordered for overnight (highest visible value first):
       every type axis) and C3 self-laying-out layout (anchor + repel + density pressure).
 
 > **The entire force catalog — canonical nine + natural + extended + modifiers + the
-> [B]/[C]/[D]/[E]/[S] classes — is complete (33 forces, six render modes).**
+> [B]/[C]/[D]/[E]/[S] classes — is complete (36 forces, six render modes).**
 
 ## Phase 7 — Adapters, the landing page, Lab, docs site
 
@@ -200,7 +200,7 @@ Ordered for overnight (highest visible value first):
       React is a peer dependency (the one approved framework dep; core stays zero-dep).
       Typecheck + `pnpm -r build` green.
 - [x] **The Field Manual `/reference` — the complete definition, in the UI.** Renders
-      `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 33
+      `MANUAL_FORCES`/`MANUAL_PRESETS`/`MANUAL_CONDITIONS` from core: every one of the 36
       forces with its law, `data-*` attributes, and description; presets as compositions;
       the `data-when` gates — all over the live field, linked from the home page. Driven by
       the catalog (completeness-tested), so it can't drift from the engine. Opens with a
@@ -241,7 +241,7 @@ Ordered for overnight (highest visible value first):
       `infrared`, `spectrum`) selectable via the `palette` FieldOption / `<forces-field palette>`
       attribute, and swappable live with `field.setPalette(name | hex[])`; a switcher in the Lab.
       Golden-tested.
-- [x] **Naming/color reconciliation** (§20.2) — every one of the 33 registered forces now
+- [x] **Naming/color reconciliation** (§20.2) — every one of the 36 registered forces now
       carries a canonical color (`FORCE_COLORS` in the manual catalog): the nine mirror
       `forces.config` (pinned by a no-drift test), the designed-extended forces take the §20.2
       registry colors, and the §20.10 naturals get principled clash-free accents. Surfaced as
@@ -272,7 +272,7 @@ separate, swappable choice and shares no code with the engine.
 
 - **First-class mass** — shipped as the split: unit-mass on the UI field by default,
   first-class `a = F/m` opt-in via `FieldOptions.mass` (§21.3).
-- **Palette/registry reconciliation (§20.2)** — done: every one of the 33 registered
+- **Palette/registry reconciliation (§20.2)** — done: every one of the 36 registered
   forces carries a canonical color, cross-checked by a completeness test.
 - **Site shell** — Astro, chosen and built (static; it shares no code with the engine, so
   it stays cheap to revisit).

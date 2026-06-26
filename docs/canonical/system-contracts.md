@@ -266,9 +266,9 @@ Recipe authors must not expect a designed lane to flow unless the host provides 
 platform writes what it can compute; `classifyMetric(name)` returns `'computed'`,
 `'supplied-only'`, or `'designed'` for any metric name.
 
-Suggested CSS variables for the platform-computed lane (canonical `--field-*`; the `--forces-*`
-names are legacy/compat aliases the FeedbackRegistry auto-mirrors, and `--d` is the compact alias
-for density):
+Suggested CSS variables for the platform-computed lane (canonical `--field-*`; `--d` is the compact
+alias for density). The legacy `--forces-*` CSS variables have been removed — only the `forces:*`
+**event** aliases remain for backward compatibility (those still fire from the engine):
 
 ```css
 --field-density
@@ -677,7 +677,7 @@ Registry rules:
 A registry must declare which scheduler phase it runs in.
 Measurement must read geometry only in the read phase.
 Feedback must write only in the write phase.
-The FeedbackRegistry auto-mirrors --field-* -> --forces-* and field:* -> forces:*.
+The FeedbackRegistry emits field:* events with forces:* event aliases for compatibility (the legacy --forces-* CSS variables have been removed).
 Relationship targets must resolve to registered bodies.
 Visual bindings must target hidden, non-orphan elements.
 Overlays must reference real links.
@@ -758,37 +758,31 @@ The legacy path is quarantined, not removed: it remains the canvas simulate-and-
 
 ## Migration and Alias Contract
 
-During the `force/` to `Fundamental/` migration, old and new public names must both resolve to the same behavior.
+The `forces-ui` → `field-ui` → `Fundamental` renames are complete. The current alias surface is
+narrow: the canonical names are `--field-*` (CSS) and `field:*` (events).
 
-CSS write-back should emit both:
+CSS write-back emits the **canonical `--field-*` family only**. The legacy `--forces-*` CSS
+variables have been **removed** (a body now reads `--field-density`, `--field-heat`, … and the
+compact `--d`):
 
 ```txt
 --field-density
---forces-density
 --field-heat
---forces-heat
 --field-entropy
---forces-entropy
 --field-coherence
---forces-coherence
 --field-attention
---forces-attention
 ```
 
-Events should support both:
+Events still ship a `forces:*` compatibility alias alongside each canonical `field:*` event:
 
 ```txt
-field:register-body
-forces:register-body
-field:unregister-body
-forces:unregister-body
-field:lit
-forces:lit
+field:register-body     (alias: forces:register-body)
+field:unregister-body   (alias: forces:unregister-body)
+field:lit               (alias: forces:lit)
 ```
 
-Component aliases should register the same body contract.
-
-Aliases may be deprecated only after:
+These event aliases remain for backward compatibility. Any future alias may be deprecated only
+after:
 
 ```txt
 docs are updated

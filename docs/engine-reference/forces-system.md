@@ -488,14 +488,14 @@ if dist < range·0.5:  b.count += (1 − dist / (range·0.5))
 // write density back into the element, eased
 target = clamp(b.count/20 + (on ? 0.45 : 0), 0, 1)
 b.d   += (target − b.d) · 0.08
-element.style.setProperty('--field-density', b.d)   // primary; --d / --forces-density are legacy/compat aliases
+element.style.setProperty('--field-density', b.d)   // primary; --d is the compact alias
 
 // optional: drive a variable font weight from density
 if fmax:  element.style.fontVariationSettings = `"wght" lerp(fmin, fmax, b.d)` (+ opsz)
 ```
 
-So `--field-density` (primary; `--d` and `--forces-density` are legacy/compat
-aliases) ∈ [0,1] is "how much field is gathered on me right now." CSS uses it for
+So `--field-density` (primary; `--d` is the compact alias) ∈ [0,1] is "how much
+field is gathered on me right now." CSS uses it for
 glow, color-mix, weight, and the per-card density wash. Sink bodies additionally
 expose `--load` ∈ [0,1] (alias `--mass`) so they can inflate as they fill.
 
@@ -603,6 +603,11 @@ and `ds-interactions.js`):
 > and proxied onto `<field-root>` as instance methods. All interaction with the running engine
 > goes through this handle; the internal `store`, `env`, and particle array are not accessible
 > from outside.
+>
+> **DOM-free consumers.** `headlessHost()` (from `@fundamental-engine/core`) provides a
+> `FieldHost` with no DOM dependency, for non-DOM consumers (engine-driven agents, native
+> sidecars, tests). It pairs with `render: 'none'` and the signal read-outs — bodies are
+> registered programmatically via `addBody` (§13.8) rather than scanned from `[data-body]`.
 
 ### 13.1 Configuration
 
@@ -614,8 +619,11 @@ and `ds-interactions.js`):
 | `setAttention(on)` | Toggle conserved attention (§2.4) — one finite strength budget. |
 | `setCausality(on)` | Toggle cross-boundary causality (Concept 4) — density spills to neighbours. |
 | `setHeatmap(on)` | Toggle the density heatmap layer (H1). |
-| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines` · `none` (the signals-only mode — never draws; see §13.7). |
+| `setRender(mode)` | Switch the underlay render mode (§20.6): `dots` · `trails` · `links` · `metaballs` · `voronoi` · `streamlines` · `flow` (a composite — `dots` + `streamlines`) · `none` (the signals-only mode — never draws; see §13.7). |
 | `setOverlay(mode)` | Render a field-structure visualization on the overlay surface: `off` · `streamlines` · `force-vectors` · `field-lines`. |
+| `setSeparation(strength)` | Particle-to-particle short-range repulsion strength (`0..1`, default `0`) — keeps free matter from clumping. Mirrors `FieldOptions.separation` and the `separation` attribute on `<field-root>`. |
+| `setWaveCenter(center)` | Set the center the `circular` Currents orbit (§24.1). Resolved live in three modes: a body token tracked each frame (e.g. `star`/`vortex`), a custom `{ x, y }` coordinate (or a `() => { x, y }` provider), or `null` to fall back to the viewport center. |
+| `registerOverlay(name, drawFn)` | Register a custom named overlay into the `setOverlay` stack; `drawFn(backend, env, W, H)` is called each frame while `name` is active. Returns an unregister function. |
 
 ### 13.2 DOM synchronization
 
@@ -650,6 +658,9 @@ read-only access to engine state that would otherwise require a reference to int
 | Method | Returns | Description |
 |---|---|---|
 | `particleCount()` | `number` | Live size of the particle pool (`store.size`). Use for budget monitors that need the count without walking the array. |
+| `readParticles(out)` | `number` | Zero-copy bulk read into a caller-owned `Float32Array` — stride-5 layout `[x, y, z, heat, size]` per particle (`PARTICLE_STRIDE = 5`, format `PARTICLE_WIRE_VERSION = 0`, both exported from `@fundamental-engine/core` types). Returns the count actually written; engine-stepped agents (§22.8) are excluded. |
+| `readParticleIds(out)` | `number` | Stable-id read into a `Uint32Array`, parallel to `readParticles` (same pool order, same agent exclusion) — `ids[i]` is the stable id of the particle at stride offset `i*5`. Lets a host key its own payload off pooled particles' identity. |
+| `readParticleChannels(channels, out)` | `number` | Column-wise multi-channel read: for each name in `channels` (`'x'·'y'·'z'·'vx'·'vy'·'heat'·'size'·'m'·'id'·'age'·'charge'`) fill the parallel `Float32Array` in `out`. Unknown channels write `0`; agent-exclusion matches `readParticles`. |
 | `energy()` | `{ kinetic, thermal, total, count }` | Per-frame energy snapshot. Forwards to `energyReport(store.particles)` from `@fundamental-engine/core/diagnostics/energy`. |
 | `scrollV()` | `number` | The engine's eased page-scroll velocity — the same EMA the `scrolling` condition gate (§5) reads: `(prev × 0.7) + (\|Δscroll\| × 0.3)` per frame. Units are **px/frame at the display refresh rate** — refresh-rate dependent (roughly half on a 120 Hz display; a px/ms normalization may replace the unit before 1.0 — the surface is experimental). The platform runtime mirrors it to `--field-scroll-v` on `:root` each frame. Pull-based: read on demand, do not poll in tight loops. |
 
@@ -717,6 +728,22 @@ A simulation that runs with no drawn surface at all — feedback variables style
 the only output — is the **invisible-fields** pattern; `render: 'none'` is its engine-level
 contract. See `docs/canonical/invisible-fields.md` for the placement taxonomy
 (underlay / overlay / typographic) and the two-field page architecture this enables.
+
+### 13.8 Programmatic bodies & edges
+
+Bodies and relationships can be created **with no DOM element** — the path a non-DOM host
+(`headlessHost`, a Three.js scene, a native sidecar) uses, where there is no `[data-body]`
+to scan. These are the engine-level counterparts of a DOM body (§3.1) and a relationship
+edge; the force-target view of the same primitives is §22.11 / §22.12.
+
+| Method | Returns | Description |
+|---|---|---|
+| `addBody(spec)` | `BodyHandle` | Register a body the engine treats like any scanned `[data-body]`. `spec` carries `tokens` (the force ids it emits), a `rect()` position sampler (the host projects its position through this each frame), and optional `strength`/`range`/`spin`/`angle`/`color`/`data`/`onFeedback`. The returned `BodyHandle` exposes the carried `data`, live `channels`, a `set(params)` for reactive force-param changes, and `remove()`. |
+| `addEdge(a, b, opts)` | `EdgeHandle` | Relate two programmatic bodies — `a` and `b` are `BodyHandle`s returned by `addBody` on this field. `opts` selects the `type`, `strength`, and `direction` (`from-to` · `to-from` · `bidirectional`). Returns an `EdgeHandle` (`set` / `remove`); read the live graph back via `readEdges()`. |
+
+A *structural* change (different `tokens`) still needs `remove()` + `addBody` — tokens are
+classified once, not reactive. Per-body feedback is delivered through `spec.onFeedback`
+(demultiplexed from the global sink) and mirrored on the handle's `channels`.
 
 ---
 
@@ -1955,6 +1982,23 @@ analytic companion off the same diffused grid (central difference, normalized by
 non-degenerate at a source; add it to a heading to climb toward matter, negate it to flee crowding.
 Requires the heatmap layer; returns `{ x: 0, y: 0 }` when off or empty. Mirrored on
 vanilla / elements / three.
+
+### 22.11 Programmatic bodies — `FieldHandle.addBody`
+A source body need not be a DOM element. `addBody(spec)` registers an **engine body with no
+DOM element** — the same agent a scanned `[data-body]` becomes (§3.1, §22.1), but positioned
+by a `rect()` sampler the host owns rather than a measured DOM rect. It is the source-side
+counterpart of the renderer-owned `addAgent` target (§22.8): `addAgent` is a particle the
+engine *moves*; `addBody` is a body that *emits* force. The returned `BodyHandle` carries the
+body's `data`, its live feedback `channels`, a `set(params)` for reactive force changes, and
+`remove()`. The signature and field-API placement are §13.8 — referenced here, not duplicated.
+
+### 22.12 Programmatic edges — `FieldHandle.addEdge`
+Relationships are likewise expressible without DOM. `addEdge(a, b, opts)` relates two
+programmatic bodies (the `BodyHandle`s from `addBody`) into the same relationship graph the
+DOM relationship registry feeds — coupling that strengthens while the source is salient and
+decays while idle, with slow-moving `memory`. The returned `EdgeHandle` mutates (`set`) or
+drops (`remove`) the edge; `readEdges()` reads the live graph (`EdgeView`) back for a
+non-visual consumer. See §13.8 for the full signature.
 
 ---
 

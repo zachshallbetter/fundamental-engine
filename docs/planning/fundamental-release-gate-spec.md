@@ -1,6 +1,6 @@
 # TASK: Fundamental Release-Gate Program (0.x → RC → 1.0)
 
-**Status:** Proposed — execution gated on §0 inputs
+**Status:** Active — RC engineering phase; open gates: RC-6 (contract coverage), RC-7 (perf budgets — blocked, hardware fact sheet needed), RC-8 (real AT pass), ST-5 (support published on live site).
 **Predecessor / Position:** Consumes `Fundamental-homepage-reorg-spec.md` (the install/docs coherence requirement) and `Fundamental-launch-brief.md` (the cohort, which *is* the RC validation phase). Sits as release governance over the project — every feature/fix task flows up into these gates.
 **Scope:** The gates that must pass to cut `1.0.0-rc.1`, and to promote `rc` → `1.0.0`, each stated as an evidence-bearing predicate. / **Excluded:** The implementation work behind any gate (the React fix, the CI wiring, the study) — those are separate tasks; this spec defines *what proves them done*, not how to do them.
 **Authority class:** Release governance. The **1.0 API freeze** and the **1.0 support commitment** are irreversible promises — treat both as critical-path; a wrong call propagates into every dependent.
@@ -76,7 +76,7 @@ Order is the dependency graph.
 
 **Phase A — Decisions (blocking).** Resolve §0.1 (the 1.0 surface) and §0.2 (support policy). Every gate inherits these; nothing proceeds until they're signed.
 
-**Phase B — RC engineering gates.** Drive RC-2 through RC-10 to `met`, parallelized across gates. RC-3 (lifecycle contracts, the React gap) and RC-4 (provenance) are the two most likely to be genuinely open; start there.
+**Phase B — RC engineering gates.** Drive RC-2 through RC-10 to `met`, parallelized across gates. RC-6 (contract coverage), RC-7 (perf budgets — blocked on the hardware fact sheet), and RC-8 (real AT pass) are the gates still open; start there. (RC-3 and RC-4 closed 2026-06-22.)
 
 **Phase C — Cut `1.0.0-rc.1`.** Only when §3.1 is fully green. Tag from that commit; capture evidence.
 
@@ -109,8 +109,8 @@ Discipline: evidence is appended to the gate ledger, not held in a context windo
 
 ## 7. Done criteria (evidence required)
 
-- [ ] **§0 decisions signed:** the 1.0 surface and the support policy are declared. *Evidence:* the two decision records.
-- [ ] **RC gate fully `met`:** every RC-* record carries its named evidence. *Evidence:* the §3.1 ledger, complete.
+- [x] **§0 decisions signed:** the 1.0 surface and the support policy are declared (#316/#317 closed 2026-06-22). *Evidence:* the two decision records (`planning/1.0-surface.md`, `SUPPORT.md`).
+- [ ] **RC gate fully `met`:** every RC-* record carries its named evidence. *Evidence:* the §3.1 ledger, complete. *State:* RC-1–RC-5, RC-9, RC-10 met; **open:** RC-6 (contract coverage), RC-8 (real AT pass); **blocked:** RC-7 (perf budgets — hardware fact sheet needed).
 - [ ] **`1.0.0-rc.1` cut** from the green-gate commit. *Evidence:* the tag + attached gate snapshot.
 - [ ] **Validation run:** ≥ N external builds on the RC with a friction→fix log. *Evidence:* `Fundamental-launch-brief.md` cohort output.
 - [ ] **STABLE gate fully `met`,** including the quiet-window condition and "all RC gates still green." *Evidence:* the §3.2 ledger, complete.

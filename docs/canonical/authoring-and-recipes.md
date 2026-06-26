@@ -442,15 +442,17 @@ Change: stronger fieldflow increases velocity and lowers center density.
 
 ## 13. Implementation Priority
 
+This list records the build order, all of which has now shipped (file pointers below).
+
 ```txt
-1. SceneRecipe schema
-2. VisualizationPreset schema
-3. ForceRecipe schema
-4. Intent compiler
-5. Authoring lint rules
-6. Essential recipes
-7. Material presets
-8. Field state presets
-9. Explain This Field output
+1. SceneRecipe schema — shipped (recipes/schema.ts; FieldRecipe, SceneRecipe alias)
+2. VisualizationPreset schema — shipped (visual/visualization.ts; VISUALIZATION_PRESETS)
+3. ForceRecipe schema — shipped (recipes/schema.ts)
+4. Intent compiler — shipped (recipes/intent.ts; compileIntent)
+5. Authoring lint rules — shipped (visual/lint.ts)
+6. Essential recipes — shipped (recipes/catalog.ts; 64 recipes, 8 first-release)
+7. Material presets — shipped (semantic/materials.ts; INTERACTION_MATERIALS)
+8. Field state presets — shipped (semantic/states.ts; FIELD_STATES)
+9. Explain This Field output — shipped (explainScene)
 10. Field Diff
 ```

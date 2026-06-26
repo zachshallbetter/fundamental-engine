@@ -1,9 +1,17 @@
 # Fundamental: A Field Translation Runtime for Relational DOM Interfaces
 
 > **Status: research draft (preprint, work in progress).** Paper 1 of the Fundamental family — the
-> flagship paradigm paper. Claims verified against the codebase and canonical docs as of 2026-06-07. See the
+> flagship paradigm paper. Claims verified against the codebase and canonical docs as of 2026-06-26. See the
 > [series index](README.md) and *the caveat canon* therein. This is a preprint draft, not canonical
 > product documentation.
+>
+> **Post-verification note (0.8.1, 2026-06-26).** Three additions since first draft extend, but do not
+> revise, this paper's argument. `field.addEdge()` adds programmatic typed relationships, broadening the
+> `RelationshipRegistry` story (§5.2) from DOM-derived edges to author-declared ones. `registerOverlay()`
+> lets a consumer register a custom overlay draw pass through the `OverlayRegistry`, and
+> `readParticleChannels()` exposes per-particle channel data for non-visual surfaces — both reinforcing
+> the signals-first / multi-surface posture (§8.7). These ride on a documented wire-format contract for
+> the particle/channel read-out. All are additive API; no claim above is retracted.
 
 **Author:** Zach Shallbetter
 **Series:** Fundamental Research Papers, Paper 1 of 8 (the flagship paradigm paper)
@@ -90,7 +98,7 @@ This paper contributes the **system** behind Fundamental:
    registries that enforce read/write discipline, so reads never thrash against writes and the loop
    stays consistent across scroll, resize, and reflow.
 4. **A force model with explicit epistemics** (§6): the `field()`/`apply()` split (structure vs
-   cause), per-force *passports*, and a five-way *truth-mode* taxonomy that keeps the system honest
+   cause), per-force *passports*, and a six-way *truth-mode* taxonomy that keeps the system honest
    about which behaviors are physics, which are design, and which are expressive.
 5. **A uniform authoring contract** (§7): one `[data-body]` markup that compiles identically across
    native HTML, web components, and React, plus an intent compiler and a conformance-gated *recipe*
@@ -543,7 +551,7 @@ the same platform registries:*
 
 - **Native HTML** — the platform runtime attaches to any element with `data-body`; the same markup
   works unchanged in Astro, Svelte, Vue, or static HTML.
-- **Web component** — `<field-root>` (with `<forces-field>` as a **deprecated** compatibility alias; prefer `<field-root>` in new code) wraps content
+- **Web component** — `<field-root>` (with `<field-field>` as an equivalent alias; prefer `<field-root>` in new code) wraps content
   and scans for bodies; the platform runtime is the default.
 - **React** — `<FieldField>` renders the same contract and maps props to `data-*` tokens;
   `useFieldField(options)` returns the field handle directly.
@@ -670,7 +678,7 @@ Three case studies anchor the family:
 Together these show the same runtime spanning reading, trust, and operations, each on a familiar
 interface archetype rather than a bespoke demo.
 
-### 8.5 Signals-first mode: the field as pure computation layer
+### 8.7 Signals-first mode: the field as pure computation layer
 
 The logical extreme of this principle is the **signals-first mode**: `render="none"` (now the engine
 default, #538) runs the full simulation — forces, registries, feedback, all six scheduler phases —
@@ -678,7 +686,7 @@ and writes all semantic signals to the DOM (`data-field-density`, `data-field-at
 `data-field-temperature`, and the corresponding CSS custom properties) *while drawing nothing at
 all.* The field becomes a pure computation layer: attention measured, memory accreted, relationships
 tracked, all without a single particle on screen. Visual representation then becomes explicitly
-opt-in (`render="particles"`, `render="contours"`, etc.) rather than the default. This is not a
+opt-in (`render="dots"`, `render="trails"`, etc.) rather than the default. This is not a
 degraded path — it is a first-class consumer posture. A data-driven agent, a server-side renderer,
 or any non-visual surface reads the same field state as the visual user sees animated; the physics
 is the common substrate, representation is a choice above it.

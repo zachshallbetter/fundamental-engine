@@ -91,10 +91,10 @@ Every markdown doc carries a status banner, and the folders mirror it:
 
 ## Naming policy
 
-New code and docs use `--field-*` CSS variables and `field:*` events. The compact `--d` and the
-`--forces-*` / `forces:*` families remain as compatibility aliases (the FeedbackRegistry auto-mirrors
-`--field-*` → `--forces-*` and `field:*` → `forces:*`). Prefer `--field-density` in examples; mention
-`--d` / `--forces-*` only as aliases. Use `Fundamental` for the project, packages, and docs.
+New code and docs use `--field-*` CSS variables and `field:*` events. The `--forces-*` CSS-variable
+mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. The `forces:*`
+**event** aliases still fire from the engine for compatibility. Prefer `--field-density` in examples;
+mention `--d` only as the compact alias. Use `Fundamental` for the project, packages, and docs.
 
 ## Status rule
 

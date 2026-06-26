@@ -330,7 +330,7 @@ scheduler. Each registry needs coverage:
 MeasurementRegistry reads element geometry only in the read phase
 StateRegistry tracks registered state and flags unregistered access
 FeedbackRegistry writes CSS variables (--field-density primary) only in the write phase
-FeedbackRegistry mirrors --field-* to --forces-* and field:* to forces:*
+FeedbackRegistry mirrors field:* to forces:* events (legacy --forces-* CSS vars removed)
 RelationshipRegistry resolves from/to targets and reports missing targets
 VisualBindingRegistry keeps decorative bindings hidden / non-orphaned
 OverlayRegistry attaches overlays only where links exist

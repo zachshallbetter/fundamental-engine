@@ -1185,3 +1185,635 @@ Not a physics toy.
 Not a background effect.
 
 A field model for interface meaning.
+
+## 26. Matter primitives beyond particles
+
+Particles are one way to sample the field.
+
+They are not the only way.
+
+The field is a continuous function over space. At any point there is a force vector, a density, a flow direction. Anything that can read a position and respond to a value can replace or augment particles.
+
+Alternative matter primitives:
+
+```txt
+fluid       grid-based simulation (SPH or Eulerian); the field drives pressure and viscosity
+fabric      a mesh of connected nodes; the field applies tension and compression across a surface
+sand        granular matter that stacks, piles, and avalanches; bodies displace and settle
+light       ray paths that bend through the field; strong bodies create gravitational lensing effects
+```
+
+### fluid
+
+Instead of discrete particles, continuous fluid that pools, flows, and swirls around bodies.
+
+Content sits in actual fluid.
+
+The field drives viscosity, not just direction.
+
+### fabric
+
+A membrane of connected nodes.
+
+Elements sit on a surface that physically deforms around heavy bodies.
+
+Priority becomes visible as depression, not motion.
+
+### sand
+
+Granular matter that settles into heaps.
+
+High-mass elements leave dunes.
+
+Weak-field bodies erode.
+
+Matter is displaced, not absorbed.
+
+### light
+
+Ray paths that curve through the field.
+
+A strong gravity body bends light around it.
+
+The field becomes visible through distortion of what is behind it, not through matter in front of it.
+
+Each primitive answers a different question about the field.
+
+Particles ask: where does matter flow?
+
+Fluid asks: what is the pressure?
+
+Fabric asks: how does the surface deform?
+
+Sand asks: where does matter accumulate?
+
+Light asks: how does the field distort what is already there?
+
+## 27. Spatial representations beyond particles
+
+Render modes should not be limited to matter.
+
+The field is a mathematical object. It has topology, gradients, equipotential surfaces, and flow lines.
+
+These can be rendered directly without any particle simulation.
+
+Possible spatial representations:
+
+```txt
+vector field glyphs      arrows at grid cells showing direction and magnitude; no particles
+isosurfaces              equipotential contour lines around bodies; a topographic map of semantic weight
+Voronoi territories      each body claims the nearest space, weighted by strength; living territory map
+pure density heatmap     color encoding field intensity at every point; thermal imaging of semantic weight
+interference patterns    multiple bodies emit waves; constructive interference becomes visible
+streamline LIC           line integral convolution showing continuous flow structure
+```
+
+### vector field glyphs
+
+The raw field topology made visible.
+
+No particles. No simulation.
+
+Just direction and magnitude at every cell.
+
+Like wind maps, but for semantic space.
+
+### isosurfaces
+
+Bodies sit at the centers of concentric rings.
+
+The field becomes a landscape.
+
+Bodies are mountains and valleys.
+
+Proximity and strength are visible as elevation, not position.
+
+### Voronoi territories
+
+The field becomes a living territory map.
+
+Boundaries shift as bodies move or change strength.
+
+Conflict becomes a visible contested boundary, not a separate visual layer.
+
+Render doctrine still holds:
+
+```txt
+Renders reveal. They do not define behavior.
+```
+
+The topology of the field exists whether or not it is drawn.
+
+## 28. Time-based representations
+
+The field currently exists in the present frame.
+
+But time is a dimension of the field too.
+
+Time-based render modes:
+
+```txt
+traces          accumulated particle paths; where matter has been, not where it is
+history bloom   density of past positions; high-traffic corridors become bright lines
+interference    wave emissions from multiple bodies; bands of constructive and destructive interference
+cellular        each grid cell updates based on neighbors and local field value; bodies perturb the rules
+decay maps      field intensity weighted by recency; recent influence is bright, old influence fades
+```
+
+### traces
+
+Instead of where particles are now, show where they have been.
+
+The field's history becomes visible as accumulated paths.
+
+High-traffic corridors show up as bright lines.
+
+Bodies that have moved leave contrails.
+
+### interference
+
+Multiple bodies emit waves.
+
+Where waves constructively interfere, bright bands form.
+
+Where they cancel, dark bands form.
+
+The field becomes a diffraction pattern.
+
+Semantically related bodies that emit in phase produce coherence.
+
+Conflicting bodies produce visible destructive bands.
+
+### cellular automata
+
+Each cell of a grid updates based on its neighbors and the local field value.
+
+The field drives the evolution rules.
+
+Bodies are perturbations in the rules, not only force sources.
+
+This is not a particle system.
+
+It is a different class of emergence.
+
+## 29. Alternative output surfaces
+
+The field does not have to be visual.
+
+The field is a continuous function over space with vector values.
+
+Any transducer that maps a value to a perceivable output can render the field.
+
+Alternative output surfaces:
+
+```txt
+sound       field density maps to synthesis parameters; the field becomes audible
+haptics     field intensity maps to vibration on mobile; the field is felt, not seen
+typography  characters in the field deform based on local force; the words physically inhabit the field
+AR / spatial  field extends into 3D space; physical objects become bodies; field bridges digital and physical
+```
+
+### sound
+
+High-gravity zones produce low drones.
+
+Electromagnetic regions create oscillating tones.
+
+Weak-field zones produce release and silence.
+
+The field becomes an ambient semantic soundscape.
+
+This is not audio decoration.
+
+It is a genuine accessibility and ambient awareness channel.
+
+### haptics
+
+Moving a finger through a strong-gravity region has physical resistance.
+
+Crossing a boundary field creates a perceivable threshold.
+
+The field is felt before it is seen.
+
+### typography as matter
+
+Characters are not glyphs on a grid.
+
+They are matter in the field.
+
+In a high-charge zone, characters spread.
+
+In a gravity well, they compress.
+
+The words physically inhabit the field.
+
+This is not a CSS filter.
+
+It is actual glyph-level deformation driven by field state.
+
+### AR / spatial
+
+The field extends into 3D space.
+
+Physical objects tracked by the camera become bodies.
+
+A real book on a desk creates a gravity well in the AR overlay.
+
+The field bridges digital and physical.
+
+Semantic relationships become visible in the room.
+
+## 30. The field as machine-readable semantic layer
+
+Every element on the page has a position in pixel-space.
+
+In a field page, every element also has a position in field-space.
+
+Field-space encodes:
+
+```txt
+semantic weight
+relational tension
+dynamic state
+flow direction
+field density
+influence range
+```
+
+This is a shared coordinate system that is spatially queryable and continuously maintained.
+
+### The field as a communication protocol
+
+Not between humans and UI.
+
+Between agents.
+
+An AI system, a service, or an autonomous process can query the field and understand the page without parsing the DOM.
+
+Field queries:
+
+```txt
+What is the most important thing on this page right now?   find the deepest gravity well
+What is this element most related to?                       follow the strong-force bonds from it
+What path should I take through this content?              follow field flow at minimum resistance
+What is in conflict here?                                   find regions of high charge separation
+What is the current trust state of this claim?             read coherence at that body's position
+```
+
+This is not metadata.
+
+It is not schema.org tags.
+
+It is live, continuous, physics-based meaning that is always current because it is computed every frame.
+
+### The field as a live knowledge graph
+
+A database has an index.
+
+A search engine has a vector space.
+
+The field is a spatial index of semantic state — continuously maintained, instantly queryable.
+
+Possible programmatic API:
+
+```txt
+field.queryAt(x, y)             → { density, direction, intensity, dominantBody }
+field.pathBetween(a, b)         → minimum-resistance path through field space
+field.dominantBody()            → body at the current global field minimum
+field.bondsFrom(element)        → strong-force bonds from a given body
+field.conflictsNear(element)    → charge separation and opposing domains
+```
+
+The field as infrastructure for entirely new kinds of interface intelligence.
+
+## 31. The field as social substrate
+
+One field per page is a constraint, not a law.
+
+### Shared fields
+
+A shared field has multiple participants, each contributing bodies.
+
+A collaborator's cursor is a body.
+
+A collaborator's reading position is a body.
+
+A selection is a body.
+
+Everyone's presence creates field contributions that sum.
+
+### Collective semantic gravity
+
+What emerges is not cursor chat.
+
+It is collective semantic gravity.
+
+Where many people are reading, a gravity well forms.
+
+Where attention flows, streamlines emerge.
+
+A controversial paragraph shows electromagnetic polarity — people polarized into two charge domains, their competing attention visible in field topology.
+
+You can see what a document means to a room of people.
+
+Not as a click heatmap.
+
+As a live field where meaning and attention are physics.
+
+### Presence as field contribution
+
+Collaborative behaviors:
+
+```txt
+collaborator focus emits signal
+reading position creates local density
+dwell time increases mass at that region
+disagreement creates charge separation
+consensus creates coherence and mass
+departure leaves a cooling memory trace
+```
+
+This extends section 17 (collaboration possibilities) from cursors and avatars to field participants.
+
+## 32. The field as accumulating memory
+
+The field currently exists only in the present frame.
+
+Particles have no history.
+
+But a field that accumulates — that remembers where attention has been, where matter has flowed, where bodies have moved — becomes a semantic sediment.
+
+### Pages that deform under use
+
+High-traffic corridors develop lower resistance.
+
+Neglected regions gradually lose charge.
+
+The page ages in a physically meaningful way, shaped by how it has been inhabited.
+
+This is not analytics.
+
+Analytics are external, discrete, and after-the-fact.
+
+Semantic sediment is local, continuous, and immediately legible.
+
+### Memory as field state
+
+Memory behaviors:
+
+```txt
+frequently visited regions develop lower resistance
+dwelled sections gain mass
+neglected regions cool and lose charge
+read paths leave visible traces
+recovered paths return to warmth
+interrupted paths show where attention broke
+```
+
+Bring a user back to a page and the field is already warm in the places they have been.
+
+Cold in the places they have not.
+
+The field is a map of prior attention.
+
+Possibility: software can remember in a visible, local, respectful way without turning everything into analytics.
+
+This extends section 24 (memory possibilities) from discrete markers to continuous field state.
+
+## 33. The field applied to time
+
+The field currently spans 2D space.
+
+But time is a dimension too.
+
+### Temporal fields
+
+A temporal field has bodies not just at positions but at moments.
+
+An event has a position in time-space.
+
+Related events are bound by strong force.
+
+Causal chains follow field flow.
+
+Concurrent events repel or attract based on semantic relationship.
+
+### Navigating time as a field
+
+A timeline is not a line.
+
+It is a field over time.
+
+Navigating it means following force gradients.
+
+Zoom into a high-density region and you are zooming into a moment of high semantic activity.
+
+Pull back and the field coarsens into epochs.
+
+Temporal field behaviors:
+
+```txt
+causal chains form flow paths
+concurrent events attract or repel based on semantic relationship
+high-activity moments create gravity wells
+long spans with few events become low-density sparse regions
+corrections and revisions overwrite memory at a position in time
+contested moments show charge separation
+```
+
+This is a genuinely different way to encode temporal relationships.
+
+Proximity in time-space means something based on meaning, not calendar distance.
+
+## 34. The field as authoring primitive
+
+Right now designers work in static space.
+
+They arrange elements, define transitions, write rules.
+
+The field inverts this.
+
+You define the physics.
+
+The layout emerges.
+
+### Authoring relationships, not positions
+
+Old model:
+
+```txt
+where should this go?
+```
+
+New model:
+
+```txt
+how should this relate?
+```
+
+You do not position a sidebar.
+
+You give the main content high gravity and the sidebar moderate gravity.
+
+They find their equilibrium.
+
+You do not animate a menu opening.
+
+You give it a charge that, when activated, repels its children into visible positions.
+
+### Responsive as field response
+
+Different viewport sizes produce different field configurations.
+
+The same semantic forces produce different spatial equilibria at different scales.
+
+Responsive design becomes field response.
+
+The author writes the meaning relationships.
+
+The field solves the geometry.
+
+### Implications for design tooling
+
+A field-native authoring tool would expose:
+
+```txt
+body mass and range sliders
+natural field type selector
+relationship graph editor
+formation picker
+equilibrium preview
+accessibility equivalent preview
+```
+
+Not:
+
+```txt
+x position
+y position
+margin
+padding
+animation timing
+```
+
+This extends section 18 (authoring possibilities) from a recipe editor to a fully field-native design model.
+
+## 35. Emergent semantics
+
+A simple field has a few bodies and produces simple dynamics.
+
+A complex field — many bodies, many forces, feedback loops between field state and body behavior — can produce emergent semantic behavior.
+
+Patterns that were not programmed.
+
+Attractor states that correspond to meaningful configurations.
+
+Phase transitions when a new body enters or leaves.
+
+### What emergence looks like in a field
+
+Possible emergent behaviors:
+
+```txt
+attractor states          the field settles into stable configurations around certain body arrangements
+phase transitions         a new body tips the field into a different global organization
+self-organizing structure bodies find equilibrium arrangements without explicit positioning rules
+resonance                 bodies at compatible ranges and strengths amplify each other's effects
+cascading release         a sink body reaching capacity triggers a chain of redistribution events
+```
+
+### Not artificial intelligence
+
+Artificial intelligence encodes meaning in weights.
+
+Emergent semantics is different.
+
+It is a medium that organizes meaning through physics.
+
+Structure arises from interaction, not from encoding.
+
+Not artificial intelligence.
+
+Not a simulation.
+
+A field model where meaning has dynamics.
+
+## 36. The projection problem
+
+Every interface ever built is a projection.
+
+A flat map of a high-dimensional semantic space.
+
+Menus are projections.
+
+Search is a projection.
+
+Feeds are projections.
+
+### What projections lose
+
+The projection loses information:
+
+```txt
+the relationship between the thing being read and the thing searched three days ago
+the tension between two articles that contradict each other
+the gravity of something important that has been avoided
+the path that was most traveled and the path that was never taken
+the coherence building across a form that is almost complete
+the conflict that has been accumulating in a document over multiple edits
+```
+
+This information exists.
+
+It is recoverable.
+
+It is not stored anywhere visible.
+
+### What the field recovers
+
+The field is a substrate that makes this information perceptible.
+
+Not inferable.
+
+Perceptible.
+
+```txt
+priority becomes gravity
+relationship becomes binding
+conflict becomes charge separation
+importance becomes convergence
+change becomes decay and transformation
+attention becomes density and memory
+trust becomes coherence
+risk becomes pressure
+```
+
+The field does not add new information.
+
+It makes existing semantic structure visible as physics.
+
+That is a different claim than most UI systems make.
+
+Most systems claim to present information.
+
+Fundamental claims to reveal the structure underneath it.
+
+### The new medium
+
+Every new medium recovered information that previous media lost.
+
+Writing recovered speech across time.
+
+Maps recovered spatial relationships across scale.
+
+Photography recovered visual appearance across memory.
+
+The field recovers semantic relationships across the interface surface.
+
+Not a particle system.
+
+Not a background effect.
+
+Not a physics toy.
+
+A medium for semantic structure — where meaning has forces, relationships have dynamics, and the interface can explain itself because it has physics.

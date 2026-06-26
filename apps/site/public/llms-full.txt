@@ -3,7 +3,7 @@
 Created by Zach Shallbetter (zachshallbetter.com).
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-25 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-26 by apps/site/scripts/gen-llms.mjs
 Files: 19
 
 These are the project's canonical documents — the authority on concepts, terminology, and
@@ -274,7 +274,9 @@ Text is a special case of the same model, governed by a design law
   it declaratively with `data-field-visual-for` + `data-field-visual-role="representation"` and keep it
   `aria-hidden` — the [VisualBindingRegistry](platform-architecture.md) discovers, binds, and
   lints the pairing. **shipped** (binding + lint). Generating glyph geometry *from* text
-  (outline extraction, text → SVG path) is **planned**, tracked as a frontier.
+  (outline extraction, text → SVG path) **ships** as the font-agnostic Contour Sink primitive
+  (`contours.ts`: `contourPathData` / `contourSvgFor`, any parsed font); only automatic CSS
+  font-binary discovery and complex-script shaping remain future work.
 
 ```html
 <h1 id="title" data-body="sink attract" data-absorb="72" data-max="36" data-feedback>Contour Field</h1>
@@ -305,7 +307,7 @@ Field Agent Consumption Model
 
 ## Headless runtime
 
-*Status: shipping — `headlessHost` (#602) and `addEdge` (#603) are in the merge queue.*
+*Status: shipped (0.8.1).*
 
 The engine runs outside the DOM — in a Node.js service, a native sidecar, an OS-level agent, a test — using the same physics and signals surface. No browser, no `canvas`, no `requestAnimationFrame`. The two pieces that gate this:
 
@@ -398,7 +400,7 @@ function tick(osState) {
 }
 ```
 
-**Availability:** `headlessHost` and `addEdge` are in PRs #602/#603 in the merge queue; not yet in the npm `@fundamental-engine/*` 0.8.0 release. To build against them today: `pnpm --filter @fundamental-engine/core build` and link the workspace build. The next tagged release will include both. Swift implementations are in `FundamentalCore`/`FundamentalVanilla` on `feat/headless-host`.
+**Availability:** Status: shipped (0.8.1). `headlessHost` (#602) and `addEdge` (#603) are in the npm `@fundamental-engine/*` 0.8.1 release. The Swift implementations shipped alongside, in `FundamentalCore`/`FundamentalVanilla`.
 
 ========================================================================
 FILE: api-stability.md
@@ -489,9 +491,9 @@ of the contract until they are added to the table above.
 | `FieldHandle` (full surface) | partial | The handle shape is not frozen as a type. Entry points that return it (`createField`, `createBrowserField`) are frozen, but new methods may be added in any patch. |
 | `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@fundamental-engine/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
 | Advanced diagnostics | partial | `DIAGNOSTICS` / `DIAGNOSTIC_LENS` / `draw*` primitives ship but are unfrozen. |
-| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) is designed but not yet implemented. |
+| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) ships shipped-but-unfrozen in `@fundamental-engine/dom` as `createFieldPerf` + `QualityGovernor`. |
 | Visual recipe editor | absent | No editor UI; the authoring toolkit is the substrate to build one on. |
-| GPU / WebGPU backend | planned | A named direction; the six shipped render modes are CPU/canvas. |
+| GPU / WebGPU backend | planned | A named direction; the 16 shipped render modes are CPU/canvas. |
 | Multi-root bridge | absent | No API for coordinating multiple `<field-root>` instances yet. |
 | AI evidence fields | partial | `EVIDENCE_FIELD` + the agent API ship as a substrate, but no packaged feature. |
 | Custom render backends | partial | Possible via `opts.host`; no stable backend-registration API. |
@@ -508,7 +510,7 @@ of the contract until they are added to the table above.
    convenience are both preserved; the vanilla door must keep auto-supplying `browserHost()`.
 4. **Package ownership is part of the contract.** Frozen symbols do not move between packages within
    `0.x` (`compileRecipe`/`FieldRecipe`/`FieldHost` → core; `createFieldPlatform`/`applyRecipe`/
-   `bindData`/`FieldPlatform`/`browserHost` → platform; `field-root`/`field-cell` → elements).
+   `bindData`/`FieldPlatform`/`browserHost` → dom; `field-root`/`field-cell` → elements).
 5. **Bodies are an attribute contract.** `[data-body]` on ordinary elements is the frozen authoring
    surface; there is no body element.
 6. **The `forces-*` compatibility layer was removed — there is no alias window.** The
@@ -541,9 +543,9 @@ migration note and a `0.MINOR` bump.
 
 ## Status
 
-The packages are **published to npm** under the `@Fundamental` scope (`@fundamental-engine/core` and the four
-adapters). This freeze defines the `0.x` contract consumers build against; the publish steps and
-order are in [`PUBLISHING.md`](../../PUBLISHING.md).
+The packages are **published to npm** under the `@fundamental-engine` scope (`@fundamental-engine/core`
+and the five adapters: dom, elements, react, vanilla, three). This freeze defines the `0.x` contract
+consumers build against; the publish steps and order are in [`PUBLISHING.md`](../../PUBLISHING.md).
 
 ========================================================================
 FILE: authoring-and-recipes.md
@@ -993,16 +995,18 @@ Change: stronger fieldflow increases velocity and lowers center density.
 
 ## 13. Implementation Priority
 
+This list records the build order, all of which has now shipped (file pointers below).
+
 ```txt
-1. SceneRecipe schema
-2. VisualizationPreset schema
-3. ForceRecipe schema
-4. Intent compiler
-5. Authoring lint rules
-6. Essential recipes
-7. Material presets
-8. Field state presets
-9. Explain This Field output
+1. SceneRecipe schema — shipped (recipes/schema.ts; FieldRecipe, SceneRecipe alias)
+2. VisualizationPreset schema — shipped (visual/visualization.ts; VISUALIZATION_PRESETS)
+3. ForceRecipe schema — shipped (recipes/schema.ts)
+4. Intent compiler — shipped (recipes/intent.ts; compileIntent)
+5. Authoring lint rules — shipped (visual/lint.ts)
+6. Essential recipes — shipped (recipes/catalog.ts; 64 recipes, 8 first-release)
+7. Material presets — shipped (semantic/materials.ts; INTERACTION_MATERIALS)
+8. Field state presets — shipped (semantic/states.ts; FIELD_STATES)
+9. Explain This Field output — shipped (explainScene)
 10. Field Diff
 ```
 
@@ -1183,7 +1187,7 @@ DOM body
 
 This loop is the core product.
 
-The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/dom` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); a legacy element write-back path in `core/field.ts` (CSS-variable and transform writes) is still being migrated behind the platform registries. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
+The loop runs on the platform runtime, which is the default for `<field-root>`. `@fundamental-engine/dom` owns DOM participation: it measures bodies, accumulates state, writes feedback, registers Shadow DOM, and resolves relationships. The legacy `core/field.ts` still simulates the field and draws the canvas render surface, while the platform owns DOM participation (measurement, feedback writes, Shadow-DOM registration, relationships); the engine loop has no direct CSS-variable write branch left — feedback flows through the registries (or the internal default sink). The one remaining element write-back in `core/field.ts` is the layout-mode transform write for `data-move="layout"` bodies. `Fundamental` imports no DOM globals — a boundary guarded by `core/dom-boundary.test.ts`. You can opt back to pure-legacy behavior with `experimental-platform="off"` or `usePlatformRuntime(false)`.
 
 The package set: `Fundamental`, `@fundamental-engine/dom`, `@fundamental-engine/elements`, `@fundamental-engine/react`, `@fundamental-engine/vanilla`. The hard rename left no `compat-*` alias packages for the prior names — they are gone, and the test suite asserts their absence (see [api-stability.md](api-stability.md) §6). The project is native-platform-first, dependency-light, and framework-agnostic; `Fundamental` specifically carries zero runtime dependencies.
 
@@ -1206,7 +1210,7 @@ VisualBindingRegistry  binds field metrics to hidden visual elements
 OverlayRegistry        manages overlay surfaces over linked bodies
 ```
 
-`FeedbackRegistry` auto-mirrors `--field-*` to the legacy `--forces-*` vars and `field:*` events to `forces:*`. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
+The `--forces-*` CSS-variable mirroring has been removed; `FeedbackRegistry` writes `--field-*` vars directly, and the `field:*` → `forces:*` event aliases still fire for compatibility. `lintPlatform()` reports authoring mistakes: `relation-target-missing`, `state-unregistered`, `overlay-without-links`, `feedback-non-css-var`, `measurement-off-phase`, `visual-orphan`, and `visual-not-hidden`.
 
 The Reading Field demo (`/docs/reading-field`) exercises all six scheduler phases across four registries (measurement, state, feedback, relationships) in a normal content page: sections are bodies, viewport proximity drives attention, accumulation becomes memory, the table of contents reflects state, citations form relationships, and reduced motion preserves meaning.
 
@@ -1480,7 +1484,7 @@ Scalar grids
    -> DOM bodies
 ```
 
-The runtime drives this loop through the `FrameScheduler` phases (`discover -> read -> compute -> state -> write -> render`); the `FeedbackRegistry` performs the write step, with `--field-density` as the primary feedback var (`--d` and `--forces-density` are legacy/compat aliases).
+The runtime drives this loop through the `FrameScheduler` phases (`discover -> read -> compute -> state -> write -> render`); the `FeedbackRegistry` performs the write step, with `--d` as the primary feedback var and `--field-density` as its expressive long form (`--forces-density` has been removed).
 
 ## 17. Design Philosophy
 
@@ -1627,10 +1631,10 @@ Every markdown doc carries a status banner, and the folders mirror it:
 
 ## Naming policy
 
-New code and docs use `--field-*` CSS variables and `field:*` events. The compact `--d` and the
-`--forces-*` / `forces:*` families remain as compatibility aliases (the FeedbackRegistry auto-mirrors
-`--field-*` → `--forces-*` and `field:*` → `forces:*`). Prefer `--field-density` in examples; mention
-`--d` / `--forces-*` only as aliases. Use `Fundamental` for the project, packages, and docs.
+New code and docs use `--field-*` CSS variables and `field:*` events. The `--forces-*` CSS-variable
+mirroring has been **removed** — `--d` and the `--field-*` family are the live vars. The `forces:*`
+**event** aliases still fire from the engine for compatibility. Prefer `--field-density` in examples;
+mention `--d` only as the compact alias. Use `Fundamental` for the project, packages, and docs.
 
 ## Status rule
 
@@ -2278,18 +2282,21 @@ Suggested outputs:
 Events:
 
 ```txt
-forces:entered
-forces:exited
-forces:lit
-forces:dim
-forces:saturated
-forces:captured
-forces:released
-forces:attention-shifted
-forces:relationship-strengthened
-forces:memory-threshold
-forces:entropy-warning
+field:entered
+field:exited
+field:lit
+field:dim
+field:saturated
+field:captured
+field:released
+field:attention-shifted
+field:relationship-strengthened
+field:memory-threshold
+field:entropy-warning
 ```
+
+The canonical names are `field:*` (per `FIELD_EVENTS` in `packages/core/src/agents/event-agent.ts`).
+The legacy `forces:*` names still fire from `core/field.ts` as compatibility aliases.
 
 Rule:
 
@@ -2556,12 +2563,12 @@ Every visible behavior should be traceable to a field cause.
 Several items below have shipped on the platform runtime (Phase D). The `RelationshipAgent` model is backed by the `RelationshipRegistry`; the reading/editorial use case ships as the Reading Field demo (section 22). Remaining items stay as authoring priorities and experiments.
 
 ```txt
-1. Formal FieldAgent model
-2. ElementAgent responder variables beyond density
+1. Formal FieldAgent model — shipped (agents/index.ts)
+2. ElementAgent responder variables beyond density — shipped (element-agent.ts)
 3. RelationshipAgent model — shipped (RelationshipRegistry)
 4. Attention budget
-5. UserAgent model for pointer/focus/selection
-6. Thresholded field events
+5. UserAgent model for pointer/focus/selection — shipped (user-agent.ts)
+6. Thresholded field events — shipped
 7. Relationship heatmaps
 8. Navigation/search recipes
 9. Form state recipes
@@ -3136,10 +3143,10 @@ the phases that ran and any violations.
 2. **StateRegistry** — typed, observable element state (numeric / boolean / string / vector2). This
    is internal truth, distinct from ARIA. CSS and JS both consume it; only feedback writes it.
 3. **FeedbackRegistry** — the write phase. Turns held state into CSS custom properties (continuous)
-   and thresholded, debounced events (discrete, with hysteresis). Mirrors `--field-*` → `--forces-*`
-   and `field:*` → `forces:*` during the alias window. Do not let other modules write CSS variables
-   directly. `cssWritesLastFrame()` reports the actual `style.setProperty` calls made during the
-   last `flush()` — a mirrored `--field-*`/`--forces-*` pair counts as 2 — which is the real
+   and thresholded, debounced events (discrete, with hysteresis). The `--forces-*` CSS-variable
+   mirroring has been removed; the `field:*` → `forces:*` **event** aliases still fire for
+   compatibility. Do not let other modules write CSS variables directly. `cssWritesLastFrame()`
+   reports the actual `style.setProperty` calls made during the last `flush()` — the real
    per-frame DOM write cost (off-screen elements with active bindings still generate mutations).
    It is distinct from `boundVars().length`, which counts registrations, not writes; the
    DataConsole's write-cost metric reads it.
@@ -3161,7 +3168,7 @@ the phases that ran and any violations.
    **State mirroring (the Bound Visual Sink tier).** CSS custom properties don't cross to siblings,
    so the registry mirrors them: with `setMirroring(true)` — the `createFieldPlatform` default —
    every `representation`/`measurement` visual receives its source's feedback channels
-   (`MIRRORED_CHANNELS`: `--d`/`--field-density`/`--forces-density`, `--load`/`--mass`, `--lit`,
+   (`MIRRORED_CHANNELS`: `--d`/`--field-density`, `--load`/`--mass`, `--lit`,
    `--entropy`/`--coherence`/`--temperature`, `--field-heatmap-density`) copied onto its own inline
    style — an `aria-hidden` SVG beside a sink heading thickens its contours from `var(--load)`
    exactly as authored. Change-gated via a MutationObserver on the source's style attribute: a quiet
@@ -3213,7 +3220,7 @@ Since Phase D the platform runtime is the **default** for every `<field-root>`. 
   sink contract is the engine's **only** feedback write path: when no platform sink is configured
   (raw `createField`, `@fundamental-engine/vanilla`, recipe-scoped engines), the engine installs an internal
   default sink (`core/feedback-sink.ts`) whose direct writes are byte-identical to the historical
-  behavior — same variables (`--d`/`--forces-density`/`--field-density`, the heatmap mirror pair,
+  behavior — same variables (`--d`/`--field-density`, the heatmap mirror pair,
   `--load`/`--mass`, `--lit`), same three-decimal formatting, same `field:lit`/`field:dim`
   hysteresis. There is no direct-write branch left in the engine loop.
 - **D4** — Shadow-DOM host registration handled by the platform (the host's `getRect` flows into
@@ -3682,9 +3689,9 @@ Recipe authors must not expect a designed lane to flow unless the host provides 
 platform writes what it can compute; `classifyMetric(name)` returns `'computed'`,
 `'supplied-only'`, or `'designed'` for any metric name.
 
-Suggested CSS variables for the platform-computed lane (canonical `--field-*`; the `--forces-*`
-names are legacy/compat aliases the FeedbackRegistry auto-mirrors, and `--d` is the compact alias
-for density):
+Suggested CSS variables for the platform-computed lane (canonical `--field-*`; `--d` is the compact
+alias for density). The legacy `--forces-*` CSS variables have been removed — only the `forces:*`
+**event** aliases remain for backward compatibility (those still fire from the engine):
 
 ```css
 --field-density
@@ -4093,7 +4100,7 @@ Registry rules:
 A registry must declare which scheduler phase it runs in.
 Measurement must read geometry only in the read phase.
 Feedback must write only in the write phase.
-The FeedbackRegistry auto-mirrors --field-* -> --forces-* and field:* -> forces:*.
+The FeedbackRegistry emits field:* events with forces:* event aliases for compatibility (the legacy --forces-* CSS variables have been removed).
 Relationship targets must resolve to registered bodies.
 Visual bindings must target hidden, non-orphan elements.
 Overlays must reference real links.
@@ -4174,37 +4181,31 @@ The legacy path is quarantined, not removed: it remains the canvas simulate-and-
 
 ## Migration and Alias Contract
 
-During the `force/` to `Fundamental/` migration, old and new public names must both resolve to the same behavior.
+The `forces-ui` → `field-ui` → `Fundamental` renames are complete. The current alias surface is
+narrow: the canonical names are `--field-*` (CSS) and `field:*` (events).
 
-CSS write-back should emit both:
+CSS write-back emits the **canonical `--field-*` family only**. The legacy `--forces-*` CSS
+variables have been **removed** (a body now reads `--field-density`, `--field-heat`, … and the
+compact `--d`):
 
 ```txt
 --field-density
---forces-density
 --field-heat
---forces-heat
 --field-entropy
---forces-entropy
 --field-coherence
---forces-coherence
 --field-attention
---forces-attention
 ```
 
-Events should support both:
+Events still ship a `forces:*` compatibility alias alongside each canonical `field:*` event:
 
 ```txt
-field:register-body
-forces:register-body
-field:unregister-body
-forces:unregister-body
-field:lit
-forces:lit
+field:register-body     (alias: forces:register-body)
+field:unregister-body   (alias: forces:unregister-body)
+field:lit               (alias: forces:lit)
 ```
 
-Component aliases should register the same body contract.
-
-Aliases may be deprecated only after:
+These event aliases remain for backward compatibility. Any future alias may be deprecated only
+after:
 
 ```txt
 docs are updated
@@ -4551,7 +4552,7 @@ scheduler. Each registry needs coverage:
 MeasurementRegistry reads element geometry only in the read phase
 StateRegistry tracks registered state and flags unregistered access
 FeedbackRegistry writes CSS variables (--field-density primary) only in the write phase
-FeedbackRegistry mirrors --field-* to --forces-* and field:* to forces:*
+FeedbackRegistry mirrors field:* to forces:* events (legacy --forces-* CSS vars removed)
 RelationshipRegistry resolves from/to targets and reports missing targets
 VisualBindingRegistry keeps decorative bindings hidden / non-orphaned
 OverlayRegistry attaches overlays only where links exist
@@ -5887,11 +5888,20 @@ DOM state shows reciprocity.
 
 ## Render Modes Catalog
 
-The engine ships **16** render modes (`RENDER_MODES` in `packages/core/src/visual/visualization.ts`),
-split into matter/structure modes and diagnostic modes. All are shipped; set one with
-`field.setRender(mode)` (or the `render` option). The `<field-root>` `render` *attribute* exposes a
-subset (`dots` / `trails` / `links` / `streamlines` / `metaballs` / `voronoi`); the rest are reached
-through `setRender()` / the core.
+The engine ships a **16-mode** catalog (`RENDER_MODES` in `packages/core/src/visual/visualization.ts`),
+split into matter/structure modes and diagnostic modes. All are shipped, but they reach the screen by
+two different paths:
+
+- **Underlay modes via `setRender(mode)`** — `FieldHandle.setRender` (and the `render` option) accepts
+  the seven underlay modes `dots` / `trails` / `links` / `metaballs` / `voronoi` / `streamlines` /
+  `flow` (plus `none`). The `<field-root>` `render` *attribute* exposes the same set.
+- **Diagnostic modes via the diagnostics API** — `force-vectors`, `contours`, `potential`, `energy`,
+  `topology`, `inspector`, `causality`, and `prediction` are drawn through the diagnostics renderers
+  (`drawTopology`, `drawInspector`, `drawCausality`, `drawPrediction`, etc. in `diagnostics/`), not
+  through `setRender`.
+
+Note that `flow` is a `setRender`-only composite (it draws `dots` + `streamlines` together) and is
+**not** a standalone entry in the 16-mode `RENDER_MODES` catalog — see the catalog table below.
 
 | Render mode | Type | Shows |
 |---|---|---|
@@ -5911,6 +5921,16 @@ through `setRender()` / the core.
 | `inspector` | diagnostic | bodies, agents, metrics, contracts |
 | `causality` | diagnostic | contribution sources |
 | `prediction` | diagnostic | ghost trajectory |
+
+**Composite (`setRender`-only, not a catalog entry):**
+
+| Render value | Type | Shows |
+|---|---|---|
+| `flow` | composite | `dots` + `streamlines` drawn together |
+
+`flow` is a valid `setRender` / `render`-option value but is **not** one of the 16 `RENDER_MODES`
+catalog entries — it is a composite that draws the `dots` and `streamlines` modes together. The
+catalog count stays **16**; `flow` is documented here as the composite.
 
 ## Visualization Presets
 

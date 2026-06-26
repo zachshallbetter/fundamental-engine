@@ -7,7 +7,7 @@
  * renaming, or changing the kind/shape of any frozen entry is a BREAKING change (a 0.MINOR bump in
  * the 0.x line) and needs a CHANGELOG migration note. Additions are fine in a PATCH.
  *
- * Package npm names: core = `Fundamental`, others = `@fundamental-engine/{platform,elements,react,vanilla}`.
+ * Package npm names: core = `@fundamental-engine/core`; others = `@fundamental-engine/{dom,elements,react,vanilla,three}`.
  */
 
 /** Frozen value exports — functions/consts that must remain importable, with their owning package. */

@@ -462,6 +462,11 @@ seams, then make physical behaviour opt-in and testable.
 
 ## Version mapping
 
+> **Historical labels.** The `v0.4`–`v0.6` labels below are the original brief's batch numbering,
+> not a live near-term roadmap — the project has since shipped `v0.8.1`. They are kept for the
+> record of how the work was planned; the actual disposition of any remaining items is tracked in
+> [`BACKLOG.md`](../../BACKLOG.md).
+
 `v0.2.0` is already cut (force-aware Lab controls, quick-pick bands, and the
 viscosity/jet/swirl conformance fixes). The brief's batches shift up by one:
 
@@ -474,7 +479,8 @@ viscosity/jet/swirl conformance fixes). The brief's batches shift up by one:
   semi-implicit Euler with `dt`, medium modes, linear and quadratic drag, the
   epsilon softening rules, frame-rate independence. (gravity and charge are
   already physical.)
-- **v0.5.0** — transformation: `warp`, `wormhole`, `fuse`, `decay`, `fission`,
+- **v0.5.0** — transformation: `warp` (**shipped** — conserved paired relocation, §22.3
+  of the spec); still remaining: `wormhole` (as a preset), `fuse`, `decay`, `fission`,
   `phase`, transformation docs, conservation tests.
 - **v0.6.0** — scale and natural Lab: velocity-Verlet, the natural-physics Lab
   preset, record/replay, fuzzing, the CPU/GPU parity path, advanced overlays.

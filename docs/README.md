@@ -104,8 +104,8 @@ When documents conflict, prefer:
 
 Use `Fundamental` for the project, packages, and docs. Use `field` for runtime concepts (field state,
 field root, field body, field event, field metric). New code uses `--field-*` CSS variables and
-`field:*` events; legacy aliases `--forces-*`, compact `--d`, and `forces:*` remain where
-compatibility requires them.
+`field:*` events; the compact `--d` CSS alias and the legacy `forces:*` event aliases remain where
+compatibility requires them. (The legacy `--forces-*` CSS variables have been removed.)
 
 ## Core distinctions
 

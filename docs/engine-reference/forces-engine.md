@@ -44,7 +44,7 @@ work is owned by the platform and sequenced by its `FrameScheduler`'s six phases
 | **read** | platform `measurement.ts` | every registered element's box read **once** per frame → an immutable geometry snapshot (no layout thrash). |
 | **compute** | `integrator.ts` (+ `attention.ts`, `causality.ts`, `scalar-grid.ts`, `reservoir.ts`, `currents.ts`) | the conserved physics: body forces → formation bias → integrate + damp; grids advance; bound↔free exchange. **Pure & headless** — the same code the conformance harness drives. |
 | **state** | platform `state.ts`, `metrics.ts` | typed per-element channels (density, attention, lit, pull, heat, entropy, coherence…) held, separate from ARIA. |
-| **write** | platform `feedback.ts` (core `feedback.ts` math) | state → DOM: `--field-*` CSS vars (compact alias `--d`; legacy `--forces-*` auto-mirrored) + thresholded, debounced `field:*` events (legacy `forces:*` mirrored). |
+| **write** | platform `feedback.ts` (core `feedback.ts` math) | state → DOM: `--field-*` CSS vars (compact alias `--d`) + thresholded, debounced `field:*` events (legacy `forces:*` mirrored). |
 | **render** | `field.ts`, `render-modes.ts`, `diagnostics/`, platform `overlays.ts` | draw the chosen render mode + optional field-line / heatmap / overlay layers. |
 
 Opt back to pure-legacy (engine owns its own rAF + DOM) with `experimental-platform="off"` /

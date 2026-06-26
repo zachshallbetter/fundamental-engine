@@ -83,9 +83,9 @@ of the contract until they are added to the table above.
 | `FieldHandle` (full surface) | partial | The handle shape is not frozen as a type. Entry points that return it (`createField`, `createBrowserField`) are frozen, but new methods may be added in any patch. |
 | `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@fundamental-engine/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
 | Advanced diagnostics | partial | `DIAGNOSTICS` / `DIAGNOSTIC_LENS` / `draw*` primitives ship but are unfrozen. |
-| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) is designed but not yet implemented. |
+| Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) ships shipped-but-unfrozen in `@fundamental-engine/dom` as `createFieldPerf` + `QualityGovernor`. |
 | Visual recipe editor | absent | No editor UI; the authoring toolkit is the substrate to build one on. |
-| GPU / WebGPU backend | planned | A named direction; the six shipped render modes are CPU/canvas. |
+| GPU / WebGPU backend | planned | A named direction; the 16 shipped render modes are CPU/canvas. |
 | Multi-root bridge | absent | No API for coordinating multiple `<field-root>` instances yet. |
 | AI evidence fields | partial | `EVIDENCE_FIELD` + the agent API ship as a substrate, but no packaged feature. |
 | Custom render backends | partial | Possible via `opts.host`; no stable backend-registration API. |
@@ -102,7 +102,7 @@ of the contract until they are added to the table above.
    convenience are both preserved; the vanilla door must keep auto-supplying `browserHost()`.
 4. **Package ownership is part of the contract.** Frozen symbols do not move between packages within
    `0.x` (`compileRecipe`/`FieldRecipe`/`FieldHost` → core; `createFieldPlatform`/`applyRecipe`/
-   `bindData`/`FieldPlatform`/`browserHost` → platform; `field-root`/`field-cell` → elements).
+   `bindData`/`FieldPlatform`/`browserHost` → dom; `field-root`/`field-cell` → elements).
 5. **Bodies are an attribute contract.** `[data-body]` on ordinary elements is the frozen authoring
    surface; there is no body element.
 6. **The `forces-*` compatibility layer was removed — there is no alias window.** The
@@ -135,6 +135,6 @@ migration note and a `0.MINOR` bump.
 
 ## Status
 
-The packages are **published to npm** under the `@Fundamental` scope (`@fundamental-engine/core` and the four
-adapters). This freeze defines the `0.x` contract consumers build against; the publish steps and
-order are in [`PUBLISHING.md`](../../PUBLISHING.md).
+The packages are **published to npm** under the `@fundamental-engine` scope (`@fundamental-engine/core`
+and the five adapters: dom, elements, react, vanilla, three). This freeze defines the `0.x` contract
+consumers build against; the publish steps and order are in [`PUBLISHING.md`](../../PUBLISHING.md).

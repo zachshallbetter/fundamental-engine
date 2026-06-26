@@ -7,6 +7,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Docs
+
+- **Documentation synced to 0.8.1.** Repo-wide doc-correctness pass: removed the stale `--forces-*`
+  CSS-variable auto-mirroring claim (the mirroring was removed; only `forces:*` event aliases remain),
+  marked all shipped-in-0.8.1 APIs as shipped, fixed force/render-mode/adapter counts, and corrected a
+  stale comment in `packages/three/src/index.ts` (both `PlaneProjection` and `VolumeProjection` ship).
+
 ### Added
 
 - **Wire-format contract — `PARTICLE_STRIDE` (5) and `PARTICLE_WIRE_VERSION` (0) (core).** Typed
