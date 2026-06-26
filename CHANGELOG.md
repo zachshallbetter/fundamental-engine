@@ -21,6 +21,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   transfers a canvas to a dedicated Worker and drives particle rendering off the main thread via
   `readParticles()` + postMessage each frame. Falls back gracefully on browsers without
   `OffscreenCanvas`. The main-thread render path is completely untouched — this is an additive opt-in.
+- **Auto-update-branch CI** — a new `auto-update-branch.yml` workflow fires on every push to main
+  and calls `gh pr update-branch` on all open PRs that are BEHIND or DIRTY, eliminating the manual
+  update-branch cycle that stalls parallel agent PRs in the strict merge queue.
+- **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
+  iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
+  filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
 
 ## [0.8.1] — 2026-06-25
 

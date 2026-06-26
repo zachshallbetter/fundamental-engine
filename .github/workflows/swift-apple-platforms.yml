@@ -1,0 +1,63 @@
+# Build and test the Swift port on iOS Simulator and visionOS Simulator.
+# The macOS workflow covers macOS only; UIKit host (iOS-only) and visionOS are untested without this.
+name: swift-apple-platforms
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'swift/**'
+      - '.github/workflows/swift-apple-platforms.yml'
+  pull_request:
+    paths:
+      - 'swift/**'
+      - '.github/workflows/swift-apple-platforms.yml'
+
+jobs:
+  ios-simulator:
+    name: build + test (iOS Simulator)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Resolve package dependencies
+        working-directory: swift
+        run: swift package resolve
+      - name: Build (iOS Simulator)
+        working-directory: swift
+        run: |
+          xcodebuild build \
+            -scheme FundamentalPackage \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath .build/xcode-ios \
+            | tail -5
+      - name: Test (iOS Simulator)
+        working-directory: swift
+        run: |
+          xcodebuild test \
+            -scheme FundamentalPackage \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath .build/xcode-ios \
+            | grep -E 'Test Suite|passed|failed|error:' | tail -20
+
+  visionos-simulator:
+    name: build (visionOS Simulator)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Resolve package dependencies
+        working-directory: swift
+        run: swift package resolve
+      - name: Build (visionOS Simulator)
+        working-directory: swift
+        run: |
+          xcodebuild build \
+            -scheme FundamentalPackage \
+            -destination 'generic/platform=visionOS Simulator' \
+            -derivedDataPath .build/xcode-visionos \
+            | tail -5
