@@ -39,6 +39,7 @@ Full list with the corrections: [Common mistakes — don't guess](https://github
 - [Start here — TypeScript](https://fundamental-engine.com/docs/guides/typescript): the typed FieldField class from @fundamental-engine/vanilla — no framework, no custom-element registration
 - [Start here — React](https://fundamental-engine.com/docs/guides/react): the <FieldField> component and the useFieldField hook
 - [Start here — Three.js](https://fundamental-engine.com/docs/guides/three)
+- [Start here — Swift (Apple platforms)](https://fundamental-engine.com/docs/guides/swift)
 - [Start here — Core engine](https://fundamental-engine.com/docs/guides/core): createField on a canvas you own, with an injected host
 - [Concepts — Concepts](https://fundamental-engine.com/docs/concepts): the mental model — bodies, the shared field context, reciprocity, the vocabulary lanes
 - [Concepts — Implementations](https://fundamental-engine.com/docs/implementations)

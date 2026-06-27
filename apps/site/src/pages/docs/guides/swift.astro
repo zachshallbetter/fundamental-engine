@@ -1,0 +1,154 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+
+const localDep = `// Package.swift — depend on the package from source.
+// Preview: there is no published SwiftPM registry release yet, so point at
+// a local checkout of the repo's swift/ directory (a .package(url:) door comes later).
+dependencies: [
+  .package(path: "../Fundamental/swift"),
+],
+targets: [
+  .target(name: "App", dependencies: [
+    .product(name: "FundamentalSwiftUI", package: "Fundamental"),
+  ]),
+]`;
+
+const swiftui = `import FundamentalSwiftUI
+
+struct ContentView: View {
+  var body: some View {
+    ZStack {
+      // the field surface — accepts every FieldOptions value
+      FieldView(options: .init(accent: "#4da3ff", render: .dots))
+
+      // any view becomes a body — the Swift analogue of [data-body]
+      Text("pull me")
+        .fieldBody(tokens: ["attract"], strength: 1.2, range: 150)
+    }
+  }
+}`;
+
+const vanilla = `import FundamentalVanilla
+
+// managed mount — mirrors new FieldField() / mountField()
+let field = FieldField(in: myView)            // myView: UIView or NSView
+field.scan()                                  // discover bodies in the view tree
+field.setFormation("wells")
+field.burst(at: tap.location(in: myView))     // a CGPoint from a gesture
+// …
+field.destroy()`;
+
+const vision = `import FundamentalVanilla
+
+// any RealityKit Entity hierarchy can host the field; the simulation runs in
+// native 3D — depth is a real axis, not a projection trick.
+let host = RealityFieldHost(root: rootEntity, width: 1.0, height: 0.6, depth: 0.4)
+let field = FieldField(host: host)`;
+---
+
+<DocsLayout
+  title="Fundamental — Swift guide (Apple platforms)"
+  description="Use Fundamental natively on iOS, macOS, and visionOS: the Swift port's packages (FundamentalCore / FundamentalSwiftUI / FundamentalVanilla), the FieldView + .fieldBody() SwiftUI API, and an honest parity status. A port of the JS engine, not a reinterpretation."
+>
+  <header class="docs-hero">
+    <p class="kicker">Guides</p>
+    <h1>The <span class="accent">Swift</span> port</h1>
+    <p class="lede">
+      The same reciprocal field, native on <strong>Apple platforms</strong> — iOS 17+, macOS 14+, and
+      visionOS 1+. It is a <strong>port of the JS engine, not a reinterpretation</strong>: the package
+      layout, the API surface, and the physics mirror the npm packages one-to-one. Where they diverge,
+      it is a bug or a listed <a href="#parity">parity gap</a>.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>Status: preview.</b> The Swift port is real and conformance-checked against the JS engine
+    (a 36-force golden test asserts the two planes agree), but the web plane moves first and the port
+    is behind on the newest primitives. See <a href="/docs/implementations">Implementations</a> for
+    the full surface-by-surface status, and <a href="#parity">Parity</a> below for specifics.
+  </div>
+
+  <section class="docs-sec">
+    <h2>Install</h2>
+    <p>
+      There is no published SwiftPM registry release yet — consume it from source. The package lives in
+      the repo's <code>swift/</code> directory; its SwiftPM package name is <code>Fundamental</code>.
+    </p>
+    <CodeTabs variants={[{ label: 'Package.swift', lang: 'swift', code: localDep }]} />
+    <p>
+      To see it run before wiring it into your own app, build the bundled <strong>Field Lab</strong>
+      demo: <code class="install" data-copy="swift run FieldLab">swift run FieldLab</code> from
+      <code>swift/</code> (a packaging script, <code>swift/Scripts/release-fieldlab.sh</code>,
+      produces an app bundle).
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Packages — one-to-one with npm</h2>
+    <p>
+      Four libraries, each the mirror of an npm package. <code>FundamentalCore</code> imports zero
+      platform code, exactly as <code>@fundamental-engine/core</code> imports zero DOM.
+    </p>
+    <table class="matrix">
+      <thead>
+        <tr><th>Swift target</th><th>npm equivalent</th><th>What it is</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>FundamentalCore</code></td><td><code>@fundamental-engine/core</code></td><td>The pure physics — particles, bodies, forces, the integrator, formations, reactions. Zero platform imports.</td></tr>
+        <tr><td><code>FundamentalPlatform</code></td><td><code>@fundamental-engine/dom</code></td><td>The six-phase frame scheduler (<code>discover → read → compute → state → write → render</code>) and the six registries.</td></tr>
+        <tr><td><code>FundamentalVanilla</code></td><td><code>@fundamental-engine/vanilla</code></td><td>The imperative API — <code>FieldField</code>, <code>mountField</code>. One import; the host (UIKit / AppKit / RealityKit) is selected at compile time.</td></tr>
+        <tr><td><code>FundamentalSwiftUI</code></td><td><code>@fundamental-engine/react</code></td><td>The declarative adapter — <code>FieldView</code>, <code>.fieldBody()</code>, <code>.fieldBurst()</code>, the <code>fieldHandle</code> environment value.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-sec">
+    <h2>SwiftUI — <code>FieldView</code> + <code>.fieldBody()</code></h2>
+    <p>
+      The declarative door. <code>FieldView</code> mounts the field surface; any view inside becomes a
+      body with the <code>.fieldBody(...)</code> modifier — the Swift analogue of the
+      <code>data-body</code> attribute. It accepts the same token vocabulary and tuning as the web.
+    </p>
+    <CodeTabs variants={[{ label: 'SwiftUI', lang: 'swift', code: swiftui }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>Vanilla — the imperative API</h2>
+    <p>
+      For UIKit/AppKit or any non-SwiftUI host, <code>FieldField</code> mirrors
+      <code>new FieldField()</code> / <code>mountField()</code> from
+      <a href="/docs/guides/typescript">the vanilla JS API</a>.
+    </p>
+    <CodeTabs variants={[{ label: 'Swift', lang: 'swift', code: vanilla }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>visionOS — volumetric, 3D-native</h2>
+    <p>
+      The Swift engine is <strong>3D-native</strong>: every position, velocity, and force is a
+      <code>SIMD3&lt;Float&gt;</code>. The JS engine is 2D only because the DOM and Canvas are — that
+      constraint doesn't exist here, so on visionOS depth is a real axis, not a projection trick. Any
+      RealityKit entity hierarchy can host the field.
+    </p>
+    <CodeTabs variants={[{ label: 'visionOS', lang: 'swift', code: vision }]} />
+  </section>
+
+  <section class="docs-sec" id="parity">
+    <h2>Parity — the honest status</h2>
+    <p>
+      The port is a port, and the web plane moves first. The core force set, the scheduler and
+      registries, formations, and the interactive scenes are all present and pass the cross-plane
+      conformance gate. The newest primitives — the field-channel read/write surface and the most
+      recent reactive-component work — are <strong>not yet ported</strong>. Treat the Swift surface as
+      <strong>preview</strong>: stable in shape, trailing the web on the very newest additions.
+    </p>
+    <p>
+      The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and
+      natively on Apple platforms behind one host seam — is in
+      <a href="/writings/one-engine-four-runtimes">One Engine, Four Runtimes</a>. The seam itself is
+      the <a href="/docs/platform">platform layer</a>; the runtime handle is the
+      <a href="/docs/api/handle">FieldHandle</a>.
+    </p>
+  </section>
+</DocsLayout>

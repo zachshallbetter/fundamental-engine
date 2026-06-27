@@ -15,7 +15,7 @@ test.describe("site nav · Wayfinding Field (signals-only)", () => {
   test("the current destination is pinned as the well — --field-attention drives to 1", async ({
     page,
   }) => {
-    await page.goto("/examples"); // SiteNav current="examples" → the Examples link is aria-current
+    await page.goto("/writings"); // SiteNav current="writings" → the Writings link is aria-current
     const current = page.locator('.sn-dest a[aria-current="page"]');
     await expect(current).toHaveCount(1);
     // the signals-only binding writes --field-attention back onto each link each frame; the current
@@ -28,7 +28,7 @@ test.describe("site nav · Wayfinding Field (signals-only)", () => {
   test("at rest, the other destinations stay low (no engagement, no false glow)", async ({
     page,
   }) => {
-    await page.goto("/examples");
+    await page.goto("/writings");
     const current = page.locator('.sn-dest a[aria-current="page"]');
     await expect.poll(() => current.evaluate(attn), { timeout: 10_000 }).toBeGreaterThan(0.9);
     const others = page.locator('.sn-dest a:not([aria-current="page"])');
@@ -40,7 +40,7 @@ test.describe("site nav · Wayfinding Field (signals-only)", () => {
   test("every destination stays inside the viewport — the field never moves layout", async ({
     page,
   }) => {
-    await page.goto("/examples");
+    await page.goto("/writings");
     const links = page.locator(".sn-dest a");
     const n = await links.count();
     expect(n).toBeGreaterThanOrEqual(5);
@@ -57,7 +57,7 @@ test.describe("site nav · Wayfinding Field (signals-only)", () => {
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/examples");
+    await page.goto("/writings");
     const current = page.locator('.sn-dest a[aria-current="page"]');
     await expect(current).toHaveCount(1);
     // the markup still carries data-field-attention="1", but with the engine skipped nothing writes
