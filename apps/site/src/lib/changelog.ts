@@ -106,6 +106,11 @@ export interface Highlight {
 }
 export const HIGHLIGHTS: Highlight[] = [
   {
+    title: "Android — a native Kotlin port",
+    blurb: "The engine now runs natively on Android: same package layout, API surface, and physics as the JS and Swift packages, held to the same shared cross-plane golden. Ships a Jetpack Compose host (FieldView + Modifier.fieldBody), an imperative View host, and a desktop FieldLab. In active development on the android branch.",
+    href: "/docs/guides/kotlin",
+  },
+  {
     title: "Warm palette by default",
     blurb: "The field renders on a warm cool→warm ramp out of the box — the same palette across the JS core and the Swift port.",
     href: "/docs/diagnostics",

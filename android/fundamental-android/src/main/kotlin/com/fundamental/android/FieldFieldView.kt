@@ -61,13 +61,25 @@ class FieldFieldView @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private var running = false
+    // Previous frame's nanos, for the frame-rate-independent timestep. 0 == no prior frame yet.
+    private var lastFrameNanos: Long = 0L
     private val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (!running) return
-            // dt = 1f is the engine's nominal frame step (FieldController.tick defaults to dt=1), the
-            // same fixed step the Compose host uses via withFrameNanos. Choreographer ~= CADisplayLink.
-            controller?.tick()
-            invalidate()
+            // Frame-rate-independent timestep — mirror of FieldEngine.swift (~L258): normalize the real
+            // frame interval to a 60fps baseline (≈1 at 60fps, ≈0.5 at 120fps), clamp so a stall can't
+            // teleport matter, and zero it under reduced motion (which gates the integrator off).
+            val last = lastFrameNanos
+            val dtRaw = if (last == 0L) 1f else (frameTimeNanos - last) / 1e9f * 60f
+            lastFrameNanos = frameTimeNanos
+            val reduced = host.prefersReducedMotion
+            val dt = if (reduced) 0f else dtRaw.coerceIn(0.2f, 2f)
+            // Hidden guard (mirror `guard !host.isHidden`): skip integration while off-screen, but keep
+            // the loop alive so it resumes cleanly when shown again.
+            if (!host.isHidden) {
+                controller?.tick(dt)
+                invalidate()
+            }
             // Re-post while attached; onDetachedFromWindow flips `running` and removes the callback.
             if (running) Choreographer.getInstance().postFrameCallback(this)
         }
@@ -104,6 +116,8 @@ class FieldFieldView @JvmOverloads constructor(
     private fun startLoop() {
         if (running) return
         running = true
+        // Reset so the first frame after (re)attach uses dt=1 rather than a stale-interval blowup.
+        lastFrameNanos = 0L
         Choreographer.getInstance().postFrameCallback(frameCallback)
     }
 

@@ -608,6 +608,12 @@ and `ds-interactions.js`):
 > `FieldHost` with no DOM dependency, for non-DOM consumers (engine-driven agents, native
 > sidecars, tests). It pairs with `render: 'none'` and the signal read-outs — bodies are
 > registered programmatically via `addBody` (§13.8) rather than scanned from `[data-body]`.
+>
+> **Kotlin/Android parity.** The Kotlin port's `:fundamental-core` needs no `headlessHost()` stub —
+> it is host-free by construction: `createField(…)` / `FieldController.tick(dt)` run the full
+> simulation with no view or renderer, and bodies are registered programmatically through the
+> `FieldHandle` API rather than scanned. A `FieldHost` is injected only by `:fundamental-platform`
+> when a host is present. In active development on the Android port branch — not a published release.
 
 ### 13.1 Configuration
 

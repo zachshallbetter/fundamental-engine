@@ -18,6 +18,10 @@ dependencies {
     implementation(project(":fundamental-core"))
     // recipe save/export round-trips a @Serializable FieldRecipe back to the canon JSON shape.
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // JVM unit tests (RecipeExport round-trip). Mirrors :fundamental-core's JUnit 5 setup.
+    testImplementation(kotlin("test-junit5"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
@@ -29,6 +33,10 @@ kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 application {
