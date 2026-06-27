@@ -18,6 +18,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   that never fired + an empty `querySelectorAll`). Adds `frame-harness.test.ts` asserting the
   capture → hold → release sequence (both the gated-discharge and saturating-supernova paths), warp
   relocate, and element emit (cap + a11y + teardown). Closes #704.
+- **Property-based fuzz test for the integrator (core test).** `packages/core/src/core/fuzz.test.ts`
+  generates random-but-valid field configs (bodies, the canonical force set, formation/env params within
+  documented ranges) from a seeded LCG and steps each many ticks, asserting the engine invariants hold
+  across the space: particle COUNT is conserved (the one strong invariant), no NaN/Infinity ever appears
+  in positions/velocities, and values stay finite and bounded (speed ≤ `env.c`, position within the wrap
+  halo). Deterministic — every case reproduces from its seed. Closes #691.
 - **Catalog-count doc-drift guard (core test).** A new conformance test derives the force count from the
   catalog (`MANUAL_FORCES`) and fails CI if any current-truth doc (canonical, engine-reference, ROADMAP,
   BACKLOG, CLAUDE, README) states a different total — catching the recurring force-count drift by hand.
