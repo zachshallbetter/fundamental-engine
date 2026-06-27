@@ -7,6 +7,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Internal
+
+- **Catalog-count doc-drift guard (core test).** A new conformance test derives the force count from the
+  catalog (`MANUAL_FORCES`) and fails CI if any current-truth doc (canonical, engine-reference, ROADMAP,
+  BACKLOG, CLAUDE, README) states a different total — catching the recurring force-count drift by hand.
+  Closes #710.
+
 ### Docs
 
 - **Documentation synced to 0.8.1.** Repo-wide doc-correctness pass: removed the stale `--forces-*`
