@@ -9,6 +9,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Internal
 
+- **Frame-driving test harness for element consumers + capture/release events (core test-support).** A
+  new `frameHarness` (`packages/core/src/core/frame-harness.ts`) drives the *real* `field.ts` frame loop
+  frame-by-frame on a deterministic `dt` + seeded `rng`, over a hand-rolled (DOM-free) element scan root.
+  It closes the long-standing gap where PR #260's per-frame element wiring — `[data-move]` movers,
+  `[data-dock]` collapse, `[data-warp]` relocate, `[data-emit]` cloning, and the `field:captured` /
+  `field:released` / `field:relocated` dispatch — never ran under the only `createField` stub (a `raf`
+  that never fired + an empty `querySelectorAll`). Adds `frame-harness.test.ts` asserting the
+  capture → hold → release sequence (both the gated-discharge and saturating-supernova paths), warp
+  relocate, and element emit (cap + a11y + teardown). Closes #704.
 - **Catalog-count doc-drift guard (core test).** A new conformance test derives the force count from the
   catalog (`MANUAL_FORCES`) and fails CI if any current-truth doc (canonical, engine-reference, ROADMAP,
   BACKLOG, CLAUDE, README) states a different total — catching the recurring force-count drift by hand.
