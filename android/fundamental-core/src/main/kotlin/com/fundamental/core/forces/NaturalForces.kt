@@ -1,9 +1,13 @@
 package com.fundamental.core.forces
 
+import com.fundamental.core.engine.AxisBox
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.Force
 import com.fundamental.core.engine.Particle
+import com.fundamental.core.engine.Pole
+import com.fundamental.core.engine.dipoleField
+import com.fundamental.core.engine.polePair
 import com.fundamental.core.math.EPS
 import com.fundamental.core.math.Vec3
 import kotlin.math.PI
@@ -26,6 +30,8 @@ import kotlin.random.Random
 
 /** Charged elements radiate up to (1 + Q_GAIN)× their base field as they charge up (Stage C2). */
 private const val Q_GAIN: Float = 1.5f
+private const val DIPOLE_MIN_SEP: Float = 8f // below this the box gives no usable dipole axis
+private const val DIPOLE_MIN_REACH: Float = 60f // synthesized pole reach floor (point bodies)
 
 private val TWO_PI: Float = (2.0 * PI).toFloat()
 
@@ -56,6 +62,24 @@ private fun bodyGravityField(b: Body, point: Vec3): Vec3 {
     val d = max(d3.length(), EPS)
     val mag = (b.M * (1f + Q_GAIN * b.d)) / (d * d)
     return (d3 / d) * mag
+}
+
+/**
+ * The body's dipole field at a world point (Stage B): the two-pole superposition scaled by `s`. Shared
+ * by magnetism (the bar magnet) and charge's dipole rendering. Synthesizes poles when the box gives no
+ * usable separation, so every source reads as a dipole regardless of size.
+ */
+private fun bodyDipole(b: Body, point: Vec3, s: Float): Vec3 {
+    var (a, c) = polePair(AxisBox(b.box, b.heading, b.spin))
+    val sep = (a.position - c.position).length()
+    if (sep < max(b.range * 0.06f, DIPOLE_MIN_SEP)) {
+        val half = max(b.range * 0.18f, DIPOLE_MIN_REACH)
+        val sgn = if (b.spin < 0f) -1f else 1f
+        a = Pole(b.center + b.heading * half, sgn)
+        c = Pole(b.center - b.heading * half, -sgn)
+    }
+    val sq = s * (1f + Q_GAIN * b.d) // charged elements radiate a stronger field
+    return dipoleField(listOf(a, c), point) * sq
 }
 
 /** The radial monopole field of a single point charge (§20.3): out of +, into −. */
@@ -106,7 +130,9 @@ class MagnetismForce : Force {
         val theta = q * body.spin * body.strength * falloff
         particle.velocity = particle.velocity.rotatedAboutZ(theta)
     }
-    // NOTE: field() (the bar-magnet dipole structure) defers to the geometry port — rendering-only.
+
+    /** The dipole structure of B (Stage B). Particles curve perpendicular to it, not along it. */
+    override fun field(body: Body, at: Vec3): Vec3 = bodyDipole(body, at, body.strength)
 }
 
 /**

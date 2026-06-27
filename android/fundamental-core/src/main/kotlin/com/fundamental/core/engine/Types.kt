@@ -94,7 +94,42 @@ class Body(
     var twist: Float? = null
     var warpScale: Float? = null
 
+    // ── runtime state read/written by the integrator ─────────────────────────────────
+    /** On-screen and exerting force (§2.1). */
+    var isVisible: Boolean = false
+    /** Shaped source: forces reference the nearest point on the box, not its centre. */
+    var shaped: Boolean = false
+    /** Condition gate token (§5); empty = always on. Backtick-escaped (Kotlin keyword). */
+    var `when`: String = ""
+    /** Opt-in to two-way density/thermo sampling (§8). */
+    var feedback: Boolean = false
+    /** Per-frame density tally (§8). */
+    var count: Float = 0f
+    /** Conserved-attention strength multiplier (§2.4); null = neutral (1). */
+    var attn: Float? = null
+    /** Screen quiet-zone floor (§"screen"). */
+    var screenMin: Float? = null
+    /** Memoized token classification (filled lazily by the integrator). */
+    var classified: ClassifiedTokens? = null
+    /** Thermodynamic accumulators (workover §"Metrics"); non-null opts the body into sampling. */
+    var thermo: Thermo? = null
+    /** Eased thermodynamic readout. */
+    var metrics: Metrics? = null
+
     val center: Vec3 get() = box.center
+}
+
+/** Token classification — `{ modifiers, forces }` per the modifier contract (workover v0.3). */
+data class ClassifiedTokens(val modifiers: List<String>, val forces: List<String>)
+
+/** The formalized modifier order (workover v0.3): spotlight → screen → resonate. */
+val MODIFIER_ORDER: List<String> = listOf("spotlight", "screen", "resonate")
+
+/** Split a body's tokens into modifiers (in contract order) and forces (in authored order). */
+fun classifyBodyTokens(tokens: List<String>): ClassifiedTokens {
+    val modifiers = MODIFIER_ORDER.filter { tokens.contains(it) }
+    val forces = tokens.filter { it !in MODIFIER_ORDER }
+    return ClassifiedTokens(modifiers, forces)
 }
 
 /** A global bias on every free particle. Only `orbit` is exercised by the foundation forces. */
@@ -210,3 +245,6 @@ interface Force {
     /** Optional visual-field hook — the structure field this body projects at a world point. */
     fun field(body: Body, at: Vec3): Vec3? = null
 }
+
+/** The force registry — `token → Force` (§4). */
+typealias ForceRegistry = Map<String, Force>
