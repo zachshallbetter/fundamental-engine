@@ -32,6 +32,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **Record / replay foundation — `recordRun` / `replayRun` / `verifyReplay` / `seededRng` (core).** A
+  pure, headless capture-and-reproduce seam (#692): `recordRun(config)` drives a deterministic
+  (seeded-rng + lockstep wall clock) field on a `headlessHost` and captures each frame's particle state
+  via the `readParticles` wire format (`PARTICLE_STRIDE` / `PARTICLE_WIRE_VERSION`) into one compact
+  `Float32Array`; `replayRun` re-runs the same config to reproduce it bit-for-bit; `verifyReplay`
+  compares a replay against a recording; `frameAt` slices one frame back out. `seededRng(seed)` is the
+  small mulberry32 generator the seam stands on (the engine's injectable `rng`). Foundational slice:
+  per-frame particle positions/heat/size + seed + config are captured and proven to replay identically;
+  an input timeline (interleaved `burst`/`flowTo`/formation calls), programmatic-body configs, and an
+  on-disk serialization format are deferred. JS-only; a Swift/Android mirror would be a follow-up.
 - **`feedback-never-written` lint + `FeedbackRegistry.feedbackActivity()` (dom).** The runtime half of
   the silent-contract-gap detector: `lintFeedbackNeverWritten` warns when a `[data-feedback]` body has
   been bound for many frames (`FEEDBACK_NEVER_WRITTEN_FRAMES`, default 120) yet never once received a
