@@ -109,6 +109,7 @@ class LabCanvas : JPanel() {
     private var causalityOn = false
     private var heatmapOn = false
     private var wavesOn = false
+    private var particleShape = com.fundamental.core.engine.ParticleShape.DOT
     var frameMs: Double = 0.0; private set
     private val timer = Timer(16) { tickOnce() }
     // Path traces: a rolling buffer of recent sampled particle positions (the `path` reading machinery).
@@ -125,6 +126,7 @@ class LabCanvas : JPanel() {
     fun setCausality(on: Boolean) { causalityOn = on; controller?.causalityEnabled = on }
     fun setHeatmap(on: Boolean) { heatmapOn = on; controller?.heatmapEnabled = on }
     fun setWaves(on: Boolean) { wavesOn = on; controller?.wavesEnabled = on }
+    fun setShape(s: com.fundamental.core.engine.ParticleShape) { particleShape = s; resetBuffer(); repaint() }
 
     init {
         background = Renderer2D.BG
@@ -203,9 +205,9 @@ class LabCanvas : JPanel() {
         val g2 = g as Graphics2D
         val buf = buffer
         if (mode == LabMode.TRAILS && buf != null) {
-            Renderer2D.fadeTrails(buf); Renderer2D.stampTrails(buf, c, accent); g2.drawImage(buf, 0, 0, null)
+            Renderer2D.fadeTrails(buf); Renderer2D.stampTrails(buf, c, accent, particleShape); g2.drawImage(buf, 0, 0, null)
         } else {
-            Renderer2D.drawFrame(g2, c, mode, accent, width, height)
+            Renderer2D.drawFrame(g2, c, mode, accent, width, height, particleShape)
         }
         if (wavesOn) Renderer2D.drawWaves(g2, c, width, height)
         if (heatmapOn) Renderer2D.drawHeatmap(g2, c, width, height, accent)
@@ -332,6 +334,18 @@ private fun makeInspector(canvas: LabCanvas): JPanel {
     val modeBox = JComboBox(LabMode.values())
     modeBox.addActionListener { canvas.setMode(modeBox.selectedItem as LabMode) }
     panel.add(labeled("Matter", modeBox))
+
+    // Particle shape (#651) — stamp a vector shape per particle, scaled by size + heat.
+    val shapes = linkedMapOf(
+        "Dot" to com.fundamental.core.engine.ParticleShape.DOT,
+        "Star" to com.fundamental.core.engine.ParticleShape.star(5),
+        "Triangle" to com.fundamental.core.engine.ParticleShape.polygon(3),
+        "Square" to com.fundamental.core.engine.ParticleShape.polygon(4),
+        "Hexagon" to com.fundamental.core.engine.ParticleShape.polygon(6),
+    )
+    val shapeBox = JComboBox(shapes.keys.toTypedArray())
+    shapeBox.addActionListener { canvas.setShape(shapes[shapeBox.selectedItem as String]!!) }
+    panel.add(labeled("Shape", shapeBox))
 
     // Density
     val densitySlider = JSlider(2, 8, 5)

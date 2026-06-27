@@ -130,8 +130,12 @@ Also ported:
   Builds against the Android SDK.
 
 The core, both host modules (`:fundamental-platform`, `:fundamental-android`), the Compose host, and the
-desktop FieldLab are all ported. Remaining follow-ups are matter-render extras (metaballs / voronoi modes)
-and the declarative `[data-body]` view scanner for the Android host.
+desktop FieldLab are all ported — including **`ParticleShape`** (dot / star / polygon / custom stamps,
+wired into the lab) and the **visual-snapshot signature** (`Snapshotter` — a perceptual luminance/lit/
+centroid fingerprint, gated for stability + structure). CI is **path-aware**: android/docs-only PRs skip
+the JS e2e suite, and an advisory on-emulator smoke job runs the sample on a real device on pushes to
+main. Remaining follow-ups are matter-render extras (metaballs / voronoi modes) and the declarative
+`[data-body]` view scanner for the Android host.
 
 ## Building & testing
 

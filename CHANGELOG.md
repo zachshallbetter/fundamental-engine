@@ -43,6 +43,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   stale comment in `packages/three/src/index.ts` (both `PlaneProjection` and `VolumeProjection` ship).
 
 ### Added
+- **Android port — ParticleShape, visual-snapshot gate, path-aware CI (`android/` + CI).** The final
+  follow-ups. **`ParticleShape`** (core): dot / star / polygon / custom unit-vector stamps the host scales
+  per particle by size + heat — ported from Swift, wired into the FieldLab renderer + a Shape inspector
+  picker (4 tests). **Visual-snapshot signature** (`Snapshotter`, lab): a perceptual luminance-grid +
+  lit-fraction + centroid fingerprint with a stability/structure gate (3 tests) — the headless visual
+  regression model. **Path-aware CI**: `ci.yml` gains a `changes` filter so android/docs/swift-only PRs
+  skip the JS gate + e2e (the required `conclusion` treats skipped deps as satisfied), ending the
+  e2e-flake-rerun dance; `android.yml` adds an advisory on-emulator smoke job (sample install + launch +
+  no-crash) on pushes to main. Core 92 + platform 28 + lab 5 JVM tests.
 - **Android port reaches full parity — core + platform + both hosts + the lab (`android/`).** Four epochs
   on `android-waves` close the gap to the Swift port: the Kotlin port now mirrors `FundamentalCore`,
   `FundamentalPlatform`, both hosts (the imperative `UIKitFieldHost` analog + the Compose adapter), and the
