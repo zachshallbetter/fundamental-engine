@@ -112,7 +112,10 @@ of the contract until they are added to the table above.
    `forces:*` **event names** (e.g. `forces:captured`/`forces:released`), which still fire for
    compatibility. The one *current* deprecated alias is the **package** rename
    `@fundamental-engine/platform → @fundamental-engine/dom` (above) — a thin re-export of `dom`,
-   excluded from the additive-only guarantee and scheduled for removal on a later minor.
+   excluded from the additive-only guarantee and scheduled for removal on a later minor. The full
+   inventory of living migration aliases (these `forces:*` events, the `--field-density`/`--mass` var
+   mirrors, the `<field-field>` tag, and this package alias) — each with its deprecation status and
+   proposed removal version — is in [deprecation-plan.md](deprecation-plan.md).
 7. **The experimental surface carries no guarantee.** Diagnostics/agent/render-mode exports that happen
    to ship today are *shipped-but-unfrozen* until explicitly added to the stable table.
 
