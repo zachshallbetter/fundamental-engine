@@ -51,3 +51,6 @@ pnpm-debug.log*
 
 .graphifyignore
 graphify-out
+
+# Research paper LaTeX/PDF build output (`pnpm gen:papers`)
+docs/research/build/
