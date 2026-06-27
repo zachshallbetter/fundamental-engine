@@ -27,6 +27,12 @@
   --line-2: rgba(255, 255, 255, 0.16);
   --line-3: rgba(255, 255, 255, 0.24);
 
+  /* layout — the single source of truth for the centered content-column width.
+     Use on a page's top-level single-column shell so content pages line up.
+     (Prose measures, sidebar-layout columns, and immersive/full-bleed pages set
+     their own widths and intentionally do not use this.) */
+  --content-max: 72rem;
+
   /* accent — the resting field */
   --accent: #4da3ff;
   --accent-soft: rgba(77, 163, 255, 0.13);
