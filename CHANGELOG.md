@@ -29,6 +29,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   non-zero value — the reciprocal loop is inert even though the CSS consumer may be wired correctly. It
   reads new per-element activity (`feedbackActivity()`) that `flush()` accumulates. Complements the
   existing CSS-side `feedback-writes-unread` (body written but no rule reads it). Dev-only via `lintPlatform`.
+- **Single-file (vendorable) build for the no-bundler consumer (vanilla).** `@fundamental-engine/vanilla`
+  now ships two pre-bundled, fully self-contained artifacts so a consumer can drop in one `<script>` with
+  no bundler and no import map: `dist/standalone.js` (bundled ESM, `import { createField } from
+  '.../standalone.js'`) and `dist/standalone.global.js` (IIFE exposing a `Fundamental` global). Both inline
+  the `vanilla→dom→core` graph (no bare `@fundamental-engine/*` imports), are produced by `pnpm --filter
+  @fundamental-engine/vanilla build:standalone` (also part of the package `build`), and are size-checked in
+  `check:dist`. Closes #585.
 - **Wire-format contract — `PARTICLE_STRIDE` (5) and `PARTICLE_WIRE_VERSION` (0) (core).** Typed
   constants documenting the `readParticles()` buffer layout so renderers can assert the contract rather
   than embedding the magic number.

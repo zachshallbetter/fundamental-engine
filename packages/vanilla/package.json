@@ -38,6 +38,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./standalone": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/standalone.js"
+    },
+    "./standalone.global.js": "./dist/standalone.global.js",
     "./package.json": "./package.json"
   },
   "engines": {
@@ -47,7 +52,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/build-standalone.mjs",
+    "build:standalone": "node scripts/build-standalone.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test"
   },
@@ -56,6 +62,7 @@
     "@fundamental-engine/core": "workspace:*"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "typescript": "^5.9.3"
   }
 }

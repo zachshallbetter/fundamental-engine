@@ -61,12 +61,24 @@ console.log(`\n@arethetypeswrong/cli\n${SEP}`);
 
 const attw = join(root, 'node_modules', '.bin', 'attw');
 
+// Per-package attw overrides. The vanilla single-file (vendorable) build (#585) adds two
+// non-standard entrypoints: `./standalone` is a typed ESM import (it reuses the package types)
+// but, being a subpath export, legitimately doesn't resolve under the legacy node10 algorithm —
+// so `no-resolution` is ignored. `./standalone.global.js` is an IIFE `<script src>` artifact, not
+// an importable typed module, so it is excluded from resolution checking entirely.
+const ATTW_OVERRIDES = {
+  vanilla: [
+    '--ignore-rules', 'no-resolution',
+    '--exclude-entrypoints', './standalone.global.js',
+  ],
+};
+
 for (const p of PACKAGES) {
   const dir = join(root, 'packages', p);
   const pkg = JSON.parse(await readFile(join(dir, 'package.json'), 'utf8'));
   console.log(`\n${pkg.name}`);
 
-  const result = spawnSync(attw, ['--pack', dir], {
+  const result = spawnSync(attw, ['--pack', dir, ...(ATTW_OVERRIDES[p] ?? [])], {
     stdio: 'inherit',
     cwd:   root,
   });
