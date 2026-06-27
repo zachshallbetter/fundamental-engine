@@ -171,6 +171,18 @@ for (const route of ["/", "/eli5"] as const) {
       await skipUnless(page, "[data-rendertour] button[data-overlay-mode]", "Field Surfaces readings");
       const tour = page.locator("[data-rendertour]");
       await tour.scrollIntoViewIfNeeded();
+      // Readiness gate for the chronic CI flake. The overlay only paints while the panel is in view —
+      // initRenderTour() applies the reading stack behind an IntersectionObserver (threshold 0.4) and
+      // setOverlay("off") whenever it isn't (GalleryRuntime.ts). Clicking before the engine boots or
+      // before the observer reports inView still flips aria-pressed (pure DOM) but pushes no overlay, so
+      // the pixel probe used to race the observer/scroll timing and read 0 on a contended runner.
+      // Instead of inferring readiness, gate on the runtime's own data-rt-overlay signal (the count of
+      // readings actually pushed to the surface) — deterministic regardless of how slow the observer is.
+      await expect
+        .poll(async () => page.evaluate(() => (document.querySelector("field-root") as any)?.particleCount?.() ?? 0), {
+          timeout: 15000,
+        })
+        .toBeGreaterThan(0);
       // stack two readings — deformation grid + traced paths — over the default matter mode
       await tour.locator('button[data-overlay-mode="grid"]').click();
       await tour.locator('button[data-overlay-mode="path"]').click();
@@ -178,8 +190,11 @@ for (const route of ["/", "/eli5"] as const) {
       await expect(tour.locator('button[data-overlay-mode="path"]')).toHaveAttribute("aria-pressed", "true");
       // the caption defines the last-touched reading (the in-place definition contract)
       await expect(tour.locator("[data-rt-caption]")).toContainText("path —");
-      // the stacked readings genuinely paint on the overlay surface (same painted-pixels
-      // probe as the picker test — report -1 until the deferred boot creates the canvas)
+      // both readings are genuinely pushed to the overlay surface (the observer has reported inView and
+      // run() applied the stack) — the deterministic precondition for the pixel probe below
+      await expect(tour).toHaveAttribute("data-rt-overlay", "2", { timeout: 15000 });
+      // …and they genuinely paint on the overlay canvas (same painted-pixels probe as the picker test —
+      // report -1 until the deferred boot creates the canvas)
       await expect
         .poll(
           async () =>
@@ -191,14 +206,16 @@ for (const route of ["/", "/eli5"] as const) {
               for (let i = 3; i < d.length; i += 400) if (d[i]! > 0) n++;
               return n;
             }),
-          { timeout: 8000 },
+          { timeout: 12000 },
         )
         .toBeGreaterThan(5);
       // leave → the panel releases the page field: the overlay surface clears. The page-wide field
       // flow lives on the UNDERLAY ('flow' render), not this overlay, so releasing the overlay genuinely
       // empties the front surface (the engine clears it and the element takes the canvas out of the
-      // compositing tree — the Field-Surfaces-when-idle perf path).
+      // compositing tree — the Field-Surfaces-when-idle perf path). Gate on the runtime confirming the
+      // release (data-rt-overlay back to 0) before probing the cleared canvas, for the same reason.
       await page.evaluate(() => scrollTo(0, 0));
+      await expect(tour).toHaveAttribute("data-rt-overlay", "0", { timeout: 15000 });
       await expect
         .poll(
           async () =>
@@ -210,7 +227,7 @@ for (const route of ["/", "/eli5"] as const) {
               for (let i = 3; i < d.length; i += 400) if (d[i]! > 0) n++;
               return n;
             }),
-          { timeout: 8000 },
+          { timeout: 12000 },
         )
         .toBe(0);
     });
