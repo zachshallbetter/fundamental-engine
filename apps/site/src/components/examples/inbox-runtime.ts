@@ -22,7 +22,13 @@
 //   · Field on/off — off, the page collapses to a plain list (CSS via [data-field]) and the
 //     scoped field is destroyed.
 // The scoped field runs render-less (applyRecipe renderless) — bodies compute (metrics flow) but nothing is drawn.
-import { allocateAttention, freshness, recipeById, weightToStrength } from "@fundamental-engine/core";
+import {
+  allocateAttention,
+  freshness,
+  logNormalizeBetween,
+  recipeById,
+  weightToStrength,
+} from "@fundamental-engine/core";
 import { applyRecipe, withFlip } from "@fundamental-engine/dom";
 import { wireFieldToggle, wireSegments } from "../../lib/controls";
 import { politeLoop, wireLiveChip } from "../../lib/live-data";
@@ -59,12 +65,13 @@ interface SeQuestion {
 
 // the normalization constants the server rendered with — live arrivals are scored on the
 // same scale (vot/vie clamped: a hot new ask can sit past the snapshot's edge; rec is the
-// freshness kernel — absolute, so it needs no constants at all)
+// freshness kernel — absolute, so it needs no constants at all). Views carry their RAW
+// min/max so the runtime re-runs core's logNormalizeBetween identically to the snapshot.
 interface IxNorm {
   sMin: number;
   sSpan: number;
-  lvMin: number;
-  lvSpan: number;
+  vMin: number;
+  vMax: number;
 }
 
 const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
@@ -203,7 +210,9 @@ function initInbox(page: HTMLElement): () => void {
     // the core temporal kernel — same shape, same half-life as the server's data-rec
     const rec = freshness(askedMs, now * 1000, REC_HALF_LIFE_MS);
     const vot = clamp01(((q.score ?? 0) - n.sMin) / n.sSpan);
-    const vie = clamp01((Math.log((q.view_count ?? 0) + 1) - n.lvMin) / n.lvSpan);
+    // identical helper, identical raw extremes as the snapshot — { equal: 0 } matches the
+    // server's degenerate convention (an all-equal set reads 0, like the linear vot lane)
+    const vie = logNormalizeBetween(q.view_count ?? 0, n.vMin, n.vMax, { equal: 0 });
 
     const li = document.createElement("li");
     li.className = "ix-item";

@@ -76,14 +76,10 @@ test("the weight→strength pair (0.4 + w·1.6) has ONE definition — core's we
 });
 
 test("log normalization is imported from core, not reimplemented", () => {
-  const allow = new Map([
-    // inbox ships its normalization constants server→client (data-ix-norm) so live
-    // arrivals score on the snapshot's absolute scale — a cross-boundary contract,
-    // not a reimplementation. Retire this when the contract moves to raw min/max.
-    ["examples/inbox-runtime.ts", "shipped-norm contract (data-ix-norm)"],
-    ["pages/evidence/inbox.astro", "shipped-norm contract (data-ix-norm)"],
-  ]);
-  assert.deepEqual(offenders(/Math\.log\(/, familyFiles(), allow), []);
+  // The inbox's shipped-norm contract (#715) now ships RAW view min/max via data-ix-norm and
+  // re-runs core's logNormalizeBetween on both sides — no hand-rolled log span remains, so the
+  // allowlist is empty.
+  assert.deepEqual(offenders(/Math\.log\(/, familyFiles(), new Map()), []);
 });
 
 test("the lens palette has ONE home — lib/palette.ts", () => {

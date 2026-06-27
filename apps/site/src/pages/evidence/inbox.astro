@@ -1,5 +1,5 @@
 ---
-import { freshness, weightToStrength } from "@fundamental-engine/core";
+import { freshness, logNormalizeBetween, weightToStrength } from "@fundamental-engine/core";
 import ExampleShell from "../../components/examples/ExampleShell.astro";
 import CodeTabs from "../../components/CodeTabs.astro";
 import inbox from "../../data/examples/inbox.json";
@@ -22,20 +22,23 @@ const hoursOf = (askedAt: number) => Math.max(0.5, (snapshot - askedAt) / 3600);
 const items0 = inbox.items.map((it) => ({ ...it, hours: hoursOf(it.askedAt) }));
 
 // normalize votes/views to 0..1 once, server-side; the runtime re-blends them per lens.
-// Recency needs no normalization constants — the freshness kernel is already 0..1, and live
-// arrivals land on the SAME scale by construction.
+// Views ride core's logNormalizeBetween (contrast-stretched, log scale) over the snapshot's
+// raw min/max — the runtime scores live arrivals through the identical helper, so the
+// constants shipped are the RAW view extremes, not a hand-rolled log span. Votes stay a
+// linear stretch over the raw score range. Recency needs no normalization constants — the
+// freshness kernel is already 0..1, and live arrivals land on the SAME scale by construction.
 const sMin = Math.min(...items0.map((it) => it.score));
 const sSpan = Math.max(...items0.map((it) => it.score)) - sMin || 1;
-const lv = items0.map((it) => Math.log(it.views + 1));
-const lvMin = Math.min(...lv);
-const lvSpan = Math.max(...lv) - lvMin || 1;
+const vMin = Math.min(...items0.map((it) => it.views));
+const vMax = Math.max(...items0.map((it) => it.views));
 
-const items1 = items0.map((it, i) => ({
+const items1 = items0.map((it) => ({
   ...it,
   // the core temporal kernel: exponential newness — fresher = closer to 1
   rec: freshness(it.askedAt * 1000, snapMs, REC_HALF_LIFE_MS),
   vot: (it.score - sMin) / sSpan,
-  vie: (lv[i]! - lvMin) / lvSpan,
+  // { equal: 0 } keeps the degenerate (all-equal) set reading 0, matching the linear vot lane
+  vie: logNormalizeBetween(it.views, vMin, vMax, { equal: 0 }),
 }));
 
 // the "fresh" lens blend (the default) — the runtime mirrors these weights exactly.
@@ -82,9 +85,10 @@ const items = items1
   .sort((a, b) => b.w - a.w);
 
 // the normalization constants, handed to the runtime so live arrivals are scored on the
-// SAME scale as the snapshot (vot/vie in 0..1, clamped for out-of-range live values;
-// rec is the freshness kernel — absolute, no constants needed).
-const norm = { sMin, sSpan, lvMin, lvSpan };
+// SAME scale as the snapshot (vot/vie in 0..1, clamped for out-of-range live values; views
+// carry their RAW min/max so the runtime re-runs logNormalizeBetween identically; rec is the
+// freshness kernel — absolute, no constants needed).
+const norm = { sMin, sSpan, vMin, vMax };
 
 const fmtAge = (h: number) =>
   h < 48
