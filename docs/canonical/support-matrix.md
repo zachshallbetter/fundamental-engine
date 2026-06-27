@@ -16,6 +16,32 @@
 The engine targets **evergreen browsers** — Canvas 2D, custom elements v1, CSS custom properties,
 `IntersectionObserver`, `matchMedia`. No transpile-to-ES5, no DOM polyfills.
 
+## Native (Swift) — Apple platforms
+
+The engine also ships as a native **Swift port** (`swift/`) — a port of the JS engine, not a
+reinterpretation: the package layout, API surface, and physics mirror the npm packages one-to-one.
+
+| Platform | Support | Notes |
+|---|---|---|
+| iOS | ✅ supported (preview) | `.iOS(.v17)` minimum; UIKit host, Metal/Core Graphics render |
+| macOS | ✅ supported (preview) | `.macOS(.v14)` minimum; AppKit host |
+| visionOS | ✅ supported (preview) | `.visionOS(.v1)` minimum; RealityKit host, **3D-native** (positions are `SIMD3<Float>`, depth is a real axis) |
+
+Four libraries map one-to-one to npm: `FundamentalCore` ↔ `@fundamental-engine/core` (zero platform
+imports, the mirror of core's zero-DOM rule), `FundamentalPlatform` ↔ `@fundamental-engine/dom`,
+`FundamentalVanilla` ↔ `@fundamental-engine/vanilla`, `FundamentalSwiftUI` ↔ `@fundamental-engine/react`.
+
+- **Cross-plane conformance is enforced**, not asserted: the 36-force catalog is single-sourced and a
+  golden test verifies the JS and Swift planes agree force-for-force (`gen:force-catalog`). The Swift
+  macOS and iOS-Simulator builds + tests are CI gates.
+- **Parity (honest):** the web plane moves first. Core forces, the scheduler/registries, formations,
+  and the interactive scenes are present; the newest primitives (the field-channel read/write surface,
+  the most recent reactive-component work) are **not yet ported**. Status is **preview** — stable in
+  shape, trailing the web on the newest additions.
+- **Consumption:** build from source (the SwiftPM package name is `Fundamental`, in `swift/`); no
+  published registry release yet. See `swift/README.md`, the site's Swift guide
+  (`/docs/guides/swift`), and the Implementations page (`/docs/implementations`).
+
 ## Device pixel ratio (DPR)
 
 The field renders at the device DPR, **capped** to keep fill-rate bounded (the field is fill-rate-bound,
