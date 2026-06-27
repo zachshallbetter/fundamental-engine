@@ -1,0 +1,102 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Fundamental — Support & stability"
+  description="The maintenance and stability commitment a solo maintainer can actually keep: SemVer, the deprecation window, best-effort security response, and what 'supported' means. Deliberately conservative — it promises only what one person can sustain."
+>
+  <header class="docs-hero">
+    <p class="kicker">Reference</p>
+    <h1>Support &amp; <span class="accent">stability</span></h1>
+    <p class="lede">
+      The maintenance policy a <strong>solo maintainer can actually keep</strong>. It is deliberately
+      conservative: it promises only what one person can sustain, and is explicit where support is
+      <strong>best-effort</strong>. Overcommitting (a security SLA, guaranteed backports) would be a
+      lie — this avoids that.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>What backs this up.</b> The contract is the <a href="/docs/api/stability">Stable surface</a> —
+    frozen and gated by <code>check:api</code> in CI. This page is the human-readable commitment around
+    it; the canonical source is <code>SUPPORT.md</code> in the repository.
+  </div>
+
+  <section class="docs-sec">
+    <h2>Versioning (SemVer)</h2>
+    <p>
+      Fundamental follows <a href="https://semver.org" rel="noopener">Semantic Versioning</a>. The
+      contract is the <strong>Stable surface</strong> (Tier 1 + Tier 2) declared in the 1.0 surface spec.
+    </p>
+    <ul>
+      <li><strong>Patch (<code>1.0.x</code>)</strong> — bug fixes, no surface change.</li>
+      <li>
+        <strong>Minor (<code>1.x.0</code>)</strong> — <strong>additive only</strong>: new options,
+        methods, exports, render modes. Never breaks the Stable surface. The Experimental tier (Tier 3)
+        may change in a minor.
+      </li>
+      <li>
+        <strong>Major (<code>2.0.0</code>)</strong> — the only release that may break the Stable surface,
+        and only after the deprecation window below.
+      </li>
+    </ul>
+    <p>The <code>0.x</code> line was already frozen-and-additive; <code>1.0</code> formalizes that promise.</p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Deprecation window</h2>
+    <ul>
+      <li>
+        A Stable symbol is <strong>deprecated</strong> (kept working, marked in docs + a dev-only
+        <code>console.warn</code> where it's a runtime call) for <strong>at least one minor release</strong>
+        before it may be removed.
+      </li>
+      <li>
+        Removal happens <strong>only in the next major</strong>. Anything deprecated in <code>1.x</code>
+        survives until <code>2.0</code> at the earliest — never a surprise break within a major line.
+      </li>
+    </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Security response</h2>
+    <p><strong>Best-effort, no SLA.</strong> This is a solo-maintained project; there is no guaranteed response time.</p>
+    <ul>
+      <li>
+        Report privately via <strong>GitHub Security Advisories</strong> ("Report a vulnerability" on the
+        repo), not a public issue.
+      </li>
+      <li>Acknowledged when the maintainer is next active; fixes prioritized by severity, best-effort.</li>
+      <li>
+        The published packages have <strong>zero runtime dependencies</strong> (core) or peer deps only
+        (three), so the runtime attack surface is minimal; most advisories live in dev/build tooling and
+        don't reach consumers.
+      </li>
+      <li>
+        Releases are published from CI <strong>with provenance</strong> (Sigstore/SLSA attestation) —
+        verify the supply chain on any published version.
+      </li>
+    </ul>
+  </section>
+
+  <section class="docs-sec">
+    <h2>What "supported" means here</h2>
+    <ul>
+      <li><strong>Supported:</strong> the current minor of <code>1.x</code>. Fixes land on <code>main</code> and ship in the next minor/patch.</li>
+      <li>
+        <strong>Best-effort:</strong> older <code>1.x</code> minors — no backports guaranteed; upgrade to
+        the latest <code>1.x</code> (additive, non-breaking) for fixes.
+      </li>
+      <li>
+        <strong>Browsers:</strong> evergreen Chrome / Firefox / Safari / Edge. Reduced motion is a
+        first-class fallback (the field's <em>meaning</em> survives without animation). SSR-safe (no DOM
+        at import). See the <a href="/docs/api/stability">stability contract</a> for the full matrix.
+      </li>
+    </ul>
+    <p class="note">
+      This policy can be revised in a minor release; revisions are additive to support (never a reduction
+      without a major-version note).
+    </p>
+  </section>
+</DocsLayout>

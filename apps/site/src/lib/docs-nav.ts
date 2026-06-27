@@ -92,6 +92,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/api/metrics', label: 'Metrics', ready: true },
       { href: '/docs/api/types', label: 'Types', ready: true },
       { href: '/docs/api/stability', label: 'API stability', ready: true },
+      { href: '/docs/support', label: 'Support & stability', ready: true },
       { href: '/docs/api/forces', label: 'Forces', ready: true },
       { href: '/docs/api/presets', label: 'Presets', ready: true },
       { href: '/docs/api/catalog', label: 'Conditions & formations', ready: true },
