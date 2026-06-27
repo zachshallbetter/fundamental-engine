@@ -98,6 +98,69 @@ test('release fires when a saturated sink lets go (count carried from the captur
   }
 });
 
+test('bus events coalesce per frame: a saturating sink delivers one release per frame, never per pass (#684)', () => {
+  // A small-capacity sink fills, saturates and supernovas repeatedly. The capture/release machinery
+  // can raise `release` from more than one path within a single tick (supernova's falling edge +
+  // updateCaptureEvents); the per-frame coalescing layer guarantees the bus delivers at most ONE
+  // release per (body, type) per frame. Stepping ONE frame at a time lets us assert exactly that.
+  const sink = virtualBody(
+    { 'data-body': 'sink attract', 'data-strength': '1.8', 'data-range': '900', 'data-absorb': '140', 'data-max': '4' },
+    { x: 500, y: 400, w: 40, h: 40 },
+  );
+  const { host, step } = drivableHost([sink]);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    let perFrame = 0;
+    let maxPerFrame = 0;
+    let totalReleases = 0;
+    field.on('release', () => { perFrame++; });
+    field.scan();
+    for (let i = 0; i < 900; i++) {
+      perFrame = 0;
+      step(1); // exactly one frame
+      maxPerFrame = Math.max(maxPerFrame, perFrame);
+      totalReleases += perFrame;
+    }
+    assert.ok(totalReleases >= 1, `release fired at least once over the run: ${totalReleases}`);
+    assert.equal(maxPerFrame, 1, `at most one release delivered in any single frame: saw ${maxPerFrame}`);
+  } finally {
+    field.destroy();
+  }
+});
+
+test('#684: a relational edge delivers once per frame and a standing relationship is not re-delivered', () => {
+  // Exercise the coalescing flush on the proximity path: when a body crosses into range, exactly one
+  // `enter` is delivered for that (source, other) on the crossing frame; while the relationship
+  // stands across later frames it is NOT re-delivered each frame (membership is sticky), and the
+  // per-frame flush adds no duplicates on top.
+  const aPos = { x: 300, y: 400, w: 40, h: 40 };
+  const bPos = { x: 950, y: 400, w: 40, h: 40 }; // far outside A's range to start
+  const a = virtualBody({ 'data-body': 'attract', 'data-strength': '1', 'data-range': '240' }, aPos);
+  const b = virtualBody({ 'data-body': 'attract', 'data-strength': '1', 'data-range': '240' }, bPos);
+  const { host, step } = drivableHost([a, b]);
+  const field = createField({} as HTMLCanvasElement, { host, render: 'none' });
+  try {
+    let enters = 0;
+    field.on('enter', () => { enters++; });
+    field.scan();
+    step(12); // apart → no enter
+    assert.equal(enters, 0, 'no enter while the bodies are apart');
+
+    bPos.x = 360; // within A's 240 range (≈60px)
+    enters = 0;
+    step(6);
+    assert.ok(enters >= 1, `enter delivered on the crossing frame: ${enters}`);
+
+    // Hold the bodies inside range across many frames: detection re-runs every measure cadence, but
+    // membership is sticky and the per-frame flush must not re-deliver the standing relationship.
+    const settled = enters;
+    step(60);
+    assert.equal(enters, settled, 'a standing in-range relationship is not re-delivered each frame');
+  } finally {
+    field.destroy();
+  }
+});
+
 test('enter/exit fire as a body crosses another body’s range; met fires on box contact (#441)', () => {
   const aPos = { x: 500, y: 400, w: 40, h: 40 };
   const bPos = { x: 950, y: 400, w: 40, h: 40 }; // starts far outside A's range

@@ -51,7 +51,7 @@ import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
 import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
 import { withinCapture, stepDock, dockTransform, type DockState } from './dock.ts';
-import { parseEventBindings, triggerActive, type EventBinding, type FieldEventMap, type FieldEventType } from './events.ts';
+import { FieldEventCoalescer, parseEventBindings, triggerActive, type EventBinding, type FieldEventMap, type FieldEventType } from './events.ts';
 import { registerCoreForces } from '../forces/index.ts';
 import { registerNaturalForces } from '../forces/natural.ts';
 import { registerExtendedForces } from '../forces/extended.ts';
@@ -110,9 +110,25 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // when unused: detection passes guard on `busHas(type)` so zero listeners cost nothing.
   const busListeners = new Map<FieldEventType, Set<(e: never) => void>>();
   const busHas = (type: FieldEventType): boolean => (busListeners.get(type)?.size ?? 0) > 0;
-  function busEmit<K extends FieldEventType>(type: K, payload: FieldEventMap[K]): void {
+  function busDeliver<K extends FieldEventType>(type: K, payload: FieldEventMap[K]): void {
     const set = busListeners.get(type);
     if (set) for (const cb of set) (cb as (e: FieldEventMap[K]) => void)(payload);
+  }
+  // Per-frame coalescing (#684, shadow-dom §31): a force/condition can cross the same edge more than
+  // once within a single frame (multiple detection passes, a same-frame fill+release), which would
+  // otherwise fire the bus repeatedly per tick. busEmit buffers occurrences during the frame; the
+  // single flushBusEvents() at frame end delivers at most ONE event per (source, type) — last write
+  // wins. Behaviour-preserving for listeners that just react to "it happened"; it removes intra-frame
+  // duplicates only. detectProximityEvents/updateCaptureEvents already dedupe per *state transition*;
+  // this layer additionally guarantees one delivery per frame regardless of how many passes ran.
+  const busCoalescer = new FieldEventCoalescer();
+  function busEmit<K extends FieldEventType>(type: K, payload: FieldEventMap[K]): void {
+    if (!busHas(type)) return; // no listeners → don't even buffer
+    busCoalescer.record(type, payload);
+  }
+  // Flush the frame's coalesced bus events to listeners — called once at the end of each frame.
+  function flushBusEvents(): void {
+    busCoalescer.flush(busDeliver);
   }
   const sinkPeak = new WeakMap<Body, number>(); // matter held at the rising edge, for the release count
   // #441 body-proximity events. Object-identity membership (survives rescan; removed bodies pruned).
@@ -2068,6 +2084,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     applyCausality();
     updateEvents();
     updateCaptureEvents();
+    flushBusEvents(); // #684: deliver the frame's coalesced discrete events — one per (source, type)
     // Draw only when there is a surface to draw to AND the canvas can be seen. Under the
     // signals-only mode (`render: 'none'`, §13.7 / #297) the engine never draws — neither the
     // underlay nor the overlay — and `ctx` may not even exist. Under reduced motion the scene is

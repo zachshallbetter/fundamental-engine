@@ -43,6 +43,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   stale comment in `packages/three/src/index.ts` (both `PlaneProjection` and `VolumeProjection` ship).
 
 ### Added
+- **Per-frame coalescing of discrete field events (`@fundamental-engine/core`).** `FieldHandle.on(...)`
+  occurrences (`absorb`/`release`/`enter`/`exit`/`met`) now batch to at most ONE delivery per
+  `(source, type)` per frame instead of firing per detection pass. Emissions are buffered during the
+  frame and flushed once at frame end (last-wins payload — a consumer sees the final state for that
+  frame); a same-frame fill+release or a doubly-raised edge no longer delivers duplicates within a
+  tick. State events (`absorb`/`release`) key on the source element; relational events
+  (`enter`/`exit`/`met`) key on the counterparty pair, so distinct pairs in one frame stay distinct.
+  Behaviour-preserving for listeners that just react to "it happened." DOM-plane only — no Swift/Android
+  port mirror needed (the ports have no discrete event bus). Closes #684.
 - **Android port — ParticleShape, visual-snapshot gate, path-aware CI (`android/` + CI).** The final
   follow-ups. **`ParticleShape`** (core): dot / star / polygon / custom unit-vector stamps the host scales
   per particle by size + heat — ported from Swift, wired into the FieldLab renderer + a Shape inspector
