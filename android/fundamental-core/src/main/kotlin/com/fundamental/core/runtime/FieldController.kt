@@ -193,10 +193,12 @@ class FieldController(
         from: Body, fromData: Any?, to: Body, toData: Any?,
         type: String, strength: Float, direction: EdgeDirection,
     ): EdgeHandle {
-        val edge = Edge(from, fromData, to, toData, type, strength.coerceIn(0f, 1f), direction)
+        // strength is stored verbatim (no clamp) — Swift FieldEngine parity; the per-tick dynamics
+        // (min(1)/max(0)) walk an out-of-range seed back into [0,1] on the next active/idle frame.
+        val edge = Edge(from, fromData, to, toData, type, strength, direction)
         _edges.add(edge)
         return EdgeHandle(
-            setImpl = { s, t -> s?.let { edge.strength = it.coerceIn(0f, 1f) }; t?.let { edge.type = it } },
+            setImpl = { s, t -> s?.let { edge.strength = it }; t?.let { edge.type = it } },
             removeImpl = { _edges.remove(edge) },
         )
     }
