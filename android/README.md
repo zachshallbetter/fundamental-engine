@@ -20,11 +20,12 @@ they diverge it is a bug.
 | `:fundamental-compose` | `@fundamental-engine/react` | `FundamentalSwiftUI` | The declarative Jetpack Compose adapter: a `FieldView` composable + `Modifier.fieldBody()`. |
 | `:sample`            | (the demos)                | `FieldLab`           | A minimal sample app — a live field with a centered `fieldBody` attractor; tap to burst. |
 
-Planned (mirroring Swift's `FundamentalPlatform` / `FundamentalVanilla`):
+| `:fundamental-platform` | `@fundamental-engine/dom`    | `FundamentalPlatform`  | The six-phase frame scheduler (`discover→read→compute→state→write→render`) + the registries (measurement / state / feedback / relationship / visual-binding / overlay), driven through an injected [`FieldHost`](fundamental-core/src/main/kotlin/com/fundamental/core/engine/FieldHost.kt). **Zero Android deps** — pure `kotlin("jvm")`. |
+
+Planned (mirroring Swift's `FundamentalVanilla`):
 
 | Module (planned)        | Mirrors                          | What it will be |
 |-------------------------|----------------------------------|-----------------|
-| `:fundamental-platform` | `@fundamental-engine/dom`        | The six-phase frame scheduler + registries. |
 | `:fundamental-android`  | `@fundamental-engine/vanilla`    | The imperative `View`/`Canvas` host (mirror of `UIKitFieldHost`), for non-Compose apps. |
 
 ## The conformance rule
@@ -117,9 +118,20 @@ Ported and tested:
   (`FieldControllerTests`). **81 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
+Also ported:
+
+- **`:fundamental-platform`** (mirror of Swift `FundamentalPlatform`) — the **six-phase `FrameScheduler`**
+  (`discover→read→compute→state→write→render`, with the read-phase guard + violation recording), the
+  **registries** (`MeasurementRegistry` with frame-stable geometry + visibility, `StateRegistry`,
+  `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`, `OverlayRegistry`), the
+  **`FieldPlatform`** coordinator (wires `read→measure`, `write→flush`), and the `QualityGovernor` /
+  `FieldPerf` budget governors. The platform seam — `FieldHost` / `FieldVolume` / `FieldProjection` —
+  lives in core (Android-free). JVM-tested (`FrameSchedulerTests`, `FieldPlatformTests`).
+
 Not yet ported (follow-up PRs):
 
-- `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
+- A non-Compose `View`/`Canvas` host (`:fundamental-android`, mirror of `UIKitFieldHost`) — the Android
+  `FieldHost` implementation that feeds real view geometry into `:fundamental-platform`.
 
 ## Building & testing
 
