@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fundamental — vanilla + Vite</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!--
+      The field draws onto THIS canvas — you own it. createField(canvas, { render: 'dots' }) in
+      src/main.ts starts the engine on it (browserHost by default), scans the page for [data-body]
+      elements, and turns each into a body that bends the field. The canvas is fixed behind content.
+    -->
+    <canvas id="field" aria-hidden="true"></canvas>
+
+    <main>
+      <header>
+        <p class="kicker">Fundamental · vanilla + Vite</p>
+        <h1>createField() on a canvas you control</h1>
+        <p class="lede">
+          One <code>&lt;canvas&gt;</code>, one call to <code>createField()</code> from
+          <code>@fundamental-engine/vanilla</code>, and a few <code>[data-body]</code> elements. The
+          dots are the field; the elements below bend it. Drag the page around — an
+          <code>attract</code> body pulls particles into a well, a <code>repel</code> body pushes them away.
+        </p>
+      </header>
+
+      <section class="bodies">
+        <!-- attract = a designed UI well; particles gather toward it. -->
+        <div class="body attract" data-body="attract" data-strength="1.6" data-range="320">
+          <span class="tag">attract</span>
+          <span class="hint">pulls particles into a well</span>
+        </div>
+
+        <!-- repel = pushes the field away; particles thin out around it. -->
+        <div class="body repel" data-body="repel" data-strength="1.4" data-range="320">
+          <span class="tag">repel</span>
+          <span class="hint">pushes particles away</span>
+        </div>
+      </section>
+
+      <p class="readout" id="readout">field: starting…</p>
+
+      <footer>
+        <p>Read <code>src/main.ts</code> — that one file is the whole integration.</p>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
