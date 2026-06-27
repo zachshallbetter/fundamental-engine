@@ -3,6 +3,9 @@
 # downstream user would. This is the half of post-publish verification that proves the packages
 # work in real framework projects — not just that they install. Static (no-bundler) examples
 # (vanilla-cdn, single-file, web-component) are plain HTML and aren't built here.
+#
+# SSR examples (nextjs, astro, sveltekit, nuxt) use framework-specific build commands but the
+# same install/build/smoke pattern — they prove the SSR integration patterns are copy-pasteable.
 name: examples
 
 on:
@@ -22,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        example: [vanilla-vite, react-vite, three]
+        example: [vanilla-vite, react-vite, three, nextjs, astro, sveltekit, nuxt]
     steps:
       - uses: actions/checkout@v4
         with:

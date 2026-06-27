@@ -1,0 +1,7 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e8e8f0; }
+main { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 1rem; padding: 2rem; }
+h1 { font-size: clamp(2rem, 6vw, 4rem); font-weight: 700; letter-spacing: -0.02em; }
+p { max-width: 38ch; text-align: center; color: #8888aa; line-height: 1.6; }
+nav { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+a, button { padding: 0.5rem 1.25rem; border-radius: 0.5rem; border: 1px solid #333360; background: transparent; color: inherit; font-size: 1rem; cursor: pointer; text-decoration: none; }

@@ -19,8 +19,31 @@ Three tiny, no-build, plain-HTML apps — copy one and start from it:
 | **web-component** | [`web-component/`](./web-component) | `<field-root>` from `@fundamental-engine/elements`, the plain-HTML web-component path. |
 
 All three are static HTML — serve the directory (`python3 -m http.server`) and
-open `index.html`. The two CDN examples need a network connection the first time
-so esm.sh can serve the modules; `single-file` needs nothing but the local file.
+open `index.html`.
 
-Each was smoke-tested with headless Chromium: a live field boots and
-`particleCount() > 0` on every one.
+## Bundler examples (Track E — no-SSR)
+
+Full npm projects with TypeScript, bundlers, and hot reload. CI builds each one
+against the published packages on every `examples/**` PR.
+
+| Example | Path | Framework | Package |
+|---|---|---|---|
+| **vanilla-vite** | [`vanilla-vite/`](./vanilla-vite) | Vite + TS | `@fundamental-engine/vanilla` |
+| **react-vite** | [`react-vite/`](./react-vite) | Vite + React + TS | `@fundamental-engine/react` |
+| **three** | [`three/`](./three) | Vite + Three.js | `@fundamental-engine/three` |
+
+## SSR / framework examples
+
+Shows the correct client-only integration pattern for SSR frameworks — each
+avoids touching the engine during server rendering.
+
+| Example | Path | Framework | Pattern |
+|---|---|---|---|
+| **nextjs** | [`nextjs/`](./nextjs) | Next.js 15 (App Router) | `'use client'` + `dynamic(…, { ssr: false })` |
+| **astro** | [`astro/`](./astro) | Astro 5 | `<script>` tag (always client-only in Astro) |
+| **sveltekit** | [`sveltekit/`](./sveltekit) | SvelteKit 2 + Svelte 5 | `onMount` + dynamic import |
+| **nuxt** | [`nuxt/`](./nuxt) | Nuxt 3 | `onMounted` + dynamic import |
+
+All SSR examples use `@fundamental-engine/vanilla` (or `react`) at `^0.9.0` and
+produce a static build that CI verifies. The README in each example explains the
+SSR pattern in detail.
