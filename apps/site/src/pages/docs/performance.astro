@@ -29,6 +29,14 @@ const energyEx = `const field = document.querySelector('field-root');
 // pull-based — call in your rAF loop or debug tool
 const { kinetic, thermal, total, count } = field.energy();
 // kinetic: Σ ½·m·|v|²   thermal: Σ heat   total: kinetic + thermal`;
+
+const guardEx = `import { createField } from '@fundamental-engine/core';
+
+// Full-viewport createField canvas: cap DPR up front (the dominant fill-rate lever).
+const field = createField(canvas, { host, render: 'dots', dprCap: 1 });
+
+// …or apply an adaptive quality tier yourself (0 = full, 3 = leanest).
+field.setQualityTier(2);   // caps the effective DPR and drops the heaviest ambient layer`;
 ---
 
 <DocsLayout
@@ -96,7 +104,7 @@ const { kinetic, thermal, total, count } = field.energy();
     </ul>
   </section>
 
-  <section class="docs-sec">
+  <section class="docs-sec" id="tuning-note">
     <h2>Tuning</h2>
     <p>
       Lower <a href="/docs/api/options">density</a> for very large or low-power surfaces;
@@ -106,6 +114,34 @@ const { kinetic, thermal, total, count } = field.energy();
       different cost model: each instance is its own loop, kept cheap by the
       <code>IntersectionObserver</code> gating above, which idles every off-screen field.
     </p>
+  </section>
+
+  <section class="docs-sec" id="createfield-unguarded">
+    <h2><code>createField</code> is the unguarded path</h2>
+    <p>
+      <code>&lt;field-root&gt;</code> protects itself: the platform runtime forwards an adaptive
+      quality tier to it (<code>setQualityTier</code>), so under sustained frame overrun it caps the
+      effective backing-store DPR and drops the heaviest ambient layer on its own. Raw
+      <code>createField</code> does <strong>not</strong> — reaching for the low-level door to drive a
+      custom or full-viewport canvas gives you the full-cost path with no automatic throttle and no
+      signal.
+    </p>
+    <div class="callout callout--warn">
+      <b>Full-viewport <code>createField</code> can starve the host page.</b> A heavy full-screen
+      canvas at DPR&nbsp;2 is fill-rate-bound (see the <a href="#tuning-note">DPR note</a> below); left
+      uncapped it competes with the host's own CSS transitions and timers on the main thread. This is
+      expected browser behavior for any heavy canvas, not an engine bug — but with <code>createField</code>
+      nothing steers you away from it.
+    </div>
+    <p>
+      So for a full-viewport <code>createField</code> canvas, set a guard yourself: cap the DPR with the
+      <code>dprCap</code> option (the dominant fill-rate lever; <code>dprCap: 1</code> roughly doubles
+      headroom on retina), and/or apply a quality tier with <code>setQualityTier</code>. Better still,
+      prefer <code>&lt;field-root&gt;</code> for a page field, or a <strong>contained</strong> field
+      (<code>new FieldField(&#123; bounds: el &#125;)</code> / <code>containerHost(el)</code>) so the
+      canvas only covers the region that needs it.
+    </p>
+    <CodeTabs variants={[{ label: 'Guard a createField canvas', lang: 'ts', code: guardEx }]} />
   </section>
 
   <section class="docs-sec">

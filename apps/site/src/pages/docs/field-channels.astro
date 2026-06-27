@@ -25,6 +25,19 @@ const best = candidates.reduce((a, b) =>
 const handle = `const heat = field.addField('heat', summerMap);  // FieldChannelHandle
 heat.set(winterMap);   // swap the sampler live — a season changes the map
 heat.remove();         // unregister; sampleField('heat', …) returns 0 again`;
+
+const amplify = `/* --d (alias of --field-density) rests small by design — fractions of 1.
+   Scale it into a usable range in CSS; don't bake per-app magic numbers into
+   every consumer. clamp() gives a calm floor and a hard ceiling. */
+[data-feedback] {
+  --d-amp: clamp(0, calc(var(--d, 0) * 12), 1);   /* raw fraction → ~0..1 */
+}
+
+/* drive the visible reaction off the amplified value, not the raw one */
+.hero-mass {
+  transform: translateY(calc(var(--d-amp) * -8px));
+  opacity: calc(0.4 + var(--d-amp) * 0.6);
+}`;
 ---
 
 <DocsLayout
@@ -108,6 +121,48 @@ heat.remove();         // unregister; sampleField('heat', …) returns 0 again`;
       unregisters the channel so <code>sampleField</code> falls back to <code>0</code>.
     </p>
     <CodeTabs variants={[{ label: 'JavaScript', lang: 'js', code: handle }]} />
+  </section>
+
+  <section class="docs-sec" id="d-density-mapping">
+    <h2>Reading <code>--d</code>: the density signal and how to scale it</h2>
+    <p>
+      The complement to a channel you <em>read</em> is the density the field <em>writes back</em>. Every
+      <code>data-feedback</code> body receives its locally gathered density as
+      <code>--field-density</code> — and as <code>--d</code>, the compact alias for the
+      <strong>same value</strong> (both are written every frame, three decimals). It is the live
+      reciprocal signal: matter gathers on a body, the body's <code>--d</code> rises, your CSS reacts.
+    </p>
+    <div class="callout">
+      <b>Resting <code>--d</code> is small by design.</b> The value is an eased density in
+      <code>0..1</code>, but at rest it sits in the <em>low fractions</em> — often around
+      <code>0.04–0.05</code>. It is not a normalized "how lit is this body" gauge you can map straight
+      to <code>0..1</code> opacity; it is the raw fraction of the pool a body has gathered, kept calm so
+      ambient drift doesn't flicker your type.
+    </div>
+    <p>
+      What moves it: the body's per-frame matter <strong>count</strong> within range (driven by field
+      <code>density</code> and the body's <code>strength</code> / <code>range</code> — a stronger,
+      wider body gathers more), plus a fixed bump while the body is <strong>engaged</strong>
+      (<code>data-active</code> / hover adds a large step). Concretely the eased target is roughly
+      <code>count / 20 + (engaged ? 0.45 : 0)</code>, clamped to <code>0..1</code> — so a resting body
+      with a handful of nearby particles lands near <code>0.05</code>, and engagement is what pushes it
+      toward the top of the range. Cranking field <code>density</code> or body <code>strength</code>
+      raises the resting floor, but only so far; the design intent is a quiet baseline, not a hot one.
+    </p>
+    <p>
+      So <strong>amplify in CSS</strong> rather than expecting a pre-scaled <code>0..1</code>. Scale
+      <code>--d</code> once into a derived variable (with a <code>clamp()</code> for a calm floor and a
+      hard ceiling), then drive every reaction off that. This keeps the magic number in one place
+      instead of sprinkling <code>* 30</code> through your stylesheet:
+    </p>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: amplify }]} />
+    <p>
+      Tune the multiplier to the resting <code>--d</code> you actually observe for your field's
+      <code>density</code> and body params — there is no universal constant, because the resting count
+      depends on your scene. For a binary "is this body engaged" gate that doesn't need scaling, read
+      the engine's thresholded <code>data-field-density="high"</code> state attribute instead of the
+      numeric var.
+    </p>
   </section>
 
   <section class="docs-sec">
