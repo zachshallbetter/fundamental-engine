@@ -205,7 +205,7 @@ A `FieldHost` is **not** a "surface" — *Field Surfaces* is the visualization-p
 | `threeHost(opts)` | `@fundamental-engine/three` | the WebGL drawing buffer | shipped — drives `core.createField` directly, no fork |
 | *worker host* | — | an `OffscreenCanvas` | **planned (#531)** — the one surface not yet built |
 | native (Swift) | `swift/` | the view's bounds | a separate language port implementing the same contract conceptually (#423) |
-| native (Android) | `android/` | the view's bounds | a separate-language Kotlin port of the same contract — foundation stage (pure-`kotlin("jvm")` core; the `View`/`Canvas` + Compose hosts are planned) |
+| native (Android) | `android/` | the view's bounds | a separate-language Kotlin port — the pure-`kotlin("jvm")` core (full 36-force surface + integrator) runs under a Jetpack Compose host (`FieldView` + `Modifier.fieldBody`), verified on-device |
 
 **The contract** (`FieldHost`): `root` (the scanned subtree), `viewport()` → `{ width, height, dpr,
 originX?, originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
