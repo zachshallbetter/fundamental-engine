@@ -4,13 +4,11 @@ name: PR checks
 #   changelog — a PR that changes a published package must carry a CHANGELOG entry.
 #               The check reads the CHANGELOG *diff* (authoritative), not the PR body.
 #   doc-links — every relative markdown link in the repo's docs resolves to a real file.
-#   silent-contract-gap — runs lintPlatform's silent-contract-gap detection over the built site
-#               pages on BASE and HEAD and reports any NEW gap a PR introduces (a [data-feedback]
-#               body whose --field-* channel no CSS rule reads, etc.). Report-only for now (does not
-#               fail the build, not a required check) — see scripts/check-silent-contract.mjs.
+# The advisory silent-contract-gap detector lives in its own path-scoped workflow
+# (silent-contract.yml) — it builds the site twice + installs Chromium, so it only runs
+# when the site/packages/script actually change rather than on every PR here.
 # `conclusion-pr` is the required status check for this workflow on main's branch
-# protection, mirroring ci.yml's `conclusion` (skipped ≠ success). silent-contract-gap is
-# intentionally NOT in its needs while it stays advisory.
+# protection, mirroring ci.yml's `conclusion` (skipped ≠ success).
 
 on:
   pull_request:
@@ -63,71 +61,6 @@ jobs:
       # plain node, no dependencies — see scripts/check-doc-links.mjs
       - name: Check doc links
         run: node scripts/check-doc-links.mjs
-
-  silent-contract-gap:
-    name: silent-contract-gap diff (advisory)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-          fetch-depth: 0 # need both base and head commits to build each side
-
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: pnpm
-
-      # ── BASE: build the merge base's site, capture its gap report ──────────────
-      - name: Checkout base
-        run: git checkout --quiet ${{ github.event.pull_request.base.sha }}
-
-      - name: Install (base)
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright chromium (base)
-        run: pnpm --filter @fundamental-engine/site exec playwright install --with-deps chromium
-
-      - name: Build (base)
-        run: pnpm build
-
-      - name: Silent-contract report (base)
-        # the script lives on HEAD; if base predates it, this no-ops and the head run reports absolute counts
-        run: node scripts/check-silent-contract.mjs --out base-contract.json || echo "base report skipped (script not on base)"
-
-      # ── HEAD: rebuild on the PR head, diff against the base report ─────────────
-      - name: Checkout head
-        run: git checkout --quiet ${{ github.event.pull_request.head.sha }}
-
-      - name: Install (head)
-        run: pnpm install --frozen-lockfile
-
-      - name: Build (head)
-        run: pnpm build
-
-      - name: Silent-contract report (head) + diff vs base
-        run: |
-          node scripts/check-silent-contract.mjs --out head-contract.json --baseline base-contract.json | tee contract-gap.log
-          {
-            echo '### Silent-contract-gap report'
-            echo '```'
-            cat contract-gap.log
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload reports
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: silent-contract-gap
-          path: |
-            base-contract.json
-            head-contract.json
-            contract-gap.log
-          retention-days: 7
-          if-no-files-found: ignore
 
   conclusion-pr:
     name: conclusion-pr
