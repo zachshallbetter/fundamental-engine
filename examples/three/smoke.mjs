@@ -1,17 +1,22 @@
-// Headless smoke test: boot the built example and assert a live field with particles.
-// Run with the repo's installed @playwright/test chromium.
-import { chromium } from '@playwright/test';
+// Headless smoke test: serve the built dist/ and assert a live field booted.
+// Proves the published @fundamental-engine/three package creates a real field layer.
+// Resolve Playwright from PLAYWRIGHT_PKG if set (lets CI / the monorepo point at
+// its own @playwright/test install); otherwise use the bare specifier.
+const playwrightEntry = process.env.PLAYWRIGHT_PKG || '@playwright/test';
+const { chromium } = await import(playwrightEntry);
+import { preview } from 'vite';
 
-const URL = process.env.SMOKE_URL ?? 'http://localhost:4173/';
+const server = await preview({ preview: { port: 4320 } });
+const url = `http://localhost:4320`;
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 
-await page.goto(URL, { waitUntil: 'load' });
+await page.goto(url, { waitUntil: 'load' });
 
-// Wait for the field layer to boot and the engine to seed its swarm.
+// main.js exposes `window.__fieldLayer` — poll particleCount() until > 0.
 const count = await page.waitForFunction(
   () => {
     const n = window.__fieldLayer?.particleCount?.();
@@ -21,9 +26,11 @@ const count = await page.waitForFunction(
 ).then((h) => h.jsonValue());
 
 await browser.close();
+await server.httpServer.close();
 
 if (errors.length) {
   console.error('PAGE ERRORS:', errors.join('\n'));
   process.exit(1);
 }
 console.log(`SMOKE PASS particleCount=${count}`);
+process.exit(0);
