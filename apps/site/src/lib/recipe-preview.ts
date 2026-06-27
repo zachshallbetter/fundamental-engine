@@ -58,6 +58,9 @@ export function initRecipePreviews(opts: PreviewOptions = {}): () => void {
           bounds: el,
           render: "dots",
           density: 0.6,
+          // The preview should show THIS recipe's behavior, not the generic ambient
+          // background Currents (which default on and look identical across every card).
+          waves: false,
         });
         el._field = field;
       } catch {
