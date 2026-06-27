@@ -11,7 +11,7 @@ const { current } = Astro.props;
 const version = currentVersion();
 const dest = [
   { href: '/docs', label: 'Docs', key: 'docs' },
-  { href: '/examples', label: 'Examples', key: 'examples' },
+  // Examples tab hidden for the time being — /examples page still exists, just unlinked from the header.
   { href: '/recipes', label: 'Recipes', key: 'recipes' },
   { href: '/evidence', label: 'Evidence', key: 'evidence' },
   { href: '/writings', label: 'Writings', key: 'writings' },
