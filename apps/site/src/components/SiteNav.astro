@@ -299,12 +299,14 @@ const dest = [
   }
   .sn-inner {
     width: 100%;
-    max-width: 1360px;
+    /* align the wordmark + links with the page content column (--content-max) so the nav
+       doesn't sprawl wider than the body it sits over. */
+    max-width: var(--content-max);
     height: 58px;
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    padding: 0 clamp(1.25rem, 3vw, 2.75rem);
+    padding: 0 clamp(1rem, 4vw, 2.5rem);
   }
   .sn-mark {
     display: inline-flex;
