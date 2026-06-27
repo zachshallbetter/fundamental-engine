@@ -7,11 +7,15 @@
  */
 import type { FieldHost } from '@fundamental-engine/core';
 import { prefersReducedMotion, pageHidden } from './env.ts';
+import { registerFieldProperties } from './register-properties.ts';
 
 const INPUT_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
 
 /** Build a FieldHost backed by `window` / `document`. */
 export function browserHost(): FieldHost {
+  // Register the field-density channels as typed, compositor-interpolable CSS properties once at
+  // boot so consumers can transition/animate var(--field-density)/var(--d). No-op if unsupported.
+  registerFieldProperties();
   return {
     root: document,
     viewport: () => ({ width: window.innerWidth, height: window.innerHeight, dpr: window.devicePixelRatio || 1 }),
