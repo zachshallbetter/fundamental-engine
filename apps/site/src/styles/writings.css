@@ -32,6 +32,10 @@
 
 /* ── index ───────────────────────────────────────────────────────────────── */
 .writings-index {
+  /* sit above the page <field-root> (position:fixed; z-index:0), which otherwise
+     paints over this non-positioned content and hides the cards. */
+  position: relative;
+  z-index: 1;
   max-width: 64rem;
   margin: 0 auto;
   padding: clamp(5rem, 8vh, 8rem) clamp(1rem, 4vw, 2.5rem) 6rem;
