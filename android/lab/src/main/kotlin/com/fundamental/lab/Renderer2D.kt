@@ -1,7 +1,9 @@
 package com.fundamental.lab
 
+import com.fundamental.core.overlay.Segment
 import com.fundamental.core.runtime.FieldController
 import java.awt.AlphaComposite
+import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.MultipleGradientPaint
@@ -108,6 +110,14 @@ object Renderer2D {
         antialias(g)
         drawDots(g, c, accent)
         g.dispose()
+    }
+
+    /** Draw overlay-reading segments (vectors, field-lines, contours, the deformation grid). */
+    fun drawSegments(g: Graphics2D, segs: List<Segment>, color: Color, width: Float = 1f) {
+        antialias(g)
+        g.stroke = BasicStroke(width)
+        g.color = color
+        for (s in segs) g.draw(Line2D.Float(s.ax, s.ay, s.bx, s.by))
     }
 
     /** Draw one non-trail frame (DOTS/LINKS/GLOW) to a fresh surface. */

@@ -47,7 +47,27 @@ private fun renderTour(dir: String) {
         ImageIO.write(img, "png", file)
         println("wrote ${file.path}")
     }
+    // overlay readings showcase
+    overlayShot(out, "overlay-vectors", forceScene(ForceCatalog.entry("attract")!!), Reading.FORCE_VECTORS)
+    overlayShot(out, "overlay-fieldlines", forceScene(ForceCatalog.entry("gravity")!!), Reading.FIELD_LINES)
+    overlayShot(out, "overlay-temperature", forceScene(ForceCatalog.entry("attract")!!), Reading.TEMPERATURE)
+    overlayShot(out, "overlay-grid", forceScene(ForceCatalog.entry("attract")!!), Reading.GRID)
     println("done → ${out.absolutePath}")
+}
+
+private fun overlayShot(out: File, name: String, scene: LabScene, reading: Reading) {
+    val c = FieldController(W.toFloat(), H.toFloat(), particleCount = scene.density, seed = 42)
+    c.setFormation(scene.formation)
+    scene.setup(c, W.toFloat(), H.toFloat())
+    repeat(90) { c.tick() }
+    val img = BufferedImage(W, H, BufferedImage.TYPE_INT_RGB)
+    val g = img.createGraphics()
+    Renderer2D.drawFrame(g, c, LabMode.DOTS, ACCENT, W, H)
+    drawReading(g, c, reading, W, H)
+    g.dispose()
+    val f = File(out, "$name.png")
+    ImageIO.write(img, "png", f)
+    println("wrote ${f.path}")
 }
 
 // ── headless: deterministic sim cost per scene (reported, not gated) ──────────────────────────────

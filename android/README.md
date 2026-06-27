@@ -79,19 +79,23 @@ Ported and tested:
   runnable `:sample` app.
 - **Render modes** — `RenderMode.DOTS` / `TRAILS` (a faded persistent buffer → comet trails) /
   `LINKS` (proximity line segments via the spatial hash → a constellation network) / `GLOW` (soft
-  radial-gradient blobs). All four verified on-device. (Metaballs / voronoi / streamlines / heatmap
-  overlays are follow-ups — they need the heatmap grid + marching-squares.)
+  radial-gradient blobs). All four verified on-device. (Metaballs / voronoi matter modes + the heatmap
+  glow are follow-ups — they need the heatmap density grid.)
+- **Overlay readings** (`overlay` package) — the field diagnostics, computed as plain `Segment`s any
+  host can draw: `forceAt` probe → **streamlines** / **force-vectors**; `netField` traces → **field
+  lines**; a displaced lattice → the **deformation grid**; and **marching-squares iso-contours** for
+  **temperature** and **energy** from a particle-splatted scalar grid. Pure + JVM-tested.
 - **FieldLab (desktop, `:lab`)** — a JVM Swing/Java2D **FieldLab** over the same engine: a sidebar (tour
   + the full 36-force catalog), a live canvas, and an inspector (formation / render mode / density /
-  accent / live body sliders / live stats), plus a headless scene-tour PNG renderer + sim bench
-  (`--args="render"` / `"bench"`). The Kotlin analog of `swift run FieldLab` — fast iteration and a
-  CI-able visual render path, no emulator.
+  accent / live body sliders / **the Readings overlays** / live stats), plus a headless scene-tour +
+  overlay PNG renderer + sim bench (`--args="render"` / `"bench"`). The Kotlin analog of
+  `swift run FieldLab` — fast iteration and a CI-able visual render path, no emulator.
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
   (`GoldenConformanceTests`); every other force has behavioral/exact unit tests
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **55 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **61 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Not yet ported (follow-up PRs):
@@ -105,7 +109,7 @@ Not yet ported (follow-up PRs):
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (55 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (61 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator
@@ -129,9 +133,10 @@ stats — particles / kinetic / thermal / frame-ms). Each force opens a scene wi
 ./gradlew :lab:run --args="bench"        # headless: sim ms/frame per scene
 ```
 
-Not yet (vs. the Swift FieldLab): the 8 overlay **readings**, the **recipe canon** + save/export, and
-the Body-Matter-Interaction toggles (attention / causality / heatmap) — they follow as those engine
-subsystems land (#654 / #652 / #647 / #649).
+Not yet (vs. the Swift FieldLab): the **recipe canon** + save/export, the Body-Matter-Interaction
+toggles (attention / causality / heatmap), and the two reading types that need more machinery (`path`
+traces, per-body `data` rings) — they follow as those engine subsystems land (#652 / #647 / #649).
+Six of the eight overlay readings are now in the Readings panel.
 
 The pure `:fundamental-core` builds on any JDK (JVM-17 bytecode); the host modules need the Android SDK
 (point Gradle at it via `local.properties` `sdk.dir=...` or `ANDROID_HOME`). compileSdk 34, minSdk 24,

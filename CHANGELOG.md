@@ -34,6 +34,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
   iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
   filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+- **Android port — overlay readings (`android/`).** The field diagnostics, in a pure `overlay` package
+  computed as plain `Segment`s any host draws: `forceAt` (the still-probe net force, ported from
+  `streamlines.ts`) → **streamlines** / **force-vectors**; the field-line tracer over `netField` →
+  **field lines**; a field-displaced lattice → the **deformation grid**; and **marching-squares
+  iso-contours** for **temperature** and **energy** from a particle-splatted scalar grid. Wired into the
+  FieldLab inspector's **Readings** panel and the headless render (overlay PNGs). 6 new JVM tests (61
+  core total); verified headless (force-vectors show a clean radial inflow; gravity's monopole traces
+  field lines). The `path` and per-body `data` readings remain follow-ups. Advances #654 / #732.
 - **Android port — Kotlin core (`android/`).** A native **Kotlin** port of the engine, mirroring the
   Swift port one-to-one. The pure-`kotlin("jvm")` `:fundamental-core` module (zero Android deps — the
   analog of `FundamentalCore`) ports the core contracts (`Vec3`/`Box`/`Particle`/`Body`/`Env`/

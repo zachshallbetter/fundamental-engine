@@ -3,7 +3,11 @@ package com.fundamental.lab
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.FORMATIONS
 import com.fundamental.core.engine.energyReport
+import com.fundamental.core.overlay.Overlays
+import com.fundamental.core.overlay.energyContours
+import com.fundamental.core.overlay.temperatureContours
 import com.fundamental.core.runtime.FieldController
+import javax.swing.JCheckBox
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -39,6 +43,32 @@ import javax.swing.WindowConstants
 // the full 36-force catalog), a live canvas, and an inspector (formation, render mode, density, accent,
 // live body sliders, live stats). Drives the same :fundamental-core engine.
 
+// ── overlay readings ────────────────────────────────────────────────────────────────────────────
+
+/** The overlay diagnostics the inspector can toggle (the FieldLab "Readings" section). */
+enum class Reading(val label: String, val color: Color) {
+    STREAMLINES("Streamlines", Color(120, 170, 235)),
+    FORCE_VECTORS("Force vectors", Color(150, 200, 255)),
+    FIELD_LINES("Field lines", Color(120, 225, 150)),
+    GRID("Deformation grid", Color(120, 128, 150)),
+    TEMPERATURE("Temperature", Color(255, 150, 90)),
+    ENERGY("Energy", Color(240, 220, 110)),
+}
+
+/** Compute + draw one reading over the current field. */
+fun drawReading(g: Graphics2D, c: FieldController, r: Reading, w: Int, h: Int) {
+    val fw = w.toFloat(); val fh = h.toFloat()
+    val segs = when (r) {
+        Reading.STREAMLINES -> Overlays.vectorField(c.bodies, c.forces, fw, fh, normalized = true)
+        Reading.FORCE_VECTORS -> Overlays.vectorField(c.bodies, c.forces, fw, fh, normalized = false)
+        Reading.FIELD_LINES -> Overlays.fieldLines(c.bodies, c.forces, fw, fh)
+        Reading.GRID -> Overlays.deformationGrid(c.bodies, c.forces, fw, fh)
+        Reading.TEMPERATURE -> temperatureContours(c.particles, fw, fh)
+        Reading.ENERGY -> energyContours(c.particles, fw, fh)
+    }
+    Renderer2D.drawSegments(g, segs, r.color, if (r == Reading.GRID) 0.6f else 1.1f)
+}
+
 // ── sidebar rows ──────────────────────────────────────────────────────────────────────────────────
 
 private sealed class Row
@@ -67,8 +97,11 @@ class LabCanvas : JPanel() {
     private var density: Int = 600
     private var primary: Body? = null
     private var buffer: BufferedImage? = null
+    private val readings = LinkedHashSet<Reading>()
     var frameMs: Double = 0.0; private set
     private val timer = Timer(16) { tickOnce() }
+
+    fun toggleReading(r: Reading, on: Boolean) { if (on) readings.add(r) else readings.remove(r) }
 
     init {
         background = Renderer2D.BG
@@ -134,6 +167,7 @@ class LabCanvas : JPanel() {
         } else {
             Renderer2D.drawFrame(g2, c, mode, accent, width, height)
         }
+        for (r in readings) drawReading(g2, c, r, width, height)
     }
 }
 
@@ -226,6 +260,17 @@ private fun makeInspector(canvas: LabCanvas): JPanel {
     panel.add(labeled("strength ×0.01", strength))
     panel.add(labeled("range px", range))
     panel.add(labeled("spin ×0.01", spin))
+
+    // Readings (overlay diagnostics)
+    panel.add(section("Readings"))
+    for (r in Reading.values()) {
+        val cb = JCheckBox(r.label)
+        cb.foreground = Color(200, 206, 218)
+        cb.isOpaque = false
+        cb.alignmentX = Component.LEFT_ALIGNMENT
+        cb.addActionListener { canvas.toggleReading(r, cb.isSelected) }
+        panel.add(cb)
+    }
 
     // Live stats
     panel.add(section("Live"))
