@@ -7,8 +7,9 @@ import java.io.File
 
 /**
  * Recipe save/export — the FieldLab "export the current recipe" action. `FieldRecipe` is
- * `@Serializable`, so a recipe round-trips back to the same JSON shape as the shared
- * `data/recipes.json` canon. Mirror of the Swift FieldLab's recipe export.
+ * `@Serializable`, so a recipe *value* round-trips: decoding the export reproduces an equal
+ * `FieldRecipe` (default-valued fields are omitted, so the bytes need not match the canon's
+ * `data/recipes.json` exactly). Mirror of the Swift FieldLab's recipe export.
  */
 object RecipeExport {
     private val json = Json { prettyPrint = true; encodeDefaults = false }

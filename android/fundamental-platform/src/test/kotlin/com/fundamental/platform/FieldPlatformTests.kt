@@ -2,33 +2,14 @@ package com.fundamental.platform
 
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Box
-import com.fundamental.core.engine.FieldHost
-import com.fundamental.core.engine.FieldProjection
 import com.fundamental.core.engine.FieldVolume
-import com.fundamental.core.engine.FlatProjection
 import com.fundamental.core.math.Vec3
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 // The coordinator wiring: read → measure, write → flush, under the six-phase scheduler.
-// A minimal headless FieldHost whose worldBox returns each body's own pre-set box.
-private class TestHost(private val vol: FieldVolume) : FieldHost {
-    override val volume: FieldVolume get() = vol
-    override val scrollY = 0f
-    override val scrollHeight = 0f
-    override val prefersReducedMotion = false
-    override val isHidden = false
-    override fun scheduleFrame(callback: (Double) -> Unit): Any = Any()
-    override fun cancelFrame(token: Any) {}
-    override fun onResize(callback: () -> Unit): () -> Unit = {}
-    override fun onScroll(callback: () -> Unit): () -> Unit = {}
-    override fun onVisibility(callback: () -> Unit): () -> Unit = {}
-    override fun onInput(callback: () -> Unit): () -> Unit = {}
-    override val projection: FieldProjection = FlatProjection()
-    override fun scanBodies(): List<Body> = emptyList()
-    override fun worldBox(view: Any): Box? = (view as? Body)?.box
-}
+// TestHost lives in TestHosts.kt (shared with RegistriesTests).
 
 class FieldPlatformTests {
 
