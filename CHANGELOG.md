@@ -68,6 +68,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   `fieldBody` bends the particle field into an orbiting shell). CI (`android.yml`) now sets up the Android
   SDK and assembles the host modules alongside the core conformance gate. compileSdk 34, minSdk 24,
   AGP 8.7, Compose BOM 2024.12.
+- **Android port — Compose render modes (`android/`).** `FieldView` gained a `renderMode` parameter:
+  `DOTS`, `TRAILS` (a faded persistent buffer → comet trails / accretion-disk look), `LINKS` (proximity
+  line segments via the engine's spatial hash → a constellation network), and `GLOW` (soft
+  radial-gradient blobs). The `:sample` can pick a mode via an `--es mode …` intent extra. All four
+  verified on the Pixel 7 / API 35 emulator. (Metaballs / voronoi / streamlines / heatmap overlays
+  remain follow-ups — they need the heatmap grid + marching-squares.)
 
 ## [0.8.1] — 2026-06-25
 

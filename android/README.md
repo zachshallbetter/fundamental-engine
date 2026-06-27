@@ -73,6 +73,10 @@ Ported and tested:
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a
   runnable `:sample` app.
+- **Render modes** — `RenderMode.DOTS` / `TRAILS` (a faded persistent buffer → comet trails) /
+  `LINKS` (proximity line segments via the spatial hash → a constellation network) / `GLOW` (soft
+  radial-gradient blobs). All four verified on-device. (Metaballs / voronoi / streamlines / heatmap
+  overlays are follow-ups — they need the heatmap grid + marching-squares.)
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
   (`GoldenConformanceTests`); every other force has behavioral/exact unit tests
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
