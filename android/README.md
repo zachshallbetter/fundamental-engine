@@ -82,6 +82,10 @@ Ported and tested:
   `LINKS` (proximity line segments via the spatial hash → a constellation network) / `GLOW` (soft
   radial-gradient blobs), plus the **heatmap glow** underlay (from the density buffer). All verified
   on-device / in the lab. (Metaballs / voronoi matter modes are follow-ups — marching-squares / nearest-site.)
+- **Reactions / sparks** (§23, `Reactions` + `SparkPool`) — the micro-reaction matter: `energyDelta`,
+  `reactionIntensity`, `burstImpulse`, `captureEdge`, and the conserved sink-release (`releaseCaptured` —
+  ejects held matter past the absorb horizon, made immortal). Forces emit sparks through `env.spark`
+  (wall impacts, the sink supernova flash); the capped pool decays them; the host draws them.
 - **Body-Matter-Interaction** (`Attention` / `Causality` / `Heatmap`) — the model's conserved truths,
   wired into the driver as toggles: **conserved attention** (one strength budget; engaging a body drains
   the others, Σ S·mul invariant), **cross-boundary causality** (saturated bodies spill density to
@@ -105,20 +109,20 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **71 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **77 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Not yet ported (follow-up PRs):
 
-- The bound↔free reservoir, reactions/accretion sparks, carrier-wave building (`buildWaves`), and the
-  `FieldHandle`'s relationship edges — the rest of `FundamentalCore`.
+- The bound↔free reservoir + carrier-wave building (`buildWaves`/`buildBound`), and the `FieldHandle`'s
+  relationship edges — the rest of `FundamentalCore`.
 - `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
 
 ## Building & testing
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (71 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (77 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator

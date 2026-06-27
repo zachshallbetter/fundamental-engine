@@ -180,6 +180,7 @@ class LabCanvas : JPanel() {
             Renderer2D.drawFrame(g2, c, mode, accent, width, height)
         }
         if (heatmapOn) Renderer2D.drawHeatmap(g2, c, width, height, accent)
+        Renderer2D.drawSparks(g2, c)
         for (r in readings) drawReading(g2, c, r, width, height)
     }
 }

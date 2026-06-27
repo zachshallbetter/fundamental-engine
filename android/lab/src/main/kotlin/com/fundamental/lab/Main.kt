@@ -1,5 +1,6 @@
 package com.fundamental.lab
 
+import com.fundamental.core.math.Vec3
 import com.fundamental.core.recipe.FieldRecipes
 import com.fundamental.core.runtime.FieldController
 import java.awt.image.BufferedImage
@@ -56,7 +57,32 @@ private fun renderTour(dir: String) {
     overlayShot(out, "overlay-temperature", forceScene(ForceCatalog.entry("attract")!!), Reading.TEMPERATURE)
     overlayShot(out, "overlay-grid", forceScene(ForceCatalog.entry("attract")!!), Reading.GRID)
     heatmapShot(out, "overlay-heatmap", forceScene(ForceCatalog.entry("attract")!!))
+    sparkShot(out, "overlay-sparks")
     println("done → ${out.absolutePath}")
+}
+
+private fun sparkShot(out: File, name: String) {
+    // drive matter hard into a wall box → continuous impact sparks (§23).
+    val c = FieldController(W.toFloat(), H.toFloat(), particleCount = 600, seed = 42)
+    c.addBody(
+        com.fundamental.core.engine.Body(
+            tokens = listOf("wall"),
+            box = com.fundamental.core.engine.Box(
+                center = Vec3(W / 2f, H / 2f, 0f),
+                halfExtents = Vec3(160f, 160f, 0f),
+            ),
+        ).apply { isVisible = true },
+    )
+    c.flowTo(W / 2f, H / 2f, strength = 3f, radius = 4000f)
+    repeat(60) { c.tick() }
+    val img = BufferedImage(W, H, BufferedImage.TYPE_INT_RGB)
+    val g = img.createGraphics()
+    Renderer2D.drawFrame(g, c, LabMode.DOTS, ACCENT, W, H)
+    Renderer2D.drawSparks(g, c)
+    g.dispose()
+    val f = File(out, "$name.png")
+    ImageIO.write(img, "png", f)
+    println("wrote ${f.path} (${c.sparks.count} live sparks)")
 }
 
 private fun heatmapShot(out: File, name: String, scene: LabScene) {

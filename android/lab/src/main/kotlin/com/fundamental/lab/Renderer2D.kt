@@ -112,6 +112,22 @@ object Renderer2D {
         g.dispose()
     }
 
+    /** Draw the §23 micro-reaction sparks — bright dots fading by life. */
+    fun drawSparks(g: Graphics2D, c: FieldController) {
+        antialias(g)
+        for (s in c.sparks.sparks) {
+            val a = s.life.coerceIn(0f, 1f)
+            g.color = Color(
+                (s.color.x / 255f).coerceIn(0f, 1f),
+                (s.color.y / 255f).coerceIn(0f, 1f),
+                (s.color.z / 255f).coerceIn(0f, 1f),
+                a,
+            )
+            val r = 1.4f + a * 1.6f
+            g.fill(Ellipse2D.Float(s.position.x - r, s.position.y - r, 2 * r, 2 * r))
+        }
+    }
+
     /** Draw the density heatmap as a coarse accent-tinted glow, sampled from the controller's buffer. */
     fun drawHeatmap(g: Graphics2D, c: FieldController, w: Int, h: Int, accent: Color, cell: Int = 24) {
         var y = 0

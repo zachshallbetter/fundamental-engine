@@ -3,10 +3,13 @@ package com.fundamental.core.runtime
 import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.AttnInput
 import com.fundamental.core.engine.Body
+import com.fundamental.core.engine.CANONICAL_FORCE_COLORS
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.FieldStore
 import com.fundamental.core.engine.FlowFocus
 import com.fundamental.core.engine.Heatmap
+import com.fundamental.core.engine.SparkPool
+import com.fundamental.core.engine.releaseCaptured
 import com.fundamental.core.engine.SpillBody
 import com.fundamental.core.engine.attentionMuls
 import com.fundamental.core.engine.spillover
@@ -81,13 +84,20 @@ class FieldController(
     var heatmapEnabled: Boolean = false
     private var heatmap: Heatmap? = null
 
+    /** Micro-reaction sparks (§23) — emitted by forces via `env.spark`, drawn by the host. */
+    val sparks = SparkPool()
+
     init {
         env.volume = Vec3(w, h, d)
         env.dt = 1f
         env.neighbors = { p, r -> store.neighbors(p, r) }
         env.spawn = { store.add(it) }
         env.grid = { name -> grids.getOrPut(name) { ScalarGridImpl(w, h, modeForName(name)) } }
-        env.supernova = { b -> releaseSink(b) }
+        env.spark = { at, power, color -> sparks.emit(at, power, color) }
+        env.supernova = { b ->
+            releaseCaptured(store.particles, b, rng = { rng.nextFloat() }) // eject held matter, conserved
+            sparks.emit(b.center, 3f, CANONICAL_FORCE_COLORS["sink"]) // the supernova flash (§23)
+        }
         seedPool(particleCount)
     }
 
@@ -109,19 +119,6 @@ class FieldController(
     }
 
     /** Release a saturated sink's captured matter outward (the §6.9 supernova). */
-    private fun releaseSink(b: Body) {
-        for (p in store.particles) {
-            if (p.cap === b) {
-                p.cap = null
-                val dir = p.position - b.center
-                val dn = max(dir.length(), 1f)
-                p.velocity = (dir / dn) * (3f + rng.nextFloat() * 3f)
-                p.heat = max(p.heat, 0.8f)
-            }
-        }
-        b.accreted = 0f
-    }
-
     /** Resize the world (host viewport changed). */
     fun resize(width: Float, height: Float) {
         w = width
@@ -261,6 +258,8 @@ class FieldController(
             val hm = heatmap ?: Heatmap(w, h).also { heatmap = it }
             hm.update(store.particles)
         }
+
+        sparks.update() // §23 micro-reaction matter: drift, damp, fade, drop
 
         env.frameN += 1
         env.t += dt

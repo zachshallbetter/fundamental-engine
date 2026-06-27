@@ -34,6 +34,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
   iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
   filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+- **Android port — reactions & sparks (§23) (`android/`).** Ported the micro-reaction layer
+  (`Reactions` + a host-agnostic `SparkPool`): `energyDelta`, `reactionIntensity`, `burstImpulse`,
+  `captureEdge`, and the conserved sink-release `releaseCaptured` (ejects held matter past the absorb
+  horizon, made immortal — a real fill→explode→fall-back cycle). The driver wires `env.spark` to the
+  capped pool (wall impacts + the sink supernova flash emit sparks), updates/decays it each frame, and
+  exposes `controller.sparks`; the lab draws them. 6 new JVM tests (77 core total): energy loss, burst
+  falloff, spark emit/decay/cap, conserved release, the capture edge, and sparks-on-wall-impact through
+  the engine. Headless `overlay-sparks.png` shows sparks firing on all four wall faces. Advances #646.
 - **Android port — Body-Matter-Interaction: attention, causality, heatmap (`android/`).** The model's
   conserved truths, ported (`Attention`/`Causality`/`Heatmap`) and wired into the driver as toggles:
   **conserved attention** (one strength budget — engaging a body drains the others, Σ S·mul invariant —
