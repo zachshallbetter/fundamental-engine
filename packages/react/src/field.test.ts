@@ -76,6 +76,24 @@ test('re-exports FieldField and useFieldField', async () => {
   assert.equal('useForcesField' in mod, false);
 });
 
+// #584 — a missing named import aborts the whole consuming ES module, so the React door must carry
+// FIELD_VERSION as a named export equal to core's.
+test('re-exports FIELD_VERSION equal to core', async () => {
+  const mod = await import('../dist/index.js');
+  const core = await import('@fundamental-engine/core');
+  assert.equal(typeof mod.FIELD_VERSION, 'string');
+  assert.ok(mod.FIELD_VERSION.length > 0);
+  assert.equal(mod.FIELD_VERSION, core.FIELD_VERSION);
+});
+
+// #698 — useForcesData is the React wrapper for bindData (record → body diffing). The headless stub
+// never runs effects, so this asserts the named export is a callable hook; the bindData diff path it
+// drives is covered by @fundamental-engine/dom's bind-data tests.
+test('exports the useForcesData hook', async () => {
+  const mod = await import('../dist/index.js');
+  assert.equal(typeof mod.useForcesData, 'function');
+});
+
 // ── overlay canvas wiring (via createBrowserField) ───────────────────────────
 // useEffect never runs in this headless stub, so we exercise the canvas wiring
 // directly through the platform entry point that the component delegates to.

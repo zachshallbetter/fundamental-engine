@@ -20,6 +20,9 @@ export const FROZEN_VALUES = [
   { pkg: '@fundamental-engine/dom', name: 'bindData', note: 'binds records → bodies; data drives the field.' },
   { pkg: '@fundamental-engine/vanilla', name: 'createField', note: 'the one imperative door — resolves the host from opts.host -> bounds (contained) -> browserHost (default). Frozen contract preserved: createField(canvas) with no host still auto-supplies browserHost; bounds/host are additive options.' },
   { pkg: '@fundamental-engine/vanilla', name: 'browserHost', note: 're-export of the platform host for the no-framework path.' },
+  { pkg: '@fundamental-engine/vanilla', name: 'FIELD_VERSION', note: 're-export of the core engine-version constant (#584) — a named import off the authoring door, beside field.version on the handle. A missing named import aborts the whole ES module, so every door must carry it.' },
+  { pkg: '@fundamental-engine/react', name: 'FIELD_VERSION', note: 're-export of the core engine-version constant (#584) — a named import off the React door.' },
+  { pkg: '@fundamental-engine/elements', name: 'FIELD_VERSION', note: 're-export of the core engine-version constant (#584) — a named import off the elements door, beside el.version on <field-root>.' },
 ];
 
 /** Frozen type exports — interfaces that must remain exported, with their owning package. */
