@@ -1,0 +1,47 @@
+# Consumer proof: build every bundler example in examples/ against the PUBLISHED
+# @fundamental-engine/* packages (the versions in each example's package.json), exactly as a
+# downstream user would. This is the half of post-publish verification that proves the packages
+# work in real framework projects — not just that they install. Static (no-bundler) examples
+# (vanilla-cdn, single-file, web-component) are plain HTML and aren't built here.
+name: examples
+
+on:
+  pull_request:
+    paths:
+      - 'examples/**'
+      - '.github/workflows/examples.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build ${{ matrix.example }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [vanilla-vite, react-vite, three]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: install (from the published packages)
+        run: npm ci
+        working-directory: examples/${{ matrix.example }}
+      - name: build
+        run: npm run build
+        working-directory: examples/${{ matrix.example }}
+      # Boot smoke: serve dist + assert a live field (particleCount() > 0). Playwright is added
+      # only in CI (kept out of the example's own deps so its package.json stays copy-pasteable).
+      - name: boot smoke
+        if: hashFiles(format('examples/{0}/smoke.mjs', matrix.example)) != ''
+        working-directory: examples/${{ matrix.example }}
+        run: |
+          npm i --no-save @playwright/test
+          npx playwright install --with-deps chromium
+          node smoke.mjs

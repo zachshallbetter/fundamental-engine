@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fundamental × Three.js — particle field</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #05070d;
+        color: #cdd6ff;
+        font: 14px/1.4 system-ui, sans-serif;
+        overflow: hidden;
+      }
+      #app {
+        position: fixed;
+        inset: 0;
+      }
+      #hud {
+        position: fixed;
+        left: 16px;
+        top: 16px;
+        padding: 8px 12px;
+        background: rgba(8, 12, 24, 0.6);
+        border: 1px solid rgba(120, 160, 255, 0.25);
+        border-radius: 8px;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="hud">Fundamental field · particles: <span id="count">…</span></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

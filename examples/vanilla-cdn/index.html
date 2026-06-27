@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fundamental — vanilla via CDN (esm.sh)</title>
+    <style>
+      :root { color-scheme: dark; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        font: 16px/1.5 system-ui, sans-serif;
+        background: #0b0d12;
+        color: #e8edf5;
+        min-height: 100vh;
+      }
+      /* The field draws to this full-viewport canvas, behind the content. */
+      #field {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+      }
+      main {
+        position: relative;
+        z-index: 1;
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+      }
+      h1 { font-size: clamp(2rem, 6vw, 3.5rem); margin: 0 0 1rem; }
+      /* [data-body] turns an element into a body in the field. */
+      .card {
+        display: block;
+        margin: 1.5rem 0;
+        padding: 1.25rem 1.5rem;
+        border: 1px solid #2a3140;
+        border-radius: 12px;
+        background: rgba(20, 24, 33, 0.6);
+      }
+      a { color: #4da3ff; }
+    </style>
+  </head>
+  <body>
+    <canvas id="field"></canvas>
+
+    <main>
+      <h1 data-body="gravity:1.4">Fundamental, no build step</h1>
+      <p>
+        This page imports <code>createField</code> straight from
+        <a href="https://esm.sh">esm.sh</a> — no bundler, no install. The
+        elements below carry <code>data-body</code>, so the engine treats them
+        as bodies that bend the field.
+      </p>
+
+      <article class="card" data-body="attract:1.0">A body that attracts.</article>
+      <article class="card" data-body="charge:+0.8">A body with positive charge.</article>
+      <a class="card" href="#" data-body="gravity:1.0">A link that has mass.</a>
+    </main>
+
+    <script type="module">
+      import { createField } from "https://esm.sh/@fundamental-engine/vanilla@0.9.0";
+
+      // One door: createField(canvas, opts). render:'dots' draws the particle surface.
+      const field = createField(document.getElementById("field"), {
+        render: "dots",
+        accent: "#4da3ff",
+      });
+
+      // Expose for the smoke test / devtools poking.
+      window.__field = field;
+    </script>
+  </body>
+</html>
