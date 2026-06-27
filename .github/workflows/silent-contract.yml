@@ -1,0 +1,92 @@
+name: silent-contract-gap
+
+# Advisory (report-only) detector for the silent-contract gap: runs lintPlatform's gap rules over the
+# built site pages on BASE and HEAD and reports any NEW gap a PR introduces (a [data-feedback] body
+# whose --field-* channel no CSS rule reads, etc.). It does NOT fail the build and is NOT a required
+# check — see scripts/check-silent-contract.mjs.
+#
+# Path-scoped (mirrors api-surface.yml / android.yml): the job builds the site twice + installs
+# Chromium, so it only runs when a PR can actually change the result — the site, the packages (the
+# lint source lives in @fundamental-engine/dom), or the script itself. Doc-only / config / .github
+# PRs skip it entirely, saving the two builds + the browser install.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/site/**"
+      - "packages/**"
+      - "scripts/check-silent-contract.mjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "silent-contract-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
+
+jobs:
+  silent-contract-gap:
+    name: silent-contract-gap diff (advisory)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # need both base and head commits to build each side
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # ── BASE: build the merge base's site, capture its gap report ──────────────
+      - name: Checkout base
+        run: git checkout --quiet ${{ github.event.pull_request.base.sha }}
+
+      - name: Install (base)
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright chromium (base)
+        run: pnpm --filter @fundamental-engine/site exec playwright install --with-deps chromium
+
+      - name: Build (base)
+        run: pnpm build
+
+      - name: Silent-contract report (base)
+        # the script lives on HEAD; if base predates it, this no-ops and the head run reports absolute counts
+        run: node scripts/check-silent-contract.mjs --out base-contract.json || echo "base report skipped (script not on base)"
+
+      # ── HEAD: rebuild on the PR head, diff against the base report ─────────────
+      - name: Checkout head
+        run: git checkout --quiet ${{ github.event.pull_request.head.sha }}
+
+      - name: Install (head)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (head)
+        run: pnpm build
+
+      - name: Silent-contract report (head) + diff vs base
+        run: |
+          node scripts/check-silent-contract.mjs --out head-contract.json --baseline base-contract.json | tee contract-gap.log
+          {
+            echo '### Silent-contract-gap report'
+            echo '```'
+            cat contract-gap.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: silent-contract-gap
+          path: |
+            base-contract.json
+            head-contract.json
+            contract-gap.log
+          retention-days: 7
+          if-no-files-found: ignore
