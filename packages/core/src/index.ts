@@ -76,3 +76,6 @@ export * from './semantic/index.ts';
 export * from './diagnostics/index.ts';
 // field export (C4) — PNG raster + SVG vector serialization + download helpers
 export * from './export.ts';
+// record / replay (#692) — seeded, headless capture of per-frame particle state (readParticles wire
+// format) + deterministic reproduction for debugging and regression tests
+export * from './record/index.ts';

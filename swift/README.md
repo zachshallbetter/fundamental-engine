@@ -5,7 +5,9 @@ as a native Swift package for **iOS**, **macOS**, and **visionOS**.
 
 This is a port of the [Fundamental](https://fundamental-engine.com) JS engine, not a reinterpretation.
 The package layout, the API surface, and the physics mirror the npm packages one-to-one;
-where the two diverge it is a bug (or listed under [Parity](#parity) below).
+where the two diverge it is a bug (or listed under [Parity](#parity) below). The sibling
+[**Android / Kotlin** port](../android/README.md) takes the same approach and is held to the same
+shared cross-plane conformance golden.
 
 ## Packages
 

@@ -11,7 +11,8 @@ const checks = [
   { name: 'E2E — Chromium + mobile (Playwright)',            gate: 'e2e',             status: 'pass' },
   { name: 'Swift macOS build + tests',                       gate: 'swift-macos CI',  status: 'pass' },
   { name: 'Swift iOS Simulator build + tests',               gate: 'swift-apple CI',  status: 'pass' },
-  { name: '36-force golden conformance JS ↔ Swift',         gate: 'gen:force-catalog', status: 'pass' },
+  { name: 'Android Kotlin build + tests',                    gate: 'android CI',      status: 'pass' },
+  { name: '36-force golden conformance JS ↔ Swift ↔ Kotlin', gate: 'gen:force-catalog', status: 'pass' },
   { name: 'Perf budgets — on-hardware canvas/DPR baselines', gate: '#324',            status: 'pending' },
 ] as const;
 

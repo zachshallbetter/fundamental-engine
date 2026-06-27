@@ -1,0 +1,6 @@
+flowchart LR
+  Source[Semantic source] --> Binding[Visual-semantic binding]
+  Binding --> Motion[Motion behavior]
+  Binding --> Static[Static / reduced-motion equivalent]
+  Motion --> Check[Equivalence conformance]
+  Static --> Check

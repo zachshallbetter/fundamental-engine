@@ -117,8 +117,7 @@ data binding (Paper 7), and diagnostics (Paper 8) — is deferred to its own pap
 ## 2. Background and related work
 
 Fundamental's runtime architecture draws on several established lines of systems and UI work; we
-position it against each and mark external references as `[TODO: cite]` pending verification against
-the family bibliography.
+position it against each and cite external references through verified keys in the family bibliography.
 
 **Retained-mode vs immediate-mode UI.** The retained/immediate distinction frames how a system
 relates computation to drawing: a retained-mode toolkit keeps a persistent object model and redraws
@@ -127,32 +126,29 @@ neither, exactly — it keeps a persistent *field* (bodies, agents, relationship
 computed in the core, and treats every visible surface (canvas, SVG overlays, CSS feedback) as an
 *immediate* read of that persistent state. The separation of a persistent model from its rendering is
 the lineage; the novelty is that the model is a relational field and the rendering targets are
-plural. `[TODO: cite retained-mode / immediate-mode UI literature]`
+plural. [retained-immediate-ui]
 
 **Renderer-agnostic and headless UI.** A renderer-agnostic engine computes against an abstract scene
 and binds to a backend (DOM, native, a test renderer) late; headless UI libraries provide behavior
 and state without prescribing markup or pixels. Fundamental's core is renderer-agnostic in the strong
 sense — it is *mechanically prevented* from importing a render target — and its conformance harness is
-a headless consumer of the same engine. `[TODO: cite renderer-agnostic / headless UI frameworks]`
+a headless consumer of the same engine. [react-test-renderer; headless-ui]
 
 **The host/adapter (ports-and-adapters) pattern.** Hexagonal architecture isolates a domain core
 behind *ports* (interfaces the core defines) implemented by *adapters* (environment-specific code).
 `FieldHost` is precisely a port: the core declares the interface it needs from any environment, and
 `browserHost()` is the browser adapter. The contribution here is not the pattern but its *enforcement*
-in a UI-behavior runtime, where the temptation to reach for a global is constant. `[TODO: cite
-hexagonal architecture / ports and adapters]`
+in a UI-behavior runtime, where the temptation to reach for a global is constant. [cockburn2005]
 
 **Reactive runtimes and the scheduling of reads and writes.** Modern UI runtimes schedule work to
 avoid layout thrash — batching DOM reads and writes so that a measurement never forces a reflow
 against a pending mutation. Fundamental makes this scheduling discipline a first-class, *named* phase
-contract (§4) and a lint rule, rather than an internal optimization. `[TODO: cite reactive runtime
-scheduling / read-write batching]`
+contract (§4) and a lint rule, rather than an internal optimization. [fastdom; webdev-layout-thrashing]
 
 **Testability of UI logic.** A recurring argument in UI engineering is that behavior is testable in
 proportion to how cleanly it is separated from the renderer. Fundamental takes the strong form of that
 position: the boundary that makes the core portable is the same boundary that makes it testable, and
-the conformance harness exercises the production physics headlessly (§5.3). `[TODO: cite testability
-of UI / separation of concerns]`
+the conformance harness exercises the production physics headlessly (§5.3). [fowler2004presentation; meszaros2007]
 
 The distinguishing stance, across all of these, is that Fundamental treats the renderer-agnostic
 boundary and the participation contract as *auditable artifacts* — a test with an empty allowlist, a
@@ -552,11 +548,12 @@ platform metric library (`packages/dom/src/metrics.ts`) draws a hard line betwee
 
 - **Computed** generically from observation: `attention`, `memory`, `recency` (proximity +
   engagement + decay) and `coherence`, `entropy`, `pressure`, `priority` (from relationship resolution
-  and age). `risk` is an explicit `0` placeholder until a real risk model exists.
-- **Supplied-only:** `confidence`. The engine has no evidence for a claim's truth, so confidence is
-  present *only* when the host supplies it (via `data-field-confidence`, recipe options, or a domain
-  trust model). It is **never** inferred from relationship presence — *a citation is not certainty, a
-  source is not proof.*
+  and age).
+- **Supplied-only:** `confidence` and `risk`. The engine has no evidence for a claim's truth — or for
+  how dangerous it is — so each is present *only* when the host supplies it (via `data-field-confidence`,
+  recipe options, or a domain trust/risk model). Neither is **ever** inferred from relationship
+  presence, and `risk` is **never** defaulted to `0` — *a citation is not certainty, a source is not
+  proof,* and "no risk" is a claim, not a safe blank.
 
 This is a recent, deliberate correctness fix. The previous code computed `confidence: relTotal > 0 ?
 resolvedRatio : 0`, which meant "any citation implies full confidence" — exactly the wrong default for
@@ -762,14 +759,14 @@ Notation is kept LaTeX-compatible (inline math and fenced code blocks translate 
 referenced in prose but not yet drawn — the package dependency graph and host seam (§3.1–3.2), the
 six-phase scheduler timeline and read/write discipline (§4.1–4.2), the registry-to-phase map (§4.3),
 and the recipe-to-platform compilation pipeline (§5.1) — are produced at conversion time from the
-prose descriptions. External citations marked `[TODO: cite]` and the `[key]` placeholders in
+prose descriptions. External citations and bibliography keys in
 [`references.md`](references.md) must be resolved and verified before submission. Cross-references to
 sibling papers use their series numbers; replace with citation keys at conversion time.
 
-## Citations needed
+## Citation coverage
 
-The following external references are cited as `[TODO: cite]` in the text and must be located and
-verified against [`references.md`](references.md) before submission — never fabricated:
+The following external references are cited in the text and have been located in
+[`references.md`](references.md) — never fabricated:
 
 - **Retained-mode vs immediate-mode UI** (§2) — the architectural distinction between a persistent
   object model redrawn from state and per-frame re-issued draw calls.

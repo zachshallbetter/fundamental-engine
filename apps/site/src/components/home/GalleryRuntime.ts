@@ -206,6 +206,11 @@ function initRenderTour(): () => void {
     field?.setRender?.(inView && mode ? mode.dataset.render || "dots" : restingRender());
     const stack = inView ? [...active] : [];
     field?.setOverlay?.(stack.length ? stack : "off");
+    // Reflect the count of readings actually pushed to the overlay surface. The overlay only
+    // applies while the panel is in view (the IntersectionObserver gate above), so this is the
+    // one true signal that a reading is painting — used by the e2e suite to gate its pixel probe
+    // deterministically instead of racing the observer/scroll timing.
+    root.dataset.rtOverlay = String(stack.length);
   };
   const say = (b: HTMLButtonElement) => {
     const name = b.dataset.render ?? b.dataset.overlayMode;

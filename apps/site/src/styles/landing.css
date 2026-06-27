@@ -505,3 +505,28 @@ html[data-field='on'] .hero-antimass:hover {
     display: none;
   }
 }
+
+/* #706 — the Natural chapter's four-field group headings (gravity / electromagnetic / strong / weak,
+   plus a residual "derived & supporting" group). Groups the chapter by fundamental field, not family. */
+.field-group-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 3.5rem 0 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line, rgba(140, 160, 200, 0.16));
+  font-weight: 400;
+}
+.field-group-label .fgl-title {
+  font: 700 1.05rem/1 var(--display, system-ui), sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--text, #f3f6fc);
+}
+.field-group-label .fgl-trans {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3, rgba(200, 212, 230, 0.5));
+}

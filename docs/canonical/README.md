@@ -30,6 +30,7 @@ are authoring surfaces. Canvas is one render surface, not the whole system.
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
 | [`api-stability.md`](api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
+| [`deprecation-plan.md`](deprecation-plan.md) | The migration alias surface: each living alias, its deprecation status, and the proposed removal version (timings pending maintainer sign-off) |
 
 Deeper references live beside this directory: `docs/engine-reference/` (the engine spec —
 `forces-system.md` is the big one), `docs/research/` (the paper family, with its caveat canon in

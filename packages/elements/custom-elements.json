@@ -3210,6 +3210,14 @@
             "name": "RegisterBodyDetail",
             "package": "@fundamental-engine/core"
           }
+        },
+        {
+          "kind": "js",
+          "name": "FIELD_VERSION",
+          "declaration": {
+            "name": "FIELD_VERSION",
+            "package": "@fundamental-engine/core"
+          }
         }
       ]
     },

@@ -15,7 +15,9 @@ import { createField as coreCreateField, compileRecipe } from '@fundamental-engi
 import type { FieldRecipe, FieldHost, FieldHandle, OverlayMode } from '@fundamental-engine/core';
 import { browserHost, createFieldPlatform, applyRecipe, bindData } from '@fundamental-engine/dom';
 import type { FieldPlatform } from '@fundamental-engine/dom';
-import { createField as vanillaCreateField, browserHost as vanillaBrowserHost } from '@fundamental-engine/vanilla';
+import { createField as vanillaCreateField, browserHost as vanillaBrowserHost, FIELD_VERSION as vanillaFieldVersion } from '@fundamental-engine/vanilla';
+import { FIELD_VERSION as reactFieldVersion } from '@fundamental-engine/react';
+import { FIELD_VERSION as elementsFieldVersion } from '@fundamental-engine/elements';
 
 // Reference every frozen VALUE so its removal/rename is a compile error here.
 const FROZEN_VALUES = [
@@ -27,6 +29,11 @@ const FROZEN_VALUES = [
   bindData,
   vanillaCreateField,
   vanillaBrowserHost,
+  // FIELD_VERSION re-exported from each authoring door (#584) — removing/renaming the re-export is a
+  // compile error here.
+  vanillaFieldVersion,
+  reactFieldVersion,
+  elementsFieldVersion,
 ] as const;
 void FROZEN_VALUES;
 

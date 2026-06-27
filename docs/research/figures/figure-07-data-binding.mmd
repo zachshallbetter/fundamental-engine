@@ -1,0 +1,9 @@
+flowchart LR
+  Records[Application records] --> Mapper[RecordMapper]
+  Mapper --> Bodies[Records -> bodies]
+  Mapper --> Edges[Links -> relationship edges]
+  Mapper --> Metrics[State -> supplied metrics]
+  Bodies --> Field[Relational field]
+  Edges --> Field
+  Metrics --> Field
+  Field --> DOM[Feedback to DOM]
