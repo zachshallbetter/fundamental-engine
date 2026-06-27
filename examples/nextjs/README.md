@@ -4,7 +4,7 @@ Shows how to use `@fundamental-engine/react` inside a Next.js App Router project
 
 ## The pattern
 
-`@fundamental-engine` code touches browser APIs. In Next.js, keep it inside a `'use client'` component and load it dynamically with `ssr: false`:
+`@fundamental-engine` code touches browser APIs. In Next.js App Router, mark the field component with `'use client'` — Next.js never executes client components during SSR, so no further guards are needed:
 
 ```tsx
 // app/components/FieldCanvas.tsx
@@ -14,15 +14,19 @@ export function FieldCanvas() {
   return <FieldField render="dots" />;
 }
 
-// app/page.tsx
-import dynamic from 'next/dynamic';
-const FieldCanvas = dynamic(
-  () => import('./components/FieldCanvas').then(m => m.FieldCanvas),
-  { ssr: false }
-);
+// app/page.tsx (a Server Component)
+import { FieldCanvas } from './components/FieldCanvas';
+export default function Home() {
+  return (
+    <>
+      <FieldCanvas />        {/* executed client-side only */}
+      <main>…</main>
+    </>
+  );
+}
 ```
 
-The page itself remains a Server Component — only the field layer is client-side.
+The page stays a pure Server Component. Importing a `'use client'` component into an RSC is the App Router SSR boundary — no `dynamic(…, { ssr: false })` needed (that pattern is for the Pages Router, and throws in RSC).
 
 ## Run it
 

@@ -2,7 +2,7 @@
   "name": "fundamental-example-nuxt",
   "private": true,
   "version": "0.0.0",
-  "description": "Nuxt 3 + @fundamental-engine/vanilla. The engine is loaded in onMounted() inside a <ClientOnly> component — never runs during SSR.",
+  "description": "Nuxt 3 + @fundamental-engine/vanilla. The engine is loaded in onMounted() — never runs during SSR.",
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
@@ -14,8 +14,6 @@
     "nuxt": "^3"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "vue": "^3",
-    "vue-router": "^4"
+    "typescript": "^5"
   }
 }
