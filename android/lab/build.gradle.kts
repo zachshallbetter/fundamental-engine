@@ -34,3 +34,9 @@ kotlin {
 application {
     mainClass.set("com.fundamental.lab.MainKt")
 }
+
+// Run from the Gradle root (android/), not the module dir, so a relative `render <dir>` resolves the
+// same way the CI smoke-check (`ls lab-out/*.png`, run from android/) expects.
+tasks.named<JavaExec>("run") {
+    workingDir = rootProject.projectDir
+}
