@@ -154,15 +154,30 @@ findings are folded back into the drafts before submission.
 
 ## Building a paper for submission
 
-The drafts are self-contained markdown. To produce a preprint PDF from one (once content is settled):
+The drafts are self-contained markdown. A conversion script turns the whole family into LaTeX (and,
+when a TeX engine is present, PDF):
 
 ```bash
-# illustrative; the LaTeX template/toolchain is chosen at conversion time
-pandoc docs/research/01-field-translation-runtime.md \
-  --from gfm --to latex --standalone \
-  --bibliography docs/research/references.bib \
-  -o build/field-translation-runtime.pdf
+pnpm gen:papers            # convert all papers → docs/research/build/{NN-…}.tex (+ .pdf)
+node scripts/papers-to-latex.mjs --tex-only   # .tex only, skip the PDF step
+node scripts/papers-to-latex.mjs 01 03        # only papers 01 and 03
 ```
 
-Conversion notes (notation kept LaTeX-friendly, figures produced from the prose descriptions) live
-at the bottom of each paper.
+`scripts/papers-to-latex.mjs` reads each `docs/research/NN-*.md` and emits a standalone, numbered,
+TOC'd `.tex` via **pandoc**, then builds a `.pdf` with the first available TeX engine. Output lands in
+`docs/research/build/`, which is **gitignored** — it is a build artifact, not checked-in content.
+
+Requirements:
+
+- **pandoc** is required (`pandoc --version`). Without it the script prints install instructions and exits.
+- A **Unicode-native LaTeX engine** is needed for PDFs — the papers use glyphs like `⇄ → ⁿ`, which
+  `pdflatex` cannot typeset. The script prefers `latexmk` driving `xelatex`/`lualatex`, then
+  `tectonic`, then a raw `xelatex`/`lualatex`. With no engine it still writes every `.tex` and tells
+  you how to install one.
+  - macOS: `brew install pandoc` and `brew install --cask mactex-no-gui` (or `brew install tectonic`)
+  - Debian/Ubuntu: `sudo apt-get install pandoc texlive-full`
+
+The script only *converts* the existing markdown — it never authors paper content. Conversion notes
+(notation kept LaTeX-friendly, figures produced from the prose descriptions) live at the bottom of
+each paper. The `references.md` bibliography is exported to `references.bib` when citation keys are
+resolved; the current pipeline cites inline and does not yet wire a `.bib`.
