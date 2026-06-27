@@ -62,6 +62,13 @@ discover → read → compute → state → write → render
 5. **write** — flush state to CSS variables, data attributes, ElementInternals, and thresholded events.
 6. **render** — draw overlays, field lines, and heatmaps from the registries (read-only).
 
+> **Ports.** This architecture — the `FrameScheduler` + the six registries + the platform coordinator,
+> driven by an injected `FieldHost` — now has three language implementations at parity: JS/TS
+> (`@fundamental-engine/dom`), Swift (`FundamentalPlatform`), and **Kotlin** (`:fundamental-platform`:
+> `FrameScheduler` + the six registries + `FieldPlatform`, wiring `read→measure` / `write→flush`). The
+> Kotlin module is pure `kotlin("jvm")` (zero Android deps) and JVM-tested (`FrameSchedulerTests`,
+> `FieldPlatformTests`). See [support-matrix.md](support-matrix.md) for the per-port status.
+
 The platform **owns discover through write**. `createFieldPlatform(root, { strict? })` wires only
 two phases by default — `measure → read` and `flush → write` — and installs a read-phase guard (a
 measurement requested off-phase is recorded, or thrown under `strict`). The remaining phases
