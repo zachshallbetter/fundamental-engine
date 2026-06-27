@@ -59,6 +59,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   `registerFieldProperties()` (`packages/dom/src/register-properties.ts`) is feature-detected,
   idempotent, and a graceful no-op where `CSS.registerProperty` is unavailable or the property is
   already registered. DOM-plane only — no Swift/Android port mirror needed. Closes #677.
+- **`textBodies({ observe })` — opt-in ResizeObserver re-annotation (`@fundamental-engine/dom`).** The
+  boundary spans `textBodies()` emits are a one-time layout snapshot; callers re-annotated on resize by
+  hand. The new `observe` option (`true`, or a debounce in ms — default `100`) wires a debounced
+  `ResizeObserver` on the source inside `annotate()`: each resize disposes the previous spans and
+  re-measures fresh boxes, so the boundary tracks the reflowed text. Default behavior is unchanged
+  (opt-in), it's silently skipped where `ResizeObserver` is unavailable (SSR / older runtimes), and the
+  observer is torn down by the same disposer `annotate()` returns. DOM-plane only — no Swift/Android port
+  mirror needed. Closes #713.
 - **Android port — ParticleShape, visual-snapshot gate, path-aware CI (`android/` + CI).** The final
   follow-ups. **`ParticleShape`** (core): dot / star / polygon / custom unit-vector stamps the host scales
   per particle by size + heat — ported from Swift, wired into the FieldLab renderer + a Shape inspector
