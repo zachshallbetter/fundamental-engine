@@ -129,9 +129,9 @@ Also ported:
   rendering the pool in `onDraw`, tap-to-burst) + `AndroidFieldHost` (implements the core `FieldHost`).
   Builds against the Android SDK.
 
-Not yet ported (follow-up PRs):
-
-- The FieldLab desktop extras (recipe save/export, `path` traces, per-body `data` rings) — see below.
+The core, both host modules (`:fundamental-platform`, `:fundamental-android`), the Compose host, and the
+desktop FieldLab are all ported. Remaining follow-ups are matter-render extras (metaballs / voronoi modes)
+and the declarative `[data-body]` view scanner for the Android host.
 
 ## Building & testing
 
