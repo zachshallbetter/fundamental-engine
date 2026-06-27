@@ -13,8 +13,15 @@ author: "Zach Shallbetter"
 
 > **Status: research draft (preprint, work in progress).** Paper 5 of the Fundamental family — the
 > systems-architecture paper. Claims verified against the codebase and canonical docs as of
-> 2026-06-07. See the [series index](/writings) and *the caveat canon* therein. This is a preprint
+> 2026-06-26. See the [series index](/writings) and *the caveat canon* therein. This is a preprint
 > draft, not canonical product documentation.
+>
+> **Post-verification note (0.8.1).** Three portability additions landed after the original draft and
+> are reflected above where load-bearing: `registerOverlay()` (a public hook for registering custom
+> overlays), the wire-format contract (`PARTICLE_STRIDE` / `PARTICLE_WIRE_VERSION` plus
+> `readParticleChannels`) for transporting particle state across a worker/process boundary, and
+> `headlessHost()` — a DOM-free reference host exported from `@fundamental-engine/core` (#600), which
+> turns the "alternative host" of §3.3 and §6 from hypothetical into shipped.
 
 **Author:** Zach Shallbetter
 **Series:** Fundamental Research Papers, Paper 5 of 8 (the runtime-architecture paper)
@@ -79,7 +86,7 @@ rhetorical rather than structural.
 Fundamental's answer is to separate *what the field does* from *how the browser participates in it*, and
 to let the two communicate through exactly one injected interface:
 
-- A renderer-agnostic **core** (`Fundamental`) computes field, force, particle, metric,
+- A renderer-agnostic **core** (`@fundamental-engine/core`) computes field, force, particle, metric,
   diagnostic, and conformance logic against plain data. It imports no DOM globals.
 - A browser **platform** (`@fundamental-engine/dom`) owns DOM participation: measurement, state, feedback,
   relationships, visual bindings, overlays, scheduling, and linting.
@@ -173,7 +180,7 @@ Fundamental's runtime is split across packages whose dependency direction is str
 package hierarchy is given in `docs/canonical/platform-architecture.md`):
 
 ```
-Fundamental      renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
+@fundamental-engine/core  renderer-agnostic field / force / particle / metric / diagnostic / conformance logic.
                     Computes field behavior against plain data. Imports no DOM globals.
 @fundamental-engine/dom  DOM participation: measurement, state, feedback, relationships, visual bindings,
                     overlays, scheduling, linting — plus the browser host adapter.
@@ -375,7 +382,7 @@ Each registry owns exactly one kind of DOM participation and one phase
 |---|---|---|---|
 | `MeasurementRegistry` | frame-stable geometry/visibility for bodies | read | one snapshot per frame; prunes disconnected elements; `getRect` override for closed shadow roots |
 | `StateRegistry` | typed, observable element state (number/bool/string/vector2) | compute / state | *internal truth*, distinct from ARIA; only feedback may write it to the DOM |
-| `FeedbackRegistry` | CSS-variable + thresholded-event write-back | write | the *single writer* of `--field-*`; hysteretic, debounced events; mirrors `--field-*` → `--forces-*` |
+| `FeedbackRegistry` | CSS-variable + thresholded-event write-back | write | the *single writer* of `--field-*`; hysteretic, debounced events; mirrors `field:*` → `forces:*` events (legacy `--forces-*` CSS vars removed) |
 | `RelationshipRegistry` | typed graph of connections between bodies | compute | normalizes native HTML/ARIA links into one typed graph; tracks unresolved edges |
 | `VisualBindingRegistry` | binds expressive visual layers to semantic sources | write | a decorative visual is `aria-hidden`; a representation must bind a source |
 | `OverlayRegistry` | relationship/field-line/diagnostic overlays | render | render-only; reads from relationship + measurement registries; mutates no physics |
@@ -385,10 +392,10 @@ Three properties are worth drawing out, because they are what make participation
 First, the `StateRegistry` holds internal truth that is explicitly *not* accessibility state, and the
 `FeedbackRegistry` is the only module permitted to turn that state into DOM-visible output. A single
 writer for CSS variables avoids the races and stale values that plague systems where any handler can
-poke at `element.style`. The feedback flush writes a bound state value to its CSS variable and, during
-the migration window, mirrors `--field-density` to the legacy `--forces-density`; threshold events
-fire only on enter/exit edges via a `Thresholder` with hysteresis and debounce, so there are no noisy
-per-frame DOM events.
+poke at `element.style`. The feedback flush writes a bound state value to its CSS variable (the legacy
+`--forces-*` CSS variables have been removed); threshold events fire only on enter/exit edges via a
+`Thresholder` with hysteresis and debounce, so there are no noisy per-frame DOM events, and they still
+emit `forces:*` event aliases for compatibility.
 
 Second, the `RelationshipRegistry` encodes the observation that *the DOM is a tree, but interfaces are
 graphs.* Rather than invent a parallel graph, it normalizes the relationships the platform *already
@@ -593,7 +600,9 @@ all — which is the existence proof that the field is separable from any one wa
 **A headless target, today.** The conformance harness (§5.3) is a *fourth* consumer of the same core,
 and the most demanding one: it runs the production physics with no browser, no canvas, and no DOM,
 deterministically. A system whose physics can be executed headlessly is, by construction, a system
-whose physics is not fused to the renderer.
+whose physics is not fused to the renderer. As of 0.8.1 this is no longer only a test harness: a
+DOM-free reference host, `headlessHost()`, ships as a public export from `@fundamental-engine/core`
+(#600), so an alternative host is no longer hypothetical — the core ships with one.
 
 **A path to new targets.** Because the only environment seam is `FieldHost`, a new render target —
 WebGL, WebGPU, a native shell, or a different document — is reachable by writing a new host, not by
@@ -626,12 +635,13 @@ The portability claim is bounded, and we state the bounds plainly.
   DOM global, so it does not break the empty-allowlist boundary — but it is the reason we do not claim
   the platform owns *all* DOM writes. It is tracked for migration behind the registries (Phase 5;
   #228).
-- **There is no shipping non-DOM production renderer yet.** Portability here is demonstrated by the
-  *proven boundary plus host injection* and by the headless harness, **not** by a second production
-  renderer such as a native or WebGL backend. The architecture makes such a backend a host-
-  implementation task rather than an engine rewrite; that it has not yet been built is a fact, not a
-  contradiction. The claim is "the engine is portable, and the boundary that makes it so is enforced,"
-  not "Fundamental ships on N renderers."
+- **There is no shipping production renderer (WebGL, native) yet.** Portability here is demonstrated by
+  the *proven boundary plus host injection*, by the headless harness, and — as of 0.8.1 — by a shipped
+  DOM-free reference host (`headlessHost()`, exported from `@fundamental-engine/core`, #600), **not** by
+  a second production renderer such as a native or WebGL backend. The architecture makes such a backend
+  a host-implementation task rather than an engine rewrite; that it has not yet been built is a fact,
+  not a contradiction. The claim is "the engine is portable, and the boundary that makes it so is
+  enforced," not "Fundamental ships on N renderers."
 
 These limits do not weaken the central claim; they sharpen it. The contribution is an *enforced*
 separation and a *checkable* portability story, stated to exactly the precision the code supports.
@@ -727,7 +737,8 @@ paradigm itself.
 Every architectural claim in this paper is checkable against the repository. The load-bearing anchors:
 
 - **The host boundary.** The `FieldHost` interface: `packages/core/src/core/host.ts`. The browser
-  adapter: `packages/dom/src/browser-host.ts` (`browserHost()`). The mandatory-host entry point:
+  adapter: `packages/dom/src/browser-host.ts` (`browserHost()`). The shipped DOM-free reference host:
+  `headlessHost()`, exported from `@fundamental-engine/core` (#600). The mandatory-host entry point:
   `packages/core/src/core/field.ts` (`createField` throws without `opts.host`).
 - **The proof.** The empty-allowlist boundary test: `packages/core/src/core/dom-boundary.test.ts`
   (`const ALLOW = new Set<string>()`). The legacy element write-back path it documents:
