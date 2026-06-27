@@ -12,9 +12,17 @@ author: "Zach Shallbetter"
 # Fundamental: A Field Translation Runtime for Relational DOM Interfaces
 
 > **Status: research draft (preprint, work in progress).** Paper 1 of the Fundamental family — the
-> flagship paradigm paper. Claims verified against the codebase and canonical docs as of 2026-06-07. See the
+> flagship paradigm paper. Claims verified against the codebase and canonical docs as of 2026-06-26. See the
 > [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not canonical
 > product documentation.
+>
+> **Post-verification note (0.8.1, 2026-06-26).** Three additions since first draft extend, but do not
+> revise, this paper's argument. `field.addEdge()` adds programmatic typed relationships, broadening the
+> `RelationshipRegistry` story (§5.2) from DOM-derived edges to author-declared ones. `registerOverlay()`
+> lets a consumer register a custom overlay draw pass through the `OverlayRegistry`, and
+> `readParticleChannels()` exposes per-particle channel data for non-visual surfaces — both reinforcing
+> the signals-first / multi-surface posture (§8.7). These ride on a documented wire-format contract for
+> the particle/channel read-out. All are additive API; no claim above is retracted.
 
 **Author:** Zach Shallbetter
 **Series:** Fundamental Research Papers, Paper 1 of 8 (the flagship paradigm paper)
@@ -101,7 +109,7 @@ This paper contributes the **system** behind Fundamental:
    registries that enforce read/write discipline, so reads never thrash against writes and the loop
    stays consistent across scroll, resize, and reflow.
 4. **A force model with explicit epistemics** (§6): the `field()`/`apply()` split (structure vs
-   cause), per-force *passports*, and a five-way *truth-mode* taxonomy that keeps the system honest
+   cause), per-force *passports*, and a six-way *truth-mode* taxonomy that keeps the system honest
    about which behaviors are physics, which are design, and which are expressive.
 5. **A uniform authoring contract** (§7): one `[data-body]` markup that compiles identically across
    native HTML, web components, and React, plus an intent compiler and a conformance-gated *recipe*
@@ -284,7 +292,7 @@ converts "renderer-agnostic" from a design aspiration into a continuously checke
 ### 4.3 Scale
 
 For a sense of proportion: the core is on the order of 80 source modules (~12.6k non-test lines) plus
-~55 test modules; the platform is ~16 source modules (~1.6k non-test lines) plus its tests. The system implements 34
+~55 test modules; the platform is ~16 source modules (~1.6k non-test lines) plus its tests. The system implements 36
 forces, 8 cosmological presets, 5 global formations, 16+ render/diagnostic modes, 6 platform
 registries, and a 6-phase scheduler, with 560+ deterministic tests across the five packages (core,
 platform, elements, vanilla, plus the scheduler/lint suites within platform). (Exact counts drift with the code; these are orders of magnitude as of the verification
@@ -451,16 +459,16 @@ that the classification is *data*, validated against code, not prose.
 
 ### 6.4 The catalog, in brief
 
-The 35 forces fall into three families:
+The 36 forces fall into three families:
 
 - **Canonical (9):** `attract`, `repel`, `swirl`, `stream`, `viscosity`, `jet`, `tether`, `wall`,
   `sink` — designed interface verbs with bounded, legible falloff.
 - **Natural (8):** `gravity`, `charge`, `magnetism`, `thermal`, `collide`, `diffuse`, `propagate`,
   `memory` — real field laws (softened inverse-square, Coulomb, Lorentz, Langevin agitation,
   elastic collision, diffusion, the wave equation, and a decaying occupancy grid).
-- **Designed-extended (~18):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`,
-  `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, `pigment`, `fieldflow`, `warp`, and the
-  `resonate` / `spotlight` modifiers.
+- **Designed-extended (19):** `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`, `wind`,
+  `cohesion`, `pressure`, `link`, `morph`, `hunt`, `spawn`, `pigment`, `fieldflow`, `screen`, `warp`,
+  and the `resonate` / `spotlight` modifiers.
 
 Eight **presets** (`blackhole`, `whitehole`, `star`, `quasar`, `galaxy`, `nebula`, `tornado`,
 `fountain`) compose primitives into cosmology *with no new engine code*: a preset expands one DOM
@@ -554,7 +562,7 @@ the same platform registries:*
 
 - **Native HTML** — the platform runtime attaches to any element with `data-body`; the same markup
   works unchanged in Astro, Svelte, Vue, or static HTML.
-- **Web component** — `<field-root>` (with `<forces-field>` as a compatibility alias) wraps content
+- **Web component** — `<field-root>` (with `<field-field>` as an equivalent alias; prefer `<field-root>` in new code) wraps content
   and scans for bodies; the platform runtime is the default.
 - **React** — `<FieldField>` renders the same contract and maps props to `data-*` tokens;
   `useFieldField(options)` returns the field handle directly.
@@ -681,6 +689,19 @@ Three case studies anchor the family:
 Together these show the same runtime spanning reading, trust, and operations, each on a familiar
 interface archetype rather than a bespoke demo.
 
+### 8.7 Signals-first mode: the field as pure computation layer
+
+The logical extreme of this principle is the **signals-first mode**: `render="none"` (now the engine
+default, #538) runs the full simulation — forces, registries, feedback, all six scheduler phases —
+and writes all semantic signals to the DOM (`data-field-density`, `data-field-attention`,
+`data-field-temperature`, and the corresponding CSS custom properties) *while drawing nothing at
+all.* The field becomes a pure computation layer: attention measured, memory accreted, relationships
+tracked, all without a single particle on screen. Visual representation then becomes explicitly
+opt-in (`render="dots"`, `render="trails"`, etc.) rather than the default. This is not a
+degraded path — it is a first-class consumer posture. A data-driven agent, a server-side renderer,
+or any non-visual surface reads the same field state as the visual user sees animated; the physics
+is the common substrate, representation is a choice above it.
+
 ---
 
 ## 9. Implementation status and limitations
@@ -693,9 +714,10 @@ aspirational behavior and then state the model's deliberate limitations.
 **Shipped** (verifiable in the registry, the manual config, the render-mode catalog, the tests, and
 the package exports): the five packages; the `FrameScheduler` and all six registries plus
 `lintPlatform()`; the platform runtime as the default for `<field-root>` (Phase D) with the
-guarded renderer-agnostic core; all 35 forces and all 16+ render/diagnostic modes (including
-`topology`, `inspector`, `causality`, `prediction`); the `field.flowTo()`/`clearFlow()` controlled
-flow API; the Reading Field demo, accessibility preview, narrative reveal, and PNG/SVG diagnostic
+guarded renderer-agnostic core; all 36 forces and all 16+ render/diagnostic modes (including
+`topology`, `inspector`, `causality`, `prediction`); signals-first mode (`render="none"` as the
+engine default, #538 — full simulation with no visual output); the `field.flowTo()`/`clearFlow()`
+controlled flow API; the Reading Field demo, accessibility preview, narrative reveal, and PNG/SVG diagnostic
 export; the native-HTML / web-component / React authoring surfaces; and the Natural Field Translation
 classification.
 

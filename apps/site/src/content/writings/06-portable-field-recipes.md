@@ -12,7 +12,7 @@ author: "Zach Shallbetter"
 # Recipes as Portable Field Programs for Interface Behavior
 
 > **Status: research draft (preprint, work in progress).** Paper 6 of the Fundamental family — the
-> authoring-model paper. Claims verified against the codebase and canonical docs as of 2026-06-07.
+> authoring-model paper. Claims verified against the codebase and canonical docs as of 2026-06-26.
 > See the [series index](/writings) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
 
@@ -198,6 +198,13 @@ A `FieldRecipe` carries:
 - **`relationships`** (optional) — typed connections between conceptual endpoints (`{ from: 'claim',
   to: 'source', type: 'supports' }`).
 - **`render`** — the render-layer stack (`particles`, `trails`, `links`, `heatmap`, …).
+
+> **Naming note — `particles` (recipe layer) vs `render="dots"` (element attribute).** The recipe
+> `RenderLayer` token for the base matter layer is `particles` (valid in `schema.ts`), but the
+> `<field-root>` custom element's render attribute spells the same surface `render="dots"`. They
+> coexist deliberately: the `RenderLayer` lane name predates the element-attribute rename, and the two
+> live in different lanes (recipe data vs. element authoring). A consumer must not write
+> `render="particles"` on `<field-root>` — the element attribute value is `dots`.
 - **`accessibility`** — *required.* An `AccessibilityRecipe` of two non-empty strings:
   `reducedMotion` (what replaces motion under `prefers-reduced-motion`) and `meaningWithoutMotion`
   (how meaning survives without color or motion). No recipe is motion-only.
@@ -438,6 +445,14 @@ asserts zero problems, asserts that no primitive is ever a render/diagnostic mod
 declared primitives equal the distinct body tokens for every recipe. The catalog is therefore not just
 documentation — it is sixty-four passing conformance fixtures. A record that referenced a non-existent
 token or omitted its accessibility fallback would fail the build.
+
+**The catalog is also frozen.** The 64-recipe `FIELD_RECIPES` catalog is a locked set: new recipes are
+added to a separate `EXPERIMENTAL_RECIPES` collection rather than the gated catalog, so the four-tier,
+sixteen-each structure cannot drift. This is a *collection*-level freeze and is orthogonal to the
+per-record `status` lane: a recipe inside the gated catalog may carry `status: 'experimental'`
+(implementation-maturity metadata, §3.1), which is distinct from membership in the `EXPERIMENTAL_RECIPES`
+collection (catalog placement). A record can therefore be a frozen-catalog member *and* status-experimental
+at once; the two lanes answer different questions.
 
 ### 5.3 The count cannot drift: `check:readme`
 
