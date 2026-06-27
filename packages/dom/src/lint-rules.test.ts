@@ -9,7 +9,7 @@ function makePlatform() {
     root: fakeRoot,
     measure: { has: () => false, elements: () => [] },
     state: { elements: () => [] },
-    feedback: { boundVars: () => [] },
+    feedback: { boundVars: () => [], feedbackActivity: () => [] },
     relationships: { size: 0 },
     visuals: { lint: () => [] },
     overlays: { all: () => [] },

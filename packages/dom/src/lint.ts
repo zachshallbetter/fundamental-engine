@@ -29,6 +29,7 @@ export type LintCode =
   | 'feedback-vars-unwritten'
   | 'feedback-writes-unread'
   | 'feedback-reads-unwritten'
+  | 'feedback-never-written'
   | 'feedback-lane-inert'
   | 'compositing-fill-trap';
 
@@ -235,6 +236,35 @@ export function lintInertFeedback(feedback: FeedbackRegistry): PlatformLintWarni
   return out;
 }
 
+/** Default flush count after which a still-empty feedback body is considered "never written". */
+export const FEEDBACK_NEVER_WRITTEN_FRAMES = 120;
+
+/**
+ * The RUNTIME half of the silent contract gap, the companion to `lintFeedbackWritesUnread` (which is
+ * static/CSS-based): a `data-feedback` body that has lived through many `flush()` calls but never once
+ * received a non-zero value. The CSS consumer may be wired correctly, yet the body still reacts to
+ * nothing — its density (or any bound channel) stays at rest forever, usually because it was never
+ * measured, sits outside the field, or no force ever reaches it. Reads `FeedbackRegistry.feedbackActivity()`
+ * (accumulated in `flush()`); a body under the threshold is still warming up and is left alone, so this
+ * only fires once the field has had a fair chance to write. Pure (reads the registry, never mutates).
+ */
+export function lintFeedbackNeverWritten(
+  feedback: FeedbackRegistry,
+  afterFrames: number = FEEDBACK_NEVER_WRITTEN_FRAMES,
+): PlatformLintWarning[] {
+  const out: PlatformLintWarning[] = [];
+  for (const { element, flushes, written } of feedback.feedbackActivity()) {
+    if (written || flushes < afterFrames) continue;
+    out.push({
+      code: 'feedback-never-written',
+      severity: 'warning',
+      element,
+      message: `data-feedback body has been bound for ${flushes} frames but never received a non-zero value — the reciprocal loop is inert (it is likely unmeasured, outside the field, or no force reaches it)`,
+    });
+  }
+  return out;
+}
+
 /** Feedback must write CSS custom properties, not ARIA/attributes — state is not accessibility state. Pure. */
 export function lintFeedbackVars(feedback: FeedbackRegistry): PlatformLintWarning[] {
   const out: PlatformLintWarning[] = [];
@@ -348,6 +378,7 @@ export function lintPlatform(platform: PlatformLike, opts: LintOptions = {}): Pl
     ...lintOverlayLinks(platform.overlays, platform.relationships),
     ...lintFeedbackVars(platform.feedback),
     ...lintInertFeedback(platform.feedback),
+    ...lintFeedbackNeverWritten(platform.feedback),
     ...lintVisuals(platform.visuals),
     ...lintSchedulerViolations(platform.scheduler),
   ];
