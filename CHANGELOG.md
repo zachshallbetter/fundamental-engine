@@ -13,6 +13,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   catalog (`MANUAL_FORCES`) and fails CI if any current-truth doc (canonical, engine-reference, ROADMAP,
   BACKLOG, CLAUDE, README) states a different total — catching the recurring force-count drift by hand.
   Closes #710.
+- **Silent-contract-gap CI report.** `scripts/check-silent-contract.mjs` (`pnpm check:contract-gap`) runs
+  `lintPlatform`'s silent-contract-gap detection (the canonical rule bodies, lifted from the built
+  `@fundamental-engine/dom`) over the built site pages in headless Chromium and emits a per-page,
+  per-code count. A new advisory `silent-contract-gap` job in `pr-checks.yml` diffs base vs head and
+  surfaces any NEW gap a PR introduces (a `[data-feedback]` body whose `--field-*` channel no CSS rule
+  reads). Report-only for now (`--fail-on-new` flips it to a hard gate). Closes #717.
 
 ### Docs
 
