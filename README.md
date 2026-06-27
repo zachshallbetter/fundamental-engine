@@ -122,6 +122,20 @@ A body is any element with a `data-body` attribute. The value is one or more for
 
 Engaging an element (hover, focus, tap) widens its range and amplifies its strength, so the field answers interaction.
 
+## Native ports
+
+The DOM is the first surface, not the only one. The engine is ported natively to other platforms,
+each mirroring the same model (forces, recipes, the body contract) and held to the JS core by a shared
+golden-conformance gate:
+
+- **Swift (Apple platforms)** — a native Swift port in [`swift/`](swift/), running on a Metal/SwiftUI
+  host. See the [Swift guide](https://fundamental-engine.com/docs/guides/swift).
+- **Kotlin (Android)** — a native Kotlin port in [`android/`](android/) (core + platform + a Jetpack
+  Compose host + the lab), at parity with Swift and JS. See the
+  [Kotlin guide](https://fundamental-engine.com/docs/guides/kotlin).
+
+The JS core remains the source of truth; engine/physics fixes land on every plane.
+
 ## The handle
 
 `createField` / `new FieldField` / `<field-root>` all return (or wrap) the same `FieldHandle` — the

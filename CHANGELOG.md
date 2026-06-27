@@ -7,6 +7,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-27
+
+The Android/Kotlin port reaches Swift/JS parity, Consumer DX & API additions land, the
+testing/QA spine fills out, and the research family doubles. All package API changes are
+additive (the frozen surface is intact).
+
 ### Internal
 
 - **Frame-driving test harness for element consumers + capture/release events (core test-support).** A
