@@ -3,7 +3,10 @@ package com.fundamental.lab
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Box
 import com.fundamental.core.math.Vec3
+import com.fundamental.core.recipe.FieldRecipe
+import com.fundamental.core.recipe.compileRecipe
 import com.fundamental.core.runtime.FieldController
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -57,6 +60,36 @@ fun forceScene(e: ForceEntry): LabScene = LabScene(
         "charge", "magnetism" -> c.particles.forEachIndexed { i, p -> p.charge = if (i % 2 == 0) 1f else -1f }
         "hunt" -> c.particles.forEachIndexed { i, p -> p.species = i % 2 }
     }
+}
+
+/** Map a recipe's first render layer to a lab render mode. */
+private fun recipeMode(render: List<String>): LabMode = when (render.firstOrNull()) {
+    "trails" -> LabMode.TRAILS
+    "links" -> LabMode.LINKS
+    "metaballs", "heatmap" -> LabMode.GLOW
+    else -> LabMode.DOTS
+}
+
+/** Compile a canon recipe into a runnable scene: place its compiled bodies, prep matter as needed. */
+fun recipeScene(r: FieldRecipe): LabScene = LabScene(
+    name = r.name, blurb = r.intent, token = r.primitives.firstOrNull(), renderMode = recipeMode(r.render),
+) { c, w, h ->
+    val compiled = compileRecipe(r)
+    val n = compiled.bodies.size.coerceAtLeast(1)
+    compiled.bodies.forEachIndexed { i, reg ->
+        val b = reg.makeBody()
+        b.isEngaged = true
+        val cx: Float; val cy: Float
+        if (compiled.bodies.size == 1) { cx = w / 2; cy = h / 2 } else {
+            val a = i.toDouble() / n * 2.0 * PI
+            cx = (w / 2 + cos(a) * w * 0.24).toFloat(); cy = (h / 2 + sin(a) * h * 0.2).toFloat()
+        }
+        b.box = Box(center = Vec3(cx, cy, 0f), halfExtents = Vec3(44f, 44f, 0f))
+        c.addBody(b)
+    }
+    val toks = r.primitives.toSet()
+    if ("charge" in toks || "magnetism" in toks) c.particles.forEachIndexed { i, p -> p.charge = if (i % 2 == 0) 1f else -1f }
+    if ("hunt" in toks) c.particles.forEachIndexed { i, p -> p.species = i % 2 }
 }
 
 /** The tour — the iconic showcase scenes (mirror of the Swift FieldLab tour, scoped to shipped features). */

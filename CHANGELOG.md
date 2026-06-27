@@ -34,6 +34,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
   iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
   filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+- **Android port — recipes: the locked 64-recipe canon (`android/`).** Ported the recipe schema,
+  validation, and the `compileRecipe` compiler (a `recipe` package). The **64-recipe canon** is decoded
+  at runtime from the shared `data/recipes.json` (synced into the core's resources by a `syncRecipes`
+  Gradle task — one source of truth with the JS catalog and Swift bundle, never hand-retyped); `kotlinx-
+  serialization-json` becomes a core `implementation` dep (pure Kotlin, so the core stays platform-free).
+  The FieldLab sidebar gained a **"The canon — 64 recipes"** section: selecting one compiles it and runs
+  its bodies live. 5 new JVM tests (66 core total): all 64 load, every recipe validates against the
+  standard registry, every body token is a registered force, all four tiers present, compile produces
+  runnable bodies. Recipe save/export remains a follow-up. Advances #652.
 - **Android port — overlay readings (`android/`).** The field diagnostics, in a pure `overlay` package
   computed as plain `Segment`s any host draws: `forceAt` (the still-probe net force, ported from
   `streamlines.ts`) → **streamlines** / **force-vectors**; the field-line tracer over `netField` →

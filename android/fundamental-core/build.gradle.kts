@@ -8,8 +8,9 @@ plugins {
 }
 
 dependencies {
-    // type-safe decode of the cross-plane golden vectors (test-only)
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // decode the embedded 64-recipe canon at runtime + the cross-plane golden in tests.
+    // kotlinx-serialization is pure Kotlin (no Android), so the core stays platform-free.
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -50,4 +51,23 @@ sourceSets.test {
 
 tasks.named<ProcessResources>("processTestResources") {
     dependsOn(syncGolden)
+}
+
+// ── The locked 64-recipe canon — single source of truth ──────────────────────────────────────────
+// `data/recipes.json` is the shared canon (same file the JS catalog and Swift bundle use). We sync it
+// onto the main classpath so `FieldRecipes` decodes the identical 64 recipes — never hand-retyped.
+val recipesSource = rootProject.file("../data/recipes.json")
+
+val syncRecipes by tasks.registering(Copy::class) {
+    description = "Sync the locked 64-recipe canon into main resources."
+    from(recipesSource)
+    into(layout.buildDirectory.dir("recipe-resources"))
+}
+
+sourceSets.main {
+    resources.srcDir(layout.buildDirectory.dir("recipe-resources"))
+}
+
+tasks.named<ProcessResources>("processResources") {
+    dependsOn(syncRecipes)
 }

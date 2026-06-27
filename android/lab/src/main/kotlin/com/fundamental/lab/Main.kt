@@ -1,5 +1,6 @@
 package com.fundamental.lab
 
+import com.fundamental.core.recipe.FieldRecipes
 import com.fundamental.core.runtime.FieldController
 import java.awt.image.BufferedImage
 import java.io.File
@@ -19,9 +20,11 @@ fun main(args: Array<String>) {
 
 /** The headless render set: the tour + a representative spread of catalog forces. */
 private fun renderScenes(): List<LabScene> =
-    tourScenes() + listOf("gravity", "magnetism", "hunt", "wall", "spawn", "pressure")
-        .mapNotNull { ForceCatalog.entry(it) }
-        .map { forceScene(it) }
+    tourScenes() +
+        listOf("gravity", "magnetism", "hunt", "wall", "spawn", "pressure")
+            .mapNotNull { ForceCatalog.entry(it) }
+            .map { forceScene(it) } +
+        FieldRecipes.all.filter { it.tier == "core" }.take(2).map { recipeScene(it) }
 
 private fun slug(name: String) = name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-')
 
