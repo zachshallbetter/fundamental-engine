@@ -1,0 +1,16 @@
+{
+  "name": "fundamental-example-astro",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Astro + @fundamental-engine/vanilla. The engine runs inside a <script> tag — always client-only in Astro, no special guards needed.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fundamental-engine/vanilla": "^0.9.0",
+    "astro": "^5"
+  }
+}
