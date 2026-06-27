@@ -66,7 +66,7 @@ equal to shipped ones.*
 | **capture** (sink) | `p.cap = b`, held then released — **shipped** | dock / collapse the element via `data-dock` — **shipped** | fire `field:captured` / `field:released` — **shipped** |
 | **relocate** (warp) | `warp` throat → paired body, conserved — **shipped** | teleport offset to the pair via `data-warp` — **shipped** | — |
 | **emit** (spawn) | new particle — **shipped** | clone a decorative template via `data-emit` — **shipped** | — |
-| **trigger** (threshold) | sets heat / state — **shipped** | toggle a class — **planned** (no built-in; do it in a `data-on` handler) | dispatch a `CustomEvent` via `data-on` — **shipped** |
+| **trigger** (threshold) | sets heat / state — **shipped** | toggle a class via `data-class` — **shipped** | dispatch a `CustomEvent` via `data-on` — **shipped** |
 | **feedback** (gathered field → output) | `--d` / density — **shipped** | `--field-*` vars + `data-field-*` bands — **shipped** | — |
 
 "Apply a force to a DOM element" = it consumes the *same* impulse a particle would, but as a
@@ -74,12 +74,14 @@ equal to shipped ones.*
 influence, on crossing a threshold, becomes a **signal**.
 
 **The honest summary:** every influence kind is now wired for particles, and elements consume impulse,
-constraint, feedback, capture (`data-dock`), relocate (`data-warp`), and emit (`data-emit`). The
-element consumers are **opt-in by attribute**, so they never surprise existing `data-move` content, and
-they stay accessible — docked elements are restored on release, emitted clones are `aria-hidden`. The
-one still-planned cell is the element `trigger` *class toggle* (do it in a `data-on` handler today).
-Element relocate is a **transform teleport**, not a DOM-tree reorder: reordering nodes would disrupt
-focus and reading order, so it is intentionally avoided.
+constraint, feedback, capture (`data-dock`), relocate (`data-warp`), emit (`data-emit`), and trigger
+(`data-class`). The element consumers are **opt-in by attribute**, so they never surprise existing
+`data-move` content, and they stay accessible — docked elements are restored on release, emitted clones
+are `aria-hidden`. The element `trigger` *class toggle* is `data-class="dense:lit, captured:full"`: the
+same `trigger:value` grammar `data-on` uses, but the value is a class name added while the trigger
+holds and removed when it releases (the no-JS counterpart of a `data-on` handler calling
+`classList.toggle`). Element relocate is a **transform teleport**, not a DOM-tree reorder: reordering
+nodes would disrupt focus and reading order, so it is intentionally avoided.
 
 ## Body roles
 
@@ -186,13 +188,23 @@ alias window (`FeedbackRegistry`, `shadow.ts`).
 - `field:captured` / `field:released` — a sink begins accreting (rising edge of `accreted > 0`) and
   releases on supernova (falling edge); also fired on a docked element when it docks / is restored.
 - `field:relocated` — a `[data-warp]` element teleports through a warp throat to its pair.
+- `field:saturated` — a sink hit its capacity (fired from `supernova`, the saturation transition);
+  `field:released` is its paired down-edge.
+- `field:entered` / `field:exited` — a body's own gathered density crossed the 0.6 / 0.2 levels
+  (hysteretic + debounced; distinct from `field:lit`/`field:dim`, which carry the neighbour-spillover
+  lit channel).
+- `field:attention-shifted` / `field:attention-settled` — a body's conserved-attention multiplier
+  crossed (only when attention is on).
+- `field:entropy-warning` / `field:entropy-cleared` — a body's measured local entropy crossed.
+- `field:memory-threshold` / `field:memory-faded` — an `addEdge` relationship's `memory` crossed
+  (dispatched on the source body's element).
 - **any event name you bind via `data-on`** — e.g. `data-on="captured:field:dock, dense:field:lit"`.
 
 Every `field:*` here mirrors to its `forces:*` twin during the alias window.
 
-**Names reserved, not yet dispatched (planned):** `field:saturated`, `field:entered`, `field:exited`,
-`field:attention-shifted`, `field:relationship-strengthened`, `field:memory-threshold`,
-`field:entropy-warning` — the agent-threshold events, still wiring up.
+**Names reserved, not yet dispatched (planned):** `field:relationship-strengthened` — the designed
+relationship-strength dynamics rarely cross a fixed level cleanly, so it is left reserved until a use
+case lands.
 
 **Edge nuance.** `field:captured`/`released` are edge-debounced on `accreted > 0`. Release is fired
 directly from `supernova` so a same-frame fill-and-release never drops it; the rising-edge capture is
@@ -235,7 +247,7 @@ SVG is a bound representation, not the meaning. Particles and contours are **exp
 Field Agent Consumption Model
   Agent types:        particle · element · relationship · user · layout · data · event   (all shipped)
   Influence kinds:    impulse · constraint · capture · relocate · emit · trigger · feedback
-                      (per-agent status in the matrix; only the element trigger class-toggle is planned)
+                      (per-agent status in the matrix; all cells now shipped)
   Body roles:         source · density receiver · force target · event host              (all shipped)
   Submodel — Body Matter Interaction:
     source · attract/repel/shape · capture (sink) · hold · release · expose feedback     (shipped)
