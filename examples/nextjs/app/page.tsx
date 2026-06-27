@@ -1,12 +1,9 @@
-import dynamic from 'next/dynamic';
-
-// Belt-and-suspenders: even though FieldCanvas is 'use client', dynamic ssr:false
-// guarantees Next.js never executes engine code during SSR — the component is
-// injected after hydration only.
-const FieldCanvas = dynamic(
-  () => import('./components/FieldCanvas').then((m) => m.FieldCanvas),
-  { ssr: false },
-);
+// In App Router, importing a 'use client' component from a Server Component is
+// already enough — Next.js never executes client components during SSR. The
+// `dynamic(…, { ssr: false })` pattern is for the Pages Router or for Client
+// Components that want to lazy-load another Client Component; it throws when
+// used in a Server Component (Next.js 13+).
+import { FieldCanvas } from './components/FieldCanvas';
 
 export default function Home() {
   return (
