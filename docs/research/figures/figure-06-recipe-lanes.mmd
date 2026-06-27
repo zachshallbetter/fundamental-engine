@@ -1,0 +1,12 @@
+flowchart TD
+  Recipe[FieldRecipe] --> Intent[Concept / intent lane]
+  Recipe --> Tokens[Runtime-token lane
+passported forces only]
+  Recipe --> Metrics[Metric lane]
+  Recipe --> Diagnostics[Diagnostic lane]
+  Recipe --> Conditions[Condition lane]
+  Recipe --> A11y[Required reduced-motion equivalent]
+  Tokens --> Gate[validateRecipe conformance gate]
+  Metrics --> Gate
+  Diagnostics --> Gate
+  A11y --> Gate

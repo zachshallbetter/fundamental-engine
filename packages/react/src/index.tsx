@@ -16,7 +16,14 @@
 import { useEffect, useRef } from 'react';
 import type { CSSProperties, ReactElement, RefObject } from 'react';
 import { FIELD_CANVAS_STYLE, type FieldHandle, type FieldOptions, type OverlayInput } from '@fundamental-engine/core';
-import { createBrowserField } from '@fundamental-engine/dom';
+import {
+  createBrowserField,
+  bindData,
+  type BindDataOptions,
+  type DataBinding,
+  type DataBindingInspection,
+  type RecordMapper,
+} from '@fundamental-engine/dom';
 
 export interface FieldFieldProps extends FieldOptions {
   className?: string;
@@ -148,6 +155,64 @@ export function useFieldField(opts: FieldOptions = {}): {
   return { canvasRef, fieldRef };
 }
 
+/**
+ * The React wrapper for `bindData()` — drive a live field from React state. Records map to bodies
+ * (via `mapper`), a recipe frames the field, and `bindData` does the record → body diffing
+ * (added/removed records enter/decay rather than popping). Attach `containerRef` to your own host
+ * element; whenever `records` changes, the hook calls `binding.update(records)` so the field stays
+ * in step with React state — no manual mount/update wiring.
+ *
+ * ```tsx
+ * const { containerRef, inspect } = useForcesData(results, toBody, { recipe: 'search-relevance-field' });
+ * return <div ref={containerRef} />;   // inspect() → { records, bodies, relationships } | null
+ * ```
+ *
+ * The hook owns the binding's lifecycle: created on the first render the container ref is set,
+ * updated on each `records` change, and destroyed on unmount. `inspect()` reads the binding's live
+ * metrics on demand (records/bodies/relationships counts), and `bindingRef` is the escape hatch to
+ * the full `DataBinding` (`ids()`, `applied()`, …) for advanced consumers. Mirrors `useFieldField`.
+ */
+export function useForcesData<T>(
+  records: T[],
+  mapper: RecordMapper<T>,
+  options: BindDataOptions<T> = {},
+): {
+  containerRef: RefObject<HTMLDivElement | null>;
+  bindingRef: RefObject<DataBinding<T> | null>;
+  inspect: () => DataBindingInspection | null;
+} {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const bindingRef = useRef<DataBinding<T> | null>(null);
+  // latest mapper/options/records held in refs so the binding can read them without re-creating
+  // the binding (and re-mounting every body) when an inline closure changes identity each render.
+  const mapperRef = useRef(mapper);
+  mapperRef.current = mapper;
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+  const recordsRef = useRef(records);
+  recordsRef.current = records;
+
+  // create/destroy the binding when the container element appears/disappears.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const binding = bindData(container, recordsRef.current, (rec, i) => mapperRef.current(rec, i), optionsRef.current);
+    bindingRef.current = binding;
+    return () => {
+      binding.destroy();
+      bindingRef.current = null;
+    };
+    // mount once per container; data flows through update() in the effect below.
+  }, []);
+
+  // push every records change into the live binding (diff by id is bindData's job).
+  useEffect(() => {
+    bindingRef.current?.update(records);
+  }, [records]);
+
+  return { containerRef, bindingRef, inspect: () => bindingRef.current?.inspect() ?? null };
+}
+
 // Re-export the core types a React consumer needs off the handle (addAgent / atomAt / feedback),
 // so they don't have to reach into @fundamental-engine/core separately.
 export type {
@@ -160,3 +225,17 @@ export type {
   FeedbackSink,
   FeedbackChannels,
 } from '@fundamental-engine/core';
+// the running engine version constant — re-exported so a consumer can read it as a named import off
+// this door. A missing named import aborts the whole ES module, so the door must carry it (#584).
+export { FIELD_VERSION } from '@fundamental-engine/core';
+// the bindData surface a useForcesData consumer needs to type its mapper/options/inspection,
+// so they don't reach into @fundamental-engine/dom separately.
+export type {
+  RecordMapper,
+  MappedRecord,
+  MappedBody,
+  MappedRelationship,
+  BindDataOptions,
+  DataBinding,
+  DataBindingInspection,
+} from '@fundamental-engine/dom';

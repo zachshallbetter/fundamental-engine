@@ -450,11 +450,12 @@ Migration acceptance rule:
 A rename is not complete until the old and new names both work.
 ```
 
-## 20. Cross-plane parity (JS ↔ Swift)
+## 20. Cross-plane parity (JS ↔ Swift ↔ Android)
 
-The engine ships on two planes: the JS/TS core (`packages/core`) and the Swift port (`swift/`). The
-**conformance rule** is that at `depth: 0` a Swift field and a JS field, given the same inputs, produce
-the same motion. Because the planes are hand-ported, parity must be *verified*, not trusted — historically
+The engine ships on three planes: the JS/TS core (`packages/core`), the Swift port (`swift/`), and the
+Kotlin/Android port (`android/`, foundation stage). The **conformance rule** is that at `depth: 0` a
+ported field and a JS field, given the same inputs, produce the same motion. Because the planes are
+hand-ported, parity must be *verified*, not trusted — historically
 it wasn't, and divergences (palette ramps #497, the scroll body-centre fix #509) surfaced as hand-fixed
 one-offs. The **autonomous verification spine** makes parity machine-checked with no device or human in the
 loop. It has three models, built on the JS conformance runner (`packages/core/src/conformance/`, seeded
@@ -463,23 +464,54 @@ loop. It has three models, built on the JS conformance runner (`packages/core/sr
 
 ### Model 1 — numeric conformance · **Status: shipped (#526)**
 
-The JS f64 engine emits **golden vectors**; the Swift f32 engine must reproduce them.
+The JS f64 engine emits **golden vectors**; every f32 port must reproduce them.
 
 ```txt
 pnpm gen:golden            # JS fires the canonical forces at probe particles, writes frame-0
                            #   force deltas → swift/Tests/.../Fixtures/conformance-golden.json
 swift test                 # GoldenConformanceTests: Swift reproduces every dv within tolerance
+./gradlew :fundamental-core:test  # GoldenConformanceTests: Kotlin/Android reproduces every dv
 pnpm check:golden          # CI gate (JS side): fail if the golden drifts from the JS math
 swift-{linux,macos}.yml    # CI gate (Swift side): fail if a Swift force drifts from the golden
+android.yml                # CI gate (Android side): fail if a Kotlin force drifts from the golden
 ```
 
-- **Granularity is one apply, not a trajectory** — Swift core is f32, JS is f64, so a single force
+- **One golden, every plane.** The fixture (`swift/Tests/.../Fixtures/conformance-golden.json`) is the
+  single source of truth. Swift's test bundle carries it; the Android build's `syncGolden` Gradle task
+  copies that exact file onto the Kotlin test classpath — so JS, Swift, and Android can never silently
+  disagree, and a golden change re-checks all three (the `android.yml` paths trigger includes the fixture).
+- **Granularity is one apply, not a trajectory** — the ports are f32, JS is f64, so a single force
   application keeps drift sub-tolerance (`2e-4 + 1e-3·|dv|`) while still catching a wrong coefficient,
   missing leg, or sign flip. Integration over many frames diverges by design and is *not* asserted bit-wise.
-- **A divergence is a Swift bug.** Fix the force; never loosen the tolerance to hide it.
-- **Coverage:** the canonical deterministic forces (attract, repel, swirl, stream, tether, viscosity).
-  The same harness extends to the EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to
-  short-trajectory + heat parity — follow-up coverage on the same fixture.
+- **A divergence is a port bug.** Fix the force; never loosen the tolerance to hide it.
+- **Coverage:** the golden pins the canonical deterministic forces (attract, repel, swirl, stream,
+  tether, viscosity) across all planes — Swift and Android both reproduce it. Each plane's *other*
+  forces (RNG / stateful / neighbor / grid / field) are verified behaviorally on that plane (Swift's
+  `ParityTests`/`EngineTests`; Android's `CoreForcesBehaviorTests`/`NaturalForcesTests`/
+  `ExtendedForcesTests`, which port the full 36-force surface). The golden harness itself extends to the
+  EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to short-trajectory + heat
+  parity — follow-up coverage on the same fixture, ported per plane as it lands.
+
+#### Kotlin/Android conformance (mirror of Swift)
+
+The **Kotlin** engine is held to the **same** shared cross-plane golden as JS and Swift — not a
+separate fixture. The Android build's `syncGolden` Gradle task copies `conformance-golden.json` onto
+the Kotlin test classpath and `GoldenConformanceTests` reproduces every force delta within the same
+tolerance (`2e-4 + 1e-3·|dv|`); a divergence is a Kotlin bug (fix the force, never loosen the
+tolerance). Beyond the shared golden, the port carries its own per-plane coverage:
+
+- **Unit / integration tests** — the full 36-force surface (`CoreForcesBehaviorTests`,
+  `NaturalForcesTests`, `ExtendedForcesTests`), the integrator driven headlessly (`EngineTests`), the
+  runtime driver (`FieldControllerTests`), and a deterministic `PerfRegressionTests` (1200 particles ×
+  600 frames: count conserved, all-finite, velocity/heat bounded) — **85 core tests** — plus the
+  platform module's scheduler/registry coverage (`FrameSchedulerTests`, `FieldPlatformTests`) — **10
+  platform tests**.
+- **Headless FieldLab render as a visual gate** — the desktop FieldLab (`:lab`, JVM Swing/Java2D over
+  the same `:fundamental-core`) renders the scene tour + 36-force catalog to PNGs headlessly
+  (`./gradlew :lab:run --args="render out/"`), the Kotlin analog of the Swift `Snapshotter` visual gate
+  — a CI-able render path with no emulator.
+- **CI gate** — `android.yml` (JDK 17 + Android SDK) runs the core conformance test and assembles the
+  host modules; it re-runs whenever the shared golden changes.
 
 ### Model 2 — performance · **Status: shipped**
 

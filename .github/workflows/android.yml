@@ -1,0 +1,49 @@
+name: android
+
+# Proves the Kotlin port builds and its cross-plane conformance test passes. The pure-JVM modules
+# (`:fundamental-core`, `:fundamental-platform`) carry the engine + the shared golden gate and run
+# their unit tests on the JVM; the desktop `:lab` compiles on the JVM too (no SDK). The host modules
+# (`:fundamental-android`, `:fundamental-compose`, `:sample`) assemble against the Android SDK. The
+# conformance test consumes the SAME golden the Swift/JS gates use, so a golden change re-checks
+# Android parity automatically.
+#
+# Note: once the Android library/application modules are in `settings.gradle.kts`, every Gradle
+# invocation configures them and needs the SDK — hence the SDK setup runs for the whole job.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android.yml'
+      - 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json'
+  pull_request:
+    paths:
+      - 'android/**'
+      - '.github/workflows/android.yml'
+      - 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json'
+
+jobs:
+  build:
+    name: build + test (JVM + Android)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: core — engine + cross-plane conformance
+        working-directory: android
+        run: ./gradlew :fundamental-core:test :fundamental-platform:test :lab:test
+      - name: host — assemble Compose adapter + Android library + sample app
+        working-directory: android
+        run: ./gradlew :fundamental-android:assembleDebug :fundamental-compose:assembleDebug :sample:assembleDebug
+      - name: lab — headless render smoke check (no emulator)
+        working-directory: android
+        run: |
+          ./gradlew :lab:run --args="render lab-out"
+          test "$(ls lab-out/*.png | wc -l)" -ge 5 || { echo "lab render produced no PNGs"; exit 1; }

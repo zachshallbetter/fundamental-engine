@@ -26,6 +26,13 @@ Two packages do the engine work (three thin authoring surfaces — `@fundamental
   one `FrameScheduler`. **Strict dependency direction:** platform depends on core for contracts;
   core never depends on platform.
 
+> **Kotlin/Android parity.** The native Kotlin port (`android/`) keeps the same split and the same
+> dependency direction: `:fundamental-core` is plain `kotlin("jvm")` with **zero Android deps** (the
+> mirror of core's zero-DOM rule) — its `FieldController` reaches the surface only through an injected
+> [`FieldHost`](../../android/fundamental-core/src/main/kotlin/com/fundamental/core/engine/FieldHost.kt),
+> and `:fundamental-platform` (also zero-Android `kotlin("jvm")`) carries the `FrameScheduler` + the six
+> registries. In active development on the Android port branch — not a published release.
+
 Section refs (§) point into [forces-system.md](forces-system.md) and the canonical docs.
 
 ---

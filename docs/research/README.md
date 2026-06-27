@@ -110,7 +110,7 @@ contribution as a *design and protocol*, not a measured result (see the caveat c
   described in prose + a `Figure N` caption; diagrams are produced at conversion time.
 - **Citations to the implementation.** Because the substrate *is* the code, papers cite real files
   (e.g. `packages/core/src/core/integrator.ts`) as primary evidence. External literature lives in
-  [`references.md`](references.md); a `[TODO: cite]` marker means a real reference still needs to be
+  [`references.md`](references.md); unresolved claims must be phrased honestly until a real reference is
   located and verified — never fabricate one.
 - **Naming.** Use `Fundamental` for the project; `--field-*` / `field:*` for the current CSS-variable
   and event families (the `forces:*` event aliases and the compact `--d` CSS alias are mentioned

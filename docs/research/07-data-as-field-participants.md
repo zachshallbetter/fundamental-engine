@@ -107,28 +107,26 @@ frameworks, and through the reactive-rendering model of modern web frameworks (a
 of state, reconciled on change). `bindData()` shares the surface goal — a declarative map from data
 to rendered output, updated incrementally — but differs in *what it binds to*: not a component tree
 whose state is local and binary, but a relational field whose participants carry continuous metrics
-and typed edges. [TODO: cite MVVM / observable-collection and reactive-view literature]
+and typed edges. [gossman2005; fowler2004presentation; react-docs-declarative]
 
 **Data-driven documents.** The closest methodological ancestor is the data-join of data-driven
 document toolkits, which bind an array of records to a selection of DOM/SVG nodes and split each
 update into enter / update / exit sets keyed by identity. `bindData()`'s id-diff (§4) is recognizably
 in this tradition — added, kept, and removed ids drive node creation, mutation, and teardown — but the
 *target* of the join is a field participant (a body with tokens, metrics, and relationships) rather
-than a positional mark, and the *exit* is a physical decay rather than an immediate removal. [TODO:
-cite data-join / data-driven documents]
+than a positional mark, and the *exit* is a physical decay rather than an immediate removal. [bostock2011; d3-selection-join]
 
 **Graph and relational visualization.** Node-link and force-directed visualization render relational
 data by *position*: edges become layout constraints that a solver resolves into coordinates. The
 Fundamental stance (Paper 1, §2) is that force is an *expressive medium* writing state back into
 arbitrary semantic elements, not only a layout solver; the binding inherits that stance, so a
-record's edges raise its neighbors' coherence or entropy rather than only repositioning them. [TODO:
-cite force-directed / relational visualization]
+record's edges raise its neighbors' coherence or entropy rather than only repositioning them. [eades1984; fruchterman1991; bostock2011]
 
 **List virtualization versus relational structure.** A large body of engineering practice optimizes
 *long flat lists* — windowing, virtualization, recycling — treating the list as a homogeneous
 sequence to be rendered cheaply. That work is orthogonal and complementary: it answers *how to render
 many rows*, while the binding model answers *what relational structure the rows carry*. We note the
-performance tension this creates in the limitations (§8). [TODO: cite list virtualization]
+performance tension this creates in the limitations (§8). [react-window; react-virtualized]
 
 The distinguishing stance, across all of these, matches the family's: the binding does not fabricate
 the relational signal it renders. Confidence and risk are *supplied* by the host, never inferred from
@@ -196,8 +194,7 @@ maps to `tokens: ['gravity', 'thermal', 'pressure']` with `strength: 0.5 + c.hea
 not know these are "results" or "cards" — it knows only that they are bodies with these tokens and
 these strengths. This is the load-bearing move: *importance becomes strength and range; the category
 of behavior becomes the choice of tokens* (the `DataAgent` mapping the canonical model already names —
-importance → strength, recency → heat, uncertainty → entropy; `docs/canonical/…interaction-and-
-relationship-model.md` §15).
+importance → strength, recency → heat, uncertainty → entropy; `docs/canonical/…interaction-and-relationship-model.md` §15).
 
 ### 3.2 Relationships → graph edges
 
@@ -254,8 +251,7 @@ emphasis because the engine is deliberately constrained about them:
   for an evidence/trust surface": a citation is not certainty, a source is not proof. Confidence is
   present only when the data supplies it; relationship resolution is a *separate* signal, not
   confidence. (This is the substance of the project's #220 confidence and #222 resolution corrections.)
-- **Risk is a placeholder, not an inference.** `risk` is a `0` placeholder "until a real risk model
-  exists" (`metrics.ts`); a binding that wants risk must supply it.
+- **Risk is not inferred.** Like `confidence`, `risk` is a *supplied-only* lane — absent unless the host supplies it (`metrics.ts`); the engine never defaults it to `0` ("no risk" is a claim, not a safe blank). A binding that wants risk must supply it.
 
 When a supplied metric is *removed* between frames — the host stopped supplying
 `data-field-confidence` — the runtime drops the stale state *and* clears the bound CSS variable, so
@@ -483,7 +479,7 @@ are reported**, consistent with the caveat canon.
    *executable and inspectable*, not *correct*. The field faithfully renders whatever relational claim
    the mapper makes; the responsibility for that claim's validity is the host's.
 2. **Confidence and risk must be supplied, not invented.** As §3.3 details, the engine refuses to
-   fabricate `confidence` (it is supplied-only — the #220 correction) and treats `risk` as a placeholder (its `0` default is tracked in the open issue #226). This is
+   fabricate `confidence` (it is supplied-only — the #220 correction) and does not invent `risk` (it is supplied-only, never defaulted to `0` — the #226 correction, mirroring #220). This is
    a deliberate honesty constraint, but it is also a *limitation on the binding's reach*: a data source
    that lacks a confidence or risk signal cannot have one synthesized by the field, and a host that
    wants those metrics must bring its own trust/risk model. The binding will not paper over missing
@@ -559,7 +555,7 @@ Every mechanism claim in this paper is checkable against the repository:
   compute/state phases, the absent-metric clear, the reduced-motion static surface, and the
   resolved/unresolved relationship inspection.
 - **Metric provenance:** `packages/dom/src/metrics.ts` — `METRIC_KINDS`, the SUPPLIED-ONLY
-  `confidence` lane, the `risk` placeholder, and the "supplied values win" rule.
+  `confidence` lane, the supplied-only `risk` lane (never defaulted to `0`), and the "supplied values win" rule.
 - **Relationship discovery and unresolved targets:** `packages/dom/src/relationships.ts` —
   `scanRelationships()` (resolved vs unresolved), `UnresolvedRelationship`, and the
   `RelationshipRegistry`'s tracking of declared-but-unresolved edges.
@@ -571,7 +567,7 @@ Every mechanism claim in this paper is checkable against the repository:
   (`DataAgent` property→field mapping), §21 (Search), §26 (AI use cases).
 
 The mechanism landed in #210; the data-bound study pages in #213–#214; the confidence-provenance
-constraint in #220; the real relationship resolution and unresolved-target tracking in #222 (the `risk` placeholder is tracked in the open issue #226).
+constraint in #220; the real relationship resolution and unresolved-target tracking in #222 (the supplied-only `risk` treatment landed in #226).
 
 ## Appendix B. Conversion notes (markdown → preprint)
 
@@ -579,13 +575,13 @@ Notation is kept LaTeX-compatible; the fenced TypeScript blocks are the binding'
 should be reproduced verbatim. Figures referenced in prose but not yet drawn — the records → bodies →
 edges → metrics mapping (§3), the id-diff lifecycle with enter/update/decay (§4), the recipe-over-data
 composition (§5), and a before/after of one demo (§6) — are produced at conversion time. External
-citations marked `[TODO: cite]` and the `[key]` placeholders in [`references.md`](references.md) must
+citation keys in [`references.md`](references.md) must
 be resolved and verified before submission; none are fabricated here.
 
-## Citations needed
+## Citation coverage
 
-- MVVM, observable collections, and the reactive view-as-function-of-state model (data binding lineage; §2).
-- Data-driven documents and the data-join enter/update/exit pattern keyed by identity (§2, §4.1).
-- Force-directed and node-link relational visualization; force as layout solver vs expressive medium (§2).
-- List virtualization / windowing / recycling, and its tension with per-element continuous state (§2, §8.3).
-- HCI literature on triage, search relevance judgment, and evidence recall, to motivate the §7.2 study sketch.
+- MVVM, observable collections, and the reactive view-as-function-of-state model (data binding lineage; §2): [gossman2005; fowler2004presentation; react-docs-declarative].
+- Data-driven documents and the data-join enter/update/exit pattern keyed by identity (§2, §4.1): [bostock2011; d3-selection-join].
+- Force-directed and node-link relational visualization; force as layout solver vs expressive medium (§2): [eades1984; fruchterman1991; bostock2011].
+- List virtualization / windowing / recycling, and its tension with per-element continuous state (§2, §8.3): [react-window; react-virtualized].
+- HCI literature on triage, search relevance judgment, and evidence recall is intentionally not over-cited here; the §7.2 study sketch is framed as a proposed protocol, not a claimed result.

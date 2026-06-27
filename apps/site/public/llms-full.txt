@@ -3,7 +3,7 @@
 Created by Zach Shallbetter (zachshallbetter.com).
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-26 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-27 by apps/site/scripts/gen-llms.mjs
 Files: 19
 
 These are the project's canonical documents — the authority on concepts, terminology, and
@@ -325,7 +325,7 @@ host.tick(performanceNow);     // or explicit ms timestamp
 host.resize(w, h);             // when workspace bounds change
 ```
 
-`render: 'none'` is signals-first mode (#538, now the engine default): full simulation, no drawing, all feedback channels live. `headlessHost` stubs every DOM dependency — `root` scans empty (all bodies come via `addBody`), `createCanvas` throws, all `on*` subscriptions are no-ops. **Swift:** `OSFieldHost` in Jellybean is the direct equivalent (`OSFieldHost.tick(at:)` drives the clock).
+`render: 'none'` is signals-first mode (#538, now the engine default): full simulation, no drawing, all feedback channels live. `headlessHost` stubs every DOM dependency — `root` scans empty (all bodies come via `addBody`), `createCanvas` throws, all `on*` subscriptions are no-ops. **Swift:** `OSFieldHost` in Jellybean is the direct equivalent (`OSFieldHost.tick(at:)` drives the clock). **Kotlin/Android:** the pure `:fundamental-core` is host-free by construction — `createField(…)` / `FieldController.tick(dt)` run the full simulation with no view or renderer (the JVM tests and desktop FieldLab drive it headlessly); `:fundamental-platform` injects a `FieldHost` when a host is present.
 
 ### `addBody` + `onFeedback` — entities as bodies
 
@@ -346,7 +346,7 @@ body.channels;                // latest snapshot (also pushed to onFeedback)
 body.remove();
 ```
 
-**Swift parity:** `BodySpec.onFeedback` was added alongside the TS version — programmatic bodies now receive `FeedbackChannels` per frame even when `view == nil`. `BodyHandle.set(strength:)` exists in both runtimes.
+**Swift parity:** `BodySpec.onFeedback` was added alongside the TS version — programmatic bodies now receive `FeedbackChannels` per frame even when `view == nil`. `BodyHandle.set(strength:)` exists in both runtimes. **Kotlin/Android parity:** `BodyHandle.set(strength = …)` exists, and programmatic bodies build with `feedback = true` so their density `d` is measured each frame; a per-frame `onFeedback` callback is **not yet** exposed on the Kotlin `BodySpec` (follow-up).
 
 ### `addEdge` / `readEdges` — relationships with memory
 
@@ -373,7 +373,7 @@ field.readEdges();
 // }>
 ```
 
-Removing either endpoint body drops the edge automatically. Edges survive `scan()` (they're programmatic, not DOM-derived). **Swift parity:** `FieldHandle.addEdge`/`readEdges` added alongside the TS API; the same dynamics (dt-scaled strength/memory updates) run in `FieldEngine.swift`.
+Removing either endpoint body drops the edge automatically. Edges survive `scan()` (they're programmatic, not DOM-derived). **Swift parity:** `FieldHandle.addEdge`/`readEdges` added alongside the TS API; the same dynamics (dt-scaled strength/memory updates) run in `FieldEngine.swift`. **Kotlin/Android parity:** `FieldHandle.addEdge`/`readEdges` ported with identical per-tick dynamics in `FieldController.kt` (strength `+1.5·dt` while the source is salient, `−0.3·dt` idle; memory `+0.2·dt`, holding on idle); removing an endpoint drops the edge.
 
 ### The agent tick loop
 
@@ -400,7 +400,7 @@ function tick(osState) {
 }
 ```
 
-**Availability:** Status: shipped (0.8.1). `headlessHost` (#602) and `addEdge` (#603) are in the npm `@fundamental-engine/*` 0.8.1 release. The Swift implementations shipped alongside, in `FundamentalCore`/`FundamentalVanilla`.
+**Availability:** Status: shipped (0.8.1). `headlessHost` (#602) and `addEdge` (#603) are in the npm `@fundamental-engine/*` 0.8.1 release. The Swift implementations shipped alongside, in `FundamentalCore`/`FundamentalVanilla`. The Kotlin/Android implementations mirror the same surface in the `android/` tree (`:fundamental-core` `FieldHandle` incl. edges, the `:fundamental-platform` host layer), held to the shared cross-plane golden — riding the Android port branch, not yet a published release.
 
 ========================================================================
 FILE: api-stability.md
@@ -3125,6 +3125,13 @@ discover → read → compute → state → write → render
 5. **write** — flush state to CSS variables, data attributes, ElementInternals, and thresholded events.
 6. **render** — draw overlays, field lines, and heatmaps from the registries (read-only).
 
+> **Ports.** This architecture — the `FrameScheduler` + the six registries + the platform coordinator,
+> driven by an injected `FieldHost` — now has three language implementations at parity: JS/TS
+> (`@fundamental-engine/dom`), Swift (`FundamentalPlatform`), and **Kotlin** (`:fundamental-platform`:
+> `FrameScheduler` + the six registries + `FieldPlatform`, wiring `read→measure` / `write→flush`). The
+> Kotlin module is pure `kotlin("jvm")` (zero Android deps) and JVM-tested (`FrameSchedulerTests`,
+> `FieldPlatformTests`). See [support-matrix.md](support-matrix.md) for the per-port status.
+
 The platform **owns discover through write**. `createFieldPlatform(root, { strict? })` wires only
 two phases by default — `measure → read` and `flush → write` — and installs a read-phase guard (a
 measurement requested off-phase is recorded, or thrown under `strict`). The remaining phases
@@ -3268,6 +3275,7 @@ A `FieldHost` is **not** a "surface" — *Field Surfaces* is the visualization-p
 | `threeHost(opts)` | `@fundamental-engine/three` | the WebGL drawing buffer | shipped — drives `core.createField` directly, no fork |
 | *worker host* | — | an `OffscreenCanvas` | **planned (#531)** — the one surface not yet built |
 | native (Swift) | `swift/` | the view's bounds | a separate language port implementing the same contract conceptually (#423) |
+| native (Android) | `android/` | the view's bounds | a separate-language Kotlin port — the pure-`kotlin("jvm")` core (full 36-force surface + integrator) runs under a Jetpack Compose host (`FieldView` + `Modifier.fieldBody`), verified on-device |
 
 **The contract** (`FieldHost`): `root` (the scanned subtree), `viewport()` → `{ width, height, dpr,
 originX?, originY? }` (the optional origin is what makes a host container-local — `measureBodies` and the
@@ -3387,6 +3395,42 @@ imports, the mirror of core's zero-DOM rule), `FundamentalPlatform` ↔ `@fundam
 - **Consumption:** build from source (the SwiftPM package name is `Fundamental`, in `swift/`); no
   published registry release yet. See `swift/README.md`, the site's Swift guide
   (`/docs/guides/swift`), and the Implementations page (`/docs/implementations`).
+
+## Native (Kotlin) — Android
+
+The engine also ships as a native **Kotlin port** (`android/`) — a port of the JS engine on the same
+terms as Swift, not a reinterpretation: the Gradle module layout, the API surface, and the physics
+mirror the npm packages (and the Swift package) one-to-one.
+
+| Module | Support | Notes |
+|---|---|---|
+| `:fundamental-core` | ✅ supported | the pure physics — full 36-force surface + integrator + `FieldHandle` (incl. relationship edges); zero Android deps, plain `kotlin("jvm")` |
+| `:fundamental-platform` | ✅ supported | the six-phase scheduler (`discover→read→compute→state→write→render`) + the six registries (measurement / state / feedback / relationship / visual-binding / overlay), driven by an injected `FieldHost`; zero Android deps, plain `kotlin("jvm")` |
+| `:fundamental-compose` (Compose host) | ✅ supported (preview) | Jetpack Compose adapter — `FieldView` composable + `Modifier.fieldBody()`; verified on-device (Pixel 7 / API 35) |
+| `:fundamental-android` (non-Compose host) | ✅ supported (preview) | imperative `View`/`Canvas` host — `FieldFieldView` (custom `View`, `Choreographer`-driven, draws in `onDraw`) + `AndroidFieldHost` |
+| `:lab` (desktop FieldLab) | ✅ supported | JVM Swing/Java2D FieldLab over the same core — live canvas + headless render/bench, no emulator |
+
+Five modules map to the npm / Swift packages: `:fundamental-core` ↔ `@fundamental-engine/core` ↔
+`FundamentalCore` (zero Android imports, the mirror of core's zero-DOM rule), `:fundamental-platform`
+↔ `@fundamental-engine/dom` ↔ `FundamentalPlatform`, `:fundamental-android` ↔
+`@fundamental-engine/vanilla` ↔ `UIKitFieldHost`, `:fundamental-compose` ↔ `@fundamental-engine/react`
+↔ `FundamentalSwiftUI`, `:lab` ↔ `FieldLab`.
+
+- **Cross-plane conformance is enforced**, not asserted: the Kotlin engine is held to the **same**
+  shared golden (`conformance-golden.json`) as JS and Swift — `GoldenConformanceTests` syncs that exact
+  fixture onto its test classpath and reproduces every force delta within tolerance. The Android build
+  (core conformance + host assembly) is a CI gate (`android.yml`), re-run whenever the golden changes.
+- **Parity (honest):** like the web, the JS plane moves first. Core forces, the integrator, the
+  scheduler/registries, the `FieldHandle` API (incl. relationship edges), formations, recipes, and
+  overlays are present; the matter-render extras (metaballs / voronoi) and the declarative `[data-body]`
+  view scanner remain follow-ups. Status is **preview** on the hosts — stable in shape, trailing the web
+  on the newest additions.
+- **SDK requirements:** the host modules build against the Android SDK — **compileSdk 34, minSdk 24**
+  (build-tools 34.0.0, AGP 8.7, Kotlin 2.1, Compose BOM 2024.12, Gradle wrapper 8.13). The pure
+  `:fundamental-core` and `:fundamental-platform` are plain `kotlin("jvm")` and build/test on **any
+  JDK-17** with no Android SDK.
+- **Consumption:** build from source (Gradle, in `android/`); no published registry release yet. See
+  `android/README.md`.
 
 ## Device pixel ratio (DPR)
 
@@ -4082,6 +4126,14 @@ The semantic layer should remain real HTML text.
 > **Implemented.** `@fundamental-engine/dom` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
+> **Kotlin/Android parity.** The native Kotlin port's `:fundamental-platform` module satisfies this same
+> contract: a `FieldPlatform` over the six-phase `FrameScheduler` and the same six registries
+> (`MeasurementRegistry`, `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`,
+> `VisualBindingRegistry`, `OverlayRegistry`), driven by an injected `FieldHost`. It is pure
+> `kotlin("jvm")` (zero Android deps), so it computes field behavior with no view layer and is
+> JVM-tested (`FrameSchedulerTests`, `FieldPlatformTests`). In active development on the Android port
+> branch — not a published release.
+
 `@fundamental-engine/dom` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:
@@ -4698,11 +4750,12 @@ Migration acceptance rule:
 A rename is not complete until the old and new names both work.
 ```
 
-## 20. Cross-plane parity (JS ↔ Swift)
+## 20. Cross-plane parity (JS ↔ Swift ↔ Android)
 
-The engine ships on two planes: the JS/TS core (`packages/core`) and the Swift port (`swift/`). The
-**conformance rule** is that at `depth: 0` a Swift field and a JS field, given the same inputs, produce
-the same motion. Because the planes are hand-ported, parity must be *verified*, not trusted — historically
+The engine ships on three planes: the JS/TS core (`packages/core`), the Swift port (`swift/`), and the
+Kotlin/Android port (`android/`, foundation stage). The **conformance rule** is that at `depth: 0` a
+ported field and a JS field, given the same inputs, produce the same motion. Because the planes are
+hand-ported, parity must be *verified*, not trusted — historically
 it wasn't, and divergences (palette ramps #497, the scroll body-centre fix #509) surfaced as hand-fixed
 one-offs. The **autonomous verification spine** makes parity machine-checked with no device or human in the
 loop. It has three models, built on the JS conformance runner (`packages/core/src/conformance/`, seeded
@@ -4711,23 +4764,54 @@ loop. It has three models, built on the JS conformance runner (`packages/core/sr
 
 ### Model 1 — numeric conformance · **Status: shipped (#526)**
 
-The JS f64 engine emits **golden vectors**; the Swift f32 engine must reproduce them.
+The JS f64 engine emits **golden vectors**; every f32 port must reproduce them.
 
 ```txt
 pnpm gen:golden            # JS fires the canonical forces at probe particles, writes frame-0
                            #   force deltas → swift/Tests/.../Fixtures/conformance-golden.json
 swift test                 # GoldenConformanceTests: Swift reproduces every dv within tolerance
+./gradlew :fundamental-core:test  # GoldenConformanceTests: Kotlin/Android reproduces every dv
 pnpm check:golden          # CI gate (JS side): fail if the golden drifts from the JS math
 swift-{linux,macos}.yml    # CI gate (Swift side): fail if a Swift force drifts from the golden
+android.yml                # CI gate (Android side): fail if a Kotlin force drifts from the golden
 ```
 
-- **Granularity is one apply, not a trajectory** — Swift core is f32, JS is f64, so a single force
+- **One golden, every plane.** The fixture (`swift/Tests/.../Fixtures/conformance-golden.json`) is the
+  single source of truth. Swift's test bundle carries it; the Android build's `syncGolden` Gradle task
+  copies that exact file onto the Kotlin test classpath — so JS, Swift, and Android can never silently
+  disagree, and a golden change re-checks all three (the `android.yml` paths trigger includes the fixture).
+- **Granularity is one apply, not a trajectory** — the ports are f32, JS is f64, so a single force
   application keeps drift sub-tolerance (`2e-4 + 1e-3·|dv|`) while still catching a wrong coefficient,
   missing leg, or sign flip. Integration over many frames diverges by design and is *not* asserted bit-wise.
-- **A divergence is a Swift bug.** Fix the force; never loosen the tolerance to hide it.
-- **Coverage:** the canonical deterministic forces (attract, repel, swirl, stream, tether, viscosity).
-  The same harness extends to the EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to
-  short-trajectory + heat parity — follow-up coverage on the same fixture.
+- **A divergence is a port bug.** Fix the force; never loosen the tolerance to hide it.
+- **Coverage:** the golden pins the canonical deterministic forces (attract, repel, swirl, stream,
+  tether, viscosity) across all planes — Swift and Android both reproduce it. Each plane's *other*
+  forces (RNG / stateful / neighbor / grid / field) are verified behaviorally on that plane (Swift's
+  `ParityTests`/`EngineTests`; Android's `CoreForcesBehaviorTests`/`NaturalForcesTests`/
+  `ExtendedForcesTests`, which port the full 36-force surface). The golden harness itself extends to the
+  EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to short-trajectory + heat
+  parity — follow-up coverage on the same fixture, ported per plane as it lands.
+
+#### Kotlin/Android conformance (mirror of Swift)
+
+The **Kotlin** engine is held to the **same** shared cross-plane golden as JS and Swift — not a
+separate fixture. The Android build's `syncGolden` Gradle task copies `conformance-golden.json` onto
+the Kotlin test classpath and `GoldenConformanceTests` reproduces every force delta within the same
+tolerance (`2e-4 + 1e-3·|dv|`); a divergence is a Kotlin bug (fix the force, never loosen the
+tolerance). Beyond the shared golden, the port carries its own per-plane coverage:
+
+- **Unit / integration tests** — the full 36-force surface (`CoreForcesBehaviorTests`,
+  `NaturalForcesTests`, `ExtendedForcesTests`), the integrator driven headlessly (`EngineTests`), the
+  runtime driver (`FieldControllerTests`), and a deterministic `PerfRegressionTests` (1200 particles ×
+  600 frames: count conserved, all-finite, velocity/heat bounded) — **85 core tests** — plus the
+  platform module's scheduler/registry coverage (`FrameSchedulerTests`, `FieldPlatformTests`) — **10
+  platform tests**.
+- **Headless FieldLab render as a visual gate** — the desktop FieldLab (`:lab`, JVM Swing/Java2D over
+  the same `:fundamental-core`) renders the scene tour + 36-force catalog to PNGs headlessly
+  (`./gradlew :lab:run --args="render out/"`), the Kotlin analog of the Swift `Snapshotter` visual gate
+  — a CI-able render path with no emulator.
+- **CI gate** — `android.yml` (JDK 17 + Android SDK) runs the core conformance test and assembles the
+  host modules; it re-runs whenever the shared golden changes.
 
 ### Model 2 — performance · **Status: shipped**
 

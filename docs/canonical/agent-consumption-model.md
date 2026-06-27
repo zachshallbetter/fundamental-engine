@@ -268,7 +268,7 @@ host.tick(performanceNow);     // or explicit ms timestamp
 host.resize(w, h);             // when workspace bounds change
 ```
 
-`render: 'none'` is signals-first mode (#538, now the engine default): full simulation, no drawing, all feedback channels live. `headlessHost` stubs every DOM dependency — `root` scans empty (all bodies come via `addBody`), `createCanvas` throws, all `on*` subscriptions are no-ops. **Swift:** `OSFieldHost` in Jellybean is the direct equivalent (`OSFieldHost.tick(at:)` drives the clock).
+`render: 'none'` is signals-first mode (#538, now the engine default): full simulation, no drawing, all feedback channels live. `headlessHost` stubs every DOM dependency — `root` scans empty (all bodies come via `addBody`), `createCanvas` throws, all `on*` subscriptions are no-ops. **Swift:** `OSFieldHost` in Jellybean is the direct equivalent (`OSFieldHost.tick(at:)` drives the clock). **Kotlin/Android:** the pure `:fundamental-core` is host-free by construction — `createField(…)` / `FieldController.tick(dt)` run the full simulation with no view or renderer (the JVM tests and desktop FieldLab drive it headlessly); `:fundamental-platform` injects a `FieldHost` when a host is present.
 
 ### `addBody` + `onFeedback` — entities as bodies
 
@@ -289,7 +289,7 @@ body.channels;                // latest snapshot (also pushed to onFeedback)
 body.remove();
 ```
 
-**Swift parity:** `BodySpec.onFeedback` was added alongside the TS version — programmatic bodies now receive `FeedbackChannels` per frame even when `view == nil`. `BodyHandle.set(strength:)` exists in both runtimes.
+**Swift parity:** `BodySpec.onFeedback` was added alongside the TS version — programmatic bodies now receive `FeedbackChannels` per frame even when `view == nil`. `BodyHandle.set(strength:)` exists in both runtimes. **Kotlin/Android parity:** `BodyHandle.set(strength = …)` exists, and programmatic bodies build with `feedback = true` so their density `d` is measured each frame; a per-frame `onFeedback` callback is **not yet** exposed on the Kotlin `BodySpec` (follow-up).
 
 ### `addEdge` / `readEdges` — relationships with memory
 
@@ -316,7 +316,7 @@ field.readEdges();
 // }>
 ```
 
-Removing either endpoint body drops the edge automatically. Edges survive `scan()` (they're programmatic, not DOM-derived). **Swift parity:** `FieldHandle.addEdge`/`readEdges` added alongside the TS API; the same dynamics (dt-scaled strength/memory updates) run in `FieldEngine.swift`.
+Removing either endpoint body drops the edge automatically. Edges survive `scan()` (they're programmatic, not DOM-derived). **Swift parity:** `FieldHandle.addEdge`/`readEdges` added alongside the TS API; the same dynamics (dt-scaled strength/memory updates) run in `FieldEngine.swift`. **Kotlin/Android parity:** `FieldHandle.addEdge`/`readEdges` ported with identical per-tick dynamics in `FieldController.kt` (strength `+1.5·dt` while the source is salient, `−0.3·dt` idle; memory `+0.2·dt`, holding on idle); removing an endpoint drops the edge.
 
 ### The agent tick loop
 
@@ -343,4 +343,4 @@ function tick(osState) {
 }
 ```
 
-**Availability:** Status: shipped (0.8.1). `headlessHost` (#602) and `addEdge` (#603) are in the npm `@fundamental-engine/*` 0.8.1 release. The Swift implementations shipped alongside, in `FundamentalCore`/`FundamentalVanilla`.
+**Availability:** Status: shipped (0.8.1). `headlessHost` (#602) and `addEdge` (#603) are in the npm `@fundamental-engine/*` 0.8.1 release. The Swift implementations shipped alongside, in `FundamentalCore`/`FundamentalVanilla`. The Kotlin/Android implementations mirror the same surface in the `android/` tree (`:fundamental-core` `FieldHandle` incl. edges, the `:fundamental-platform` host layer), held to the shared cross-plane golden — riding the Android port branch, not yet a published release.

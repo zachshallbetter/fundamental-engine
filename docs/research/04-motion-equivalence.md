@@ -53,7 +53,7 @@ But movement is exactly the channel that the accessibility literature warns abou
 population experiences motion as a barrier rather than an aid: vestibular disorders can make
 large-scale or parallax motion nauseating or disorienting, and the platform exposes a first-class
 signal — the `prefers-reduced-motion` media query — for readers who have asked the system to stop
-moving. [TODO: cite prefers-reduced-motion / vestibular accessibility] An interface whose *meaning*
+moving. [prefers-reduced-motion; wcag-motion; vestibular-accessibility] An interface whose *meaning*
 is encoded in motion fails these readers twice: it withholds the meaning *and* it cannot simply turn
 the motion off without turning the meaning off with it.
 
@@ -128,15 +128,14 @@ than an enhancement. Fundamental reads it through an injected host capability �
 (freezes the sim)" (`packages/core/src/core/host.ts`) and implemented in the browser host via
 `matchMedia('(prefers-reduced-motion: reduce)')` (`packages/dom/src/browser-host.ts`). The
 standard's framing — motion is a *preference dimension*, not a binary on/off of the interface — is the
-seed of this paper's model. [TODO: cite prefers-reduced-motion media-query specification]
+seed of this paper's model. [prefers-reduced-motion]
 
 **WCAG motion guidance and vestibular accessibility.** Accessibility guidelines treat motion as a
 hazard to be controllable and treat animation-from-interactions as something a user must be able to
 disable without losing function. The motivating clinical reality is vestibular dysfunction, for which
 motion — especially large, parallax, or unexpected motion — can induce nausea, dizziness, and
 disorientation. The design obligation that follows is not "remove motion" but "ensure no information
-or function is *lost* when motion is removed." [TODO: cite WCAG 2.x motion / animation-from-interaction
-guidance] [TODO: cite vestibular-disorder accessibility literature]
+or function is *lost* when motion is removed." [wcag-motion] [vestibular-accessibility; frederick2013]
 
 **Color is not the only carrier of meaning.** A long-standing accessibility principle holds that color
 must never be the sole means of conveying information, because color perception varies across readers.
@@ -144,22 +143,21 @@ Fundamental generalizes the principle from color to *any single expressive chann
 critically motion — and encodes it as a rule: "Color is not the only carrier of meaning. Motion is
 optional. Reduced motion preserves state without travel" (visual-language §16; §5.2). We treat
 "motion is not the only carrier" as the exact analogue of "color is not the only carrier," and apply
-the same remedy: pair the expressive channel with a redundant, accessible one. [TODO: cite
-color-is-not-the-only-means / redundant-coding guidance]
+the same remedy: pair the expressive channel with a redundant, accessible one. [use-of-color]
 
 **Animation as information versus decoration.** A separate line of work distinguishes *functional*
 animation (motion that communicates causality, continuity, or hierarchy) from *decorative* animation
 (motion that does not). Fundamental's truth-mode taxonomy (Paper 1, §6.3) gives this distinction teeth at
 the level of *forces*; this paper extends it to the level of *rendering*, asking of each motion: does
 it carry state that has no other carrier? If yes, the static equivalent must carry that state too; if
-no, it may simply be removed. [TODO: cite functional-vs-decorative animation literature]
+no, it may simply be removed. [baecker1990; material-design-motion]
 
-**The degraded-fallback antipattern.** Practitioner accounts of accessibility regressions repeatedly
-describe a second, simplified path that diverges from the primary one and is under-tested. We position
-Fundamental against this directly: the contribution is not "Fundamental has a reduced-motion fallback" — many
-systems do — but that the fallback is *derived from the same state* and is *checkable against the
-primary surface*, which is what a degraded second path is not. [TODO: cite accessibility
-fallback-divergence / dual-codebase drift]
+**The degraded-fallback antipattern.** A separately authored reduced-motion path risks divergence
+from the primary surface unless it is derived from the same state and tested against the same meaning
+contract. We position Fundamental against this directly: the contribution is not "Fundamental has a
+reduced-motion fallback" — many systems do — but that the reduced surface is *derived from the same
+state* and is *checkable against the primary surface*. This is an engineering-risk framing, not an
+externally established empirical claim.
 
 The distinguishing stance, as in the rest of the family, is *epistemic*: Fundamental makes the
 accessibility property auditable — a guard that throws, lint that warns, a schema field that is
@@ -629,26 +627,25 @@ Notation is kept LaTeX-compatible (the non-inferiority margin $\delta$ and the i
 directly). Figures referenced in prose but not yet drawn — the equivalence chain (§3, semantic source →
 binding → motion / static equivalent), the motion→static mapping table rendered as a figure (§3.3), and
 the three-condition study design (§5.1) — are produced at conversion time. External citations marked
-`[TODO: cite]` and the `[key]` placeholders in [`references.md`](references.md) must be resolved and
+citation keys in [`references.md`](references.md) are resolved and
 verified before submission — never fabricated.
 
-## Citations needed
+## Citation coverage
 
-External references this paper relies on, to be located and verified (none fabricated; cite by `[key]`
-once resolved). The existing family key `[prefers-reduced-motion]` in
-[`references.md`](references.md) covers several of these and should be split as the topics are located:
+External references this paper relies on, resolved into [`references.md`](references.md) where a real
+source supports the claim. Unsourced engineering-risk prose is labeled as such rather than cited:
 
 - `[prefers-reduced-motion]` — the `prefers-reduced-motion` media-query specification (CSS Media
-  Queries Level 5 / platform docs). *(existing family key; **[TODO: locate]**)*
+  Queries Level 5 / platform docs). *(resolved: [prefers-reduced-motion].)*
 - WCAG 2.x motion / animation-from-interaction guidance (the success criteria governing
-  motion-from-interaction and disabling non-essential animation). **[TODO: cite]**
+  motion-from-interaction and disabling non-essential animation). Resolved: [wcag-motion].
 - Vestibular-disorder accessibility literature (clinical and HCI accounts of motion as a barrier:
-  nausea, dizziness, disorientation from large/parallax/unexpected motion). **[TODO: cite]**
+  nausea, dizziness, disorientation from large/parallax/unexpected motion). Resolved: [vestibular-accessibility; frederick2013].
 - "Color is not the only means of conveying information" / redundant-coding guidance (the WCAG
-  use-of-color principle this paper generalizes from color to motion). **[TODO: cite]**
+  use-of-color principle this paper generalizes from color to motion). Resolved: [use-of-color].
 - Functional-versus-decorative animation in interface design (motion that communicates causality,
-  continuity, or hierarchy versus motion that does not). **[TODO: cite]**
+  continuity, or hierarchy versus motion that does not). Resolved: [baecker1990; material-design-motion].
 - The degraded-fallback / dual-codebase-drift antipattern in accessibility practice (separate,
-  under-tested accessible paths diverging from the primary surface). **[TODO: cite]**
+  under-tested accessible paths diverging from the primary surface). No canonical source is asserted; the paper frames this as an engineering-risk limitation.
 - Non-inferiority trial design and margin selection (the statistical framing of §5.2, for the
-  evaluation methodology). **[TODO: cite]**
+  evaluation methodology). Resolved: [piaggio2012].

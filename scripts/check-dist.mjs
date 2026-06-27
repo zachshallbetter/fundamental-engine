@@ -13,7 +13,7 @@
  * and TypeScript-resolution checks, see scripts/check-packaging.mjs (publint + attw).
  */
 import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -53,6 +53,28 @@ for (const p of PACKAGES) {
     await import(pathToFileURL(join(dir, pkg.main ?? 'dist/index.js')).href);
   } catch (e) {
     problems.push(`import failed: ${e.message}`);
+  }
+
+  // The vanilla single-file (vendorable) build (#585): both standalone artifacts must exist, be
+  // self-contained (no bare `@fundamental-engine/*` import a no-bundler consumer can't resolve),
+  // and stay under a sane size budget so the "drop in one <script>" path doesn't silently bloat.
+  if (p === 'vanilla') {
+    const STANDALONE_MAX_KB = 160; // self-bundled vanilla→dom→core; well above ~90 kB today
+    for (const f of ['dist/standalone.js', 'dist/standalone.global.js']) {
+      const fp = join(dir, f);
+      if (!existsSync(fp)) {
+        problems.push(`standalone build missing: ${f} (run "pnpm --filter @fundamental-engine/vanilla build:standalone")`);
+        continue;
+      }
+      const src = await readFile(fp, 'utf8');
+      if (/(?:^|[^.\w])(?:import|from|require)\s*\(?\s*['"]@fundamental-engine\//.test(src)) {
+        problems.push(`standalone build not self-contained: ${f} still has bare @fundamental-engine/* imports`);
+      }
+      const kb = statSync(fp).size / 1024;
+      if (kb > STANDALONE_MAX_KB) {
+        problems.push(`standalone build too large: ${f} is ${kb.toFixed(1)} kB (budget ${STANDALONE_MAX_KB} kB)`);
+      }
+    }
   }
 
   if (problems.length) {

@@ -22,6 +22,8 @@ import {
   lintFeedbackWritesUnread,
   lintFeedbackReadsUnwritten,
   lintInertFeedback,
+  lintFeedbackNeverWritten,
+  FEEDBACK_NEVER_WRITTEN_FRAMES,
   lintSchedulerViolations,
   lintPlatform,
 } from './lint.ts';
@@ -53,6 +55,48 @@ test('lintInertFeedback stays quiet when the lane is computed, supplied, or not 
   // non --field- channels (--d, --load) are out of scope
   assert.deepEqual(lintInertFeedback(fakeFeedback([{ element: computed, vars: ['--d', '--load'] }])), []);
 });
+
+test('lintFeedbackNeverWritten flags a bound body that never received a non-zero value after N frames', () => {
+  const state = new StateRegistry();
+  const feedback = new FeedbackRegistry();
+  const inert = mkFeedbackEl();
+  const live = mkFeedbackEl();
+  feedback.bind(inert, { density: '--field-density' });
+  feedback.bind(live, { density: '--field-density' });
+  state.set(live, 'density', 0.4); // live body receives a value; inert never does
+  for (let i = 0; i < FEEDBACK_NEVER_WRITTEN_FRAMES; i++) feedback.flush(state);
+  const w = lintFeedbackNeverWritten(feedback);
+  assert.equal(w.length, 1, 'only the never-written body is flagged');
+  assert.equal(w[0]!.code, 'feedback-never-written');
+  assert.equal(w[0]!.element, inert);
+});
+
+test('lintFeedbackNeverWritten stays quiet while a body is still warming up (under the frame threshold)', () => {
+  const state = new StateRegistry();
+  const feedback = new FeedbackRegistry();
+  const el = mkFeedbackEl();
+  feedback.bind(el, { density: '--field-density' });
+  for (let i = 0; i < FEEDBACK_NEVER_WRITTEN_FRAMES - 1; i++) feedback.flush(state);
+  assert.deepEqual(lintFeedbackNeverWritten(feedback), [], 'below threshold → still warming up, not flagged');
+});
+
+test('lintFeedbackNeverWritten treats a zero value as "never written" (zero is no reaction)', () => {
+  const state = new StateRegistry();
+  const feedback = new FeedbackRegistry();
+  const el = mkFeedbackEl();
+  feedback.bind(el, { density: '--field-density' });
+  state.set(el, 'density', 0); // a zero is written but means "at rest" — does not count as reacting
+  for (let i = 0; i < FEEDBACK_NEVER_WRITTEN_FRAMES; i++) feedback.flush(state);
+  const w = lintFeedbackNeverWritten(feedback);
+  assert.equal(w.length, 1);
+  assert.equal(w[0]!.code, 'feedback-never-written');
+});
+
+/** A connected element exposing the style.setProperty + isConnected a real FeedbackRegistry.flush() needs. */
+function mkFeedbackEl(): Element {
+  const el = { isConnected: true, style: { setProperty: () => {} } } as unknown as Element;
+  return el;
+}
 
 function fakeEl(connected = true): Element {
   const el = new EventTarget() as unknown as Element & { isConnected: boolean };
