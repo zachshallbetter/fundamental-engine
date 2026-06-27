@@ -119,7 +119,6 @@ Ported and tested:
 
 Not yet ported (follow-up PRs):
 
-- The `FieldHandle`'s relationship edges (`addEdge`/`readEdges`) — the last of `FundamentalCore`.
 - `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
 
 ## Building & testing

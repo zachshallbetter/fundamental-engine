@@ -15,8 +15,7 @@ import kotlin.math.sin
 // pool out. Hosts (Compose, the desktop lab) can use the lower-level FieldController directly; consumers
 // integrating the engine use this.
 //
-// Not yet exposed (their subsystems aren't ported): relationship edges, sampleScalar/Gradient (heatmap),
-// overlay readings, and the attention/causality toggles.
+// Overlay readings live in the `overlay` package (host-drawn), not on this facade.
 
 /** The readParticles buffer layout: 5 floats per particle (x, y, z, heat, size). */
 const val PARTICLE_STRIDE: Int = 5
@@ -73,6 +72,34 @@ class FieldChannelHandle internal constructor(private val controller: FieldContr
     fun remove() = controller.removeFieldChannel(name)
 }
 
+/** Direction of a declared relationship edge (`addEdge`). */
+enum class EdgeDirection { FROM_TO, TO_FROM, BIDIRECTIONAL }
+
+/**
+ * A snapshot of a relationship edge at the moment [FieldHandle.readEdges] is called — immutable.
+ * `from`/`to` are the endpoint bodies' carried `data`. `strength` ∈ [0,1] climbs ~1.5/s while the
+ * source is salient and decays ~0.3/s idle; `memory` ∈ [0,1] is the slow longitudinal warmth (holds
+ * while idle); `active` is whether the source body's density > 0.08 this tick.
+ */
+data class EdgeRecord(
+    val from: Any?,
+    val to: Any?,
+    val type: String,
+    val strength: Float,
+    val memory: Float,
+    val active: Boolean,
+    val direction: EdgeDirection,
+)
+
+/** A live handle to a registered edge: mutate its strength/type, or remove it. */
+class EdgeHandle internal constructor(
+    private val setImpl: (Float?, String?) -> Unit,
+    private val removeImpl: () -> Unit,
+) {
+    fun set(strength: Float? = null, type: String? = null) = setImpl(strength, type)
+    fun remove() = removeImpl()
+}
+
 /** The public field handle — drive frames with [tick], render from [readParticles] / [particles]. */
 class FieldHandle(val controller: FieldController) {
 
@@ -93,6 +120,7 @@ class FieldHandle(val controller: FieldController) {
             val r = Math.toRadians(it.toDouble()); Vec3(cos(r).toFloat(), sin(r).toFloat(), 0f)
         } ?: Vec3(0f, -1f, 0f)
         val body = Body(tokens = spec.tokens, strength = spec.strength, range = spec.range, spin = spec.spin, heading = heading)
+        body.feedback = true // programmatic bodies measure density (§8) — Swift addBody parity (feedback: true)
         body.tint = spec.tint
         body.rect = spec.rect
         body.box = spec.rect()
@@ -119,6 +147,23 @@ class FieldHandle(val controller: FieldController) {
     fun sampleScalar(x: Float, y: Float): Float = controller.sampleScalar(x, y)
     /** Heatmap density gradient at a point (up-slope toward denser matter). */
     fun sampleGradient(x: Float, y: Float): Vec3 = controller.sampleGradient(x, y)
+
+    // ── relationship edges (§addEdge) ──────────────────────────────────────────────────
+    /**
+     * Declare a directed relationship between two programmatic bodies (handles from [addBody]).
+     * The edge strengthens while `from` is salient and decays idle; `memory` accretes. Removing
+     * either endpoint body drops the edge. Returns an [EdgeHandle] to mutate/remove it live.
+     */
+    fun addEdge(
+        from: BodyHandle,
+        to: BodyHandle,
+        type: String = "related",
+        strength: Float = 0.5f,
+        direction: EdgeDirection = EdgeDirection.FROM_TO,
+    ): EdgeHandle = controller.addEdge(from.body, from.data, to.body, to.data, type, strength, direction)
+
+    /** A live snapshot of all programmatic edges — the relationship read-out for a consumer. */
+    fun readEdges(): List<EdgeRecord> = controller.readEdges()
 
     // ── observability ────────────────────────────────────────────────────────────────
     fun particleCount(): Int = controller.particleCount

@@ -91,6 +91,49 @@ class FieldHandleTests {
     }
 
     @Test
+    fun addEdgeStrengthensWhileSourceIsSalientThenSetsAndRemoves() {
+        val f = createField(400f, 300f, particleCount = 300, seed = 7)
+        // A = a strong attract source (gathers matter → salient); B = the target it relates to.
+        val a = f.addBody(BodySpec(tokens = listOf("attract"), strength = 1.6f, range = 260f,
+            data = mapOf("entity" to "meeting"), rect = { Box(center = Vec3(200f, 150f, 0f)) }))
+        val b = f.addBody(BodySpec(tokens = listOf("attract"), strength = 0.2f, range = 80f,
+            data = mapOf("entity" to "file"), rect = { Box(center = Vec3(40f, 40f, 0f)) }))
+        val edge = f.addEdge(a, b, type = "relates")
+
+        // reads back immediately, keyed by the bodies' carried records.
+        var edges = f.readEdges()
+        assertEquals(1, edges.size)
+        assertEquals("relates", edges[0].type)
+        assertEquals(mapOf("entity" to "meeting"), edges[0].from)
+        assertEquals(mapOf("entity" to "file"), edges[0].to)
+        val start = edges[0].strength
+
+        // drive frames: A gathers matter → A.d passes the salience gate → the edge strengthens + warms.
+        repeat(240) { f.tick() }
+        edges = f.readEdges()
+        assertTrue(edges[0].active, "the edge went active as its source gathered matter")
+        assertTrue(edges[0].strength > start, "strength rose while active ($start → ${edges[0].strength})")
+        assertTrue(edges[0].memory > 0f, "memory accumulated — the relationship is warm")
+
+        // live mutation + removal.
+        edge.set(strength = 0.1f)
+        assertEquals(0.1f, f.readEdges()[0].strength, "set() mutates strength live")
+        edge.remove()
+        assertEquals(0, f.readEdges().size, "remove() drops the edge")
+    }
+
+    @Test
+    fun removingABodyDropsTheEdgesThatTouchedIt() {
+        val f = createField(300f, 300f, particleCount = 50, seed = 9)
+        val a = f.addBody(BodySpec(tokens = listOf("attract"), rect = { Box(center = Vec3(10f, 10f, 0f)) }))
+        val b = f.addBody(BodySpec(tokens = listOf("attract"), rect = { Box(center = Vec3(90f, 90f, 0f)) }))
+        f.addEdge(a, b)
+        assertEquals(1, f.readEdges().size)
+        a.remove()
+        assertEquals(0, f.readEdges().size, "the edge is dropped when an endpoint body is removed")
+    }
+
+    @Test
     fun readParticlesWritesStrideFive() {
         val f = createField(300f, 300f, particleCount = 10, seed = 8)
         val out = FloatArray(10 * PARTICLE_STRIDE)

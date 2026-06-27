@@ -62,6 +62,7 @@ class FieldController(
     private val conditions = builtinConditions()
     private val _bodies = ArrayList<Body>()
     val bodies: List<Body> get() = _bodies
+    private val _edges = ArrayList<Edge>()
     private val grids = HashMap<String, ScalarGridImpl>()
     private val rng = if (seed != null) Random(seed) else Random.Default
 
@@ -171,7 +172,42 @@ class FieldController(
         return body
     }
 
-    fun removeBody(body: Body) = _bodies.remove(body)
+    fun removeBody(body: Body): Boolean {
+        // removing either endpoint automatically drops the edge (Swift FieldEngine parity).
+        _edges.removeAll { it.from === body || it.to === body }
+        return _bodies.remove(body)
+    }
+
+    // ── relationship edges (§addEdge) ──────────────────────────────────────────────────
+    /** A directed relationship between two programmatic bodies; carries live strength + memory. */
+    internal class Edge(
+        val from: Body, val fromData: Any?, val to: Body, val toData: Any?,
+        var type: String, var strength: Float, val direction: EdgeDirection,
+    ) {
+        var memory: Float = 0f
+        var active: Boolean = false
+    }
+
+    /** Register an edge; returns an [EdgeHandle] to mutate strength/type or remove it. */
+    fun addEdge(
+        from: Body, fromData: Any?, to: Body, toData: Any?,
+        type: String, strength: Float, direction: EdgeDirection,
+    ): EdgeHandle {
+        val edge = Edge(from, fromData, to, toData, type, strength.coerceIn(0f, 1f), direction)
+        _edges.add(edge)
+        return EdgeHandle(
+            setImpl = { s, t -> s?.let { edge.strength = it.coerceIn(0f, 1f) }; t?.let { edge.type = it } },
+            removeImpl = { _edges.remove(edge) },
+        )
+    }
+
+    /** Snapshot all live edges (purging any whose endpoint left the field). */
+    fun readEdges(): List<EdgeRecord> {
+        _edges.removeAll { it.from !in _bodies || it.to !in _bodies }
+        return _edges.map {
+            EdgeRecord(it.fromData, it.toData, it.type, it.strength, it.memory, it.active, it.direction)
+        }
+    }
 
     /** Ease toward a named global formation (ambient / wells / lanes / scatter / accretion). */
     fun setFormation(name: String) {
@@ -280,6 +316,22 @@ class FieldController(
 
         // feedback easing (§8): ease each body's density toward its per-frame tally (step set b.count).
         for (b in _bodies) b.d += (clamp(b.count / 40f, 0f, 1f) - b.d) * 0.12f
+
+        // relationship edges (§addEdge): strength rises while the source body is salient (d > 0.08),
+        // decays idle; memory accretes longitudinally and holds. Mirrors FieldEngine.swift line-for-line.
+        if (_edges.isNotEmpty()) {
+            val edt = env.dt
+            for (e in _edges) {
+                e.active = e.from.d > 0.08f
+                if (e.active) {
+                    e.strength = minOf(1f, e.strength + 1.5f * edt)
+                    e.memory = minOf(1f, e.memory + 0.2f * edt)
+                } else {
+                    e.strength = maxOf(0f, e.strength - 0.3f * edt)
+                    // memory holds — no decay on idle
+                }
+            }
+        }
 
         // cross-boundary causality (Concept 4): saturated bodies spill density to neighbours (ΣΔ = 0).
         if (causalityEnabled) {
