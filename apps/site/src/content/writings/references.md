@@ -131,3 +131,11 @@ allowlist), `packages/core/src/core/integrator.ts`, `packages/core/src/contracts
 - `[d3-selection-join]` D3, "Joining data" and `selection.join` documentation. <https://d3js.org/d3-selection/joining>.
 - `[react-window]` B. Vaughn, "react-window," GitHub project documentation. <https://github.com/bvaughn/react-window>.
 - `[react-virtualized]` B. Vaughn, "react-virtualized," GitHub project documentation. <https://github.com/bvaughn/react-virtualized>.
+
+## Expansion draft note
+
+Papers 09–30 reuse existing bibliography keys where possible. New external claims go through the same source-verification process before submission.
+
+### Additional expansion anchors
+- `[html-standard]` WHATWG, *HTML Standard*, living standard. <https://html.spec.whatwg.org/>.
+- `[aria]` W3C, *Accessible Rich Internet Applications (WAI-ARIA) 1.2*. <https://www.w3.org/TR/wai-aria-1.2/>.
