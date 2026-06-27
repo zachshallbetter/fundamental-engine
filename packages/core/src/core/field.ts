@@ -47,6 +47,7 @@ import { defaultFeedbackSink } from './feedback-sink.ts';
 import { thermoMetrics } from './thermo.ts';
 import { attentionMuls } from './attention.ts';
 import { updateRelationship, type RelationshipAgent } from '../agents/relationship.ts';
+import { Thresholder } from '../agents/event-agent.ts';
 import { spillover } from './causality.ts';
 import { integrateOffset, anchorForce, elementMass, repelForce, densityPush, type ElementOffset } from './agents.ts';
 import { releaseCaptured, sinkLoad, captureEdge, dischargeDisengaged } from './accretion.ts';
@@ -176,6 +177,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   interface ProgEdge { agent: RelationshipAgent; from: Body; to: Body; fromData: unknown; toData: unknown }
   const programmaticEdges: ProgEdge[] = [];
   let edgeSeq = 0;
+  // Reserved agent-threshold events (§22.5, FIELD_EVENTS): per-body hysteretic edge detectors that
+  // turn a continuous metric (sink load, density, attention, entropy) into one debounced `field:*`
+  // CustomEvent on its rising edge — never per-frame. Lazy: a body gets a Thresholder for a metric
+  // only the first frame it has a value to test, and the maps are pruned on rescan with the body.
+  // Keyed body → metric-name → Thresholder; edges track relationship `memory` the same way.
+  const bodyThresholds = new WeakMap<Body, Map<string, Thresholder>>();
+  const edgeThresholds = new WeakMap<RelationshipAgent, Map<string, Thresholder>>();
   const fieldChannels = new Map<string, (x: number, y: number) => number>(); // addField() input channels
   // custom overlay functions registered via registerOverlay(); keyed by name, dispatched from renderOverlay()
   const customOverlays = new Map<string, (backend: RenderBackend, env: Env, W: number, H: number) => void>();
@@ -329,6 +337,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   let emitters: { el: HTMLElement; tmpl: HTMLElement | null; cap: number; emitted: HTMLElement[] }[] = [];
   let sparks: { x: number; y: number; vx: number; vy: number; life: number; c: RGB }[] = [];
   let eventEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
+  // element trigger class-toggle (§22.3, FACM #687): `data-class="dense:lit, captured:full"` adds a
+  // class while a trigger holds and removes it when the trigger releases — the declarative, no-JS
+  // counterpart of the `data-on` CustomEvent binding (same trigger vocabulary, parsed identically).
+  let classEls: { el: HTMLElement; body: Body | null; bindings: EventBinding[] }[] = [];
   let engaged: { el: HTMLElement; enter: () => void; leave: () => void }[] = []; // [data-hot] listeners, for teardown
 
   // shadow-DOM participation (docs/engine-reference/shadow-dom.md): encapsulated components dispatch composed
@@ -410,6 +422,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       tearBoundNear(bound, waves, b.cx, b.cy, 320, W, H, env.t, (p) => void store.add(newParticle(p)));
       // release docks any DOM elements this sink had captured (§22.3, element capture).
       undockFrom(b);
+      // saturation is the threshold transition for field:saturated (§22.5, FACM #686): the sink
+      // reached its capacity this frame (that is what triggered the supernova). The force pass resets
+      // accreted to 0 immediately, so the load metric is never observable at ≈1 after the fact — the
+      // honest place to announce saturation is here, the moment it happens. field:released (below) is
+      // the paired down-edge, so a consumer gets both ends of the cycle.
+      fireThreshold(b.el, 'field:saturated', { peak: released.length });
       // and fires field:released on the falling edge of accreting (capture/release events, §22.5).
       if (b.el.dataset.fxCap === '1') {
         b.el.dataset.fxCap = '0';
@@ -553,6 +571,16 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         bindings: parseEventBindings(el.dataset.on ?? ''),
       };
     });
+    // element trigger class-toggle (§22.3, FACM #687): same trigger:value grammar as data-on, but the
+    // value is a class name toggled on the element instead of an event name dispatched.
+    classEls = [...host.root.querySelectorAll('[data-class]')].map((node) => {
+      const el = node as HTMLElement;
+      return {
+        el,
+        body: bodies.find((b) => b.el === el) ?? null,
+        bindings: parseEventBindings(el.dataset.class ?? ''),
+      };
+    });
     // resolve `warp` pairings (§22.3 relocate): a body's data-pair selector → the paired body, whose
     // live centre becomes the relocate target each frame (updateWarpTargets).
     for (const b of bodies) {
@@ -666,6 +694,30 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     }
   }
 
+  // element trigger class-toggle (§22.3, FACM #687): the declarative element-trigger consumer. While a
+  // trigger holds (the same dense/sparse/engaged/captured vocabulary data-on uses), add its class to
+  // the element; remove it when the trigger releases. Idempotent via classList + the per-binding armed
+  // flag, so a held trigger toggles exactly once. Opt-in by `data-class`, so it never touches existing
+  // content — the no-JS counterpart of doing `el.classList.toggle()` inside a data-on handler.
+  function updateClassToggles(): void {
+    if (classEls.length === 0) return;
+    for (const ce of classEls) {
+      const s = ce.body
+        ? { d: ce.body.d, on: ce.body.on, accreted: ce.body.accreted }
+        : { d: 0, on: ce.el.dataset.active === '1', accreted: 0 };
+      for (const bind of ce.bindings) {
+        const active = triggerActive(bind.trigger, s);
+        if (active && !bind.armed) {
+          bind.armed = true;
+          ce.el.classList.add(bind.event); // `event` carries the class name for a data-class binding
+        } else if (!active && bind.armed) {
+          bind.armed = false;
+          ce.el.classList.remove(bind.event);
+        }
+      }
+    }
+  }
+
   // dispatch a discrete field event on an element, with the forces:* alias (migration window).
   function fireCaptureEvent(el: HTMLElement, name: 'captured' | 'released' | 'relocated', detail: Record<string, unknown>): void {
     el.dispatchEvent(new CustomEvent('field:' + name, { bubbles: true, composed: true, detail }));
@@ -691,6 +743,80 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         if (busHas('release')) busEmit('release', { body: b, count: sinkPeak.get(b) ?? 0 });
         sinkPeak.delete(b);
       }
+    }
+  }
+
+  // Reserved agent-threshold events (§22.5): turn each body's continuous metrics into debounced,
+  // hysteretic `field:*` CustomEvents on the element as it crosses a level. Mirrors the lit/dim
+  // contract (rising edge fires once, falls re-arm), but routed through the shared Thresholder so the
+  // enter/exit levels + debounce are uniform. Every event is paired (a "warning"/"shifted" rising
+  // edge and an `*-cleared` falling edge) so a consumer can react both ways. Lazy & cheap: a body
+  // only allocates a Thresholder for a metric the first frame that metric has a value to test, and
+  // the per-frame loop is a few comparisons. `field:entered`/`field:exited` here are the body's own
+  // density crossing (distinct from `field:lit`/`field:dim`, which carry the neighbour-spillover lit
+  // channel). See FIELD_EVENTS in agents/event-agent.ts and docs/canonical/agent-consumption-model.md.
+  // density / attention / entropy are continuous channels sampled per frame → hysteretic Thresholder.
+  // saturation is a discrete transition (the sink hitting capacity), so field:saturated is fired from
+  // the supernova callback above, not here (the load metric is reset to 0 before this loop runs).
+  const THRESHOLD_EVENTS: { metric: string; enter: number; exit: number; rise: string; fall: string }[] = [
+    { metric: 'density', enter: 0.6, exit: 0.2, rise: 'field:entered', fall: 'field:exited' },
+    { metric: 'attention', enter: 1.5, exit: 1.1, rise: 'field:attention-shifted', fall: 'field:attention-settled' },
+    { metric: 'entropy', enter: 0.7, exit: 0.4, rise: 'field:entropy-warning', fall: 'field:entropy-cleared' },
+  ];
+  const THRESHOLD_DEBOUNCE_MS = 120;
+  function fireThreshold(el: HTMLElement, name: string, detail: Record<string, unknown>): void {
+    el.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail }));
+  }
+  function dispatchBodyThreshold(
+    store: WeakMap<object, Map<string, Thresholder>>,
+    key: object,
+    el: HTMLElement,
+    spec: { metric: string; enter: number; exit: number; rise: string; fall: string },
+    value: number,
+    now: number,
+  ): void {
+    let metrics = store.get(key);
+    if (!metrics) store.set(key, (metrics = new Map()));
+    let th = metrics.get(spec.metric);
+    if (!th) metrics.set(spec.metric, (th = new Thresholder({ enter: spec.enter, exit: spec.exit, debounceMs: THRESHOLD_DEBOUNCE_MS })));
+    const edge = th.update(value, now);
+    if (edge === 'entered') fireThreshold(el, spec.rise, { metric: spec.metric, value });
+    else if (edge === 'exited') fireThreshold(el, spec.fall, { metric: spec.metric, value });
+  }
+  function updateThresholdEvents(now: number): void {
+    for (const b of bodies) {
+      if (!b.vis || b.tokens.length === 0) continue;
+      for (const spec of THRESHOLD_EVENTS) {
+        let value: number | undefined;
+        switch (spec.metric) {
+          case 'density':
+            value = b.d;
+            break;
+          case 'attention':
+            // conserved-attention multiplier (1 = neutral); only meaningful while attention is on.
+            if (cfg.attention) value = b.attn ?? 1;
+            break;
+          case 'entropy':
+            value = b.metrics?.entropy;
+            break;
+        }
+        if (value === undefined) continue;
+        dispatchBodyThreshold(bodyThresholds, b, b.el, spec, value, now);
+      }
+    }
+    // relationship memory (addEdge agents, §2.7): a remembered edge crosses its memory threshold.
+    // The event dispatches on the source body's element so an app can react to "this relationship is
+    // now durably remembered" / "…has faded". (For programmatic addBody bodies the element is the
+    // internal synthetic stub; a DOM-backed edge surfaces it on a real node.)
+    for (const e of programmaticEdges) {
+      dispatchBodyThreshold(
+        edgeThresholds,
+        e.agent,
+        e.from.el,
+        { metric: 'memory', enter: 0.6, exit: 0.3, rise: 'field:memory-threshold', fall: 'field:memory-faded' },
+        e.agent.memory,
+        now,
+      );
     }
   }
 
@@ -2083,7 +2209,9 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     writeFeedback();
     applyCausality();
     updateEvents();
+    updateClassToggles(); // element trigger class-toggle (§22.3, FACM #687): toggle data-class on crossings
     updateCaptureEvents();
+    updateThresholdEvents(now); // reserved agent-threshold events (§22.5): debounced field:* on crossings
     flushBusEvents(); // #684: deliver the frame's coalesced discrete events — one per (source, type)
     // Draw only when there is a surface to draw to AND the canvas can be seen. Under the
     // signals-only mode (`render: 'none'`, §13.7 / #297) the engine never draws — neither the

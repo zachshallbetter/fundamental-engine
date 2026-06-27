@@ -64,11 +64,13 @@ export interface FieldEventName {
 /**
  * The named field-event catalog (system-contracts §9, shadow-dom §22, interaction §12). These are
  * the thresholded, debounced events the engine may dispatch — never per-frame by default.
- * `field:lit`/`dim` and the `*-body` lifecycle events are dispatched today; the rest are the agreed
- * names for agent/threshold events as they wire up.
+ * `field:lit`/`dim`, the `*-body` lifecycle events, capture/release/relocate, and (as of #686) the
+ * agent-threshold events below are all dispatched today. Each threshold event is hysteretic and
+ * debounced (see `updateThresholdEvents` in core/field.ts) and pairs a rising edge with a falling
+ * edge so a consumer can react both ways.
  */
 export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
-  // --- dispatched today (shipped) ---
+  // --- lifecycle (shipped) ---
   registerBody: { field: 'field:register-body' },
   unregisterBody: { field: 'field:unregister-body' },
   updateBody: { field: 'field:update-body' },
@@ -80,15 +82,22 @@ export const FIELD_EVENTS: Readonly<Record<string, FieldEventName>> = {
   released: { field: 'field:released' },
   // relocate (§22.3): a [data-warp] element teleports its transform to its paired throat.
   relocated: { field: 'field:relocated' },
-  // --- names reserved; NOT yet dispatched by the engine (planned agent-threshold events).
-  //     See docs/canonical/agent-consumption-model.md (Events). ---
+  // --- agent-threshold events (#686): hysteretic + debounced, dispatched by updateThresholdEvents.
+  //     Rising edge then a paired falling edge. See docs/canonical/agent-consumption-model.md. ---
   entered: { field: 'field:entered', metric: 'density' },
   exited: { field: 'field:exited', metric: 'density' },
+  // saturation is a discrete transition fired from the supernova callback; field:released is its
+  // paired down-edge (see core/field.ts), so there is no separate "unsaturated" event.
   saturated: { field: 'field:saturated', metric: 'accreted' },
   attentionShifted: { field: 'field:attention-shifted', metric: 'attention' },
-  relationshipStrengthened: { field: 'field:relationship-strengthened', metric: 'strength' },
+  attentionSettled: { field: 'field:attention-settled', metric: 'attention' },
   memoryThreshold: { field: 'field:memory-threshold', metric: 'memory' },
+  memoryFaded: { field: 'field:memory-faded', metric: 'memory' },
   entropyWarning: { field: 'field:entropy-warning', metric: 'entropy' },
+  entropyCleared: { field: 'field:entropy-cleared', metric: 'entropy' },
+  // reserved (not yet dispatched): relationship-strength crossing — addEdge tracks strength but the
+  // designed dynamics rarely cross a fixed level cleanly; left reserved until a use case lands.
+  relationshipStrengthened: { field: 'field:relationship-strengthened', metric: 'strength' },
 };
 
 /** Map a metric to its conventional `field:*` event name for an edge. */

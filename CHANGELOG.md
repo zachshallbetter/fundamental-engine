@@ -43,6 +43,26 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   stale comment in `packages/three/src/index.ts` (both `PlaneProjection` and `VolumeProjection` ship).
 
 ### Added
+- **Reserved agent-threshold events now dispatched (`@fundamental-engine/core`, FACM).** The
+  previously reserved `field:*` agent-threshold events fire as a body crosses a metric level —
+  hysteretic + debounced via the shared `Thresholder`, never per-frame: `field:saturated` (a sink
+  hit capacity, fired from the saturation transition; `field:released` is its paired down-edge),
+  `field:entered`/`field:exited` (the body's own gathered density crossing 0.6/0.2 — distinct from
+  `field:lit`/`field:dim`, which carry the neighbour-spillover lit channel),
+  `field:attention-shifted`/`field:attention-settled` (conserved-attention multiplier, when attention
+  is on), `field:entropy-warning`/`field:entropy-cleared` (measured local entropy), and
+  `field:memory-threshold`/`field:memory-faded` (an `addEdge` relationship's `memory`, on the source
+  body's element). DOM CustomEvents on the same channel as the existing `field:lit`/`field:captured`
+  family — DOM/consumer-plane only, no Swift/Android port mirror needed (the ports have no DOM event
+  bus). `field:relationship-strengthened` stays reserved (the designed dynamics rarely cross a fixed
+  level cleanly). Additive. Closes #686.
+- **Element trigger class-toggle via `data-class` (`@fundamental-engine/core`, FACM).** The last
+  still-planned FACM element-influence cell. `data-class="dense:lit, captured:full"` adds a class to
+  the element while a trigger holds and removes it when the trigger releases — the same
+  `trigger:value` grammar `data-on` uses (`dense`/`sparse`/`engaged`/`captured`), but the value is a
+  class name toggled on the element instead of a `CustomEvent` dispatched. Opt-in by attribute (never
+  touches existing content), idempotent, and the declarative no-JS counterpart of a `data-on` handler
+  calling `classList.toggle`. DOM/consumer-plane only — no port mirror needed. Additive. Closes #687.
 - **Per-frame coalescing of discrete field events (`@fundamental-engine/core`).** `FieldHandle.on(...)`
   occurrences (`absorb`/`release`/`enter`/`exit`/`met`) now batch to at most ONE delivery per
   `(source, type)` per frame instead of firing per detection pass. Emissions are buffered during the
