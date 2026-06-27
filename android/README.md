@@ -22,11 +22,7 @@ they diverge it is a bug.
 
 | `:fundamental-platform` | `@fundamental-engine/dom`    | `FundamentalPlatform`  | The six-phase frame scheduler (`discover→read→compute→state→write→render`) + the registries (measurement / state / feedback / relationship / visual-binding / overlay), driven through an injected [`FieldHost`](fundamental-core/src/main/kotlin/com/fundamental/core/engine/FieldHost.kt). **Zero Android deps** — pure `kotlin("jvm")`. |
 
-Planned (mirroring Swift's `FundamentalVanilla`):
-
-| Module (planned)        | Mirrors                          | What it will be |
-|-------------------------|----------------------------------|-----------------|
-| `:fundamental-android`  | `@fundamental-engine/vanilla`    | The imperative `View`/`Canvas` host (mirror of `UIKitFieldHost`), for non-Compose apps. |
+| `:fundamental-android`  | `@fundamental-engine/vanilla` | `UIKitFieldHost`       | The imperative `View`/`Canvas` host for non-Compose apps: `FieldFieldView` (a custom `android.view.View` that owns a `FieldController`, drives it from the `Choreographer`, and draws the pool in `onDraw`) + `AndroidFieldHost` (the `FieldHost` impl — volume/visibility/reduced-motion, `Choreographer` frame loop, `worldBox` via `getLocationOnScreen`). |
 
 ## The conformance rule
 
@@ -128,10 +124,14 @@ Also ported:
   `FieldPerf` budget governors. The platform seam — `FieldHost` / `FieldVolume` / `FieldProjection` —
   lives in core (Android-free). JVM-tested (`FrameSchedulerTests`, `FieldPlatformTests`).
 
+- **`:fundamental-android`** (mirror of `UIKitFieldHost` / `@fundamental-engine/vanilla`) — the imperative
+  non-Compose host: `FieldFieldView` (a custom `View` driving a `FieldController` from the `Choreographer`,
+  rendering the pool in `onDraw`, tap-to-burst) + `AndroidFieldHost` (implements the core `FieldHost`).
+  Builds against the Android SDK.
+
 Not yet ported (follow-up PRs):
 
-- A non-Compose `View`/`Canvas` host (`:fundamental-android`, mirror of `UIKitFieldHost`) — the Android
-  `FieldHost` implementation that feeds real view geometry into `:fundamental-platform`.
+- The FieldLab desktop extras (recipe save/export, `path` traces, per-body `data` rings) — see below.
 
 ## Building & testing
 
