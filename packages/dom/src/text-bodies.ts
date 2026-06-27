@@ -26,9 +26,10 @@
  * - `annotate()` is idempotent — re-calling disposes the previous span set first, then re-measures.
  * - The engine picks the spans up on its next scan: call `field.rescan()` (or re-run the platform
  *   scan) after `annotate()` and after disposing.
- * - Resize/reflow honesty: the spans are a static snapshot in page coordinates. Callers re-call
- *   `annotate()` (and rescan) when the text reflows — wiring a ResizeObserver is deliberately NOT
- *   this slice's job and is noted as the follow-up.
+ * - Resize/reflow honesty: the spans are a static snapshot in page coordinates. By default callers
+ *   re-call `annotate()` (and rescan) when the text reflows. Opt into `observe: true` to wire a
+ *   debounced `ResizeObserver` on the source that re-measures the spans automatically on resize;
+ *   the observer is torn down by the same disposer that removes the spans.
  * - Reduced motion is irrelevant here: this is geometry only; it animates nothing.
  * - SSR-safe: no module-top DOM access; everything reaches the DOM through the passed element's
  *   `ownerDocument`.
@@ -48,14 +49,24 @@ export interface TextBodiesOptions {
   body?: 'wall' | 'shear';
   /** `data-strength` written on each span. Default 1. */
   strength?: number;
+  /**
+   * Re-annotate automatically when the source resizes. When `true` (or a debounce in ms), `annotate()`
+   * wires a debounced `ResizeObserver` on the source; each resize disposes the previous spans and
+   * re-measures fresh boxes, so the boundary stays glued to the reflowed text. Off by default (the
+   * spans remain a one-time snapshot). The observer is registered on the source's `ResizeObserver`
+   * global; in environments without one (SSR / old runtimes) it's silently skipped. Cleaned up by the
+   * disposer `annotate()` returns. Default debounce `100`ms when `observe: true`.
+   */
+  observe?: boolean | number;
 }
 
 export interface TextBodiesHandle {
   /** The boxes measured at creation time (viewport coordinates, zero-size fragments dropped). */
   boxes: DOMRect[];
   /**
-   * Create the boundary spans (re-measuring fresh boxes) and return a disposer that removes them.
-   * Idempotent: calling again first disposes the previous set.
+   * Create the boundary spans (re-measuring fresh boxes) and return a disposer that removes them
+   * (and, when `observe` is set, disconnects the ResizeObserver). Idempotent: calling again first
+   * disposes the previous set.
    */
   annotate(): () => void;
 }
@@ -132,11 +143,13 @@ export function textBodies(el: HTMLElement, opts: TextBodiesOptions = {}): TextB
   const granularity: TextBodiesGranularity = opts.granularity ?? 'word';
   const body = opts.body ?? 'shear';
   const strength = opts.strength ?? 1;
+  const observe = opts.observe ?? false;
+  const observeDelay = typeof observe === 'number' ? observe : 100;
 
   let disposeCurrent: (() => void) | null = null;
 
-  const annotate = (): (() => void) => {
-    disposeCurrent?.(); // idempotent: one live span set per handle
+  /** Build one span set from a fresh measurement and return its remover. */
+  const render = (): (() => void) => {
     const doc = el.ownerDocument;
     const view = doc.defaultView;
     const sx = view?.scrollX ?? 0;
@@ -177,8 +190,38 @@ export function textBodies(el: HTMLElement, opts: TextBodiesOptions = {}): TextB
     }
     doc.body.appendChild(container);
 
+    return () => container.parentNode?.removeChild(container);
+  };
+
+  const annotate = (): (() => void) => {
+    disposeCurrent?.(); // idempotent: one live span set per handle
+
+    let removeSpans = render();
+
+    // Opt-in: re-measure on source resize, debounced, so the boundary tracks the reflowed text.
+    // Skipped where ResizeObserver is unavailable (SSR / older runtimes) — the snapshot still stands.
+    let ro: ResizeObserver | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const RO = (el.ownerDocument.defaultView as { ResizeObserver?: typeof ResizeObserver } | null)
+      ?.ResizeObserver;
+    if (observe && typeof RO === 'function') {
+      ro = new RO(() => {
+        if (timer != null) clearTimeout(timer);
+        timer = setTimeout(() => {
+          timer = null;
+          removeSpans();
+          removeSpans = render();
+        }, observeDelay);
+      });
+      ro.observe(el);
+    }
+
     const dispose = (): void => {
-      container.parentNode?.removeChild(container);
+      if (timer != null) clearTimeout(timer);
+      timer = null;
+      ro?.disconnect();
+      ro = null;
+      removeSpans();
       if (disposeCurrent === dispose) disposeCurrent = null;
     };
     disposeCurrent = dispose;

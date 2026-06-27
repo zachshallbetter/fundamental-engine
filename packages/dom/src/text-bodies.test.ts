@@ -4,7 +4,7 @@
  * pattern as platform.test.ts: granularity selection, span contract (body token, strength, the
  * visual-binding pair), disposal, and annotate idempotency.
  */
-import { test } from 'node:test';
+import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { textBodies } from './text-bodies.ts';
 
@@ -61,16 +61,22 @@ function textNode(text: string, rectsFor: (start: number, end: number) => DOMRec
   return { nodeType: 3, textContent: text, childNodes: [] as unknown[], rectsFor };
 }
 
+interface FakeView {
+  scrollX: number;
+  scrollY: number;
+  ResizeObserver?: unknown;
+}
+
 interface FakeDoc {
   body: FakeEl;
-  defaultView: { scrollX: number; scrollY: number };
+  defaultView: FakeView;
   createElement(tag: string): FakeEl;
   createRange(): unknown;
   /** every (node, start, end) word range the helper created, in order */
   wordRanges: Array<{ text: string; start: number; end: number }>;
 }
 
-function fakeDoc(view = { scrollX: 0, scrollY: 0 }): FakeDoc {
+function fakeDoc(view: FakeView = { scrollX: 0, scrollY: 0 }): FakeDoc {
   const wordRanges: FakeDoc['wordRanges'] = [];
   const doc: FakeDoc = {
     body: makeEl('body'),
@@ -121,6 +127,38 @@ function sourceEl(doc: FakeDoc, opts: { id?: string; rect?: DOMRect; lineRects?:
 }
 
 const asHTML = (el: unknown) => el as HTMLElement;
+
+/**
+ * A fake ResizeObserver that records observed targets and lets a test fire a resize. `instances`
+ * collects every observer the helper constructs, so a test can assert wiring and trigger a callback.
+ */
+function fakeResizeObserver() {
+  const instances: Array<{
+    cb: () => void;
+    observed: unknown[];
+    disconnected: boolean;
+    fire(): void;
+  }> = [];
+  class FakeRO {
+    cb: () => void;
+    observed: unknown[] = [];
+    disconnected = false;
+    constructor(cb: () => void) {
+      this.cb = cb;
+      instances.push(this);
+    }
+    observe(t: unknown) {
+      this.observed.push(t);
+    }
+    disconnect() {
+      this.disconnected = true;
+    }
+    fire() {
+      if (!this.disconnected) this.cb();
+    }
+  }
+  return { FakeRO, instances };
+}
 
 test("granularity 'box' measures the element's own box (the homepage behavior, via API)", () => {
   const doc = fakeDoc();
@@ -227,4 +265,75 @@ test('annotate() is idempotent — re-calling disposes the previous set first', 
   assert.equal(doc.body.children.length, 1, 'one live span set, not two');
   disposeSecond();
   assert.equal(doc.body.children.length, 0);
+});
+
+test('observe: re-annotates on source resize, debounced, and the disposer disconnects the observer', (t) => {
+  t.after(() => mock.timers.reset());
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const { FakeRO, instances } = fakeResizeObserver();
+  const doc = fakeDoc({ scrollX: 0, scrollY: 0, ResizeObserver: FakeRO });
+  const el = sourceEl(doc, { id: 's', rect: rect(10, 20, 300, 40) });
+
+  const dispose = textBodies(asHTML(el), { granularity: 'box', observe: true }).annotate();
+  assert.equal(instances.length, 1, 'one ResizeObserver constructed');
+  assert.deepEqual(instances[0]!.observed, [el], 'it observes the source element');
+  assert.equal(doc.body.children.length, 1, 'spans rendered up front');
+  const first = doc.body.children[0]!;
+
+  // A resize fires; debounced, so nothing happens until the timer elapses.
+  instances[0]!.fire();
+  assert.equal(doc.body.children.length, 1, 'still the original set before the debounce');
+  mock.timers.tick(100);
+  assert.equal(doc.body.children.length, 1, 'still exactly one set after re-measure');
+  assert.notEqual(doc.body.children[0], first, 'the span set was replaced (re-measured)');
+
+  // Coalesced: two quick resizes → a single re-annotate.
+  const beforeBurst = doc.body.children[0]!;
+  instances[0]!.fire();
+  instances[0]!.fire();
+  mock.timers.tick(100);
+  assert.equal(doc.body.children.length, 1);
+  assert.notEqual(doc.body.children[0], beforeBurst, 're-measured once for the burst');
+
+  dispose();
+  assert.equal(instances[0]!.disconnected, true, 'disposer disconnects the observer');
+  assert.equal(doc.body.children.length, 0, 'and removes the spans');
+
+  // A late resize after disposal is inert (timer cleared, observer gone).
+  instances[0]!.fire();
+  mock.timers.tick(100);
+  assert.equal(doc.body.children.length, 0, 'no resurrection after dispose');
+});
+
+test('observe accepts a custom debounce in ms', (t) => {
+  t.after(() => mock.timers.reset());
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const { FakeRO, instances } = fakeResizeObserver();
+  const doc = fakeDoc({ scrollX: 0, scrollY: 0, ResizeObserver: FakeRO });
+  const el = sourceEl(doc, { id: 's', rect: rect(10, 20, 300, 40) });
+
+  textBodies(asHTML(el), { granularity: 'box', observe: 250 }).annotate();
+  const first = doc.body.children[0]!;
+  instances[0]!.fire();
+  mock.timers.tick(100);
+  assert.equal(doc.body.children[0], first, 'not yet re-measured at 100ms');
+  mock.timers.tick(150);
+  assert.notEqual(doc.body.children[0], first, 're-measured once the 250ms debounce elapses');
+});
+
+test('observe is off by default and a no-op when ResizeObserver is unavailable', () => {
+  // default: no observer wired even when one is present
+  const { FakeRO, instances } = fakeResizeObserver();
+  const withRO = fakeDoc({ scrollX: 0, scrollY: 0, ResizeObserver: FakeRO });
+  const a = sourceEl(withRO, { id: 'a', rect: rect(0, 0, 10, 10) });
+  textBodies(asHTML(a), { granularity: 'box' }).annotate();
+  assert.equal(instances.length, 0, 'no observer constructed by default');
+
+  // observe requested but the runtime lacks ResizeObserver → snapshot still renders, no throw
+  const noRO = fakeDoc();
+  const b = sourceEl(noRO, { id: 'b', rect: rect(0, 0, 10, 10) });
+  const dispose = textBodies(asHTML(b), { granularity: 'box', observe: true }).annotate();
+  assert.equal(noRO.body.children.length, 1, 'spans still rendered without a ResizeObserver');
+  dispose();
+  assert.equal(noRO.body.children.length, 0);
 });
