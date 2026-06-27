@@ -326,45 +326,43 @@ export function initHomeRuntime(): () => void {
   // The grid is a hero flourish, not a persistent scroll companion. Once the reader scrolls past the
   // hero we RETIRE it — flip the nav grid toggle off so the control reflects reality and the reader can
   // opt it back on — and stop auto-asserting it (a manual re-enable then sticks at full opacity).
-  let gridRetired = false;
-  let heroSeen = false; // guard: only retire after the hero has actually been at the top, so a boot
-  // scroll-race (restored scroll position before the engine settles) can't retire it sight-unseen.
+  // The hero grid is a visual flourish gated on the user's grid toggle (data-nav-grid, default on for
+  // the home hero). The toggle is a STABLE user control — scrolling never changes it or its button.
+  // Near the hero we draw the grid and fade its opacity as it scrolls away; once it's out of the hero
+  // we stop drawing it (so it costs no fill-rate and any flow overlay shows at full opacity). That stop
+  // is purely a draw optimization keyed to an internal flag — it never reads or writes the toggle.
+  // Composes with an active flow overlay so the two coexist.
+  let heroGridDrawn = false; // internal draw-state for the hero flourish — NOT the user toggle
+  const setGridOverlay = (withGrid: boolean) => {
+    if (!field) return;
+    const stack: string[] = [];
+    if (field.dataset.navFlow === "on") stack.push("streamlines"); // keep any active flow overlay
+    if (withGrid) stack.push("grid");
+    field.setOverlay?.(stack.length ? stack : "off");
+    heroGridDrawn = withGrid;
+  };
   const heroGrid = () => {
     if (sig.aborted) return;
     const oc = document.querySelector<HTMLElement>("canvas[data-field-overlay]");
-    if (scrollY < innerHeight * 0.3) heroSeen = true;
-
-    // retire on scroll-away: turn the grid toggle off (once), recompose the overlay without it, and
-    // sync the nav button so it shows 'off' and invites a re-enable.
-    if (heroSeen && !gridRetired && scrollY > innerHeight * 0.55 && field?.dataset.navGrid === "on") {
-      gridRetired = true;
-      field.dataset.navGrid = "off";
-      const stack: string[] = [];
-      if (field.dataset.navFlow === "on") stack.push("streamlines"); // keep any other active overlay
-      field.setOverlay?.(stack.length ? stack : "off");
-      const gridBtn = document.getElementById("sn-grid-toggle");
-      if (gridBtn) {
-        gridBtn.setAttribute("aria-pressed", "false");
-        gridBtn.title = "Show field grid";
-      }
-    }
-
-    const isGrid = (field?.getAttribute("overlay") ?? "").includes("grid");
-    // fade HERO_GRID_MAX→0 across the first 0.6 viewport — but ONLY while the grid is the active hero
-    // overlay (not retired, not a panel's own reading). Once retired, a manual re-enable shows at full
-    // opacity. The ceiling is held below 1 so the screen-blend lattice never overwhelms the hero copy.
-    // Smoothstep (t²(3−2t)) instead of linear so the fade opens softly and closes with a gentle ease-in,
-    // rather than starting at full brightness and dropping linearly from the first pixel of scroll.
+    // fade HERO_GRID_MAX→0 across the first 0.6 viewport so the lattice is a hero flourish, not a
+    // persistent scroll companion. Smoothstep (t²(3−2t)) so the fade opens softly and eases out; the
+    // ceiling is held below 1 so the screen-blend lattice never overwhelms the hero copy.
     const HERO_GRID_MAX = 0.72;
     const t = Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.6)));
     const smoothT = t * t * (3 - 2 * t);
     const fade = HERO_GRID_MAX * smoothT;
-    if (oc) oc.style.opacity = isGrid && !gridRetired ? String(fade) : "1";
-    // while the hero is in view AND the grid hasn't been retired, keep it as the resting overlay
-    // (re-asserting over the on-load settle to 'off'); only call when it has drifted, to stay idle-quiet.
-    if (!gridRetired && scrollY < innerHeight * 0.5 && field && field.getAttribute("overlay") !== "grid") {
-      field.setOverlay?.("grid");
-    }
+    // Draw the grid only while the user wants it (toggle on) AND it's still near the hero; once it has
+    // faded out, stop drawing it. This is a pure draw optimization — the toggle/button are untouched,
+    // so scrolling never flips the control.
+    const wantGrid = field?.dataset.navGrid === "on";
+    const shouldDraw = wantGrid && fade > 0.02;
+    // Drive the ASSERT off the real overlay attribute, not the flag: <field-root> upgrades async, so an
+    // early setOverlay() is a no-op — re-checking the attribute each tick retries until it sticks. The
+    // flag only scopes the DE-assert so we retire our own hero grid, never a grid the user pinned on.
+    const hasGrid = (field?.getAttribute("overlay") ?? "").includes("grid");
+    if (field && shouldDraw && !hasGrid) setGridOverlay(true);
+    else if (field && !shouldDraw && hasGrid && heroGridDrawn) setGridOverlay(false);
+    if (oc) oc.style.opacity = heroGridDrawn ? String(fade) : "1";
   };
   window.addEventListener("scroll", heroGrid, { passive: true, signal: sig });
   heroGrid();
