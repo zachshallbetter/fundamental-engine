@@ -5,7 +5,7 @@ summary: "The honest path to 1.0: what's locked in 0.x today, the 10-of-11 green
 date: 2026-06-26
 category: release
 author: "Zach Shallbetter"
-draft: true
+draft: false
 ---
 
 # The Road to 1.0 — What the RC1 Gates Actually Prove

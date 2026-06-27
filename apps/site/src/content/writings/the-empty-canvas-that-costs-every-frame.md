@@ -5,7 +5,7 @@ summary: "Why a transparent canvas tanked our framerate, and why the bottleneck 
 date: 2026-06-26
 category: feature
 author: "Zach Shallbetter"
-draft: true
+draft: false
 ---
 
 # The Empty Canvas That Costs Every Frame

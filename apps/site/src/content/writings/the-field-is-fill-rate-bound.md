@@ -5,7 +5,7 @@ summary: "Why a slow field is almost never the particles, and the DPR2 / mix-ble
 date: 2026-06-26
 category: feature
 author: "Zach Shallbetter"
-draft: true
+draft: false
 ---
 
 # The Field Was Never Particle-Bound — It Was Fill-Rate-Bound

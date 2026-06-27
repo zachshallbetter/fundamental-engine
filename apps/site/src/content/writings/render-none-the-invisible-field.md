@@ -5,7 +5,7 @@ summary: "Why the engine default is render: 'none', and why a signals-first fiel
 date: 2026-06-26
 category: feature
 author: "Zach Shallbetter"
-draft: true
+draft: false
 ---
 
 # render: 'none' — The Invisible Field Is the Baseline

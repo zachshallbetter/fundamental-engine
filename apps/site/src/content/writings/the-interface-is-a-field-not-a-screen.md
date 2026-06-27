@@ -5,7 +5,7 @@ summary: "The manifesto: why an interface is a shared field of meaning, not a pi
 date: 2026-06-26
 category: feature
 author: "Zach Shallbetter"
-draft: true
+draft: false
 ---
 
 # The Interface is a Field, Not a Screen

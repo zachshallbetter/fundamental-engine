@@ -5,7 +5,7 @@ summary: "A whole bug class on CSS custom properties: faithful writes, no enforc
 date: 2026-06-26
 category: feature
 author: "Zach Shallbetter"
-draft: true
+draft: false
 ---
 
 # The Silent Contract Gap — Bugs That Don't Throw
