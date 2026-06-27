@@ -48,10 +48,20 @@ export interface ThresholdOptions {
   exitEvent?: string;
 }
 
+/** Per-binding runtime activity: how many flushes the body has lived through, and whether any
+ *  bound channel has ever received a non-zero value. The "silent contract gap" detector reads this. */
+export interface FeedbackActivity {
+  /** flushes seen while this binding was registered (and the element connected). */
+  flushes: number;
+  /** has any bound channel ever flushed a non-zero value onto this element? */
+  written: boolean;
+}
+
 export class FeedbackRegistry {
   private readonly bindings = new Map<Element, VarBinding>();
   private readonly direct = new Map<Element, Record<string, string>>();
   private readonly thresholds: ThresholdEntry[] = [];
+  private readonly activity = new Map<Element, FeedbackActivity>();
   private _cssWritesLastFrame = 0;
 
   /** Declare which state keys map to which CSS vars on an element (e.g. `{ density: '--field-density' }`). */
@@ -74,6 +84,17 @@ export class FeedbackRegistry {
   /** The declared bindings (element → the CSS-var names it writes), for lint / inspection. */
   boundVars(): Array<{ element: Element; vars: string[] }> {
     return [...this.bindings].map(([element, map]) => ({ element, vars: Object.values(map) }));
+  }
+
+  /**
+   * Per-element runtime feedback activity accumulated across `flush()` calls: how many flushes the
+   * binding has lived through and whether any bound channel ever flushed a non-zero value. The
+   * "silent contract gap" detector (`lintFeedbackNeverWritten`) reads this to flag a body that has
+   * been bound for many frames but never actually received a value — it reacts to nothing. Inspection
+   * only; never mutated outside `flush()`.
+   */
+  feedbackActivity(): Array<{ element: Element; flushes: number; written: boolean }> {
+    return [...this.activity].map(([element, a]) => ({ element, flushes: a.flushes, written: a.written }));
   }
 
   /**
@@ -110,6 +131,7 @@ export class FeedbackRegistry {
   unregister(element: Element): void {
     this.bindings.delete(element);
     this.direct.delete(element);
+    this.activity.delete(element);
     // splice in reverse so the index arithmetic stays correct as we remove entries
     for (let i = this.thresholds.length - 1; i >= 0; i--) {
       if (this.thresholds[i]!.element === element) this.thresholds.splice(i, 1);
@@ -127,12 +149,16 @@ export class FeedbackRegistry {
     for (const [el, map] of this.bindings) {
       // prune entries whose element left the DOM; writing to a disconnected element is a no-op
       // layout-wise but still costs a Map lookup + style.setProperty call every frame.
-      if (!el.isConnected) { this.bindings.delete(el); continue; }
+      if (!el.isConnected) { this.bindings.delete(el); this.activity.delete(el); continue; }
+      const act = this.activity.get(el) ?? { flushes: 0, written: false };
+      act.flushes++;
       for (const key of Object.keys(map)) {
         const v = state.get(el, key);
         if (!v) continue;
+        if (v.type === 'number' ? v.value !== 0 : Boolean((v as { value?: unknown }).value)) act.written = true;
         this._cssWritesLastFrame += writeVar(el, map[key]!, v.type === 'number' ? v.value.toFixed(3) : String((v as { value?: unknown }).value ?? ''));
       }
+      this.activity.set(el, act);
     }
     for (const [el, vars] of this.direct) {
       for (const name of Object.keys(vars)) this._cssWritesLastFrame += writeVar(el, name, vars[name]!);

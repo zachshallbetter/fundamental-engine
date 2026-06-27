@@ -23,6 +23,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`feedback-never-written` lint + `FeedbackRegistry.feedbackActivity()` (dom).** The runtime half of
+  the silent-contract-gap detector: `lintFeedbackNeverWritten` warns when a `[data-feedback]` body has
+  been bound for many frames (`FEEDBACK_NEVER_WRITTEN_FRAMES`, default 120) yet never once received a
+  non-zero value — the reciprocal loop is inert even though the CSS consumer may be wired correctly. It
+  reads new per-element activity (`feedbackActivity()`) that `flush()` accumulates. Complements the
+  existing CSS-side `feedback-writes-unread` (body written but no rule reads it). Dev-only via `lintPlatform`.
 - **Wire-format contract — `PARTICLE_STRIDE` (5) and `PARTICLE_WIRE_VERSION` (0) (core).** Typed
   constants documenting the `readParticles()` buffer layout so renderers can assert the contract rather
   than embedding the magic number.
