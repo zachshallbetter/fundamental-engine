@@ -216,7 +216,12 @@ const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/eli5' || A
         inset: 0;
         z-index: 1;
         pointer-events: none;
-        background: radial-gradient(120% 80% at 50% -10%, transparent 55%, rgba(0, 0, 0, 0.55));
+        /* Two layers: (1) the original top-anchored vignette that darkens the edges/bottom, kept so the
+           hero stays bright; (2) a faint flat floor so the field dims just enough behind body copy to lift
+           text legibility everywhere — without hiding the field (particles/streamlines still read through). */
+        background:
+          radial-gradient(120% 80% at 50% -10%, transparent 55%, rgba(0, 0, 0, 0.55)),
+          rgba(0, 0, 0, 0.12);
       }
       @media (prefers-reduced-motion: reduce) {
         .field {
