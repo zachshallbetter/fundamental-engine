@@ -69,6 +69,26 @@ const CONTRACT = [
   ['data-intent', 'authored intent, compiled to forces', 'gather'],
   ['data-field-role', 'semantic role → a default force', 'source, sink, anchor'],
 ];
+
+// Element consumers — the element doesn't push the field, it REACTS to it (the element side of the
+// Body Matter Interaction model). Each needs data-move so the engine may relocate/collapse the node.
+const CONSUMERS = [
+  ['data-dock', 'collapse into a sink when captured; fires field:captured / field:released', 'data-move data-dock'],
+  ['data-warp', 'teleport to a paired body through a warp throat; fires field:relocated', 'data-warp data-pair="#exit" data-twist="0.5" data-scale="0.8"'],
+  ['data-emit', 'clone a decorative template node as matter is emitted', 'data-emit'],
+];
+
+const consumers = `<!-- capture: a chip that collapses into a sink when the field pulls it in -->
+<span class="chip" data-move data-dock>tag</span>
+
+<!-- relocate: an element that teleports to its paired exit through a warp throat -->
+<div data-move data-warp data-pair="#exit" data-twist="0.5" data-scale="0.8">in</div>
+<div id="exit"></div>
+
+<!-- emit: clone this template node as the body emits matter -->
+<button data-body="spawn" data-emit>
+  <template><span class="spark">·</span></template>
+</button>`;
 ---
 
 <DocsLayout
@@ -128,6 +148,27 @@ const CONTRACT = [
       ))}
     </tbody>
   </table>
+
+  <h2>Element consumers — react to the field</h2>
+  <p>
+    The contract above makes an element a <em>force source</em>. An element can instead <em>consume</em>
+    the field — react to the matter around it (the element side of the Body Matter Interaction model).
+    Each pairs with <code>data-move</code> so the engine may relocate or collapse the node.
+  </p>
+  <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: consumers }]} />
+  <table class="au-table">
+    <thead><tr><th>Attribute</th><th>Behavior</th><th>Example</th></tr></thead>
+    <tbody>
+      {CONSUMERS.map(([attr, meaning, ex]) => (
+        <tr><td><code>{attr}</code></td><td>{meaning}</td><td><code>{ex}</code></td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p class="note">
+    <code>data-warp</code> needs a paired body (<code>data-pair</code>) to relocate to — a single body
+    can't show relocation. See the <a href="/docs/api/handle">agent consumption model</a> for the
+    captured / relocated / emitted events.
+  </p>
 
   <h2>Beneath the surfaces: the platform</h2>
   <p>
