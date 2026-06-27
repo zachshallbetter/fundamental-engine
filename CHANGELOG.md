@@ -52,6 +52,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   (`enter`/`exit`/`met`) key on the counterparty pair, so distinct pairs in one frame stay distinct.
   Behaviour-preserving for listeners that just react to "it happened." DOM-plane only — no Swift/Android
   port mirror needed (the ports have no discrete event bus). Closes #684.
+- **Typed `--field-density` / `--d` via `CSS.registerProperty` (dom).** `browserHost()` now registers the
+  field-density channels (`--field-density` and its compact alias `--d`) as typed `<number>` custom
+  properties (`inherits: true`, `initialValue: '0'`) once at boot, so consumers can transition/animate
+  `var(--field-density)`/`var(--d)` on the compositor instead of getting an all-or-nothing swap. New
+  `registerFieldProperties()` (`packages/dom/src/register-properties.ts`) is feature-detected,
+  idempotent, and a graceful no-op where `CSS.registerProperty` is unavailable or the property is
+  already registered. DOM-plane only — no Swift/Android port mirror needed. Closes #677.
 - **Android port — ParticleShape, visual-snapshot gate, path-aware CI (`android/` + CI).** The final
   follow-ups. **`ParticleShape`** (core): dot / star / polygon / custom unit-vector stamps the host scales
   per particle by size + heat — ported from Swift, wired into the FieldLab renderer + a Shape inspector
