@@ -31,6 +31,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   position or heat.
 - **`registerOverlay(name, drawFn)` (core).** Register a custom named overlay into the existing
   `setOverlay` stack; returns an unregister function for clean teardown.
+- **`FIELD_VERSION` re-exported from the adapter doors (vanilla / react / elements).** The
+  engine-version constant is now a named export off each authoring door, not core-only — a missing
+  named import aborts the whole consuming ES module, so `import { FIELD_VERSION } from
+  '@fundamental-engine/vanilla'` (and react / elements) now resolves, equal to `field.version` on the
+  handle. Added to the frozen API surface. Closes #584.
+- **`useForcesData(records, mapper, options)` React hook (react).** The React wrapper for `bindData()`
+  — attach the returned `containerRef` to a host element and the hook drives a live field from React
+  state, doing record → body diffing (entering/decaying rather than popping) on every `records` change.
+  Returns `{ containerRef, bindingRef, inspect }`; the bindData mapper/option/inspection types are
+  re-exported alongside it. Closes #698.
 - **Off-main-thread render (C3) — Worker + OffscreenCanvas (dom).** `attachOffthreadRender(field, canvas)`
   transfers a canvas to a dedicated Worker and drives particle rendering off the main thread via
   `readParticles()` + postMessage each frame. Falls back gracefully on browsers without

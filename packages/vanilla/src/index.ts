@@ -42,6 +42,10 @@ export type {
 } from '@fundamental-engine/core';
 // the feedback CSS adapter, for a host that wants the default DOM write path explicitly.
 export { cssFeedbackSink } from '@fundamental-engine/core';
+// the running engine version constant — re-exported so a consumer can read it as a named import
+// off the door they already import from (the standalone constant, beside `field.version` on the
+// handle). A missing named import aborts the whole ES module, so the door must carry it (#584).
+export { FIELD_VERSION } from '@fundamental-engine/core';
 
 // The catalog data a vanilla UI commonly reads — the force list, formations, `data-when`
 // gates, and the palette — so a force picker or legend needs no second install.

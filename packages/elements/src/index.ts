@@ -675,3 +675,7 @@ export {
   UPDATE_BODY,
 } from '@fundamental-engine/core';
 export type { RegisterBodyDetail } from '@fundamental-engine/core';
+// the running engine version constant — re-exported so a consumer can read it as a named import off
+// this door (beside `el.version` on the element). A missing named import aborts the whole ES module,
+// so the door must carry it (#584).
+export { FIELD_VERSION } from '@fundamental-engine/core';
