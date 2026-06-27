@@ -13,20 +13,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.fundamental.compose.FieldView
+import com.fundamental.compose.RenderMode
 import com.fundamental.compose.fieldBody
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { Demo() }
+        // Optional `--es mode DOTS|TRAILS|LINKS|GLOW` to pick the render mode (defaults to TRAILS).
+        val mode = runCatching { RenderMode.valueOf(intent?.getStringExtra("mode") ?: "") }
+            .getOrDefault(RenderMode.TRAILS)
+        setContent { Demo(mode) }
     }
 }
 
 @Composable
-private fun Demo() {
+private fun Demo(mode: RenderMode) {
     Box(Modifier.fillMaxSize().background(Color(0xFF0A0A12))) {
         // A live field. Tap anywhere to burst matter.
-        FieldView(modifier = Modifier.fillMaxSize(), particleCount = 600) {
+        FieldView(modifier = Modifier.fillMaxSize(), particleCount = 600, renderMode = mode) {
             // A centered attractor: this box IS a body — its well gathers the field, and the field's
             // gathered density bends back. Mirrors `.fieldBody(...)` on Swift / React.
             Box(

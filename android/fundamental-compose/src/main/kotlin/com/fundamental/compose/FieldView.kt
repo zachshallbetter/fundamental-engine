@@ -1,5 +1,8 @@
 package com.fundamental.compose
 
+import android.graphics.Bitmap
+import android.graphics.Paint
+import android.graphics.Canvas as AndroidCanvas
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -17,12 +20,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.unit.IntSize
 import com.fundamental.core.engine.Body
 import com.fundamental.core.math.Vec3
 import com.fundamental.core.runtime.FieldController
@@ -38,23 +45,54 @@ import com.fundamental.core.engine.Box as FieldBox
  * back."
  */
 
+/** How the particle pool is drawn (the matter render modes — mirror of the JS/Swift modes). */
+enum class RenderMode {
+    /** Soft round particles (the default). */
+    DOTS,
+
+    /** Motion trails — the frame fades instead of clearing, so matter leaves comet tails. */
+    TRAILS,
+
+    /** Proximity links — line segments between nearby particles (constellation / network look). */
+    LINKS,
+
+    /** Soft additive glow — radial-gradient blobs, brightest where matter is hot. */
+    GLOW,
+}
+
 /** Provides the running [FieldController] to descendants so [Modifier.fieldBody] can attach. */
 val LocalFieldController = compositionLocalOf<FieldController?> { null }
+
+private const val LINK_RADIUS = 38f // px — links connect particles closer than this
+private val COOL = Color(0xFFFFE0C8) // resting (warm-default identity), matches the engine palette
 
 @Composable
 fun FieldView(
     modifier: Modifier = Modifier,
     accent: Color = Color(0xFF4DA3FF),
     particleCount: Int = 300,
+    renderMode: RenderMode = RenderMode.DOTS,
     content: @Composable () -> Unit = {},
 ) {
     var controller by remember { mutableStateOf<FieldController?>(null) }
     var frame by remember { mutableIntStateOf(0) }
-    val cool = Color(0xFFFFE0C8) // resting (warm-default identity), matches the engine palette
+    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+
+    // Persistent buffer for TRAILS: matter is drawn into it each frame and the frame is faded, not
+    // cleared, so trails accumulate. Recreated when the size or mode changes; null for other modes.
+    val trail = remember(canvasSize, renderMode) {
+        if (renderMode == RenderMode.TRAILS && canvasSize.width > 0 && canvasSize.height > 0) {
+            val bmp = Bitmap.createBitmap(canvasSize.width, canvasSize.height, Bitmap.Config.ARGB_8888)
+            TrailBuffer(bmp, AndroidCanvas(bmp), Paint().apply { isAntiAlias = true })
+        } else {
+            null
+        }
+    }
 
     Box(
         modifier = modifier.onSizeChanged { size ->
             if (size.width == 0 || size.height == 0) return@onSizeChanged
+            canvasSize = size
             val c = controller
             if (c == null) {
                 controller = FieldController(size.width.toFloat(), size.height.toFloat(), particleCount = particleCount)
@@ -72,15 +110,59 @@ fun FieldView(
         ) {
             frame // observe the frame tick so the canvas redraws each display frame
             val c = controller ?: return@Canvas
-            for (p in c.particles) {
-                val heat = p.heat.coerceIn(0f, 1f)
-                val r = 1.5f + p.size * 1.5f + heat * 3f
-                drawCircle(
-                    color = lerp(cool, accent, heat),
-                    radius = r,
-                    center = Offset(p.position.x, p.position.y),
-                    alpha = 0.85f,
-                )
+            val particles = c.particles
+            when (renderMode) {
+                RenderMode.DOTS -> for (p in particles) {
+                    val heat = p.heat.coerceIn(0f, 1f)
+                    drawCircle(lerp(COOL, accent, heat), 1.5f + p.size * 1.5f + heat * 3f, Offset(p.position.x, p.position.y), 0.85f)
+                }
+
+                RenderMode.GLOW -> for (p in particles) {
+                    val heat = p.heat.coerceIn(0f, 1f)
+                    val c0 = lerp(COOL, accent, heat)
+                    val glowR = 5f + p.size * 2f + heat * 16f
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(c0.copy(alpha = 0.45f + heat * 0.4f), Color.Transparent),
+                            center = Offset(p.position.x, p.position.y),
+                            radius = glowR,
+                        ),
+                        radius = glowR,
+                        center = Offset(p.position.x, p.position.y),
+                    )
+                }
+
+                RenderMode.LINKS -> {
+                    for (p in particles) {
+                        val po = Offset(p.position.x, p.position.y)
+                        for (q in c.store.neighbors(p, LINK_RADIUS)) {
+                            val dx = p.position.x - q.position.x
+                            val dy = p.position.y - q.position.y
+                            val d = kotlin.math.sqrt(dx * dx + dy * dy)
+                            // each pair is visited twice (p→q and q→p); half the alpha so it sums right.
+                            drawLine(accent, po, Offset(q.position.x, q.position.y), strokeWidth = 1f, alpha = (1f - d / LINK_RADIUS) * 0.25f)
+                        }
+                    }
+                    for (p in particles) {
+                        val heat = p.heat.coerceIn(0f, 1f)
+                        drawCircle(lerp(COOL, accent, heat), 1.5f + heat * 2f, Offset(p.position.x, p.position.y), 0.9f)
+                    }
+                }
+
+                RenderMode.TRAILS -> if (trail != null) {
+                    // fade the previous frame toward black, then stamp the particles.
+                    trail.canvas.drawColor(android.graphics.Color.argb(38, 0, 0, 0), android.graphics.PorterDuff.Mode.SRC_OVER)
+                    for (p in particles) {
+                        val heat = p.heat.coerceIn(0f, 1f)
+                        trail.paint.color = lerp(COOL, accent, heat).toArgb()
+                        trail.canvas.drawCircle(p.position.x, p.position.y, 1.5f + p.size * 1.5f + heat * 3f, trail.paint)
+                    }
+                    drawImage(trail.bitmap.asImageBitmap())
+                } else {
+                    for (p in particles) {
+                        drawCircle(lerp(COOL, accent, p.heat.coerceIn(0f, 1f)), 2f, Offset(p.position.x, p.position.y), 0.85f)
+                    }
+                }
             }
         }
 
@@ -96,6 +178,9 @@ fun FieldView(
         }
     }
 }
+
+/** Holds the persistent trail surface + a reusable paint (so TRAILS doesn't reallocate per frame). */
+private class TrailBuffer(val bitmap: Bitmap, val canvas: AndroidCanvas, val paint: Paint)
 
 /**
  * Make this composable a force source in the surrounding [FieldView]. The body's well tracks the
