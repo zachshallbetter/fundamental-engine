@@ -77,9 +77,11 @@ Ported and tested:
   `LINKS` (proximity line segments via the spatial hash → a constellation network) / `GLOW` (soft
   radial-gradient blobs). All four verified on-device. (Metaballs / voronoi / streamlines / heatmap
   overlays are follow-ups — they need the heatmap grid + marching-squares.)
-- **FieldLab (desktop, `:lab`)** — a JVM Swing/Java2D lab over the same engine: an interactive window
-  (`:lab:run`) and a headless scene-tour PNG renderer + sim bench (`--args="render"` / `"bench"`). The
-  Kotlin analog of `swift run FieldLab` — fast iteration and a CI-able visual render path, no emulator.
+- **FieldLab (desktop, `:lab`)** — a JVM Swing/Java2D **FieldLab** over the same engine: a sidebar (tour
+  + the full 36-force catalog), a live canvas, and an inspector (formation / render mode / density /
+  accent / live body sliders / live stats), plus a headless scene-tour PNG renderer + sim bench
+  (`--args="render"` / `"bench"`). The Kotlin analog of `swift run FieldLab` — fast iteration and a
+  CI-able visual render path, no emulator.
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
   (`GoldenConformanceTests`); every other force has behavioral/exact unit tests
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
@@ -108,15 +110,23 @@ adb shell am start -n com.fundamental.sample/.MainActivity
 
 ### FieldLab (desktop) — no emulator
 
-`:lab` is a JVM desktop lab + headless snapshot tool over the **same** `:fundamental-core` engine, drawn
-with Java2D (built into the JDK — no Android, no Compose-Multiplatform). It's the Kotlin analog of
-`swift run FieldLab`: instant iteration without an emulator.
+`:lab` is a JVM **FieldLab** over the **same** `:fundamental-core` engine, drawn with Java2D (built into
+the JDK — no Android, no Compose-Multiplatform). It's the Kotlin analog of `swift run FieldLab`: a real
+desktop app, instant iteration without an emulator. Like the Swift lab it has a **sidebar** (the tour +
+the full 36-force catalog, grouped canonical / natural / extended), a **live canvas**, and an
+**inspector** (formation, render mode, density, accent, live body strength/range/spin sliders, and live
+stats — particles / kinetic / thermal / frame-ms). Each force opens a scene wired so it actually shows
+(charge/magnetism get charged matter, hunt gets two species, wall/gate get a box, morph gets a target).
 
 ```sh
-./gradlew :lab:run                       # interactive window — click = burst, D/T/L/G = render mode, ←/→ = scene
-./gradlew :lab:run --args="render out/"  # headless: render the scene tour to PNGs (CI-able, no display)
+./gradlew :lab:run                       # the FieldLab window — pick a force in the sidebar, tune the inspector, click = burst
+./gradlew :lab:run --args="render out/"  # headless: render the tour + catalog spread to PNGs (CI-able, no display)
 ./gradlew :lab:run --args="bench"        # headless: sim ms/frame per scene
 ```
+
+Not yet (vs. the Swift FieldLab): the 8 overlay **readings**, the **recipe canon** + save/export, and
+the Body-Matter-Interaction toggles (attention / causality / heatmap) — they follow as those engine
+subsystems land (#654 / #652 / #647 / #649).
 
 The pure `:fundamental-core` builds on any JDK (JVM-17 bytecode); the host modules need the Android SDK
 (point Gradle at it via `local.properties` `sdk.dir=...` or `ANDROID_HOME`). compileSdk 34, minSdk 24,
