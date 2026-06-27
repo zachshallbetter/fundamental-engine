@@ -28,16 +28,23 @@ const mdIn = (d: string) =>
   readdirSync(dirURL(d))
     .filter((f) => f.endsWith('.md'))
     .map((f) => ({ rel: `${d}/${f}`, text: readFileSync(new URL(f, dirURL(d)), 'utf8') }));
-const rootFile = (f: string) => ({ rel: f, text: readFileSync(new URL(`../../../../${f}`, import.meta.url), 'utf8') });
+// Optional: a repo-root doc may be absent in some checkouts (e.g. CLAUDE.md is a local agent file,
+// not committed — so it isn't present in CI). Tolerate that rather than crashing the guard.
+const rootFile = (f: string): { rel: string; text: string } | null => {
+  try {
+    return { rel: f, text: readFileSync(new URL(`../../../../${f}`, import.meta.url), 'utf8') };
+  } catch {
+    return null;
+  }
+};
 
 const files = [
   ...mdIn('docs/canonical'),
   ...mdIn('docs/engine-reference'),
   rootFile('ROADMAP.md'),
   rootFile('BACKLOG.md'),
-  rootFile('CLAUDE.md'),
   rootFile('README.md'),
-];
+].filter((x): x is { rel: string; text: string } => x !== null);
 
 test('catalog self-consistency: families sum to the total force count', () => {
   const sum = Object.values(FAMILY).reduce((a, b) => a + b, 0);
