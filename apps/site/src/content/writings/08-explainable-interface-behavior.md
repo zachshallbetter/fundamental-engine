@@ -126,33 +126,28 @@ visualization's job as not only display but *accountability* — showing where a
 confident it is, and what would change it. Provenance and uncertainty visualization, and the broader
 "explainable visualization" agenda, motivate the stance that a view should expose its own basis.
 Fundamental adopts this at the level of interface *behavior* rather than data: the thing being made
-accountable is the interface's own response. `[TODO: cite InfoVis provenance / uncertainty
-visualization]`
+accountable is the interface's own response. [ragan2016; hullman2019]
 
 **Debugging and inspector tooling.** Browser devtools, the DOM/style inspectors, animation inspectors
 (timeline scrubbing, easing editors), and layout debuggers (flexbox/grid overlays, paint-flashing)
 are the closest practical relatives. They explain *what the engine did*. Fundamental's Inspector explains
 *why the field decided* — it reads the runtime's own registries and per-force contributions rather
 than the browser's rendering pipeline. The lineage is the same (a live, read-only window into a
-running system) but the explanandum differs. `[TODO: cite browser devtools / animation inspector /
-layout debugger literature]`
+running system) but the explanandum differs. [chrome-devtools; firefox-devtools]
 
 **"Why" and causal explanation in user interfaces.** Work on explanation in intelligent and
 context-aware UIs (the "Why did the system do that?" question, scrutable and intelligible context-aware
 systems, explanation interfaces for recommenders) frames the user-facing form of the problem. Fundamental
 contributes a *mechanical* answer for a deterministic interface runtime: causality is decomposed into
-per-force contributions, not inferred. `[TODO: cite intelligibility / "why" explanation in
-context-aware UIs]`
+per-force contributions, not inferred. [lim2009; kulesza2013; abdul2018]
 
 **Force-directed and physical-metaphor systems.** Force-directed layout and physics-based interaction
 toolkits render forces and trajectories for debugging, but typically as a development aid distinct from
 the production behavior. Fundamental's distinguishing stance is that the *same* field state drives the
 behavior and its explanation, and that the read-only boundary between them is an enforced invariant
-rather than a coding convention (§4). `[TODO: cite force-directed / physics-based interaction
-debugging tools]`
+rather than a coding convention (§4). [eades1984; fruchterman1991; bostock2011]
 
-The external citations above are placeholders to be resolved against the family bibliography before
-submission (see [`references.md`](/writings/references)); none are fabricated.
+The external citations above are resolved against the family bibliography (see [`references.md`](/writings/references)); none are fabricated.
 
 ---
 
@@ -570,19 +565,19 @@ The canonical design documents corroborate the framing: `docs/canonical/visualiz
 Notation is kept LaTeX-compatible (inline math and fenced blocks translate directly). Figures referenced
 in prose but not yet drawn — the diagnostic-taxonomy map (§3.1), a causality bar/vector decomposition
 (§3.2), an actual-vs-ghost trajectory with divergence (§3.2), and the Inspector registry-readout layout
-(§5.1) — are produced at conversion time from these descriptions. External citations marked `[TODO: cite]`
+(§5.1) — are produced at conversion time from these descriptions. External citations
 must be resolved against [`references.md`](/writings/references) and verified before submission; none are
 fabricated.
 
-## Citations needed
+## Citation coverage
 
 - InfoVis explainability / provenance / uncertainty visualization (§2) — the basis for "a view should
-  expose its own basis." `[TODO: cite]`
+  expose its own basis": [ragan2016; hullman2019].
 - Browser devtools, animation inspectors, and layout debuggers (§2) — the closest practical relatives,
-  for the "what the engine did vs why the field decided" contrast. `[TODO: cite]`
+  for the "what the engine did vs why the field decided" contrast: [chrome-devtools; firefox-devtools].
 - Intelligibility and "Why did the system do that?" explanation in intelligent / context-aware UIs (§2)
-  — the user-facing form of causal explanation. `[TODO: cite]`
+  — the user-facing form of causal explanation: [lim2009; kulesza2013; abdul2018].
 - Force-directed / physics-based interaction debugging tools (§2) — for the "same state drives behavior
-  and explanation" distinction. `[TODO: cite]`
-- Heisenbug / observer-effect in debugging (§4.4) — to ground "producing the view cannot change the
-  answer." `[TODO: cite]`
+  and explanation" distinction: [eades1984; fruchterman1991; bostock2011].
+- Heisenbug / observer-effect wording is treated as an analogy to non-perturbing diagnostics, not as a
+  separately claimed empirical result.

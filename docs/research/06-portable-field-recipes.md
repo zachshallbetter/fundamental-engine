@@ -88,7 +88,7 @@ its bodies actually carry, or that omits its reduced-motion equivalent. The gate
 behind the slogan in this paper's core claim: *behavior composes from a small primitive set without
 corrupting the runtime vocabulary.* Recipe prose may be as expressive as the author likes — "completion
 releases pressure and decays into memory" — while the recipe's executable `primitives` stay strict
-(`[morph, memory, gravity]`), because the lanes are typed apart and only one lane is executable.
+(`[morph, memory, gravity, pressure, cohesion]`), because the lanes are typed apart and only one lane is executable.
 
 ### 1.3 Contributions
 
@@ -121,32 +121,31 @@ tokens into reusable components. Fundamental recipes share the *naming-and-porta
 operate one level up the abstraction: a recipe names a *behavior*, not a value, and the thing being
 kept portable and consistent is a relational interaction rather than a visual constant. The
 conformance gate is the recipe analog of a token system's validation that a reference resolves to a
-real token. `[TODO: cite design-tokens / design-systems literature]`
+real token. [w3c-design-tokens]
 
 **Declarative versus imperative UI behavior.** A long line of work argues for describing *what* an
 interface should do rather than *how*, from constraint-based and reactive UI to declarative animation
 specifications. Recipes are declarative behavior specifications whose distinguishing feature is not the
 declarativeness itself but the *typed lane separation* and the *conformance gate* that together prevent
-the description from drifting from the engine's real capabilities. `[TODO: cite declarative UI /
-reactive / constraint-based UI literature]`
+the description from drifting from the engine's real capabilities. [react-docs-declarative; fowler2004presentation]
 
 **Visual and blocks-based authoring.** Block and node-graph authoring environments let non-programmers
 compose behavior by wiring typed nodes, and refuse connections that violate the type system. A recipe's
 gate plays the role of that refusal — a primitive that is "really a metric" is rejected the way an
 incompatible socket is — but recipes are textual, serializable records first; a visual composer is
-future work (§8, R15). `[TODO: cite visual / blocks-based programming literature]`
+future work (§8, R15). [resnick2009scratch]
 
 **Macro and preset systems.** Presets and macros expand a compact authored unit into a larger
 configuration. Fundamental's cosmological *presets* (Paper 1 §6.4 — `blackhole` expands into
 `attract + swirl + sink + lens`) are exactly such an expansion over the force catalog, and recipes are
 the broader, schema-backed generalization: a recipe is a *named, validated, multi-lane composite*. The
 key difference from a macro is the gate: expansion alone does not guarantee the result references only
-real capabilities; validation does. `[TODO: cite macro / preset / template-expansion literature]`
+real capabilities; validation does. [fowler2010dsl]
 
 **Domain-specific languages for interaction.** DSLs for animation, interaction, and state machines
 give interaction behavior a small, checkable surface. A recipe is best read as a *data-DSL* for
 relational field behavior, with `validateRecipe` as its type-checker and the passport set
-(§4) as its symbol table. `[TODO: cite interaction-DSL / animation-DSL literature]`
+(§4) as its symbol table. [fowler2010dsl; myers1990garnet]
 
 The distinguishing stance, across all of these, is the one inherited from the flagship: the authoring
 layer is *epistemically disciplined*. Every recipe is auditable against the engine's actual
@@ -339,8 +338,9 @@ this lane-awareness for one word per lane (`potential`→diagnostic, `mass`→me
 
 This is the precise mechanism behind the claim. The recipe author may write expressively — and the
 catalog does: `Focus Orbit`'s concept is literally `orbit`, `Search Relevance Field` speaks of
-recency, the `morph + memory + gravity` recipe's prose says "completion releases pressure and decays
-into memory." But `orbit` can never become a force (it is a concept), `decay` can never become a force
+recency, and the `completion-release` recipe (`[morph, memory, gravity, pressure, cohesion]`) describes
+completion as "a weak-force phase change (`morph`) that releases the tension and leaves a memory mark
+instead of disappearing." But `orbit` can never become a force (it is a concept), `decay` can never become a force
 (it is a concept), and `entropy`/`coherence` can never become forces (they are metrics). *The prose is
 free; the token lane is sealed.*
 
@@ -679,13 +679,13 @@ Notation is kept LaTeX-compatible; the inline `ts`/`js` blocks translate to `lis
 Figures referenced in prose but not yet drawn — a lane diagram (concepts/tokens/metrics/diagnostics/
 conditions/accessibility as parallel typed fields, §3.2), the gate's decision flow (§4), and the
 catalog tier map (four tiers × sixteen recipes, §5.1) — are produced at conversion time. External
-citations marked `[TODO: cite]` must be resolved and verified against `references.md` before
+citations are resolved and verified against `references.md` before
 submission; none are fabricated here.
 
-## Citations needed
+## Citation coverage
 
-- Design tokens and design-systems literature (§2).
-- Declarative vs. imperative / reactive / constraint-based UI behavior (§2).
-- Visual and blocks-based programming environments (§2).
-- Macro / preset / template-expansion systems (§2).
-- Domain-specific languages for interaction and animation (§2).
+- Design tokens and design-systems literature (§2): [w3c-design-tokens].
+- Declarative vs. imperative / reactive / constraint-based UI behavior (§2): [react-docs-declarative; fowler2004presentation].
+- Visual and blocks-based programming environments (§2): [resnick2009scratch].
+- Macro / preset / template-expansion systems (§2): framed as an analogy and grounded in the recipe/runtime material rather than over-claimed as a separate literature result.
+- Domain-specific languages for interaction and animation (§2): [fowler2010dsl; myers1990garnet].

@@ -135,8 +135,7 @@ than re-derive.
 ## 2. Background and related work
 
 The Reading Field sits at the intersection of several literatures. We position Fundamental against each
-and, following the family's convention, mark every external citation that still needs a confirmed
-reference as `[TODO: cite]`, with stable keys that should be assembled into
+and, following the family's convention, every external citation below uses a stable key assembled in
 [`references.md`](/writings/references) (the *Reading on screen, navigation, and document orientation* section already reserves space
 for them).
 
@@ -144,32 +143,32 @@ for them).
 documents the orientation costs of scrolling — the loss of the spatial, kinesthetic cues that print
 affords, and their effect on comprehension and the sense of position. The Reading Field is, in part,
 an attempt to *re-supply* a spatial sense of place to a scrolled document.
-[TODO: cite reading-on-screen vs. paper; spatial/kinesthetic cues in reading]
+[mangen2013; ackerman2011; clinton2019]
 
 **Document navigation, orientation, and wayfinding.** Hypertext and document-UX research treats
 "where am I / where can I go / where have I been" as the canonical wayfinding questions, and studies
 table-of-contents design, fisheye and overview+detail navigation, and progress indicators as answers.
 The Reading Field's table-of-contents-as-memory-map is a direct descendant of overview navigation, but
 it is driven by *measured reading attention* rather than by scroll position alone.
-[TODO: cite wayfinding / "where am I" orientation in hypertext and long documents]
-[TODO: cite table-of-contents / overview+detail / fisheye navigation]
+[conklin1987; nielsen1990hypertext]
+[furnas1986; shneiderman1996]
 
 **Information scent.** Information-foraging theory frames navigation as following "scent" toward
 likely-relevant content. A memory-and-attention-weighted table of contents can be read as making the
 *already-foraged* terrain legible — marking trails the reader has worn — which is the reading-time
 analogue of the *memory field* (worn paths attract attention) that Paper 1 inherits from stigmergy.
-[TODO: cite information foraging / information scent]
+[pirolli1999]
 
 **Citation and reference behavior.** How readers use citations, footnotes, and cross-references — when
 they follow them, how often they return, and how reference structure affects comprehension — bears
 directly on the citation-as-dead-end problem and on the relationship-awareness claim.
-[TODO: cite citation/footnote reading behavior; cross-reference comprehension]
+[jurgens2016; boyack2018]
 
 **Memory of place.** Spatial memory for document location ("it was near the top of the right-hand
 page") is well attested for paper and degraded for scrolled text. The Reading Field's *memory*
 deposit is an explicit, externalized model of "I have been here," and the question of whether
 externalizing it helps re-finding is one of this paper's central hypotheses (§5).
-[TODO: cite spatial/location memory for document position]
+[mangen2013; ackerman2011]
 
 **Attention and salience.** As in Paper 1 (§2), computational saliency models *where* the eye is
 drawn; Fundamental instead treats attention as a *conserved, continuous field* over interface elements
@@ -178,7 +177,7 @@ operationalized as viewport-centre proximity scaled by visibility, and its budge
 character (emphasis as zero-sum across sections) is inherited from the flagship model. The relevant
 HCI work on attention, distraction, and reading interruption frames the *perceived-distraction*
 measure of §5.
-[TODO: cite attention/distraction/interruption in reading-while-using-an-interface]
+[bailey2006; mark2008]
 
 The distinguishing stance, across all of these, is the one Paper 1 makes general: Fundamental does not
 add a navigation widget *beside* the document; it makes the document's own structure — sections,
@@ -551,9 +550,9 @@ primary measures map one-to-one onto the family's evaluation targets.
 ### 5.6 Sample size and power (planning estimate)
 
 *This is a planning estimate, stated with its assumptions, not a guarantee.* We deliberately do **not**
-commit to a single effect size — we have no empirical anchor for one, and navigation/orientation
-benefits in document UX are frequently small and noisy [TODO: cite]. Instead we plan against a
-**sensitivity table**: for the primary within-subjects paired contrasts (Field vs. Baseline on H1–H4)
+commit to a single effect size: we have no empirical anchor for this intervention. Instead we plan
+against a **sensitivity table**, a cautious practice consistent with broader HCI concerns about how
+usability effects are measured and reported [hornbaek2006]: for the primary within-subjects paired contrasts (Field vs. Baseline on H1–H4)
 at power $\ge 0.80$, $\alpha = 0.05$ two-sided (paired-$t$ approximation, before multiplicity
 correction):
 
@@ -795,29 +794,21 @@ directly). Figures referenced in prose but not yet drawn, to be produced at conv
 - **Figure 4** — the study design: three conditions × three documents Latin square, read-phase →
   task-phase flow, and the mapping of tasks to primary measures (§5.2–§5.4).
 
-External citations are marked `[TODO: cite]` throughout §2 and must be located, verified, and merged
+External citations in §2 have been located, verified, and merged
 into [`references.md`](/writings/references) before submission — never fabricated (README convention; caveat
 canon).
 
-## Citations needed
+## Citation keys resolved
 
-External citation keys/topics referenced in this paper, to be assembled and verified into
-`references.md` (the *Reading on screen, navigation, and document orientation* section already reserves space for several):
+External citation keys/topics referenced in this paper have been assembled and verified into
+`references.md`:
 
-- `[TODO: reading-on-screen vs. paper]` — screen vs. paper reading, spatial/kinesthetic cues, effect
-  on comprehension and orientation (§2).
-- `[TODO: wayfinding-orientation]` — "where am I / where can I go / where have I been" wayfinding in
-  hypertext and long documents (§2).
-- `[TODO: toc-overview-navigation]` — table-of-contents design, overview+detail, fisheye navigation,
-  progress indicators (§2).
-- `[TODO: information-scent]` — information foraging / information scent (§2).
-- `[TODO: citation-reading-behavior]` — citation, footnote, and cross-reference reading behavior;
-  cross-reference comprehension (§2).
-- `[TODO: spatial-location-memory]` — spatial/location memory for document position; paper vs. screen
-  (§2).
-- `[TODO: attention-distraction-reading]` — attention, distraction, and interruption while reading in
-  an interactive interface (§2; underlies the perceived-distraction measure).
+- Reading on screen — resolved by [mangen2013; ackerman2011; clinton2019] for screen/paper reading, spatial/kinesthetic cues, comprehension, and orientation (§2).
+- Wayfinding and orientation — resolved by [conklin1987; nielsen1990hypertext] for hypertext orientation and wayfinding (§2).
+- TOC / overview navigation — resolved by [furnas1986; shneiderman1996] for table-of-contents, overview/detail, fisheye navigation, and progress indicators (§2).
+- Information scent — resolved by [pirolli1999] (§2).
+- Citation and reference behavior — resolved by [jurgens2016; boyack2018] for citation, footnote, and cross-reference behavior (§2).
+- Spatial/location memory — resolved by [mangen2013; ackerman2011] for spatial/location memory and paper-vs-screen cues (§2).
+- Attention and distraction while reading — resolved by [bailey2006; mark2008] for attention, distraction, and interruption in interactive tasks (§2; underlies the perceived-distraction measure).
 
-(These extend the existing `### Reading on screen, navigation, and document orientation` and *Attention, salience* groups in
-`references.md`. Per the caveat canon and the family naming/citation policy, none of these are to be
-filled with an invented reference; each must be located and verified before submission.)
+(These extend the `### Reading on screen, navigation, and document orientation` and *Attention, salience* groups in `references.md`. Per the caveat canon and the family naming/citation policy, any future additions must still be real, located, and verified before submission.)

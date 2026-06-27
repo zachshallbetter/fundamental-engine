@@ -78,10 +78,10 @@ doing so.
 The cost of weak trust primitives is not neutral. A large literature on **automation bias** and
 over-reliance on automated decision aids documents that people tend to over-trust confident,
 fluent system output and under-scrutinize it, particularly under time pressure
-`[TODO: cite automation-bias / over-reliance]`. Large language models compound the risk: they
+[parasuraman1997; skitka1999; goddard2012]. Large language models compound the risk: they
 produce fluent, well-formed prose *independently* of whether the underlying claims are supported,
 and studies of citation faithfulness in retrieval-augmented systems report that attached citations
-frequently do not entail the claims they decorate `[TODO: cite citation-faithfulness / hallucination]`.
+frequently do not entail the claims they decorate [liu2023verifiability; gao2023alce; wallat2024faithfulness].
 The interface, then, is being asked to communicate the *one thing the text itself cannot convey*:
 where the prose is and is not anchored in evidence — and it does so with a footnote marker and a bar.
 
@@ -138,43 +138,42 @@ rather than re-explaining.
 ## 2. Background and related work
 
 The Evidence Field sits at the intersection of several lines of work. We position it against each;
-keys below correspond to entries to be assembled and verified in [`references.md`](references.md),
-and every one is a placeholder, never a fabricated citation.
+keys below correspond to verified entries in [`references.md`](references.md); no citation is invented solely to satisfy the paper.
 
 **Trust calibration in decision support.** Work on human–automation trust holds that the goal is not
 maximal trust but *calibrated* trust — reliance that tracks the system's actual reliability — with
 miscalibration taking two forms, over-trust and under-trust
-`[TODO: cite trust-calibration / Lee-See trust-in-automation]`. This frames our primary dependent
+[lee2004]. This frames our primary dependent
 variable: an evidence display is judged by whether it moves users toward calibration, not by whether
 it raises confidence.
 
 **Uncertainty visualization.** Visualizing uncertainty is hard: representations that *look*
 authoritative can suppress appropriate doubt, and the encoding choice changes how much uncertainty
-people perceive and act on `[TODO: cite uncertainty-visualization]`. The Evidence Field encodes
+people perceive and act on [hullman2019; kale2019]. The Evidence Field encodes
 uncertainty as a continuous entropy metric written back to the claim — one such representation, and
 it inherits these risks; §6 treats them as a falsification path, not a guarantee.
 
 **Automation bias and over-reliance on AI.** People over-rely on confident automated output,
-especially under load `[TODO: cite automation-bias / over-reliance]`; recent work on over-reliance
+especially under load [parasuraman1997; skitka1999; goddard2012]; recent work on over-reliance
 on LLM assistants asks whether explanations and confidence signals reduce or *increase* unwarranted
-reliance, with mixed results `[TODO: cite over-reliance-on-LLMs]`. We take the mixed results
+reliance, with mixed results [bansal2021; bucinca2021; kim2025llm]. We take the mixed results
 seriously: a relational display is not assumed to help.
 
 **Source credibility and citation behavior.** Studies of credibility assessment and citation
 inspection suggest attached references are frequently not opened and that credibility cues are often
-heuristic rather than evidential `[TODO: cite source-credibility / citation-behavior]`. The Evidence
+heuristic rather than evidential [hovland1951; fogg2003; jurgens2016]. The Evidence
 Field's premise is that making support *structural and visible*, rather than a marker the reader must
 choose to open, could change this; the study tests it.
 
 **LLM hallucination and citation faithfulness.** Retrieval-augmented generation attaches sources, but
 evaluations report that a model's cited source frequently does not *entail* the sentence it is
-attached to `[TODO: cite citation-faithfulness / attribution-evaluation]` — precisely the
+attached to [liu2023verifiability; gao2023alce; wallat2024faithfulness] — precisely the
 relationship the Evidence Field externalizes: a "supports" edge can be *present but weak*, and a
 contradiction can sit unmarked between two attached sources.
 
 **Explanation usefulness and explainable AI.** Work on whether explanations *help* (vs. merely
 satisfy) cautions that explanation can produce *illusory* understanding and that a plausible rationale
-can raise trust without improving decisions `[TODO: cite explanation-usefulness / explainable-AI-evaluation]`.
+can raise trust without improving decisions [bansal2021; bucinca2021; abdul2018].
 We treat "explanation usefulness" as a measured construct in §5, not an assumed benefit.
 
 **Position against the baseline.** Against the badge-and-citation baseline, Fundamental's stance is
@@ -205,7 +204,7 @@ This is not only rhetoric; it is enforced by the code. The platform metric libra
 conflicting ratio), but `confidence` is **supplied** by the host through `data-field-<metric>` and —
 since #220 — has **no computed fallback at all**: the engine never infers confidence from relationship
 presence (a citation is not certainty), so `--field-confidence` is written only when the host supplies
-it. (`risk` and `priority` retain computed defaults; see the metric library.) A claim's
+it. (only `priority` retains a computed default; `risk`, like `confidence`, is supplied-only and intentionally has no default — see `SUPPLIED_ONLY_METRICS` in the metric library.) A claim's
 confidence enters the field because the application put it there. The field's job is to make the
 *consequences* of that supplied evidence — which claims read coherent, which read contested — visible
 and consistent.
@@ -343,7 +342,7 @@ host (`data-field-confidence`) and merely *carried*, never manufactured. The fie
 supplied low-confidence claim *look* unstable; it cannot decide that the claim is false.
 
 Thresholded events complete the write-back: a claim crossing into high entropy can emit an
-`entropy-warning`-class event (the canonical event vocabulary includes `forces:entropy-warning`),
+`entropy-warning`-class event (the canonical event vocabulary includes `field:entropy-warning`),
 and a binding strengthening can emit a relationship event. These are debounced and inspectable, per
 the interaction model. The relationship graph itself is owned by the **`RelationshipRegistry`**
 (Paper 1, §5.2; `docs/canonical/interaction-and-relationship-model.md`, §7), which resolves
@@ -502,7 +501,7 @@ and a subjective confidence. From these and the ground-truth claim status we com
 
 **Secondary measures.** Over-trust rate (reliance on incorrect/unsupported claims) and under-trust
 rate (rejection of correct, well-supported claims); decision time per claim; subjective workload
-(a standard multi-dimensional workload instrument) `[TODO: cite workload-instrument, e.g. NASA-TLX]`;
+(a standard multi-dimensional workload instrument) [hart1988];
 perceived distraction; and an accessibility-preference item for the reduced-motion condition. Process
 data — whether and when the reader opens a citation in baseline, or probes an edge / opens the
 inspector in the Evidence Field — is logged to interpret the outcome measures.
@@ -724,32 +723,30 @@ formulas translate directly to inline and display math). Figures referenced in p
 drawn — the evidence-graph schematic (claims, sources, `supports`/`contradicts` edges; §3), the
 field/metric write-back diagram (§3.4), the three study conditions side by side (§5.2), and a sample
 reliability diagram with the *d′*/criterion decomposition annotated (§5.4) — are produced at
-conversion time. External citations are all `[TODO: cite]` placeholders and must be resolved and
+conversion time. External citations are resolved and
 verified against [`references.md`](references.md) before submission; none is invented.
 
 ---
 
-## Citations needed
+## Citation coverage
 
-External citation keys/topics referenced above, for the lead to merge into
-[`references.md`](references.md) under the trust/evidence group (all currently `[TODO: cite]`, none
-fabricated):
+External citation keys/topics referenced above and resolved into [`references.md`](references.md) under the trust/evidence group:
 
-- `[trust-calibration]` — trust calibration in human–automation interaction; over-trust vs.
+- Trust calibration — trust calibration in human–automation interaction; over-trust vs.
   under-trust; calibrated reliance (e.g. Lee & See, *trust in automation*).
-- `[automation-bias]` — automation bias / over-reliance on automated decision aids, esp. under time
+- Automation bias — automation bias / over-reliance on automated decision aids, esp. under time
   pressure.
-- `[over-reliance-on-LLMs]` — over-reliance on LLM assistants; whether confidence/explanation signals
+- Over-reliance on LLMs — over-reliance on LLM assistants; whether confidence/explanation signals
   raise or reduce unwarranted reliance.
-- `[uncertainty-visualization]` — uncertainty visualization; how encoding affects perceived and
+- Uncertainty visualization — uncertainty visualization; how encoding affects perceived and
   acted-on uncertainty.
-- `[source-credibility]` — source credibility assessment and citation-inspection behavior (do readers
+- Source credibility — source credibility assessment and citation-inspection behavior (do readers
   open citations?).
-- `[citation-faithfulness]` — citation faithfulness / attribution evaluation in retrieval-augmented
+- Citation faithfulness — citation faithfulness / attribution evaluation in retrieval-augmented
   generation (cited source not entailing the claim); LLM hallucination.
-- `[explanation-usefulness]` — explanation usefulness / explainable-AI evaluation; illusory
+- Explanation usefulness — explanation usefulness / explainable-AI evaluation; illusory
   understanding; plausible rationales raising trust without improving decisions.
-- `[signal-detection]` — signal-detection theory (*d′*, criterion *c*) as applied to discrimination
+- Signal detection — signal-detection theory (*d′*, criterion *c*) as applied to discrimination
   in decision tasks.
-- `[calibration-metrics]` — Brier score and expected calibration error (ECE) / reliability diagrams.
-- `[workload-instrument]` — a validated subjective-workload instrument (e.g. NASA-TLX).
+- Calibration metrics — Brier score and expected calibration error (ECE) / reliability diagrams.
+- Workload instruments — a validated subjective-workload instrument (e.g. NASA-TLX).

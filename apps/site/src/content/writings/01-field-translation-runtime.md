@@ -143,7 +143,7 @@ many, not the purpose.
 
 **Stigmergy and field-based coordination.** Several Fundamental primitives — `diffuse`, `propagate`,
 `memory` — are scalar-field mechanisms with antecedents in stigmergy and pheromone-field models
-[grasse1959; dorigo]: agents deposit into a decaying grid and later read its gradient. We adopt the
+[grasse1959; dorigo2006]: agents deposit into a decaying grid and later read its gradient. We adopt the
 mechanism as an interface substrate (e.g. a reading trail that makes worn paths attract attention)
 rather than as an optimization technique.
 
@@ -152,13 +152,13 @@ Fundamental treats attention as a *conserved, continuous* field over interface e
 is a decision; attention is a field"* — with an explicit budget (§8.1). The relevant HCI literature
 on attention, interruption, and alert fatigue frames the motivating claims for the empirical papers
 (Papers 2–3).
-[TODO: cite attention/interruption literature]
+[itti1998; bailey2006; mark2008]
 
 **Motion, "material" interfaces, and accessibility.** Motion-design systems give interface
 transitions a sense of physical material. Fundamental pushes the metaphor from *transitions between
 states* to *a continuous medium the interface lives inside*, and treats reduced motion not as a
 degraded path but as the same field *differently revealed* — developed in Paper 4.
-[TODO: cite motion-design and prefers-reduced-motion / vestibular accessibility literature]
+[material-design-motion; prefers-reduced-motion; wcag-motion; vestibular-accessibility]
 
 **The rendering substrate.** Fundamental is built on fundamental web platform primitives (Custom
 Elements, Shadow DOM, CSS custom properties, Canvas 2D, `ResizeObserver`, `IntersectionObserver`)
@@ -717,13 +717,13 @@ the package exports): the five packages; the `FrameScheduler` and all six regist
 guarded renderer-agnostic core; all 36 forces and all 16+ render/diagnostic modes (including
 `topology`, `inspector`, `causality`, `prediction`); signals-first mode (`render="none"` as the
 engine default, #538 — full simulation with no visual output); the `field.flowTo()`/`clearFlow()`
-controlled flow API; the Reading Field demo, accessibility preview, narrative reveal, and PNG/SVG diagnostic
-export; the native-HTML / web-component / React authoring surfaces; and the Natural Field Translation
-classification.
+controlled flow API; the Reading Field demo, accessibility preview, narrative reveal, and PNG/SVG
+diagnostic export; the native-HTML / web-component / React authoring surfaces; and the Natural Field
+Translation classification.
 
 **Aspirational or opt-in**, and labeled as such throughout: first-class inertial mass (opt-in; see
 below); several "weak-field" transformations (phase, fission) that are conceptual rather than
-implemented as forces; and the forward-looking frontiers (data binding, input agents, GPU compute,
+implemented as forces; and the forward-looking frontiers (input agents, GPU compute,
 multi-root fields, visual authoring tools) that are roadmap items, not shipped behavior.
 
 ### 9.2 Deliberate limitations (the caveat canon)
@@ -824,5 +824,5 @@ architecture, the fundamental field-behavior table, and the natural-fields class
 Notation is kept LaTeX-compatible (inline math and fenced blocks translate directly). Figures
 referenced in prose but not yet drawn — the package dependency graph (§4.1), the reciprocal loop
 (§3.1), the six-phase scheduler timeline (§5.1), and a field-vs-particle-path diagram (§3.3) — are
-produced at conversion time. External citations marked `[TODO: cite]` and the `[key]` placeholders in
+produced at conversion time. External citations and bibliography keys are resolved in
 [`references.md`](/writings/references) must be resolved and verified before submission.

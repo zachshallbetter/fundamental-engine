@@ -1,0 +1,7 @@
+flowchart LR
+  C[Claim body] --- S1[Supporting source]
+  C -. contradiction .- S2[Contradicting source]
+  S1 --> Coherence[Coherence metric]
+  S2 --> Entropy[Entropy metric]
+  Host[Host-supplied confidence] --> C
+  C --> UI[Inspectable evidence field]
