@@ -38,7 +38,7 @@ jobs:
         uses: android-actions/setup-android@v3
       - name: core — engine + cross-plane conformance
         working-directory: android
-        run: ./gradlew :fundamental-core:test :fundamental-platform:test :lab:compileKotlin
+        run: ./gradlew :fundamental-core:test :fundamental-platform:test :lab:test
       - name: host — assemble Compose adapter + Android library + sample app
         working-directory: android
         run: ./gradlew :fundamental-android:assembleDebug :fundamental-compose:assembleDebug :sample:assembleDebug
