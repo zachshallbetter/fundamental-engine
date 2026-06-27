@@ -15,7 +15,7 @@ export const DEFAULTS = { strength: 1.5, range: 280, spin: 1, angle: -90 } as co
 export const OVERRIDES: Record<string, Record<string, number>> = {
   gravity: { strength: 320, range: 360 },
   thermal: { strength: 1.5, range: 240 },
-  magnetism: { strength: 0.15, range: 180 }, // tight range concentrates cyclotron arcs
+  magnetism: { strength: 0.3, range: 200 }, // tight range concentrates the cyclotron arcs of its swirl-fed moving charges
   charge: { strength: 80 }, // M=80 → visible +/- demixing
   memory: { strength: 2.5 },
   wind: { strength: 26 }, // curl-noise is divergence-free + WIND_SCALE 0.01 → needs amplitude to drift
@@ -26,13 +26,17 @@ export const OVERRIDES: Record<string, Record<string, number>> = {
  *  (resonate, spotlight) genuinely require a sibling — they have no force of their own and
  *  exist to modify one. So does fieldflow: it advects matter along the NET field other
  *  forces radiate (their `field()` hooks), so without a field-radiating sibling there are
- *  no lines to follow and the body is a no-op. A real force like magnetism does NOT: its
- *  dipole field-line render plus the field's charge induction make it legible on its own,
- *  so pairing it with attract would just make the demo do two things at once. */
+ *  no lines to follow and the body is a no-op. Magnetism needs one too: it is a no-work
+ *  Lorentz rotation that only bends ALREADY-MOVING charged matter, so on the calm resting
+ *  field it has nothing to turn and reads as static. Pair it with swirl — swirl gives nearby
+ *  matter persistent tangential velocity that charge-induction then signs, and the magnet
+ *  bends those moving charges into visible cyclotron arcs (kept gentle so the arc, not the
+ *  swirl, reads). */
 export const BODY_TOKENS: Record<string, string> = {
   resonate: 'resonate attract', // modifier — pulses a sibling; pair with attract
   spotlight: 'spotlight stream', // modifier — gates a sibling to a cone; pair with stream
   fieldflow: 'fieldflow magnetism', // transport — needs a radiated field; thread a magnet's dipole loops
+  magnetism: 'magnetism swirl', // no-work Lorentz bend needs moving charged matter; swirl supplies it
 };
 
 /** The natural/extended demo attrs: DEFAULTS, with any OVERRIDES and sibling tokens merged. */
