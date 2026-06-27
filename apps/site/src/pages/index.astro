@@ -12,7 +12,7 @@ import NaturalFieldsSection from "../components/home/NaturalFieldsSection.astro"
 import InvisibleFieldsStrip from "../components/home/InvisibleFieldsStrip.astro";
 import ManualForceRow from "../components/home/ManualForceRow.astro";
 import PresetRow from "../components/home/PresetRow.astro";
-import { MANUAL_FORCES, MANUAL_PRESETS, type ManualEntry, type ManualPreset } from "@fundamental-engine/core";
+import { MANUAL_FORCES, MANUAL_PRESETS, NATURAL_FIELDS, FORCE_FIELD, type ManualEntry, type ManualPreset } from "@fundamental-engine/core";
 import { RENDER_MODES, OVERLAY_MODES } from "../lib/docs-api.ts";
 import contours from "../data/contours.json";
 import "../styles/manual.css";
@@ -41,8 +41,19 @@ const PRESET_COLORS: Record<string, string> = {
   tornado: "#2dd4bf",
   fountain: "#7dd3fc",
 };
-const natural = MANUAL_FORCES.filter((f) => f.family === "natural");
-const extended = MANUAL_FORCES.filter((f) => f.family === "extended");
+// Chapter II groups by the four FUNDAMENTAL FIELDS, pulling expressions across families (strong/weak
+// live in the extended family). NATURAL_FIELDS carries each field's label/translation/summary + its
+// token list (derived live from FORCE_FIELD), so this can't drift from the catalog.
+const byToken = new Map(MANUAL_FORCES.map((f) => [f.token, f]));
+const fieldGroups = NATURAL_FIELDS.map((nf) => ({
+  ...nf,
+  forces: nf.expressions.map((t) => byToken.get(t)).filter((f): f is ManualEntry => !!f),
+}));
+// natural-family tokens with no fundamental-field parent (derived forces + the memory metric) — kept
+// in a residual group so nothing drops off the page.
+const derived = MANUAL_FORCES.filter((f) => f.family === "natural" && !FORCE_FIELD[f.token]);
+// the extended chapter excludes forces now shown under a fundamental field, to avoid duplication.
+const extended = MANUAL_FORCES.filter((f) => f.family === "extended" && !FORCE_FIELD[f.token]);
 let n = 3; // running concept number; Substrate is 01–03 (hardcoded below), then every
 // chapter after it increments this in render order (Natural, Forces, Extended, Presets, …).
 
@@ -452,11 +463,31 @@ const chapters = [
           translations, not additional fundamental fields. See the
           <a href="/docs/natural-fields">Natural Fields</a> model.</ChapterHeader>
     {
-      natural.map((f: ManualEntry, i) => {
-        n += 1;
-        return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
-      })
+      fieldGroups.map((g) => (
+        <>
+          <h3 class="field-group-label">
+            <span class="fgl-title">{g.title}</span>
+            <span class="fgl-trans">{g.translation}</span>
+          </h3>
+          {g.forces.map((f, i) => {
+            n += 1;
+            return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
+          })}
+        </>
+      ))
     }
+    {derived.length > 0 && (
+      <>
+        <h3 class="field-group-label">
+          <span class="fgl-title">Derived &amp; supporting</span>
+          <span class="fgl-trans">behaviors that compose from the four</span>
+        </h3>
+        {derived.map((f: ManualEntry, i) => {
+          n += 1;
+          return <ManualForceRow f={f} num={n} reverse={i % 2 === 1} />;
+        })}
+      </>
+    )}
 
     <!-- III · Forces (canonical nine) -->
     <ChapterHeader no="III" id="ch-forces" title="Forces">What a single body can do to the matter around it — designed UI verbs,
