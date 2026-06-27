@@ -21,3 +21,4 @@ rootProject.name = "fundamental-android"
 include(":fundamental-core")
 include(":fundamental-compose")
 include(":sample")
+include(":lab")

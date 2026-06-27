@@ -40,3 +40,8 @@ jobs:
       - name: host — assemble Compose adapter + sample app
         working-directory: android
         run: ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug
+      - name: lab — headless render smoke check (no emulator)
+        working-directory: android
+        run: |
+          ./gradlew :lab:run --args="render lab-out"
+          test "$(ls lab-out/*.png | wc -l)" -ge 5 || { echo "lab render produced no PNGs"; exit 1; }

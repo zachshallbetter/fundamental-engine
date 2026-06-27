@@ -74,6 +74,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   radial-gradient blobs). The `:sample` can pick a mode via an `--es mode …` intent extra. All four
   verified on the Pixel 7 / API 35 emulator. (Metaballs / voronoi / streamlines / heatmap overlays
   remain follow-ups — they need the heatmap grid + marching-squares.)
+- **Android port — FieldLab for the JVM (`android/lab`).** A desktop lab + headless snapshot/bench tool
+  over the same pure-Kotlin engine, drawn with Java2D (built into the JDK — no Android, no emulator, no
+  Compose-Multiplatform). The Kotlin analog of `swift run FieldLab`: `./gradlew :lab:run` opens an
+  interactive Swing window (click = burst, D/T/L/G = render mode, ←/→ = scene); `--args="render out/"`
+  renders a 5-scene tour to PNGs (a CI-able visual gate that needs no display — wired into `android.yml`);
+  `--args="bench"` reports deterministic sim ms/frame (~0.3 ms for 600 particles). Closes the
+  "can't iterate/verify rendering without an emulator" gap. Advances the FieldLab-showcase and
+  visual-verification follow-ups.
 
 ## [0.8.1] — 2026-06-25
 
