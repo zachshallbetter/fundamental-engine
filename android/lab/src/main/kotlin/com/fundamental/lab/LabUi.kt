@@ -104,6 +104,7 @@ class LabCanvas : JPanel() {
     private var attentionOn = false
     private var causalityOn = false
     private var heatmapOn = false
+    private var wavesOn = false
     var frameMs: Double = 0.0; private set
     private val timer = Timer(16) { tickOnce() }
 
@@ -111,6 +112,7 @@ class LabCanvas : JPanel() {
     fun setAttention(on: Boolean) { attentionOn = on; controller?.attentionEnabled = on }
     fun setCausality(on: Boolean) { causalityOn = on; controller?.causalityEnabled = on }
     fun setHeatmap(on: Boolean) { heatmapOn = on; controller?.heatmapEnabled = on }
+    fun setWaves(on: Boolean) { wavesOn = on; controller?.wavesEnabled = on }
 
     init {
         background = Renderer2D.BG
@@ -149,6 +151,7 @@ class LabCanvas : JPanel() {
         c.attentionEnabled = attentionOn
         c.causalityEnabled = causalityOn
         c.heatmapEnabled = heatmapOn
+        c.wavesEnabled = wavesOn
         controller = c
         primary = c.bodies.firstOrNull { scene.token != null && it.tokens.contains(scene.token) } ?: c.bodies.firstOrNull()
         resetBuffer()
@@ -179,6 +182,7 @@ class LabCanvas : JPanel() {
         } else {
             Renderer2D.drawFrame(g2, c, mode, accent, width, height)
         }
+        if (wavesOn) Renderer2D.drawWaves(g2, c, width, height)
         if (heatmapOn) Renderer2D.drawHeatmap(g2, c, width, height, accent)
         Renderer2D.drawSparks(g2, c)
         for (r in readings) drawReading(g2, c, r, width, height)
@@ -297,6 +301,7 @@ private fun makeInspector(canvas: LabCanvas): JPanel {
     bmi("Conserved attention") { canvas.setAttention(it) }
     bmi("Cross-boundary causality") { canvas.setCausality(it) }
     bmi("Density heatmap") { canvas.setHeatmap(it) }
+    bmi("Carrier waves") { canvas.setWaves(it) }
 
     // Live stats
     panel.add(section("Live"))

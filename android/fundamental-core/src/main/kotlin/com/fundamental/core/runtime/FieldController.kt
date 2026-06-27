@@ -3,13 +3,21 @@ package com.fundamental.core.runtime
 import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.AttnInput
 import com.fundamental.core.engine.Body
+import com.fundamental.core.engine.BoundParticle
 import com.fundamental.core.engine.CANONICAL_FORCE_COLORS
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.FieldStore
 import com.fundamental.core.engine.FlowFocus
 import com.fundamental.core.engine.Heatmap
 import com.fundamental.core.engine.SparkPool
+import com.fundamental.core.engine.Wave
+import com.fundamental.core.engine.WaveStyle
+import com.fundamental.core.engine.buildBound
+import com.fundamental.core.engine.buildWaves
+import com.fundamental.core.engine.healWaves
+import com.fundamental.core.engine.induceCharges
 import com.fundamental.core.engine.releaseCaptured
+import com.fundamental.core.engine.tearBoundByForces
 import com.fundamental.core.engine.SpillBody
 import com.fundamental.core.engine.attentionMuls
 import com.fundamental.core.engine.spillover
@@ -87,6 +95,27 @@ class FieldController(
     /** Micro-reaction sparks (§23) — emitted by forces via `env.spark`, drawn by the host. */
     val sparks = SparkPool()
 
+    // ── carrier waves + the bound↔free reservoir (§2.3 / §2.4 / §24) ─────────────────────────────
+    /** The ambient resting structure: five standing currents (decorative; off by default). */
+    var wavesEnabled: Boolean = false
+        set(value) { field = value; rebuildWaves() }
+    private var _waves: List<Wave> = emptyList()
+    val waves: List<Wave> get() = _waves
+    private val _bound = ArrayList<BoundParticle>()
+    val bound: List<BoundParticle> get() = _bound
+    private var boundTarget: Int = 0
+
+    private fun rebuildWaves() {
+        if (wavesEnabled && w > 0f && h > 0f) {
+            _waves = buildWaves(emptyList()) // palette empty → DEFAULT_ACCENT; the host recolors on draw
+            _bound.clear()
+            _bound.addAll(buildBound(_waves.size, density = 2f, rand = { rng.nextFloat() }))
+            boundTarget = _bound.size
+        } else {
+            _waves = emptyList(); _bound.clear(); boundTarget = 0
+        }
+    }
+
     init {
         env.volume = Vec3(w, h, d)
         env.dt = 1f
@@ -126,6 +155,7 @@ class FieldController(
         env.volume = Vec3(w, h, d)
         grids.values.forEach { it.resize(w, h) }
         heatmap?.resize(w, h)
+        rebuildWaves()
     }
 
     /** Normalized heatmap density ∈ [0,1] at a point (0 when the heatmap is off). */
@@ -237,7 +267,16 @@ class FieldController(
             for (b in _bodies) b.attn = null
         }
 
-        step(StepInput(store, _bodies, env, forces, conditions, separation = separation))
+        // charge induction (§2.4): charge bodies polarize nearby matter, so charge/magnetism act.
+        induceCharges(_bodies, store.particles)
+
+        step(StepInput(store, _bodies, env, forces, conditions, waves = if (wavesEnabled) _waves else null, separation = separation))
+
+        // the bound↔free reservoir (§2.4): heal calm matter onto the lines, tear it loose near bodies.
+        if (wavesEnabled && _waves.isNotEmpty()) {
+            healWaves(store, _bound, boundTarget, _waves, w, h, env.t) { rng.nextFloat() }
+            tearBoundByForces(_bound, _waves, _bodies, forces, w, h, env.t) { store.add(it) }
+        }
 
         // feedback easing (§8): ease each body's density toward its per-frame tally (step set b.count).
         for (b in _bodies) b.d += (clamp(b.count / 40f, 0f, 1f) - b.d) * 0.12f

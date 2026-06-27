@@ -34,6 +34,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
   iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
   filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+- **Android port — carrier waves + the bound↔free reservoir (§24/§2.4) (`android/`).** Ported the
+  remaining `Currents` (`buildWaves` — the five layered standing currents — + `buildBound` + `BoundParticle`)
+  and `Reservoir` (`healWaves`/`tearBoundNear`/`tearBoundByForces`/`induceCharges`; the Reservoir draft was
+  produced by a sub-agent and reviewed line-by-line). Wired into the driver behind a `wavesEnabled` toggle:
+  free matter drifts along the wave slopes (the integrator's existing wave block), the bound shimmer pool
+  rides the lines, and `healWaves`/`tearBoundByForces` exchange matter between free and bound — the free +
+  bound count is invariant. `induceCharges` runs each frame (charge bodies polarize nearby matter into
+  +/- domains, so charge/magnetism act automatically). FieldHandle `setWaves`; the FieldLab gained a
+  Carrier-waves toggle + wave/shimmer rendering. 4 new JVM tests (81 core total): five layered waves,
+  shimmer count, charge polarization, and reservoir conservation. Headless `overlay-waves.png` shows the
+  five currents with 160 shimmer riders. Advances #644 / #645.
 - **Android port — reactions & sparks (§23) (`android/`).** Ported the micro-reaction layer
   (`Reactions` + a host-agnostic `SparkPool`): `energyDelta`, `reactionIntensity`, `burstImpulse`,
   `captureEdge`, and the conserved sink-release `releaseCaptured` (ejects held matter past the absorb

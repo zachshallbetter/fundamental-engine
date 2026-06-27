@@ -113,6 +113,8 @@ class FieldHandle(val controller: FieldController) {
     fun setAttention(on: Boolean) { controller.attentionEnabled = on }
     fun setCausality(on: Boolean) { controller.causalityEnabled = on }
     fun setHeatmap(on: Boolean) { controller.heatmapEnabled = on }
+    /** Carrier waves — the ambient resting structure + the bound shimmer reservoir (§2.3 / §24). */
+    fun setWaves(on: Boolean) { controller.wavesEnabled = on }
     /** Normalized heatmap density ∈ [0,1] at a point (requires `setHeatmap(true)`). */
     fun sampleScalar(x: Float, y: Float): Float = controller.sampleScalar(x, y)
     /** Heatmap density gradient at a point (up-slope toward denser matter). */

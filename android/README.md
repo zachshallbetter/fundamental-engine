@@ -82,6 +82,11 @@ Ported and tested:
   `LINKS` (proximity line segments via the spatial hash → a constellation network) / `GLOW` (soft
   radial-gradient blobs), plus the **heatmap glow** underlay (from the density buffer). All verified
   on-device / in the lab. (Metaballs / voronoi matter modes are follow-ups — marching-squares / nearest-site.)
+- **Carrier waves + the bound↔free reservoir** (§24 / §2.3 / §2.4, `Currents` + `Reservoir`) — the five
+  layered standing currents (`buildWaves`) that free matter drifts along, the bound shimmer pool riding
+  them (`buildBound`), the conserved `healWaves` (reclaim calm matter onto a line) / `tearBoundByForces`
+  (rip it loose near a body) cycle — free + bound count is invariant — and `induceCharges` (a charge
+  body polarizes nearby matter into +/- domains, so charge/magnetism act without manual seeding).
 - **Reactions / sparks** (§23, `Reactions` + `SparkPool`) — the micro-reaction matter: `energyDelta`,
   `reactionIntensity`, `burstImpulse`, `captureEdge`, and the conserved sink-release (`releaseCaptured` —
   ejects held matter past the absorb horizon, made immortal). Forces emit sparks through `env.spark`
@@ -101,7 +106,7 @@ Ported and tested:
   **temperature** and **energy** from a particle-splatted scalar grid. Pure + JVM-tested.
 - **FieldLab (desktop, `:lab`)** — a JVM Swing/Java2D **FieldLab** over the same engine: a sidebar (tour
   + the full 36-force catalog + the 64-recipe canon), a live canvas, and an inspector (formation / render mode / density /
-  accent / live body sliders / **the Readings overlays** / **the Body-Matter-Interaction toggles** + heatmap glow / live stats), plus a headless scene-tour +
+  accent / live body sliders / **the Readings overlays** / **the Body-Matter-Interaction toggles** + heatmap glow + carrier waves / live stats), plus a headless scene-tour +
   overlay PNG renderer + sim bench (`--args="render"` / `"bench"`). The Kotlin analog of
   `swift run FieldLab` — fast iteration and a CI-able visual render path, no emulator.
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
@@ -109,20 +114,19 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **77 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **81 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Not yet ported (follow-up PRs):
 
-- The bound↔free reservoir + carrier-wave building (`buildWaves`/`buildBound`), and the `FieldHandle`'s
-  relationship edges — the rest of `FundamentalCore`.
+- The `FieldHandle`'s relationship edges (`addEdge`/`readEdges`) — the last of `FundamentalCore`.
 - `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
 
 ## Building & testing
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (77 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (81 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator

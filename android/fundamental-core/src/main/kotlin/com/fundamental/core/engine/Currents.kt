@@ -1,7 +1,9 @@
 package com.fundamental.core.engine
 
+import com.fundamental.core.math.DEFAULT_ACCENT
 import com.fundamental.core.math.Vec3
 import com.fundamental.core.math.roundHalfAway
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -36,6 +38,58 @@ data class Wave(
     /** Scroll-parallax offset, eased. */
     var offsetY: Float,
 )
+
+/** A particle riding a wave line (the shimmer). */
+data class BoundParticle(
+    var wi: Int,
+    var progress: Float,
+    var phase: Float,
+    var size: Float,
+    var glow: Boolean,
+    var speed: Float,
+)
+
+const val WAVE_LAYERS = 5
+val WAVE_BASE = floatArrayOf(0.24f, 0.4f, 0.55f, 0.7f, 0.85f)
+
+/** Build the five wave layers, coloring them from the palette (§24.4). */
+fun buildWaves(palette: List<Vec3>): List<Wave> {
+    val waves = ArrayList<Wave>(WAVE_LAYERS)
+    for (i in 0 until WAVE_LAYERS) {
+        val fi = i.toFloat()
+        val baseFrac = if (i < WAVE_BASE.size) WAVE_BASE[i] else 0.5f
+        val amp = 22f + fi * 15f
+        val freq = 0.0012f + fi * 0.0008f
+        val phase = (fi * 1.7f) % 6.28f // deterministic spread
+        val speed = 0.00013f + fi * 0.00009f
+        val color = if (palette.isEmpty()) DEFAULT_ACCENT else palette[i % palette.size]
+        val depth = fi / (WAVE_LAYERS - 1).toFloat()
+        val dir = if (i % 2 == 1) -1f else 1f
+        waves.add(Wave(baseFrac, amp, freq, phase, speed, color, depth, dir, 0f))
+    }
+    return waves
+}
+
+/** Build the bound shimmer pool: `round(16·density)` riders per wave (§2.5). */
+fun buildBound(waveCount: Int, density: Float, rand: () -> Float): List<BoundParticle> {
+    val per = roundHalfAway(16f * density).toInt()
+    val bound = ArrayList<BoundParticle>()
+    for (wi in 0 until waveCount) {
+        repeat(per) {
+            bound.add(
+                BoundParticle(
+                    wi = wi,
+                    progress = rand(),
+                    phase = (rand() - 0.5f) * 0.22f * PI.toFloat(),
+                    size = 0.7f + rand() * 1.5f,
+                    glow = rand() < 0.3f,
+                    speed = (0.00035f + rand() * 0.0009f) * (if (rand() < 0.5f) 1f else -1f),
+                ),
+            )
+        }
+    }
+    return bound
+}
 
 /**
  * An engaged element the lines bend toward — the "spine" (§24). Port of Swift `WavePull`;

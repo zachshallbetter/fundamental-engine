@@ -58,7 +58,22 @@ private fun renderTour(dir: String) {
     overlayShot(out, "overlay-grid", forceScene(ForceCatalog.entry("attract")!!), Reading.GRID)
     heatmapShot(out, "overlay-heatmap", forceScene(ForceCatalog.entry("attract")!!))
     sparkShot(out, "overlay-sparks")
+    waveShot(out, "overlay-waves")
     println("done → ${out.absolutePath}")
+}
+
+private fun waveShot(out: File, name: String) {
+    val c = FieldController(W.toFloat(), H.toFloat(), particleCount = 400, seed = 42)
+    c.wavesEnabled = true // build the carrier waves + bound shimmer
+    repeat(80) { c.tick() }
+    val img = BufferedImage(W, H, BufferedImage.TYPE_INT_RGB)
+    val g = img.createGraphics()
+    Renderer2D.drawFrame(g, c, LabMode.DOTS, ACCENT, W, H)
+    Renderer2D.drawWaves(g, c, W, H)
+    g.dispose()
+    val f = File(out, "$name.png")
+    ImageIO.write(img, "png", f)
+    println("wrote ${f.path} (${c.waves.size} waves, ${c.bound.size} shimmer)")
 }
 
 private fun sparkShot(out: File, name: String) {

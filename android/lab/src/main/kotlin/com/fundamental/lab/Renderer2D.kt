@@ -112,6 +112,35 @@ object Renderer2D {
         g.dispose()
     }
 
+    /** Draw the carrier waves (curves) + the bound shimmer riding them (§24 / §2.3). */
+    fun drawWaves(g: Graphics2D, c: FieldController, w: Int, h: Int) {
+        antialias(g)
+        val t = c.env.t
+        val hf = h.toFloat()
+        for (wave in c.waves) {
+            val col = wave.color
+            g.color = Color((col.x / 255f).coerceIn(0f, 1f), (col.y / 255f).coerceIn(0f, 1f), (col.z / 255f).coerceIn(0f, 1f), 0.16f + wave.depth * 0.32f)
+            g.stroke = BasicStroke(1f + wave.depth * 1.4f)
+            var px = 0f
+            var py = com.fundamental.core.engine.waveYat(wave, 0f, t, hf)
+            var x = 10f
+            while (x <= w) {
+                val y = com.fundamental.core.engine.waveYat(wave, x, t, hf)
+                g.draw(Line2D.Float(px, py, x, y))
+                px = x; py = y; x += 10f
+            }
+        }
+        for (b in c.bound) {
+            val wave = c.waves.getOrNull(b.wi) ?: continue
+            val x = b.progress * w
+            val y = com.fundamental.core.engine.waveYat(wave, x, t, hf) + b.phase * 32f
+            val a = if (b.glow) 0.9f else 0.5f
+            g.color = Color((wave.color.x / 255f).coerceIn(0f, 1f), (wave.color.y / 255f).coerceIn(0f, 1f), (wave.color.z / 255f).coerceIn(0f, 1f), a)
+            val r = b.size
+            g.fill(Ellipse2D.Float(x - r, y - r, 2 * r, 2 * r))
+        }
+    }
+
     /** Draw the §23 micro-reaction sparks — bright dots fading by life. */
     fun drawSparks(g: Graphics2D, c: FieldController) {
         antialias(g)
