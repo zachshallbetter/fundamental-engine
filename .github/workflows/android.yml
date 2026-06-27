@@ -1,10 +1,12 @@
 name: android
 
-# Proves the platform-free Kotlin engine (fundamental-core) builds and its cross-plane conformance
-# test passes on the JVM. Mirror of swift-linux.yml: the pure core only — Android host modules (when
-# they land) get their own job. The conformance test consumes the SAME golden the Swift/JS gates use
-# (swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json), so a golden change re-checks
-# Android parity automatically.
+# Proves the Kotlin port builds and its cross-plane conformance test passes. The pure-JVM core
+# (`:fundamental-core`) carries the engine + the shared golden gate; the host modules
+# (`:fundamental-compose`, `:sample`) assemble against the Android SDK. The conformance test consumes
+# the SAME golden the Swift/JS gates use, so a golden change re-checks Android parity automatically.
+#
+# Note: once the Android library/application modules are in `settings.gradle.kts`, every Gradle
+# invocation configures them and needs the SDK — hence the SDK setup runs for the whole job.
 
 on:
   push:
@@ -20,8 +22,8 @@ on:
       - 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json'
 
 jobs:
-  core:
-    name: build + test (JVM)
+  build:
+    name: build + test (JVM + Android)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,8 +32,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-      - name: build + test
+      - name: set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: core — engine + cross-plane conformance
         working-directory: android
-        run: ./gradlew :fundamental-core:build
+        run: ./gradlew :fundamental-core:test
+      - name: host — assemble Compose adapter + sample app
+        working-directory: android
+        run: ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug

@@ -14,17 +14,18 @@ they diverge it is a bug.
 
 ## Packages
 
-| Gradle module      | npm equivalent             | Swift equivalent     | What it is |
-|--------------------|----------------------------|----------------------|------------|
-| `:fundamental-core`| `@fundamental-engine/core` | `FundamentalCore`    | The pure physics: particles, bodies, forces, the math. **Zero Android deps** — plain `kotlin("jvm")`, so it builds on a cheap CI runner and runs the conformance test against the portable engine. |
+| Gradle module        | npm equivalent             | Swift equivalent     | What it is |
+|----------------------|----------------------------|----------------------|------------|
+| `:fundamental-core`  | `@fundamental-engine/core` | `FundamentalCore`    | The pure physics: particles, bodies, forces, the integrator, the runtime driver. **Zero Android deps** — plain `kotlin("jvm")`, so it builds on a cheap runner and runs the conformance test against the portable engine. |
+| `:fundamental-compose` | `@fundamental-engine/react` | `FundamentalSwiftUI` | The declarative Jetpack Compose adapter: a `FieldView` composable + `Modifier.fieldBody()`. |
+| `:sample`            | (the demos)                | `FieldLab`           | A minimal sample app — a live field with a centered `fieldBody` attractor; tap to burst. |
 
-Planned (mirroring Swift's `FundamentalPlatform` / `FundamentalVanilla` / `FundamentalSwiftUI`):
+Planned (mirroring Swift's `FundamentalPlatform` / `FundamentalVanilla`):
 
 | Module (planned)        | Mirrors                          | What it will be |
 |-------------------------|----------------------------------|-----------------|
 | `:fundamental-platform` | `@fundamental-engine/dom`        | The six-phase frame scheduler + registries. |
-| `:fundamental-android`  | `@fundamental-engine/vanilla`    | The imperative API + a `View`/`Canvas` host (mirror of `UIKitFieldHost`). |
-| `:fundamental-compose`  | `@fundamental-engine/react`      | The declarative adapter: a `FieldView` composable + `Modifier.fieldBody()`. |
+| `:fundamental-android`  | `@fundamental-engine/vanilla`    | The imperative `View`/`Canvas` host (mirror of `UIKitFieldHost`), for non-Compose apps. |
 
 ## The conformance rule
 
@@ -65,27 +66,41 @@ Ported and tested:
   dipoles, box SDF, `netField`), `Formations` (presets + easing + accretion target), the `when`
   condition gates, thermodynamics, weights, and temporal kernels. The `field()` structure hooks are
   complete (gravity/charge monopole, magnetism dipole).
+- **The runtime driver** (`FieldController`) — the `createField`-equivalent loop: pool seeding, env
+  service wiring (neighbours, spawn, scalar grids by name, sink supernova), formation easing, grid
+  stepping, and `tick()`; plus `addBody`/`burst`/`setFormation`/`resize`. Pure Kotlin, JVM-testable.
+- **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
+  frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
+  `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a
+  runnable `:sample` app.
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
   (`GoldenConformanceTests`); every other force has behavioral/exact unit tests
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
-  headlessly (`EngineTests`: matter gathers, friction bleeds energy, flat fields stay planar, sinks
-  capture, sources stay bounded) and gated by a deterministic `PerfRegressionTests` (1200 particles ×
-  600 frames: count conserved, all-finite, velocity/heat bounded). **44 tests total.**
+  headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
+  frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
+  (`FieldControllerTests`). **48 core tests total**, and the Compose host + sample app build against the
+  Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Not yet ported (follow-up PRs):
 
-- The bound↔free reservoir, reactions/accretion sparks, attention/causality, recipes, and the
-  `createField` driver + the full `FieldHandle` public API — the rest of `FundamentalCore`/the host seam.
-- `:fundamental-platform` (the six-phase scheduler + registries), the Android `View`/`Canvas` host, the
-  Jetpack Compose adapter, and a sample app (the FieldLab equivalent).
+- The bound↔free reservoir, reactions/accretion sparks, attention/causality, recipes, carrier-wave
+  building (`buildWaves`), and the full `FieldHandle` public API — the rest of `FundamentalCore`.
+- `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
 
 ## Building & testing
 
 ```sh
 cd android
-./gradlew :fundamental-core:test    # cross-plane conformance: 120 golden cases within tolerance
-./gradlew :fundamental-core:build   # compile the pure core (no Android deps) + test
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (48 tests; 120 golden cases)
+./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
+
+# run the sample on a device/emulator
+./gradlew :sample:installDebug
+adb shell am start -n com.fundamental.sample/.MainActivity
 ```
 
-The Gradle wrapper is committed (Gradle 8.13). The build runs on JDK 17 in CI (`.github/workflows/android.yml`)
-and targets JVM 17 bytecode regardless of the local JDK.
+The pure `:fundamental-core` builds on any JDK (JVM-17 bytecode); the host modules need the Android SDK
+(point Gradle at it via `local.properties` `sdk.dir=...` or `ANDROID_HOME`). compileSdk 34, minSdk 24,
+build-tools 34.0.0, AGP 8.7, Kotlin 2.1, Compose BOM 2024.12. The committed Gradle wrapper is 8.13.
+CI (`.github/workflows/android.yml`, JDK 17 + Android SDK) runs the core conformance test and assembles
+the host modules; it re-runs whenever the shared golden changes.

@@ -64,6 +64,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   bounded sources) and a deterministic `PerfRegressionTests` (1200 particles × 600 frames: count
   conserved, all-finite, velocity/heat bounded) — 44 core tests total. Still to come: the `createField`
   driver + `FieldHandle`, the platform scheduler, the Android `View`/`Canvas` + Compose hosts, a sample app.
+- **Android port — runtime driver + Jetpack Compose host (`android/`).** The engine now runs on-device.
+  `FieldController` (pure Kotlin, the `createField`-equivalent loop: pool seeding, env-service wiring,
+  scalar-grid stepping, formation easing, `tick()`, plus `addBody`/`burst`/`setFormation`/`resize`) is
+  driven by a new `:fundamental-compose` module — `FieldView` (one frame per display frame via
+  `withFrameNanos`, particle rendering on a Compose `Canvas`, tap-to-burst) and `Modifier.fieldBody(...)`
+  (a composable becomes a force source tracking its on-screen bounds, mirroring SwiftUI `.fieldBody`) —
+  with a runnable `:sample` app. 48 core tests (incl. `FieldControllerTests`); the host + sample build
+  against the Android SDK and were **verified running on a Pixel 7 / API 35 emulator** (a centered
+  `fieldBody` bends the particle field into an orbiting shell). CI (`android.yml`) now sets up the Android
+  SDK and assembles the host modules alongside the core conformance gate. compileSdk 34, minSdk 24,
+  AGP 8.7, Compose BOM 2024.12.
 
 ## [0.8.1] — 2026-06-25
 
