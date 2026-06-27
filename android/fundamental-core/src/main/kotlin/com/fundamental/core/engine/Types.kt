@@ -85,6 +85,8 @@ class Body(
 
     /** Eased density ∈ [0,1] — amplifies the charge/gravity field as a body charges up (§20.10). */
     var d: Float = 0f
+    /** Cross-boundary causality channel (Concept 4): density spilled in from saturated neighbours. */
+    var lit: Float = 0f
 
     /** Tint a `pigment` body stains onto overlapping matter (§20.8). */
     var tint: String? = null

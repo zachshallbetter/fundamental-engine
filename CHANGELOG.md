@@ -34,6 +34,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
   iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
   filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+- **Android port — Body-Matter-Interaction: attention, causality, heatmap (`android/`).** The model's
+  conserved truths, ported (`Attention`/`Causality`/`Heatmap`) and wired into the driver as toggles:
+  **conserved attention** (one strength budget — engaging a body drains the others, Σ S·mul invariant —
+  fed into the integrator's `attn` multiplier each frame), **cross-boundary causality** (saturated bodies
+  spill density to neighbours, ΣΔ = 0, into a new `lit` channel; with per-frame feedback density easing),
+  and the **density heatmap** (the H1 scalar buffer of where matter pools — sampled back via
+  `FieldHandle.sampleScalar`/`sampleGradient` and drawn as a glow underlay). All three are inspector
+  toggles in the FieldLab, completing its Body-Matter-Interaction section. 5 new JVM tests (71 core
+  total): attention is rest-neutral + conserves total strength, causality spillover conserves and flows
+  to neighbours, the heatmap reads hotter where matter pooled. Advances #647 / #649.
 - **Android port — recipes: the locked 64-recipe canon (`android/`).** Ported the recipe schema,
   validation, and the `compileRecipe` compiler (a `recipe` package). The **64-recipe canon** is decoded
   at runtime from the shared `data/recipes.json` (synced into the core's resources by a `syncRecipes`

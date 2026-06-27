@@ -71,7 +71,8 @@ Ported and tested:
   stepping, and `tick()`; plus `addBody`/`burst`/`setFormation`/`resize`. Pure Kotlin, JVM-testable.
 - **The public `FieldHandle` API** (`createField`, the Kotlin `FieldField`) — programmatic bodies with
   live `BodyHandle`s (`set` / `remove` / `load` / `drain`), `burst`, `flowTo`/`clearFlow` (the Flow
-  focus), data atoms (`seed` / `atomAt`), open scalar channels (`addField` / `sampleField`), `energy`,
+  focus), data atoms (`seed` / `atomAt`), open scalar channels (`addField` / `sampleField`), the BMI
+  toggles (`setAttention` / `setCausality` / `setHeatmap`) + `sampleScalar` / `sampleGradient`, `energy`,
   `particleCount`, and `readParticles` (stride-5 wire format). JVM-tested.
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
@@ -79,8 +80,14 @@ Ported and tested:
   runnable `:sample` app.
 - **Render modes** — `RenderMode.DOTS` / `TRAILS` (a faded persistent buffer → comet trails) /
   `LINKS` (proximity line segments via the spatial hash → a constellation network) / `GLOW` (soft
-  radial-gradient blobs). All four verified on-device. (Metaballs / voronoi matter modes + the heatmap
-  glow are follow-ups — they need the heatmap density grid.)
+  radial-gradient blobs), plus the **heatmap glow** underlay (from the density buffer). All verified
+  on-device / in the lab. (Metaballs / voronoi matter modes are follow-ups — marching-squares / nearest-site.)
+- **Body-Matter-Interaction** (`Attention` / `Causality` / `Heatmap`) — the model's conserved truths,
+  wired into the driver as toggles: **conserved attention** (one strength budget; engaging a body drains
+  the others, Σ S·mul invariant), **cross-boundary causality** (saturated bodies spill density to
+  neighbours, ΣΔ = 0, into a `lit` channel), and the **density heatmap** (a scalar buffer of where matter
+  pools, sampled back via `sampleScalar`/`sampleGradient` and drawn as a glow). First-class mass already
+  ships in the integrator.
 - **Recipes** (`recipe` package) — the schema, validation, and the `compileRecipe` compiler, with the
   **locked 64-recipe canon** decoded from the shared `data/recipes.json` (4 tiers × 16, never
   hand-retyped). Every recipe validates against the standard registry in the tests, exactly as on Swift.
@@ -90,7 +97,7 @@ Ported and tested:
   **temperature** and **energy** from a particle-splatted scalar grid. Pure + JVM-tested.
 - **FieldLab (desktop, `:lab`)** — a JVM Swing/Java2D **FieldLab** over the same engine: a sidebar (tour
   + the full 36-force catalog + the 64-recipe canon), a live canvas, and an inspector (formation / render mode / density /
-  accent / live body sliders / **the Readings overlays** / live stats), plus a headless scene-tour +
+  accent / live body sliders / **the Readings overlays** / **the Body-Matter-Interaction toggles** + heatmap glow / live stats), plus a headless scene-tour +
   overlay PNG renderer + sim bench (`--args="render"` / `"bench"`). The Kotlin analog of
   `swift run FieldLab` — fast iteration and a CI-able visual render path, no emulator.
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
@@ -98,21 +105,20 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **66 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **71 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Not yet ported (follow-up PRs):
 
-- The bound↔free reservoir, reactions/accretion sparks, attention/causality, carrier-wave building
-  (`buildWaves`), and the `FieldHandle`'s remaining surface (relationship edges,
-  `sampleScalar`/`sampleGradient`) — the rest of `FundamentalCore`.
+- The bound↔free reservoir, reactions/accretion sparks, carrier-wave building (`buildWaves`), and the
+  `FieldHandle`'s relationship edges — the rest of `FundamentalCore`.
 - `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
 
 ## Building & testing
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (66 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (71 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator
@@ -136,10 +142,10 @@ stats — particles / kinetic / thermal / frame-ms). Each force opens a scene wi
 ./gradlew :lab:run --args="bench"        # headless: sim ms/frame per scene
 ```
 
-Not yet (vs. the Swift FieldLab): recipe **save/export**, the Body-Matter-Interaction toggles
-(attention / causality / heatmap), and the two reading types that need more machinery (`path` traces,
-per-body `data` rings) — they follow as those engine subsystems land (#647 / #649). The sidebar runs the
-64-recipe canon and six of the eight overlay readings are in the Readings panel.
+Not yet (vs. the Swift FieldLab): recipe **save/export**, and the two reading types that need more
+machinery (`path` traces, per-body `data` rings). The sidebar runs the 64-recipe canon, six of the eight
+overlay readings are in the Readings panel, and all three Body-Matter-Interaction toggles
+(attention / causality / heatmap) work.
 
 The pure `:fundamental-core` builds on any JDK (JVM-17 bytecode); the host modules need the Android SDK
 (point Gradle at it via `local.properties` `sdk.dir=...` or `ANDROID_HOME`). compileSdk 34, minSdk 24,

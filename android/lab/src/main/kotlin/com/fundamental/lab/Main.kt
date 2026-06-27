@@ -55,7 +55,24 @@ private fun renderTour(dir: String) {
     overlayShot(out, "overlay-fieldlines", forceScene(ForceCatalog.entry("gravity")!!), Reading.FIELD_LINES)
     overlayShot(out, "overlay-temperature", forceScene(ForceCatalog.entry("attract")!!), Reading.TEMPERATURE)
     overlayShot(out, "overlay-grid", forceScene(ForceCatalog.entry("attract")!!), Reading.GRID)
+    heatmapShot(out, "overlay-heatmap", forceScene(ForceCatalog.entry("attract")!!))
     println("done → ${out.absolutePath}")
+}
+
+private fun heatmapShot(out: File, name: String, scene: LabScene) {
+    val c = FieldController(W.toFloat(), H.toFloat(), particleCount = scene.density, seed = 42)
+    c.setFormation(scene.formation)
+    scene.setup(c, W.toFloat(), H.toFloat())
+    c.heatmapEnabled = true
+    repeat(90) { c.tick() }
+    val img = BufferedImage(W, H, BufferedImage.TYPE_INT_RGB)
+    val g = img.createGraphics()
+    Renderer2D.drawFrame(g, c, LabMode.DOTS, ACCENT, W, H)
+    Renderer2D.drawHeatmap(g, c, W, H, ACCENT)
+    g.dispose()
+    val f = File(out, "$name.png")
+    ImageIO.write(img, "png", f)
+    println("wrote ${f.path}")
 }
 
 private fun overlayShot(out: File, name: String, scene: LabScene, reading: Reading) {

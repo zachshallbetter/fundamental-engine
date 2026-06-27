@@ -109,6 +109,15 @@ class FieldHandle(val controller: FieldController) {
     }
     fun sampleField(name: String, x: Float, y: Float): Float = controller.sampleField(name, x, y)
 
+    // ── Body-Matter-Interaction toggles (§2.4 / Concept 4 / H1) ──────────────────────
+    fun setAttention(on: Boolean) { controller.attentionEnabled = on }
+    fun setCausality(on: Boolean) { controller.causalityEnabled = on }
+    fun setHeatmap(on: Boolean) { controller.heatmapEnabled = on }
+    /** Normalized heatmap density ∈ [0,1] at a point (requires `setHeatmap(true)`). */
+    fun sampleScalar(x: Float, y: Float): Float = controller.sampleScalar(x, y)
+    /** Heatmap density gradient at a point (up-slope toward denser matter). */
+    fun sampleGradient(x: Float, y: Float): Vec3 = controller.sampleGradient(x, y)
+
     // ── observability ────────────────────────────────────────────────────────────────
     fun particleCount(): Int = controller.particleCount
     fun energy(): EnergyReport = energyReport(controller.particles)

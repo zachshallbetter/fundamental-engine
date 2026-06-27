@@ -1,10 +1,15 @@
 package com.fundamental.core.runtime
 
 import com.fundamental.core.engine.AtomPayload
+import com.fundamental.core.engine.AttnInput
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.FieldStore
 import com.fundamental.core.engine.FlowFocus
+import com.fundamental.core.engine.Heatmap
+import com.fundamental.core.engine.SpillBody
+import com.fundamental.core.engine.attentionMuls
+import com.fundamental.core.engine.spillover
 import com.fundamental.core.engine.ForceRegistry
 import com.fundamental.core.engine.Formation
 import com.fundamental.core.engine.GridMode
@@ -19,6 +24,7 @@ import com.fundamental.core.engine.formation
 import com.fundamental.core.engine.makeFlowFocus
 import com.fundamental.core.engine.step
 import com.fundamental.core.math.Vec3
+import com.fundamental.core.math.clamp
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -65,6 +71,15 @@ class FieldController(
         private set
 
     private val channels = HashMap<String, (Float, Float) -> Float>()
+
+    // ── Body-Matter-Interaction toggles (§2.4 / Concept 4 / H1) ──────────────────────────────────
+    /** Conserved attention — engaging a body drains the others (Σ S·mul invariant). */
+    var attentionEnabled: Boolean = false
+    /** Cross-boundary causality — saturated bodies spill density to neighbours (Σ deltas = 0). */
+    var causalityEnabled: Boolean = false
+    /** Density heatmap — a scalar buffer of where matter pools, sampled back + drawn as a glow. */
+    var heatmapEnabled: Boolean = false
+    private var heatmap: Heatmap? = null
 
     init {
         env.volume = Vec3(w, h, d)
@@ -113,7 +128,14 @@ class FieldController(
         h = height
         env.volume = Vec3(w, h, d)
         grids.values.forEach { it.resize(w, h) }
+        heatmap?.resize(w, h)
     }
+
+    /** Normalized heatmap density ∈ [0,1] at a point (0 when the heatmap is off). */
+    fun sampleScalar(x: Float, y: Float): Float = heatmap?.norm(Vec3(x, y, 0f)) ?: 0f
+
+    /** Heatmap density gradient at a point, up-slope toward denser matter. */
+    fun sampleGradient(x: Float, y: Float): Vec3 = heatmap?.gradient(Vec3(x, y, 0f)) ?: Vec3.ZERO
 
     /** Register a force-source body. Marked visible so it acts immediately. */
     fun addBody(body: Body): Body {
@@ -210,7 +232,36 @@ class FieldController(
         if (f != null) {
             for (p in store.particles) if (p.cap == null) p.velocity += flowBias(p.position, f)
         }
+        // conserved attention (§2.4): set each body's strength multiplier before the force pass.
+        if (attentionEnabled && _bodies.isNotEmpty()) {
+            val muls = attentionMuls(_bodies.map { AttnInput(it.strength, it.isEngaged) })
+            _bodies.forEachIndexed { i, b -> b.attn = muls[i] }
+        } else {
+            for (b in _bodies) b.attn = null
+        }
+
         step(StepInput(store, _bodies, env, forces, conditions, separation = separation))
+
+        // feedback easing (§8): ease each body's density toward its per-frame tally (step set b.count).
+        for (b in _bodies) b.d += (clamp(b.count / 40f, 0f, 1f) - b.d) * 0.12f
+
+        // cross-boundary causality (Concept 4): saturated bodies spill density to neighbours (ΣΔ = 0).
+        if (causalityEnabled) {
+            val vis = _bodies.filter { it.isVisible }
+            if (vis.size >= 2) {
+                val deltas = spillover(vis.map { SpillBody(it.d, it.center) })
+                vis.forEachIndexed { i, b -> b.lit += (max(0f, deltas[i]) - b.lit) * 0.2f }
+            }
+        } else {
+            for (b in _bodies) b.lit = 0f
+        }
+
+        // density heatmap (H1): deposit + decay the scalar buffer once per frame.
+        if (heatmapEnabled) {
+            val hm = heatmap ?: Heatmap(w, h).also { heatmap = it }
+            hm.update(store.particles)
+        }
+
         env.frameN += 1
         env.t += dt
     }

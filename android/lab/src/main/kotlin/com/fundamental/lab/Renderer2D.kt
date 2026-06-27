@@ -112,6 +112,23 @@ object Renderer2D {
         g.dispose()
     }
 
+    /** Draw the density heatmap as a coarse accent-tinted glow, sampled from the controller's buffer. */
+    fun drawHeatmap(g: Graphics2D, c: FieldController, w: Int, h: Int, accent: Color, cell: Int = 24) {
+        var y = 0
+        while (y < h) {
+            var x = 0
+            while (x < w) {
+                val v = c.sampleScalar((x + cell / 2).toFloat(), (y + cell / 2).toFloat())
+                if (v > 0.03f) {
+                    g.color = Color(accent.red, accent.green, accent.blue, (v * 150f).toInt().coerceIn(0, 170))
+                    g.fillRect(x, y, cell, cell)
+                }
+                x += cell
+            }
+            y += cell
+        }
+    }
+
     /** Draw overlay-reading segments (vectors, field-lines, contours, the deformation grid). */
     fun drawSegments(g: Graphics2D, segs: List<Segment>, color: Color, width: Float = 1f) {
         antialias(g)

@@ -101,10 +101,16 @@ class LabCanvas : JPanel() {
     private var primary: Body? = null
     private var buffer: BufferedImage? = null
     private val readings = LinkedHashSet<Reading>()
+    private var attentionOn = false
+    private var causalityOn = false
+    private var heatmapOn = false
     var frameMs: Double = 0.0; private set
     private val timer = Timer(16) { tickOnce() }
 
     fun toggleReading(r: Reading, on: Boolean) { if (on) readings.add(r) else readings.remove(r) }
+    fun setAttention(on: Boolean) { attentionOn = on; controller?.attentionEnabled = on }
+    fun setCausality(on: Boolean) { causalityOn = on; controller?.causalityEnabled = on }
+    fun setHeatmap(on: Boolean) { heatmapOn = on; controller?.heatmapEnabled = on }
 
     init {
         background = Renderer2D.BG
@@ -140,6 +146,9 @@ class LabCanvas : JPanel() {
         val c = FieldController(width.toFloat(), height.toFloat(), particleCount = density)
         c.setFormation(formation)
         scene.setup(c, width.toFloat(), height.toFloat())
+        c.attentionEnabled = attentionOn
+        c.causalityEnabled = causalityOn
+        c.heatmapEnabled = heatmapOn
         controller = c
         primary = c.bodies.firstOrNull { scene.token != null && it.tokens.contains(scene.token) } ?: c.bodies.firstOrNull()
         resetBuffer()
@@ -170,6 +179,7 @@ class LabCanvas : JPanel() {
         } else {
             Renderer2D.drawFrame(g2, c, mode, accent, width, height)
         }
+        if (heatmapOn) Renderer2D.drawHeatmap(g2, c, width, height, accent)
         for (r in readings) drawReading(g2, c, r, width, height)
     }
 }
@@ -274,6 +284,18 @@ private fun makeInspector(canvas: LabCanvas): JPanel {
         cb.addActionListener { canvas.toggleReading(r, cb.isSelected) }
         panel.add(cb)
     }
+
+    // Body Matter Interaction — the model's conserved truths
+    panel.add(section("Body Matter Interaction"))
+    fun bmi(label: String, apply: (Boolean) -> Unit) {
+        val cb = JCheckBox(label)
+        cb.foreground = Color(200, 206, 218); cb.isOpaque = false; cb.alignmentX = Component.LEFT_ALIGNMENT
+        cb.addActionListener { apply(cb.isSelected) }
+        panel.add(cb)
+    }
+    bmi("Conserved attention") { canvas.setAttention(it) }
+    bmi("Cross-boundary causality") { canvas.setCausality(it) }
+    bmi("Density heatmap") { canvas.setHeatmap(it) }
 
     // Live stats
     panel.add(section("Live"))
