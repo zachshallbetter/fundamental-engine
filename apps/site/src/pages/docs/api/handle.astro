@@ -92,6 +92,34 @@ export function Background() {
     />
   );
 }`;
+
+const coordWindow = `// WINDOW field (browserHost / <field-root>): args are VIEWPORT pixels — the same
+// space as a pointer event. clientX/clientY drop straight in.
+addEventListener('pointermove', (e) => field.flowTo(e.clientX, e.clientY));
+
+// To track a DOM element, read its viewport rect — and recompute on scroll, because
+// getBoundingClientRect() is relative to the viewport, which moves as the page scrolls.
+function focusOn(el) {
+  const r = el.getBoundingClientRect();
+  field.flowTo(r.left + r.width / 2, r.top + r.height / 2);
+}
+addEventListener('scroll', () => focusOn(target), { passive: true });`;
+
+const coordContained = `// CONTAINED field (containerHost / new FieldField({ bounds: el })): args are
+// CONTAINER-LOCAL pixels — measured from the container's top-left, NOT the viewport.
+// Subtract the container's rect; these coords are scroll-invariant (container and its
+// contents move together), so no recompute on scroll of the page.
+const box = container.getBoundingClientRect();
+container.addEventListener('pointermove', (e) => {
+  field.flowTo(e.clientX - box.left, e.clientY - box.top);
+});
+
+// To focus a child element inside the contained field, take both rects local-relative:
+function focusChild(child) {
+  const c = container.getBoundingClientRect();
+  const r = child.getBoundingClientRect();
+  field.flowTo(r.left - c.left + r.width / 2, r.top - c.top + r.height / 2);
+}`;
 ---
 
 <DocsLayout
@@ -181,6 +209,52 @@ export function Background() {
         { label: 'Web component', lang: 'js', code: worked },
         { label: 'React', lang: 'tsx', code: workedReact },
         { label: 'Vanilla', lang: 'ts', code: workedVanilla },
+      ]}
+    />
+  </section>
+
+  <section class="docs-sec" id="coordinate-space">
+    <h2>Coordinate space: <code>flowTo</code>, <code>burst</code>, and <code>sample</code></h2>
+    <p>
+      The position-taking methods — <code>flowTo(x, y)</code>, <code>burst(x, y)</code>, and the
+      sampling reads (<code>sample(x, y)</code>, <code>sampleField(name, x, y)</code>,
+      <code>atomAt</code>, <code>focusAt</code>) — all take coordinates in the <strong>field's own
+      pixel space</strong>, the same space its particles and bodies live in. What that space
+      <em>is</em> depends on how the field was created:
+    </p>
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k">Window field — <code>browserHost</code> / <code>&lt;field-root&gt;</code></dt>
+        <dd class="d">
+          Field space <strong>equals viewport space</strong> (the canvas is fixed and full-viewport, so
+          the origin is <code>0,0</code>). Pass <strong>viewport pixels</strong> — a pointer event's
+          <code>clientX</code>/<code>clientY</code> work directly. To track a document element, read its
+          <code>getBoundingClientRect()</code>; because that rect is viewport-relative, you must
+          <strong>recompute on scroll</strong> as the element moves under the fixed field.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k">Contained field — <code>containerHost(el)</code> / <code>new FieldField(&#123; bounds: el &#125;)</code></dt>
+        <dd class="d">
+          The field, its bodies, and its canvas all live in the <strong>container's local space</strong>:
+          the engine subtracts the container's origin when it measures bodies, so the args you pass must
+          be <strong>container-local</strong> (<code>clientX − rect.left</code>), not viewport. These
+          local coordinates are <strong>scroll-invariant</strong> — the container and its contents move
+          together, so a focus pinned to a child stays put without recompute as the page scrolls.
+        </dd>
+      </div>
+    </dl>
+    <div class="callout">
+      <b>The methods don't translate for you.</b> <code>flowTo</code>/<code>burst</code> store the raw
+      <code>(x, y)</code> and compare them against particle positions directly — there is no
+      viewport→local conversion inside the engine. A window field has a zero origin so viewport pixels
+      happen to be correct; a contained field does not, so passing viewport pixels there places the
+      focus in the wrong spot. Convert to the field's space before you call.
+    </div>
+    <CodeTabs
+      variants={[
+        { label: 'Window field', lang: 'js', code: coordWindow },
+        { label: 'Contained field', lang: 'js', code: coordContained },
       ]}
     />
   </section>
