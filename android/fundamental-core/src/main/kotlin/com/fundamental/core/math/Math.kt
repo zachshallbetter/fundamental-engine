@@ -3,13 +3,14 @@ package com.fundamental.core.math
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.max
 import kotlin.math.sin
 
 // Scalar + color helpers — the Kotlin port of swift/Sources/FundamentalCore/Math/Math.swift. RGB is a
 // `Vec3` of [0,255] channels, exactly as Swift aliases `RGB = SIMD3<Float>`.
 
-/** Softening floor shared by the natural inverse-square fields (Swift `EPS`). */
-const val EPS: Float = 1e-6f
+/** Divide-by-zero guard at a pole — 1 unit, sub-pixel (Swift `Geometry.EPS`). */
+const val EPS: Float = 1f
 
 /** Fallback accent blue. */
 val DEFAULT_ACCENT = Vec3(77f, 163f, 255f)
@@ -46,6 +47,18 @@ fun mixHex(a: String, b: String, t: Float): String {
     val cb = hexToRgb(b)
     val k = clamp(t, 0f, 1f)
     return rgbToHex(ca + (cb - ca) * k)
+}
+
+/**
+ * Screen attenuation factor (workover v0.3 §"`screen` modifier"): 1 outside the range, easing down to
+ * `1 − strength` at the centre, floored at `floor`. Used by the integrator's cross-body screen pass.
+ */
+fun screenFactor(d: Float, range: Float, strength: Float, floor: Float = 0f): Float {
+    if (range <= 0f) return 1f
+    val fall = max(0f, 1f - d / range)
+    val factor = 1f - strength * fall * fall
+    val f = clamp(floor, 0f, 1f)
+    return clamp(factor, f, 1f)
 }
 
 /**

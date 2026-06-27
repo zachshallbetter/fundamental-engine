@@ -52,9 +52,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   test classpath and `GoldenConformanceTests` reproduces every `dv` within tolerance (`2e-4 + 1e-3·|dv|`);
   every other force gets exact/behavioral unit tests (36 tests total), as on Swift. New CI workflow
   `android.yml` (JDK 17, `./gradlew :fundamental-core:build`) gates it and re-runs when the golden
-  changes; committed Gradle 8.13 wrapper, JVM-17 bytecode. Still to come: the integrator + real scalar
-  grids, the scheduler, the Android `View`/`Canvas` + Jetpack Compose hosts, and a sample app. See
-  [`android/README.md`](android/README.md).
+  changes; committed Gradle 8.13 wrapper, JVM-17 bytecode. See [`android/README.md`](android/README.md).
+- **Android port — the integrator (`android/`).** Ported `step()` (the per-tick loop) and its
+  subsystems to Kotlin, line-for-line from the Swift integrator: first-class mass, the range cull, the
+  modifier contract (spotlight → screen → resonate), cross-body screen attenuation, conserved attention,
+  the carrier-wave current (linear + circular), formation currents, the `c` cap, friction/heat decay,
+  wander, mortal aging, toroidal wrap, and the source pass — plus real scalar grids (`ScalarGridImpl`:
+  diffuse/wave/memory), `SpatialHash`/`FieldStore`, `Currents`, `Geometry` (dipoles + `netField`),
+  `Formations`, the `when` gates, thermodynamics, weights, and temporal kernels; the `field()` structure
+  hooks are now complete. Verified by a headless `EngineTests` (gather / friction / planar / capture /
+  bounded sources) and a deterministic `PerfRegressionTests` (1200 particles × 600 frames: count
+  conserved, all-finite, velocity/heat bounded) — 44 core tests total. Still to come: the `createField`
+  driver + `FieldHandle`, the platform scheduler, the Android `View`/`Canvas` + Compose hosts, a sample app.
 
 ## [0.8.1] — 2026-06-25
 

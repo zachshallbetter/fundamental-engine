@@ -55,22 +55,29 @@ Ported and tested:
   - **Designed extended set** (§20.3) — `lens`, `gate`, `buoyancy`, `shear`, `crystallize`, `align`,
     `wind`, `cohesion`, `pressure`, `link`, `hunt`, `morph`, `spawn`, `resonate`, `spotlight`,
     `screen`, `pigment`, `fieldflow`, `warp`.
+- **The integrator** (`step`) — the per-tick loop, line-for-line from Swift: first-class mass (Δv ×
+  1/m), the range cull, the modifier contract (spotlight → screen → resonate; gates OR, strengths
+  multiply), cross-body `screen` attenuation, conserved-attention multiplier, the carrier-wave current
+  (linear + circular), formation currents (drift / spread / convergence), the `c` velocity cap,
+  friction/heat decay, wander, mortal aging, toroidal wrap, and the source pass.
+- **Supporting subsystems** — real scalar grids (`ScalarGridImpl`: diffuse / wave / memory stepping),
+  the `SpatialHash` + `FieldStore` neighbour index, carrier waves (`Currents`), `Geometry` (pole-pair
+  dipoles, box SDF, `netField`), `Formations` (presets + easing + accretion target), the `when`
+  condition gates, thermodynamics, weights, and temporal kernels. The `field()` structure hooks are
+  complete (gravity/charge monopole, magnetism dipole).
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
-  (`GoldenConformanceTests`); every other force is verified by behavioral/exact unit tests
-  (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`) — closed-form ones against
-  their exact formula, neighbor/RNG/grid/field ones against a constructed `Env`. This mirrors how the
-  Swift port verifies the non-golden forces.
+  (`GoldenConformanceTests`); every other force has behavioral/exact unit tests
+  (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
+  headlessly (`EngineTests`: matter gathers, friction bleeds energy, flat fields stay planar, sinks
+  capture, sources stay bounded) and gated by a deterministic `PerfRegressionTests` (1200 particles ×
+  600 frames: count conserved, all-finite, velocity/heat bounded). **44 tests total.**
 
 Not yet ported (follow-up PRs):
 
-- The **visual `field()` structure hooks** for the dipole sources (magnetism's bar-magnet dipole;
-  the renderable dipole/monopole fields) — they need the geometry pole-pair port and only matter once
-  the integrator wires `env.fieldAt`. The monopole `field()` for `gravity`/`charge` is ported.
-- The integrator, scalar grids (the real diffuse/wave/memory stepping behind `NoopGrid`), currents,
-  the bound↔free reservoir, formations/reactions/feedback, conditions, thermodynamics, attention,
-  recipes — the rest of `FundamentalCore`.
-- `:fundamental-platform` (scheduler + registries), the Android hosts, the Compose adapter, and a
-  sample app (the FieldLab equivalent).
+- The bound↔free reservoir, reactions/accretion sparks, attention/causality, recipes, and the
+  `createField` driver + the full `FieldHandle` public API — the rest of `FundamentalCore`/the host seam.
+- `:fundamental-platform` (the six-phase scheduler + registries), the Android `View`/`Canvas` host, the
+  Jetpack Compose adapter, and a sample app (the FieldLab equivalent).
 
 ## Building & testing
 
