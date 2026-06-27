@@ -8,9 +8,9 @@ reinterpretation — the same approach as the [Swift port](../swift/README.md). 
 the API surface, and the physics mirror the npm packages (and the Swift package) one-to-one; where
 they diverge it is a bug.
 
-> **Status: foundation.** This is the first slice — the pure-Kotlin core plus the cross-plane
-> conformance gate. It is intentionally small so every later force/host PR is held to parity from
-> day one. See [Parity](#parity) for exactly what is and isn't ported yet.
+> **Status: running on-device.** The pure-Kotlin core (full 36-force surface + integrator, held to the
+> cross-plane conformance gate), the `FieldHandle` public API, a Jetpack Compose host, and a desktop
+> FieldLab are all in place. See [Parity](#parity) for exactly what is and isn't ported yet.
 
 ## Packages
 
@@ -20,12 +20,9 @@ they diverge it is a bug.
 | `:fundamental-compose` | `@fundamental-engine/react` | `FundamentalSwiftUI` | The declarative Jetpack Compose adapter: a `FieldView` composable + `Modifier.fieldBody()`. |
 | `:sample`            | (the demos)                | `FieldLab`           | A minimal sample app — a live field with a centered `fieldBody` attractor; tap to burst. |
 
-Planned (mirroring Swift's `FundamentalPlatform` / `FundamentalVanilla`):
+| `:fundamental-platform` | `@fundamental-engine/dom`    | `FundamentalPlatform`  | The six-phase frame scheduler (`discover→read→compute→state→write→render`) + the registries (measurement / state / feedback / relationship / visual-binding / overlay), driven through an injected [`FieldHost`](fundamental-core/src/main/kotlin/com/fundamental/core/engine/FieldHost.kt). **Zero Android deps** — pure `kotlin("jvm")`. |
 
-| Module (planned)        | Mirrors                          | What it will be |
-|-------------------------|----------------------------------|-----------------|
-| `:fundamental-platform` | `@fundamental-engine/dom`        | The six-phase frame scheduler + registries. |
-| `:fundamental-android`  | `@fundamental-engine/vanilla`    | The imperative `View`/`Canvas` host (mirror of `UIKitFieldHost`), for non-Compose apps. |
+| `:fundamental-android`  | `@fundamental-engine/vanilla` | `UIKitFieldHost`       | The imperative `View`/`Canvas` host for non-Compose apps: `FieldFieldView` (a custom `android.view.View` that owns a `FieldController`, drives it from the `Choreographer`, and draws the pool in `onDraw`) + `AndroidFieldHost` (the `FieldHost` impl — volume/visibility/reduced-motion, `Choreographer` frame loop, `worldBox` via `getLocationOnScreen`). |
 
 ## The conformance rule
 
@@ -69,39 +66,105 @@ Ported and tested:
 - **The runtime driver** (`FieldController`) — the `createField`-equivalent loop: pool seeding, env
   service wiring (neighbours, spawn, scalar grids by name, sink supernova), formation easing, grid
   stepping, and `tick()`; plus `addBody`/`burst`/`setFormation`/`resize`. Pure Kotlin, JVM-testable.
+- **The public `FieldHandle` API** (`createField`, the Kotlin `FieldField`) — programmatic bodies with
+  live `BodyHandle`s (`set` / `remove` / `load` / `drain`), `burst`, `flowTo`/`clearFlow` (the Flow
+  focus), data atoms (`seed` / `atomAt`), open scalar channels (`addField` / `sampleField`), the BMI
+  toggles (`setAttention` / `setCausality` / `setHeatmap`) + `sampleScalar` / `sampleGradient`, `energy`,
+  `particleCount`, and `readParticles` (stride-5 wire format). JVM-tested.
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a
   runnable `:sample` app.
 - **Render modes** — `RenderMode.DOTS` / `TRAILS` (a faded persistent buffer → comet trails) /
   `LINKS` (proximity line segments via the spatial hash → a constellation network) / `GLOW` (soft
-  radial-gradient blobs). All four verified on-device. (Metaballs / voronoi / streamlines / heatmap
-  overlays are follow-ups — they need the heatmap grid + marching-squares.)
+  radial-gradient blobs), plus the **heatmap glow** underlay (from the density buffer). All verified
+  on-device / in the lab. (Metaballs / voronoi matter modes are follow-ups — marching-squares / nearest-site.)
+- **Carrier waves + the bound↔free reservoir** (§24 / §2.3 / §2.4, `Currents` + `Reservoir`) — the five
+  layered standing currents (`buildWaves`) that free matter drifts along, the bound shimmer pool riding
+  them (`buildBound`), the conserved `healWaves` (reclaim calm matter onto a line) / `tearBoundByForces`
+  (rip it loose near a body) cycle — free + bound count is invariant — and `induceCharges` (a charge
+  body polarizes nearby matter into +/- domains, so charge/magnetism act without manual seeding).
+- **Reactions / sparks** (§23, `Reactions` + `SparkPool`) — the micro-reaction matter: `energyDelta`,
+  `reactionIntensity`, `burstImpulse`, `captureEdge`, and the conserved sink-release (`releaseCaptured` —
+  ejects held matter past the absorb horizon, made immortal). Forces emit sparks through `env.spark`
+  (wall impacts, the sink supernova flash); the capped pool decays them; the host draws them.
+- **Body-Matter-Interaction** (`Attention` / `Causality` / `Heatmap`) — the model's conserved truths,
+  wired into the driver as toggles: **conserved attention** (one strength budget; engaging a body drains
+  the others, Σ S·mul invariant), **cross-boundary causality** (saturated bodies spill density to
+  neighbours, ΣΔ = 0, into a `lit` channel), and the **density heatmap** (a scalar buffer of where matter
+  pools, sampled back via `sampleScalar`/`sampleGradient` and drawn as a glow). First-class mass already
+  ships in the integrator.
+- **Recipes** (`recipe` package) — the schema, validation, and the `compileRecipe` compiler, with the
+  **locked 64-recipe canon** decoded from the shared `data/recipes.json` (4 tiers × 16, never
+  hand-retyped). Every recipe validates against the standard registry in the tests, exactly as on Swift.
+- **Overlay readings** (`overlay` package) — the field diagnostics, computed as plain `Segment`s any
+  host can draw: `forceAt` probe → **streamlines** / **force-vectors**; `netField` traces → **field
+  lines**; a displaced lattice → the **deformation grid**; and **marching-squares iso-contours** for
+  **temperature** and **energy** from a particle-splatted scalar grid. Pure + JVM-tested.
+- **FieldLab (desktop, `:lab`)** — a JVM Swing/Java2D **FieldLab** over the same engine: a sidebar (tour
+  + the full 36-force catalog + the 64-recipe canon), a live canvas, and an inspector (formation / render mode / density /
+  accent / live body sliders / **the Readings overlays** / **the Body-Matter-Interaction toggles** + heatmap glow + carrier waves / live stats), plus a headless scene-tour +
+  overlay PNG renderer + sim bench (`--args="render"` / `"bench"`). The Kotlin analog of
+  `swift run FieldLab` — fast iteration and a CI-able visual render path, no emulator.
 - **Verification** — the six deterministic canonical forces are held to the cross-plane golden
   (`GoldenConformanceTests`); every other force has behavioral/exact unit tests
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **48 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **81 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
-Not yet ported (follow-up PRs):
+Also ported:
 
-- The bound↔free reservoir, reactions/accretion sparks, attention/causality, recipes, carrier-wave
-  building (`buildWaves`), and the full `FieldHandle` public API — the rest of `FundamentalCore`.
-- `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
+- **`:fundamental-platform`** (mirror of Swift `FundamentalPlatform`) — the **six-phase `FrameScheduler`**
+  (`discover→read→compute→state→write→render`, with the read-phase guard + violation recording), the
+  **registries** (`MeasurementRegistry` with frame-stable geometry + visibility, `StateRegistry`,
+  `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`, `OverlayRegistry`), the
+  **`FieldPlatform`** coordinator (wires `read→measure`, `write→flush`), and the `QualityGovernor` /
+  `FieldPerf` budget governors. The platform seam — `FieldHost` / `FieldVolume` / `FieldProjection` —
+  lives in core (Android-free). JVM-tested (`FrameSchedulerTests`, `FieldPlatformTests`).
+
+- **`:fundamental-android`** (mirror of `UIKitFieldHost` / `@fundamental-engine/vanilla`) — the imperative
+  non-Compose host: `FieldFieldView` (a custom `View` driving a `FieldController` from the `Choreographer`,
+  rendering the pool in `onDraw`, tap-to-burst) + `AndroidFieldHost` (implements the core `FieldHost`).
+  Builds against the Android SDK.
+
+The core, both host modules (`:fundamental-platform`, `:fundamental-android`), the Compose host, and the
+desktop FieldLab are all ported. Remaining follow-ups are matter-render extras (metaballs / voronoi modes)
+and the declarative `[data-body]` view scanner for the Android host.
 
 ## Building & testing
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (48 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (81 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator
 ./gradlew :sample:installDebug
 adb shell am start -n com.fundamental.sample/.MainActivity
 ```
+
+### FieldLab (desktop) — no emulator
+
+`:lab` is a JVM **FieldLab** over the **same** `:fundamental-core` engine, drawn with Java2D (built into
+the JDK — no Android, no Compose-Multiplatform). It's the Kotlin analog of `swift run FieldLab`: a real
+desktop app, instant iteration without an emulator. Like the Swift lab it has a **sidebar** (the tour +
+the full 36-force catalog, grouped canonical / natural / extended), a **live canvas**, and an
+**inspector** (formation, render mode, density, accent, live body strength/range/spin sliders, and live
+stats — particles / kinetic / thermal / frame-ms). Each force opens a scene wired so it actually shows
+(charge/magnetism get charged matter, hunt gets two species, wall/gate get a box, morph gets a target).
+
+```sh
+./gradlew :lab:run                       # the FieldLab window — pick a force in the sidebar, tune the inspector, click = burst
+./gradlew :lab:run --args="render out/"  # headless: render the tour + catalog spread to PNGs (CI-able, no display)
+./gradlew :lab:run --args="bench"        # headless: sim ms/frame per scene
+```
+
+At full FieldLab parity: the sidebar runs the tour + 36-force catalog + 64-recipe canon, **all eight**
+overlay readings work (incl. `path` traces + per-body `data` rings), the three Body-Matter-Interaction
+toggles (attention / causality / heatmap) + carrier waves, and **recipe save/export** round-trips a
+scene back to the canon JSON shape (`RecipeExport`).
 
 The pure `:fundamental-core` builds on any JDK (JVM-17 bytecode); the host modules need the Android SDK
 (point Gradle at it via `local.properties` `sdk.dir=...` or `ANDROID_HOME`). compileSdk 34, minSdk 24,

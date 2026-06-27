@@ -19,5 +19,8 @@ dependencyResolutionManagement {
 rootProject.name = "fundamental-android"
 
 include(":fundamental-core")
+include(":fundamental-platform")
+include(":fundamental-android")
 include(":fundamental-compose")
 include(":sample")
+include(":lab")

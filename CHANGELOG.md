@@ -43,6 +43,36 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   stale comment in `packages/three/src/index.ts` (both `PlaneProjection` and `VolumeProjection` ship).
 
 ### Added
+- **Android port reaches full parity — core + platform + both hosts + the lab (`android/`).** Four epochs
+  on `android-waves` close the gap to the Swift port: the Kotlin port now mirrors `FundamentalCore`,
+  `FundamentalPlatform`, both hosts (the imperative `UIKitFieldHost` analog + the Compose adapter), and the
+  FieldLab.
+  - **Relationship edges — `addEdge` / `readEdges` (core).** The last `FieldHandle` capability: directed
+    edges between two programmatic bodies, with per-tick dynamics ported line-for-line from
+    `FieldEngine.swift` — strength climbs while the source body is salient (`d > 0.08`), decays idle, and
+    `memory` accretes and holds; removing either endpoint drops the edge. `EdgeRecord` snapshots carry the
+    endpoints' data + `type` / `strength` / `memory` / `active` / direction, the relationship layer the way
+    `readParticles` is the swarm. Completes the Kotlin `FieldHandle` / `FundamentalCore` surface. 2 new JVM
+    tests (**85 core total**).
+  - **`:fundamental-platform` — the host-agnostic platform layer (mirror of Swift `FundamentalPlatform`).**
+    The **six-phase `FrameScheduler`** (`discover→read→compute→state→write→render`, with the read-phase guard
+    + violation recording), the six **registries** (`MeasurementRegistry` with frame-stable geometry +
+    visibility, `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`,
+    `OverlayRegistry`), the **`FieldPlatform`** coordinator (wires `read→measure`, `write→flush`), and the
+    `QualityGovernor` / `FieldPerf` budget governors. The platform seam — `FieldHost` / `FieldVolume` /
+    `FieldProjection` — moves into core (Android-free). Pure `kotlin("jvm")`, JVM-tested
+    (`FrameSchedulerTests`, `FieldPlatformTests`; **10 platform tests**).
+  - **`:fundamental-android` — the imperative non-Compose host (mirror of `UIKitFieldHost`).** A `View` /
+    `Canvas` host for non-Compose apps: `FieldFieldView` (a custom `android.view.View` that owns a
+    `FieldController`, drives it from the `Choreographer`, draws the pool in `onDraw`, tap-to-burst) +
+    `AndroidFieldHost` (the core `FieldHost` impl — volume / visibility / reduced-motion, the `Choreographer`
+    frame loop, `worldBox` via `getLocationOnScreen`). **Verified to assemble against the Android SDK**; the
+    on-device E2E pass is a follow-up (the Compose host + sample remain the on-device-verified path).
+  - **FieldLab desktop parity (`android/lab`).** Completes the desktop FieldLab to full parity with the
+    Swift lab: **recipe save/export** (`RecipeExport` round-trips a scene's `@Serializable FieldRecipe` back
+    to the canon JSON shape) and the final two overlay readings — **`path` traces** (per-particle position
+    history) and per-body **`data` rings** (the eased density `--d` as a fill ring). All eight readings now
+    work; `:lab` gains a `kotlinx-serialization-json` dep for export.
 
 - **Record / replay foundation — `recordRun` / `replayRun` / `verifyReplay` / `seededRng` (core).** A
   pure, headless capture-and-reproduce seam (#692): `recordRun(config)` drives a deterministic
@@ -101,6 +131,52 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
   iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
   filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+- **Android port — carrier waves + the bound↔free reservoir (§24/§2.4) (`android/`).** Ported the
+  remaining `Currents` (`buildWaves` — the five layered standing currents — + `buildBound` + `BoundParticle`)
+  and `Reservoir` (`healWaves`/`tearBoundNear`/`tearBoundByForces`/`induceCharges`; the Reservoir draft was
+  produced by a sub-agent and reviewed line-by-line). Wired into the driver behind a `wavesEnabled` toggle:
+  free matter drifts along the wave slopes (the integrator's existing wave block), the bound shimmer pool
+  rides the lines, and `healWaves`/`tearBoundByForces` exchange matter between free and bound — the free +
+  bound count is invariant. `induceCharges` runs each frame (charge bodies polarize nearby matter into
+  +/- domains, so charge/magnetism act automatically). FieldHandle `setWaves`; the FieldLab gained a
+  Carrier-waves toggle + wave/shimmer rendering. 4 new JVM tests (81 core total): five layered waves,
+  shimmer count, charge polarization, and reservoir conservation. Headless `overlay-waves.png` shows the
+  five currents with 160 shimmer riders. Advances #644 / #645.
+- **Android port — reactions & sparks (§23) (`android/`).** Ported the micro-reaction layer
+  (`Reactions` + a host-agnostic `SparkPool`): `energyDelta`, `reactionIntensity`, `burstImpulse`,
+  `captureEdge`, and the conserved sink-release `releaseCaptured` (ejects held matter past the absorb
+  horizon, made immortal — a real fill→explode→fall-back cycle). The driver wires `env.spark` to the
+  capped pool (wall impacts + the sink supernova flash emit sparks), updates/decays it each frame, and
+  exposes `controller.sparks`; the lab draws them. 6 new JVM tests (77 core total): energy loss, burst
+  falloff, spark emit/decay/cap, conserved release, the capture edge, and sparks-on-wall-impact through
+  the engine. Headless `overlay-sparks.png` shows sparks firing on all four wall faces. Advances #646.
+- **Android port — Body-Matter-Interaction: attention, causality, heatmap (`android/`).** The model's
+  conserved truths, ported (`Attention`/`Causality`/`Heatmap`) and wired into the driver as toggles:
+  **conserved attention** (one strength budget — engaging a body drains the others, Σ S·mul invariant —
+  fed into the integrator's `attn` multiplier each frame), **cross-boundary causality** (saturated bodies
+  spill density to neighbours, ΣΔ = 0, into a new `lit` channel; with per-frame feedback density easing),
+  and the **density heatmap** (the H1 scalar buffer of where matter pools — sampled back via
+  `FieldHandle.sampleScalar`/`sampleGradient` and drawn as a glow underlay). All three are inspector
+  toggles in the FieldLab, completing its Body-Matter-Interaction section. 5 new JVM tests (71 core
+  total): attention is rest-neutral + conserves total strength, causality spillover conserves and flows
+  to neighbours, the heatmap reads hotter where matter pooled. Advances #647 / #649.
+- **Android port — recipes: the locked 64-recipe canon (`android/`).** Ported the recipe schema,
+  validation, and the `compileRecipe` compiler (a `recipe` package). The **64-recipe canon** is decoded
+  at runtime from the shared `data/recipes.json` (synced into the core's resources by a `syncRecipes`
+  Gradle task — one source of truth with the JS catalog and Swift bundle, never hand-retyped); `kotlinx-
+  serialization-json` becomes a core `implementation` dep (pure Kotlin, so the core stays platform-free).
+  The FieldLab sidebar gained a **"The canon — 64 recipes"** section: selecting one compiles it and runs
+  its bodies live. 5 new JVM tests (66 core total): all 64 load, every recipe validates against the
+  standard registry, every body token is a registered force, all four tiers present, compile produces
+  runnable bodies. Recipe save/export remains a follow-up. Advances #652.
+- **Android port — overlay readings (`android/`).** The field diagnostics, in a pure `overlay` package
+  computed as plain `Segment`s any host draws: `forceAt` (the still-probe net force, ported from
+  `streamlines.ts`) → **streamlines** / **force-vectors**; the field-line tracer over `netField` →
+  **field lines**; a field-displaced lattice → the **deformation grid**; and **marching-squares
+  iso-contours** for **temperature** and **energy** from a particle-splatted scalar grid. Wired into the
+  FieldLab inspector's **Readings** panel and the headless render (overlay PNGs). 6 new JVM tests (61
+  core total); verified headless (force-vectors show a clean radial inflow; gravity's monopole traces
+  field lines). The `path` and per-body `data` readings remain follow-ups. Advances #654 / #732.
 - **Android port — Kotlin core (`android/`).** A native **Kotlin** port of the engine, mirroring the
   Swift port one-to-one. The pure-`kotlin("jvm")` `:fundamental-core` module (zero Android deps — the
   analog of `FundamentalCore`) ports the core contracts (`Vec3`/`Box`/`Particle`/`Body`/`Env`/
@@ -130,17 +206,45 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   driven by a new `:fundamental-compose` module — `FieldView` (one frame per display frame via
   `withFrameNanos`, particle rendering on a Compose `Canvas`, tap-to-burst) and `Modifier.fieldBody(...)`
   (a composable becomes a force source tracking its on-screen bounds, mirroring SwiftUI `.fieldBody`) —
-  with a runnable `:sample` app. 48 core tests (incl. `FieldControllerTests`); the host + sample build
+  with a runnable `:sample` app. 55 core tests (incl. `FieldControllerTests`); the host + sample build
   against the Android SDK and were **verified running on a Pixel 7 / API 35 emulator** (a centered
   `fieldBody` bends the particle field into an orbiting shell). CI (`android.yml`) now sets up the Android
   SDK and assembles the host modules alongside the core conformance gate. compileSdk 34, minSdk 24,
   AGP 8.7, Compose BOM 2024.12.
+- **Android port — the public `FieldHandle` API (`android/`).** A `createField(...)` facade over the
+  runtime driver (the Kotlin `FieldField`), exposing the consumer surface: programmatic bodies with live
+  `BodyHandle`s (`set` / `remove` / `load` / `drain` for sinks), `burst`, `flowTo` / `clearFlow` (a new
+  `Flow` focus ported from `flow.ts` — a transient linear-falloff pull applied in `tick`), data atoms
+  (`seed` / `atomAt`, with `AtomPayload`), open scalar channels (`addField` / `sampleField`), `energy`,
+  `particleCount`, and `readParticles(out)` (stride-5 wire format, with `PARTICLE_STRIDE` /
+  `PARTICLE_WIRE_VERSION`). Programmatic bodies track a per-frame `rect`. 7 new JVM tests (55 core total).
+  Still pending (subsystems not yet ported): relationship edges and `sampleScalar` / `sampleGradient`.
 - **Android port — Compose render modes (`android/`).** `FieldView` gained a `renderMode` parameter:
   `DOTS`, `TRAILS` (a faded persistent buffer → comet trails / accretion-disk look), `LINKS` (proximity
   line segments via the engine's spatial hash → a constellation network), and `GLOW` (soft
   radial-gradient blobs). The `:sample` can pick a mode via an `--es mode …` intent extra. All four
   verified on the Pixel 7 / API 35 emulator. (Metaballs / voronoi / streamlines / heatmap overlays
   remain follow-ups — they need the heatmap grid + marching-squares.)
+- **Android port — FieldLab for the JVM (`android/lab`).** A desktop **FieldLab** over the same
+  pure-Kotlin engine, drawn with Java2D (built into the JDK — no Android, no emulator, no
+  Compose-Multiplatform). The Kotlin analog of `swift run FieldLab`: `./gradlew :lab:run` opens a real
+  Swing app with a **sidebar** (the tour + the full 36-force catalog, grouped canonical/natural/extended),
+  a **live canvas**, and an **inspector** (formation, render mode, density, accent, live
+  strength/range/spin sliders, and live stats — particles / kinetic / thermal / frame-ms). Each force
+  opens a scene wired to actually show it (charge/magnetism get charged matter, hunt two species, wall/gate
+  a box, morph a target). Headless paths: `--args="render out/"` renders the tour + a catalog spread to
+  PNGs (a CI-able visual gate needing no display — wired into `android.yml`) and `--args="bench"` reports
+  deterministic sim ms/frame. Closes the "can't iterate/verify rendering without an emulator" gap;
+  advances #655. (Not yet vs. Swift FieldLab: overlay readings, the recipe canon, and the
+  attention/causality/heatmap toggles — they follow their engine subsystems.)
+
+### Fixed
+
+- **Android port — programmatic bodies build with `feedback=true` (`android/`, Swift `addBody` parity).**
+  Code-driven bodies were constructed without feedback, so their density `d` never rose — which silently
+  broke `addEdge` salience, conserved attention, and causality on bodies made via `FieldHandle.addBody`
+  (they only worked on scanned/DOM-equivalent bodies). They now construct with `feedback=true`, matching
+  Swift `addBody`.
 
 ## [0.8.1] — 2026-06-25
 
