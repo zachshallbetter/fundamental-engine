@@ -49,7 +49,16 @@ class Particle(
 
     /** Carried pigment, conserved color transport (§20.8). */
     var color: String? = null
+
+    /** Opaque data record bound by `FieldHandle.seed`. */
+    var atom: AtomPayload? = null
 }
+
+/**
+ * An opaque data record bindable to a particle via `FieldHandle.seed`. `weight` (a size/mass basis)
+ * scales that particle's mass + size. Mirror of Swift's `AtomPayload`.
+ */
+class AtomPayload(var weight: Float? = null, var payload: Map<String, Any?> = emptyMap())
 
 /** A registered view acting as a force source. */
 class Body(
@@ -111,6 +120,8 @@ class Body(
     var screenMin: Float? = null
     /** Memoized token classification (filled lazily by the integrator). */
     var classified: ClassifiedTokens? = null
+    /** Per-frame position source for a view-less programmatic body (`FieldHandle.addBody`); sampled each tick. */
+    var rect: (() -> Box)? = null
     /** Thermodynamic accumulators (workover §"Metrics"); non-null opts the body into sampling. */
     var thermo: Thermo? = null
     /** Eased thermodynamic readout. */

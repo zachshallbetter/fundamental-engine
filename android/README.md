@@ -8,9 +8,9 @@ reinterpretation — the same approach as the [Swift port](../swift/README.md). 
 the API surface, and the physics mirror the npm packages (and the Swift package) one-to-one; where
 they diverge it is a bug.
 
-> **Status: foundation.** This is the first slice — the pure-Kotlin core plus the cross-plane
-> conformance gate. It is intentionally small so every later force/host PR is held to parity from
-> day one. See [Parity](#parity) for exactly what is and isn't ported yet.
+> **Status: running on-device.** The pure-Kotlin core (full 36-force surface + integrator, held to the
+> cross-plane conformance gate), the `FieldHandle` public API, a Jetpack Compose host, and a desktop
+> FieldLab are all in place. See [Parity](#parity) for exactly what is and isn't ported yet.
 
 ## Packages
 
@@ -69,6 +69,10 @@ Ported and tested:
 - **The runtime driver** (`FieldController`) — the `createField`-equivalent loop: pool seeding, env
   service wiring (neighbours, spawn, scalar grids by name, sink supernova), formation easing, grid
   stepping, and `tick()`; plus `addBody`/`burst`/`setFormation`/`resize`. Pure Kotlin, JVM-testable.
+- **The public `FieldHandle` API** (`createField`, the Kotlin `FieldField`) — programmatic bodies with
+  live `BodyHandle`s (`set` / `remove` / `load` / `drain`), `burst`, `flowTo`/`clearFlow` (the Flow
+  focus), data atoms (`seed` / `atomAt`), open scalar channels (`addField` / `sampleField`), `energy`,
+  `particleCount`, and `readParticles` (stride-5 wire format). JVM-tested.
 - **The Jetpack Compose host** (`:fundamental-compose`) — `FieldView` (drives one frame per display
   frame via `withFrameNanos`, renders the pool on a Compose `Canvas`, tap-to-burst) and
   `Modifier.fieldBody(...)` (a composable becomes a body tracking its on-screen bounds), plus a
@@ -87,20 +91,21 @@ Ported and tested:
   (`CoreForcesBehaviorTests`, `NaturalForcesTests`, `ExtendedForcesTests`); the integrator is driven
   headlessly (`EngineTests`) and gated by a deterministic `PerfRegressionTests` (1200 particles × 600
   frames: count conserved, all-finite, velocity/heat bounded); the driver has its own headless tests
-  (`FieldControllerTests`). **48 core tests total**, and the Compose host + sample app build against the
+  (`FieldControllerTests`). **55 core tests total**, and the Compose host + sample app build against the
   Android SDK and **run on-device** (verified on a Pixel 7 / API 35 emulator).
 
 Not yet ported (follow-up PRs):
 
 - The bound↔free reservoir, reactions/accretion sparks, attention/causality, recipes, carrier-wave
-  building (`buildWaves`), and the full `FieldHandle` public API — the rest of `FundamentalCore`.
+  building (`buildWaves`), and the `FieldHandle`'s remaining surface (relationship edges,
+  `sampleScalar`/`sampleGradient`) — the rest of `FundamentalCore`.
 - `:fundamental-platform` (the six-phase scheduler + registries) and a non-Compose `View`/`Canvas` host.
 
 ## Building & testing
 
 ```sh
 cd android
-./gradlew :fundamental-core:test       # engine + cross-plane conformance (48 tests; 120 golden cases)
+./gradlew :fundamental-core:test       # engine + cross-plane conformance (55 tests; 120 golden cases)
 ./gradlew :fundamental-compose:assembleDebug :sample:assembleDebug   # the Android host + sample app
 
 # run the sample on a device/emulator

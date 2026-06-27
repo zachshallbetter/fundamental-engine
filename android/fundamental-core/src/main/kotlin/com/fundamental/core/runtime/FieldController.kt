@@ -1,8 +1,10 @@
 package com.fundamental.core.runtime
 
+import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.FieldStore
+import com.fundamental.core.engine.FlowFocus
 import com.fundamental.core.engine.ForceRegistry
 import com.fundamental.core.engine.Formation
 import com.fundamental.core.engine.GridMode
@@ -12,7 +14,9 @@ import com.fundamental.core.engine.ScalarGridImpl
 import com.fundamental.core.engine.StepInput
 import com.fundamental.core.engine.builtinConditions
 import com.fundamental.core.engine.easeFormation
+import com.fundamental.core.engine.flowBias
 import com.fundamental.core.engine.formation
+import com.fundamental.core.engine.makeFlowFocus
 import com.fundamental.core.engine.step
 import com.fundamental.core.math.Vec3
 import kotlin.math.max
@@ -55,6 +59,12 @@ class FieldController(
 
     /** Short-range anti-clumping separation strength (0 = off). */
     var separation: Float = 0f
+
+    /** Active flow focus (a transient pull point), or null. Set via [flowTo] / cleared by [clearFlow]. */
+    var flow: FlowFocus? = null
+        private set
+
+    private val channels = HashMap<String, (Float, Float) -> Float>()
 
     init {
         env.volume = Vec3(w, h, d)
@@ -134,13 +144,72 @@ class FieldController(
         }
     }
 
-    /** Advance the field one frame: ease the formation, step the grids, then integrate. */
+    /** Place / move a flow focus the field bends toward (§flowTo). */
+    fun flowTo(x: Float, y: Float, strength: Float? = null, radius: Float? = null) {
+        flow = makeFlowFocus(Vec3(x, y, 0f), strength, radius)
+    }
+
+    fun clearFlow() { flow = null }
+
+    /** Register / replace an external scalar field channel (the open-input analog of a render surface). */
+    fun addFieldChannel(name: String, sampler: (Float, Float) -> Float) { channels[name] = sampler }
+
+    fun removeFieldChannel(name: String) { channels.remove(name) }
+
+    /** Sample a registered channel at (x, y); 0 if none by that name. */
+    fun sampleField(name: String, x: Float, y: Float): Float = channels[name]?.invoke(x, y) ?: 0f
+
+    /** Bind data records to the first `atoms.size` particles; a record's `weight` sets its size+mass basis. */
+    fun seed(atoms: List<AtomPayload>) {
+        val parts = store.particles
+        for (i in atoms.indices) {
+            if (i >= parts.size) break
+            val a = atoms[i]
+            parts[i].atom = a
+            a.weight?.let { w -> parts[i].size = max(0.25f, w); parts[i].mass = max(0.25f, w) }
+        }
+    }
+
+    /** The atom bound to the nearest seeded particle within `radius`, or null. */
+    fun atomAt(x: Float, y: Float, radius: Float = 24f): AtomPayload? {
+        val at = Vec3(x, y, 0f)
+        var best: Particle? = null
+        var bestD = Float.MAX_VALUE
+        for (p in store.near(at, radius)) {
+            if (p.atom == null) continue
+            val d = (p.position - at).lengthSquared()
+            if (d < bestD) { bestD = d; best = p }
+        }
+        return best?.atom
+    }
+
+    /** Copy live particle state into a caller buffer (stride 5: x, y, z, heat, size); returns the count written. */
+    fun readParticles(out: FloatArray): Int {
+        val n = minOf(store.size, out.size / PARTICLE_STRIDE)
+        val parts = store.particles
+        var i = 0
+        for (k in 0 until n) {
+            val p = parts[k]
+            out[i++] = p.position.x; out[i++] = p.position.y; out[i++] = p.position.z
+            out[i++] = p.heat; out[i++] = p.size
+        }
+        return n
+    }
+
+    /** Advance the field one frame: ease the formation, track programmatic bodies, apply flow, step. */
     fun tick(dt: Float = 1f) {
         env.dt = dt
         formCurrent = easeFormation(formCurrent, formationTarget)
         env.form = formCurrent
+        // view-less programmatic bodies re-sample their position each frame.
+        for (b in _bodies) b.rect?.let { b.box = it() }
         store.reindex()
         for (g in grids.values) g.step()
+        // flow focus: a transient pull toward a moving point, before the body forces integrate.
+        val f = flow
+        if (f != null) {
+            for (p in store.particles) if (p.cap == null) p.velocity += flowBias(p.position, f)
+        }
         step(StepInput(store, _bodies, env, forces, conditions, separation = separation))
         env.frameN += 1
         env.t += dt

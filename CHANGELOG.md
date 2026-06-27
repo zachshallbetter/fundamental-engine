@@ -63,11 +63,19 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   driven by a new `:fundamental-compose` module — `FieldView` (one frame per display frame via
   `withFrameNanos`, particle rendering on a Compose `Canvas`, tap-to-burst) and `Modifier.fieldBody(...)`
   (a composable becomes a force source tracking its on-screen bounds, mirroring SwiftUI `.fieldBody`) —
-  with a runnable `:sample` app. 48 core tests (incl. `FieldControllerTests`); the host + sample build
+  with a runnable `:sample` app. 55 core tests (incl. `FieldControllerTests`); the host + sample build
   against the Android SDK and were **verified running on a Pixel 7 / API 35 emulator** (a centered
   `fieldBody` bends the particle field into an orbiting shell). CI (`android.yml`) now sets up the Android
   SDK and assembles the host modules alongside the core conformance gate. compileSdk 34, minSdk 24,
   AGP 8.7, Compose BOM 2024.12.
+- **Android port — the public `FieldHandle` API (`android/`).** A `createField(...)` facade over the
+  runtime driver (the Kotlin `FieldField`), exposing the consumer surface: programmatic bodies with live
+  `BodyHandle`s (`set` / `remove` / `load` / `drain` for sinks), `burst`, `flowTo` / `clearFlow` (a new
+  `Flow` focus ported from `flow.ts` — a transient linear-falloff pull applied in `tick`), data atoms
+  (`seed` / `atomAt`, with `AtomPayload`), open scalar channels (`addField` / `sampleField`), `energy`,
+  `particleCount`, and `readParticles(out)` (stride-5 wire format, with `PARTICLE_STRIDE` /
+  `PARTICLE_WIRE_VERSION`). Programmatic bodies track a per-frame `rect`. 7 new JVM tests (55 core total).
+  Still pending (subsystems not yet ported): relationship edges and `sampleScalar` / `sampleGradient`.
 - **Android port — Compose render modes (`android/`).** `FieldView` gained a `renderMode` parameter:
   `DOTS`, `TRAILS` (a faded persistent buffer → comet trails / accretion-disk look), `LINKS` (proximity
   line segments via the engine's spatial hash → a constellation network), and `GLOW` (soft
