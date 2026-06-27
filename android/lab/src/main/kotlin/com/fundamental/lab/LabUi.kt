@@ -221,9 +221,11 @@ class LabCanvas : JPanel() {
     private fun drawPathTraces(g: Graphics2D) {
         if (pathHistory.size < 2) return
         g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON)
-        val frames = pathHistory.toList()
         val base = Reading.PATH.color
-        // particle count can drift; trace only indices present in every frame.
+        // particle count can drift; trace only indices present in every frame. Skip empty captures
+        // (a frame that sampled 0 particles would otherwise collapse n — and the whole trace — to 0).
+        val frames = pathHistory.toList().filter { it.isNotEmpty() }
+        if (frames.size < 2) return
         val n = frames.minOf { it.size / 2 }
         for (j in 0 until n) {
             for (f in 1 until frames.size) {

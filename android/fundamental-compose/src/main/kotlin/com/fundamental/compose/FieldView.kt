@@ -29,7 +29,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
+import android.provider.Settings
 import com.fundamental.core.engine.Body
 import com.fundamental.core.math.Vec3
 import com.fundamental.core.runtime.FieldController
@@ -77,6 +79,15 @@ fun FieldView(
     var controller by remember { mutableStateOf<FieldController?>(null) }
     var frame by remember { mutableIntStateOf(0) }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+
+    // Reduced-motion seam. No FieldHost here (unlike :fundamental-android's AndroidFieldHost), so read
+    // the same system signal it does: ANIMATOR_DURATION_SCALE == 0 means the user disabled animations.
+    val context = LocalContext.current
+    val prefersReducedMotion = Settings.Global.getFloat(
+        context.contentResolver,
+        Settings.Global.ANIMATOR_DURATION_SCALE,
+        1f,
+    ) == 0f
 
     // Persistent buffer for TRAILS: matter is drawn into it each frame and the frame is faded, not
     // cleared, so trails accumulate. Recreated when the size or mode changes; null for other modes.
@@ -168,9 +179,20 @@ fun FieldView(
 
         val c = controller
         if (c != null) {
-            LaunchedEffect(c) {
+            LaunchedEffect(c, prefersReducedMotion) {
+                // Frame-rate-independent timestep — mirror of FieldEngine.swift (~L258): normalize the
+                // real frame interval to a 60fps baseline, clamp so a stall can't teleport matter, and
+                // zero it under reduced motion (which gates the integrator off). First frame uses dt=1.
+                // Note: unlike the View host there's no cheap hidden-guard here; a backgrounded
+                // composition simply stops receiving frames, so the reduced-motion + clamp is the guard.
+                var lastNanos = 0L
                 while (true) {
-                    withFrameNanos { c.tick() }
+                    withFrameNanos { now ->
+                        val dtRaw = if (lastNanos == 0L) 1f else (now - lastNanos) / 1e9f * 60f
+                        lastNanos = now
+                        val dt = if (prefersReducedMotion) 0f else dtRaw.coerceIn(0.2f, 2f)
+                        c.tick(dt)
+                    }
                     frame++
                 }
             }
