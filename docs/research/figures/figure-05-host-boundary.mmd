@@ -1,0 +1,8 @@
+flowchart LR
+  Core[@fundamental-engine/core
+plain data + physics] <-- FieldHost --> Browser[browserHost()
+DOM / viewport / rAF / media query]
+  Core <-- FieldHost2[FieldHost] --> Headless[headlessHost()
+DOM-free conformance]
+  DOM[@fundamental-engine/dom] --> Core
+  Elements[elements / react / vanilla adapters] --> DOM
