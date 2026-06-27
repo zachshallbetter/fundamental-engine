@@ -1,0 +1,37 @@
+name: android
+
+# Proves the platform-free Kotlin engine (fundamental-core) builds and its cross-plane conformance
+# test passes on the JVM. Mirror of swift-linux.yml: the pure core only — Android host modules (when
+# they land) get their own job. The conformance test consumes the SAME golden the Swift/JS gates use
+# (swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json), so a golden change re-checks
+# Android parity automatically.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android.yml'
+      - 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json'
+  pull_request:
+    paths:
+      - 'android/**'
+      - '.github/workflows/android.yml'
+      - 'swift/Tests/FundamentalCoreTests/Fixtures/conformance-golden.json'
+
+jobs:
+  core:
+    name: build + test (JVM)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: build + test
+        working-directory: android
+        run: ./gradlew :fundamental-core:build

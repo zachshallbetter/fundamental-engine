@@ -214,6 +214,13 @@ The dependency direction is strict and uniform: `elements → dom → core`, `re
 `vanilla → dom → core`. `@fundamental-engine/core` imports zero DOM (renderer-agnostic); the browser host
 adapter lives in `@fundamental-engine/dom`. See [`docs/canonical/platform-architecture.md`](docs/canonical/platform-architecture.md).
 
+**Native ports.** The engine is also ported, language-for-language, beyond the web. The
+[**Swift** package](swift/README.md) (`swift/`) covers iOS / macOS / visionOS; the [**Kotlin/Android**
+port](android/README.md) (`android/`) is at its foundation stage. Both mirror the npm package layout and
+are held to the JS engine's force math by a shared, machine-checked **cross-plane conformance golden** —
+at `depth: 0` a ported field and a JS field produce the same motion
+([`docs/canonical/testing-and-conformance.md` §20](docs/canonical/testing-and-conformance.md)).
+
 ## Availability
 
 The packages are published to npm under the `@fundamental-engine` scope, **with provenance** (signed Sigstore/SLSA build attestation). Most projects want **`npm i @fundamental-engine/vanilla`** (the host-bundled default door) or **`@fundamental-engine/react`** for React; `@fundamental-engine/elements` (web component) and `@fundamental-engine/core` (own the canvas) are there when you need them. No build step? Import from a CDN — `import { createField } from 'https://esm.sh/@fundamental-engine/vanilla'`. Releases publish from CI on a `vX.Y.Z` tag (see [`RELEASING.md`](RELEASING.md) / [`PUBLISHING.md`](PUBLISHING.md)). The public surface is frozen and additive-only; the support and versioning policy is in [`SUPPORT.md`](SUPPORT.md).

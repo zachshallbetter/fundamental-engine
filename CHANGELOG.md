@@ -41,6 +41,20 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **Swift Apple-platform CI** (`swift-apple-platforms.yml`) — builds and tests the Swift port on
   iOS Simulator (Xcode xcodebuild, `iPhone 16` destination) and builds for visionOS Simulator,
   filling the gap left by the macOS-only swift workflow (UIKit host is iOS-only).
+- **Android port — Kotlin core (`android/`).** A native **Kotlin** port of the engine, mirroring the
+  Swift port one-to-one. The pure-`kotlin("jvm")` `:fundamental-core` module (zero Android deps — the
+  analog of `FundamentalCore`) ports the core contracts (`Vec3`/`Box`/`Particle`/`Body`/`Env`/
+  `Formation`/`ScalarGrid`/`Force`+`ForceModification`/`ForceColors`/`Registry`) and the **full
+  36-force surface** line-for-line: the canonical nine (§6), the natural primitives (§20.10 —
+  gravity/charge/magnetism/thermal/collide/diffuse/propagate/memory), and the designed extended set
+  (§20.3 — lens…warp). The six deterministic canonical forces are **machine-checked on the same golden**
+  as Swift — a `syncGolden` Gradle task pulls `swift/Tests/.../conformance-golden.json` onto the Kotlin
+  test classpath and `GoldenConformanceTests` reproduces every `dv` within tolerance (`2e-4 + 1e-3·|dv|`);
+  every other force gets exact/behavioral unit tests (36 tests total), as on Swift. New CI workflow
+  `android.yml` (JDK 17, `./gradlew :fundamental-core:build`) gates it and re-runs when the golden
+  changes; committed Gradle 8.13 wrapper, JVM-17 bytecode. Still to come: the integrator + real scalar
+  grids, the scheduler, the Android `View`/`Canvas` + Jetpack Compose hosts, and a sample app. See
+  [`android/README.md`](android/README.md).
 
 ## [0.8.1] — 2026-06-25
 
