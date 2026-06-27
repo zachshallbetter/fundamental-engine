@@ -15,11 +15,36 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   stale comment in `packages/three/src/index.ts` (both `PlaneProjection` and `VolumeProjection` ship).
 
 ### Added
-- **Android port — FieldLab recipe export + the last two readings (`android/lab`).** Completes the desktop
-  FieldLab to full parity with the Swift lab: **recipe save/export** (`RecipeExport` round-trips a scene's
-  `@Serializable FieldRecipe` back to the canon JSON shape) and the final two overlay readings — **`path`
-  traces** (per-particle position history) and per-body **`data` rings** (the eased density `--d` as a fill
-  ring). All eight readings now work; `:lab` gains a `kotlinx-serialization-json` dep for export.
+- **Android port reaches full parity — core + platform + both hosts + the lab (`android/`).** Four epochs
+  on `android-waves` close the gap to the Swift port: the Kotlin port now mirrors `FundamentalCore`,
+  `FundamentalPlatform`, both hosts (the imperative `UIKitFieldHost` analog + the Compose adapter), and the
+  FieldLab.
+  - **Relationship edges — `addEdge` / `readEdges` (core).** The last `FieldHandle` capability: directed
+    edges between two programmatic bodies, with per-tick dynamics ported line-for-line from
+    `FieldEngine.swift` — strength climbs while the source body is salient (`d > 0.08`), decays idle, and
+    `memory` accretes and holds; removing either endpoint drops the edge. `EdgeRecord` snapshots carry the
+    endpoints' data + `type` / `strength` / `memory` / `active` / direction, the relationship layer the way
+    `readParticles` is the swarm. Completes the Kotlin `FieldHandle` / `FundamentalCore` surface. 2 new JVM
+    tests (**85 core total**).
+  - **`:fundamental-platform` — the host-agnostic platform layer (mirror of Swift `FundamentalPlatform`).**
+    The **six-phase `FrameScheduler`** (`discover→read→compute→state→write→render`, with the read-phase guard
+    + violation recording), the six **registries** (`MeasurementRegistry` with frame-stable geometry +
+    visibility, `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`, `VisualBindingRegistry`,
+    `OverlayRegistry`), the **`FieldPlatform`** coordinator (wires `read→measure`, `write→flush`), and the
+    `QualityGovernor` / `FieldPerf` budget governors. The platform seam — `FieldHost` / `FieldVolume` /
+    `FieldProjection` — moves into core (Android-free). Pure `kotlin("jvm")`, JVM-tested
+    (`FrameSchedulerTests`, `FieldPlatformTests`; **10 platform tests**).
+  - **`:fundamental-android` — the imperative non-Compose host (mirror of `UIKitFieldHost`).** A `View` /
+    `Canvas` host for non-Compose apps: `FieldFieldView` (a custom `android.view.View` that owns a
+    `FieldController`, drives it from the `Choreographer`, draws the pool in `onDraw`, tap-to-burst) +
+    `AndroidFieldHost` (the core `FieldHost` impl — volume / visibility / reduced-motion, the `Choreographer`
+    frame loop, `worldBox` via `getLocationOnScreen`). **Verified to assemble against the Android SDK**; the
+    on-device E2E pass is a follow-up (the Compose host + sample remain the on-device-verified path).
+  - **FieldLab desktop parity (`android/lab`).** Completes the desktop FieldLab to full parity with the
+    Swift lab: **recipe save/export** (`RecipeExport` round-trips a scene's `@Serializable FieldRecipe` back
+    to the canon JSON shape) and the final two overlay readings — **`path` traces** (per-particle position
+    history) and per-body **`data` rings** (the eased density `--d` as a fill ring). All eight readings now
+    work; `:lab` gains a `kotlinx-serialization-json` dep for export.
 
 - **Wire-format contract — `PARTICLE_STRIDE` (5) and `PARTICLE_WIRE_VERSION` (0) (core).** Typed
   constants documenting the `readParticles()` buffer layout so renderers can assert the contract rather
@@ -145,6 +170,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   deterministic sim ms/frame. Closes the "can't iterate/verify rendering without an emulator" gap;
   advances #655. (Not yet vs. Swift FieldLab: overlay readings, the recipe canon, and the
   attention/causality/heatmap toggles — they follow their engine subsystems.)
+
+### Fixed
+
+- **Android port — programmatic bodies build with `feedback=true` (`android/`, Swift `addBody` parity).**
+  Code-driven bodies were constructed without feedback, so their density `d` never rose — which silently
+  broke `addEdge` salience, conserved attention, and causality on bodies made via `FieldHandle.addBody`
+  (they only worked on scanned/DOM-equivalent bodies). They now construct with `feedback=true`, matching
+  Swift `addBody`.
 
 ## [0.8.1] — 2026-06-25
 

@@ -4,7 +4,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 
 <DocsLayout
   title="Fundamental — Implementations"
-  description="One renderer-agnostic field engine, three surfaces: the Web (@fundamental-engine/dom, the DOM binding), Native (a Swift port + the Field Lab app), and your own renderer (@fundamental-engine/three, or the read primitives). What each is, how to get it, and what's at parity."
+  description="One renderer-agnostic field engine, three surfaces: the Web (@fundamental-engine/dom, the DOM binding), Native (a Swift port for Apple platforms and a Kotlin port for Android, each with a Field Lab), and your own renderer (@fundamental-engine/three, or the read primitives). What each is, how to get it, and what's at parity."
 >
   <header class="docs-hero">
     <p class="kicker">Reference</p>
@@ -12,8 +12,8 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
     <p class="lede">
       Fundamental’s core (<code>@fundamental-engine/core</code>) computes the field against plain data
       and imports <strong>zero DOM</strong> — it’s renderer-agnostic. A thin host binds it to a surface.
-      Three are real today: the <strong>Web</strong>, <strong>Native</strong> (Swift), and
-      <strong>your own renderer</strong>.
+      Three are real today: the <strong>Web</strong>, <strong>Native</strong> (Swift on Apple
+      platforms, Kotlin on Android), and <strong>your own renderer</strong>.
     </p>
   </header>
 
@@ -37,15 +37,27 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
   </section>
 
   <section class="docs-sec">
-    <h2>Native — Swift, and the Field Lab</h2>
+    <h2>Native — Swift &amp; Kotlin, and the Field Lab</h2>
     <p>
       A <strong>Swift port</strong> runs the same field on Apple platforms (macOS / iOS / visionOS) with
       native rendering (Metal / SwiftUI), free of the browser’s full-viewport compositing ceiling — so a
       dense field reads smoother than the web Lab. Its showcase is the <strong>Field Lab</strong>: a
       native app where every engine pillar is a live, interactive scene.
     </p>
+    <p>
+      A <strong>Kotlin port</strong> mirrors the JS (and Swift) packages 1:1 on Android — the full
+      36-force core plus the integrator, held to the same <strong>cross-plane conformance gate</strong>
+      (one shared golden, JS / Swift / Kotlin), and the <code>FieldHandle</code> public API (relationship
+      edges included). It ships a <code>:fundamental-platform</code> module (the six-phase
+      discover→read→compute→state→write→render scheduler + the six registries), a
+      <strong>Jetpack Compose</strong> host (<code>FieldView</code> + <code>Modifier.fieldBody()</code>),
+      and a non-Compose <code>View</code>/<code>Canvas</code> host for imperative apps. It has its own
+      desktop <strong>Field Lab</strong>. Source: the repo’s
+      <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/android/README.md"><code>android/</code></a>
+      directory.
+    </p>
     <div class="callout">
-      <b>Parity — honest status.</b> The Swift port is a port, and the web plane moves first. The newest
+      <b>Parity — honest status.</b> Both are ports, and the web plane moves first. The newest
       primitives — <code>addField</code> / <code>sampleField</code> (field channels), reactive
       <code>BodyHandle.set</code>, and <code>depth</code> forwarding — shipped on the web in 0.5.1 / 0.7.0
       and are <strong>not yet ported</strong>. The core force set and the interactive scenes are there;
@@ -78,7 +90,8 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
       <thead><tr><th>Surface</th><th>Host / binding</th><th>Get it</th><th>Status</th></tr></thead>
       <tbody>
         <tr><td><b>Web</b></td><td><code>@fundamental-engine/dom</code> → <code>--field-*</code></td><td><code>npm i @fundamental-engine/vanilla</code></td><td>stable</td></tr>
-        <tr><td><b>Native</b></td><td>Swift port (Metal / SwiftUI) → the Field Lab</td><td>build from source (<code>.dmg</code> soon)</td><td>preview · behind on newest primitives</td></tr>
+        <tr><td><b>Native — Apple</b></td><td>Swift port (Metal / SwiftUI) → the Field Lab</td><td>build from source (<code>.dmg</code> soon)</td><td>preview · behind on newest primitives</td></tr>
+        <tr><td><b>Native — Android</b></td><td>Kotlin port (Compose + <code>View</code>/<code>Canvas</code>) → the Field Lab</td><td>build from source (<code><a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/android/README.md">android/</a></code>)</td><td>preview · running on-device</td></tr>
         <tr><td><b>Your renderer</b></td><td><code>@fundamental-engine/three</code> / the read primitives</td><td><code>npm i @fundamental-engine/three</code></td><td>stable</td></tr>
       </tbody>
     </table>

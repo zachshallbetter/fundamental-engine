@@ -42,6 +42,42 @@ imports, the mirror of core's zero-DOM rule), `FundamentalPlatform` ↔ `@fundam
   published registry release yet. See `swift/README.md`, the site's Swift guide
   (`/docs/guides/swift`), and the Implementations page (`/docs/implementations`).
 
+## Native (Kotlin) — Android
+
+The engine also ships as a native **Kotlin port** (`android/`) — a port of the JS engine on the same
+terms as Swift, not a reinterpretation: the Gradle module layout, the API surface, and the physics
+mirror the npm packages (and the Swift package) one-to-one.
+
+| Module | Support | Notes |
+|---|---|---|
+| `:fundamental-core` | ✅ supported | the pure physics — full 36-force surface + integrator + `FieldHandle` (incl. relationship edges); zero Android deps, plain `kotlin("jvm")` |
+| `:fundamental-platform` | ✅ supported | the six-phase scheduler (`discover→read→compute→state→write→render`) + the six registries (measurement / state / feedback / relationship / visual-binding / overlay), driven by an injected `FieldHost`; zero Android deps, plain `kotlin("jvm")` |
+| `:fundamental-compose` (Compose host) | ✅ supported (preview) | Jetpack Compose adapter — `FieldView` composable + `Modifier.fieldBody()`; verified on-device (Pixel 7 / API 35) |
+| `:fundamental-android` (non-Compose host) | ✅ supported (preview) | imperative `View`/`Canvas` host — `FieldFieldView` (custom `View`, `Choreographer`-driven, draws in `onDraw`) + `AndroidFieldHost` |
+| `:lab` (desktop FieldLab) | ✅ supported | JVM Swing/Java2D FieldLab over the same core — live canvas + headless render/bench, no emulator |
+
+Five modules map to the npm / Swift packages: `:fundamental-core` ↔ `@fundamental-engine/core` ↔
+`FundamentalCore` (zero Android imports, the mirror of core's zero-DOM rule), `:fundamental-platform`
+↔ `@fundamental-engine/dom` ↔ `FundamentalPlatform`, `:fundamental-android` ↔
+`@fundamental-engine/vanilla` ↔ `UIKitFieldHost`, `:fundamental-compose` ↔ `@fundamental-engine/react`
+↔ `FundamentalSwiftUI`, `:lab` ↔ `FieldLab`.
+
+- **Cross-plane conformance is enforced**, not asserted: the Kotlin engine is held to the **same**
+  shared golden (`conformance-golden.json`) as JS and Swift — `GoldenConformanceTests` syncs that exact
+  fixture onto its test classpath and reproduces every force delta within tolerance. The Android build
+  (core conformance + host assembly) is a CI gate (`android.yml`), re-run whenever the golden changes.
+- **Parity (honest):** like the web, the JS plane moves first. Core forces, the integrator, the
+  scheduler/registries, the `FieldHandle` API (incl. relationship edges), formations, recipes, and
+  overlays are present; the matter-render extras (metaballs / voronoi) and the declarative `[data-body]`
+  view scanner remain follow-ups. Status is **preview** on the hosts — stable in shape, trailing the web
+  on the newest additions.
+- **SDK requirements:** the host modules build against the Android SDK — **compileSdk 34, minSdk 24**
+  (build-tools 34.0.0, AGP 8.7, Kotlin 2.1, Compose BOM 2024.12, Gradle wrapper 8.13). The pure
+  `:fundamental-core` and `:fundamental-platform` are plain `kotlin("jvm")` and build/test on **any
+  JDK-17** with no Android SDK.
+- **Consumption:** build from source (Gradle, in `android/`); no published registry release yet. See
+  `android/README.md`.
+
 ## Device pixel ratio (DPR)
 
 The field renders at the device DPR, **capped** to keep fill-rate bounded (the field is fill-rate-bound,

@@ -492,6 +492,27 @@ android.yml                # CI gate (Android side): fail if a Kotlin force drif
   EM/grid/RNG/extended forces (RNG via the shared mulberry32 seed) and to short-trajectory + heat
   parity — follow-up coverage on the same fixture, ported per plane as it lands.
 
+#### Kotlin/Android conformance (mirror of Swift)
+
+The **Kotlin** engine is held to the **same** shared cross-plane golden as JS and Swift — not a
+separate fixture. The Android build's `syncGolden` Gradle task copies `conformance-golden.json` onto
+the Kotlin test classpath and `GoldenConformanceTests` reproduces every force delta within the same
+tolerance (`2e-4 + 1e-3·|dv|`); a divergence is a Kotlin bug (fix the force, never loosen the
+tolerance). Beyond the shared golden, the port carries its own per-plane coverage:
+
+- **Unit / integration tests** — the full 36-force surface (`CoreForcesBehaviorTests`,
+  `NaturalForcesTests`, `ExtendedForcesTests`), the integrator driven headlessly (`EngineTests`), the
+  runtime driver (`FieldControllerTests`), and a deterministic `PerfRegressionTests` (1200 particles ×
+  600 frames: count conserved, all-finite, velocity/heat bounded) — **85 core tests** — plus the
+  platform module's scheduler/registry coverage (`FrameSchedulerTests`, `FieldPlatformTests`) — **10
+  platform tests**.
+- **Headless FieldLab render as a visual gate** — the desktop FieldLab (`:lab`, JVM Swing/Java2D over
+  the same `:fundamental-core`) renders the scene tour + 36-force catalog to PNGs headlessly
+  (`./gradlew :lab:run --args="render out/"`), the Kotlin analog of the Swift `Snapshotter` visual gate
+  — a CI-able render path with no emulator.
+- **CI gate** — `android.yml` (JDK 17 + Android SDK) runs the core conformance test and assembles the
+  host modules; it re-runs whenever the shared golden changes.
+
 ### Model 2 — performance · **Status: shipped**
 
 `Bench` splits per-frame sim/draw ms (headless, CoreGraphics) and `FieldPerf`/`QualityGovernor` compute
