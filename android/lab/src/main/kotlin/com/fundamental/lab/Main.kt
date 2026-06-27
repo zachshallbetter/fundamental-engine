@@ -59,7 +59,22 @@ private fun renderTour(dir: String) {
     heatmapShot(out, "overlay-heatmap", forceScene(ForceCatalog.entry("attract")!!))
     sparkShot(out, "overlay-sparks")
     waveShot(out, "overlay-waves")
+    shapeShot(out, "shape-star", com.fundamental.core.engine.ParticleShape.star(5))
     println("done → ${out.absolutePath}")
+}
+
+private fun shapeShot(out: File, name: String, shape: com.fundamental.core.engine.ParticleShape) {
+    val scene = forceScene(ForceCatalog.entry("attract")!!)
+    val c = FieldController(W.toFloat(), H.toFloat(), particleCount = scene.density, seed = 42)
+    scene.setup(c, W.toFloat(), H.toFloat())
+    repeat(70) { c.tick() }
+    val img = BufferedImage(W, H, BufferedImage.TYPE_INT_RGB)
+    val g = img.createGraphics()
+    Renderer2D.drawFrame(g, c, LabMode.DOTS, ACCENT, W, H, shape)
+    g.dispose()
+    val f = File(out, "$name.png")
+    ImageIO.write(img, "png", f)
+    println("wrote ${f.path}")
 }
 
 private fun waveShot(out: File, name: String) {

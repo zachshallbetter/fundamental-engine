@@ -23,9 +23,39 @@ env:
   NODE_VERSION: 22
 
 jobs:
+  # Path filter: the heavy JS gate + e2e only need to run when JS-relevant files change. An
+  # android-only / docs-only / swift-only PR skips them and `conclusion` still passes (it treats a
+  # skipped dependency as satisfied — see below). Changing this workflow itself counts as JS so the
+  # filter is always self-tested.
+  changes:
+    name: detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      js: ${{ steps.filter.outputs.js }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            js:
+              - 'packages/**'
+              - 'apps/**'
+              - 'scripts/**'
+              - 'data/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/pr-checks.yml'
+
   gate:
     name: typecheck · test · build
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.js == 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -92,7 +122,8 @@ jobs:
   e2e:
     name: "e2e · ${{ matrix.project }}"
     runs-on: ubuntu-latest
-    needs: gate
+    needs: [changes, gate]
+    if: ${{ needs.changes.outputs.js == 'true' }}
     strategy:
       fail-fast: false # report every browser's failure, not just the first
       matrix:
@@ -133,16 +164,17 @@ jobs:
           path: apps/site/playwright-report
           retention-days: 7
 
-  # The required status check. Runs even when a dependency fails (never when the whole run
-  # is cancelled), and passes only if EVERY dependency result is "success" — GitHub would
-  # otherwise count a skipped job as a satisfied requirement.
+  # The required status check. Always runs (so the required check is never "expected" forever on a
+  # path-filtered PR), never when the whole run is cancelled. Passes when every dependency is either
+  # "success" OR "skipped" — a JS PR must have gate+e2e green; an android/docs/swift-only PR skips
+  # them and still goes green. A genuine failure (or cancellation) of any dependency fails the gate.
   conclusion:
     name: conclusion
-    needs: [gate, e2e]
+    needs: [changes, gate, e2e]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - name: All jobs succeeded
+      - name: All required jobs succeeded (skipped = not required this run)
         run: |
           jq -C <<< '${{ toJson(needs) }}'
-          jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+          jq --exit-status 'all(.result == "success" or .result == "skipped")' <<< '${{ toJson(needs) }}'

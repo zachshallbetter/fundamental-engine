@@ -51,12 +51,30 @@ object Renderer2D {
         g.fillRect(0, 0, w, h)
     }
 
-    fun drawDots(g: Graphics2D, c: FieldController, accent: Color) {
+    fun drawDots(g: Graphics2D, c: FieldController, accent: Color, shape: com.fundamental.core.engine.ParticleShape = com.fundamental.core.engine.ParticleShape.DOT) {
+        val verts = shape.vertices
+        if (verts == null) {
+            for (p in c.particles) {
+                val heat = p.heat.coerceIn(0f, 1f)
+                val r = 1.5f + p.size * 1.5f + heat * 3f
+                g.color = blend(COOL, accent, heat)
+                g.fill(Ellipse2D.Float(p.position.x - r, p.position.y - r, 2 * r, 2 * r))
+            }
+            return
+        }
+        // stamp the unit shape per particle, scaled by size + heat (the physics still drives it).
         for (p in c.particles) {
             val heat = p.heat.coerceIn(0f, 1f)
-            val r = 1.5f + p.size * 1.5f + heat * 3f
+            val r = (1.5f + p.size * 1.5f + heat * 3f) * 1.6f
             g.color = blend(COOL, accent, heat)
-            g.fill(Ellipse2D.Float(p.position.x - r, p.position.y - r, 2 * r, 2 * r))
+            val path = java.awt.geom.Path2D.Float()
+            verts.forEachIndexed { i, v ->
+                val x = p.position.x + v.x * r
+                val y = p.position.y + v.y * r
+                if (i == 0) path.moveTo(x.toDouble(), y.toDouble()) else path.lineTo(x.toDouble(), y.toDouble())
+            }
+            path.closePath()
+            g.fill(path)
         }
     }
 
@@ -105,10 +123,10 @@ object Renderer2D {
     }
 
     /** Stamp the current matter into a TRAILS buffer (opaque dots on top of the faded frame). */
-    fun stampTrails(buffer: BufferedImage, c: FieldController, accent: Color) {
+    fun stampTrails(buffer: BufferedImage, c: FieldController, accent: Color, shape: com.fundamental.core.engine.ParticleShape = com.fundamental.core.engine.ParticleShape.DOT) {
         val g = buffer.createGraphics()
         antialias(g)
-        drawDots(g, c, accent)
+        drawDots(g, c, accent, shape)
         g.dispose()
     }
 
@@ -183,14 +201,14 @@ object Renderer2D {
     }
 
     /** Draw one non-trail frame (DOTS/LINKS/GLOW) to a fresh surface. */
-    fun drawFrame(g: Graphics2D, c: FieldController, mode: LabMode, accent: Color, w: Int, h: Int) {
+    fun drawFrame(g: Graphics2D, c: FieldController, mode: LabMode, accent: Color, w: Int, h: Int, shape: com.fundamental.core.engine.ParticleShape = com.fundamental.core.engine.ParticleShape.DOT) {
         antialias(g)
         fillBackground(g, w, h)
         when (mode) {
-            LabMode.DOTS -> drawDots(g, c, accent)
+            LabMode.DOTS -> drawDots(g, c, accent, shape)
             LabMode.GLOW -> drawGlow(g, c, accent)
             LabMode.LINKS -> drawLinks(g, c, accent)
-            LabMode.TRAILS -> drawDots(g, c, accent) // trails need a persistent buffer; caller handles it
+            LabMode.TRAILS -> drawDots(g, c, accent, shape) // trails need a persistent buffer; caller handles it
         }
     }
 }
