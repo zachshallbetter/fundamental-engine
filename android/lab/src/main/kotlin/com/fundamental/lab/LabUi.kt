@@ -54,6 +54,8 @@ enum class Reading(val label: String, val color: Color) {
     GRID("Deformation grid", Color(120, 128, 150)),
     TEMPERATURE("Temperature", Color(255, 150, 90)),
     ENERGY("Energy", Color(240, 220, 110)),
+    PATH("Path traces", Color(180, 150, 235)),
+    DATA("Data rings", Color(235, 200, 120)),
 }
 
 /** Compute + draw one reading over the current field. */
@@ -66,6 +68,8 @@ fun drawReading(g: Graphics2D, c: FieldController, r: Reading, w: Int, h: Int) {
         Reading.GRID -> Overlays.deformationGrid(c.bodies, c.forces, fw, fh)
         Reading.TEMPERATURE -> temperatureContours(c.particles, fw, fh)
         Reading.ENERGY -> energyContours(c.particles, fw, fh)
+        // PATH / DATA are stateful (position history / per-body) — drawn by the canvas, not here.
+        Reading.PATH, Reading.DATA -> emptyList()
     }
     Renderer2D.drawSegments(g, segs, r.color, if (r == Reading.GRID) 0.6f else 1.1f)
 }
@@ -107,8 +111,16 @@ class LabCanvas : JPanel() {
     private var wavesOn = false
     var frameMs: Double = 0.0; private set
     private val timer = Timer(16) { tickOnce() }
+    // Path traces: a rolling buffer of recent sampled particle positions (the `path` reading machinery).
+    private val pathHistory = ArrayDeque<FloatArray>()
+    private var currentRecipe: com.fundamental.core.recipe.FieldRecipe? = null
 
-    fun toggleReading(r: Reading, on: Boolean) { if (on) readings.add(r) else readings.remove(r) }
+    fun toggleReading(r: Reading, on: Boolean) {
+        if (on) readings.add(r) else { readings.remove(r); if (r == Reading.PATH) pathHistory.clear() }
+    }
+
+    /** The recipe backing the loaded scene, if any (drives the inspector's Export). */
+    fun currentRecipe(): com.fundamental.core.recipe.FieldRecipe? = currentRecipe
     fun setAttention(on: Boolean) { attentionOn = on; controller?.attentionEnabled = on }
     fun setCausality(on: Boolean) { causalityOn = on; controller?.causalityEnabled = on }
     fun setHeatmap(on: Boolean) { heatmapOn = on; controller?.heatmapEnabled = on }
@@ -131,6 +143,8 @@ class LabCanvas : JPanel() {
 
     fun load(s: LabScene) {
         scene = s; mode = s.renderMode; formation = s.formation; density = s.density
+        currentRecipe = s.recipe
+        pathHistory.clear()
         rebuild()
     }
 
@@ -169,7 +183,18 @@ class LabCanvas : JPanel() {
         val t0 = System.nanoTime()
         c.tick()
         frameMs = frameMs * 0.9 + (System.nanoTime() - t0) / 1e6 * 0.1
+        if (Reading.PATH in readings) capturePath(c)
         repaint()
+    }
+
+    // Snapshot the first ~64 particles' positions each frame; keep a short rolling window.
+    private fun capturePath(c: FieldController) {
+        val parts = c.particles
+        val n = minOf(64, parts.size)
+        val snap = FloatArray(n * 2)
+        for (i in 0 until n) { snap[i * 2] = parts[i].position.x; snap[i * 2 + 1] = parts[i].position.y }
+        pathHistory.addLast(snap)
+        while (pathHistory.size > 30) pathHistory.removeFirst()
     }
 
     override fun paintComponent(g: Graphics) {
@@ -185,7 +210,60 @@ class LabCanvas : JPanel() {
         if (wavesOn) Renderer2D.drawWaves(g2, c, width, height)
         if (heatmapOn) Renderer2D.drawHeatmap(g2, c, width, height, accent)
         Renderer2D.drawSparks(g2, c)
-        for (r in readings) drawReading(g2, c, r, width, height)
+        for (r in readings) when (r) {
+            Reading.PATH -> drawPathTraces(g2)
+            Reading.DATA -> drawDataRings(g2, c)
+            else -> drawReading(g2, c, r, width, height)
+        }
+    }
+
+    // The `path` reading: each sampled particle's recent trajectory as a fading polyline.
+    private fun drawPathTraces(g: Graphics2D) {
+        if (pathHistory.size < 2) return
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON)
+        val frames = pathHistory.toList()
+        val base = Reading.PATH.color
+        // particle count can drift; trace only indices present in every frame.
+        val n = frames.minOf { it.size / 2 }
+        for (j in 0 until n) {
+            for (f in 1 until frames.size) {
+                val a = frames[f - 1]; val b = frames[f]
+                val alpha = (f.toFloat() / frames.size * 200f).toInt().coerceIn(12, 220)
+                g.color = Color(base.red, base.green, base.blue, alpha)
+                g.stroke = java.awt.BasicStroke(1.4f)
+                g.drawLine(a[j * 2].toInt(), a[j * 2 + 1].toInt(), b[j * 2].toInt(), b[j * 2 + 1].toInt())
+            }
+        }
+    }
+
+    // The per-body `data` reading: a density ring + (for sinks) a load arc, with the live readout.
+    private fun drawDataRings(g: Graphics2D, c: FieldController) {
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON)
+        val accentRing = Reading.DATA.color
+        for (b in c.bodies) {
+            if (!b.isVisible || b.tokens.isEmpty()) continue
+            val cx = b.box.center.x.toInt(); val cy = b.box.center.y.toInt()
+            val rad = (b.range * 0.5f).coerceIn(20f, 180f)
+            // outer density ring — opacity tracks the body's eased density d ∈ [0,1].
+            val dAlpha = (40 + b.d.coerceIn(0f, 1f) * 180f).toInt().coerceIn(40, 220)
+            g.color = Color(accentRing.red, accentRing.green, accentRing.blue, dAlpha)
+            g.stroke = java.awt.BasicStroke(1.6f + b.d.coerceIn(0f, 1f) * 2.4f)
+            g.drawOval(cx - rad.toInt(), cy - rad.toInt(), (rad * 2).toInt(), (rad * 2).toInt())
+            // sink load arc — sweep ∝ accreted/capacity.
+            val isSink = b.capacity > 0f
+            val load = if (isSink) (b.accreted / b.capacity).coerceIn(0f, 1f) else 0f
+            if (isSink) {
+                val ir = (rad * 0.62f).toInt()
+                g.color = Color(255, 140, 90, 220)
+                g.stroke = java.awt.BasicStroke(3f)
+                g.drawArc(cx - ir, cy - ir, ir * 2, ir * 2, 90, -(load * 360f).toInt())
+            }
+            // readout text — mirrors the Swift FieldCanvas "d 0.00" / "load N%".
+            val label = if (isSink) "load ${(load * 100).toInt()}%" else "d %.2f".format(b.d)
+            g.color = Color(220, 224, 232, 230)
+            g.font = g.font.deriveFont(java.awt.Font.BOLD, 11f)
+            g.drawString(label, cx + rad.toInt() + 4, cy)
+        }
     }
 }
 
@@ -265,6 +343,22 @@ private fun makeInspector(canvas: LabCanvas): JPanel {
         if (picked != null) canvas.accent = picked
     }
     panel.add(accentBtn)
+
+    // Recipe save/export — write the loaded recipe back to canonical JSON.
+    val exportBtn = JButton("Export recipe…")
+    exportBtn.addActionListener {
+        val recipe = canvas.currentRecipe()
+        if (recipe == null) {
+            javax.swing.JOptionPane.showMessageDialog(panel, "Load a recipe scene (the canon section) to export it.")
+        } else {
+            val chooser = javax.swing.JFileChooser().apply { selectedFile = java.io.File(RecipeExport.defaultFileName(recipe)) }
+            if (chooser.showSaveDialog(panel) == javax.swing.JFileChooser.APPROVE_OPTION) {
+                val f = RecipeExport.write(recipe, chooser.selectedFile)
+                javax.swing.JOptionPane.showMessageDialog(panel, "Exported ${recipe.name} → ${f.absolutePath}")
+            }
+        }
+    }
+    panel.add(exportBtn)
 
     // Body params
     val strength = JSlider(0, 300, 200)

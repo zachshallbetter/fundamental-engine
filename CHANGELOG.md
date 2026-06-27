@@ -15,6 +15,11 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   stale comment in `packages/three/src/index.ts` (both `PlaneProjection` and `VolumeProjection` ship).
 
 ### Added
+- **Android port — FieldLab recipe export + the last two readings (`android/lab`).** Completes the desktop
+  FieldLab to full parity with the Swift lab: **recipe save/export** (`RecipeExport` round-trips a scene's
+  `@Serializable FieldRecipe` back to the canon JSON shape) and the final two overlay readings — **`path`
+  traces** (per-particle position history) and per-body **`data` rings** (the eased density `--d` as a fill
+  ring). All eight readings now work; `:lab` gains a `kotlinx-serialization-json` dep for export.
 
 - **Wire-format contract — `PARTICLE_STRIDE` (5) and `PARTICLE_WIRE_VERSION` (0) (core).** Typed
   constants documenting the `readParticles()` buffer layout so renderers can assert the contract rather

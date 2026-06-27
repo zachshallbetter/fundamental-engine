@@ -10,11 +10,14 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 //   ./gradlew :lab:run --args="bench"           # headless: report sim ms per scene
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization")
     application
 }
 
 dependencies {
     implementation(project(":fundamental-core"))
+    // recipe save/export round-trips a @Serializable FieldRecipe back to the canon JSON shape.
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }
 
 java {

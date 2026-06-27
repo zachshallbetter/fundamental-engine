@@ -161,10 +161,10 @@ stats — particles / kinetic / thermal / frame-ms). Each force opens a scene wi
 ./gradlew :lab:run --args="bench"        # headless: sim ms/frame per scene
 ```
 
-Not yet (vs. the Swift FieldLab): recipe **save/export**, and the two reading types that need more
-machinery (`path` traces, per-body `data` rings). The sidebar runs the 64-recipe canon, six of the eight
-overlay readings are in the Readings panel, and all three Body-Matter-Interaction toggles
-(attention / causality / heatmap) work.
+At full FieldLab parity: the sidebar runs the tour + 36-force catalog + 64-recipe canon, **all eight**
+overlay readings work (incl. `path` traces + per-body `data` rings), the three Body-Matter-Interaction
+toggles (attention / causality / heatmap) + carrier waves, and **recipe save/export** round-trips a
+scene back to the canon JSON shape (`RecipeExport`).
 
 The pure `:fundamental-core` builds on any JDK (JVM-17 bytecode); the host modules need the Android SDK
 (point Gradle at it via `local.properties` `sdk.dir=...` or `ANDROID_HOME`). compileSdk 34, minSdk 24,

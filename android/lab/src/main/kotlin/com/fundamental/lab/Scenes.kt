@@ -22,6 +22,8 @@ class LabScene(
     val renderMode: LabMode,
     val formation: String = "ambient",
     val density: Int = 600,
+    /** The recipe this scene was built from, if any — lets the inspector export it. */
+    val recipe: FieldRecipe? = null,
     val setup: (c: FieldController, w: Float, h: Float) -> Unit = { _, _, _ -> },
 )
 
@@ -73,6 +75,7 @@ private fun recipeMode(render: List<String>): LabMode = when (render.firstOrNull
 /** Compile a canon recipe into a runnable scene: place its compiled bodies, prep matter as needed. */
 fun recipeScene(r: FieldRecipe): LabScene = LabScene(
     name = r.name, blurb = r.intent, token = r.primitives.firstOrNull(), renderMode = recipeMode(r.render),
+    recipe = r,
 ) { c, w, h ->
     val compiled = compileRecipe(r)
     val n = compiled.bodies.size.coerceAtLeast(1)
