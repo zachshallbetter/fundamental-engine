@@ -1,0 +1,148 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
+
+const localDep = `// settings.gradle.kts — depend on the modules from source.
+// Preview: nothing is published to Maven Central yet, so include the repo's
+// android/ build as a composite (a maven coordinate door comes later).
+includeBuild("../fundamental-engine/android") {
+  dependencySubstitution {
+    substitute(module("com.fundamental:fundamental-compose"))
+      .using(project(":fundamental-compose"))
+  }
+}
+
+// build.gradle.kts (your app module)
+dependencies {
+  implementation("com.fundamental:fundamental-compose")
+}`;
+
+const compose = `import com.fundamental.compose.FieldView
+import com.fundamental.compose.fieldBody
+
+@Composable
+fun ContentScreen() {
+  Box {
+    // the field surface — accepts the same tuning as the web / Swift hosts
+    FieldView(accent = Color(0xFF4DA3FF), renderMode = RenderMode.DOTS)
+
+    // any composable becomes a body — the Kotlin analogue of [data-body]
+    Text(
+      "pull me",
+      modifier = Modifier.fieldBody(tokens = listOf("attract"), strength = 1.2f, range = 150f),
+    )
+  }
+}`;
+
+const view = `import com.fundamental.android.FieldFieldView
+
+// imperative host — a plain Android View / Canvas, no Compose required.
+val field = FieldFieldView(context)
+parent.addView(field)                 // mounts and starts the frame loop
+field.addBody(BodySpec(tokens = listOf("attract"), strength = 1.2f, range = 150f))
+field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
+// the loop stops automatically on detach from the window`;
+---
+
+<DocsLayout
+  title="Fundamental — Kotlin guide (Android)"
+  description="Use Fundamental natively on Android: the Kotlin port's modules (fundamental-core / fundamental-platform / fundamental-compose / fundamental-android), the FieldView + Modifier.fieldBody Compose API, an imperative View host, a desktop FieldLab, and an honest parity status. A port of the JS engine, held to the same cross-plane golden."
+>
+  <header class="docs-hero">
+    <p class="kicker">Guides</p>
+    <h1>The <span class="accent">Kotlin</span> port</h1>
+    <p class="lede">
+      The same reciprocal field, native on <strong>Android</strong>. It is a
+      <strong>port of the JS engine, not a reinterpretation</strong>: the package layout, the API
+      surface, and the physics mirror the npm packages — and the
+      <a href="/docs/guides/swift">Swift port</a> — one-to-one. The two planes are held to the same
+      <strong>shared cross-plane conformance golden</strong> (JS / Swift / Kotlin). Where they diverge,
+      it is a bug or a listed <a href="#parity">parity gap</a>.
+    </p>
+  </header>
+
+  <div class="callout">
+    <b>Status: in active development.</b> The Kotlin port lives on the <code>android</code> branch and is
+    not a published release. It is real and conformance-checked against the JS engine (the same 36-force
+    golden the Swift port runs), but the web plane moves first and the port is behind on the newest
+    primitives. See <a href="/docs/implementations">Implementations</a> for the full surface-by-surface
+    status, and <a href="#parity">Parity</a> below for specifics.
+  </div>
+
+  <section class="docs-sec">
+    <h2>Install</h2>
+    <p>
+      Nothing is on Maven Central yet — consume it from source. The modules live in the repo's
+      <a href="https://github.com/zachshallbetter/fundamental-engine/blob/main/android/README.md"><code>android/</code></a>
+      directory; the recommended door is <code>:fundamental-compose</code>.
+    </p>
+    <CodeTabs variants={[{ label: 'settings.gradle.kts', lang: 'kotlin', code: localDep }]} />
+    <p>
+      To see it run before wiring it into your own app, build the bundled desktop <strong>Field Lab</strong>:
+      <code class="install" data-copy="./gradlew :lab:run">./gradlew :lab:run</code> from
+      <code>android/</code> — every engine pillar as a live, interactive scene.
+    </p>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Modules — one-to-one with npm</h2>
+    <p>
+      Four libraries, each the mirror of an npm package (and of a Swift target).
+      <code>fundamental-core</code> imports zero platform code, exactly as
+      <code>@fundamental-engine/core</code> imports zero DOM.
+    </p>
+    <table class="matrix">
+      <thead>
+        <tr><th>Gradle module</th><th>npm equivalent</th><th>What it is</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>:fundamental-core</code></td><td><code>@fundamental-engine/core</code></td><td>The pure physics — particles, bodies, the 36-force catalog, the integrator, formations, reactions. Zero platform imports.</td></tr>
+        <tr><td><code>:fundamental-platform</code></td><td><code>@fundamental-engine/dom</code></td><td>The six-phase frame scheduler (<code>discover → read → compute → state → write → render</code>) and the six registries.</td></tr>
+        <tr><td><code>:fundamental-android</code></td><td><code>@fundamental-engine/vanilla</code></td><td>The imperative host — <code>FieldFieldView</code>, a plain Android <code>View</code> / <code>Canvas</code> with no Compose dependency.</td></tr>
+        <tr><td><code>:fundamental-compose</code></td><td><code>@fundamental-engine/react</code></td><td>The declarative adapter — <code>FieldView</code>, <code>Modifier.fieldBody()</code>, the <code>FieldHandle</code> exposed to descendants.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-sec">
+    <h2>Compose — <code>FieldView</code> + <code>Modifier.fieldBody()</code></h2>
+    <p>
+      The declarative door. <code>FieldView</code> mounts the field surface; any composable inside
+      becomes a body with the <code>Modifier.fieldBody(...)</code> modifier — the Kotlin analogue of the
+      <code>data-body</code> attribute (and of SwiftUI <code>.fieldBody()</code>). It accepts the same
+      token vocabulary and tuning as the web.
+    </p>
+    <CodeTabs variants={[{ label: 'Compose', lang: 'kotlin', code: compose }]} />
+  </section>
+
+  <section class="docs-sec">
+    <h2>View / Canvas — the imperative host</h2>
+    <p>
+      For non-Compose apps, <code>FieldFieldView</code> is a plain Android <code>View</code> that runs the
+      field on a <code>Canvas</code> and drives its own frame loop — the analogue of
+      <code>new FieldField()</code> / <code>mountField()</code> from
+      <a href="/docs/guides/typescript">the vanilla JS API</a>.
+    </p>
+    <CodeTabs variants={[{ label: 'Kotlin', lang: 'kotlin', code: view }]} />
+  </section>
+
+  <section class="docs-sec" id="parity">
+    <h2>Parity — the honest status</h2>
+    <p>
+      The port is a port, and the web plane moves first. The core force set, the scheduler and
+      registries, formations, the <code>FieldHandle</code> public API (relationship edges included), and
+      the interactive scenes are all present and pass the cross-plane conformance gate. The newest
+      primitives — the field-channel read/write surface and the most recent reactive-component work — are
+      <strong>not yet ported</strong>. Treat the Kotlin surface as
+      <strong>in active development</strong>: stable in shape, trailing the web on the very newest
+      additions.
+    </p>
+    <p>
+      The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and
+      natively on Apple platforms and Android behind one host seam — is the same one the
+      <a href="/docs/guides/swift">Swift port</a> tells. The seam itself is the
+      <a href="/docs/platform">platform layer</a>; the runtime handle is the
+      <a href="/docs/api/handle">FieldHandle</a>.
+    </p>
+  </section>
+</DocsLayout>

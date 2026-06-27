@@ -633,6 +633,14 @@ The semantic layer should remain real HTML text.
 > **Implemented.** `@fundamental-engine/dom` ships `createFieldPlatform(root)` plus the six registries, the
 > `FrameScheduler`, and `lintPlatform()`. The platform runtime is the default for `<field-root>`.
 
+> **Kotlin/Android parity.** The native Kotlin port's `:fundamental-platform` module satisfies this same
+> contract: a `FieldPlatform` over the six-phase `FrameScheduler` and the same six registries
+> (`MeasurementRegistry`, `StateRegistry`, `FeedbackRegistry`, `RelationshipRegistry`,
+> `VisualBindingRegistry`, `OverlayRegistry`), driven by an injected `FieldHost`. It is pure
+> `kotlin("jvm")` (zero Android deps), so it computes field behavior with no view layer and is
+> JVM-tested (`FrameSchedulerTests`, `FieldPlatformTests`). In active development on the Android port
+> branch — not a published release.
+
 `@fundamental-engine/dom` binds the renderer-agnostic field computed by `Fundamental` to the DOM. It owns DOM participation; core stays free of DOM side effects.
 
 The platform must:

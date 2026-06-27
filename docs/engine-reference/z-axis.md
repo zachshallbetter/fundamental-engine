@@ -26,6 +26,13 @@ Two halves, both enforced by `core/z-axis.test.ts`:
    bodies are DOM elements, they live at `z = 0` always — by the same falloffs that
    pull matter across the plane. The `c` velocity cap bounds the full 3D speed.
 
+> **Kotlin/Android parity.** The JS engine is 2D because the DOM and Canvas are, so z is an opt-in
+> lane bolted on. The native Kotlin port (`android/`), like the Swift port, is instead **3D-native**:
+> every position, velocity, and force is a `Vec3` of `Float`. The *contract is the same* — **flat is
+> the default and flat is exact**: at z = 0 every formula reduces to the JS math (same falloffs, same
+> constants), and that reduction is held to the shared cross-plane conformance golden. In active
+> development on the Android port branch — not a published release.
+
 ## Authoring
 
 ```js
