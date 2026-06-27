@@ -23,9 +23,18 @@
  *   - fps: `Math.round(1000 / medianMs)` over the current window; `null` while empty.
  *   - `frames`: total clean deltas ever counted (not capped by the window).
  *
- * Pure and host-driven by design: NO `requestAnimationFrame` of its own (callers feed their
- * loop's timestamps) and NO PerformanceObserver — the LoAF / long-task split stays page-side
- * in this slice (the DataConsole keeps its own observer; a platform LoAF lane is future work).
+ * Frame timing is host-driven by design: NO `requestAnimationFrame` of its own (callers feed
+ * their loop's timestamps). The LoAF / long-task lane is the one optional exception — opt in with
+ * `{ loaf: true }` and the meter attaches a `PerformanceObserver`, mirroring the DataConsole's
+ * own observer byte-for-byte:
+ *   - observes `'long-animation-frame'` (LoAF) when available, else falls back to `'longtask'`.
+ *   - counts only entries with `duration >= 50` ms (the long-task / LoAF threshold).
+ *   - `loafCount` is the running tally of those entries; `tbtMs` sums their blocking time as
+ *     `Σ max(0, duration − 50)` — Total Blocking Time, the DataConsole's exact formula.
+ *   - feature-detected and fully graceful: where `PerformanceObserver` (or the entry type) is
+ *     unsupported the lane is a silent no-op (`loafCount` / `tbtMs` stay 0). Without `loaf`,
+ *     the meter is pure (no observer, no globals) — existing callers are unchanged.
+ * Call `dispose()` when done to disconnect the observer (a no-op when none was attached).
  */
 
 export interface FieldPerfOptions {
@@ -33,6 +42,12 @@ export interface FieldPerfOptions {
   window?: number;
   /** number of clean deltas used to detect the frame budget (default 30); the budget is their median. Min 1. */
   budgetSeed?: number;
+  /**
+   * Observe Long Animation Frames / long tasks via `PerformanceObserver` (default false). When
+   * enabled and supported, `snapshot()` reports `loafCount` / `tbtMs`; when unsupported it is a
+   * silent no-op. Leave off to keep the meter pure (no observer, no globals).
+   */
+  loaf?: boolean;
 }
 
 export interface FieldPerfSnapshot {
@@ -50,6 +65,16 @@ export interface FieldPerfSnapshot {
   dropped: number;
   /** total clean deltas counted since creation/reset (not capped by the window). */
   frames: number;
+  /**
+   * Long Animation Frames / long tasks (`duration >= 50` ms) observed since creation/reset.
+   * Always 0 unless `{ loaf: true }` was set and the observer is supported.
+   */
+  loafCount: number;
+  /**
+   * Total Blocking Time (ms): `Σ max(0, duration − 50)` over the observed LoAF / long-task
+   * entries. Always 0 unless the LoAF lane is enabled and supported.
+   */
+  tbtMs: number;
 }
 
 export interface FieldPerf {
@@ -57,12 +82,46 @@ export interface FieldPerf {
   feed(frameTs: number): void;
   /** Read the current numbers (pure — no layout, no globals). */
   snapshot(): FieldPerfSnapshot;
-  /** Forget everything: window, seed, budget, counters, and the last timestamp. */
+  /** Forget everything: window, seed, budget, counters, the last timestamp, and the LoAF tally. */
   reset(): void;
+  /** Disconnect the LoAF / long-task observer (no-op when the lane is off or unsupported). */
+  dispose(): void;
 }
 
 /** A gap above this (ms) is a discontinuity — tab switch / sleep — and is skipped, not measured. */
 const DISCONTINUITY_MS = 500;
+
+/** LoAF / long-task threshold (ms): entries at or above this are counted; the TBT floor too. */
+const LOAF_MS = 50;
+
+/** The shape of a `PerformanceObserver` entry we read — just its `duration` (ms). */
+interface DurationEntry {
+  readonly duration: number;
+}
+
+/**
+ * Attach a LoAF / long-task observer, feeding each qualifying entry to `onEntry`. Tries
+ * `'long-animation-frame'` first, falls back to `'longtask'`. Returns a disconnect fn, or a
+ * no-op where `PerformanceObserver` (or both entry types) is unsupported — fully graceful.
+ */
+function observeLoaf(onEntry: (e: DurationEntry) => void): () => void {
+  const PO = (globalThis as { PerformanceObserver?: typeof PerformanceObserver }).PerformanceObserver;
+  if (typeof PO !== 'function') return () => {};
+  for (const type of ['long-animation-frame', 'longtask'] as const) {
+    try {
+      const obs = new PO((list) => {
+        for (const e of list.getEntries() as unknown as DurationEntry[]) {
+          if (e.duration >= LOAF_MS) onEntry(e);
+        }
+      });
+      obs.observe({ type, buffered: true } as PerformanceObserverInit);
+      return () => obs.disconnect();
+    } catch {
+      // entry type unsupported in this engine — try the next, then give up gracefully
+    }
+  }
+  return () => {};
+}
 
 /** Nearest-rank-by-floor percentile on a copy (the DataConsole's `pct`). `null` when empty. */
 function pct(arr: readonly number[], p: number): number | null {
@@ -82,6 +141,16 @@ export function createFieldPerf(opts: FieldPerfOptions = {}): FieldPerf {
   let budget: number | null = null;
   let dropped = 0;
   let frames = 0;
+  let loafCount = 0;
+  let tbtMs = 0;
+
+  // LoAF / long-task lane — opt-in, feature-detected, graceful no-op where unsupported.
+  const disconnectLoaf = opts.loaf
+    ? observeLoaf((e) => {
+        loafCount++;
+        tbtMs += Math.max(0, e.duration - LOAF_MS);
+      })
+    : () => {};
 
   const feed = (frameTs: number): void => {
     if (lastTs === null) {
@@ -116,6 +185,8 @@ export function createFieldPerf(opts: FieldPerfOptions = {}): FieldPerf {
       p99Ms: pct(deltas, 99),
       dropped,
       frames,
+      loafCount,
+      tbtMs,
     };
   };
 
@@ -126,7 +197,13 @@ export function createFieldPerf(opts: FieldPerfOptions = {}): FieldPerf {
     budget = null;
     dropped = 0;
     frames = 0;
+    loafCount = 0;
+    tbtMs = 0;
   };
 
-  return { feed, snapshot, reset };
+  const dispose = (): void => {
+    disconnectLoaf();
+  };
+
+  return { feed, snapshot, reset, dispose };
 }

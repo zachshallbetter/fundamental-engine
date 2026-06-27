@@ -48,6 +48,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   per-frame particle positions/heat/size + seed + config are captured and proven to replay identically;
   an input timeline (interleaved `burst`/`flowTo`/formation calls), programmatic-body configs, and an
   on-disk serialization format are deferred. JS-only; a Swift/Android mirror would be a follow-up.
+- **`createFieldPerf` LoAF / long-task lane (dom).** Opt in with `createFieldPerf({ loaf: true })` and the
+  meter attaches a feature-detected `PerformanceObserver` (`long-animation-frame`, falling back to
+  `longtask`), surfacing `loafCount` and `tbtMs` (Total Blocking Time, `Σ max(0, duration − 50)`) on the
+  same `snapshot()` — so consumers see the main-thread stalls the field contends with. Graceful no-op where
+  unsupported; off by default (the meter stays pure without it). `dispose()` disconnects the observer.
+  Additive to the unfrozen `FieldPerfOptions` / `FieldPerfSnapshot` / `FieldPerf`. Closes #714.
 - **`feedback-never-written` lint + `FeedbackRegistry.feedbackActivity()` (dom).** The runtime half of
   the silent-contract-gap detector: `lintFeedbackNeverWritten` warns when a `[data-feedback]` body has
   been bound for many frames (`FEEDBACK_NEVER_WRITTEN_FRAMES`, default 120) yet never once received a
