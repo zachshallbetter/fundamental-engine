@@ -92,6 +92,45 @@ import { createField } from '@fundamental-engine/vanilla';
 const field = createField(document.querySelector('canvas')!, { accent: '#2dd4bf' });
 ```
 
+## Vendor / CDN (single file, no bundler)
+
+The shipped dist is unbundled ESM with bare cross-package imports (`@fundamental-engine/dom`,
+`@fundamental-engine/core`), so a plain `<script type="module">`, a `file://` page, or a vendored
+copy can't resolve it without a bundler or an import map. For the **no build step** path the package
+also ships two pre-bundled, fully self-contained single-file artifacts — no bare imports, nothing to
+resolve:
+
+- `dist/standalone.js` — bundled **ESM** (drop in with `<script type="module">`)
+- `dist/standalone.global.js` — **IIFE** that exposes a `Fundamental` global (no module loader at all)
+
+**Self-contained ESM** — copy `standalone.js` next to your HTML and import it directly:
+
+```html
+<canvas id="field"></canvas>
+<script type="module">
+  import { createField } from './standalone.js';
+  createField(document.querySelector('#field'), { accent: '#4da3ff', render: 'dots' });
+</script>
+```
+
+**IIFE global** — for pages that want zero module machinery:
+
+```html
+<canvas id="field"></canvas>
+<script src="./standalone.global.js"></script>
+<script>
+  Fundamental.createField(document.querySelector('#field'), { render: 'dots' });
+</script>
+```
+
+From a CDN it's the same files via the published package — e.g.
+`https://esm.sh/@fundamental-engine/vanilla/standalone` (ESM) or
+`https://unpkg.com/@fundamental-engine/vanilla/dist/standalone.global.js` (IIFE). Vendoring the file
+locally needs no network at all, which is what the offline / CSP-restricted path wants.
+
+The artifacts are produced by `pnpm --filter @fundamental-engine/vanilla build:standalone` (also run
+as part of the package `build`) and size-checked in CI.
+
 ## Marking bodies — the `data-body` vocabulary
 
 | Attribute | Meaning |
