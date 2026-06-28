@@ -1,0 +1,532 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import '../styles/use-cases.css';
+
+// /use-cases — the product pitch page.
+// Source of truth: docs/canonical/use-cases.md
+// Each section is a real UI problem + what the field does structurally + why it's better.
+// Live field interactions are woven in — this page demonstrates what it describes.
+---
+
+<Base
+  title="Use Cases — Fundamental"
+  description="What you can build with Fundamental: concrete UI problems, what the field does structurally, and what it enables that wasn't tractable before."
+>
+  <SiteNav current="use-cases" />
+
+  <main id="main" class="uc-shell">
+
+    <!-- ── HERO ─────────────────────────────────────────────────────────── -->
+    <header class="uc-hero">
+      <p class="uc-kicker">Fundamental · Use Cases</p>
+      <h1 class="uc-headline">
+        What you can build<br />
+        <span
+          class="uc-headline-accent"
+          data-body="attract"
+          data-strength="1.2"
+          data-range="380"
+          data-feedback
+        >with the field.</span>
+      </h1>
+      <p class="uc-standfirst">
+        These are not demos. Each is a real UI problem — the kind you've already
+        hand-coded with scroll spies, IntersectionObservers, animation timers, and
+        custom state machines. The field collapses that work to a data attribute
+        and a CSS variable.
+      </p>
+      <nav class="uc-toc" aria-label="Page sections">
+        <a href="#universal">I. Universal UI</a>
+        <a href="#data">II. Data & Dashboards</a>
+        <a href="#commerce">III. Commerce</a>
+        <a href="#media">IV. Media</a>
+        <a href="#invisible">V. Invisible Field</a>
+        <a href="#narrative">VI. Narrative</a>
+        <a href="#tools">VII. Tools</a>
+        <a href="#only-fundamental">VIII. Only Fundamental</a>
+        <a href="#memory">IX. Memory</a>
+        <a href="#ai">X. AI & Evidence</a>
+        <a href="#collab">XI. Collaboration</a>
+      </nav>
+    </header>
+
+    <!-- ── §I UNIVERSAL UI PATTERNS ─────────────────────────────────────── -->
+    <section id="universal" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">I</span>
+        <h2>Universal UI Patterns</h2>
+        <p class="uc-section-sub">
+          These apply to any product in any stack — the "oh, I get it" tier.
+        </p>
+      </header>
+
+      <div class="uc-cards">
+
+        <article class="uc-card" data-body="attract" data-strength="0.5" data-range="200" data-feedback>
+          <h3>Weighted Navigation</h3>
+          <p class="uc-problem">Scroll spy: observe every section, update active class on entry, handle edge cases for fast scrolls.</p>
+          <div class="uc-vs">→</div>
+          <p class="uc-solution">Nav anchors are <code>data-body="attract"</code> with editorial priority as <code>data-strength</code>. The active section amplifies its pull. <code>--field-density</code> drives the highlight.</p>
+          <div class="uc-demo uc-demo-nav" aria-hidden="true">
+            <span class="uc-nav-item" data-body="attract" data-strength="0.9" data-feedback style="--d:0">Home</span>
+            <span class="uc-nav-item uc-nav-active" data-body="attract" data-strength="1.6" data-feedback style="--d:0">Products</span>
+            <span class="uc-nav-item" data-body="attract" data-strength="0.5" data-feedback style="--d:0">About</span>
+            <span class="uc-nav-item" data-body="attract" data-strength="0.3" data-feedback style="--d:0">Blog</span>
+          </div>
+        </article>
+
+        <article class="uc-card" data-body="attract" data-strength="0.5" data-range="200" data-feedback>
+          <h3>Attention Hierarchy</h3>
+          <p class="uc-problem">z-index and size express visual hierarchy but not spatial pressure — your CTA competes on decoration alone.</p>
+          <div class="uc-vs">→</div>
+          <p class="uc-solution">The CTA is <code>data-body="gravity" data-strength="1.5"</code>. Particles drift toward it. Users notice their eye goes where it should — without consciously seeing the field.</p>
+        </article>
+
+        <article class="uc-card" data-body="attract" data-strength="0.5" data-range="200" data-feedback>
+          <h3>Error Gravity</h3>
+          <p class="uc-problem">Validation highlights a field, adds an error message — but doesn't move attention spatially in a long form.</p>
+          <div class="uc-vs">→</div>
+          <p class="uc-solution">On failure, <code>field.setBodyStrength(el, 1.8)</code>. The error body competes for density and wins. The <code>coherent</code> condition fires when all required fields resolve.</p>
+          <div class="uc-demo uc-demo-form" aria-hidden="true">
+            <span class="uc-form-field">Name</span>
+            <span class="uc-form-field uc-form-error" data-body="attract charge" data-strength="1.8" data-feedback style="--d:0">Email ⚠</span>
+            <span class="uc-form-field">Message</span>
+          </div>
+        </article>
+
+        <article class="uc-card" data-body="attract" data-strength="0.5" data-range="200" data-feedback>
+          <h3>Reading Weight</h3>
+          <p class="uc-problem">Scroll animations highlight content as it enters, then stop. No memory of where the reader lingers.</p>
+          <div class="uc-vs">→</div>
+          <p class="uc-solution">Pull quotes are <code>data-body="attract"</code>. The <code>dwell</code> condition accumulates mass at passages the reader revisits. The field stays live — it responds to where the reader <em>is</em>.</p>
+        </article>
+
+        <article class="uc-card" data-body="attract" data-strength="0.5" data-range="200" data-feedback>
+          <h3>Completion Momentum</h3>
+          <p class="uc-problem">Progress bars tell you where you are. Nothing tells you where to go next.</p>
+          <div class="uc-vs">→</div>
+          <p class="uc-solution">Each completed step drops to <code>data-strength="0.1"</code>. The active step is <code>1.0</code>. The next step has latent strength <code>0.4</code>. The field topography tilts toward what is coming.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ── §V INVISIBLE FIELD (the pitch) ────────────────────────────────── -->
+    <section id="invisible" class="uc-section uc-section-featured">
+      <header class="uc-section-header">
+        <span class="uc-section-no">V</span>
+        <h2>The Invisible Field</h2>
+        <p class="uc-section-sub uc-section-callout">
+          This is the architectural shift most people miss.
+        </p>
+      </header>
+
+      <div class="uc-invisible-intro">
+        <p>
+          Since 0.9.0, the field's default render mode is <code>'none'</code>.
+          No canvas. No particles. The full simulation runs and writes its results
+          as CSS variables — <code>--field-density</code>, <code>--d</code>,
+          <code>--load</code> — to every <code>[data-feedback]</code> element.
+          Your existing CSS consumes them.
+        </p>
+        <p class="uc-thesis" data-body="attract" data-strength="0.8" data-range="320" data-feedback style="--d:0">
+          The field is not a particle effect.<br />
+          It is a pressure system that drives your design system.
+        </p>
+      </div>
+
+      <div class="uc-cards uc-invisible-cards">
+
+        <article class="uc-card uc-card-invisible" data-feedback style="--d:0">
+          <h3>Ambient Typography</h3>
+          <p>Font weight driven by <code>--field-density</code>. Near a high-mass heading, body text gets fractionally heavier. No canvas. No JavaScript in the style path.</p>
+          <div class="uc-demo uc-demo-typo" aria-hidden="true">
+            <span class="uc-typo-ex" data-body="attract" data-strength="1.0" data-feedback style="--d:0">
+              Heading drives mass
+            </span>
+            <span class="uc-typo-body" data-feedback style="--d:0">
+              Body text responds to proximity — field density modulates weight here
+            </span>
+          </div>
+          <code class="uc-snippet">font-weight: calc(400 + var(--d) * 200);</code>
+        </article>
+
+        <article class="uc-card uc-card-invisible" data-feedback style="--d:0">
+          <h3>Focus-Weight Accessibility</h3>
+          <p>The focused element is the engaged body. Tab traversal creates a moving gravity well. CSS on <code>[data-feedback]</code> drives color, shadow, or scale from proximity — no motion needed for reduced-motion users.</p>
+          <code class="uc-snippet">border-color: color-mix(in srgb, var(--accent) calc(var(--d) * 80%), transparent);</code>
+        </article>
+
+        <article class="uc-card uc-card-invisible" data-feedback style="--d:0">
+          <h3>State Without Animation</h3>
+          <p>A toggle's state is a field charge flip. Checked: positive charge, surrounding elements respond. No keyframes, no class toggling, no transition timings to coordinate.</p>
+          <code class="uc-snippet">/* the field carries state into style */</code>
+        </article>
+
+        <article class="uc-card uc-card-invisible" data-feedback style="--d:0">
+          <h3>Semantic Content Structure</h3>
+          <p><code>&lt;h1&gt;</code> carries more mass than <code>&lt;h2&gt;</code> than <code>&lt;p&gt;</code>. Screen readers consume the markup; the field renders the same hierarchy as a physical pressure map. Both come from the same HTML.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ── §II DATA & DASHBOARDS ─────────────────────────────────────────── -->
+    <section id="data" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">II</span>
+        <h2>Data & Dashboards</h2>
+        <p class="uc-section-sub">The field as a live metric layer — a spatial representation of data beneath the visual one.</p>
+      </header>
+
+      <div class="uc-cards">
+
+        <article class="uc-card">
+          <h3>Anomaly Field</h3>
+          <p>A status dashboard where each service's body strength is proportional to error rate. A healthy service is a low-mass body. A spiking service becomes a gravity well — you see the incident before you read the number.</p>
+          <div class="uc-demo uc-demo-services" aria-hidden="true">
+            <span class="uc-svc uc-svc-ok" data-body="attract" data-strength="0.1" data-feedback style="--d:0">api ✓</span>
+            <span class="uc-svc uc-svc-ok" data-body="attract" data-strength="0.2" data-feedback style="--d:0">cdn ✓</span>
+            <span class="uc-svc uc-svc-err" data-body="attract" data-strength="1.8" data-feedback style="--d:0">db ↑↑</span>
+            <span class="uc-svc uc-svc-ok" data-body="attract" data-strength="0.15" data-feedback style="--d:0">auth ✓</span>
+          </div>
+        </article>
+
+        <article class="uc-card">
+          <h3>Urgency Sorting</h3>
+          <p>Task queues where priority maps to body strength. A P0 ticket buried in a long list pulls harder than the P2 at the top — without reordering the DOM.</p>
+          <div class="uc-demo uc-demo-queue" aria-hidden="true">
+            <span class="uc-ticket uc-ticket-p2" data-body="attract" data-strength="0.3" data-feedback style="--d:0">P2 — Update docs</span>
+            <span class="uc-ticket uc-ticket-p0" data-body="attract" data-strength="1.9" data-feedback style="--d:0">P0 — Login broken</span>
+            <span class="uc-ticket uc-ticket-p1" data-body="attract" data-strength="0.9" data-feedback style="--d:0">P1 — Slow checkout</span>
+          </div>
+        </article>
+
+        <article class="uc-card">
+          <h3>Live Data Streams</h3>
+          <p>Real-time feeds where incoming events create field disturbances. Busy channels hum differently from quiet ones. Notification badges count — the field shows <em>cadence</em>.</p>
+        </article>
+
+        <article class="uc-card">
+          <h3>Relationship Graphs</h3>
+          <p>Graph nodes whose edge weights become <code>data-field-relation</code> values. Hover a node and the field reveals strongly connected neighbors — second-degree connections respond too, weighted by path strength.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ── §III COMMERCE ─────────────────────────────────────────────────── -->
+    <section id="commerce" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">III</span>
+        <h2>Commerce & Products</h2>
+      </header>
+
+      <div class="uc-cards uc-cards-3">
+        <article class="uc-card">
+          <h3>Product Gravity</h3>
+          <p>Rating × review_count → body strength. Promoted items carry <code>data-truth="designed"</code>, organically popular ones <code>"physical"</code>. The distinction is structurally honest and spatially visible.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Cart Magnetism</h3>
+          <p>Cart item count → <code>data-strength</code>. On add, <code>dispatchBodyThreshold</code> fires at strength > 1.0 — the confirmation is driven by the field event, not a timeout. The cart's field state IS the cart state.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Inventory Urgency</h3>
+          <p>"Only 3 left" — low stock makes a body's charge spike. Urgency is structural, not cosmetic. Zero stock drops the charge. The <code>thresholded</code> condition handles the boundary.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Comparison Pull</h3>
+          <p>Side-by-side comparison where the winning option has higher aggregate mass. The field tips the decision spatially before the user consciously compares.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── §IV MEDIA ──────────────────────────────────────────────────────── -->
+    <section id="media" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">IV</span>
+        <h2>Media & Content</h2>
+      </header>
+
+      <div class="uc-cards uc-cards-3">
+        <article class="uc-card">
+          <h3>Playlist Gravity</h3>
+          <p>The currently playing track is a dominant gravity well. Play count = accumulated mass — accretion in the Body Matter Interaction model. <code>--load</code> represents play history.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Gallery Focus</h3>
+          <p>Hover triggers <code>data-active</code>, amplifying pull. Other gallery items dim because field density <em>genuinely dropped</em> — not because of <code>:not(:hover)</code> tricks.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Content Topography</h3>
+          <p>Article archive where view count → <code>data-strength</code>. The field's density distribution over the grid is a spatial map of readership.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── §VI NARRATIVE ─────────────────────────────────────────────────── -->
+    <section id="narrative" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">VI</span>
+        <h2>Narrative & Immersive</h2>
+      </header>
+
+      <div class="uc-cards uc-cards-3">
+        <article class="uc-card">
+          <h3>Scrollytelling</h3>
+          <p>Data stories where scrolling changes which body is dominant. No scroll-jacking, no IntersectionObserver farm. The <code>ScrollAgent</code> feeds input; the field re-orients continuously.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Interactive Fiction</h3>
+          <p>Branching narratives where choices carry accumulated attention weight. The field is a memory of the user's attention during the choice — hovered longest has more mass.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Museum / Exhibition</h3>
+          <p>Digital archives where cultural significance, date range, acquisition cost → body strength. Moving through the collection, the field creates a topography of importance.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── §VII TOOLS ─────────────────────────────────────────────────────── -->
+    <section id="tools" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">VII</span>
+        <h2>Productivity & Tools</h2>
+      </header>
+
+      <div class="uc-cards uc-cards-3">
+        <article class="uc-card">
+          <h3>Kanban Physics</h3>
+          <p>Blocked or overdue cards accumulate urgency mass. The board's field density distribution shows bottlenecks without a filter or sort. The <code>pressure</code> formation biases the whole field.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Document Co-presence</h3>
+          <p>Each active cursor is a charged body. Dense regions are where people are working. An idle cursor loses charge over time. Presence as field — not a list of avatars.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Code Review Gravity</h3>
+          <p>Diff view where modified files have mass proportional to change size. The file tree's density shows where the review bulk is — before opening anything.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── §VIII ONLY FUNDAMENTAL ────────────────────────────────────────── -->
+    <section id="only-fundamental" class="uc-section uc-section-only">
+      <header class="uc-section-header">
+        <span class="uc-section-no">VIII</span>
+        <h2>Only Fundamental Can Do This</h2>
+        <p class="uc-section-sub">Capabilities with no clean analogy in CSS, JavaScript event systems, or existing animation libraries.</p>
+      </header>
+
+      <div class="uc-cards">
+
+        <article class="uc-card uc-card-only" data-body="attract" data-strength="0.7" data-range="280" data-feedback style="--d:0">
+          <h3>Reciprocal UI</h3>
+          <p>The DOM affects the field AND the field affects the DOM. The loop is closed. Most "physics" UI is one-way. Fundamental's two-way binding means a button hovered many times has accumulated interaction history as field density.</p>
+          <div class="uc-reciprocal" aria-label="DOM → field → DOM loop">
+            <span class="uc-loop-node">DOM</span>
+            <span class="uc-loop-arrow">⇄</span>
+            <span class="uc-loop-node">Field</span>
+          </div>
+        </article>
+
+        <article class="uc-card uc-card-only" data-body="attract" data-strength="0.7" data-range="280" data-feedback style="--d:0">
+          <h3>Truth Mode Mixing</h3>
+          <p>A pricing page where the recommended tier's mass is <code>designed</code> (editorially elevated, bounded) while user review scores drive <code>physical</code> mass (true physics, potentially unbounded). Both in the same field. The tension is physically visible.</p>
+        </article>
+
+        <article class="uc-card uc-card-only" data-body="attract" data-strength="0.7" data-range="280" data-feedback style="--d:0">
+          <h3>Composed Force Personalities</h3>
+          <p><code>data-preset="blackhole"</code> combines <code>attract + sink</code>. <code>data-body="attract charge warp"</code> pulls, has polarity, bends space. These combinations produce emergent field shapes impossible to replicate with CSS alone.</p>
+        </article>
+
+        <article class="uc-card uc-card-only" data-body="attract" data-strength="0.7" data-range="280" data-feedback style="--d:0">
+          <h3>Multi-Plane Fields</h3>
+          <p>Three independent container fields on one page — one per section, no shared particles. <code>bounds: el</code> scopes a field to a DOM subtree. Zero interference between sections.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ── §IX MEMORY ─────────────────────────────────────────────────────── -->
+    <section id="memory" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">IX</span>
+        <h2>Memory & Temporal Fields</h2>
+        <p class="uc-section-sub">
+          The field currently exists in the present frame. Extending it backward (memory) and forward (prediction) opens a distinct class of use cases.
+        </p>
+      </header>
+
+      <div class="uc-cards uc-cards-3">
+        <article class="uc-card">
+          <h3>Reading History</h3>
+          <p>A page that is warmer in the places a user has been. High-traffic corridors develop lower resistance. Not analytics — semantic sediment: local, continuous, immediately legible.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Dwell-Driven Mastery</h3>
+          <p>Documentation where sections gain mass through repeated attention. A concept revisited five times is heavier than one skimmed. The field shows which ideas have been internalized.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Interrupted Path Recovery</h3>
+          <p>The user left mid-flow. When they return, the uncompleted step is already the dominant body — attention is pulled there before they consciously re-orient. No session storage logic needed.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Staleness Gradient</h3>
+          <p>Recently updated items are bright bodies; older items cool and lose charge. Staleness is visible as field entropy — not a timestamp, but a spatial warmth gradient across the surface.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── §X AI & EVIDENCE ───────────────────────────────────────────────── -->
+    <section id="ai" class="uc-section uc-section-featured">
+      <header class="uc-section-header">
+        <span class="uc-section-no">X</span>
+        <h2>AI & Evidence Fields</h2>
+        <p class="uc-section-sub">
+          AI outputs contain claims, sources, confidence, uncertainty, contradiction, revision, memory, and provenance.
+          Field recipes make these structural properties visible — without badges or tooltips.
+        </p>
+      </header>
+
+      <div class="uc-cards">
+
+        <article class="uc-card uc-card-ai">
+          <h3>Evidence Field</h3>
+          <p>Claims become bodies. Sources bind to them — strong sources pull closer, weak sources orbit at distance. Contradictory sources repel. Verified claims gain coherence and mass. Unverified claims remain visibly unsettled.</p>
+          <p class="uc-why"><strong>Why it matters:</strong> AI interfaces show confidence as a percentage or color label. The field makes confidence spatial and relational — you see which claims are well-supported before reading a number.</p>
+        </article>
+
+        <article class="uc-card uc-card-ai">
+          <h3>Trust Gradient</h3>
+          <p>A research or fact-check surface where field density reflects source quality. High-authority sources are strong bodies. Sources with corroborating claims form clusters — the field shows where consensus is dense and where it's sparse.</p>
+        </article>
+
+        <article class="uc-card uc-card-ai">
+          <h3>Provenance Trail</h3>
+          <p>A generated document where each passage carries the origin of its content. Cited passages have one quality of presence; inferred passages have another. Expressed through <code>data-truth</code> modes and CSS <code>--d</code> — not labels.</p>
+        </article>
+
+        <article class="uc-card uc-card-ai">
+          <h3>Conflict Field</h3>
+          <p>Contested information — two sources that contradict each other. The field holds the contradiction in visible tension rather than collapsing it into a resolved state. Conflicting bodies carry opposing charge; the contested zone is measurable.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ── §XI COLLABORATION ──────────────────────────────────────────────── -->
+    <section id="collab" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">XI</span>
+        <h2>Collaboration & Shared Fields</h2>
+        <p class="uc-section-sub">
+          Collaboration beyond cursors and avatars — multiple participants' attention becomes field contributions that sum.
+        </p>
+      </header>
+
+      <div class="uc-cards uc-cards-3">
+        <article class="uc-card">
+          <h3>Presence Field</h3>
+          <p>Each active collaborator's focus is a charged body. A paragraph where three people are reading is demonstrably denser than one where nobody is. Departure leaves a cooling Memory Trace.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Consensus Well</h3>
+          <p>Items with growing consensus pull toward a stable gravity well. Items with persistent disagreement show charge separation — two camps of opposing charge, visible as a split field topology.</p>
+        </article>
+        <article class="uc-card">
+          <h3>Handoff Stream</h3>
+          <p>Ownership changes create directional field flow. The handoff is visible as current — not just a status update in a list.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── CAPABILITY MATRIX ──────────────────────────────────────────────── -->
+    <section id="matrix" class="uc-section">
+      <header class="uc-section-header">
+        <span class="uc-section-no">⊕</span>
+        <h2>Capability Matrix</h2>
+        <p class="uc-section-sub">Use case × engine capability — which forces, feedback, and truth modes apply.</p>
+      </header>
+
+      <div class="uc-matrix-wrap">
+        <table class="uc-matrix">
+          <thead>
+            <tr>
+              <th>Use Case</th>
+              <th>Forces</th>
+              <th>Feedback</th>
+              <th>Relations</th>
+              <th>Signals-only</th>
+              <th>Truth Mode</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["Weighted navigation",  "attract",         "✓", "—", "✓", "designed"],
+              ["Error gravity",        "attract, charge", "✓", "—", "✓", "designed"],
+              ["Reading weight",       "attract",         "✓", "—", "✓", "semantic"],
+              ["Completion momentum",  "gravity, attract","✓", "—", "✓", "designed"],
+              ["Anomaly field",        "gravity",         "✓", "—", "✓", "physical"],
+              ["Urgency sorting",      "attract, charge", "✓", "—", "✓", "physical"],
+              ["Relationship graphs",  "attract",         "✓", "✓", "—", "physical"],
+              ["Product gravity",      "gravity",         "✓", "—", "✓", "hybrid"],
+              ["Cart magnetism",       "attract",         "✓", "—", "—", "designed"],
+              ["Ambient typography",   "—",               "✓", "—", "✓", "semantic"],
+              ["Focus a11y",           "—",               "✓", "—", "✓", "designed"],
+              ["Evidence field",       "attract, charge", "✓", "✓", "✓", "physical"],
+              ["Trust gradient",       "gravity",         "✓", "✓", "✓", "hybrid"],
+              ["Conflict field",       "charge",          "✓", "✓", "✓", "physical"],
+              ["Presence field",       "attract",         "✓", "—", "✓", "hybrid"],
+              ["Reading history",      "—",               "✓", "—", "✓", "physical"],
+              ["Staleness gradient",   "—",               "✓", "—", "✓", "physical"],
+              ["Reciprocal UI",        "any",             "✓", "—", "✓", "hybrid"],
+            ].map(([name, forces, fb, rel, sig, mode]) => (
+              <tr>
+                <td>{name}</td>
+                <td class="uc-cell-code">{forces}</td>
+                <td class="uc-cell-center">{fb}</td>
+                <td class="uc-cell-center">{rel}</td>
+                <td class="uc-cell-center">{sig}</td>
+                <td class="uc-cell-mode" data-mode={mode}>{mode}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── CTA ────────────────────────────────────────────────────────────── -->
+    <footer class="uc-cta">
+      <h2 class="uc-cta-headline" data-body="attract" data-strength="1.0" data-range="300" data-feedback style="--d:0">
+        Start with five lines of HTML.
+      </h2>
+      <p class="uc-cta-body">
+        Add <code>data-body="attract"</code> to any element. The field responds.
+        No bundler configuration, no JavaScript wiring — the physics starts immediately.
+      </p>
+      <div class="uc-cta-code">
+        <pre><code>&lt;field-root render="dots"&gt;&lt;/field-root&gt;
+
+&lt;h1
+  data-body="attract"
+  data-strength="1.2"
+  data-feedback
+&gt;
+  This heading now has mass.
+&lt;/h1&gt;</code></pre>
+      </div>
+      <div class="uc-cta-links">
+        <a class="uc-btn uc-btn-primary" href="/docs">Read the docs →</a>
+        <a class="uc-btn uc-btn-secondary" href="/lab">Open the Lab →</a>
+        <a class="uc-btn uc-btn-tertiary" href="/recipes">Browse recipes →</a>
+      </div>
+    </footer>
+
+  </main>
+
+  <SiteFooter />
+</Base>
