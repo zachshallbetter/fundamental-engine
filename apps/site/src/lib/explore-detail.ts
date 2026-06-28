@@ -131,6 +131,7 @@ export function initExploreDetail(): () => void {
         scaffoldId: d.scaffoldId,
         primaryRender: d.primaryRender,
         reducedMotionText: d.reducedMotion,
+        renderLayers: d.render,
       });
     }, REDUCED ? 0 : 340);
 

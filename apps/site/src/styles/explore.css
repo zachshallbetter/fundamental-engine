@@ -479,6 +479,102 @@
 
 body.ex-detail-open { overflow: hidden; }
 
+/* ── Workbench (render switcher + heatmap + live signals) ──────────────────────────────────────── */
+.exd-workbench {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  background: linear-gradient(to top, color-mix(in srgb, var(--bg-page) 88%, transparent), transparent);
+}
+.exd-render-pills { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.exd-rpill,
+.exd-heat {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: color 140ms var(--ease), border-color 140ms var(--ease), background 140ms var(--ease);
+}
+.exd-rpill:hover,
+.exd-heat:hover { color: var(--text); border-color: var(--line-2); }
+.exd-rpill.is-on {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--detail-accent, var(--accent)) 60%, transparent);
+  background: color-mix(in srgb, var(--detail-accent, var(--accent)) 16%, var(--bg-card));
+}
+.exd-heat[aria-pressed='true'] {
+  color: var(--detail-accent, var(--accent));
+  border-color: color-mix(in srgb, var(--detail-accent, var(--accent)) 55%, transparent);
+}
+
+/* "what you're seeing" caption */
+.exd-note {
+  position: absolute;
+  left: 0.7rem; right: 0.7rem; bottom: 2.6rem;
+  z-index: 2;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  line-height: 1.45;
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--bg-page) 60%, transparent);
+  border-radius: var(--r-sm);
+  padding: 0.3rem 0.45rem;
+  backdrop-filter: blur(3px);
+}
+
+/* live signal readout — instrumentation, top-left of the preview */
+.exd-signals {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 11rem;
+  padding: 0.45rem 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  background: color-mix(in srgb, var(--bg-page) 64%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  backdrop-filter: blur(4px);
+}
+.exd-sig {
+  display: grid;
+  grid-template-columns: 1fr 2.4rem auto;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-2);
+}
+.exd-sig-k { color: color-mix(in srgb, var(--coherence, #5fd0a8) 70%, var(--text-2)); white-space: nowrap; }
+.exd-sig-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+.exd-sig-bar > i {
+  display: block;
+  height: 100%;
+  background: color-mix(in srgb, var(--detail-accent, var(--accent)) 80%, transparent);
+  transition: width 260ms linear;
+}
+.exd-sig-v { color: var(--text); font-variant-numeric: tabular-nums; text-align: right; }
+.exd-sig-count { grid-template-columns: 1fr auto; padding-top: 0.15rem; border-top: 1px solid var(--line); }
+
 /* narrow: stack preview over info */
 @media (max-width: 640px) {
   .ex-detail-panel {

@@ -17,6 +17,8 @@ export interface PreviewOptions {
   scaffoldId: string | null;
   primaryRender: string;
   reducedMotionText: string;
+  /** the recipe's render layers — the workbench's render switcher is built from these */
+  renderLayers: string[];
 }
 
 const REDUCED =
@@ -27,6 +29,7 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
   let destroyed = false;
   let applied: { destroy(): void } | null = null;
   let field: { destroy(): void } | null = null;
+  let detachWorkbench: (() => void) | null = null;
 
   if (REDUCED) {
     container.innerHTML = `<p class="exd-static">${opts.reducedMotionText.replace(/[<>&]/g, '')}</p>`;
@@ -36,11 +39,12 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
   // Async: lazy-import the engine so the catalog never pays for it until a recipe is opened.
   (async () => {
     try {
-      const [{ recipeById }, { applyRecipe }, { createField }, scaffolds] = await Promise.all([
+      const [{ recipeById }, { applyRecipe }, { createField }, scaffolds, { attachWorkbench }] = await Promise.all([
         import('@fundamental-engine/core'),
         import('@fundamental-engine/dom'),
         import('@fundamental-engine/vanilla'),
         import('./recipe-scaffolds.ts'),
+        import('./explore-workbench.ts'),
       ]);
       if (destroyed) return;
       const recipe = recipeById(opts.recipeId);
@@ -77,6 +81,15 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
         drive: true,
         field: field as never,
       });
+
+      // the visualization workbench — render switcher + heatmap + live signal readout
+      detachWorkbench = attachWorkbench({
+        container,
+        field: field as never,
+        applied: applied as never,
+        renderLayers: opts.renderLayers,
+        primaryRender: opts.primaryRender,
+      });
     } catch {
       /* the info panel stands on its own if the engine can't boot */
     }
@@ -85,6 +98,8 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
   return {
     destroy() {
       destroyed = true;
+      detachWorkbench?.();
+      detachWorkbench = null;
       applied?.destroy();
       applied = null;
       field?.destroy();
