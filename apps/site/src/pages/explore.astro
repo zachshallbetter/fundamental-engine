@@ -1,0 +1,173 @@
+---
+// /explore — the solution-finder catalog. A clean-slate rethink of /recipes built around the
+// question a developer actually arrives with ("I need to show what matters / where the user is /
+// how these connect") rather than the engine's own taxonomy. See
+// docs/design/explore-interaction-model.md for the full interaction model.
+//
+// PHASE 0 (this file): server-render the complete, semantic, no-JS catalog — every recipe as a
+// linked <article>, tagged with its problem domains, grouped under the nine-domain filter bar.
+// Works with zero JavaScript (the filter bar + live previews are progressive enhancement layered
+// on in later phases). The page suppresses the global ambient particle field (signals-first): the
+// catalog is calm at rest; the engine wakes only where the visitor interacts.
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { FIELD_RECIPES, type FieldRecipe } from '@fundamental-engine/core';
+import { DOMAINS, taxonomyFor, isPlatformRecipe, type ProblemDomain } from '../lib/recipe-taxonomy.ts';
+import '../styles/explore.css';
+
+// Natural-field accent (mirrors the /recipes hub so the colour language stays consistent).
+const FIELD_COLOR: Record<string, string> = {
+  gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
+  diagnostic: '#9aa7b4', platform: '#9aa7b4',
+};
+const fieldKeyOf = (r: FieldRecipe) => r.naturalField ?? 'platform';
+const fieldLabelOf = (r: FieldRecipe) =>
+  r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Platform';
+
+// Assemble one view-model row per recipe (the 64), carrying everything the card + the Phase-1
+// filter island need. Data attributes keep the filter logic out of the markup.
+const cards = FIELD_RECIPES.map((r) => {
+  const tax = taxonomyFor(r.id);
+  return {
+    id: r.id,
+    name: r.name,
+    intent: r.intent,
+    tier: r.tier ?? 'core',
+    fieldKey: fieldKeyOf(r),
+    fieldLabel: fieldLabelOf(r),
+    accent: FIELD_COLOR[fieldKeyOf(r)] ?? FIELD_COLOR.platform,
+    domains: tax.domains,
+    solves: tax.solves,
+    isPlatform: isPlatformRecipe(r.id),
+  };
+});
+
+// Per-domain counts for the pill labels.
+const countFor = (d: ProblemDomain) => cards.filter((c) => c.domains.includes(d)).length;
+const platformCount = cards.filter((c) => c.isPlatform).length;
+const total = cards.length;
+
+const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
+  DOMAINS.map((d) => [d.id, d.label]),
+) as Record<ProblemDomain, string>;
+---
+
+<Base
+  title="Fundamental — Explore"
+  description={`Find the field recipe for your problem. ${total} portable recipes, organised by what you're building — priority, navigation, relationships, evidence, conflict, memory, flow, presence, governance.`}
+>
+  <SiteNav current="explore" />
+
+  <main id="main" class="ex-shell">
+    <header class="ex-hero">
+      <p class="ex-kicker">Fundamental · explore</p>
+      <h1 class="ex-title">Find the recipe for your problem.</h1>
+      <p class="ex-lede">
+        Start from what you're building, not from the physics. Every recipe below is a named,
+        validated answer to a real interface problem — pick the job, watch it run, open its page.
+      </p>
+    </header>
+
+    <!-- Filter bar. Phase 0: static, semantic, no-JS-inert. Phase 1 turns the pills + search into an
+         engine-powered FilterField. The full catalog is always present below regardless of JS, so a
+         no-JS visitor gets a complete, linked, browsable catalog. -->
+    <div class="ex-filterbar" role="search">
+      <div class="ex-search">
+        <svg class="ex-search-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4" />
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        </svg>
+        <input
+          type="search"
+          class="ex-search-input"
+          placeholder="Search recipes — priority, conflict, citations…"
+          aria-label="Search recipes"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="ex-pills" role="group" aria-label="Filter by what you're building">
+        <button class="ex-pill is-on" type="button" data-domain="all" aria-pressed="true">
+          <span class="ex-pill-label">All</span>
+          <span class="ex-pill-count">{total}</span>
+        </button>
+        {DOMAINS.map((d) => (
+          <button class="ex-pill" type="button" data-domain={d.id} aria-pressed="false" title={d.need}>
+            <span class="ex-pill-dot" style={`--pill-accent: var(${d.accentVar})`}></span>
+            <span class="ex-pill-label">{d.label}</span>
+            <span class="ex-pill-count">{countFor(d.id)}</span>
+          </button>
+        ))}
+        <button class="ex-pill ex-pill-platform" type="button" data-domain="platform" aria-pressed="false" title="Recipes that help you understand or instrument the engine itself">
+          <span class="ex-pill-label">Platform &amp; Teaching</span>
+          <span class="ex-pill-count">{platformCount}</span>
+        </button>
+      </div>
+    </div>
+
+    <p class="ex-resultcount" aria-live="polite" data-result-count>{total} recipes</p>
+
+    <!-- The catalog. One <article> per recipe — minimal by design: field accent, name, the problem
+         it solves, the domains it answers, a link to the full recipe page. Implementation metadata
+         (tokens, metrics, render stack) deliberately lives on the expanded view, not here. -->
+    <ul class="ex-grid" role="list">
+      {cards.map((c) => (
+        <li
+          class="ex-card"
+          data-recipe-id={c.id}
+          data-name={c.name.toLowerCase()}
+          data-intent={c.intent.toLowerCase()}
+          data-solves={c.solves.join(' ').toLowerCase()}
+          data-domains={c.domains.join(' ')}
+          data-platform={c.isPlatform ? '1' : undefined}
+          data-field={c.fieldKey}
+          data-tier={c.tier}
+          style={`--card-accent: ${c.accent}`}
+        >
+          <a class="ex-card-link" href={`/recipes/${c.id}`}>
+            <div class="ex-card-head">
+              <span class="ex-card-field">{c.fieldLabel}</span>
+              <span class="ex-card-tier">{c.tier}</span>
+            </div>
+            <h2 class="ex-card-name">{c.name}</h2>
+            <p class="ex-card-intent">{c.intent}</p>
+            <div class="ex-card-foot">
+              {c.isPlatform ? (
+                <span class="ex-chip ex-chip-platform">Platform</span>
+              ) : (
+                c.domains.map((d) => (
+                  <span class="ex-chip" style={`--chip-accent: var(--dom-${d})`}>{domainLabel[d]}</span>
+                ))
+              )}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <p class="ex-empty" data-empty hidden>
+      No recipe matches that yet. <button type="button" data-clear-filters class="ex-link-btn">Clear filters</button>
+    </p>
+  </main>
+
+  <SiteFooter />
+</Base>
+
+<!-- Suppress the global ambient particle field on /explore only (signals-first: the catalog is calm;
+     the engine wakes where the visitor interacts). Page-scoped class — does NOT touch the global
+     `data-field` nav toggle, so the visitor's own preference is preserved when they leave. -->
+<style is:global>
+  html.ex-no-ambient field-root { display: none !important; }
+</style>
+<script>
+  const mark = () => document.documentElement.classList.add('ex-no-ambient');
+  const unmark = () => document.documentElement.classList.remove('ex-no-ambient');
+  mark();
+  // Astro client-side nav: re-assert on arrival, release on departure.
+  document.addEventListener('astro:page-load', () => {
+    if (location.pathname.replace(/\/$/, '') === '/explore') mark();
+    else unmark();
+  });
+  document.addEventListener('astro:before-swap', unmark);
+</script>

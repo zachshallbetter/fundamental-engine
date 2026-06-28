@@ -1,0 +1,271 @@
+/* explore.css — the solution-finder catalog (/explore).
+ *
+ * Clean slate, aligned to ds-tokens.css. The page is calm at rest: no ambient particle field, cards
+ * are static, the only motion is the visitor's own interaction (filter, hover, expand in later
+ * phases). Lesson carried from use-cases.css: the .scrim is position:fixed; z-index:1, so all page
+ * content must be lifted above it (.ex-shell { position: relative; z-index: 2 }).
+ */
+
+/* ── Domain accents — the nine problem domains, spread around the wheel for legibility ─────────── */
+:root {
+  --dom-priority:      #4da3ff;
+  --dom-navigation:    #22d3ee;
+  --dom-relationships: #a78bfa;
+  --dom-evidence:      #2dd4bf;
+  --dom-conflict:      #fb7185;
+  --dom-memory:        #fbbf24;
+  --dom-flow:          #a3e635;
+  --dom-presence:      #4ade80;
+  --dom-governance:    #f472b6;
+}
+
+/* ── Shell ────────────────────────────────────────────────────────────────────────────────────── */
+.ex-shell {
+  position: relative;
+  z-index: 2; /* clear the fixed .scrim */
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: calc(58px + 3.5rem) clamp(1rem, 4vw, 2.5rem) 6rem;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────────────────────────── */
+.ex-hero { margin-bottom: 2.5rem; max-width: 46rem; }
+.ex-kicker {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0 0 0.9rem;
+}
+.ex-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+  color: var(--text);
+}
+.ex-lede {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-2);
+  margin: 0;
+}
+
+/* ── Filter bar (sticky under the nav) ────────────────────────────────────────────────────────── */
+.ex-filterbar {
+  position: sticky;
+  top: 58px; /* under the fixed nav */
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.9rem 0;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to bottom, var(--bg) 60%, color-mix(in srgb, var(--bg) 60%, transparent));
+  backdrop-filter: blur(6px);
+}
+
+.ex-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 30rem;
+}
+.ex-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  width: 15px; height: 15px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.ex-search-input {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 0.6rem 1rem 0.6rem 2.4rem;
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+.ex-search-input::placeholder { color: var(--text-4); }
+.ex-search-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.ex-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ex-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  color: var(--text-2);
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 0.34rem 0.7rem;
+  cursor: pointer;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease), background 150ms var(--ease);
+}
+.ex-pill:hover { color: var(--text); border-color: var(--line-2); }
+.ex-pill.is-on {
+  color: var(--text);
+  border-color: var(--line-3);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
+}
+.ex-pill-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--pill-accent, var(--accent));
+  flex: none;
+}
+.ex-pill-count {
+  font-size: 0.62rem;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.ex-pill.is-on .ex-pill-count { color: var(--text-2); }
+.ex-pill-platform { margin-left: 0.3rem; }
+
+.ex-resultcount {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-3);
+  margin: 0 0 1.4rem;
+  letter-spacing: 0.02em;
+}
+
+/* ── Grid ─────────────────────────────────────────────────────────────────────────────────────── */
+.ex-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: 0.9rem;
+}
+
+/* ── Card — minimal by design: accent, name, problem, domains, link ───────────────────────────── */
+.ex-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-left: 2px solid color-mix(in srgb, var(--card-accent) 65%, transparent);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  transition: border-color 180ms var(--ease), transform 180ms var(--ease), box-shadow 180ms var(--ease);
+}
+.ex-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-2);
+  border-left-color: var(--card-accent);
+  box-shadow: 0 6px 24px -12px color-mix(in srgb, var(--card-accent) 60%, transparent);
+}
+.ex-card.is-dimmed { /* receded by an active filter (Phase 1 toggles this) */
+  opacity: 0.16;
+  transform: scale(0.985);
+  pointer-events: none;
+}
+.ex-card[hidden] { display: none; }
+
+.ex-card-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1.05rem 1.1rem 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+.ex-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.ex-card-field {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--card-accent) 80%, var(--text-3));
+}
+.ex-card-tier {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.ex-card-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.08rem;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--text);
+}
+.ex-card-intent {
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-2);
+  margin: 0;
+  flex: 1;
+}
+.ex-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+.ex-chip {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--chip-accent, var(--text-3)) 90%, white 0%);
+  background: color-mix(in srgb, var(--chip-accent, var(--accent)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip-accent, var(--accent)) 28%, transparent);
+  border-radius: var(--r-pill);
+  padding: 0.12rem 0.5rem;
+}
+.ex-chip-platform {
+  --chip-accent: var(--text-3);
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────────────────────────────── */
+.ex-empty {
+  font-size: 0.9rem;
+  color: var(--text-2);
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.ex-link-btn {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ex-card,
+  .ex-search-input,
+  .ex-pill {
+    transition: none;
+  }
+  .ex-card:hover { transform: none; }
+}
