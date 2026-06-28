@@ -19,6 +19,8 @@ interface RecipeDetail {
   fieldLabel: string;
   accent: string;
   domains: DomainRef[];
+  /** plain-language "how it works" — the recipe's authored notes */
+  how: string;
   solves: string[];
   tokens: string[];
   metrics: string[];
@@ -66,6 +68,10 @@ export function initExploreDetail(): () => void {
     const tierField = `<div class="exd-head"><span class="exd-field" style="--accent:${esc(d.accent)}">${esc(d.fieldLabel)}</span><span class="exd-tier">${esc(d.tier)}</span></div>`;
     const title = `<h2 class="exd-name" id="ex-detail-name">${esc(d.name)}</h2>`;
     const intent = `<p class="exd-intent">${esc(d.intent)}</p>`;
+    // "How it works" — the field mechanism in plain language, in the recipe's accent.
+    const how = d.how
+      ? `<p class="exd-how"><span class="exd-how-tag">How it works</span>${esc(d.how)}</p>`
+      : '';
     const domains = d.isPlatform
       ? chip('Platform & Teaching', 'var(--text-3)')
       : d.domains.map((dm) => chip(dm.label, `var(--dom-${dm.id})`)).join('');
@@ -79,7 +85,7 @@ export function initExploreDetail(): () => void {
     const metrics = lane('Metrics', d.metrics);
     const render = lane('Render', d.render);
     const link = `<a class="exd-open" href="/recipes/${encodeURIComponent(id)}">Open full recipe <span aria-hidden="true">→</span></a>`;
-    return tierField + title + intent + domainRow + solves + tokens + metrics + render + link;
+    return tierField + title + intent + domainRow + how + solves + tokens + metrics + render + link;
   };
 
   // ── focus trap ──────────────────────────────────────────────────────────────────────────────

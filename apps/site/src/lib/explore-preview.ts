@@ -35,6 +35,7 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
   let applied: { destroy(): void } | null = null;
   let field: { destroy(): void } | null = null;
   let detachWorkbench: (() => void) | null = null;
+  let detachPointer: (() => void) | null = null;
 
   if (REDUCED) {
     container.innerHTML = `<p class="exd-static">${opts.reducedMotionText.replace(/[<>&]/g, '')}</p>`;
@@ -111,6 +112,26 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
         primaryRender: opts.primaryRender,
         accent: FIELD_ACCENT[recipe.naturalField ?? ''] ?? '#4da3ff',
       });
+
+      // Pointer interaction — moving over the preview steers a flow focus (field.flowTo): matter
+      // pulls toward the cursor and the streamline render bends to it. The most direct "the field
+      // responds to you" demonstration; clears on leave so it settles back.
+      const f = field as { flowTo?: (x: number, y: number) => void; clearFlow?: () => void };
+      if (typeof f.flowTo === 'function') {
+        container.classList.add('is-steerable');
+        const onMove = (e: PointerEvent): void => {
+          const r = container.getBoundingClientRect();
+          f.flowTo!(e.clientX - r.left, e.clientY - r.top);
+        };
+        const onLeave = (): void => f.clearFlow?.();
+        container.addEventListener('pointermove', onMove);
+        container.addEventListener('pointerleave', onLeave);
+        detachPointer = () => {
+          container.removeEventListener('pointermove', onMove);
+          container.removeEventListener('pointerleave', onLeave);
+          container.classList.remove('is-steerable');
+        };
+      }
     } catch {
       /* the info panel stands on its own if the engine can't boot */
     }
@@ -119,6 +140,8 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
   return {
     destroy() {
       destroyed = true;
+      detachPointer?.();
+      detachPointer = null;
       detachWorkbench?.();
       detachWorkbench = null;
       applied?.destroy();

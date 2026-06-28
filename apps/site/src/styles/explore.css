@@ -465,6 +465,8 @@
   display: grid;
   place-items: center;
 }
+/* steerable: moving the cursor here drags the field's flow focus (field.flowTo) */
+.ex-detail-preview.is-steerable { cursor: crosshair; }
 .ex-detail-preview .exd-scaffold {
   position: relative;
   z-index: 1;
@@ -529,6 +531,24 @@
   line-height: 1.5;
   color: var(--text-2);
   margin: 0;
+}
+/* "How it works" — the field mechanism, set off by an accent rule + a small tag */
+.exd-how {
+  margin: 0;
+  padding: 0.55rem 0 0.55rem 0.8rem;
+  border-left: 2px solid color-mix(in srgb, var(--detail-accent, var(--accent)) 55%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.exd-how-tag {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--detail-accent, var(--accent)) 75%, var(--text-3));
+  margin-bottom: 0.25rem;
 }
 .exd-domains {
   display: flex;

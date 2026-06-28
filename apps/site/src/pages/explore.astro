@@ -64,6 +64,9 @@ const detailData = Object.fromEntries(
       fieldLabel: fieldLabelOf(r),
       accent: FIELD_COLOR[fieldKeyOf(r)] ?? FIELD_COLOR.platform,
       domains: tax.domains.map((d) => ({ id: d, label: domainLabel[d] })),
+      // "How it works" — the recipe's authored notes, minus the deep technical parentheticals
+      // (CSS-var / data-attr caveats) so the detail panel reads as plain language, not token-speak.
+      how: (r.notes ?? '').replace(/\s*\([^)]*(?:--|data-)[^)]*\)/g, '').trim(),
       solves: tax.solves,
       tokens: r.primitives,
       metrics: r.metrics,
