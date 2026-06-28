@@ -274,6 +274,221 @@
   padding: 0;
 }
 
+/* ── Expand-in-place detail overlay ───────────────────────────────────────────────────────────── */
+.ex-detail {
+  position: fixed;
+  inset: 0;
+  z-index: 70; /* above nav (60) */
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+.ex-detail[hidden] { display: none; }
+
+.ex-detail-backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg-page) 78%, transparent);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 240ms var(--ease);
+}
+.ex-detail.is-open .ex-detail-backdrop { opacity: 1; }
+
+.ex-detail-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  width: min(64rem, 100%);
+  height: min(80vh, 40rem);
+  background: var(--bg-card);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--detail-accent, var(--accent)) 50%, #000),
+    0 0 0 1px color-mix(in srgb, var(--detail-accent, var(--accent)) 20%, transparent);
+  overflow: hidden;
+  transform-origin: center;
+  /* The panel is ALWAYS fully opaque — opacity is never animated, so it can never get stuck
+     invisible if a heavy field rAF starves a main-thread animation. The entrance is a scale-only
+     keyframe; even frozen at its first frame the panel reads fine (scale 0.97 ≈ imperceptible). */
+  opacity: 1;
+}
+.ex-detail.is-open .ex-detail-panel {
+  animation: exd-panel-in 300ms var(--ease) both;
+}
+@keyframes exd-panel-in {
+  from { transform: scale(0.97) translateY(8px); }
+  to   { transform: none; }
+}
+
+.ex-detail-close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-page) 60%, transparent);
+  color: var(--text-2);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: color 150ms var(--ease), border-color 150ms var(--ease);
+}
+.ex-detail-close:hover { color: var(--text); border-color: var(--line-2); }
+
+/* preview region — the field wakes here */
+.ex-detail-preview {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(80% 80% at 50% 40%, color-mix(in srgb, var(--detail-accent, var(--accent)) 9%, transparent), transparent 70%),
+    var(--bg-canvas);
+  border-right: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+}
+.ex-detail-preview .exd-scaffold {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  max-width: 90%;
+}
+.exd-static {
+  position: relative;
+  z-index: 1;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-2);
+  text-align: center;
+  padding: 1.5rem;
+  max-width: 28ch;
+}
+
+/* info region */
+.ex-detail-info {
+  padding: 2.2rem 1.6rem 1.6rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.exd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.exd-field {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 85%, var(--text-3));
+}
+.exd-tier {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.exd-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--text);
+}
+.exd-intent {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin: 0;
+}
+.exd-domains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.exd-chip {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--chip-accent, var(--text-3));
+  background: color-mix(in srgb, var(--chip-accent, var(--accent)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip-accent, var(--accent)) 28%, transparent);
+  border-radius: var(--r-pill);
+  padding: 0.14rem 0.55rem;
+}
+.exd-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+.exd-lane-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.exd-lane-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.exd-token {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-2);
+  background: var(--bg-subtle);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 0.1rem 0.4rem;
+}
+.exd-solve {
+  font-size: 0.74rem;
+  color: var(--text-2);
+  background: var(--bg-subtle);
+  border-radius: var(--r-sm);
+  padding: 0.12rem 0.5rem;
+}
+.exd-open {
+  margin-top: auto;
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--detail-accent, var(--accent));
+  text-decoration: none;
+  padding-top: 0.6rem;
+}
+.exd-open:hover { text-decoration: underline; }
+
+body.ex-detail-open { overflow: hidden; }
+
+/* narrow: stack preview over info */
+@media (max-width: 640px) {
+  .ex-detail-panel {
+    grid-template-columns: 1fr;
+    grid-template-rows: 0.9fr 1.1fr;
+    height: min(86vh, 44rem);
+  }
+  .ex-detail-preview { border-right: none; border-bottom: 1px solid var(--line); }
+}
+
 /* ── Reduced motion ───────────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .ex-card,
@@ -282,4 +497,6 @@
     transition: none;
   }
   .ex-card:hover { transform: none; }
+  .ex-detail-backdrop { transition: none; }
+  .ex-detail.is-open .ex-detail-panel { animation: none; }
 }

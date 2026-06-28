@@ -51,6 +51,30 @@ const total = cards.length;
 const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
   DOMAINS.map((d) => [d.id, d.label]),
 ) as Record<ProblemDomain, string>;
+
+// Richer per-recipe data for the expand-in-place detail overlay, built client-side from this blob
+// (embedded as JSON rather than 64 hidden DOM panels, and avoids bundling core into the page).
+const detailData = Object.fromEntries(
+  FIELD_RECIPES.map((r) => {
+    const tax = taxonomyFor(r.id);
+    return [r.id, {
+      name: r.name,
+      intent: r.intent,
+      tier: r.tier ?? 'core',
+      fieldLabel: fieldLabelOf(r),
+      accent: FIELD_COLOR[fieldKeyOf(r)] ?? FIELD_COLOR.platform,
+      domains: tax.domains.map((d) => ({ id: d, label: domainLabel[d] })),
+      solves: tax.solves,
+      tokens: r.primitives,
+      metrics: r.metrics,
+      render: r.render,
+      isPlatform: isPlatformRecipe(r.id),
+      scaffoldId: tax.scaffoldId ?? null,
+      primaryRender: tax.primaryRender ?? r.render[0] ?? 'dots',
+      reducedMotion: r.accessibility.meaningWithoutMotion,
+    }];
+  }),
+);
 ---
 
 <Base
@@ -151,6 +175,29 @@ const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
     </p>
   </main>
 
+  <!-- Per-recipe detail data for the expand-in-place overlay (parsed client-side). -->
+  <script type="application/json" id="ex-recipe-data" set:html={JSON.stringify(detailData)}></script>
+
+  <!-- Expand-in-place detail overlay — one reusable shell, populated on open. Backdrop recedes the
+       grid; the panel grows from the clicked card (FLIP); the field wakes in the preview area. -->
+  <div class="ex-detail" data-detail hidden>
+    <div class="ex-detail-backdrop" data-detail-backdrop></div>
+    <article class="ex-detail-panel" role="dialog" aria-modal="true" aria-labelledby="ex-detail-name" data-detail-panel>
+      <button class="ex-detail-close" type="button" aria-label="Close" data-detail-close>
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+          <path d="M4 4 12 12 M12 4 4 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      </button>
+      <div class="ex-detail-preview" data-detail-preview>
+        <!-- field canvas + scaffold bodies mount here on open; the Phase-2b workbench controls
+             attach to this region -->
+      </div>
+      <div class="ex-detail-info" data-detail-info>
+        <!-- name / intent / solves / tokens / metrics / render / link — built on open -->
+      </div>
+    </article>
+  </div>
+
   <SiteFooter />
 </Base>
 
@@ -179,15 +226,25 @@ const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
   import { initExplorePage } from '../lib/explore-page.ts';
 
   import { startFilterField, stopFilterField } from '../lib/explore-filter-field.ts';
+  import { initExploreDetail } from '../lib/explore-detail.ts';
 
   let teardown: (() => void) | null = null;
+  let teardownDetail: (() => void) | null = null;
+  let booted = false;
   function boot() {
     if (location.pathname.replace(/\/$/, '') !== '/explore') { stopFilterField(); return; }
-    teardown?.();
+    if (booted) return; // astro:page-load + the readyState fallback can both fire on first load
+    booted = true;
     teardown = initExplorePage();
+    teardownDetail = initExploreDetail(); // expand-in-place overlay (also handles ?r= deep-links)
     startFilterField(); // engine-powered (invisible) filter bar — lazy, signals-only
   }
-  function teardownAll() { teardown?.(); teardown = null; stopFilterField(); }
+  function teardownAll() {
+    booted = false;
+    teardown?.(); teardown = null;
+    teardownDetail?.(); teardownDetail = null;
+    stopFilterField();
+  }
   document.addEventListener('astro:page-load', boot);
   document.addEventListener('astro:before-swap', teardownAll);
   if (document.readyState !== 'loading') boot();
