@@ -82,11 +82,15 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
         field: field as never,
       });
 
-      // the visualization workbench — render switcher + heatmap + live signal readout
+      // the visualization workbench — render switcher + heatmap + live signal readout. The readout
+      // reads the engine's live feedback vars (--d, --coherence, …) off the heaviest gathering body.
+      const heaviest = bodyEls
+        .filter((el) => el.hasAttribute('data-feedback'))
+        .sort((a, b) => parseFloat(b.dataset.strength ?? '0') - parseFloat(a.dataset.strength ?? '0'))[0];
       detachWorkbench = attachWorkbench({
         container,
         field: field as never,
-        applied: applied as never,
+        feedbackEl: heaviest ?? bodyEls[0] ?? null,
         renderLayers: opts.renderLayers,
         primaryRender: opts.primaryRender,
       });

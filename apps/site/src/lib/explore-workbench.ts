@@ -16,20 +16,29 @@ interface FieldLike {
   particleCount(): number;
 }
 
-interface AppliedLike {
-  inspect(): { metrics: Record<string, Record<string, number>> };
-}
-
 export interface WorkbenchOptions {
   container: HTMLElement;
   field: FieldLike;
-  /** the applied recipe — inspect() gives the live metric pipeline values for the signal readout */
-  applied: AppliedLike;
+  /** the gathering body the engine writes its live feedback vars onto (--d, --coherence, …) */
+  feedbackEl: HTMLElement | null;
   /** the recipe's render layers (catalog order); mapped to setRender modes */
   renderLayers: string[];
   /** which mode the field is currently in */
   primaryRender: string;
 }
+
+// The live feedback channels the engine writes onto a [data-feedback] body (feedback-sink.ts) —
+// the genuine "what your CSS sees" set. --d is the engine's own gathered-density channel (distinct
+// from the host-supplied --field-density lane). We read these inline props directly, in this order.
+const SIGNAL_VARS: { prop: string; label: string }[] = [
+  { prop: '--d', label: '--d' },
+  { prop: '--field-attention', label: '--field-attention' },
+  { prop: '--coherence', label: '--coherence' },
+  { prop: '--entropy', label: '--entropy' },
+  { prop: '--temperature', label: '--temperature' },
+  { prop: '--field-priority', label: '--field-priority' },
+  { prop: '--load', label: '--load' },
+];
 
 // recipe render layer → setRender mode (particles draws as dots; field-lines/heatmap aren't pills)
 const RENDER_MAP: Record<string, string> = {
@@ -50,7 +59,7 @@ const RENDER_NOTE: Record<string, string> = {
 const fmt = (v: number) => (Math.abs(v) >= 1 ? v.toFixed(0) : v.toFixed(2));
 
 export function attachWorkbench(opts: WorkbenchOptions): () => void {
-  const { container, field, applied, renderLayers } = opts;
+  const { container, field, feedbackEl, renderLayers } = opts;
 
   // build the ordered, de-duplicated render mode list from the recipe, with signals-only appended.
   const modes: string[] = [];
@@ -111,31 +120,27 @@ export function attachWorkbench(opts: WorkbenchOptions): () => void {
   bar.addEventListener('click', onBarClick);
 
   // ── live signal readout (interval, not rAF — avoids contending with the field's own loop) ─────
-  // Source = the recipe's REAL metric pipeline via applied.inspect() (elementKey → metric → value),
-  // averaged across the bodies. These are the same numbers a CSS consumer reads as --field-<metric>.
+  // Source = the body's INLINE feedback custom properties — exactly what a CSS consumer reads. The
+  // engine writes these every frame (feedback-sink.ts); reading them here is the honest "what your
+  // CSS sees" view. (Earlier this read applied.inspect()'s `density` metric, which is the
+  // host-supplied --field-density lane — 0 unless data-field-density is set — not the engine's own
+  // --d channel; that mismatch is why the panel showed 0 while --d was live.)
   const renderSignals = (): void => {
     const rows: string[] = [];
-    let metrics: Record<string, Record<string, number>> = {};
-    try { metrics = applied.inspect().metrics; } catch { /* inspection unavailable */ }
-
-    const sums = new Map<string, { total: number; n: number }>();
-    for (const perEl of Object.values(metrics)) {
-      for (const [k, v] of Object.entries(perEl)) {
-        if (!Number.isFinite(v)) continue;
-        const acc = sums.get(k) ?? { total: 0, n: 0 };
-        acc.total += v; acc.n += 1;
-        sums.set(k, acc);
+    if (feedbackEl) {
+      for (const { prop, label } of SIGNAL_VARS) {
+        if (rows.length >= 4) break;
+        const raw = feedbackEl.style.getPropertyValue(prop).trim();
+        if (raw === '') continue;
+        const num = parseFloat(raw);
+        if (Number.isNaN(num)) continue;
+        const pct = Math.max(0, Math.min(1, Math.abs(num))) * 100;
+        rows.push(
+          `<div class="exd-sig"><span class="exd-sig-k">${label}</span>` +
+            `<span class="exd-sig-bar"><i style="width:${pct.toFixed(0)}%"></i></span>` +
+            `<span class="exd-sig-v">${fmt(num)}</span></div>`,
+        );
       }
-    }
-    for (const [k, { total, n }] of sums) {
-      if (rows.length >= 4) break;
-      const avg = total / n;
-      const pct = Math.max(0, Math.min(1, Math.abs(avg))) * 100;
-      rows.push(
-        `<div class="exd-sig"><span class="exd-sig-k">--field-${k}</span>` +
-          `<span class="exd-sig-bar"><i style="width:${pct.toFixed(0)}%"></i></span>` +
-          `<span class="exd-sig-v">${fmt(avg)}</span></div>`,
-      );
     }
     rows.push(
       `<div class="exd-sig exd-sig-count"><span class="exd-sig-k">particles</span>` +
