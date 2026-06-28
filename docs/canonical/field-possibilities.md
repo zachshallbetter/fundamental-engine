@@ -1,15 +1,16 @@
-# field-possibilities
+# Field Possibilities
 
-> Status: planning / possibility space.  
-> This document describes what Fundamental can become beyond the current implementation. It is not the source of truth for shipped behavior.
->
-> Current implementation truth lives in the package code, conformance tests, diagnostics, and canonical docs. This document exists to keep the wider idea space coherent.
+> **Status: canonical / possibility space.**
+> This document describes what Fundamental can become beyond the current implementation. It is not the
+> source of truth for shipped behavior — that lives in the package code, conformance tests, and the
+> other canonical docs. This document exists to keep the wider idea space coherent and to give the
+> shipped use cases (`use-cases.md`) their conceptual grounding.
 >
 > **Vocabulary note (concepts vs runtime tokens).** Possibility language here is not the engine token
-> set. The 34 real runtime tokens live in the [forces catalog](../engine-reference/forces-system.md).
+> set. The 36 real runtime tokens live in the [forces catalog](../engine-reference/forces-system.md).
 > Concept words map to them: `vortex→swirl`, `drag→viscosity`, `emitter→spawn`, `spring→tether`,
 > `reflect→wall`, `absorb→sink`, `phase`/`decay`→`morph`/`memory`. `mass` is a metric, `potential` a
-> diagnostic; `fuse`/`fission`/`warp`/`wormhole` are not implemented.
+> diagnostic; `fuse`/`fission`/`warp`/`wormhole` are not yet implemented.
 
 ## 0. Purpose
 

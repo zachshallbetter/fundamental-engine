@@ -85,7 +85,6 @@ the canonical docs and the code.
 |---|---|
 | [`field-concept.md`](planning-archive/field-concept.md) | North-star concept / vision (full conceptual arc) |
 | [`field-explainer.md`](planning-archive/field-explainer.md) | Plain-language "what it is" explainer |
-| [`field-possibilities.md`](planning-archive/field-possibilities.md) | Possibility space / design notes |
 | [`roadmap-frontiers.md`](planning-archive/roadmap-frontiers.md) | Frontier roadmap (R1–R4 shipped; R5+ planned) |
 | [`live-web-examples.md`](planning-archive/live-web-examples.md) | Plan for familiar-page "concept study" demos |
 
