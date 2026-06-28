@@ -1,0 +1,696 @@
+/* /use-cases — product pitch page styles.
+   Uses the shared design system (ds-tokens.css) variables throughout. */
+
+/* ── Shell ─────────────────────────────────────────────────────────────────── */
+
+.uc-shell {
+  position: relative;
+  z-index: 2;
+  max-width: var(--content-max, 72rem);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────────── */
+
+.uc-hero {
+  padding: clamp(5rem, 12vh, 8rem) 0 clamp(3rem, 6vh, 5rem);
+  text-align: center;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.uc-kicker {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  margin: 0 0 1.25rem;
+}
+
+.uc-headline {
+  font-family: var(--display, sans-serif);
+  font-size: clamp(2.6rem, 6.5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink-900, #f3f6fc);
+  margin: 0 0 1.5rem;
+}
+
+.uc-headline-accent {
+  display: inline-block;
+  color: var(--accent, #4da3ff);
+  /* The field's --d written to this element modulates the glow strength */
+  text-shadow: 0 0 calc(var(--d, 0) * 40px) color-mix(in srgb, var(--accent, #4da3ff) 60%, transparent);
+  transition: text-shadow 0.4s ease;
+}
+
+.uc-standfirst {
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  max-width: 46rem;
+  margin: 0 auto 2.5rem;
+}
+
+/* ── TOC ───────────────────────────────────────────────────────────────────── */
+
+.uc-toc {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 0.8rem;
+}
+
+.uc-toc a {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  text-decoration: none;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: var(--r-pill, 999px);
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.uc-toc a:hover {
+  color: var(--accent, #4da3ff);
+  border-color: color-mix(in srgb, var(--accent, #4da3ff) 40%, transparent);
+}
+
+/* ── Section scaffold ──────────────────────────────────────────────────────── */
+
+.uc-section {
+  padding: clamp(3rem, 6vh, 5rem) 0;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.uc-section-featured {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent, #4da3ff) 4%, transparent) 0%,
+    transparent 100%
+  );
+  border-radius: 1.5rem;
+  margin: 0 -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.uc-section-only {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--coherence, #ffce6b) 3%, transparent) 0%,
+    transparent 100%
+  );
+  border-radius: 1.5rem;
+  margin: 0 -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.uc-section-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: baseline;
+  gap: 0 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.uc-section-no {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent, #4da3ff);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--accent, #4da3ff) 35%, transparent);
+  border-radius: 4px;
+  grid-row: 1 / 3;
+  align-self: start;
+  margin-top: 0.35rem;
+}
+
+.uc-section-header h2 {
+  font-family: var(--display, sans-serif);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--ink-900, #f3f6fc);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.uc-section-sub {
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin: 0;
+  grid-column: 2;
+}
+
+.uc-section-callout {
+  font-style: italic;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
+
+.uc-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem;
+}
+
+.uc-cards-3 {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+}
+
+.uc-card {
+  background: var(--bg-card, #0b0e16);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: border-color 200ms ease;
+}
+
+.uc-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.uc-card h3 {
+  font-family: var(--display, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-900, #f3f6fc);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.uc-card p {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  margin: 0;
+}
+
+.uc-card code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent, #4da3ff);
+  background: color-mix(in srgb, var(--accent, #4da3ff) 8%, transparent);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+.uc-card-invisible {
+  /* The field's --d drives a subtle border warmth on invisible-field cards */
+  border-color: color-mix(
+    in srgb,
+    var(--accent, #4da3ff) calc(var(--d, 0) * 30%),
+    var(--line, rgba(255, 255, 255, 0.08))
+  );
+}
+
+.uc-card-only {
+  border-color: color-mix(
+    in srgb,
+    var(--coherence, #ffce6b) calc(var(--d, 0) * 20%),
+    var(--line, rgba(255, 255, 255, 0.08))
+  );
+}
+
+.uc-card-ai {
+  border-color: color-mix(
+    in srgb,
+    var(--ok, #5fd0a8) 15%,
+    var(--line, rgba(255, 255, 255, 0.08))
+  );
+}
+
+/* ── Problem/solution layout ───────────────────────────────────────────────── */
+
+.uc-problem {
+  font-size: 0.82rem !important;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46)) !important;
+  font-style: italic;
+}
+
+.uc-solution {
+  font-size: 0.88rem;
+}
+
+.uc-vs {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--accent, #4da3ff);
+  opacity: 0.6;
+  margin: -0.25rem 0;
+}
+
+/* ── Snippet ───────────────────────────────────────────────────────────────── */
+
+.uc-snippet {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  background: var(--bg-page, #04050a);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-top: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Invisible-field section intro ────────────────────────────────────────── */
+
+.uc-invisible-intro {
+  max-width: 44rem;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.uc-invisible-intro p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  margin: 0 0 1.25rem;
+}
+
+.uc-thesis {
+  font-family: var(--display, sans-serif);
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-900, #f3f6fc);
+  line-height: 1.35;
+  padding: 1.5rem 2rem;
+  background: var(--bg-card, #0b0e16);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: 1rem;
+  /* --d drives a subtle accent glow around the thesis statement */
+  box-shadow: 0 0 calc(var(--d, 0) * 60px) color-mix(in srgb, var(--accent, #4da3ff) 20%, transparent);
+  transition: box-shadow 0.6s ease;
+}
+
+.uc-invisible-cards {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+}
+
+/* ── Only Fundamental reciprocal loop ──────────────────────────────────────── */
+
+.uc-reciprocal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  margin-top: auto;
+  background: var(--bg-page, #04050a);
+  border-radius: 8px;
+}
+
+.uc-loop-node {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent, #4da3ff);
+  padding: 0.25rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent, #4da3ff) 40%, transparent);
+  border-radius: var(--r-pill, 999px);
+}
+
+.uc-loop-arrow {
+  font-size: 1.25rem;
+  color: var(--coherence, #ffce6b);
+}
+
+/* ── Demo widgets ──────────────────────────────────────────────────────────── */
+
+.uc-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bg-page, #04050a);
+  border-radius: 8px;
+  margin-top: auto;
+}
+
+/* Nav demo */
+.uc-nav-item {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: color 200ms ease;
+}
+
+.uc-nav-active {
+  color: var(--accent, #4da3ff);
+  border-color: color-mix(in srgb, var(--accent, #4da3ff) 30%, transparent);
+  background: color-mix(in srgb, var(--accent, #4da3ff) 8%, transparent);
+}
+
+/* Form demo */
+.uc-demo-form {
+  flex-direction: column;
+}
+
+.uc-form-field {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: 5px;
+  background: var(--bg-surface, #0a0d14);
+}
+
+.uc-form-error {
+  color: var(--err, #ff6e9c);
+  border-color: color-mix(in srgb, var(--err, #ff6e9c) 40%, transparent);
+  /* --d from the attached body drives the glow */
+  box-shadow: 0 0 calc(var(--d, 0) * 20px) color-mix(in srgb, var(--err, #ff6e9c) 50%, transparent);
+}
+
+/* Service status demo */
+.uc-demo-services {
+  justify-content: space-around;
+  align-items: center;
+}
+
+.uc-svc {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid transparent;
+}
+
+.uc-svc-ok {
+  color: var(--ok, #5fd0a8);
+  border-color: color-mix(in srgb, var(--ok, #5fd0a8) 30%, transparent);
+  background: color-mix(in srgb, var(--ok, #5fd0a8) 6%, transparent);
+}
+
+.uc-svc-err {
+  color: var(--err, #ff6e9c);
+  border-color: color-mix(in srgb, var(--err, #ff6e9c) 50%, transparent);
+  background: color-mix(in srgb, var(--err, #ff6e9c) 8%, transparent);
+  /* --d from the heavy-mass error body drives scale + glow */
+  transform: scale(calc(1 + var(--d, 0) * 0.12));
+  box-shadow: 0 0 calc(var(--d, 0) * 18px) color-mix(in srgb, var(--err, #ff6e9c) 40%, transparent);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Queue/ticket demo */
+.uc-demo-queue {
+  flex-direction: column;
+}
+
+.uc-ticket {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: var(--bg-surface, #0a0d14);
+}
+
+.uc-ticket-p0 {
+  color: var(--err, #ff6e9c);
+  border-color: color-mix(in srgb, var(--err, #ff6e9c) 35%, transparent);
+  font-weight: 700;
+  box-shadow: 0 0 calc(var(--d, 0) * 15px) color-mix(in srgb, var(--err, #ff6e9c) 35%, transparent);
+  transition: box-shadow 0.3s ease;
+}
+
+.uc-ticket-p1 {
+  color: var(--warn, #ffce6b);
+  border-color: color-mix(in srgb, var(--warn, #ffce6b) 25%, transparent);
+}
+
+.uc-ticket-p2 {
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+}
+
+/* Typography demo */
+.uc-demo-typo {
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.uc-typo-ex {
+  font-family: var(--display, sans-serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-900, #f3f6fc);
+}
+
+.uc-typo-body {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  /* --d from the heading body modulates font-weight — the field drives the style */
+  font-weight: calc(400 + var(--d, 0) * 200);
+}
+
+/* ── Why callouts ──────────────────────────────────────────────────────────── */
+
+.uc-why {
+  font-size: 0.82rem !important;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46)) !important;
+  line-height: 1.55 !important;
+  border-left: 2px solid color-mix(in srgb, var(--ok, #5fd0a8) 35%, transparent);
+  padding-left: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Capability matrix ─────────────────────────────────────────────────────── */
+
+.uc-matrix-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: 1rem;
+}
+
+.uc-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  font-family: var(--mono);
+  min-width: 600px;
+}
+
+.uc-matrix thead {
+  background: var(--bg-card, #0b0e16);
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+}
+
+.uc-matrix th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.uc-matrix td {
+  padding: 0.65rem 1rem;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.05));
+}
+
+.uc-matrix tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.uc-matrix tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.uc-cell-code {
+  color: var(--accent, #4da3ff);
+  font-size: 0.75rem;
+}
+
+.uc-cell-center {
+  text-align: center;
+}
+
+.uc-cell-mode {
+  font-size: 0.72rem;
+}
+
+.uc-cell-mode[data-mode='physical'] { color: var(--ok, #5fd0a8); }
+.uc-cell-mode[data-mode='designed'] { color: var(--accent, #4da3ff); }
+.uc-cell-mode[data-mode='hybrid']   { color: var(--coherence, #ffce6b); }
+.uc-cell-mode[data-mode='semantic'] { color: var(--ink-700, rgba(228, 235, 247, 0.78)); }
+
+/* ── CTA ───────────────────────────────────────────────────────────────────── */
+
+.uc-cta {
+  padding: clamp(4rem, 8vh, 6rem) 0 clamp(5rem, 10vh, 8rem);
+  text-align: center;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.uc-cta-headline {
+  font-family: var(--display, sans-serif);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink-900, #f3f6fc);
+  margin: 0 0 1rem;
+  /* --d from the headline body drives a subtle glow */
+  text-shadow: 0 0 calc(var(--d, 0) * 50px) color-mix(in srgb, var(--accent, #4da3ff) 30%, transparent);
+  transition: text-shadow 0.5s ease;
+}
+
+.uc-cta-body {
+  font-size: 1rem;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  margin: 0 auto 2rem;
+  max-width: 38rem;
+  line-height: 1.65;
+}
+
+.uc-cta-body code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  color: var(--accent, #4da3ff);
+  background: color-mix(in srgb, var(--accent, #4da3ff) 10%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.uc-cta-code {
+  display: inline-block;
+  text-align: left;
+  margin: 0 auto 2.5rem;
+  max-width: 32rem;
+  width: 100%;
+}
+
+.uc-cta-code pre {
+  background: var(--bg-card, #0b0e16);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  text-align: left;
+}
+
+.uc-cta-code code {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+}
+
+.uc-cta-links {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.uc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: var(--r-pill, 999px);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 160ms ease;
+}
+
+.uc-btn-primary {
+  background: var(--accent, #4da3ff);
+  color: var(--bg-page, #04050a);
+}
+
+.uc-btn-primary:hover {
+  background: color-mix(in srgb, var(--accent, #4da3ff) 88%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--accent, #4da3ff) 40%, transparent);
+}
+
+.uc-btn-secondary {
+  background: transparent;
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+}
+
+.uc-btn-secondary:hover {
+  color: var(--ink-900, #f3f6fc);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.uc-btn-tertiary {
+  background: transparent;
+  color: var(--ink-500, rgba(200, 212, 230, 0.46));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.uc-btn-tertiary:hover {
+  color: var(--ink-700, rgba(228, 235, 247, 0.78));
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 680px) {
+  .uc-section-header {
+    grid-template-columns: 1fr;
+  }
+  .uc-section-no {
+    grid-row: 1;
+    width: fit-content;
+    margin-bottom: 0.5rem;
+  }
+  .uc-section-header h2,
+  .uc-section-sub {
+    grid-column: 1;
+  }
+  .uc-matrix-wrap {
+    border-radius: 0.5rem;
+    margin: 0 -1rem;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+  .uc-cta-code {
+    margin: 0 -0.5rem 2rem;
+    max-width: none;
+  }
+  .uc-cta-code pre {
+    border-radius: 0.5rem;
+  }
+}
