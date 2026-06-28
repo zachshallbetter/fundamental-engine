@@ -272,15 +272,38 @@ export function scaffoldFor(id: string): string {
   return RECIPE_SCAFFOLDS[id] ?? GENERIC;
 }
 
-/** One-time injection of shared scaffold element styles into the page head. */
+/** One-time injection of shared scaffold element styles + delegated toggle handler. */
 export function injectScaffoldStyles(): void {
   if (document.getElementById('sc-styles')) return;
   const style = document.createElement('style');
   style.id = 'sc-styles';
   style.textContent = `
     .rc-preview { flex-wrap: wrap; gap: 0.45rem; align-items: center; justify-content: center; }
-    /* base scaffold element — position:relative + z-index:1 lifts above the
-       position:absolute canvas that recipe-preview.ts appends to the same container */
+
+    /* ── Toggle pill ───────────────────────────────────────────────────────── */
+    .sc-toggle {
+      position: absolute; top: 6px; right: 6px; z-index: 10;
+      display: inline-flex; align-items: center;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px; background: rgba(4,5,10,0.7);
+      padding: 0; cursor: pointer; overflow: hidden;
+      font-family: ui-monospace, monospace; font-size: 0.62rem; letter-spacing: 0.05em;
+      transition: border-color 150ms ease;
+      backdrop-filter: blur(4px);
+    }
+    .sc-toggle:hover { border-color: rgba(255,255,255,0.22); }
+    .sc-toggle-opt {
+      padding: 0.18rem 0.55rem; transition: background 150ms ease, color 150ms ease;
+      color: rgba(200,212,230,0.46);
+    }
+    /* "Use case" tab active by default */
+    .sc-toggle-opt:first-child { color: rgba(228,235,247,0.9); background: rgba(255,255,255,0.09); }
+    /* In field mode, flip which tab is highlighted */
+    .rc-preview.sc-field-mode .sc-toggle-opt:first-child { color: rgba(200,212,230,0.46); background: transparent; }
+    .rc-preview.sc-field-mode .sc-toggle-opt:last-child  { color: rgba(228,235,247,0.9); background: rgba(255,255,255,0.09); }
+
+    /* ── Scaffold elements ─────────────────────────────────────────────────── */
+    /* position:relative + z-index:1 lifts labels above the position:absolute canvas */
     .sc-item, .sc-node, .sc-nav, .sc-step, .sc-text, .sc-field,
     .sc-mem, .sc-claim, .sc-source, .sc-svc, .sc-tag, .sc-avatar,
     .sc-cmd, .sc-mid {
@@ -289,48 +312,69 @@ export function injectScaffoldStyles(): void {
       font-family: ui-monospace, monospace; font-size: 0.72rem; line-height: 1.35;
       padding: 0.22rem 0.55rem; border-radius: 5px;
       border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(10,13,20,0.72);
+      background: rgba(10,13,20,0.82);
       white-space: nowrap;
-      transition: box-shadow 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-      /* --d from the field drives visual response */
+      transition: box-shadow 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.25s ease;
       box-shadow: 0 0 calc(var(--d,0) * 14px) color-mix(in srgb, var(--rc,#4da3ff) calc(var(--d,0) * 55%), transparent);
       border-color: color-mix(in srgb, var(--rc,#4da3ff) calc(var(--d,0) * 40%), rgba(255,255,255,0.08));
       color: color-mix(in srgb, rgba(228,235,247,0.95) calc(var(--d,0) * 100%), rgba(228,235,247,0.45));
     }
-    /* semantic state tints */
-    .sc-hi  { border-color: rgba(77,163,255,0.3); color: rgba(228,235,247,0.8); }
-    .sc-lo  { opacity: 0.5; }
-    .sc-ok  { border-color: rgba(95,208,168,0.3); color: rgba(95,208,168,0.8); }
+    /* Field mode: use visibility:hidden (not display:none) so bodies keep their
+       layout positions — the field still reads data-body at those coordinates,
+       so particles visibly cluster at the invisible body locations. */
+    .rc-preview.sc-field-mode .sc-item,
+    .rc-preview.sc-field-mode .sc-node,
+    .rc-preview.sc-field-mode .sc-nav,
+    .rc-preview.sc-field-mode .sc-step,
+    .rc-preview.sc-field-mode .sc-text,
+    .rc-preview.sc-field-mode .sc-field,
+    .rc-preview.sc-field-mode .sc-mem,
+    .rc-preview.sc-field-mode .sc-claim,
+    .rc-preview.sc-field-mode .sc-source,
+    .rc-preview.sc-field-mode .sc-svc,
+    .rc-preview.sc-field-mode .sc-tag,
+    .rc-preview.sc-field-mode .sc-avatar,
+    .rc-preview.sc-field-mode .sc-cmd,
+    .rc-preview.sc-field-mode .sc-mid { visibility: hidden; }
+
+    /* ── Semantic state tints ──────────────────────────────────────────────── */
+    .sc-hi   { border-color: rgba(77,163,255,0.3); color: rgba(228,235,247,0.8); }
+    .sc-lo   { opacity: 0.5; }
+    .sc-ok   { border-color: rgba(95,208,168,0.3); color: rgba(95,208,168,0.8); }
     .sc-warn { border-color: rgba(255,206,107,0.3); color: rgba(255,206,107,0.8); }
-    .sc-err { border-color: rgba(255,110,156,0.3); color: rgba(255,110,156,0.75); }
+    .sc-err  { border-color: rgba(255,110,156,0.3); color: rgba(255,110,156,0.75); }
     .sc-active { border-color: rgba(77,163,255,0.45); color: rgba(228,235,247,0.9); font-weight: 600; }
     .sc-done { opacity: 0.38; }
     .sc-hot  { color: rgba(255,174,77,0.85); border-color: rgba(255,174,77,0.3); }
     .sc-cold { color: rgba(150,165,190,0.45); }
-    /* text passages — full width */
+
+    /* ── Element variants ──────────────────────────────────────────────────── */
     .sc-text {
       display: block; width: 100%; text-align: left; padding: 0.35rem 0.6rem;
-      font-family: inherit; font-size: 0.75rem; line-height: 1.45;
-      white-space: normal;
+      font-family: inherit; font-size: 0.75rem; line-height: 1.45; white-space: normal;
     }
-    /* form fields */
     .sc-field { background: rgba(255,255,255,0.06); }
-    /* avatars */
     .sc-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      font-weight: 700; padding: 0;
-      background: rgba(77,163,255,0.12);
-      border-color: rgba(77,163,255,0.35);
+      width: 28px; height: 28px; border-radius: 50%; font-weight: 700; padding: 0;
+      background: rgba(77,163,255,0.12); border-color: rgba(77,163,255,0.35);
     }
-    /* claim + source pair */
-    .sc-claim { font-weight: 600; border-color: rgba(255,206,107,0.3); color: rgba(255,206,107,0.85); }
+    .sc-claim  { font-weight: 600; border-color: rgba(255,206,107,0.3); color: rgba(255,206,107,0.85); }
     .sc-source { font-size: 0.68rem; padding: 0.15rem 0.45rem; }
-    /* connective "→" middle nodes */
-    .sc-mid { opacity: 0.45; padding: 0.15rem 0.3rem; }
-    /* tags for concept clusters */
-    .sc-tag { font-size: 0.7rem; border-radius: 999px; }
-    /* service status */
-    .sc-svc { font-size: 0.7rem; }
+    .sc-mid    { opacity: 0.45; padding: 0.15rem 0.3rem; }
+    .sc-tag    { font-size: 0.7rem; border-radius: 999px; }
+    .sc-svc    { font-size: 0.7rem; }
   `;
   document.head.appendChild(style);
+
+  // Delegated toggle — one handler for all preview cards, present and future.
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest<HTMLElement>('.sc-toggle');
+    if (!btn) return;
+    const preview = btn.closest<HTMLElement>('.rc-preview');
+    if (!preview) return;
+    const next = !preview.classList.contains('sc-field-mode');
+    preview.classList.toggle('sc-field-mode', next);
+    btn.setAttribute('aria-pressed', String(next));
+    btn.title = next ? 'Show use case' : 'Show field visualization';
+  });
 }
