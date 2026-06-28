@@ -48,9 +48,17 @@ export function initRecipePreviews(opts: PreviewOptions = {}): () => void {
     el.dataset.recipeMounted = "1";
 
     // Inject representative UI bodies so visitors see the field reacting to
-    // actual elements, not an empty particle box. The canvas is appended after
-    // so it renders on top of the scaffold elements (position:absolute,inset:0).
+    // actual elements, not an empty particle box. The toggle lets visitors
+    // switch between the labelled use-case view and the pure particle field.
+    // The canvas is appended after so it sits behind the scaffold elements
+    // (scaffold uses position:relative+z-index:1 to stay on top).
     el.insertAdjacentHTML("beforeend", scaffoldFor(id));
+    el.insertAdjacentHTML("beforeend",
+      `<button class="sc-toggle" aria-pressed="false" title="Show field visualization" type="button">` +
+      `<span class="sc-toggle-opt">Use case</span>` +
+      `<span class="sc-toggle-opt">Field</span>` +
+      `</button>`
+    );
 
     // Create a contained particle field for this preview card — without a real FieldHandle,
     // applyRecipe only runs the feedback/metrics layer and the recipe draws nothing.
