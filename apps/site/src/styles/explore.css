@@ -105,6 +105,12 @@
   gap: 0.4rem;
 }
 .ex-pill {
+  /* Filter Field (signals-only): the engine writes --field-attention (0..1, eased per frame) onto
+     each pill — proof the bar participates in the field. It resolves to 0 when the engine is off /
+     reduced motion / pre-boot. We consume it ONLY to modulate the ACTIVE pill's glow (below), never
+     as an all-pills glow — a uniform glow muddies which filter is actually selected. */
+  --att: var(--field-attention, 0);
+  --accent-here: var(--pill-accent, var(--accent));
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -117,26 +123,34 @@
   border-radius: var(--r-pill);
   padding: 0.34rem 0.7rem;
   cursor: pointer;
-  transition: color 150ms var(--ease), border-color 150ms var(--ease), background 150ms var(--ease);
+  transition: color 150ms var(--ease), border-color 150ms var(--ease), background 150ms var(--ease),
+    box-shadow 200ms var(--ease);
 }
 .ex-pill:hover { color: var(--text); border-color: var(--line-2); }
+/* Active filter — the unambiguous winner, in the domain's own accent. The engine's --att gently
+   reinforces this one pill's glow (an invisible signal doing real, non-competing work). */
 .ex-pill.is-on {
   color: var(--text);
-  border-color: var(--line-3);
-  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
+  border-color: color-mix(in srgb, var(--accent-here) 70%, transparent);
+  background: color-mix(in srgb, var(--accent-here) 16%, var(--bg-card));
+  box-shadow: 0 0 calc(7px + var(--att) * 8px)
+    color-mix(in srgb, var(--accent-here) calc(35% + var(--att) * 25%), transparent);
 }
 .ex-pill-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--pill-accent, var(--accent));
+  background: var(--accent-here);
   flex: none;
+}
+.ex-pill.is-on .ex-pill-dot {
+  box-shadow: 0 0 6px var(--accent-here);
 }
 .ex-pill-count {
   font-size: 0.62rem;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
-.ex-pill.is-on .ex-pill-count { color: var(--text-2); }
+.ex-pill.is-on .ex-pill-count { color: var(--text); }
 .ex-pill-platform { margin-left: 0.3rem; }
 
 .ex-resultcount {

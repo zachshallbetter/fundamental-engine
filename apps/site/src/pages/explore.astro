@@ -93,8 +93,8 @@ const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
           <span class="ex-pill-count">{total}</span>
         </button>
         {DOMAINS.map((d) => (
-          <button class="ex-pill" type="button" data-domain={d.id} aria-pressed="false" title={d.need}>
-            <span class="ex-pill-dot" style={`--pill-accent: var(${d.accentVar})`}></span>
+          <button class="ex-pill" type="button" data-domain={d.id} aria-pressed="false" title={d.need} style={`--pill-accent: var(${d.accentVar})`}>
+            <span class="ex-pill-dot"></span>
             <span class="ex-pill-label">{d.label}</span>
             <span class="ex-pill-count">{countFor(d.id)}</span>
           </button>
@@ -170,4 +170,26 @@ const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
     else unmark();
   });
   document.addEventListener('astro:before-swap', unmark);
+</script>
+
+<script>
+  // Browse layer: search + domain filtering (works with no engine). The engine-powered signals
+  // filter bar is layered on top and lazy-imported separately, so the catalog is fully usable the
+  // instant this runs.
+  import { initExplorePage } from '../lib/explore-page.ts';
+
+  import { startFilterField, stopFilterField } from '../lib/explore-filter-field.ts';
+
+  let teardown: (() => void) | null = null;
+  function boot() {
+    if (location.pathname.replace(/\/$/, '') !== '/explore') { stopFilterField(); return; }
+    teardown?.();
+    teardown = initExplorePage();
+    startFilterField(); // engine-powered (invisible) filter bar — lazy, signals-only
+  }
+  function teardownAll() { teardown?.(); teardown = null; stopFilterField(); }
+  document.addEventListener('astro:page-load', boot);
+  document.addEventListener('astro:before-swap', teardownAll);
+  if (document.readyState !== 'loading') boot();
+  else document.addEventListener('DOMContentLoaded', boot);
 </script>
