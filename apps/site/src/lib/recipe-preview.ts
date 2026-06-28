@@ -13,6 +13,7 @@ import { recipeById } from "@fundamental-engine/core";
 import { applyRecipe, type AppliedRecipe } from "@fundamental-engine/dom";
 import { createField } from "@fundamental-engine/vanilla";
 import type { FieldHandle } from "@fundamental-engine/core";
+import { scaffoldFor, injectScaffoldStyles } from "./recipe-scaffolds.ts";
 
 interface PreviewOptions {
   selector?: string;
@@ -31,6 +32,8 @@ export function initRecipePreviews(opts: PreviewOptions = {}): () => void {
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 
+  injectScaffoldStyles();
+
   const els = Array.from(document.querySelectorAll<Slot>(sel));
   const live = new Set<Slot>();
   const visible = new Set<Slot>();
@@ -38,10 +41,16 @@ export function initRecipePreviews(opts: PreviewOptions = {}): () => void {
 
   const mount = (el: Slot, drive: boolean): void => {
     if (el._applied) return;
-    const recipe = recipeById(el.dataset.recipePreview ?? "");
+    const id = el.dataset.recipePreview ?? "";
+    const recipe = recipeById(id);
     if (!recipe) return;
     el.innerHTML = "";
     el.dataset.recipeMounted = "1";
+
+    // Inject representative UI bodies so visitors see the field reacting to
+    // actual elements, not an empty particle box. The canvas is appended after
+    // so it renders on top of the scaffold elements (position:absolute,inset:0).
+    el.insertAdjacentHTML("beforeend", scaffoldFor(id));
 
     // Create a contained particle field for this preview card — without a real FieldHandle,
     // applyRecipe only runs the feedback/metrics layer and the recipe draws nothing.
