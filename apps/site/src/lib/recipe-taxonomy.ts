@@ -32,8 +32,10 @@ export type ProblemDomain =
 /** Domain display metadata — order here is the order pills render in the filter bar. */
 export interface DomainMeta {
   id: ProblemDomain;
-  /** pill label */
+  /** full pill label / detail-panel tag */
   label: string;
+  /** compact pill label for the filter bar (the first word) */
+  short: string;
   /** the arrival question, shown under the label / as a tooltip */
   need: string;
   /** css custom-property name carrying the domain accent (defined in explore.css) */
@@ -41,15 +43,15 @@ export interface DomainMeta {
 }
 
 export const DOMAINS: readonly DomainMeta[] = [
-  { id: 'priority',      label: 'Priority & Attention',     need: 'show what matters / what’s urgent',       accentVar: '--dom-priority' },
-  { id: 'navigation',    label: 'Navigation & Wayfinding',  need: 'orient the user & guide them',             accentVar: '--dom-navigation' },
-  { id: 'relationships', label: 'Relationships & Structure', need: 'connect, cluster, show dependencies',     accentVar: '--dom-relationships' },
-  { id: 'evidence',      label: 'Evidence & Trust',         need: 'show support, provenance, confidence',     accentVar: '--dom-evidence' },
-  { id: 'conflict',      label: 'Conflict & Stability',     need: 'surface contradiction / instability',      accentVar: '--dom-conflict' },
-  { id: 'memory',        label: 'Memory & Time',            need: 'show recency, decay, transitions',         accentVar: '--dom-memory' },
-  { id: 'flow',          label: 'Flow & Process',           need: 'multi-step, handoff, recovery',            accentVar: '--dom-flow' },
-  { id: 'presence',      label: 'Presence & System Health', need: 'live activity, collaborators, status',     accentVar: '--dom-presence' },
-  { id: 'governance',    label: 'Safety & Governance',      need: 'show what’s protected / risky / scoped',    accentVar: '--dom-governance' },
+  { id: 'priority',      label: 'Priority & Attention',     short: 'Priority',      need: 'show what matters / what’s urgent',       accentVar: '--dom-priority' },
+  { id: 'navigation',    label: 'Navigation & Wayfinding',  short: 'Navigation',    need: 'orient the user & guide them',             accentVar: '--dom-navigation' },
+  { id: 'relationships', label: 'Relationships & Structure', short: 'Relationships', need: 'connect, cluster, show dependencies',     accentVar: '--dom-relationships' },
+  { id: 'evidence',      label: 'Evidence & Trust',         short: 'Evidence',      need: 'show support, provenance, confidence',     accentVar: '--dom-evidence' },
+  { id: 'conflict',      label: 'Conflict & Stability',     short: 'Conflict',      need: 'surface contradiction / instability',      accentVar: '--dom-conflict' },
+  { id: 'memory',        label: 'Memory & Time',            short: 'Memory',        need: 'show recency, decay, transitions',         accentVar: '--dom-memory' },
+  { id: 'flow',          label: 'Flow & Process',           short: 'Flow',          need: 'multi-step, handoff, recovery',            accentVar: '--dom-flow' },
+  { id: 'presence',      label: 'Presence & System Health', short: 'Presence',      need: 'live activity, collaborators, status',     accentVar: '--dom-presence' },
+  { id: 'governance',    label: 'Safety & Governance',      short: 'Safety',        need: 'show what’s protected / risky / scoped',    accentVar: '--dom-governance' },
 ] as const;
 
 /** One discovery row per recipe. */

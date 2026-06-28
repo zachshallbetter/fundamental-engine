@@ -117,14 +117,14 @@ const detailData = Object.fromEntries(
           <span class="ex-pill-count">{total}</span>
         </button>
         {DOMAINS.map((d) => (
-          <button class="ex-pill" type="button" data-domain={d.id} aria-pressed="false" title={d.need} style={`--pill-accent: var(${d.accentVar})`}>
+          <button class="ex-pill" type="button" data-domain={d.id} aria-pressed="false" title={`${d.label} — ${d.need}`} aria-label={d.label} style={`--pill-accent: var(${d.accentVar})`}>
             <span class="ex-pill-dot"></span>
-            <span class="ex-pill-label">{d.label}</span>
+            <span class="ex-pill-label">{d.short}</span>
             <span class="ex-pill-count">{countFor(d.id)}</span>
           </button>
         ))}
-        <button class="ex-pill ex-pill-platform" type="button" data-domain="platform" aria-pressed="false" title="Recipes that help you understand or instrument the engine itself">
-          <span class="ex-pill-label">Platform &amp; Teaching</span>
+        <button class="ex-pill ex-pill-platform" type="button" data-domain="platform" aria-pressed="false" title="Platform &amp; Teaching — recipes that help you understand or instrument the engine itself" aria-label="Platform & Teaching">
+          <span class="ex-pill-label">Platform</span>
           <span class="ex-pill-count">{platformCount}</span>
         </button>
       </div>
