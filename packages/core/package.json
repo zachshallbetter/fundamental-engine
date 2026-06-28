@@ -1,6 +1,6 @@
 {
   "name": "@fundamental-engine/core",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A reciprocal DOM-physics field — elements bend the field; the field's density bends them back.",
   "type": "module",
   "license": "MIT",
