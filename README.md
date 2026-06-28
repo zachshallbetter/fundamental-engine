@@ -284,6 +284,34 @@ The build is `tsc`. There is no bundler; the library ships unbundled ESM. The si
 - **Lanes stay separate.** Concepts describe, tokens execute, metrics measure, diagnostics explain, conditions activate, recipes compose. A word lives in exactly one lane, and recipes never invent engine behavior.
 - **Framework-agnostic.** The custom element makes "every element is a body" a portable primitive that behaves the same in React, Svelte, Astro, Vue, or plain HTML.
 
+## How to cite
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+
+If you use this work, please cite it via its concept DOI:
+
+> Shallbetter, Z. (2026). *Fundamental* (Version 0.9.0) [Computer software].
+> Zenodo. https://doi.org/10.5281/zenodo.XXXXXXX
+
+<details>
+<summary>BibTeX</summary>
+
+```bibtex
+@software{shallbetter_fundamental_engine,
+  author    = {Shallbetter, Zachary},
+  title     = {Fundamental},
+  year      = {2026},
+  publisher = {Zenodo},
+  version   = {0.9.0},
+  doi       = {10.5281/zenodo.XXXXXXX},
+  url       = {https://doi.org/10.5281/zenodo.XXXXXXX}
+}
+```
+
+</details>
+
+A machine-readable [`CITATION.cff`](CITATION.cff) is also included. Update the DOI and version number after each Zenodo release.
+
 ## Contributing
 
 Issues and pull requests are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow and conventions, report anything sensitive through [`SECURITY.md`](SECURITY.md), and see [`SUPPORT.md`](SUPPORT.md) for the support and versioning policy.
