@@ -4,7 +4,14 @@
 > This document describes what Fundamental can become beyond the current implementation. It is not the
 > source of truth for shipped behavior — that lives in the package code, conformance tests, and the
 > other canonical docs. This document exists to keep the wider idea space coherent and to give the
-> shipped use cases (`use-cases.md`) their conceptual grounding.
+> shipped use cases their conceptual grounding.
+>
+> **Relationship to use-cases.md.** [`use-cases.md`](use-cases.md) is the shipped, narrative tier —
+> concrete UI problems and how the field solves them today. This document is the conceptual framework
+> beneath it: conditions, formations, recipe families, natural field translations, matter primitives,
+> temporal fields, and alternative output surfaces. When a section here has a concrete shipped
+> implementation, it links to the relevant use-cases section. Sections §26–§36 are
+> **`[frontier]`** — not yet shipped; they define the research and long-range possibility space.
 >
 > **Vocabulary note (concepts vs runtime tokens).** Possibility language here is not the engine token
 > set. The 36 real runtime tokens live in the [forces catalog](../engine-reference/forces-system.md).
@@ -235,6 +242,8 @@ What is the reduced-motion equivalent?
 
 ## 6. Conditions
 
+→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (error gravity — `coherent`; reading weight — `dwell`; completion momentum — `coherent`), §II (urgency sorting — `stale`, `thresholded`; anomaly field — `thresholded`), §IX (staleness gradient — `stale`; dwell-driven mastery — `dwell`), §X (trust gradient — `trusted`; evidence field — `trusted`).*
+
 Conditions decide when a body, recipe, or relationship becomes active.
 
 The older condition list remains useful, but it should be renamed into field-state language.
@@ -334,6 +343,8 @@ Consensus Well
 Conditions should not spam DOM events. Continuous state belongs in CSS variables and platform state. Discrete transitions belong in thresholded events.
 
 ## 7. Formations
+
+→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` formation; completion momentum — `coherence` formation), §IV (article topography — `reading` formation), §VII (kanban physics — `pressure` formation), §X (evidence field — `evidence` formation; conflict field — `conflict` formation), §XI (presence field — `presence` formation).*
 
 A formation is a global or scoped field arrangement.
 
@@ -450,6 +461,8 @@ Recovery Path
 
 ## 8. Recipes as the main possibility unit
 
+→ *Shipped use cases: All concrete use cases in [use-cases.md](use-cases.md) map to named recipes — `Evidence Field`, `Trust Gradient`, `Presence Field`, `Memory Trace`, `Guided Flow`, `System Pulse`, `Relation Lens`, `Staleness Drift`, `Provenance Trail`, and more.*
+
 The most important product frontier is not another force.
 
 It is recipes.
@@ -550,6 +563,8 @@ It turns field theory into product patterns.
 
 ## 10. Data-bound fields
 
+→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (anomaly field — `System Pulse` recipe; live data streams; relationship graphs) and §III (product gravity).*
+
 A major possibility is turning records into field participants.
 
 The field should be able to bind to arrays, graphs, search results, events, claims, files, tasks, calendar slots, or source documents.
@@ -628,6 +643,8 @@ Review Constellation
 ```
 
 ## 11. Relationship possibilities
+
+→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (relationship graphs — `Relation Lens` recipe), §X (evidence field — source binding).*
 
 The DOM is a tree, but interfaces are graphs.
 
@@ -826,6 +843,8 @@ The possibility is an interface that can explain itself.
 
 ## 15. Accessibility possibilities
 
+→ *Shipped use cases: [use-cases.md §V](use-cases.md#v-the-invisible-field--signals-only) (focus-weight accessibility — the signals-only field is inherently reduced-motion safe; state without animation).*
+
 Every field behavior must survive without motion.
 
 Potential accessibility equivalents:
@@ -857,6 +876,8 @@ visual binding requirement
 Possibility: accessibility becomes a field contract, not a late audit.
 
 ## 16. AI and evidence possibilities
+
+→ *Shipped use cases: [use-cases.md §X](use-cases.md#x-ai--evidence-fields) (evidence field, trust gradient, provenance trail, conflict field) — "one of the strongest product directions."*
 
 AI interfaces need field behavior more than most UI categories.
 
@@ -903,6 +924,8 @@ generated drafts show provenance
 This is one of the strongest product directions.
 
 ## 17. Collaboration possibilities
+
+→ *Shipped use cases: [use-cases.md §XI](use-cases.md#xi-collaboration--shared-fields) (presence field, consensus well, handoff stream) and §VII (document co-presence).*
 
 Collaboration can move beyond cursors and avatars.
 
@@ -1115,6 +1138,8 @@ This is especially useful for editors, admin tools, design systems, and enterpri
 
 ## 24. Memory possibilities
 
+→ *Shipped use cases: [use-cases.md §IX](use-cases.md#ix-memory--temporal-fields) (reading history, dwell-driven mastery, interrupted path recovery, staleness gradient) and §IV (playlist gravity — accretion/`--load`).*
+
 Memory is one of the most important non-visual field concepts.
 
 Memory can describe:
@@ -1187,7 +1212,7 @@ Not a background effect.
 
 A field model for interface meaning.
 
-## 26. Matter primitives beyond particles
+## 26. Matter primitives beyond particles `[frontier]`
 
 Particles are one way to sample the field.
 
@@ -1250,7 +1275,7 @@ Sand asks: where does matter accumulate?
 
 Light asks: how does the field distort what is already there?
 
-## 27. Spatial representations beyond particles
+## 27. Spatial representations beyond particles `[frontier]`
 
 Render modes should not be limited to matter.
 
@@ -1305,7 +1330,7 @@ Renders reveal. They do not define behavior.
 
 The topology of the field exists whether or not it is drawn.
 
-## 28. Time-based representations
+## 28. Time-based representations `[frontier]`
 
 The field currently exists in the present frame.
 
@@ -1357,7 +1382,7 @@ This is not a particle system.
 
 It is a different class of emergence.
 
-## 29. Alternative output surfaces
+## 29. Alternative output surfaces `[frontier]`
 
 The field does not have to be visual.
 
@@ -1424,7 +1449,7 @@ The field bridges digital and physical.
 
 Semantic relationships become visible in the room.
 
-## 30. The field as machine-readable semantic layer
+## 30. The field as machine-readable semantic layer `[frontier]`
 
 Every element on the page has a position in pixel-space.
 
@@ -1487,7 +1512,7 @@ field.conflictsNear(element)    → charge separation and opposing domains
 
 The field as infrastructure for entirely new kinds of interface intelligence.
 
-## 31. The field as social substrate
+## 31. The field as social substrate `[frontier]`
 
 One field per page is a constraint, not a law.
 
@@ -1536,7 +1561,7 @@ departure leaves a cooling memory trace
 
 This extends section 17 (collaboration possibilities) from cursors and avatars to field participants.
 
-## 32. The field as accumulating memory
+## 32. The field as accumulating memory `[frontier]`
 
 The field currently exists only in the present frame.
 
@@ -1581,7 +1606,7 @@ Possibility: software can remember in a visible, local, respectful way without t
 
 This extends section 24 (memory possibilities) from discrete markers to continuous field state.
 
-## 33. The field applied to time
+## 33. The field applied to time `[frontier]`
 
 The field currently spans 2D space.
 
@@ -1626,7 +1651,7 @@ This is a genuinely different way to encode temporal relationships.
 
 Proximity in time-space means something based on meaning, not calendar distance.
 
-## 34. The field as authoring primitive
+## 34. The field as authoring primitive `[frontier]`
 
 Right now designers work in static space.
 
@@ -1699,7 +1724,7 @@ animation timing
 
 This extends section 18 (authoring possibilities) from a recipe editor to a fully field-native design model.
 
-## 35. Emergent semantics
+## 35. Emergent semantics `[frontier]`
 
 A simple field has a few bodies and produces simple dynamics.
 
@@ -1739,7 +1764,7 @@ Not a simulation.
 
 A field model where meaning has dynamics.
 
-## 36. The projection problem
+## 36. The projection problem `[frontier]`
 
 Every interface ever built is a projection.
 
