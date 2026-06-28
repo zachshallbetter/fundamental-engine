@@ -403,7 +403,7 @@ protocol**; it has not been run.
 ### 5.1 Research questions and hypotheses
 
 The motivating question, in the project's own words, is *"Does Evidence Field improve trust
-calibration?"* (`docs/planning-archive/field-possibilities.md`). We refine it into five questions,
+calibration?"* (`docs/canonical/field-possibilities.md`). We refine it into five questions,
 three of which map to an evaluation target the project already names (source-support recognition,
 perceived distraction, accessibility preference), and two of which — contradiction detection and
 unsupported-claim identification — extend that set:
