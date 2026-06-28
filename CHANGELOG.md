@@ -7,6 +7,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-06-27
+
+### Added
+
+- **Root `Package.swift` for Swift Package Manager.** Adds a `Package.swift` at the repository root
+  so `https://github.com/zachshallbetter/fundamental-engine` can be used as a remote SPM reference
+  without a subdirectory path. Exports `FundamentalCore`, `FundamentalPlatform`, `FundamentalVanilla`,
+  and `FundamentalSwiftUI` — sources live in `swift/Sources/` and are unchanged.
+
 ## [0.9.0] - 2026-06-27
 
 The Android/Kotlin port reaches Swift/JS parity, Consumer DX & API additions land, the
