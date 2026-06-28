@@ -25,6 +25,11 @@ const REDUCED =
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
+// natural-field accent — the canonical palette (mirrors explore.astro / lab.astro).
+const FIELD_ACCENT: Record<string, string> = {
+  gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
+};
+
 export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions): PreviewHandle {
   let destroyed = false;
   let applied: { destroy(): void } | null = null;
@@ -64,11 +69,21 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
         'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;';
       container.appendChild(canvas);
 
+      // a second, stacked surface for the diagnostic OVERLAY readings (force-vectors, grid, …). The
+      // engine draws overlays only when given an overlayCanvas (field.ts) — without it setOverlay is
+      // a no-op. This is the engine's real underlay+overlay "immersive" architecture, contained.
+      const overlayCanvas = document.createElement('canvas');
+      overlayCanvas.className = 'exd-canvas exd-canvas-overlay';
+      overlayCanvas.style.cssText =
+        'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;';
+      container.appendChild(overlayCanvas);
+
       field = createField(canvas, {
         bounds: container,
         render: 'dots',
         density: 0.8,
         waves: false,
+        overlayCanvas,
       });
       if (destroyed) { field.destroy(); field = null; return; }
 
@@ -82,17 +97,19 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
         field: field as never,
       });
 
-      // the visualization workbench — render switcher + heatmap + live signal readout. The readout
-      // reads the engine's live feedback vars (--d, --coherence, …) off the heaviest gathering body.
+      // the visualization workbench — two-tier substrate/overlay controls + live signal readout. The
+      // readout reads the engine's live feedback vars (--d, --coherence, …) off the heaviest body.
       const heaviest = bodyEls
         .filter((el) => el.hasAttribute('data-feedback'))
         .sort((a, b) => parseFloat(b.dataset.strength ?? '0') - parseFloat(a.dataset.strength ?? '0'))[0];
       detachWorkbench = attachWorkbench({
         container,
         field: field as never,
+        hasOverlay: true,
         feedbackEl: heaviest ?? bodyEls[0] ?? null,
         renderLayers: opts.renderLayers,
         primaryRender: opts.primaryRender,
+        accent: FIELD_ACCENT[recipe.naturalField ?? ''] ?? '#4da3ff',
       });
     } catch {
       /* the info panel stands on its own if the engine can't boot */

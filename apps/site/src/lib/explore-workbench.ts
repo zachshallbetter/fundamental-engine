@@ -1,35 +1,74 @@
 // explore-workbench.ts — the visualization workbench inside the expanded detail preview.
 //
-// This is the teaching surface: it turns the engine's legibility layers into interactive controls so
-// a visitor can SEE the machinery. Three pieces:
-//   • render switcher — field.setRender(mode): the same matter, drawn as dots / links / metaballs / …
-//   • heatmap toggle  — field.setHeatmap(): the density underlay
-//   • live signal readout — the CSS variables the engine writes onto the feedback bodies every frame
-//     (--field-attention, --d / --field-density, the recipe's own metrics) + the particle count.
+// The teaching surface: it turns the engine's legibility layers into interactive controls so a
+// visitor can SEE the machinery. Two tiers, mirroring the engine's own surface model:
+//   • SUBSTRATE (field.setRender) — the base layer, ONE at a time. The same matter, drawn eight ways:
+//     dots / trails / links / streamlines / metaballs / voronoi / field-lines / heatmap.
+//   • OVERLAY (field.setOverlay) — diagnostic readings drawn ON TOP, ADDITIVE: toggle any combination
+//     of force-vectors / grid / temperature / energy / path / data. These stack (the engine takes an
+//     array), so they are true toggles, not a selector.
+//   • live signal readout — the CSS variables the engine writes onto the feedback body every frame
+//     (--d / --field-attention / --coherence / …) + the particle count. The conversion moment.
 //
-// The signals panel is the conversion moment, and it's most striking in "signals" (render: none) mode:
-// nothing is drawn, yet the numbers keep moving — the invisible field your CSS consumes.
+// The substrate is a base layer so it is pick-one; the overlays genuinely compose, so they toggle.
 
 interface FieldLike {
   setRender(mode: string): void;
-  setHeatmap(on: boolean): void;
+  setOverlay(mode: string | string[]): void;
   particleCount(): number;
 }
 
 export interface WorkbenchOptions {
   container: HTMLElement;
   field: FieldLike;
+  /** whether an overlay surface (second canvas) is wired — gates the overlay tier */
+  hasOverlay: boolean;
   /** the gathering body the engine writes its live feedback vars onto (--d, --coherence, …) */
   feedbackEl: HTMLElement | null;
-  /** the recipe's render layers (catalog order); mapped to setRender modes */
+  /** the recipe's render layers (catalog order) — used to mark the recipe's NATIVE substrate */
   renderLayers: string[];
-  /** which mode the field is currently in */
+  /** which mode the field starts in */
   primaryRender: string;
+  /** the recipe's natural-field accent (drives the active-pill glow) */
+  accent: string;
 }
 
-// The live feedback channels the engine writes onto a [data-feedback] body (feedback-sink.ts) —
-// the genuine "what your CSS sees" set. --d is the engine's own gathered-density channel (distinct
-// from the host-supplied --field-density lane). We read these inline props directly, in this order.
+// The eight substrate modes (RenderMode, passport.ts). Each gets a signature swatch colour so the
+// palette reads as distinct techniques, and a one-line "what you're seeing" note.
+const SUBSTRATE: { mode: string; label: string; sw: string; note: string }[] = [
+  { mode: 'dots',        label: 'dots',        sw: '#cbd5e1', note: 'Each particle is a dot — raw matter responding to the bodies.' },
+  { mode: 'trails',      label: 'trails',      sw: '#60a5fa', note: 'Particles leave fading trails — momentum and history.' },
+  { mode: 'links',       label: 'links',       sw: '#818cf8', note: 'Lines join nearby matter — the relationship structure between bodies.' },
+  { mode: 'streamlines', label: 'streamlines', sw: '#2dd4bf', note: 'Flow lines trace where the field would carry a particle — direction and current.' },
+  { mode: 'metaballs',   label: 'metaballs',   sw: '#a78bfa', note: 'Matter melts into blobs — clustering, grouping, and merged regions.' },
+  { mode: 'voronoi',     label: 'voronoi',     sw: '#f472b6', note: 'Cells partition the field — territories and regions of influence.' },
+  { mode: 'field-lines', label: 'field-lines', sw: '#38bdf8', note: "The field's own lines — the shape of its influence, independent of matter." },
+  { mode: 'heatmap',     label: 'heatmap',     sw: '#fb923c', note: 'A density gradient — where matter concentrates, hot to cold.' },
+];
+
+// The diagnostic overlay readings (OverlayMode, types.ts) — additive, drawn on the overlay surface.
+const OVERLAYS: { mode: string; label: string; note: string }[] = [
+  { mode: 'force-vectors', label: 'vectors',     note: 'Arrows: the force a probe would feel at each point.' },
+  { mode: 'grid',          label: 'grid',        note: 'A reference grid bent by the field.' },
+  { mode: 'field-lines',   label: 'field-lines', note: 'Field lines drawn over the substrate.' },
+  { mode: 'temperature',   label: 'temperature', note: 'Local thermodynamic temperature as a tint.' },
+  { mode: 'energy',        label: 'energy',      note: 'Field energy density.' },
+  { mode: 'path',          label: 'path',        note: 'Traced motion paths of the matter.' },
+];
+
+const SUBSTRATE_BY_MODE = new Map(SUBSTRATE.map((s) => [s.mode, s]));
+const OVERLAY_BY_MODE = new Map(OVERLAYS.map((o) => [o.mode, o]));
+
+// recipe render layer → substrate mode (the catalog uses "particles" for the dot substrate)
+const LAYER_TO_SUBSTRATE: Record<string, string> = {
+  particles: 'dots', dots: 'dots', trails: 'trails', links: 'links',
+  streamlines: 'streamlines', metaballs: 'metaballs', voronoi: 'voronoi',
+  'field-lines': 'field-lines', heatmap: 'heatmap',
+};
+
+// live feedback channels written onto a [data-feedback] body (feedback-sink.ts) — the genuine "what
+// your CSS sees" set. --d is the engine's own gathered-density channel (distinct from the
+// host-supplied --field-density lane); we read the inline props directly, in this order.
 const SIGNAL_VARS: { prop: string; label: string }[] = [
   { prop: '--d', label: '--d' },
   { prop: '--field-attention', label: '--field-attention' },
@@ -40,91 +79,109 @@ const SIGNAL_VARS: { prop: string; label: string }[] = [
   { prop: '--load', label: '--load' },
 ];
 
-// recipe render layer → setRender mode (particles draws as dots; field-lines/heatmap aren't pills)
-const RENDER_MAP: Record<string, string> = {
-  particles: 'dots', dots: 'dots', trails: 'trails', links: 'links',
-  streamlines: 'streamlines', metaballs: 'metaballs', voronoi: 'voronoi',
-};
-
-const RENDER_NOTE: Record<string, string> = {
-  dots: 'Each particle is a dot — raw matter responding to the bodies.',
-  trails: 'Particles leave fading trails — momentum and history.',
-  links: 'Lines join nearby matter — the relationship structure.',
-  metaballs: 'Matter merges into blobs — clustering and grouping.',
-  voronoi: 'Cells partition the field — territories and regions.',
-  streamlines: 'Flow lines trace the field — direction and current.',
-  none: 'Signals only — nothing is drawn. The field still measures and writes the CSS variables on the right, which your styles consume. This is the invisible field.',
-};
-
 const fmt = (v: number) => (Math.abs(v) >= 1 ? v.toFixed(0) : v.toFixed(2));
 
 export function attachWorkbench(opts: WorkbenchOptions): () => void {
-  const { container, field, feedbackEl, renderLayers } = opts;
+  const { container, field, feedbackEl, hasOverlay, accent } = opts;
 
-  // build the ordered, de-duplicated render mode list from the recipe, with signals-only appended.
-  const modes: string[] = [];
-  for (const layer of renderLayers) {
-    const m = RENDER_MAP[layer];
-    if (m && !modes.includes(m)) modes.push(m);
+  // the recipe's native substrates (highlighted with a dot marker so visitors know the "home" view)
+  const native = new Set<string>();
+  for (const layer of opts.renderLayers) {
+    const m = LAYER_TO_SUBSTRATE[layer];
+    if (m) native.add(m);
   }
-  if (!modes.includes('dots')) modes.unshift('dots');
-  modes.push('none');
+  let current = LAYER_TO_SUBSTRATE[opts.primaryRender] ?? opts.primaryRender;
+  if (!SUBSTRATE_BY_MODE.has(current)) current = 'dots';
 
-  let current = RENDER_MAP[opts.primaryRender] ?? opts.primaryRender;
-  if (!modes.includes(current)) current = modes[0]!;
+  const activeOverlays = new Set<string>();
 
   // ── DOM ───────────────────────────────────────────────────────────────────────────────────────
   const bar = document.createElement('div');
   bar.className = 'exd-workbench';
-  bar.innerHTML =
-    `<div class="exd-render-pills" role="group" aria-label="Render mode">` +
-    modes
-      .map(
-        (m) =>
-          `<button type="button" class="exd-rpill${m === current ? ' is-on' : ''}" data-render="${m}">${m === 'none' ? 'signals' : m}</button>`,
-      )
-      .join('') +
-    `</div>` +
-    `<button type="button" class="exd-heat" data-heat aria-pressed="false">heatmap</button>`;
+  bar.style.setProperty('--exd-accent', accent);
+
+  const substrateRow =
+    `<div class="exd-viz-group">` +
+    `<span class="exd-viz-label">substrate</span>` +
+    `<div class="exd-substrate" role="radiogroup" aria-label="Substrate render mode">` +
+    SUBSTRATE.map(
+      (s) =>
+        `<button type="button" class="exd-vpill${s.mode === current ? ' is-on' : ''}${native.has(s.mode) ? ' is-native' : ''}" ` +
+        `data-render="${s.mode}" role="radio" aria-checked="${s.mode === current}" title="${s.note}">` +
+        `<i class="exd-sw" style="background:${s.sw}"></i>${s.label}</button>`,
+    ).join('') +
+    `</div></div>`;
+
+  const overlayRow = hasOverlay
+    ? `<div class="exd-viz-group">` +
+      `<span class="exd-viz-label">overlay</span>` +
+      `<div class="exd-overlays" role="group" aria-label="Diagnostic overlays (stackable)">` +
+      OVERLAYS.map(
+        (o) =>
+          `<button type="button" class="exd-vtog" data-overlay="${o.mode}" aria-pressed="false" title="${o.note}">${o.label}</button>`,
+      ).join('') +
+      `</div></div>`
+    : '';
+
+  bar.innerHTML = substrateRow + overlayRow;
 
   const note = document.createElement('p');
   note.className = 'exd-note';
-  note.textContent = RENDER_NOTE[current] ?? '';
+  note.textContent = SUBSTRATE_BY_MODE.get(current)?.note ?? '';
 
   const signals = document.createElement('div');
   signals.className = 'exd-signals';
 
+  // note rides at the top of the bottom control block so the caption + the two control rows move
+  // together and never overlap (the substrate/overlay rows can wrap to two lines each).
+  bar.insertBefore(note, bar.firstChild);
+
   container.appendChild(signals);
-  container.appendChild(note);
   container.appendChild(bar);
 
-  // ── render switcher ─────────────────────────────────────────────────────────────────────────
+  // caption = active substrate note + any active overlay notes appended
+  const refreshNote = (): void => {
+    const parts = [SUBSTRATE_BY_MODE.get(current)?.note ?? ''];
+    for (const m of activeOverlays) {
+      const o = OVERLAY_BY_MODE.get(m);
+      if (o) parts.push(o.note);
+    }
+    note.textContent = parts.filter(Boolean).join('  ·  ');
+  };
+
+  // ── controls ────────────────────────────────────────────────────────────────────────────────
   const onBarClick = (e: MouseEvent): void => {
     const t = e.target as HTMLElement;
-    const rpill = t.closest<HTMLElement>('.exd-rpill');
-    if (rpill) {
-      const mode = rpill.dataset.render!;
-      try { field.setRender(mode); } catch { /* mode unsupported on this field — ignore */ }
+
+    const sub = t.closest<HTMLElement>('.exd-vpill');
+    if (sub) {
+      const mode = sub.dataset.render!;
+      try { field.setRender(mode); } catch { /* unsupported on this field — ignore */ }
       current = mode;
-      bar.querySelectorAll('.exd-rpill').forEach((b) => b.classList.toggle('is-on', b === rpill));
-      note.textContent = RENDER_NOTE[mode] ?? '';
+      bar.querySelectorAll('.exd-vpill').forEach((b) => {
+        const on = b === sub;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-checked', String(on));
+      });
+      refreshNote();
       return;
     }
-    const heat = t.closest<HTMLElement>('.exd-heat');
-    if (heat) {
-      const on = heat.getAttribute('aria-pressed') !== 'true';
-      try { field.setHeatmap(on); } catch { /* ignore */ }
-      heat.setAttribute('aria-pressed', String(on));
+
+    const tog = t.closest<HTMLElement>('.exd-vtog');
+    if (tog) {
+      const mode = tog.dataset.overlay!;
+      const on = tog.getAttribute('aria-pressed') !== 'true';
+      if (on) activeOverlays.add(mode);
+      else activeOverlays.delete(mode);
+      tog.setAttribute('aria-pressed', String(on));
+      tog.classList.toggle('is-on', on);
+      try { field.setOverlay(activeOverlays.size ? [...activeOverlays] : 'off'); } catch { /* ignore */ }
+      refreshNote();
     }
   };
   bar.addEventListener('click', onBarClick);
 
   // ── live signal readout (interval, not rAF — avoids contending with the field's own loop) ─────
-  // Source = the body's INLINE feedback custom properties — exactly what a CSS consumer reads. The
-  // engine writes these every frame (feedback-sink.ts); reading them here is the honest "what your
-  // CSS sees" view. (Earlier this read applied.inspect()'s `density` metric, which is the
-  // host-supplied --field-density lane — 0 unless data-field-density is set — not the engine's own
-  // --d channel; that mismatch is why the panel showed 0 while --d was live.)
   const renderSignals = (): void => {
     const rows: string[] = [];
     if (feedbackEl) {

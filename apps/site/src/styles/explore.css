@@ -588,26 +588,45 @@
 
 body.ex-detail-open { overflow: hidden; }
 
-/* ── Workbench (render switcher + heatmap + live signals) ──────────────────────────────────────── */
+/* ── Workbench (two-tier substrate/overlay controls + caption + live signals) ──────────────────── */
 .exd-workbench {
   position: absolute;
   left: 0; right: 0; bottom: 0;
   z-index: 2;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.55rem 0.7rem;
-  background: linear-gradient(to top, color-mix(in srgb, var(--bg-page) 88%, transparent), transparent);
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 0.7rem 0.6rem;
+  background: linear-gradient(to top, var(--bg-page) 8%, color-mix(in srgb, var(--bg-page) 80%, transparent) 60%, transparent);
 }
-.exd-render-pills { display: flex; flex-wrap: wrap; gap: 0.25rem; }
-.exd-rpill,
-.exd-heat {
+.exd-viz-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.exd-viz-label {
+  flex: none;
+  width: 4.2rem;
   font-family: var(--mono);
-  font-size: 0.6rem;
+  font-size: 0.54rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding-top: 0.18rem;
+}
+.exd-substrate,
+.exd-overlays { display: flex; flex-wrap: wrap; gap: 0.25rem; flex: 1; }
+
+.exd-vpill,
+.exd-vtog {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  font-family: var(--mono);
+  font-size: 0.58rem;
   letter-spacing: 0.02em;
   color: var(--text-3);
-  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  background: color-mix(in srgb, var(--bg-card) 78%, transparent);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   padding: 0.2rem 0.5rem;
@@ -615,33 +634,44 @@ body.ex-detail-open { overflow: hidden; }
   backdrop-filter: blur(4px);
   transition: color 140ms var(--ease), border-color 140ms var(--ease), background 140ms var(--ease);
 }
-.exd-rpill:hover,
-.exd-heat:hover { color: var(--text); border-color: var(--line-2); }
-.exd-rpill.is-on {
-  color: var(--text);
-  border-color: color-mix(in srgb, var(--detail-accent, var(--accent)) 60%, transparent);
-  background: color-mix(in srgb, var(--detail-accent, var(--accent)) 16%, var(--bg-card));
-}
-.exd-heat[aria-pressed='true'] {
-  color: var(--detail-accent, var(--accent));
-  border-color: color-mix(in srgb, var(--detail-accent, var(--accent)) 55%, transparent);
+.exd-vpill:hover,
+.exd-vtog:hover { color: var(--text); border-color: var(--line-2); }
+
+/* swatch — the substrate technique's signature colour */
+.exd-sw {
+  width: 7px; height: 7px;
+  border-radius: 2px;
+  flex: none;
+  box-shadow: 0 0 5px color-mix(in srgb, currentColor 30%, transparent);
 }
 
-/* "what you're seeing" caption */
+/* the recipe's NATIVE substrate(s) carry a faint ring so visitors know the "home" view */
+.exd-vpill.is-native { border-color: color-mix(in srgb, var(--exd-accent, var(--accent)) 28%, var(--line)); }
+
+/* active substrate (pick-one) — filled in the recipe's natural-field accent */
+.exd-vpill.is-on {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--exd-accent, var(--accent)) 65%, transparent);
+  background: color-mix(in srgb, var(--exd-accent, var(--accent)) 18%, var(--bg-card));
+}
+/* active overlay (toggle) — outlined, accent text, so a stack reads as several lit chips */
+.exd-vtog.is-on {
+  color: var(--exd-accent, var(--accent));
+  border-color: color-mix(in srgb, var(--exd-accent, var(--accent)) 60%, transparent);
+  background: color-mix(in srgb, var(--exd-accent, var(--accent)) 10%, var(--bg-card));
+}
+
+/* "what you're seeing" caption — first row of the bottom control block */
 .exd-note {
-  position: absolute;
-  left: 0.7rem; right: 0.7rem; bottom: 2.6rem;
-  z-index: 2;
-  margin: 0;
+  margin: 0 0 0.1rem;
   font-family: var(--mono);
   font-size: 0.62rem;
   line-height: 1.45;
-  color: var(--text-3);
-  background: color-mix(in srgb, var(--bg-page) 60%, transparent);
-  border-radius: var(--r-sm);
-  padding: 0.3rem 0.45rem;
-  backdrop-filter: blur(3px);
+  color: var(--text-2);
 }
+
+/* the overlay surface sits above the substrate canvas */
+.exd-canvas-overlay { z-index: 1; }
 
 /* live signal readout — instrumentation, top-left of the preview */
 .exd-signals {
