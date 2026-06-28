@@ -354,7 +354,7 @@ no transition timings to coordinate. The field carries state into style directly
 outline as spatial weight. Screen readers consume the markup; the field renders the
 same hierarchy as a physical pressure map. Both come from the same HTML.
 
-→ *See [`field-possibilities.md §36`](field-possibilities.md#36-the-projection-problem) (the projection problem: the field recovers semantic relationships the flat interface loses) and §1 (the paradigm shift).*
+→ *See [`field-possibilities.md §36`](field-possibilities.md#36-the-projection-problem-frontier) (the projection problem: the field recovers semantic relationships the flat interface loses) and §1 (the paradigm shift).*
 
 ---
 
