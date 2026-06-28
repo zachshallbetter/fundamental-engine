@@ -188,6 +188,13 @@ export function initExploreDetail(): () => void {
   root.querySelector('[data-detail-close]')?.addEventListener('click', () => close());
   root.querySelector('[data-detail-backdrop]')?.addEventListener('click', () => close());
 
+  // constellation nodes (and any other surface) request an open via this event
+  const onOpenEvent = (e: Event): void => {
+    const id = (e as CustomEvent).detail?.id as string | undefined;
+    if (id && data[id]) open(id, document.querySelector(`.ex-card[data-recipe-id="${id}"]`), true);
+  };
+  document.addEventListener('explore:open', onOpenEvent);
+
   const onPopState = (): void => {
     const r = new URLSearchParams(location.search).get('r');
     if (r && data[r]) open(r, document.querySelector(`.ex-card[data-recipe-id="${r}"]`), false);
@@ -203,6 +210,7 @@ export function initExploreDetail(): () => void {
 
   return () => {
     grid.removeEventListener('click', onCardClick);
+    document.removeEventListener('explore:open', onOpenEvent);
     window.removeEventListener('popstate', onPopState);
     document.removeEventListener('keydown', onKeydown);
     // Synchronous teardown — no close animation (whose async finish() could clobber a fresh open

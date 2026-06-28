@@ -130,7 +130,17 @@ const detailData = Object.fromEntries(
       </div>
     </div>
 
-    <p class="ex-resultcount" aria-live="polite" data-result-count>{total} recipes</p>
+    <div class="ex-toolbar">
+      <p class="ex-resultcount" aria-live="polite" data-result-count>{total} recipes</p>
+      <div class="ex-viewtoggle" role="group" aria-label="View mode">
+        <button type="button" class="ex-view is-on" data-view="grid" aria-pressed="true">Grid</button>
+        <button type="button" class="ex-view" data-view="constellation" aria-pressed="false">Constellation</button>
+      </div>
+    </div>
+
+    <!-- Constellation view — a force-directed map of the catalog: recipes cluster around their
+         primary domain. Built + laid out client-side; hidden until toggled (and on no-JS). -->
+    <div class="ex-constellation" data-constellation hidden aria-hidden="true"></div>
 
     <!-- The catalog. One <article> per recipe — minimal by design: field accent, name, the problem
          it solves, the domains it answers, a link to the full recipe page. Implementation metadata
@@ -227,9 +237,11 @@ const detailData = Object.fromEntries(
 
   import { startFilterField, stopFilterField } from '../lib/explore-filter-field.ts';
   import { initExploreDetail } from '../lib/explore-detail.ts';
+  import { initConstellation, type ConstellationHandle } from '../lib/explore-constellation.ts';
 
   let teardown: (() => void) | null = null;
   let teardownDetail: (() => void) | null = null;
+  let constellation: ConstellationHandle | null = null;
   let booted = false;
   function boot() {
     if (location.pathname.replace(/\/$/, '') !== '/explore') { stopFilterField(); return; }
@@ -237,12 +249,30 @@ const detailData = Object.fromEntries(
     booted = true;
     teardown = initExplorePage();
     teardownDetail = initExploreDetail(); // expand-in-place overlay (also handles ?r= deep-links)
+    constellation = initConstellation();
     startFilterField(); // engine-powered (invisible) filter bar — lazy, signals-only
+
+    // Grid ↔ Constellation view toggle
+    const grid = document.querySelector('.ex-grid');
+    const views = [...document.querySelectorAll('.ex-view')];
+    for (const btn of views) {
+      btn.addEventListener('click', () => {
+        const mode = (btn as HTMLElement).dataset.view;
+        views.forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle('is-on', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+        if (mode === 'constellation') { grid?.setAttribute('hidden', ''); constellation?.show(); }
+        else { constellation?.hide(); grid?.removeAttribute('hidden'); }
+      });
+    }
   }
   function teardownAll() {
     booted = false;
     teardown?.(); teardown = null;
     teardownDetail?.(); teardownDetail = null;
+    constellation?.destroy(); constellation = null;
     stopFilterField();
   }
   document.addEventListener('astro:page-load', boot);

@@ -153,13 +153,121 @@
 .ex-pill.is-on .ex-pill-count { color: var(--text); }
 .ex-pill-platform { margin-left: 0.3rem; }
 
+.ex-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.4rem;
+}
 .ex-resultcount {
   font-family: var(--mono);
   font-size: 0.7rem;
   color: var(--text-3);
-  margin: 0 0 1.4rem;
+  margin: 0;
   letter-spacing: 0.02em;
 }
+.ex-viewtoggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+.ex-view {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+  background: transparent;
+  border: none;
+  padding: 0.32rem 0.75rem;
+  cursor: pointer;
+  transition: color 140ms var(--ease), background 140ms var(--ease);
+}
+.ex-view:hover { color: var(--text-2); }
+.ex-view.is-on { color: var(--text); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* ── Constellation view ───────────────────────────────────────────────────────────────────────── */
+.ex-constellation {
+  position: relative;
+  width: 100%;
+  height: min(72vh, 40rem);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background:
+    radial-gradient(60% 60% at 50% 50%, color-mix(in srgb, var(--accent) 4%, transparent), transparent 75%),
+    var(--bg-canvas);
+  overflow: hidden;
+}
+.ex-constellation[hidden] { display: none; }
+
+.ex-cluster-label {
+  position: absolute;
+  top: 0; left: 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+/* Each recipe is a small dot; the name appears on hover/focus so the map stays uncluttered. */
+.ex-cnode {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 1;
+  width: 18px; height: 18px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transform: translate(50%, 50%); /* overwritten by JS; centre fallback */
+  transition: transform 700ms var(--ease), opacity 250ms var(--ease);
+}
+.ex-constellation.no-anim .ex-cnode { transition: opacity 250ms var(--ease); }
+.ex-cnode-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--cnode-accent, var(--accent));
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--cnode-accent, var(--accent)) 60%, transparent);
+  transition: width 140ms var(--ease), height 140ms var(--ease), box-shadow 200ms var(--ease);
+}
+.ex-cnode-name {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 3px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg-page) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cnode-accent, var(--accent)) 40%, var(--line));
+  border-radius: var(--r-sm);
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms var(--ease);
+}
+.ex-cnode:hover,
+.ex-cnode:focus-visible { z-index: 4; outline: none; }
+.ex-cnode:hover .ex-cnode-dot,
+.ex-cnode:focus-visible .ex-cnode-dot {
+  width: 13px; height: 13px;
+  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--cnode-accent, var(--accent)) 60%, transparent);
+}
+.ex-cnode:hover .ex-cnode-name,
+.ex-cnode:focus-visible .ex-cnode-name { opacity: 1; }
+.ex-cnode.is-dim { opacity: 0.1; pointer-events: none; }
+
+.ex-cluster-label { z-index: 2; }
 
 /* ── Grid ─────────────────────────────────────────────────────────────────────────────────────── */
 .ex-grid {
@@ -170,6 +278,7 @@
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   gap: 0.9rem;
 }
+.ex-grid[hidden] { display: none; } /* explicit display:grid otherwise beats the [hidden] UA rule */
 
 /* ── Card — minimal by design: accent, name, problem, domains, link ───────────────────────────── */
 .ex-card {
