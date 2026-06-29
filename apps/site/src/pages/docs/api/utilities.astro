@@ -1,0 +1,430 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import SeeAlso from '../../../components/SeeAlso.astro';
+
+// Platform utilities — shipped APIs with no prior site docs.
+// All seven are exported from @fundamental-engine/dom (or @fundamental-engine/core for headlessHost + allocateAttention).
+---
+
+<DocsLayout
+  title="Fundamental — platform utilities"
+  description="Seven shipped but lower-visibility platform utilities: withFlip (FLIP animation), allocateAttention (conserved attention budget), threadOverlay (hover thread SVG), bindFieldNav (navigation field binding), QualityGovernor (frame budget detector), textBodies (per-line/word body geometry), and headlessHost (manual-loop non-DOM host)."
+>
+  <header class="docs-hero">
+    <p class="kicker">API reference</p>
+    <h1>Platform <span class="accent">utilities</span></h1>
+    <p class="lede">
+      Shipped helpers that sit below the main tutorial path but are load-bearing in real
+      applications. All seven are part of the stable platform surface. Most come from
+      <code>@fundamental-engine/dom</code>; <code>headlessHost</code> and
+      <code>allocateAttention</code> come from <code>@fundamental-engine/core</code>.
+    </p>
+  </header>
+
+  <nav class="on-this-page" aria-label="On this page">
+    <ul>
+      <li><a href="#withFlip">withFlip</a></li>
+      <li><a href="#allocateAttention">allocateAttention</a></li>
+      <li><a href="#threadOverlay">threadOverlay</a></li>
+      <li><a href="#bindFieldNav">bindFieldNav</a></li>
+      <li><a href="#QualityGovernor">QualityGovernor</a></li>
+      <li><a href="#textBodies">textBodies</a></li>
+      <li><a href="#headlessHost">headlessHost</a></li>
+    </ul>
+  </nav>
+
+  <section class="docs-sec" id="withFlip">
+    <h2>withFlip</h2>
+    <p>
+      The <strong>FLIP</strong> (First, Last, Invert, Play) animation primitive. Measures where
+      elements sit, runs your DOM mutation, then translates each element from its old position to
+      its new one and releases the offset under a transition — so re-sorts and re-parents read as
+      travel, not teleportation.
+    </p>
+    <p>
+      Respects <code>prefers-reduced-motion: reduce</code>: the mutation still runs, only the
+      animation is skipped.
+    </p>
+
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>withFlip(elements, mutate, opts?)</code></dt>
+        <dd class="d">
+          <code>elements</code> is called twice — before and after <code>mutate</code> — so a
+          callback that re-queries the DOM naturally covers reparenting. Elements that only appear
+          after the mutation (no first rect) are left alone.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.axis</code></dt>
+        <dd class="d">
+          <code>'both'</code> (default) — animates <code>translate(dx, dy)</code>. <code>'y'</code>
+          — animates <code>translateY(dy)</code> only, for single-column lists where horizontal
+          delta is noise.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.exclude</code></dt>
+        <dd class="d">
+          <code>(el: HTMLElement) => boolean</code> — elements the mutation moved but that should
+          NOT be translated (e.g. a tile whose size class changed, settled a different way).
+        </dd>
+      </div>
+    </dl>
+
+    <pre><code class="language-ts">import &#123; withFlip &#125; from '@fundamental-engine/dom';
+
+// re-sort a card list with animated travel
+withFlip(
+  () =&gt; [...grid.querySelectorAll('.card')] as HTMLElement[],
+  () =&gt; grid.append(...sortedCards),    // the actual DOM mutation
+  &#123; axis: 'y', duration: 400 &#125;
+);</code></pre>
+  </section>
+
+  <section class="docs-sec" id="allocateAttention">
+    <h2>allocateAttention</h2>
+    <p>
+      A <strong>conserved attention budget</strong> for a page. When any body is engaged (hovered,
+      focused, tapped), <code>allocateAttention</code> computes a per-body effective-strength
+      multiplier that boosts the engaged body while proportionally starving the others — because
+      the total is invariant, the field cannot emphasise two things at once.
+    </p>
+    <p>
+      The model is feed-forward on <em>demand</em>: idle bodies (nothing engaged) always receive a
+      multiplier of 1, so a field that opts in is <em>unchanged until something is actually
+      engaged</em>.
+    </p>
+
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>allocateAttention(inputs, opts?)</code></dt>
+        <dd class="d">
+          Takes an array of <code>&#123; strength, on &#125;</code> items (one per body) and returns a
+          parallel array of multipliers the integrator folds into each body's force magnitude.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.beta</code></dt>
+        <dd class="d">
+          Engagement multiplier β — how much harder an engaged body competes. Default <code>2</code>.
+          The engaged body's effective strength is <code>strength × (1 + β) × k</code> where
+          <code>k = ΣS / ΣM</code> normalises the total.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.lo</code> / <code>opts.hi</code></dt>
+        <dd class="d">Multiplier clamp floor / ceiling. Defaults: <code>0.25</code> / <code>3</code>.</dd>
+      </div>
+    </dl>
+
+    <pre><code class="language-ts">import &#123; allocateAttention &#125; from '@fundamental-engine/core';
+
+// compute multipliers for three bodies on hover of the first
+const muls = allocateAttention(
+  [
+    &#123; strength: 0.8, on: true  &#125;,  // hovered
+    &#123; strength: 0.6, on: false &#125;,
+    &#123; strength: 0.4, on: false &#125;,
+  ],
+  &#123; beta: 2 &#125;
+);
+// muls[0] &gt; 1 (competing harder), muls[1] + muls[2] &lt; 1 (starved)</code></pre>
+  </section>
+
+  <section class="docs-sec" id="threadOverlay">
+    <h2>threadOverlay</h2>
+    <p>
+      An absolutely-positioned, <code>aria-hidden</code>, pointer-events-none SVG overlay that
+      draws <strong>cubic-bezier center-to-center threads</strong> from a source element to one or
+      more targets. The invisible-fields example pages (Evidence, Backlog, Dependencies) all use
+      this pattern; <code>threadOverlay</code> is the common core extracted so callers write only
+      <em>what</em> to connect, not how the SVG lifecycle or geometry math works.
+    </p>
+    <p>
+      Geometry is sampled at draw time — callers must re-draw after layout changes (FLIP re-sorts,
+      batch reveals, container resize).
+    </p>
+
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>threadOverlay(host, opts?)</code></dt>
+        <dd class="d">
+          Creates the overlay and prepends it into <code>host</code> (lazily on first
+          <code>draw</code>). The host must be a containing block (<code>position: relative</code>
+          or similar).
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>.draw(from, targets, opts?)</code></dt>
+        <dd class="d">
+          Draws one bezier per target from the centre of <code>from</code>. Marks <code>from</code>
+          with <code>.lit</code> and each target with <code>.cited</code>. Replaces the previous
+          draw. Pass <code>opts.color</code> to set <code>--thread</code> on the overlay so CSS can
+          style the stroke.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>.clear()</code></dt>
+        <dd class="d">Empties the overlay's paths and removes every <code>lit</code>/<code>cited</code> mark.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>.destroy()</code></dt>
+        <dd class="d"><code>clear()</code> + remove the SVG from the host. A later <code>draw()</code> recreates it.</dd>
+      </div>
+    </dl>
+
+    <pre><code class="language-ts">import &#123; threadOverlay &#125; from '@fundamental-engine/dom';
+
+const overlay = threadOverlay(containerEl, &#123; className: 'my-threads' &#125;);
+
+card.addEventListener('pointerenter', () =&gt; &#123;
+  const related = [...document.querySelectorAll('.related-card')] as HTMLElement[];
+  overlay.draw(card, related, &#123; color: 'var(--accent)' &#125;);
+&#125;);
+card.addEventListener('pointerleave', () =&gt; overlay.clear());</code></pre>
+
+    <p>CSS contract: style <code>.my-threads path &#123; stroke: var(--thread, #fff4); fill: none; &#125;</code>.</p>
+  </section>
+
+  <section class="docs-sec" id="bindFieldNav">
+    <h2>bindFieldNav</h2>
+    <p>
+      Runs a recipe <strong>signals-only</strong> (<code>render: []</code>) over the
+      <code>&lt;a href&gt;</code> links inside a navigation root. Every link becomes a body; the
+      current link can be pinned as the "well" (<code>data-field-attention=1</code>); previously
+      visited links can be marked (<code>data-field-memory=1</code> + a <code>nav-visited</code>
+      class). The platform writes the recipe's <code>--field-*</code> channels back onto each link;
+      CSS turns them into ink weight, glows, and markers. Nothing is drawn.
+    </p>
+    <p>
+      Progressive enhancement is the contract: under <code>prefers-reduced-motion</code>, or when
+      the recipe can't be resolved / there are no links, <code>bindFieldNav</code> returns
+      <code>null</code> and writes nothing — the links stay plain and reachable.
+    </p>
+
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>bindFieldNav(root, recipe, opts?)</code></dt>
+        <dd class="d">
+          <code>recipe</code> is a <code>FieldRecipe</code> object or a catalog ID string.
+          Returns a <code>&#123; destroy() &#125;</code> handle, or <code>null</code> on reduced-motion or
+          empty root.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.pin</code></dt>
+        <dd class="d">The link element to mark as the current page — its <code>data-field-attention</code> is held at 1.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.visited</code></dt>
+        <dd class="d">
+          <code>(href: string) =&gt; boolean</code> predicate — links where this returns true receive
+          <code>data-field-memory=1</code> and the <code>nav-visited</code> class.
+        </dd>
+      </div>
+    </dl>
+
+    <pre><code class="language-ts">import &#123; bindFieldNav &#125; from '@fundamental-engine/dom';
+
+const nav = document.querySelector('nav.site-nav')!;
+const current = nav.querySelector(`a[href="$&#123;window.location.pathname&#125;"]`);
+
+const handle = bindFieldNav(nav, 'gravity-pull', &#123;
+  pin: current,
+  visited: (href) =&gt; sessionStorage.getItem(href) != null,
+&#125;);
+
+// on teardown (e.g. SPA route change):
+handle?.destroy();</code></pre>
+  </section>
+
+  <section class="docs-sec" id="QualityGovernor">
+    <h2>QualityGovernor</h2>
+    <p>
+      Detects <strong>sustained frame-budget overruns</strong> and emits a tier signal (0–3) so
+      the caller can adapt render quality without a hard cutoff. The <code>&lt;field-root&gt;</code>
+      element runtime uses it internally; expose it directly when building a custom platform loop.
+    </p>
+
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k">Tier semantics</dt>
+        <dd class="d">
+          <code>0</code> = full quality (default).
+          <code>1</code> = simplify effects — drop heatmap, reduce overlay.
+          <code>2</code> = minimal — switch <code>render</code> to <code>'dots'</code>, halve particle cap.
+          <code>3</code> = paused — suspend the field loop entirely.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>new QualityGovernor(budgetMs?)</code></dt>
+        <dd class="d">Default budget: <code>16.67</code> ms (60 fps). Pass <code>8.33</code> for a 120 fps budget.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>.feed(durationMs)</code></dt>
+        <dd class="d">
+          Feed one rAF frame duration. Returns the new tier when it changes,
+          <code>undefined</code> when stable. Escalation: 10 frames above 20 ms → tier 1; 5 frames
+          above 33 ms → tier 2; 3 frames above 50 ms → tier 3. Recovery requires 30 clean frames
+          to avoid thrashing.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>.reset()</code></dt>
+        <dd class="d">Reset to tier 0 and clear streak counters. Call on <code>visibilitychange</code> to avoid false escalation on tab switches.</dd>
+      </div>
+    </dl>
+
+    <pre><code class="language-ts">import &#123; QualityGovernor &#125; from '@fundamental-engine/dom';
+
+const gov = new QualityGovernor(16.67);
+let prev = performance.now();
+
+function loop(now: number) &#123;
+  const dur = now - prev; prev = now;
+  const tier = gov.feed(dur);
+  if (tier !== undefined) &#123;
+    // tier changed — adapt render
+    field.setQualityTier(tier);
+  &#125;
+  field.tick();
+  requestAnimationFrame(loop);
+&#125;
+requestAnimationFrame(loop);
+
+document.addEventListener('visibilitychange', () =&gt; &#123;
+  if (document.hidden) gov.reset();
+&#125;);</code></pre>
+  </section>
+
+  <section class="docs-sec" id="textBodies">
+    <h2>textBodies</h2>
+    <p>
+      Annotates a text element with <strong>per-line or per-word body geometry</strong>. It
+      measures the element's rendered line boxes via <code>Range.getClientRects()</code>, emits one
+      absolutely-positioned, <code>aria-hidden</code>, <code>pointer-events:none</code> span per
+      box, and declares each span as a <code>data-field-visual-for</code> representation of the
+      source element — so the field's per-line/per-word geometry flows through the existing
+      <code>[data-body]</code> contract without a new engine surface.
+    </p>
+    <p>
+      This is <strong>box geometry</strong>, not glyph contours. True glyph-outline sampling is the
+      planned next slice of the <code>textBodies</code> roadmap and will slot in as a finer
+      granularity behind the same API.
+    </p>
+
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>textBodies(el, field, opts?)</code></dt>
+        <dd class="d">
+          Returns a disposer. Calling it removes the spans and tears down any observer. Call
+          <code>field.rescan()</code> after annotating (and after disposing) so the engine picks up
+          the new geometry.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.granularity</code></dt>
+        <dd class="d">
+          <code>'line'</code> (default) — one span per rendered line box.
+          <code>'word'</code> — one span per word fragment box.
+          <code>'box'</code> — raw <code>getClientRects()</code> boxes.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>opts.observe</code></dt>
+        <dd class="d">
+          <code>true</code> — wire a debounced <code>ResizeObserver</code> on the source that
+          re-measures spans on resize. The observer is torn down by the disposer.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k">Lifecycle note</dt>
+        <dd class="d">
+          <code>textBodies()</code> is idempotent — re-calling disposes the previous span set
+          first, then re-measures. Call <code>field.rescan()</code> after <em>both</em> annotate
+          and dispose.
+        </dd>
+      </div>
+    </dl>
+
+    <pre><code class="language-ts">import &#123; textBodies &#125; from '@fundamental-engine/dom';
+import &#123; createField &#125; from '@fundamental-engine/vanilla';
+
+const field = createField(canvas);
+const heading = document.querySelector('h1')!;
+
+const dispose = textBodies(heading, field, &#123;
+  granularity: 'word',
+  observe: true,   // re-annotate on resize
+&#125;);
+field.rescan();    // pick up the new spans immediately
+
+// to teardown:
+// dispose(); field.rescan();</code></pre>
+  </section>
+
+  <section class="docs-sec" id="headlessHost">
+    <h2>headlessHost</h2>
+    <p>
+      The reference <a href="/docs/api/handle"><code>FieldHost</code></a> for
+      <strong>non-DOM, non-visual consumers</strong>: an agent reading the field as a salience
+      substrate, a native sidecar, a Node.js service, or a deterministic test. Where
+      <code>browserHost()</code> binds the engine to <code>window</code> / <code>document</code> /
+      <code>requestAnimationFrame</code>, <code>headlessHost()</code> binds it to nothing — an
+      abstract volume the caller sets, a no-op scan root (bodies come via <code>addBody</code>, not
+      <code>[data-body]</code>), and a <strong>manual tick loop</strong> the caller drives.
+    </p>
+    <p>
+      Pair with <code>render: 'none'</code> (the signals-first default). The full simulation
+      runs and writes its signals; no DOM is touched.
+    </p>
+
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>headlessHost(&#123; width, height &#125;)</code></dt>
+        <dd class="d">
+          Returns a <code>HeadlessHost</code> — a <code>FieldHost</code> with one extra method:
+          <code>.tick()</code>.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>host.tick()</code></dt>
+        <dd class="d">
+          Advance one engine frame manually. Call per agent turn, on a schedule, or in a test loop.
+          In the browser context <code>tick()</code> replaces <code>requestAnimationFrame</code>.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k">Reading signals</dt>
+        <dd class="d">
+          Register bodies with <code>field.addBody(&#123; …, onFeedback: (ch) =&gt; read(ch.density) &#125;)</code>
+          for per-body channels, or use <code>field.sampleScalar(x, y)</code> /
+          <code>field.readParticles()</code> for global sampling.
+        </dd>
+      </div>
+    </dl>
+
+    <pre><code class="language-ts">import &#123; headlessHost &#125; from '@fundamental-engine/core';
+import &#123; createField &#125; from '@fundamental-engine/vanilla';
+
+const host  = headlessHost(&#123; width: 1920, height: 1080 &#125;);
+const field = createField(undefined, &#123; host, render: 'none' &#125;);
+
+const densities: number[] = [];
+field.addBody(&#123;
+  tokens: ['attract'],
+  rect: () =&gt; (&#123; x: 500, y: 400, width: 200, height: 100 &#125;),
+  onFeedback: (ch) =&gt; densities.push(ch.density),
+&#125;);
+
+// run 10 frames
+for (let i = 0; i &lt; 10; i++) host.tick();</code></pre>
+  </section>
+
+  <SeeAlso links={[
+    { href: '/docs/api/handle', label: 'FieldHandle reference' },
+    { href: '/docs/api/parity', label: 'Platform parity matrix' },
+    { href: '/docs/authoring', label: 'Authoring guide' },
+  ]} />
+</DocsLayout>
