@@ -2,7 +2,18 @@
 import Base from '../layouts/Base.astro';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import CodeTabs from '../components/CodeTabs.astro';
 import '../styles/use-cases.css';
+
+const ctaCode = `<field-root render="dots"></field-root>
+
+<h1
+  data-body="attract"
+  data-strength="1.2"
+  data-feedback
+>
+  This heading now has mass.
+</h1>`;
 
 // /use-cases — the product pitch page.
 // Source of truth: docs/canonical/use-cases.md
@@ -509,15 +520,7 @@ import '../styles/use-cases.css';
         No bundler configuration, no JavaScript wiring — the physics starts immediately.
       </p>
       <div class="uc-cta-code">
-        <pre><code>&lt;field-root render="dots"&gt;&lt;/field-root&gt;
-
-&lt;h1
-  data-body="attract"
-  data-strength="1.2"
-  data-feedback
-&gt;
-  This heading now has mass.
-&lt;/h1&gt;</code></pre>
+        <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: ctaCode }]} />
       </div>
       <div class="uc-cta-links">
         <a class="uc-btn uc-btn-primary" href="/docs">Read the docs →</a>

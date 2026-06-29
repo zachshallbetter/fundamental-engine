@@ -1,7 +1,14 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
 import SeeAlso from '../../../components/SeeAlso.astro';
+import CodeTabs from '../../../components/CodeTabs.astro';
 import { FIELD_OUTPUT_VARS } from '@fundamental-engine/core';
+
+const cssWeightExample = `/* density drives visual weight — no JS needed */
+.card {
+  scale: calc(1 + var(--field-density, 0) * 0.08);
+  box-shadow: 0 0 calc(var(--field-heat, 0) * 24px) rgba(77,163,255,0.35);
+}`;
 
 // Per-metric documentation: what each --field-* variable measures, its range, and when to use it.
 const METRIC_DOCS: Record<string, { range: string; written: string; summary: string; use: string }> = {
@@ -127,11 +134,7 @@ const ALL = [...PRIMARY, ...SECONDARY];
       on its <code>style</code> attribute. Because they are scoped to the element, you can read them in CSS
       with <code>var(--field-density)</code> — no need to query the handle or listen for events.
     </p>
-    <pre class="code-block"><code>/* density drives visual weight — no JS needed */
-.card &#123;
-  scale: calc(1 + var(--field-density, 0) * 0.08);
-  box-shadow: 0 0 calc(var(--field-heat, 0) * 24px) rgba(77,163,255,0.35);
-&#125;</code></pre>
+    <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: cssWeightExample }]} />
     <p>
       You can also read a metric from JavaScript via <code>getComputedStyle(el).getPropertyValue('--field-density')</code>,
       or use it as a <code>data-feedback</code> target to write it back as a discrete state attribute.

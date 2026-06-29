@@ -1,5 +1,6 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
 
 const codeInstall = `npm install @fundamental-engine/vanilla`;
 
@@ -43,13 +44,13 @@ const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
   </p>
 
   <h2>1. Install</h2>
-  <pre><code set:html={codeInstall}></code></pre>
+  <CodeTabs variants={[{ label: 'Terminal', lang: 'bash', code: codeInstall }]} />
 
   <h2>2. Add a canvas to your HTML</h2>
-  <pre><code set:html={codeCanvas}></code></pre>
+  <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: codeCanvas }]} />
 
   <h2>3. Start the field</h2>
-  <pre><code set:html={codeField}></code></pre>
+  <CodeTabs variants={[{ label: 'TypeScript', lang: 'ts', code: codeField }]} />
   <p>
     That's it. Particles begin flowing immediately. Any element with
     <code>data-body="attract"</code> pulls matter toward it; the page's content becomes
@@ -57,7 +58,7 @@ const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
   </p>
 
   <h2>4. Make an element a body</h2>
-  <pre><code set:html={codeBody}></code></pre>
+  <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: codeBody }]} />
   <p>
     Bodies bend the field. <code>attract</code> gathers matter; <code>repel</code> pushes
     it away. Strength (0–1) scales the pull; range (px) sets how far it reaches.
@@ -65,8 +66,8 @@ const codeSignalsCss = `/* Use them in CSS — no JavaScript polling needed */
   </p>
 
   <h2>5. Read the signals (no drawing required)</h2>
-  <pre><code set:html={codeSignalsHtml}></code></pre>
-  <pre><code set:html={codeSignalsCss}></code></pre>
+  <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: codeSignalsHtml }]} />
+  <CodeTabs variants={[{ label: 'CSS', lang: 'css', code: codeSignalsCss }]} />
   <p>
     The field writes <code>--field-density</code>, <code>--field-attention</code>, and
     <code>--field-temperature</code> directly onto elements with <code>data-feedback</code>.
