@@ -814,6 +814,30 @@
 .api-table dd {
   margin: 0;
 }
+.parity-chips {
+  display: inline-flex;
+  gap: 0.2rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+.parity-chip {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  cursor: default;
+}
+.parity-yes {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.parity-no {
+  background: transparent;
+  color: var(--text-4);
+  border: 1px solid color-mix(in srgb, var(--text-4) 30%, transparent);
+}
 @media (max-width: 680px) {
   .api-row {
     grid-template-columns: 1fr;
