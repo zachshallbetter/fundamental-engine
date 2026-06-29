@@ -134,3 +134,22 @@ test('renderless keeps a supplied field untouched — the guard also covers redu
   applyRecipe(fakeRoot(), base, { bodies: [el], annotateBodies: false, drive: false, reducedMotion: false, field, renderless: true }).destroy();
   assert.deepEqual(calls, [], 'renderless never drives the field (reduced motion shares the same single guard)');
 });
+
+test('density metric does not clobber --field-density written by the particle engine', () => {
+  // `priority-well` declares metrics: ['density', 'attention', 'priority'].
+  // The recipe pipeline must NOT write --field-density = 0 when data-field-density is absent —
+  // that would overwrite the engine's own gathered-density write from feedback-sink.
+  const base = recipeById('priority-well')!;
+  assert.ok(base.metrics.includes('density'), 'precondition: recipe declares density metric');
+  const el = fakeEl({ x: 450, y: 450, w: 100, h: 100 });
+
+  // Simulate the particle engine having written --field-density before the recipe frame runs.
+  el.props['--field-density'] = '0.720';
+
+  const applied = applyRecipe(fakeRoot(), base, { bodies: [el], annotateBodies: false, drive: false, reducedMotion: false });
+  applied.platform.tick(1, VP);
+
+  assert.equal(el.props['--field-density'], '0.720', '--field-density must not be overwritten by the recipe metric pipeline');
+
+  applied.destroy();
+});

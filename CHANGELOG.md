@@ -7,6 +7,12 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`@fundamental-engine/dom`:** `apply-recipe.ts` no longer overwrites `--field-density` when
+  applying a recipe's metric pipeline. The `density` CSS variable is now excluded from the recipe
+  `varMap` so the engine's live density signal (`--field-density`) is preserved across recipe changes.
+
 ## [0.9.1] - 2026-06-27
 
 ### Added

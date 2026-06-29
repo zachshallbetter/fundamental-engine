@@ -176,8 +176,15 @@ export function applyRecipe(root: Element, recipe: FieldRecipe, options: ApplyRe
   }
 
   // ── register for measurement + bind the metric lane to feedback variables ──────────────
+  // `density` → `--field-density` is written each frame by the particle engine's feedback-sink.
+  // Binding it through the recipe's metric pipeline would overwrite the live engine value with
+  // the host-supplied `data-field-density` attribute (absent → 0). Exclude it so the engine's
+  // write stays authoritative; `--d` is the canonical working channel.
+  const ENGINE_OWNED_METRICS = new Set(['density']);
   const varMap: Record<string, string> = {};
-  for (const f of compiled.feedback) varMap[f.metric] = f.var;
+  for (const f of compiled.feedback) {
+    if (!ENGINE_OWNED_METRICS.has(f.metric)) varMap[f.metric] = f.var;
+  }
   for (const el of elements) {
     platform.measure.register(el, { role: 'recipe-body' });
     if (wantMetrics && compiled.feedback.length) platform.feedback.bind(el, varMap);
