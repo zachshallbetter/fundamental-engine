@@ -138,6 +138,13 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
       additions.
     </p>
     <p>
+      <b>20/44 FieldHandle methods ship on Kotlin (45%).</b> The full method-by-method breakdown is on
+      the <a href="/docs/api/parity">parity matrix page</a>. The main gap versus Swift: render-layer
+      methods (<code>setRender</code>, <code>setOverlay</code>, <code>threads</code>,
+      <code>setAccent</code>) are absent because Compose and the View/Canvas host own the draw — the
+      Kotlin engine exposes the data pipeline, and Compose wires the drawing.
+    </p>
+    <p>
       The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and
       natively on Apple platforms and Android behind one host seam — is the same one the
       <a href="/docs/guides/swift">Swift port</a> tells. The seam itself is the

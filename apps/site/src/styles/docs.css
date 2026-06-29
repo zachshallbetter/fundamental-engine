@@ -821,9 +821,10 @@
   vertical-align: middle;
 }
 .parity-chip {
+  display: inline-block;
   font-family: var(--mono);
-  font-size: 0.58rem;
-  padding: 0.1rem 0.3rem;
+  font-size: 0.62rem;
+  padding: 0.1rem 0.32rem;
   border-radius: 3px;
   letter-spacing: 0.02em;
   cursor: default;
