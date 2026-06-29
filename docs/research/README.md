@@ -38,6 +38,7 @@ The first paper names the paradigm. The rest prove it in specific interface doma
 | 6 | [`06-portable-field-recipes.md`](06-portable-field-recipes.md) | **Recipes as Portable Field Programs for Interface Behavior** | A structured authoring model for composing relational field behavior without corrupting runtime vocabulary. | executable recipes | Design systems / authoring tools |
 | 7 | [`07-data-as-field-participants.md`](07-data-as-field-participants.md) | **Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields** | A data-binding model for relational interface fields. | now writable — `bindData()` + study demos ship; eval still to run | Web systems / data UX |
 | 8 | [`08-explainable-interface-behavior.md`](08-explainable-interface-behavior.md) | **Explainable Interface Behavior Through Field Diagnostics** | A diagnostic framework for explainable interaction behavior. | Platform Inspector | HCI / dev tools / explainability |
+| 9 | [`09-behavioral-models-after-boids.md`](09-behavioral-models-after-boids.md) | **Substrate, Not Spectacle: Behavioral Models After Boids** | A source-grounded comparison with Reynolds' Boids (1987): shared mechanism, the per-axis verdict, the explainability↔arbitration tradeoff, and behavioral models as computation substrate. Comparison/positioning, not an empirical study. | none (theory + source) | HCI / graphics / behavioral animation |
 
 Shared assets:
 
