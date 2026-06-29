@@ -1,0 +1,122 @@
+---
+title: "The Bats Had Momentum: What Fundamental's Field Is Missing"
+description: "In 1992, Reynolds' boids gave Batman Returns its swarming bats and its army of penguins. Fundamental descends from the same model — but it's missing the thing that made those creatures feel like matter: momentum. Here's the idea to add it, and what we'd expect."
+summary: "Fundamental flocks like a boid but doesn't move like one — bodies push matter without recoiling, so momentum leaks. A proposal for first-class mass and Newtonian reaction, and the results we'd expect from it."
+date: 2026-06-29
+category: note
+author: "Zach Shallbetter"
+draft: false
+---
+
+# The Bats Had Momentum: What Fundamental's Field Is Missing
+
+In *Batman Returns* (1992), the bats that pour through Gotham and the regiment of penguins that march
+on the city were not hand-animated. They were **boids** — a modified version of Craig Reynolds' 1987
+distributed behavioral model, one of its first big-screen outings. Each bat saw only its neighbors and
+followed a few small rules, and the swarm fell out of the interaction. It was one of the earliest times
+a film audience watched emergence do an animator's job, and it worked because the creatures didn't just
+*arrange* themselves — they *moved* like things with weight. They carried momentum. A bat that banked
+hard kept going; the flock had inertia you could feel.
+
+Fundamental is a descendant of that 1992 swarm. It's a relational field runtime — it lets the elements
+of a web page become bodies in an invisible physics field — and, as it happens, it flocks. Its forces
+for spacing, aligning, and grouping particles are even named, in the source, after Reynolds' three
+rules. Drop an autonomous agent into the field and a murmuration emerges with no code that says "flock."
+
+But watch it closely and something the bats had is missing. **Fundamental flocks like a boid, but it
+doesn't move like one.** And the reason is a single word: momentum.
+
+## Where the momentum leaks
+
+Two facts about how the engine works today.
+
+First, **bodies don't recoil.** When a body in the field pushes a particle — attracts it, repels it,
+swirls it — the particle moves, but the body doesn't move back. The body is an immovable source. In the
+real world, and in Reynolds' bats, every push has an equal and opposite push; that's how a flock's
+total momentum stays put while individuals trade it back and forth. In Fundamental, the push goes one
+way and the bookkeeping never balances.
+
+Second, **mass is nominal.** By default every particle behaves as if it weighs exactly one unit — the
+engine advances velocity by simply adding the force (`v += F`), not by dividing force by mass
+(`a = F/m`). So "heavier elements swing wider, lighter ones dart" is, right now, a thing the field
+*can't express* by default. There's an opt-in for real mass, but the recipes are all tuned around unit
+weight, so almost nothing uses it.
+
+Add a dab of friction every frame — which the engine does deliberately, to keep interfaces calm — and
+the result is a field that is **driven and damped** rather than one that *conserves*. Momentum doesn't
+circulate through it the way it circulates through a flock of bats. It leaks.
+
+This isn't a bug. It's a design that optimized for a calm, legible interface and got one. But it leaves
+a real capability on the table, and — interestingly — the capability is the one most aligned with
+Fundamental's own headline idea.
+
+## The idea: give bodies reaction, give matter mass
+
+The proposal is two linked changes, both opt-in.
+
+**1. First-class mass.** Make `a = F/m` available as a real default for a field, with a body's mass
+deriving from something physical — its rendered area, say. A heading becomes heavy; a tag becomes
+light. The machinery already exists in the engine; what's missing is making it the basis of a field's
+motion rather than a rarely-used flag.
+
+**2. Newtonian reaction.** When a force acts on matter, apply the equal-and-opposite impulse back to the
+source body. Not a new force — a *property* that existing forces opt into: when `attract` pulls a
+particle in, the body feels a small tug toward the particle in return. Bodies stop being immovable
+sources and become participants that can be moved by what they move.
+
+You can't have the second without the first — you can't recoil an infinite-mass body, so reaction needs
+bodies to have finite, real mass. The two changes are one change. And the engine team has already
+half-seen the hole: the wall primitive "does not yet recoil," and collision recoil onto the DOM is
+already filed as proposed. This would generalize that instinct across the whole force set.
+
+## What we'd expect from it
+
+This is a proposal, not a shipped feature, so the right register is *expected results* — hypotheses, not
+findings. Here is what adding momentum should do.
+
+**Reciprocity becomes physical, not just bookkeeping.** Fundamental's whole thesis is reciprocal:
+bodies bend the field, and the field bends them back. But today that "back" is a *feedback* loop — the
+field writes a CSS variable onto the element and a style rule reacts. With reaction, the loop also
+closes through *motion*: a body that throws its weight around gets pushed by the matter it disturbs.
+The headline becomes literally true at the level of physics, not only of styling. This is the single
+most thesis-aligned upgrade available.
+
+**Weight becomes legible.** A massive element should settle slowly and overshoot; a light one should
+snap. Importance could read as inertia, not just size — a heavier body resists being shoved aside by a
+crowd of lighter ones. That's a new expressive channel that costs no new vocabulary.
+
+**Momentum can be conserved on purpose.** With reaction in place and friction turned off, a field
+becomes a closed system: total momentum is preserved, the way it is in a real flock. That's an opt-in
+"physics-truth" mode for the cases that want it (a simulation, a teaching demo) sitting alongside the
+calm, damped default for the cases that don't.
+
+**The clump might ease — but we should test, not assume.** Today, opposing forces can cancel and
+friction freezes the leftover into a stalled clump. Real mass changes those dynamics: matter carries
+through a balance point instead of stopping dead at it. We'd *expect* momentum to soften the clump, but
+the honest move is to measure it, because it could equally introduce new oscillation. Reaction adds
+energy paths that didn't exist before.
+
+**And there are costs worth naming.** Momentum makes things bouncier, and bounciness is exactly what
+the calm-interface default was protecting against — so this has to be opt-in, not a global flip. Every
+recipe is tuned for unit mass, so a mass-on field needs recalibration. And the moment bodies can be
+moved by matter, layout stability becomes something the system has to actively defend rather than get
+for free. None of these is disqualifying; all of them are real.
+
+## Why this one
+
+Of everything on Fundamental's list of honest limitations, momentum is the one a single, clean mechanism
+would resolve — and the one that pays the system's own story back the most. Most of the others are
+deliberate (energy decay keeps things calm; designed forces are kept distinct from natural laws on
+purpose) or aren't the engine's job at all (whether any of this *helps a user* still needs studies that
+haven't been run). Momentum is different. It's a capability the field almost has, that the recipes
+don't yet use, that the roadmap already gestures at, and that would make the reciprocity at the heart of
+the whole project something you could feel in the motion — the way you could feel it in a swarm of bats
+over Gotham.
+
+---
+
+*The full comparison this grew out of — Fundamental against Reynolds' Boids, with the per-axis verdict
+and the explainability-vs-arbitration result — is in the research paper
+[Substrate, Not Spectacle: Behavioral Models After Boids](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/research/31-behavioral-models-after-boids.md).
+Momentum is a proposal, not a shipped feature; everything above is framed as expected results, not
+measured ones.*
