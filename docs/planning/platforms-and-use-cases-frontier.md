@@ -8,6 +8,18 @@
 > status is in [`../../android/README.md`](../../android/README.md) and the
 > [Swift](../../swift/) tree.
 
+> **Relationship to the canon.** The authoritative possibility space is
+> [`canonical/field-possibilities.md`](../canonical/field-possibilities.md) (36 sections), with its
+> shipped narrative tier in [`canonical/use-cases.md`](../canonical/use-cases.md). Those cover the
+> **semantic / UI** axis — what new *kinds of interface* the field makes possible, mostly within the
+> web/DOM — plus **§19 Platform possibilities** (missing web-platform primitives the runtime could
+> supply) and **§21 Product possibilities** (product surfaces). This doc is the complementary
+> **runtime / host axis**: *where the engine runs* (new-language cores, embedded, GPU) and *what it
+> computes when it draws nothing* (headless layout, embeddings, agent steering). It extends
+> field-possibilities §19 outward from "web-platform primitives" to "any host behind the `FieldHost`
+> seam," and §13 (render possibilities) outward to non-visual output surfaces. Concept-vs-token
+> vocabulary follows the same rule as the canon: words here are not engine tokens.
+
 ## Why this is even possible
 
 The engine's leverage is one architectural fact: **`@fundamental-engine/core` imports zero DOM and reaches
