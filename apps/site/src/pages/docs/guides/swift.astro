@@ -58,15 +58,16 @@ let field = FieldField(host: host)`;
       The same reciprocal field, native on <strong>Apple platforms</strong> — iOS 17+, macOS 14+, and
       visionOS 1+. It is a <strong>port of the JS engine, not a reinterpretation</strong>: the package
       layout, the API surface, and the physics mirror the npm packages one-to-one. Where they diverge,
-      it is a bug or a listed <a href="#parity">parity gap</a>.
+      it is a bug or a documented <a href="#parity">platform difference</a>.
     </p>
   </header>
 
   <div class="callout">
-    <b>Status: preview.</b> The Swift port is real and conformance-checked against the JS engine
-    (a 36-force golden test asserts the two planes agree), but the web plane moves first and the port
-    is behind on the newest primitives. See <a href="/docs/implementations">Implementations</a> for
-    the full surface-by-surface status, and <a href="#parity">Parity</a> below for specifics.
+    <b>Status: 44/44.</b> The Swift port is conformance-checked against the JS engine
+    (a 36-force golden test asserts the two planes agree) and ships all 44 FieldHandle methods
+    as of <a href="https://github.com/zachshallbetter/fundamental-engine/pull/822">#822</a>. See
+    <a href="/docs/implementations">Implementations</a> for the full surface-by-surface status,
+    and <a href="#parity">Parity</a> below for platform-specific notes.
   </div>
 
   <section class="docs-sec">
@@ -135,20 +136,21 @@ let field = FieldField(host: host)`;
   </section>
 
   <section class="docs-sec" id="parity">
-    <h2>Parity — the honest status</h2>
+    <h2>Parity</h2>
     <p>
-      The port is a port, and the web plane moves first. The core force set, the scheduler and
-      registries, formations, and the interactive scenes are all present and pass the cross-plane
-      conformance gate. The newest primitives — the field-channel read/write surface and the most
-      recent reactive-component work — are <strong>not yet ported</strong>. Treat the Swift surface as
-      <strong>preview</strong>: stable in shape, trailing the web on the very newest additions.
+      The Swift port ships <strong>44/44 FieldHandle methods</strong> — full parity with the JS engine
+      as of <a href="https://github.com/zachshallbetter/fundamental-engine/pull/822">#822</a>.
+      The core force set, the scheduler and registries, formations, the interactive scenes, and all
+      six advanced methods (<code>addAgent</code>, <code>sample</code>, <code>on</code>,
+      <code>readParticleIds</code>, <code>readParticleChannels</code>, <code>registerOverlay</code>)
+      are implemented and pass the cross-plane conformance gate.
     </p>
     <p>
-      <b>34/44 FieldHandle methods ship on Swift (77%).</b> The full method-by-method breakdown is on
-      the <a href="/docs/api/parity">parity matrix page</a>. The main gaps: <code>setDprCap</code>,
-      <code>setQualityTier</code>, <code>addAgent</code>, <code>sample</code>, <code>grid</code>,
-      <code>on</code>, <code>readParticleIds</code>, <code>readParticleChannels</code>,
-      <code>registerOverlay</code>, and <code>setBackground</code>.
+      The full method-by-method breakdown is on the <a href="/docs/api/parity">parity matrix page</a>.
+      Some methods behave differently by platform design — <code>setRender</code> and
+      <code>setOverlay</code> are host-owned in the native render loop; <code>scrollV</code> reads from
+      UIScrollView velocity; <code>scan</code> is called by the SwiftUI integration layer rather than
+      manually. These are documented in the parity matrix notes column.
     </p>
     <p>
       The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and

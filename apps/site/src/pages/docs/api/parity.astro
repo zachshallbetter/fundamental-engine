@@ -39,7 +39,7 @@ const METHODS: ParityRow[] = [
   { method: 'flowTo',               swift: true,  kotlin: true,  three: true  },
   { method: 'clearFlow',            swift: true,  kotlin: true,  three: true  },
   { method: 'seed',                 swift: true,  kotlin: true,  three: true  },
-  { method: 'addAgent',             swift: false, kotlin: false, three: true,  note: 'native planned — #815' },
+  { method: 'addAgent',             swift: true,  kotlin: true,  three: true,  note: 'AgentSpec / AgentHandle; Kotlin init-block wires tickAgents() via onAfterTick; Swift uses UUID-keyed agent list' },
   { method: 'addBody',              swift: true,  kotlin: true,  three: true  },
   { method: 'addEdge',              swift: true,  kotlin: true,  three: true  },
   { method: 'readEdges',            swift: true,  kotlin: true,  three: true  },
@@ -50,15 +50,15 @@ const METHODS: ParityRow[] = [
   { method: 'clearFocus',           swift: true,  kotlin: true,  three: true  },
   { method: 'particleCount',        swift: true,  kotlin: true,  three: true  },
   { method: 'energy',               swift: true,  kotlin: true,  three: true  },
-  { method: 'sample',               swift: false, kotlin: false, three: true,  note: 'force-probe; native planned — #816' },
+  { method: 'sample',               swift: true,  kotlin: true,  three: true,  note: 'force-probe at world point; Swift delegates to forceAt(); Kotlin delegates to controller.sample() → forceAt()' },
   { method: 'sampleScalar',         swift: true,  kotlin: true,  three: true  },
   { method: 'sampleGradient',       swift: true,  kotlin: true,  three: true  },
   { method: 'grid',                 swift: true,  kotlin: true,  three: true,  note: 'named ScalarGrid — lazy get/create, same grid as env.grid in the force system' },
-  { method: 'on',                   swift: false, kotlin: false, three: true,  note: 'event bus; native planned — #817' },
+  { method: 'on',                   swift: true,  kotlin: true,  three: true,  note: 'UUID-keyed subscriber bus; FieldEvent enum (tick/bodyAdd/bodyRemove/particleCapture/supernova); returns Subscription' },
   { method: 'readParticles',        swift: true,  kotlin: true,  three: true  },
-  { method: 'readParticleIds',      swift: false, kotlin: false, three: true,  note: 'requires stable particle IDs — #818' },
-  { method: 'readParticleChannels', swift: false, kotlin: false, three: true,  note: 'per-particle scalar channel readout — #819' },
-  { method: 'registerOverlay',      swift: false, kotlin: false, three: true,  note: 'extensible overlay renderer — #820' },
+  { method: 'readParticleIds',      swift: true,  kotlin: true,  three: true,  note: 'Particle.id (stable, auto-incremented by FieldStore.add); fills an Int buffer' },
+  { method: 'readParticleChannels', swift: true,  kotlin: true,  three: true,  note: 'samples named ScalarGrids at each particle position; stride = names.count/size' },
+  { method: 'registerOverlay',      swift: true,  kotlin: true,  three: true,  note: 'OverlayRenderer protocol/interface; host reads overlayRegistry and calls render() each frame' },
   { method: 'scrollV',              swift: true,  kotlin: true,  three: true,  note: 'DOM/UIKit scroll velocity; Kotlin: scrollV() + feedScrollV(); Three.js returns 0 in headless' },
   { method: 'setVisible',           swift: true,  kotlin: true,  three: true  },
   { method: 'destroy',              swift: true,  kotlin: true,  three: true  },
@@ -72,7 +72,7 @@ const total = METHODS.length;
 
 <DocsLayout
   title="Fundamental — cross-platform parity matrix"
-  description="Which FieldHandle methods ship on @fundamental-engine/three (44/44), Swift (38/44, 86%), and Kotlin (38/44, 86%). JS is the source of truth. Three.js delegates all 44 methods; native ports trail by design."
+  description="Which FieldHandle methods ship on @fundamental-engine/three (44/44), Swift (44/44), and Kotlin (44/44). Full cross-platform parity achieved. JS is the source of truth; Three.js, Swift, and Kotlin implement all 44 methods."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
@@ -80,7 +80,7 @@ const total = METHODS.length;
     <p class="lede">
       Which <a href="/docs/api/handle">FieldHandle</a> methods ship on each surface.
       JS is the source of truth. <code>@fundamental-engine/three</code> delegates all 44 methods to the
-      wrapped engine — 44/44. Swift and Kotlin are native ports that trail by design; the cross-plane
+      wrapped engine — 44/44. Swift and Kotlin are native ports at full parity — 44/44. The cross-plane
       <em>physics</em> is identical (the 36-force conformance suite asserts it). This matrix tracks
       <em>API surface</em> parity.
     </p>
@@ -144,65 +144,66 @@ const total = METHODS.length;
   </section>
 
   <section class="docs-sec">
-    <h2>Why the gaps?</h2>
+    <h2>Platform notes</h2>
     <p>
-      Both Swift and Kotlin now ship 38/44 methods. The remaining 6 require deeper engine plumbing and
-      are tracked on GitHub:
+      All three platforms ship 44/44 as of June 2026 (<a href="https://github.com/zachshallbetter/fundamental-engine/pull/822">#822</a> Swift,
+      <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a> Kotlin).
+      Some methods behave differently across platforms by design:
     </p>
     <dl class="api-table">
       <div class="api-row">
-        <dt class="k">Three.js — 44/44, but some are host-context notes</dt>
+        <dt class="k">Three.js — 44/44, host-context notes</dt>
         <dd class="d">
           <code>@fundamental-engine/three</code> delegates all 44 methods to the wrapped
-          <code>FieldHandle</code>, so every method is callable. However, some are contextually
-          irrelevant in a 3D scene: <code>setRender</code> / <code>setOverlay</code> / <code>setBackground</code>
-          are owned by the Three.js renderer — use <code>threeBackend()</code> for diagnostic overlays
-          instead. <code>scrollV</code> returns 0 (no DOM scroll). <code>scan</code> / <code>rescan</code>
-          are called internally by the body registry; in Three.js you register bodies via <code>layer.addBody(mesh, spec)</code>.
+          <code>FieldHandle</code>. Some are contextually different in a 3D scene:
+          <code>setRender</code> / <code>setOverlay</code> / <code>setBackground</code>
+          are owned by the Three.js renderer — use <code>threeBackend()</code> for diagnostic overlays.
+          <code>scrollV</code> returns 0 (no DOM scroll). <code>scan</code> / <code>rescan</code>
+          are called internally; in Three.js register bodies via <code>layer.addBody(mesh, spec)</code>.
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Needs agent infrastructure — addAgent (#815)</dt>
+        <dt class="k">sample — force probe</dt>
         <dd class="d">
-          <code>addAgent</code> attaches autonomous agent consumers to the field. The <code>AgentSpec</code>
-          type and consumer loop integration don't yet exist in the native ports. Tracked in
-          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/815">#815</a>.
+          Swift delegates to <code>forceAt(bodies:forces:env:at:)</code> in <code>Streamlines.swift</code>.
+          Kotlin delegates to <code>FieldController.sample()</code> which calls the same <code>forceAt()</code>
+          function used by the streamlines overlay. Both are safe to call between ticks.
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Needs read-only force evaluation — sample (#816)</dt>
+        <dt class="k">on — event bus</dt>
         <dd class="d">
-          <code>sample(x, y)</code> returns the net force vector at a world point without mutating
-          particle state. The force-evaluation path needs a read-only pass mode. Tracked in
-          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/816">#816</a>.
+          Both platforms use a UUID-keyed subscriber registry (not closure equality, which doesn't hold
+          across captures). <code>FieldEvent.tick</code> fires after every simulation step via an
+          <code>onAfterTick</code> hook. <code>bodyAdd</code> / <code>bodyRemove</code> fire from the
+          <code>addBody</code> / remove path. Returns a <code>Subscription</code>; call <code>.cancel()</code>
+          to unsubscribe.
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Needs event bus — on (#817)</dt>
+        <dt class="k">addAgent — autonomous consumers</dt>
         <dd class="d">
-          <code>on(event, handler)</code> requires a typed <code>FieldEvent</code> enum and subscriber
-          registry not yet present in the native engines. Tracked in
-          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/817">#817</a>.
+          <code>AgentSpec</code> carries a <code>position</code> closure sampled each tick;
+          <code>onInfluence</code> receives the net force vector at that point. Agents are ticked via
+          the same <code>onAfterTick</code> hook as the event bus, after each force step.
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Needs stable particle IDs + channel readout — readParticleIds, readParticleChannels (#818, #819)</dt>
+        <dt class="k">readParticleIds / readParticleChannels</dt>
         <dd class="d">
-          <code>readParticleIds</code> requires a stable per-particle <code>id</code> field (not yet in
-          native <code>Particle</code>). <code>readParticleChannels</code> packs scalar-grid values
-          sampled at each particle's position — the scalar grids exist but the particle-loop bridge
-          does not. Tracked in
-          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/818">#818</a> /
-          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/819">#819</a>.
+          <code>Particle.id</code> is assigned by <code>FieldStore.add()</code> via a monotonically
+          increasing counter — stable for the lifetime of the pool. <code>readParticleChannels</code>
+          samples each named <code>ScalarGrid</code> at each particle's position; the output stride
+          equals the number of channel names.
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Needs overlay renderer protocol — registerOverlay (#820)</dt>
+        <dt class="k">registerOverlay</dt>
         <dd class="d">
-          <code>registerOverlay</code> requires an <code>OverlayRenderer</code> protocol/interface
-          and a registry handoff between <code>FieldHandle</code> and the platform host frame loop.
-          The overlay registry exists in the platform layer but not the FieldHandle bridge. Tracked in
-          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/820">#820</a>.
+          <code>OverlayRenderer</code> is a protocol (Swift) / interface (Kotlin). The
+          <code>FieldHandle</code> keeps a <code>[String: OverlayRenderer]</code> registry the
+          platform host frame loop reads to call <code>render()</code> after the underlay draw each
+          frame. No deep engine integration — pure registry delegation.
         </dd>
       </div>
     </dl>
