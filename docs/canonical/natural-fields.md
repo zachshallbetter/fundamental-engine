@@ -7,7 +7,9 @@
 > [platform-architecture.md](platform-architecture.md) and
 > [../engine-reference/forces-system.md](../engine-reference/forces-system.md). For *why* a token is
 > designed vs. natural — its relationship to what nature actually does, and why the departures are the
-> engine's flexibility — see [designed-vs-natural-map.md](designed-vs-natural-map.md).
+> engine's flexibility — see [designed-vs-natural-map.md](designed-vs-natural-map.md). For how dimensions,
+> fields, forces, and relationships compose — orthogonal-by-default, association ≠ coupling, forces as the
+> only coupling mechanism — see [dimensional-coupling.md](dimensional-coupling.md).
 
 # Natural Fields
 
@@ -36,7 +38,8 @@ Canonical forces are designed verbs.
 Derived behaviors are not additional fundamental forces.
 Fieldflow is transport along field structure.
 Diagnostics reveal invisible structure.
-Recipes compose behavior into interface meaning.
+Configurations compose behavior into interface meaning.
+FieldRecipe is the current API representation of a configuration.
 ```
 
 Short version: **natural fields are not tokens; tokens are translations.** So `gravity` is both a
