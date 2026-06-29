@@ -144,6 +144,13 @@ let field = FieldField(host: host)`;
       <strong>preview</strong>: stable in shape, trailing the web on the very newest additions.
     </p>
     <p>
+      <b>34/44 FieldHandle methods ship on Swift (77%).</b> The full method-by-method breakdown is on
+      the <a href="/docs/api/parity">parity matrix page</a>. The main gaps: <code>setDprCap</code>,
+      <code>setQualityTier</code>, <code>addAgent</code>, <code>sample</code>, <code>grid</code>,
+      <code>on</code>, <code>readParticleIds</code>, <code>readParticleChannels</code>,
+      <code>registerOverlay</code>, and <code>setBackground</code>.
+    </p>
+    <p>
       The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and
       natively on Apple platforms behind one host seam — is in
       <a href="/writings/one-engine-four-runtimes">One Engine, Four Runtimes</a>. The seam itself is
