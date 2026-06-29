@@ -107,15 +107,15 @@ jobs:
       - name: Check recipes datafile
         run: pnpm check:recipes
 
-      # packages/elements/custom-elements.json is generated from the element source (pnpm gen:cem);
-      # fail if the committed manifest drifted from the annotated <field-root>/<field-cell> classes.
-      - name: Check custom-elements manifest
-        run: pnpm check:cem
-
       # apps/site/src/data/atoms.json is generated from the compiled core (pnpm gen:atoms); fail if
       # it drifted — catches a force added to the engine but not regenerated in the site atom catalog.
       - name: Check atoms datafile
         run: pnpm check:atoms
+
+      # packages/elements/custom-elements.json is generated from the element source (pnpm gen:cem);
+      # fail if the committed manifest drifted from the annotated <field-root>/<field-cell> classes.
+      - name: Check custom-elements manifest
+        run: pnpm check:cem
 
       # the cross-plane conformance golden (Swift parity, #526) is emitted from the JS engine
       # (pnpm gen:golden); fail if the committed golden drifted from the current JS force math, so the
