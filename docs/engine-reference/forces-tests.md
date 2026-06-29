@@ -96,7 +96,7 @@ interface Scenario {
 
 The class decides how `runScenario` wires the environment (§20.1):
 
-- **`A` — body → particle.** Single particle, no services. 20 forces.
+- **`A` — body → particle.** Single particle, no services. 22 forces.
 - **`B` — particle ↔ particle.** Needs `env.neighbors` (a real spatial hash). `collide`,
   `cohesion`, `pressure`, `link`, `hunt`, `align`.
 - **`C` — field-buffer.** Needs `env.grid` (a real `ScalarGrid` advanced each frame).

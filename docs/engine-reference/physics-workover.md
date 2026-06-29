@@ -78,8 +78,8 @@ substrate already ships. Do not re-implement these:
 - **`magnetism`**: the 2D Lorentz force on charged, moving matter. `natural.ts`.
 - **First-class inertial mass `p.m` with `a = F/m`.** The integrator captures the
   pre-force velocity and divides the force-induced delta by `p.m`
-  (`core/integrator.ts:92-151`). A `mass` field option exists. The integrator
-  header comment claiming this "arrives in Phase 6" is stale; it is already in.
+  (`core/integrator.ts:92-151`). A `mass` field option exists. Shipped and
+  conformance-tested (`integrator.test.ts`); default is unit mass (opt-in via `FieldOptions.mass`).
 - **`b.accreted`**: the sink captured-count field (`forces/index.ts:188`),
   with `capacity` and a conserved `supernova` release. (The `b.mass` to
   `b.accreted` rename is already done in TS.)

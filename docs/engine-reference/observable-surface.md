@@ -302,44 +302,44 @@ here so the gap is explicit:
 | `store.size` | Live particle count | **`handle.particleCount()`** — the accessor added for this |
 | `store.particles[]` | Full particle pool | **`handle.energy()`** (aggregate summary) + **`handle.readParticles()` / `readParticleIds()` / `readParticleChannels()`** (zero-copy wire-format read-out, see below) |
 
-There is no `frameDuration` measurement. The engine does not record how long a frame takes —
-see the `FieldPerf` design direction below.
+Frame timing ships as **`FieldPerf`** (`createFieldPerf`, from `@fundamental-engine/dom`) — host-driven:
+feed it your rAF timestamps and read fps / frame budget / dropped frames / percentiles. See below.
 
 ---
 
-## `FieldPerf` — design direction (not yet implemented)
+## `FieldPerf` — frame-timing meter (shipped)
 
-The runtime has no self-measurement of frame cost. This is the highest-priority observability
-gap: `inspectBudget()` can tell you particle count is over limit, but can't tell you if that's
-actually causing a frame-time problem.
-
-The proposed surface — a `FieldPerf` object updated each frame alongside `Env`:
+Frame-cost self-measurement ships as **`FieldPerf`** (`packages/dom/src/perf.ts`, `createFieldPerf`,
+exported from `@fundamental-engine/dom`). Where `inspectBudget()` judges a *configuration* (is the
+particle count over limit?), `FieldPerf` measures the *actual* frame timing. It is **host-driven** — no
+internal `requestAnimationFrame`; you feed it your loop's rAF timestamps via `feed(ts)` and read a pure
+snapshot:
 
 ```ts
-interface FieldPerf {
-  frameDuration: number;      // ms, last frame total (sim + render combined)
-  simDuration: number;        // ms, physics tick only
-  renderDuration: number;     // ms, canvas draw only
-  droppedFrames: number;      // cumulative count: frames where frameDuration > 1.5 × targetMs
-  qualityTier: 0 | 1 | 2 | 3; // 0 = full quality, 3 = minimum viable
-  cssWritesPerFrame: number;  // style mutations per frame (FeedbackRegistry writes)
-  poolSize: number;           // current store.size
-  poolHighWaterMark: number;  // max particles ever allocated in this session
+interface FieldPerfSnapshot {
+  fps: number | null;                      // round(1000 / median delta)
+  budgetMs: number | null;                 // detected frame budget (median of the seed deltas)
+  medianMs, p95Ms, p99Ms: number | null;   // windowed delta percentiles
+  dropped: number;                         // cumulative deltas > budget × 1.5
+  frames: number;                          // total clean deltas counted
+  loafCount, tbtMs: number;                // Long-Animation-Frame count + Total Blocking Time (opt-in `{ loaf: true }`)
 }
 ```
 
-Would be observable the same way `EnergyReport` is — pull-based via `handle.perf()`, with the
-option to mirror key metrics as `--field-perf-*` CSS variables for CSS-driven debug overlays.
+Gaps > 500 ms (tab switch / sleep) are skipped as discontinuities. And the **QualityGovernor**
+(`governor.ts`, exported; wired on attach — see
+[platform-architecture.md](../canonical/platform-architecture.md#the-qualitygovernor)) turns sustained
+budget overruns into a degradation *tier* (reduce particle cap → simplify render → throttle DOM work),
+so `prefers-reduced-motion` is no longer the only quality lever.
 
-### Identified gaps in priority order
+### Still-open instrumentation gaps
 
-| Gap | Why it matters | Blocks |
-|---|---|---|
-| **Frame duration split** (`simDuration` / `renderDuration`) | Without it, you can't tell if the bottleneck is the physics tick or the canvas draw | Any meaningful perf regression story |
-| **Adaptive quality governor** | Detect sustained budget overrun (e.g. 10 consecutive frames > 20 ms) and respond: reduce particle cap → simplify render mode → increase integration step → pause heatmap | Currently `prefers-reduced-motion` is the only lever, and it's binary |
-| **Per-force timing** (`forceTimings: Map<token, avgMs>`) | With many bodies, hunt / metaball / shaped-source forces are meaningfully more expensive than others; no way to identify which `[data-body]` is expensive at runtime | Force author guidance; body-count tuning |
-| **CSS write cost** (`cssWritesPerFrame`, `skippedElementUpdates`) | 80 bodies × 10 vars = 800 style mutations per frame; no metric for off-screen elements still receiving writes | FeedbackRegistry tuning |
-| **Pool stability** (`poolHighWaterMark`, `particleAllocRate`) | The pool grows on demand with no shrink path; over a long session, no signal that it has stabilized | Session-length profiling |
+`FieldPerf` measures *total* frame timing; the finer-grained splits remain unbuilt:
 
-The governor is the only one that changes runtime behavior rather than just observing it —
-everything else is read-only instrumentation.
+| Gap | Why it matters |
+|---|---|
+| **Sim-vs-render split** (`simDuration` / `renderDuration`) | `FieldPerf` reports the total frame delta; it can't yet say whether the physics tick or the canvas draw is the bottleneck |
+| **Per-force timing** (`forceTimings: Map<token, avgMs>`) | No way to identify which `[data-body]` is expensive at runtime (hunt / metaball / shaped-source cost more) |
+| **CSS write cost** (`cssWritesPerFrame`, `skippedElementUpdates`) | 80 bodies × 10 vars = 800 style mutations/frame; no metric for off-screen elements still receiving writes |
+| **Pool stability** (`poolHighWaterMark`, `particleAllocRate`) | The pool grows on demand with no shrink path; no signal that it has stabilized over a long session |
+| **Handle integration** (`handle.perf()` + `--field-perf-*` mirror) | `FieldPerf` is a standalone meter today; a pull-based `handle.perf()` and a CSS-var mirror for debug overlays are still proposed |
