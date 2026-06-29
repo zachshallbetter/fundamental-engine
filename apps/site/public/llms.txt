@@ -133,7 +133,7 @@ counts when its source is reachable:
 
 ## Optional
 
-- [llms-full.txt](https://fundamental-engine.com/llms-full.txt): every canonical document, concatenated into one file
+- [llms-full.txt](https://fundamental-engine.com/llms-full.txt): the full corpus — every canonical document, the site documentation pages, and the recipe catalog, concatenated into one file
 - [GitHub repository](https://github.com/zachshallbetter/fundamental-engine): the monorepo — core, platform, elements, react, vanilla, and this site
 - [Writings](https://fundamental-engine.com/writings): the eight-paper research family on the field model
 - [The Lab](https://fundamental-engine.com/lab): a physics detector — fire a particle into any force and verify its law

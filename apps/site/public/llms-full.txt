@@ -1,13 +1,16 @@
-# Fundamental — full canonical documentation
+# Fundamental — full documentation corpus
 
 Created by Zach Shallbetter (zachshallbetter.com).
 
-Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
+Source: docs/canonical/, the site documentation pages (apps/site/src/pages/docs/), and the
+recipe catalog (data/recipes.json) in https://github.com/zachshallbetter/fundamental-engine
 Generated: 2026-06-29 by apps/site/scripts/gen-llms.mjs
-Files: 26
+Canonical docs: 26 · documentation pages: 48 · recipes: 64
 
-These are the project's canonical documents — the authority on concepts, terminology, and
-contracts — concatenated in filename order. The live site map is https://fundamental-engine.com/llms.txt.
+Three sections, in order: (1) the project's CANONICAL documents — the authority on concepts,
+terminology, and contracts; (2) the authored prose of the SITE DOCUMENTATION pages (the
+data-driven catalog tables are generated at build time and are not reproduced here); (3) the
+FIELD RECIPES catalog. The live site map is https://fundamental-engine.com/llms.txt.
 
 ========================================================================
 FILE: README.md
@@ -9854,3 +9857,2313 @@ This list records the build order that has now shipped; every item below is live
 11. Prediction mode
 12. Topology/flux-linkage after fieldflow stabilizes
 ```
+
+========================================================================
+## SITE DOCUMENTATION PAGES
+========================================================================
+
+========================================================================
+PAGE: /docs/accessibility-preview — Fundamental — Accessibility Preview
+========================================================================
+
+Accessibility preview
+The contract: motion is optional, meaning is never motion-only. Under
+prefers-reduced-motion: reduce the engine freezes the simulation ( dt = 0 )
+— but the field's state still reads, because it lives in CSS variables, not in travel.
+Preview as reduced motion
+Showing: motion on
+Motion on
+mass
+particles travel; the headline pulses
+Reduced motion
+mass
+no travel — the lit state still reads
+Reduced-motion fallbacks
+Full mode Reduced mode
+
+========================================================================
+PAGE: /docs/accessibility — Fundamental — Accessibility
+========================================================================
+
+Accessibility
+Decorative by contract
+The field is ambiance, never content. It's built so assistive tech skips it, motion
+preferences are honoured, and keyboard users get the same reactions as the mouse.
+The canvas is hidden from assistive tech
+Every field surface — <field-root> , <field-cell> , and
+mountField() — marks its canvas aria-hidden="true" automatically, sits
+at z-index: 0 behind the content, and is pointer-events: none . Screen
+readers and tab order never touch it.
+Reduced motion is honoured
+Under prefers-reduced-motion: reduce , the integrator runs with dt = 0 —
+the simulation freezes to a single calm frame, and the CSS backdrop animation is disabled. The
+field is present but still.
+That covers the engine's own motion. If you drive animation from a feedback variable,
+gate it the same way — the value is still there under reduced motion, so nothing is lost:
+Focus engages, like hover
+Bodies marked data-hot activate on focus as well as hover — so a
+keyboard user tabbing through links gets the same field reaction (and the same
+--field-density feedback) a pointer user gets. Reactions are progressive enhancement layered on
+real, focusable elements.
+Guidance for consumers
+Never put essential content only in a render layer. Semantic HTML is the source of meaning. Canvas, SVG overlays, diagnostic views, and vectorized visuals may clarify, emphasize, or represent state, but the interface must remain usable without them.
+Pair visuals with a semantic source. When a visual layer represents content, bind it through the platform's VisualBindingRegistry so it is aria-hidden unless it carries independent meaning; lint() flags orphan and un-hidden visuals. See the live accessibility preview .
+Keep text legible on its own. Don't rely on the field for contrast — --field-density effects should enhance already-readable type, not create it.
+Respect the user's setting. If you add your own --field-density -driven motion, gate it behind prefers-reduced-motion too. Meaning lives in state, not motion — reduced motion loses none of it.
+Words glow, they are never drawn. The engine never assembles particles into letterforms — text stays real and selectable.
+Binding a decorative visual to the element that carries its meaning, so assistive tech skips
+the canvas and reads the source:
+
+========================================================================
+PAGE: /docs/api/attributes — Fundamental — data-* attributes
+========================================================================
+
+API reference
+data-* attributes
+A body is configured entirely in markup. Each force reads only the attributes it uses and
+ignores the rest, so you can set a few and compose freely.
+All attributes
+Which force reads which
+Beyond the universal data-body / data-when / data-feedback ,
+each force reads this subset (declared in the catalog):
+What the field writes back
+Reciprocity has two halves: bodies bend the field through data-* , and the field
+bends them back through CSS custom properties. A body that opts in ( data-feedback )
+receives these on its element — read them in your own CSS to make type glow, cards lift, or a
+meter fill. The write target is the element itself, or a body's writeTarget .
+<field-root> HTML attributes
+The <field-root> custom element mirrors every createField option
+as a kebab-case HTML attribute. Setting an attribute after mount calls the corresponding setter
+on the live handle — so declarative markup and imperative runtime control are the same surface.
+
+========================================================================
+PAGE: /docs/api/catalog — Fundamental — Conditions, formations & modes
+========================================================================
+
+API reference
+Conditions, formations & modes
+The dimensions that shape the field independently of the forces themselves — when a
+force acts, a bias on every particle, how the field is drawn , and its color.
+Conditions
+Gate any force with data-when ; it acts only while the condition holds.
+Formations
+A formation is a single global bias on every particle at once. Switch it live with
+field.setFormation(name) .
+Render modes
+The same physics, drawn differently. Set render or call field.setRender(mode) .
+Overlay readings
+Field Surfaces, the front layer — line-drawn diagnostics over the content. Set
+overlay or call field.setOverlay(reading) ; readings are
+additive — pass a stack ( ['grid','path'] , or space-separated in the
+attribute) and they compose over whatever the underlay is drawing.
+Palettes
+The color template the travelling accent journeys through. Swap with field.setPalette(name) .
+
+========================================================================
+PAGE: /docs/api/forces — Fundamental — Forces reference
+========================================================================
+
+API reference
+The forces
+Compose them on any data-body element, space-separated. Each card is generated
+from the engine's own catalog — the law, the attributes it reads, and a real-world use.
+Runtime tokens only. Every card here is a real, passported engine token. Each carries a badge
+from the engine's classification — either a fundamental-field parent
+( gravity
+EM
+strong
+weak ) or a kind
+( designed , derived ,
+transport , metric ). Only
+gravity / electromagnetic / strong / weak are conceptual natural fields;
+charge and magnetism are electromagnetic expressions , while
+thermal , diffuse , and collide are derived behaviors. Concepts
+( spring , orbit ), metrics ( mass ), and diagnostics
+( potential ) are not tokens and do not appear here — see the
+Natural Fields model and the
+recipe model .
+{
+families.map((fam) => {
+const list = MANUAL_FORCES.filter((f) => f.family === fam.key);
+return (
+( )
+{list.map((f) => (
+.
+))}
+);
+})
+}
+
+========================================================================
+PAGE: /docs/api/handle — Fundamental — FieldHandle
+========================================================================
+
+API reference
+The FieldHandle
+Every entry point — createField , mountField , the
+FieldField class, the <field-root> element (proxied), and
+the React onReady — hands you a FieldHandle . Use it to drive the
+field after it mounts.
+How you get one
+Every entry point returns the same handle — pick the one that matches your stack. With the
+web component it's also proxied onto the element , so the element is
+the handle.
+Methods
+{
+HANDLE.map((m) => )
+}
+On the element. When you use <field-root> , these are proxied onto
+the element itself — document.querySelector('field-root').setFormation('wells') .
+Diagnostics
+Two read-only accessors give external tools — debug overlays, the DataConsole, Inspector panels
+— access to engine state that is otherwise private to the engine:
+particleCount() → number
+Live size of the particle pool ( store.size forwarded). Use for budget monitors that need the count without walking the array (which inspectBudget does internally).
+energy() → &#123; kinetic, thermal, total, count &#125;
+Per-frame energy snapshot. Forwards to energyReport(store.particles) — the function exists in @fundamental-engine/core/diagnostics/energy ; this accessor exposes it without requiring a reference to the internal particle array.
+Shipped-but-unfrozen. Both accessors ship today and are safe to use. They are not part
+of the frozen 0.x contract — their signatures may refine before 1.0 as the
+FieldPerf surface is designed. See the performance
+docs for the full observability gap analysis.
+A worked example
+Drive the field from your own code — recolor it, reshape it, thread engaged elements
+together, react to events, and clean up:
+Sampling the field
+Three read-only paths let you query the field's state at a point — without walking the particle
+array. All take coordinates in the field's own pixel space (see
+coordinate space below for the window vs contained distinction).
+sampleScalar(x, y)
+Smooth bilinear density ∈ [0,1] from the heatmap grid. Stays well-defined at a source (non-degenerate gradient). Requires heatmap: true .
+sampleGradient(x, y)
+Density gradient — direction and steepness (1/px) of increasing density. The analytic companion to sampleScalar on the same grid. Use for "forage-by-gradient" agents.
+sample(x, y)
+Net force vector &#123; x, y &#125; a still test particle would feel — all visible body wells superposed. Use for custom visualizers (vector grids, streamline tubes, mesh displacement).
+atomAt(x, y) / focusAt(x, y) / clearFocus()
+Identify the nearest seeded particle within ~24 px and return its data record. focusAt also highlights the particle (hold affordance before a click); clearFocus releases it.
+grid(name)
+Open a named host-authorable ScalarGrid — deposit signal, let the engine diffuse it, read the level and gradient back. The same grid type used by diffuse / memory forces.
+addField(name, sampler) / sampleField(name, x, y)
+Register an external scalar field (terrain height, soil moisture) and sample it through the same read path as the engine's built-in layers.
+Shipped-but-unfrozen. These sampling APIs are live and stable for consumers today, but
+their signatures may refine (e.g. the grid mode enum, the addField
+coupling syntax) before 1.0.
+Discrete events
+on(type, cb) is the host-agnostic push bus for reacting to occurrences instead
+of polling feedback channels each frame. It returns an unsubscribe function; subscribing to a
+type with no active bodies is free (lazy evaluation).
+absorb
+A sink body captured matter — the rising edge of accretion. Payload: &#123; body, count &#125; .
+release
+A sink body reached capacity and released (supernova) — the falling edge. Payload: &#123; body, count &#125; .
+Contact, settle, and enter/exit events are the next slice (#441) — they follow the same
+on bus once they ship.
+Swarm readout
+Three zero-allocation methods copy live particle state into caller-owned typed arrays —
+the interface a WebGL renderer or a Three.js layer uses to draw the field without coupling
+to the internal particle store.
+Programmatic bodies & edges
+The [data-body] scanner is the primary authoring surface — DOM-first, declarative.
+For non-DOM hosts (a Three.js mesh, a native view, a game entity) the addBody /
+addEdge family gives the same physics without requiring a DOM element.
+Coordinate space: flowTo , burst , and sample
+The position-taking methods — flowTo(x, y) , burst(x, y) , and the
+sampling reads ( sample(x, y) , sampleField(name, x, y) ,
+atomAt , focusAt ) — all take coordinates in the field's own
+pixel space , the same space its particles and bodies live in. What that space
+is depends on how the field was created:
+Window field — browserHost / <field-root>
+Field space equals viewport space (the canvas is fixed and full-viewport, so
+the origin is 0,0 ). Pass viewport pixels — a pointer event's
+clientX / clientY work directly. To track a document element, read its
+getBoundingClientRect() ; because that rect is viewport-relative, you must
+recompute on scroll as the element moves under the fixed field.
+Contained field — containerHost(el) / new FieldField(&#123; bounds: el &#125;)
+The field, its bodies, and its canvas all live in the container's local space :
+the engine subtracts the container's origin when it measures bodies, so the args you pass must
+be container-local ( clientX − rect.left ), not viewport. These
+local coordinates are scroll-invariant — the container and its contents move
+together, so a focus pinned to a child stays put without recompute as the page scrolls.
+The methods don't translate for you. flowTo / burst store the raw
+(x, y) and compare them against particle positions directly — there is no
+viewport→local conversion inside the engine. A window field has a zero origin so viewport pixels
+happen to be correct; a contained field does not, so passing viewport pixels there places the
+focus in the wrong spot. Convert to the field's space before you call.
+
+========================================================================
+PAGE: /docs/api — Fundamental — API reference
+========================================================================
+
+API reference
+The complete surface .
+Every option, method, attribute, and catalog entry. The forces, presets, conditions, and
+formations pages are generated from the engine's own catalog, so they can't drift from the
+code you install.
+Reference
+At a glance. forces · presets ·
+conditions · formations ·
+render modes · palettes — one shared field
+runtime, platform-native DOM participation, and a core with zero runtime dependencies.
+
+========================================================================
+PAGE: /docs/api/metrics — Fundamental — CSS metrics reference
+========================================================================
+
+API reference
+--field-* metrics
+The field writes measured state back to each body as CSS custom properties. Style with them directly
+— no JavaScript readback needed. The primary seven are updated every frame by the core loop; the
+sub-variables are written by the agent layer on interaction ticks.
+How readback works
+When the field runs, each registered body receives its own set of --field-* properties
+on its style attribute. Because they are scoped to the element, you can read them in CSS
+with var(--field-density) — no need to query the handle or listen for events.
+You can also read a metric from JavaScript via getComputedStyle(el).getPropertyValue('--field-density') ,
+or use it as a data-feedback target to write it back as a discrete state attribute.
+Primary metrics
+Written every frame by the core loop. Available immediately when a body is registered.
+Agent-layer sub-variables
+Written by the agent layer on interaction ticks — not every frame. May be absent until the first tick.
+
+========================================================================
+PAGE: /docs/api/options — Fundamental — createField & options
+========================================================================
+
+API reference
+createField & options
+The lowest-level entry point. createField(canvas, &#123; host, ...options &#125;)
+starts the engine on a canvas you provide and returns the
+FieldHandle — a host is required (the core is
+renderer-agnostic; @fundamental-engine/vanilla wires the browser host for you). The web
+component, the FieldField class, and mountField() all wrap it.
+Signature
+A host is required. @fundamental-engine/core is renderer-agnostic, so
+createField takes a host . In the browser, use createField
+from @fundamental-engine/vanilla
+(it wires
+browserHost() for you)
+or pass host: browserHost() from
+@fundamental-engine/dom . The snippets below omit it for brevity.
+FieldOptions
+Every field is optional. Defaults keep the live field unchanged until you opt in.
+Common configurations
+Every option is optional and the defaults keep the field calm. These are the combinations
+worth knowing — each is the whole options object (the host is omitted;
+wire it per the signature above, or use @fundamental-engine/vanilla ). Switch tabs to compare.
+These are creation-time. Most have a live counterpart on the
+FieldHandle — setPalette , setRender ,
+setAttention , setCausality — so you can change them after mount too.
+
+========================================================================
+PAGE: /docs/api/parity — Fundamental — cross-platform parity matrix
+========================================================================
+
+API reference
+Platform parity matrix
+Which FieldHandle methods ship on each surface.
+JS is the source of truth. @fundamental-engine/three delegates all 44 methods to the
+wrapped engine — 44/44. Swift and Kotlin are native ports at full parity — 44/44. The cross-plane
+physics is identical (the 36-force conformance suite asserts it). This matrix tracks
+API surface parity.
+How to read this table. A green chip means the method ships on that platform. A grey chip
+means it is not yet implemented (or not applicable for that platform — see the note column for
+context). The counts below each platform header show what fraction is covered.
+FieldHandle coverage
+Method
+Three.js
+/ ( %)
+Swift
+/ ( %)
+Kotlin
+/ ( %)
+Notes
+Platform notes
+All three platforms ship 44/44 as of June 2026 ( #822 Swift,
+#823 Kotlin).
+Some methods behave differently across platforms by design:
+Three.js — 44/44, host-context notes
+@fundamental-engine/three delegates all 44 methods to the wrapped
+FieldHandle . Some are contextually different in a 3D scene:
+setRender / setOverlay / setBackground
+are owned by the Three.js renderer — use threeBackend() for diagnostic overlays.
+scrollV returns 0 (no DOM scroll). scan / rescan
+are called internally; in Three.js register bodies via layer.addBody(mesh, spec) .
+sample — force probe
+Swift delegates to forceAt(bodies:forces:env:at:) in Streamlines.swift .
+Kotlin delegates to FieldController.sample() which calls the same forceAt()
+function used by the streamlines overlay. Both are safe to call between ticks.
+on — event bus
+Both platforms use a UUID-keyed subscriber registry (not closure equality, which doesn't hold
+across captures). FieldEvent.tick fires after every simulation step via an
+onAfterTick hook. bodyAdd / bodyRemove fire from the
+addBody / remove path. Returns a Subscription ; call .cancel()
+to unsubscribe.
+addAgent — autonomous consumers
+AgentSpec carries a position closure sampled each tick;
+onInfluence receives the net force vector at that point. Agents are ticked via
+the same onAfterTick hook as the event bus, after each force step.
+readParticleIds / readParticleChannels
+Particle.id is assigned by FieldStore.add() via a monotonically
+increasing counter — stable for the lifetime of the pool. readParticleChannels
+samples each named ScalarGrid at each particle's position; the output stride
+equals the number of channel names.
+registerOverlay
+OverlayRenderer is a protocol (Swift) / interface (Kotlin). The
+FieldHandle keeps a [String: OverlayRenderer] registry the
+platform host frame loop reads to call render() after the underlay draw each
+frame. No deep engine integration — pure registry delegation.
+
+========================================================================
+PAGE: /docs/api/presets — Fundamental — Presets
+========================================================================
+
+API reference
+Presets
+A preset expands to several co-located bodies — one primitive each, sharing the element's
+rectangle. It's pure composition: the engine never grows to add one.
+Usage
+The presets
+
+========================================================================
+PAGE: /docs/api/stability — Fundamental — API stability
+========================================================================
+
+API reference
+API stability
+The architecture has stopped being fluid. The surface below is frozen for 0.x :
+each symbol stays exported, from the same package, with the same kind, and does not break for the
+life of the 0.x line. The freeze is enforced in CI by pnpm check:api —
+entries that fail the build if they change.
+Package names. Core publishes as @fundamental-engine/core ;
+the rest are @fundamental-engine/dom , @fundamental-engine/elements ,
+@fundamental-engine/react , @fundamental-engine/vanilla .
+Stable — entry points & runtime
+Symbol Package What it is
+createField has two doors on purpose : the core primitive is renderer-agnostic
+and host-required; @fundamental-engine/vanilla re-exports the host-bundled convenience so the
+no-framework path stays one call. Both are frozen.
+Stable — types
+Type Package What it is
+Stable — elements & the body contract
+Surface Package What it is
+attribute
+core BODY_SELECTOR
+The body contract. "Every element is a body" via the attribute on ordinary elements.
+There is no <field-body> element. Bodies are an attribute on ordinary
+elements, not a tag — the body contract is the data-body attribute. The pre-rename
+<forces-field> / <forces-cell> tags were removed in the hard
+rename and are not available — there is no alias window.
+Experimental — not frozen
+These carry no stability guarantee and may change shape or be removed in any release. Some
+have exported building blocks today — those are shipped-but-unfrozen : present in the
+package, but not part of the contract until promoted above.
+Area Status Notes
+Compatibility rules
+Enforced. scripts/api-surface.ts (typechecked) locks every value and type;
+scripts/check-api-surface.mjs locks the element tags and the data-body
+contract; both run via pnpm check:api in CI. The full contract is in
+docs/canonical/api-stability.md ; publish order is in PUBLISHING.md .
+
+========================================================================
+PAGE: /docs/api/types — Fundamental — Types
+========================================================================
+
+API reference
+Core & platform types
+For advanced use and authoring your own forces. Core types describe field
+computation (renderer-agnostic); platform types describe DOM participation. A
+force is just an object implementing the Force contract — the engine never
+special-cases any single one.
+Force
+The contract every force implements. apply nudges one particle given one body and the shared env.
+Body
+A DOM element as a force source — parsed from data-* attributes , then refreshed each frame.
+Particle
+A point-mass in the conserved pool.
+Env
+The shared per-frame environment handed to every force — precomputed vectors plus the engine services.
+Platform types
+The core types above are renderer-agnostic. @fundamental-engine/dom adds the DOM
+participation layer: createFieldPlatform(root) returns a FieldPlatform
+binding the six registries to the FrameScheduler . See
+the platform overview .
+Two words that mean different things
+A couple of terms recur across lanes — they are disambiguated here so a type is never misread:
+phase Scheduler phase — a runtime loop step ( discover → read → compute → state → write → render ), the Phase type above. A transition phase (a weak-field state change, expressed by the morph token) and a particle phase (a particle property) are different things. There is no phase force token.
+mass A property / metric — the particle field m , or a recipe metric. It is not a runtime token; weight comes from gravity / attract .
+potential A diagnostic (a sampled scalar field), not a token — see diagnostic overlays .
+
+========================================================================
+PAGE: /docs/api/utilities — Fundamental — platform utilities
+========================================================================
+
+API reference
+Platform utilities
+Shipped helpers that sit below the main tutorial path but are load-bearing in real
+applications. All seven are part of the stable platform surface. Most come from
+@fundamental-engine/dom ; headlessHost and
+allocateAttention come from @fundamental-engine/core .
+withFlip
+allocateAttention
+threadOverlay
+bindFieldNav
+QualityGovernor
+textBodies
+headlessHost
+withFlip
+The FLIP (First, Last, Invert, Play) animation primitive. Measures where
+elements sit, runs your DOM mutation, then translates each element from its old position to
+its new one and releases the offset under a transition — so re-sorts and re-parents read as
+travel, not teleportation.
+Respects prefers-reduced-motion: reduce : the mutation still runs, only the
+animation is skipped.
+withFlip(elements, mutate, opts?)
+elements is called twice — before and after mutate — so a
+callback that re-queries the DOM naturally covers reparenting. Elements that only appear
+after the mutation (no first rect) are left alone.
+opts.axis
+'both' (default) — animates translate(dx, dy) . 'y'
+— animates translateY(dy) only, for single-column lists where horizontal
+delta is noise.
+opts.exclude
+(el: HTMLElement) => boolean — elements the mutation moved but that should
+NOT be translated (e.g. a tile whose size class changed, settled a different way).
+import &#123; withFlip &#125; from '@fundamental-engine/dom';
+// re-sort a card list with animated travel
+withFlip(
+() => [...grid.querySelectorAll('.card')] as HTMLElement[],
+() => grid.append(...sortedCards), // the actual DOM mutation
+&#123; axis: 'y', duration: 400 &#125;
+);
+allocateAttention
+A conserved attention budget for a page. When any body is engaged (hovered,
+focused, tapped), allocateAttention computes a per-body effective-strength
+multiplier that boosts the engaged body while proportionally starving the others — because
+the total is invariant, the field cannot emphasise two things at once.
+The model is feed-forward on demand : idle bodies (nothing engaged) always receive a
+multiplier of 1, so a field that opts in is unchanged until something is actually
+engaged .
+allocateAttention(inputs, opts?)
+Takes an array of &#123; strength, on &#125; items (one per body) and returns a
+parallel array of multipliers the integrator folds into each body's force magnitude.
+opts.beta
+Engagement multiplier β — how much harder an engaged body competes. Default 2 .
+The engaged body's effective strength is strength × (1 + β) × k where
+k = ΣS / ΣM normalises the total.
+opts.lo / opts.hi
+Multiplier clamp floor / ceiling. Defaults: 0.25 / 3 .
+import &#123; allocateAttention &#125; from '@fundamental-engine/core';
+// compute multipliers for three bodies on hover of the first
+const muls = allocateAttention(
+[
+&#123; strength: 0.8, on: true &#125;, // hovered
+&#123; strength: 0.6, on: false &#125;,
+&#123; strength: 0.4, on: false &#125;,
+],
+&#123; beta: 2 &#125;
+);
+// muls[0] > 1 (competing harder), muls[1] + muls[2] < 1 (starved)
+threadOverlay
+An absolutely-positioned, aria-hidden , pointer-events-none SVG overlay that
+draws cubic-bezier center-to-center threads from a source element to one or
+more targets. The invisible-fields example pages (Evidence, Backlog, Dependencies) all use
+this pattern; threadOverlay is the common core extracted so callers write only
+what to connect, not how the SVG lifecycle or geometry math works.
+Geometry is sampled at draw time — callers must re-draw after layout changes (FLIP re-sorts,
+batch reveals, container resize).
+threadOverlay(host, opts?)
+Creates the overlay and prepends it into host (lazily on first
+draw ). The host must be a containing block ( position: relative
+or similar).
+.draw(from, targets, opts?)
+Draws one bezier per target from the centre of from . Marks from
+with .lit and each target with .cited . Replaces the previous
+draw. Pass opts.color to set --thread on the overlay so CSS can
+style the stroke.
+.clear()
+Empties the overlay's paths and removes every lit / cited mark.
+.destroy()
+clear() + remove the SVG from the host. A later draw() recreates it.
+import &#123; threadOverlay &#125; from '@fundamental-engine/dom';
+const overlay = threadOverlay(containerEl, &#123; className: 'my-threads' &#125;);
+card.addEventListener('pointerenter', () => &#123;
+const related = [...document.querySelectorAll('.related-card')] as HTMLElement[];
+overlay.draw(card, related, &#123; color: 'var(--accent)' &#125;);
+&#125;);
+card.addEventListener('pointerleave', () => overlay.clear());
+CSS contract: style .my-threads path &#123; stroke: var(--thread, #fff4); fill: none; &#125; .
+bindFieldNav
+Runs a recipe signals-only ( render: [] ) over the
+<a href> links inside a navigation root. Every link becomes a body; the
+current link can be pinned as the "well" ( data-field-attention=1 ); previously
+visited links can be marked ( data-field-memory=1 + a nav-visited
+class). The platform writes the recipe's --field-* channels back onto each link;
+CSS turns them into ink weight, glows, and markers. Nothing is drawn.
+Progressive enhancement is the contract: under prefers-reduced-motion , or when
+the recipe can't be resolved / there are no links, bindFieldNav returns
+null and writes nothing — the links stay plain and reachable.
+bindFieldNav(root, recipe, opts?)
+recipe is a FieldRecipe object or a catalog ID string.
+Returns a &#123; destroy() &#125; handle, or null on reduced-motion or
+empty root.
+opts.pin
+The link element to mark as the current page — its data-field-attention is held at 1.
+opts.visited
+(href: string) => boolean predicate — links where this returns true receive
+data-field-memory=1 and the nav-visited class.
+import &#123; bindFieldNav &#125; from '@fundamental-engine/dom';
+const nav = document.querySelector('nav.site-nav')!;
+const current = nav.querySelector(`a[href="$&#123;window.location.pathname&#125;"]`);
+const handle = bindFieldNav(nav, 'gravity-pull', &#123;
+pin: current,
+visited: (href) => sessionStorage.getItem(href) != null,
+&#125;);
+// on teardown (e.g. SPA route change):
+handle?.destroy();
+QualityGovernor
+Detects sustained frame-budget overruns and emits a tier signal (0–3) so
+the caller can adapt render quality without a hard cutoff. The <field-root>
+element runtime uses it internally; expose it directly when building a custom platform loop.
+Tier semantics
+0 = full quality (default).
+1 = simplify effects — drop heatmap, reduce overlay.
+2 = minimal — switch render to 'dots' , halve particle cap.
+3 = paused — suspend the field loop entirely.
+new QualityGovernor(budgetMs?)
+Default budget: 16.67 ms (60 fps). Pass 8.33 for a 120 fps budget.
+.feed(durationMs)
+Feed one rAF frame duration. Returns the new tier when it changes,
+undefined when stable. Escalation: 10 frames above 20 ms → tier 1; 5 frames
+above 33 ms → tier 2; 3 frames above 50 ms → tier 3. Recovery requires 30 clean frames
+to avoid thrashing.
+.reset()
+Reset to tier 0 and clear streak counters. Call on visibilitychange to avoid false escalation on tab switches.
+import &#123; QualityGovernor &#125; from '@fundamental-engine/dom';
+const gov = new QualityGovernor(16.67);
+let prev = performance.now();
+function loop(now: number) &#123;
+const dur = now - prev; prev = now;
+const tier = gov.feed(dur);
+if (tier !== undefined) &#123;
+// tier changed — adapt render
+field.setQualityTier(tier);
+&#125;
+field.tick();
+requestAnimationFrame(loop);
+&#125;
+requestAnimationFrame(loop);
+document.addEventListener('visibilitychange', () => &#123;
+if (document.hidden) gov.reset();
+&#125;);
+textBodies
+Annotates a text element with per-line or per-word body geometry . It
+measures the element's rendered line boxes via Range.getClientRects() , emits one
+absolutely-positioned, aria-hidden , pointer-events:none span per
+box, and declares each span as a data-field-visual-for representation of the
+source element — so the field's per-line/per-word geometry flows through the existing
+[data-body] contract without a new engine surface.
+This is box geometry , not glyph contours. True glyph-outline sampling is the
+planned next slice of the textBodies roadmap and will slot in as a finer
+granularity behind the same API.
+textBodies(el, field, opts?)
+Returns a disposer. Calling it removes the spans and tears down any observer. Call
+field.rescan() after annotating (and after disposing) so the engine picks up
+the new geometry.
+opts.granularity
+'line' (default) — one span per rendered line box.
+'word' — one span per word fragment box.
+'box' — raw getClientRects() boxes.
+opts.observe
+true — wire a debounced ResizeObserver on the source that
+re-measures spans on resize. The observer is torn down by the disposer.
+Lifecycle note
+textBodies() is idempotent — re-calling disposes the previous span set
+first, then re-measures. Call field.rescan() after both annotate
+and dispose.
+import &#123; textBodies &#125; from '@fundamental-engine/dom';
+import &#123; createField &#125; from '@fundamental-engine/vanilla';
+const field = createField(canvas);
+const heading = document.querySelector('h1')!;
+const dispose = textBodies(heading, field, &#123;
+granularity: 'word',
+observe: true, // re-annotate on resize
+&#125;);
+field.rescan(); // pick up the new spans immediately
+// to teardown:
+// dispose(); field.rescan();
+headlessHost
+The reference FieldHost for
+non-DOM, non-visual consumers : an agent reading the field as a salience
+substrate, a native sidecar, a Node.js service, or a deterministic test. Where
+browserHost() binds the engine to window / document /
+requestAnimationFrame , headlessHost() binds it to nothing — an
+abstract volume the caller sets, a no-op scan root (bodies come via addBody , not
+[data-body] ), and a manual tick loop the caller drives.
+Pair with render: 'none' (the signals-first default). The full simulation
+runs and writes its signals; no DOM is touched.
+headlessHost(&#123; width, height &#125;)
+Returns a HeadlessHost — a FieldHost with one extra method:
+.tick() .
+host.tick()
+Advance one engine frame manually. Call per agent turn, on a schedule, or in a test loop.
+In the browser context tick() replaces requestAnimationFrame .
+Reading signals
+Register bodies with field.addBody(&#123; …, onFeedback: (ch) => read(ch.density) &#125;)
+for per-body channels, or use field.sampleScalar(x, y) /
+field.readParticles() for global sampling.
+import &#123; headlessHost &#125; from '@fundamental-engine/core';
+import &#123; createField &#125; from '@fundamental-engine/vanilla';
+const host = headlessHost(&#123; width: 1920, height: 1080 &#125;);
+const field = createField(undefined, &#123; host, render: 'none' &#125;);
+const densities: number[] = [];
+field.addBody(&#123;
+tokens: ['attract'],
+rect: () => (&#123; x: 500, y: 400, width: 200, height: 100 &#125;),
+onFeedback: (ch) => densities.push(ch.density),
+&#125;);
+// run 10 frames
+for (let i = 0; i < 10; i++) host.tick();
+
+========================================================================
+PAGE: /docs/authoring — Fundamental — Authoring across surfaces
+========================================================================
+
+Authoring across surfaces
+Four surfaces, one contract. A body authored in plain HTML, as a web component, in React, or in a
+Three.js scene is the same body in the field — each is a different way to reach the same
+[data-body] contract. Pick the surface your stack uses;
+Fundamental does not ask you to adopt a framework.
+A body, four ways
+Each of these authors one attractor of strength 0.8. They produce identical bodies in the engine.
+attract , strength 0.8 — across all four surfaces. The Three.js door uses layer.addBody(mesh, spec) instead of data-body markup."
+/>
+Live
+These cards carry real data-body attributes, so the page's field reacts to them right
+now. Move your pointer near one and watch the field gather around it.
+attract pulls matter inward
+repel pushes matter away
+swirl orbits matter around
+The shared contract
+Every surface writes the same data-* attributes. This is the contract:
+Attribute Meaning Example
+Element consumers — react to the field
+The contract above makes an element a force source . An element can instead consume
+the field — react to the matter around it (the element side of the Body Matter Interaction model).
+Each pairs with data-move so the engine may relocate or collapse the node.
+Attribute Behavior Example
+data-warp needs a paired body ( data-pair ) to relocate to — a single body
+can't show relocation. See the agent consumption model for the
+captured / relocated / emitted events.
+Reading the field — CSS feedback channels
+The engine writes CSS custom properties onto elements during the write phase of
+every frame. Add data-feedback to receive them; consume them in CSS to make an
+element visually react. No polling, no event listeners — the engine is a CSS property writer.
+--d is the canonical density var ∈ [0,1]. Scale it before driving properties — the raw fraction is small by design."
+/>
+The full set of feedback channels — --d , --load , --lit ,
+--entropy , --coherence , --temperature — is in the
+writeback reference . Sink accretion is a common
+pattern — --load fills from 0 (empty) to 1 (saturated):
+Correctness note: drive reactions off --d , not
+--field-density . When a recipe's metric pipeline runs, it also writes
+--field-density as a recipe output — so on recipe elements,
+--field-density holds the recipe metric, not the engine's raw particle density.
+--d is always the engine value.
+Conditional forces — data-when
+A force can activate only while a named condition holds, by adding data-when to
+the body element. The condition is evaluated by the engine each frame; the force is
+multiplied by 0 when the condition is false, 1 when true. No JavaScript required.
+Built-in conditions: active (the element is hovered/focused), slow
+( --field-scroll-v < 2 — reading pace), idle (no pointer
+activity in the last second), visible (intersection > 0.1). The full list
+is on the conditions reference .
+Formations — setFormation + data-formation
+A formation shapes where the field&apos;s particles want to be — a global geometry
+imposed on top of the local force field. Formations are page-scope and transition smoothly.
+setFormation() switches on any event."
+/>
+The built-in formations — arc , ring , wells ,
+cascade , drift , and more — are on the
+formations reference . Formations coexist with local
+body forces; the field blends both.
+Beneath the surfaces: the platform
+The surfaces above author bodies . When you need the page itself to participate — to
+measure elements, hold state, and write feedback on a disciplined loop — reach for
+createFieldPlatform() from
+@fundamental-engine/dom directly. It is framework-agnostic; the same code runs under any
+surface.
+Reading Field demo for a full page built on it."
+/>
+
+========================================================================
+PAGE: /docs/concepts — Fundamental — Concepts
+========================================================================
+
+Concepts
+How the field thinks .
+Fundamental is a relational field runtime for the DOM. Elements are bodies in one
+shared field context — they bend the field; its density bends them back. A
+renderer-agnostic core computes the field; a platform layer binds it to the DOM. The visible
+canvas is one render surface, not the whole system.
+Bodies
+A body is any element you mark with data-body . Its value is
+one or more force tokens, space-separated — they compose, so a single element
+can attract and swirl at once. The engine re-reads each body's bounding box every frame,
+so moving the element moves the force.
+Common attributes — data-strength , data-range ,
+data-color , data-spin , data-angle — are read by the
+forces that use them; each force ignores the ones it doesn't. See the
+attribute reference for the full matrix.
+Data attributes are the contract. You make semantic HTML participate in the field by adding
+attributes to it — there is no special body element. <field-root> only hosts the
+field; applyRecipe() and bindData()
+adapt it to recipes and data; and the
+<field-cell> frames lower down are just isolated single-force microscopes. The
+system is the markup, not the components.
+The shared field context
+Bodies, particles, relationships, measurements, metrics, feedback, and overlays all share one
+field context. The visible particle layer is a conserved pool (~130 at default density) drawn
+on a full-viewport <canvas> — one render surface among several (SVG overlays
+and DOM feedback are others). Particles are one agent type , not the whole substrate.
+The conserved pool carries a central law: nothing is created from nothing —
+matter is moved, captured, and released; a sink that swallows particles must later release
+them, so the count stays constant. That is what makes the field feel physical rather than
+decorative.
+The platform layer
+@fundamental-engine/core (the core) computes the field against plain data and stays renderer-agnostic.
+@fundamental-engine/dom binds it to the DOM through six registries — measurement
+(frame-stable geometry), state (typed element state), feedback
+(CSS variables + thresholded events), relationships (the native href/aria/data
+graph), visual bindings (visual ↔ semantic pairing), and overlays
+(render layers) — all driven by one frame scheduler with explicit phases:
+discover → read → compute → state → write → render
+Reads happen in the read phase and writes in the write phase, so geometry reads never thrash
+against DOM writes. Since the runtime-unification phase the platform is the default for
+<field-root> ; the core engine still renders the canvas. See the
+platform layer for the registries, scheduler, and lint.
+The DOM ⇄ field runtime binding
+The rarest property of the system is a two-way binding between layout and a
+physics runtime . Fundamental is not a particle background: those are one-way (a
+canvas reacts to the mouse). Here the DOM is the runtime's geometry, and the runtime
+writes back into layout and type — a shared field context, not a decorative layer. Two flows, on
+the scheduler's read and write phases:
+Read (geometry in): any DOM change — reflow, transform, resize — is an
+instantaneous change to the force geometry, so animating the DOM animates the runtime for free.
+Write (feedback out): the field samples how much matter pooled on each
+data-feedback body and writes it back as --field-density (with the
+compact --d as an alias).
+Reciprocity & --field-density
+Reciprocity is the payoff. Opt a body in with data-feedback and the FeedbackRegistry
+eases the gathered density into a CSS custom property --field-density ∈ [0, 1] on the
+element (the compact --d is written alongside it as an
+alias). Your styles turn that number into anything — weight, glow, scale, color:
+The value is low-pass filtered (a ~0.2s time constant), so it eases rather than jitters.
+This is the sanctioned way to make type react — words gain weight where matter collects.
+(The engine never assembles particles into letterforms; words glow and grow, they are not
+drawn from dots.)
+Metrics, and the lanes that stay separate
+Density is one channel. The field also computes higher-level metrics — attention,
+priority, coherence, entropy — and writes each back as a --field-<metric> custom
+property. A recipe declares which metrics it tracks; the runtime writes
+them. Below, real elements carry a runtime token ( data-body="attract" ) and a supplied
+priority ; applyRecipe() writes it back as --field-priority ,
+and the CSS reads it — no canvas, no cursor needed:
+The vocabulary works because each word lives in exactly one lane , and the lanes
+never bleed into each other:
+Concept describes (priority, polarity, binding) — it is never executed.
+Token executes ( attract , gravity ) — the only thing a data-body runs.
+Metric measures ( --field-priority , --field-attention ) — state the field writes back, not a force.
+Diagnostic explains (potential, topology, causality) — it inspects behavior, it does not cause it.
+Condition activates ( data-when="active" ) — when a token is allowed to act.
+So: a concept is not a token, a token is not a metric, and a diagnostic is not behavior. The
+recipe model composes these lanes without ever inventing a new force.
+The orthogonal axes
+The vocabulary stays small by separating four independent dimensions:
+Forces — what a body does to nearby matter (attract, swirl, gravity,
+lens…). They compose. Reference →
+Conditions — when a force acts, via data-when (active, fast,
+slow, hot, cool, scrolling). Reference →
+Formations — a single global bias applied to every particle at once
+(ambient, wells, lanes, scatter, accretion). Reference →
+Render modes — the same physics drawn differently. Matter/structure: dots, trails,
+links, metaballs, voronoi, streamlines, field-lines, heatmap. Diagnostics (all shipped):
+force-vectors, contours, potential, energy, topology, inspector, causality, prediction.
+Diagnostics →
+The natural model: four fields
+Fundamental does not copy physics into the interface — it translates the four
+fundamental fields into interface behavior. Every interface already has priority, polarity,
+binding, and transformation:
+Gravity → priority, convergence, hierarchy ( gravity , potential).
+Electromagnetic → polarity, signal, field lines, flow ( charge , magnetism , propagate , fieldflow ).
+Strong → binding, cohesion, structure ( cohesion , link , crystallize ).
+Weak → transformation, decay, release ( morph , memory decay).
+Natural fields are conceptual; engine primitives are translations; canonical forces
+( attract , repel , …) are designed verbs, not natural translations. The
+full model is on the Natural Fields page.
+See the primitives move
+Each frame below is a live <field-cell> running one force — the
+lightweight demo surface with its own small particle pool, not the page field. Move your
+cursor through a frame to push the matter around.
+These are posters, not the detector. A cell uses a simplified centre-of-frame model
+so the motion reads at a glance. To fire a particle into the canonical force math
+and check it against its law, open the Lab .
+Agents: particles, elements, events
+A force doesn't only push particles — it produces an influence at a location ,
+and whatever sits there decides how to consume it. A particle consumes it as
+motion (the lightest agent); a DOM element consumes it as a transform offset
+with an anchor tether; an event sink consumes a density threshold by firing a
+CustomEvent you can listen for. One influence, three kinds of consumer — so the
+field can drive real app behaviour, not just pixels.
+Fundamental calls this the Field Agent Consumption Model . A single DOM body can
+play several roles at once — force source, density receiver, force target, and event host. Its
+capture-hold-release behaviour (the sink token, data-absorb ,
+data-max , --load ) is the Body Matter Interaction submodel —
+sink is the token; absorb is concept language, not a runtime token.
+Composites, not new code. Bigger ideas — blackhole , galaxy ,
+tornado — are presets that expand to several
+co-located bodies, one primitive each. The engine never grows to add a preset.
+Engine-stepped agents, tagged matter, and the scalar field
+Three engine capabilities turn the swarm from a backdrop into a population you can program.
+They live in the core, so they work under any renderer — and the
+Three.js layer binds a mesh over each one.
+Engine-stepped agents — addAgent(spec) adds
+a participant the integrator moves (vs an agent that samples the field and
+integrates itself). It lives in the conserved pool, so it feels every force the swarm feels
+— body forces and the particle-level hunt / align / cohesion
+— and each step its report(p) fires so an external object (a mesh, a label) can
+follow it. maxSpeed clamps it; it edge-bounces rather than wrapping; it's counted
+by particleCount() but excluded from readParticles() .
+Matter tagging — a body stamps the matter it emits with data-species and
+acts selectively via data-affects (a species set). Matter outside the set feels
+no force and is skipped in the density sample, so several ecologies — pollen, seeds, spores —
+share one field with no cross-talk. Tags are read once at scan, allocation-free per frame.
+The scalar field — sampleScalar(x, y)
+returns the smooth diffused density ∈ [0, 1] at a point (the heatmap grid, bilinear-sampled).
+Its gradient stays meaningful right at a source — unlike a nearest-body readout — so a
+creature can forage by gradient , always reading which way is "more". Enable it with
+createField(&#123; heatmap: true &#125;) ; it runs even under render: 'none' .
+These extend the consumption model rather than adding forces: an agent is a particle the engine
+drives, tagging scopes which matter a force sees, and the scalar is a read channel —
+no new data-body verb. The FieldHandle reference has
+the exact signatures.
+
+========================================================================
+PAGE: /docs/contour-typography — Contour typography — Fundamental docs
+========================================================================
+
+Contour typography
+Text can become a contour object without ever stopping being text. The architecture is the
+Body Matter Interaction law: the element absorbs field matter; the visual layer shows
+what that absorption means; the semantic text remains the source of meaning. This page
+is the Contour Sink tier — the text/vector form of the sink contract.
+The quick form — live text, stroked
+For simple typographic outlines, keep the text live and stroke the glyphs. Selectable,
+accessible, zero tooling:
+Contour
+The vector form — generated glyph outlines
+For true contour behavior the glyphs become vector paths — from any font the author
+applies to the body . The platform primitive is font-agnostic: Fundamental ships no parser
+(the zero-dependency rule); you hand contourSvgFor a parsed font — anything
+matching the ContourFont shape, which opentype.js satisfies directly — and it
+lays out the element's own text at its computed size, generates the ring SVG, and binds it:
+Prefer zero font work in the browser? Run the same primitive at build time and commit the
+output — this site does exactly that with its self-hosted face:
+The generated SVG is a representation , never a replacement: it binds to its semantic
+source with data-field-visual-for , stays aria-hidden , and the
+platform mirrors the body's live feedback channels onto it
+( MIRRORED_CHANNELS — density, sink load, the measured metrics):
+Live — the title is a sink; the rings are its readout
+The heading below is a real sink attract body on the page field. The outlines
+are the generated paths. As the body gathers and captures matter, its mirrored
+--d and --load thicken and brighten the rings — hover and dwell to
+feed it.
+--d 0.000 · --load 0.000
+True offset contours — rings at a mathematically constant distance from the glyph boundary —
+need polygon offsetting (a Clipper-class pass, best done in the same build step). The rings
+here are stacked strokes of the one outline: the documented practical form.
+
+========================================================================
+PAGE: /docs/diagnostics — Fundamental — Diagnostic Overlays
+========================================================================
+
+Diagnostic overlays
+The diagnostics module computes the data; these overlays draw it. Every diagnostic mode now ships
+— contours, potential, force and velocity vectors, energy, topology, inspector, causality, and
+prediction. Toggle a layer — each reads field state and never mutates it.
+Contours
+Potential
+Force vectors
+Velocity
+Energy
+Topology
+Inspector
+Causality
+Prediction
+Export PNG (current mode)
+Export contours (SVG)
+Runtime observables
+Beyond the canvas overlays above, the engine exposes pull-based data surfaces through
+FieldHandle and @fundamental-engine/core :
+API Returns Source
+handle.particleCount()
+number
+Live pool size ( store.size ). No particle-array walk.
+handle.energy()
+&#123; kinetic, thermal, total, count &#125;
+Per-frame energy snapshot. Forwards to energyReport() from diagnostics/energy .
+inspectBudget(counts)
+BudgetFinding[]
+Checks supplied counts against DEFAULT_BUDGET . Partial-safe.
+systemReport()
+SystemReport
+Force/passport/contract/agent counts + missing-passport list. Stable after mount.
+causalityAt(x, y)
+CausalContribution[]
+Per-force Δv decomposition at a point. Powers the causality overlay above.
+All are pure — they read state, they do not mutate physics. particleCount() and
+energy() are shipped-but-unfrozen; inspectBudget /
+systemReport / causalityAt are the same. See the
+performance docs for the full observable surface and the
+FieldPerf design direction.
+Render-mode status
+Mode Type Shows Status
+
+========================================================================
+PAGE: /docs/field-channels — Fundamental — Field channels
+========================================================================
+
+Build
+Field channels
+A field is more than its own forces. addField(name, sampler) lets you register an
+external scalar field you already own — terrain height, soil moisture, a
+temperature map — as a named channel the engine samples on the same read path
+as its built-in field functions. So a consumer queries one field, instead of
+bolting a parallel grid alongside it and keeping the two in sync by hand.
+The input mirror of the surfaces. The render surfaces are bundled output layers —
+setRender draws the underlay,
+setOverlay the overlay. A channel is the open input analog: you hand the
+field a sampler and it becomes part of what the field can read. Same shape as the host-authorable
+grid(name) buffer, but for a field you already
+compute yourself.
+Register and sample
+addField(name, sampler) takes a name and a pull-based function
+(x, y) => number in field-pixel space. Read it back with
+sampleField(name, x, y) — an unregistered name reads 0 , so a sampler
+is always safe to call. Both are on the FieldHandle , mirrored through
+@fundamental-engine/vanilla , <field-root> , and the
+Three.js layer .
+Pull, not push — you keep ownership
+A channel sampler is pull-based : the engine calls it on demand and never caches
+the result, so the data stays yours and always current — change your terrain and the next
+sampleField sees it, with nothing to invalidate. Keep the sampler cheap; it can be
+called many times a frame. It must obey the field-function contract — side-effect free and
+stable for a fixed state (the same contract the built-in field lines ,
+streamlines , and heatmaps rely on).
+This is the same ownership split the engine draws everywhere: it owns the particle pool and
+moves it; you own your terrain and the engine only reads it. Reading a channel as a
+force potential — letting matter drift down its gradient — is a separate, opt-in step.
+addField is the read substrate, not yet a cause.
+Worked example: terrain on the field's path
+Habitat — a simulation garden running this engine through
+@fundamental-engine/three — has a rich soil model (three-horizon moisture, ground
+height) that used to live in a parallel grid the field read through by hand. Registered as
+channels, terrain becomes part of the field's own sampling path, and any agent can consult it
+the same way it samples force or density:
+The win isn't the read itself — it's the single path . Force, density, and now
+terrain all answer to sample* calls on one field, so a consumer never has to thread
+a second structure through every function that already has the field in hand.
+The handle — swap and remove
+addField returns a FieldChannelHandle : set(sampler) swaps
+the function live (a season changes the map; a layer toggles), and remove()
+unregisters the channel so sampleField falls back to 0 .
+Reading --d : the density signal and how to scale it
+The complement to a channel you read is the density the field writes back . Every
+data-feedback body receives its locally gathered density as
+--field-density — and as --d , the compact alias for the
+same value (both are written every frame, three decimals). It is the live
+reciprocal signal: matter gathers on a body, the body's --d rises, your CSS reacts.
+Resting --d is small by design. The value is an eased density in
+0..1 , but at rest it sits in the low fractions — often around
+0.04–0.05 . It is not a normalized "how lit is this body" gauge you can map straight
+to 0..1 opacity; it is the raw fraction of the pool a body has gathered, kept calm so
+ambient drift doesn't flicker your type.
+What moves it: the body's per-frame matter count within range (driven by field
+density and the body's strength / range — a stronger,
+wider body gathers more), plus a fixed bump while the body is engaged
+( data-active / hover adds a large step). Concretely the eased target is roughly
+count / 20 + (engaged ? 0.45 : 0) , clamped to 0..1 — so a resting body
+with a handful of nearby particles lands near 0.05 , and engagement is what pushes it
+toward the top of the range. Cranking field density or body strength
+raises the resting floor, but only so far; the design intent is a quiet baseline, not a hot one.
+So amplify in CSS rather than expecting a pre-scaled 0..1 . Scale
+--d once into a derived variable (with a clamp() for a calm floor and a
+hard ceiling), then drive every reaction off that. This keeps the magic number in one place
+instead of sprinkling * 30 through your stylesheet:
+Tune the multiplier to the resting --d you actually observe for your field's
+density and body params — there is no universal constant, because the resting count
+depends on your scene. For a binary "is this body engaged" gate that doesn't need scaling, read
+the engine's thresholded data-field-density="high" state attribute instead of the
+numeric var.
+Channels, grids, and surfaces
+Three open primitives, one principle — name it, and the field extends to hold it:
+Channels ( addField ) — an input field you compute and own; the
+engine samples it. Pull-based, never cached.
+Grids ( grid(name) ) — a host-authorable
+engine buffer (the same primitive diffuse / memory run on): you
+deposit into it and the engine advances it each frame. A scent map, a wear layer.
+Surfaces ( setRender / setOverlay ) — output layers
+the engine draws onto a canvas. The visible counterpart to the channels you read.
+For the hard contract a channel sampler obeys, see
+the FieldHandle reference .
+
+========================================================================
+PAGE: /docs/getting-started — Getting started — 5 minutes to your first field
+========================================================================
+
+Getting started
+Five minutes: install → canvas → field → particles → read the signals.
+No framework, no build step beyond what you already have.
+1. Install
+2. Add a canvas to your HTML
+3. Start the field
+That's it. Particles begin flowing immediately. Any element with
+data-body="attract" pulls matter toward it; the page's content becomes
+part of the field.
+4. Make an element a body
+Bodies bend the field. attract gathers matter; repel pushes
+it away. Strength (0–1) scales the pull; range (px) sets how far it reaches.
+See the data-* attribute reference for all tokens.
+5. Read the signals (no drawing required)
+The field writes --field-density , --field-attention , and
+--field-temperature directly onto elements with data-feedback .
+CSS reads them — zero JS event listeners required for basic reactivity.
+Next steps
+Full step-by-step tutorial — all three authoring surfaces (web component, React, vanilla)
+FieldOptions reference — density, formation, render modes, overlays, and more
+FieldHandle reference — addBody , readParticles , addEdge , sampleScalar
+Concepts — bodies, reciprocity, and why the field is a substrate
+Interactive FieldLab — try every force live without writing any code
+
+========================================================================
+PAGE: /docs/guides/core — Fundamental — Core engine guide
+========================================================================
+
+Guides
+The core engine
+Skip every wrapper and drive the engine on a canvas you own. The core is zero-dependency
+TypeScript. For a managed canvas and an ergonomic class, reach for the
+TypeScript wrapper instead.
+Where this fits. Use @fundamental-engine/core when you own the render surface and want
+renderer-agnostic field math. When you want DOM participation — measurement, feedback,
+relationships, visual bindings, and overlays on a frame scheduler — reach for
+@fundamental-engine/dom . Canvas is one render surface, not the whole system.
+Install
+npm i @fundamental-engine/core
+the engine itself — when you own the canvas
+createField — your own canvas
+When you want to place and size the canvas yourself, hand it to createField .
+You get the FieldHandle . This is the lowest-level entry
+point; the web component, the React adapter, and @fundamental-engine/vanilla all wrap it.
+The canvas is decorative. Position it fixed behind your content
+( position: fixed; inset: 0; z-index: 0; pointer-events: none ) and mark it
+aria-hidden . Reduced motion is honoured automatically, and the loop pauses
+when the tab is backgrounded.
+Want a managed canvas? @fundamental-engine/vanilla creates and tears down the
+canvas for you — as a FieldField class or the mountField()
+function. See the TypeScript guide .
+The force contract
+A force is one small object — a token and an
+apply(body, particle, env) that nudges a particle's velocity. Every one of the
+36 built-ins implements this exact contract, and the engine never special-cases any of them,
+which is why they compose. The shape:
+Registering your own. The built-in catalog is registered for you, and the registry
+that holds it lives inside createField — so authoring a brand-new force today
+means building against the Force contract at the engine level
+rather than passing it in as an option. The documented catalog covers most needs; compose
+forces with presets for bigger effects.
+Bring your own field
+The field can read data you already own. field.addField(name, (x, y) => …)
+registers an external scalar field — terrain, moisture, a heat map — as a named channel the
+engine samples on its own read path, read back with field.sampleField(name, x, y) .
+It's the open input mirror of the render surfaces, so a consumer queries one
+field instead of bolting a parallel grid alongside it. See the
+field channels guide .
+
+========================================================================
+PAGE: /docs/guides/kotlin — Fundamental — Kotlin guide (Android)
+========================================================================
+
+Guides
+The Kotlin port
+The same reciprocal field, native on Android . It is a
+port of the JS engine, not a reinterpretation : the package layout, the API
+surface, and the physics mirror the npm packages — and the
+Swift port — one-to-one. The two planes are held to the same
+shared cross-plane conformance golden (JS / Swift / Kotlin). Where they diverge,
+it is a bug or a documented platform difference .
+Status: 44/44. The Kotlin port is conformance-checked against the JS engine (the same 36-force
+golden the Swift port runs) and ships all 44 FieldHandle methods as of
+#823 . See
+Implementations for the full surface-by-surface status,
+and Parity below for platform-specific notes.
+Install
+Nothing is on Maven Central yet — consume it from source. The modules live in the repo's
+android/
+directory; the recommended door is :fundamental-compose .
+To see it run before wiring it into your own app, build the bundled desktop Field Lab :
+./gradlew :lab:run from
+android/ — every engine pillar as a live, interactive scene.
+Modules — one-to-one with npm
+Four libraries, each the mirror of an npm package (and of a Swift target).
+fundamental-core imports zero platform code, exactly as
+@fundamental-engine/core imports zero DOM.
+Gradle module npm equivalent What it is
+:fundamental-core @fundamental-engine/core The pure physics — particles, bodies, the 36-force catalog, the integrator, formations, reactions. Zero platform imports.
+:fundamental-platform @fundamental-engine/dom The six-phase frame scheduler ( discover → read → compute → state → write → render ) and the six registries.
+:fundamental-android @fundamental-engine/vanilla The imperative host — FieldFieldView , a plain Android View / Canvas with no Compose dependency.
+:fundamental-compose @fundamental-engine/react The declarative adapter — FieldView , Modifier.fieldBody() , the FieldHandle exposed to descendants.
+Compose — FieldView + Modifier.fieldBody()
+The declarative door. FieldView mounts the field surface; any composable inside
+becomes a body with the Modifier.fieldBody(...) modifier — the Kotlin analogue of the
+data-body attribute (and of SwiftUI .fieldBody() ). It accepts the same
+token vocabulary and tuning as the web.
+View / Canvas — the imperative host
+For non-Compose apps, FieldFieldView is a plain Android View that runs the
+field on a Canvas and drives its own frame loop — the analogue of
+new FieldField() / mountField() from
+the vanilla JS API .
+Parity
+The Kotlin port ships 44/44 FieldHandle methods — full parity with the JS engine
+as of #823 .
+The core force set, the scheduler and registries, formations, the FieldHandle public
+API (relationship edges included), and all six advanced methods ( addAgent ,
+sample , on , readParticleIds ,
+readParticleChannels , registerOverlay ) are implemented and pass the
+cross-plane conformance gate.
+The full method-by-method breakdown is on the parity matrix page .
+Some methods behave differently by platform design: Compose and the View/Canvas host own the draw
+loop, so setRender and setOverlay are read by the host rather than
+driving a native canvas directly. scrollV is fed by the platform via
+feedScrollV() . These platform differences are documented in the parity matrix notes.
+The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and
+natively on Apple platforms and Android behind one host seam — is the same one the
+Swift port tells. The seam itself is the
+platform layer ; the runtime handle is the
+FieldHandle .
+
+========================================================================
+PAGE: /docs/guides/react — Fundamental — React guide
+========================================================================
+
+component (every FieldOptions prop + onReady) and the useFieldField hook. React is a peer dependency; the core engine stays zero-dependency."
+>
+Guides
+The React adapter
+A reciprocal field as a React component. React is a peer dependency — the
+one approved framework dep; the core engine stays zero-dependency.
+An authoring surface over the same contracts. <FieldField> mounts the
+visible field surface; DOM-facing behavior belongs to the platform layer
+(measurement, state, feedback, relationships, visual bindings, overlays). Reach the runtime handle
+— including flowTo / clearFlow — through onReady .
+Install
+npm i @fundamental-engine/react
+<FieldField>
+Mounts a fixed, full-viewport canvas behind your app and runs the engine — the same field
+the web component and mountField() wrap. Bodies are still plain
+[data-body] elements anywhere in your tree.
+It accepts every FieldOptions prop
+( accent , density , waves , waveStyle , waveCenter , render ,
+palette , mass , attention , causality , separation ) plus
+className / style .
+onReady — get the handle
+Because React renders bodies after the field mounts, call field.scan() once
+your elements are in the DOM. onReady hands you the live
+FieldHandle :
+useFieldField — own the canvas
+For full control of the canvas element, use the hook form. It returns a
+canvasRef to attach and a fieldRef holding the handle.
+
+========================================================================
+PAGE: /docs/guides/swift — Fundamental — Swift guide (Apple platforms)
+========================================================================
+
+Guides
+The Swift port
+The same reciprocal field, native on Apple platforms — iOS 17+, macOS 14+, and
+visionOS 1+. It is a port of the JS engine, not a reinterpretation : the package
+layout, the API surface, and the physics mirror the npm packages one-to-one. Where they diverge,
+it is a bug or a documented platform difference .
+Status: 44/44. The Swift port is conformance-checked against the JS engine
+(a 36-force golden test asserts the two planes agree) and ships all 44 FieldHandle methods
+as of #822 . See
+Implementations for the full surface-by-surface status,
+and Parity below for platform-specific notes.
+Install
+There is no published SwiftPM registry release yet — consume it from source. The package lives in
+the repo's swift/ directory; its SwiftPM package name is Fundamental .
+To see it run before wiring it into your own app, build the bundled Field Lab
+demo: swift run FieldLab from
+swift/ (a packaging script, swift/Scripts/release-fieldlab.sh ,
+produces an app bundle).
+Packages — one-to-one with npm
+Four libraries, each the mirror of an npm package. FundamentalCore imports zero
+platform code, exactly as @fundamental-engine/core imports zero DOM.
+Swift target npm equivalent What it is
+FundamentalCore @fundamental-engine/core The pure physics — particles, bodies, forces, the integrator, formations, reactions. Zero platform imports.
+FundamentalPlatform @fundamental-engine/dom The six-phase frame scheduler ( discover → read → compute → state → write → render ) and the six registries.
+FundamentalVanilla @fundamental-engine/vanilla The imperative API — FieldField , mountField . One import; the host (UIKit / AppKit / RealityKit) is selected at compile time.
+FundamentalSwiftUI @fundamental-engine/react The declarative adapter — FieldView , .fieldBody() , .fieldBurst() , the fieldHandle environment value.
+SwiftUI — FieldView + .fieldBody()
+The declarative door. FieldView mounts the field surface; any view inside becomes a
+body with the .fieldBody(...) modifier — the Swift analogue of the
+data-body attribute. It accepts the same token vocabulary and tuning as the web.
+Vanilla — the imperative API
+For UIKit/AppKit or any non-SwiftUI host, FieldField mirrors
+new FieldField() / mountField() from
+the vanilla JS API .
+visionOS — volumetric, 3D-native
+The Swift engine is 3D-native : every position, velocity, and force is a
+SIMD3<Float> . The JS engine is 2D only because the DOM and Canvas are — that
+constraint doesn't exist here, so on visionOS depth is a real axis, not a projection trick. Any
+RealityKit entity hierarchy can host the field.
+Parity
+The Swift port ships 44/44 FieldHandle methods — full parity with the JS engine
+as of #822 .
+The core force set, the scheduler and registries, formations, the interactive scenes, and all
+six advanced methods ( addAgent , sample , on ,
+readParticleIds , readParticleChannels , registerOverlay )
+are implemented and pass the cross-plane conformance gate.
+The full method-by-method breakdown is on the parity matrix page .
+Some methods behave differently by platform design — setRender and
+setOverlay are host-owned in the native render loop; scrollV reads from
+UIScrollView velocity; scan is called by the SwiftUI integration layer rather than
+manually. These are documented in the parity matrix notes column.
+The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and
+natively on Apple platforms behind one host seam — is in
+One Engine, Four Runtimes . The seam itself is
+the platform layer ; the runtime handle is the
+FieldHandle .
+
+========================================================================
+PAGE: /docs/guides/three — Fundamental — Three.js guide
+========================================================================
+
+Guides
+The Three.js door
+@fundamental-engine/three runs the same reciprocal field engine that drives
+<field-root> — headless, with no DOM canvas — and renders its conserved
+particle swarm as a THREE.Points cloud in your own WebGL scene. The physics is
+identical; only the renderer changes.
+One engine, a different surface. The core computes the field against plain data and stays
+renderer-agnostic. The DOM binds it through the platform layer ;
+this package binds it to a Three.js scene through a FieldProjection (the 2D ⇄ 3D
+map) and a FieldHost . Every FieldHandle method —
+burst , flowTo , setFormation , seed — drives
+the 3D layer exactly as it drives the page field.
+Install
+npm i @fundamental-engine/three three
+three is a peer dependency — you bring your own version
+( ≥ 0.147 , the tested floor). The package touches only long-stable three APIs,
+so it works against modern three (built against 0.169) and is verified live at r147. On a
+no-bundler page, pin the peer to the same revision your scene already uses so the library and
+your page share one Three.js (see the package README for the CDN recipe).
+The particle bridge
+The engine runs in signals-only mode ( render: 'none' ) and exposes its particle
+pool through readParticles() . FieldLayer pulls that each frame and
+writes it onto a THREE.Points geometry through the projection. Create a layer,
+add layer.object to your scene, and call layer.tick() in your render
+loop — the engine self-steps, so tick() only pulls the latest swarm.
+Want to see it first? The live Three.js field is this bridge running a
+volumetric swarm you can push around with the pointer.
+Flat plane or real volume
+A FieldProjection maps the engine's CSS-pixel field space to 3D world space.
+Two ship, both behind one interface, so the layer and overlays are unchanged by the choice:
+PlaneProjection — the field on a quad; z is lifted stylistically from
+per-particle heat . The right choice for a flat field.
+VolumeProjection — maps the engine's real depth lane
+( z ∈ [0, depth) , the opt-in z axis) onto a world depth range, for a genuinely
+volumetric swarm.
+Pass depth and the layer picks a VolumeProjection for you:
+Bodies — meshes that bend the field
+A scene object can be a body (a force source). layer.addBody(object3d, spec)
+registers it: it bends the field and the swarm responds, while
+density / load / lit feedback flows back to the mesh (drive a
+uniform or material from onFeedback ). A body carries a data record (a
+genome, an inventory), so a mesh can be a meaningful agent — not just a force. Params are
+reactive: body.set(...) is read on the next measure cycle, no re-create.
+Matter tagging — many ecologies, one field
+Tag a body with a species (the matter it emits or represents) and make it
+affects -selective (the species it acts on). Matter outside a body's set feels no
+force from it and is skipped in its density sample — so pollen, seeds, and spores can share one
+field, each pulled only by its own bodies. Tags are read once at scan, allocation-free per
+frame.
+Agents — creatures the engine moves
+layer.addAgent(object3d, opts) makes a mesh a field agent : the
+engine steps it — it lives in the particle pool, so it feels every force the swarm
+feels (body forces and the particle-level hunt / align / cohesion )
+— and drives the object's position each frame. This is the engine-stepped successor to the
+self-integrating FieldAgent : you no longer hand-roll a motion loop.
+maxSpeed clamps; the agent bounces. An agent is held under maxSpeed (field
+px/frame) and edge-bounces at the field bounds rather than wrapping toroidally,
+so it stays inside the world. It's counted by particleCount() but excluded from
+readParticles() — your mesh is the agent's body, so it isn't drawn into the swarm.
+Reading the field — your own visuals
+The package re-exports the engine's field samplers — forceAt and
+netField — so you can drive your own 3D visuals (streamline tubes, vector grids,
+density volumes) from the live field without a second import. For forage-by-gradient ,
+layer.sampleScalar(x, y) returns the smooth diffused density ∈ [0, 1]; unlike a
+nearest-body readout, its gradient stays meaningful right at a source, so a creature can always
+tell which way is "more". Enable the scalar grid with heatmap: true (it returns 0
+when off):
+Diagnostic overlays
+threeBackend implements the engine's structural drawing seam
+( RenderBackend ), so the diagnostic overlays — streamlines, field-lines, grid,
+contours, force-vector arrows — draw as scene geometry. Inject it through the lower-level
+createThreeField and add overlay.object to your scene:
+The line overlays render fully; numeric label sprites (the data reading) are a
+tracked follow-up. See the diagnostic overlays page for what
+each mode shows.
+Lifecycle & cleanup
+When the scene goes away, call layer.destroy() . It stops the engine, releases the
+host's listeners, retires every agent, drops the body↔mesh references (so a retained body
+handle can't pin the registry), and frees the swarm's GPU buffers. Then dispose your renderer
+as usual.
+One destroy per layer. A FieldLayer owns real resources — a running engine,
+a THREE.Points geometry, growable overlay buffers, and (in the DOM build) registry
+observers. destroy() tears all of them down; skipping it on a re-mounted or
+route-swapped scene is the usual source of a slow leak. The page field's
+<field-root> does the equivalent automatically on disconnect.
+Next
+The live Three.js field — the bridge running a volumetric swarm.
+The FieldHandle reference — every method the layer exposes, including addAgent and sampleScalar .
+The concepts — bodies, the shared field context, and the Field Agent Consumption Model the agents extend.
+
+========================================================================
+PAGE: /docs/guides/typescript — Fundamental — TypeScript guide
+========================================================================
+
+Guides
+The TypeScript wrapper
+@fundamental-engine/vanilla is the framework-free door — a typed FieldField
+class for plain TypeScript apps, with no custom element to register and no framework
+dependency. It wraps the same zero-dependency engine the web component and React adapter do.
+Install
+npm i @fundamental-engine/vanilla
+The FieldField class
+new FieldField() builds a fixed, full-viewport canvas behind your page and
+starts the engine on it. It takes every FieldOptions value,
+implements the full FieldHandle surface, and exposes the
+canvas it runs on. Importing the package has no side effects — it never
+registers a custom element.
+Drive a canvas you own
+Pass your own <canvas> and the field never creates or removes one —
+destroy() only stops the engine. Use this when you place and size the canvas
+yourself.
+mountField — the factory form
+Prefer a plain function over a class? mountField() returns the bare
+FieldHandle ; its destroy() also removes the
+canvas it made. @fundamental-engine/vanilla also re-exports a browser-wired
+createField (it injects browserHost() for you) for when you own the
+canvas. The lowest-level engine entry is @fundamental-engine/core 's createField
+with an explicit host — see the core engine guide.
+One package, everything vanilla. The catalog data ( FORCES ,
+FORMATIONS , CONDITIONS , PALETTE ) and the engine
+contracts are re-exported, so a force picker or legend needs no second install.
+
+========================================================================
+PAGE: /docs/guides/web-component — Fundamental — Web component guide
+========================================================================
+
+web component from @fundamental-engine/elements: register it, mark elements as bodies, set attributes, and drive the field through the proxied FieldHandle. Works in any framework or plain HTML."
+>
+Guides
+The web component
+<field-root> is the keystone — a custom element that drops into any
+framework (or plain HTML) unchanged. "Every element is a body" is a web-components-shaped
+idea.
+An authoring surface, not a separate engine. <field-root> mounts the
+visible field surface and participates in the same Fundamental contracts. DOM-facing behavior belongs
+to the platform layer — measurement, state, feedback, relationships,
+visual bindings, and overlays — which the element runs by default (Phase D).
+Install
+npm i @fundamental-engine/elements
+Set up the field
+Import the package once to register the element, then drop a single
+<field-root> anywhere. It mounts a fixed, full-viewport canvas behind
+your page and runs the engine. It's decorative, so it marks itself
+aria-hidden automatically.
+Mark elements as bodies
+The field reacts to every [data-body] element on the page (the field-reacts
+law). Forces compose, space-separated; each force reads only the attributes it uses.
+Rescan after DOM changes. The engine reads bodies on mount. If you add or remove
+[data-body] elements later (a route change, a list update), call
+field.scan() so it picks them up.
+Attributes
+Set these on the <field-root> element:
+accent — the travelling accent color (a hex string).
+density — particle-count multiplier (default 1).
+waves — draw the background Currents (default on; "false" to disable).
+wave-style — the wave current pattern: linear (default) or circular .
+wave-center — custom coordinate string space-separated, e.g. "200 300" (default matches star/vortex bodies or center).
+render — dots · trails · links · metaballs · voronoi · streamlines .
+depth — optional z-volume (default 0 , the flat field); > 0 opens a shallow depth matter drifts through, projected as a size/alpha recession.
+palette — ours · heatmap · infrared · spectrum .
+attention — opt into conserved attention (one finite strength budget).
+causality — opt into cross-boundary causality (density spills to neighbours).
+Full details in the options reference .
+Methods
+The full FieldHandle is proxied onto the element, so any
+page can drive the field after it mounts:
+The Field Cell
+For a small, in-frame, single-force demo (instead of the page-wide field), use
+<field-cell> — a container-sized canvas that runs one force with its own
+particle pool. It pauses off-screen (IntersectionObserver), re-fits on resize, and honours
+reduced motion. It's the embeddable unit behind the Manual's per-concept demos.
+swirl
+live — move your cursor through the frame
+Supported forces. The cell is a simplified poster engine — it runs
+attract , repel , swirl , gravity ,
+stream , buoyancy , and tether . For the full
+catalog of against the canonical math, use the page field
+or the Lab .
+
+========================================================================
+PAGE: /docs/implementations — Fundamental — Implementations
+========================================================================
+
+Reference
+One engine, many surfaces
+Fundamental’s core ( @fundamental-engine/core ) computes the field against plain data
+and imports zero DOM — it’s renderer-agnostic. A thin host binds it to a surface.
+Three are real today: the Web , Native (Swift on Apple
+platforms, Kotlin on Android), and your own renderer .
+The core is the contract; surfaces are bindings. The same physics, force catalog, and
+conserved particle count run on every surface — only the host and the draw change. A bug fixed in
+the engine is fixed on all planes (the project ships engine fixes across them deliberately).
+Web — the primary surface
+@fundamental-engine/dom binds the engine to the page through browserHost()
+and the six registries (measurement, state, feedback, relationships, visual bindings, overlays):
+every [data-body] element becomes a body, and the field returns as --field-*
+CSS variables you style with. The authoring surfaces — the
+<field-root> web component , React ,
+vanilla / TypeScript — all wrap it. This is the surface the whole site runs on.
+Get it: npm i @fundamental-engine/vanilla (the recommended door). Status: stable, 0.x frozen.
+Native — Swift & Kotlin, and the Field Lab
+A Swift port runs the same field on Apple platforms (macOS / iOS / visionOS) with
+native rendering (Metal / SwiftUI), free of the browser’s full-viewport compositing ceiling — so a
+dense field reads smoother than the web Lab. Its showcase is the Field Lab : a
+native app where every engine pillar is a live, interactive scene.
+A Kotlin port mirrors the JS (and Swift) packages 1:1 on Android — the full
+36-force core plus the integrator, held to the same cross-plane conformance gate
+(one shared golden, JS / Swift / Kotlin), and the FieldHandle public API (relationship
+edges included). It ships a :fundamental-platform module (the six-phase
+discover→read→compute→state→write→render scheduler + the six registries), a
+Jetpack Compose host ( FieldView + Modifier.fieldBody() ),
+and a non-Compose View / Canvas host for imperative apps. It has its own
+desktop Field Lab . Source: the repo’s
+android/
+directory.
+Parity — full API surface, still preview. Both are ports, and the web plane moved first
+historically — but all three native ports now ship the full 44-method
+FieldHandle surface (44/44/44; Three.js, Swift, Kotlin) as of June 2026
+(#822 / #823 / #824), and the shared physics-conformance golden is green across planes. The field
+channels ( addField / sampleField ), the core force set, and the
+interactive scenes are all there. API parity is not production-readiness, though — treat the native
+plane as a fast-moving preview (see Status below). For the method-by-method breakdown see the
+parity matrix .
+Get it: the notarized .dmg download is coming; until then, build it from source —
+swift run FieldLab in swift/ (a packaging script,
+swift/Scripts/release-fieldlab.sh , produces the app bundle). Status: preview.
+Your renderer — bring your own draw
+@fundamental-engine/three runs the engine headless and renders its swarm as a
+THREE.Points layer in your WebGL scene ( the
+Three.js guide ). More generally, the engine exposes renderer-agnostic read
+primitives — sample , sampleScalar , readParticles ,
+and the field channels ( addField ) — so you can bind
+the field to anything that draws, on your own loop. Habitat
+(a simulation garden) is this surface in production.
+Get it: npm i @fundamental-engine/three three . Status: stable, 0.x frozen.
+At a glance
+Surface Host / binding Get it Status
+Web @fundamental-engine/dom → --field-* npm i @fundamental-engine/vanilla stable
+Native — Apple Swift port (Metal / SwiftUI) → the Field Lab build from source ( .dmg soon) preview · behind on newest primitives
+Native — Android Kotlin port (Compose + View / Canvas ) → the Field Lab build from source ( android/ ) preview · running on-device
+Your renderer @fundamental-engine/three / the read primitives npm i @fundamental-engine/three stable
+
+========================================================================
+PAGE: /docs — Fundamental — Developer docs
+========================================================================
+
+Documentation
+Build with Fundamental .
+A platform-native relational field runtime for the DOM — framework-agnostic, with a
+renderer-agnostic core. This page is the map; every card below is drawn from the same
+source as the sidebar, and every card is a body in this page's field. Engage one.
+Install
+Most projects want @fundamental-engine/vanilla — the framework-free door, host-bundled
+so createField works with no wiring. React users want @fundamental-engine/react .
+The other packages are there when you need them; the core engine has zero runtime dependencies.
+Plain JS/TS, or any framework, no opinion? → @fundamental-engine/vanilla — start here.
+React app? → @fundamental-engine/react
+Vue / Svelte / Angular / plain HTML? → @fundamental-engine/elements — the <field-root> custom element.
+Your own renderer, or a canvas you own? → @fundamental-engine/core — you supply the host.
+npm i @fundamental-engine/vanilla
+the framework-free FieldField class, mountField() , and host-bundled createField . The recommended starting point.
+npm i @fundamental-engine/react
+the <FieldField> React component + useFieldField hook
+npm i @fundamental-engine/elements
+the <field-root> web component — drops into any framework or plain HTML
+npm i @fundamental-engine/core
+the renderer-agnostic engine — when you own the canvas and wire your own host
+No build step? Import straight from a CDN:
+import from 'https://esm.sh/@fundamental-engine/vanilla' .
+Install the specific package you need — the umbrella packages were retired in 0.7.0.
+In a hurry? Your first field goes from install to a reacting
+headline in eight steps.
+Reactive, not ambient
+Fundamental is a behaviour layer , not a background effect. A field reads each
+[data-body] 's position every frame and writes the local field back as
+--field-* CSS variables your styles consume — so it reacts to your layout
+and engagement, not to the cursor over a decorative canvas. Since
+#538 it is
+signals-first : a field draws nothing by default — it runs the simulation and emits signals,
+and you opt into a visible surface ( render: 'dots' , or the warped grid) when
+you want one. The particles are one optional surface; the signals are the point.
+One createField — which door?
+There is one createField . The @fundamental-engine/core export is the
+renderer-agnostic primitive and requires opts.host ; the
+@fundamental-engine/vanilla export is the same function with browserHost()
+bundled for you (and a bounds option). Same function, host supplied or not — not three
+different APIs. Pick the door that matches your stack:
+Plain TS/JS, any framework → new FieldField(opts) or createField(canvas, opts) (vanilla) — host auto-supplied, signals-first.
+Scope the field to a component → new FieldField( ) — the field lives in the element, not the window.
+HTML / Vue / Svelte / Angular → <field-root> — add render="dots" for particles, omit it for signals-only.
+React → <FieldField> / useFieldField() .
+Your own renderer, or a canvas you own → createField(canvas, ) (core) — requires a host .
+Declared metrics on real bodies, no canvas → applyRecipe(root, recipe, ) (dom) — the signals-only metric pipeline; bind data with bindData .
+Copyable, end to end: a reactive component (no particles) for
+the contained, signals-only path, and your first field for the
+window path.
+The map
+The documentation, whole. These groups mirror the sidebar exactly — both render from one
+navigation tree, so this map cannot drift from it.
+The examples
+The applied tier. Twelve ordinary page types — an inbox, a market, a backlog, a front page —
+run as fields over real data , with no particle swarm: the field's
+measurements come back as type, ink, and anchor. Each ships a committed data snapshot,
+upgrades itself to live counts when its source is reachable, and says which mode it is in.
+Start with Evidence — the family's front door →
+For agents
+The docs ship as plain text too — /llms.txt is this map in the
+llms.txt format, and /llms-full.txt is the full canonical
+documentation concatenated; the field's agent consumption model, applied to its own docs.
+
+========================================================================
+PAGE: /docs/inspector — Fundamental — Inspector
+========================================================================
+
+Inspector
+The system inspecting itself — the live platform runtime, coverage, contracts, passports, and a
+reciprocity readout. It proves the field is measured, related, and fed back, not magic.
+System report
+forces
+passports
+conformance
+contracts
+agent types
+recipes
+Live platform runtime
+The running <field-root> 's platform registries,
+read live each frame — the actual production runtime (Phase D), not a mock. The six-phase
+scheduler runs discover → read → compute → state → write → render ; the counts below
+are the real registered measurements, state, feedback bindings, relationships, visuals, and
+overlays on this page.
+Connecting to the field-root platform…
+System report
+Platform
+Recipe inspector
+Reciprocity
+Contracts
+Passports
+frame —
+0 measurements
+0 state elements
+0 feedback bindings
+0 relationships
+0 visual bindings
+0 overlays
+These are live, not mocked — and the zeroes are real too. This docs page registers bodies and
+relationships, but declares no visual bindings, overlays, or thresholded state, so the inspector
+shows exactly what is running. The Reading Field exercises
+state and feedback in full.
+Relationship graph
+no relationships discovered yet
+Platform lint
+—
+Recipe inspector
+Pick a recipe to see its compiled plan ( compileRecipe ) and then run it through
+applyRecipe live. This answers why is this moving : which runtime tokens execute,
+which metrics are written, which relationships bind, and what the reduced-motion output is.
+Recipe
+reduced motion
+—
+Compiled plan
+Natural field —
+Runtime tokens —
+Metrics → vars —
+Diagnostics —
+Conditions —
+Reduced-motion —
+Live application
+run a recipe to see live metrics
+Live reciprocity
+These are real bodies in the page-wide field. The bars read their live --field-density write-back each frame.
+attract
+0.000
+swirl
+0.000
+sink attract
+0.000
+Contracts ( )
+Show all contracts
+Force passports ( )
+Token Family Class Truth field() Work Cons. speed Charge Neutral
+
+========================================================================
+PAGE: /docs/narrative — Fundamental — Narrative
+========================================================================
+
+One element, revealed as a field participant
+Step through the system the way the runtime sees it. The same ordinary element gains one layer at a
+time — from plain HTML to a body that the field measures, drives, and feeds back, all through data
+attributes.
+1 /
+Open the Inspector →
+Reciprocal interfaces
+An ordinary element, participating.
+supporting evidence
+← Back
+Next →
+
+========================================================================
+PAGE: /docs/natural-fields — Fundamental — Natural Fields
+========================================================================
+
+Concepts
+Natural fields
+Fundamental does not copy physics into the interface. It translates the four
+fundamental fields into interface behavior. Every interface already has priority, polarity,
+binding, and transformation — physics already has a language for those relations.
+Natural fields are conceptual. Engine primitives are translations. Canonical forces are designed
+verbs. Natural fields are not tokens; tokens are translations. This reframe
+changes nothing the particles do — it only gives each behavior a clean place in the hierarchy:
+field → translation → runtime token → metric → diagnostic → recipe
+The vocabulary lanes
+Fundamental keeps these categories separate on purpose. A reader should never have to guess whether a
+word is a runtime token, a metric, or a diagnostic — the lane says so:
+The four fields
+Electric fields push. Magnetic fields bend. Fieldflow carries. Do not make
+magnetism.apply() follow magnetic field lines — field-aligned transport belongs to
+fieldflow . And attract is not gravity; repel is not charge —
+those are designed UI verbs.
+Author each field — the data-attribute patterns
+You express a field's translation with data attributes on semantic HTML , using
+honest runtime tokens only. A token's field is its classification, not a separate API — there is no
+<gravity> element, only data-body="gravity" . Strong binding is the
+clearest case: a native href (or data-field-relation /
+data-field-target ) is the relationship — the graph is discovered from the DOM,
+not declared in code.
+Live — gravity bodies carrying a supplied priority ; applyRecipe()
+writes it back as --field-priority and the CSS reads
+it (gravity's interface translation, running):
+Fields vs primitives vs forces
+Every catalog token has a place. This grouping is read straight from the engine's classification:
+Interface translation table
+One need, separated into lanes: the runtime tokens that execute it, the metrics it measures, and the diagnostics that reveal it.
+Interface need Natural field Runtime tokens Metrics Diagnostics
+Diagnostics by field
+Each diagnostic answers “which invisible relation am I revealing?” — all shipped ( see them live ). Diagnostics are inspection modes, not runtime tokens.
+Diagnostic Reveals Field
+Four fields. Many expressions. One DOM runtime. Every interface has priority, polarity,
+binding, and transformation. Fundamental gives those relations a field model.
+
+========================================================================
+PAGE: /docs/performance — Fundamental — Performance
+========================================================================
+
+Performance
+Cheap by design
+Fundamental separates DOM participation from engine computation. The platform runs a six-phase
+scheduler over ~130 particles at default density, and the core stays off the main thread's way.
+The platform scheduler
+The platform runs one frame loop with explicit, ordered phases, so geometry reads never thrash
+against DOM writes:
+discover → read → compute → state → write → render
+Measurement happens in the read phase; CSS-variable and event feedback happen in the
+write phase; overlays draw in render . Batching all reads before all writes is the
+single most important layout-performance property — it prevents the read/write interleaving that
+forces synchronous reflow. An off-phase read is caught by the scheduler's guard.
+What runs each frame
+The body-force loop — O(particles × bodies), range-culled : a body past its reach is skipped before any maths, on squared distance (no sqrt ).
+Integration + damping — a few flops per particle, plus a spatial-hash reindex for neighbour queries.
+Render — plain additive arcs. The path uses zero shadowBlur (the most expensive canvas op); glow is a cheap halo under each dot.
+No per-frame reflow — scrollHeight is cached and variable-font writes are quantized, so the loop doesn't thrash layout.
+Benchmark
+The integrator hot path, measured across scales well beyond a real page:
+A real page runs ~130 particles against a handful of bodies — the "light" row and below — so
+the simulation is a rounding error; the render and layout discipline above are what keep it
+smooth.
+That holds on a real page, not just the hot path: the live homepage — 42 separate field
+instances , IntersectionObserver-gated — sustains 120 fps with zero long tasks and no
+visible jank on desktop , a result an independent integrator corroborated (conservatively).
+The one measurement still open is a throttled mid-tier-phone profile of that page — the honest
+remaining gap.
+It pauses itself
+Backgrounded tab — the loop stops on visibilitychange and resumes on return.
+Reduced motion — prefers-reduced-motion freezes the sim ( dt = 0 ) to a single static frame.
+Field Cells — <field-cell> demos gate their loop on an IntersectionObserver , so off-screen cells cost nothing.
+Tuning
+Lower density for very large or low-power surfaces;
+density: 0.5 halves the particle count. Within one field , the cost does not
+grow with the number of bodies on the page beyond the per-body loop term — one field is one
+shared canvas. Many separate field instances on a page (the homepage runs 42) are a
+different cost model: each instance is its own loop, kept cheap by the
+IntersectionObserver gating above, which idles every off-screen field.
+createField is the unguarded path
+<field-root> protects itself: the platform runtime forwards an adaptive
+quality tier to it ( setQualityTier ), so under sustained frame overrun it caps the
+effective backing-store DPR and drops the heaviest ambient layer on its own. Raw
+createField does not — reaching for the low-level door to drive a
+custom or full-viewport canvas gives you the full-cost path with no automatic throttle and no
+signal.
+Full-viewport createField can starve the host page. A heavy full-screen
+canvas at DPR 2 is fill-rate-bound (see the DPR note below); left
+uncapped it competes with the host's own CSS transitions and timers on the main thread. This is
+expected browser behavior for any heavy canvas, not an engine bug — but with createField
+nothing steers you away from it.
+So for a full-viewport createField canvas, set a guard yourself: cap the DPR with the
+dprCap option (the dominant fill-rate lever; dprCap: 1 roughly doubles
+headroom on retina), and/or apply a quality tier with setQualityTier . Better still,
+prefer <field-root> for a page field, or a contained field
+( new FieldField(&#123; bounds: el &#125;) / containerHost(el) ) so the
+canvas only covers the region that needs it.
+Performance budget
+The engine ships a PerformanceBudget — a set of default limits you can check your
+scene against at runtime. Use inspectBudget() from @fundamental-engine/core :
+Dimension Default limit Notes
+particles 600 Pool grows on demand; no built-in shrink path.
+bodies 80 [data-body] elements tracked by the engine.
+localCells 3 Active <field-cell> scoped regions.
+fieldLines 256 Field-line overlay count cap.
+heatmapResolution 6 px Density heatmap cell size (4–8 px range).
+dprCap 2 Device pixel ratio ceiling for the canvas backing store.
+inspectBudget is partial-safe — supply only the dimensions you can observe.
+withinBudget(counts) is the boolean shorthand. Both are pure; they do not sample
+the engine.
+Energy accounting
+handle.energy() returns a per-frame snapshot of the field's kinetic and thermal
+energy. The primary use case is debug overlays and the DataConsole — it tells you whether the
+field is active, cooling, or frozen.
+What the runtime doesn't measure (yet)
+The engine has no self-measurement of frame cost. inspectBudget() can tell you
+particle count is over limit, but can't tell you if that's actually causing a frame-time
+problem. The highest-priority gaps:
+Frame duration split — no simDuration / renderDuration split.
+Without it, you can't tell whether the bottleneck is the physics tick or the canvas draw.
+Adaptive quality governor — currently prefers-reduced-motion is the only
+quality lever, and it is binary (full physics or full freeze). No automatic response to
+sustained frame overrun.
+Per-force timing — some force types (hunt, metaball, shaped source) are meaningfully
+more expensive than others with many bodies. No forceTimings map today.
+These are tracked as the FieldPerf design direction — a proposed
+interface that would be observable the same way energy() is. See
+docs/engine-reference/observable-surface.md for the full gap analysis.
+
+========================================================================
+PAGE: /docs/platform — Fundamental — The platform layer
+========================================================================
+
+Concepts
+The platform layer
+@fundamental-engine/core (the core) computes field behavior, renderer-agnostic. @fundamental-engine/dom
+binds it to the DOM — measurement, state, feedback, relationships, visual bindings, and overlays,
+all driven by one frame scheduler. It is the DOM participation layer; canvas is one render surface.
+Package hierarchy
+@fundamental-engine/core renderer-agnostic field, force, particle, metric, recipe, diagnostic logic
+@fundamental-engine/dom DOM participation: the six registries + scheduler + lintPlatform()
+@fundamental-engine/elements native web components — <field-root> + the [data-body] contract
+@fundamental-engine/react the React adapter over the same contracts
+@fundamental-engine/vanilla the FieldField class for plain TypeScript
+Dependency direction is strict: elements → platform → core ,
+react → platform → core , vanilla → core . Since the runtime-unification
+phase the platform runtime is the default for <field-root> .
+The frame scheduler
+One shared loop with explicit, ordered phases, so reads never thrash against writes:
+An off-phase layout read is caught by the scheduler's guard. createFieldPlatform(root)
+wires measure → read and flush → write by default and exposes
+.on(phase, fn) for the rest. The platform also exports browserHost()
+— the canonical DOM host the
+renderer-agnostic core requires.
+The six registries
+Platform lint
+lintPlatform(platform) surfaces the quiet failures of a field system — it reads, never mutates:
+See it whole. The Reading Field demo exercises all six
+registries on the scheduler over ordinary prose. The deep reference is the canonical
+platform-architecture
+doc; the API surface is under API reference .
+
+========================================================================
+PAGE: /docs/reactive-component — A reactive component (no particles)
+========================================================================
+
+A reactive component — no particles
+The field is a behaviour layer , not a particle background. Here it runs
+contained inside one list and signals-only — nothing is drawn. The only thing
+you see is an ordinary list whose rows gain weight, lift, and glow from the field, and respond
+when you engage them. This is what you'd actually build.
+Hover or tab through the rows. Each is a [data-body] ; the contained field gathers its
+invisible matter toward them and writes the local density back as --field-density
+( --d ). Important rows are visibly heavier; engaging one pulls the field toward it.
+There is no <canvas> on this page — the field is pure signal.
+Copy it into your app
+Three parts: the markup, the field, and the CSS that reads what the field writes.
+render: 'none' is the default since #538 —
+a field draws nothing until you ask it to. bounds scopes the field to one element
+instead of the window. Together they make the field a component, not a backdrop.
+
+========================================================================
+PAGE: /docs/reading-field — Fundamental — Reading Field
+========================================================================
+
+Reading Field
+An ordinary article, wired to the platform. Scroll: sections gather attention as they centre,
+accrue memory as you read, and the contents list remembers where you have been. The whole page is
+one field — no spectacle, just the substrate doing its job.
+platform: starting…
+Contents
+
+========================================================================
+PAGE: /docs/recipes — Fundamental — Recipe model
+========================================================================
+
+Recipes
+The recipe model
+A FieldRecipe is a portable, serializable field program — the reusable unit that
+connects the natural-field model, engine primitives, DOM authoring, platform feedback, diagnostics,
+and the accessibility fallback. The catalog ships
+recipes across tiers
+( first-release), composed from distinct runtime
+tokens. See them all in the recipe gallery .
+Recipe prose can be expressive. Runtime tokens must be real. A recipe may say “completion
+releases pressure and decays into memory,” but its runtime fields stay strict:
+primitives: ["morph", "memory"] . The conformance gate rejects any recipe whose
+primitives are not real passported tokens — or that puts a diagnostic, metric, condition, or concept
+in the token lane.
+The vocabulary lanes
+A recipe separates these on purpose. A word lives in exactly one lane, and the lane says which:
+The schema
+Concept → token mapping
+When a product word is not a real engine token, it goes to its proper lane — it is never invented
+as a force. No new force tokens are added for recipes.
+Concept word Lane Resolution
+A worked recipe
+Every recipe is plain, serializable data. This is Guided Flow straight from the
+catalog — note the strict primitives beside the expressive notes :
+What the conformance gate enforces
+Every is a real, passported engine force.
+No token is a , , , or .
+Declared primitives exactly match the body tokens (no drift).
+Every is a real render / inspection mode.
+Every is one of gravity / electromagnetic / strong / weak.
+Every recipe declares a reduced-motion equivalent — no recipe is motion-only.
+Data binding — bindData()
+Recipes make behavior portable; bindData() makes real records participate in it.
+Records become bodies, mapped metrics become state, mapped relationships become edges, and a
+recipe supplies the behavior. Updates are deterministic and removed records decay rather than pop.
+Add record
+Remove one
+Shuffle values
+—
+
+========================================================================
+PAGE: /docs/showcase — Fundamental — Showcase
+========================================================================
+
+Resources
+Live showcase
+Every demo here is real. The field behind this page reacts to the elements below and writes
+density back into them — move your cursor near one and watch it answer. Each comes with its
+source.
+A glowing hero word
+The canonical reciprocity effect. The word is an attract body with
+data-feedback ; its --d drives weight and glow, so it grows where
+matter gathers. Sweep your cursor across it.
+gravity
+A reacting card grid
+Each card is a gentle attractor. Its --d drives a subtle lift, edge glow, and
+shadow — the grid breathes as the field moves through it.
+Reciprocal
+the field bends to elements; elements bend back
+Conserved
+nothing is created from nothing — matter is moved
+Physical
+one field, not a pool of decorative particles
+Click to burst
+Drive the field from your own events. The FieldHandle 's
+burst takes viewport coordinates — click anywhere in the stage to shove and heat
+the matter there.
+click anywhere in here
+Want the recipes as a reference? The copy-paste-first versions live on the
+Recipes page; this showcase is the same patterns, running.
+
+========================================================================
+PAGE: /docs/snapshots — Fundamental — Snapshot reference
+========================================================================
+
+Snapshot reference
+Every force scenario, run through the real engine and reduced to a deterministic fingerprint.
+These are the regression baseline: re-run them and any change in the numbers is a change in the
+physics. Captured at build time via captureSnapshot() .
+
+========================================================================
+PAGE: /docs/studies/evidence-field — Fundamental — Evidence Field Study
+========================================================================
+
+Concept study · data-bound
+Evidence Field Study
+Claims become bodies, sources bind to them, and contradictions raise entropy — the
+Evidence Field recipe, driven by real data through
+bindData() . Flip a source's polarity or add a claim and the field updates
+deterministically; removed claims decay rather than pop. Still a plain claim/source list with the
+field off.
+Before A plain list of claims and their sources.
+After Well-supported claims read coherent; contradicted claims gain entropy and read contested.
+Inspect Live bindData().inspect() — records, bodies, relationship edges.
+Field: on
+Add claim
+Remove claim
+Flip a source
+Reduce motion
+starting…
+Claims
+Sources
+
+========================================================================
+PAGE: /docs/studies/reading-field — Fundamental — Reading Field Study
+========================================================================
+
+Concept study
+Reading Field Study
+A familiar page — a long-form article — reinterpreted as a field. The structure stays ordinary
+semantic HTML; the field adds a second layer: orientation, memory, and relationship. It remains
+fully readable with the field off or motion reduced. This is the first of the
+concept studies .
+Before A plain semantic article — headings, citations, a source list. Toggle the field off to see it.
+After Field on: sections gather attention and accrue memory, citations thread to sources, claims show support and conflict.
+Inspect Reveal the live relationship graph and the platform readout — why the page behaves as it does.
+Field: on
+Relation lens
+Inspect
+Reduce motion
+semantic article — field off
+Contents
+Evidence
+Sources
+Evidence
+Claims are bodies; sources bind to them. A claim with a contradiction reads as contested ; one with only support reads as supported . Hover a claim to thread it to its sources.
+Sources
+Live platform frame —
+sections 0
+relationships 0
+read 0
+lint ✓
+
+========================================================================
+PAGE: /docs/studies/review-field — Fundamental — Review Field Study
+========================================================================
+
+Concept study · data-bound
+Review Field Study
+A generic pull request, reinterpreted as a field. Changed files and reviewers are records
+bound through bindData() — the Dependency
+Tension and Review Constellation recipes turn
+them into heat, tension, and attention; comments bind to the files they touch. Usable with the field off.
+Before A plain PR: files, comments, reviewers, checks, a merge box.
+After Files heat by impact, blocked files hold tension, reviewers' attention shows.
+Inspect Live bindData().inspect() — records · bodies · edges.
+Field: on
+Reduce motion
+starting…
+Make the recipe runtime executable
+feat/recipe-runtime → main
+Merge readiness % coherent
+Changed files Dependency Tension
+Reviewers Review Constellation
+Review comments
+Checks
+
+========================================================================
+PAGE: /docs/studies/search-field — Fundamental — Search Field Study
+========================================================================
+
+Concept study · data-bound
+Search Field Study
+A ranked list becomes an evidence landscape. Results are records bound through
+bindData() ; the Trust Gradient recipe turns
+each result's confidence into a gradient and contradictions stand apart — still a plain list with the
+field off.
+Before A plain ranked list of results with sources.
+After Confidence reads as a trust gradient; contradictions are flagged; opened results are marked.
+Inspect Live bindData().inspect() — records · bodies · edges.
+Field: on
+Reduce motion
+starting…
+field ui evidence —
+
+========================================================================
+PAGE: /docs/studies/system-weather — Fundamental — System Weather Study
+========================================================================
+
+Concept study · data-bound
+System Weather Study
+A dashboard read as weather. Metric cards are records bound through bindData() ;
+the Attention Weather recipe turns each card's heat and
+pressure into field state, so hot or overloaded metrics gain weight and calm regions stay quiet —
+still a legible grid with the field off.
+Before A plain grid of metric cards.
+After Cards develop heat and pressure by activity; anomalies stand out; calm regions stay quiet.
+Inspect Live bindData().inspect() — records · bodies · edges.
+Field: on
+Reduce motion
+starting…
+System pulse —
+
+========================================================================
+PAGE: /docs/studies/visual-binding — Fundamental — Visual Binding Study
+========================================================================
+
+Concept study · declarative visual binding
+Visual Binding Study
+An expressive visual can stand in for a semantic element without stealing its meaning. Mark the
+visual with data-field-visual-for and a data-field-visual-role , call
+platform.visuals.scan() , and the field binds, lints, and inspects the pairing. The
+text remains real HTML. The SVG is a bound representation. The visual can be expressive, but the
+semantic source remains inspectable and accessible.
+Semantic source real HTML
+Fields read the page
+This <h3 id="vb-source"> is the source of truth. Screen
+readers and search engines read this, not the SVG.
+Bound representation hand-authored SVG
+Expressive, but carries no independent meaning — so it is
+aria-hidden .
+Re-scan
+aria-hidden: on
+Target: resolved
+Inspector
+scan —
+binding —
+lint —
+Toggle aria-hidden off and the lint flips to
+visual-not-hidden (the representation would double-expose the heading). Break the
+target and it flips to visual-orphan (a representation must bind a real source).
+
+========================================================================
+PAGE: /docs/support — Fundamental — Support & stability
+========================================================================
+
+Reference
+Support & stability
+The maintenance policy a solo maintainer can actually keep . It is deliberately
+conservative: it promises only what one person can sustain, and is explicit where support is
+best-effort . Overcommitting (a security SLA, guaranteed backports) would be a
+lie — this avoids that.
+What backs this up. The contract is the Stable surface —
+frozen and gated by check:api in CI. This page is the human-readable commitment around
+it; the canonical source is SUPPORT.md in the repository.
+Versioning (SemVer)
+Fundamental follows Semantic Versioning . The
+contract is the Stable surface (Tier 1 + Tier 2) declared in the 1.0 surface spec.
+Patch ( 1.0.x ) — bug fixes, no surface change.
+Minor ( 1.x.0 ) — additive only : new options,
+methods, exports, render modes. Never breaks the Stable surface. The Experimental tier (Tier 3)
+may change in a minor.
+Major ( 2.0.0 ) — the only release that may break the Stable surface,
+and only after the deprecation window below.
+The 0.x line was already frozen-and-additive; 1.0 formalizes that promise.
+Deprecation window
+A Stable symbol is deprecated (kept working, marked in docs + a dev-only
+console.warn where it's a runtime call) for at least one minor release
+before it may be removed.
+Removal happens only in the next major . Anything deprecated in 1.x
+survives until 2.0 at the earliest — never a surprise break within a major line.
+Security response
+Best-effort, no SLA. This is a solo-maintained project; there is no guaranteed response time.
+Report privately via GitHub Security Advisories ("Report a vulnerability" on the
+repo), not a public issue.
+Acknowledged when the maintainer is next active; fixes prioritized by severity, best-effort.
+The published packages have zero runtime dependencies (core) or peer deps only
+(three), so the runtime attack surface is minimal; most advisories live in dev/build tooling and
+don't reach consumers.
+Releases are published from CI with provenance (Sigstore/SLSA attestation) —
+verify the supply chain on any published version.
+What "supported" means here
+Supported: the current minor of 1.x . Fixes land on main and ship in the next minor/patch.
+Best-effort: older 1.x minors — no backports guaranteed; upgrade to
+the latest 1.x (additive, non-breaking) for fixes.
+Browsers: evergreen Chrome / Firefox / Safari / Edge. Reduced motion is a
+first-class fallback (the field's meaning survives without animation). SSR-safe (no DOM
+at import). See the stability contract for the full matrix.
+This policy can be revised in a minor release; revisions are additive to support (never a reduction
+without a major-version note).
+
+========================================================================
+PAGE: /docs/troubleshooting — Fundamental — Troubleshooting
+========================================================================
+
+Resources
+Troubleshooting
+The handful of things that trip people up — each with the why and the fix. Most reduce to
+one of two facts: the field reads bodies on a schedule, and it refuses to fake motion.
+New elements aren't reacting
+The field scans for [data-body] elements when it mounts. If you add or remove
+bodies afterwards — a route change, a list update, a modal — it won't see them until you
+re-scan. Call field.scan() (or its alias rescan() ) after the DOM
+settles.
+The field is frozen or blank
+Two behaviours pause the loop on purpose — both are features, not bugs:
+Reduced motion. Under prefers-reduced-motion: reduce the simulation
+renders a single static frame ( dt = 0 ) and never animates. Test with the OS
+setting off to see motion.
+Backgrounded tab. The loop stops on visibilitychange and resumes when
+the tab is foregrounded again, so a hidden tab costs nothing.
+Off-screen cells. A <field-cell> gates its loop on an
+IntersectionObserver — it only runs while visible.
+The canvas covers my content or eats clicks
+With <field-root> and the React component this is handled for you. If
+you own the canvas via createField , position it fixed behind your content and
+let pointer events pass through:
+One field per page. There is exactly one background field. Don't mount several
+<field-root> elements — for small in-frame effects use
+<field-cell> instead, which is built to be embedded many times.
+--field-density isn't updating my element
+Density write-back is opt-in. The element needs data-feedback , and your CSS
+should default --field-density (via the var(--field-density, 0)
+fallback) so it renders before the first write. The value is low-pass filtered (~0.2s), so it
+eases rather than jumps. (The compact --d is written too, as a compatibility alias.)
+Words glow, they are never drawn. The engine never assembles particles into
+letterforms — text stays real, selectable, and accessible; --field-density drives
+weight, glow, and scale on the real element.
+SSR & hydration
+The field is a client-only concern. The custom element registers in the browser, and the
+React component mounts its canvas on the client — there is no server-rendered canvas to
+mismatch. In Astro, the import '@fundamental-engine/elements' lives in a client
+<script> ; in Next.js, render the field in a client component. Bodies are
+plain markup, so they server-render fine; only the field's reaction is deferred to the
+client.
+The field keeps running after I remove it
+A field owns real resources — a running loop, event listeners, an idle timer, and (depending on
+the surface) a canvas, GPU buffers, and registry observers. How they're released depends on how
+you mounted it:
+<field-root> / <field-cell> — automatic. The
+element tears itself down on disconnect (and rebuilds cleanly on an attribute change): the
+loop stops, the platform registries are pruned, and the visual-binding observers disconnect.
+Just remove the element.
+createField() / the Three.js FieldLayer — you hold the
+handle, so you call destroy() when the view goes away. It stops the loop,
+releases the host's listeners, clears the idle timer, retires agents, and frees the swarm's
+GPU buffers. Skipping it on a re-mounted or route-swapped view is the usual cause of a slow
+leak.
+Long-lived pages stay flat. The registries prune entries for elements that leave the DOM
+on a low cadence, so a single-page app that mounts and unmounts bodies for hours doesn't
+accumulate stale state. You don't manage that — it's the runtime's hygiene.
+It feels heavy on a large page
+The field is one shared canvas, so cost does not grow with the number of bodies beyond the
+per-body loop term. If a very large or low-power surface needs headroom, lower
+density — density: 0.5 halves the particle
+count. See Performance for the full picture.
+Still stuck? The Lab fires a single particle into any force and
+checks it against its law — the fastest way to confirm a force behaves as documented.
+
+========================================================================
+PAGE: /docs/tutorial — Fundamental — Your first field
+========================================================================
+
+Getting started
+Your first field
+Eight short steps from npm install to a headline that gains weight and glow as
+the field pools around it. Every step is runnable on its own — paste, save, watch.
+1. Install
+Pick the entry point for your stack. The rest of this tutorial uses the web component.
+2. Drop the field
+One field lives behind your whole page. Register the element and drop a single
+<field-root> — it mounts a fixed, full-viewport canvas and starts the
+engine. Nothing reacts yet; there are no bodies.
+3. Add your first body
+A body is any element with data-body . Mark your headline an
+attract body and the field starts pulling matter toward it. Move the element and
+the force moves with it — the engine re-reads its box every frame.
+attract
+An isolated single-force microscope — not the system. Your headline above runs the same
+attract on the page field through the data-body attribute.
+React note. Components render their bodies after the field mounts, so call
+field.scan() once from onReady to pick them up.
+4. Make the type react
+This is the payoff. Add data-feedback and the field writes the density it
+gathered back to your element as --field-density (∈ [0, 1], low-pass filtered so it
+eases; the compact --d is written too as an alias). Drive weight and glow from it —
+the word grows where matter collects.
+Words glow, they are never drawn. The text stays real, selectable, and accessible —
+--field-density only enhances it; particles never assemble into letterforms.
+Meaning without motion. Under prefers-reduced-motion the field freezes and the
+element holds a static, emphasised baseline. The point the motion made — which word carries weight
+— survives with the motion off. Always give --field-density a reduced-motion fallback.
+5. Compose another force
+Forces compose, space-separated. Add swirl and your headline now both pulls and
+spins the matter around it. Each force reads only the attributes it uses —
+swirl takes data-spin ; attract ignores it.
+swirl
+Another single-force microscope. The system is the data-body markup above;
+this cell just isolates one token so you can see its motion.
+6. Gate it on a condition
+A force can act only when a condition holds, via data-when . Mark an
+element data-hot so hover and keyboard focus set its engaged state, then gate the
+force on active — it swirls only while the link is engaged.
+7. Drive it from code
+Every entry point hands you a FieldHandle . With the web
+component it's proxied onto the element, so you can reshape the field and react to events:
+8. Where to go next
+Concepts
+The model in depth — one conserved field, reciprocity, the orthogonal axes.
+The forces
+The full catalog — compose any of them on a body, space-separated.
+Recipes
+Copy-paste patterns — a glowing hero, a reacting grid, a click burst.
+The Lab
+Fire a particle into any force and verify it against its law.
+
+========================================================================
+## FIELD RECIPES
+========================================================================
+
+========================================================================
+RECIPES: field-recipes (generated from data/recipes.json)
+========================================================================
+
+# Field recipes
+
+The 64 shipped FieldRecipes (the `FIELD_RECIPES` catalog; a FieldRecipe is the API
+representation of a field configuration). Each composes runtime tokens, metrics, and diagnostics into
+an interface pattern. The locked set is frozen; new recipes go in EXPERIMENTAL_RECIPES.
+
+### Core — interface & accessibility
+
+
+
+### Applied — product, workflow & collaboration
+
+
+
+### Systems — safety, provenance & governance
+
+
+
+### Operational — multi-actor, adaptive & live
