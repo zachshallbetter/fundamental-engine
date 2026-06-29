@@ -7,7 +7,7 @@ authors:
   - family-names: Shallbetter
     given-names: Zachary
     orcid: "https://orcid.org/0009-0009-9450-3429"
-version: 0.9.0
+version: 0.9.1
 date-released: 2026-06-27
 license: MIT
 repository-code: "https://github.com/zachshallbetter/fundamental-engine"
