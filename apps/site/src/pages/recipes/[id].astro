@@ -4,7 +4,7 @@ import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
 import {
-  FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe,
+  FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, passportFor, type FieldRecipe,
 } from '@fundamental-engine/core';
 import { metricTitle, designedMetrics } from '../../lib/metric-lanes.ts';
 import { taxonomyFor } from '../../lib/recipe-taxonomy.ts';
@@ -34,6 +34,10 @@ const designed = designedMetrics(r.metrics);
 // discovery metadata for the shared workbench preview (scaffold + the render stack it wakes into)
 const tax = taxonomyFor(r.id);
 const primaryRender = tax.primaryRender ?? r.render[0] ?? 'dots';
+// per-token / per-metric one-liners — tokens from the engine's own ForcePassport.designUse (the
+// authored "what it does" verb); metrics from the support-lane description (metricTitle).
+const tokenDef = (t: string): string => passportFor(t as never)?.designUse ?? '';
+const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/, '');
 ---
 
 <Base title={`Fundamental — ${r.name}`} description={`${r.name}: ${r.intent}. A live, validated Fundamental recipe — runs in your browser, with the runtime tokens, metrics, diagnostics, accessibility equivalent, and copyable HTML / web component / React / JSON.`}>
@@ -69,10 +73,14 @@ const primaryRender = tax.primaryRender ?? r.render[0] ?? 'dots';
     {r.notes && <p class="notes">{r.notes}</p>}
 
     <dl class="rp-meta">
-      <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
+      <div><dt>Runtime tokens</dt><dd class="rp-defs">{r.primitives.map((p) => (
+        <span class="rp-def"><VocabBadge kind="token" label={p} title={`${p} — ${tokenDef(p)}`} /><span class="rp-def-text">{tokenDef(p)}</span></span>
+      ))}</dd></div>
       {r.concepts && r.concepts.length > 0 && <div><dt>Concepts</dt><dd>{r.concepts.map((c) => <VocabBadge kind="concept" label={c} />)}</dd></div>}
-      <div><dt>Metrics</dt><dd>
-        {r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}
+      <div><dt>Metrics</dt><dd class="rp-defs">
+        {r.metrics.map((m) => (
+          <span class="rp-def"><VocabBadge kind="metric" label={m} title={metricTitle(m)} /><span class="rp-def-text">{metricDef(m)}</span></span>
+        ))}
         {designed.length > 0 && (
           <span class="ml-note">
             {designed.join(', ')} {designed.length === 1 ? 'is a host-supplied lane' : 'are host-supplied lanes'} —
@@ -180,6 +188,11 @@ const primaryRender = tax.primaryRender ?? r.render[0] ?? 'dots';
   .rp-meta > div { display: grid; grid-template-columns: 10rem 1fr; gap: 0.7rem; align-items: baseline; }
   .rp-meta dt { color: var(--muted, #9aa); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
   .rp-meta dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  /* token/metric chip + its one-liner, one per row, so meanings read at a glance */
+  .rp-meta dd.rp-defs { flex-direction: column; gap: 0.35rem; }
+  .rp-def { display: flex; align-items: baseline; gap: 0.6rem; }
+  .rp-def > :first-child { flex: none; min-width: 6.5rem; }
+  .rp-def-text { color: var(--muted, #c3c9d4); font-size: 0.88rem; line-height: 1.4; }
   .rp-meta dd.a11y { display: block; color: var(--muted, #c3c9d4); font-size: 0.9rem; }
   .rp-meta dd .ml-note { flex-basis: 100%; margin-top: 0.35rem; color: var(--muted, #9aa); font-size: 0.8rem; line-height: 1.5; }
   .rp-meta dd .ml-note code { font-size: 0.92em; color: var(--text-2, #c3c9d4); }
