@@ -1784,6 +1784,32 @@ FILE: dimensional-coupling.md
 > [`feedback-channels.md`](feedback-channels.md) (the DOM output). Descriptive of intent; where it
 > disagrees with the code, the code wins.
 
+## At a glance
+
+```mermaid
+flowchart LR
+  D["Dimension<br/>axis of state"] --> F["Fields<br/>structure over that axis"]
+  F --> S["Superposition<br/>net influence"]
+  S --> A["Agents consume influence"]
+  A --> R["Forces<br/>reaction / state change"]
+
+  X["Relationships<br/>association"] --> Y{"Mapped by configuration?"}
+  Y -->|No| Z["No dynamical effect"]
+  Y -->|Yes| C["Coupling"]
+  C --> R
+
+  R --> M["Metrics<br/>measured state"]
+  M --> G["Diagnostics<br/>explain cause"]
+  M --> P["Projection<br/>visible output"]
+
+  CFG["Configuration / FieldRecipe"] --> F
+  CFG --> X
+  CFG --> R
+  CFG --> M
+  CFG --> G
+  CFG --> P
+```
+
 ## Association is not coupling
 
 The single most important distinction in the model:
@@ -1872,6 +1898,69 @@ superposition is what makes forces composable.)
 | **Metric** | Measured output | density, load, coherence |
 | **Diagnostic** | Explanation layer | field lines, causality, topology |
 | **Projection** | Makes a dimension visible | 3D → scale/blur/occlusion; time → trail/decay |
+
+## The full picture
+
+```mermaid
+flowchart TD
+  A["Dimension<br/>axis of state"] --> A1["Examples<br/>x/y · z · time · orientation · attention · memory · confidence"]
+
+  A --> B["Fields<br/>structure over a dimension"]
+  B --> B1["Examples<br/>gravity well · charge field · memory grid · temporal kernel · orientation field"]
+
+  B --> C["Superposition<br/>fields add into net influence"]
+  C --> D["Net influence at agent state"]
+
+  D --> E["Agent / Consumer<br/>thing that receives influence"]
+  E --> E1["Particle<br/>velocity · heat · capture"]
+  E --> E2["Element<br/>CSS vars · transform · events"]
+  E --> E3["Relationship<br/>strength · tension · memory"]
+  E --> E4["Data record<br/>salience · confidence · decay"]
+  E --> E5["User / input<br/>focus · pointer · selection"]
+
+  D --> F["Force<br/>reaction law / the coupling mechanism"]
+  F --> F1["Changes state<br/>motion · rotation · heat · decay · charge · capture"]
+
+  G["Relationship<br/>association"] --> G1["Relates without forcing"]
+  G1 --> G2["claim supports source"]
+  G1 --> G3["heading relates to section"]
+  G1 --> G4["event relates to moment"]
+  G1 --> G5["body relates to depth"]
+
+  G --> H{"Does a configuration<br/>map relation into force?"}
+  H -->|No| I["Association only<br/>no dynamical effect"]
+  H -->|Yes| J["Coupling<br/>relation becomes force input"]
+
+  J --> F
+
+  K["Cross-dimensional effects<br/>explicit and named"] --> K2["translation to rotation<br/>torque (coupling)"]
+  K --> K3["time to strength<br/>decay / memory (coupling)"]
+  K --> K5["confidence to gravity<br/>semantic mass (coupling)"]
+  K --> K4["depth to projection<br/>scale / blur / occlusion (projection, not coupling)"]
+
+  K2 --> F
+  K3 --> F
+  K5 --> F
+  K4 --> L
+
+  M["Configuration / FieldRecipe"] --> M1["Authored mapping"]
+  M1 --> B
+  M1 --> G
+  M1 --> F
+  M1 --> N["Metrics"]
+  M1 --> O["Diagnostics"]
+  M1 --> L["Projection"]
+  M1 --> P["Accessibility equivalent"]
+
+  N --> N1["Expose state<br/>density · load · coherence · confidence · memory"]
+  O --> O1["Explain cause<br/>field lines · causality · topology · prediction"]
+  L --> L1["Make dimensions visible<br/>CSS vars · SVG · Canvas · transform · typography"]
+  P --> P1["Meaning survives without motion"]
+```
+
+> One correction from the source sketch: `depth → projection` is a **projection** (visual), not a
+> coupling (dynamical) — projection is deliberately *separate* from coupling, so it routes to Projection,
+> not Force. The rest of the cross-dimensional arrows are genuine couplings and route through Force.
 
 ## Coupling requires a passport declaration
 
@@ -1984,6 +2073,18 @@ Metrics expose state.
 Diagnostics explain cause.
 Projections make dimensions visible.
 Configurations decide which associations become couplings.
+```
+
+```mermaid
+flowchart TD
+  A["Fields describe structure"] --> B["Forces create coupling"]
+  C["Relationships declare association"] --> D["Configurations decide whether association becomes coupling"]
+  E["Metrics expose state"] --> F["Diagnostics explain cause"]
+  G["Projections make dimensions visible"]
+
+  D --> B
+  B --> E
+  E --> G
 ```
 
 ========================================================================
