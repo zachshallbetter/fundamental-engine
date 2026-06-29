@@ -17,7 +17,7 @@
 > set. The 36 real runtime tokens live in the [forces catalog](../engine-reference/forces-system.md).
 > Concept words map to them: `vortex→swirl`, `drag→viscosity`, `emitter→spawn`, `spring→tether`,
 > `reflect→wall`, `absorb→sink`, `phase`/`decay`→`morph`/`memory`. `mass` is a metric, `potential` a
-> diagnostic; `fuse`/`fission`/`warp`/`wormhole` are not yet implemented.
+> diagnostic; `fuse`/`fission` are not yet implemented (`warp` ships the wormhole-throat behavior).
 
 ## 0. Purpose
 
