@@ -45,6 +45,30 @@ export function Page() {
   );
 }`;
 
+const bodyThree = `import * as THREE from 'three';
+import { createFieldLayer, PlaneProjection } from '@fundamental-engine/three';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+const layer = createFieldLayer({
+  projection: new PlaneProjection({ relief: 2 }),  // field on a plane; z lifted from heat
+  renderer,
+  accent: '#4da3ff',
+});
+scene.add(layer.object);   // a THREE.Points swarm
+
+// any THREE.Object3D becomes a body — the analogue of [data-body="attract" data-strength="0.8"]
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+layer.addBody(mesh, { tokens: 'attract', strength: 0.8, range: 260 });
+
+renderer.setAnimationLoop(() => {
+  layer.tick();                        // engine self-steps; tick() pulls the latest swarm
+  renderer.render(scene, camera);
+});`;
+
 const platformExample = `import { createFieldPlatform } from '@fundamental-engine/dom';
 
 // the substrate beneath every surface: measure → state → write, on one scheduler
@@ -157,23 +181,22 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
 >
   <h1>Authoring across surfaces</h1>
   <p class="lede">
-    Three surfaces, one contract. A body authored in plain HTML, as a web component, or in React is
-    the <em>same</em> body in the field — each is just a different way to write the
-    <code>[data-body]</code> <ApiStamp name="data-body" /> contract the scanner reads. The HTML path
-    mounts with <code>createField</code> <ApiStamp name="createField" pkg="@fundamental-engine/vanilla" /> from
-    <code>@fundamental-engine/vanilla</code>. Pick the surface your stack already uses;
+    Four surfaces, one contract. A body authored in plain HTML, as a web component, in React, or in a
+    Three.js scene is the <em>same</em> body in the field — each is a different way to reach the same
+    <code>[data-body]</code> <ApiStamp name="data-body" /> contract. Pick the surface your stack uses;
     Fundamental does not ask you to adopt a framework.
   </p>
 
-  <h2>A body, three ways</h2>
-  <p>Each of these authors one attractor of strength 0.8. They compile to identical bodies.</p>
+  <h2>A body, four ways</h2>
+  <p>Each of these authors one attractor of strength 0.8. They produce identical bodies in the engine.</p>
   <CodeTabs
     variants={[
       { label: 'Native HTML', lang: 'html', code: bodyHtml },
       { label: 'Web component', lang: 'html', code: bodyWc },
       { label: 'React', lang: 'tsx', code: bodyReact },
+      { label: 'Three.js', lang: 'js', code: bodyThree },
     ]}
-    caption="The same body — <code>attract</code>, strength 0.8 — across all three surfaces."
+    caption="The same body — <code>attract</code>, strength 0.8 — across all four surfaces. The Three.js door uses <code>layer.addBody(mesh, spec)</code> instead of <code>data-body</code> markup."
   />
 
   <h2>Live</h2>

@@ -7,78 +7,82 @@ import SeeAlso from '../../../components/SeeAlso.astro';
 // JS methods: packages/core/src/core/types.ts (FieldHandle interface)
 // Swift methods: swift/Sources/FundamentalVanilla/FieldEngine.swift
 // Kotlin methods: android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt
+// Three.js: packages/three/src/layer.ts (FieldLayer delegates all 44 to the wrapped FieldHandle)
 
 interface ParityRow {
   method: string;
   swift: boolean;
   kotlin: boolean;
+  three: boolean;
   note?: string;
 }
 
 const METHODS: ParityRow[] = [
-  { method: 'scan',                 swift: true,  kotlin: false, note: 'Kotlin re-scans implicitly on tick' },
-  { method: 'rescan',               swift: true,  kotlin: false, note: 'alias of scan' },
-  { method: 'setAccent',            swift: true,  kotlin: false, note: 'visual layer — Compose has its own color API' },
-  { method: 'setPalette',           swift: true,  kotlin: false, note: 'visual layer' },
-  { method: 'setFormation',         swift: true,  kotlin: true  },
-  { method: 'setWaveStyle',         swift: true,  kotlin: false, note: 'visual layer' },
-  { method: 'setWaveCenter',        swift: true,  kotlin: false, note: 'visual layer' },
-  { method: 'setSeparation',        swift: true,  kotlin: false, note: 'Kotlin exposes as var separation' },
-  { method: 'setAttention',         swift: true,  kotlin: true  },
-  { method: 'setCausality',         swift: true,  kotlin: true  },
-  { method: 'setHeatmap',           swift: true,  kotlin: true  },
-  { method: 'setDprCap',            swift: false, kotlin: false, note: 'native OSs handle DPR differently' },
-  { method: 'setQualityTier',       swift: false, kotlin: false, note: 'adaptive quality governor' },
-  { method: 'setRender',            swift: true,  kotlin: false, note: 'render surface is Compose/SwiftUI-owned on native' },
-  { method: 'setOverlay',           swift: true,  kotlin: false },
-  { method: 'setBackground',        swift: false, kotlin: false, note: 'Web-specific canvas clearing' },
-  { method: 'threads',              swift: true,  kotlin: false, note: 'visual layer — glowing connector lines' },
-  { method: 'burst',                swift: true,  kotlin: true  },
-  { method: 'flowTo',               swift: true,  kotlin: true  },
-  { method: 'clearFlow',            swift: true,  kotlin: true  },
-  { method: 'seed',                 swift: true,  kotlin: true  },
-  { method: 'addAgent',             swift: false, kotlin: false, note: 'engine-stepped agent — planned for native' },
-  { method: 'addBody',              swift: true,  kotlin: true  },
-  { method: 'addEdge',              swift: true,  kotlin: true  },
-  { method: 'readEdges',            swift: true,  kotlin: true  },
-  { method: 'addField',             swift: true,  kotlin: true  },
-  { method: 'sampleField',          swift: true,  kotlin: true  },
-  { method: 'atomAt',               swift: true,  kotlin: true  },
-  { method: 'focusAt',              swift: true,  kotlin: false },
-  { method: 'clearFocus',           swift: true,  kotlin: false },
-  { method: 'particleCount',        swift: true,  kotlin: true  },
-  { method: 'energy',               swift: true,  kotlin: true  },
-  { method: 'sample',               swift: false, kotlin: false, note: 'Swift uses renderer path' },
-  { method: 'sampleScalar',         swift: true,  kotlin: true  },
-  { method: 'sampleGradient',       swift: true,  kotlin: true  },
-  { method: 'grid',                 swift: false, kotlin: false, note: 'named ScalarGrid — planned for native' },
-  { method: 'on',                   swift: false, kotlin: false, note: 'event bus — planned for native' },
-  { method: 'readParticles',        swift: true,  kotlin: true  },
-  { method: 'readParticleIds',      swift: false, kotlin: false },
-  { method: 'readParticleChannels', swift: false, kotlin: false },
-  { method: 'registerOverlay',      swift: false, kotlin: false },
-  { method: 'scrollV',              swift: true,  kotlin: false, note: 'DOM/UIKit-specific scroll velocity' },
-  { method: 'setVisible',           swift: true,  kotlin: false },
-  { method: 'destroy',              swift: true,  kotlin: true  },
+  { method: 'scan',                 swift: true,  kotlin: false, three: true,  note: 'Kotlin re-scans implicitly on tick; Three.js calls scan internally when bodies change' },
+  { method: 'rescan',               swift: true,  kotlin: false, three: true,  note: 'alias of scan' },
+  { method: 'setAccent',            swift: true,  kotlin: false, three: true,  note: 'visual layer — Compose has its own color API' },
+  { method: 'setPalette',           swift: true,  kotlin: false, three: true,  note: 'visual layer' },
+  { method: 'setFormation',         swift: true,  kotlin: true,  three: true  },
+  { method: 'setWaveStyle',         swift: true,  kotlin: false, three: true,  note: 'visual layer' },
+  { method: 'setWaveCenter',        swift: true,  kotlin: false, three: true,  note: 'visual layer' },
+  { method: 'setSeparation',        swift: true,  kotlin: false, three: true,  note: 'Kotlin exposes as var separation' },
+  { method: 'setAttention',         swift: true,  kotlin: true,  three: true  },
+  { method: 'setCausality',         swift: true,  kotlin: true,  three: true  },
+  { method: 'setHeatmap',           swift: true,  kotlin: true,  three: true  },
+  { method: 'setDprCap',            swift: false, kotlin: false, three: true,  note: 'native OSs handle DPR differently; Three.js delegates but DPR is renderer-owned' },
+  { method: 'setQualityTier',       swift: false, kotlin: false, three: true,  note: 'adaptive quality governor' },
+  { method: 'setRender',            swift: true,  kotlin: false, three: true,  note: 'render surface is host-owned on native + Three.js; delegated but use Three.js renderer directly' },
+  { method: 'setOverlay',           swift: true,  kotlin: false, three: true,  note: 'use threeBackend() for Three.js diagnostic overlays' },
+  { method: 'setBackground',        swift: false, kotlin: false, three: true,  note: 'web canvas clearing; Three.js delegates but the concept is renderer-owned' },
+  { method: 'threads',              swift: true,  kotlin: false, three: true,  note: 'visual layer — glowing connector lines' },
+  { method: 'burst',                swift: true,  kotlin: true,  three: true  },
+  { method: 'flowTo',               swift: true,  kotlin: true,  three: true  },
+  { method: 'clearFlow',            swift: true,  kotlin: true,  three: true  },
+  { method: 'seed',                 swift: true,  kotlin: true,  three: true  },
+  { method: 'addAgent',             swift: false, kotlin: false, three: true,  note: 'Three.js layer.addAgent() binds a mesh; native planned' },
+  { method: 'addBody',              swift: true,  kotlin: true,  three: true  },
+  { method: 'addEdge',              swift: true,  kotlin: true,  three: true  },
+  { method: 'readEdges',            swift: true,  kotlin: true,  three: true  },
+  { method: 'addField',             swift: true,  kotlin: true,  three: true  },
+  { method: 'sampleField',          swift: true,  kotlin: true,  three: true  },
+  { method: 'atomAt',               swift: true,  kotlin: true,  three: true  },
+  { method: 'focusAt',              swift: true,  kotlin: false, three: true  },
+  { method: 'clearFocus',           swift: true,  kotlin: false, three: true  },
+  { method: 'particleCount',        swift: true,  kotlin: true,  three: true  },
+  { method: 'energy',               swift: true,  kotlin: true,  three: true  },
+  { method: 'sample',               swift: false, kotlin: false, three: true,  note: 'Swift uses renderer path; re-exported by @fundamental-engine/three' },
+  { method: 'sampleScalar',         swift: true,  kotlin: true,  three: true  },
+  { method: 'sampleGradient',       swift: true,  kotlin: true,  three: true  },
+  { method: 'grid',                 swift: false, kotlin: false, three: true,  note: 'named ScalarGrid — planned for native; mirrored on Three.js' },
+  { method: 'on',                   swift: false, kotlin: false, three: true,  note: 'event bus — planned for native; mirrored on Three.js' },
+  { method: 'readParticles',        swift: true,  kotlin: true,  three: true  },
+  { method: 'readParticleIds',      swift: false, kotlin: false, three: true  },
+  { method: 'readParticleChannels', swift: false, kotlin: false, three: true  },
+  { method: 'registerOverlay',      swift: false, kotlin: false, three: true  },
+  { method: 'scrollV',              swift: true,  kotlin: false, three: true,  note: 'DOM/UIKit scroll velocity; returns 0 in headless Three.js context' },
+  { method: 'setVisible',           swift: true,  kotlin: false, three: true  },
+  { method: 'destroy',              swift: true,  kotlin: true,  three: true  },
 ];
 
 const swiftCount  = METHODS.filter(m => m.swift).length;
 const kotlinCount = METHODS.filter(m => m.kotlin).length;
+const threeCount  = METHODS.filter(m => m.three).length;
 const total = METHODS.length;
 ---
 
 <DocsLayout
   title="Fundamental — cross-platform parity matrix"
-  description="Which FieldHandle methods ship on Swift (Apple platforms: iOS, macOS, visionOS) and Kotlin (Android). JS is the source of truth at 44/44; Swift at 34/44 (77%); Kotlin at 20/44 (45%). Render-layer methods are absent from Kotlin because Compose/View rendering is host-owned."
+  description="Which FieldHandle methods ship on @fundamental-engine/three (44/44), Swift (34/44, 77%), and Kotlin (20/44, 45%). JS is the source of truth. Three.js delegates all 44 methods; native ports trail by design."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
     <h1>Platform <span class="accent">parity</span> matrix</h1>
     <p class="lede">
-      Which <a href="/docs/api/handle">FieldHandle</a> methods ship on each platform.
-      JS is the source of truth; Swift and Kotlin are ports that trail by design — the web plane moves
-      first. The cross-plane <em>physics</em> is identical (the 36-force golden conformance suite asserts
-      it); this matrix tracks <em>API surface</em> parity.
+      Which <a href="/docs/api/handle">FieldHandle</a> methods ship on each surface.
+      JS is the source of truth. <code>@fundamental-engine/three</code> delegates all 44 methods to the
+      wrapped engine — 44/44. Swift and Kotlin are native ports that trail by design; the cross-plane
+      <em>physics</em> is identical (the 36-force conformance suite asserts it). This matrix tracks
+      <em>API surface</em> parity.
     </p>
   </header>
 
@@ -96,6 +100,11 @@ const total = METHODS.length;
         <tr>
           <th>Method</th>
           <th>
+            Three.js
+            <br />
+            <small class="parity-count">{threeCount}/{total} ({Math.round(threeCount/total*100)}%)</small>
+          </th>
+          <th>
             Swift
             <br />
             <small class="parity-count">{swiftCount}/{total} ({Math.round(swiftCount/total*100)}%)</small>
@@ -112,6 +121,11 @@ const total = METHODS.length;
         {METHODS.map(m => (
           <tr>
             <td><code>{m.method}</code></td>
+            <td>
+              <span class={`parity-chip ${m.three ? 'parity-yes' : 'parity-no'}`}>
+                {m.three ? '✓' : '—'}
+              </span>
+            </td>
             <td>
               <span class={`parity-chip ${m.swift ? 'parity-yes' : 'parity-no'}`}>
                 {m.swift ? '✓' : '—'}
@@ -135,6 +149,17 @@ const total = METHODS.length;
       Most absent methods fall into one of three categories:
     </p>
     <dl class="api-table">
+      <div class="api-row">
+        <dt class="k">Three.js — 44/44, but some are host-context notes</dt>
+        <dd class="d">
+          <code>@fundamental-engine/three</code> delegates all 44 methods to the wrapped
+          <code>FieldHandle</code>, so every method is callable. However, some are contextually
+          irrelevant in a 3D scene: <code>setRender</code> / <code>setOverlay</code> / <code>setBackground</code>
+          are owned by the Three.js renderer — use <code>threeBackend()</code> for diagnostic overlays
+          instead. <code>scrollV</code> returns 0 (no DOM scroll). <code>scan</code> / <code>rescan</code>
+          are called internally by the body registry; in Three.js you register bodies via <code>layer.addBody(mesh, spec)</code>.
+        </dd>
+      </div>
       <div class="api-row">
         <dt class="k">Render-layer — host-owned on native</dt>
         <dd class="d">

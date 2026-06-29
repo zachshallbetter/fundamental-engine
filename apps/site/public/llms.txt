@@ -67,6 +67,7 @@ Full list with the corrections: [Common mistakes — don't guess](https://github
 - [Reference — Presets](https://fundamental-engine.com/docs/api/presets): composites (blackhole, galaxy, tornado, …) that expand to primitive bodies
 - [Reference — Conditions & formations](https://fundamental-engine.com/docs/api/catalog): conditions, formations, render modes, and palettes — the orthogonal axes
 - [Reference — Platform parity matrix](https://fundamental-engine.com/docs/api/parity)
+- [Reference — Platform utilities](https://fundamental-engine.com/docs/api/utilities)
 - [Field studies — Reading Field Study](https://fundamental-engine.com/docs/studies/reading-field): a long-form article reinterpreted as a field (attention + memory + citations)
 - [Field studies — Review Field Study](https://fundamental-engine.com/docs/studies/review-field): a pull request as a field — file heat, reviewer constellation, comment binding
 - [Field studies — Search Field Study](https://fundamental-engine.com/docs/studies/search-field): search results as a trust gradient with contradiction polarity
