@@ -66,6 +66,7 @@ Full list with the corrections: [Common mistakes — don't guess](https://github
 - [Reference — Forces](https://fundamental-engine.com/docs/api/forces): all 36 forces: per-frame law, attributes read, and an example each
 - [Reference — Presets](https://fundamental-engine.com/docs/api/presets): composites (blackhole, galaxy, tornado, …) that expand to primitive bodies
 - [Reference — Conditions & formations](https://fundamental-engine.com/docs/api/catalog): conditions, formations, render modes, and palettes — the orthogonal axes
+- [Reference — Platform parity matrix](https://fundamental-engine.com/docs/api/parity)
 - [Field studies — Reading Field Study](https://fundamental-engine.com/docs/studies/reading-field): a long-form article reinterpreted as a field (attention + memory + citations)
 - [Field studies — Review Field Study](https://fundamental-engine.com/docs/studies/review-field): a pull request as a field — file heat, reviewer constellation, comment binding
 - [Field studies — Search Field Study](https://fundamental-engine.com/docs/studies/search-field): search results as a trust gradient with contradiction polarity
@@ -91,6 +92,7 @@ They live in the repository, not on the site:
 - [Fundamental Definition Document](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/definition-document.md): The canonical concept and operating model.
 - [Migration alias surface — deprecation & removal plan](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/deprecation-plan.md): This document enumerates the migration-era alias surface still shipping for back-compat, gives each alias a deprecation status, and proposes a removal version consistent with the SUPPORT.md deprecation window.
 - [Fundamental documentation standards](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/documentation-standards.md): This document governs how Fundamental is described across the docs, the site, and the Lab: the canonical architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the "verify agai…
+- [Feedback Channels](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/feedback-channels.md)
 - [Field Possibilities](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-possibilities.md)
 - [Fundamental Field Behavior Table for Fundamental](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
 - [Fundamental Interaction and Relationship Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
