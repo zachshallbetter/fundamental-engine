@@ -38,7 +38,8 @@ Canonical forces are designed verbs.
 Derived behaviors are not additional fundamental forces.
 Fieldflow is transport along field structure.
 Diagnostics reveal invisible structure.
-Recipes compose behavior into interface meaning.
+Configurations compose behavior into interface meaning.
+FieldRecipe is the current API representation of a configuration.
 ```
 
 Short version: **natural fields are not tokens; tokens are translations.** So `gravity` is both a
