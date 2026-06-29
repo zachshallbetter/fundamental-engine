@@ -209,6 +209,61 @@ Read the other direction: the frontier capabilities the project already wants (f
 an agent-queryable semantic layer, authoring-by-physics, temporal fields, emergent semantics) are *gated*
 on this substrate work. That is the argument for doing it.
 
+## Missing: the collapsed dimensions, adjustments & expansions
+
+The [designed-vs-natural map](../canonical/designed-vs-natural-map.md) reframes "what are we missing": every
+**Departure** and **Idealization** is a *degree of freedom nature has that the engine collapsed* to stay
+cheap, 2D, present-tense, and legible. "Missing" = the collapsed axes worth re-expanding. The deepest are
+not forces — they are **dimensions of state**, and there are **three**, not two.
+
+### Tier 1 — the three collapsed dimensions
+
+- **3D space.** `z` is *optional / bolted-on*; 2D is the default because the DOM/canvas is. Native planes
+  (Swift/visionOS) already run 3D-native, so this is "promote `z` to first-class," not greenfield. Unlocks
+  depth-as-meaning, volumetric fields, §29 AR/spatial. *Gated on the integrator/mass foundation — 3D
+  momentum is meaningless until momentum is.*
+- **Time.** The field is **present-frame only**; `memory` grids accumulate (partial). Two sub-gaps:
+  (a) **temporal fields** — time as a queryable axis (events at moments, causal chains, §33); and
+  (b) **fixed timestep / proper time** — dt is welded to rAF + the every-6th-frame cadence (also adjustment
+  #2 below). Unlocks timelines-as-fields, semantic sediment (§32), causal navigation.
+- **Orientation / rotation** *(the non-obvious third — co-equal).* Matter is **point-like with no angular
+  state**: no orientation, no angular velocity, no torque, no angular-momentum conservation. (`spin` is a
+  *body* parameter for swirl/magnetism polarity — **not** rotation of matter; see adjustment #4.) Nature
+  gives every body 6 DOF (3 translation + 3 rotation); we model 2–3 and drop rotation. For an *interface*
+  engine this may outrank 3D — UI is full of rotation (dials, tumbling cards, orientation-as-meaning,
+  torque from off-center forces).
+
+**The insight: space, time, and orientation are the three axes the present model collapsed.** Each
+re-expands as an opt-in *Faithful* mode, exactly like momentum.
+
+### Tier 2 — enabling adjustments (cheap; they gate Tier 1)
+
+| Adjust | Why it blocks |
+|---|---|
+| **Units / dimensional system** | `c=12`, `0.95`, px/frame are nominal — momentum *exchange* and energy accounting are meaningless without consistent units |
+| **Fixed timestep** (decouple dt from rAF) | Prerequisite for Time and a stable integrator (also layer #1/#6) |
+| **Coordinate-space / reference-frame rigor** | field-space vs pixel-space vs DOM-rect conversions are ad hoc; ties to the body-position-authority decision; 3D + frames need it clean |
+| **De-overload `spin`** | `spin` currently means polarity/handedness for swirl/magnetism — real rotation needs its own state (lane-separation discipline) |
+
+### Tier 3 — model expansions (frontier; after the foundation)
+
+- **An equilibrium / relaxation solver** *(non-obvious, high value).* Today the engine only *simulates
+  forward*. Authoring-by-physics (§34, "define forces, layout emerges") and headless layout need to **solve
+  for the settled state directly** (d3-force does this via alpha-cooling). There is no energy-minimizer /
+  relax-to-equilibrium mode — this is the missing piece that turns "a physics sim" into "a layout engine."
+- **Distributions / uncertainty as first-class** — metrics are scalars; AI-evidence (§16) wants confidence
+  as a *distribution*, not a number. The field can't represent uncertainty as a shape.
+- **Constraints (PBD/XPBD)** and **fields-as-media (PDE)** — layers #4 and #8.
+- **Matter phase / material identity** — fluid/fabric/sand (§26) need state beyond point particles.
+- **Anisotropic / tensor fields** — every force is isotropic-radial or a simple dipole; no directional stress.
+
+### Caveat
+
+All of Tier 1 sits on the substrate foundation: 3D *momentum*, temporal *dynamics*, and rotational *recoil*
+are meaningless until the `#3 → #1 → #2` foundation exists. The order does not change — but this tells us
+what the foundation is *for*: it is the substrate that lets any collapsed axis (translation-momentum, then
+orientation, then 3D, then time) be re-expanded as an opt-in Faithful mode.
+
 ## Relationship to the canon
 
 This doc is the **engine-internals axis** of the possibility space. It complements:

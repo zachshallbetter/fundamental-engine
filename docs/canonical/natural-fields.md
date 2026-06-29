@@ -5,7 +5,9 @@
 > force manual, the Lab badges, and `/docs/natural-fields` all read it and cannot drift. It changes
 > no particle/engine behavior — only how each token is explained and organized. See
 > [platform-architecture.md](platform-architecture.md) and
-> [../engine-reference/forces-system.md](../engine-reference/forces-system.md).
+> [../engine-reference/forces-system.md](../engine-reference/forces-system.md). For *why* a token is
+> designed vs. natural — its relationship to what nature actually does, and why the departures are the
+> engine's flexibility — see [designed-vs-natural-map.md](designed-vs-natural-map.md).
 
 # Natural Fields
 
