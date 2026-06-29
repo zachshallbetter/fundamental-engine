@@ -150,6 +150,16 @@ public final class FieldField: FieldHandle {
 
     public func particleCount() -> Int                    { handle.particleCount() }
     public func readParticles(into out: inout [Float]) -> Int { handle.readParticles(into: &out) }
+    public func readParticleIds(into out: inout [Int]) -> Int { handle.readParticleIds(into: &out) }
+    public func readParticleChannels(_ names: [String], into out: inout [Float]) -> Int { handle.readParticleChannels(names, into: &out) }
+    public func sample(x: Float, y: Float) -> Vec3        { handle.sample(x: x, y: y) }
+    @discardableResult
+    public func on(_ event: FieldEvent, _ handler: @escaping (FieldEventPayload) -> Void) -> Subscription { handle.on(event, handler) }
+    public func registerOverlay(_ key: String, _ renderer: any OverlayRenderer) { handle.registerOverlay(key, renderer) }
+    public func removeOverlay(_ key: String) { handle.removeOverlay(key) }
+    public var overlayRegistry: [String: any OverlayRenderer] { handle.overlayRegistry }
+    @discardableResult
+    public func addAgent(_ spec: AgentSpec) -> AgentHandle { handle.addAgent(spec) }
     public func sampleScalar(at p: Vec3) -> Float         { handle.sampleScalar(at: p) }
     public func sampleGradient(at p: Vec3) -> Vec3        { handle.sampleGradient(at: p) }
     public func addField(_ name: String, _ sampler: @escaping (Float, Float) -> Float) -> FieldChannelHandle { handle.addField(name, sampler) }

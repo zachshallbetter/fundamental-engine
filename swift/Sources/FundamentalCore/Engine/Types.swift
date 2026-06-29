@@ -47,6 +47,9 @@ public final class Particle {
     public var color: String?
     /// Opaque data record bound by `FieldHandle.seed`.
     public var atom: AtomPayload?
+    /// Stable integer ID assigned at pool creation (assigned by `FieldStore.add`).
+    /// Survives re-binding; mirrors JS `readParticleIds`. Default 0 until the store assigns it.
+    public var id: Int = 0
 
     public init(
         position: Vec3 = .zero,
