@@ -93,6 +93,88 @@ export function Background() {
   );
 }`;
 
+const samplingScalar = `// heatmap density at any point — requires heatmap: true
+field.setHeatmap(true);
+
+const density = field.sampleScalar(x, y);         // 0 → 1 (bilinear; stays smooth at a source)
+const grad    = field.sampleGradient(x, y);        // { x, y } in 1/px — steepest-ascent direction
+const vec     = field.sample(x, y);               // net force vector { x, y } a still particle would feel
+
+// read a named external channel
+field.addField('terrain', (px, py) => heightmap[py][px]);
+const height = field.sampleField('terrain', x, y);`;
+
+const samplingAtom = `// seeded hover-to-inspect: bind data records, then hover to identify
+field.seed(records);                               // round-robins records onto base particles
+addEventListener('pointermove', (e) => {
+  const atom = field.atomAt(e.clientX, e.clientY);  // nearest seeded particle within ~24px
+  if (atom) tooltip.textContent = atom.title;
+});
+
+// dwell-before-click affordance
+const rec = field.focusAt(e.clientX, e.clientY);  // returns record + highlights the particle
+field.clearFocus();                                // release — particle resumes drifting`;
+
+const samplingGrid = `// host-authorable scalar grid — the same grid type diffuse/memory/propagate use
+const scent = field.grid('scent');                 // created on first access, viewport-sized
+
+// deposit + diffuse each frame
+rAF(() => {
+  scent.deposit(x, y, 0.8);                       // add signal at a point
+  // grid advances itself each frame (diffuse mode by default)
+  const level = scent.sample(x, y);               // read back
+  const grad  = scent.gradient(x, y);             // steepness + direction
+});`;
+
+const eventsAbsorb = `// react to a sink body capturing / releasing matter — discrete, not polled
+const off = field.on('absorb', ({ body, count }) => {
+  body.el?.dispatchEvent(new CustomEvent('field:captured', { detail: count }));
+});
+field.on('release', ({ body, count }) => {
+  console.log(\`sink \${body.el?.id} released \${count} particles\`);
+});
+
+// unsubscribe
+off();                                             // the return value of on() is a cleanup fn`;
+
+const swarmRead = `// zero-alloc swarm read-out — caller owns the Float32Array
+const N    = field.particleCount();
+const out  = new Float32Array(N * 5);              // stride 5: x, y, z, heat, size
+const n    = field.readParticles(out);             // returns count written
+
+for (let i = 0; i < n; i++) {
+  const x    = out[i * 5];
+  const y    = out[i * 5 + 1];
+  const heat = out[i * 5 + 3];
+  // drive a WebGL point at (x, y) coloured by heat
+}
+
+// stable ids — key external state to a particle across frames
+const ids = new Uint32Array(N);
+field.readParticleIds(ids);                        // ids[i] is stable across frames
+
+// multi-channel read-out — subset of channels, column-wise
+const xs   = new Float32Array(N);
+const ys   = new Float32Array(N);
+field.readParticleChannels(['x', 'y'], [xs, ys]);  // fills xs then ys`;
+
+const progBodies = `// programmatic body — no DOM, mirrors [data-body] for non-DOM hosts (Three.js mesh, native)
+const b = field.addBody({
+  tokens: ['attract'],
+  strength: 1.5,
+  range: 120,
+  rect: () => ({ left: mesh.x, top: mesh.y, width: 32, height: 32 }),  // sampled each frame
+  onFeedback: ({ density }) => { mesh.scale = 1 + density * 0.4; },
+});
+// live update (no remove+re-add)
+b.set({ strength: 2.0, color: '#ff4400' });
+b.remove();                                        // unregister
+
+// relate two programmatic bodies
+const edge = field.addEdge(bA, bB, { type: 'affinity', strength: 0.8 });
+const graph = field.readEdges();                   // [ { from, to, type, strength, memory, active } ]
+edge.remove();`;
+
 const coordWindow = `// WINDOW field (browserHost / <field-root>): args are VIEWPORT pixels — the same
 // space as a pointer event. clientX/clientY drop straight in.
 addEventListener('pointermove', (e) => field.flowTo(e.clientX, e.clientY));
@@ -211,6 +293,97 @@ function focusChild(child) {
         { label: 'Vanilla', lang: 'ts', code: workedVanilla },
       ]}
     />
+  </section>
+
+  <section class="docs-sec" id="sampling">
+    <h2>Sampling the field</h2>
+    <p>
+      Three read-only paths let you query the field's state at a point — without walking the particle
+      array. All take coordinates in the <strong>field's own pixel space</strong> (see
+      <a href="#coordinate-space">coordinate space</a> below for the window vs contained distinction).
+    </p>
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>sampleScalar(x, y)</code></dt>
+        <dd class="d">Smooth bilinear density ∈ [0,1] from the heatmap grid. Stays well-defined at a source (non-degenerate gradient). Requires <code>heatmap: true</code>.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>sampleGradient(x, y)</code></dt>
+        <dd class="d">Density gradient — direction and steepness (1/px) of increasing density. The analytic companion to <code>sampleScalar</code> on the same grid. Use for "forage-by-gradient" agents.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>sample(x, y)</code></dt>
+        <dd class="d">Net force vector <code>&#123; x, y &#125;</code> a still test particle would feel — all visible body wells superposed. Use for custom visualizers (vector grids, streamline tubes, mesh displacement).</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>atomAt(x, y)</code> / <code>focusAt(x, y)</code> / <code>clearFocus()</code></dt>
+        <dd class="d">Identify the nearest seeded particle within ~24 px and return its data record. <code>focusAt</code> also highlights the particle (hold affordance before a click); <code>clearFocus</code> releases it.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>grid(name)</code></dt>
+        <dd class="d">Open a named host-authorable ScalarGrid — deposit signal, let the engine diffuse it, read the level and gradient back. The same grid type used by <code>diffuse</code> / <code>memory</code> forces.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>addField(name, sampler)</code> / <code>sampleField(name, x, y)</code></dt>
+        <dd class="d">Register an external scalar field (terrain height, soil moisture) and sample it through the same read path as the engine's built-in layers.</dd>
+      </div>
+    </dl>
+    <CodeTabs
+      variants={[
+        { label: 'Density · gradient · force', lang: 'js', code: samplingScalar },
+        { label: 'Seeded hover / focus', lang: 'js', code: samplingAtom },
+        { label: 'ScalarGrid', lang: 'js', code: samplingGrid },
+      ]}
+    />
+    <div class="callout callout--warn">
+      <b>Shipped-but-unfrozen.</b> These sampling APIs are live and stable for consumers today, but
+      their signatures may refine (e.g. the <code>grid</code> mode enum, the <code>addField</code>
+      coupling syntax) before 1.0.
+    </div>
+  </section>
+
+  <section class="docs-sec" id="events">
+    <h2>Discrete events</h2>
+    <p>
+      <code>on(type, cb)</code> is the host-agnostic push bus for reacting to occurrences instead
+      of polling feedback channels each frame. It returns an unsubscribe function; subscribing to a
+      type with no active bodies is free (lazy evaluation).
+    </p>
+    <dl class="api-table">
+      <div class="api-row">
+        <dt class="k"><code>absorb</code></dt>
+        <dd class="d">A sink body captured matter — the rising edge of accretion. Payload: <code>&#123; body, count &#125;</code>.</dd>
+      </div>
+      <div class="api-row">
+        <dt class="k"><code>release</code></dt>
+        <dd class="d">A sink body reached capacity and released (supernova) — the falling edge. Payload: <code>&#123; body, count &#125;</code>.</dd>
+      </div>
+    </dl>
+    <CodeTabs variants={[{ label: 'Event bus', lang: 'js', code: eventsAbsorb }]} />
+    <div class="callout">
+      Contact, settle, and enter/exit events are the next slice (#441) — they follow the same
+      <code>on</code> bus once they ship.
+    </div>
+  </section>
+
+  <section class="docs-sec" id="swarm">
+    <h2>Swarm readout</h2>
+    <p>
+      Three zero-allocation methods copy live particle state into caller-owned typed arrays —
+      the interface a WebGL renderer or a Three.js layer uses to draw the field without coupling
+      to the internal particle store.
+    </p>
+    <CodeTabs variants={[{ label: 'readParticles / readParticleIds / readParticleChannels', lang: 'js', code: swarmRead }]} />
+  </section>
+
+  <section class="docs-sec" id="programmatic">
+    <h2>Programmatic bodies &amp; edges</h2>
+    <p>
+      The <code>[data-body]</code> scanner is the primary authoring surface — DOM-first, declarative.
+      For non-DOM hosts (a Three.js mesh, a native view, a game entity) the <code>addBody</code> /
+      <code>addEdge</code> family gives the same physics without requiring a DOM element.
+    </p>
+    <CodeTabs variants={[{ label: 'addBody / addEdge / readEdges', lang: 'js', code: progBodies }]} />
   </section>
 
   <section class="docs-sec" id="coordinate-space">
