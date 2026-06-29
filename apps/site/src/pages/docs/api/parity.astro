@@ -18,49 +18,49 @@ interface ParityRow {
 }
 
 const METHODS: ParityRow[] = [
-  { method: 'scan',                 swift: true,  kotlin: false, three: true,  note: 'Kotlin re-scans implicitly on tick; Three.js calls scan internally when bodies change' },
-  { method: 'rescan',               swift: true,  kotlin: false, three: true,  note: 'alias of scan' },
-  { method: 'setAccent',            swift: true,  kotlin: false, three: true,  note: 'visual layer — Compose has its own color API' },
-  { method: 'setPalette',           swift: true,  kotlin: false, three: true,  note: 'visual layer' },
+  { method: 'scan',                 swift: true,  kotlin: true,  three: true  },
+  { method: 'rescan',               swift: true,  kotlin: true,  three: true,  note: 'alias of scan' },
+  { method: 'setAccent',            swift: true,  kotlin: true,  three: true  },
+  { method: 'setPalette',           swift: true,  kotlin: true,  three: true  },
   { method: 'setFormation',         swift: true,  kotlin: true,  three: true  },
-  { method: 'setWaveStyle',         swift: true,  kotlin: false, three: true,  note: 'visual layer' },
-  { method: 'setWaveCenter',        swift: true,  kotlin: false, three: true,  note: 'visual layer' },
-  { method: 'setSeparation',        swift: true,  kotlin: false, three: true,  note: 'Kotlin exposes as var separation' },
+  { method: 'setWaveStyle',         swift: true,  kotlin: true,  three: true  },
+  { method: 'setWaveCenter',        swift: true,  kotlin: true,  three: true  },
+  { method: 'setSeparation',        swift: true,  kotlin: true,  three: true,  note: 'Kotlin fun setSeparation(Float) coexists with var separation via @JvmName on the property' },
   { method: 'setAttention',         swift: true,  kotlin: true,  three: true  },
   { method: 'setCausality',         swift: true,  kotlin: true,  three: true  },
   { method: 'setHeatmap',           swift: true,  kotlin: true,  three: true  },
-  { method: 'setDprCap',            swift: false, kotlin: false, three: true,  note: 'native OSs handle DPR differently; Three.js delegates but DPR is renderer-owned' },
-  { method: 'setQualityTier',       swift: false, kotlin: false, three: true,  note: 'adaptive quality governor' },
-  { method: 'setRender',            swift: true,  kotlin: false, three: true,  note: 'render surface is host-owned on native + Three.js; delegated but use Three.js renderer directly' },
-  { method: 'setOverlay',           swift: true,  kotlin: false, three: true,  note: 'use threeBackend() for Three.js diagnostic overlays' },
-  { method: 'setBackground',        swift: false, kotlin: false, three: true,  note: 'web canvas clearing; Three.js delegates but the concept is renderer-owned' },
-  { method: 'threads',              swift: true,  kotlin: false, three: true,  note: 'visual layer — glowing connector lines' },
+  { method: 'setDprCap',            swift: true,  kotlin: true,  three: true,  note: 'Three.js delegates but DPR is renderer-owned; native stores in FieldOptions / FieldHandle' },
+  { method: 'setQualityTier',       swift: true,  kotlin: true,  three: true  },
+  { method: 'setRender',            swift: true,  kotlin: true,  three: true,  note: 'render surface is host-owned on native + Three.js; Kotlin host reads renderMode' },
+  { method: 'setOverlay',           swift: true,  kotlin: true,  three: true,  note: 'use threeBackend() for Three.js diagnostic overlays' },
+  { method: 'setBackground',        swift: true,  kotlin: true,  three: true,  note: 'web canvas clearing; native stores in FieldOptions.background' },
+  { method: 'threads',              swift: true,  kotlin: true,  three: true,  note: 'visual layer — glowing connector lines' },
   { method: 'burst',                swift: true,  kotlin: true,  three: true  },
   { method: 'flowTo',               swift: true,  kotlin: true,  three: true  },
   { method: 'clearFlow',            swift: true,  kotlin: true,  three: true  },
   { method: 'seed',                 swift: true,  kotlin: true,  three: true  },
-  { method: 'addAgent',             swift: false, kotlin: false, three: true,  note: 'Three.js layer.addAgent() binds a mesh; native planned' },
+  { method: 'addAgent',             swift: false, kotlin: false, three: true,  note: 'native planned — #815' },
   { method: 'addBody',              swift: true,  kotlin: true,  three: true  },
   { method: 'addEdge',              swift: true,  kotlin: true,  three: true  },
   { method: 'readEdges',            swift: true,  kotlin: true,  three: true  },
   { method: 'addField',             swift: true,  kotlin: true,  three: true  },
   { method: 'sampleField',          swift: true,  kotlin: true,  three: true  },
   { method: 'atomAt',               swift: true,  kotlin: true,  three: true  },
-  { method: 'focusAt',              swift: true,  kotlin: false, three: true  },
-  { method: 'clearFocus',           swift: true,  kotlin: false, three: true  },
+  { method: 'focusAt',              swift: true,  kotlin: true,  three: true  },
+  { method: 'clearFocus',           swift: true,  kotlin: true,  three: true  },
   { method: 'particleCount',        swift: true,  kotlin: true,  three: true  },
   { method: 'energy',               swift: true,  kotlin: true,  three: true  },
-  { method: 'sample',               swift: false, kotlin: false, three: true,  note: 'Swift uses renderer path; re-exported by @fundamental-engine/three' },
+  { method: 'sample',               swift: false, kotlin: false, three: true,  note: 'force-probe; native planned — #816' },
   { method: 'sampleScalar',         swift: true,  kotlin: true,  three: true  },
   { method: 'sampleGradient',       swift: true,  kotlin: true,  three: true  },
-  { method: 'grid',                 swift: false, kotlin: false, three: true,  note: 'named ScalarGrid — planned for native; mirrored on Three.js' },
-  { method: 'on',                   swift: false, kotlin: false, three: true,  note: 'event bus — planned for native; mirrored on Three.js' },
+  { method: 'grid',                 swift: true,  kotlin: true,  three: true,  note: 'named ScalarGrid — lazy get/create, same grid as env.grid in the force system' },
+  { method: 'on',                   swift: false, kotlin: false, three: true,  note: 'event bus; native planned — #817' },
   { method: 'readParticles',        swift: true,  kotlin: true,  three: true  },
-  { method: 'readParticleIds',      swift: false, kotlin: false, three: true  },
-  { method: 'readParticleChannels', swift: false, kotlin: false, three: true  },
-  { method: 'registerOverlay',      swift: false, kotlin: false, three: true  },
-  { method: 'scrollV',              swift: true,  kotlin: false, three: true,  note: 'DOM/UIKit scroll velocity; returns 0 in headless Three.js context' },
-  { method: 'setVisible',           swift: true,  kotlin: false, three: true  },
+  { method: 'readParticleIds',      swift: false, kotlin: false, three: true,  note: 'requires stable particle IDs — #818' },
+  { method: 'readParticleChannels', swift: false, kotlin: false, three: true,  note: 'per-particle scalar channel readout — #819' },
+  { method: 'registerOverlay',      swift: false, kotlin: false, three: true,  note: 'extensible overlay renderer — #820' },
+  { method: 'scrollV',              swift: true,  kotlin: true,  three: true,  note: 'DOM/UIKit scroll velocity; Kotlin: scrollV() + feedScrollV(); Three.js returns 0 in headless' },
+  { method: 'setVisible',           swift: true,  kotlin: true,  three: true  },
   { method: 'destroy',              swift: true,  kotlin: true,  three: true  },
 ];
 
@@ -72,7 +72,7 @@ const total = METHODS.length;
 
 <DocsLayout
   title="Fundamental — cross-platform parity matrix"
-  description="Which FieldHandle methods ship on @fundamental-engine/three (44/44), Swift (34/44, 77%), and Kotlin (20/44, 45%). JS is the source of truth. Three.js delegates all 44 methods; native ports trail by design."
+  description="Which FieldHandle methods ship on @fundamental-engine/three (44/44), Swift (38/44, 86%), and Kotlin (38/44, 86%). JS is the source of truth. Three.js delegates all 44 methods; native ports trail by design."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
@@ -146,7 +146,8 @@ const total = METHODS.length;
   <section class="docs-sec">
     <h2>Why the gaps?</h2>
     <p>
-      Most absent methods fall into one of three categories:
+      Both Swift and Kotlin now ship 38/44 methods. The remaining 6 require deeper engine plumbing and
+      are tracked on GitHub:
     </p>
     <dl class="api-table">
       <div class="api-row">
@@ -161,30 +162,47 @@ const total = METHODS.length;
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Render-layer — host-owned on native</dt>
+        <dt class="k">Needs agent infrastructure — addAgent (#815)</dt>
         <dd class="d">
-          Methods like <code>setRender</code>, <code>setOverlay</code>, <code>threads</code>,
-          <code>setAccent</code>, and <code>setPalette</code> are absent from Kotlin because
-          Compose and the Android <code>View</code>/<code>Canvas</code> host own the draw. The Kotlin
-          engine exposes the <em>data pipeline</em> (forces, density, particles, edges) and Compose
-          wires the drawing — a deliberate architecture choice, not an oversight. Swift covers these
-          because Metal/SwiftUI rendering stays closer to the web canvas model.
+          <code>addAgent</code> attaches autonomous agent consumers to the field. The <code>AgentSpec</code>
+          type and consumer loop integration don't yet exist in the native ports. Tracked in
+          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/815">#815</a>.
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Platform-specific — not applicable</dt>
+        <dt class="k">Needs read-only force evaluation — sample (#816)</dt>
         <dd class="d">
-          <code>setDprCap</code> and <code>setBackground</code> are web-only concepts (backing-store
-          DPR, transparent vs opaque canvas clearing). Native OSs handle DPR at the display layer;
-          there is nothing to cap or clear in the same way.
+          <code>sample(x, y)</code> returns the net force vector at a world point without mutating
+          particle state. The force-evaluation path needs a read-only pass mode. Tracked in
+          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/816">#816</a>.
         </dd>
       </div>
       <div class="api-row">
-        <dt class="k">Planned — in the native backlog</dt>
+        <dt class="k">Needs event bus — on (#817)</dt>
         <dd class="d">
-          <code>addAgent</code>, <code>grid</code>, <code>on</code>, <code>readParticleIds</code>,
-          and <code>readParticleChannels</code> are on the native roadmap — the primitives they
-          depend on are present, but the API surface hasn't been ported yet.
+          <code>on(event, handler)</code> requires a typed <code>FieldEvent</code> enum and subscriber
+          registry not yet present in the native engines. Tracked in
+          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/817">#817</a>.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k">Needs stable particle IDs + channel readout — readParticleIds, readParticleChannels (#818, #819)</dt>
+        <dd class="d">
+          <code>readParticleIds</code> requires a stable per-particle <code>id</code> field (not yet in
+          native <code>Particle</code>). <code>readParticleChannels</code> packs scalar-grid values
+          sampled at each particle's position — the scalar grids exist but the particle-loop bridge
+          does not. Tracked in
+          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/818">#818</a> /
+          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/819">#819</a>.
+        </dd>
+      </div>
+      <div class="api-row">
+        <dt class="k">Needs overlay renderer protocol — registerOverlay (#820)</dt>
+        <dd class="d">
+          <code>registerOverlay</code> requires an <code>OverlayRenderer</code> protocol/interface
+          and a registry handoff between <code>FieldHandle</code> and the platform host frame loop.
+          The overlay registry exists in the platform layer but not the FieldHandle bridge. Tracked in
+          <a href="https://github.com/zachshallbetter/fundamental-engine/issues/820">#820</a>.
         </dd>
       </div>
     </dl>
