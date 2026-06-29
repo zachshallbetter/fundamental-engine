@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
 import {
   FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, passportFor, type FieldRecipe,
 } from '@fundamental-engine/core';
@@ -96,17 +97,14 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
       <div><dt>Without motion</dt><dd class="a11y">{r.accessibility.meaningWithoutMotion}</dd></div>
     </dl>
 
-    <section class="rp-export" data-ex>
+    <section class="rp-export">
       <h2>Copy this recipe</h2>
-      <div class="ex-tabs" role="tablist">
-        <button type="button" class="on" data-ex-tab="html">HTML</button>
-        <button type="button" data-ex-tab="wc">Web component</button>
-        <button type="button" data-ex-tab="react">React</button>
-        <button type="button" data-ex-tab="json">JSON</button>
-        <button type="button" class="ex-copy" data-ex-copy>Copy</button>
-      </div>
-      <pre class="ex-pre"><code>{exports.html}</code></pre>
-      <script type="application/json" data-ex-data set:html={JSON.stringify(exports).split('</').join('<\\/')}></script>
+      <CodeTabs variants={[
+        { label: 'HTML', lang: 'html', code: exports.html },
+        { label: 'Web component', lang: 'html', code: exports.wc },
+        { label: 'React', lang: 'tsx', code: exports.react },
+        { label: 'JSON', lang: 'json', code: exports.json },
+      ]} />
     </section>
 
     {seeAlso.length > 0 && (
@@ -139,25 +137,7 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
       });
     }
 
-    // copy-this-recipe tabs
-    const ex = document.querySelector<HTMLElement>('[data-ex]');
-    if (ex) {
-      let data: Record<string, string> = {};
-      try { data = JSON.parse(ex.querySelector('[data-ex-data]')?.textContent ?? '{}'); } catch { data = {}; }
-      const pre = ex.querySelector<HTMLElement>('.ex-pre code');
-      const tabs = Array.from(ex.querySelectorAll<HTMLButtonElement>('[data-ex-tab]'));
-      const copyBtn = ex.querySelector<HTMLButtonElement>('[data-ex-copy]');
-      let current = 'html';
-      for (const t of tabs) t.addEventListener('click', () => {
-        current = t.dataset.exTab ?? 'html';
-        tabs.forEach((x) => x.classList.toggle('on', x === t));
-        if (pre) pre.textContent = data[current] ?? '';
-      });
-      copyBtn?.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(data[current] ?? ''); copyBtn.textContent = 'Copied'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200); }
-        catch { copyBtn.textContent = 'Copy failed'; }
-      });
-    }
+    // the copy-this-recipe block is now <CodeTabs> — it owns its own tab + copy behaviour.
   }
   if (document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
@@ -198,11 +178,6 @@ const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/
   .rp-meta dd .ml-note code { font-size: 0.92em; color: var(--text-2, #c3c9d4); }
   .rc-render { font-family: ui-monospace, monospace; font-size: 0.82rem; color: var(--muted, #c3c9d4); }
   .rp-export { margin: 1.8rem 0; }
-  .ex-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-  .ex-tabs button { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--muted, #9aa); border-radius: 8px 8px 0 0; padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; }
-  .ex-tabs button.on { color: var(--text, #e8e8ef); border-bottom-color: transparent; background: color-mix(in srgb, var(--text, #fff) 4%, transparent); }
-  .ex-copy { margin-left: auto; }
-  .ex-pre { margin: 0; border: 1px solid var(--line, #2a2a35); border-radius: 0 10px 10px 10px; padding: 0.9rem 1rem; overflow: auto; background: color-mix(in srgb, var(--text, #fff) 3%, transparent); font-size: 0.8rem; }
   .rp-seealso { margin-top: 2rem; border-top: 1px solid var(--line, #2a2a35); padding-top: 1.2rem; }
   .rp-seealso ul { list-style: none; padding: 0; display: grid; gap: 0.45rem; }
   .rp-seealso a { color: var(--rc, #4da3ff); text-decoration: none; }
