@@ -165,6 +165,11 @@ public final class FieldField: FieldHandle {
     public func energy() -> EnergyReport                  { handle.energy() }
     public func scrollV() -> Float                        { handle.scrollV() }
 
+    public func grid(_ name: String) -> any ScalarGrid    { handle.grid(name) }
+    public func setBackground(_ hex: String?)             { handle.setBackground(hex) }
+    public func setDprCap(_ cap: Float)                   { handle.setDprCap(cap) }
+    public func setQualityTier(_ tier: Int)               { handle.setQualityTier(tier) }
+
     public func setVisible(_ on: Bool)                    { handle.setVisible(on) }
 
     public func destroy() {
