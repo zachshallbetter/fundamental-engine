@@ -26,6 +26,8 @@ export interface WorkbenchOptions {
   hasOverlay: boolean;
   /** the gathering body the engine writes its live feedback vars onto (--d, --coherence, …) */
   feedbackEl: HTMLElement | null;
+  /** the recipe's body elements — the reverse toggle flips their data-strength sign */
+  bodies: HTMLElement[];
   /** the recipe's render layers (catalog order) — used to mark the recipe's NATIVE substrate */
   renderLayers: string[];
   /** which mode the field starts in */
@@ -86,8 +88,10 @@ const SIGNAL_VARS: { prop: string; label: string }[] = [
 
 const fmt = (v: number) => (Math.abs(v) >= 1 ? v.toFixed(0) : v.toFixed(2));
 
+const REVERSE_NOTE = 'Dynamics reversed — every body\'s force is inverted: wells become hills, attraction flips to repulsion. Matter that gathered now scatters.';
+
 export function attachWorkbench(opts: WorkbenchOptions): () => void {
-  const { container, field, feedbackEl, hasOverlay, accent } = opts;
+  const { container, field, feedbackEl, hasOverlay, accent, bodies } = opts;
 
   // the recipe's native substrates (highlighted with a dot marker so visitors know the "home" view)
   const native = new Set<string>();
@@ -109,6 +113,24 @@ export function attachWorkbench(opts: WorkbenchOptions): () => void {
     }
   }
   let heatmapOn = opts.renderLayers.includes('heatmap');
+
+  // reverse-dynamics state — flips the sign of every body's data-strength (the engine re-reads it
+  // live on its measure cadence). origStrength preserves the recipe's authored value to restore.
+  let reversed = false;
+  const origStrength = new Map<HTMLElement, string | null>();
+  const applyReverse = (on: boolean): void => {
+    for (const b of bodies) {
+      if (!origStrength.has(b)) origStrength.set(b, b.getAttribute('data-strength'));
+      if (on) {
+        const orig = parseFloat(origStrength.get(b) ?? '1') || 1;
+        b.setAttribute('data-strength', String(-orig));
+      } else {
+        const o = origStrength.get(b);
+        if (o == null) b.removeAttribute('data-strength');
+        else b.setAttribute('data-strength', o);
+      }
+    }
+  };
 
   // ── DOM ───────────────────────────────────────────────────────────────────────────────────────
   const bar = document.createElement('div');
@@ -138,7 +160,17 @@ export function attachWorkbench(opts: WorkbenchOptions): () => void {
       `</div></div>`
     : '';
 
-  bar.innerHTML = substrateRow + overlayRow;
+  // dynamics control — distinct from the viz tiers: it changes the simulation, not how it's drawn.
+  const dynamicsRow = bodies.length
+    ? `<div class="exd-viz-group">` +
+      `<span class="exd-viz-label">dynamics</span>` +
+      `<div class="exd-overlays" role="group" aria-label="Simulation dynamics">` +
+      `<button type="button" class="exd-vtog exd-reverse" data-reverse aria-pressed="false" ` +
+      `title="${REVERSE_NOTE}">⇄ reverse</button>` +
+      `</div></div>`
+    : '';
+
+  bar.innerHTML = substrateRow + overlayRow + dynamicsRow;
 
   const note = document.createElement('p');
   note.className = 'exd-note';
@@ -168,6 +200,7 @@ export function attachWorkbench(opts: WorkbenchOptions): () => void {
       if (o) parts.push(o.note);
     }
     if (heatmapOn) parts.push(OVERLAY_BY_MODE.get('heatmap')?.note ?? '');
+    if (reversed) parts.push(REVERSE_NOTE);
     note.textContent = parts.filter(Boolean).join('  ·  ');
   };
 
@@ -185,6 +218,16 @@ export function attachWorkbench(opts: WorkbenchOptions): () => void {
         b.classList.toggle('is-on', on);
         b.setAttribute('aria-checked', String(on));
       });
+      refreshNote();
+      return;
+    }
+
+    const rev = t.closest<HTMLElement>('.exd-reverse');
+    if (rev) {
+      reversed = !reversed;
+      rev.setAttribute('aria-pressed', String(reversed));
+      rev.classList.toggle('is-on', reversed);
+      applyReverse(reversed);
       refreshNote();
       return;
     }

@@ -681,6 +681,13 @@ body.ex-detail-open { overflow: hidden; }
   border-color: color-mix(in srgb, var(--exd-accent, var(--accent)) 60%, transparent);
   background: color-mix(in srgb, var(--exd-accent, var(--accent)) 10%, var(--bg-card));
 }
+/* reverse: a simulation change, not a viz layer — amber when active to signal altered dynamics */
+.exd-reverse { letter-spacing: 0.04em; }
+.exd-reverse.is-on {
+  color: #ff9d5c;
+  border-color: color-mix(in srgb, #ff9d5c 62%, transparent);
+  background: color-mix(in srgb, #ff9d5c 12%, var(--bg-card));
+}
 
 /* "what you're seeing" caption — first row of the bottom control block */
 .exd-note {

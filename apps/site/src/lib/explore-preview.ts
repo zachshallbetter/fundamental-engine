@@ -108,6 +108,7 @@ export function mountRecipePreview(container: HTMLElement, opts: PreviewOptions)
         field: field as never,
         hasOverlay: true,
         feedbackEl: heaviest ?? bodyEls[0] ?? null,
+        bodies: bodyEls,
         renderLayers: opts.renderLayers,
         primaryRender: opts.primaryRender,
         accent: FIELD_ACCENT[recipe.naturalField ?? ''] ?? '#4da3ff',
