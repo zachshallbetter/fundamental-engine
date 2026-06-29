@@ -38,7 +38,6 @@ The first paper names the paradigm. The rest prove it in specific interface doma
 | 6 | [`06-portable-field-recipes.md`](06-portable-field-recipes.md) | **Recipes as Portable Field Programs for Interface Behavior** | A structured authoring model for composing relational field behavior without corrupting runtime vocabulary. | executable recipes | Design systems / authoring tools |
 | 7 | [`07-data-as-field-participants.md`](07-data-as-field-participants.md) | **Data as Field Participants: Binding Records, Relationships, and Metrics into Interface Fields** | A data-binding model for relational interface fields. | now writable — `bindData()` + study demos ship; eval still to run | Web systems / data UX |
 | 8 | [`08-explainable-interface-behavior.md`](08-explainable-interface-behavior.md) | **Explainable Interface Behavior Through Field Diagnostics** | A diagnostic framework for explainable interaction behavior. | Platform Inspector | HCI / dev tools / explainability |
-| 9 | [`09-behavioral-models-after-boids.md`](09-behavioral-models-after-boids.md) | **Substrate, Not Spectacle: Behavioral Models After Boids** | A source-grounded comparison with Reynolds' Boids (1987): shared mechanism, the per-axis verdict, the explainability↔arbitration tradeoff, and behavioral models as computation substrate. Comparison/positioning, not an empirical study. | none (theory + source) | HCI / graphics / behavioral animation |
 
 Shared assets:
 
@@ -127,6 +126,15 @@ Twenty-two generalizing/companion preprints that lift the original eight-paper f
 | 28 | [`28-layout-to-topology.md`](28-layout-to-topology.md) | **From Layout to Topology: Interfaces as Graphs of Meaning** | Paper 28 abstracts the Fundamental paper family's core insight into a renderer-agnostic interface principle that meaning relationships should be first-class, inspectable interface state rather than visual side effects, and proposes a four-term model (participant, signal, binding, equivalence) with an evaluation plan. |
 | 29 | [`29-ai-interfaces-show-support-not-sources.md`](29-ai-interfaces-show-support-not-sources.md) | **AI Interfaces Should Show Support, Not Just Sources** | Expansion Paper 29 generalizes the Evidence Fields claim into a portable interface principle: showing that a source supports a specific claim, with a falsifiable participant/signal/binding/equivalence model and a four-study evaluation plan. |
 | 30 | [`30-platform-native-expressive-systems.md`](30-platform-native-expressive-systems.md) | **Platform-Native Expressive Systems Without Replacing HTML** | Paper 30 of the Fundamental expansion family generalizes the first eight papers' core claim into a renderer-agnostic, falsifiable model for treating relational meaning as a first-class interface substrate over semantic HTML. |
+
+## Comparison papers (31–)
+
+Direct comparisons positioning Fundamental against a named prior system — a different kind from the
+generalizing expansion family.
+
+| # | File | Title | Summary |
+|---|---|---|---|
+| 31 | [`31-behavioral-models-after-boids.md`](31-behavioral-models-after-boids.md) | **Substrate, Not Spectacle: Behavioral Models After Boids** | A source-grounded comparison with Reynolds' *Boids* (1987): shared mechanism (local neighborhoods, the three rules by name, spatial-hash neighbors), the per-axis better/worse/something-else verdict, the explainability↔arbitration tradeoff, and behavioral models as computation substrate. Comparison/positioning, not an empirical study. |
 
 ## Conventions
 

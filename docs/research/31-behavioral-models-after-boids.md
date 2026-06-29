@@ -1,6 +1,6 @@
 # Substrate, Not Spectacle: Behavioral Models After Boids
 
-> **Status: research draft (preprint, work in progress).** Paper 9 of the Fundamental family — a
+> **Status: research draft (preprint, work in progress).** Paper 31 of the Fundamental family — a
 > comparison/positioning paper, not an empirical study. It situates Fundamental's relational field
 > runtime against Reynolds' 1987 distributed behavioral model ("Boids"). Claims verified against the
 > codebase and canonical docs as of 2026-06-29. See the [series index](README.md) and *the caveat
@@ -8,7 +8,7 @@
 > claim disagree, the code wins.
 
 **Author:** Zach Shallbetter
-**Series:** Fundamental Research Papers, Paper 9 (comparison / positioning)
+**Series:** Fundamental Research Papers, Paper 31 (comparison / positioning)
 **Primary comparand:** C. W. Reynolds, *Flocks, Herds, and Schools: A Distributed Behavioral Model*,
 SIGGRAPH '87 `[reynolds1987]`.
 **Working material:** [`docs/planning/boids-2026-comparison.md`](../planning/boids-2026-comparison.md)
