@@ -99,6 +99,29 @@ Do not make `magnetism.apply()` follow magnetic field lines.
 
 That behavior belongs to `fieldflow`.
 
+## Avoidance: radial brakes, tangential routes
+
+A second mental model, for any force whose job is to *keep matter away* from something:
+
+```txt
+Radial forces brake.
+Tangential forces route.
+```
+
+A purely **radial** repulsion (`repel`, `charge`, `pressure`, `cohesion`'s short-range push) applied to a
+body heading *straight at* its source can only decelerate it — it adds no sideways component, so matter
+piles up or freezes in front of the source rather than going *around* it. To route matter around an
+obstacle you need a **tangential** component: `swirl` (mostly perpendicular, ~8× tangential to 0.12
+inward) or `lens` (speed-preserving path rotation). This is why the canonical "deflector" pattern uses a
+swirl/lens, not a stronger `repel` — and why stacking `attract` against a radial `repel`/`separation`
+tends to clump (the opposing radial urges cancel under linear superposition and friction freezes the
+residue).
+
+> This is the field-native echo of a classic result in behavioral animation (Reynolds, *Boids*, 1987):
+> a radial repulsion field hit head-on "serves only to slow the [agent]... provides no side thrust at
+> all." Reynolds' answer was predictive lateral steering; ours is a tangential force. See
+> [`../planning/boids-2026-comparison.md`](../planning/boids-2026-comparison.md).
+
 ## Gravity
 
 > **Implemented.** `gravity.field()` now ships (`packages/core/src/forces/natural.ts`,

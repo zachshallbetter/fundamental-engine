@@ -1017,6 +1017,11 @@ Fundamental can implement these today as a platform-adjacent layer.
 
 Long-term, it can also serve as a working argument for what the web platform itself could grow.
 
+The *runtime / host* expansion of this section — running the engine behind the `FieldHost` seam on
+other languages, embedded targets, and the GPU, plus non-visual output surfaces — is catalogued in
+[`../planning/platforms-and-use-cases-frontier.md`](../planning/platforms-and-use-cases-frontier.md)
+(with dispatchable briefs on RC1 board #24).
+
 ## 20. Research possibilities
 
 Fundamental can become a research artifact.
@@ -1082,6 +1087,10 @@ The strongest near-term product arc:
 Do not start by adding more spectacle.
 
 Start by making the system coherent, inspectable, and authorable.
+
+Longer-range product/runtime surfaces — new-language cores, headless/non-visual applications
+(force-directed layout, embeddings clustering, agent steering), and new host platforms — are
+catalogued in [`../planning/platforms-and-use-cases-frontier.md`](../planning/platforms-and-use-cases-frontier.md).
 
 ## 22. Field cells and local fields
 

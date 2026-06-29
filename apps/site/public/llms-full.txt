@@ -2990,6 +2990,11 @@ Fundamental can implement these today as a platform-adjacent layer.
 
 Long-term, it can also serve as a working argument for what the web platform itself could grow.
 
+The *runtime / host* expansion of this section — running the engine behind the `FieldHost` seam on
+other languages, embedded targets, and the GPU, plus non-visual output surfaces — is catalogued in
+[`../planning/platforms-and-use-cases-frontier.md`](../planning/platforms-and-use-cases-frontier.md)
+(with dispatchable briefs on RC1 board #24).
+
 ## 20. Research possibilities
 
 Fundamental can become a research artifact.
@@ -3055,6 +3060,10 @@ The strongest near-term product arc:
 Do not start by adding more spectacle.
 
 Start by making the system coherent, inspectable, and authorable.
+
+Longer-range product/runtime surfaces — new-language cores, headless/non-visual applications
+(force-directed layout, embeddings clustering, agent steering), and new host platforms — are
+catalogued in [`../planning/platforms-and-use-cases-frontier.md`](../planning/platforms-and-use-cases-frontier.md).
 
 ## 22. Field cells and local fields
 
@@ -3921,6 +3930,29 @@ Fieldflow carries.
 Do not make `magnetism.apply()` follow magnetic field lines.
 
 That behavior belongs to `fieldflow`.
+
+## Avoidance: radial brakes, tangential routes
+
+A second mental model, for any force whose job is to *keep matter away* from something:
+
+```txt
+Radial forces brake.
+Tangential forces route.
+```
+
+A purely **radial** repulsion (`repel`, `charge`, `pressure`, `cohesion`'s short-range push) applied to a
+body heading *straight at* its source can only decelerate it — it adds no sideways component, so matter
+piles up or freezes in front of the source rather than going *around* it. To route matter around an
+obstacle you need a **tangential** component: `swirl` (mostly perpendicular, ~8× tangential to 0.12
+inward) or `lens` (speed-preserving path rotation). This is why the canonical "deflector" pattern uses a
+swirl/lens, not a stronger `repel` — and why stacking `attract` against a radial `repel`/`separation`
+tends to clump (the opposing radial urges cancel under linear superposition and friction freezes the
+residue).
+
+> This is the field-native echo of a classic result in behavioral animation (Reynolds, *Boids*, 1987):
+> a radial repulsion field hit head-on "serves only to slow the [agent]... provides no side thrust at
+> all." Reynolds' answer was predictive lateral steering; ours is a tangential force. See
+> [`../planning/boids-2026-comparison.md`](../planning/boids-2026-comparison.md).
 
 ## Gravity
 
