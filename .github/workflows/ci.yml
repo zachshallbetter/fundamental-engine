@@ -107,6 +107,11 @@ jobs:
       - name: Check recipes datafile
         run: pnpm check:recipes
 
+      # apps/site/src/data/atoms.json is generated from the compiled core (pnpm gen:atoms); fail if
+      # it drifted — catches a force added to the engine but not regenerated in the site atom catalog.
+      - name: Check atoms datafile
+        run: pnpm check:atoms
+
       # packages/elements/custom-elements.json is generated from the element source (pnpm gen:cem);
       # fail if the committed manifest drifted from the annotated <field-root>/<field-cell> classes.
       - name: Check custom-elements manifest

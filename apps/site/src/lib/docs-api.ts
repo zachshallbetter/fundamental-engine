@@ -113,6 +113,15 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-opsz', type: 'number', desc: 'Optical-size axis to drive alongside weight.' },
   { name: 'data-active', type: '"1"', desc: 'Engagement state — set automatically on hover/focus of a [data-hot] element.' },
   { name: 'data-preset', type: 'name', desc: 'Expand a preset into several co-located bodies — blackhole, galaxy, tornado, …' },
+  { name: 'data-pair', type: 'selector', desc: 'Warp force: CSS selector for the partner body (the other end of the wormhole). Matter that enters this body is teleported to the partner. Omit on non-warp bodies.' },
+  { name: 'data-twist', type: 'deg', def: '0', desc: 'Warp force: rotation applied to matter crossing the throat — twist the exit angle.' },
+  { name: 'data-scale', type: 'number', def: '1', desc: 'Warp force: scale factor applied to matter velocity when it exits the partner throat.' },
+  { name: 'data-budget', type: 'flag', desc: 'Source budget flag — marks a spawn source as explicitly budgeted without specifying data-life or data-cap. Suppresses the unbudgeted-source dev warning.' },
+  { name: 'data-sink', type: 'flag', desc: 'Secondary budget indicator for a spawn source — if present, the engine treats the source as budgeted (equivalent to data-budget). Useful when paired with the sink force.' },
+  { name: 'data-intent', type: 'intent', desc: 'Semantic authoring: a plain-language intent (e.g. "highlight" or "warn") that the engine compiles into a body configuration. When set, data-body is optional — the intent provides a default token + strength.' },
+  { name: 'data-intensity', type: 'number', def: '1', desc: 'Modifier for data-intent: scales the compiled strength (0 = subtle, 1 = default, 2 = strong). Ignored when data-body is set directly.' },
+  { name: 'data-risk', type: "'low' | 'medium' | 'high'", desc: 'Intent hint for data-intent compilation — tunes the body configuration when the intent has risk-sensitive variants.' },
+  { name: 'data-field-role', type: "role", desc: 'Semantic role: source / sink / anchor / boundary / sensor / display. Maps the element to a default body token and feedback (data-body is optional). sensor/display are feedback-only (no force).' },
 ];
 
 /** The CSS custom properties the field writes back onto bodies — the reciprocal half of the
@@ -150,4 +159,33 @@ export const OVERLAY_MODES: { name: string; desc: string }[] = [
   { name: 'energy', desc: 'Iso-contour rings of kinetic energy (½m·|v|²) — where the motion is.' },
   { name: 'path', desc: 'Streamline curves traced from seeded probes — where the field would carry a particle over distance.' },
   { name: 'data', desc: 'A numeric density readout beside each measuring body — the --d measurement made legible.' },
+];
+
+/** Observed HTML attributes on `<field-root>` — the HTML face of the createField options.
+ *  These are the attrs you set in markup / Astro / JSX; each mirrors a createField option (camelCase).
+ *  The matching createField option entry in OPTIONS[] has the full description. */
+export const FIELD_ROOT_ATTRS: { name: string; option: string; desc: string }[] = [
+  { name: 'accent', option: 'accent', desc: 'Travelling accent color hex. Mirrors the accent createField option.' },
+  { name: 'density', option: 'density', desc: 'Particle-count multiplier. Mirrors the density createField option.' },
+  { name: 'waves', option: 'waves', desc: 'Draw background Currents. Mirrors the waves option (boolean attribute — presence = true).' },
+  { name: 'depth', option: 'depth', desc: 'Optional z volume for a shallow 3D effect. Mirrors the depth createField option.' },
+  { name: 'render', option: 'render', desc: 'Underlay render mode (none / dots / trails / links / metaballs / voronoi / streamlines / flow). Mirrors the render createField option.' },
+  { name: 'overlay', option: 'overlay', desc: 'Overlay reading(s) drawn in front of content — one or space-separated stack. Mirrors the overlay createField option.' },
+  { name: 'palette', option: 'palette', desc: 'Accent color template (built-in name or hex stops, space-separated). Mirrors the palette option.' },
+  { name: 'mass', option: 'mass', desc: 'First-class mass (boolean). Mirrors the mass createField option.' },
+  { name: 'attention', option: 'attention', desc: 'Conserved attention (boolean). Mirrors the attention createField option.' },
+  { name: 'causality', option: 'causality', desc: 'Cross-boundary causality (boolean). Mirrors the causality createField option.' },
+  { name: 'heatmap', option: 'heatmap', desc: 'Density heatmap (boolean). Mirrors the heatmap createField option.' },
+  { name: 'dpr-cap', option: 'dprCap', desc: 'Backing-store DPR ceiling (number). Mirrors the dprCap createField option.' },
+  { name: 'grid-warp', option: 'gridWarp', desc: 'Grid overlay distortion multiplier. Mirrors the gridWarp createField option.' },
+  { name: 'grid-intensity', option: 'gridIntensity', desc: 'Grid overlay stroke intensity. Mirrors the gridIntensity createField option.' },
+  { name: 'theme', option: 'theme', desc: 'Ambient theme preset (warm / cool / mono). Mirrors the theme createField option.' },
+  { name: 'gradient-cool', option: 'gradientCool', desc: 'Cool-end hex for the particle heat ramp. Mirrors the gradientCool createField option.' },
+  { name: 'gradient-warm', option: 'gradientWarm', desc: 'Warm-end hex for the particle heat ramp. Mirrors the gradientWarm createField option.' },
+  { name: 'wave-baseline', option: 'waveBaseline', desc: 'Hex stops for the background-wave baseline (space-separated). Mirrors the waveBaseline createField option.' },
+  { name: 'wave-style', option: 'waveStyle', desc: "Wave current pattern (linear / circular). Mirrors the waveStyle createField option." },
+  { name: 'wave-center', option: 'waveCenter', desc: 'Center coordinate for circular waves (space-separated x y). Mirrors the waveCenter createField option.' },
+  { name: 'separation', option: 'separation', desc: 'Short-range particle separation strength. Mirrors the separation createField option.' },
+  { name: 'background', option: 'background', desc: "Substrate background (opaque / transparent). Mirrors the background createField option." },
+  { name: 'formation', option: 'formation', desc: 'Global formation preset name. Mirrors the formation createField option (setFormation).' },
 ];

@@ -8,16 +8,15 @@
  * /docs/api/* pages). A new FieldHandle method, option, or feedback variable that ships without a
  * doc entry FAILS this check — so the documentation cannot silently fall behind.
  *
- * It is designed to ship RED: on first run it reports the current gaps (a burndown metric for the
- * refactor). Set DOCS_GATE_ENFORCE=1 (CI, once green) to exit non-zero on any gap.
+ * Set DOCS_GATE_ENFORCE=1 (CI) to exit non-zero on any gap.
  *
- * This is a deliberately small, robust first version covering the three highest-value, most
- * drift-prone, hand-maintained surfaces:
- *   1. FieldHandle methods   (engine: core/types.ts  ·  docs: HANDLE[])
- *   2. createField options   (engine: core/types.ts  ·  docs: OPTIONS[])
- *   3. feedback CSS variables(engine: feedback-sink.ts · docs: WRITEBACK[])
- * Forces / data-* attributes / element members / parity matrix are TODO surfaces (see the plan,
- * docs/design/docs-refactor-plan.md §4) — each is a new `surface()` entry below.
+ * Surfaces checked:
+ *   1. FieldHandle methods   (engine: core/types.ts          · docs: HANDLE[])
+ *   2. createField options   (engine: core/types.ts          · docs: OPTIONS[])
+ *   3. feedback CSS vars     (engine: feedback-sink.ts       · docs: WRITEBACK[])
+ *   4. force tokens          (engine: forces/{index,natural,extended}.ts · docs: atoms.json forces)
+ *   5. body attrs            (engine: core/scanner.ts        · docs: ATTRS[])
+ *   6. field-root attrs      (engine: elements/custom-elements.json     · docs: FIELD_ROOT_ATTRS[])
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +27,10 @@ const read = (p) => readFileSync(resolve(root, p), 'utf8');
 
 const typesSrc = read('packages/core/src/core/types.ts');
 const feedbackSrc = read('packages/core/src/core/feedback-sink.ts');
+const scannerSrc = read('packages/core/src/core/scanner.ts');
 const docsApi = read('apps/site/src/lib/docs-api.ts');
+const atomsSrc = (() => { const d = JSON.parse(read('apps/site/src/data/atoms.json')); return Array.isArray(d) ? d : d.atoms ?? []; })();
+const cem = JSON.parse(read('packages/elements/custom-elements.json'));
 
 // ── source-of-truth extractors ────────────────────────────────────────────────────────────────
 
@@ -68,6 +70,46 @@ function engineFeedbackVars() {
   return set;
 }
 
+/** All force token ids registered in the three force-source files (36 total). */
+function engineForceTokens() {
+  const set = new Set();
+  for (const f of ['packages/core/src/forces/index.ts', 'packages/core/src/forces/natural.ts', 'packages/core/src/forces/extended.ts']) {
+    for (const m of read(f).matchAll(/token:\s*'([a-z][a-z-]+)'/g)) set.add(m[1]);
+  }
+  return set;
+}
+
+/** Body attribute suffixes (after `data-`) that the scanner recognizes. Extracted from the three
+ *  parser paths in scanner.ts: parseBodyParams (a.get/has/num calls), authoredAttrs (getAttribute),
+ *  BODY_SELECTOR bracket notation, and el.dataset.color. */
+function engineBodyAttrs() {
+  const set = new Set();
+  // a.get('X') or a.has('X') — the BodyAttrs accessor contract used in parseBodyParams
+  for (const m of scannerSrc.matchAll(/a\.(?:get|has)\('([\w-]+)'\)/g)) set.add(m[1]);
+  // num('X', defaultVal) — the shorthand float-parse helper in parseBodyParams
+  for (const m of scannerSrc.matchAll(/num\('([\w-]+)',/g)) set.add(m[1]);
+  // el.getAttribute('data-X') — direct DOM reads in authoredAttrs
+  for (const m of scannerSrc.matchAll(/getAttribute\('data-([\w-]+)'\)/g)) set.add(m[1]);
+  // [data-X] selectors in BODY_SELECTOR
+  for (const m of scannerSrc.matchAll(/\[data-([\w-]+)\]/g)) set.add(m[1]);
+  // el.dataset.color in makeBody (property accessor, not getAttribute)
+  if (scannerSrc.includes('dataset.color')) set.add('color');
+  return set;
+}
+
+/** Observed attributes on a CEM-declared custom element. */
+function cemAttrs(tagName) {
+  const set = new Set();
+  for (const mod of cem.modules ?? []) {
+    for (const decl of mod.declarations ?? []) {
+      if (decl.tagName === tagName) {
+        for (const attr of decl.attributes ?? []) if (attr.name) set.add(attr.name);
+      }
+    }
+  }
+  return set;
+}
+
 // ── docs extractors (apps/site/src/lib/docs-api.ts) ─────────────────────────────────────────────
 
 /** Names in a `{ name: 'x', … }` row array, scoped to `export const NAME: …[] = [ … ]`. */
@@ -82,6 +124,31 @@ function docRowNames(constName, key) {
   return set;
 }
 
+/** Force token ids documented in atoms.json (kind === 'force', data.token present). */
+function docForceTokens() {
+  return new Set(atomsSrc.filter((a) => a.kind === 'force' && a.data?.token).map((a) => a.data.token));
+}
+
+/** Body attr suffixes (after `data-`) documented in the ATTRS table.
+ *  Handles combined entries like `data-fmin / data-fmax` by splitting on ' / '
+ *  BEFORE stripping the `data-` prefix, so each part is cleaned independently. */
+function docBodyAttrs() {
+  const rawNames = docRowNames('ATTRS', 'name');
+  const set = new Set();
+  for (const raw of rawNames) {
+    for (const part of raw.split(/\s*\/\s*/)) {
+      const clean = part.trim().replace(/^data-/, '');
+      if (clean) set.add(clean);
+    }
+  }
+  return set;
+}
+
+/** Element attr names documented in a `{ name: 'x', … }` table for the given const. */
+function docElementAttrs(constName) {
+  return docRowNames(constName, 'name');
+}
+
 // ── the surfaces ────────────────────────────────────────────────────────────────────────────────
 
 const surfaces = [
@@ -94,13 +161,26 @@ const surfaces = [
     name: 'createField options',
     truth: engineOptions(),
     docs: docRowNames('OPTIONS', 'name'),
-    // `host`, `rng`, `now`, `overlayBackend`, `feedbackSink` are advanced/internal — still want docs,
-    // but they're acceptable as known-low-priority; surfaced, not excluded.
   },
   {
     name: 'feedback CSS variables',
     truth: engineFeedbackVars(),
     docs: docRowNames('WRITEBACK', 'name'),
+  },
+  {
+    name: 'force tokens',
+    truth: engineForceTokens(),
+    docs: docForceTokens(),
+  },
+  {
+    name: 'body attrs (data-*)',
+    truth: engineBodyAttrs(),
+    docs: docBodyAttrs(),
+  },
+  {
+    name: '<field-root> attrs',
+    truth: cemAttrs('field-root'),
+    docs: docElementAttrs('FIELD_ROOT_ATTRS'),
   },
 ];
 
@@ -137,5 +217,5 @@ if (process.env.DOCS_GATE_ENFORCE === '1') {
   console.log('\nDOCS_GATE_ENFORCE=1 → failing on the gaps above.');
   process.exit(1);
 }
-console.log('\n(advisory: set DOCS_GATE_ENFORCE=1 to fail CI on these gaps — see docs/design/docs-refactor-plan.md)');
+console.log('\n(advisory: set DOCS_GATE_ENFORCE=1 to fail CI on these gaps)');
 process.exit(0);
