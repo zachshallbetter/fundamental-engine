@@ -54,11 +54,8 @@
   margin: 0;
 }
 
-/* ── Filter bar (a cohesive floating panel, sticky under the nav) ──────────────────────────────── */
+/* ── Filter bar (a cohesive panel at the top of the catalog — scrolls with the page) ───────────── */
 .ex-filterbar {
-  position: sticky;
-  top: 70px; /* under the fixed nav, with breathing room */
-  z-index: 5;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -66,10 +63,10 @@
   margin-bottom: 0.9rem;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: color-mix(in srgb, var(--bg-card) 72%, transparent);
-  backdrop-filter: blur(14px) saturate(1.3);
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 5%, transparent) inset,
-    0 14px 40px -22px rgba(0, 0, 0, 0.75);
+  /* not sticky: a floating translucent bar over the scrolling grid just doubled the visual noise.
+     It's a solid panel that scrolls away — you pick a filter, then browse. */
+  background: var(--bg-card);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 4%, transparent) inset;
 }
 
 .ex-search {
