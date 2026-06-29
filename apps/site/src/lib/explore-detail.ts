@@ -172,9 +172,13 @@ export function initExploreDetail(): () => void {
     lastFocused?.focus?.();
     lastFocused = null;
     if (push) {
-      // drop the ?r= param
-      if (history.state?.r) history.back();
-      else history.replaceState({}, '', location.pathname);
+      // Drop the ?r= param with replaceState — NOT history.back(). The site's ClientRouter intercepts
+      // popstate and swaps the document, which resets focus, so back-to-close would undo the focus
+      // restoration above. replaceState fires no popstate, so lastFocused.focus() holds. (A browser
+      // Back press while open still closes via the open's pushState → popstate → onPopState.)
+      if (new URLSearchParams(location.search).has('r')) {
+        history.replaceState({}, '', location.pathname);
+      }
     }
   }
 

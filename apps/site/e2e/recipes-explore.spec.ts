@@ -39,4 +39,36 @@ test.describe("/recipes · solution-finder catalog", () => {
     await expect(page.locator(".ex-detail")).toBeHidden();
     await expect(page).not.toHaveURL(/r=/);
   });
+
+  // ── perf: the catalog is calm at rest (no per-card fields) and at most one preview field runs ────
+  test("no per-card fields at rest; the expanded preview owns at most two canvases", async ({ page }) => {
+    await page.goto("/recipes");
+    // the old hub ran a field per visible card; the solution-finder runs none until you expand
+    await expect(page.locator(".ex-card canvas")).toHaveCount(0);
+    await page.locator('.ex-card[data-recipe-id="signal-path"] .ex-card-link').click();
+    await expect(page.locator(".exd-workbench")).toBeVisible();
+    // the one live preview: substrate canvas + overlay canvas — the engine's two-surface budget
+    await expect(page.locator(".ex-detail-preview canvas")).toHaveCount(2);
+  });
+
+  // ── a11y: reduced motion draws nothing — the static meaning stands in for the field ─────────────
+  test("reduced motion: the expanded preview shows the static fallback, no field canvas", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/recipes?r=priority-well");
+    await expect(page.locator(".exd-name")).toHaveText("Priority Well");
+    await expect(page.locator(".ex-detail-preview .exd-static")).toBeVisible();
+    await expect(page.locator(".ex-detail-preview canvas")).toHaveCount(0);
+  });
+
+  // ── a11y: keyboard — Enter opens the overlay, Escape closes it and restores focus to the card ───
+  test("keyboard: Enter opens the overlay, Escape restores focus to the originating card", async ({ page }) => {
+    await page.goto("/recipes");
+    const link = page.locator('.ex-card[data-recipe-id="conflict-field"] .ex-card-link');
+    await link.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator(".ex-detail")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".ex-detail")).toBeHidden();
+    await expect(link).toBeFocused();
+  });
 });
