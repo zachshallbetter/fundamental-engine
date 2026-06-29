@@ -132,6 +132,91 @@ function canonMeta(file) {
 const canon = canonFiles.map((f) => ({ file: f, ...canonMeta(f) }));
 
 // ---------------------------------------------------------------------------
+// Site docs pages (.astro): extract the authored prose, snippets, and headings.
+// The generated catalog tables (forces/options/attrs) come from TS data at build
+// time and are not literal in the source, so this captures the hand-written
+// content, not the data-driven tables. Deterministic: sorted by route.
+// ---------------------------------------------------------------------------
+const docsPagesDir = join(site, 'src/pages/docs');
+function walkAstro(dir) {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) out.push(...walkAstro(p));
+    else if (e.name.endsWith('.astro')) out.push(p);
+  }
+  return out;
+}
+function astroText(src) {
+  let s = src.replace(/^---[\s\S]*?\n---\n/, ''); // drop the frontmatter component script
+  s = s
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '');
+  for (let i = 0; i < 4; i++) s = s.replace(/\{[^{}]*\}/g, ' '); // strip JSX expressions (incl. light nesting)
+  s = s.replace(/<[^>]+>/g, ' '); // strip tags
+  s = s
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+  return s
+    .split('\n')
+    .map((l) => l.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+function astroTitle(src, route) {
+  const m = src.match(/\btitle=\{?["'`]([^"'`]+)["'`]/);
+  return m ? m[1] : route;
+}
+const docsPages = walkAstro(docsPagesDir)
+  .sort()
+  .map((p) => {
+    const src = readFileSync(p, 'utf8');
+    const route =
+      '/docs' +
+      p
+        .slice(docsPagesDir.length)
+        .replace(/\\/g, '/')
+        .replace(/\/index\.astro$/, '')
+        .replace(/\.astro$/, '');
+    return { route, title: astroTitle(src, route), text: astroText(src) };
+  })
+  .filter((d) => d.text.length > 60);
+
+// ---------------------------------------------------------------------------
+// Field recipes: the shipped 64-recipe catalog (data/recipes.json, regenerated
+// by `pnpm gen:recipes`). Emitted as a compact, agent-readable catalog.
+// ---------------------------------------------------------------------------
+const recipesData = JSON.parse(readFileSync(join(root, 'data/recipes.json'), 'utf8'));
+const recipeTierBlocks = recipesData.tiers.map((t) => {
+  const rows = t.recipeIds
+    .map((id) => {
+      const r = recipesData.recipes[id];
+      if (!r) return null;
+      const tokens = (r.primitives ?? []).join(' ');
+      const metrics = (r.metrics ?? []).join(', ');
+      return (
+        `- **${r.name}** (\`${id}\`) — ${r.intent ?? ''}` +
+        `${r.naturalField ? ` · natural field: ${r.naturalField}` : ''}` +
+        `${tokens ? ` · tokens: \`${tokens}\`` : ''}` +
+        `${metrics ? ` · metrics: ${metrics}` : ''}`
+      );
+    })
+    .filter(Boolean);
+  return `### ${t.label}\n\n${rows.join('\n')}`;
+});
+const recipesText =
+  `# Field recipes\n\n` +
+  `The ${recipesData.count} shipped FieldRecipes (the \`FIELD_RECIPES\` catalog; a FieldRecipe is the API\n` +
+  `representation of a field configuration). Each composes runtime tokens, metrics, and diagnostics into\n` +
+  `an interface pattern. The locked set is frozen; new recipes go in EXPERIMENTAL_RECIPES.\n\n` +
+  recipeTierBlocks.join('\n\n');
+
+// ---------------------------------------------------------------------------
 // llms.txt
 // ---------------------------------------------------------------------------
 const line = (name, url, desc) => `- [${name}](${url})${desc ? `: ${desc}` : ''}`;
@@ -206,7 +291,7 @@ ${exampleLines.join('\n')}
 
 ## Optional
 
-- [llms-full.txt](${SITE_URL}/llms-full.txt): every canonical document, concatenated into one file
+- [llms-full.txt](${SITE_URL}/llms-full.txt): the full corpus — every canonical document, the site documentation pages, and the recipe catalog, concatenated into one file
 - [GitHub repository](https://github.com/zachshallbetter/fundamental-engine): the monorepo — core, platform, elements, react, vanilla, and this site
 - [Writings](${SITE_URL}/writings): the eight-paper research family on the field model
 - [The Lab](${SITE_URL}/lab): a physics detector — fire a particle into any force and verify its law
@@ -217,23 +302,32 @@ ${exampleLines.join('\n')}
 // llms-full.txt
 // ---------------------------------------------------------------------------
 const SEP = '='.repeat(72);
-const fullHeader = `# Fundamental — full canonical documentation
+const fullHeader = `# Fundamental — full documentation corpus
 
 Created by Zach Shallbetter (zachshallbetter.com).
 
-Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
+Source: docs/canonical/, the site documentation pages (apps/site/src/pages/docs/), and the
+recipe catalog (data/recipes.json) in https://github.com/zachshallbetter/fundamental-engine
 Generated: ${DATE} by apps/site/scripts/gen-llms.mjs
-Files: ${canon.length}
+Canonical docs: ${canon.length} · documentation pages: ${docsPages.length} · recipes: ${recipesData.count}
 
-These are the project's canonical documents — the authority on concepts, terminology, and
-contracts — concatenated in filename order. The live site map is ${SITE_URL}/llms.txt.
+Three sections, in order: (1) the project's CANONICAL documents — the authority on concepts,
+terminology, and contracts; (2) the authored prose of the SITE DOCUMENTATION pages (the
+data-driven catalog tables are generated at build time and are not reproduced here); (3) the
+FIELD RECIPES catalog. The live site map is ${SITE_URL}/llms.txt.
 `;
 
-const fullBody = canon
+const canonBody = canon
   .map((c) => `${SEP}\nFILE: ${c.file}\n${SEP}\n\n${c.src.trimEnd()}\n`)
   .join('\n');
 
-const full = `${fullHeader}\n${fullBody}`;
+const pagesBody = docsPages
+  .map((d) => `${SEP}\nPAGE: ${d.route} — ${d.title}\n${SEP}\n\n${d.text.trimEnd()}\n`)
+  .join('\n');
+
+const recipesBody = `${SEP}\nRECIPES: field-recipes (generated from data/recipes.json)\n${SEP}\n\n${recipesText.trimEnd()}\n`;
+
+const full = `${fullHeader}\n${canonBody}\n${SEP}\n## SITE DOCUMENTATION PAGES\n${SEP}\n\n${pagesBody}\n${SEP}\n## FIELD RECIPES\n${SEP}\n\n${recipesBody}`;
 
 // ---------------------------------------------------------------------------
 mkdirSync(outDir, { recursive: true });
@@ -242,5 +336,5 @@ writeFileSync(join(outDir, 'llms-full.txt'), full);
 
 console.log(
   `gen-llms: wrote llms.txt (${docsLines.length} docs, ${canonLines.length} canon, ${exampleLines.length} examples) ` +
-    `and llms-full.txt (${canon.length} files, ${(full.length / 1024).toFixed(0)} KiB) to apps/site/public/`,
+    `and llms-full.txt (${canon.length} canon + ${docsPages.length} pages + ${recipesData.count} recipes, ${(full.length / 1024).toFixed(0)} KiB) to apps/site/public/`,
 );
