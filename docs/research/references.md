@@ -30,6 +30,7 @@ allowlist), `packages/core/src/core/integrator.ts`, `packages/core/src/contracts
 ## External literature and standards
 
 ### Force-directed layout, physical metaphors, and field coordination
+- `[reynolds1987]` C. W. Reynolds, "Flocks, herds and schools: A distributed behavioral model," *Computer Graphics* (SIGGRAPH '87 Proceedings), 21(4), 25–34, 1987. DOI: `10.1145/37401.37406`. The distributed behavioral model ("boids"): local-neighborhood steering rules (separation, alignment, cohesion), prioritized acceleration allocation, and steer-to-avoid. Compared against Fundamental in Paper 31.
 - `[eades1984]` P. Eades, "A heuristic for graph drawing," *Congressus Numerantium*, 42, 149–160, 1984.
 - `[fruchterman1991]` T. M. J. Fruchterman and E. M. Reingold, "Graph drawing by force-directed placement," *Software: Practice and Experience*, 21(11), 1129–1164, 1991. DOI: `10.1002/spe.4380211102`.
 - `[bostock2011]` M. Bostock, V. Ogievetsky, and J. Heer, "D³: Data-Driven Documents," *IEEE Transactions on Visualization and Computer Graphics*, 17(12), 2301–2309, 2011. DOI: `10.1109/TVCG.2011.185`.

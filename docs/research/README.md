@@ -127,6 +127,15 @@ Twenty-two generalizing/companion preprints that lift the original eight-paper f
 | 29 | [`29-ai-interfaces-show-support-not-sources.md`](29-ai-interfaces-show-support-not-sources.md) | **AI Interfaces Should Show Support, Not Just Sources** | Expansion Paper 29 generalizes the Evidence Fields claim into a portable interface principle: showing that a source supports a specific claim, with a falsifiable participant/signal/binding/equivalence model and a four-study evaluation plan. |
 | 30 | [`30-platform-native-expressive-systems.md`](30-platform-native-expressive-systems.md) | **Platform-Native Expressive Systems Without Replacing HTML** | Paper 30 of the Fundamental expansion family generalizes the first eight papers' core claim into a renderer-agnostic, falsifiable model for treating relational meaning as a first-class interface substrate over semantic HTML. |
 
+## Comparison papers (31–)
+
+Direct comparisons positioning Fundamental against a named prior system — a different kind from the
+generalizing expansion family.
+
+| # | File | Title | Summary |
+|---|---|---|---|
+| 31 | [`31-behavioral-models-after-boids.md`](31-behavioral-models-after-boids.md) | **Substrate, Not Spectacle: Behavioral Models After Boids** | A source-grounded comparison with Reynolds' *Boids* (1987): shared mechanism (local neighborhoods, the three rules by name, spatial-hash neighbors), the per-axis better/worse/something-else verdict, the explainability↔arbitration tradeoff, and behavioral models as computation substrate. Comparison/positioning, not an empirical study. |
+
 ## Conventions
 
 - **Audience & register.** Technical-preprint (arXiv) voice: precise, citable, honest about
