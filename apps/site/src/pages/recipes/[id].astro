@@ -7,6 +7,8 @@ import {
   FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe,
 } from '@fundamental-engine/core';
 import { metricTitle, designedMetrics } from '../../lib/metric-lanes.ts';
+import { taxonomyFor } from '../../lib/recipe-taxonomy.ts';
+import '../../styles/workbench.css';
 
 // One page per recipe (getStaticPaths over the 64 FIELD_RECIPES + the experimental set): a large live
 // preview, the full five-lane breakdown + render + a11y + notes + plain-language explanation, copyable
@@ -29,6 +31,9 @@ const exports = { html: auth.html, wc: auth.webComponent, react: auth.react, jso
 const seeAlso = FIELD_RECIPES.filter((x) => x.id !== r.id && (x.naturalField === r.naturalField || x.tier === r.tier)).slice(0, 6);
 // which metric lanes need the host to ground them (else --field-<m> stays inert) — see lintInertFeedback
 const designed = designedMetrics(r.metrics);
+// discovery metadata for the shared workbench preview (scaffold + the render stack it wakes into)
+const tax = taxonomyFor(r.id);
+const primaryRender = tax.primaryRender ?? r.render[0] ?? 'dots';
 ---
 
 <Base title={`Fundamental — ${r.name}`} description={`${r.name}: ${r.intent}. A live, validated Fundamental recipe — runs in your browser, with the runtime tokens, metrics, diagnostics, accessibility equivalent, and copyable HTML / web component / React / JSON.`}>
@@ -48,14 +53,16 @@ const designed = designedMetrics(r.metrics);
     </header>
 
     <section class="rp-stage" aria-label="Live preview">
-      <div class="rp-preview" data-recipe-preview={r.id} aria-hidden="true"></div>
-      <div class="rp-readout" data-readout>
-        <span>frame <b data-ro="frame">—</b></span>
-        <span>bodies <b data-ro="measurements">0</b></span>
-        <span>relationships <b data-ro="relationships">0</b></span>
-        <span class="rp-metrics" data-ro-metrics></span>
-      </div>
-      <p class="rp-note">Running the actual recipe live via <code>applyRecipe()</code> — not a mock.</p>
+      <div
+        class="rp-preview"
+        data-recipe-mount={r.id}
+        data-scaffold={tax.scaffoldId ?? ''}
+        data-primary-render={primaryRender}
+        data-render-layers={r.render.join(',')}
+        data-reduced={r.accessibility.meaningWithoutMotion}
+        aria-hidden="true"
+      ></div>
+      <p class="rp-note">Running the actual recipe live via <code>applyRecipe()</code> — switch the substrate, stack overlays, watch the signals, or reverse the dynamics. Not a mock.</p>
     </section>
 
     <p class="explain">{explainScene(r)}</p>
@@ -105,26 +112,24 @@ const designed = designedMetrics(r.metrics);
 </Base>
 
 <script>
-  import { initRecipePreviews } from '../../lib/recipe-preview.ts';
+  import { mountRecipePreview, type PreviewHandle } from '../../lib/explore-preview.ts';
 
-  let teardown: (() => void) | undefined;
+  let preview: PreviewHandle | undefined;
   function init() {
-    const ro = (k: string, v: string) => { const e = document.querySelector(`[data-ro="${k}"]`); if (e) e.textContent = v; };
-    const metricsEl = document.querySelector<HTMLElement>('[data-ro-metrics]');
-    teardown?.();
-    teardown = initRecipePreviews({
-      max: 1,
-      onInspect: (_el, applied) => {
-        const ins = applied.inspect();
-        ro('frame', String(ins.frame));
-        ro('measurements', String(ins.measurements));
-        ro('relationships', String(ins.relationships));
-        if (metricsEl) {
-          const first = Object.values(ins.metrics)[0] ?? {};
-          metricsEl.innerHTML = Object.entries(first).map(([m, v]) => `<span>${m} <b>${(v as number).toFixed(2)}</b></span>`).join('');
-        }
-      },
-    });
+    // the full workbench preview — substrate/overlay/dynamics controls + live signal readout, the
+    // same component the Explore detail uses (mountRecipePreview reads the recipe metadata off the
+    // mount element's data-* attributes, set server-side).
+    const el = document.querySelector<HTMLElement>('[data-recipe-mount]');
+    preview?.destroy();
+    if (el) {
+      preview = mountRecipePreview(el, {
+        recipeId: el.dataset.recipeMount ?? '',
+        scaffoldId: el.dataset.scaffold || null,
+        primaryRender: el.dataset.primaryRender ?? 'dots',
+        reducedMotionText: el.dataset.reduced ?? '',
+        renderLayers: (el.dataset.renderLayers ?? '').split(',').filter(Boolean),
+      });
+    }
 
     // copy-this-recipe tabs
     const ex = document.querySelector<HTMLElement>('[data-ex]');
@@ -149,7 +154,7 @@ const designed = designedMetrics(r.metrics);
   if (document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
   document.addEventListener('astro:page-load', init);
-  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+  document.addEventListener('astro:before-swap', () => { preview?.destroy(); preview = undefined; });
 </script>
 
 <style>
@@ -164,12 +169,11 @@ const designed = designedMetrics(r.metrics);
   .rp-hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0.5rem 0 0.4rem; line-height: 1.05; }
   .intent { color: var(--muted, #c3c9d4); font-size: 1.05rem; margin: 0 0 0.3rem; }
   .translation { color: var(--muted, #9aa); font-style: italic; margin: 0; }
-  .rp-stage { margin: 1.6rem 0; border: 1px solid var(--line, #2a2a35); border-radius: 14px; overflow: hidden; background: radial-gradient(120% 120% at 50% 30%, color-mix(in srgb, var(--rc) 9%, transparent), transparent 70%); }
-  .rp-preview { position: relative; min-height: 240px; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: center; padding: 1.2rem; }
-  .rp-readout { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0.6rem 1rem; border-top: 1px solid var(--line, #2a2a35); font: 0.8rem ui-monospace, monospace; color: var(--muted, #9aa); }
-  .rp-readout b { color: var(--text, #e8e8ef); }
-  .rp-metrics { display: flex; gap: 0.7rem; flex-wrap: wrap; }
-  .rp-note { font-size: 0.8rem; color: var(--muted, #9aa); padding: 0 1rem 0.7rem; margin: 0; }
+  /* --detail-accent drives the workbench signal bars + active-pill glow to the recipe's field colour */
+  .rp-stage { margin: 1.6rem 0; border: 1px solid var(--line, #2a2a35); border-radius: 14px; overflow: hidden; --detail-accent: var(--rc); background: radial-gradient(120% 120% at 50% 30%, color-mix(in srgb, var(--rc) 9%, transparent), transparent 70%); }
+  /* host for the shared workbench preview: positioned + clipped, tall enough for the control rows */
+  .rp-preview { position: relative; overflow: hidden; min-height: 440px; display: grid; place-items: center; }
+  .rp-note { font-size: 0.8rem; color: var(--muted, #9aa); padding: 0.6rem 1rem 0.7rem; margin: 0; border-top: 1px solid var(--line, #2a2a35); }
   .explain { font-size: 1.02rem; line-height: 1.6; }
   .notes { color: var(--muted, #c3c9d4); font-size: 0.92rem; border-left: 2px solid var(--rc, #4da3ff); padding-left: 0.9rem; }
   .rp-meta { display: grid; gap: 0.5rem; margin: 1.6rem 0; }
