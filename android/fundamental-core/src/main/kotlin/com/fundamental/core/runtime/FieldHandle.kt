@@ -9,6 +9,7 @@ import com.fundamental.core.engine.ScalarGrid
 import com.fundamental.core.engine.WaveStyle
 import com.fundamental.core.engine.energyReport
 import com.fundamental.core.math.Vec3
+import java.util.UUID
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -49,6 +50,53 @@ sealed class OverlayInput {
 
 /** Thread connector between two opaque body references — mirrors Swift `ThreadLink`. */
 data class ThreadLink(val a: Any, val b: Any, val color: String? = null)
+
+// ── Event bus types ────────────────────────────────────────────────────────────────────────────────
+
+/** Field lifecycle events for the subscription bus. Mirrors Swift `FieldEvent`. */
+enum class FieldEvent { TICK, BODY_ADD, BODY_REMOVE, PARTICLE_CAPTURE, SUPERNOVA }
+
+/** Payload delivered to `on` subscribers. Mirrors Swift `FieldEventPayload`. */
+data class FieldEventPayload(
+    val event: FieldEvent,
+    val body: Body? = null,
+    val particle: Particle? = null,
+)
+
+/** Live subscription returned by [FieldHandle.on]. Call [cancel] to unsubscribe. */
+class Subscription internal constructor(private val _cancel: () -> Unit) {
+    fun cancel() = _cancel()
+}
+
+// ── Overlay renderer ───────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A named overlay renderer registered via [FieldHandle.registerOverlay]. The host frame loop
+ * calls [render] after the underlay draw each frame. Mirrors Swift `OverlayRenderer`.
+ */
+interface OverlayRenderer {
+    fun render(handle: FieldHandle)
+}
+
+// ── Agent types ────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Spec for an autonomous field-agent consumer. [position] reports the agent's world location each
+ * tick; [onInfluence] receives the net force vector the field exerts there. Mirrors JS `AgentSpec`.
+ */
+class AgentSpec(
+    val position: () -> Vec3,
+    val range: Float = 120f,
+    val tokens: List<String> = emptyList(),
+    val onInfluence: ((Vec3) -> Unit)? = null,
+)
+
+/**
+ * Handle returned by [FieldHandle.addAgent]. Call [remove] to deregister. Mirrors JS `AgentHandle`.
+ */
+class AgentHandle internal constructor(val spec: AgentSpec, private val _remove: () -> Unit) {
+    fun remove() = _remove()
+}
 
 /** The readParticles buffer layout: 5 floats per particle (x, y, z, heat, size). */
 const val PARTICLE_STRIDE: Int = 5
@@ -236,6 +284,7 @@ class FieldHandle(val controller: FieldController) {
         body.rect = spec.rect
         body.box = spec.rect()
         controller.addBody(body)
+        fireEvent(FieldEvent.BODY_ADD, FieldEventPayload(FieldEvent.BODY_ADD, body = body))
         return BodyHandle(controller, body, spec.data)
     }
 
@@ -314,7 +363,103 @@ class FieldHandle(val controller: FieldController) {
     fun energy(): EnergyReport = energyReport(controller.particles)
     fun readParticles(out: FloatArray): Int = controller.readParticles(out)
 
+    /**
+     * Fill [out] with the stable integer ID of each live particle; return the particle count.
+     * IDs are assigned at pool creation and survive body rebinding. Mirrors JS `readParticleIds`.
+     */
+    fun readParticleIds(out: IntArray): Int {
+        val parts = controller.particles
+        val n = minOf(parts.size, out.size)
+        for (i in 0 until n) out[i] = parts[i].id
+        return parts.size
+    }
+
+    /**
+     * Sample each named scalar grid at every live particle's position and pack the results into
+     * [out] (stride = `names.size`). Returns the particle count. Mirrors JS `readParticleChannels`.
+     */
+    fun readParticleChannels(names: List<String>, out: FloatArray): Int {
+        val parts = controller.particles
+        val stride = names.size
+        for (i in parts.indices) {
+            val base = i * stride
+            if (base + stride > out.size) return parts.size
+            for (j in names.indices) out[base + j] = controller.grid(names[j]).sample(parts[i].position)
+        }
+        return parts.size
+    }
+
+    /**
+     * Net force vector a free particle at (x, y) would experience from all active bodies.
+     * Uses the same [forceAt] probe the streamlines overlay draws. Safe to call between ticks.
+     * Mirrors JS `sample(x, y)`.
+     */
+    fun sample(x: Float, y: Float): Vec3 = controller.sample(x, y)
+
+    // ── event bus ─────────────────────────────────────────────────────────────────────
+    private val _listeners = mutableListOf<Triple<FieldEvent, String, (FieldEventPayload) -> Unit>>()
+
+    /**
+     * Subscribe to a field event. Returns a [Subscription]; call [Subscription.cancel] to
+     * unsubscribe. The [FieldEvent.TICK] event fires after each simulation frame.
+     * Mirrors JS `on(event, handler)`.
+     */
+    fun on(event: FieldEvent, handler: (FieldEventPayload) -> Unit): Subscription {
+        val id = java.util.UUID.randomUUID().toString()
+        _listeners.add(Triple(event, id, handler))
+        return Subscription { _listeners.removeAll { it.second == id } }
+    }
+
+    private fun fireEvent(event: FieldEvent, payload: FieldEventPayload) {
+        for ((e, _, h) in _listeners) if (e == event) h(payload)
+    }
+
+    // ── overlay registry ──────────────────────────────────────────────────────────────
+    private val _overlayRegistry = mutableMapOf<String, OverlayRenderer>()
+
+    /**
+     * Register a named overlay renderer — called by the host frame loop after underlay draw.
+     * Mirrors JS `registerOverlay(key, renderer)`.
+     */
+    fun registerOverlay(key: String, renderer: OverlayRenderer) { _overlayRegistry[key] = renderer }
+
+    /** Remove a previously registered overlay renderer. */
+    fun removeOverlay(key: String) { _overlayRegistry.remove(key) }
+
+    /** The live overlay registry — read by the Compose/View host to call custom renderers each frame. */
+    val overlayRegistry: Map<String, OverlayRenderer> get() = _overlayRegistry
+
+    // ── agents ────────────────────────────────────────────────────────────────────────
+    private val _agentEntries = mutableListOf<Pair<String, AgentSpec>>()
+
+    /**
+     * Register an autonomous agent consumer. Each tick the engine evaluates the net force at
+     * the agent's [AgentSpec.position] and calls [AgentSpec.onInfluence]. Returns an [AgentHandle];
+     * call [AgentHandle.remove] to deregister. Mirrors JS `addAgent`.
+     */
+    fun addAgent(spec: AgentSpec): AgentHandle {
+        val id = java.util.UUID.randomUUID().toString()
+        _agentEntries.add(id to spec)
+        return AgentHandle(spec) { _agentEntries.removeAll { it.first == id } }
+    }
+
+    private fun tickAgents() {
+        for ((_, spec) in _agentEntries) {
+            val pos = spec.position()
+            val force = controller.sample(pos.x, pos.y)
+            spec.onInfluence?.invoke(force)
+        }
+    }
+
     // ── lifecycle ────────────────────────────────────────────────────────────────────
+    init {
+        // Wire the after-tick hook so TICK events and agent updates fire each frame.
+        controller.onAfterTick = {
+            tickAgents()
+            fireEvent(FieldEvent.TICK, FieldEventPayload(FieldEvent.TICK))
+        }
+    }
+
     fun tick(dt: Float = 1f) = controller.tick(dt)
     fun destroy() { controller.clearFlow() }
 }
