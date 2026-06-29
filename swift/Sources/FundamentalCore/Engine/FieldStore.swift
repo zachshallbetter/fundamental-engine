@@ -12,6 +12,7 @@ import Foundation
 public final class FieldStore {
     public private(set) var particles: [Particle] = []
     private let hash: SpatialHash
+    private var nextId: Int = 0
 
     public init(cellSize: Float = 64) {
         self.hash = SpatialHash(cellSize: cellSize)
@@ -21,6 +22,8 @@ public final class FieldStore {
 
     @discardableResult
     public func add(_ p: Particle) -> Particle {
+        p.id = nextId
+        nextId += 1
         particles.append(p)
         return p
     }

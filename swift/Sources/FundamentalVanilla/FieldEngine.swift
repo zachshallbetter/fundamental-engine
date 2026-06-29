@@ -86,6 +86,30 @@ final class FieldEngine: FieldHandle {
     private var bodyHandleMap: [ObjectIdentifier: WeakBody] = [:]
     private struct WeakBody { weak var body: Body? }
 
+    // MARK: - Event bus (on / fire)
+
+    private var listeners: [FieldEvent: [(id: UUID, fn: (FieldEventPayload) -> Void)]] = [:]
+
+    private func fire(_ payload: FieldEventPayload) {
+        listeners[payload.event]?.forEach { $0.fn(payload) }
+    }
+
+    // MARK: - Overlay registry
+
+    private var _overlayRegistry: [String: any OverlayRenderer] = [:]
+
+    // MARK: - Agent entries
+
+    private var agentEntries: [(id: UUID, spec: AgentSpec)] = []
+
+    private func tickAgents() {
+        for entry in agentEntries {
+            let pos = entry.spec.position()
+            let force = forceAt(bodies: bodies, forces: registry.forces, env: env, at: pos)
+            entry.spec.onInfluence?(force)
+        }
+    }
+
     init(host: any FieldHost, options: FieldOptions, registry: Registry = .standard()) {
         self.host = host
         self.options = options
@@ -332,6 +356,10 @@ final class FieldEngine: FieldHandle {
                        waveStyle: options.waveStyle, waveCenter: resolvedCenter,
                        separation: options.separation))
 
+        // fire tick event + evaluate agent consumers after the force step.
+        fire(FieldEventPayload(event: .tick))
+        tickAgents()
+
         // flow focus: pull free matter toward the target (gain 0.6, the JS particle gain).
         if let flow {
             for p in store.particles where p.cap == nil {
@@ -518,6 +546,7 @@ final class FieldEngine: FieldHandle {
         body.feedbackCallback = spec.onFeedback
         programmaticBodies.append(body)
         bodies.append(body) // live this frame, before the next scan() re-merges it
+        fire(FieldEventPayload(event: .bodyAdd, body: body))
         return BodyHandle(
             data: spec.data,
             set: { [weak body] p in
@@ -534,6 +563,7 @@ final class FieldEngine: FieldHandle {
                 self.bodies.removeAll { $0 === body }
                 // drop any edges whose endpoint was this body
                 self.edges.removeAll { $0.from === body || $0.to === body }
+                self.fire(FieldEventPayload(event: .bodyRemove, body: body))
             },
             bodyRef: { [weak body] in body },
             load: { [weak body] in guard let body else { return 0 }; return sinkLoad(body) },
@@ -697,6 +727,52 @@ final class FieldEngine: FieldHandle {
     func energy() -> EnergyReport { energyReport(store.particles) }
 
     func scrollV() -> Float { scrollVel }
+
+    func readParticleIds(into out: inout [Int]) -> Int {
+        let parts = store.particles
+        let n = min(parts.count, out.count)
+        for i in 0..<n { out[i] = parts[i].id }
+        return parts.count
+    }
+
+    func readParticleChannels(_ names: [String], into out: inout [Float]) -> Int {
+        let parts = store.particles
+        let stride = names.count
+        for i in 0..<parts.count {
+            let base = i * stride
+            guard base + stride <= out.count else { return parts.count }
+            for (j, name) in names.enumerated() {
+                out[base + j] = grid(name).sample(at: parts[i].position)
+            }
+        }
+        return parts.count
+    }
+
+    func sample(x: Float, y: Float) -> Vec3 {
+        forceAt(bodies: bodies, forces: registry.forces, env: env, at: Vec3(x, y, 0))
+    }
+
+    @discardableResult
+    func on(_ event: FieldEvent, _ handler: @escaping (FieldEventPayload) -> Void) -> Subscription {
+        let id = UUID()
+        listeners[event, default: []].append((id: id, fn: handler))
+        return Subscription { [weak self] in
+            self?.listeners[event]?.removeAll { $0.id == id }
+        }
+    }
+
+    func registerOverlay(_ key: String, _ renderer: any OverlayRenderer) { _overlayRegistry[key] = renderer }
+    func removeOverlay(_ key: String) { _overlayRegistry.removeValue(forKey: key) }
+    var overlayRegistry: [String: any OverlayRenderer] { _overlayRegistry }
+
+    @discardableResult
+    func addAgent(_ spec: AgentSpec) -> AgentHandle {
+        let id = UUID()
+        agentEntries.append((id: id, spec: spec))
+        return AgentHandle(spec: spec) { [weak self] in
+            self?.agentEntries.removeAll { $0.id == id }
+        }
+    }
 
     // ── scalar grid ───────────────────────────────────────────────────────────────────
 

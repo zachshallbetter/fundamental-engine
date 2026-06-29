@@ -270,6 +270,68 @@ public struct FieldChannelHandle {
     public func remove() { removeImpl() }
 }
 
+// MARK: - Event bus types
+
+/// Field lifecycle events — the typed event bus vocabulary. Mirrors JS `FieldEvent`.
+public enum FieldEvent: Hashable {
+    case tick
+    case bodyAdd
+    case bodyRemove
+    case particleCapture
+    case supernova
+}
+
+/// The payload delivered to an `on` subscriber.
+public struct FieldEventPayload {
+    public let event: FieldEvent
+    public let body: Body?
+    public let particle: Particle?
+    public init(event: FieldEvent, body: Body? = nil, particle: Particle? = nil) {
+        self.event = event; self.body = body; self.particle = particle
+    }
+}
+
+/// A live subscription returned by `FieldHandle.on`. Call `cancel()` to unsubscribe.
+public final class Subscription {
+    private let _cancel: () -> Void
+    public init(_ cancel: @escaping () -> Void) { _cancel = cancel }
+    public func cancel() { _cancel() }
+}
+
+// MARK: - Overlay renderer type
+
+/// A named overlay renderer registered via `FieldHandle.registerOverlay`. The host's draw loop
+/// calls `render(in:)` each frame after the underlay draw. Mirrors JS `registerOverlay`.
+public protocol OverlayRenderer: AnyObject {
+    func render(in handle: any FieldHandle)
+}
+
+// MARK: - Agent types
+
+/// Spec for an autonomous field-agent consumer. `position` reports the agent's world location
+/// each tick; `onInfluence` receives the net force vector the field exerts there.
+/// Mirrors JS `AgentSpec`.
+public struct AgentSpec {
+    public var position: () -> Vec3
+    public var range: Float
+    public var tokens: [String]
+    public var onInfluence: ((Vec3) -> Void)?
+    public init(position: @escaping () -> Vec3, range: Float = 120, tokens: [String] = [],
+                onInfluence: ((Vec3) -> Void)? = nil) {
+        self.position = position; self.range = range; self.tokens = tokens; self.onInfluence = onInfluence
+    }
+}
+
+/// Handle returned by `FieldHandle.addAgent`. Call `remove()` to deregister. Mirrors JS `AgentHandle`.
+public final class AgentHandle {
+    public let spec: AgentSpec
+    private let _remove: () -> Void
+    public init(spec: AgentSpec, remove: @escaping () -> Void) { self.spec = spec; _remove = remove }
+    public func remove() { _remove() }
+}
+
+// MARK: - FieldHandle protocol
+
 /// The public field API — the handle returned by `createField`.
 /// All spatial parameters are 3D; on 2D platforms pass z = 0.
 public protocol FieldHandle: AnyObject {
@@ -363,6 +425,41 @@ public protocol FieldHandle: AnyObject {
     /// Quality tier 0–3 (0 = full, 3 = paused). The platform host adapts its draw complexity.
     /// Mirrors JS `setQualityTier`.
     func setQualityTier(_ tier: Int)
+
+    // ── particle ids ──────────────────────────────────────────────────────
+    /// Fill `out` with the stable integer ID of each live particle; return the particle count.
+    /// IDs are assigned at pool creation and survive re-binding. Mirrors JS `readParticleIds`.
+    func readParticleIds(into out: inout [Int]) -> Int
+
+    // ── particle channel readout ──────────────────────────────────────────
+    /// Sample each named scalar grid at every live particle's position and pack the results into
+    /// `out` (stride = `names.count`). Returns the particle count. Mirrors JS `readParticleChannels`.
+    func readParticleChannels(_ names: [String], into out: inout [Float]) -> Int
+
+    // ── force probe ───────────────────────────────────────────────────────
+    /// Net force vector a particle at (x, y) would experience from all active bodies.
+    /// Mirrors JS `sample(x, y)`.
+    func sample(x: Float, y: Float) -> Vec3
+
+    // ── event bus ─────────────────────────────────────────────────────────
+    /// Subscribe to a field event. Returns a `Subscription`; call `.cancel()` to unsubscribe.
+    /// The `tick` event fires after each simulation frame. Mirrors JS `on(event, handler)`.
+    @discardableResult
+    func on(_ event: FieldEvent, _ handler: @escaping (FieldEventPayload) -> Void) -> Subscription
+
+    // ── overlay registry ──────────────────────────────────────────────────
+    /// Register a named overlay renderer — called by the host frame loop after underlay draw.
+    func registerOverlay(_ key: String, _ renderer: any OverlayRenderer)
+    /// Remove a registered overlay renderer.
+    func removeOverlay(_ key: String)
+    /// The live overlay registry — read by the host frame loop.
+    var overlayRegistry: [String: any OverlayRenderer] { get }
+
+    // ── agents ────────────────────────────────────────────────────────────
+    /// Register an autonomous agent consumer. Each tick the engine evaluates the net force
+    /// at the agent's `position()` and delivers it via `onInfluence`. Mirrors JS `addAgent`.
+    @discardableResult
+    func addAgent(_ spec: AgentSpec) -> AgentHandle
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)
