@@ -117,6 +117,13 @@ jobs:
       - name: Check custom-elements manifest
         run: pnpm check:cem
 
+      # Documentation coverage: every FieldHandle method, createField option, and feedback CSS var
+      # must have a docs-api.ts entry. DOCS_GATE_ENFORCE=1 makes gaps fail CI (not advisory).
+      - name: Check docs coverage
+        run: pnpm check:docs
+        env:
+          DOCS_GATE_ENFORCE: '1'
+
       # the cross-plane conformance golden (Swift parity, #526) is emitted from the JS engine
       # (pnpm gen:golden); fail if the committed golden drifted from the current JS force math, so the
       # Swift GoldenConformanceTests can't validate against a stale fixture. The Swift side of the gate
