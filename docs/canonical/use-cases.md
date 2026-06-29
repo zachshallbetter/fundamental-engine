@@ -301,7 +301,7 @@ distribution over the article grid is a spatial representation of readership.
 
 > This is the architectural shift that most people miss.
 
-Since 0.9.0, the field's default `render` mode is `'none'`. No canvas. No particles.
+Since the signals-first change (#538), the field's default `render` mode is `'none'`. No canvas. No particles.
 The full simulation runs and writes its results as CSS variables (`--field-density`,
 `--d`, `--load`, `--field-attention`) to every `[data-feedback]` element. Your
 existing CSS consumes them.

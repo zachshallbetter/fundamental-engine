@@ -57,13 +57,14 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
       directory.
     </p>
     <div class="callout">
-      <b>Parity — honest status.</b> Both are ports, and the web plane moves first. The newest
-      primitives — <code>addField</code> / <code>sampleField</code> (field channels), reactive
-      <code>BodyHandle.set</code>, and <code>depth</code> forwarding — shipped on the web in 0.5.1 / 0.7.0
-      and are <strong>not yet ported</strong>. The core force set and the interactive scenes are there;
-      treat the native plane as a fast-moving preview until parity is called out here. For the full
-      method-by-method breakdown see the <a href="/docs/api/parity">parity matrix</a>
-      (Swift 34/44 = 77%, Kotlin 20/44 = 45%).
+      <b>Parity — full API surface, still preview.</b> Both are ports, and the web plane moved first
+      historically — but all three native ports now ship the <strong>full 44-method
+      <code>FieldHandle</code> surface (44/44/44; Three.js, Swift, Kotlin)</strong> as of June 2026
+      (#822 / #823 / #824), and the shared physics-conformance golden is green across planes. The field
+      channels (<code>addField</code> / <code>sampleField</code>), the core force set, and the
+      interactive scenes are all there. API parity is not production-readiness, though — treat the native
+      plane as a fast-moving preview (see Status below). For the method-by-method breakdown see the
+      <a href="/docs/api/parity">parity matrix</a>.
     </div>
     <p>
       <b>Get it:</b> the notarized <code>.dmg</code> download is coming; until then, build it from source —

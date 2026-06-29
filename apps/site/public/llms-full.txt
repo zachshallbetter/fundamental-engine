@@ -2429,7 +2429,7 @@ FILE: field-possibilities.md
 > set. The 36 real runtime tokens live in the [forces catalog](../engine-reference/forces-system.md).
 > Concept words map to them: `vortex→swirl`, `drag→viscosity`, `emitter→spawn`, `spring→tether`,
 > `reflect→wall`, `absorb→sink`, `phase`/`decay`→`morph`/`memory`. `mass` is a metric, `potential` a
-> diagnostic; `fuse`/`fission`/`warp`/`wormhole` are not yet implemented.
+> diagnostic; `fuse`/`fission` are not yet implemented (`warp` ships the wormhole-throat behavior).
 
 ## 0. Purpose
 
@@ -5714,84 +5714,33 @@ FILE: parity-matrix.md
 
 # Cross-platform parity matrix
 
-The `FieldHandle` interface is the engine's public API contract. Every platform that
-ships a field runtime implements a subset of it; the table below is the machine-generated
-snapshot of which methods are present on each platform.
+> **The authoritative, auto-counted matrix is the live page: [`/docs/api/parity`](https://fundamental-engine.com/docs/api/parity)**
+> (source: `apps/site/src/pages/docs/api/parity.astro`, which derives its counts from a single `METHODS`
+> table). This canonical note used to carry a hand-maintained copy of that table; it drifted, so the copy
+> was removed in favor of one source of truth. **All three native ports are at full parity — 44/44/44 —
+> as of June 2026** (Three.js, Swift, Kotlin; PRs #822/#823/#824).
 
-**Method source of truth:** `packages/core/src/core/types.ts` — `FieldHandle` interface.
-**Swift source:** `swift/Sources/FundamentalVanilla/FieldEngine.swift`.
-**Kotlin source:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt`.
+The `FieldHandle` interface is the engine's public API contract. Every platform that ships a field
+runtime implements it; the live page tracks which callable methods exist on each platform.
 
-The cross-plane *mathematical* conformance (force physics identical across JS, Swift, and Kotlin)
-is separately verified by the golden fixture and the per-platform `GoldenConformanceTests`.
-This matrix tracks *API surface* parity — which callable methods exist on each platform.
+**Sources of truth:**
+- **Methods:** `packages/core/src/core/types.ts` — the `FieldHandle` interface.
+- **Three.js:** `packages/three/src/layer.ts` — `FieldLayer` delegates all 44 to the wrapped handle.
+- **Swift:** `swift/Sources/FundamentalVanilla/FieldEngine.swift`.
+- **Kotlin:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt`.
 
-Last generated: 2026-06-29 (from the source files above). Update when adding a method to any platform.
+## Two different "parity" claims — keep them separate
 
----
+- **API-surface parity** — which callable `FieldHandle` methods exist on each platform. This is what the
+  [parity page](https://fundamental-engine.com/docs/api/parity) tracks (44/44/44).
+- **Mathematical conformance** — the force *physics* being identical across JS, Swift, and Kotlin. This is
+  verified separately by the shared golden fixture (`swift/Tests/.../Fixtures/conformance-golden.json`) and
+  the per-platform `GoldenConformanceTests` (`pnpm check:golden`). API parity and physics conformance are
+  independent guarantees.
 
-## FieldHandle method coverage
-
-| Method | JS | Swift | Kotlin | Notes |
-|--------|----|-------|--------|-------|
-| `scan` | ✓ | ✓ | — | Kotlin re-scans implicitly on tick |
-| `rescan` | ✓ | ✓ | — | alias of scan |
-| `setAccent` | ✓ | ✓ | — | visual layer — Compose has its own color API |
-| `setPalette` | ✓ | ✓ | — | visual layer |
-| `setFormation` | ✓ | ✓ | ✓ | |
-| `setWaveStyle` | ✓ | ✓ | — | visual layer |
-| `setWaveCenter` | ✓ | ✓ | — | visual layer |
-| `setSeparation` | ✓ | ✓ | — | Kotlin exposes as `var separation` |
-| `setAttention` | ✓ | ✓ | ✓ | |
-| `setCausality` | ✓ | ✓ | ✓ | |
-| `setHeatmap` | ✓ | ✓ | ✓ | |
-| `setDprCap` | ✓ | — | — | pixel-density control — native OSs handle DPR differently |
-| `setQualityTier` | ✓ | — | — | adaptive quality governor |
-| `setRender` | ✓ | ✓ | — | render surface is Compose/SwiftUI-owned on native |
-| `setOverlay` | ✓ | ✓ | — | overlay readings (overlay canvas) |
-| `setBackground` | ✓ | — | — | Web-specific: transparent vs opaque canvas clearing |
-| `threads` | ✓ | ✓ | — | visual layer — glowing connector lines |
-| `burst` | ✓ | ✓ | ✓ | |
-| `flowTo` | ✓ | ✓ | ✓ | |
-| `clearFlow` | ✓ | ✓ | ✓ | |
-| `seed` | ✓ | ✓ | ✓ | |
-| `addAgent` | ✓ | — | — | engine-stepped agent — planned for native |
-| `addBody` | ✓ | ✓ | ✓ | |
-| `addEdge` | ✓ | ✓ | ✓ | |
-| `readEdges` | ✓ | ✓ | ✓ | |
-| `addField` | ✓ | ✓ | ✓ | |
-| `sampleField` | ✓ | ✓ | ✓ | |
-| `atomAt` | ✓ | ✓ | ✓ | |
-| `focusAt` | ✓ | ✓ | — | |
-| `clearFocus` | ✓ | ✓ | — | |
-| `particleCount` | ✓ | ✓ | ✓ | |
-| `energy` | ✓ | ✓ | ✓ | |
-| `sample` | ✓ | — | — | force-field vector at a point; Swift uses renderer path |
-| `sampleScalar` | ✓ | ✓ | ✓ | heatmap density at a point |
-| `sampleGradient` | ✓ | ✓ | ✓ | density gradient at a point |
-| `grid` | ✓ | — | — | named ScalarGrid — planned for native |
-| `on` | ✓ | — | — | event subscription bus — planned for native |
-| `readParticles` | ✓ | ✓ | ✓ | raw swarm read-out (stride 5) |
-| `readParticleIds` | ✓ | — | — | stable per-particle ids |
-| `readParticleChannels` | ✓ | — | — | multi-channel read-out (§future) |
-| `registerOverlay` | ✓ | — | — | custom overlay fn |
-| `scrollV` | ✓ | ✓ | — | DOM/UIKit-specific scroll velocity |
-| `setVisible` | ✓ | ✓ | — | element-level visibility hint |
-| `destroy` | ✓ | ✓ | ✓ | |
-
-**Summary:**
-
-| Platform | Methods | Coverage |
-|----------|---------|----------|
-| JS (npm) | 44/44 | 100% (source of truth) |
-| Swift | 34/44 | 77% |
-| Kotlin | 20/44 | 45% |
-
-The gap between Swift and Kotlin reflects that the Kotlin port is at **engine parity** (identical
-force math, verified by the golden conformance suite) while the Swift port additionally covers the
-full visual and scan API. Render-layer methods (`setRender`, `setOverlay`, `threads`, `setAccent`)
-are absent from Kotlin because the Compose / View rendering APIs are host-owned; the Kotlin engine
-exposes the data pipeline (forces, density, particles, edges) and Compose wires the drawing.
+Some methods behave differently *by platform design* even at full parity (e.g. `setRender`/`setOverlay`
+are host-owned in Compose/SwiftUI; `scrollV` reads DOM/UIKit scroll). Those per-method notes live in the
+parity page's Notes column, not here, so there is nothing to keep in sync.
 
 ========================================================================
 FILE: platform-architecture.md
@@ -7988,7 +7937,7 @@ distribution over the article grid is a spatial representation of readership.
 
 > This is the architectural shift that most people miss.
 
-Since 0.9.0, the field's default `render` mode is `'none'`. No canvas. No particles.
+Since the signals-first change (#538), the field's default `render` mode is `'none'`. No canvas. No particles.
 The full simulation runs and writes its results as CSS variables (`--field-density`,
 `--d`, `--load`, `--field-attention`) to every `[data-feedback]` element. Your
 existing CSS consumes them.
