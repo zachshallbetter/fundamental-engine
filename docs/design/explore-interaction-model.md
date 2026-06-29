@@ -1,8 +1,16 @@
 # Explore — interactive recipe catalog & site interaction model
 
-**Status:** Design — not yet built. Active plan (not frozen archive).
-**Scope:** A new `/explore` page that replaces `/recipes` once proven, *and* the
-reusable interaction patterns it establishes for the rest of fundamental-engine.com.
+**Status:** BUILT & shipped on `feat/explore-page` — the catalog *became* `/recipes`
+(it did not stay at `/explore`; the old tiny-card hub and the `/explore` route are
+retired). All phases landed: nine-domain taxonomy, engine-powered filter bar,
+expand-in-place detail overlay, two-tier substrate/overlay workbench (+ a reverse
+dynamics toggle), constellation view, per-recipe "How it works", pointer steering,
+token/metric definitions, highlighted code blocks site-wide, and the workbench unified
+onto the `/recipes/[id]` pages. Verification gate green (typecheck · test · check:* ·
+e2e chromium+webkit). This doc remains the reference for the site-wide interaction
+patterns (§3, §14) — the next surfaces to adopt them.
+**Scope:** The recipes catalog *and* the reusable interaction patterns it establishes
+for the rest of fundamental-engine.com.
 **Author/owner:** Zach Shallbetter.
 
 > The recipes catalog should be a working demonstration of the exact problems it
