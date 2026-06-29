@@ -26,6 +26,7 @@ import com.fundamental.core.engine.Formation
 import com.fundamental.core.engine.GridMode
 import com.fundamental.core.engine.Particle
 import com.fundamental.core.engine.Registry
+import com.fundamental.core.engine.ScalarGrid
 import com.fundamental.core.engine.ScalarGridImpl
 import com.fundamental.core.engine.StepInput
 import com.fundamental.core.engine.builtinConditions
@@ -237,6 +238,12 @@ class FieldController(
     }
 
     fun clearFlow() { flow = null }
+
+    /**
+     * Get or create a named [ScalarGrid] — exposed so [FieldHandle.grid] can access the same
+     * grid the force system uses. The same logic as the internal env.grid lambda above.
+     */
+    fun grid(name: String): ScalarGrid = grids.getOrPut(name) { ScalarGridImpl(w, h, modeForName(name)) }
 
     /** Register / replace an external scalar field channel (the open-input analog of a render surface). */
     fun addFieldChannel(name: String, sampler: (Float, Float) -> Float) { channels[name] = sampler }
