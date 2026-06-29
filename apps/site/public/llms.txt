@@ -11,7 +11,7 @@ Every element can become a body in an invisible physics field via the `data-body
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
 CSS custom properties like `--field-density`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from `scripts/api-surface.data.mjs` — the docs' provenance stamps
-render from the same file. Generated 2026-06-27 by apps/site/scripts/gen-llms.mjs.
+render from the same file. Generated 2026-06-29 by apps/site/scripts/gen-llms.mjs.
 
 ## Start here — don't guess
 
@@ -62,6 +62,7 @@ Full list with the corrections: [Common mistakes — don't guess](https://github
 - [Reference — Metrics](https://fundamental-engine.com/docs/api/metrics): every --field-* custom property the field writes back — ranges, cadence, and when to use each
 - [Reference — Types](https://fundamental-engine.com/docs/api/types): the exported TypeScript contracts, core and platform
 - [Reference — API stability](https://fundamental-engine.com/docs/api/stability): the frozen 0.x surface and compatibility rules — rendered from the same data CI enforces
+- [Reference — Support & stability](https://fundamental-engine.com/docs/support)
 - [Reference — Forces](https://fundamental-engine.com/docs/api/forces): all 36 forces: per-frame law, attributes read, and an example each
 - [Reference — Presets](https://fundamental-engine.com/docs/api/presets): composites (blackhole, galaxy, tornado, …) that expand to primitive bodies
 - [Reference — Conditions & formations](https://fundamental-engine.com/docs/api/catalog): conditions, formations, render modes, and palettes — the orthogonal axes
@@ -88,17 +89,21 @@ They live in the repository, not on the site:
 - [Fundamental Authoring and Recipes](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/authoring-and-recipes.md): Authoring levels, the intent compiler, the recipe schema, examples, and precedence rules.
 - [Common mistakes — don't guess](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/common-mistakes.md)
 - [Fundamental Definition Document](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/definition-document.md): The canonical concept and operating model.
+- [Migration alias surface — deprecation & removal plan](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/deprecation-plan.md): This document enumerates the migration-era alias surface still shipping for back-compat, gives each alias a deprecation status, and proposes a removal version consistent with the SUPPORT.md deprecation window.
 - [Fundamental documentation standards](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/documentation-standards.md): This document governs how Fundamental is described across the docs, the site, and the Lab: the canonical architecture statement, the core doctrine, the document-status taxonomy, the naming policy, and the "verify agai…
+- [Field Possibilities](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/field-possibilities.md)
 - [Fundamental Field Behavior Table for Fundamental](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/fundamental-field-behavior-table.md): Field/force laws, the electromagnetic split, fieldflow, and truth modes.
 - [Fundamental Interaction and Relationship Model](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/interaction-and-relationship-model.md): Agents beyond particles: users, elements, relationships, events, layout, data, attention, and the interaction grammar.
 - [Fundamental Invisible Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/invisible-fields.md): The invisible-fields pattern: running the field with no drawn surface at all, so its measurements come back as typography, ink, and anchor.
 - [Lifecycle contract — register · measure · unmount](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/lifecycle-contract.md)
 - [Natural Fields](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/natural-fields.md): This document defines the Natural Field Translation System — how Fundamental translates the four fundamental fields into interface behavior.
+- [Cross-platform parity matrix](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/parity-matrix.md)
 - [Fundamental platform architecture](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/platform-architecture.md): This document defines the current @fundamental-engine/dom architecture as of the runtime-platform unification phase (Phase D): the FrameScheduler, the six registries, lintPlatform(), the live <field-root> runtime, and…
 - [Support matrix](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/support-matrix.md)
 - [Fundamental System Contracts](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/system-contracts.md): Hard contracts for bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, and the platform.
 - [Fundamental Testing and Conformance](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/testing-and-conformance.md): The test matrix, conformance gates, force passports, and platform/scheduler/lint coverage.
 - [Time in the Field](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/time.md): How Fundamental handles time: the three clocks (simulation, experiential, world), the temporal kernels, and the declared-timestamp contract (data-field-at).
+- [Use Cases](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/use-cases.md)
 - [Fundamental Visual Language and Geometry System](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/visual-language-and-geometry.md): Typography, color, shape, distance, pattern, emission, containers, surfaces, and visual semantics.
 - [Visualization Methods Taxonomy for Fundamental](https://github.com/zachshallbetter/fundamental-engine/blob/main/docs/canonical/visualization-methods-taxonomy.md): Render layers, diagnostics, heatmaps, field lines, probes, energy, topology, causality, and prediction.
 

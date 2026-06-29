@@ -3,8 +3,8 @@
 Created by Zach Shallbetter (zachshallbetter.com).
 
 Source: docs/canonical/ in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-27 by apps/site/scripts/gen-llms.mjs
-Files: 19
+Generated: 2026-06-29 by apps/site/scripts/gen-llms.mjs
+Files: 23
 
 These are the project's canonical documents — the authority on concepts, terminology, and
 contracts — concatenated in filename order. The live site map is https://fundamental-engine.com/llms.txt.
@@ -45,10 +45,13 @@ are authoring surfaces. Canvas is one render surface, not the whole system.
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
 | [`api-stability.md`](api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
+| [`deprecation-plan.md`](deprecation-plan.md) | The migration alias surface: each living alias, its deprecation status, and the proposed removal version (timings pending maintainer sign-off) |
+| [`field-possibilities.md`](field-possibilities.md) | The full possibility space — what new kinds of interfaces become possible when meaning has field behavior (36 sections, from recipes and input agents to temporal fields, matter primitives, and the field as semantic medium) |
+| [`use-cases.md`](use-cases.md) | Concrete use cases across eight domains — the product-level translation of the possibility space into real UI problems and solutions |
 
 Deeper references live beside this directory: `docs/engine-reference/` (the engine spec —
 `forces-system.md` is the big one), `docs/research/` (the paper family, with its caveat canon in
-its own README), and `docs/planning-archive/` (frozen history — do not cite as current).
+its own README), and `docs/planning-archive/` (frozen design history — do not cite as current).
 Planned work lives in `ROADMAP.md` / `BACKLOG.md` at the repo root and on the RC1 board.
 
 ========================================================================
@@ -123,7 +126,7 @@ equal to shipped ones.*
 | **capture** (sink) | `p.cap = b`, held then released — **shipped** | dock / collapse the element via `data-dock` — **shipped** | fire `field:captured` / `field:released` — **shipped** |
 | **relocate** (warp) | `warp` throat → paired body, conserved — **shipped** | teleport offset to the pair via `data-warp` — **shipped** | — |
 | **emit** (spawn) | new particle — **shipped** | clone a decorative template via `data-emit` — **shipped** | — |
-| **trigger** (threshold) | sets heat / state — **shipped** | toggle a class — **planned** (no built-in; do it in a `data-on` handler) | dispatch a `CustomEvent` via `data-on` — **shipped** |
+| **trigger** (threshold) | sets heat / state — **shipped** | toggle a class via `data-class` — **shipped** | dispatch a `CustomEvent` via `data-on` — **shipped** |
 | **feedback** (gathered field → output) | `--d` / density — **shipped** | `--field-*` vars + `data-field-*` bands — **shipped** | — |
 
 "Apply a force to a DOM element" = it consumes the *same* impulse a particle would, but as a
@@ -131,12 +134,14 @@ equal to shipped ones.*
 influence, on crossing a threshold, becomes a **signal**.
 
 **The honest summary:** every influence kind is now wired for particles, and elements consume impulse,
-constraint, feedback, capture (`data-dock`), relocate (`data-warp`), and emit (`data-emit`). The
-element consumers are **opt-in by attribute**, so they never surprise existing `data-move` content, and
-they stay accessible — docked elements are restored on release, emitted clones are `aria-hidden`. The
-one still-planned cell is the element `trigger` *class toggle* (do it in a `data-on` handler today).
-Element relocate is a **transform teleport**, not a DOM-tree reorder: reordering nodes would disrupt
-focus and reading order, so it is intentionally avoided.
+constraint, feedback, capture (`data-dock`), relocate (`data-warp`), emit (`data-emit`), and trigger
+(`data-class`). The element consumers are **opt-in by attribute**, so they never surprise existing
+`data-move` content, and they stay accessible — docked elements are restored on release, emitted clones
+are `aria-hidden`. The element `trigger` *class toggle* is `data-class="dense:lit, captured:full"`: the
+same `trigger:value` grammar `data-on` uses, but the value is a class name added while the trigger
+holds and removed when it releases (the no-JS counterpart of a `data-on` handler calling
+`classList.toggle`). Element relocate is a **transform teleport**, not a DOM-tree reorder: reordering
+nodes would disrupt focus and reading order, so it is intentionally avoided.
 
 ## Body roles
 
@@ -243,13 +248,23 @@ alias window (`FeedbackRegistry`, `shadow.ts`).
 - `field:captured` / `field:released` — a sink begins accreting (rising edge of `accreted > 0`) and
   releases on supernova (falling edge); also fired on a docked element when it docks / is restored.
 - `field:relocated` — a `[data-warp]` element teleports through a warp throat to its pair.
+- `field:saturated` — a sink hit its capacity (fired from `supernova`, the saturation transition);
+  `field:released` is its paired down-edge.
+- `field:entered` / `field:exited` — a body's own gathered density crossed the 0.6 / 0.2 levels
+  (hysteretic + debounced; distinct from `field:lit`/`field:dim`, which carry the neighbour-spillover
+  lit channel).
+- `field:attention-shifted` / `field:attention-settled` — a body's conserved-attention multiplier
+  crossed (only when attention is on).
+- `field:entropy-warning` / `field:entropy-cleared` — a body's measured local entropy crossed.
+- `field:memory-threshold` / `field:memory-faded` — an `addEdge` relationship's `memory` crossed
+  (dispatched on the source body's element).
 - **any event name you bind via `data-on`** — e.g. `data-on="captured:field:dock, dense:field:lit"`.
 
 Every `field:*` here mirrors to its `forces:*` twin during the alias window.
 
-**Names reserved, not yet dispatched (planned):** `field:saturated`, `field:entered`, `field:exited`,
-`field:attention-shifted`, `field:relationship-strengthened`, `field:memory-threshold`,
-`field:entropy-warning` — the agent-threshold events, still wiring up.
+**Names reserved, not yet dispatched (planned):** `field:relationship-strengthened` — the designed
+relationship-strength dynamics rarely cross a fixed level cleanly, so it is left reserved until a use
+case lands.
 
 **Edge nuance.** `field:captured`/`released` are edge-debounced on `accreted > 0`. Release is fired
 directly from `supernova` so a same-frame fill-and-release never drops it; the rising-edge capture is
@@ -292,7 +307,7 @@ SVG is a bound representation, not the meaning. Particles and contours are **exp
 Field Agent Consumption Model
   Agent types:        particle · element · relationship · user · layout · data · event   (all shipped)
   Influence kinds:    impulse · constraint · capture · relocate · emit · trigger · feedback
-                      (per-agent status in the matrix; only the element trigger class-toggle is planned)
+                      (per-agent status in the matrix; all cells now shipped)
   Body roles:         source · density receiver · force target · event host              (all shipped)
   Submodel — Body Matter Interaction:
     source · attract/repel/shape · capture (sink) · hold · release · expose feedback     (shipped)
@@ -520,7 +535,10 @@ of the contract until they are added to the table above.
    `forces:*` **event names** (e.g. `forces:captured`/`forces:released`), which still fire for
    compatibility. The one *current* deprecated alias is the **package** rename
    `@fundamental-engine/platform → @fundamental-engine/dom` (above) — a thin re-export of `dom`,
-   excluded from the additive-only guarantee and scheduled for removal on a later minor.
+   excluded from the additive-only guarantee and scheduled for removal on a later minor. The full
+   inventory of living migration aliases (these `forces:*` events, the `--field-density`/`--mass` var
+   mirrors, the `<field-field>` tag, and this package alias) — each with its deprecation status and
+   proposed removal version — is in [deprecation-plan.md](deprecation-plan.md).
 7. **The experimental surface carries no guarantee.** Diagnostics/agent/render-mode exports that happen
    to ship today are *shipped-but-unfrozen* until explicitly added to the stable table.
 
@@ -1535,6 +1553,102 @@ feedback returns the field to the DOM.
 ```
 
 ========================================================================
+FILE: deprecation-plan.md
+========================================================================
+
+> **Status: canonical (policy) — removal timings are PROPOSED, pending maintainer sign-off.**
+> This document enumerates the **migration-era alias surface** still shipping for back-compat, gives
+> each alias a deprecation status, and proposes a removal version consistent with the
+> [`SUPPORT.md`](../../SUPPORT.md) deprecation window. It exists so the "temporary" compat surface does
+> not silently become a permanent, forever-maintained API. Closes #709 (parent #738).
+>
+> **The actual removal *timing* is the maintainer's call.** The version commitments below are a draft
+> proposal — they need maintainer sign-off before any alias is announced as deprecated-with-a-date or
+> removed. Nothing is removed by this document. Related: [`api-stability.md`](api-stability.md) (the
+> freeze contract), [`SUPPORT.md`](../../SUPPORT.md) (the support/versioning policy).
+
+# Migration alias surface — deprecation & removal plan
+
+The `forces-ui → field-ui → Fundamental` rename was a **hard** rename: most of the old surface
+(`<forces-field>`/`<forces-cell>` tags, the `ForcesField`/`ForcesController`/`useForcesField` exports,
+the `--forces-*` CSS vars, and the `compat-core`/`compat-elements`/`compat-react`/`compat-vanilla`
+packages) is **already gone** — the test suite asserts its absence. What remains is a small set of
+**living aliases** kept so that consumers who migrated to `field`/`field-*` naming but still listen for
+old event names, read old var names, or import the old package name do not break.
+
+This plan covers those survivors. It does **not** reopen anything already removed.
+
+## The deprecation window (from `SUPPORT.md`)
+
+- A stable symbol is **deprecated** (kept working; marked in docs + a dev-only `console.warn` where it
+  is a runtime call) for **at least one minor release** before it may be removed.
+- Removal happens **only in the next major**. Anything deprecated in `1.x` survives until `2.0` at the
+  earliest — never a surprise break within a major line.
+
+The pre-`1.0` line was already frozen-and-additive; `1.0` formalizes the promise. Because these aliases
+are *passive mirrors* (an extra event, an extra var write, a re-export) rather than primary API, the
+recommended path is: **keep them through `1.0`, mark them deprecated in a `1.x` minor, remove in `2.0`.**
+
+## The living aliases
+
+| # | Alias | Canonical form | Where it lives | Current status | Proposed removal (needs sign-off) |
+|---|---|---|---|---|---|
+| 1 | `forces:*` events (`forces:captured` / `forces:released` / `forces:relocated`) — *dispatched* alongside `field:*` | `field:*` events | `packages/core/src/core/field.ts` (`fireCaptureEvent`, ~L654) | Shipping, undocumented sunset | Deprecate in a `1.x` minor (docs note + dev `console.warn` on first add of a `forces:*` listener is **not** feasible — see "Console-deprecation path"); remove dispatch in **`2.0`** |
+| 2 | `forces:*` body-registration events (`REGISTER_BODY`/`UNREGISTER_BODY`/`UPDATE_BODY` *listened to* under both namespaces) | `field:*` body events | `packages/core/src/core/field.ts` (~L2141) and `host.onBodyEvent` wiring | Shipping, undocumented sunset | Same window as #1 — listen under both through `1.x`, drop the `forces:*` listeners in **`2.0`** |
+| 3 | `--field-density` CSS var — *written* alongside `--d` | `--d` | `packages/core/src/core/feedback-sink.ts` (`defaultFeedbackSink`) | Shipping; **note:** `--d` is the established var and `--field-density` is itself the *newer* mirror, so this pair is ambiguous about which is "canonical" — resolve before deprecating | **Defer** — do not deprecate until the canonical-var question (#below) is settled |
+| 4 | `--mass` CSS var — *written* alongside `--load` (back-compat alias, §21.2) | `--load` | `packages/core/src/core/feedback-sink.ts` | Shipping, documented as back-compat alias | Deprecate in a `1.x` minor (docs); stop writing `--mass` in **`2.0`** |
+| 5 | `<field-field>` custom element — *registered* alongside `<field-root>` | `<field-root>` | `packages/elements/src/index.ts` (~L644) | Shipping; both registered. Note: `<field-field>` is a *current* alias of `<field-root>`, **not** a legacy `forces-*` tag | Deprecate in a `1.x` minor (docs); keep registered through `1.x`; consider removal in **`2.0`** — **but** this is a low-cost registration mirror and may be worth keeping. Maintainer call. |
+| 6 | `@fundamental-engine/platform` package — re-exports `@fundamental-engine/dom` | `@fundamental-engine/dom` | `packages/platform/` (thin alias; `package.json` `description` already says DEPRECATED) | **Already deprecated** (excluded from the additive-only guarantee; `api-stability.md` rule 6 says "scheduled for removal on a later minor") | Pin a concrete removal: **stop publishing in `2.0`** (a package unpublish/removal is a breaking change, so a major is the honest home), or — if the maintainer prefers — drop in a `1.x` minor since it was already declared excluded from the freeze. Maintainer call. |
+
+### Already removed (for the record — do not re-add)
+
+- `<forces-field>` / `<forces-cell>` tags — not registered.
+- `ForcesField` / `ForcesController` / `useForcesField` exports — gone.
+- `--forces-*` CSS vars — gone.
+- `@fundamental-engine/compat-core` / `-elements` / `-react` / `-vanilla` packages — gone.
+
+The absence of the above is asserted by the test suite; this plan does not change that.
+
+## Open questions for the maintainer (sign-off required)
+
+1. **Removal versions.** The table proposes `2.0` for the event/var aliases (the conservative,
+   SUPPORT-window-honest choice). Confirm, or pick earlier `1.x` minors for any alias you are willing to
+   announce-then-drop within the major line. Nothing here is binding until you confirm.
+2. **`--d` vs `--field-density` (alias #3).** Decide which is canonical. If `--d` is canonical,
+   `--field-density` becomes a normal deprecatable alias. If `--field-density` is canonical, then `--d`
+   is the alias — but `--d` is the older, more widely-used name in author CSS, so deprecating it is more
+   disruptive. This must be settled **before** either is deprecated.
+3. **`<field-field>` (alias #5).** Keeping a second registration is nearly free and aids discoverability.
+   Decide whether to deprecate it at all, or bless it as a permanent secondary tag.
+4. **`@fundamental-engine/platform` (alias #6).** It is already declared deprecated. Confirm whether it
+   stops publishing at `2.0` (major-honest) or you are comfortable dropping it in a `1.x` minor given it
+   was carved out of the freeze from the start.
+
+## Console-deprecation path
+
+`SUPPORT.md` says deprecation is "marked in docs + a dev-only `console.warn` **where it is a runtime
+call**." The aliases here are **passive mirrors**, not call sites the consumer invokes, so a clean
+`console.warn` hook is not always available:
+
+- **Events (#1, #2)** — the engine *dispatches* `forces:*`; it cannot cheaply detect that a consumer
+  *added a listener* for the old name, so there is no natural warn point. The honest deprecation signal
+  is docs + release notes, with removal landing in the major.
+- **CSS vars (#3, #4)** — the engine *writes* the var; CSS reads are invisible to JS, so again no warn
+  point. Docs + release notes are the signal.
+- **`<field-field>` (#5)** — a `console.warn` on `connectedCallback` of the alias tag **is** feasible and
+  is the one place a dev-only deprecation log would actually reach a consumer. Recommended if/when it is
+  deprecated.
+- **`@fundamental-engine/platform` (#6)** — the package can emit a one-time dev-only `console.warn` from
+  its entry module when imported. Recommended to add now (it is already declared deprecated), gated to
+  `process.env.NODE_ENV !== 'production'`.
+
+## RC1 / `1.0` shipping decision
+
+RC1 / `1.0` **ships all six living aliases** (none are removed for the freeze). This document is the
+record that they are *intentionally temporary*, not permanent API, and the place where their removal
+versions get committed once the maintainer signs off on the table above.
+
+========================================================================
 FILE: documentation-standards.md
 ========================================================================
 
@@ -1649,6 +1763,1856 @@ The old story: Fundamental is a particle field behind the DOM.
 The new story: Fundamental is a platform-native relational field runtime for the DOM.
 Natural fields:  Four fields. Many expressions. One DOM runtime.
 ```
+
+========================================================================
+FILE: field-possibilities.md
+========================================================================
+
+# Field Possibilities
+
+> **Status: canonical / possibility space.**
+> This document describes what Fundamental can become beyond the current implementation. It is not the
+> source of truth for shipped behavior — that lives in the package code, conformance tests, and the
+> other canonical docs. This document exists to keep the wider idea space coherent and to give the
+> shipped use cases their conceptual grounding.
+>
+> **Relationship to use-cases.md.** [`use-cases.md`](use-cases.md) is the shipped, narrative tier —
+> concrete UI problems and how the field solves them today. This document is the conceptual framework
+> beneath it: conditions, formations, recipe families, natural field translations, matter primitives,
+> temporal fields, and alternative output surfaces. When a section here has a concrete shipped
+> implementation, it links to the relevant use-cases section. Sections §26–§36 are
+> **`[frontier]`** — not yet shipped; they define the research and long-range possibility space.
+>
+> **Vocabulary note (concepts vs runtime tokens).** Possibility language here is not the engine token
+> set. The 36 real runtime tokens live in the [forces catalog](../engine-reference/forces-system.md).
+> Concept words map to them: `vortex→swirl`, `drag→viscosity`, `emitter→spawn`, `spring→tether`,
+> `reflect→wall`, `absorb→sink`, `phase`/`decay`→`morph`/`memory`. `mass` is a metric, `potential` a
+> diagnostic; `fuse`/`fission`/`warp`/`wormhole` are not yet implemented.
+
+## 0. Purpose
+
+Fundamental is not a particle background.
+
+It is a platform-native relational field runtime for the DOM.
+
+The system lets semantic HTML, DOM elements, particles, relationships, measurements, metrics, feedback, visual layers, and user interaction participate in one shared field context.
+
+The purpose of this document is to describe the possibility space opened by that model.
+
+Not just:
+
+```txt
+What forces can we add?
+```
+
+But:
+
+```txt
+What new kinds of interfaces become possible when meaning has field behavior?
+```
+
+## 1. The paradigm shift
+
+Most interface systems are organized around isolated component state.
+
+```txt
+component owns state
+state changes class
+class changes style
+animation decorates transition
+```
+
+Fundamental introduces a different model:
+
+```txt
+interface owns a shared field
+bodies emit influence
+agents respond
+metrics accumulate
+diagnostics explain
+feedback returns state to the DOM
+```
+
+The possibility space begins there.
+
+A button can still be a button.  
+A heading can still be a heading.  
+A citation can still be a citation.  
+A form can still be semantic HTML.
+
+But those elements can also participate in a field.
+
+They can have priority, polarity, binding, transformation, memory, coherence, pressure, entropy, heat, attention, and relationship strength.
+
+The interface becomes a shared, inspectable field of meaning.
+
+## 2. Current doctrine
+
+The current architecture should guide every possibility.
+
+```txt
+Fundamental   host-driven, renderer-agnostic field engine
+@fundamental-engine/dom   browser host, DOM participation, measurement, state, feedback,   relationships, visual bindings, overlays, scheduling, linting
+@fundamental-engine/elements   native HTML and web component authoring
+@fundamental-engine/react   React adapter over the same contracts
+```
+
+Canvas is one render surface.
+
+SVG overlays are one render surface.
+
+DOM feedback is one render surface.
+
+Diagnostics are one explanation surface.
+
+The system is larger than the canvas.
+
+## 3. The Natural Field Translation System
+
+The old language of “natural primitives” is too flat for the current model.
+
+The possibility space should start from the four natural fields:
+
+```txt
+Gravity
+Electromagnetic
+Strong
+Weak
+```
+
+Translated into interface behavior:
+
+```txt
+Gravity -> priority, convergence, hierarchy
+Electromagnetic -> polarity, signal, field lines, flow
+Strong -> binding, cohesion, structure
+Weak -> transformation, decay, release
+```
+
+This is the organizing frame.
+
+Natural fields are conceptual.
+
+Engine primitives are translations.
+
+Canonical forces are designed verbs.
+
+Derived behaviors are not additional fundamental forces.
+
+Fieldflow is transport along field structure.
+
+Diagnostics reveal invisible structure.
+
+Recipes compose behavior into interface meaning.
+
+Short version:
+
+```txt
+Natural fields are not tokens. Tokens are translations.
+```
+
+## 4. Designed forces and natural translations
+
+The system should preserve the distinction between designed interface forces and natural translations.
+
+Designed UI forces exist because interfaces need readable, bounded behavior.
+
+Real designed tokens (shipped):
+
+```txt
+attract
+repel
+swirl
+stream
+viscosity
+jet
+tether
+wall
+sink
+```
+
+Concept words map onto them (a concept is not a token): `vortex→swirl`, `drag→viscosity`,
+`spring→tether`, `reflect→wall`, `absorb→sink`, `emitter→spawn`.
+
+These are interface verbs.
+
+They are stable, legible, and composable.
+
+Natural translations exist because some behaviors benefit from physical coherence.
+
+Examples:
+
+```txt
+gravity
+charge
+magnetism
+cohesion
+morph
+memory
+propagate
+fieldflow
+```
+
+These express the four natural fields or their derived effects. (`morph` is the shipped
+transformation token; `phase`/`decay` are concept words for it.)
+
+Important distinctions:
+
+```txt
+attract is not gravity
+repel is not charge
+charge and magnetism are electromagnetic expressions
+fieldflow is not magnetism
+fieldflow is transport
+```
+
+Preserve the electromagnetic rule:
+
+```txt
+Electric fields push.
+Magnetic fields bend.
+Fieldflow carries.
+```
+
+## 5. Possibility categories
+
+The old possibilities document was mostly a force, formation, condition, and render menu.
+
+The new version should be broader.
+
+The possibility categories are:
+
+```txt
+conditions
+formations
+recipes
+relationships
+input agents
+data fields
+render surfaces
+diagnostics
+accessibility equivalents
+platform bridges
+natural-field expansions
+AI evidence fields
+authoring tools
+research artifacts
+```
+
+Each possibility should answer:
+
+```txt
+What relation does this reveal?
+Which natural field does it translate?
+Which engine primitives might express it?
+Which platform registry owns it?
+How is it inspected?
+What is the reduced-motion equivalent?
+```
+
+## 6. Conditions
+
+→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (error gravity — `coherent`; reading weight — `dwell`; completion momentum — `coherent`), §II (urgency sorting — `stale`, `thresholded`; anomaly field — `thresholded`), §IX (staleness gradient — `stale`; dwell-driven mastery — `dwell`), §X (trust gradient — `trusted`; evidence field — `trusted`).*
+
+Conditions decide when a body, recipe, or relationship becomes active.
+
+The older condition list remains useful, but it should be renamed into field-state language.
+
+Possible conditions:
+
+```txt
+near
+dense
+sparse
+aligned
+aging
+charged
+species
+dwell
+pointer-fast
+schedule
+inview
+focused
+selected
+related
+trusted
+conflicted
+stale
+unstable
+coherent
+thresholded
+```
+
+Examples:
+
+### dwell
+
+A section, card, or control becomes active after sustained attention.
+
+Use for:
+
+```txt
+Reading Field
+Ambient Tutor
+Memory Trace
+Context Halo
+```
+
+### related
+
+A body acts only when the active element is related to it through the RelationshipRegistry.
+
+Use for:
+
+```txt
+Citation Thread
+Evidence Field
+Relationship Bond
+Relation Lens
+```
+
+### trusted
+
+A claim, source, or result acts only when it passes a confidence or verification threshold.
+
+Use for:
+
+```txt
+Trust Gradient
+Evidence Field
+Source Constellation
+AI review surfaces
+```
+
+### stale
+
+A document, data record, task, or notification acts when age or recency decay crosses a threshold.
+
+Use for:
+
+```txt
+Staleness Drift
+Review Pressure
+Decay Notice
+Priority Tide
+```
+
+### coherent
+
+A workflow, form, or group acts when enough of its relationships stabilize.
+
+Use for:
+
+```txt
+Coherence Field
+Form Stability Field
+Completion Release
+Consensus Well
+```
+
+Conditions should not spam DOM events. Continuous state belongs in CSS variables and platform state. Discrete transitions belong in thresholded events.
+
+## 7. Formations
+
+→ *Shipped use cases: [use-cases.md §I](use-cases.md#i-universal-ui-patterns) (reading weight — `reading` formation; completion momentum — `coherence` formation), §IV (article topography — `reading` formation), §VII (kanban physics — `pressure` formation), §X (evidence field — `evidence` formation; conflict field — `conflict` formation), §XI (presence field — `presence` formation).*
+
+A formation is a global or scoped field arrangement.
+
+Formations do not replace force tokens. They bias the whole field.
+
+Current and future formations can include:
+
+```txt
+ambient
+wells
+lanes
+scatter
+accretion
+gravity
+tide
+lattice
+flock
+spiral
+turbulence
+pressure
+shatter
+magnetic
+reading
+evidence
+coherence
+conflict
+presence
+```
+
+### reading
+
+A formation for long-form content.
+
+Sections gain attention near viewport center. Dwelled sections accumulate memory. Citations and related concepts become relationship paths.
+
+Use for:
+
+```txt
+Reading Field
+Field Tutorial
+Natural Fields docs
+research articles
+legal documents
+```
+
+### evidence
+
+A formation for claims, sources, and support.
+
+Claims become bodies. Sources bind or repel. Contradictions add entropy. Verified claims gain coherence.
+
+Use for:
+
+```txt
+Evidence Field
+Trust Gradient
+Source Constellation
+Citation Thread
+Provenance Trail
+Conflict Field
+Disagreement Charge
+Risk Horizon
+Field Contract Preview
+```
+
+### coherence
+
+A formation for completion and stability.
+
+Valid, aligned, or mutually supporting elements pull into a stable structure. Missing or contradictory elements add pressure.
+
+Use for:
+
+```txt
+Form Stability Field
+Coherence Field
+Calibration Field
+Consensus Well
+```
+
+### conflict
+
+A formation for contradiction, incompatibility, and unresolved difference.
+
+Opposing states separate, unstable zones heat, and unresolved conflict remains inspectable.
+
+Use for:
+
+```txt
+Conflict Field
+Disagreement Charge
+Error Pressure
+merge conflict UIs
+```
+
+### presence
+
+A formation for collaborative systems.
+
+Collaborators are not just avatars. They emit local attention, recency, and interaction signal.
+
+Use for:
+
+```txt
+Presence Field
+Review Constellation
+Handoff Stream
+Consensus Well
+Disagreement Charge
+Change Shockwave
+Dependency Tension
+Recovery Path
+```
+
+## 8. Recipes as the main possibility unit
+
+→ *Shipped use cases: All concrete use cases in [use-cases.md](use-cases.md) map to named recipes — `Evidence Field`, `Trust Gradient`, `Presence Field`, `Memory Trace`, `Guided Flow`, `System Pulse`, `Relation Lens`, `Staleness Drift`, `Provenance Trail`, and more.*
+
+The most important product frontier is not another force.
+
+It is recipes.
+
+A recipe is a portable field program.
+
+It connects:
+
+```txt
+intent
+natural field translation
+engine primitives
+DOM bodies
+relationships
+metrics
+feedback
+diagnostics
+accessibility equivalent
+```
+
+A recipe should answer:
+
+```txt
+What is this for?
+What field relation does it translate?
+Which primitives does it use?
+Which bodies must exist?
+Which relationships matter?
+What metrics does it write?
+What diagnostics explain it?
+What happens in reduced motion?
+```
+
+Candidate recipe families:
+
+```txt
+Core interface fields
+Reading, memory, accessibility
+Product and workflow patterns
+Trust, collaboration, inspection, teaching
+Professional systems, safety, provenance, governance
+Enterprise, collaborative, adaptive, operational fields
+```
+
+The recipe catalog should become a primary authoring surface.
+
+## 9. The 64-recipe possibility map
+
+The current recipe universe can be organized as:
+
+```txt
+1-16: Core interface and accessibility fields
+17-32: Product, workflow, trust, collaboration
+33-48: Professional systems, safety, provenance, governance
+49-64: Enterprise, collaborative, adaptive, operational fields
+```
+
+Examples:
+
+```txt
+Priority Well
+Signal Path
+Relationship Bond
+Reading Field
+Evidence Field
+Coherence Field
+Memory Trace
+Guided Flow
+Attention Weather
+Navigation Current
+Citation Thread
+Form Stability Field
+Command Intent Field
+Dependency Tension
+Trust Gradient
+Handoff Stream
+Semantic Gravity Map
+Polarity Filter
+Source Constellation
+Boundary Field
+Threshold Bloom
+Latency Ripple
+Provenance Trail
+Relation Lens
+Field Contract Preview
+Presence Field
+Consensus Well
+Disagreement Charge
+Change Shockwave
+Permission Boundary
+Risk Horizon
+System Pulse
+```
+
+The recipe set is the clearest way to make Fundamental usable.
+
+It turns field theory into product patterns.
+
+## 10. Data-bound fields
+
+→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (anomaly field — `System Pulse` recipe; live data streams; relationship graphs) and §III (product gravity).*
+
+A major possibility is turning records into field participants.
+
+The field should be able to bind to arrays, graphs, search results, events, claims, files, tasks, calendar slots, or source documents.
+
+Possible API:
+
+```ts
+const binding = bindData(container, records, mapper, options);
+
+binding.update(nextRecords);
+binding.destroy();
+```
+
+Mapper:
+
+```ts
+record => ({
+  id,
+  body,
+  role,
+  strength,
+  range,
+  color,
+  relationships,
+  metrics,
+  status
+})
+```
+
+Examples:
+
+### Search results
+
+High relevance becomes gravity. Recency becomes memory. Low confidence creates distance.
+
+Recipe:
+
+```txt
+Search Relevance Field
+```
+
+### Claims and sources
+
+Claims become bodies. Sources bind to claims. Contradictions repel or destabilize.
+
+Recipe:
+
+```txt
+Evidence Field
+Source Constellation
+Trust Gradient
+```
+
+### Calendar blocks
+
+Busy blocks create pressure. Available spaces remain low pressure. Deadlines create wells.
+
+Recipe:
+
+```txt
+Availability Pressure
+Risk Horizon
+Priority Tide
+```
+
+### Review queues
+
+Pending work develops review pressure. Resolved items cool and become memory.
+
+Recipe:
+
+```txt
+Review Pressure
+Completion Release
+Review Constellation
+```
+
+## 11. Relationship possibilities
+
+→ *Shipped use cases: [use-cases.md §II](use-cases.md#ii-data--dashboards) (relationship graphs — `Relation Lens` recipe), §X (evidence field — source binding).*
+
+The DOM is a tree, but interfaces are graphs.
+
+Fundamental should continue moving toward relationship-native interface behavior.
+
+Relationship sources:
+
+```txt
+href="#id"
+label[for]
+aria-controls
+aria-describedby
+aria-labelledby
+form ownership
+figure / figcaption
+details / summary
+popover target
+data-field-relation
+runtime recipe relationships
+data-bound graph edges
+```
+
+Relationship behaviors:
+
+```txt
+support
+contradiction
+dependency
+ownership
+definition
+example
+control
+description
+evidence
+sequence
+handoff
+grouping
+conflict
+```
+
+Relationship diagnostics:
+
+```txt
+topology
+causality
+relationship overlay
+source strength
+tension
+memory
+active path
+```
+
+Possibility: relationships should become first-class interface material.
+
+Not just lines. Not just graph edges.
+
+They can pull, resist, decay, strengthen, route signal, carry memory, and explain state.
+
+## 12. Input agents
+
+User input should become part of the field.
+
+Candidate input agents:
+
+```txt
+FocusAgent
+PointerAgent
+KeyboardAgent
+SelectionAgent
+DwellAgent
+ScrollAgent
+PresenceAgent
+IntentAgent
+```
+
+### FocusAgent
+
+Focus becomes current.
+
+Tab order can emit signal.
+
+Reduced motion should use lit state without travel.
+
+### PointerAgent
+
+Pointer velocity can become temporary influence.
+
+Fast movement can impart momentum if enabled.
+
+### KeyboardAgent
+
+Directional navigation can act as flow.
+
+Shortcut targets can emit signal to affected regions.
+
+### SelectionAgent
+
+Selected text, cards, rows, or nodes become temporary bodies.
+
+### DwellAgent
+
+Dwell becomes attention and memory.
+
+### PresenceAgent
+
+A collaborator’s focus emits local signal and recency.
+
+### IntentAgent
+
+Likely next actions gain gravity from current context.
+
+All input agents must be opt-in, inspectable, and reduced-motion safe.
+
+## 13. Render possibilities
+
+Render modes should not be treated as visual skins.
+
+Each render mode should answer:
+
+```txt
+What invisible relation does this reveal?
+```
+
+Existing and possible render surfaces:
+
+```txt
+particles
+trails
+metaballs
+links
+streamlines
+field lines
+potential
+energy
+contours
+velocity vectors
+force vectors
+topology
+inspector
+causality
+prediction
+depth
+knockout
+flow-field LIC
+relationship ribbons
+glyph interior fields
+field shadows
+volumetric density
+```
+
+Render doctrine:
+
+```txt
+Renders reveal. They do not define behavior.
+```
+
+Canvas, SVG, and DOM overlays are surfaces.
+
+Semantic HTML remains the source of meaning.
+
+## 14. Diagnostic possibilities
+
+Diagnostics are not developer-only extras.
+
+They are part of the trust model.
+
+A mature Fundamental surface should be able to answer:
+
+```txt
+Why is this moving?
+Why is this emphasized?
+Why are these connected?
+What caused this warning?
+What accumulated here?
+Which source supports this claim?
+Which relationship is active?
+Which recipe wrote this CSS variable?
+```
+
+Diagnostic surfaces:
+
+```txt
+Platform Inspector
+Field Contract Preview
+Diagnostic Lens
+Relation Lens
+Recipe Debugger
+Causality Overlay
+Prediction Overlay
+Topology View
+Memory Heatmap
+Energy View
+```
+
+The possibility is an interface that can explain itself.
+
+## 15. Accessibility possibilities
+
+→ *Shipped use cases: [use-cases.md §V](use-cases.md#v-the-invisible-field--signals-only) (focus-weight accessibility — the signals-only field is inherently reduced-motion safe; state without animation).*
+
+Every field behavior must survive without motion.
+
+Potential accessibility equivalents:
+
+```txt
+motion trail -> static memory mark
+fieldflow ribbon -> path contour
+particle bloom -> badge or outline
+relationship pulse -> persistent thread
+heat bloom -> tone and status rail
+orbit -> grouped related items
+prediction path -> next-step marker
+conflict separation -> conflict list
+```
+
+The accessibility system should be recipe-aware.
+
+Every shipped recipe should define:
+
+```txt
+semantic source
+motion behavior
+reduced-motion behavior
+keyboard behavior
+screen-reader source
+visual binding requirement
+```
+
+Possibility: accessibility becomes a field contract, not a late audit.
+
+## 16. AI and evidence possibilities
+
+→ *Shipped use cases: [use-cases.md §X](use-cases.md#x-ai--evidence-fields) (evidence field, trust gradient, provenance trail, conflict field) — "one of the strongest product directions."*
+
+AI interfaces need field behavior more than most UI categories.
+
+AI outputs contain:
+
+```txt
+claims
+sources
+confidence
+uncertainty
+contradiction
+revision
+memory
+provenance
+risk
+```
+
+Field recipes can make these visible:
+
+```txt
+Evidence Field
+Trust Gradient
+Source Constellation
+Citation Thread
+Provenance Trail
+Conflict Field
+Disagreement Charge
+Risk Horizon
+Field Contract Preview
+```
+
+Possible AI field behaviors:
+
+```txt
+unsupported claims remain unstable
+verified claims gain coherence
+contradictions create charge separation
+source support creates binding
+corrections overwrite memory
+high-risk claims gain pressure
+generated drafts show provenance
+```
+
+This is one of the strongest product directions.
+
+## 17. Collaboration possibilities
+
+→ *Shipped use cases: [use-cases.md §XI](use-cases.md#xi-collaboration--shared-fields) (presence field, consensus well, handoff stream) and §VII (document co-presence).*
+
+Collaboration can move beyond cursors and avatars.
+
+Recipes:
+
+```txt
+Presence Field
+Review Constellation
+Handoff Stream
+Consensus Well
+Disagreement Charge
+Change Shockwave
+Dependency Tension
+Recovery Path
+```
+
+Possible behaviors:
+
+```txt
+collaborator focus emits signal
+recent edits leave memory
+reviewers bind to artifacts
+open comments create tension
+resolved comments cool
+handoffs flow from source to target
+consensus gains mass
+disagreement remains inspectable
+```
+
+The interface can show not just who is present, but how presence changes the field.
+
+## 18. Authoring possibilities
+
+The system should eventually support visual authoring.
+
+Candidate tools:
+
+```txt
+recipe editor
+force card editor
+relationship graph editor
+diagnostic lens
+parameter tuning panel
+reduced-motion equivalent editor
+field contract preview
+copyable HTML / web component / React snippets
+```
+
+Authoring principle:
+
+```txt
+Designers should compose relational behavior without editing engine force code.
+```
+
+A recipe editor should make these visible:
+
+```txt
+bodies
+natural field translation
+primitives
+relationships
+metrics
+feedback variables
+diagnostics
+accessibility equivalent
+status
+```
+
+## 19. Platform possibilities
+
+The web platform already gives Fundamental the raw materials.
+
+But Fundamental also points toward missing platform primitives:
+
+```txt
+native relationship graph
+typed element state channels
+low-cost layout snapshots
+coordinate-space conversion
+visual-semantic pairing
+thresholded state observers
+connection rendering
+reading state
+attention state
+field-aware DevTools
+```
+
+Fundamental can implement these today as a platform-adjacent layer.
+
+Long-term, it can also serve as a working argument for what the web platform itself could grow.
+
+## 20. Research possibilities
+
+Fundamental can become a research artifact.
+
+Possible research frame:
+
+```txt
+Fundamental: A Field Translation Runtime for Relational DOM Interfaces
+```
+
+Claims to evaluate:
+
+```txt
+Does Reading Field improve orientation in long documents?
+Does relationship visibility improve source recall?
+Does Evidence Field improve trust calibration?
+Does reduced-motion equivalence preserve meaning?
+Does diagnostic visibility improve author trust?
+Does field-based priority reduce alert fatigue?
+```
+
+Evaluation targets:
+
+```txt
+section relocation speed
+concept relationship recall
+source support recognition
+perceived distraction
+debuggability
+authoring time
+accessibility preference
+```
+
+## 21. Product possibilities
+
+Potential product surfaces:
+
+```txt
+docs site
+recipe gallery
+platform inspector
+Lab
+visual authoring tool
+recipe contract preview
+AI evidence viewer
+reading-field article template
+collaboration dashboard
+design-system plugin
+DevTools extension
+```
+
+The strongest near-term product arc:
+
+```txt
+1. Platform-backed runtime
+2. Platform Inspector
+3. Recipe system
+4. Executable Recipe Gallery
+5. Reading Field and Evidence Field demos
+6. Accessibility conformance
+```
+
+Do not start by adding more spectacle.
+
+Start by making the system coherent, inspectable, and authorable.
+
+## 22. Field cells and local fields
+
+The global field should remain the default.
+
+But local cells are useful for demos, previews, recipe cards, educational blocks, and isolated experiments.
+
+Local field cells should obey these rules:
+
+```txt
+local cells are explicit
+local cells do not accidentally fragment the global field
+local cells are paused when offscreen
+local cells are low-particle by default
+local cells are semantic-safe
+local cells expose their purpose
+```
+
+Examples:
+
+```html
+<field-cell recipe="priority-well"></field-cell>
+<field-cell force="vortex"></field-cell>
+<field-cell diagnostic="field-lines"></field-cell>
+```
+
+The possibility is a documentation system where every concept can carry its own small executable field.
+
+## 23. Boundary and container possibilities
+
+Containers should be able to express scope.
+
+Recipes:
+
+```txt
+Boundary Field
+Permission Boundary
+Scope Lens
+Availability Pressure
+Field Contract Preview
+```
+
+Container behaviors:
+
+```txt
+valid items enter cleanly
+invalid items resist or reflect
+protected regions become visible on approach
+scope is inspectable before mutation
+drop zones communicate meaning through field pressure
+```
+
+This is especially useful for editors, admin tools, design systems, and enterprise apps.
+
+## 24. Memory possibilities
+
+→ *Shipped use cases: [use-cases.md §IX](use-cases.md#ix-memory--temporal-fields) (reading history, dwell-driven mastery, interrupted path recovery, staleness gradient) and §IV (playlist gravity — accretion/`--load`).*
+
+Memory is one of the most important non-visual field concepts.
+
+Memory can describe:
+
+```txt
+where the user paused
+what was read
+what was visited
+what was recently edited
+which source was used
+where an error happened
+where a process was interrupted
+which path recovered state
+```
+
+Recipes:
+
+```txt
+Memory Trace
+Reading Field
+Selection Wake
+Staleness Drift
+Provenance Trail
+Recovery Path
+Version Gravity
+Ambient Tutor
+```
+
+Possibility: software can remember in a visible, local, respectful way without turning everything into analytics.
+
+## 25. The final possibility
+
+The old model:
+
+```txt
+UI as isolated components with decorative transitions.
+```
+
+The Fundamental model:
+
+```txt
+UI as a shared, inspectable field of meaning.
+```
+
+The possibility is not just better animation.
+
+It is a new interface layer.
+
+A layer where:
+
+```txt
+priority has gravity
+difference has polarity
+relationships have binding
+change has decay
+attention has memory
+trust has coherence
+conflict has charge
+state has pressure
+motion has cause
+visuals have semantic sources
+behavior can explain itself
+```
+
+That is the point of Fundamental.
+
+Not a physics toy.
+
+Not a background effect.
+
+A field model for interface meaning.
+
+## 26. Matter primitives beyond particles `[frontier]`
+
+Particles are one way to sample the field.
+
+They are not the only way.
+
+The field is a continuous function over space. At any point there is a force vector, a density, a flow direction. Anything that can read a position and respond to a value can replace or augment particles.
+
+Alternative matter primitives:
+
+```txt
+fluid       grid-based simulation (SPH or Eulerian); the field drives pressure and viscosity
+fabric      a mesh of connected nodes; the field applies tension and compression across a surface
+sand        granular matter that stacks, piles, and avalanches; bodies displace and settle
+light       ray paths that bend through the field; strong bodies create gravitational lensing effects
+```
+
+### fluid
+
+Instead of discrete particles, continuous fluid that pools, flows, and swirls around bodies.
+
+Content sits in actual fluid.
+
+The field drives viscosity, not just direction.
+
+### fabric
+
+A membrane of connected nodes.
+
+Elements sit on a surface that physically deforms around heavy bodies.
+
+Priority becomes visible as depression, not motion.
+
+### sand
+
+Granular matter that settles into heaps.
+
+High-mass elements leave dunes.
+
+Weak-field bodies erode.
+
+Matter is displaced, not absorbed.
+
+### light
+
+Ray paths that curve through the field.
+
+A strong gravity body bends light around it.
+
+The field becomes visible through distortion of what is behind it, not through matter in front of it.
+
+Each primitive answers a different question about the field.
+
+Particles ask: where does matter flow?
+
+Fluid asks: what is the pressure?
+
+Fabric asks: how does the surface deform?
+
+Sand asks: where does matter accumulate?
+
+Light asks: how does the field distort what is already there?
+
+## 27. Spatial representations beyond particles `[frontier]`
+
+Render modes should not be limited to matter.
+
+The field is a mathematical object. It has topology, gradients, equipotential surfaces, and flow lines.
+
+These can be rendered directly without any particle simulation.
+
+Possible spatial representations:
+
+```txt
+vector field glyphs      arrows at grid cells showing direction and magnitude; no particles
+isosurfaces              equipotential contour lines around bodies; a topographic map of semantic weight
+Voronoi territories      each body claims the nearest space, weighted by strength; living territory map
+pure density heatmap     color encoding field intensity at every point; thermal imaging of semantic weight
+interference patterns    multiple bodies emit waves; constructive interference becomes visible
+streamline LIC           line integral convolution showing continuous flow structure
+```
+
+### vector field glyphs
+
+The raw field topology made visible.
+
+No particles. No simulation.
+
+Just direction and magnitude at every cell.
+
+Like wind maps, but for semantic space.
+
+### isosurfaces
+
+Bodies sit at the centers of concentric rings.
+
+The field becomes a landscape.
+
+Bodies are mountains and valleys.
+
+Proximity and strength are visible as elevation, not position.
+
+### Voronoi territories
+
+The field becomes a living territory map.
+
+Boundaries shift as bodies move or change strength.
+
+Conflict becomes a visible contested boundary, not a separate visual layer.
+
+Render doctrine still holds:
+
+```txt
+Renders reveal. They do not define behavior.
+```
+
+The topology of the field exists whether or not it is drawn.
+
+## 28. Time-based representations `[frontier]`
+
+The field currently exists in the present frame.
+
+But time is a dimension of the field too.
+
+Time-based render modes:
+
+```txt
+traces          accumulated particle paths; where matter has been, not where it is
+history bloom   density of past positions; high-traffic corridors become bright lines
+interference    wave emissions from multiple bodies; bands of constructive and destructive interference
+cellular        each grid cell updates based on neighbors and local field value; bodies perturb the rules
+decay maps      field intensity weighted by recency; recent influence is bright, old influence fades
+```
+
+### traces
+
+Instead of where particles are now, show where they have been.
+
+The field's history becomes visible as accumulated paths.
+
+High-traffic corridors show up as bright lines.
+
+Bodies that have moved leave contrails.
+
+### interference
+
+Multiple bodies emit waves.
+
+Where waves constructively interfere, bright bands form.
+
+Where they cancel, dark bands form.
+
+The field becomes a diffraction pattern.
+
+Semantically related bodies that emit in phase produce coherence.
+
+Conflicting bodies produce visible destructive bands.
+
+### cellular automata
+
+Each cell of a grid updates based on its neighbors and the local field value.
+
+The field drives the evolution rules.
+
+Bodies are perturbations in the rules, not only force sources.
+
+This is not a particle system.
+
+It is a different class of emergence.
+
+## 29. Alternative output surfaces `[frontier]`
+
+The field does not have to be visual.
+
+The field is a continuous function over space with vector values.
+
+Any transducer that maps a value to a perceivable output can render the field.
+
+Alternative output surfaces:
+
+```txt
+sound       field density maps to synthesis parameters; the field becomes audible
+haptics     field intensity maps to vibration on mobile; the field is felt, not seen
+typography  characters in the field deform based on local force; the words physically inhabit the field
+AR / spatial  field extends into 3D space; physical objects become bodies; field bridges digital and physical
+```
+
+### sound
+
+High-gravity zones produce low drones.
+
+Electromagnetic regions create oscillating tones.
+
+Weak-field zones produce release and silence.
+
+The field becomes an ambient semantic soundscape.
+
+This is not audio decoration.
+
+It is a genuine accessibility and ambient awareness channel.
+
+### haptics
+
+Moving a finger through a strong-gravity region has physical resistance.
+
+Crossing a boundary field creates a perceivable threshold.
+
+The field is felt before it is seen.
+
+### typography as matter
+
+Characters are not glyphs on a grid.
+
+They are matter in the field.
+
+In a high-charge zone, characters spread.
+
+In a gravity well, they compress.
+
+The words physically inhabit the field.
+
+This is not a CSS filter.
+
+It is actual glyph-level deformation driven by field state.
+
+### AR / spatial
+
+The field extends into 3D space.
+
+Physical objects tracked by the camera become bodies.
+
+A real book on a desk creates a gravity well in the AR overlay.
+
+The field bridges digital and physical.
+
+Semantic relationships become visible in the room.
+
+## 30. The field as machine-readable semantic layer `[frontier]`
+
+Every element on the page has a position in pixel-space.
+
+In a field page, every element also has a position in field-space.
+
+Field-space encodes:
+
+```txt
+semantic weight
+relational tension
+dynamic state
+flow direction
+field density
+influence range
+```
+
+This is a shared coordinate system that is spatially queryable and continuously maintained.
+
+### The field as a communication protocol
+
+Not between humans and UI.
+
+Between agents.
+
+An AI system, a service, or an autonomous process can query the field and understand the page without parsing the DOM.
+
+Field queries:
+
+```txt
+What is the most important thing on this page right now?   find the deepest gravity well
+What is this element most related to?                       follow the strong-force bonds from it
+What path should I take through this content?              follow field flow at minimum resistance
+What is in conflict here?                                   find regions of high charge separation
+What is the current trust state of this claim?             read coherence at that body's position
+```
+
+This is not metadata.
+
+It is not schema.org tags.
+
+It is live, continuous, physics-based meaning that is always current because it is computed every frame.
+
+### The field as a live knowledge graph
+
+A database has an index.
+
+A search engine has a vector space.
+
+The field is a spatial index of semantic state — continuously maintained, instantly queryable.
+
+Possible programmatic API:
+
+```txt
+field.queryAt(x, y)             → { density, direction, intensity, dominantBody }
+field.pathBetween(a, b)         → minimum-resistance path through field space
+field.dominantBody()            → body at the current global field minimum
+field.bondsFrom(element)        → strong-force bonds from a given body
+field.conflictsNear(element)    → charge separation and opposing domains
+```
+
+The field as infrastructure for entirely new kinds of interface intelligence.
+
+## 31. The field as social substrate `[frontier]`
+
+One field per page is a constraint, not a law.
+
+### Shared fields
+
+A shared field has multiple participants, each contributing bodies.
+
+A collaborator's cursor is a body.
+
+A collaborator's reading position is a body.
+
+A selection is a body.
+
+Everyone's presence creates field contributions that sum.
+
+### Collective semantic gravity
+
+What emerges is not cursor chat.
+
+It is collective semantic gravity.
+
+Where many people are reading, a gravity well forms.
+
+Where attention flows, streamlines emerge.
+
+A controversial paragraph shows electromagnetic polarity — people polarized into two charge domains, their competing attention visible in field topology.
+
+You can see what a document means to a room of people.
+
+Not as a click heatmap.
+
+As a live field where meaning and attention are physics.
+
+### Presence as field contribution
+
+Collaborative behaviors:
+
+```txt
+collaborator focus emits signal
+reading position creates local density
+dwell time increases mass at that region
+disagreement creates charge separation
+consensus creates coherence and mass
+departure leaves a cooling memory trace
+```
+
+This extends section 17 (collaboration possibilities) from cursors and avatars to field participants.
+
+## 32. The field as accumulating memory `[frontier]`
+
+The field currently exists only in the present frame.
+
+Particles have no history.
+
+But a field that accumulates — that remembers where attention has been, where matter has flowed, where bodies have moved — becomes a semantic sediment.
+
+### Pages that deform under use
+
+High-traffic corridors develop lower resistance.
+
+Neglected regions gradually lose charge.
+
+The page ages in a physically meaningful way, shaped by how it has been inhabited.
+
+This is not analytics.
+
+Analytics are external, discrete, and after-the-fact.
+
+Semantic sediment is local, continuous, and immediately legible.
+
+### Memory as field state
+
+Memory behaviors:
+
+```txt
+frequently visited regions develop lower resistance
+dwelled sections gain mass
+neglected regions cool and lose charge
+read paths leave visible traces
+recovered paths return to warmth
+interrupted paths show where attention broke
+```
+
+Bring a user back to a page and the field is already warm in the places they have been.
+
+Cold in the places they have not.
+
+The field is a map of prior attention.
+
+Possibility: software can remember in a visible, local, respectful way without turning everything into analytics.
+
+This extends section 24 (memory possibilities) from discrete markers to continuous field state.
+
+## 33. The field applied to time `[frontier]`
+
+The field currently spans 2D space.
+
+But time is a dimension too.
+
+### Temporal fields
+
+A temporal field has bodies not just at positions but at moments.
+
+An event has a position in time-space.
+
+Related events are bound by strong force.
+
+Causal chains follow field flow.
+
+Concurrent events repel or attract based on semantic relationship.
+
+### Navigating time as a field
+
+A timeline is not a line.
+
+It is a field over time.
+
+Navigating it means following force gradients.
+
+Zoom into a high-density region and you are zooming into a moment of high semantic activity.
+
+Pull back and the field coarsens into epochs.
+
+Temporal field behaviors:
+
+```txt
+causal chains form flow paths
+concurrent events attract or repel based on semantic relationship
+high-activity moments create gravity wells
+long spans with few events become low-density sparse regions
+corrections and revisions overwrite memory at a position in time
+contested moments show charge separation
+```
+
+This is a genuinely different way to encode temporal relationships.
+
+Proximity in time-space means something based on meaning, not calendar distance.
+
+## 34. The field as authoring primitive `[frontier]`
+
+Right now designers work in static space.
+
+They arrange elements, define transitions, write rules.
+
+The field inverts this.
+
+You define the physics.
+
+The layout emerges.
+
+### Authoring relationships, not positions
+
+Old model:
+
+```txt
+where should this go?
+```
+
+New model:
+
+```txt
+how should this relate?
+```
+
+You do not position a sidebar.
+
+You give the main content high gravity and the sidebar moderate gravity.
+
+They find their equilibrium.
+
+You do not animate a menu opening.
+
+You give it a charge that, when activated, repels its children into visible positions.
+
+### Responsive as field response
+
+Different viewport sizes produce different field configurations.
+
+The same semantic forces produce different spatial equilibria at different scales.
+
+Responsive design becomes field response.
+
+The author writes the meaning relationships.
+
+The field solves the geometry.
+
+### Implications for design tooling
+
+A field-native authoring tool would expose:
+
+```txt
+body mass and range sliders
+natural field type selector
+relationship graph editor
+formation picker
+equilibrium preview
+accessibility equivalent preview
+```
+
+Not:
+
+```txt
+x position
+y position
+margin
+padding
+animation timing
+```
+
+This extends section 18 (authoring possibilities) from a recipe editor to a fully field-native design model.
+
+## 35. Emergent semantics `[frontier]`
+
+A simple field has a few bodies and produces simple dynamics.
+
+A complex field — many bodies, many forces, feedback loops between field state and body behavior — can produce emergent semantic behavior.
+
+Patterns that were not programmed.
+
+Attractor states that correspond to meaningful configurations.
+
+Phase transitions when a new body enters or leaves.
+
+### What emergence looks like in a field
+
+Possible emergent behaviors:
+
+```txt
+attractor states          the field settles into stable configurations around certain body arrangements
+phase transitions         a new body tips the field into a different global organization
+self-organizing structure bodies find equilibrium arrangements without explicit positioning rules
+resonance                 bodies at compatible ranges and strengths amplify each other's effects
+cascading release         a sink body reaching capacity triggers a chain of redistribution events
+```
+
+### Not artificial intelligence
+
+Artificial intelligence encodes meaning in weights.
+
+Emergent semantics is different.
+
+It is a medium that organizes meaning through physics.
+
+Structure arises from interaction, not from encoding.
+
+Not artificial intelligence.
+
+Not a simulation.
+
+A field model where meaning has dynamics.
+
+## 36. The projection problem `[frontier]`
+
+Every interface ever built is a projection.
+
+A flat map of a high-dimensional semantic space.
+
+Menus are projections.
+
+Search is a projection.
+
+Feeds are projections.
+
+### What projections lose
+
+The projection loses information:
+
+```txt
+the relationship between the thing being read and the thing searched three days ago
+the tension between two articles that contradict each other
+the gravity of something important that has been avoided
+the path that was most traveled and the path that was never taken
+the coherence building across a form that is almost complete
+the conflict that has been accumulating in a document over multiple edits
+```
+
+This information exists.
+
+It is recoverable.
+
+It is not stored anywhere visible.
+
+### What the field recovers
+
+The field is a substrate that makes this information perceptible.
+
+Not inferable.
+
+Perceptible.
+
+```txt
+priority becomes gravity
+relationship becomes binding
+conflict becomes charge separation
+importance becomes convergence
+change becomes decay and transformation
+attention becomes density and memory
+trust becomes coherence
+risk becomes pressure
+```
+
+The field does not add new information.
+
+It makes existing semantic structure visible as physics.
+
+That is a different claim than most UI systems make.
+
+Most systems claim to present information.
+
+Fundamental claims to reveal the structure underneath it.
+
+### The new medium
+
+Every new medium recovered information that previous media lost.
+
+Writing recovered speech across time.
+
+Maps recovered spatial relationships across scale.
+
+Photography recovered visual appearance across memory.
+
+The field recovers semantic relationships across the interface surface.
+
+Not a particle system.
+
+Not a background effect.
+
+Not a physics toy.
+
+A medium for semantic structure — where meaning has forces, relationships have dynamics, and the interface can explain itself because it has physics.
 
 ========================================================================
 FILE: fundamental-field-behavior-table.md
@@ -3056,6 +5020,91 @@ The system should not say "we have physics-inspired UI effects." It says: every 
 priority, polarity, binding, and transformation; physics already has a compact language for those
 relations; Fundamental translates that language into DOM behavior. **Four fields. Many expressions. One
 DOM runtime.**
+
+========================================================================
+FILE: parity-matrix.md
+========================================================================
+
+# Cross-platform parity matrix
+
+The `FieldHandle` interface is the engine's public API contract. Every platform that
+ships a field runtime implements a subset of it; the table below is the machine-generated
+snapshot of which methods are present on each platform.
+
+**Method source of truth:** `packages/core/src/core/types.ts` — `FieldHandle` interface.
+**Swift source:** `swift/Sources/FundamentalVanilla/FieldEngine.swift`.
+**Kotlin source:** `android/fundamental-core/src/main/kotlin/com/fundamental/core/runtime/FieldHandle.kt`.
+
+The cross-plane *mathematical* conformance (force physics identical across JS, Swift, and Kotlin)
+is separately verified by the golden fixture and the per-platform `GoldenConformanceTests`.
+This matrix tracks *API surface* parity — which callable methods exist on each platform.
+
+Last generated: 2026-06-29 (from the source files above). Update when adding a method to any platform.
+
+---
+
+## FieldHandle method coverage
+
+| Method | JS | Swift | Kotlin | Notes |
+|--------|----|-------|--------|-------|
+| `scan` | ✓ | ✓ | — | Kotlin re-scans implicitly on tick |
+| `rescan` | ✓ | ✓ | — | alias of scan |
+| `setAccent` | ✓ | ✓ | — | visual layer — Compose has its own color API |
+| `setPalette` | ✓ | ✓ | — | visual layer |
+| `setFormation` | ✓ | ✓ | ✓ | |
+| `setWaveStyle` | ✓ | ✓ | — | visual layer |
+| `setWaveCenter` | ✓ | ✓ | — | visual layer |
+| `setSeparation` | ✓ | ✓ | — | Kotlin exposes as `var separation` |
+| `setAttention` | ✓ | ✓ | ✓ | |
+| `setCausality` | ✓ | ✓ | ✓ | |
+| `setHeatmap` | ✓ | ✓ | ✓ | |
+| `setDprCap` | ✓ | — | — | pixel-density control — native OSs handle DPR differently |
+| `setQualityTier` | ✓ | — | — | adaptive quality governor |
+| `setRender` | ✓ | ✓ | — | render surface is Compose/SwiftUI-owned on native |
+| `setOverlay` | ✓ | ✓ | — | overlay readings (overlay canvas) |
+| `setBackground` | ✓ | — | — | Web-specific: transparent vs opaque canvas clearing |
+| `threads` | ✓ | ✓ | — | visual layer — glowing connector lines |
+| `burst` | ✓ | ✓ | ✓ | |
+| `flowTo` | ✓ | ✓ | ✓ | |
+| `clearFlow` | ✓ | ✓ | ✓ | |
+| `seed` | ✓ | ✓ | ✓ | |
+| `addAgent` | ✓ | — | — | engine-stepped agent — planned for native |
+| `addBody` | ✓ | ✓ | ✓ | |
+| `addEdge` | ✓ | ✓ | ✓ | |
+| `readEdges` | ✓ | ✓ | ✓ | |
+| `addField` | ✓ | ✓ | ✓ | |
+| `sampleField` | ✓ | ✓ | ✓ | |
+| `atomAt` | ✓ | ✓ | ✓ | |
+| `focusAt` | ✓ | ✓ | — | |
+| `clearFocus` | ✓ | ✓ | — | |
+| `particleCount` | ✓ | ✓ | ✓ | |
+| `energy` | ✓ | ✓ | ✓ | |
+| `sample` | ✓ | — | — | force-field vector at a point; Swift uses renderer path |
+| `sampleScalar` | ✓ | ✓ | ✓ | heatmap density at a point |
+| `sampleGradient` | ✓ | ✓ | ✓ | density gradient at a point |
+| `grid` | ✓ | — | — | named ScalarGrid — planned for native |
+| `on` | ✓ | — | — | event subscription bus — planned for native |
+| `readParticles` | ✓ | ✓ | ✓ | raw swarm read-out (stride 5) |
+| `readParticleIds` | ✓ | — | — | stable per-particle ids |
+| `readParticleChannels` | ✓ | — | — | multi-channel read-out (§future) |
+| `registerOverlay` | ✓ | — | — | custom overlay fn |
+| `scrollV` | ✓ | ✓ | — | DOM/UIKit-specific scroll velocity |
+| `setVisible` | ✓ | ✓ | — | element-level visibility hint |
+| `destroy` | ✓ | ✓ | ✓ | |
+
+**Summary:**
+
+| Platform | Methods | Coverage |
+|----------|---------|----------|
+| JS (npm) | 44/44 | 100% (source of truth) |
+| Swift | 34/44 | 77% |
+| Kotlin | 20/44 | 45% |
+
+The gap between Swift and Kotlin reflects that the Kotlin port is at **engine parity** (identical
+force math, verified by the golden conformance suite) while the Swift port additionally covers the
+full visual and scan API. Render-layer methods (`setRender`, `setOverlay`, `threads`, `setAccent`)
+are absent from Kotlin because the Compose / View rendering APIs are host-owned; the Kotlin engine
+exposes the data pipeline (forces, density, particles, edges) and Compose wires the drawing.
 
 ========================================================================
 FILE: platform-architecture.md
@@ -4944,6 +6993,681 @@ the page owns the semantics*:
 - Experiential `memory`/`recency` (inferred) and world-grounded `recency` (declared) are the
   same *lane* with different *sources*; the engine-measured thermodynamics
   (`--temperature` etc.) are a different thing entirely (workover v0.3) and share no naming.
+
+========================================================================
+FILE: use-cases.md
+========================================================================
+
+# Use Cases
+
+> **How the field earns its place in real products.**
+>
+> These are not demos. Each use case describes a real UI problem, what the field does
+> structurally to solve it, and what it enables that wasn't possible — or wasn't
+> tractable — before.
+>
+> **Relationship to field-possibilities.md.** This document is the shipped, narrative
+> tier — concrete UI problems and how the field solves them today. The conceptual
+> framework beneath it (conditions, formations, recipe families, natural field
+> translations, matter primitives, temporal fields, alternative output surfaces) lives
+> in [`field-possibilities.md`](field-possibilities.md). When a use case references a
+> condition, formation, or recipe name, that's where the definition lives. When a
+> section in `field-possibilities.md` has a concrete shipped example, it links back here.
+>
+> The `/use-cases` site page is built from this document.
+
+The field is a **substrate, not wallpaper**. The use cases below are organized by how
+they tend to land with different audiences. Start with §I (universal UI patterns) and
+§V (invisible field) — those two sections carry the pitch. The later sections are
+depth for specific domains and emerging capabilities.
+
+---
+
+## I. Universal UI Patterns
+
+These apply to any product in any stack. They are the "oh, I get it" tier — the
+examples that make the model click for someone who has never seen Fundamental before.
+
+→ *Conceptual grounding: [`field-possibilities.md §1`](field-possibilities.md#1-the-paradigm-shift) (the paradigm shift), §7 (formations), §8 (recipes as the main possibility unit).*
+
+### Weighted Navigation
+
+Links carry mass proportional to their semantic importance. Primary nav items pull
+harder than secondary ones; the active section is a gravity well. As the user scrolls
+a long page, the corresponding nav item draws field density toward it automatically —
+no IntersectionObserver callback, no scroll-position arithmetic.
+
+**What the field does:** each nav anchor is a `data-body="attract"` body; body
+strength is set by editorial priority (`data-strength`). The current-section link
+gains an amplified `data-active` state; the field reads engagement and redistributes
+density. `--field-density` drives a CSS highlight on the active item.
+
+**Why it's better:** the alternative is a bespoke scroll-spy: observe every section,
+update active class on entry, handle edge cases for fast scrolls. The field collapses
+that to a data attribute and a CSS variable binding.
+
+---
+
+### Attention Hierarchy
+
+On any page with a primary CTA, that element is the dominant body. Everything else
+carries lighter mass. Particles drift toward the action. Users don't consciously
+notice the field — they notice their eye goes where it should.
+
+**What the field does:** the CTA is `data-body="gravity" data-strength="1.5"`. The
+headline is `data-body="attract" data-strength="0.8"`. Supporting copy is unregistered
+or carries minimal mass. Density naturally accumulates at the CTA.
+
+**Why it's better:** CSS z-index and size can express hierarchy visually but not
+spatially. The field makes the CTA a genuine attractor — particles and user attention
+follow the same gradient.
+
+---
+
+### Error Gravity
+
+Form fields are neutral bodies until validation runs. An error state converts a
+field's charge — the element becomes urgent, field density pulls toward it, and the
+`--field-density` spike drives a CSS transition on the border or label. The user's
+attention is physically redirected to the problem without a `focus()` call or
+scroll-into-view.
+
+**What the field does:** on validation failure, the field's body strength is elevated
+programmatically (`field.setBodyStrength(el, 1.8)`). The error body competes for
+density against other page bodies and wins. On resolution, strength returns to
+baseline. The `coherent` condition (`field-possibilities.md §6`) can detect when all
+required fields are valid and fire a completion event.
+
+**Why it's better:** traditional validation highlights a field and adds an error
+message, but doesn't move attention spatially. The field applies physical pressure
+toward the problem — more useful in long forms with many fields.
+
+---
+
+### Reading Weight
+
+A long-form article where pull quotes and key terms carry mass. Particles cluster
+near editorially heavy content. As the reader moves through the page, the field
+re-orients to whatever high-mass elements are in the viewport.
+
+→ *Recipe: `Reading Field` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations) (reading formation) and §24 (memory possibilities).*
+
+**What the field does:** `<blockquote>` and `<strong>` elements receive
+`data-body="attract"` with varying `data-strength`. As they scroll into viewport,
+their engagement amplifies their pull. `--field-density` can drive a subtle background
+warmth on key passages. Combine with the `dwell` condition
+(`field-possibilities.md §6`) to accumulate memory at passages the reader revisits.
+
+**Why it's better:** scroll-driven animations highlight content as it enters, then
+stop. The field stays live — it responds to where the reader is, not just to whether
+content has crossed a threshold.
+
+---
+
+### Completion Momentum
+
+Multi-step flows — checkout, onboarding, wizard — where each completed step releases
+its gravity and the next step's gravity increases. The submit button at the end of a
+long form is the strongest body on the page.
+
+→ *Recipe: `Guided Flow` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations) (coherence formation) and §6 (coherent condition).*
+
+**What the field does:** steps are registered bodies with strength 0 (neutral) until
+active. The active step has strength 1; the next step has latent strength 0.4.
+Completed steps drop to 0.1. The field topography always tilts toward what is coming.
+
+**Why it's better:** progress bars tell you where you are. The field tells you where
+to go.
+
+---
+
+## II. Data & Dashboards
+
+The field as a live metric layer — a spatial representation of data that sits beneath
+the visual one.
+
+→ *Conceptual grounding: [`field-possibilities.md §10`](field-possibilities.md#10-data-bound-fields) (data-bound fields), §11 (relationship possibilities), §30 (the field as machine-readable semantic layer).*
+
+### Anomaly Field
+
+A status dashboard where each service's body strength is proportional to its error
+rate or latency percentile. A healthy service is a low-mass body. A spiking service
+becomes a gravity well. Particles cluster there before any human has clicked anything.
+
+→ *Recipe: `System Pulse` — see [`field-possibilities.md §10`](field-possibilities.md#10-data-bound-fields) (data-bound fields: live data source → body strength mapper).*
+
+**What the field does:** body strength is updated from a live data source on each
+tick via `field.setBodyStrength(el, normalized_rate)`. The field's density
+distribution acts as a heat signature across the dashboard. `--field-density` can
+drive a visual overlay on the affected service tile.
+
+**Why it's better:** you see the incident before you read the number. The field
+creates spatial pre-attention — you know where to look before you consciously process
+the dashboard.
+
+---
+
+### Urgency Sorting
+
+Task lists, ticket queues, support queues — items with escalating urgency accumulate
+mass. The field creates a second ordering layer that doesn't conflict with the
+explicit DOM order. A P0 ticket buried in a long list pulls harder than the P2 at
+the top.
+
+→ *Conditions: `stale`, `thresholded` — see [`field-possibilities.md §6`](field-possibilities.md#6-conditions).*
+
+**What the field does:** `data-strength` is set from priority level. Overdue tickets
+get an additional charge boost from `data-body="attract charge"`. The field density
+surface reveals pressure pockets that the list sort doesn't.
+
+**Why it's better:** sorting a list by priority changes the order. The field shows
+you the pressure within the current order — useful when reordering isn't possible
+(e.g., time-ordered queues).
+
+---
+
+### Live Data Streams
+
+Real-time feeds where incoming events create field disturbances. A new message, a
+stock tick, a sensor reading — each body momentarily increases its charge. In
+aggregate, a busy channel hums differently from a quiet one without any explicit
+visualization.
+
+→ *See [`field-possibilities.md §10`](field-possibilities.md#10-data-bound-fields) (data-bound fields: real-time event binding).*
+
+**What the field does:** on each incoming event, the corresponding body's strength
+spikes and decays over N frames via a tween on `data-strength`. The field's aggregate
+density encodes channel activity as a physical texture the user perceives peripherally.
+
+**Why it's better:** notification badges count. The field shows cadence — whether
+activity is bursty or steady, dense or sparse — information a count can't carry.
+
+---
+
+### Relationship Graphs
+
+Graph nodes whose edge weights map to field relationships. The field adds a
+behavioral layer on top of an existing layout (d3-force, ELK, manual). Hover a node
+and the field reveals strongly connected neighbors through how intensely they respond.
+
+→ *Recipe: `Relation Lens` — see [`field-possibilities.md §11`](field-possibilities.md#11-relationship-possibilities) (relationship behaviors: support, dependency, evidence) and §30 (field queries API).*
+
+**What the field does:** edge weights become `data-field-relation` values between
+body pairs. The RelationshipRegistry propagates influence; strongly connected nodes
+co-activate. `--field-density` drives neighbor highlight intensity.
+
+**Why it's better:** traditional graph hover highlights adjacent nodes by class
+toggle. The field propagates through the graph — second-degree connections also
+respond, weighted by path strength. The topology becomes tactile.
+
+---
+
+## III. Commerce & Products
+
+### Product Gravity
+
+In a product grid, `rating × review_count` maps to body strength. The hero product
+is a gravity well. Promoted items carry elevated mass from an explicit editorial
+override — different truth mode (`designed`) from organic rating mass (`physical`),
+so the distinction is structurally honest.
+
+→ *See [`field-possibilities.md §4`](field-possibilities.md#4-designed-forces-and-natural-translations) (designed vs. natural translations) and §10 (data-bound fields).*
+
+**What the field does:** `data-strength` is set server-side from product data. The
+promoted item gets `data-truth="designed"` to distinguish editorial weight from user
+signal. CSS responds to `--field-density` with a subtle card glow.
+
+---
+
+### Cart Magnetism
+
+The cart indicator in a nav is a charged body. Add an item and its charge spikes —
+particles briefly surge toward the cart, then settle. The cart's field state IS the
+cart state, not a copy of it.
+
+**What the field does:** cart item count maps directly to `data-strength`. The cart
+icon is `data-body="attract"`. On item add, `dispatchBodyThreshold` fires at
+strength > 1.0 to trigger a confirmation animation driven by the field event, not a
+timeout.
+
+---
+
+### Inventory Urgency
+
+"Only 3 left" — low stock makes a body's charge spike. When stock hits zero, the
+charge drops. Urgency is structural, not cosmetic.
+
+→ *Condition: `thresholded` — see [`field-possibilities.md §6`](field-possibilities.md#6-conditions).*
+
+**What the field does:** `data-strength` is derived from
+`max(0, 1 - (stock / max_stock))`. Critically low stock triggers
+`data-body="attract charge"` — the attract pull is urgency; the charge is the
+"electric" quality of scarcity.
+
+---
+
+### Comparison Pull
+
+Side-by-side product comparison where the item with more "winning" attributes has
+higher aggregate mass. The field tips the decision spatially. Users don't consciously
+read the physics — they feel which option is heavier.
+
+**What the field does:** each comparison column's body strength is the sum of its
+winning attribute scores, normalized. The field creates a spatial lean toward the
+dominant option that precedes the user's conscious comparison.
+
+---
+
+## IV. Media & Content
+
+### Playlist Gravity
+
+The currently playing track is a dominant gravity well. Related tracks are attracted
+bodies. The densest region of the playlist is where you keep returning — play count
+= accumulated mass; this is accretion in the Body Matter Interaction model.
+
+→ *Recipe: `Memory Trace` — see [`field-possibilities.md §24`](field-possibilities.md#24-memory-possibilities) and §32 (the field as accumulating memory).*
+
+**What the field does:** `data-absorb` on the current track; absorbed particle count
+(via `--load`) represents accumulated play history. Related tracks carry
+`data-body="attract"` with strength proportional to audio feature similarity.
+
+---
+
+### Gallery Focus
+
+A photo or project gallery where the featured piece has dominant mass. Hover
+transitions are driven by the body's engagement state rather than `:hover` CSS.
+
+**What the field does:** hover triggers `data-active` on the hovered item, amplifying
+its pull. All gallery items are `[data-feedback]`; their `--d` values drop as density
+concentrates at the active item. CSS maps `--d` to `opacity` or `filter: brightness`.
+
+---
+
+### Article Series / Content Topography
+
+A collection of posts where each article's body strength is its view count or
+normalized read time. On a category page, the field creates a content topography.
+
+→ *Formation: `reading` — see [`field-possibilities.md §7`](field-possibilities.md#7-formations).*
+
+**What the field does:** view count maps to `data-strength`. The field's density
+distribution over the article grid is a spatial representation of readership.
+
+---
+
+## V. The Invisible Field — Signals Only
+
+> This is the architectural shift that most people miss.
+
+Since 0.9.0, the field's default `render` mode is `'none'`. No canvas. No particles.
+The full simulation runs and writes its results as CSS variables (`--field-density`,
+`--d`, `--load`, `--field-attention`) to every `[data-feedback]` element. Your
+existing CSS consumes them.
+
+→ *Architectural grounding: [`field-possibilities.md §13`](field-possibilities.md#13-render-possibilities) (render possibilities — signals-only is one mode among many) and §0 (purpose: "the system is larger than the canvas").*
+
+**The field is not a particle effect. It is a pressure system that drives your design
+system.**
+
+---
+
+### Ambient Typography
+
+Font weight, letter spacing, or color temperature driven by `--field-density`. Near
+a high-mass heading, body text gets fractionally heavier. No canvas exists. The field
+is a semantic pressure gradient that your typographic CSS responds to.
+
+**What the field does:** `--d` (the compact alias for `--field-density`) is written
+to every `[data-feedback]` body each frame. CSS maps it:
+`font-weight: calc(400 + var(--d) * 200)`. No JavaScript in the style path.
+
+---
+
+### Focus-Weight Accessibility
+
+The focused element is the engaged body — the strongest local gravity source. Tab
+traversal creates a moving gravity well. CSS on `[data-feedback]` elements responds
+to `--d` with color, shadow, or scale changes driven by proximity to focus.
+
+→ *See [`field-possibilities.md §15`](field-possibilities.md#15-accessibility-possibilities) for the full accessibility contract every recipe should define (motion, reduced-motion, keyboard, screen-reader equivalents).*
+
+For reduced-motion users: the field still writes the CSS variables. Motion is one
+consumer; color is another. Disable the particle canvas and the CSS color response
+remains — the field continues to carry semantic weight through hue and value rather
+than movement.
+
+---
+
+### State Without Animation
+
+A toggle's state is a field charge flip. Checked: positive charge, surrounding
+elements respond. Unchecked: neutral. No keyframes, no JavaScript class toggling,
+no transition timings to coordinate. The field carries state into style directly.
+
+---
+
+### Semantic Content Structure
+
+`<h1>` carries more mass than `<h2>` than `<p>`. The field encodes document
+outline as spatial weight. Screen readers consume the markup; the field renders the
+same hierarchy as a physical pressure map. Both come from the same HTML.
+
+→ *See [`field-possibilities.md §36`](field-possibilities.md#36-the-projection-problem-frontier) (the projection problem: the field recovers semantic relationships the flat interface loses) and §1 (the paradigm shift).*
+
+---
+
+## VI. Narrative & Immersive
+
+### Scrollytelling
+
+A data story where scrolling through sections changes which body is dominant. No
+scroll-jacking, no IntersectionObserver farm, no manual step management.
+
+→ *Input agent: `ScrollAgent` — see [`field-possibilities.md §12`](field-possibilities.md#12-input-agents).*
+
+**What the field does:** each chapter's key element is a `data-body` with high
+strength. Engagement amplification re-orients the field continuously as sections
+enter and exit.
+
+---
+
+### Interactive Fiction
+
+A branching narrative where choices carry accumulated attention weight. The option
+the user has hovered longest has more mass. The field is a memory of the user's
+attention during the choice.
+
+→ *Condition: `dwell` — [`field-possibilities.md §6`](field-possibilities.md#6-conditions). Memory: §24 and §32.*
+
+---
+
+### Museum / Exhibition
+
+A digital archive where artifacts carry historical weight: date range, cultural
+significance, acquisition cost → body strength. Moving through the collection, the
+field creates a topography of importance.
+
+→ *Recipe: `Semantic Gravity Map` — see [`field-possibilities.md §9`](field-possibilities.md#9-the-64-recipe-possibility-map) and §10 (data-bound fields).*
+
+---
+
+## VII. Productivity & Tools
+
+### Kanban Physics
+
+A kanban board where blocked or overdue cards accumulate urgency mass. The board's
+field density distribution shows where bottlenecks are without a filter or sort.
+
+→ *Formation: `pressure` — [`field-possibilities.md §7`](field-possibilities.md#7-formations). Conditions: `stale`, `thresholded` from §6. Boundary: §23 (Permission Boundary for column scope).*
+
+---
+
+### Document Co-presence
+
+A collaborative document where each active cursor is a charged body. Dense regions
+are where people are working. An idle cursor loses charge over time.
+
+→ *Recipe: `Presence Field` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities) and §31 (the field as social substrate). See also §XI below.*
+
+---
+
+### Code Review Gravity
+
+A diff view where modified files have mass proportional to change size. The file
+tree's field density shows where the bulk of the review is before opening anything.
+
+→ *See [`field-possibilities.md §10`](field-possibilities.md#10-data-bound-fields) (data-bound fields) and §34 (the field as authoring primitive).*
+
+---
+
+## VIII. Only Fundamental Can Do This
+
+These are capabilities with no clean analogy in CSS, JavaScript event systems, or
+existing animation libraries.
+
+### Reciprocal UI
+
+The DOM affects the field AND the field affects the DOM. The loop is closed. Most
+"physics" UI is one-way — cursor moves, effect responds. Fundamental's two-way
+binding means a button that has been hovered many times has accumulated interaction
+history as field density. The UI responds to its own usage pattern.
+
+→ *Architectural grounding: [`field-possibilities.md §1`](field-possibilities.md#1-the-paradigm-shift) (feedback returns state to the DOM — closing the loop) and §32 (the field as accumulating memory).*
+
+---
+
+### Truth Mode Mixing
+
+A pricing page where the recommended tier's mass is `designed` (deliberately elevated,
+bounded by editorial choice) while user review scores drive `physical` mass (true
+physics, potentially unbounded). Both operate in the same field. The spatial tension
+between editorial intent and user signal is physically visible.
+
+→ *See [`field-possibilities.md §4`](field-possibilities.md#4-designed-forces-and-natural-translations) (designed forces vs. natural translations) and §27 (interference patterns).*
+
+---
+
+### Composed Force Personalities
+
+`data-preset="blackhole"` combines `attract + sink`. `data-body="attract charge warp"`
+pulls, has polarity, and bends the space around it. These combinations produce
+emergent field shapes that are impossible to replicate with CSS alone.
+
+→ *See [`field-possibilities.md §8`](field-possibilities.md#8-recipes-as-the-main-possibility-unit) (recipes as the main possibility unit) and §35 (emergent semantics).*
+
+---
+
+### Multi-Plane Fields
+
+Three independent container fields on one page — one per section, none sharing
+particles. `bounds: el` scopes a field to one DOM subtree. Zero interference.
+
+→ *See [`field-possibilities.md §22`](field-possibilities.md#22-field-cells-and-local-fields) (field cells and local fields) and §23 (boundary and container possibilities).*
+
+---
+
+## IX. Memory & Temporal Fields
+
+The field currently exists in the present frame. Extending it backward (memory) and
+forward (prediction) opens a distinct class of use cases.
+
+→ *Conceptual grounding: [`field-possibilities.md §24`](field-possibilities.md#24-memory-possibilities) (memory possibilities), §32 (the field as accumulating memory), §33 (the field applied to time).*
+
+### Reading History
+
+A page that is warmer in the places a user has been. High-traffic corridors develop
+lower resistance. Neglected regions cool. The page ages in a physically meaningful
+way, shaped by how it has been inhabited — not as analytics (external, discrete,
+after-the-fact) but as semantic sediment (local, continuous, immediately legible).
+
+→ *Recipes: `Memory Trace`, `Reading Field`, `Staleness Drift` — [`field-possibilities.md §24`](field-possibilities.md#24-memory-possibilities).*
+
+---
+
+### Dwell-Driven Mastery
+
+An educational or documentation surface where sections gain accumulated mass through
+repeated attention. A concept the user has revisited five times is heavier than one
+they skimmed. The field shows which ideas have been internalized and which still
+carry unresolved weight.
+
+→ *Condition: `dwell` — [`field-possibilities.md §6`](field-possibilities.md#6-conditions).*
+
+---
+
+### Interrupted Path Recovery
+
+The user left mid-flow. The field has memory of where they were. When they return,
+the uncompleted step is already the dominant body — attention is pulled there before
+they consciously re-orient.
+
+→ *Recipe: `Recovery Path` — [`field-possibilities.md §24`](field-possibilities.md#24-memory-possibilities).*
+
+---
+
+### Staleness Gradient
+
+A dashboard or document where the recency of data or edits decays continuously.
+Recently updated items are bright bodies; older items cool and lose charge. Staleness
+is visible as field entropy — not a "last updated" timestamp, but a spatial warmth
+gradient across the surface.
+
+→ *Condition: `stale` — [`field-possibilities.md §6`](field-possibilities.md#6-conditions). Recipe: `Staleness Drift`.*
+
+---
+
+## X. AI & Evidence Fields
+
+AI outputs contain claims, sources, confidence, uncertainty, contradiction, revision,
+memory, and provenance. Field recipes can make these structural properties visible
+without decorating them as badges or tooltips.
+
+→ *Conceptual grounding: [`field-possibilities.md §16`](field-possibilities.md#16-ai-and-evidence-possibilities) ("one of the strongest product directions"). Formation: `evidence` — §7.*
+
+### Evidence Field
+
+Claims become bodies. Sources bind to them — strong sources pull closer, weak sources
+orbit at distance. Contradictory sources repel. Verified claims gain coherence and
+mass. Unverified claims remain unstable, visibly unsettled in the field.
+
+→ *Recipe: `Evidence Field` — [`field-possibilities.md §7`](field-possibilities.md#7-formations) (evidence formation) and §9 (recipe catalog).*
+
+**What the field does:** each claim is a `data-body` whose strength is its confidence
+score. Each source is a related body with `data-field-relation` to the claim it
+supports. Contradicting sources carry opposing charge. `--field-density` at the claim
+body reflects aggregate support.
+
+**Why it matters:** AI interfaces currently show confidence as a percentage or color
+label. The field makes confidence spatial and relational — you see which claims are
+well-supported, which are contested, and where the uncertainty lives before you read
+a single number.
+
+---
+
+### Trust Gradient
+
+A research or fact-check surface where the spatial distribution of field density
+reflects source quality. High-authority sources are strong bodies. The gradient
+across the page is the trust landscape.
+
+→ *Condition: `trusted` — [`field-possibilities.md §6`](field-possibilities.md#6-conditions). Recipe: `Trust Gradient`.*
+
+**What the field does:** source authority maps to `data-strength`. Sources with
+corroborating claims form clusters — the field shows where consensus is dense and
+where it's sparse.
+
+---
+
+### Provenance Trail
+
+A generated document where each passage carries the origin of its content — which
+source it came from, how confident the model was, whether it was checked. The field
+makes provenance visible as a texture.
+
+→ *Recipe: `Provenance Trail` — [`field-possibilities.md §16`](field-possibilities.md#16-ai-and-evidence-possibilities) and §9.*
+
+**What the field does:** passages receive `data-truth` modes reflecting their
+provenance (`physical` for empirically sourced, `poetic` for generated without a
+specific source). CSS on `[data-feedback]` elements uses `--d` to express the
+difference as a quality of presence, not a label.
+
+---
+
+### Conflict Field
+
+A document or interface with contested information — two sources that contradict each
+other, two recommendations that conflict. The field holds the contradiction in visible
+tension rather than collapsing it into a resolved state.
+
+→ *Formation: `conflict` — [`field-possibilities.md §7`](field-possibilities.md#7-formations). Recipes: `Conflict Field`, `Disagreement Charge`.*
+
+**What the field does:** conflicting bodies carry opposing charge
+(`data-body="charge"`). The field maintains charge separation between them. The
+region between conflicting claims has measurable field tension. CSS can drive a
+visible "contested zone" without any explicit boundary markup.
+
+---
+
+## XI. Collaboration & Shared Fields
+
+Collaboration can move beyond cursors and avatars when multiple participants'
+attention becomes field contributions that sum.
+
+→ *Conceptual grounding: [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities) (collaboration possibilities) and §31 (the field as social substrate — "collective semantic gravity").*
+
+### Presence Field
+
+Each active collaborator's focus is a charged body. A paragraph where three people
+are reading simultaneously is demonstrably denser than one where nobody is. Departure
+leaves a cooling Memory Trace.
+
+→ *Recipe: `Presence Field` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities) and §31.*
+
+**What the field does:** each active cursor is registered as a transient
+`data-body="attract"` at its current position. All collaborator bodies sum. Dense
+regions reveal where attention is concentrated. An idle cursor loses charge over time.
+
+---
+
+### Consensus Well
+
+A voting or review surface where agreement accumulates mass. Items with growing
+consensus pull toward a stable gravity well. Items with persistent disagreement show
+charge separation — two camps of opposing charge, visible as a split field topology.
+
+→ *Recipes: `Consensus Well`, `Disagreement Charge` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities).*
+
+---
+
+### Handoff Stream
+
+In a collaborative workflow, ownership changes create directional field flow — the
+field carries work from one contributor's domain to another. The handoff is visible
+as current, not just as a status update.
+
+→ *Recipes: `Handoff Stream`, `Dependency Tension` — [`field-possibilities.md §17`](field-possibilities.md#17-collaboration-possibilities).*
+
+---
+
+## Appendix: Use Case × Engine Capability Matrix
+
+| Use Case | Forces | Feedback | Relationships | Signals-only | Truth Mode | Key Condition / Formation |
+|---|---|---|---|---|---|---|
+| Weighted navigation | attract | ✓ | — | ✓ | designed | inview |
+| Error gravity | attract, charge | ✓ | — | ✓ | designed | coherent |
+| Reading weight | attract | ✓ | — | ✓ | semantic | dwell, inview |
+| Completion momentum | gravity, attract | ✓ | — | ✓ | designed | coherent |
+| Anomaly field | gravity | ✓ | — | ✓ | physical | thresholded |
+| Urgency sorting | attract, charge | ✓ | — | ✓ | physical | stale |
+| Live data streams | attract | ✓ | — | ✓ | physical | thresholded |
+| Relationship graphs | attract | ✓ | ✓ | — | physical | related |
+| Product gravity | gravity | ✓ | — | ✓ | hybrid | — |
+| Cart magnetism | attract | ✓ | — | — | designed | thresholded |
+| Playlist gravity | sink | ✓ | attract | — | physical | dwell |
+| Ambient typography | — | ✓ | — | ✓ | semantic | — |
+| Focus-weight a11y | — | ✓ | — | ✓ | designed | focused |
+| Scrollytelling | gravity | ✓ | — | ✓ | designed | inview |
+| Kanban physics | attract, charge | ✓ | — | ✓ | physical | stale, pressure |
+| Co-presence | attract | ✓ | — | ✓ | hybrid | — |
+| Reading history | — | ✓ | — | ✓ | physical | dwell |
+| Staleness gradient | — | ✓ | — | ✓ | physical | stale |
+| Evidence field | attract, charge | ✓ | ✓ | ✓ | physical | trusted |
+| Trust gradient | gravity | ✓ | ✓ | ✓ | hybrid | trusted |
+| Conflict field | charge | ✓ | ✓ | ✓ | physical | conflicted |
+| Consensus well | gravity, charge | ✓ | — | ✓ | physical | coherent |
+| Reciprocal UI | any | ✓ | — | ✓ | hybrid | dwell |
+| Multi-plane fields | any | ✓ | — | ✓ | any | — |
+
+---
+
+## Status
+
+`draft: true` — source material for the `/use-cases` site page. Update status to
+`published` when the site page ships and links back here. The site page should
+present §I–§V as the main narrative (the pitch), §VI–§VIII as depth, and §IX–§XI
+as the emerging capabilities tier.
 
 ========================================================================
 FILE: visual-language-and-geometry.md
