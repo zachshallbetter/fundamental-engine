@@ -61,6 +61,66 @@ platform.on('compute', () => {                            // compute phase
 const tick = (t) => { platform.tick(t); requestAnimationFrame(tick); };
 requestAnimationFrame(tick);`;
 
+const feedbackHtml = `<!-- 1. Add data-feedback to receive --d and the other engine vars -->
+<h1 data-body="attract" data-feedback class="hero-mass">
+  The field is here
+</h1>`;
+
+const feedbackCss = `/* 2. Scale the raw [0,1] fraction before driving reactions */
+[data-feedback] {
+  --d-amp: clamp(0, calc(var(--d, 0) * 12), 1);
+}
+
+/* 3. React off the amplified value */
+.hero-mass {
+  transform:   translateY(calc(var(--d-amp) * -6px));
+  text-shadow: 0 0 calc(var(--d-amp) * 20px) color-mix(in srgb, var(--accent) 60%, transparent);
+}`;
+
+const sinkHtml = `<!-- a sink body; data-absorb starts accretion, data-max caps it -->
+<ul data-body="sink" data-absorb data-max="40" data-feedback class="queue">
+  <!-- items dock here when captured -->
+</ul>`;
+
+const sinkCss = `/* --load fills from 0 (empty) to 1 (saturated) as matter accretes */
+.queue {
+  outline: 2px solid color-mix(in srgb, var(--accent) calc(var(--load, 0) * 60%), transparent);
+}`;
+
+const condHtml = `<!-- data-when gates the force on a named condition -->
+<nav data-body="attract" data-when="active">
+  <!-- force activates only while this element is hovered / focused -->
+</nav>
+
+<!-- 'slow' = --field-scroll-v < 2 (reading pace); force sleeps during fast scroll -->
+<section data-body="swirl" data-strength="0.5" data-when="slow">
+  ...
+</section>
+
+<!-- combine data-hot + data-when: hover triggers, condition gates -->
+<button data-hot data-body="attract" data-spin="1" data-when="active">
+  hover me
+</button>`;
+
+const formationHtml = `<!-- divide the page into named sections; a formation snaps particles to each -->
+<section data-formation="arc">
+  <h2>chapter one</h2>
+</section>
+
+<section data-formation="ring">
+  <h2>chapter two</h2>
+</section>`;
+
+const formationJs = `// switch formations from code — smooth transition, same particles
+import { mountField } from '@fundamental-engine/vanilla';
+
+const { handle } = mountField(canvas);
+
+// on route change, on scroll into section, or on user action:
+handle.setFormation('wells');    // a stable multi-well attractor grid
+handle.setFormation('cascade');  // a downward pour
+handle.setFormation('ring');     // a closed orbit`;
+
 const CONTRACT = [
   ['data-body', 'force tokens, space-separated', 'attract repel swirl'],
   ['data-strength', 'source mass / pull (default 0.5)', '0.8'],
@@ -168,6 +228,72 @@ const consumers = `<!-- capture: a chip that collapses into a sink when the fiel
     <code>data-warp</code> needs a paired body (<code>data-pair</code>) to relocate to — a single body
     can't show relocation. See the <a href="/docs/api/handle">agent consumption model</a> for the
     captured / relocated / emitted events.
+  </p>
+
+  <h2 id="feedback">Reading the field — CSS feedback channels</h2>
+  <p>
+    The engine writes CSS custom properties onto elements during the <code>write</code> phase of
+    every frame. Add <code>data-feedback</code> to receive them; consume them in CSS to make an
+    element visually react. No polling, no event listeners — the engine is a CSS property writer.
+  </p>
+  <CodeTabs
+    variants={[
+      { label: 'HTML', lang: 'html', code: feedbackHtml },
+      { label: 'CSS', lang: 'css', code: feedbackCss },
+    ]}
+    caption="<code>--d</code> is the canonical density var ∈ [0,1]. Scale it before driving properties — the raw fraction is small by design."
+  />
+  <p>
+    The full set of feedback channels — <code>--d</code>, <code>--load</code>, <code>--lit</code>,
+    <code>--entropy</code>, <code>--coherence</code>, <code>--temperature</code> — is in the
+    <a href="/docs/api/attributes#writeback">writeback reference</a>. Sink accretion is a common
+    pattern — <code>--load</code> fills from 0 (empty) to 1 (saturated):
+  </p>
+  <CodeTabs
+    variants={[
+      { label: 'HTML', lang: 'html', code: sinkHtml },
+      { label: 'CSS', lang: 'css', code: sinkCss },
+    ]}
+  />
+  <p class="note">
+    <strong>Correctness note:</strong> drive reactions off <code>--d</code>, not
+    <code>--field-density</code>. When a recipe's metric pipeline runs, it also writes
+    <code>--field-density</code> as a recipe output — so on recipe elements,
+    <code>--field-density</code> holds the recipe metric, not the engine's raw particle density.
+    <code>--d</code> is always the engine value.
+  </p>
+
+  <h2 id="conditions">Conditional forces — <code>data-when</code></h2>
+  <p>
+    A force can activate only while a named condition holds, by adding <code>data-when</code> to
+    the body element. The condition is evaluated by the engine each frame; the force is
+    multiplied by 0 when the condition is false, 1 when true. No JavaScript required.
+  </p>
+  <CodeTabs variants={[{ label: 'HTML', lang: 'html', code: condHtml }]} />
+  <p>
+    Built-in conditions: <strong>active</strong> (the element is hovered/focused), <strong>slow</strong>
+    (<code>--field-scroll-v &lt; 2</code> — reading pace), <strong>idle</strong> (no pointer
+    activity in the last second), <strong>visible</strong> (intersection &gt; 0.1). The full list
+    is on the <a href="/docs/api/catalog#conditions">conditions reference</a>.
+  </p>
+
+  <h2 id="formations">Formations — <code>setFormation</code> + <code>data-formation</code></h2>
+  <p>
+    A formation shapes <em>where</em> the field&apos;s particles want to be — a global geometry
+    imposed on top of the local force field. Formations are page-scope and transition smoothly.
+  </p>
+  <CodeTabs
+    variants={[
+      { label: 'HTML (declarative)', lang: 'html', code: formationHtml },
+      { label: 'JS (imperative)', lang: 'ts', code: formationJs },
+    ]}
+    caption="Declarative: scroll drives formation changes. Imperative: <code>setFormation()</code> switches on any event."
+  />
+  <p>
+    The built-in formations — <strong>arc</strong>, <strong>ring</strong>, <strong>wells</strong>,
+    <strong>cascade</strong>, <strong>drift</strong>, and more — are on the
+    <a href="/docs/api/catalog#formations">formations reference</a>. Formations coexist with local
+    body forces; the field blends both.
   </p>
 
   <h2>Beneath the surfaces: the platform</h2>

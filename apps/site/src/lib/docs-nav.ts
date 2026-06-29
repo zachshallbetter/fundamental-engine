@@ -97,6 +97,7 @@ export const DOCS_NAV: DocGroup[] = [
       { href: '/docs/api/forces', label: 'Forces', ready: true },
       { href: '/docs/api/presets', label: 'Presets', ready: true },
       { href: '/docs/api/catalog', label: 'Conditions & formations', ready: true },
+      { href: '/docs/api/parity', label: 'Platform parity matrix', ready: true },
     ],
   },
   {

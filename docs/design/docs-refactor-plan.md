@@ -1,6 +1,6 @@
 # Documentation refactor — full plan (JS · Swift · Kotlin)
 
-**Status:** Design — not started. Active plan.
+**Status:** In progress — Phases 0–5 complete (see phase list §9). Phase 6 (IA refinement) active.
 **Goal:** Every user-facing API and capability, on every platform, documented — **correct, complete, current, and cross-platform-honest** — and *locked that way* by a gate so it cannot rot or contradict the engine again. No mysteries.
 **Grounding:** Written from a five-front audit of the actual surface (JS imperative + declarative, current docs IA, Swift, Kotlin). The numbers and parity facts below are from code, not memory.
 
