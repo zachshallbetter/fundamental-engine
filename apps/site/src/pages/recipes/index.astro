@@ -1,217 +1,298 @@
 ---
+// /explore — the solution-finder catalog. A clean-slate rethink of /recipes built around the
+// question a developer actually arrives with ("I need to show what matters / where the user is /
+// how these connect") rather than the engine's own taxonomy. See
+// docs/design/explore-interaction-model.md for the full interaction model.
+//
+// PHASE 0 (this file): server-render the complete, semantic, no-JS catalog — every recipe as a
+// linked <article>, tagged with its problem domains, grouped under the nine-domain filter bar.
+// Works with zero JavaScript (the filter bar + live previews are progressive enhancement layered
+// on in later phases). The page suppresses the global ambient particle field (signals-first): the
+// catalog is calm at rest; the engine wakes only where the visitor interacts.
 import Base from '../../layouts/Base.astro';
 import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import VocabBadge from '../../components/VocabBadge.astro';
-import { RECIPE_TIERS, FIRST_RELEASE_RECIPE_IDS, EXPERIMENTAL_RECIPES, type FieldRecipe } from '@fundamental-engine/core';
-import { metricTitle } from '../../lib/metric-lanes.ts';
+import { FIELD_RECIPES, EXPERIMENTAL_RECIPES, type FieldRecipe } from '@fundamental-engine/core';
+import { DOMAINS, taxonomyFor, isPlatformRecipe, type ProblemDomain } from '../../lib/recipe-taxonomy.ts';
+import '../../styles/workbench.css';
+import '../../styles/explore.css';
 
-// The recipes hub — the engine's own catalog of 64 portable `FieldRecipe`s across four tiers
-// (RECIPE_TIERS: core/applied/systems/operational). Each card runs the REAL recipe live (lazily, via
-// applyRecipe — see lib/recipe-preview.ts) and links to its full page at /recipes/[id]. Replaces the
-// old static /recipes listing.
+// Natural-field accent (mirrors the /recipes hub so the colour language stays consistent).
 const FIELD_COLOR: Record<string, string> = {
   gravity: '#4da3ff', electromagnetic: '#2dd4bf', strong: '#a78bfa', weak: '#ff9d5c',
   diagnostic: '#9aa7b4', platform: '#9aa7b4',
 };
-const first = new Set(FIRST_RELEASE_RECIPE_IDS);
+const fieldKeyOf = (r: FieldRecipe) => r.naturalField ?? 'platform';
 const fieldLabelOf = (r: FieldRecipe) =>
-  r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Diagnostic / platform';
+  r.naturalField != null ? r.naturalField[0]!.toUpperCase() + r.naturalField.slice(1) : 'Platform';
 
-const total = RECIPE_TIERS.reduce((n, t) => n + t.recipes.length, 0);
-const filters = [
-  { key: 'all', label: `All (${total})` },
-  { key: 'first', label: 'First release' },
-  ...RECIPE_TIERS.map((t) => ({ key: t.key, label: t.label })),
-  { key: 'gravity', label: 'Gravity' },
-  { key: 'electromagnetic', label: 'Electromagnetic' },
-  { key: 'strong', label: 'Strong' },
-  { key: 'weak', label: 'Weak' },
-  { key: 'other', label: 'Diagnostic / platform' },
-];
+// Assemble one view-model row per recipe (the 64), carrying everything the card + the Phase-1
+// filter island need. Data attributes keep the filter logic out of the markup.
+const cards = FIELD_RECIPES.map((r) => {
+  const tax = taxonomyFor(r.id);
+  return {
+    id: r.id,
+    name: r.name,
+    intent: r.intent,
+    tier: r.tier ?? 'core',
+    fieldKey: fieldKeyOf(r),
+    fieldLabel: fieldLabelOf(r),
+    accent: FIELD_COLOR[fieldKeyOf(r)] ?? FIELD_COLOR.platform,
+    domains: tax.domains,
+    solves: tax.solves,
+    isPlatform: isPlatformRecipe(r.id),
+  };
+});
+
+// Per-domain counts for the pill labels.
+const countFor = (d: ProblemDomain) => cards.filter((c) => c.domains.includes(d)).length;
+const platformCount = cards.filter((c) => c.isPlatform).length;
+const total = cards.length;
+
+const domainLabel: Record<ProblemDomain, string> = Object.fromEntries(
+  DOMAINS.map((d) => [d.id, d.label]),
+) as Record<ProblemDomain, string>;
+
+// Richer per-recipe data for the expand-in-place detail overlay, built client-side from this blob
+// (embedded as JSON rather than 64 hidden DOM panels, and avoids bundling core into the page).
+const detailData = Object.fromEntries(
+  FIELD_RECIPES.map((r) => {
+    const tax = taxonomyFor(r.id);
+    return [r.id, {
+      name: r.name,
+      intent: r.intent,
+      tier: r.tier ?? 'core',
+      fieldLabel: fieldLabelOf(r),
+      accent: FIELD_COLOR[fieldKeyOf(r)] ?? FIELD_COLOR.platform,
+      domains: tax.domains.map((d) => ({ id: d, label: domainLabel[d] })),
+      // "How it works" — the recipe's authored notes, minus the deep technical parentheticals
+      // (CSS-var / data-attr caveats) so the detail panel reads as plain language, not token-speak.
+      how: (r.notes ?? '').replace(/\s*\([^)]*(?:--|data-)[^)]*\)/g, '').trim(),
+      solves: tax.solves,
+      tokens: r.primitives,
+      metrics: r.metrics,
+      render: r.render,
+      isPlatform: isPlatformRecipe(r.id),
+      scaffoldId: tax.scaffoldId ?? null,
+      primaryRender: tax.primaryRender ?? r.render[0] ?? 'dots',
+      reducedMotion: r.accessibility.meaningWithoutMotion,
+    }];
+  }),
+);
 ---
 
 <Base
   title="Fundamental — Recipes"
-  description={`The ${total} Fundamental recipes across four tiers — portable field programs you can run live, read, and compose. Live previews, per-recipe pages, copyable HTML / web-component / React / JSON, and a from-scratch composer.`}
+  description={`Find the field recipe for your problem. ${total} portable recipes, organised by what you're building — priority, navigation, relationships, evidence, conflict, memory, flow, presence, governance.`}
 >
-  <SiteNav />
-  <main id="main" class="recipes-shell">
-    <header class="rx-hero">
-      <p class="kicker">Fundamental · recipes</p>
-      <h1>{total} recipes. Each one runs.</h1>
-      <p class="lede">
-        Portable <code>FieldRecipe</code>s — the four-field translation model made practical. Every card
-        below runs the <i>real, validated</i> recipe (its runtime tokens, render stack, and diagnostics
-        are checked against the engine catalog). Filter, watch one run, or open its page.
-      </p>
-      <p class="lede lede-lanes">
-        Each keeps the vocabulary lanes separate: <VocabBadge kind="token" label="runtime tokens" /> execute,
-        <VocabBadge kind="concept" label="concepts" /> name behavior,
-        <VocabBadge kind="metric" label="metrics" /> measure state,
-        <VocabBadge kind="diagnostic" label="diagnostics" /> explain it,
-        <VocabBadge kind="condition" label="conditions" /> activate it.
+  <SiteNav current="recipes" sticky={false} />
+
+  <main id="main" class="ex-shell">
+    <header class="ex-hero">
+      <p class="ex-kicker">Fundamental · recipes</p>
+      <h1 class="ex-title">Find the recipe for your problem.</h1>
+      <p class="ex-lede">
+        Start from what you're building, not from the physics. Every recipe below is a named,
+        validated answer to a real interface problem — pick the job, watch it run, open its page.
       </p>
     </header>
 
-    <div class="filters" role="group" aria-label="Filter recipes">
-      {filters.map((f) => (
-        <button
-          class:list={['chip', { on: f.key === 'all', 'chip-field': !!FIELD_COLOR[f.key] }]}
-          data-filter={f.key}
-          type="button"
-          style={FIELD_COLOR[f.key] ? `--chip-color: ${FIELD_COLOR[f.key]}` : undefined}
-        >{f.label}</button>
-      ))}
-    </div>
-
-    <div class="recipe-grid">
-      {RECIPE_TIERS.flatMap((t) => t.recipes).map((r) => {
-        const fieldKey = r.naturalField ?? 'other';
-        const color = FIELD_COLOR[fieldKey] ?? '#9aa7b4';
-        return (
-          <article class="recipe-card" data-field={fieldKey} data-tier={r.tier} data-first={first.has(r.id) ? 'true' : 'false'} style={`--rc: ${color}`}>
-            <header>
-              <div class="rc-tags">
-                <span class="rc-field">{fieldLabelOf(r)}</span>
-                <span class="rc-tier">{r.tier}</span>
-                {first.has(r.id) && <span class="rc-first">First release</span>}
-              </div>
-              <h2><a href={`/recipes/${r.id}`}>{r.name}</a></h2>
-              <p class="intent">{r.intent}</p>
-            </header>
-
-            <div class="rc-preview" data-recipe-preview={r.id} aria-hidden="true"></div>
-
-            <dl class="meta">
-              <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
-              <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}</dd></div>
-              <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
-            </dl>
-
-            <a class="rc-open" href={`/recipes/${r.id}`}>Open recipe →</a>
-          </article>
-        );
-      })}
-    </div>
-    <p class="empty" hidden>No recipes match that filter.</p>
-
-    <section class="rx-experimental" aria-labelledby="rx-exp-h">
-      <header class="rx-exp-head">
-        <h2 id="rx-exp-h">Experimental — Wayfinding</h2>
-        <p>
-          Two nav-chrome recipes that run the engine <i>signals-only</i> (no canvas) to drive the site's
-          own navigation — the invisible-fields family applied to wayfinding (<em>where am I</em> /
-          <em>where have I been</em>). Validated and live, but kept <b>outside the canonical {total}</b>
-          while they prove out.
-        </p>
-      </header>
-      <div class="recipe-grid">
-        {EXPERIMENTAL_RECIPES.map((r) => {
-          const fieldKey = r.naturalField ?? 'other';
-          const color = FIELD_COLOR[fieldKey] ?? '#9aa7b4';
-          return (
-            <article class="recipe-card rx-exp-card" data-field={fieldKey} style={`--rc: ${color}`}>
-              <header>
-                <div class="rc-tags">
-                  <span class="rc-field">{fieldLabelOf(r)}</span>
-                  <span class="rc-status">{r.status}</span>
-                </div>
-                <h2><a href={`/recipes/${r.id}`}>{r.name}</a></h2>
-                <p class="intent">{r.intent}</p>
-              </header>
-
-              <div class="rc-preview" data-recipe-preview={r.id} aria-hidden="true"></div>
-
-              <dl class="meta">
-                <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
-                <div><dt>Metrics</dt><dd>{r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}</dd></div>
-                <div><dt>Render</dt><dd class="rc-render">{r.render.join(' · ')}</dd></div>
-              </dl>
-
-              <a class="rc-open" href={`/recipes/${r.id}`}>Open recipe →</a>
-            </article>
-          );
-        })}
+    <!-- Filter bar. Phase 0: static, semantic, no-JS-inert. Phase 1 turns the pills + search into an
+         engine-powered FilterField. The full catalog is always present below regardless of JS, so a
+         no-JS visitor gets a complete, linked, browsable catalog. -->
+    <div class="ex-filterbar" role="search">
+      <div class="ex-search">
+        <svg class="ex-search-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4" />
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        </svg>
+        <input
+          type="search"
+          class="ex-search-input"
+          placeholder="Search recipes — priority, conflict, citations…"
+          aria-label="Search recipes"
+          autocomplete="off"
+        />
       </div>
+
+      <div class="ex-pills" role="group" aria-label="Filter by what you're building">
+        <button class="ex-pill is-on" type="button" data-domain="all" aria-pressed="true">
+          <span class="ex-pill-label">All</span>
+          <span class="ex-pill-count">{total}</span>
+        </button>
+        {DOMAINS.map((d) => (
+          <button class="ex-pill" type="button" data-domain={d.id} aria-pressed="false" title={`${d.label} — ${d.need}`} aria-label={d.label} style={`--pill-accent: var(${d.accentVar})`}>
+            <span class="ex-pill-dot"></span>
+            <span class="ex-pill-label">{d.short}</span>
+            <span class="ex-pill-count">{countFor(d.id)}</span>
+          </button>
+        ))}
+        <button class="ex-pill ex-pill-platform" type="button" data-domain="platform" aria-pressed="false" title="Platform &amp; Teaching — recipes that help you understand or instrument the engine itself" aria-label="Platform & Teaching">
+          <span class="ex-pill-label">Platform</span>
+          <span class="ex-pill-count">{platformCount}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="ex-toolbar">
+      <p class="ex-resultcount" aria-live="polite" data-result-count>{total} recipes</p>
+      <div class="ex-viewtoggle" role="group" aria-label="View mode">
+        <button type="button" class="ex-view is-on" data-view="grid" aria-pressed="true">Grid</button>
+        <button type="button" class="ex-view" data-view="constellation" aria-pressed="false">Constellation</button>
+      </div>
+    </div>
+
+    <!-- Constellation view — a force-directed map of the catalog: recipes cluster around their
+         primary domain. Built + laid out client-side; hidden until toggled (and on no-JS). -->
+    <div class="ex-constellation" data-constellation hidden aria-hidden="true"></div>
+
+    <!-- The catalog. One <article> per recipe — minimal by design: field accent, name, the problem
+         it solves, the domains it answers, a link to the full recipe page. Implementation metadata
+         (tokens, metrics, render stack) deliberately lives on the expanded view, not here. -->
+    <ul class="ex-grid" role="list">
+      {cards.map((c) => (
+        <li
+          class="ex-card"
+          data-recipe-id={c.id}
+          data-name={c.name.toLowerCase()}
+          data-intent={c.intent.toLowerCase()}
+          data-solves={c.solves.join(' ').toLowerCase()}
+          data-domains={c.domains.join(' ')}
+          data-platform={c.isPlatform ? '1' : undefined}
+          data-field={c.fieldKey}
+          data-tier={c.tier}
+          style={`--card-accent: ${c.accent}`}
+        >
+          <a class="ex-card-link" href={`/recipes/${c.id}`}>
+            <div class="ex-card-head">
+              <span class="ex-card-field">{c.fieldLabel}</span>
+              <span class="ex-card-tier">{c.tier}</span>
+            </div>
+            <h2 class="ex-card-name">{c.name}</h2>
+            <p class="ex-card-intent">{c.intent}</p>
+            <div class="ex-card-foot">
+              {c.isPlatform ? (
+                <span class="ex-chip ex-chip-platform">Platform</span>
+              ) : (
+                c.domains.map((d) => (
+                  <span class="ex-chip" style={`--chip-accent: var(--dom-${d})`}>{domainLabel[d]}</span>
+                ))
+              )}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <p class="ex-empty" data-empty hidden>
+      No recipe matches that yet. <button type="button" data-clear-filters class="ex-link-btn">Clear filters</button>
+    </p>
+
+    <section class="ex-experimental" aria-labelledby="ex-exp-h">
+      <h2 id="ex-exp-h">Experimental</h2>
+      <p>Recipes still proving out — kept outside the canonical {FIELD_RECIPES.length} while they settle. Validated and live, with their own pages.</p>
+      <ul class="ex-exp-list">
+        {EXPERIMENTAL_RECIPES.map((r) => (
+          <li><a href={`/recipes/${r.id}`}>{r.name}</a> <span>{r.intent}</span></li>
+        ))}
+      </ul>
     </section>
   </main>
+
+  <!-- Per-recipe detail data for the expand-in-place overlay (parsed client-side). -->
+  <script type="application/json" id="ex-recipe-data" set:html={JSON.stringify(detailData)}></script>
+
+  <!-- Expand-in-place detail overlay — one reusable shell, populated on open. Backdrop recedes the
+       grid; the panel grows from the clicked card (FLIP); the field wakes in the preview area. -->
+  <div class="ex-detail" data-detail hidden>
+    <div class="ex-detail-backdrop" data-detail-backdrop></div>
+    <article class="ex-detail-panel" role="dialog" aria-modal="true" aria-labelledby="ex-detail-name" data-detail-panel>
+      <button class="ex-detail-close" type="button" aria-label="Close" data-detail-close>
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+          <path d="M4 4 12 12 M12 4 4 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      </button>
+      <div class="ex-detail-preview" data-detail-preview>
+        <!-- field canvas + scaffold bodies mount here on open; the Phase-2b workbench controls
+             attach to this region -->
+      </div>
+      <div class="ex-detail-info" data-detail-info>
+        <!-- name / intent / solves / tokens / metrics / render / link — built on open -->
+      </div>
+    </article>
+  </div>
+
   <SiteFooter />
 </Base>
 
+<!-- Suppress the global ambient particle field on the recipes catalog only (signals-first: the
+     catalog is calm; the engine wakes where the visitor interacts). Page-scoped class — does NOT
+     touch the global `data-field` nav toggle, so the visitor's own preference is preserved on leave.
+     The /recipes/<id> pages have their own contained workbench field, so suppress only the index. -->
+<style is:global>
+  html.ex-no-ambient field-root { display: none !important; }
+</style>
 <script>
-  import { initRecipePreviews } from '../../lib/recipe-preview.ts';
-
-  let teardown: (() => void) | undefined;
-  function init() {
-    // filters
-    const cards = Array.from(document.querySelectorAll<HTMLElement>('.recipe-card'));
-    const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip'));
-    const empty = document.querySelector<HTMLElement>('.empty');
-    const TIERS = new Set(['core', 'applied', 'systems', 'operational']);
-    const apply = (key: string) => {
-      let shown = 0;
-      for (const card of cards) {
-        const f = card.dataset.field ?? '';
-        const tier = card.dataset.tier ?? '';
-        const match = key === 'all' || (key === 'first' && card.dataset.first === 'true') || (TIERS.has(key) && key === tier) || key === f;
-        card.hidden = !match;
-        if (match) shown++;
-      }
-      if (empty) empty.hidden = shown > 0;
-    };
-    for (const chip of chips) chip.addEventListener('click', () => {
-      chips.forEach((c) => c.classList.toggle('on', c === chip));
-      apply(chip.dataset.filter ?? 'all');
-    });
-    // live previews (lazy, in-view, capped)
-    teardown?.();
-    teardown = initRecipePreviews({ max: 6 });
-  }
-  if (document.readyState !== 'loading') init();
-  else document.addEventListener('DOMContentLoaded', init);
-  document.addEventListener('astro:page-load', init);
-  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+  const onCatalog = () => location.pathname.replace(/\/$/, '') === '/recipes';
+  const mark = () => document.documentElement.classList.add('ex-no-ambient');
+  const unmark = () => document.documentElement.classList.remove('ex-no-ambient');
+  if (onCatalog()) mark();
+  // Astro client-side nav: re-assert on arrival, release on departure.
+  document.addEventListener('astro:page-load', () => {
+    if (onCatalog()) mark();
+    else unmark();
+  });
+  document.addEventListener('astro:before-swap', unmark);
 </script>
 
-<style>
-  .recipes-shell { position: relative; z-index: 2; width: 100%; max-width: var(--content-max); margin: 0 auto; padding: 5.5rem 1.5rem 4rem; }
-  .rx-hero { max-width: 60rem; }
-  .kicker { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted, #9aa); margin: 0; }
-  .rx-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 0.4rem 0 0.6rem; line-height: 1.05; }
-  .lede { color: var(--muted, #9aa); max-width: 70ch; }
-  .lede a { color: #4da3ff; }
-  .lede-lanes { font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: baseline; }
-  .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1.5rem 0 0.5rem; }
-  .chip { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--text, #e8e8ef); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.82rem; cursor: pointer; }
-  .chip.on { background: color-mix(in srgb, var(--chip-color, #4da3ff) 22%, transparent); border-color: var(--chip-color, #4da3ff); }
-  /* a field chip carries its natural-field color as a leading dot — the field's identity at a glance */
-  .chip-field::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--chip-color, var(--accent)); flex: none; }
-  .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.1rem; margin-top: 1rem; }
-  .recipe-card[hidden] { display: none; }
-  .recipe-card { display: flex; flex-direction: column; border: 1px solid var(--line, #2a2a35); border-top: 3px solid var(--rc, #4da3ff); border-radius: 12px; padding: 1rem 1.1rem; background: color-mix(in srgb, var(--text, #fff) 2.5%, transparent); }
-  .rc-tags { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; font-size: 0.72rem; }
-  .rc-field { color: var(--rc, #4da3ff); font-weight: 600; }
-  .rc-tier { color: var(--muted, #9aa); text-transform: capitalize; }
-  .rc-first { color: #ffd479; border: 1px solid color-mix(in srgb, #ffd479 40%, transparent); border-radius: 999px; padding: 0 0.4rem; }
-  .recipe-card h2 { font-size: 1.15rem; margin: 0.45rem 0 0.2rem; }
-  .recipe-card h2 a { text-decoration: none; }
-  .recipe-card h2 a:hover { color: var(--rc, #4da3ff); }
-  .intent { color: var(--muted, #9aa); font-size: 0.88rem; margin: 0 0 0.7rem; }
-  .rc-preview { position: relative; min-height: 116px; border: 1px solid var(--line, #2a2a35); border-radius: 10px; background: radial-gradient(120% 120% at 50% 40%, color-mix(in srgb, var(--rc) 8%, transparent), transparent 70%); display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: center; padding: 0.7rem; overflow: hidden; }
-  .meta { display: grid; gap: 0.4rem; margin: 0.8rem 0 0.6rem; }
-  .meta > div { display: grid; grid-template-columns: 8rem 1fr; gap: 0.5rem; align-items: baseline; }
-  .meta dt { color: var(--muted, #9aa); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
-  .meta dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.25rem; }
-  .rc-render { font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--muted, #c3c9d4); }
-  .rc-open { margin-top: auto; font-size: 0.84rem; color: var(--rc, #4da3ff); text-decoration: none; padding-top: 0.4rem; }
-  .rc-open:hover { text-decoration: underline; }
-  .empty { color: var(--muted, #9aa); margin-top: 1.5rem; }
-  .rx-experimental { margin-top: 3rem; border-top: 1px dashed var(--line, #2a2a35); padding-top: 1.6rem; }
-  .rx-exp-head { max-width: 60rem; margin-bottom: 1rem; }
-  .rx-exp-head h2 { font-size: 1.4rem; margin: 0 0 0.4rem; }
-  .rx-exp-head p { color: var(--muted, #9aa); font-size: 0.9rem; max-width: 70ch; }
-  .rx-exp-card { border-top-style: dashed; }
-  .rc-status { color: #ff9d5c; text-transform: capitalize; }
-  @media (max-width: 560px) { .meta > div { grid-template-columns: 1fr; } }
-</style>
+<script>
+  // Browse layer: search + domain filtering (works with no engine). The engine-powered signals
+  // filter bar is layered on top and lazy-imported separately, so the catalog is fully usable the
+  // instant this runs.
+  import { initExplorePage } from '../../lib/explore-page.ts';
+
+  import { startFilterField, stopFilterField } from '../../lib/explore-filter-field.ts';
+  import { initExploreDetail } from '../../lib/explore-detail.ts';
+  import { initConstellation, type ConstellationHandle } from '../../lib/explore-constellation.ts';
+
+  let teardown: (() => void) | null = null;
+  let teardownDetail: (() => void) | null = null;
+  let constellation: ConstellationHandle | null = null;
+  let booted = false;
+  function boot() {
+    if (location.pathname.replace(/\/$/, '') !== '/recipes') { stopFilterField(); return; }
+    if (booted) return; // astro:page-load + the readyState fallback can both fire on first load
+    booted = true;
+    teardown = initExplorePage();
+    teardownDetail = initExploreDetail(); // expand-in-place overlay (also handles ?r= deep-links)
+    constellation = initConstellation();
+    startFilterField(); // engine-powered (invisible) filter bar — lazy, signals-only
+
+    // Grid ↔ Constellation view toggle
+    const grid = document.querySelector('.ex-grid');
+    const views = [...document.querySelectorAll('.ex-view')];
+    for (const btn of views) {
+      btn.addEventListener('click', () => {
+        const mode = (btn as HTMLElement).dataset.view;
+        views.forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle('is-on', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+        if (mode === 'constellation') { grid?.setAttribute('hidden', ''); constellation?.show(); }
+        else { constellation?.hide(); grid?.removeAttribute('hidden'); }
+      });
+    }
+  }
+  function teardownAll() {
+    booted = false;
+    teardown?.(); teardown = null;
+    teardownDetail?.(); teardownDetail = null;
+    constellation?.destroy(); constellation = null;
+    stopFilterField();
+  }
+  document.addEventListener('astro:page-load', boot);
+  document.addEventListener('astro:before-swap', teardownAll);
+  if (document.readyState !== 'loading') boot();
+  else document.addEventListener('DOMContentLoaded', boot);
+</script>

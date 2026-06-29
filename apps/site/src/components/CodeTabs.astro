@@ -106,3 +106,117 @@ const multi = variants.length > 1;
   if (document.readyState !== "loading") restoreCodeTab();
   else document.addEventListener("DOMContentLoaded", restoreCodeTab);
 </script>
+
+<!-- Styles travel with the component (is:global) so CodeTabs renders identically on ANY page —
+     the docs/evidence pages and the Base-layout recipe pages alike — not just where docs.css loads. -->
+<style is:global>
+  .code-tabs {
+    margin: 1rem 0 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-canvas, #07090e);
+    overflow: hidden;
+  }
+  .code-tabs .ct-head {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .code-tabs .ct-tabs {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .code-tabs .ct-tab {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 0.55rem 0.95rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    cursor: pointer;
+    transition:
+      color 0.18s,
+      border-color 0.18s;
+  }
+  .code-tabs .ct-tab:hover {
+    color: var(--text-2);
+  }
+  .code-tabs .ct-tab[aria-selected='true'] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .code-tabs .ct-lang {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55rem 0.95rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .code-tabs .ct-copy {
+    appearance: none;
+    align-self: center;
+    margin: 0 0.5rem 0 0;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    cursor: copy;
+    transition:
+      color 0.18s,
+      border-color 0.18s,
+      background 0.18s;
+  }
+  .code-tabs .ct-copy:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+  .code-tabs .ct-copy.copied {
+    color: var(--ok);
+    border-color: var(--ok);
+  }
+  .code-tabs .ct-body[hidden] {
+    display: none;
+  }
+  /* Shiki sets its own bg + inline span colors; strip the bg so the panel shows
+     through and the block matches the site's --bg-canvas. */
+  .code-tabs pre.astro-code,
+  .code-tabs pre.astro-code code {
+    margin: 0;
+    background: transparent !important;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.7;
+    tab-size: 2;
+  }
+  .code-tabs pre.astro-code {
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+  }
+  .code-tabs .ct-caption {
+    padding: 0.55rem 1.15rem 0.7rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.82rem;
+    color: var(--text-3);
+  }
+  .code-tabs .ct-caption code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    color: var(--text-2);
+  }
+</style>

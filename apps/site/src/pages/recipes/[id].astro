@@ -3,10 +3,13 @@ import Base from '../../layouts/Base.astro';
 import SiteNav from '../../components/SiteNav.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import VocabBadge from '../../components/VocabBadge.astro';
+import CodeTabs from '../../components/CodeTabs.astro';
 import {
-  FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, type FieldRecipe,
+  FIELD_RECIPES, EXPERIMENTAL_RECIPES, FIRST_RELEASE_RECIPE_IDS, explainScene, serializeRecipe, recipeAuthoring, passportFor, type FieldRecipe,
 } from '@fundamental-engine/core';
 import { metricTitle, designedMetrics } from '../../lib/metric-lanes.ts';
+import { taxonomyFor } from '../../lib/recipe-taxonomy.ts';
+import '../../styles/workbench.css';
 
 // One page per recipe (getStaticPaths over the 64 FIELD_RECIPES + the experimental set): a large live
 // preview, the full five-lane breakdown + render + a11y + notes + plain-language explanation, copyable
@@ -29,6 +32,13 @@ const exports = { html: auth.html, wc: auth.webComponent, react: auth.react, jso
 const seeAlso = FIELD_RECIPES.filter((x) => x.id !== r.id && (x.naturalField === r.naturalField || x.tier === r.tier)).slice(0, 6);
 // which metric lanes need the host to ground them (else --field-<m> stays inert) — see lintInertFeedback
 const designed = designedMetrics(r.metrics);
+// discovery metadata for the shared workbench preview (scaffold + the render stack it wakes into)
+const tax = taxonomyFor(r.id);
+const primaryRender = tax.primaryRender ?? r.render[0] ?? 'dots';
+// per-token / per-metric one-liners — tokens from the engine's own ForcePassport.designUse (the
+// authored "what it does" verb); metrics from the support-lane description (metricTitle).
+const tokenDef = (t: string): string => passportFor(t as never)?.designUse ?? '';
+const metricDef = (m: string): string => metricTitle(m).replace(/^[^—]*—\s*/, '');
 ---
 
 <Base title={`Fundamental — ${r.name}`} description={`${r.name}: ${r.intent}. A live, validated Fundamental recipe — runs in your browser, with the runtime tokens, metrics, diagnostics, accessibility equivalent, and copyable HTML / web component / React / JSON.`}>
@@ -48,24 +58,30 @@ const designed = designedMetrics(r.metrics);
     </header>
 
     <section class="rp-stage" aria-label="Live preview">
-      <div class="rp-preview" data-recipe-preview={r.id} aria-hidden="true"></div>
-      <div class="rp-readout" data-readout>
-        <span>frame <b data-ro="frame">—</b></span>
-        <span>bodies <b data-ro="measurements">0</b></span>
-        <span>relationships <b data-ro="relationships">0</b></span>
-        <span class="rp-metrics" data-ro-metrics></span>
-      </div>
-      <p class="rp-note">Running the actual recipe live via <code>applyRecipe()</code> — not a mock.</p>
+      <div
+        class="rp-preview"
+        data-recipe-mount={r.id}
+        data-scaffold={tax.scaffoldId ?? ''}
+        data-primary-render={primaryRender}
+        data-render-layers={r.render.join(',')}
+        data-reduced={r.accessibility.meaningWithoutMotion}
+        aria-hidden="true"
+      ></div>
+      <p class="rp-note">Running the actual recipe live via <code>applyRecipe()</code> — switch the substrate, stack overlays, watch the signals, or reverse the dynamics. Not a mock.</p>
     </section>
 
     <p class="explain">{explainScene(r)}</p>
     {r.notes && <p class="notes">{r.notes}</p>}
 
     <dl class="rp-meta">
-      <div><dt>Runtime tokens</dt><dd>{r.primitives.map((p) => <VocabBadge kind="token" label={p} />)}</dd></div>
+      <div><dt>Runtime tokens</dt><dd class="rp-defs">{r.primitives.map((p) => (
+        <span class="rp-def"><VocabBadge kind="token" label={p} title={`${p} — ${tokenDef(p)}`} /><span class="rp-def-text">{tokenDef(p)}</span></span>
+      ))}</dd></div>
       {r.concepts && r.concepts.length > 0 && <div><dt>Concepts</dt><dd>{r.concepts.map((c) => <VocabBadge kind="concept" label={c} />)}</dd></div>}
-      <div><dt>Metrics</dt><dd>
-        {r.metrics.map((m) => <VocabBadge kind="metric" label={m} title={metricTitle(m)} />)}
+      <div><dt>Metrics</dt><dd class="rp-defs">
+        {r.metrics.map((m) => (
+          <span class="rp-def"><VocabBadge kind="metric" label={m} title={metricTitle(m)} /><span class="rp-def-text">{metricDef(m)}</span></span>
+        ))}
         {designed.length > 0 && (
           <span class="ml-note">
             {designed.join(', ')} {designed.length === 1 ? 'is a host-supplied lane' : 'are host-supplied lanes'} —
@@ -81,17 +97,14 @@ const designed = designedMetrics(r.metrics);
       <div><dt>Without motion</dt><dd class="a11y">{r.accessibility.meaningWithoutMotion}</dd></div>
     </dl>
 
-    <section class="rp-export" data-ex>
+    <section class="rp-export">
       <h2>Copy this recipe</h2>
-      <div class="ex-tabs" role="tablist">
-        <button type="button" class="on" data-ex-tab="html">HTML</button>
-        <button type="button" data-ex-tab="wc">Web component</button>
-        <button type="button" data-ex-tab="react">React</button>
-        <button type="button" data-ex-tab="json">JSON</button>
-        <button type="button" class="ex-copy" data-ex-copy>Copy</button>
-      </div>
-      <pre class="ex-pre"><code>{exports.html}</code></pre>
-      <script type="application/json" data-ex-data set:html={JSON.stringify(exports).split('</').join('<\\/')}></script>
+      <CodeTabs variants={[
+        { label: 'HTML', lang: 'html', code: exports.html },
+        { label: 'Web component', lang: 'html', code: exports.wc },
+        { label: 'React', lang: 'tsx', code: exports.react },
+        { label: 'JSON', lang: 'json', code: exports.json },
+      ]} />
     </section>
 
     {seeAlso.length > 0 && (
@@ -105,51 +118,31 @@ const designed = designedMetrics(r.metrics);
 </Base>
 
 <script>
-  import { initRecipePreviews } from '../../lib/recipe-preview.ts';
+  import { mountRecipePreview, type PreviewHandle } from '../../lib/explore-preview.ts';
 
-  let teardown: (() => void) | undefined;
+  let preview: PreviewHandle | undefined;
   function init() {
-    const ro = (k: string, v: string) => { const e = document.querySelector(`[data-ro="${k}"]`); if (e) e.textContent = v; };
-    const metricsEl = document.querySelector<HTMLElement>('[data-ro-metrics]');
-    teardown?.();
-    teardown = initRecipePreviews({
-      max: 1,
-      onInspect: (_el, applied) => {
-        const ins = applied.inspect();
-        ro('frame', String(ins.frame));
-        ro('measurements', String(ins.measurements));
-        ro('relationships', String(ins.relationships));
-        if (metricsEl) {
-          const first = Object.values(ins.metrics)[0] ?? {};
-          metricsEl.innerHTML = Object.entries(first).map(([m, v]) => `<span>${m} <b>${(v as number).toFixed(2)}</b></span>`).join('');
-        }
-      },
-    });
-
-    // copy-this-recipe tabs
-    const ex = document.querySelector<HTMLElement>('[data-ex]');
-    if (ex) {
-      let data: Record<string, string> = {};
-      try { data = JSON.parse(ex.querySelector('[data-ex-data]')?.textContent ?? '{}'); } catch { data = {}; }
-      const pre = ex.querySelector<HTMLElement>('.ex-pre code');
-      const tabs = Array.from(ex.querySelectorAll<HTMLButtonElement>('[data-ex-tab]'));
-      const copyBtn = ex.querySelector<HTMLButtonElement>('[data-ex-copy]');
-      let current = 'html';
-      for (const t of tabs) t.addEventListener('click', () => {
-        current = t.dataset.exTab ?? 'html';
-        tabs.forEach((x) => x.classList.toggle('on', x === t));
-        if (pre) pre.textContent = data[current] ?? '';
-      });
-      copyBtn?.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(data[current] ?? ''); copyBtn.textContent = 'Copied'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200); }
-        catch { copyBtn.textContent = 'Copy failed'; }
+    // the full workbench preview — substrate/overlay/dynamics controls + live signal readout, the
+    // same component the Explore detail uses (mountRecipePreview reads the recipe metadata off the
+    // mount element's data-* attributes, set server-side).
+    const el = document.querySelector<HTMLElement>('[data-recipe-mount]');
+    preview?.destroy();
+    if (el) {
+      preview = mountRecipePreview(el, {
+        recipeId: el.dataset.recipeMount ?? '',
+        scaffoldId: el.dataset.scaffold || null,
+        primaryRender: el.dataset.primaryRender ?? 'dots',
+        reducedMotionText: el.dataset.reduced ?? '',
+        renderLayers: (el.dataset.renderLayers ?? '').split(',').filter(Boolean),
       });
     }
+
+    // the copy-this-recipe block is now <CodeTabs> — it owns its own tab + copy behaviour.
   }
   if (document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
   document.addEventListener('astro:page-load', init);
-  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+  document.addEventListener('astro:before-swap', () => { preview?.destroy(); preview = undefined; });
 </script>
 
 <style>
@@ -164,28 +157,27 @@ const designed = designedMetrics(r.metrics);
   .rp-hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0.5rem 0 0.4rem; line-height: 1.05; }
   .intent { color: var(--muted, #c3c9d4); font-size: 1.05rem; margin: 0 0 0.3rem; }
   .translation { color: var(--muted, #9aa); font-style: italic; margin: 0; }
-  .rp-stage { margin: 1.6rem 0; border: 1px solid var(--line, #2a2a35); border-radius: 14px; overflow: hidden; background: radial-gradient(120% 120% at 50% 30%, color-mix(in srgb, var(--rc) 9%, transparent), transparent 70%); }
-  .rp-preview { position: relative; min-height: 240px; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: center; padding: 1.2rem; }
-  .rp-readout { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0.6rem 1rem; border-top: 1px solid var(--line, #2a2a35); font: 0.8rem ui-monospace, monospace; color: var(--muted, #9aa); }
-  .rp-readout b { color: var(--text, #e8e8ef); }
-  .rp-metrics { display: flex; gap: 0.7rem; flex-wrap: wrap; }
-  .rp-note { font-size: 0.8rem; color: var(--muted, #9aa); padding: 0 1rem 0.7rem; margin: 0; }
+  /* --detail-accent drives the workbench signal bars + active-pill glow to the recipe's field colour */
+  .rp-stage { margin: 1.6rem 0; border: 1px solid var(--line, #2a2a35); border-radius: 14px; overflow: hidden; --detail-accent: var(--rc); background: radial-gradient(120% 120% at 50% 30%, color-mix(in srgb, var(--rc) 9%, transparent), transparent 70%); }
+  /* host for the shared workbench preview: positioned + clipped, tall enough for the control rows */
+  .rp-preview { position: relative; overflow: hidden; min-height: 440px; display: grid; place-items: center; }
+  .rp-note { font-size: 0.8rem; color: var(--muted, #9aa); padding: 0.6rem 1rem 0.7rem; margin: 0; border-top: 1px solid var(--line, #2a2a35); }
   .explain { font-size: 1.02rem; line-height: 1.6; }
   .notes { color: var(--muted, #c3c9d4); font-size: 0.92rem; border-left: 2px solid var(--rc, #4da3ff); padding-left: 0.9rem; }
   .rp-meta { display: grid; gap: 0.5rem; margin: 1.6rem 0; }
   .rp-meta > div { display: grid; grid-template-columns: 10rem 1fr; gap: 0.7rem; align-items: baseline; }
   .rp-meta dt { color: var(--muted, #9aa); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
   .rp-meta dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  /* token/metric chip + its one-liner, one per row, so meanings read at a glance */
+  .rp-meta dd.rp-defs { flex-direction: column; gap: 0.35rem; }
+  .rp-def { display: flex; align-items: baseline; gap: 0.6rem; }
+  .rp-def > :first-child { flex: none; min-width: 6.5rem; }
+  .rp-def-text { color: var(--muted, #c3c9d4); font-size: 0.88rem; line-height: 1.4; }
   .rp-meta dd.a11y { display: block; color: var(--muted, #c3c9d4); font-size: 0.9rem; }
   .rp-meta dd .ml-note { flex-basis: 100%; margin-top: 0.35rem; color: var(--muted, #9aa); font-size: 0.8rem; line-height: 1.5; }
   .rp-meta dd .ml-note code { font-size: 0.92em; color: var(--text-2, #c3c9d4); }
   .rc-render { font-family: ui-monospace, monospace; font-size: 0.82rem; color: var(--muted, #c3c9d4); }
   .rp-export { margin: 1.8rem 0; }
-  .ex-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-  .ex-tabs button { border: 1px solid var(--line, #2a2a35); background: transparent; color: var(--muted, #9aa); border-radius: 8px 8px 0 0; padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; }
-  .ex-tabs button.on { color: var(--text, #e8e8ef); border-bottom-color: transparent; background: color-mix(in srgb, var(--text, #fff) 4%, transparent); }
-  .ex-copy { margin-left: auto; }
-  .ex-pre { margin: 0; border: 1px solid var(--line, #2a2a35); border-radius: 0 10px 10px 10px; padding: 0.9rem 1rem; overflow: auto; background: color-mix(in srgb, var(--text, #fff) 3%, transparent); font-size: 0.8rem; }
   .rp-seealso { margin-top: 2rem; border-top: 1px solid var(--line, #2a2a35); padding-top: 1.2rem; }
   .rp-seealso ul { list-style: none; padding: 0; display: grid; gap: 0.45rem; }
   .rp-seealso a { color: var(--rc, #4da3ff); text-decoration: none; }

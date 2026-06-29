@@ -5,9 +5,12 @@
 // (GitHub + npm links are added at launch, once the repo is public and packages ship.)
 import { currentVersion } from '../lib/changelog';
 interface Props {
-  current?: 'home' | 'docs' | 'lab' | 'examples' | 'writings' | 'use-cases';
+  current?: 'home' | 'docs' | 'lab' | 'examples' | 'writings' | 'use-cases' | 'recipes';
+  /** when false, the nav is not fixed — it sits at the top and scrolls away with the page
+   *  (for content-dense pages where a pinned translucent nav over the scroll reads as noise). */
+  sticky?: boolean;
 }
-const { current } = Astro.props;
+const { current, sticky = true } = Astro.props;
 const version = currentVersion();
 const dest = [
   { href: '/docs', label: 'Docs', key: 'docs' },
@@ -20,7 +23,7 @@ const dest = [
 ] as const;
 ---
 
-<header class="site-nav">
+<header class={`site-nav${sticky ? '' : ' is-flow'}`}>
   <div class="sn-inner">
     <a
       class="sn-mark"
@@ -298,6 +301,9 @@ const dest = [
       transparent 90%
     );
   }
+  /* Non-pinned variant (sticky={false}): absolute, so it stays at the document top and scrolls
+     away with the page — out of flow, so pages keep the same top spacing as the fixed nav. */
+  .site-nav.is-flow { position: absolute; }
   .sn-inner {
     width: 100%;
     /* align the wordmark + links with the page content column (--content-max) so the nav

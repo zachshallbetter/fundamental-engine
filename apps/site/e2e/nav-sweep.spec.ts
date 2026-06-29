@@ -65,12 +65,18 @@ test.describe("footer · Wayfinding Field", () => {
   });
 });
 
-test.describe("recipes filter chips · per-field color", () => {
-  test("the natural-field chips carry their field color", async ({ page }) => {
+test.describe("recipes filter pills · per-domain color", () => {
+  test("the problem-domain pills carry their domain color", async ({ page }) => {
+    // /recipes is the solution-finder catalog: the primary filter is the nine problem-domain pills,
+    // each tinted with its own --pill-accent (the natural-field colour now lives on the cards).
     await page.goto("/recipes");
-    const gravity = page.locator('.chip[data-filter="gravity"]');
-    await expect(gravity).toHaveClass(/chip-field/);
-    expect((await gravity.evaluate((el) => el.style.getPropertyValue("--chip-color"))).trim().length).toBeGreaterThan(0);
+    const pill = page.locator('.ex-pill[data-domain="conflict"]');
+    await expect(pill).toHaveCount(1);
+    const dotColor = await pill
+      .locator(".ex-pill-dot")
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(dotColor.startsWith("rgb")).toBe(true);
+    expect(dotColor).not.toBe("rgba(0, 0, 0, 0)");
   });
 });
 
