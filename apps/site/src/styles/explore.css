@@ -609,3 +609,17 @@ body.ex-detail-open { overflow: hidden; }
   .ex-detail-backdrop { transition: none; }
   .ex-detail.is-open .ex-detail-panel { animation: none; }
 }
+
+/* ── Experimental recipes (outside the canonical 64) — a compact linked list under the catalog ──── */
+.ex-experimental {
+  margin-top: 3.5rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+}
+.ex-experimental h2 { font-size: 1.3rem; margin: 0 0 0.3rem; }
+.ex-experimental > p { color: var(--text-3); font-size: 0.9rem; margin: 0 0 1rem; max-width: 60ch; }
+.ex-exp-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+.ex-exp-list li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; }
+.ex-exp-list a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.ex-exp-list a:hover { text-decoration: underline; }
+.ex-exp-list span { color: var(--text-3); font-size: 0.88rem; }
