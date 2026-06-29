@@ -57,16 +57,16 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
       surface, and the physics mirror the npm packages — and the
       <a href="/docs/guides/swift">Swift port</a> — one-to-one. The two planes are held to the same
       <strong>shared cross-plane conformance golden</strong> (JS / Swift / Kotlin). Where they diverge,
-      it is a bug or a listed <a href="#parity">parity gap</a>.
+      it is a bug or a documented <a href="#parity">platform difference</a>.
     </p>
   </header>
 
   <div class="callout">
-    <b>Status: in active development.</b> The Kotlin port lives on the <code>android</code> branch and is
-    not a published release. It is real and conformance-checked against the JS engine (the same 36-force
-    golden the Swift port runs), but the web plane moves first and the port is behind on the newest
-    primitives. See <a href="/docs/implementations">Implementations</a> for the full surface-by-surface
-    status, and <a href="#parity">Parity</a> below for specifics.
+    <b>Status: 44/44.</b> The Kotlin port is conformance-checked against the JS engine (the same 36-force
+    golden the Swift port runs) and ships all 44 FieldHandle methods as of
+    <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a>. See
+    <a href="/docs/implementations">Implementations</a> for the full surface-by-surface status,
+    and <a href="#parity">Parity</a> below for platform-specific notes.
   </div>
 
   <section class="docs-sec">
@@ -127,22 +127,22 @@ field.burst(tap.x, tap.y)             // a CGPoint analogue from a MotionEvent
   </section>
 
   <section class="docs-sec" id="parity">
-    <h2>Parity — the honest status</h2>
+    <h2>Parity</h2>
     <p>
-      The port is a port, and the web plane moves first. The core force set, the scheduler and
-      registries, formations, the <code>FieldHandle</code> public API (relationship edges included), and
-      the interactive scenes are all present and pass the cross-plane conformance gate. The newest
-      primitives — the field-channel read/write surface and the most recent reactive-component work — are
-      <strong>not yet ported</strong>. Treat the Kotlin surface as
-      <strong>in active development</strong>: stable in shape, trailing the web on the very newest
-      additions.
+      The Kotlin port ships <strong>44/44 FieldHandle methods</strong> — full parity with the JS engine
+      as of <a href="https://github.com/zachshallbetter/fundamental-engine/pull/823">#823</a>.
+      The core force set, the scheduler and registries, formations, the <code>FieldHandle</code> public
+      API (relationship edges included), and all six advanced methods (<code>addAgent</code>,
+      <code>sample</code>, <code>on</code>, <code>readParticleIds</code>,
+      <code>readParticleChannels</code>, <code>registerOverlay</code>) are implemented and pass the
+      cross-plane conformance gate.
     </p>
     <p>
-      <b>20/44 FieldHandle methods ship on Kotlin (45%).</b> The full method-by-method breakdown is on
-      the <a href="/docs/api/parity">parity matrix page</a>. The main gap versus Swift: render-layer
-      methods (<code>setRender</code>, <code>setOverlay</code>, <code>threads</code>,
-      <code>setAccent</code>) are absent because Compose and the View/Canvas host own the draw — the
-      Kotlin engine exposes the data pipeline, and Compose wires the drawing.
+      The full method-by-method breakdown is on the <a href="/docs/api/parity">parity matrix page</a>.
+      Some methods behave differently by platform design: Compose and the View/Canvas host own the draw
+      loop, so <code>setRender</code> and <code>setOverlay</code> are read by the host rather than
+      driving a native canvas directly. <code>scrollV</code> is fed by the platform via
+      <code>feedScrollV()</code>. These platform differences are documented in the parity matrix notes.
     </p>
     <p>
       The deeper architectural story — why the same engine can run on the web, in WebGL, headless, and
