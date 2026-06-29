@@ -87,6 +87,14 @@ public struct FieldOptions {
     /// attractors — particles still respond physically, they just don't bloom. 0 = no heat glow at all.
     public var particleGlow: Float
     public var feedbackSink: FeedbackSink?
+    /// Canvas background clear colour (hex) — the renderer clears to it each frame. `nil` = transparent.
+    /// Mirrors JS `setBackground`. Only affects Metal/CG renderers that honour this option.
+    public var background: String?
+    /// Device-pixel-ratio cap — passed to Metal's `contentsScale`. Default `nil` = no cap.
+    /// Mirrors JS `setDprCap`.
+    public var dprCap: Float?
+    /// Quality tier 0–3 (0 = full, 3 = paused). Read by the platform scheduler. Mirrors JS `setQualityTier`.
+    public var qualityTier: Int
 
     public init(
         accent: String? = nil,
@@ -105,6 +113,9 @@ public struct FieldOptions {
         particleSize: Float = 1.0,
         particleGlow: Float = 1.0,
         separation: Float = 0.0,
+        background: String? = nil,
+        dprCap: Float? = nil,
+        qualityTier: Int = 0,
         feedbackSink: FeedbackSink? = nil
     ) {
         self.accent = accent
@@ -123,6 +134,9 @@ public struct FieldOptions {
         self.particleSize = particleSize
         self.particleGlow = particleGlow
         self.separation = separation
+        self.background = background
+        self.dprCap = dprCap
+        self.qualityTier = qualityTier
         self.feedbackSink = feedbackSink
     }
 }
@@ -333,6 +347,22 @@ public protocol FieldHandle: AnyObject {
                  type: String, strength: Float, direction: EdgeDirection) -> EdgeHandle
     /// Snapshot all live edges. Mirrors JS `readEdges()`.
     func readEdges() -> [EdgeRecord]
+
+    // ── scalar grid ───────────────────────────────────────────────────────
+    /// Get or create a named `ScalarGrid` — the field-buffer substrate backing `diffuse`/`propagate`
+    /// forces. Grids are lazily created and shared with the force system. Mirrors JS `grid(name)`.
+    func grid(_ name: String) -> any ScalarGrid
+
+    // ── visual tuning ─────────────────────────────────────────────────────
+    /// Background / canvas clear colour (hex string) — the renderer clears to it each frame.
+    /// `nil` = transparent. Mirrors JS `setBackground`.
+    func setBackground(_ hex: String?)
+    /// Device-pixel-ratio cap — the platform host clamps its backing-scale to this value.
+    /// Mirrors JS `setDprCap`.
+    func setDprCap(_ cap: Float)
+    /// Quality tier 0–3 (0 = full, 3 = paused). The platform host adapts its draw complexity.
+    /// Mirrors JS `setQualityTier`.
+    func setQualityTier(_ tier: Int)
 
     // ── lifecycle ─────────────────────────────────────────────────────────
     func setVisible(_ on: Bool)

@@ -698,6 +698,23 @@ final class FieldEngine: FieldHandle {
 
     func scrollV() -> Float { scrollVel }
 
+    // ── scalar grid ───────────────────────────────────────────────────────────────────
+
+    func grid(_ name: String) -> any ScalarGrid {
+        if let g = grids[name] { return g }
+        let vol = host.volume
+        let mode: GridMode = name.hasPrefix("wave") ? .wave : name.hasPrefix("memory") ? .memory : .diffuse
+        let g = ScalarGridImpl(width: vol.width, height: vol.height, mode: mode)
+        grids[name] = g
+        return g
+    }
+
+    // ── visual tuning ─────────────────────────────────────────────────────────────────
+
+    func setBackground(_ hex: String?) { options.background = hex }
+    func setDprCap(_ cap: Float) { options.dprCap = cap }
+    func setQualityTier(_ tier: Int) { options.qualityTier = tier }
+
     func setVisible(_ on: Bool) { visible = on }
 
     func destroy() {
