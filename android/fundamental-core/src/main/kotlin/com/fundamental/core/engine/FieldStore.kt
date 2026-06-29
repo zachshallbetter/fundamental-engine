@@ -12,10 +12,12 @@ class FieldStore(cellSize: Float = 64f) {
     private val _particles = ArrayList<Particle>()
     val particles: List<Particle> get() = _particles
     private val hash = SpatialHash(cellSize)
+    private var nextId: Int = 0
 
     val size: Int get() = _particles.size
 
     fun add(p: Particle): Particle {
+        p.id = nextId++
         _particles.add(p)
         return p
     }

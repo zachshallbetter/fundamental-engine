@@ -26,6 +26,9 @@ class Particle(
     /** Render-radius basis; also the collision/SPH radius. */
     var size: Float = 1f,
 ) {
+    /** Stable integer ID assigned at pool creation — survives body rebinding. Mirrors Swift `Particle.id`. */
+    var id: Int = 0
+
     /** The sink/blackhole body holding this particle, or null (§6.9). */
     var cap: Body? = null
 

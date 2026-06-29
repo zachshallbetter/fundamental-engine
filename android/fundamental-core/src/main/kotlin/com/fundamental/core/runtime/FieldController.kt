@@ -32,6 +32,7 @@ import com.fundamental.core.engine.StepInput
 import com.fundamental.core.engine.builtinConditions
 import com.fundamental.core.engine.easeFormation
 import com.fundamental.core.engine.flowBias
+import com.fundamental.core.engine.forceAt
 import com.fundamental.core.engine.formation
 import com.fundamental.core.engine.makeFlowFocus
 import com.fundamental.core.engine.step
@@ -78,6 +79,9 @@ class FieldController(
 
     /** Short-range anti-clumping separation strength (0 = off). */
     var separation: Float = 0f
+
+    /** Called once per tick, after the force step and all feedback — used by [FieldHandle] for events + agents. */
+    var onAfterTick: (() -> Unit)? = null
 
     /** Active flow focus (a transient pull point), or null. Set via [flowTo] / cleared by [clearFlow]. */
     var flow: FlowFocus? = null
@@ -363,7 +367,16 @@ class FieldController(
 
         env.frameN += 1
         env.t += dt
+        onAfterTick?.invoke()
     }
+
+    /**
+     * Probe the net force a particle would experience at world point (x, y). Uses the same
+     * [forceAt] function the streamlines overlay draws — applies all visible body forces to a
+     * temporary probe particle and returns the accumulated velocity delta. Safe to call between
+     * ticks. Mirrors Swift `FieldEngine.sample(x:y:)`. Exposed via [FieldHandle.sample].
+     */
+    fun sample(x: Float, y: Float): Vec3 = forceAt(_bodies, forces, Vec3(x, y, 0f))
 
     val particles: List<Particle> get() = store.particles
     val particleCount: Int get() = store.size
