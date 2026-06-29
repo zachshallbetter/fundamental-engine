@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '../../../layouts/DocsLayout.astro';
-import { ATTRS, WRITEBACK } from '../../../lib/docs-api.ts';
+import { ATTRS, WRITEBACK, FIELD_ROOT_ATTRS } from '../../../lib/docs-api.ts';
 import SeeAlso from '../../../components/SeeAlso.astro';
 import ApiStamp from '../../../components/ApiStamp.astro';
 import { FROZEN_BODY_ATTR } from '../../../../../../scripts/api-surface.data.mjs';
@@ -16,7 +16,7 @@ const families = [
 
 <DocsLayout
   title="Fundamental — data-* attributes"
-  description="Every data-* attribute a body reads — data-body, data-strength, data-range, data-color, data-when, data-feedback and more — with defaults, plus a per-force matrix of which force reads which."
+  description="Every data-* attribute a body reads — data-body, data-strength, data-range, data-color, data-when, data-feedback and more — with defaults, per-force matrix, and the full &lt;field-root&gt; HTML attribute reference."
 >
   <header class="docs-hero">
     <p class="kicker">API reference</p>
@@ -97,6 +97,28 @@ const families = [
         ))
       }
     </div>
+  </section>
+
+  <section class="docs-sec">
+    <h2><code>&lt;field-root&gt;</code> HTML attributes</h2>
+    <p>
+      The <code>&lt;field-root&gt;</code> custom element mirrors every <code>createField</code> option
+      as a kebab-case HTML attribute. Setting an attribute after mount calls the corresponding setter
+      on the live handle — so declarative markup and imperative runtime control are the same surface.
+    </p>
+    <dl class="api-table">
+      {
+        FIELD_ROOT_ATTRS.map((a) => (
+          <div class="api-row">
+            <dt class="k">
+              <code>{a.name}</code>
+              <span class="ty">option <b>{a.option}</b></span>
+            </dt>
+            <dd class="d">{a.desc}</dd>
+          </div>
+        ))
+      }
+    </dl>
   </section>
 
   <SeeAlso
