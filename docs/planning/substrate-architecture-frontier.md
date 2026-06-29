@@ -117,6 +117,78 @@ Two standing constraints shape every item:
 
 ---
 
+## Blast radius & sequencing (verified against code, 2026-06-29)
+
+A seven-survey sweep of the codebase (JS core, Swift, Kotlin, diagnostics, contracts/recipes/docs, the
+`dom` package, the test wall) establishes the real cost. Two corrections to the earlier framing:
+
+- **First-class mass is already shipped and conformance-tested** — `FieldOptions.mass` (default `false`),
+  `a = F/m` wired in `integrator.ts:53–57,220`, tested in `integrator.test.ts:198–286`, mirrored in Swift
+  + Kotlin. `recoilImpulse` exists (`reactions.ts:29`) but is **never called in `integrator.ts`** for
+  body-acting forces (only `collide` uses pairwise recoil). So the genuinely-new surface is: the
+  **symplectic integrator (#1)**, **wiring recoil into body forces (#2)**, **mass default-flip +
+  recipe recalibration**, and **closed-system conservation**. This is *wire-and-flip-and-add*, not
+  greenfield. (`physics-workover.md:79–82` already documents mass as shipped — no status fix owed.)
+
+### Two linchpin decisions gate the whole program
+
+1. **The impulse-accumulator contract (gates #3).** `causality`, `prediction`/`ghostTrajectory`
+   (`diagnostics/{probes,modes}.ts`), `streamlines.forceAt()`, dock movers (`field.ts:873`), **and the
+   conformance harness** (`conformance/expectations.ts`) all read a force's effect by diffing
+   `p.vx`/`p.vy` around `apply()`. Forces must therefore **add to an impulse accumulator the integrator
+   owns** (not return an impulse — breaks the Δv-readers; not blind-mutate — blocks mass/recoil). This
+   is the only design that preserves per-force explainability (Paper 31 §6, made mechanical).
+2. **Body-position authority (gates #2 recoil).** `MeasurementRegistry` re-derives a body's position
+   from `getBoundingClientRect()` every frame (`measurement.ts:97`); overlays, `apply-recipe` proximity,
+   feedback `--d`, and `visual-bindings` all assume body-position = DOM-rect. A recoiling body's physics
+   position diverges from its DOM rect → those all read the wrong place. So recoil requires either
+   **engine-authoritative body state (#6)** or **recoil-writes-a-transform** (DOM-mediated, the loop #6
+   wants to retire). **Recoil is therefore downstream of a #6 decision** — not part of the early
+   foundation as first thought.
+
+### Corrected order
+
+```
+#3  impulse-accumulator refactor   ← clean first PR: behaviorally identical (test wall stays green),
+    (JS core; migrate diagnostics      moves no golden, flips no recipe, breaks no freeze, touches no DOM coupling
+     + conformance to the accumulator)
+        ↓
+#1  opt-in symplectic integrator   ← behind a flag; default Euler path's tests untouched; keep
+                                       ghostTrajectory in lockstep (it hardcodes Euler + m:1)
+        ↓
+[decide body-position authority]   ← the dom-survey gate; ties to #6
+        ↓
+#2  wire recoil into body forces   ← only safe after that decision; add new golden cases (golden
+                                       doesn't cover recoil today) on all 3 planes in one PR
+        ↓
+mass default-flip → recipe recalibration lands in EXPERIMENTAL_RECIPES (the 64 are locked)
+```
+
+### Blast-radius map (verdict per artifact)
+
+| Artifact | Verdict |
+|---|---|
+| `integrator.ts` (+ Swift/Kotlin mirrors) | **Rewrite** loop → accumulator, opt-in Verlet, wire recoil; ×3 planes |
+| 36 force `apply()` bodies (25 additive, 5 kinematic, modifiers) | **Update** to accumulator contract; ×3 planes |
+| `diagnostics/{probes,modes}.ts`, `streamlines.ts`, `field.ts` movers | **Update** Δv extraction to read the accumulator |
+| `conformance/{experiments,expectations}.ts` | **Add** recoil/closed-system cases (`momentumConserved` exists) |
+| Cross-plane golden (`conformance-golden.json`) | **Regenerate** on 3 planes in one PR — but only *force-math* changes move it (samples single-`apply` Δv); pure integrator/recoil-wiring does not |
+| 64 LOCKED `FIELD_RECIPES` | **Can't retune in place** → mass-on variants go to `EXPERIMENTAL_RECIPES` |
+| `passport.ts` schema + 36 rows + `validatePassports` | **Additive** (`conservesMomentum`, `reactsOnSource`) |
+| Freeze gate (`api-surface.data.mjs`, 14 entries) | **Untouched** — mass/momentum live on unfrozen `FieldOptions`/`FieldHandle`; additive-safe |
+| `dom`: `measurement`/`overlays`/`apply-recipe`/`feedback`/`visual-bindings`/`thread-overlay` | **Review** — all assume body-position = DOM-rect; impacted only when recoil moves bodies |
+| `dom`: `FrameScheduler`, `bindData`, `governor`, `flip`, `energy.ts`, `netField()` | **Safe** — no physics-position coupling |
+| Docs: `system-contracts.md` §3 ("a force may mutate" widens to the *body* for recoil) | **Update** (contract widening, not a freeze break) |
+| `feedback-channels.md` | **Additive** (`--momentum`?) — do **not** overload `--mass` (= `--load` accretion alias) |
+| `check:recipes` / `check:golden` / `check:cem` (only if new element attr) | **Regenerate** to pass |
+| Determinism / record-replay / `FRICTION`/`c` tests | Break only on *behavior* change → opt-in flag isolates them; new modes get their own determinism tests |
+
+**The two true bottlenecks:** the LOCKED recipe catalog (recalibration → `EXPERIMENTAL_RECIPES`) and the
+cross-plane golden (JS + Swift + Android in lockstep, one PR). The clean root that touches neither is
+**#3 as a behavior-preserving impulse-accumulator refactor.**
+
+---
+
 ## What this unlocks (the concepts/features it enables)
 
 The substrate work is not plumbing for its own sake — it makes buildable a large part of the **already-documented
