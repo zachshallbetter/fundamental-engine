@@ -1223,6 +1223,14 @@ A field model for interface meaning.
 
 ## 26. Matter primitives beyond particles `[frontier]`
 
+> **Gated on the substrate-architecture frontier.** The richer matter primitives below (fluid, fabric,
+> sand) and several later frontier sections (§29 alternative output surfaces, §30 the machine-readable
+> layer, §32–§33 accumulating/temporal fields, §35 emergent semantics) depend on engine-internals
+> changes — first-class mass, a conserving integrator, fields-as-medium, and decoupling the simulation
+> from the DOM loop. That program is mapped in
+> [`../planning/substrate-architecture-frontier.md`](../planning/substrate-architecture-frontier.md),
+> with momentum as its root (see research [Paper 31](../research/31-behavioral-models-after-boids.md)).
+
 Particles are one way to sample the field.
 
 They are not the only way.

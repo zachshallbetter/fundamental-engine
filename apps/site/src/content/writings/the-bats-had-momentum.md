@@ -113,6 +113,32 @@ don't yet use, that the roadmap already gestures at, and that would make the rec
 the whole project something you could feel in the motion — the way you could feel it in a swarm of bats
 over Gotham.
 
+## The first domino
+
+Here's the part that makes momentum more than a feature. You can't add it cleanly without touching the
+floor of the engine — and that turns out to be the point.
+
+To give bodies recoil, the integrator has to stop being a quick `v += F` with a hard speed cap and become
+something that actually conserves (a symplectic, fixed-timestep solver — the kind of thing d3-force has
+used for graph layout for years). To give matter mass, bodies and particles stop being two different
+kinds of thing — an immovable source and a weightless dot — and become one kind of *matter* that can both
+push and be pushed. And for any of it to be measurable, forces have to *produce* forces instead of
+secretly editing velocity, so the integrator can do the physics in one place.
+
+None of that is momentum, exactly. It's the foundation momentum needs. And it's the same foundation a
+serious substrate needs anyway — which is why the right way to read this isn't "add bounciness," it's
+**momentum is the first domino.** Knock it over deliberately and the engine stops being a calm decoration
+that reads the page and starts being a small physics that the page is one view of.
+
+What that unlocks is already written down. Fundamental's possibility space has long described matter that
+isn't particles — fluid that pools, fabric that sags under a heavy heading, sand that piles where
+attention accretes. It describes the field as something an AI agent could *query* instead of scraping the
+DOM, and as a shared space where a room full of readers' attention sums into a visible weather. Almost all
+of it is waiting on the same thing: a field whose physics is real enough, and independent enough of the
+browser's layout loop, to carry that weight. Momentum is where you start paying that down.
+
+The bats had it in 1992. It's time the field did too.
+
 ---
 
 *The full comparison this grew out of — Fundamental against Reynolds' Boids, with the per-axis verdict

@@ -1,0 +1,156 @@
+# Substrate-architecture frontier
+
+> **Status: exploration / working notes.** A forward-looking map of the engine-internals we should
+> begin rethinking as Fundamental shifts from *DOM decoration* to a *physical/behavioral substrate that
+> renders to DOM*. Nothing here is shipped. Each layer has (or will have) a **draft brief on the RC1
+> board** ([#24](https://github.com/users/zachshallbetter/projects/24), Status `Backlog`). Companion
+> docs: the runtime/host axis in [`platforms-and-use-cases-frontier.md`](platforms-and-use-cases-frontier.md);
+> the Boids verdict that surfaced momentum in [`boids-2026-comparison.md`](boids-2026-comparison.md) and
+> research [Paper 31](../research/31-behavioral-models-after-boids.md). The canonical possibility space
+> is [`../canonical/field-possibilities.md`](../canonical/field-possibilities.md) — §"What this unlocks"
+> below maps each rethink to the frontier capabilities it makes buildable.
+
+## The one inversion underneath all of it
+
+Fundamental was architected as **cheap, calm DOM decoration** — a particle layer that reads geometry
+off the page and writes CSS variables back. It is becoming a **physical/behavioral substrate that
+happens to render to DOM.** Almost every rethink below is the same move:
+
+> The physics core becomes **authoritative and plane-agnostic**; the DOM demotes from *"the loop's
+> substrate"* to *"one I/O adapter."*
+
+This is not a grab bag — it is a **dependency tree with momentum at the root.** Momentum (first-class
+mass + Newtonian body recoil; see Paper 31 §9 and the board spike) cannot be done well without pulling
+the integrator, the matter model, and the force interface into scope — which is good, because those are
+the foundation a serious substrate needs anyway. **Momentum is the forcing function, not the feature.**
+
+Two standing constraints shape every item:
+- **Explainability must survive.** `causality`/`prediction` decompose motion into a *sum* of per-force
+  Δv. Any change to combination or integration must preserve per-force attribution (Paper 31 §6).
+- **Calm stays the default.** The damped, summed, unit-mass field is the right default for interface
+  decoration. Every item here is **opt-in**, not a global flip.
+
+---
+
+## The layers — current assumption → why it strains → what to reconsider
+
+### 1. The integrator (the floor) — *Component: Core engine*
+- **Now:** explicit Euler (`v += F`, `x += v·dt`), a global `friction *= 0.95`, a hard clamp `|v| ≤ c`
+  (c = 12, a magic constant).
+- **Strain:** explicit Euler *injects* energy on stiff forces (`tether`/`link` oscillate and can blow
+  up), and a hard velocity clip is non-physical — it silently destroys momentum exactly when you want
+  to conserve it.
+- **Reconsider:** a **symplectic / velocity-Verlet integrator** for the conservative regime (d3-force,
+  which we already cite, uses velocity Verlet); a **fixed-timestep accumulator decoupled from rAF**
+  ("fix your timestep" — physics independent of frame rate and the every-6th-frame cadence); replace the
+  hard `c` clamp with **continuous drag**. This is the floor momentum sits on.
+
+### 2. The matter model (the deepest class change) — *Component: Architecture*
+- **Now:** two classes — `Body` (immovable source) and `Particle` (unit-mass consumer). Source-vs-consumer
+  is baked into the type system.
+- **Strain:** the moment bodies recoil, the distinction dissolves — a body is just heavy matter that also
+  emits influence.
+- **Reconsider:** **unify `Body` and `Particle` under one "matter" interface** with mass, velocity, and
+  integrable state; a body becomes a particle that also owns a `field()`. The reciprocity thesis has
+  implied this all along. Biggest blast radius → wants #3 done first.
+
+### 3. The force interface (the cheapest enabling refactor) — *Component: Core engine*
+- **Now:** `apply()` mutates particle velocity *directly*; some forces set velocity outright
+  ("kinematic"). Force-generation and integration are conflated.
+- **Strain:** this fights any mass model and any integrator swap — a force that writes `v` cannot be
+  re-integrated as `F/m·dt`.
+- **Reconsider:** forces **produce a force/impulse**; the integrator owns the velocity update.
+  Separating cause from integration is the smallest change that unlocks #1 and #2, and it *preserves*
+  per-force attribution (you still sum contributions, just one stage earlier). **Do this first.**
+
+### 4. Combination → channels + a constraint solver — *Component: Core engine*
+- **Now:** blind global summation (Paper 31's central tension; the clump).
+- **Reconsider two things:** **force channels** — separate accumulators (steering / structural / thermal)
+  combined by *different* rules, generalizing the modifier-class arbiter (the `screen` template) so some
+  forces can be prioritized without a global rule; and a real **constraint solver (PBD/XPBD)** for rigid
+  links and non-penetration instead of stiff springs the explicit integrator can't hold. Constraints are
+  a *different loop* (iterative position projection), not a force.
+
+### 5. Agents → a steering/controller class — *Component: Consumer DX & API*
+- **Now:** agents **consume** influence; no steering policy (the consume-vs-steer inversion, Paper 31 §7.2).
+- **Reconsider:** add a **steering/actuation influence kind** to the consumption matrix and a
+  **controller-agent class** (perceive → decide → act). Once mass + reaction make agents embodied, a
+  steering layer turns them into autonomous actors — the "agent substrate" frontier, now with a body to
+  steer.
+
+### 6. The loops → decouple sim / DOM / render (this *is* "past CSS-feedback") — *Component: Platform/DOM*
+- **Now:** one rAF loop; bodies re-measured every 6th frame via `getBoundingClientRect`; reciprocity
+  closes by writing a CSS var and re-reading layout next frame.
+- **Strain:** the loop's *substrate is the browser's layout engine* — lossy, async, plane-specific.
+- **Reconsider:** close reciprocity **inside the engine** (body state is a first-class engine quantity,
+  not a DOM round-trip); make the DOM an **input/output adapter** on a throttled cadence; run **three
+  decoupled rates** — fixed sim tick, throttled DOM sync, free render. Payoff: physics becomes
+  *identical* across web / native / headless because it no longer needs the DOM to close its own loop.
+
+### 7. Semantics → units + conservation contracts — *Component: Architecture*
+- **Now:** mass nominal, `c` a magic 12, friction a dimensionless 0.95; the passport declares `doesWork`,
+  `conservesSpeed`.
+- **Strain:** momentum *exchange* is meaningless without consistent units — you can't balance a budget
+  measured in nothing.
+- **Reconsider:** a **nominal-but-coherent unit system**, and extend passports into a **conservation
+  contract** (each force declares momentum/energy conservation) so the engine can *compose a closed-system
+  mode* from only conservative forces. The truth-mode system is the right home.
+
+### 8. Fields → a dynamical medium — *Component: Core engine*
+- **Now:** grids (memory, heat, density) are passively-sampled scalar fields.
+- **Reconsider:** fields as **first-class evolving media** — PDE-driven (`propagate`/wave and SPH
+  `pressure` are seeds). The jump from "particles in a static force field" to "matter coupled to a
+  continuous medium" (fluid, reaction-diffusion) is what makes the field a *substrate* rather than a
+  lookup table.
+
+---
+
+## Ranked by leverage (and dependency order)
+
+1. **Force-gen / integration split (#3)** — smallest change, unlocks everything physical, keeps explainability.
+2. **Symplectic fixed-timestep integrator (#1)** — the floor momentum needs.
+3. **Matter unification + first-class mass + recoil (#2 + momentum spike)** — the reciprocity payoff; biggest class change.
+4. **Decouple sim from the DOM/render loop (#6)** — makes the substrate plane-agnostic; the literal "past CSS-feedback" move.
+5. **Steering-agent class (#5)**, then **channels/constraints (#4)**, **units/conservation contracts (#7)**, **dynamical fields (#8)**.
+
+`#3 → #1 → #2` is the critical path; momentum drags all three into scope, so doing momentum *properly* is the natural first project.
+
+---
+
+## What this unlocks (the concepts/features it enables)
+
+The substrate work is not plumbing for its own sake — it makes buildable a large part of the **already-documented
+frontier** in [`field-possibilities.md`](../canonical/field-possibilities.md) §26–36, and deepens several
+shipped use cases. The mapping:
+
+| Substrate rethink | Unlocks (field-possibilities / use-cases) |
+|---|---|
+| **Matter unification + mass + recoil** (#2, momentum) | §26 **matter primitives** (fluid / fabric / sand / light all need real matter dynamics); §VIII **Reciprocal UI** becomes *Newtonian*, not just CSS-feedback; §34 **field-as-authoring-primitive** ("you define physics, layout emerges" needs bodies that settle into equilibria) |
+| **Symplectic integrator + constraints** (#1, #4) | §34 authoring (the field *solves the geometry* — needs stable convergence); fabric/fluid (§26); stable `tether`/`link` structures |
+| **Dynamical fields / medium** (#8) | §26 fluid; §28 **time-based representations** (interference, cellular automata); §32 **accumulating memory** (semantic sediment = a field that *evolves*); §33 **temporal fields** |
+| **Decouple sim from DOM loop** (#6) | §29 **alternative output surfaces** (sound / haptics / AR — need the sim independent of the DOM); §30 **field-as-machine-readable-layer** + field-query API (needs engine-authoritative state); §31 **social substrate** (shared fields across clients) |
+| **Steering / controller agents** (#5) | §12 **input agents** with policy; §30 the field as an **agent communication protocol**; §35 **emergent semantics** |
+| **Units + conservation contracts** (#7) | opt-in **closed-system mode**; §35 emergent semantics (attractor states / phase transitions are only meaningful under conservative dynamics) |
+| **Force channels / arbitration** (#4) | richer §VIII **composed force personalities**; §35 emergent semantics; the explainability-safe path to Reynolds-style robustness (Paper 31 §6) |
+
+Read the other direction: the frontier capabilities the project already wants (fluid matter, the field as
+an agent-queryable semantic layer, authoring-by-physics, temporal fields, emergent semantics) are *gated*
+on this substrate work. That is the argument for doing it.
+
+## Relationship to the canon
+
+This doc is the **engine-internals axis** of the possibility space. It complements:
+- [`field-possibilities.md`](../canonical/field-possibilities.md) §26–36 — the *capability* frontier (what
+  becomes possible); this doc is *how the engine has to change* to get there.
+- [`platforms-and-use-cases-frontier.md`](platforms-and-use-cases-frontier.md) — the *host/runtime* axis
+  (where the engine runs); #6 (decouple sim from DOM) is the shared seam.
+- [`fundamental-field-behavior-table.md`](../canonical/fundamental-field-behavior-table.md) — where the
+  per-force `field()`/`apply()` contract lives; #3 (force-gen split) and #7 (conservation contracts) edit
+  that contract.
+
+## Note on the paper
+
+Research [Paper 31](../research/31-behavioral-models-after-boids.md) currently frames momentum and
+arbitration as *limitations*. When this substrate work is scoped/landed, Paper 31 should be revised to
+frame momentum as the **root of a substrate program**, not an isolated gap — deferred until the board
+epics below are real. (Per the no-premature-claims rule, the paper is not edited ahead of the work.)
