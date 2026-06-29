@@ -138,13 +138,22 @@ A seven-survey sweep of the codebase (JS core, Swift, Kotlin, diagnostics, contr
    `p.vx`/`p.vy` around `apply()`. Forces must therefore **add to an impulse accumulator the integrator
    owns** (not return an impulse — breaks the Δv-readers; not blind-mutate — blocks mass/recoil). This
    is the only design that preserves per-force explainability (Paper 31 §6, made mechanical).
-2. **Body-position authority (gates #2 recoil).** `MeasurementRegistry` re-derives a body's position
-   from `getBoundingClientRect()` every frame (`measurement.ts:97`); overlays, `apply-recipe` proximity,
-   feedback `--d`, and `visual-bindings` all assume body-position = DOM-rect. A recoiling body's physics
-   position diverges from its DOM rect → those all read the wrong place. So recoil requires either
-   **engine-authoritative body state (#6)** or **recoil-writes-a-transform** (DOM-mediated, the loop #6
-   wants to retire). **Recoil is therefore downstream of a #6 decision** — not part of the early
-   foundation as first thought.
+   **Make the accumulator dimension-aware from the start** even if only `x/y(/z)` ship first — the shape
+   should not assume all force contribution is `vx/vy`. Conceptually: `linear (x,y,z)` · `angular
+   (θx,θy,θz)` · `thermal (heat)` · `temporal (delay/decay/phase)` · `semantic (attention/confidence/
+   memory)`. This is the construction rule from [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md)
+   applied to the contract: don't paint orientation/time into a corner.
+2. **Body-position authority (gates #2 recoil) — three modes, not a binary.** `MeasurementRegistry`
+   re-derives a body's position from `getBoundingClientRect()` every frame (`measurement.ts:97`);
+   overlays, `apply-recipe` proximity, feedback `--d`, and `visual-bindings` all assume body-position =
+   DOM-rect. A recoiling body's physics position diverges from its rect → those read the wrong place.
+   The decision is *which body-authority mode* a body declares (see
+   [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md) "Body-authority modes"):
+   **Anchored** (DOM-rect authoritative; today's default — shipped), **Kinematic** (engine writes a
+   transform; DOM follows — `data-move`, shipped), or **Dynamic** (engine owns position; DOM measurement
+   initializes/constrains — future, required for physical recoil). The current system is not *wrong* —
+   it is *Anchored mode*. **Recoil requires Dynamic mode** (or Kinematic-with-readback), so it is
+   downstream of this decision — not part of the early foundation as first thought.
 
 ### Corrected order
 
@@ -263,6 +272,29 @@ All of Tier 1 sits on the substrate foundation: 3D *momentum*, temporal *dynamic
 are meaningless until the `#3 → #1 → #2` foundation exists. The order does not change — but this tells us
 what the foundation is *for*: it is the substrate that lets any collapsed axis (translation-momentum, then
 orientation, then 3D, then time) be re-expanded as an opt-in Faithful mode.
+
+## The headline frontier: restoring collapsed dimensions (not adding tokens)
+
+The next frontier is **not another force token — it is restoring dimensions of state the interface
+engine collapsed.** The [designed-vs-natural map](../canonical/designed-vs-natural-map.md) names three:
+**depth (3D)**, **time**, and **orientation/rotation** (the sleeper — matter today has position +
+velocity but no angular state, torque, or angular momentum). Each is built by the same rule from the
+[Dimensional Coupling Doctrine](../canonical/dimensional-coupling.md): **add the axis, keep it orthogonal
+by default, and name the coupling.**
+
+- **Orientation** — add θ + angular velocity as their own lane; couple to translation *only* via an
+  explicit `torque` (`τ = r × F`).
+- **Time** — temporal coordinates + fields; time does not "push back" by default (independent evolution
+  parameter); decay/memory/prediction/replay are explicit temporal kernels.
+- **Depth** — promote `z` from optional lane to first-class state; `x/y` unchanged unless a depth-aware
+  force/projection is enabled.
+
+Two doctrine constraints carry into implementation: **cross-dimensional coupling must be passport-declared**
+(`Couples dimensions: …`) so "why did this rotate?" is inspectable; and **every added dimension needs a
+projection rule** (how its state renders to the 2D/present-tense DOM) — *separate* from coupling (you can
+visualize a dimension without letting it affect another). All of Tier-1 dimensional work sits **on** the
+foundation below — there is no 3D *momentum*, temporal *dynamics*, or rotational *recoil* until the
+`#3 → #1 → #2` path exists.
 
 ## Relationship to the canon
 

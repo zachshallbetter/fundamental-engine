@@ -7,7 +7,9 @@
 > [platform-architecture.md](platform-architecture.md) and
 > [../engine-reference/forces-system.md](../engine-reference/forces-system.md). For *why* a token is
 > designed vs. natural — its relationship to what nature actually does, and why the departures are the
-> engine's flexibility — see [designed-vs-natural-map.md](designed-vs-natural-map.md).
+> engine's flexibility — see [designed-vs-natural-map.md](designed-vs-natural-map.md). For how dimensions,
+> fields, forces, and relationships compose — orthogonal-by-default, association ≠ coupling, forces as the
+> only coupling mechanism — see [dimensional-coupling.md](dimensional-coupling.md).
 
 # Natural Fields
 
