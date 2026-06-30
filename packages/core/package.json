@@ -1,7 +1,7 @@
 {
   "name": "@fundamental-engine/core",
   "version": "0.9.1",
-  "description": "A reciprocal DOM-physics field — elements bend the field; the field's density bends them back.",
+  "description": "A reciprocal DOM-physics field \u2014 elements bend the field; the field's density bends them back.",
   "type": "module",
   "license": "MIT",
   "author": "Zach Shallbetter <hi@zachshallbetter.com> (https://zachshallbetter.com)",
@@ -52,7 +52,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test",
-    "bench": "node bench/integrator.bench.ts"
+    "bench": "node bench/field-bench.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

@@ -17,6 +17,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **performance suite** (`packages/core/bench/`) — a deterministic,
+  pure-Node benchmark of the engine's *algorithmic* cost: full-frame scaling vs particle count, the
+  opt-in accumulator capture overhead, `query()`/`snapshot()` read cost, and the every-6th-frame
+  body-measure cadence. Run with `pnpm --filter @fundamental-engine/core bench`. Tooling only — not
+  shipped in `dist`, no engine behavior change. Reads alongside the new
+  [`docs/engine-reference/performance.md`](docs/engine-reference/performance.md), which documents why the
+  field is fill-rate-bound (GPU, measured on hardware) rather than particle-bound (the math measured here).
+
+
 - **`@fundamental-engine/core`:** **query lenses** (substrate query phase 2, roadmap 8/10). A `FieldLens`
   is a user-defined declarative scope over a query reading — NOT an opinionated preset catalog: the
   caller supplies it. Each clause is an allow-list (`metrics` keys, influence `channels`, body `tokens`;
