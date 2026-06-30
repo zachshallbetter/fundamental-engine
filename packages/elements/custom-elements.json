@@ -1339,6 +1339,37 @@
               "description": "Compare two snapshots — pure (works before the field starts). See FieldHandle.diff. EXPERIMENTAL."
             },
             {
+              "kind": "method",
+              "name": "replay",
+              "return": {
+                "type": {
+                  "text": "CausalReplay"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "a",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                },
+                {
+                  "name": "b",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "ReplayOptions"
+                  }
+                }
+              ],
+              "description": "Explain how the field changed between two snapshots — pure (works before start). See FieldHandle.replay. EXPERIMENTAL."
+            },
+            {
               "kind": "field",
               "name": "projections",
               "type": {
@@ -3037,6 +3068,41 @@
                 }
               ],
               "description": "Compare two snapshots — pure (works before the field starts). See FieldHandle.diff. EXPERIMENTAL.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "replay",
+              "return": {
+                "type": {
+                  "text": "CausalReplay"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "a",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                },
+                {
+                  "name": "b",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                },
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "ReplayOptions"
+                  }
+                }
+              ],
+              "description": "Explain how the field changed between two snapshots — pure (works before start). See FieldHandle.replay. EXPERIMENTAL.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

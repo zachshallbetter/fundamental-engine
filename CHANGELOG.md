@@ -19,7 +19,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   now report the registered projections. New `FieldProjection`, `FieldProjectionInfo`,
   `FieldProjectionSurface`, `FieldProjectionTarget`, `ProjectionRegistry` types. On every surface.
   **Experimental** — governance lint rules + write-phase auto-apply are later steps.
-
+- **`@fundamental-engine/core`:** **Causal Replay** — `field.replay(a, b, opts?)` (substrate
+  critical-path 03 phase 2). Explains *how* the field changed between two snapshots: an ordered,
+  narrated sequence of causes (formation activations, relationship shifts, body entries/exits, metric
+  movements) derived from the diff, each carrying its before/after `contribution` — e.g. "Formation
+  'wells' activated", "Relationship A→B (supports) became active, strengthened 0.10→0.40", "Body
+  claim-3 density rose 0.20→0.60". `opts.focus` scopes it to one body. Pure (derived from the two
+  snapshots); the standalone `replayFieldSnapshots(a, b, opts)` is also exported. New `CausalReplay`,
+  `CausalReplayStep`, `CausalCause`, `ReplayOptions` types. On every surface. **Experimental.**
 - **`@fundamental-engine/core`:** **dynamic bodies + recoil** (substrate doc 04 §Step 5). A body with
   `authority: 'dynamic'` now has its position **owned by the engine**: each frame it integrates under
   the net field the other bodies create at its centre (`a = F/M`, lightly damped + speed-capped) and
