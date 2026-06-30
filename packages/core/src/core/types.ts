@@ -130,6 +130,16 @@ export interface AtomPayload {
 }
 
 /**
+ * Who owns a body's position (substrate doc 04 §body-authority). `anchored` (default) — the DOM/host
+ * rect is authoritative, re-measured each frame (today's behavior for all bodies). `kinematic` — the
+ * engine writes the body's visual transform while the DOM stays the rendered object (the shipped
+ * `data-move` / transform pattern). `dynamic` — the engine owns position/velocity/mass; **declared but
+ * not yet physically simulated** (Step 5 wires recoil/torque/conservation onto it). A declaration today;
+ * anchored and kinematic behave exactly as before.
+ */
+export type BodyAuthority = 'anchored' | 'kinematic' | 'dynamic';
+
+/**
  * A registered DOM element acting as a force source (§3.1). Parsed from
  * `data-*` attributes; the runtime fields are refreshed each scan/frame.
  */
@@ -137,6 +147,8 @@ export interface Body {
   el: HTMLElement;
   /** space-joined force ids from `data-body` (they compose, §4). */
   tokens: Token[];
+  /** who owns this body's position (`data-authority`); default `'anchored'`. See {@link BodyAuthority}. */
+  authority?: BodyAuthority;
   /** `tokens` split into `{ modifiers, forces, sources }` per the modifier contract
    *  (workover v0.3). The scanner fills it at parse time; the integrator memoizes it
    *  lazily for bodies built elsewhere (conformance, tests). Modifiers carry the
@@ -667,6 +679,8 @@ export interface AgentHandle {
 export interface BodySpec {
   /** the force ids this body emits (space-joined string or array), e.g. `'attract swirl'`. */
   tokens: string | readonly string[];
+  /** who owns this body's position; default `'anchored'`. See {@link BodyAuthority}. */
+  authority?: BodyAuthority;
   /** overall force magnitude (scales every token). */
   strength?: number;
   /** radius of influence, in field px. */
@@ -762,6 +776,8 @@ export interface FieldBodyReading {
   dimensions: Record<string, number>;
   /** the Field Formation(s) biasing this body right now (the field's active formation). */
   activeFormations?: string[];
+  /** who owns this body's position (see {@link BodyAuthority}); `'anchored'` by default. */
+  authority?: BodyAuthority;
 }
 
 /** A relationship (edge) as seen by a query. */
@@ -830,6 +846,8 @@ export interface FieldSnapshotOptions {
 /** A body captured in a {@link FieldSnapshot}. */
 export interface FieldBodySnapshot {
   id: string;
+  /** who owns this body's position (see {@link BodyAuthority}); `'anchored'` by default. */
+  authority?: BodyAuthority;
   /** the body's box in field coordinates (anchored bodies). */
   rect?: FieldRect;
   /** the body's centre in field coordinates (z = 0 for an anchored body). */

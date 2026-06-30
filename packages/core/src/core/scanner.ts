@@ -24,6 +24,7 @@ export interface BodyAttrs {
 export type StaticBody = Pick<
   Body,
   | 'tokens'
+  | 'authority'
   | 'strength'
   | 'range'
   | 'absorbR'
@@ -74,8 +75,13 @@ export function parseBodyParams(a: BodyAttrs): StaticBody {
   const cap = Number.parseFloat(capRaw ?? '');
   const budgeted =
     lifeRaw != null || capRaw != null || a.has('budget') || a.has('sink');
+  // body-authority (substrate doc 04): data-authority = anchored (default) | kinematic | dynamic.
+  // Anything else (incl. absent) ⇒ anchored. A declaration today — anchored/kinematic behave as before.
+  const authRaw = a.get('authority');
+  const authority = authRaw === 'kinematic' || authRaw === 'dynamic' ? authRaw : 'anchored';
   return {
     tokens,
+    authority,
     classified,
     ...(Number.isFinite(life) && life > 0 ? { life } : {}),
     ...(Number.isFinite(cap) && cap > 0 ? { cap } : {}),
