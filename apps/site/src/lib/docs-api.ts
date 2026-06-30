@@ -127,9 +127,9 @@ export const ATTRS: AttrRow[] = [
   { name: 'data-scale', type: 'number', def: '1', desc: 'Warp force: scale factor applied to matter velocity when it exits the partner throat.' },
   { name: 'data-budget', type: 'flag', desc: 'Source budget flag — marks a spawn source as explicitly budgeted without specifying data-life or data-cap. Suppresses the unbudgeted-source dev warning.' },
   { name: 'data-sink', type: 'flag', desc: 'Secondary budget indicator for a spawn source — if present, the engine treats the source as budgeted (equivalent to data-budget). Useful when paired with the sink force.' },
-  { name: 'data-intent', type: 'intent', desc: 'Semantic authoring: a plain-language intent (e.g. "highlight" or "warn") that the engine compiles into a body configuration. When set, data-body is optional — the intent provides a default token + strength.' },
+  { name: 'data-intent', type: 'intent', desc: 'Semantic authoring: a plain-language intent (e.g. "highlight" or "warn") that the engine compiles into the body\'s forces. When set, data-body is optional — the intent provides a default token + strength.' },
   { name: 'data-intensity', type: 'number', def: '1', desc: 'Modifier for data-intent: scales the compiled strength (0 = subtle, 1 = default, 2 = strong). Ignored when data-body is set directly.' },
-  { name: 'data-risk', type: "'low' | 'medium' | 'high'", desc: 'Intent hint for data-intent compilation — tunes the body configuration when the intent has risk-sensitive variants.' },
+  { name: 'data-risk', type: "'low' | 'medium' | 'high'", desc: 'Intent hint for data-intent compilation — tunes the body\'s compiled forces when the intent has risk-sensitive variants.' },
   { name: 'data-field-role', type: "role", desc: 'Semantic role: source / sink / anchor / boundary / sensor / display. Maps the element to a default body token and feedback (data-body is optional). sensor/display are feedback-only (no force).' },
 ];
 

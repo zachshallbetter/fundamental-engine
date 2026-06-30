@@ -11,8 +11,8 @@
 > engine; where it disagrees with the code, the code wins. The roadmap reading — which departures
 > become opt-in *Faithful* modes — lives in
 > [`../planning/substrate-architecture-frontier.md`](../planning/substrate-architecture-frontier.md). The
-> composition rules — how dimensions, fields, forces, and relationships combine (orthogonal-by-default,
-> association ≠ coupling), plus the five-question method for reading any force — live in
+> composition rules — how dimensions, fields, forces, relationships, and Field Formations combine
+> (orthogonal-by-default, association ≠ coupling), plus the five-question method for reading any force — live in
 > [`dimensional-coupling.md`](dimensional-coupling.md).
 
 ## The four relationships

@@ -15,60 +15,10 @@ const expItem = (sig: string): string | undefined => {
   return EXPERIMENTAL.find((x: { item: string }) => x.item.includes(fn))?.item;
 };
 
-// Cross-platform parity — which methods the Swift and Kotlin runtimes implement.
-// Source of truth: docs/canonical/parity-matrix.md (generated from the port source files).
-// ✓ = ships in that runtime · — = not yet / render-layer not applicable for that platform.
-const PARITY: Record<string, { swift: boolean; kotlin: boolean; note?: string }> = {
-  scan:                 { swift: true,  kotlin: false, note: 'Kotlin re-scans implicitly on tick' },
-  rescan:               { swift: true,  kotlin: false, note: 'alias of scan' },
-  setAccent:            { swift: true,  kotlin: false, note: 'visual layer — Compose has its own color API' },
-  setPalette:           { swift: true,  kotlin: false, note: 'visual layer' },
-  setFormation:         { swift: true,  kotlin: true  },
-  setWaveStyle:         { swift: true,  kotlin: false, note: 'visual layer' },
-  setWaveCenter:        { swift: true,  kotlin: false, note: 'visual layer' },
-  setSeparation:        { swift: true,  kotlin: false, note: 'Kotlin exposes as var separation' },
-  setAttention:         { swift: true,  kotlin: true  },
-  setCausality:         { swift: true,  kotlin: true  },
-  setHeatmap:           { swift: true,  kotlin: true  },
-  setDprCap:            { swift: false, kotlin: false, note: 'native OSs handle DPR differently' },
-  setQualityTier:       { swift: false, kotlin: false, note: 'adaptive quality governor' },
-  setRender:            { swift: true,  kotlin: false, note: 'render surface is Compose/SwiftUI-owned on native' },
-  setOverlay:           { swift: true,  kotlin: false },
-  setBackground:        { swift: false, kotlin: false, note: 'Web-specific canvas clearing' },
-  threads:              { swift: true,  kotlin: false, note: 'visual layer — glowing connector lines' },
-  burst:                { swift: true,  kotlin: true  },
-  flowTo:               { swift: true,  kotlin: true  },
-  clearFlow:            { swift: true,  kotlin: true  },
-  seed:                 { swift: true,  kotlin: true  },
-  addAgent:             { swift: false, kotlin: false, note: 'engine-stepped agent — planned for native' },
-  addBody:              { swift: true,  kotlin: true  },
-  addEdge:              { swift: true,  kotlin: true  },
-  readEdges:            { swift: true,  kotlin: true  },
-  addField:             { swift: true,  kotlin: true  },
-  sampleField:          { swift: true,  kotlin: true  },
-  atomAt:               { swift: true,  kotlin: true  },
-  focusAt:              { swift: true,  kotlin: false },
-  clearFocus:           { swift: true,  kotlin: false },
-  particleCount:        { swift: true,  kotlin: true  },
-  energy:               { swift: true,  kotlin: true  },
-  sample:               { swift: false, kotlin: false, note: 'Swift uses renderer path' },
-  sampleScalar:         { swift: true,  kotlin: true  },
-  sampleGradient:       { swift: true,  kotlin: true  },
-  grid:                 { swift: false, kotlin: false, note: 'named ScalarGrid — planned for native' },
-  on:                   { swift: false, kotlin: false, note: 'event bus — planned for native' },
-  readParticles:        { swift: true,  kotlin: true  },
-  readParticleIds:      { swift: false, kotlin: false },
-  readParticleChannels: { swift: false, kotlin: false },
-  registerOverlay:      { swift: false, kotlin: false },
-  scrollV:              { swift: true,  kotlin: false, note: 'DOM/UIKit-specific scroll velocity' },
-  setVisible:           { swift: true,  kotlin: false },
-  destroy:              { swift: true,  kotlin: true  },
-};
-
-const parityFor = (sig: string) => {
-  const name = sig.split(/[(<\s]/)[0];
-  return PARITY[name];
-};
+// Cross-platform parity is maintained in ONE place — the parity matrix
+// (docs/canonical/parity-matrix.md → /docs/api/parity). All 44 FieldHandle methods
+// ship on Three.js, Swift, and Kotlin (44/44/44); some behave differently by platform.
+// This page deliberately does not duplicate that table — a hand-copy here drifted before.
 
 const getWc = `import '@fundamental-engine/elements';
 
@@ -292,26 +242,22 @@ function focusChild(child) {
 
   <section class="docs-sec">
     <h2>Methods</h2>
+    <p class="parity-note">
+      All 44 methods ship on Three.js, Swift, and Kotlin (<strong>44/44/44</strong>); a few behave
+      differently by platform. See the <a href="/docs/api/parity">parity matrix</a> for the per-method,
+      per-platform breakdown.
+    </p>
     <dl class="api-table">
       {
-        HANDLE.map((m) => {
-          const p = parityFor(m.sig);
-          return (
-            <div class="api-row">
-              <dt class="k">
-                <code>{m.sig}</code>
-                {expItem(m.sig) && <ApiStamp item={expItem(m.sig)} />}
-                {p && (
-                  <span class="parity-chips">
-                    <span class={`parity-chip ${p.swift ? 'parity-yes' : 'parity-no'}`} title={`Swift: ${p.swift ? 'ships' : (p.note ?? 'not yet')}`}>Swift</span>
-                    <span class={`parity-chip ${p.kotlin ? 'parity-yes' : 'parity-no'}`} title={`Kotlin: ${p.kotlin ? 'ships' : (p.note ?? 'not yet')}`}>Kotlin</span>
-                  </span>
-                )}
-              </dt>
-              <dd class="d">{m.desc}</dd>
-            </div>
-          );
-        })
+        HANDLE.map((m) => (
+          <div class="api-row">
+            <dt class="k">
+              <code>{m.sig}</code>
+              {expItem(m.sig) && <ApiStamp item={expItem(m.sig)} />}
+            </dt>
+            <dd class="d">{m.desc}</dd>
+          </div>
+        ))
       }
     </dl>
     <div class="callout">

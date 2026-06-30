@@ -38,8 +38,8 @@ Canonical forces are designed verbs.
 Derived behaviors are not additional fundamental forces.
 Fieldflow is transport along field structure.
 Diagnostics reveal invisible structure.
-Configurations compose behavior into interface meaning.
-FieldRecipe is the current API representation of a configuration.
+Field Formations compose behavior into interface meaning.
+FieldRecipe is the current API representation of a Field Formation.
 ```
 
 Short version: **natural fields are not tokens; tokens are translations.** So `gravity` is both a
@@ -52,7 +52,7 @@ fields, flow along field lines, scatter under thermal agitation, diffuse, collid
 memory trails. The four-field model only gives each behavior a clean place in the hierarchy:
 
 ```
-Natural field → interface translation → engine primitive → metric → diagnostic → recipe
+Natural field → interface translation → engine primitive → metric → diagnostic → Field Formation
 ```
 
 ## The four fields
@@ -150,9 +150,12 @@ Each diagnostic answers "which invisible relation am I revealing?"
 All diagnostic render modes are shipped — see [visualization-methods-taxonomy.md](visualization-methods-taxonomy.md)
 and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics).
 
-## Recipes by meaning
+## Formations by meaning
 
-Interface-native recipes name the *meaning*, then map to a field:
+These are Field Formations conceptually. In the current API and catalog they are represented as
+`FieldRecipe` records, so existing recipe names and APIs remain unchanged.
+
+Interface-native formations name the *meaning*, then map to a field:
 
 | Recipe | Field | Use | Primitives |
 |---|---|---|---|
