@@ -69,6 +69,7 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
   const bvx = p.vx;
   const bvy = p.vy;
   const bvz = p.vz ?? 0;
+  const bvh = p.heat;
   f.apply(b, p, env);
   if (!(inv === 1 || f.kinematic)) {
     p.vx = bvx + (p.vx - bvx) * inv;
@@ -85,6 +86,14 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
       acc.linear.y += dvy;
       acc.linear.z += dvz;
       acc.attribution.push({ force: f.token, channel: 'linear', contribution: { x: dvx, y: dvy, z: dvz } });
+    }
+    // thermal channel (doc 04 §Step 6): capture the per-force heat change too, so attribution answers
+    // "which force *heated* matter here", not only "which moved it". Capture-only — the heat mutation
+    // is the force's own; recording it changes nothing.
+    const dh = p.heat - bvh;
+    if (dh !== 0) {
+      acc.thermal = (acc.thermal ?? 0) + dh;
+      acc.attribution.push({ force: f.token, channel: 'thermal', contribution: dh });
     }
   }
 }

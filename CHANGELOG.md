@@ -17,6 +17,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **accumulator thermal channel** (substrate doc 04 §Step 6). The
+  per-force capture path (`applyAndRecord`) now also records each force's **heat** change, populating
+  the accumulator's reserved `thermal` lane and emitting `{ channel: 'thermal' }` attribution — so
+  `accumulateAt`/`query().influences` answer "which force *heated* matter here", not only "which moved
+  it". `FieldInfluenceReading` gains an optional `channel` field (defaults to `'linear'`). Capture-only
+  and behavior-preserving (the default no-accumulator hot path is untouched); `causalityAt` stays the
+  linear motion lane. **Experimental.** (The angular/temporal/semantic lanes remain reserved.)
 - **`@fundamental-engine/core`:** **governance lint** (substrate critical-path 05 phase 2). The
   `ProjectionRegistry` gains `lint()` and the standalone `lintProjections(projections)` is exported —
   pure accessibility-governance checks over registered projections: `field/reduced-motion-equivalent-required`

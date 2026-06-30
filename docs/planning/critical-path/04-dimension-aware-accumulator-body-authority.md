@@ -285,9 +285,15 @@ speed-capped) and writes back to `cx`/`cy`, overriding the DOM rect. Opt-in; beh
 anchored/kinematic. Refinement still open: literal momentum-recoil from a body's *own* emission (the
 reaction to the impulses it imparts), torque, and conservation modes.
 
-### Step 6: angular/temporal/semantic channels
+### Step 6: angular/temporal/semantic channels — 🟡 STARTED (thermal lane)
 
 Introduce torque, time kernels, semantic pressure, and thermal/energy accounting as opt-in channels.
+
+Shipped: the **thermal** lane — `applyAndRecord` captures each force's heat change into the
+accumulator's `thermal` channel with `{ channel: 'thermal' }` attribution; surfaced via
+`accumulateAt`/`query().influences` (`FieldInfluenceReading.channel`). Capture-only, behavior-
+preserving. Still reserved: angular (torque — needs per-particle angular state), temporal (time
+kernels), semantic (attention/confidence/memory pressure).
 
 ## Interaction with Field Query and Replay
 

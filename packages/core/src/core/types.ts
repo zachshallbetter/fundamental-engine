@@ -828,7 +828,10 @@ export interface FieldInfluenceReading {
   target?: string;
   /** the contributing force token. */
   force: Token;
-  /** the Δv contribution (linear channel today). */
+  /** which accumulator channel this contribution is in (`'linear'` Δv, `'thermal'` heat, …). Default
+   *  `'linear'` for back-compat with readers written before the thermal channel (doc 04 §Step 6). */
+  channel?: ForceAttribution['channel'];
+  /** the contribution — a Δv vector for `'linear'`, a scalar heat delta for `'thermal'`. */
   contribution: number | Vec2 | Vec3;
   /** optional human-readable note (lane: diagnostic). */
   reason?: string;
