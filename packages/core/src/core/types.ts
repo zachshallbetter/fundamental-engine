@@ -419,7 +419,8 @@ export interface FieldImpulseAccumulator {
   /** temporal contribution (delay/decay/phase) — `decay` populated when a force changes mortal matter's
    *  `Particle.age` (frames-to-live); delay/phase reserved (doc 04 §Step 6). */
   temporal?: { delay?: number; decay?: number; phase?: number };
-  /** semantic-channel contributions (attention/confidence/memory) — reserved; unpopulated today. */
+  /** semantic-channel contributions (attention/confidence/memory) — `attention` populated with the body's
+   *  conserved-attention multiplier (`Body.attn`) when active; confidence/memory reserved (doc 04 §Step 6). */
   semantic?: Record<string, number>;
   /** per-force breakdown — preserves explainability (Paper 31 §6). */
   attribution: ForceAttribution[];

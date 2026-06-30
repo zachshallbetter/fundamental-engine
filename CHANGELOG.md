@@ -17,6 +17,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **semantic accumulator lane** (substrate doc 04 §Step 6, roadmap 3).
+  `applyAndRecord` now annotates a force's contribution with the body's conserved-attention multiplier
+  in effect (`Body.attn`, which scales the body's effective force strength) into `acc.semantic.attention`
+  with a `{ channel: 'semantic' }` attribution — "this force's influence here was attention-scaled to X".
+  Only when attention is active (`attn` defined and ≠ 1), so the neutral field is byte-identical.
+  Capture-only / behavior-preserving (identical Δv with the accumulator on vs off). `confidence`/`memory`
+  remain reserved. **Experimental.**
+
+
 - **`@fundamental-engine/core`:** **temporal accumulator lane** (substrate doc 04 §Step 6, roadmap 2).
   `applyAndRecord` now captures a per-force change in `Particle.age` (frames-to-live, for *mortal*
   matter) into `acc.temporal.decay` with a `{ channel: 'temporal' }` attribution — "which force aged /
