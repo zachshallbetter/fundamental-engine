@@ -17,6 +17,8 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 - **`@fundamental-engine/core`:** `applyAndRecord` (the single force-capture path) and `accumulateAt`
   — the net + per-force attribution at a point. `causalityAt` now reads the accumulator. Additive and
   behavior-identical.
+- **`@fundamental-engine/core`:** `forceVectorAt` reads the accumulator via `applyAndRecord`, so the
+  force-vectors overlay, causality, and prediction share one capture path. Behavior-identical.
 
 ### Fixed
 
