@@ -70,6 +70,7 @@ import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 import { accumulateAt } from '../diagnostics/probes.ts';
 import { diffFieldSnapshots, replayFieldSnapshots } from './field-snapshot.ts';
+import { lintProjections } from './governance.ts';
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
@@ -333,6 +334,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     apply(id, reading, target) {
       projectionMap.get(id)?.apply?.(reading, target);
     },
+    lint: () => lintProjections(projectionList()),
   };
 
   // Dynamic bodies (substrate doc 04 §Step 5 — recoil): a body with authority:'dynamic' has its

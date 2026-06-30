@@ -21,6 +21,7 @@ export * from './core/feedback.ts';
 export * from './core/attention.ts';
 export * from './core/causality.ts';
 export * from './core/field-snapshot.ts';
+export * from './core/governance.ts';
 export * from './core/streamlines.ts';
 export * from './core/flow.ts';
 export * from './core/fieldlines.ts';

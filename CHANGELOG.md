@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **Tests:** aggressive cross-surface integration coverage for the substrate API — new
+  `substrate-api.test.ts` in `@fundamental-engine/{vanilla,three,elements,react}` (+47 tests)
+  verifying `query`/`snapshot`/`diff`/`replay`/`projections` are reachable, correctly shaped, and
+  delegate per surface (incl. the `<field-root>` before-start fallbacks the codex review flagged, and
+  body-authority round-trips). Closes the surface-level coverage gap; no behavior change.
+
 ### Added
 
 - **`@fundamental-engine/core`:** **accumulator thermal channel** (substrate doc 04 §Step 6). The
@@ -16,6 +24,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   it". `FieldInfluenceReading` gains an optional `channel` field (defaults to `'linear'`). Capture-only
   and behavior-preserving (the default no-accumulator hot path is untouched); `causalityAt` stays the
   linear motion lane. **Experimental.** (The angular/temporal/semantic lanes remain reserved.)
+- **`@fundamental-engine/core`:** **governance lint** (substrate critical-path 05 phase 2). The
+  `ProjectionRegistry` gains `lint()` and the standalone `lintProjections(projections)` is exported —
+  pure accessibility-governance checks over registered projections: `field/reduced-motion-equivalent-required`
+  (a motion-capable projection with no `reducedMotionEquivalent` → **error**, an accessibility-contract
+  violation) and `field/accessibility-equivalent-required` (no `accessibilityEquivalent` → **warning**).
+  New `GovernanceWarning` type. Rides every surface via `field.projections.lint()`. **Experimental** —
+  the lane-separation / coupling-passport / relationship-as-force rules are a later step.
 
 
 - **`@fundamental-engine/core`:** **Projection Registry** — `field.projections` (substrate
