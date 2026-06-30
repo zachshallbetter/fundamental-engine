@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, Formation, OverlayInput, OverlayMode, Particle } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, Formation, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -68,6 +68,7 @@ import type { FieldHost } from './host.ts';
 import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
+import { accumulateAt } from '../diagnostics/probes.ts';
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
@@ -269,6 +270,22 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // (onVisibility stops the loop entirely).
   let canvasVisible = true;
   let formTarget: Formation = { ...FORMATION_BY.ambient.preset };
+  let formationName = 'ambient'; // the active formation's id, for FieldHandle.query()
+
+  // Stable per-body ids for FieldHandle.query(): the element's id when present, else a synthetic
+  // `body-N` kept stable across queries (same Body object → same id), so relationship endpoints and
+  // body readings agree.
+  const bodyIdMap = new WeakMap<Body, string>();
+  let bodyIdSeq = 0;
+  const bodyId = (b: Body): string => {
+    if (b.el && b.el.id) return b.el.id;
+    let id = bodyIdMap.get(b);
+    if (id === undefined) {
+      id = `body-${bodyIdSeq++}`;
+      bodyIdMap.set(b, id);
+    }
+    return id;
+  };
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
@@ -2229,7 +2246,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
   function setFormation(name: string): void {
     const f = FORMATION_BY[name as FormationId];
-    if (f) formTarget = { ...f.preset };
+    if (f) {
+      formTarget = { ...f.preset };
+      formationName = name;
+    }
   }
 
   // conductor (§7.1): as a section crosses mid-viewport, ease to its formation
@@ -2630,6 +2650,113 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         memory: e.agent.memory,
         active: e.agent.active,
       })),
+    query: (q: FieldQuery = {}): FieldQueryResult => {
+      // Resolve the region: a point (+radius), a rect, or the whole field. Read-only throughout.
+      const at = q.at;
+      let region: FieldRect | undefined;
+      let cx = 0;
+      let cy = 0;
+      let radius = 0;
+      let local = false;
+      if (at) {
+        if ('width' in at) {
+          region = { x: at.x, y: at.y, width: at.width, height: at.height };
+          cx = at.x + at.width / 2;
+          cy = at.y + at.height / 2;
+          radius = Math.max(at.width, at.height) / 2;
+        } else {
+          radius = q.radius ?? 240;
+          cx = at.x;
+          cy = at.y;
+          region = { x: cx - radius, y: cy - radius, width: radius * 2, height: radius * 2 };
+        }
+        local = true;
+      }
+
+      // Default include set: bodies + metrics + relationships, plus influences for a local query.
+      const want = new Set<FieldQueryInclude>(
+        q.include ?? (local ? ['bodies', 'metrics', 'relationships', 'influences'] : ['bodies', 'metrics', 'relationships']),
+      );
+
+      const inRegion = (b: Body): boolean => {
+        if (!b.vis) return false;
+        if (!local) return true;
+        if ("width" in (at as FieldRect)) {
+          const r = region!;
+          return b.cx >= r.x && b.cx <= r.x + r.width && b.cy >= r.y && b.cy <= r.y + r.height;
+        }
+        return Math.hypot(b.cx - cx, b.cy - cy) <= radius;
+      };
+
+      const matched = bodies.filter(inRegion);
+
+      const bodyReadings: FieldBodyReading[] = want.has('bodies')
+        ? matched.map((b): FieldBodyReading => {
+            const metrics: Record<string, number> = {
+              density: b.d,
+              count: b.count,
+              engaged: b.on ? 1 : 0,
+            };
+            if (b.attn !== undefined) metrics.attention = b.attn;
+            if (b.capacity > 0) metrics.load = b.accreted / b.capacity;
+            const dimensions: Record<string, number> = b.metrics
+              ? { entropy: b.metrics.entropy, coherence: b.metrics.coherence, temperature: b.metrics.temperature }
+              : {};
+            return {
+              id: bodyId(b),
+              rect: { x: b.cx - b.hw, y: b.cy - b.hh, width: b.hw * 2, height: b.hh * 2 },
+              tokens: b.tokens.slice(),
+              metrics,
+              dimensions,
+              activeFormations: [formationName],
+            };
+          })
+        : [];
+
+      const metrics: Record<string, number> = {};
+      if (want.has('metrics')) {
+        metrics.particles = store.size;
+        metrics.bodies = matched.length;
+        if (matched.length > 0) {
+          let sumD = 0;
+          for (const b of matched) sumD += b.d;
+          metrics.meanDensity = sumD / matched.length;
+        }
+      }
+
+      const relationships: FieldRelationshipReading[] = want.has('relationships')
+        ? programmaticEdges
+            .filter((e) => !local || inRegion(e.from) || inRegion(e.to))
+            .map((e): FieldRelationshipReading => ({
+              from: bodyId(e.from),
+              to: bodyId(e.to),
+              type: e.agent.type,
+              strength: e.agent.strength,
+              memory: e.agent.memory,
+              active: e.agent.active,
+              causal: e.agent.active,
+            }))
+        : [];
+
+      // Influences: only meaningful for a local query (a point to attribute force to). For the query
+      // centre, ask each in-region body which of its forces contributed Δv there (impulse accumulator).
+      const influences: FieldInfluenceReading[] = [];
+      if (want.has('influences') && local) {
+        for (const b of matched) {
+          if (b.tokens.length === 0) continue;
+          const acc = accumulateAt(reg.forces, b.tokens, b, cx, cy);
+          for (const a of acc.attribution) {
+            influences.push({
+              source: bodyId(b),
+              force: a.force,
+              contribution: a.contribution as number | Vec2 | Vec3,
+            });
+          }
+        }
+      }
+
+      return { query: q, frame: env.frameN, time: env.t, region, bodies: bodyReadings, metrics, relationships, influences };
+    },
     addField: (name, sampler) => {
       fieldChannels.set(name, sampler);
       return {

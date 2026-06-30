@@ -7,7 +7,7 @@
  * untouched. Reduced motion (`dt = 0`) freezes the sim (§18).
  */
 
-import type { Body, ConditionRegistry, Env, Force, ForceRegistry, Particle } from './types.ts';
+import type { Body, ConditionRegistry, Env, FieldImpulseAccumulator, Force, ForceRegistry, Particle } from './types.ts';
 import type { FieldStore } from './field-store.ts';
 import { accretionTarget } from './formations.ts';
 import { waveYat, waveSlope, waveDistance, type Wave } from './currents.ts';
@@ -57,20 +57,63 @@ function classified(b: Body): ClassifiedTokens {
  * scaled identically so depth-enabled fields keep `a = F/m` on all three axes (a heavy particle
  * pushed off-plane accelerates as little along z as it does in x/y).
  */
-function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
-  if (inv === 1 || f.kinematic) {
-    f.apply(b, p, env);
-    return;
-  }
+/**
+ * Apply one force to a particle AND, when `env.accum` is present, record its net per-force Δv into
+ * the accumulator (doc 04). The single canonical capture path: the integrator's hot loop, the
+ * diagnostics (`accumulateAt`/causality), and any Field-Query probe all run a force through here, so
+ * "what did this force contribute?" is computed in exactly one place. The velocity update is unchanged
+ * from the pre-accumulator engine — `accum` is a read-only inspection sink. `inv` is the mass factor
+ * (1 = unit mass); kinematic forces are left unscaled.
+ */
+export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1): void {
   const bvx = p.vx;
   const bvy = p.vy;
   const bvz = p.vz ?? 0;
   f.apply(b, p, env);
-  p.vx = bvx + (p.vx - bvx) * inv;
-  p.vy = bvy + (p.vy - bvy) * inv;
-  // only rescale z when the force actually engaged the lane — never materialize a spurious 0
-  // on a flat (z-less) particle.
-  if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
+  if (!(inv === 1 || f.kinematic)) {
+    p.vx = bvx + (p.vx - bvx) * inv;
+    p.vy = bvy + (p.vy - bvy) * inv;
+    if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
+  }
+  const acc = env.accum;
+  if (acc !== undefined) {
+    const dvx = p.vx - bvx;
+    const dvy = p.vy - bvy;
+    const dvz = (p.vz ?? 0) - bvz;
+    if (dvx !== 0 || dvy !== 0 || dvz !== 0) {
+      acc.linear.x += dvx;
+      acc.linear.y += dvy;
+      acc.linear.z += dvz;
+      acc.attribution.push({ force: f.token, channel: 'linear', contribution: { x: dvx, y: dvy, z: dvz } });
+    }
+  }
+}
+
+function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
+  // Default hot path: byte-identical to the pre-accumulator engine (zero overhead — no capture).
+  if (env.accum === undefined) {
+    if (inv === 1 || f.kinematic) {
+      f.apply(b, p, env);
+      return;
+    }
+    const bvx = p.vx;
+    const bvy = p.vy;
+    const bvz = p.vz ?? 0;
+    f.apply(b, p, env);
+    p.vx = bvx + (p.vx - bvx) * inv;
+    p.vy = bvy + (p.vy - bvy) * inv;
+    // only rescale z when the force actually engaged the lane — never materialize a spurious 0
+    // on a flat (z-less) particle.
+    if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
+    return;
+  }
+  // Attribution requested: delegate to the shared capture path.
+  applyAndRecord(f, b, p, env, inv);
+}
+
+/** A fresh, empty impulse accumulator (dimension-aware shape; only `linear` is populated today). */
+export function makeAccumulator(): FieldImpulseAccumulator {
+  return { linear: { x: 0, y: 0, z: 0 }, attribution: [] };
 }
 
 export function step(input: StepInput): void {

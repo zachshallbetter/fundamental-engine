@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult } from '@fundamental-engine/core';
 import { createField } from './create-field.ts';
 import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
@@ -140,6 +140,11 @@ export class FieldField implements FieldHandle {
   /** the live programmatic-edge read-out — each edge's endpoint data, type, strength, memory, active. */
   readEdges(): ReadonlyArray<EdgeView> {
     return this.field.readEdges();
+  }
+  /** Ask the live field a structured question (bodies/metrics/relationships/influences) — delegated
+   *  to the engine. Read-only; works headless. See {@link FieldHandle.query}. */
+  query(q?: FieldQuery): FieldQueryResult {
+    return this.field.query(q);
   }
   /** register a named external scalar field channel the engine samples on its read path. */
   addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle {

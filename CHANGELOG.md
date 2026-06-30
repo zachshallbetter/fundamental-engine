@@ -7,6 +7,29 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`@fundamental-engine/core`:** **Field Query API (MVP)** — `field.query(q?)` (substrate critical-path
+  02). A read-only, render-agnostic way to ask the live field a structured question — a point
+  (`{x, y}` + `radius`), a `DOMRect`-shaped rect, or the whole field — and get back plain, serializable
+  data: `bodies` (id, rect, tokens, metrics, dimensions, active formation), `metrics`, `relationships`
+  (the edge graph by id), and `influences` (per-force Δv at the point, from the impulse accumulator).
+  Works headless; never mutates state. New types `FieldQuery`, `FieldQueryResult`, `FieldBodyReading`,
+  `FieldRelationshipReading`, `FieldInfluenceReading`, `FieldQueryInclude`, plus `FieldRect`/`Vec3`. The
+  method is exposed on every surface (`<field-root>`, `<FieldField>`/`useFieldField`, vanilla, three).
+  **Experimental** — not yet part of the frozen API surface.
+
+- **`@fundamental-engine/core`:** dimension-aware impulse accumulator (substrate critical path). An
+  opt-in `Env.accum` (`FieldImpulseAccumulator`) lets a diagnostic or query probe read each force's
+  per-particle contribution — a net `linear` channel plus per-force attribution — captured centrally
+  by the integrator without changing the integration math. The default hot path is byte-identical
+  (`accum` absent); the public API surface is unchanged.
+- **`@fundamental-engine/core`:** `applyAndRecord` (the single force-capture path) and `accumulateAt`
+  — the net + per-force attribution at a point. `causalityAt` now reads the accumulator. Additive and
+  behavior-identical.
+- **`@fundamental-engine/core`:** `forceVectorAt` reads the accumulator via `applyAndRecord`, so the
+  force-vectors overlay, causality, and prediction share one capture path. Behavior-identical.
+
 ### Fixed
 
 - **`@fundamental-engine/dom`:** `apply-recipe.ts` no longer overwrites `--field-density` when
