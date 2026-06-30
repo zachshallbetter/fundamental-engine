@@ -71,6 +71,7 @@ import { energyReport } from '../diagnostics/energy.ts';
 import { accumulateAt } from '../diagnostics/probes.ts';
 import { diffFieldSnapshots, replayFieldSnapshots } from './field-snapshot.ts';
 import { lintProjections } from './governance.ts';
+import { applyLens } from './query-lens.ts';
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
@@ -2880,7 +2881,8 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
 
-      return { query: q, frame: env.frameN, time: env.t, region, bodies: bodyReadings, metrics, relationships, influences, projections: projectionList() };
+      const result: FieldQueryResult = { query: q, frame: env.frameN, time: env.t, region, bodies: bodyReadings, metrics, relationships, influences, projections: projectionList() };
+      return q.lens ? applyLens(result, q.lens) : result;
     },
     snapshot: (opts: FieldSnapshotOptions = {}): FieldSnapshot => {
       const includeRelationships = opts.includeRelationships !== false;

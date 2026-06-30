@@ -782,6 +782,22 @@ export interface EdgeView {
  *  `relationships`, plus `influences` when the query targets a point/region). */
 export type FieldQueryInclude = 'bodies' | 'metrics' | 'relationships' | 'influences';
 
+/** A user-defined interpretation lens over a query/snapshot reading (substrate query phase 2) — a
+ *  declarative scope, NOT an opinionated preset catalog: the caller supplies the lens, the field/`applyLens`
+ *  filters by it. Each clause is an allow-list; omitting a clause keeps everything in that dimension.
+ *  Pure metadata — a lens never changes field state. **EXPERIMENTAL.** */
+export interface FieldLens {
+  /** lens id, echoed onto the result as `FieldQueryResult.lens`. */
+  id: string;
+  label?: string;
+  /** keep only these metric keys (applied to global metrics + each body's metrics/dimensions). */
+  metrics?: readonly string[];
+  /** keep only influences in these accumulator channels (a missing `channel` counts as `'linear'`). */
+  channels?: readonly ForceAttribution['channel'][];
+  /** keep only bodies carrying at least one of these tokens. */
+  tokens?: readonly Token[];
+}
+
 /** A structured question put to the live field (read-only; never mutates state). */
 export interface FieldQuery {
   /** where to look: a point (`{x, y}`) or a rectangle (`{x, y, width, height}` — `DOMRect`-shaped).
@@ -791,6 +807,9 @@ export interface FieldQuery {
   radius?: number;
   /** which sections to include; omitted ⇒ the default set (see {@link FieldQueryInclude}). */
   include?: readonly FieldQueryInclude[];
+  /** interpret the result through a lens (substrate query phase 2) — scopes metrics/influences/bodies.
+   *  Equivalent to calling `applyLens(result, lens)` on the answer. **EXPERIMENTAL.** */
+  lens?: FieldLens;
 }
 
 /** A body as seen by a query — identity, box, active tokens, and its measured metrics/dimensions. */
@@ -862,6 +881,8 @@ export interface FieldQueryResult {
   influences: FieldInfluenceReading[];
   /** the projections registered on the field (substrate 05) — metadata only; read-only. */
   projections: FieldProjectionInfo[];
+  /** the lens id this reading was scoped through, when a `lens` was supplied (substrate query phase 2). */
+  lens?: string;
 }
 
 // ── Field Snapshot + Diff (substrate critical-path 03) ────────────────────────────────────────────
