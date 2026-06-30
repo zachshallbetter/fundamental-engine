@@ -8,7 +8,10 @@
 > the Boids verdict that surfaced momentum in [`boids-2026-comparison.md`](boids-2026-comparison.md) and
 > research [Paper 31](../research/31-behavioral-models-after-boids.md). The canonical possibility space
 > is [`../canonical/field-possibilities.md`](../canonical/field-possibilities.md) — §"What this unlocks"
-> below maps each rethink to the frontier capabilities it makes buildable.
+> below maps each rethink to the frontier capabilities it makes buildable. The **critical-path specs**
+> for the next substrate program — Field Formation terminology, the Field Query API, Field Snapshot +
+> Causal Replay, the dimension-aware accumulator + body-authority modes, and the Projection Registry +
+> Governance — live in [`critical-path/`](critical-path/README.md) (each filed as an RC1 epic).
 
 ## The one inversion underneath all of it
 

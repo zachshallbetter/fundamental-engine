@@ -1,0 +1,45 @@
+# Fundamental Critical Path Docs
+
+This pack contains five focused planning documents for the next major Fundamental substrate work.
+
+## Documents
+
+1. [Field Formation Terminology](01-field-formation-terminology.md)
+2. [Field Query API](02-field-query-api.md)
+3. [Field Snapshot + Causal Replay](03-field-snapshot-causal-replay.md)
+4. [Dimension-Aware Accumulator + Body-Authority Modes](04-dimension-aware-accumulator-body-authority.md)
+5. [Projection Registry + Governance](05-projection-registry-governance.md)
+
+## Critical path
+
+```txt
+Field Formation terminology
+  establishes the conceptual language
+
+Field Query API
+  makes the field readable
+
+Field Snapshot + Causal Replay
+  makes the field inspectable over time
+
+Dimension-aware accumulator + body-authority modes
+  makes the engine substrate ready for restored dimensions
+
+Projection registry + governance
+  makes field behavior visible, accessible, and trustworthy
+```
+
+## Guiding principle
+
+Fundamental does not need more spectacle first. It needs queryability, inspectability, persistence, projection, stronger contracts, and governance.
+
+```txt
+Field Formation = authored arrangement
+Field Query = ask the field
+Field Snapshot = capture the field
+Causal Replay = explain the field
+Accumulator = attribute cause before integration
+Body Authority = decide who owns position
+Projection = reveal state
+Governance = keep the system authorable instead of magical
+```
