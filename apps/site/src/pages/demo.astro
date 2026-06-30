@@ -1,0 +1,150 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+// /demo — a small, additive showcase of two shipped substrate features:
+//   1. data-authority="dynamic" bodies — the engine owns their position; they recoil under the field.
+//   2. the agent-json projection — a live, serializable read-out of field state, the surface an agent/tool
+//      consumes (field.projections + agentJsonProjection/agentJsonTarget, @fundamental-engine/core).
+// It rides the persistent <field-root> from Base.astro. Legible with the field off: the page still reads
+// as a list of labelled bodies and a JSON panel; the field only adds motion + live numbers.
+---
+
+<Base
+  title="Substrate demo — Fundamental"
+  description="A live demo of dynamic (recoiling) bodies and the agent-json projection — a serializable read-out of the field for agents and tools."
+>
+  <SiteNav current="demo" />
+
+  <main id="main" class="demo-shell">
+    <header class="demo-head">
+      <h1>Substrate demo</h1>
+      <p>
+        Two shipped substrate features, live over the page field. The <strong>anchored</strong> wells
+        below hold position; the <strong>dynamic</strong> motes recoil — the engine owns their position and
+        integrates them under the net field. The panel is the <strong>agent-json projection</strong>: a
+        serializable read-out of field state, the same surface an agent or tool would consume.
+      </p>
+    </header>
+
+    <section class="demo-stage" aria-label="Field stage with bodies">
+      <!-- anchored attractors: fixed wells the dynamic motes fall toward -->
+      <span class="well" data-body="attract" data-strength="1.6" data-range="320" data-feedback>well A</span>
+      <span class="well well-b" data-body="attract" data-strength="1.6" data-range="320" data-feedback>well B</span>
+
+      <!-- dynamic motes: engine-owned position; they recoil toward the wells (the script drives the
+           visible transform from each body's live query() position) -->
+      <span id="mote-1" class="mote" data-body="attract" data-strength="0.5" data-range="120" data-authority="dynamic">mote 1</span>
+      <span id="mote-2" class="mote mote-2" data-body="attract" data-strength="0.5" data-range="120" data-authority="dynamic">mote 2</span>
+      <span id="mote-3" class="mote mote-3" data-body="attract" data-strength="0.5" data-range="120" data-authority="dynamic">mote 3</span>
+    </section>
+
+    <section class="demo-readout" aria-label="Live agent-json projection">
+      <h2>agent-json projection</h2>
+      <p class="demo-note">Updated every frame from <code>field.query().metrics</code>, written by a bound projection.</p>
+      <pre data-agent-json aria-live="off">{'{ binding the projection… }'}</pre>
+    </section>
+  </main>
+
+  <SiteFooter />
+</Base>
+
+<style>
+  .demo-shell { max-width: 64rem; margin: 0 auto; padding: 4rem 1.5rem 6rem; position: relative; z-index: 1; }
+  .demo-head h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 0.5rem; }
+  .demo-head p { max-width: 48rem; line-height: 1.6; opacity: 0.85; }
+  .demo-stage {
+    position: relative; height: 22rem; margin: 2.5rem 0; border: 1px solid color-mix(in oklch, currentColor 14%, transparent);
+    border-radius: 1rem; overflow: hidden;
+  }
+  .well, .mote {
+    position: absolute; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px; font-size: 0.8rem; letter-spacing: 0.02em; user-select: none;
+  }
+  .well {
+    top: 38%; left: 22%; width: 5.5rem; height: 5.5rem; transform: translate(-50%, -50%);
+    background: color-mix(in oklch, var(--accent, #4da3ff) 18%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent, #4da3ff) 50%, transparent);
+    /* --d is written by the engine onto data-feedback bodies; consume it so the well visibly reacts */
+    box-shadow: 0 0 calc(8px + var(--d, 0) * 40px) color-mix(in oklch, var(--accent, #4da3ff) 60%, transparent);
+  }
+  .well-b { left: 74%; top: 60%; }
+  .mote {
+    top: 50%; left: 50%; width: 3.25rem; height: 3.25rem;
+    background: color-mix(in oklch, #f0a 22%, transparent);
+    border: 1px solid color-mix(in oklch, #f0a 55%, transparent);
+  }
+  .mote-2 { top: 30%; left: 55%; }
+  .mote-3 { top: 68%; left: 48%; }
+  .demo-readout h2 { font-size: 1.25rem; margin: 0 0 0.25rem; }
+  .demo-note { opacity: 0.7; margin: 0 0 0.75rem; font-size: 0.9rem; }
+  .demo-readout pre {
+    margin: 0; padding: 1rem 1.25rem; border-radius: 0.75rem; overflow-x: auto;
+    background: color-mix(in oklch, currentColor 6%, transparent);
+    border: 1px solid color-mix(in oklch, currentColor 12%, transparent);
+    font-variant-numeric: tabular-nums; line-height: 1.5;
+  }
+  @media (prefers-reduced-motion: reduce) { .demo-stage { /* the field runs static; bodies hold their authored positions */ } }
+</style>
+
+<script>
+  // Wire the agent-json projection to the page field and stream its read-out into the <pre>.
+  // Runs on load AND astro:page-load (SPA nav); binds once per visit.
+  import { agentJsonProjection, agentJsonTarget } from '@fundamental-engine/core';
+
+  type ProjReg = {
+    register(p: unknown): () => void;
+    bind(id: string, target: unknown, source: () => Record<string, number>): () => void;
+  };
+  type BodyReading = { id: string; authority?: string; rect?: { x: number; y: number } };
+  type FieldEl = Element & {
+    projections?: ProjReg;
+    query?: (q?: unknown) => { metrics: Record<string, number>; bodies: BodyReading[] };
+  };
+
+  function initDemo() {
+    const pre = document.querySelector('pre[data-agent-json]') as HTMLElement | null;
+    const field = document.querySelector('field-root') as FieldEl | null;
+    if (!pre || !field || pre.dataset.bound) return;
+    // the field must have started (its real projection registry replaces the no-op stub). Retry briefly.
+    if (typeof field.projections?.bind !== 'function' || typeof field.query !== 'function') {
+      window.setTimeout(initDemo, 120);
+      return;
+    }
+    pre.dataset.bound = '1';
+
+    const target = agentJsonTarget();
+    field.projections!.register(agentJsonProjection('demo-metrics', ['density', 'attention', 'temperature', 'load']));
+    field.projections!.bind('demo-metrics', target, () => field.query!().metrics);
+
+    // drive the visible recoil: the engine owns each dynamic body's position, but does not write the
+    // DOM transform — so translate each mote by the delta of its live query() position from its first
+    // sample (a delta in engine space, so no coordinate mapping is needed; engine px ≈ CSS px).
+    const origin = new Map<string, { x: number; y: number }>();
+    const moveMotes = () => {
+      const bodies = field.query!({ include: ['bodies'] } as unknown).bodies.filter((b) => b.authority === 'dynamic' && b.rect);
+      for (const b of bodies) {
+        const el = document.getElementById(b.id);
+        if (!el) continue;
+        if (!origin.has(b.id)) origin.set(b.id, { x: b.rect!.x, y: b.rect!.y });
+        const o = origin.get(b.id)!;
+        el.style.transform = `translate(${(b.rect!.x - o.x).toFixed(1)}px, ${(b.rect!.y - o.y).toFixed(1)}px)`;
+      }
+    };
+
+    // the binding auto-applies each write phase; poll the target and pretty-print it.
+    let raf = 0;
+    const tick = () => {
+      const v = target.value();
+      pre.textContent = v ? JSON.stringify(v, (_k, x) => (typeof x === 'number' ? Math.round(x * 1000) / 1000 : x), 2) : '{ no reading yet }';
+      moveMotes();
+      raf = window.requestAnimationFrame(tick);
+    };
+    tick();
+    document.addEventListener('astro:before-swap', () => window.cancelAnimationFrame(raf), { once: true });
+  }
+
+  initDemo();
+  document.addEventListener('astro:page-load', initDemo);
+</script>
