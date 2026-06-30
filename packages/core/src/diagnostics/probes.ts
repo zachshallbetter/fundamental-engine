@@ -58,12 +58,17 @@ export function forceVectorAt(force: Force, b: Body, x: number, y: number, probe
     size: 1,
     cap: null,
   } as unknown as Particle;
+  // Read the Δv through the canonical capture path (doc 04): the recorded contribution is the same
+  // value the old `p.vx − probe.vx` diff produced, but it survives the force-contract change (when a
+  // force contributes to the accumulator instead of mutating velocity, this still reads correctly).
+  const env = probeEnv(b, x, y);
+  env.accum = makeAccumulator();
   try {
-    force.apply(b, p, probeEnv(b, x, y));
+    applyAndRecord(force, b, p, env);
   } catch {
     return { x: 0, y: 0 };
   }
-  return { x: p.vx - probe.vx, y: p.vy - probe.vy };
+  return { x: env.accum.linear.x, y: env.accum.linear.y };
 }
 
 export interface CausalContribution {
