@@ -57,10 +57,41 @@ function classified(b: Body): ClassifiedTokens {
  * scaled identically so depth-enabled fields keep `a = F/m` on all three axes (a heavy particle
  * pushed off-plane accelerates as little along z as it does in x/y).
  */
-function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
+/**
+ * Apply one force to a particle AND, when `env.accum` is present, record its net per-force Δv into
+ * the accumulator (doc 04). The single canonical capture path: the integrator's hot loop, the
+ * diagnostics (`accumulateAt`/causality), and any Field-Query probe all run a force through here, so
+ * "what did this force contribute?" is computed in exactly one place. The velocity update is unchanged
+ * from the pre-accumulator engine — `accum` is a read-only inspection sink. `inv` is the mass factor
+ * (1 = unit mass); kinematic forces are left unscaled.
+ */
+export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1): void {
+  const bvx = p.vx;
+  const bvy = p.vy;
+  const bvz = p.vz ?? 0;
+  f.apply(b, p, env);
+  if (!(inv === 1 || f.kinematic)) {
+    p.vx = bvx + (p.vx - bvx) * inv;
+    p.vy = bvy + (p.vy - bvy) * inv;
+    if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
+  }
   const acc = env.accum;
-  // Default hot path: byte-identical to the pre-accumulator engine (zero overhead).
-  if (acc === undefined) {
+  if (acc !== undefined) {
+    const dvx = p.vx - bvx;
+    const dvy = p.vy - bvy;
+    const dvz = (p.vz ?? 0) - bvz;
+    if (dvx !== 0 || dvy !== 0 || dvz !== 0) {
+      acc.linear.x += dvx;
+      acc.linear.y += dvy;
+      acc.linear.z += dvz;
+      acc.attribution.push({ force: f.token, channel: 'linear', contribution: { x: dvx, y: dvy, z: dvz } });
+    }
+  }
+}
+
+function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
+  // Default hot path: byte-identical to the pre-accumulator engine (zero overhead — no capture).
+  if (env.accum === undefined) {
     if (inv === 1 || f.kinematic) {
       f.apply(b, p, env);
       return;
@@ -76,26 +107,8 @@ function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void
     if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
     return;
   }
-  // Attribution path (opt-in, doc 04): same math, but capture the net per-force Δv and record it
-  // into the accumulator. The velocity update is unchanged — `accum` is a read-only inspection sink.
-  const bvx = p.vx;
-  const bvy = p.vy;
-  const bvz = p.vz ?? 0;
-  f.apply(b, p, env);
-  if (!(inv === 1 || f.kinematic)) {
-    p.vx = bvx + (p.vx - bvx) * inv;
-    p.vy = bvy + (p.vy - bvy) * inv;
-    if (p.vz !== undefined) p.vz = bvz + (p.vz - bvz) * inv;
-  }
-  const dvx = p.vx - bvx;
-  const dvy = p.vy - bvy;
-  const dvz = (p.vz ?? 0) - bvz;
-  if (dvx !== 0 || dvy !== 0 || dvz !== 0) {
-    acc.linear.x += dvx;
-    acc.linear.y += dvy;
-    acc.linear.z += dvz;
-    acc.attribution.push({ force: f.token, channel: 'linear', contribution: { x: dvx, y: dvy, z: dvz } });
-  }
+  // Attribution requested: delegate to the shared capture path.
+  applyAndRecord(f, b, p, env, inv);
 }
 
 /** A fresh, empty impulse accumulator (dimension-aware shape; only `linear` is populated today). */
