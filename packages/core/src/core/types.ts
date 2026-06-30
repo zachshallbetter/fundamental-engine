@@ -868,6 +868,9 @@ export interface FieldSnapshotOptions {
   includeRelationships?: boolean;
   /** include each body's opaque `data` record (default false — privacy-preserving). */
   includeData?: boolean;
+  /** include per-body force attribution (each body's own forces at its centre, via the impulse
+   *  accumulator) so a later `replay()` can derive `cause: 'force'` steps. Off by default. */
+  includeInfluences?: boolean;
 }
 
 /** A body captured in a {@link FieldSnapshot}. */
@@ -911,6 +914,9 @@ export interface FieldSnapshot {
   bodies: FieldBodySnapshot[];
   relationships: FieldRelationshipReading[];
   metrics: Record<string, number>;
+  /** per-body force attribution at capture (only when `includeInfluences`) — each body's own forces at
+   *  its centre, by channel; lets `replay()` derive `cause: 'force'` steps. */
+  influences?: FieldInfluenceReading[];
   /** the projections registered on the field at capture (substrate 05) — metadata only. */
   projections: FieldProjectionInfo[];
   particles?: FieldParticleSnapshot[];

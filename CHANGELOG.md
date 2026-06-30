@@ -17,6 +17,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **Causal Replay force attribution** (substrate critical-path 03 ph2
+  + doc 04 §Step 6). `snapshot({ includeInfluences })` now captures per-body force attribution (each
+  body's forces sampled just off its centre, by channel — linear Δv + thermal), and `replay(a, b)`
+  derives **`cause: 'force'`** steps from how those shift between two captures — e.g. "Force attract on
+  claim-3 grew 0.12→0.30", "Force attract on B released 0.20→0". Ties the substrate together
+  (accumulator → snapshot → replay), incl. the thermal lane. `FieldSnapshot.influences` +
+  `FieldSnapshotOptions.includeInfluences`. **Experimental.**
+
+
 - **`@fundamental-engine/core`:** **accumulator thermal channel** (substrate doc 04 §Step 6). The
   per-force capture path (`applyAndRecord`) now also records each force's **heat** change, populating
   the accumulator's reserved `thermal` lane and emitting `{ channel: 'thermal' }` attribution — so
