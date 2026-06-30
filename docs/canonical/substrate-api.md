@@ -262,7 +262,7 @@ interface ForceAttribution {
 }
 ```
 
-Today the `linear`, `thermal`, `angular`, and `temporal` channels (and the per-force `attribution`) are populated (`angular` only when a force gives a particle `spin` — opt-in `Particle.orient`/`spin`); the
+Today the `linear`, `thermal`, `angular`, `temporal`, and `semantic` channels (and the per-force `attribution`) are populated (`angular` only when a force gives a particle `spin` — opt-in `Particle.orient`/`spin`); the
 remaining optional channels are declared now so the contract does not assume all force is `vx/vy` —
 they are filled when those dimensions (orientation, time, semantic) are restored (see
 [phase-2-frontier](../planning/critical-path/phase-2-frontier.md)). This is why a

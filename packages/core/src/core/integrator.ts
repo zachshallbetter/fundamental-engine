@@ -118,6 +118,14 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
         acc.attribution.push({ force: f.token, channel: 'temporal', contribution: da });
       }
     }
+    // semantic channel (doc 04 §Step 6): annotate the contribution with the body's conserved-attention
+    // multiplier in effect (`b.attn` scales this body's effective force strength — integrator §2.4). This
+    // is body-level metadata — "this force's influence here was attention-scaled to X" — not a particle
+    // delta. Only when attention is active (attn defined and ≠ 1), so the neutral field is byte-identical.
+    if (b.attn !== undefined && b.attn !== 1) {
+      (acc.semantic ??= {}).attention = b.attn;
+      acc.attribution.push({ force: f.token, channel: 'semantic', contribution: b.attn });
+    }
   }
 }
 
