@@ -70,6 +70,7 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
   const bvy = p.vy;
   const bvz = p.vz ?? 0;
   const bvh = p.heat;
+  const bvs = p.spin ?? 0;
   f.apply(b, p, env);
   if (!(inv === 1 || f.kinematic)) {
     p.vx = bvx + (p.vx - bvx) * inv;
@@ -94,6 +95,15 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
     if (dh !== 0) {
       acc.thermal = (acc.thermal ?? 0) + dh;
       acc.attribution.push({ force: f.token, channel: 'thermal', contribution: dh });
+    }
+    // angular channel (doc 04 §Step 6): capture the per-force change in angular velocity (spin about
+    // the z axis). Like thermal, capture-only — a `torque` force writes `p.spin`; recording the delta
+    // changes nothing. The accumulator's angular lane is 3D; 2D spin lives in its z component.
+    const ds = (p.spin ?? 0) - bvs;
+    if (ds !== 0) {
+      const ang = (acc.angular ??= { x: 0, y: 0, z: 0 });
+      ang.z += ds;
+      acc.attribution.push({ force: f.token, channel: 'angular', contribution: ds });
     }
   }
 }
@@ -453,6 +463,13 @@ export function step(input: StepInput): void {
     p.vx *= fr;
     p.vy *= fr;
     p.vz! *= fr;
+    // optional orientation lane (doc 04 §Step 6): advance angle by spin and damp the spin, ONLY when a
+    // force gave this particle angular velocity — undefined ⇒ inert ⇒ byte-identical to the spin-less
+    // engine. Mirrors the position integrate + FRICTION damp above.
+    if (p.spin !== undefined) {
+      p.orient = (p.orient ?? 0) + p.spin * dt;
+      p.spin *= fr;
+    }
 
     // wander (after damping, so it stays lively): a periodic brownian jitter every 40 frames, plus
     // a smooth curl-noise eddy (§7). Agents (report defined) opt out — their motion is force- and
