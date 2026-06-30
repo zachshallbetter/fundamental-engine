@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Added
+
+- **`@fundamental-engine/core`:** dimension-aware impulse accumulator (substrate critical path). An
+  opt-in `Env.accum` (`FieldImpulseAccumulator`) lets a diagnostic or query probe read each force's
+  per-particle contribution — a net `linear` channel plus per-force attribution — captured centrally
+  by the integrator without changing the integration math. The default hot path is byte-identical
+  (`accum` absent); the public API surface is unchanged.
+
 ### Fixed
 
 - **`@fundamental-engine/dom`:** `apply-recipe.ts` no longer overwrites `--field-density` when

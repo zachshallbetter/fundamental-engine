@@ -318,6 +318,54 @@ export interface Env {
    *  follows under `fieldflow`. Set by the integrator each step from the live bodies; absent
    *  in bare/probe envs, where a field-following force simply no-ops. */
   fieldAt?(x: number, y: number): Vec2;
+  /**
+   * OPT-IN impulse accumulator (substrate critical path, doc 04). When present, the
+   * integrator's central `applyForce` records each force's per-particle contribution here
+   * (net + per-force attribution) WITHOUT changing the integration math — the force still
+   * updates velocity as before. Absent on the default hot path (zero overhead, byte-identical
+   * behavior); a diagnostic / Field-Query probe sets it to read structured attribution. The
+   * shape is dimension-aware from day one so orientation/time/semantic channels are not painted
+   * into a corner, even though only `linear` is populated today. Read-only contract: setting
+   * `accum` never alters how matter moves. */
+  accum?: FieldImpulseAccumulator;
+}
+
+/**
+ * A single force's contribution to one agent in one step, in one channel (substrate doc 04).
+ * The unit the diagnostics (`causality`/`prediction`), Field Query, and Causal Replay consume:
+ * "this matter moved 0.42 in linear x because of `attract`."
+ */
+export interface ForceAttribution {
+  /** the contributing force token (`Force.token`). */
+  force: Token;
+  /** which channel the contribution lands in. Only `linear` is populated today. */
+  channel: 'linear' | 'angular' | 'thermal' | 'temporal' | 'semantic' | 'constraint';
+  /** the contribution value — a `{x,y,z}` Δv for `linear`; a scalar for `thermal`. */
+  contribution: { x: number; y: number; z: number } | number;
+  /** dimensions this force couples, if any (the coupling passport, doc 04 / dimensional-coupling). */
+  couplesDimensions?: string[];
+}
+
+/**
+ * A dimension-aware impulse accumulator (substrate doc 04). Collects per-force contributions for
+ * one agent so cause can be attributed before/independent of integration. `linear` is the running
+ * net Δv; `attribution` is the per-force breakdown. The optional channels (`angular`/`thermal`/
+ * `temporal`/`semantic`) are declared now so the contract does not assume all force is `vx/vy` —
+ * they are not populated until those dimensions are restored.
+ */
+export interface FieldImpulseAccumulator {
+  /** running net linear Δv (x/y, plus z when the lane is engaged). */
+  linear: { x: number; y: number; z: number };
+  /** angular Δω (θx/θy/θz) — reserved for the orientation dimension; unpopulated today. */
+  angular?: { x: number; y: number; z: number };
+  /** thermal (heat) contribution — reserved; unpopulated today. */
+  thermal?: number;
+  /** temporal contribution (delay/decay/phase) — reserved; unpopulated today. */
+  temporal?: { delay?: number; decay?: number; phase?: number };
+  /** semantic-channel contributions (attention/confidence/memory) — reserved; unpopulated today. */
+  semantic?: Record<string, number>;
+  /** per-force breakdown — preserves explainability (Paper 31 §6). */
+  attribution: ForceAttribution[];
 }
 
 /**
