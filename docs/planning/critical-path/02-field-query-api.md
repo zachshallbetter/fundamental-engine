@@ -2,7 +2,14 @@
 
 ## Status
 
-Proposed experimental API. Highest-leverage missing capability for AI, data, OS, research, debugging, design systems, and agent tooling.
+Experimental API — **MVP shipped** (`@fundamental-engine/core`, `FieldHandle.query(q?)`). The first-scope
+slice below is live: `field.query({ at, radius })` (point / rect / global) returns bodies, metrics,
+relationships, active tokens + formation, and per-force influence attribution (via the impulse
+accumulator), read-only and headless. Exposed on every surface (`<field-root>`, React, vanilla, three).
+Still **not in the frozen API surface** — the result shape may evolve. Not yet built: `lens` queries,
+`time`/snapshot windows, projection readings, and the richer `diagnostics`/`events` includes.
+
+Highest-leverage missing capability for AI, data, OS, research, debugging, design systems, and agent tooling.
 
 ## Purpose
 
