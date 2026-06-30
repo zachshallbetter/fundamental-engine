@@ -4,7 +4,7 @@ Created by Zach Shallbetter (zachshallbetter.com).
 
 Source: docs/canonical/, the site documentation pages (apps/site/src/pages/docs/), and the
 recipe catalog (data/recipes.json) in https://github.com/zachshallbetter/fundamental-engine
-Generated: 2026-06-29 by apps/site/scripts/gen-llms.mjs
+Generated: 2026-06-30 by apps/site/scripts/gen-llms.mjs
 Canonical docs: 26 · documentation pages: 48 · recipes: 64
 
 Three sections, in order: (1) the project's CANONICAL documents — the authority on concepts,
@@ -10032,9 +10032,9 @@ Every entry point returns the same handle — pick the one that matches your sta
 web component it's also proxied onto the element , so the element is
 the handle.
 Methods
-{
-HANDLE.map((m) => )
-}
+All 44 methods ship on Three.js, Swift, and Kotlin ( 44/44/44 ); a few behave
+differently by platform. See the parity matrix for the per-method,
+per-platform breakdown.
 On the element. When you use <field-root> , these are proxied onto
 the element itself — document.querySelector('field-root').setFormation('wells') .
 Diagnostics
