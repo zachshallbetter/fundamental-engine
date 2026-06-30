@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, diffFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -460,6 +460,22 @@ export class FieldField extends HTMLElementBase {
   /** kinetic/thermal/total energy snapshot for the current frame. */
   energy(): { kinetic: number; thermal: number; total: number; count: number } {
     return this.field?.energy() ?? { kinetic: 0, thermal: 0, total: 0, count: 0 };
+  }
+  /** Ask the live field a structured question (bodies/metrics/relationships/influences) — read-only.
+   *  Returns an empty reading before the field starts. See {@link FieldHandle.query}. EXPERIMENTAL. */
+  query(q?: FieldQuery): FieldQueryResult {
+    return this.field?.query(q) ?? { query: q ?? {}, frame: 0, time: 0, bodies: [], metrics: {}, relationships: [], influences: [] };
+  }
+  /** Capture field state — a portable, versioned {@link FieldSnapshot}. Empty before start. EXPERIMENTAL. */
+  snapshot(opts?: FieldSnapshotOptions): FieldSnapshot {
+    return (
+      this.field?.snapshot(opts) ??
+      { id: 'snap-0-0', createdAt: 0, frame: 0, version: FIELD_VERSION, formations: [], bodies: [], relationships: [], metrics: {} }
+    );
+  }
+  /** Compare two snapshots — pure (works before the field starts). See {@link FieldHandle.diff}. EXPERIMENTAL. */
+  diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff {
+    return this.field?.diff(a, b) ?? diffFieldSnapshots(a, b);
   }
   /** sample the live field at `(x, y)` — the net force vector a still test particle would feel
    *  (zero before the field starts). The seam external visualizers consume to build field geometry. */

@@ -299,6 +299,21 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     return { metrics, dimensions };
   };
   let snapSeq = 0; // per-field snapshot id counter
+  // Capture body.data BY VALUE at snapshot time — a snapshot is a portable capture, so later mutation
+  // of the original record must not change older snapshots (or make diffs/exports nondeterministic).
+  const sclone = (globalThis as { structuredClone?: (v: unknown) => unknown }).structuredClone;
+  const cloneData = (d: unknown): unknown => {
+    if (d === undefined || d === null) return d;
+    try {
+      return sclone ? sclone(d) : JSON.parse(JSON.stringify(d));
+    } catch {
+      try {
+        return JSON.parse(JSON.stringify(d));
+      } catch {
+        return d; // non-serializable (functions, cycles) — fall back to the reference
+      }
+    }
+  };
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
   let boundTarget = 0;
@@ -2774,7 +2789,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           metrics,
           dimensions,
         };
-        if (opts.includeData) reading.data = b.data;
+        if (opts.includeData) reading.data = cloneData(b.data);
         return reading;
       });
       const relationships: FieldRelationshipReading[] = includeRelationships
