@@ -17,6 +17,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **angular accumulator lane + particle orientation** (substrate doc 04
+  §Step 6). Opt-in `Particle.orient?` (angle, radians) + `spin?` (angular velocity) — undefined ⇒ inert,
+  byte-identical to the spin-less engine (the z-lane discipline). When a force gives a particle `spin`,
+  `applyAndRecord` captures the Δspin into `acc.angular.z` with a `{ channel: 'angular' }` attribution,
+  and the integrator advances `orient += spin·dt` (damped by `FRICTION`) — only when `spin` is defined.
+  Behavior-preserving; the default field never gains orientation. **Experimental.** (A public `torque`
+  force that drives spin is a follow-up; the lane + capture + integrate ship here.)
+
+
 - **`@fundamental-engine/core`:** **Causal Replay force attribution** (substrate critical-path 03 ph2
   + doc 04 §Step 6). `snapshot({ includeInfluences })` now captures per-body force attribution (each
   body's forces sampled just off its centre, by channel — linear Δv + thermal), and `replay(a, b)`

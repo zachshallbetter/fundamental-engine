@@ -83,6 +83,15 @@ export interface Particle {
    */
   z?: number;
   vz?: number;
+  /**
+   * OPTIONAL ORIENTATION LANE (substrate doc 04 §Step 6): `orient` is the particle's angle (radians,
+   * about the z axis) and `spin` its angular velocity. Undefined ⇒ no orientation ⇒ byte-identical to
+   * the spin-less engine — exactly the z-lane discipline. Only a `torque`-style force ever writes
+   * `spin`; the integrator advances `orient += spin · dt` (and damps) only when `spin` is defined.
+   * Renderers may ignore it; nothing in the base field depends on a particle facing a direction.
+   */
+  orient?: number;
+  spin?: number;
   /** inertial mass — 1 = nominal (§21). */
   m: number;
   /** ∈ [0,1]; drives color (toward accent), size, and glow (§2.2). */

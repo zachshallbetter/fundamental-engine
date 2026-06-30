@@ -292,8 +292,7 @@ Introduce torque, time kernels, semantic pressure, and thermal/energy accounting
 Shipped: the **thermal** lane — `applyAndRecord` captures each force's heat change into the
 accumulator's `thermal` channel with `{ channel: 'thermal' }` attribution; surfaced via
 `accumulateAt`/`query().influences` (`FieldInfluenceReading.channel`). Capture-only, behavior-
-preserving. Still reserved: angular (torque — needs per-particle angular state), temporal (time
-kernels), semantic (attention/confidence/memory pressure).
+preserving. Shipped too: the **angular** lane — opt-in `Particle.orient`/`spin` (z-lane discipline, inert by default), Δspin captured into `acc.angular.z`, integrator advances `orient += spin·dt`. Still reserved: temporal (time kernels), semantic (attention/confidence/memory pressure).
 
 ## Interaction with Field Query and Replay
 

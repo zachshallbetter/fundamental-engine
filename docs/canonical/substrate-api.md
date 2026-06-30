@@ -207,7 +207,7 @@ per-force attribution. Setting `accum` never alters how matter moves (read-only 
 ```ts
 interface FieldImpulseAccumulator {
   linear: { x: number; y: number; z: number };   // running net Δv
-  angular?: { x: number; y: number; z: number };  // reserved — orientation dimension, unpopulated
+  angular?: { x: number; y: number; z: number };  // per-force spin (about z) — populated when a force writes Particle.spin
   thermal?: number;                                // per-force heat change (populated)
   temporal?: { delay?: number; decay?: number; phase?: number };  // reserved
   semantic?: Record<string, number>;               // reserved
@@ -221,7 +221,7 @@ interface ForceAttribution {
 }
 ```
 
-Today the `linear` and `thermal` channels (and the per-force `attribution`) are populated; the
+Today the `linear`, `thermal`, and `angular` channels (and the per-force `attribution`) are populated (`angular` only when a force gives a particle `spin` — opt-in `Particle.orient`/`spin`); the
 remaining optional channels are declared now so the contract does not assume all force is `vx/vy` —
 they are filled when those dimensions (orientation, time, semantic) are restored (see
 [phase-2-frontier](../planning/critical-path/phase-2-frontier.md)). This is why a
