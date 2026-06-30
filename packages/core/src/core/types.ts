@@ -365,7 +365,16 @@ export interface Env {
    * into a corner, even though only `linear` is populated today. Read-only contract: setting
    * `accum` never alters how matter moves. */
   accum?: FieldImpulseAccumulator;
+  /** The integration scheme (substrate doc 04 §Step 3). `undefined`/`'legacy'` is the shipped
+   * semi-implicit Euler with per-frame decay (the default — unchanged). `'fixed'` is the opt-in
+   * fixed-timestep integrator: additive force impulses and the `FRICTION`/`HEAT_DECAY` decays scale
+   * with `dt`, so motion is frame-rate independent. At `dt === 1` (the reference rate, and every
+   * golden/conformance run) the two are byte-identical, so opting in never moves the golden. */
+  integrator?: IntegratorMode;
 }
+
+/** The integration scheme for the field (see {@link Env.integrator}). */
+export type IntegratorMode = 'legacy' | 'fixed';
 
 /**
  * A single force's contribution to one agent in one step, in one channel (substrate doc 04).
@@ -523,6 +532,10 @@ export interface FieldOptions {
    * render projects z as a size/alpha recession. Purely additive: no API requires z.
    */
   depth?: number;
+  /** the integration scheme (substrate doc 04 §Step 3); default `'legacy'`. `'fixed'` opts into the
+   *  frame-rate-independent fixed-timestep integrator (additive impulses and decay scale with `dt`).
+   *  Identical to legacy at the reference frame rate — see {@link Env.integrator}. */
+  integrator?: IntegratorMode;
   /** draw the background Currents (§24); default true. Set false for the bare
    *  free-particle field with no carrier waves. */
   waves?: boolean;

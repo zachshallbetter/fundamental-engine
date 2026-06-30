@@ -9,6 +9,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** opt-in fixed-timestep integrator (substrate doc 04 §Step 3). A new
+  `integrator: 'fixed'` field option (default `'legacy'`) makes the per-step decays frame-rate
+  independent — `FRICTION`/`HEAT_DECAY` scale with `dt` (`FRICTION^dt`). At the reference frame rate
+  (`dt === 1`, and every golden/conformance run) it is byte-identical to the shipped semi-implicit
+  Euler, so opting in never moves the golden. New `IntegratorMode` type and `Env.integrator` channel;
+  the option is forwarded through `<field-root>`, `<FieldField>`/`useFieldField`, and vanilla.
+  (Frame-rate-correct force *impulses* — which require pair forces like `collide` to contribute their
+  `q` leg through the accumulator — land with the later force-contract change.)
 - **`@fundamental-engine/core`:** **body-authority modes** (substrate doc 04 §Step 4). A body can now
   declare who owns its position via `data-authority` / `BodySpec.authority` / `Body.authority`:
   `anchored` (default — the DOM/host rect is authoritative, today's behavior), `kinematic` (the engine
@@ -16,7 +24,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   position/velocity — **declared but not yet physically simulated**; Step 5 wires recoil/torque onto
   it). Reported in `query()` and `snapshot()` body readings. New `BodyAuthority` type. Behavior-
   preserving — a declaration only; anchored/kinematic behave exactly as before.
-
 - **`@fundamental-engine/core`:** **Field Snapshot + Diff (MVP)** — `field.snapshot(opts?)` and
   `field.diff(a, b)` (substrate critical-path 03). A snapshot captures *what the field is doing* at a
   frame — a portable, versioned, serializable `FieldSnapshot` (bodies with rect/position/tokens/
