@@ -9,6 +9,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **Field Query API (MVP)** — `field.query(q?)` (substrate critical-path
+  02). A read-only, render-agnostic way to ask the live field a structured question — a point
+  (`{x, y}` + `radius`), a `DOMRect`-shaped rect, or the whole field — and get back plain, serializable
+  data: `bodies` (id, rect, tokens, metrics, dimensions, active formation), `metrics`, `relationships`
+  (the edge graph by id), and `influences` (per-force Δv at the point, from the impulse accumulator).
+  Works headless; never mutates state. New types `FieldQuery`, `FieldQueryResult`, `FieldBodyReading`,
+  `FieldRelationshipReading`, `FieldInfluenceReading`, `FieldQueryInclude`, plus `FieldRect`/`Vec3`. The
+  method is exposed on every surface (`<field-root>`, `<FieldField>`/`useFieldField`, vanilla, three).
+  **Experimental** — not yet part of the frozen API surface.
+
 - **`@fundamental-engine/core`:** dimension-aware impulse accumulator (substrate critical path). An
   opt-in `Env.accum` (`FieldImpulseAccumulator`) lets a diagnostic or query probe read each force's
   per-particle contribution — a net `linear` channel plus per-force attribution — captured centrally

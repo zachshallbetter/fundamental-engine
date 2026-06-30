@@ -144,7 +144,10 @@ imperative surface for driving and reading a live field:
 - **Drive it.** `setRender` / `setOverlay` (the two render *surfaces* — underlay + overlay), `setFormation`,
   `setAccent`, `setPalette`, `flowTo(x, y)` / `clearFlow`, `burst`, `scan` / `rescan`, `destroy`.
 - **Read it.** `particleCount()`, `readParticles(out)` (the render-agnostic swarm read-out),
-  `scrollV()`, `version` (which engine build this field is on — `FIELD_VERSION`).
+  `readEdges()` (the relationship graph), `scrollV()`, `version` (which engine build this field is on
+  — `FIELD_VERSION`). And **`query(q?)`** — ask the field a structured question (a point, a rect, or
+  the whole field) and get back plain data: bodies, metrics, relationships, and per-force influence.
+  Read-only and headless-capable — the agent-/tool-readable surface. *Experimental.*
 - **Listen.** `on(type, cb)` returns an unsubscribe. Discrete events: `absorb` / `release` (a `sink`
   capturing matter) and the proximity triggers `enter` / `exit` / `met` (a body crossing another body's
   range — the gameplay "entered radius" signal).

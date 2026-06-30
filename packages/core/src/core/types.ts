@@ -31,6 +31,23 @@ export interface Vec2 {
   y: number;
 }
 
+/** A 3D vector — the optional z lane (a `depth > 0` field) and the accumulator's linear channel. */
+export interface Vec3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/** An axis-aligned rectangle in field coordinates, `DOMRect`-shaped (x/y/width/height) so a caller
+ *  can pass `el.getBoundingClientRect()` straight into a {@link FieldQuery}'s `at`. (Distinct from the
+ *  engine-internal {@link Rect} in geometry, which is centre + half-extents.) */
+export interface FieldRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 /** A force id. Open string so the registry can be extended (§20), but the
  *  canonical set is enumerated in `config/forces.config.ts`. */
 export type Token = string;
@@ -711,6 +728,90 @@ export interface EdgeView {
   active: boolean;
 }
 
+// ── Field Query API (substrate doc 04 / critical-path 02) ─────────────────────────────────────────
+// A read-only, structured way to ask the live field for its state — bodies, metrics, relationships,
+// and per-force influence — without a render surface. EXPERIMENTAL until stabilized; not yet part of
+// the frozen API surface. See docs/planning/critical-path/02-field-query-api.md.
+
+/** What a {@link FieldQuery} should return. Omitted ⇒ a sensible default (`bodies`, `metrics`,
+ *  `relationships`, plus `influences` when the query targets a point/region). */
+export type FieldQueryInclude = 'bodies' | 'metrics' | 'relationships' | 'influences';
+
+/** A structured question put to the live field (read-only; never mutates state). */
+export interface FieldQuery {
+  /** where to look: a point (`{x, y}`) or a rectangle (`{x, y, width, height}` — `DOMRect`-shaped).
+   *  Omitted ⇒ a global query over the whole field. */
+  at?: Vec2 | FieldRect;
+  /** for a point `at`, the query radius in field px (default 240). Ignored for a rect or global query. */
+  radius?: number;
+  /** which sections to include; omitted ⇒ the default set (see {@link FieldQueryInclude}). */
+  include?: readonly FieldQueryInclude[];
+}
+
+/** A body as seen by a query — identity, box, active tokens, and its measured metrics/dimensions. */
+export interface FieldBodyReading {
+  /** stable id: the element's `id` when present, else a per-field synthetic (`body-N`). */
+  id: string;
+  /** the body's box in field coordinates, when measured. */
+  rect?: FieldRect;
+  /** the composed force ids (the `data-body` tokens). */
+  tokens: Token[];
+  /** scalar readings (lane: metric) — e.g. `density`, `load`, `attention`, `engaged`. */
+  metrics: Record<string, number>;
+  /** measured field dimensions (lane: metric) — e.g. `entropy`, `coherence`, `temperature`. */
+  dimensions: Record<string, number>;
+  /** the Field Formation(s) biasing this body right now (the field's active formation). */
+  activeFormations?: string[];
+}
+
+/** A relationship (edge) as seen by a query. */
+export interface FieldRelationshipReading {
+  /** source / target body ids (see {@link FieldBodyReading.id}). */
+  from: string;
+  to: string;
+  /** the relationship kind (`'related'` by default). */
+  type: string;
+  /** active coupling ∈ [0,1]. */
+  strength: number;
+  /** slow accumulated familiarity ∈ [0,1]. */
+  memory?: number;
+  /** exercised this tick. */
+  active: boolean;
+  /** whether the edge carried causal influence this frame (today: equal to `active`). */
+  causal: boolean;
+}
+
+/** A single force's influence at the query point/region — which body's which force contributed how
+ *  much (from the impulse accumulator; lane: force). */
+export interface FieldInfluenceReading {
+  /** the body whose force exerted the influence. */
+  source: string;
+  /** the influenced target, when the query has one (the query point/region). */
+  target?: string;
+  /** the contributing force token. */
+  force: Token;
+  /** the Δv contribution (linear channel today). */
+  contribution: number | Vec2 | Vec3;
+  /** optional human-readable note (lane: diagnostic). */
+  reason?: string;
+}
+
+/** The structured answer to a {@link FieldQuery}. Plain data; safe to serialize. */
+export interface FieldQueryResult {
+  /** the query that produced this reading (echoed back). */
+  query: FieldQuery;
+  /** the frame this reading was taken on. */
+  frame: number;
+  /** the field clock at read time. */
+  time: number;
+  /** the resolved region (for a point/rect query). */
+  region?: FieldRect;
+  bodies: FieldBodyReading[];
+  metrics: Record<string, number>;
+  relationships: FieldRelationshipReading[];
+  influences: FieldInfluenceReading[];
+}
+
 /** A registered **field channel** (`FieldHandle.addField`) — an external scalar field sampled on the
  *  engine's read path. The open *input* analog of the render surfaces. */
 export interface FieldChannelHandle {
@@ -829,6 +930,11 @@ export interface FieldHandle {
    *  consumer: each edge's endpoint `data`, type, live `strength`/`memory`, and whether it's active this
    *  tick. Pure, read-only. Shipped-but-unfrozen. */
   readEdges(): ReadonlyArray<EdgeView>;
+  /** Ask the live field a structured question and get back plain, serializable data — bodies,
+   *  metrics, relationships, and per-force influence — for a point, a rect, or the whole field.
+   *  Read-only and render-agnostic (works headless). The substrate's agent-/tool-readable surface;
+   *  see {@link FieldQuery}. **EXPERIMENTAL** — not yet in the frozen API set. */
+  query(q?: FieldQuery): FieldQueryResult;
   /**
    * Register a named **field channel** — a read-back substrate the host samples via `sampleField`; the
    * engine does not (yet) couple it into forces. The open *input* analog of the render surfaces
