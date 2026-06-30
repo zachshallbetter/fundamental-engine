@@ -9,6 +9,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **Projection Registry** — `field.projections` (substrate
+  critical-path 05). Register named **projections** that map field *state* to an output surface (CSS,
+  dom-attribute, annotation, agent-json, reduced-motion, sound, haptic, native, spatial, …), each
+  declaring its `channels`, `surfaces`, and `reducedMotionEquivalent`/`accessibilityEquivalent`.
+  `register(p)` (→ unregister fn) / `unregister(id)` / `get(id)` / `list()` (serializable metadata) /
+  `apply(id, reading, target)`. **Governance principle: a projection reveals state, it never changes
+  it** (no forces) — accessibility is an alternate projection, not a fallback. `query()`/`snapshot()`
+  now report the registered projections. New `FieldProjection`, `FieldProjectionInfo`,
+  `FieldProjectionSurface`, `FieldProjectionTarget`, `ProjectionRegistry` types. On every surface.
+  **Experimental** — governance lint rules + write-phase auto-apply are later steps.
 - **`@fundamental-engine/core`:** **Causal Replay** — `field.replay(a, b, opts?)` (substrate
   critical-path 03 phase 2). Explains *how* the field changed between two snapshots: an ordered,
   narrated sequence of causes (formation activations, relationship shifts, body entries/exits, metric

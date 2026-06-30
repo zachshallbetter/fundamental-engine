@@ -2,6 +2,14 @@
 
 ## Status
 
+Experimental — **Projection Registry MVP shipped** (`@fundamental-engine/core`, `field.projections`):
+register named projections that map field state to an output surface, declaring `channels`/`surfaces`/
+`reducedMotionEquivalent`/`accessibilityEquivalent`; `register`/`unregister`/`get`/`list`/`apply`;
+read-only (a projection never changes state); reported by `query()`/`snapshot()`; on every surface.
+**Not yet built (the Governance half + extras):** governance lint rules (lane separation,
+relationship-as-force, motion-only, semantic-source), write-phase auto-apply, sound/haptic/agent-json
+surface adapters, formation inspector, strict CI lint mode. Not in the frozen API surface.
+
 Proposed platform/devtools architecture. Required for design systems, accessibility, AI-readable field state, non-visual outputs, multi-surface runtimes, and trustworthy field behavior.
 
 ## Purpose

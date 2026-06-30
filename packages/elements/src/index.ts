@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions, type ProjectionRegistry } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -51,6 +51,15 @@ const NULL_GRID: ScalarGrid = {
   gradient: () => ({ x: 0, y: 0 }),
   decay: () => {},
   clear: () => {},
+};
+
+/** A no-op projection registry returned by `projections` before the element's field has started. */
+const NULL_PROJECTIONS: ProjectionRegistry = {
+  register: () => () => {},
+  unregister: () => {},
+  get: () => undefined,
+  list: () => [],
+  apply: () => {},
 };
 
 export class FieldField extends HTMLElementBase {
@@ -472,13 +481,13 @@ export class FieldField extends HTMLElementBase {
   /** Ask the live field a structured question (bodies/metrics/relationships/influences) — read-only.
    *  Returns an empty reading before the field starts. See {@link FieldHandle.query}. EXPERIMENTAL. */
   query(q?: FieldQuery): FieldQueryResult {
-    return this.field?.query(q) ?? { query: q ?? {}, frame: 0, time: 0, bodies: [], metrics: {}, relationships: [], influences: [] };
+    return this.field?.query(q) ?? { query: q ?? {}, frame: 0, time: 0, bodies: [], metrics: {}, relationships: [], influences: [], projections: [] };
   }
   /** Capture field state — a portable, versioned {@link FieldSnapshot}. Empty before start. EXPERIMENTAL. */
   snapshot(opts?: FieldSnapshotOptions): FieldSnapshot {
     return (
       this.field?.snapshot(opts) ??
-      { id: 'snap-0-0', createdAt: 0, frame: 0, version: FIELD_VERSION, formations: [], bodies: [], relationships: [], metrics: {} }
+      { id: 'snap-0-0', createdAt: 0, frame: 0, version: FIELD_VERSION, formations: [], bodies: [], relationships: [], metrics: {}, projections: [] }
     );
   }
   /** Compare two snapshots — pure (works before the field starts). See {@link FieldHandle.diff}. EXPERIMENTAL. */
@@ -488,6 +497,10 @@ export class FieldField extends HTMLElementBase {
   /** Explain how the field changed between two snapshots — pure (works before start). See {@link FieldHandle.replay}. EXPERIMENTAL. */
   replay(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay {
     return this.field?.replay(a, b, opts) ?? replayFieldSnapshots(a, b, opts);
+  }
+  /** The field's projection registry — a no-op registry before the field starts. See {@link FieldHandle.projections}. EXPERIMENTAL. */
+  get projections(): ProjectionRegistry {
+    return this.field?.projections ?? NULL_PROJECTIONS;
   }
   /** sample the live field at `(x, y)` — the net force vector a still test particle would feel
    *  (zero before the field starts). The seam external visualizers consume to build field geometry. */

@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -301,6 +301,39 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     return { metrics, dimensions };
   };
   let snapSeq = 0; // per-field snapshot id counter
+
+  // Projection registry (substrate doc 04 §05): named maps from field STATE to an output surface.
+  // Read/output only — registering a projection never changes how matter moves. Stored here; query()/
+  // snapshot() report the metadata, and `apply` is invoked by the caller (write-phase auto-apply is a
+  // later step).
+  const projectionMap = new Map<string, FieldProjection>();
+  const projectionInfo = (p: FieldProjection): FieldProjectionInfo => ({
+    id: p.id,
+    label: p.label,
+    channels: p.channels.slice(),
+    surfaces: p.surfaces.slice(),
+    ...(p.reducedMotionEquivalent !== undefined ? { reducedMotionEquivalent: p.reducedMotionEquivalent } : {}),
+    ...(p.accessibilityEquivalent !== undefined ? { accessibilityEquivalent: p.accessibilityEquivalent } : {}),
+  });
+  const projectionList = (): FieldProjectionInfo[] => [...projectionMap.values()].map(projectionInfo);
+  const projectionRegistry: ProjectionRegistry = {
+    register(p) {
+      projectionMap.set(p.id, p);
+      return () => {
+        if (projectionMap.get(p.id) === p) projectionMap.delete(p.id);
+      };
+    },
+    unregister(id) {
+      projectionMap.delete(id);
+    },
+    get(id) {
+      return projectionMap.get(id);
+    },
+    list: projectionList,
+    apply(id, reading, target) {
+      projectionMap.get(id)?.apply?.(reading, target);
+    },
+  };
 
   // Dynamic bodies (substrate doc 04 §Step 5 — recoil): a body with authority:'dynamic' has its
   // position OWNED by the engine, not the DOM. Each frame it integrates under the net field the other
@@ -2391,6 +2424,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   raf = host.raf(frame);
 
   const handle: FieldHandle = {
+    projections: projectionRegistry,
     scan,
     rescan: scan,
     setAccent: (hex) => {
@@ -2827,7 +2861,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
       }
 
-      return { query: q, frame: env.frameN, time: env.t, region, bodies: bodyReadings, metrics, relationships, influences };
+      return { query: q, frame: env.frameN, time: env.t, region, bodies: bodyReadings, metrics, relationships, influences, projections: projectionList() };
     },
     snapshot: (opts: FieldSnapshotOptions = {}): FieldSnapshot => {
       const includeRelationships = opts.includeRelationships !== false;
@@ -2872,6 +2906,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         bodies: snapBodies,
         relationships,
         metrics: fieldMetrics,
+        projections: projectionList(),
       };
       if (opts.includeParticles) {
         const out: FieldParticleSnapshot[] = [];

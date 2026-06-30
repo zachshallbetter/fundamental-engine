@@ -1370,6 +1370,15 @@
               "description": "Explain how the field changed between two snapshots — pure (works before start). See FieldHandle.replay. EXPERIMENTAL."
             },
             {
+              "kind": "field",
+              "name": "projections",
+              "type": {
+                "text": "ProjectionRegistry"
+              },
+              "description": "The field's projection registry — a no-op registry before the field starts. See FieldHandle.projections. EXPERIMENTAL.",
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "sample",
               "return": {
@@ -3094,6 +3103,19 @@
                 }
               ],
               "description": "Explain how the field changed between two snapshots — pure (works before start). See FieldHandle.replay. EXPERIMENTAL.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "projections",
+              "type": {
+                "text": "ProjectionRegistry"
+              },
+              "description": "The field's projection registry — a no-op registry before the field starts. See FieldHandle.projections. EXPERIMENTAL.",
+              "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

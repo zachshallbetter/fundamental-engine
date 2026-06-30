@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff, CausalReplay, ReplayOptions, ProjectionRegistry } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -322,6 +322,10 @@ export class FieldLayer implements FieldHandle {
   /** Explain how the field changed between two snapshots — delegated. See {@link FieldHandle.replay}. */
   replay(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay {
     return this.field.replay(a, b, opts);
+  }
+  /** The field's projection registry — delegated. See {@link FieldHandle.projections}. */
+  get projections(): ProjectionRegistry {
+    return this.field.projections;
   }
   /** subscribe to a discrete field event (absorb/release/settle); returns an unsubscribe fn. */
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
