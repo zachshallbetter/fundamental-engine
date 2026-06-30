@@ -17,7 +17,7 @@
 
 ## 1. Definition
 
-`Fundamental` is an inspectable field language for interfaces.
+`Fundamental` is an inspectable field language for interfaces — and that inspection is now concrete: the running field is directly queryable, snapshot-able, diff-able, and replay-able as plain data (the [substrate API](substrate-api.md)), not only observed through CSS variables and render surfaces.
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 

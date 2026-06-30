@@ -82,6 +82,7 @@ of the contract until they are added to the table above.
 | --- | --- | --- |
 | `FieldHandle` (full surface) | partial | The handle shape is not frozen as a type. Entry points that return it (`createField`, `createBrowserField`) are frozen, but new methods may be added in any patch. |
 | `FieldHandle` diagnostic accessors | shipped-unfrozen | `particleCount(): number` and `energy(): { kinetic, thermal, total, count }` ship in `@fundamental-engine/core` and are proxied on `<field-root>`. Safe to use; not frozen until 1.0. |
+| Substrate read API | shipped-unfrozen · EXPERIMENTAL | `query` / `snapshot` / `diff` / `replay` / `projections` (+ `lint`), `data-authority` / `Body.authority`, `createField({ integrator: 'fixed' })`, and the accumulator channels — all shipped across the surfaces but **not** in the frozen 17 and may change shape or be removed. Full reference: [substrate-api.md](substrate-api.md). |
 | Advanced diagnostics | partial | `DIAGNOSTICS` / `DIAGNOSTIC_LENS` / `draw*` primitives ship but are unfrozen. |
 | Performance budget | shipped-unfrozen | `inspectBudget()`, `withinBudget()`, `DEFAULT_BUDGET`, `BudgetFinding` ship in `@fundamental-engine/core`; `FieldPerf` (frame-duration split, adaptive governor) ships shipped-but-unfrozen in `@fundamental-engine/dom` as `createFieldPerf` + `QualityGovernor`. |
 | Visual recipe editor | absent | No editor UI; the authoring toolkit is the substrate to build one on. |
