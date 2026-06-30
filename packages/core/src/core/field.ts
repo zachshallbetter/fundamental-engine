@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -69,7 +69,7 @@ import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 import { accumulateAt } from '../diagnostics/probes.ts';
-import { diffFieldSnapshots } from './field-snapshot.ts';
+import { diffFieldSnapshots, replayFieldSnapshots } from './field-snapshot.ts';
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
@@ -2836,6 +2836,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       return snap;
     },
     diff: (a: FieldSnapshot, b: FieldSnapshot): FieldDiff => diffFieldSnapshots(a, b),
+    replay: (a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay => replayFieldSnapshots(a, b, opts),
     addField: (name, sampler) => {
       fieldChannels.set(name, sampler);
       return {

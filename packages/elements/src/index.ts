@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, diffFieldSnapshots, replayFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -484,6 +484,10 @@ export class FieldField extends HTMLElementBase {
   /** Compare two snapshots — pure (works before the field starts). See {@link FieldHandle.diff}. EXPERIMENTAL. */
   diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff {
     return this.field?.diff(a, b) ?? diffFieldSnapshots(a, b);
+  }
+  /** Explain how the field changed between two snapshots — pure (works before start). See {@link FieldHandle.replay}. EXPERIMENTAL. */
+  replay(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay {
+    return this.field?.replay(a, b, opts) ?? replayFieldSnapshots(a, b, opts);
   }
   /** sample the live field at `(x, y)` — the net force vector a still test particle would feel
    *  (zero before the field starts). The seam external visualizers consume to build field geometry. */

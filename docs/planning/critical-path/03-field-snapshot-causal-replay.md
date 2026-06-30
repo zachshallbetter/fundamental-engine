@@ -7,8 +7,12 @@ Experimental — **Snapshot + Diff MVP shipped** (`@fundamental-engine/core`: `F
 `field.snapshot()` captures bodies/metrics/relationships/active-formations (optionally particles/data),
 versioned and serializable, read-only and headless; `field.diff()` reports body/relationship/metric/
 formation changes. Exposed on every surface. **Not in the frozen API surface** — the format may evolve.
-Not yet built: **Causal Replay** (`field.replay`/`history.explain`), force-attribution timelines,
-projection/diagnostic changes, events-since-last-snapshot, export/import, and redaction.
+
+**Causal Replay shipped too** — `field.replay(a, b, opts?)` (+ the pure `replayFieldSnapshots`): an
+ordered, narrated sequence of causes (formation / relationship / measurement / metric) derived from the
+diff, each carrying its before/after; `opts.focus` scopes to one body. Still not built: force-attribution
+timelines (per-step accumulator contribution), `history.explain`, projection/diagnostic changes,
+events-since-last-snapshot, export/import, and redaction.
 
 Required for debugging, AI explainability, compliance, observability, testing, collaboration, and long-running field systems.
 

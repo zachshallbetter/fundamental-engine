@@ -17,7 +17,7 @@
  * ```
  */
 
-import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff } from '@fundamental-engine/core';
+import { type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FlowOptions, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type EdgeHandle, type EdgeView, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff, type CausalReplay, type ReplayOptions } from '@fundamental-engine/core';
 import { createField } from './create-field.ts';
 import { makeFieldCanvas, makeContainedCanvas, assertBrowser } from './mount.ts';
 
@@ -153,6 +153,10 @@ export class FieldField implements FieldHandle {
   /** Compare two snapshots — delegated. See {@link FieldHandle.diff}. */
   diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff {
     return this.field.diff(a, b);
+  }
+  /** Explain how the field changed between two snapshots — delegated. See {@link FieldHandle.replay}. */
+  replay(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay {
+    return this.field.replay(a, b, opts);
   }
   /** register a named external scalar field channel the engine samples on its read path. */
   addField(name: string, sampler: (x: number, y: number) => number): FieldChannelHandle {
