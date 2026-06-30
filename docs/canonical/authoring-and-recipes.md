@@ -37,7 +37,7 @@ The system supports three authoring levels:
 | Web Components | encapsulated field participation |
 | React props | framework integration |
 | Core API | engine-level control |
-| Field recipes | portable field programs |
+| Field Formations | portable field programs (current API: `FieldRecipe`) |
 | Composer | visual authoring and copy-code tool |
 | Lab | executable spec and tuning |
 | Inspector | debugging and reciprocity view |
@@ -172,8 +172,22 @@ The compiler must be inspectable. Authors should be able to see the generated fo
 
 ## 5. FieldRecipe Schema
 
-> **Implemented.** `FieldRecipe` (`packages/core/src/recipes/schema.ts`). A recipe is a portable,
-> serializable, inspectable field program — the reusable unit that connects the natural-field model,
+### Field Formation vs. FieldRecipe
+
+A **Field Formation** is the canonical concept: an authored arrangement of semantic intent, dimensions,
+bodies, fields, forces, relationships, metrics, diagnostics, projections, and accessibility equivalents.
+
+`FieldRecipe` is the current API representation of a Field Formation.
+
+Use "Field Formation" when explaining the model. Use `FieldRecipe`, `compileRecipe`, `applyRecipe`, and
+`FIELD_RECIPES` when referring to the current TypeScript schema, compiler, validator, catalog, routes,
+and API. Do not use "Configuration" for this concept — reserve configuration for ordinary
+settings/options (render configuration, host configuration, engine configuration). Do not use "Matter"
+for this concept — Matter is the participant/substance lane. Do not rename any API symbols.
+
+> **Implemented.** `FieldRecipe` (`packages/core/src/recipes/schema.ts`). A `FieldRecipe` is the current
+> API representation of a portable, serializable, inspectable Field Formation — the reusable unit that
+> connects the natural-field model,
 > engine primitives, DOM authoring, platform feedback, diagnostics, and the accessibility fallback.
 > `validateRecipe` enforces every reference against the engine catalog. (`SceneRecipe` is a deprecated
 > alias of `FieldRecipe`.)

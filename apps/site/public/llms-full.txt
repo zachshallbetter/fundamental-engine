@@ -28,8 +28,9 @@ Fundamental is a platform-native relational field runtime for the DOM. `Fundamen
 renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM; `elements`/`react`
 are authoring surfaces. Canvas is one render surface, not the whole system.
 
-> Concepts describe. Tokens execute. Metrics measure. Diagnostics explain. Conditions activate.
-> Recipes compose. No word lives in two lanes.
+> Concepts describe. Dimensions hold state. Fields structure. Relationships associate. Forces couple.
+> Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Projections reveal.
+> Formations compose. FieldRecipe represents. Contracts execute. No word lives in two lanes.
 
 | Document | Role |
 |---|---|
@@ -38,7 +39,7 @@ are authoring surfaces. Canvas is one render surface, not the whole system.
 | [`natural-fields.md`](natural-fields.md) | The four Natural Fields (gravity→importance, electromagnetic→polarity, strong→binding, weak→transformation) — concepts, not tokens |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | The six truth modes + the per-force behavior table |
 | [`designed-vs-natural-map.md`](designed-vs-natural-map.md) | Why the engine is shaped as it is — every concept tagged Faithful / Idealization / Departure / No-analog against what nature does; the Departures are the flexibility |
-| [`dimensional-coupling.md`](dimensional-coupling.md) | The Dimensional Coupling Doctrine — dimensions are orthogonal by default; association ≠ coupling; forces are the only coupling mechanism; projections, body-authority modes (Anchored/Kinematic/Dynamic), and the construction rule for restoring collapsed dimensions (depth/time/orientation) |
+| [`dimensional-coupling.md`](dimensional-coupling.md) | The Dimensional Coupling Doctrine — dimensions are orthogonal by default; association ≠ coupling; forces are the only coupling mechanism; projections, body-authority modes (Anchored/Kinematic/Dynamic), Field Formations, and the construction rule for restoring collapsed dimensions (depth/time/orientation) |
 | [`system-contracts.md`](system-contracts.md) | The hard contracts: bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, platform |
 | [`platform-architecture.md`](platform-architecture.md) | The platform layer: the six registries, the six-phase scheduler, the runtime (attachHandle, QualityGovernor), linting |
 | [`agent-consumption-model.md`](agent-consumption-model.md) | How consumers (particles, DOM elements, event sinks, visual layers) read one influence differently; Body Matter Interaction → Sink/Accretion |
@@ -613,7 +614,7 @@ The system supports three authoring levels:
 | Web Components | encapsulated field participation |
 | React props | framework integration |
 | Core API | engine-level control |
-| Field recipes | portable field programs |
+| Field Formations | portable field programs (current API: `FieldRecipe`) |
 | Composer | visual authoring and copy-code tool |
 | Lab | executable spec and tuning |
 | Inspector | debugging and reciprocity view |
@@ -748,8 +749,22 @@ The compiler must be inspectable. Authors should be able to see the generated fo
 
 ## 5. FieldRecipe Schema
 
-> **Implemented.** `FieldRecipe` (`packages/core/src/recipes/schema.ts`). A recipe is a portable,
-> serializable, inspectable field program — the reusable unit that connects the natural-field model,
+### Field Formation vs. FieldRecipe
+
+A **Field Formation** is the canonical concept: an authored arrangement of semantic intent, dimensions,
+bodies, fields, forces, relationships, metrics, diagnostics, projections, and accessibility equivalents.
+
+`FieldRecipe` is the current API representation of a Field Formation.
+
+Use "Field Formation" when explaining the model. Use `FieldRecipe`, `compileRecipe`, `applyRecipe`, and
+`FIELD_RECIPES` when referring to the current TypeScript schema, compiler, validator, catalog, routes,
+and API. Do not use "Configuration" for this concept — reserve configuration for ordinary
+settings/options (render configuration, host configuration, engine configuration). Do not use "Matter"
+for this concept — Matter is the participant/substance lane. Do not rename any API symbols.
+
+> **Implemented.** `FieldRecipe` (`packages/core/src/recipes/schema.ts`). A `FieldRecipe` is the current
+> API representation of a portable, serializable, inspectable Field Formation — the reusable unit that
+> connects the natural-field model,
 > engine primitives, DOM authoring, platform feedback, diagnostics, and the accessibility fallback.
 > `validateRecipe` enforces every reference against the engine catalog. (`SceneRecipe` is a deprecated
 > alias of `FieldRecipe`.)
@@ -1670,8 +1685,8 @@ FILE: designed-vs-natural-map.md
 > engine; where it disagrees with the code, the code wins. The roadmap reading — which departures
 > become opt-in *Faithful* modes — lives in
 > [`../planning/substrate-architecture-frontier.md`](../planning/substrate-architecture-frontier.md). The
-> composition rules — how dimensions, fields, forces, and relationships combine (orthogonal-by-default,
-> association ≠ coupling), plus the five-question method for reading any force — live in
+> composition rules — how dimensions, fields, forces, relationships, and Field Formations combine
+> (orthogonal-by-default, association ≠ coupling), plus the five-question method for reading any force — live in
 > [`dimensional-coupling.md`](dimensional-coupling.md).
 
 ## The four relationships
@@ -1796,7 +1811,7 @@ flowchart LR
   S --> A["Agents consume influence"]
   A --> R["Forces<br/>reaction / state change"]
 
-  X["Relationships<br/>association"] --> Y{"Mapped by configuration?"}
+  X["Relationships<br/>association"] --> Y{"Mapped by a Field Formation?"}
   Y -->|No| Z["No dynamical effect"]
   Y -->|Yes| C["Coupling"]
   C --> R
@@ -1805,7 +1820,7 @@ flowchart LR
   M --> G["Diagnostics<br/>explain cause"]
   M --> P["Projection<br/>visible output"]
 
-  CFG["Configuration / FieldRecipe"] --> F
+  CFG["Field Formation / FieldRecipe"] --> F
   CFG --> X
   CFG --> R
   CFG --> M
@@ -1824,12 +1839,12 @@ Coupling says one thing changes the other.
 
 A **relationship** is a statement of association — it does **not** exert force just because it exists.
 A **force** is a dynamical effect — it couples state and causes change. A relationship may *later* feed a
-force, but only when a configuration says so, explicitly.
+force, but only when a **Field Formation** says so, explicitly.
 
 ```txt
 Citation A supports Claim B.        ← association alone. Moves nothing.
 
-Evidence Field configuration:        ← the configuration turns association into coupling.
+Evidence Field formation:            ← the Field Formation turns association into coupling.
   support relation     → cohesion
   contradiction relation → charge separation
   confidence metric    → gravity strength
@@ -1930,7 +1945,7 @@ flowchart TD
   G1 --> G4["event relates to moment"]
   G1 --> G5["body relates to depth"]
 
-  G --> H{"Does a configuration<br/>map relation into force?"}
+  G --> H{"Does a Field Formation<br/>map relation into force?"}
   H -->|No| I["Association only<br/>no dynamical effect"]
   H -->|Yes| J["Coupling<br/>relation becomes force input"]
 
@@ -1946,7 +1961,7 @@ flowchart TD
   K5 --> F
   K4 --> L
 
-  M["Configuration / FieldRecipe"] --> M1["Authored mapping"]
+  M["Field Formation / FieldRecipe"] --> M1["Authored mapping"]
   M1 --> B
   M1 --> G
   M1 --> F
@@ -2028,28 +2043,32 @@ The current system is therefore not *wrong* — it is **Anchored interface mode.
 mode (or Kinematic-with-readback), which is why the body-authority decision gates recoil (see the
 [substrate frontier](../planning/substrate-architecture-frontier.md)).
 
-## On "configuration" (without renaming the API)
+## On Field Formation (without renaming the API)
 
 After this physics framing, "recipe" can read as casual — but `FieldRecipe`, `compileRecipe`, and
 `applyRecipe` are part of the **frozen public API** ([`api-stability.md`](api-stability.md)). Do **not**
-rename them. Use **conceptual layering** instead:
+rename them. The canonical concept is a **Field Formation**; the API representation stays `FieldRecipe`.
+Use lane separation instead:
 
 ```txt
-Configuration   the conceptual authored arrangement
-FieldRecipe     the current API representation of a field configuration
-Contract        the compiled executable plan
-Preset          a convenience bundle
+Pattern          the human-facing reusable behavior name
+Field Formation  the canonical field-native authored arrangement
+FieldRecipe      the current API representation of a Field Formation
+Field Contract   the compiled executable plan
+Configuration    ordinary settings/options only
+Matter           participants/substance only
 ```
 
-So a configuration is more than a bundle of tokens — it is a **declared mapping from semantic intent to
-dimensions, fields, forces, metrics, diagnostics, projections, and accessibility equivalents.** Canonically:
+> A `FieldRecipe` is the API representation of a Field Formation: a declared arrangement of semantic
+> intent, dimensions, bodies, fields, forces, relationships, metrics, diagnostics, projections, and
+> accessibility equivalents.
 
-> A `FieldRecipe` is the API representation of a field configuration: a declared mapping from semantic
-> intent to dimensions, fields, forces, metrics, diagnostics, projections, and accessibility equivalents.
-
-That makes "recipe" feel serious without breaking the shipped language. (Whether to introduce
-`Configuration`/`Contract` as first-class vocabulary is tracked as a **board decision**, not an
-implementation item.)
+A Field Formation is more than a bundle of tokens. It is the authored arrangement that decides which
+associations become couplings, which dimensions participate, which forces act, which metrics are exposed,
+which diagnostics explain cause, and which projections preserve meaning. This terminology change does not
+rename any API symbol, route, catalog identifier, validator, or check. (The terminology decision —
+"Field Formation" canonical, no API rename before a major-version migration — is tracked as a **board
+decision**.)
 
 ## Reading any force (the five-question method)
 
@@ -2075,13 +2094,13 @@ Relationships declare association.
 Metrics expose state.
 Diagnostics explain cause.
 Projections make dimensions visible.
-Configurations decide which associations become couplings.
+Field Formations decide which associations become couplings.
 ```
 
 ```mermaid
 flowchart TD
   A["Fields describe structure"] --> B["Forces create coupling"]
-  C["Relationships declare association"] --> D["Configurations decide whether association becomes coupling"]
+  C["Relationships declare association"] --> D["Field Formations decide whether association becomes coupling"]
   E["Metrics expose state"] --> F["Diagnostics explain cause"]
   G["Projections make dimensions visible"]
 
@@ -2548,7 +2567,8 @@ Fieldflow is transport along field structure.
 
 Diagnostics reveal invisible structure.
 
-Recipes compose behavior into interface meaning.
+Field Formations compose behavior into interface meaning.
+FieldRecipe is the current API representation of a Field Formation.
 
 Short version:
 
@@ -2880,9 +2900,9 @@ Recovery Path
 
 The most important product frontier is not another force.
 
-It is recipes.
+It is Field Formations.
 
-A recipe is a portable field program.
+A Field Formation is a portable field program; a `FieldRecipe` is its current API representation.
 
 It connects:
 
@@ -5579,8 +5599,8 @@ Canonical forces are designed verbs.
 Derived behaviors are not additional fundamental forces.
 Fieldflow is transport along field structure.
 Diagnostics reveal invisible structure.
-Configurations compose behavior into interface meaning.
-FieldRecipe is the current API representation of a configuration.
+Field Formations compose behavior into interface meaning.
+FieldRecipe is the current API representation of a Field Formation.
 ```
 
 Short version: **natural fields are not tokens; tokens are translations.** So `gravity` is both a
@@ -5593,7 +5613,7 @@ fields, flow along field lines, scatter under thermal agitation, diffuse, collid
 memory trails. The four-field model only gives each behavior a clean place in the hierarchy:
 
 ```
-Natural field → interface translation → engine primitive → metric → diagnostic → recipe
+Natural field → interface translation → engine primitive → metric → diagnostic → Field Formation
 ```
 
 ## The four fields
@@ -5691,9 +5711,12 @@ Each diagnostic answers "which invisible relation am I revealing?"
 All diagnostic render modes are shipped — see [visualization-methods-taxonomy.md](visualization-methods-taxonomy.md)
 and the live [/docs/diagnostics](https://fundamental-engine.com/docs/diagnostics).
 
-## Recipes by meaning
+## Formations by meaning
 
-Interface-native recipes name the *meaning*, then map to a field:
+These are Field Formations conceptually. In the current API and catalog they are represented as
+`FieldRecipe` records, so existing recipe names and APIs remain unchanged.
+
+Interface-native formations name the *meaning*, then map to a field:
 
 | Recipe | Field | Use | Primitives |
 |---|---|---|---|
@@ -6643,7 +6666,7 @@ No unbounded creation.
 
 ## 13. Scene Recipe Contract
 
-A recipe is a portable scene or behavior definition.
+A `FieldRecipe` is the API representation of a Field Formation — a portable scene or behavior definition.
 
 Required fields:
 

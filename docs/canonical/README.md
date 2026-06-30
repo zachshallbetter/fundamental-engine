@@ -10,8 +10,9 @@ Fundamental is a platform-native relational field runtime for the DOM. `Fundamen
 renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM; `elements`/`react`
 are authoring surfaces. Canvas is one render surface, not the whole system.
 
-> Concepts describe. Tokens execute. Metrics measure. Diagnostics explain. Conditions activate.
-> Recipes compose. No word lives in two lanes.
+> Concepts describe. Dimensions hold state. Fields structure. Relationships associate. Forces couple.
+> Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Projections reveal.
+> Formations compose. FieldRecipe represents. Contracts execute. No word lives in two lanes.
 
 | Document | Role |
 |---|---|
@@ -20,7 +21,7 @@ are authoring surfaces. Canvas is one render surface, not the whole system.
 | [`natural-fields.md`](natural-fields.md) | The four Natural Fields (gravity→importance, electromagnetic→polarity, strong→binding, weak→transformation) — concepts, not tokens |
 | [`fundamental-field-behavior-table.md`](fundamental-field-behavior-table.md) | The six truth modes + the per-force behavior table |
 | [`designed-vs-natural-map.md`](designed-vs-natural-map.md) | Why the engine is shaped as it is — every concept tagged Faithful / Idealization / Departure / No-analog against what nature does; the Departures are the flexibility |
-| [`dimensional-coupling.md`](dimensional-coupling.md) | The Dimensional Coupling Doctrine — dimensions are orthogonal by default; association ≠ coupling; forces are the only coupling mechanism; projections, body-authority modes (Anchored/Kinematic/Dynamic), and the construction rule for restoring collapsed dimensions (depth/time/orientation) |
+| [`dimensional-coupling.md`](dimensional-coupling.md) | The Dimensional Coupling Doctrine — dimensions are orthogonal by default; association ≠ coupling; forces are the only coupling mechanism; projections, body-authority modes (Anchored/Kinematic/Dynamic), Field Formations, and the construction rule for restoring collapsed dimensions (depth/time/orientation) |
 | [`system-contracts.md`](system-contracts.md) | The hard contracts: bodies, fields, forces, agents, events, feedback, recipes, accessibility, performance, conformance, platform |
 | [`platform-architecture.md`](platform-architecture.md) | The platform layer: the six registries, the six-phase scheduler, the runtime (attachHandle, QualityGovernor), linting |
 | [`agent-consumption-model.md`](agent-consumption-model.md) | How consumers (particles, DOM elements, event sinks, visual layers) read one influence differently; Body Matter Interaction → Sink/Accretion |
