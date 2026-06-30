@@ -9,7 +9,14 @@
 > *shipped* unless code confirms it. Deeper references:
 > [system-contracts §5–§9](system-contracts.md),
 > [interaction-and-relationship-model](interaction-and-relationship-model.md),
-> [forces-system §22](../engine-reference/forces-system.md).
+> [forces-system §22](../engine-reference/forces-system.md),
+> [substrate-api](substrate-api.md).
+
+> **Agent-readable surface (shipped).** A software/AI agent no longer has to scrape the DOM or read
+> per-body `--field-*` channels to understand the field: `field.query()` and `field.snapshot()` return
+> the live model — bodies, metrics, relationships, and per-force influence — as plain structured data,
+> and the projection registry's `agent-json` surface lets a Field Formation expose a tailored reading.
+> `query()` is *the* substrate's agent-/tool-readable surface; see [substrate-api.md](substrate-api.md).
 
 # Field Agent Consumption Model
 
