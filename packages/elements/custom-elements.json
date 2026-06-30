@@ -1269,6 +1269,68 @@
             },
             {
               "kind": "method",
+              "name": "query",
+              "return": {
+                "type": {
+                  "text": "FieldQueryResult"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "q",
+                  "optional": true,
+                  "type": {
+                    "text": "FieldQuery"
+                  }
+                }
+              ],
+              "description": "Ask the live field a structured question (bodies/metrics/relationships/influences) — read-only.\nReturns an empty reading before the field starts. See FieldHandle.query. EXPERIMENTAL."
+            },
+            {
+              "kind": "method",
+              "name": "snapshot",
+              "return": {
+                "type": {
+                  "text": "FieldSnapshot"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "FieldSnapshotOptions"
+                  }
+                }
+              ],
+              "description": "Capture field state — a portable, versioned FieldSnapshot. Empty before start. EXPERIMENTAL."
+            },
+            {
+              "kind": "method",
+              "name": "diff",
+              "return": {
+                "type": {
+                  "text": "FieldDiff"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "a",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                },
+                {
+                  "name": "b",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                }
+              ],
+              "description": "Compare two snapshots — pure (works before the field starts). See FieldHandle.diff. EXPERIMENTAL."
+            },
+            {
+              "kind": "method",
               "name": "sample",
               "return": {
                 "type": {
@@ -2860,6 +2922,80 @@
                 }
               },
               "description": "kinetic/thermal/total energy snapshot for the current frame.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "query",
+              "return": {
+                "type": {
+                  "text": "FieldQueryResult"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "q",
+                  "optional": true,
+                  "type": {
+                    "text": "FieldQuery"
+                  }
+                }
+              ],
+              "description": "Ask the live field a structured question (bodies/metrics/relationships/influences) — read-only.\nReturns an empty reading before the field starts. See FieldHandle.query. EXPERIMENTAL.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "snapshot",
+              "return": {
+                "type": {
+                  "text": "FieldSnapshot"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "opts",
+                  "optional": true,
+                  "type": {
+                    "text": "FieldSnapshotOptions"
+                  }
+                }
+              ],
+              "description": "Capture field state — a portable, versioned FieldSnapshot. Empty before start. EXPERIMENTAL.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "diff",
+              "return": {
+                "type": {
+                  "text": "FieldDiff"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "a",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                },
+                {
+                  "name": "b",
+                  "type": {
+                    "text": "FieldSnapshot"
+                  }
+                }
+              ],
+              "description": "Compare two snapshots — pure (works before the field starts). See FieldHandle.diff. EXPERIMENTAL.",
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

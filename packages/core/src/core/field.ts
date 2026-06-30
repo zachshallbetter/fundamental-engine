@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, Formation, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, Formation, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -69,6 +69,7 @@ import { devWarnNoOp } from '../contracts/guards.ts';
 import { FIELD_VERSION } from '../version.ts';
 import { energyReport } from '../diagnostics/energy.ts';
 import { accumulateAt } from '../diagnostics/probes.ts';
+import { diffFieldSnapshots } from './field-snapshot.ts';
 
 // Shared draw/integrate scratch — reused across the per-particle and per-cell hot loops so an
 // active flow focus and the particle draw don't allocate a `{x,y}` / `[r,g,b]` each iteration.
@@ -285,6 +286,33 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       bodyIdMap.set(b, id);
     }
     return id;
+  };
+  // Shared metric/dimension reading for query() and snapshot(), so both compute identically (diff
+  // compares snapshot metrics — they must agree with what query() reports).
+  const readBodyMetrics = (b: Body): { metrics: Record<string, number>; dimensions: Record<string, number> } => {
+    const metrics: Record<string, number> = { density: b.d, count: b.count, engaged: b.on ? 1 : 0 };
+    if (b.attn !== undefined) metrics.attention = b.attn;
+    if (b.capacity > 0) metrics.load = b.accreted / b.capacity;
+    const dimensions: Record<string, number> = b.metrics
+      ? { entropy: b.metrics.entropy, coherence: b.metrics.coherence, temperature: b.metrics.temperature }
+      : {};
+    return { metrics, dimensions };
+  };
+  let snapSeq = 0; // per-field snapshot id counter
+  // Capture body.data BY VALUE at snapshot time — a snapshot is a portable capture, so later mutation
+  // of the original record must not change older snapshots (or make diffs/exports nondeterministic).
+  const sclone = (globalThis as { structuredClone?: (v: unknown) => unknown }).structuredClone;
+  const cloneData = (d: unknown): unknown => {
+    if (d === undefined || d === null) return d;
+    try {
+      return sclone ? sclone(d) : JSON.parse(JSON.stringify(d));
+    } catch {
+      try {
+        return JSON.parse(JSON.stringify(d));
+      } catch {
+        return d; // non-serializable (functions, cycles) — fall back to the reference
+      }
+    }
   };
   let waves: Wave[] = [];
   let bound: BoundParticle[] = [];
@@ -2692,16 +2720,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
       const bodyReadings: FieldBodyReading[] = want.has('bodies')
         ? matched.map((b): FieldBodyReading => {
-            const metrics: Record<string, number> = {
-              density: b.d,
-              count: b.count,
-              engaged: b.on ? 1 : 0,
-            };
-            if (b.attn !== undefined) metrics.attention = b.attn;
-            if (b.capacity > 0) metrics.load = b.accreted / b.capacity;
-            const dimensions: Record<string, number> = b.metrics
-              ? { entropy: b.metrics.entropy, coherence: b.metrics.coherence, temperature: b.metrics.temperature }
-              : {};
+            const { metrics, dimensions } = readBodyMetrics(b);
             return {
               id: bodyId(b),
               rect: { x: b.cx - b.hw, y: b.cy - b.hh, width: b.hw * 2, height: b.hh * 2 },
@@ -2757,6 +2776,60 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
       return { query: q, frame: env.frameN, time: env.t, region, bodies: bodyReadings, metrics, relationships, influences };
     },
+    snapshot: (opts: FieldSnapshotOptions = {}): FieldSnapshot => {
+      const includeRelationships = opts.includeRelationships !== false;
+      const visible = bodies.filter((b) => b.vis);
+      const snapBodies: FieldBodySnapshot[] = visible.map((b): FieldBodySnapshot => {
+        const { metrics, dimensions } = readBodyMetrics(b);
+        const reading: FieldBodySnapshot = {
+          id: bodyId(b),
+          rect: { x: b.cx - b.hw, y: b.cy - b.hh, width: b.hw * 2, height: b.hh * 2 },
+          position: { x: b.cx, y: b.cy, z: 0 },
+          tokens: b.tokens.slice(),
+          metrics,
+          dimensions,
+        };
+        if (opts.includeData) reading.data = cloneData(b.data);
+        return reading;
+      });
+      const relationships: FieldRelationshipReading[] = includeRelationships
+        ? programmaticEdges.map((e) => ({
+            from: bodyId(e.from),
+            to: bodyId(e.to),
+            type: e.agent.type,
+            strength: e.agent.strength,
+            memory: e.agent.memory,
+            active: e.agent.active,
+            causal: e.agent.active,
+          }))
+        : [];
+      const fieldMetrics: Record<string, number> = { particles: store.size, bodies: visible.length };
+      if (visible.length > 0) {
+        let sumD = 0;
+        for (const b of visible) sumD += b.d;
+        fieldMetrics.meanDensity = sumD / visible.length;
+      }
+      const snap: FieldSnapshot = {
+        id: `snap-${env.frameN}-${snapSeq++}`,
+        createdAt: env.t,
+        frame: env.frameN,
+        version: FIELD_VERSION,
+        formations: [formationName],
+        bodies: snapBodies,
+        relationships,
+        metrics: fieldMetrics,
+      };
+      if (opts.includeParticles) {
+        const out: FieldParticleSnapshot[] = [];
+        for (const p of store.particles) {
+          if (p.cap) continue; // captured matter is held, not free — skip
+          out.push({ x: p.x, y: p.y, z: p.z ?? 0, heat: p.heat, size: p.size });
+        }
+        snap.particles = out;
+      }
+      return snap;
+    },
+    diff: (a: FieldSnapshot, b: FieldSnapshot): FieldDiff => diffFieldSnapshots(a, b),
     addField: (name, sampler) => {
       fieldChannels.set(name, sampler);
       return {

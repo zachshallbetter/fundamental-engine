@@ -147,7 +147,10 @@ imperative surface for driving and reading a live field:
   `readEdges()` (the relationship graph), `scrollV()`, `version` (which engine build this field is on
   — `FIELD_VERSION`). And **`query(q?)`** — ask the field a structured question (a point, a rect, or
   the whole field) and get back plain data: bodies, metrics, relationships, and per-force influence.
-  Read-only and headless-capable — the agent-/tool-readable surface. *Experimental.*
+  Read-only and headless-capable — the agent-/tool-readable surface. *Experimental.* And
+  **`snapshot(opts?)`** / **`diff(a, b)`** — capture *what the field is doing* at a frame (a versioned,
+  serializable `FieldSnapshot`) and compare two captures (body / relationship / metric / formation
+  changes). *Experimental.*
 - **Listen.** `on(type, cb)` returns an unsubscribe. Discrete events: `absorb` / `release` (a `sink`
   capturing matter) and the proximity triggers `enter` / `exit` / `met` (a body crossing another body's
   range — the gameplay "entered radius" signal).
