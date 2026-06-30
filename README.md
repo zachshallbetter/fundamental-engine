@@ -119,6 +119,7 @@ A body is any element with a `data-body` attribute. The value is one or more for
 | `data-color` | accent color when the body is engaged |
 | `data-absorb` / `data-max` | capture radius and capacity for `sink` |
 | `data-preset` | expand a named composite (`blackhole`, `galaxy`, …) |
+| `data-authority` | who owns the body's position: `anchored` (default), `kinematic`, `dynamic` *(experimental)* |
 
 Engaging an element (hover, focus, tap) widens its range and amplifies its strength, so the field answers interaction.
 

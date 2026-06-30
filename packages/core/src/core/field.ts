@@ -2605,6 +2605,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       const body = bodyFromElement(el);
       body.rect = toRect;
       body.data = spec.data;
+      if (spec.authority) body.authority = spec.authority; // body-authority (doc 04); default anchored
       body.feedback = true; // programmatic bodies always compute channels (the CSS write hits the
       // harmless stub element; the value flows to onFeedback + the handle's live channels).
       const channels: FeedbackChannels = {};
@@ -2731,6 +2732,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
               metrics,
               dimensions,
               activeFormations: [formationName],
+              authority: b.authority ?? 'anchored',
             };
           })
         : [];
@@ -2786,6 +2788,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         const { metrics, dimensions } = readBodyMetrics(b);
         const reading: FieldBodySnapshot = {
           id: bodyId(b),
+          authority: b.authority ?? 'anchored',
           rect: { x: b.cx - b.hw, y: b.cy - b.hh, width: b.hw * 2, height: b.hh * 2 },
           position: { x: b.cx, y: b.cy, z: 0 },
           tokens: b.tokens.slice(),
