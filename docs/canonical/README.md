@@ -33,6 +33,7 @@ are authoring surfaces. Canvas is one render surface, not the whole system.
 | [`authoring-and-recipes.md`](authoring-and-recipes.md) | Authoring surfaces and the FieldRecipe system |
 | [`testing-and-conformance.md`](testing-and-conformance.md) | Test contracts and the conformance framework (the Lab-as-detector) |
 | [`api-stability.md`](api-stability.md) | The freeze contract: the frozen surface, the experimental surface, the 0.x compatibility rules |
+| [`substrate-api.md`](substrate-api.md) | The shipped substrate read API (EXPERIMENTAL): `query` / `snapshot` / `diff` / `replay` / `projections` + governance lint, body authority + dynamic recoil, integrator modes, accumulator channels |
 | [`deprecation-plan.md`](deprecation-plan.md) | The migration alias surface: each living alias, its deprecation status, and the proposed removal version (timings pending maintainer sign-off) |
 | [`field-possibilities.md`](field-possibilities.md) | The full possibility space — what new kinds of interfaces become possible when meaning has field behavior (36 sections, from recipes and input agents to temporal fields, matter primitives, and the field as semantic medium) |
 | [`use-cases.md`](use-cases.md) | Concrete use cases across eight domains — the product-level translation of the possibility space into real UI problems and solutions |
