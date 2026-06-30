@@ -1024,6 +1024,24 @@ export interface ProjectionRegistry {
   list(): FieldProjectionInfo[];
   /** apply a registered projection's writer to a target (no-op if the id/`apply` is absent). */
   apply(id: string, reading: Record<string, number>, target: FieldProjectionTarget): void;
+  /** governance lint over the registered projections (substrate 05 §governance) — flags accessibility
+   *  gaps (a motion-capable projection with no reduced-motion equivalent; any projection with no
+   *  accessibility equivalent). Pure; the standalone `lintProjections` is also exported. */
+  lint(): GovernanceWarning[];
+}
+
+// ── Governance lint (substrate critical-path 05 §governance) ──────────────────────────────────────
+// Rules that keep powerful field behavior explainable + accessible. MVP: the projection-accessibility
+// rules (the lane-separation / coupling-passport / relationship-force rules are a later step).
+
+/** A governance lint finding. `rule` is a stable `field/...` id (see doc 05 §field-lint-rules). The
+ *  severity scale matches the visual `LintSeverity` (info / warning / error / fatal). */
+export interface GovernanceWarning {
+  rule: string;
+  severity: 'info' | 'warning' | 'error' | 'fatal';
+  /** the offending subject — e.g. a projection id. */
+  subject: string;
+  message: string;
 }
 
 // ── Causal Replay (substrate critical-path 03 phase 2) ────────────────────────────────────────────

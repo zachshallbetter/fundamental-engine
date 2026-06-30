@@ -17,6 +17,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **governance lint** (substrate critical-path 05 phase 2). The
+  `ProjectionRegistry` gains `lint()` and the standalone `lintProjections(projections)` is exported —
+  pure accessibility-governance checks over registered projections: `field/reduced-motion-equivalent-required`
+  (a motion-capable projection with no `reducedMotionEquivalent` → **error**, an accessibility-contract
+  violation) and `field/accessibility-equivalent-required` (no `accessibilityEquivalent` → **warning**).
+  New `GovernanceWarning` type. Rides every surface via `field.projections.lint()`. **Experimental** —
+  the lane-separation / coupling-passport / relationship-as-force rules are a later step.
+
+
 - **`@fundamental-engine/core`:** **Projection Registry** — `field.projections` (substrate
   critical-path 05). Register named **projections** that map field *state* to an output surface (CSS,
   dom-attribute, annotation, agent-json, reduced-motion, sound, haptic, native, spatial, …), each
