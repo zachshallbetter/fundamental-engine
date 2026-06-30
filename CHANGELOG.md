@@ -39,7 +39,6 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   Capture-only / behavior-preserving (identical Δv with the accumulator on vs off). `confidence`/`memory`
   remain reserved. **Experimental.**
 
-
 - **`@fundamental-engine/core`:** **temporal accumulator lane** (substrate doc 04 §Step 6, roadmap 2).
   `applyAndRecord` now captures a per-force change in `Particle.age` (frames-to-live, for *mortal*
   matter) into `acc.temporal.decay` with a `{ channel: 'temporal' }` attribution — "which force aged /
@@ -47,6 +46,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   default conserved field is byte-identical. Capture-only / behavior-preserving (the force's age
   mutation is its own; recording the delta changes nothing). `delay`/`phase` remain reserved.
   **Experimental.**
+
+- **`@fundamental-engine/core`:** **word→lane registry + the `field/no-word-in-two-lanes` lint**
+  (substrate governance 05 — the governance module names this as a planned rule). `LANE_WORDS` indexes
+  the engine's shipped vocabulary by lane straight from the source-of-truth catalogs (`force` = the 36
+  tokens, `formation` = the 5 field-shape modes, `condition` = the data-when keywords, `visualization`
+  = the 16 render+diagnostic modes); `laneOf(word)` resolves a word; `lintWordLanes()` reports any word
+  in two lanes. With the shipped catalogs it returns `[]` — the canon's "no word lives in two lanes"
+  holds — so the lint's job is to guard future drift. **Experimental.** *Design calls (flagged for
+  review): `render`/`diagnostic` are merged into one `visualization` lane (no clean catalog boundary),
+  and `metric` is not yet a lane (no single metric-name catalog).*
 
 
 - **`@fundamental-engine/core`:** **performance suite** (`packages/core/bench/`) — a deterministic,
