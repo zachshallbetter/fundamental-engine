@@ -263,13 +263,17 @@ Add the better integrator behind a flag.
 
 Keep default path stable.
 
-### Step 4: body-authority modes
+### Step 4: body-authority modes — ✅ SHIPPED (declaration)
 
 Introduce explicit authority declarations.
 
 ```ts
 type BodyAuthority = "anchored" | "kinematic" | "dynamic";
 ```
+
+Shipped (`@fundamental-engine/core`): `BodyAuthority` type + `Body.authority` / `BodySpec.authority` /
+`data-authority`, reported in `query()`/`snapshot()` body readings. Default `anchored`; behavior-
+preserving (a declaration — `dynamic` is inert until Step 5 wires physics).
 
 ### Step 5: dynamic bodies and recoil
 

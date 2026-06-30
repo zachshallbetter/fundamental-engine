@@ -9,6 +9,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **body-authority modes** (substrate doc 04 §Step 4). A body can now
+  declare who owns its position via `data-authority` / `BodySpec.authority` / `Body.authority`:
+  `anchored` (default — the DOM/host rect is authoritative, today's behavior), `kinematic` (the engine
+  writes the visual transform; the shipped `data-move` pattern), or `dynamic` (the engine owns
+  position/velocity — **declared but not yet physically simulated**; Step 5 wires recoil/torque onto
+  it). Reported in `query()` and `snapshot()` body readings. New `BodyAuthority` type. Behavior-
+  preserving — a declaration only; anchored/kinematic behave exactly as before.
+
 - **`@fundamental-engine/core`:** **Field Snapshot + Diff (MVP)** — `field.snapshot(opts?)` and
   `field.diff(a, b)` (substrate critical-path 03). A snapshot captures *what the field is doing* at a
   frame — a portable, versioned, serializable `FieldSnapshot` (bodies with rect/position/tokens/
