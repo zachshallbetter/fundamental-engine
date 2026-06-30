@@ -4,7 +4,8 @@
  * magnitude`), and the per-token *causality* breakdown of why motion happened. Works for body→
  * particle (class-A) forces; class-B/C/D forces need neighbours/grids the conformance runner wires.
  */
-import type { Body, Particle, Env, Force, ForceRegistry, Formation, Vec2 } from '../core/types.ts';
+import type { Body, Particle, Env, Force, ForceRegistry, Formation, Vec2, FieldImpulseAccumulator } from '../core/types.ts';
+import { applyAndRecord, makeAccumulator } from '../core/integrator.ts';
 
 /** An instrument particle. */
 export interface Probe {
@@ -71,6 +72,49 @@ export interface CausalContribution {
   dvy: number;
 }
 
+/**
+ * Run every body→particle (class-A) force in `tokens` on a fresh probe at (x, y) and collect the
+ * result into one dimension-aware accumulator (doc 04): the net linear Δv plus the per-force
+ * attribution. The canonical "why does matter move here?" primitive — `causalityAt` reads it, and the
+ * Field Query API (epic 02) consumes the same shape. Each token runs on an *independent* probe (base
+ * velocity), so each attribution is that force's standalone contribution and `linear` is their
+ * superposition. Forces that need neighbours/grids the probe env lacks (class B/C) are skipped, as in
+ * `forceVectorAt`. Read-only: the probe is discarded.
+ */
+export function accumulateAt(
+  registry: ForceRegistry,
+  tokens: readonly string[],
+  b: Body,
+  x: number,
+  y: number,
+  probe: Probe = PROBE_PRESETS.neutral!,
+): FieldImpulseAccumulator {
+  const acc = makeAccumulator();
+  const env = probeEnv(b, x, y);
+  env.accum = acc;
+  for (const t of tokens) {
+    const f = registry[t];
+    if (!f) continue;
+    const p = {
+      x,
+      y,
+      vx: probe.vx,
+      vy: probe.vy,
+      charge: probe.charge,
+      m: probe.m,
+      heat: probe.heat,
+      size: 1,
+      cap: null,
+    } as unknown as Particle;
+    try {
+      applyAndRecord(f, b, p, env);
+    } catch {
+      // a class-B/C force needing neighbours/grids the probe env lacks — skip (as forceVectorAt does).
+    }
+  }
+  return acc;
+}
+
 /** Decompose the motion at (x, y) into per-token contributions — the causality overlay's data. */
 export function causalityAt(
   registry: ForceRegistry,
@@ -80,12 +124,8 @@ export function causalityAt(
   y: number,
   probe: Probe = PROBE_PRESETS.neutral!,
 ): CausalContribution[] {
-  const out: CausalContribution[] = [];
-  for (const t of tokens) {
-    const f = registry[t];
-    if (!f) continue;
-    const v = forceVectorAt(f, b, x, y, probe);
-    out.push({ token: t, dvx: v.x, dvy: v.y });
-  }
-  return out;
+  return accumulateAt(registry, tokens, b, x, y, probe).attribution.map((a) => {
+    const c = a.contribution as { x: number; y: number };
+    return { token: a.force, dvx: c.x, dvy: c.y };
+  });
 }

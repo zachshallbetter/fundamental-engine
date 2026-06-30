@@ -14,6 +14,9 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   per-particle contribution — a net `linear` channel plus per-force attribution — captured centrally
   by the integrator without changing the integration math. The default hot path is byte-identical
   (`accum` absent); the public API surface is unchanged.
+- **`@fundamental-engine/core`:** `applyAndRecord` (the single force-capture path) and `accumulateAt`
+  — the net + per-force attribution at a point. `causalityAt` now reads the accumulator. Additive and
+  behavior-identical.
 
 ### Fixed
 

@@ -4,6 +4,7 @@ import { FieldStore } from './field-store.ts';
 import { step, makeAccumulator, FRICTION } from './integrator.ts';
 import type { Body, Env, Particle, Force } from './types.ts';
 import { attract, swirl } from '../forces/index.ts';
+import { accumulateAt } from '../diagnostics/probes.ts';
 
 // Minimal harness (mirrors integrator.test.ts).
 const makeEnv = (over: Partial<Env> = {}): Env => ({
@@ -116,6 +117,16 @@ test('accum: the default hot path leaves the accumulator absent (zero overhead)'
   runOne(makeP({ vx: 2 }), [], {}, env);
   assert.equal(env.accum, undefined, 'no accumulator unless explicitly provided');
   // friction still applies on the default path, proving step() ran normally.
+});
+
+test('accumulateAt: net linear + per-force attribution at a point (the Field-Query primitive)', () => {
+  const body = makeBody({ tokens: ['attract'], cx: 250, cy: 100 });
+  const acc = accumulateAt({ attract }, ['attract'], body, 100, 100);
+  assert.equal(acc.attribution.length, 1, 'one force attributed');
+  assert.equal(acc.attribution[0]!.force, 'attract');
+  const c = acc.attribution[0]!.contribution as { x: number };
+  assert.ok(Math.abs(c.x - 0.125) < 1e-9, `attract Δvx ≈ 0.125, got ${c.x}`);
+  assert.ok(Math.abs(acc.linear.x - 0.125) < 1e-9, 'net linear.x ≈ 0.125');
 });
 
 void FRICTION;
