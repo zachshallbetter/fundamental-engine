@@ -129,8 +129,10 @@ export function causalityAt(
   y: number,
   probe: Probe = PROBE_PRESETS.neutral!,
 ): CausalContribution[] {
-  return accumulateAt(registry, tokens, b, x, y, probe).attribution.map((a) => {
-    const c = a.contribution as { x: number; y: number };
-    return { token: a.force, dvx: c.x, dvy: c.y };
-  });
+  return accumulateAt(registry, tokens, b, x, y, probe)
+    .attribution.filter((a) => a.channel === 'linear') // the causality overlay reads the motion (Δv) lane
+    .map((a) => {
+      const c = a.contribution as { x: number; y: number };
+      return { token: a.force, dvx: c.x, dvy: c.y };
+    });
 }

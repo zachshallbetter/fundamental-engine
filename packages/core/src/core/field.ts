@@ -2855,6 +2855,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
             influences.push({
               source: bodyId(b),
               force: a.force,
+              channel: a.channel,
               contribution: a.contribution as number | Vec2 | Vec3,
             });
           }
