@@ -1018,6 +1018,22 @@ export interface FieldProjection {
   apply?(reading: Record<string, number>, target: FieldProjectionTarget): void;
 }
 
+/** A live reading source for an auto-applied projection — called once per write phase to produce the
+ *  reading handed to the projection's `apply`. The field never reads it for simulation. */
+export type ProjectionSource = () => Record<string, number>;
+
+/** A {@link FieldProjectionTarget} for the `agent-json` surface: it captures the last reading written to
+ *  it as a plain object, serializable for agent / tooling consumption. Build one with `agentJsonTarget()`
+ *  and pair it with `agentJsonProjection()`. **EXPERIMENTAL.** */
+export interface AgentJsonTarget extends FieldProjectionTarget {
+  /** receive a reading (called by the projection's `apply`). */
+  receive(reading: Record<string, number>): void;
+  /** the last received reading, or null before the first write. */
+  value(): Record<string, number> | null;
+  /** the last received reading serialized as JSON (`"null"` before the first write). */
+  json(): string;
+}
+
 /** Serializable metadata about a registered projection (no `apply`) — what `query()`/`snapshot()` and
  *  governance tooling read. */
 export interface FieldProjectionInfo {
@@ -1042,6 +1058,10 @@ export interface ProjectionRegistry {
   list(): FieldProjectionInfo[];
   /** apply a registered projection's writer to a target (no-op if the id/`apply` is absent). */
   apply(id: string, reading: Record<string, number>, target: FieldProjectionTarget): void;
+  /** bind a registered projection to a target + a live reading source — the field auto-applies it once
+   *  per write phase (after feedback), read-only w.r.t. the field. Returns an unbind fn. Multiple
+   *  bindings (even of the same id) coexist; binding an unknown/`apply`-less id is inert. **EXPERIMENTAL.** */
+  bind(id: string, target: FieldProjectionTarget, source: ProjectionSource): () => void;
   /** governance lint over the registered projections (substrate 05 §governance) — flags accessibility
    *  gaps (a motion-capable projection with no reduced-motion equivalent; any projection with no
    *  accessibility equivalent). Pure; the standalone `lintProjections` is also exported. */

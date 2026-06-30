@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -317,6 +317,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     ...(p.accessibilityEquivalent !== undefined ? { accessibilityEquivalent: p.accessibilityEquivalent } : {}),
   });
   const projectionList = (): FieldProjectionInfo[] => [...projectionMap.values()].map(projectionInfo);
+  // Write-phase auto-apply (substrate doc 05): a binding ties a projection id to a target + a live
+  // reading source. After feedback each frame, applyBoundProjections() invokes the projection's writer.
+  // Read-only w.r.t. the field — a projection never moves matter.
+  const projectionBindings: Array<{ id: string; target: FieldProjectionTarget; source: ProjectionSource }> = [];
+  function applyBoundProjections(): void {
+    for (const bnd of projectionBindings) projectionMap.get(bnd.id)?.apply?.(bnd.source(), bnd.target);
+  }
   const projectionRegistry: ProjectionRegistry = {
     register(p) {
       projectionMap.set(p.id, p);
@@ -333,6 +340,14 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     list: projectionList,
     apply(id, reading, target) {
       projectionMap.get(id)?.apply?.(reading, target);
+    },
+    bind(id, target, source) {
+      const binding = { id, target, source };
+      projectionBindings.push(binding);
+      return () => {
+        const i = projectionBindings.indexOf(binding);
+        if (i >= 0) projectionBindings.splice(i, 1);
+      };
     },
     lint: () => lintProjections(projectionList()),
   };
@@ -2338,6 +2353,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       updateEmitters(); // element emit (§22.3): clone decorative templates, budgeted by data-max
     }
     writeFeedback();
+    applyBoundProjections(); // write phase: auto-apply bound projections (read-only; never moves matter)
     applyCausality();
     updateEvents();
     updateClassToggles(); // element trigger class-toggle (§22.3, FACM #687): toggle data-class on crossings

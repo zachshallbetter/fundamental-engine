@@ -60,6 +60,7 @@ const NULL_PROJECTIONS: ProjectionRegistry = {
   get: () => undefined,
   list: () => [],
   apply: () => {},
+  bind: () => () => {},
   lint: () => [],
 };
 
