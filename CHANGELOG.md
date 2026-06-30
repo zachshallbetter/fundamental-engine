@@ -9,6 +9,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **Projection Registry** — `field.projections` (substrate
+  critical-path 05). Register named **projections** that map field *state* to an output surface (CSS,
+  dom-attribute, annotation, agent-json, reduced-motion, sound, haptic, native, spatial, …), each
+  declaring its `channels`, `surfaces`, and `reducedMotionEquivalent`/`accessibilityEquivalent`.
+  `register(p)` (→ unregister fn) / `unregister(id)` / `get(id)` / `list()` (serializable metadata) /
+  `apply(id, reading, target)`. **Governance principle: a projection reveals state, it never changes
+  it** (no forces) — accessibility is an alternate projection, not a fallback. `query()`/`snapshot()`
+  now report the registered projections. New `FieldProjection`, `FieldProjectionInfo`,
+  `FieldProjectionSurface`, `FieldProjectionTarget`, `ProjectionRegistry` types. On every surface.
+  **Experimental** — governance lint rules + write-phase auto-apply are later steps.
+
 - **`@fundamental-engine/core`:** **dynamic bodies + recoil** (substrate doc 04 §Step 5). A body with
   `authority: 'dynamic'` now has its position **owned by the engine**: each frame it integrates under
   the net field the other bodies create at its centre (`a = F/M`, lightly damped + speed-capped) and

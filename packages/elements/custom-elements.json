@@ -1339,6 +1339,15 @@
               "description": "Compare two snapshots — pure (works before the field starts). See FieldHandle.diff. EXPERIMENTAL."
             },
             {
+              "kind": "field",
+              "name": "projections",
+              "type": {
+                "text": "ProjectionRegistry"
+              },
+              "description": "The field's projection registry — a no-op registry before the field starts. See FieldHandle.projections. EXPERIMENTAL.",
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "sample",
               "return": {
@@ -3028,6 +3037,19 @@
                 }
               ],
               "description": "Compare two snapshots — pure (works before the field starts). See FieldHandle.diff. EXPERIMENTAL.",
+              "inheritedFrom": {
+                "name": "FieldField",
+                "module": "src/index.ts"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "projections",
+              "type": {
+                "text": "ProjectionRegistry"
+              },
+              "description": "The field's projection registry — a no-op registry before the field starts. See FieldHandle.projections. EXPERIMENTAL.",
+              "readonly": true,
               "inheritedFrom": {
                 "name": "FieldField",
                 "module": "src/index.ts"

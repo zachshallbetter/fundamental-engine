@@ -848,6 +848,8 @@ export interface FieldQueryResult {
   metrics: Record<string, number>;
   relationships: FieldRelationshipReading[];
   influences: FieldInfluenceReading[];
+  /** the projections registered on the field (substrate 05) — metadata only; read-only. */
+  projections: FieldProjectionInfo[];
 }
 
 // ── Field Snapshot + Diff (substrate critical-path 03) ────────────────────────────────────────────
@@ -906,6 +908,8 @@ export interface FieldSnapshot {
   bodies: FieldBodySnapshot[];
   relationships: FieldRelationshipReading[];
   metrics: Record<string, number>;
+  /** the projections registered on the field at capture (substrate 05) — metadata only. */
+  projections: FieldProjectionInfo[];
   particles?: FieldParticleSnapshot[];
 }
 
@@ -951,6 +955,77 @@ export interface FieldDiff {
   formationChanges: FormationChange[];
 }
 
+// ── Projection Registry (substrate critical-path 05) ──────────────────────────────────────────────
+// A projection maps field STATE into an output surface (CSS, an annotation, agent-readable JSON, a
+// reduced-motion equivalent, …). Governance principle: *projection reveals state; coupling changes
+// state — do not confuse them.* A projection never mutates the field (no forces). EXPERIMENTAL — not in
+// the frozen surface; governance lint is a later step. See docs/planning/critical-path/05-*.md.
+
+/** The kinds of output surface a {@link FieldProjection} can target. */
+export type FieldProjectionSurface =
+  | 'css'
+  | 'dom-attribute'
+  | 'svg'
+  | 'canvas'
+  | 'typography'
+  | 'annotation'
+  | 'sound'
+  | 'haptic'
+  | 'native'
+  | 'spatial'
+  | 'agent-json';
+
+/** Where a projection writes — a minimal, DOM-shaped sink (an element's style / attributes), but open
+ *  so non-DOM surfaces (native, agent-json) can pass their own target. */
+export interface FieldProjectionTarget {
+  style?: { setProperty(key: string, value: string): void };
+  setAttribute?(key: string, value: string): void;
+  [key: string]: unknown;
+}
+
+/** A named mapping from field state to an output surface. `apply` is the (optional) writer; the rest is
+ *  declarative metadata governance + tooling read. A projection must NOT change field state. */
+export interface FieldProjection {
+  id: string;
+  label: string;
+  /** the field channels this projection reads (e.g. `['density','confidence']`). */
+  channels: string[];
+  /** the surface(s) it writes to. */
+  surfaces: FieldProjectionSurface[];
+  /** the non-motion equivalent, for `prefers-reduced-motion` (governance: motion must translate). */
+  reducedMotionEquivalent?: string;
+  /** the accessibility equivalent — an alternate projection of the same state, not a fallback. */
+  accessibilityEquivalent?: string;
+  /** write the reading onto the target (read-only w.r.t. the field). */
+  apply?(reading: Record<string, number>, target: FieldProjectionTarget): void;
+}
+
+/** Serializable metadata about a registered projection (no `apply`) — what `query()`/`snapshot()` and
+ *  governance tooling read. */
+export interface FieldProjectionInfo {
+  id: string;
+  label: string;
+  channels: string[];
+  surfaces: FieldProjectionSurface[];
+  reducedMotionEquivalent?: string;
+  accessibilityEquivalent?: string;
+}
+
+/** The field's projection registry ({@link FieldHandle.projections}) — register named projections and
+ *  apply them. Read/output only; registering a projection never changes how matter moves. */
+export interface ProjectionRegistry {
+  /** register a projection (replacing any with the same id); returns an unregister fn. */
+  register(projection: FieldProjection): () => void;
+  /** remove a registered projection by id. */
+  unregister(id: string): void;
+  /** the full projection (incl. `apply`) for an id, or undefined. */
+  get(id: string): FieldProjection | undefined;
+  /** serializable metadata for every registered projection. */
+  list(): FieldProjectionInfo[];
+  /** apply a registered projection's writer to a target (no-op if the id/`apply` is absent). */
+  apply(id: string, reading: Record<string, number>, target: FieldProjectionTarget): void;
+}
+
 /** A registered **field channel** (`FieldHandle.addField`) — an external scalar field sampled on the
  *  engine's read path. The open *input* analog of the render surfaces. */
 export interface FieldChannelHandle {
@@ -966,6 +1041,10 @@ export interface FieldChannelHandle {
 export interface FieldHandle {
   /** the running engine version (`FIELD_VERSION`) — which build this field is on. */
   readonly version: string;
+  /** the field's projection registry (substrate 05) — register named projections that reveal field
+   *  state on an output surface (CSS / annotation / agent-json / reduced-motion …). Read/output only:
+   *  a projection never changes how matter moves. See {@link ProjectionRegistry}. **EXPERIMENTAL.** */
+  readonly projections: ProjectionRegistry;
   /** (re)scan the document for `[data-body]` bodies after a layout change. */
   scan(): void;
   /** alias of `scan`. */
