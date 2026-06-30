@@ -462,7 +462,7 @@ No unbounded creation.
 
 ## 13. Scene Recipe Contract
 
-A recipe is a portable scene or behavior definition.
+A `FieldRecipe` is the API representation of a Field Formation — a portable scene or behavior definition.
 
 Required fields:
 

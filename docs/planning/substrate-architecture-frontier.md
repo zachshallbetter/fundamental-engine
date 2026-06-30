@@ -278,6 +278,10 @@ orientation, then 3D, then time) be re-expanded as an opt-in Faithful mode.
 
 ## The headline frontier: restoring collapsed dimensions (not adding tokens)
 
+> **Terminology.** The canonical term for an authored field arrangement is now **Field Formation** (see
+> the [Dimensional Coupling Doctrine](../canonical/dimensional-coupling.md)). The current API
+> representation remains `FieldRecipe`; no API rename is implied here.
+
 The next frontier is **not another force token — it is restoring dimensions of state the interface
 engine collapsed.** The [designed-vs-natural map](../canonical/designed-vs-natural-map.md) names three:
 **depth (3D)**, **time**, and **orientation/rotation** (the sleeper — matter today has position +

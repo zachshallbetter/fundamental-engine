@@ -1,7 +1,7 @@
 ---
 title: "Fundamental, explained to a developer"
 description: "Not an animation library, not a particle background — a relational field runtime for interfaces. The conceptual shift, the lane model, field vs force, the Natural Fields, designed-vs-natural, dimensions and coupling, agents, signals-first feedback, and the practical developer rules."
-summary: "The developer-tier companion to 'explained simply' — the mental model (concepts/tokens/metrics/diagnostics/configurations/projections), field() vs apply(), designed-vs-natural, association ≠ coupling, signals-first CSS feedback, and the minimal working mindset."
+summary: "The developer-tier companion to 'explained simply' — the mental model (concepts/tokens/metrics/diagnostics/formations/projections), field() vs apply(), designed-vs-natural, association ≠ coupling, signals-first CSS feedback, and the minimal working mindset."
 date: 2026-06-29
 category: note
 author: "Zach Shallbetter"
@@ -85,12 +85,19 @@ There are several lanes. Do not mix them.
 
 ```txt
 Concepts describe.
+Dimensions hold state.
+Fields structure.
+Relationships associate.
+Forces couple.
 Tokens execute.
 Metrics measure.
 Diagnostics explain.
 Conditions activate.
-Configurations compose.
-Projections make visible.
+Projections reveal.
+Formations compose.
+FieldRecipe represents.
+Contracts execute.
+No word lives in two lanes.
 ```
 
 A new developer needs this more than anything else, because the language is powerful but easy to blur.
@@ -111,14 +118,17 @@ themselves. They are readings.
 heatmap, contours, inspector. The behavior table says it cleanly: `field()` returns invisible
 structure, while `apply()` causes change.
 
-**Configurations / FieldRecipes** are authored arrangements of concepts, tokens, metrics, diagnostics,
-projections, and accessibility equivalents. The current API calls this a `FieldRecipe`. Keep that API
-name. Conceptually:
+**Field Formations** are authored arrangements of concepts, tokens, metrics, diagnostics,
+projections, and accessibility equivalents. The current API represents one as a `FieldRecipe`. Keep that
+API name. Conceptually:
 
 ```txt
-Configuration = authored field behavior
-FieldRecipe   = current executable schema
-Contract      = compiled executable plan
+Pattern         = human-facing reusable behavior name
+Field Formation = canonical field-native authored arrangement
+FieldRecipe     = current API representation of a Field Formation
+Field Contract  = compiled executable plan
+Configuration   = ordinary settings/options only
+Matter          = participants/substance only
 ```
 
 That gives the idea weight without breaking the shipped API.
@@ -221,7 +231,7 @@ Association is not coupling.
 ```
 
 A relationship says *these things are related.* A force says *this thing changes that thing.* A citation
-can be related to a claim without physically pulling anything. But an Evidence Field configuration can
+can be related to a claim without physically pulling anything. But an Evidence Field formation can
 decide:
 
 ```txt
@@ -257,7 +267,7 @@ values onto elements during the write phase, and the page's CSS reads those valu
 reactions. No polling, no event listeners, no separate state.
 
 The most important variable is `--d` — the canonical raw live density reaction. (`--d` is reliable;
-`--field-density` can be overwritten by configuration metric output.)
+`--field-density` can be overwritten by Field Formation metric output.)
 
 ```html
 <article data-body="attract" data-feedback>
@@ -377,13 +387,13 @@ Now the button participates in a shared field. It can gather density, affect nea
 <cite data-field-relation="supports" data-field-target="#claim">Source</cite>
 ```
 
-The relationship does not have to create force by itself. A configuration decides whether `supports`
+The relationship does not have to create force by itself. A Field Formation decides whether `supports`
 maps into cohesion, confidence, density, topology, or nothing visible.
 
 ## Why this changes things
 
-Fundamental changes the **unit** of interface behavior — from `component state` to `field
-configuration`. Behavior can emerge from relationships instead of being manually scripted. A navigation
+Fundamental changes the **unit** of interface behavior — from `component state` to a **Field
+Formation**. Behavior can emerge from relationships instead of being manually scripted. A navigation
 weighted by section importance; a form that shows coherence as it completes; a research document where
 evidence, contradiction, and confidence are spatial; a dashboard that reveals anomaly pressure before
 anyone reads a number; a collaborative document that shows co-presence as density; an article that
@@ -443,8 +453,8 @@ diagnosed inspectably
 4.  Add data-feedback when the element should receive CSS variables.
 5.  Use --d for raw live density.
 6.  Use --load for sink fill.
-7.  Use --field-<metric> for configuration metrics.
-8.  Keep relationships non-causal unless a configuration maps them into force.
+7.  Use --field-<metric> for Field Formation metrics.
+8.  Keep relationships non-causal unless a Field Formation maps them into force.
 9.  Keep field() and apply() separate.
 10. Diagnostics explain behavior; they do not mutate it.
 11. Render surfaces are optional.
@@ -469,7 +479,7 @@ The DOM remains semantic.
 The field becomes behavioral.
 CSS becomes the projection layer.
 Diagnostics reveal cause.
-Configurations decide how relationships become force.
+Field Formations decide how relationships become force.
 
 That is why this is different.
 ```

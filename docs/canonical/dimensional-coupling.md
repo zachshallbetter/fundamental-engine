@@ -19,7 +19,7 @@ flowchart LR
   S --> A["Agents consume influence"]
   A --> R["Forces<br/>reaction / state change"]
 
-  X["Relationships<br/>association"] --> Y{"Mapped by configuration?"}
+  X["Relationships<br/>association"] --> Y{"Mapped by a Field Formation?"}
   Y -->|No| Z["No dynamical effect"]
   Y -->|Yes| C["Coupling"]
   C --> R
@@ -28,7 +28,7 @@ flowchart LR
   M --> G["Diagnostics<br/>explain cause"]
   M --> P["Projection<br/>visible output"]
 
-  CFG["Configuration / FieldRecipe"] --> F
+  CFG["Field Formation / FieldRecipe"] --> F
   CFG --> X
   CFG --> R
   CFG --> M
@@ -47,12 +47,12 @@ Coupling says one thing changes the other.
 
 A **relationship** is a statement of association — it does **not** exert force just because it exists.
 A **force** is a dynamical effect — it couples state and causes change. A relationship may *later* feed a
-force, but only when a configuration says so, explicitly.
+force, but only when a **Field Formation** says so, explicitly.
 
 ```txt
 Citation A supports Claim B.        ← association alone. Moves nothing.
 
-Evidence Field configuration:        ← the configuration turns association into coupling.
+Evidence Field formation:            ← the Field Formation turns association into coupling.
   support relation     → cohesion
   contradiction relation → charge separation
   confidence metric    → gravity strength
@@ -153,7 +153,7 @@ flowchart TD
   G1 --> G4["event relates to moment"]
   G1 --> G5["body relates to depth"]
 
-  G --> H{"Does a configuration<br/>map relation into force?"}
+  G --> H{"Does a Field Formation<br/>map relation into force?"}
   H -->|No| I["Association only<br/>no dynamical effect"]
   H -->|Yes| J["Coupling<br/>relation becomes force input"]
 
@@ -169,7 +169,7 @@ flowchart TD
   K5 --> F
   K4 --> L
 
-  M["Configuration / FieldRecipe"] --> M1["Authored mapping"]
+  M["Field Formation / FieldRecipe"] --> M1["Authored mapping"]
   M1 --> B
   M1 --> G
   M1 --> F
@@ -251,28 +251,32 @@ The current system is therefore not *wrong* — it is **Anchored interface mode.
 mode (or Kinematic-with-readback), which is why the body-authority decision gates recoil (see the
 [substrate frontier](../planning/substrate-architecture-frontier.md)).
 
-## On "configuration" (without renaming the API)
+## On Field Formation (without renaming the API)
 
 After this physics framing, "recipe" can read as casual — but `FieldRecipe`, `compileRecipe`, and
 `applyRecipe` are part of the **frozen public API** ([`api-stability.md`](api-stability.md)). Do **not**
-rename them. Use **conceptual layering** instead:
+rename them. The canonical concept is a **Field Formation**; the API representation stays `FieldRecipe`.
+Use lane separation instead:
 
 ```txt
-Configuration   the conceptual authored arrangement
-FieldRecipe     the current API representation of a field configuration
-Contract        the compiled executable plan
-Preset          a convenience bundle
+Pattern          the human-facing reusable behavior name
+Field Formation  the canonical field-native authored arrangement
+FieldRecipe      the current API representation of a Field Formation
+Field Contract   the compiled executable plan
+Configuration    ordinary settings/options only
+Matter           participants/substance only
 ```
 
-So a configuration is more than a bundle of tokens — it is a **declared mapping from semantic intent to
-dimensions, fields, forces, metrics, diagnostics, projections, and accessibility equivalents.** Canonically:
+> A `FieldRecipe` is the API representation of a Field Formation: a declared arrangement of semantic
+> intent, dimensions, bodies, fields, forces, relationships, metrics, diagnostics, projections, and
+> accessibility equivalents.
 
-> A `FieldRecipe` is the API representation of a field configuration: a declared mapping from semantic
-> intent to dimensions, fields, forces, metrics, diagnostics, projections, and accessibility equivalents.
-
-That makes "recipe" feel serious without breaking the shipped language. (Whether to introduce
-`Configuration`/`Contract` as first-class vocabulary is tracked as a **board decision**, not an
-implementation item.)
+A Field Formation is more than a bundle of tokens. It is the authored arrangement that decides which
+associations become couplings, which dimensions participate, which forces act, which metrics are exposed,
+which diagnostics explain cause, and which projections preserve meaning. This terminology change does not
+rename any API symbol, route, catalog identifier, validator, or check. (The terminology decision —
+"Field Formation" canonical, no API rename before a major-version migration — is tracked as a **board
+decision**.)
 
 ## Reading any force (the five-question method)
 
@@ -298,13 +302,13 @@ Relationships declare association.
 Metrics expose state.
 Diagnostics explain cause.
 Projections make dimensions visible.
-Configurations decide which associations become couplings.
+Field Formations decide which associations become couplings.
 ```
 
 ```mermaid
 flowchart TD
   A["Fields describe structure"] --> B["Forces create coupling"]
-  C["Relationships declare association"] --> D["Configurations decide whether association becomes coupling"]
+  C["Relationships declare association"] --> D["Field Formations decide whether association becomes coupling"]
   E["Metrics expose state"] --> F["Diagnostics explain cause"]
   G["Projections make dimensions visible"]
 

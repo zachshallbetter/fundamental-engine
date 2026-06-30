@@ -354,7 +354,7 @@ bodies that lane runs over.
 
 The recipe's *internals* — validation, compilation, the conformance gate that rejects non-real tokens,
 the metric/diagnostic catalog — are Paper 6's subject and are deferred here. What matters for the
-binding claim is only the contract: a recipe is a portable field program, and `bindData()` lets real
+binding claim is only the contract: a `FieldRecipe` is the API representation of a Field Formation — a portable field program — and `bindData()` lets real
 data be the program's input. The same mechanism therefore inherits the recipe runtime's guarantees —
 reduced-motion equivalence (a real static surface is installed when motion is reduced; Paper 4), live
 inspection (`applied().inspect()` reports measurements, resolved/unresolved relationships, and live

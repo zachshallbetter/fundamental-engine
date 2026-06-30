@@ -144,7 +144,13 @@ imperative surface for driving and reading a live field:
 - **Drive it.** `setRender` / `setOverlay` (the two render *surfaces* — underlay + overlay), `setFormation`,
   `setAccent`, `setPalette`, `flowTo(x, y)` / `clearFlow`, `burst`, `scan` / `rescan`, `destroy`.
 - **Read it.** `particleCount()`, `readParticles(out)` (the render-agnostic swarm read-out),
-  `scrollV()`, `version` (which engine build this field is on — `FIELD_VERSION`).
+  `readEdges()` (the relationship graph), `scrollV()`, `version` (which engine build this field is on
+  — `FIELD_VERSION`). And **`query(q?)`** — ask the field a structured question (a point, a rect, or
+  the whole field) and get back plain data: bodies, metrics, relationships, and per-force influence.
+  Read-only and headless-capable — the agent-/tool-readable surface. *Experimental.* And
+  **`snapshot(opts?)`** / **`diff(a, b)`** — capture *what the field is doing* at a frame (a versioned,
+  serializable `FieldSnapshot`) and compare two captures (body / relationship / metric / formation
+  changes). *Experimental.*
 - **Listen.** `on(type, cb)` returns an unsubscribe. Discrete events: `absorb` / `release` (a `sink`
   capturing matter) and the proximity triggers `enter` / `exit` / `met` (a body crossing another body's
   range — the gameplay "entered radius" signal).
@@ -203,6 +209,8 @@ Browse and run all 64 at the [recipe gallery](https://fundamental-engine.com/doc
 ## Inspect and verify
 
 **The field is readable, not a black box.** The [inspector](https://fundamental-engine.com/docs/inspector) reads the live platform each frame (the six-phase spine, registry counts, the typed relationship graph, and lint warnings) without mutating it.
+
+**Per-force attribution.** A dimension-aware impulse accumulator captures every force's contribution to a particle through one canonical path, so the question *"which forces moved matter here, and by how much?"* has a structured answer (`accumulateAt` → net Δv + per-force breakdown). The causality and prediction diagnostics read it; it's the foundation for an inspectable, queryable substrate (see the [critical-path plan](docs/planning/critical-path)).
 
 **Verified, not eyeballed.** A conformance framework fires known particles into each force and checks the measured trajectory against the math. The same catalog drives the test suite and the visual Lab. The repository carries **900+ deterministic tests** (core, platform, scheduler, lint, and the site) and a global safety sweep that holds every force finite, bounded in velocity and heat, and conserved in count. The release-readiness gates are pinned too: a [lifecycle contract](docs/canonical/lifecycle-contract.md) (create→register→measure→unmount, tested per surface), a [support matrix](docs/canonical/support-matrix.md) (browsers / DPR / reduced-motion / SSR, each row backed by a test), and a contract-coverage guard that fails CI if any public option or metric ships untested.
 

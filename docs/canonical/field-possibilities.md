@@ -133,7 +133,8 @@ Fieldflow is transport along field structure.
 
 Diagnostics reveal invisible structure.
 
-Recipes compose behavior into interface meaning.
+Field Formations compose behavior into interface meaning.
+FieldRecipe is the current API representation of a Field Formation.
 
 Short version:
 
@@ -465,9 +466,9 @@ Recovery Path
 
 The most important product frontier is not another force.
 
-It is recipes.
+It is Field Formations.
 
-A recipe is a portable field program.
+A Field Formation is a portable field program; a `FieldRecipe` is its current API representation.
 
 It connects:
 

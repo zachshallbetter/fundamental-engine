@@ -4,6 +4,12 @@
 > authoring-model paper. Claims verified against the codebase and canonical docs as of 2026-06-07.
 > See the [series index](README.md) and *the caveat canon* therein. This is a preprint draft, not
 > canonical product documentation.
+>
+> **Terminology note.** This paper predates the "Field Formation" terminology decision. A **Field
+> Formation** is the canonical concept (an authored field arrangement); `FieldRecipe` — the subject of
+> this paper — is its current API representation. Read "recipe" throughout as that API representation;
+> the schema, compiler, validator, and catalog names are unchanged. See
+> [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md).
 
 **Author:** Zach Shallbetter
 **Series:** Fundamental Research Papers, Paper 6 of 8

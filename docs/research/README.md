@@ -7,6 +7,13 @@
 > each paper's header; where a behavior is aspirational or opt-in rather than shipped, the papers
 > say so explicitly (see *The caveat canon* below). When the code and a paper disagree, the code
 > wins — fix the paper.
+>
+> **Terminology (2026 update).** The canonical conceptual term for an authored field arrangement is a
+> **Field Formation**; `FieldRecipe` is its current API representation. These papers predate that
+> decision and use "recipe"/`FieldRecipe` for both the concept and the implementation — read "recipe"
+> here as the API representation of a Field Formation. The shipped API names (`FieldRecipe`,
+> `compileRecipe`, `applyRecipe`, `FIELD_RECIPES`) are unchanged. See
+> [`../canonical/dimensional-coupling.md`](../canonical/dimensional-coupling.md).
 
 This folder holds a **small family of focused papers** on the ideas behind
 [Fundamental](../../README.md), a platform-native relational field runtime for the DOM. The family is

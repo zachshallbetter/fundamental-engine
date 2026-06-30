@@ -2,7 +2,15 @@
 
 ## Status
 
-Proposed substrate and developer-tooling capability. Required for debugging, AI explainability, compliance, observability, testing, collaboration, and long-running field systems.
+Experimental — **Snapshot + Diff MVP shipped** (`@fundamental-engine/core`: `FieldHandle.snapshot(opts?)`,
+`FieldHandle.diff(a, b)`, and the pure `diffFieldSnapshots(a, b)`). The MVP-scope slice below is live:
+`field.snapshot()` captures bodies/metrics/relationships/active-formations (optionally particles/data),
+versioned and serializable, read-only and headless; `field.diff()` reports body/relationship/metric/
+formation changes. Exposed on every surface. **Not in the frozen API surface** — the format may evolve.
+Not yet built: **Causal Replay** (`field.replay`/`history.explain`), force-attribution timelines,
+projection/diagnostic changes, events-since-last-snapshot, export/import, and redaction.
+
+Required for debugging, AI explainability, compliance, observability, testing, collaboration, and long-running field systems.
 
 ## Purpose
 
