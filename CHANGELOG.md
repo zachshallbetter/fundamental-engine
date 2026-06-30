@@ -17,6 +17,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **temporal accumulator lane** (substrate doc 04 §Step 6, roadmap 2).
+  `applyAndRecord` now captures a per-force change in `Particle.age` (frames-to-live, for *mortal*
+  matter) into `acc.temporal.decay` with a `{ channel: 'temporal' }` attribution — "which force aged /
+  extended this particle's life here". Immortal particles (no `age`) never engage the lane, so the
+  default conserved field is byte-identical. Capture-only / behavior-preserving (the force's age
+  mutation is its own; recording the delta changes nothing). `delay`/`phase` remain reserved.
+  **Experimental.**
+
+
 - **`@fundamental-engine/core`:** **performance suite** (`packages/core/bench/`) — a deterministic,
   pure-Node benchmark of the engine's *algorithmic* cost: full-frame scaling vs particle count, the
   opt-in accumulator capture overhead, `query()`/`snapshot()` read cost, and the every-6th-frame

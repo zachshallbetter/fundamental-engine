@@ -412,11 +412,12 @@ export interface ForceAttribution {
 export interface FieldImpulseAccumulator {
   /** running net linear Δv (x/y, plus z when the lane is engaged). */
   linear: { x: number; y: number; z: number };
-  /** angular Δω (θx/θy/θz) — reserved for the orientation dimension; unpopulated today. */
+  /** angular Δω contribution (θx/θy/θz) — populated when a force writes `Particle.spin` (doc 04 §Step 6). */
   angular?: { x: number; y: number; z: number };
-  /** thermal (heat) contribution — reserved; unpopulated today. */
+  /** thermal (heat) contribution — populated when a force changes `Particle.heat` (doc 04 §Step 6). */
   thermal?: number;
-  /** temporal contribution (delay/decay/phase) — reserved; unpopulated today. */
+  /** temporal contribution (delay/decay/phase) — `decay` populated when a force changes mortal matter's
+   *  `Particle.age` (frames-to-live); delay/phase reserved (doc 04 §Step 6). */
   temporal?: { delay?: number; decay?: number; phase?: number };
   /** semantic-channel contributions (attention/confidence/memory) — reserved; unpopulated today. */
   semantic?: Record<string, number>;

@@ -71,6 +71,7 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
   const bvz = p.vz ?? 0;
   const bvh = p.heat;
   const bvs = p.spin ?? 0;
+  const bage = p.age;
   f.apply(b, p, env);
   if (!(inv === 1 || f.kinematic)) {
     p.vx = bvx + (p.vx - bvx) * inv;
@@ -104,6 +105,18 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
       const ang = (acc.angular ??= { x: 0, y: 0, z: 0 });
       ang.z += ds;
       acc.attribution.push({ force: f.token, channel: 'angular', contribution: ds });
+    }
+    // temporal channel (doc 04 §Step 6): capture a per-force change in `age` (frames-to-live) for MORTAL
+    // matter — "which force aged / extended this particle's life here". Δage lands in `temporal.decay`
+    // (life lost when negative). Only mortal particles carry `age`; immortal ones (age undefined) never
+    // engage the lane, so this is byte-identical for the conserved base field. Capture-only.
+    if (bage !== undefined && p.age !== undefined) {
+      const da = p.age - bage;
+      if (da !== 0) {
+        const tmp = (acc.temporal ??= {});
+        tmp.decay = (tmp.decay ?? 0) + da;
+        acc.attribution.push({ force: f.token, channel: 'temporal', contribution: da });
+      }
     }
   }
 }
