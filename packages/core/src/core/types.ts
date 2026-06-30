@@ -133,9 +133,10 @@ export interface AtomPayload {
  * Who owns a body's position (substrate doc 04 §body-authority). `anchored` (default) — the DOM/host
  * rect is authoritative, re-measured each frame (today's behavior for all bodies). `kinematic` — the
  * engine writes the body's visual transform while the DOM stays the rendered object (the shipped
- * `data-move` / transform pattern). `dynamic` — the engine owns position/velocity/mass; **declared but
- * not yet physically simulated** (Step 5 wires recoil/torque/conservation onto it). A declaration today;
- * anchored and kinematic behave exactly as before.
+ * `data-move` / transform pattern). `dynamic` — the engine owns position/velocity: the body integrates
+ * under the net field each frame and moves (recoil / field-to-body coupling, doc 04 §Step 5). Anchored
+ * and kinematic behave exactly as before. (Literal momentum-recoil from the body's own emission, torque,
+ * and conservation are later refinements.)
  */
 export type BodyAuthority = 'anchored' | 'kinematic' | 'dynamic';
 
@@ -149,6 +150,14 @@ export interface Body {
   tokens: Token[];
   /** who owns this body's position (`data-authority`); default `'anchored'`. See {@link BodyAuthority}. */
   authority?: BodyAuthority;
+  /** engine-owned position + velocity for a `dynamic` body (substrate doc 04 §Step 5 — recoil). Lazily
+   *  initialized from the body's first measured centre, then integrated under the net field each frame
+   *  and written back to `cx`/`cy` (so `measureBodies`' per-frame rect overwrite doesn't reset it).
+   *  Untouched for anchored/kinematic bodies. */
+  bx?: number;
+  by?: number;
+  bvx?: number;
+  bvy?: number;
   /** `tokens` split into `{ modifiers, forces, sources }` per the modifier contract
    *  (workover v0.3). The scanner fills it at parse time; the integrator memoizes it
    *  lazily for bodies built elsewhere (conformance, tests). Modifiers carry the

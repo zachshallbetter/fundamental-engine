@@ -9,6 +9,15 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **dynamic bodies + recoil** (substrate doc 04 §Step 5). A body with
+  `authority: 'dynamic'` now has its position **owned by the engine**: each frame it integrates under
+  the net field the other bodies create at its centre (`a = F/M`, lightly damped + speed-capped) and
+  writes the result back to its centre — so the source moves in response to the field (the reciprocity
+  thesis: bodies bend the field; the field bends them back). Reported through `query()`/`snapshot()`
+  position. Opt-in and behavior-preserving: anchored (default) and kinematic bodies are untouched, so
+  fields with no `dynamic` body run identically. (Literal momentum-recoil from a body's *own* emission
+  is a later refinement; this is the field-to-body coupling.)
+
 - **`@fundamental-engine/core`:** opt-in fixed-timestep integrator (substrate doc 04 §Step 3). A new
   `integrator: 'fixed'` field option (default `'legacy'`) makes the per-step decays frame-rate
   independent — `FRICTION`/`HEAT_DECAY` scale with `dt` (`FRICTION^dt`). At the reference frame rate

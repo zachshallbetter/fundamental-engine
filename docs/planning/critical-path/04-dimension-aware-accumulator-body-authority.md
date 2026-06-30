@@ -275,9 +275,15 @@ Shipped (`@fundamental-engine/core`): `BodyAuthority` type + `Body.authority` / 
 `data-authority`, reported in `query()`/`snapshot()` body readings. Default `anchored`; behavior-
 preserving (a declaration — `dynamic` is inert until Step 5 wires physics).
 
-### Step 5: dynamic bodies and recoil
+### Step 5: dynamic bodies and recoil — ✅ SHIPPED (field-to-body coupling)
 
 Wire body forces into reciprocal response only after authority modes exist.
+
+Shipped (`@fundamental-engine/core`): an `authority: 'dynamic'` body's position is engine-owned —
+each frame it integrates under the net field the other bodies create at its centre (`a = F/M`, damped +
+speed-capped) and writes back to `cx`/`cy`, overriding the DOM rect. Opt-in; behavior-preserving for
+anchored/kinematic. Refinement still open: literal momentum-recoil from a body's *own* emission (the
+reaction to the impulses it imparts), torque, and conservation modes.
 
 ### Step 6: angular/temporal/semantic channels
 
