@@ -17,6 +17,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
   claim-3 density rose 0.20→0.60". `opts.focus` scopes it to one body. Pure (derived from the two
   snapshots); the standalone `replayFieldSnapshots(a, b, opts)` is also exported. New `CausalReplay`,
   `CausalReplayStep`, `CausalCause`, `ReplayOptions` types. On every surface. **Experimental.**
+- **`@fundamental-engine/core`:** **dynamic bodies + recoil** (substrate doc 04 §Step 5). A body with
+  `authority: 'dynamic'` now has its position **owned by the engine**: each frame it integrates under
+  the net field the other bodies create at its centre (`a = F/M`, lightly damped + speed-capped) and
+  writes the result back to its centre — so the source moves in response to the field (the reciprocity
+  thesis: bodies bend the field; the field bends them back). Reported through `query()`/`snapshot()`
+  position. Opt-in and behavior-preserving: anchored (default) and kinematic bodies are untouched, so
+  fields with no `dynamic` body run identically. (Literal momentum-recoil from a body's *own* emission
+  is a later refinement; this is the field-to-body coupling.)
 
 - **`@fundamental-engine/core`:** opt-in fixed-timestep integrator (substrate doc 04 §Step 3). A new
   `integrator: 'fixed'` field option (default `'legacy'`) makes the per-step decays frame-rate
