@@ -812,6 +812,105 @@ export interface FieldQueryResult {
   influences: FieldInfluenceReading[];
 }
 
+// ── Field Snapshot + Diff (substrate critical-path 03) ────────────────────────────────────────────
+// A snapshot captures *what the field was doing* at a frame (vs a screenshot's *what it looked like*);
+// a diff compares two snapshots. EXPERIMENTAL — not in the frozen surface. Causal Replay is a later
+// step. See docs/planning/critical-path/03-field-snapshot-causal-replay.md.
+
+/** Options for {@link FieldHandle.snapshot}. */
+export interface FieldSnapshotOptions {
+  /** include the raw particle pool (heavier; off by default for lightweight exports). */
+  includeParticles?: boolean;
+  /** include the relationship (edge) graph (default true). */
+  includeRelationships?: boolean;
+  /** include each body's opaque `data` record (default false — privacy-preserving). */
+  includeData?: boolean;
+}
+
+/** A body captured in a {@link FieldSnapshot}. */
+export interface FieldBodySnapshot {
+  id: string;
+  /** the body's box in field coordinates (anchored bodies). */
+  rect?: FieldRect;
+  /** the body's centre in field coordinates (z = 0 for an anchored body). */
+  position?: Vec3;
+  tokens: Token[];
+  metrics: Record<string, number>;
+  dimensions: Record<string, number>;
+  /** the body's opaque record, only when `includeData` was set. */
+  data?: unknown;
+}
+
+/** One particle captured in a {@link FieldSnapshot} (only when `includeParticles`). */
+export interface FieldParticleSnapshot {
+  x: number;
+  y: number;
+  z: number;
+  heat: number;
+  size: number;
+}
+
+/** A portable capture of field state at a moment in time — inspect, compare, test, export, or hand to
+ *  an agent. Plain data; safe to serialize. Format is versioned via {@link FieldSnapshot.version}. */
+export interface FieldSnapshot {
+  /** a per-field unique id (`snap-<frame>-<n>`). */
+  id: string;
+  /** the field clock at capture (`env.t`). */
+  createdAt: number;
+  /** the frame captured. */
+  frame: number;
+  /** the engine build (`FIELD_VERSION`) — the snapshot-format version. */
+  version: string;
+  /** the active Field Formation id(s) at capture. */
+  formations: string[];
+  bodies: FieldBodySnapshot[];
+  relationships: FieldRelationshipReading[];
+  metrics: Record<string, number>;
+  particles?: FieldParticleSnapshot[];
+}
+
+/** A change to one body between two snapshots. */
+export interface BodyChange {
+  id: string;
+  kind: 'added' | 'removed' | 'changed';
+  /** per-metric `{ from, to }` for the metrics that changed (kind `'changed'`). */
+  metrics?: Record<string, { from: number; to: number }>;
+}
+
+/** A change to one relationship between two snapshots. */
+export interface RelationshipChange {
+  from: string;
+  to: string;
+  type: string;
+  kind: 'added' | 'removed' | 'changed';
+  strength?: { from: number; to: number };
+  active?: { from: boolean; to: boolean };
+}
+
+/** A change to one field-level metric between two snapshots. */
+export interface MetricChange {
+  key: string;
+  from: number;
+  to: number;
+}
+
+/** A Field Formation that activated or deactivated between two snapshots. */
+export interface FormationChange {
+  id: string;
+  kind: 'activated' | 'deactivated';
+}
+
+/** The structured comparison of two {@link FieldSnapshot}s — what changed in the field, by lane. */
+export interface FieldDiff {
+  /** the `id`s of the two snapshots compared. */
+  from: string;
+  to: string;
+  bodyChanges: BodyChange[];
+  relationshipChanges: RelationshipChange[];
+  metricChanges: MetricChange[];
+  formationChanges: FormationChange[];
+}
+
 /** A registered **field channel** (`FieldHandle.addField`) — an external scalar field sampled on the
  *  engine's read path. The open *input* analog of the render surfaces. */
 export interface FieldChannelHandle {
@@ -935,6 +1034,13 @@ export interface FieldHandle {
    *  Read-only and render-agnostic (works headless). The substrate's agent-/tool-readable surface;
    *  see {@link FieldQuery}. **EXPERIMENTAL** — not yet in the frozen API set. */
   query(q?: FieldQuery): FieldQueryResult;
+  /** Capture *what the field is doing* right now — a portable, serializable {@link FieldSnapshot}
+   *  (bodies, metrics, relationships, active formations; optionally particles). Read-only; works
+   *  headless. Pair with {@link FieldHandle.diff} to compare two snapshots. **EXPERIMENTAL.** */
+  snapshot(opts?: FieldSnapshotOptions): FieldSnapshot;
+  /** Compare two snapshots and report what changed in the field — body, relationship, metric, and
+   *  formation changes. Pure (takes two snapshots; ignores live state). **EXPERIMENTAL.** */
+  diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff;
   /**
    * Register a named **field channel** — a read-back substrate the host samples via `sampleField`; the
    * engine does not (yet) couple it into forces. The open *input* analog of the render surfaces

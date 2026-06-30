@@ -9,6 +9,18 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **Field Snapshot + Diff (MVP)** — `field.snapshot(opts?)` and
+  `field.diff(a, b)` (substrate critical-path 03). A snapshot captures *what the field is doing* at a
+  frame — a portable, versioned, serializable `FieldSnapshot` (bodies with rect/position/tokens/
+  metrics/dimensions, relationships, active formations, field metrics; optional particles/data) — vs a
+  screenshot of what it looked like. `diff` compares two snapshots and reports body / relationship /
+  metric / formation changes; the pure `diffFieldSnapshots(a, b)` is also exported. Read-only, works
+  headless, privacy-preserving by default (`includeData` opt-in). New types `FieldSnapshot`,
+  `FieldSnapshotOptions`, `FieldBodySnapshot`, `FieldParticleSnapshot`, `FieldDiff`, `BodyChange`,
+  `RelationshipChange`, `MetricChange`, `FormationChange`. On every surface (`<field-root>`,
+  React/element handles, vanilla, three). **Experimental** — not in the frozen surface. (Causal Replay
+  is the next step.)
+
 - **`@fundamental-engine/core`:** **Field Query API (MVP)** — `field.query(q?)` (substrate critical-path
   02). A read-only, render-agnostic way to ask the live field a structured question — a point
   (`{x, y}` + `radius`), a `DOMRect`-shaped rect, or the whole field — and get back plain, serializable

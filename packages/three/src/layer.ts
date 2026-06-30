@@ -18,7 +18,7 @@
  */
 
 import { createField } from '@fundamental-engine/core';
-import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult } from '@fundamental-engine/core';
+import type { AgentHandle, AgentSpec, AtomPayload, FieldHandle, FieldOptions, FlowOptions, HostViewport, ScalarGrid, ThreadLink, FieldEventType, FieldEventMap, BodySpec, BodyHandle, EdgeHandle, EdgeView, FieldChannelHandle, FieldQuery, FieldQueryResult, FieldSnapshot, FieldSnapshotOptions, FieldDiff } from '@fundamental-engine/core';
 import { Group, Vector3 } from 'three';
 import type { Object3D, WebGLRenderer } from 'three';
 import { threeHost } from './host.ts';
@@ -310,6 +310,14 @@ export class FieldLayer implements FieldHandle {
    *  to the engine. Read-only; works headless. See {@link FieldHandle.query}. */
   query(q?: FieldQuery): FieldQueryResult {
     return this.field.query(q);
+  }
+  /** Capture field state (bodies/metrics/relationships/active formations) — delegated. See {@link FieldHandle.snapshot}. */
+  snapshot(opts?: FieldSnapshotOptions): FieldSnapshot {
+    return this.field.snapshot(opts);
+  }
+  /** Compare two snapshots — delegated. See {@link FieldHandle.diff}. */
+  diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff {
+    return this.field.diff(a, b);
   }
   /** subscribe to a discrete field event (absorb/release/settle); returns an unsubscribe fn. */
   on<K extends FieldEventType>(type: K, cb: (e: FieldEventMap[K]) => void): () => void {
