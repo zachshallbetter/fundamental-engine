@@ -90,6 +90,12 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
 }
 
 function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
+  // NOTE (doc 04 §Step 3): the fixed-timestep integrator does NOT dt-scale force impulses here. The
+  // single-particle capture trick (rescale `p`'s Δv) is unsound for forces that also mutate a
+  // neighbour in the same pass — `collide`/`link` apply an equal-and-opposite impulse to `q`, which
+  // this path can't see, so scaling only `p` would break momentum conservation. Frame-rate-correct
+  // force impulses wait for the force-contract change, where every contribution (including a pair's
+  // `q` leg) flows through the accumulator. Fixed mode currently corrects only the per-step decays.
   // Default hot path: byte-identical to the pre-accumulator engine (zero overhead — no capture).
   if (env.accum === undefined) {
     if (inv === 1 || f.kinematic) {
@@ -427,13 +433,17 @@ export function step(input: StepInput): void {
       }
     }
 
-    // integrate, then damp (§2.2). The z lane integrates identically — inert at 0.
+    // integrate, then damp (§2.2). The z lane integrates identically — inert at 0. Under the opt-in
+    // fixed-timestep integrator (doc 04 §Step 3) the per-step damping scales with `dt` (`FRICTION^dt`)
+    // so it is frame-rate independent; at `dt === 1` `Math.pow(FRICTION, 1) === FRICTION`, so the
+    // default path is byte-identical.
     p.x += p.vx * dt;
     p.y += p.vy * dt;
     p.z! += p.vz! * dt;
-    p.vx *= FRICTION;
-    p.vy *= FRICTION;
-    p.vz! *= FRICTION;
+    const fr = env.integrator === 'fixed' ? Math.pow(FRICTION, dt) : FRICTION;
+    p.vx *= fr;
+    p.vy *= fr;
+    p.vz! *= fr;
 
     // wander (after damping, so it stays lively): a periodic brownian jitter every 40 frames, plus
     // a smooth curl-noise eddy (§7). Agents (report defined) opt out — their motion is force- and
@@ -455,7 +465,7 @@ export function step(input: StepInput): void {
       }
     }
 
-    p.heat *= HEAT_DECAY;
+    p.heat *= env.integrator === 'fixed' ? Math.pow(HEAT_DECAY, dt) : HEAT_DECAY;
 
     // mortal matter ages (the class-[S] sink): spawned particles carry a finite `age`
     // and despawn at ≤ 0, so a continuous source stays budgeted. Immortal base-field

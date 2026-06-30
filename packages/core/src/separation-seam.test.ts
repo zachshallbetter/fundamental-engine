@@ -67,3 +67,21 @@ test('separation: negative value falls back to 0 (clamped, no throw)', () => {
     field.destroy();
   }
 });
+
+test('integrator: the fixed-timestep integrator is accepted (doc 04 §Step 3, no throw)', () => {
+  const field = createField(fakeCanvas(), { host: fakeHost(), render: 'none', integrator: 'fixed' });
+  try {
+    assert.ok(field, 'field initialises with integrator: "fixed"');
+  } finally {
+    field.destroy();
+  }
+});
+
+test('integrator: defaults to legacy when omitted (the shipped semi-implicit Euler)', () => {
+  const field = createField(fakeCanvas(), { host: fakeHost(), render: 'none' });
+  try {
+    assert.ok(field, 'field initialises with the default (legacy) integrator');
+  } finally {
+    field.destroy();
+  }
+});

@@ -1,4 +1,4 @@
-import { PALETTE, FIELD_VERSION, diffFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff } from '@fundamental-engine/core';
+import { PALETTE, FIELD_VERSION, diffFieldSnapshots, type AgentHandle, type AgentSpec, type AtomPayload, type FieldHandle, type FieldOptions, type ThreadLink, type FeedbackSink, type FlowOptions, type OverlayInput, type OverlayMode, type IntegratorMode, type ScalarGrid, type FieldEventType, type FieldEventMap, type BodySpec, type BodyHandle, type FieldChannelHandle, type FieldQuery, type FieldQueryResult, type FieldSnapshot, type FieldSnapshotOptions, type FieldDiff } from '@fundamental-engine/core';
 import { createBrowserField, type FieldPlatform } from '@fundamental-engine/dom';
 import { HTMLElementBase } from './base.ts';
 import { shouldUsePlatformRuntime, startPlatformRuntime, makeFeedbackSink, type PlatformRuntime } from './platform-runtime.ts';
@@ -39,6 +39,7 @@ export type { PlatformRuntime } from './platform-runtime.ts';
  * @attr {boolean} causality - Enables the causality demo behaviour.
  * @attr {string} background - Substrate background: `transparent` clears to transparent so the underlay composites over light content (an image, a 3D scene, a light page); default `opaque` paints the near-black substrate.
  * @attr {number} depth - Optional z-volume (default `0`, the flat field). `> 0` opens a shallow depth the matter drifts through, projected as a size/alpha recession. Construction-time — changing it rebuilds.
+ * @attr {string} integrator - Integration scheme (substrate doc 04 §Step 3): `fixed` opts into the frame-rate-independent integrator; anything else (incl. absent) is the default `legacy`. Construction-time — changing it rebuilds.
  * @attr {number} grid-warp - Distortion multiplier for the `grid` overlay's lattice (default `1`, the calibrated amount). `2`–`3` exaggerates the deformation; `0` flattens it. Only affects the `grid` overlay mode.
  * @attr {number} grid-intensity - Stroke opacity ∈ [0,1] for the `grid` overlay lines (default `0.16`, the faint diagnostic). Raise it (≈`0.5`) to make the warped lattice a visual centerpiece. Only affects the `grid` overlay mode.
  */
@@ -90,6 +91,7 @@ export class FieldField extends HTMLElementBase {
     { key: 'waveStyle', attr: 'wave-style', read: (el) => el.waveStyle },
     { key: 'waveCenter', attr: 'wave-center', read: (el) => el.waveCenter },
     { key: 'separation', attr: 'separation', read: (el) => el.separation },
+    { key: 'integrator', attr: 'integrator', read: (el) => el.integrator },
   ];
 
   // Literal (not computed) so the CEM analyzer can enumerate it; the test keeps it in sync with OPTIONS.
@@ -115,6 +117,7 @@ export class FieldField extends HTMLElementBase {
     'wave-style',
     'wave-center',
     'separation',
+    'integrator',
     'background',
     'formation',
   ];
@@ -254,6 +257,11 @@ export class FieldField extends HTMLElementBase {
   get separation(): number | undefined {
     const v = Number(this.getAttribute('separation'));
     return Number.isFinite(v) && v >= 0 ? v : undefined;
+  }
+  /** `integrator` — the integration scheme (substrate doc 04 §Step 3); `'fixed'` opts into the
+   *  frame-rate-independent integrator, anything else (incl. absent) is the default `'legacy'`. */
+  get integrator(): IntegratorMode | undefined {
+    return this.getAttribute('integrator') === 'fixed' ? 'fixed' : undefined;
   }
   /** `theme` — ambient palette preset (`warm` (default) | `cool` | `mono`); undefined if absent (#529). */
   get theme(): string | undefined {
