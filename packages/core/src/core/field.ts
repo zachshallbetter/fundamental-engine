@@ -299,6 +299,49 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     return { metrics, dimensions };
   };
   let snapSeq = 0; // per-field snapshot id counter
+
+  // Dynamic bodies (substrate doc 04 §Step 5 — recoil): a body with authority:'dynamic' has its
+  // position OWNED by the engine, not the DOM. Each frame it integrates under the net field the other
+  // bodies create at its centre (`a = F/M`, lightly damped + speed-capped) and writes the result back
+  // to cx/cy — so the source moves in response to the field (the reciprocity thesis). Anchored and
+  // kinematic bodies are never touched, so with no dynamic bodies this loop is a no-op.
+  const BODY_FRICTION = 0.9; // heavier than particle FRICTION so dynamic bodies settle, not drift forever
+  const MAX_BODY_SPEED = 8; // px/frame cap — keeps a dynamic body from flinging off under a strong well
+  function moveDynamicBodies(): void {
+    for (const b of bodies) {
+      if (b.authority !== 'dynamic' || !b.vis) continue;
+      // lazily adopt the measured centre as the engine-owned position on first touch.
+      if (b.bx === undefined) {
+        b.bx = b.cx;
+        b.by = b.cy;
+        b.bvx = 0;
+        b.bvy = 0;
+      }
+      const bx = b.bx ?? b.cx;
+      const by = b.by ?? b.cy;
+      // the net field from every OTHER visible body at this body's centre (exclude self so a body
+      // doesn't recoil from its own singular centre).
+      const others = bodies.filter((o) => o !== b && o.vis && o.tokens.length > 0);
+      const { fx, fy } = forceAt(others, reg.forces, env, bx, by);
+      const invM = 1 / Math.max(b.M, 1e-4);
+      let vx = (b.bvx ?? 0) + fx * invM * env.dt;
+      let vy = (b.bvy ?? 0) + fy * invM * env.dt;
+      vx *= BODY_FRICTION;
+      vy *= BODY_FRICTION;
+      const sp = Math.hypot(vx, vy);
+      if (sp > MAX_BODY_SPEED) {
+        const k = MAX_BODY_SPEED / sp;
+        vx *= k;
+        vy *= k;
+      }
+      b.bvx = vx;
+      b.bvy = vy;
+      b.bx = bx + vx * env.dt;
+      b.by = by + vy * env.dt;
+      b.cx = b.bx; // the owned position becomes authoritative (overrides measureBodies' rect write)
+      b.cy = b.by;
+    }
+  }
   // Capture body.data BY VALUE at snapshot time — a snapshot is a portable capture, so later mutation
   // of the original record must not change older snapshots (or make diffs/exports nondeterministic).
   const sclone = (globalThis as { structuredClone?: (v: unknown) => unknown }).structuredClone;
@@ -2167,6 +2210,11 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       // edge of engagement — the same conserved supernova ritual as saturation.
       dischargeDisengaged(bodies, env.supernova);
     }
+    // Dynamic bodies (substrate doc 04 §Step 5 — recoil): the engine owns a `dynamic` body's position.
+    // Each frame it integrates under the net field the OTHER bodies create at its centre (the
+    // reciprocity thesis — the field bends the source back) and writes the result to cx/cy, overriding
+    // the DOM rect. Opt-in via authority:'dynamic'; with none present this whole pass is skipped.
+    if (env.dt !== 0) moveDynamicBodies();
     // Step programmatic edges (addEdge): a relationship is "active" while its source body is salient
     // (gathering matter, d > 0.08) — it then strengthens + accumulates memory, and decays while idle.
     // env.dt is frame-normalized (≈1 at 60fps); the dynamics rates are per-second, so convert (÷60).

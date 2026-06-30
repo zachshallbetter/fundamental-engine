@@ -149,6 +149,14 @@ export interface Body {
   tokens: Token[];
   /** who owns this body's position (`data-authority`); default `'anchored'`. See {@link BodyAuthority}. */
   authority?: BodyAuthority;
+  /** engine-owned position + velocity for a `dynamic` body (substrate doc 04 §Step 5 — recoil). Lazily
+   *  initialized from the body's first measured centre, then integrated under the net field each frame
+   *  and written back to `cx`/`cy` (so `measureBodies`' per-frame rect overwrite doesn't reset it).
+   *  Untouched for anchored/kinematic bodies. */
+  bx?: number;
+  by?: number;
+  bvx?: number;
+  bvy?: number;
   /** `tokens` split into `{ modifiers, forces, sources }` per the modifier contract
    *  (workover v0.3). The scanner fills it at parse time; the integrator memoizes it
    *  lazily for bodies built elsewhere (conformance, tests). Modifiers carry the
