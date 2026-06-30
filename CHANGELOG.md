@@ -7,6 +7,14 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Changed
+
+- **Tests:** aggressive cross-surface integration coverage for the substrate API — new
+  `substrate-api.test.ts` in `@fundamental-engine/{vanilla,three,elements,react}` (+47 tests)
+  verifying `query`/`snapshot`/`diff`/`replay`/`projections` are reachable, correctly shaped, and
+  delegate per surface (incl. the `<field-root>` before-start fallbacks the codex review flagged, and
+  body-authority round-trips). Closes the surface-level coverage gap; no behavior change.
+
 ### Added
 
 - **`@fundamental-engine/core`:** **Projection Registry** — `field.projections` (substrate
