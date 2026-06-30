@@ -17,6 +17,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **projection write-phase auto-apply + the `agent-json` surface**
+  (substrate doc 05, roadmap 9/10). `ProjectionRegistry.bind(id, target, source)` ties a registered
+  projection to a target + a live `ProjectionSource` (`() => Record<string, number>`); the field
+  re-applies it once per write phase (right after feedback), read-only w.r.t. the field — a projection
+  still never moves matter. Returns an unbind fn; multiple bindings coexist; binding an unknown id is
+  inert. New `agentJsonProjection(id, channels, opts?)` + `agentJsonTarget()` give an agent/tooling
+  surface whose output is a serializable reading (`value()` / `json()`) rather than a visual write.
+  Additive; behavior-preserving (a bound projection does not perturb the simulation). **Experimental.**
+
+
 - **`@fundamental-engine/core`:** **angular accumulator lane + particle orientation** (substrate doc 04
   §Step 6). Opt-in `Particle.orient?` (angle, radians) + `spin?` (angular velocity) — undefined ⇒ inert,
   byte-identical to the spin-less engine (the z-lane discipline). When a force gives a particle `spin`,

@@ -135,8 +135,28 @@ interface ProjectionRegistry {
   get(id: string): FieldProjection | undefined;
   list(): FieldProjectionInfo[];              // serializable metadata (no apply)
   apply(id: string, reading: Record<string, number>, target: FieldProjectionTarget): void;
+  bind(id: string, target: FieldProjectionTarget,
+       source: ProjectionSource): () => void; // auto-apply each write phase; returns an unbind fn
   lint(): GovernanceWarning[];                // accessibility governance over the registry
 }
+```
+
+**Write-phase auto-apply.** `apply()` is a one-shot manual write; `bind()` ties a projection to a target
+plus a live `ProjectionSource` (`() => Record<string, number>`) and the field re-applies it **once per
+write phase** (right after feedback), read-only w.r.t. the field. Multiple bindings — even of the same
+id — coexist; `bind()` returns an unbind fn; binding an unknown or `apply`-less id is inert.
+
+**The `agent-json` surface.** For agent / tooling consumers, `agentJsonProjection(id, channels, opts?)` is
+a projection whose output is a serializable reading rather than a visual write, and `agentJsonTarget()` is
+the sink it writes into — `value()` returns the last reading, `json()` serializes it. Bind the two for a
+live, JSON-serializable view of any channels:
+
+```ts
+import { agentJsonProjection, agentJsonTarget } from '@fundamental-engine/core';
+const out = agentJsonTarget();
+field.projections.register(agentJsonProjection('agent', ['density', 'attention']));
+field.projections.bind('agent', out, () => field.query().metrics as Record<string, number>);
+// each frame: out.value() → { density, attention }, out.json() → '{"density":…}'
 ```
 
 ```ts
