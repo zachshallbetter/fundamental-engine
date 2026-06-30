@@ -43,6 +43,7 @@ interface FieldQuery {
   at?: Vec2 | FieldRect;                 // point {x,y}, DOMRect-shaped rect, or omitted = whole field
   radius?: number;                        // point-query radius in field px (default 240)
   include?: ('bodies' | 'metrics' | 'relationships' | 'influences')[];
+  lens?: FieldLens;                       // scope the answer through a lens (query phase 2)
 }
 interface FieldQueryResult {
   query: FieldQuery; frame: number; time: number; region?: FieldRect;
@@ -51,11 +52,31 @@ interface FieldQueryResult {
   relationships: FieldRelationshipReading[];   // from/to ids, type, strength, memory, active, causal
   influences: FieldInfluenceReading[];    // source body, force token, channel, contribution (Δv | heat)
   projections: FieldProjectionInfo[];     // registered projections (metadata only)
+  lens?: string;                          // the lens id this reading was scoped through, when supplied
 }
 ```
 
 `el.getBoundingClientRect()` drops straight into `at` (it's `DOMRect`-shaped). `influences` come from
 the impulse accumulator — each carries a `channel` (`'linear'` Δv or `'thermal'` heat).
+
+**Lenses (query phase 2).** A `FieldLens` is a **user-defined** declarative scope — not a preset
+catalog: the caller supplies it. Each clause is an allow-list (an omitted clause keeps everything in
+that dimension), and the result is tagged with `lens.id`:
+
+```ts
+interface FieldLens {
+  id: string; label?: string;
+  metrics?: string[];                     // keep only these metric keys (global + per-body metrics/dimensions)
+  channels?: ('linear'|'thermal'|'angular'|…)[]; // keep only influences in these accumulator channels
+  tokens?: Token[];                       // keep only bodies carrying a listed token
+}
+const thermal = field.query({ lens: { id: 'thermal', metrics: ['temperature','entropy'], channels: ['thermal'] } });
+```
+
+The standalone **`applyLens(result, lens)`** is exported and pure (returns a new result; never mutates),
+so a lens composes over any `FieldQueryResult` — a live `query()` answer or one rebuilt from elsewhere.
+The query's *time-window* (interpreting a past moment) is served by the snapshot trio
+(`snapshot()` / `diff()` / `replay()`), not a separate in-engine history buffer.
 
 ```ts
 const result = field.query({ at: el.getBoundingClientRect(), include: ['bodies', 'influences'] });

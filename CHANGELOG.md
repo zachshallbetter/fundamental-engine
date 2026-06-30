@@ -17,6 +17,16 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **query lenses** (substrate query phase 2, roadmap 8/10). A `FieldLens`
+  is a user-defined declarative scope over a query reading — NOT an opinionated preset catalog: the
+  caller supplies it. Each clause is an allow-list (`metrics` keys, influence `channels`, body `tokens`;
+  an omitted clause keeps everything in that dimension). `field.query({ lens })` scopes the live answer
+  and tags it with `lens.id`; the standalone `applyLens(result, lens)` is exported and **pure** (returns
+  a new result, never mutates), so a lens composes over any `FieldQueryResult`. The query *time-window*
+  (interpreting a past moment) is served by the existing `snapshot()`/`diff()`/`replay()` trio rather
+  than a new in-engine history buffer. Additive; behavior-preserving. **Experimental.**
+
+
 - **`@fundamental-engine/core`:** **projection write-phase auto-apply + the `agent-json` surface**
   (substrate doc 05, roadmap 9/10). `ProjectionRegistry.bind(id, target, source)` ties a registered
   projection to a target + a live `ProjectionSource` (`() => Record<string, number>`); the field
