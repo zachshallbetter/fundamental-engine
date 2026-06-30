@@ -44,6 +44,7 @@ export function FieldField({
   accent,
   density,
   depth,
+  integrator,
   waves,
   waveStyle,
   waveCenter,
@@ -84,7 +85,7 @@ export function FieldField({
     }
 
     const field = createBrowserField(canvas, {
-      accent, density, depth, waves, waveStyle, waveCenter, background, render,
+      accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render,
       overlay, overlayCanvas: overlayCanvasRef.current ?? undefined, overlayBackend,
       mass, palette, attention, causality, heatmap, dprCap, separation,
       rng, now, feedbackSink,
@@ -99,7 +100,7 @@ export function FieldField({
     // re-create only when a declarative engine option actually changes. The determinism/feedback
     // seams (rng/now/feedbackSink/overlayBackend) are config-set-once — forwarded above, but kept
     // out of the dep list so an inline value passed each render doesn't thrash the field.
-  }, [accent, density, depth, waves, waveStyle, waveCenter, background, render, overlay, mass, palette, attention, causality, heatmap, dprCap, separation]);
+  }, [accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render, overlay, mass, palette, attention, causality, heatmap, dprCap, separation]);
 
   return (
     <canvas ref={canvasRef} aria-hidden="true" className={className} style={{ ...FIXED, ...style }} />
@@ -119,7 +120,7 @@ export function useFieldField(opts: FieldOptions = {}): {
   /** Field Surfaces: the front overlay surface this hook owns, lazily created. */
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const {
-    accent, density, depth, waves, waveStyle, waveCenter, background, render, overlay, overlayBackend,
+    accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render, overlay, overlayBackend,
     mass, palette, attention, causality, heatmap, dprCap, separation, rng, now, feedbackSink,
   } = opts;
   useEffect(() => {
@@ -137,7 +138,7 @@ export function useFieldField(opts: FieldOptions = {}): {
     }
 
     const field = createBrowserField(canvas, {
-      accent, density, depth, waves, waveStyle, waveCenter, background, render,
+      accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render,
       overlay, overlayCanvas: overlayCanvasRef.current ?? undefined, overlayBackend,
       mass, palette, attention, causality, heatmap, dprCap, separation,
       rng, now, feedbackSink,
@@ -151,7 +152,7 @@ export function useFieldField(opts: FieldOptions = {}): {
       overlayCanvasRef.current = null;
     };
     // declarative options drive recreation; the seams (rng/now/feedbackSink/overlayBackend) forward but stay out of deps.
-  }, [accent, density, depth, waves, waveStyle, waveCenter, background, render, overlay, mass, palette, attention, causality, heatmap, dprCap, separation]);
+  }, [accent, density, depth, integrator, waves, waveStyle, waveCenter, background, render, overlay, mass, palette, attention, causality, heatmap, dprCap, separation]);
   return { canvasRef, fieldRef };
 }
 

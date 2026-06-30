@@ -10,11 +10,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 ### Added
 
 - **`@fundamental-engine/core`:** opt-in fixed-timestep integrator (substrate doc 04 §Step 3). A new
-  `integrator: 'fixed'` field option (default `'legacy'`) makes motion frame-rate independent —
-  additive force impulses and the `FRICTION`/`HEAT_DECAY` decays scale with `dt` (`Δv = a·dt`,
-  `FRICTION^dt`). At the reference frame rate (`dt === 1`, and every golden/conformance run) it is
-  byte-identical to the shipped semi-implicit Euler, so opting in never moves the golden. New
-  `IntegratorMode` type and `Env.integrator` channel.
+  `integrator: 'fixed'` field option (default `'legacy'`) makes the per-step decays frame-rate
+  independent — `FRICTION`/`HEAT_DECAY` scale with `dt` (`FRICTION^dt`). At the reference frame rate
+  (`dt === 1`, and every golden/conformance run) it is byte-identical to the shipped semi-implicit
+  Euler, so opting in never moves the golden. New `IntegratorMode` type and `Env.integrator` channel;
+  the option is forwarded through `<field-root>`, `<FieldField>`/`useFieldField`, and vanilla.
+  (Frame-rate-correct force *impulses* — which require pair forces like `collide` to contribute their
+  `q` leg through the accumulator — land with the later force-contract change.)
 - **`@fundamental-engine/core`:** dimension-aware impulse accumulator (substrate critical path). An
   opt-in `Env.accum` (`FieldImpulseAccumulator`) lets a diagnostic or query probe read each force's
   per-particle contribution — a net `linear` channel plus per-force attribution — captured centrally

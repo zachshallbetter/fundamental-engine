@@ -29,7 +29,7 @@ test('option-attrs-observed: every forwarded option attr is in observedAttribute
 const FORWARDED_OPTION_KEYS = [
   'density', 'waves', 'depth', 'background', 'render', 'overlay',
   'palette', 'mass', 'attention', 'causality', 'heatmap', 'dprCap',
-  'waveStyle', 'waveCenter',
+  'waveStyle', 'waveCenter', 'integrator',
 ] as const;
 
 test('every forwardable FieldOptions key has an OPTIONS row (reverse drift guard)', () => {

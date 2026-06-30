@@ -102,13 +102,12 @@ test('fixed: legacy stays frame-rate *dependent* (the bug the fixed mode fixes)'
   assert.equal(legacy.vx, 2 * FRICTION, 'legacy applies one decay no matter the dt');
 });
 
-test('fixed: an additive force impulse scales with dt', () => {
-  // attract Δvx at this geometry is 0.125 per unit dt (see accumulator.test.ts).
-  const at1 = makeAccumulator();
-  run(makeP(), [makeBody({ tokens: ['attract'], cx: 250, cy: 100 })], { attract }, makeEnv({ dt: 1, integrator: 'fixed', accum: at1 }));
-  assert.ok(Math.abs(at1.linear.x - 0.125) < 1e-9, `dt=1 impulse ≈ 0.125, got ${at1.linear.x}`);
-
-  const at2 = makeAccumulator();
-  run(makeP(), [makeBody({ tokens: ['attract'], cx: 250, cy: 100 })], { attract }, makeEnv({ dt: 2, integrator: 'fixed', accum: at2 }));
-  assert.ok(Math.abs(at2.linear.x - 0.25) < 1e-9, `dt=2 impulse ≈ 0.25 (2× dt=1), got ${at2.linear.x}`);
+test('fixed: force impulses are NOT dt-scaled (guards the unsound pair-force scaling that was removed)', () => {
+  // attract Δvx at this geometry is 0.125 (see accumulator.test.ts). Fixed mode must apply the raw
+  // impulse — scaling it by dt via the single-particle capture path would break neighbour-coupling
+  // forces like `collide` (only `p` scaled, `q` not), so it was removed. A buggy version would
+  // record 0.25 here at dt=2; the correct one records 0.125.
+  const acc = makeAccumulator();
+  run(makeP(), [makeBody({ tokens: ['attract'], cx: 250, cy: 100 })], { attract }, makeEnv({ dt: 2, integrator: 'fixed', accum: acc }));
+  assert.ok(Math.abs(acc.linear.x - 0.125) < 1e-9, `impulse unscaled by dt (0.125, not 0.25); got ${acc.linear.x}`);
 });

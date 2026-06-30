@@ -90,15 +90,12 @@ export function applyAndRecord(f: Force, b: Body, p: Particle, env: Env, inv = 1
 }
 
 function applyForce(f: Force, b: Body, p: Particle, env: Env, inv: number): void {
-  // Fixed-timestep integrator (opt-in, doc 04 §Step 3): an *additive* force's impulse scales with
-  // `dt` so motion is frame-rate independent (a = F/m, Δv = a·dt); a `kinematic` force replaces
-  // velocity outright and is never scaled. At `dt === 1` (the reference frame rate, and every
-  // golden/conformance run) this is byte-identical to the legacy path. Routed through the shared
-  // capture path so it also feeds the accumulator when one is attached.
-  if (env.integrator === 'fixed') {
-    applyAndRecord(f, b, p, env, f.kinematic ? 1 : inv * env.dt);
-    return;
-  }
+  // NOTE (doc 04 §Step 3): the fixed-timestep integrator does NOT dt-scale force impulses here. The
+  // single-particle capture trick (rescale `p`'s Δv) is unsound for forces that also mutate a
+  // neighbour in the same pass — `collide`/`link` apply an equal-and-opposite impulse to `q`, which
+  // this path can't see, so scaling only `p` would break momentum conservation. Frame-rate-correct
+  // force impulses wait for the force-contract change, where every contribution (including a pair's
+  // `q` leg) flows through the accumulator. Fixed mode currently corrects only the per-step decays.
   // Default hot path: byte-identical to the pre-accumulator engine (zero overhead — no capture).
   if (env.accum === undefined) {
     if (inv === 1 || f.kinematic) {
