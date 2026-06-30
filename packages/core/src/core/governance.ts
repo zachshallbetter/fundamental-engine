@@ -10,6 +10,8 @@
  * need force + formation passports) are a later step.
  */
 import type { FieldProjectionInfo, FieldProjectionSurface, GovernanceWarning } from './types.ts';
+import { PASSPORTS } from '../contracts/passport.ts';
+import type { ForcePassport } from '../contracts/passport.ts';
 
 /** Surfaces that can express *motion* — a projection touching one of these must offer a non-motion
  *  equivalent for `prefers-reduced-motion`. (Inherently-static/non-visual surfaces are exempt.) */
@@ -42,6 +44,45 @@ export function lintProjections(projections: readonly FieldProjectionInfo[]): Go
         subject: p.id,
         message: `Projection "${p.id}" declares no accessibilityEquivalent. Accessibility is an alternate projection of the same field state, not a fallback.`,
       });
+    }
+  }
+  return out;
+}
+
+// ── Dimension-coupling passports (substrate governance 05 — `field/no-dimension-coupling-without-passport`)
+// A force that COUPLES dimensions (a change in one dimension drives a change in another) must declare it
+// in its passport's `couplesDimensions`. The cleanest unarguable signal is `conservesSpeed`: a force that
+// preserves |v| while moving particles necessarily *redirects velocity* — it couples the linear-velocity
+// components (and, for a torque-style force, `linear`→`angular`). This lint reports any such force that
+// declares no coupling, and any declared dimension that is not a known lane. Pure over the passports.
+
+/** The dimension lanes a coupling may name — the accumulator's channels (doc 04). */
+const COUPLING_DIMENSIONS: ReadonlySet<string> = new Set(['linear', 'angular', 'thermal', 'temporal', 'semantic']);
+
+/** Lint force passports for the dimension-coupling rule (substrate governance 05). With the shipped
+ *  passports this returns `[]` — every speed-conserving force (`wall`, `magnetism`) declares its coupling —
+ *  so the lint guards future drift (a new coupler that forgets to declare, or a typo'd dimension name). */
+export function lintDimensionCoupling(passports: readonly ForcePassport[] = Object.values(PASSPORTS)): GovernanceWarning[] {
+  const out: GovernanceWarning[] = [];
+  for (const p of passports) {
+    const declared = p.couplesDimensions ?? [];
+    if (p.movesParticles && p.conservesSpeed && declared.length === 0) {
+      out.push({
+        rule: 'field/no-dimension-coupling-without-passport',
+        severity: 'error',
+        subject: p.token,
+        message: `"${p.token}" conserves speed (it redirects velocity) but declares no couplesDimensions — a dimension-coupling force must declare its coupling.`,
+      });
+    }
+    for (const d of declared) {
+      if (!COUPLING_DIMENSIONS.has(d)) {
+        out.push({
+          rule: 'field/no-dimension-coupling-without-passport',
+          severity: 'warning',
+          subject: p.token,
+          message: `"${p.token}" declares couplesDimensions ["${d}"], but "${d}" is not a known dimension lane (${[...COUPLING_DIMENSIONS].join(', ')}).`,
+        });
+      }
     }
   }
   return out;

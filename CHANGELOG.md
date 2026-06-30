@@ -20,6 +20,17 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **coupling passports + the `field/no-dimension-coupling-without-passport`
+  lint** (substrate governance 05, roadmap 6). `ForcePassport` gains `couplesDimensions?: readonly
+  string[]` — the dimensions a force cross-links. `lintDimensionCoupling()` reports any force that
+  *conserves speed* (so it necessarily redirects velocity — a dimension coupling) yet declares none, plus
+  any declared dimension that is not a known lane. The three speed-conserving forces (`wall`, `magnetism`,
+  `warp`) now declare `couplesDimensions: ['linear']`, so the lint returns `[]` — it guards future drift.
+  Additive, behavior-preserving. **Experimental.** *Design call flagged for review: the coupling rule
+  keys off `conservesSpeed` (unarguable) and the declared vocabulary is minimal (`['linear']`); a richer
+  per-force coupling map (e.g. `linear→angular` for a torque force) is a follow-up.*
+
+
 - **`@fundamental-engine/core`:** **semantic accumulator lane** (substrate doc 04 §Step 6, roadmap 3).
   `applyAndRecord` now annotates a force's contribution with the body's conserved-attention multiplier
   in effect (`Body.attn`, which scales the body's effective force strength) into `acc.semantic.attention`
