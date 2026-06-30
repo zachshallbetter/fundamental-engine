@@ -951,6 +951,46 @@ export interface FieldDiff {
   formationChanges: FormationChange[];
 }
 
+// ── Causal Replay (substrate critical-path 03 phase 2) ────────────────────────────────────────────
+// Explain HOW the field changed between two snapshots — an ordered, narrated sequence of causes
+// (formation activations, relationship shifts, body measurements/metrics). Derived purely from two
+// snapshots (it reads the diff); preserves attribution. EXPERIMENTAL — not in the frozen surface.
+
+/** The lane a {@link CausalReplayStep} belongs to. */
+export type CausalCause = 'force' | 'relationship' | 'metric' | 'formation' | 'measurement';
+
+/** Options for {@link FieldHandle.replay}. */
+export interface ReplayOptions {
+  /** restrict the replay to steps touching this body id (its metrics, or a relationship endpoint). */
+  focus?: string;
+}
+
+/** One narrated cause in a {@link CausalReplay}. */
+export interface CausalReplayStep {
+  frame: number;
+  time: number;
+  cause: CausalCause;
+  /** the body/edge the cause originates from (a body id, or a relationship's `from`). */
+  source?: string;
+  /** the affected target, when the cause is a relationship. */
+  target?: string;
+  /** a human-readable account of the change (lane: diagnostic). */
+  description: string;
+  /** the structured before/after behind the description (e.g. `{ from, to }`). */
+  contribution?: unknown;
+}
+
+/** An explanation of how the field changed between two snapshots — the ordered causal steps. Pure
+ *  (derived from the two snapshots); plain data, safe to serialize. */
+export interface CausalReplay {
+  /** the `id`s of the two snapshots replayed. */
+  from: string;
+  to: string;
+  /** the focus body id, if the replay was scoped to one. */
+  focus?: string;
+  steps: CausalReplayStep[];
+}
+
 /** A registered **field channel** (`FieldHandle.addField`) — an external scalar field sampled on the
  *  engine's read path. The open *input* analog of the render surfaces. */
 export interface FieldChannelHandle {
@@ -1081,6 +1121,10 @@ export interface FieldHandle {
   /** Compare two snapshots and report what changed in the field — body, relationship, metric, and
    *  formation changes. Pure (takes two snapshots; ignores live state). **EXPERIMENTAL.** */
   diff(a: FieldSnapshot, b: FieldSnapshot): FieldDiff;
+  /** Explain how the field changed between two snapshots — an ordered, narrated sequence of causes
+   *  (formation activations, relationship shifts, body measurements/metrics). Pure (derived from the
+   *  two snapshots). Pass `{ focus }` to scope it to one body. **EXPERIMENTAL.** */
+  replay(a: FieldSnapshot, b: FieldSnapshot, opts?: ReplayOptions): CausalReplay;
   /**
    * Register a named **field channel** — a read-back substrate the host samples via `sampleField`; the
    * engine does not (yet) couple it into forces. The open *input* analog of the render surfaces
