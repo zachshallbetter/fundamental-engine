@@ -2919,6 +2919,21 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
         }
         snap.particles = out;
       }
+      if (opts.includeInfluences) {
+        // per-body force attribution: each body's own forces at its centre, by channel (linear Δv,
+        // thermal heat, …). A later replay() derives `cause: 'force'` steps from how these shift.
+        const inf: FieldInfluenceReading[] = [];
+        for (const b of visible) {
+          if (b.tokens.length === 0) continue;
+          // sample just off the centre, not AT it: a body's directional forces (attract/repel/…) have
+          // zero direction exactly at their own centre, so the centre reads no linear contribution.
+          const acc = accumulateAt(reg.forces, b.tokens, b, b.cx + 8, b.cy);
+          for (const a of acc.attribution) {
+            inf.push({ source: bodyId(b), force: a.force, channel: a.channel, contribution: a.contribution as number | Vec2 | Vec3 });
+          }
+        }
+        snap.influences = inf;
+      }
       return snap;
     },
     diff: (a: FieldSnapshot, b: FieldSnapshot): FieldDiff => diffFieldSnapshots(a, b),
