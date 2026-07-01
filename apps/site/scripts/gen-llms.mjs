@@ -77,7 +77,7 @@ const DOC_DESC = {
   '/docs/api/stability': 'the frozen 0.x surface and compatibility rules — rendered from the same data CI enforces',
   '/docs/api/forces': 'all 36 forces: per-frame law, attributes read, and an example each',
   '/docs/api/presets': 'composites (blackhole, galaxy, tornado, …) that expand to primitive bodies',
-  '/docs/api/catalog': 'conditions, formations, render modes, and palettes — the orthogonal axes',
+  '/docs/api/catalog': 'conditions, global formation modes, render modes, and palettes — the orthogonal axes',
   '/docs/studies/reading-field': 'a long-form article reinterpreted as a field (attention + memory + citations)',
   '/docs/studies/review-field': 'a pull request as a field — file heat, reviewer constellation, comment binding',
   '/docs/studies/search-field': 'search results as a trust gradient with contradiction polarity',
@@ -241,16 +241,17 @@ const exampleLines = EXAMPLES.map((e) => line(e.name, `${SITE_URL}${e.href}`, e.
 
 const llms = `# Fundamental
 
-> Fundamental is a platform-native relational field runtime for the DOM, created by Zach Shallbetter (zachshallbetter.com). The core (\`@fundamental-engine/core\`)
-> computes renderer-agnostic field behavior; \`@fundamental-engine/dom\` binds field behavior to the DOM
-> through measurement, state, feedback, relationships, visual bindings, overlays, linting, and
-> scheduling; \`@fundamental-engine/elements\` exposes native HTML and web-component authoring; \`@fundamental-engine/react\`
-> adapts the same contracts for React. Canvas is one render surface, not the whole system: a field is
-> **signals-first** — by default it draws nothing and writes \`--field-*\` CSS variables your styles read.
+> Fundamental is a platform-native relational field runtime, created by Zach Shallbetter (zachshallbetter.com). The core (\`@fundamental-engine/core\`)
+> computes renderer-agnostic field behavior; host adapters bind that field to real platforms.
+> \`@fundamental-engine/dom\` is the web host adapter, binding field behavior to the DOM through
+> measurement, state, feedback, relationships, visual bindings, overlays, linting, and scheduling
+> (\`@fundamental-engine/elements\` and \`@fundamental-engine/react\` are authoring surfaces on top of it).
+> Canvas is one render surface, not the whole system: a field is **signals-first** — by default it draws
+> nothing and exposes structured signals, metrics, feedback, queries, snapshots, and projections.
 
 Every element can become a body in an invisible physics field via the \`data-body\` attribute:
 bodies bend the field, and the field's local density bends them back (reciprocity, returned as
-CSS custom properties like \`--field-density\`). The public 0.x API surface is frozen and
+the canonical \`--d\` density channel, whose expressive long form is \`--field-density\`). The public 0.x API surface is frozen and
 additive-only, enforced in CI from \`scripts/api-surface.data.mjs\` — the docs' provenance stamps
 render from the same file. Generated ${DATE} by apps/site/scripts/gen-llms.mjs.
 

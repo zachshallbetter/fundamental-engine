@@ -557,8 +557,8 @@ its strength, so *the field answers interaction.*
 ### 7.2 Three surfaces, one compiled contract
 
 The same markup is authored three ways, and all three *compile to identical `[data-body]` markup,
-drive the same `--field-density` feedback variable, and are measured, fed back, and related through
-the same platform registries:*
+drive the same `--d` feedback channel (long form `--field-density`), and are measured, fed back, and
+related through the same platform registries:*
 
 - **Native HTML** — the platform runtime attaches to any element with `data-body`; the same markup
   works unchanged in Astro, Svelte, Vue, or static HTML.

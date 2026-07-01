@@ -6,12 +6,15 @@
 > [definition-document.md](definition-document.md) and
 > [system-contracts.md](system-contracts.md).
 
-# Fundamental platform architecture
+# Fundamental DOM platform architecture
 
-Fundamental is a **platform-native relational field runtime for the DOM**. It lets semantic HTML, DOM
-elements, particles, relationships, measurements, visual layers, and user interaction participate in
-one shared field context. The visible particle canvas is **one render surface**, not the whole
-system.
+Fundamental is a **platform-native relational field runtime**; this document specifies its **web host
+adapter** (`@fundamental-engine/dom`). `@fundamental-engine/core` computes renderer-agnostic field behavior; a
+host adapter binds that field to a concrete platform. On the web, the DOM host adapter lets semantic
+HTML, DOM elements, particles, relationships, measurements, visual layers, and user interaction
+participate in one shared field context. The visible particle canvas is **one render surface**, not the
+whole system — and the DOM is the *first* host, not the boundary (the same core runs headlessly and in
+the native Swift/Kotlin ports).
 
 ## Package hierarchy
 

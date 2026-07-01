@@ -24,9 +24,10 @@ FILE: README.md
 
 # Canonical documentation map
 
-Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` (core) computes
-renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM; `elements`/`react`
-are authoring surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime. `@fundamental-engine/core` computes
+renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom`
+is the web host adapter (`elements`/`react` are authoring surfaces on top of it). The DOM is the first
+host, not the boundary. Canvas is one render surface, not the whole system.
 
 > Concepts describe. Dimensions hold state. Fields structure. Relationships associate. Forces couple.
 > Tokens execute. Metrics measure. Diagnostics explain. Conditions activate. Projections reveal.
@@ -601,11 +602,12 @@ FILE: authoring-and-recipes.md
 
 ## Purpose
 
-This document defines how authors use `Fundamental`. `Fundamental` is a platform-native relational field
-runtime for the DOM: `Fundamental` computes renderer-agnostic field behavior, `@fundamental-engine/dom`
-binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays,
-scheduling, linting), and the elements/React surfaces are how authors declare bodies into that shared
-field context. Authors write the same `[data-body]` contract regardless of surface.
+This document defines how authors use `Fundamental` on the web. `Fundamental` is a platform-native
+relational field runtime: `@fundamental-engine/core` computes renderer-agnostic field behavior, and its
+web host adapter `@fundamental-engine/dom` binds the field to the DOM (measurement, state, feedback,
+relationships, visual bindings, overlays, scheduling, linting); the elements/React surfaces are how
+authors declare bodies into that shared field context. Authors write the same `[data-body]` contract
+regardless of surface.
 
 The system supports three authoring levels:
 
@@ -672,8 +674,9 @@ function Headline() {
 }
 ```
 
-All three forms emit identical `[data-body]` markup, drive the same `--field-density` feedback
-variable, and are measured, fed back, and related to one another through the same platform registries.
+All three forms emit identical `[data-body]` markup, drive the same `--d` feedback channel (its
+expressive long form is `--field-density`), and are measured, fed back, and related to one another
+through the same platform registries.
 
 ## 2. Core Attributes
 
@@ -1160,7 +1163,7 @@ FILE: definition-document.md
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 
-`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime. `@fundamental-engine/core` computes renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom` is the web host adapter, binding the field to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces on top of it. The DOM is the first host, not the boundary — the same core runs headlessly and in the native Swift/Kotlin ports. Canvas is one render surface, not the whole system.
 
 Core principle:
 
@@ -2145,25 +2148,32 @@ are written or revised, they follow the framing below.
 ## Canonical architecture statement
 
 ```
-Fundamental is a platform-native relational field runtime for the DOM.
+Fundamental is a platform-native relational field runtime.
 
-Fundamental      computes renderer-agnostic field behavior.
-@fundamental-engine/dom  binds field behavior to the DOM through measurement, state, feedback,
-                    relationships, visual bindings, overlays, linting, and scheduling.
-@fundamental-engine/elements  exposes native HTML and web-component authoring.
-@fundamental-engine/react     adapts the same contracts for React.
+@fundamental-engine/core  computes renderer-agnostic field behavior.
+Host adapters       bind field behavior to concrete platforms.
+@fundamental-engine/dom   is the web host adapter: it binds the field to the DOM through
+                    measurement, state, feedback, relationships, visual bindings, overlays,
+                    linting, and scheduling.
 
 Canvas is one render surface, not the whole system.
 ```
 
-Fundamental creates **one shared field context** across DOM bodies, agents, relationships, measurements,
+`@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces **on the DOM host** —
+reserve "for the DOM" for the web host adapter and the surfaces built on it, not for the runtime as a
+whole. The DOM is the first host, not the boundary of the system: the same core can run headlessly, in
+native views (the Swift/Kotlin ports), or against any host adapter that supplies body geometry, identity,
+a tick, and a feedback sink.
+
+Fundamental creates **one shared field context** across bodies, agents, relationships, measurements,
 metrics, feedback, particles, and render surfaces. Canvas, SVG overlays, and DOM feedback are each a
-render surface; the platform layer is the DOM participation layer; the core engine stays
+render surface; a host adapter is the participation layer for its platform; the core engine stays
 renderer-agnostic.
 
 Do not describe Fundamental as only "one canvas", "one particle field", "a particle background", or a
 "DOM ⇄ canvas binding". Those phrases are fine when specifically discussing the canvas render surface,
-but they must not define the whole product. The binding is **DOM ⇄ field runtime**.
+but they must not define the whole product. The binding is **host ⇄ field runtime** (on the web,
+**DOM ⇄ field runtime**).
 
 ## Core doctrine
 
@@ -2235,8 +2245,8 @@ before changing a status. Labels: shipped · experimental · planned · conceptu
 
 ```
 The old story: Fundamental is a particle field behind the DOM.
-The new story: Fundamental is a platform-native relational field runtime for the DOM.
-Natural fields:  Four fields. Many expressions. One DOM runtime.
+The new story: Fundamental is a platform-native relational field runtime; the DOM is its first host.
+Natural fields:  Four fields. Many expressions. One field runtime, many hosts.
 ```
 
 ========================================================================
@@ -2471,7 +2481,7 @@ FILE: field-possibilities.md
 
 Fundamental is not a particle background.
 
-It is a platform-native relational field runtime for the DOM.
+It is a platform-native relational field runtime; the DOM is its first host, not its boundary.
 
 The system lets semantic HTML, DOM elements, particles, relationships, measurements, metrics, feedback, visual layers, and user interaction participate in one shared field context.
 
@@ -4689,7 +4699,7 @@ FILE: interaction-and-relationship-model.md
 
 This document expands `Fundamental` beyond particles.
 
-`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime. `@fundamental-engine/core` computes renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom` is the web host adapter, binding the field to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 
@@ -5794,12 +5804,15 @@ FILE: platform-architecture.md
 > [definition-document.md](definition-document.md) and
 > [system-contracts.md](system-contracts.md).
 
-# Fundamental platform architecture
+# Fundamental DOM platform architecture
 
-Fundamental is a **platform-native relational field runtime for the DOM**. It lets semantic HTML, DOM
-elements, particles, relationships, measurements, visual layers, and user interaction participate in
-one shared field context. The visible particle canvas is **one render surface**, not the whole
-system.
+Fundamental is a **platform-native relational field runtime**; this document specifies its **web host
+adapter** (`@fundamental-engine/dom`). `@fundamental-engine/core` computes renderer-agnostic field behavior; a
+host adapter binds that field to a concrete platform. On the web, the DOM host adapter lets semantic
+HTML, DOM elements, particles, relationships, measurements, visual layers, and user interaction
+participate in one shared field context. The visible particle canvas is **one render surface**, not the
+whole system — and the DOM is the *first* host, not the boundary (the same core runs headlessly and in
+the native Swift/Kotlin ports).
 
 ## Package hierarchy
 
@@ -6554,7 +6567,7 @@ FILE: system-contracts.md
 
 ## Purpose
 
-Fundamental is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime. `@fundamental-engine/core` computes renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom` is the web host adapter, binding the field to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `elements`/`react` are authoring surfaces on top of it. The contracts below bind these layers together — a shared field context across bodies, agents, relationships, measurements, metrics, feedback, and render surfaces. Canvas is one render surface, not the whole system.
 
 This document defines the hard contracts that bind the system together.
 
@@ -8790,8 +8803,9 @@ Example:
 
 ```css
 .field-text {
-  /* --field-density is the primary feedback variable; --d is a compact legacy alias. */
-  --d: var(--field-density, 0);
+  /* --d is the canonical raw density channel the engine writes; --field-density is its
+     expressive long-form alias (both are written — read whichever fits your stylesheet). */
+  --d: var(--d, var(--field-density, 0));
   --a: var(--field-attention, 0);
   --h: var(--field-heat, 0);
 
@@ -10957,10 +10971,10 @@ PAGE: /docs/concepts — Fundamental — Concepts
 
 Concepts
 How the field thinks .
-Fundamental is a relational field runtime for the DOM. Elements are bodies in one
-shared field context — they bend the field; its density bends them back. A
-renderer-agnostic core computes the field; a platform layer binds it to the DOM. The visible
-canvas is one render surface, not the whole system.
+Fundamental is a platform-native relational field runtime; the DOM is its first host. Elements
+are bodies in one shared field context — they bend the field; its density bends
+them back. A renderer-agnostic core computes the field; a host adapter binds it to a platform
+(on the web, to the DOM). The visible canvas is one render surface, not the whole system.
 Bodies
 A body is any element you mark with data-body . Its value is
 one or more force tokens, space-separated — they compose, so a single element
@@ -11752,7 +11766,7 @@ PAGE: /docs — Fundamental — Developer docs
 
 Documentation
 Build with Fundamental .
-A platform-native relational field runtime for the DOM — framework-agnostic, with a
+A platform-native relational field runtime; the DOM is its first host — framework-agnostic, with a
 renderer-agnostic core. This page is the map; every card below is drawn from the same
 source as the sidebar, and every card is a body in this page's field. Engage one.
 Install

@@ -21,7 +21,7 @@
 
 It turns DOM elements, custom components, data records, relationships, events, users, and layout regions into participants inside a shared field context. Those participants can emit fields, apply forces, guide matter, receive density, write state back to the DOM, trigger events, form relationships, and expose their behavior through visualization, metrics, and tests. The shared context spans bodies, agents, relationships, measurements, metrics, feedback, and every render surface — particles are one agent type within it, not the whole substrate.
 
-`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces. Canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime. `@fundamental-engine/core` computes renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom` is the web host adapter, binding the field to the DOM (measurement, state, feedback, relationships, visual bindings, overlays, scheduling, linting); `@fundamental-engine/elements` and `@fundamental-engine/react` are authoring surfaces on top of it. The DOM is the first host, not the boundary — the same core runs headlessly and in the native Swift/Kotlin ports. Canvas is one render surface, not the whole system.
 
 Core principle:
 

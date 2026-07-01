@@ -23,7 +23,7 @@
 
 Fundamental is not a particle background.
 
-It is a platform-native relational field runtime for the DOM.
+It is a platform-native relational field runtime; the DOM is its first host, not its boundary.
 
 The system lets semantic HTML, DOM elements, particles, relationships, measurements, metrics, feedback, visual layers, and user interaction participate in one shared field context.
 

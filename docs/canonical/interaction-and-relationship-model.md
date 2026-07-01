@@ -17,7 +17,7 @@
 
 This document expands `Fundamental` beyond particles.
 
-`Fundamental` is a platform-native relational field runtime for the DOM. `Fundamental` computes renderer-agnostic field behavior; `@fundamental-engine/dom` binds it to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
+`Fundamental` is a platform-native relational field runtime. `@fundamental-engine/core` computes renderer-agnostic field behavior; host adapters bind that field to concrete platforms. `@fundamental-engine/dom` is the web host adapter, binding the field to the DOM through measurement, state, feedback, relationships, visual bindings, overlays, scheduling, and linting. Particles are one agent type, not the whole substrate; canvas is one render surface, not the whole system.
 
 Particles are only one class of field participant. Users, elements, relationships, events, layouts, and data can also be agents.
 

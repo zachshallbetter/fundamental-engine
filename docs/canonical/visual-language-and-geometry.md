@@ -119,8 +119,9 @@ Example:
 
 ```css
 .field-text {
-  /* --field-density is the primary feedback variable; --d is a compact legacy alias. */
-  --d: var(--field-density, 0);
+  /* --d is the canonical raw density channel the engine writes; --field-density is its
+     expressive long-form alias (both are written — read whichever fits your stylesheet). */
+  --d: var(--d, var(--field-density, 0));
   --a: var(--field-attention, 0);
   --h: var(--field-heat, 0);
 
