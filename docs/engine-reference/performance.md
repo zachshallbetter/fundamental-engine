@@ -82,6 +82,14 @@ These are **not** in the Node suite — they need a real GPU and are verified on
 **Caveat canon:** headless exaggerates fill — never kill a render feature on a headless fill number
 alone; flag it and confirm on real hardware.
 
+**On-hardware harness.** The fill-rate half has its own benchmark — the **`/perf-bench`** page (a dev tool;
+`noindex`, not in the nav). It sweeps render-mode × density × `dprCap`, runs the live field for ~2s per
+config, samples real `requestAnimationFrame` deltas, and reports median/p5 fps — the numbers this Node
+suite can't produce. Open it in a real browser (`pnpm --filter @fundamental-engine/site preview` →
+`/perf-bench`, or on the deployed site) and hit **Run sweep**; **Copy results** emits a markdown table
+(with the display's DPR + UA) to paste into an issue. Because it isolates *per-layer × per-DPR* cost, it
+tells you which layer to cut — the prerequisite for any fill-rate optimization.
+
 ## Running it
 
 ```bash
