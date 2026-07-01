@@ -41,8 +41,6 @@ const rootFile = (f: string): { rel: string; text: string } | null => {
 const files = [
   ...mdIn('docs/canonical'),
   ...mdIn('docs/engine-reference'),
-  rootFile('ROADMAP.md'),
-  rootFile('BACKLOG.md'),
   rootFile('README.md'),
 ].filter((x): x is { rel: string; text: string } => x !== null);
 

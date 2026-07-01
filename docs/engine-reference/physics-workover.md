@@ -465,7 +465,7 @@ seams, then make physical behaviour opt-in and testable.
 > **Historical labels.** The `v0.4`–`v0.6` labels below are the original brief's batch numbering,
 > not a live near-term roadmap — the project has since shipped `v0.8.1`. They are kept for the
 > record of how the work was planned; the actual disposition of any remaining items is tracked in
-> [`BACKLOG.md`](../../BACKLOG.md).
+> on the RC1 board (user Project #24) and [`CHANGELOG.md`](../../CHANGELOG.md).
 
 `v0.2.0` is already cut (force-aware Lab controls, quick-pick bands, and the
 viscosity/jet/swirl conformance fixes). The brief's batches shift up by one:

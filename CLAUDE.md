@@ -55,9 +55,9 @@ them back (reciprocity). It began as the homepage of zachshallbetter.com and out
   `applyAndRecord` path, plus `accumulateAt(registry, tokens, b, x, y)` (net + per-force attribution at a
   point) — the diagnostics (causality/prediction/force-vectors) read it, and it is the primitive the Field
   Query API builds on. Default engine behavior is unchanged (accumulator is opt-in). See `docs/planning/critical-path/README.md`.
-- **`ROADMAP.md` / `BACKLOG.md`** (repo root) — **historical** planned-work records (the pre-1.0 refactor
-  roadmap + a manually-maintained queue); they lag `main`. The **current** source of truth for planned work
-  is the RC1 board (#24) + `CHANGELOG.md` for what shipped.
+- **Planned work** lives on the **RC1 board** (#24); **shipped work** is in `CHANGELOG.md` + per-version
+  `docs/release-notes/`. (The historical `ROADMAP.md` / `BACKLOG.md` root docs were removed — the board and
+  CHANGELOG supersede them.)
 - **Issues & release board:** GitHub issues on `zachshallbetter/Fundamental` + the **RC1 board** ("RC1 - Production",
   user Project **#24**: https://github.com/users/zachshallbetter/projects/24). Manage it with the
   `github-projects` skill. Planned/deferred work is filed there (Status / Priority {P0-P2} / Size {XS-XL}).
@@ -220,7 +220,7 @@ them back (reciprocity). It began as the homepage of zachshallbetter.com and out
 ## Quick map for a new task
 
 1. Concept/terminology question → `docs/canonical/`. Engine internals → `docs/engine-reference/forces-system.md`.
-2. "What's planned / where does this belong?" → `ROADMAP.md`, `BACKLOG.md`, RC1 board #24.
+2. "What's planned / where does this belong?" → RC1 board #24 (planned); `CHANGELOG.md` + `docs/release-notes/` (shipped).
 3. Adding to the public API → mirror an existing method through core→vanilla→elements→react, extend the
    freeze gate, add a test, document in `apps/site/src/lib/docs-api.ts` + the relevant canon doc.
 4. Touching the example family (`apps/site/src/pages/evidence*`) → the pattern doc is
