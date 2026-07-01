@@ -95,9 +95,12 @@ the gates above.
   contract changed: fix the change or cut a deliberate 0.MINOR with a migration note —
   never edit the baseline to silence it. If e2e fails on one browser, fix the race; don't
   skip the project.
-- **Partial publish recovery:** `gh run rerun <run-id> --failed`. The publish is
-  idempotent per-package (already-published versions are skipped). Do **not** delete or
-  re-push the tag, and do not re-run the whole workflow from scratch.
+- **Partial publish recovery:** the publish step now **auto-retries up to 3×** in-step to absorb the
+  transient Sigstore provenance tlog 409 (`an equivalent entry already exists in the transparency log`)
+  that intermittently aborts the run after some packages publish (it bit v0.9.2 after `core`). If it
+  still fails after the retries, `gh run rerun <run-id> --failed`. The publish is idempotent per-package
+  (already-published versions are skipped), so retries only re-attempt the packages that didn't land. Do
+  **not** delete or re-push the tag, and do not re-run the whole workflow from scratch.
 - **Token rotation:** create the new granular token (`@Fundamental` write, 2FA-bypass) and
   update the `NPM_TOKEN` secret **before** revoking the old one — a window with no valid
   token makes the next release fail at auth. Verify with a `dry_run` dispatch of
