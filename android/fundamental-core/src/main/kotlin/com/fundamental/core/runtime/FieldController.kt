@@ -6,6 +6,7 @@ import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.BoundParticle
 import com.fundamental.core.engine.CANONICAL_FORCE_COLORS
 import com.fundamental.core.engine.Env
+import com.fundamental.core.engine.FieldBodyIdentity
 import com.fundamental.core.engine.FieldStore
 import com.fundamental.core.engine.FlowFocus
 import com.fundamental.core.engine.Heatmap
@@ -61,6 +62,28 @@ class FieldController(
 ) {
     val store = FieldStore()
     val forces: ForceRegistry = Registry.standardForces()
+
+    /**
+     * FIRST-CLASS IDENTITY resolver (substrate — JS #884). Derive a [FieldBodyIdentity] for a scanned
+     * body from a host-supplied platform id. Called once per body, the first time it is keyed; the
+     * returned identity is cached on the body. Return null to fall back to the default derivation (a
+     * monotonic `body-N`). Programmatic `addBody(identity = …)` overrides this. Additive — leaving it
+     * null reproduces the pre-identity behavior.
+     */
+    var identify: ((Body) -> FieldBodyIdentity?)? = null
+    private var bodyIdSeq = 0
+
+    /**
+     * Resolve a body's stable [FieldBodyIdentity], caching it on first keying (JS #884 semantics).
+     * Precedence: an already-resolved / supplied identity → the [identify] resolver → a monotonic
+     * `body-N` synthetic. Deterministic (never random); stable for the body's life.
+     */
+    fun bodyIdentity(b: Body): FieldBodyIdentity {
+        b.identity?.let { return it }
+        val ident = identify?.invoke(b) ?: FieldBodyIdentity(id = "body-${bodyIdSeq++}")
+        b.identity = ident
+        return ident
+    }
     private val conditions = builtinConditions()
     private val _bodies = ArrayList<Body>()
     val bodies: List<Body> get() = _bodies

@@ -4,6 +4,7 @@ import com.fundamental.core.engine.AtomPayload
 import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Box
 import com.fundamental.core.engine.EnergyReport
+import com.fundamental.core.engine.FieldBodyIdentity
 import com.fundamental.core.engine.Particle
 import com.fundamental.core.engine.ScalarGrid
 import com.fundamental.core.engine.WaveStyle
@@ -113,6 +114,12 @@ class BodySpec(
     val angleDeg: Float? = null,
     val tint: String? = null,
     val data: Any? = null,
+    /**
+     * FIRST-CLASS IDENTITY for this programmatic body (JS #884). Supply a stable [FieldBodyIdentity]
+     * (unique `id` in the field, plus optional namespace/kind/host) so consumers can reference the body
+     * by identity rather than the returned handle. Omitted ⇒ the engine derives a synthetic `body-N`.
+     */
+    val identity: FieldBodyIdentity? = null,
     val rect: () -> Box,
 )
 
@@ -133,6 +140,9 @@ class BodyHandle internal constructor(
             body.heading = Vec3(cos(r).toFloat(), sin(r).toFloat(), 0f)
         }
     }
+
+    /** This body's resolved FIRST-CLASS IDENTITY (JS #884) — supplied, or derived + cached on first key. */
+    val identity: FieldBodyIdentity get() = controller.bodyIdentity(body)
 
     /** Current sink load: absorbed / capacity ∈ [0,1]. Zero if the body has no `sink` token. */
     val load: Float get() = if (body.capacity > 0f) (body.accreted / body.capacity).coerceIn(0f, 1f) else 0f
@@ -281,6 +291,7 @@ class FieldHandle(val controller: FieldController) {
         val body = Body(tokens = spec.tokens, strength = spec.strength, range = spec.range, spin = spec.spin, heading = heading)
         body.feedback = true // programmatic bodies measure density (§8) — Swift addBody parity (feedback: true)
         body.tint = spec.tint
+        body.identity = spec.identity // supplied identity overrides derivation (JS #884)
         body.rect = spec.rect
         body.box = spec.rect()
         controller.addBody(body)
@@ -471,4 +482,9 @@ fun createField(
     depth: Float = 0f,
     particleCount: Int = 300,
     seed: Long? = null,
-): FieldHandle = FieldHandle(FieldController(width, height, depth, particleCount, seed))
+    /**
+     * FIRST-CLASS IDENTITY resolver (JS #884): derive a stable [FieldBodyIdentity] for a scanned body.
+     * Null ⇒ default derivation (a monotonic `body-N`). See [FieldController.identify].
+     */
+    identify: ((Body) -> FieldBodyIdentity?)? = null,
+): FieldHandle = FieldHandle(FieldController(width, height, depth, particleCount, seed).also { it.identify = identify })
