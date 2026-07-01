@@ -25,10 +25,10 @@ export function containerHost(el: HTMLElement): FieldHost {
     scrollHeight: () => el.scrollHeight,
     reducedMotion: () => prefersReducedMotion(),
     hidden: () => pageHidden(),
-    raf: (cb) => requestAnimationFrame(cb),
-    cancelRaf: (id) => cancelAnimationFrame(id),
+    raf: (cb: (t: number) => void) => requestAnimationFrame(cb),
+    cancelRaf: (id: number) => cancelAnimationFrame(id),
     createCanvas: () => document.createElement('canvas'),
-    onResize: (cb) => {
+    onResize: (cb: () => void) => {
       // a container can resize without the window doing so → ResizeObserver; window resize can still
       // move it (re-layout), so keep that too.
       const ro = new ResizeObserver(cb);
@@ -39,7 +39,7 @@ export function containerHost(el: HTMLElement): FieldHost {
         window.removeEventListener('resize', cb);
       };
     },
-    onScroll: (cb) => {
+    onScroll: (cb: () => void) => {
       // content scrolling INSIDE the container, plus page scroll (which moves the container in the
       // viewport → its origin shifts). The engine re-reads the origin each frame for a contained field.
       el.addEventListener('scroll', cb, { passive: true });
@@ -49,18 +49,18 @@ export function containerHost(el: HTMLElement): FieldHost {
         window.removeEventListener('scroll', cb);
       };
     },
-    onVisibility: (cb) => {
+    onVisibility: (cb: () => void) => {
       document.addEventListener('visibilitychange', cb);
       return () => document.removeEventListener('visibilitychange', cb);
     },
-    onInput: (cb) => {
+    onInput: (cb: () => void) => {
       // interaction within the container drives its field (not the whole window).
       for (const ev of INPUT_EVENTS) el.addEventListener(ev, cb, { passive: true });
       return () => {
         for (const ev of INPUT_EVENTS) el.removeEventListener(ev, cb);
       };
     },
-    onBodyEvent: (type, cb) => {
+    onBodyEvent: (type: string, cb: (e: Event) => void) => {
       el.addEventListener(type, cb);
       return () => el.removeEventListener(type, cb);
     },

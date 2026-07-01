@@ -207,7 +207,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
   const host: FieldHost = opts.host;
   const teardowns: Array<() => void> = []; // host event unsubscribers, called on destroy
-  const reduceMotion = host.reducedMotion();
+  const reduceMotion = host.reducedMotion?.() ?? false;
 
   // ambient theme (#529): a named preset for the heat ramp + wave baseline; `warm` (default) reproduces
   // the shipped palette. Individual lanes (gradientCool/gradientWarm/waveBaseline) override the preset.
@@ -1230,7 +1230,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     sizeSurfaces(vp.dpr);
     env.W = W;
     env.H = H;
-    maxScroll = host.scrollHeight() - H || 1;
+    maxScroll = (host.scrollHeight?.() ?? H) - H || 1;
     for (const g of grids.values()) g.resize(W, H); // keep field buffers viewport-sized
     if (cfg.heatmap) {
       if (!heatmap) heatmap = new Heatmap(W, H);
@@ -1535,6 +1535,13 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     const cols = Math.max(1, Math.ceil(W / cell));
     const rows = Math.max(1, Math.ceil(H / cell));
     if (!hmCanvas) {
+      if (!host.createCanvas) {
+        // a drawing mode reached the heatmap buffer but the host has no canvas capability; a
+        // signals-first (render:'none') field never gets here. Fail loud rather than draw nothing.
+        throw new Error(
+          "Fundamental: this FieldHost provides no createCanvas() — the heatmap layer needs one. Use render:'none' (signals-first) or supply a host with a createCanvas capability.",
+        );
+      }
       hmCanvas = host.createCanvas();
       hmCtx = hmCanvas.getContext('2d');
     }
@@ -2270,7 +2277,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       originX = vp.originX ?? 0;
       originY = vp.originY ?? 0;
     }
-    const scrollY = host.scrollY();
+    const scrollY = host.scrollY?.() ?? 0;
     const dScroll = scrollY - lastScrollY;
     // eased page-scroll speed for the `scrolling` data-when gate (§5).
     env.scrollV = (env.scrollV ?? 0) * 0.7 + Math.abs(dScroll) * 0.3;
@@ -2328,7 +2335,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
 
     // accent journey (§9): scroll travels the palette; a hovered element overrides.
     // maxScroll is cached (scrollHeight forces a reflow); resample it twice a second.
-    if (frameN % 30 === 0) maxScroll = host.scrollHeight() - H || 1;
+    if (frameN % 30 === 0) maxScroll = (host.scrollHeight?.() ?? H) - H || 1;
     const targetAcc = hoverAccent ? hexToRgb(hoverAccent) : sampleStops(JOURNEY, scrollY / maxScroll);
     curAccent = [
       curAccent[0] + (targetAcc[0] - curAccent[0]) * 0.08,
@@ -2454,22 +2461,27 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   // resume cleanly when it returns (browsers throttle rAF in the background, but this
   // guarantees zero work and avoids drift on return).
   const onVisibility = (): void => {
-    if (host.hidden()) {
+    if (host.hidden?.() ?? false) {
       host.cancelRaf(raf);
       raf = 0;
     } else if (!raf) {
       raf = host.raf(frame);
     }
   };
-  teardowns.push(host.onResize(onResize));
-  teardowns.push(host.onScroll(scrollHandler));
-  teardowns.push(host.onVisibility(onVisibility));
-  teardowns.push(host.onInput(markInput));
+  // Optional subscription capabilities — a MinimalFieldHost supplies none of these; the field then
+  // never re-reads on resize, never scroll-drives, never auto-pauses, and takes no DOM body events
+  // (programmatic bodies via addBody still work). Each is wired only when the host offers it.
+  if (host.onResize) teardowns.push(host.onResize(onResize));
+  if (host.onScroll) teardowns.push(host.onScroll(scrollHandler));
+  if (host.onVisibility) teardowns.push(host.onVisibility(onVisibility));
+  if (host.onInput) teardowns.push(host.onInput(markInput));
   // shadow-DOM body events: forces:* + field:* aliases share the same idempotent handlers, so a body
   // registers under either namespace; the controller dispatches both, the engine listens to both.
-  teardowns.push(host.onBodyEvent(REGISTER_BODY, onRegister as (e: Event) => void));
-  teardowns.push(host.onBodyEvent(UNREGISTER_BODY, onUnregister as (e: Event) => void));
-  teardowns.push(host.onBodyEvent(UPDATE_BODY, onUpdateBody as (e: Event) => void));
+  if (host.onBodyEvent) {
+    teardowns.push(host.onBodyEvent(REGISTER_BODY, onRegister as (e: Event) => void));
+    teardowns.push(host.onBodyEvent(UNREGISTER_BODY, onUnregister as (e: Event) => void));
+    teardowns.push(host.onBodyEvent(UPDATE_BODY, onUpdateBody as (e: Event) => void));
+  }
   onScroll();
   raf = host.raf(frame);
 
