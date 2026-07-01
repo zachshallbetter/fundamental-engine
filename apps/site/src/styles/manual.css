@@ -9,7 +9,7 @@
 
 .wrap {
   width: 100%;
-  max-width: 1120px;
+  max-width: var(--content-max);
   margin: 0 auto;
   padding: 0 clamp(1.2rem, 5vw, 3.5rem);
 }
@@ -1332,7 +1332,7 @@ html.hide-field-lines .stage-field {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1120px;
+  max-width: var(--content-max);
   margin: -1.5rem auto 0;
   padding: 0 clamp(1.2rem, 5vw, 3.5rem);
 }

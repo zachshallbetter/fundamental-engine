@@ -31,7 +31,7 @@
      Use on a page's top-level single-column shell so content pages line up.
      (Prose measures, sidebar-layout columns, and immersive/full-bleed pages set
      their own widths and intentionally do not use this.) */
-  --content-max: 72rem;
+  --content-max: 1340px;
 
   /* accent — the resting field */
   --accent: #4da3ff;
