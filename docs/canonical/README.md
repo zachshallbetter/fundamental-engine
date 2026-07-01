@@ -46,4 +46,4 @@ host, not the boundary. Canvas is one render surface, not the whole system.
 Deeper references live beside this directory: `docs/engine-reference/` (the engine spec —
 `forces-system.md` is the big one), `docs/research/` (the paper family, with its caveat canon in
 its own README), and `docs/planning-archive/` (frozen design history — do not cite as current).
-Planned work lives in `ROADMAP.md` / `BACKLOG.md` at the repo root and on the RC1 board.
+Planned work lives on the RC1 board (user Project #24); shipped work is in `CHANGELOG.md` and per-version `docs/release-notes/`.

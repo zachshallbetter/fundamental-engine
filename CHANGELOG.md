@@ -7,6 +7,13 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ## [Unreleased]
 
+### Removed
+
+- **Removed the historical `ROADMAP.md` and `BACKLOG.md` root docs.** The pre-1.0 refactor roadmap and the
+  manually-maintained backlog lagged `main` and duplicated the RC1 board (user Project #24); planned work
+  now lives on the board, and shipped work in `CHANGELOG.md` + per-version `docs/release-notes/`. Inbound
+  references (docs, the catalog-count doc guard, the `llms` corpus generator) were updated accordingly.
+
 ### Added
 
 - **`@fundamental-engine/core`:** **agent permissions + redactions + snapshot profiles** — the scoped,
