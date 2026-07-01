@@ -14,7 +14,7 @@
  * the same engine from a different renderer/environment. Enforced by `dom-boundary.test.ts`.
  */
 
-import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
+import type { AtomPayload, Body, BodyHandle, Env, FeedbackChannels, FieldHandle, FieldOptions, FieldPolicy, FieldQuery, FieldQueryInclude, FieldQueryResult, FieldBodyReading, FieldRelationshipReading, FieldInfluenceReading, FieldRect, FieldBodyIdentity, FieldSnapshot, FieldSnapshotOptions, FieldBodySnapshot, FieldParticleSnapshot, FieldDiff, FieldProjection, FieldProjectionInfo, ProjectionRegistry, ProjectionSource, FieldProjectionTarget, CausalReplay, ReplayOptions, Formation, IntegratorMode, OverlayInput, OverlayMode, Particle, Vec2, Vec3 } from './types.ts';
 import { FieldStore } from './field-store.ts';
 import { createRegistry } from './registry.ts';
 import { step } from './integrator.ts';
@@ -79,6 +79,19 @@ import { applyLens } from './query-lens.ts';
 // scratch before the next write (no overlapping lifetimes, no cross-instance interleaving).
 const _flowB = { x: 0, y: 0 };
 const _rgb: RGB = [0, 0, 0];
+
+/** Deep-copy a {@link FieldPolicy} (shallow is unsafe — `budgets` is nested). `undefined` → `{}` (the
+ *  unbounded default). Used on set + read so callers can neither mutate the field's live policy nor
+ *  observe later mutations of the object they passed in. */
+function clonePolicy(p: FieldPolicy | undefined): FieldPolicy {
+  if (!p) return {};
+  const out: FieldPolicy = {};
+  if (p.allowBodyDataInSnapshots != null) out.allowBodyDataInSnapshots = p.allowBodyDataInSnapshots;
+  if (p.allowMotionProjection != null) out.allowMotionProjection = p.allowMotionProjection;
+  if (p.maxMotionBudget != null) out.maxMotionBudget = p.maxMotionBudget;
+  if (p.budgets) out.budgets = { ...p.budgets };
+  return out;
+}
 
 export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}): FieldHandle {
   // Signals-only mode (`render: 'none'`, §13.7 / #297): the full simulation + feedback pipeline
@@ -207,7 +220,40 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
   }
   const host: FieldHost = opts.host;
   const teardowns: Array<() => void> = []; // host event unsubscribers, called on destroy
-  const reduceMotion = host.reducedMotion?.() ?? false;
+
+  // Reduced-motion is an ACCESSIBILITY clamp: when the host/user asks for it, motion can only be
+  // *removed*, never restored by policy. It's read live (not captured once) so it always reflects the
+  // current OS/user state.
+  const hostReducedMotion = (): boolean => host.reducedMotion?.() ?? false;
+
+  // Runtime FIELD POLICY (#field-policy): what THIS host/session/user/app PERMITS (runtime), distinct
+  // from governance (what doctrine allows — static lint). Replaced live via `setPolicy`. Default: no
+  // policy → unbounded, byte-identical to the pre-policy engine.
+  let policy: FieldPolicy = clonePolicy(opts.policy);
+
+  // The effective MOTION budget (0..1) — the single value the render/easing/integrator path reads.
+  // Unifies reduced-motion + host policy (+ perf pressure, folded via the same `min`). Reduced-motion
+  // ALWAYS wins (accessibility can only lower motion, never raise it): when it's on, this is 0.
+  const effectiveMotion = (): number => {
+    if (hostReducedMotion()) return 0; // accessibility clamp — beats any policy
+    let m = 1;
+    if (policy.allowMotionProjection === false) return 0; // policy pins motion off
+    if (policy.maxMotionBudget != null) m = Math.min(m, policy.maxMotionBudget);
+    if (policy.budgets?.motion != null) m = Math.min(m, policy.budgets.motion);
+    return Math.max(0, Math.min(1, m)); // perf pressure folds here via the same min (currently 1)
+  };
+  // the initial static snapshot used for boot/seed state (frame 0 has no perf history):
+  const reduceMotion = effectiveMotion() <= 0;
+
+  // Privacy budget → snapshot data gate. A privacy budget below this withholds body `data` even when a
+  // caller passes `includeData` (policy tightens; it can't be overridden upward at the call site).
+  const PRIVACY_DATA_THRESHOLD = 0.5;
+  const policyPermitsBodyData = (): boolean => {
+    if (policy.allowBodyDataInSnapshots === false) return false; // explicit deny wins
+    const pv = policy.budgets?.privacy;
+    if (pv != null && pv < PRIVACY_DATA_THRESHOLD) return false; // low privacy budget → withhold
+    return true; // default: fall through to the call-site `includeData`
+  };
 
   // ambient theme (#529): a named preset for the heat ramp + wave baseline; `warm` (default) reproduces
   // the shipped palette. Individual lanes (gradientCool/gradientWarm/waveBaseline) override the preset.
@@ -2266,7 +2312,12 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // "is the field animating" flag, so it must stay falsy when still and >0 when moving.
     const dtRaw = Number.isFinite(lastNow) ? (now - lastNow) / 16.6667 : 1;
     lastNow = now;
-    env.dt = reduceMotion ? 0 : clamp(dtRaw, 0.2, 2);
+    // Effective motion budget (0..1) folds reduced-motion + policy (+ perf pressure). At 0 the field is
+    // frozen exactly as reduced-motion (`dt = 0` — the "is animating" flag stays falsy); a partial
+    // budget scales displacement-per-second proportionally, so a `maxMotionBudget: 0.5` field drifts at
+    // half speed. Reduced-motion always forces this to 0 (see `effectiveMotion`).
+    const motion = effectiveMotion();
+    env.dt = motion <= 0 ? 0 : clamp(dtRaw, 0.2, 2) * motion;
     if (boot < 1) boot = Math.min(1, boot + 0.012);
     easeFormation(env.form, formTarget, 0.03); // glide between formations (§7)
 
@@ -2403,7 +2454,7 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
     // signals-only mode (`render: 'none'`, §13.7 / #297) the engine never draws — neither the
     // underlay nor the overlay — and `ctx` may not even exist. Under reduced motion the scene is
     // static (dt = 0), so a quarter-rate redraw is visually identical at a quarter of the cost.
-    if (ctx && cfg.render !== 'none' && canvasVisible && (!reduceMotion || frameN % 4 === 0)) {
+    if (ctx && cfg.render !== 'none' && canvasVisible && (motion > 0 || frameN % 4 === 0)) {
       render();
       if (overlayBackend) {
         const stack = overlayStack(cfg.overlay);
@@ -2579,6 +2630,15 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
       if (next === qualityTier) return;
       qualityTier = next;
       if (ctx) sizeSurfaces(host.viewport().dpr); // re-apply the tier's effective DPR ceiling now
+    },
+    get policy() {
+      return clonePolicy(policy); // frozen copy — callers can't mutate the live policy
+    },
+    setPolicy: (next) => {
+      // REPLACE (not merge): the field runs exactly the policy handed in. Deep-cloned so a later
+      // mutation of the caller's object can't reach in. Takes effect next frame (motion) / next call
+      // (privacy). Reduced-motion still wins in `effectiveMotion`, so this can't raise motion above it.
+      policy = clonePolicy(next);
     },
     threads: setThreads,
     burst: (x, y, hex) => {
@@ -2951,7 +3011,10 @@ export function createField(canvas: HTMLCanvasElement, opts: FieldOptions = {}):
           metrics,
           dimensions,
         };
-        if (opts.includeData) reading.data = cloneData(b.data);
+        // Privacy gate: the caller must ask for data AND the policy must permit it. Policy tightens —
+        // `allowBodyDataInSnapshots === false` (or a privacy budget below threshold) withholds body
+        // `data` even when the call opts in. A policy can restrict, never widen, the call-site default.
+        if (opts.includeData && policyPermitsBodyData()) reading.data = cloneData(b.data);
         return reading;
       });
       const relationships: FieldRelationshipReading[] = includeRelationships

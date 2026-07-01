@@ -566,6 +566,55 @@ export type OverlayMode =
 /** One reading, or an additive stack of readings, for `setOverlay` / `FieldOptions.overlay`. */
 export type OverlayInput = OverlayMode | readonly OverlayMode[];
 
+/**
+ * Consumable field-resource budgets — upper bounds a host/session/user/app sets on what the field is
+ * PERMITTED to spend, distinct from what doctrine *allows* (that is governance — static lint). Each is
+ * optional; an unset budget means "unbounded / engine default". Values are normalized `0..1` unless the
+ * one-line note says otherwise. Carried on {@link FieldPolicy.budgets}.
+ *
+ * WIRED today: `motion` (folds into the effective motion allowance alongside reduced-motion + perf
+ * pressure) and `privacy` (gates body `data` in snapshots). The rest are DECLARED-not-yet-enforced —
+ * accepted and carried on the policy for host/tooling introspection, wired as their consumers land.
+ */
+export interface FieldBudgets {
+  /** WIRED. `0..1` cap on how much motion the field may express; `0` behaves as reduced-motion (frozen). */
+  motion?: number;
+  /** DECLARED. `0..1` cap on applied force magnitude — the share of the impulse budget matter may absorb. */
+  force?: number;
+  /** DECLARED. `0..1` cap on conserved-attention spend (§2.4) — the finite focus budget. */
+  attention?: number;
+  /** DECLARED. `0..1` cap on thermal/heat accumulation the field may carry. */
+  thermal?: number;
+  /** DECLARED. `0..1` cap on render cost the field may spend (draw layers / fill). */
+  render?: number;
+  /** WIRED. `0..1` privacy budget; below the `PRIVACY_DATA_THRESHOLD` (0.5) snapshots withhold body `data`. */
+  privacy?: number;
+  /** DECLARED. `0..1` accessibility floor — the minimum non-motion legibility the field must preserve. */
+  accessibility?: number;
+  /** DECLARED. `0..1` cap on how much field state agent readers (query/snapshot/agent-json) may consume. */
+  agentRead?: number;
+}
+
+/**
+ * Runtime FIELD POLICY — what THIS host / session / user / app PERMITS, evaluated live. Distinct lane
+ * from GOVERNANCE (what doctrine allows — static lint): policy can only tighten, never loosen, the
+ * accessibility floor (reduced-motion always wins; a policy can lower motion but never raise it above
+ * what the host/user reduced-motion state allows). Set at creation via {@link FieldOptions.policy} and
+ * live via {@link FieldHandle.setPolicy}; read via {@link FieldHandle.policy}. Purely additive — a field
+ * with no policy behaves exactly as before.
+ */
+export interface FieldPolicy {
+  /** permit body `data` to appear in snapshots (default: fall through to `FieldSnapshotOptions.includeData`). */
+  allowBodyDataInSnapshots?: boolean;
+  /** permit motion-expressing projections/animation at all; `false` pins the effective motion budget to 0. */
+  allowMotionProjection?: boolean;
+  /** `0..1` host/session cap on motion; folded (via `min`) with reduced-motion + perf pressure into the
+   *  effective motion allowance the integrator/easing path reads. Reduced-motion can only lower it. */
+  maxMotionBudget?: number;
+  /** consumable-resource budgets (see {@link FieldBudgets}). */
+  budgets?: Partial<FieldBudgets>;
+}
+
 export interface FieldOptions {
   /** travelling accent color (§9). */
   accent?: string;
@@ -698,6 +747,11 @@ export interface FieldOptions {
    * you; inject a custom host for a headless renderer / different document / tests.
    */
   host?: FieldHost;
+  /**
+   * Initial runtime {@link FieldPolicy} — what this host/session/user/app PERMITS (runtime rules),
+   * distinct from governance (what doctrine allows). Change it live with {@link FieldHandle.setPolicy}.
+   * Purely additive — omit for the unbounded default. */
+  policy?: FieldPolicy;
   /**
    * FIRST-CLASS IDENTITY resolver (substrate critical path): derive a {@link FieldBodyIdentity} for a
    * DOM-scanned body from its element. Called once per body, the first time the body is keyed; the
@@ -1259,6 +1313,14 @@ export interface FieldHandle {
    *  quality. The platform runtime forwards the governor's tier automatically; call it directly for a
    *  custom quality policy. */
   setQualityTier(tier: number): void;
+  /** the field's current runtime {@link FieldPolicy} (a frozen copy). `{}` when none was set. */
+  readonly policy: FieldPolicy;
+  /** Replace the runtime {@link FieldPolicy} live — what this host/session/user/app PERMITS. This is a
+   *  REPLACE (not a merge): pass the full policy you want in effect (`{}` clears to the unbounded
+   *  default). Takes effect from the next frame. The motion budget it carries folds (via `min`) with
+   *  reduced-motion + perf pressure — reduced-motion always wins, so a policy can lower motion but never
+   *  raise it. The privacy budget gates body `data` in `snapshot()`. */
+  setPolicy(policy: FieldPolicy): void;
   /**
    * Switch the underlay render mode (§20.6) live — the surface behind content. `'none'` is the
    * signals-only mode (§13.7 / #297): drawing stops from the next frame while the simulation and

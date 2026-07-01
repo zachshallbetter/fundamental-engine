@@ -340,6 +340,63 @@ they are filled when those dimensions (orientation, time, semantic) are restored
 
 ---
 
+## Runtime Field Policy + Budgets — `createField({ policy })` · `setPolicy(p)` · `field.policy`
+
+**Policy is a different lane from governance.** *Governance* is what **doctrine allows** — static, lint,
+authored (see the projection `lint()` above). *Policy* is what **THIS host / session / user / app
+permits** at runtime. They must not be conflated: a governance lint never reads a policy, and a policy
+never relaxes a governance rule.
+
+*Budgets* bound **consumable field resources** — an upper limit on what the field is *permitted to
+spend* this run.
+
+```ts
+interface FieldBudgets {
+  motion?: number;        // 0..1 — WIRED. cap on expressed motion; 0 behaves as reduced-motion
+  force?: number;         // 0..1 — declared. cap on applied force magnitude
+  attention?: number;     // 0..1 — declared. cap on conserved-attention spend (§2.4)
+  thermal?: number;       // 0..1 — declared. cap on heat accumulation
+  render?: number;        // 0..1 — declared. cap on render cost (draw layers / fill)
+  privacy?: number;       // 0..1 — WIRED. below 0.5 → snapshots withhold body data
+  accessibility?: number; // 0..1 — declared. minimum non-motion legibility floor
+  agentRead?: number;     // 0..1 — declared. cap on field state agent readers may consume
+}
+
+interface FieldPolicy {
+  allowBodyDataInSnapshots?: boolean; // permit body `data` in snapshot() (default: fall through to includeData)
+  allowMotionProjection?: boolean;    // false → effective motion pinned to 0
+  maxMotionBudget?: number;           // 0..1 host/session motion cap
+  budgets?: Partial<FieldBudgets>;
+}
+```
+
+```ts
+const field = createField(canvas, { host, policy: { maxMotionBudget: 0.5 } });
+field.setPolicy({ allowMotionProjection: false }); // REPLACE, not merge — pass the whole policy you want
+field.policy;                                       // a frozen copy ({} when none was ever set)
+```
+
+**Wired budgets (enforced today):**
+
+- **`motion` / `maxMotionBudget` / `allowMotionProjection`** — folded (via `min`) with host/user
+  reduced-motion **and** performance pressure into **one effective motion allowance** the
+  integrator/easing path reads. `maxMotionBudget: 0` (or `allowMotionProjection: false`) freezes matter
+  exactly as reduced-motion does; a partial budget slows displacement-per-second proportionally.
+  **Reduced-motion always wins** — accessibility can only *lower* motion, never raise it, so a permissive
+  policy cannot override a reduced-motion host.
+- **`privacy` / `allowBodyDataInSnapshots`** — gates body `data` in `snapshot()`. An explicit
+  `allowBodyDataInSnapshots: false`, or a `privacy` budget below `0.5`, withholds body `data` **even when
+  the caller passes `includeData: true`**. Policy *tightens* the call-site privacy default; it never
+  widens it.
+
+**Declared-not-yet-enforced:** `force`, `attention`, `thermal`, `render`, `accessibility`, `agentRead`
+are accepted and carried on the policy (readable via `field.policy`) for host/tooling introspection, and
+will be wired as their consumers land. `setPolicy` is a **replace** (not a merge): pass the full policy
+you want in effect; `{}` clears to the unbounded default. Purely additive — a field with no policy
+behaves exactly as before.
+
+---
+
 ## Status & relation to the frozen surface
 
 | Capability | Surface | Status |
@@ -351,6 +408,7 @@ they are filled when those dimensions (orientation, time, semantic) are restored
 | Body authority + dynamic recoil | `data-authority` / `Body.authority` | shipped-unfrozen · EXPERIMENTAL |
 | Integrator `'fixed'` | `createField({ integrator })` | shipped-unfrozen · EXPERIMENTAL |
 | Accumulator channels | `Env.accum` / `FieldImpulseAccumulator` | shipped-unfrozen · EXPERIMENTAL |
+| Runtime policy + budgets | `createField({ policy })` · `setPolicy` · `field.policy` | shipped-unfrozen · EXPERIMENTAL (motion + privacy budgets wired; others declared) |
 
 None of these are in the frozen 17 ([api-stability.md](api-stability.md)). They are present in the
 package and safe to use, but carry **no** stability guarantee until explicitly added to the stable

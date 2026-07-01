@@ -9,6 +9,21 @@ a git tag (see [RELEASING.md](RELEASING.md)).
 
 ### Added
 
+- **`@fundamental-engine/core`:** **runtime FIELD POLICY + a FIELD BUDGET model.** A new `FieldPolicy`
+  (`{ allowBodyDataInSnapshots?, allowMotionProjection?, maxMotionBudget?, budgets?: Partial<FieldBudgets> }`)
+  expresses what THIS host/session/user/app **permits** at runtime — a distinct lane from governance
+  (what doctrine *allows*, via static lint). `FieldBudgets` bounds consumable field resources
+  (`motion`, `force`, `attention`, `thermal`, `render`, `privacy`, `accessibility`, `agentRead`). Set it
+  at creation via `createField({ policy })` and live via `field.setPolicy(p)` (a **replace**, not a merge);
+  read a frozen copy via `field.policy`. **Wired today:** the **motion budget** folds (via `min`) with
+  host reduced-motion and performance pressure into a single effective motion allowance the
+  integrator/easing path reads — reduced-motion **always wins** (accessibility can only *lower* motion,
+  never raise it), and `maxMotionBudget: 0` behaves exactly as reduced-motion (frozen); the **privacy
+  budget** (and `allowBodyDataInSnapshots`) gates body `data` in `snapshot()`. The remaining budgets are
+  declared-not-yet-enforced (carried for host/tooling introspection, wired as their consumers land).
+  Mirrored on `@fundamental-engine/vanilla` and `@fundamental-engine/three`. Purely additive — a field
+  with no policy behaves exactly as before.
+
 - **`@fundamental-engine/core`:** **`MinimalFieldHost` + a host capability model.** `MinimalFieldHost` is the
   smallest surface a host must supply — `root` + `viewport()` (geometry) and `raf()`/`cancelRaf()` (time).
   `FieldHost` now `extends MinimalFieldHost` with every other member (`scrollY`, `scrollHeight`,

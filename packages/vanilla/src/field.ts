@@ -98,6 +98,14 @@ export class FieldField implements FieldHandle {
   setQualityTier(tier: number): void {
     this.field.setQualityTier(tier);
   }
+  /** the field's current runtime policy (frozen copy). */
+  get policy(): FieldHandle['policy'] {
+    return this.field.policy;
+  }
+  /** replace the runtime field policy live — what this host/session/user/app permits. */
+  setPolicy(policy: Parameters<FieldHandle['setPolicy']>[0]): void {
+    this.field.setPolicy(policy);
+  }
   /** switch the underlay render mode (§20.6) live. */
   setRender(mode: Parameters<FieldHandle['setRender']>[0]): void {
     this.field.setRender(mode);
