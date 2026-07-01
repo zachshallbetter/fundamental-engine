@@ -7,7 +7,10 @@ import com.fundamental.core.engine.BoundParticle
 import com.fundamental.core.engine.CANONICAL_FORCE_COLORS
 import com.fundamental.core.engine.Env
 import com.fundamental.core.engine.FieldBodyIdentity
+import com.fundamental.core.engine.FieldPolicy
 import com.fundamental.core.engine.FieldStore
+import com.fundamental.core.engine.effectiveMotion
+import com.fundamental.core.engine.policyPermitsBodyData
 import com.fundamental.core.engine.FlowFocus
 import com.fundamental.core.engine.Heatmap
 import com.fundamental.core.engine.SparkPool
@@ -105,6 +108,31 @@ class FieldController(
 
     /** Called once per tick, after the force step and all feedback — used by [FieldHandle] for events + agents. */
     var onAfterTick: (() -> Unit)? = null
+
+    // ── runtime FIELD POLICY (JS #892) ────────────────────────────────────────────────────────────
+    /**
+     * What THIS host/session/user/app PERMITS (runtime), distinct from governance (static lint). Replace
+     * live via [setPolicy]. Default: unbounded → byte-identical to the pre-policy engine. Reduced-motion
+     * (fed via [reducedMotion]) ALWAYS wins over any policy in [effectiveMotion].
+     */
+    var policy: FieldPolicy = FieldPolicy.UNBOUNDED
+        private set
+
+    /**
+     * The current reduced-motion signal, fed by the host (the Kotlin analog of the JS host's
+     * `reducedMotion()` — the controller is host-agnostic, so the platform/handle feeds it like scroll).
+     * When true, [effectiveMotion] is 0 regardless of policy: motion can only be lowered, never raised.
+     */
+    var reducedMotion: Boolean = false
+
+    /** Replace the runtime policy (JS #892 `setPolicy` — REPLACE, not merge). Reduced-motion still wins. */
+    fun setPolicy(next: FieldPolicy) { policy = next }
+
+    /** The effective motion allowance `0..1` this frame — reduced-motion + policy folded (JS #892). */
+    fun effectiveMotion(): Float = effectiveMotion(policy, reducedMotion)
+
+    /** Whether the policy permits body data to be exposed (JS #892) — policy tightens, never widens. */
+    fun policyPermitsBodyData(): Boolean = policyPermitsBodyData(policy)
 
     /** Active flow focus (a transient pull point), or null. Set via [flowTo] / cleared by [clearFlow]. */
     var flow: FlowFocus? = null
@@ -319,7 +347,10 @@ class FieldController(
 
     /** Advance the field one frame: ease the formation, track programmatic bodies, apply flow, step. */
     fun tick(dt: Float = 1f) {
-        env.dt = dt
+        // Effective motion (JS #892): reduced-motion + policy fold into the step. At the unbounded
+        // default (no policy, no reduced-motion) this is dt · 1 → byte-identical. Reduced-motion clamps
+        // to 0 (frozen); a motion budget scales the step proportionally.
+        env.dt = dt * effectiveMotion()
         formCurrent = easeFormation(formCurrent, formationTarget)
         env.form = formCurrent
         // view-less programmatic bodies re-sample their position each frame.

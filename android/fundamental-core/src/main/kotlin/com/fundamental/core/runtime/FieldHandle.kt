@@ -5,6 +5,7 @@ import com.fundamental.core.engine.Body
 import com.fundamental.core.engine.Box
 import com.fundamental.core.engine.EnergyReport
 import com.fundamental.core.engine.FieldBodyIdentity
+import com.fundamental.core.engine.FieldPolicy
 import com.fundamental.core.engine.Particle
 import com.fundamental.core.engine.ScalarGrid
 import com.fundamental.core.engine.WaveStyle
@@ -278,6 +279,24 @@ class FieldHandle(val controller: FieldController) {
     /** Feed the current frame's scroll velocity from the platform scroll listener. */
     fun feedScrollV(vel: Float) { _scrollV = vel }
 
+    // ── runtime FIELD POLICY (JS #892) ─────────────────────────────────────────────────
+    /**
+     * Replace the runtime [FieldPolicy] — what this host/session/user/app PERMITS. Reduced-motion always
+     * wins (a policy can lower motion but never raise it above what reduced-motion allows). Mirrors JS
+     * `setPolicy`.
+     */
+    fun setPolicy(policy: FieldPolicy) = controller.setPolicy(policy)
+    /** The live runtime policy. Mirrors JS `policy`. */
+    val policy: FieldPolicy get() = controller.policy
+    /**
+     * Feed the host's reduced-motion preference (the Kotlin analog of the JS host's `reducedMotion()` —
+     * the controller is host-agnostic, so the platform/host feeds it like scroll). When true, motion
+     * clamps to 0 regardless of policy.
+     */
+    fun feedReducedMotion(on: Boolean) { controller.reducedMotion = on }
+    /** The effective motion allowance `0..1` this frame — reduced-motion + policy folded (JS #892). */
+    fun effectiveMotion(): Float = controller.effectiveMotion()
+
     // ── imperative interactions ──────────────────────────────────────────────────────
     fun burst(x: Float, y: Float, power: Float = 1f) = controller.burst(x, y, power)
     fun flowTo(x: Float, y: Float, strength: Float? = null, radius: Float? = null) = controller.flowTo(x, y, strength, radius)
@@ -487,4 +506,11 @@ fun createField(
      * Null ⇒ default derivation (a monotonic `body-N`). See [FieldController.identify].
      */
     identify: ((Body) -> FieldBodyIdentity?)? = null,
-): FieldHandle = FieldHandle(FieldController(width, height, depth, particleCount, seed).also { it.identify = identify })
+    /** Initial runtime [FieldPolicy] (JS #892) — what this host/session/user/app permits. Additive. */
+    policy: FieldPolicy = FieldPolicy.UNBOUNDED,
+): FieldHandle = FieldHandle(
+    FieldController(width, height, depth, particleCount, seed).also {
+        it.identify = identify
+        it.setPolicy(policy)
+    },
+)
